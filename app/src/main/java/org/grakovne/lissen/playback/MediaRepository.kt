@@ -81,6 +81,13 @@ class MediaRepository @Inject constructor(@ApplicationContext private val contex
                         override fun onIsPlayingChanged(isPlaying: Boolean) {
                             _isPlaying.value = isPlaying
                         }
+
+                        override fun onPlaybackStateChanged(playbackState: Int) {
+                            if (playbackState == Player.STATE_ENDED) {
+                                mediaController.seekTo(0)
+                                mediaController.pause()
+                            }
+                        }
                     })
                 }
 

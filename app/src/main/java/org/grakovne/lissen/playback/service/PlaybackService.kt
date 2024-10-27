@@ -164,11 +164,23 @@ class PlaybackService : MediaSessionService() {
         when (position) {
             null -> exoPlayer.seekTo(0, 0)
             else -> {
-                val duration = items.runningFold(0.0) { acc, chapter -> acc + chapter.duration }
-                val targetChapter = duration.indexOfFirst { it > position }
-                val chapterProgress = position - duration[targetChapter - 1]
+                val positionMs = (position * 1000).toLong()
 
-                exoPlayer.seekTo(targetChapter - 1, (chapterProgress * 1000).toLong())
+                val durationsMs = items.map { (it.duration * 1000).toLong() }
+                val cumulativeDurationsMs = durationsMs.runningFold(0L) { acc, duration -> acc + duration }
+
+                val targetChapterIndex = cumulativeDurationsMs.indexOfFirst { it > positionMs }
+
+                if (targetChapterIndex == -1) {
+                    val lastChapterIndex = items.size - 1
+                    val lastChapterDurationMs = durationsMs.last()
+                    exoPlayer.seekTo(lastChapterIndex, lastChapterDurationMs)
+                    return
+                }
+
+                val chapterStartTimeMs = cumulativeDurationsMs[targetChapterIndex - 1]
+                val chapterProgressMs = positionMs - chapterStartTimeMs
+                exoPlayer.seekTo(targetChapterIndex - 1, chapterProgressMs)
             }
         }
     }
@@ -179,6 +191,7 @@ class PlaybackService : MediaSessionService() {
     ) = seek(chapters, progress?.currentTime)
 
     companion object {
+
         const val ACTION_PLAY = "org.grakovne.lissen.player.service.PLAY"
         const val ACTION_PAUSE = "org.grakovne.lissen.player.service.PAUSE"
         const val ACTION_SET_PLAYBACK = "org.grakovne.lissen.player.service.SET_PLAYBACK"
