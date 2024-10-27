@@ -60,6 +60,7 @@ class PlaybackService : MediaSessionService() {
                 playerServiceScope
                     .launch {
                         exoPlayer.prepare()
+                        exoPlayer.setPlaybackSpeed(sharedPreferences.getPlaybackSpeed())
                         exoPlayer.playWhenReady = true
                     }
                 return START_STICKY

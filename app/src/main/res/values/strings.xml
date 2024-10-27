@@ -12,7 +12,7 @@
     <string name="login_screen_password_input">Password</string>
     <string name="login_screen_connect_button_text">Connect</string>
     <string name="player_screen_library_navigation">Library</string>
-    <string name="player_screen_timer_navigation">Timer</string>
+    <string name="player_screen_playback_speed_navigation">Speed</string>
     <string name="player_screen_chapter_list_navigation">Chapters</string>
     <string name="player_screen_preferences_navigation">Preferences</string>
     <string name="player_screen_now_playing_title">Now Playing</string>

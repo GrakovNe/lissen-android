@@ -22,6 +22,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.domain.DetailedBook
+import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.ACTION_SEEK_TO
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.BOOK_EXTRA
@@ -31,7 +32,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class MediaRepository @Inject constructor(@ApplicationContext private val context: Context) {
+class MediaRepository @Inject constructor(
+        @ApplicationContext private val context: Context,
+        private val preferences: LissenSharedPreferences
+) {
 
     private lateinit var mediaController: MediaController
 
@@ -50,7 +54,7 @@ class MediaRepository @Inject constructor(@ApplicationContext private val contex
     private val _playingBook = MutableLiveData<DetailedBook>()
     val playingBook: LiveData<DetailedBook> = _playingBook
 
-    private val _playbackSpeed = MutableLiveData<Float>(1f)
+    private val _playbackSpeed = MutableLiveData(preferences.getPlaybackSpeed())
     val playbackSpeed: LiveData<Float> = _playbackSpeed
 
     private val handler = Handler(Looper.getMainLooper())
@@ -147,6 +151,8 @@ class MediaRepository @Inject constructor(@ApplicationContext private val contex
 
         mediaController.setPlaybackSpeed(speed)
         _playbackSpeed.postValue(speed)
+
+        preferences.savePlaybackSpeed(speed)
     }
 
     private fun startUpdatingProgress(detailedBook: DetailedBook) {

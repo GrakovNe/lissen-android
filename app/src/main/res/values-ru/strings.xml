@@ -12,7 +12,7 @@
     <string name="login_screen_password_input">Пароль</string>
     <string name="login_screen_connect_button_text">Подключиться</string>
     <string name="player_screen_library_navigation">Библиотека</string>
-    <string name="player_screen_timer_navigation">Таймер</string>
+    <string name="player_screen_playback_speed_navigation">Скорость</string>
     <string name="player_screen_chapter_list_navigation">Эпизоды</string>
     <string name="player_screen_preferences_navigation">Настройки</string>
     <string name="player_screen_now_playing_title">"Сейчас играет "</string>
