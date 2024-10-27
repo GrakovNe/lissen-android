@@ -33,7 +33,7 @@
     <string name="no_books_listened_to_yet">Еще нет прослушанных книг</string>
     <string name="the_library_is_empty">В библиотеке нет книг</string>
     <string name="the_offline_library_is_empty">Загруженных книг нет</string>
-    <string name="audiobookshelf_server_is_required">"Для работы приложения необходим Audiobookshelf"</string>
+    <string name="audiobookshelf_server_is_required">"Для работы приложения необходим Audiobookshelf сервер"</string>
     <string name="no_internet_connection">Нет подключения к интернету</string>
     <string name="app_crach_toast">Извините за ошибку в приложении\nДанные уже отправлены для расследования</string>
     <string name="dialog_remove_from_cache_title">Удалить из скачанных?</string>

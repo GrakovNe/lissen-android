@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight.Companion.SemiBold
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
@@ -61,7 +63,7 @@ fun PlaybackSpeedComposable(
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = "${String.format("%.2f", selectedPlaybackSpeed)}x",
-                    style = typography.titleLarge
+                    style = typography.titleLarge.copy(fontWeight = SemiBold)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Slider(
@@ -79,7 +81,12 @@ fun PlaybackSpeedComposable(
                         onSpeedChange(snappedValue)
                     },
                     valueRange = 0.5f..3f,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = SliderDefaults.colors(
+                        thumbColor = colorScheme.primary,
+                        activeTrackColor = colorScheme.primary,
+                        inactiveTrackColor = colorScheme.primary.copy(alpha = 0.2f)
+                    )
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -92,7 +99,7 @@ fun PlaybackSpeedComposable(
                         .forEach { value ->
                             Box(
                                 contentAlignment = Alignment.Center,
-                                modifier = Modifier.size(48.dp)
+                                modifier = Modifier.size(56.dp)
                             ) {
                                 Button(
                                     onClick = {
@@ -111,7 +118,10 @@ fun PlaybackSpeedComposable(
                                 Text(
                                     text = String.format("%.2f", value),
                                     color = Color.Black,
-                                    style = typography.labelMedium,
+                                    style = when (selectedPlaybackSpeed == value) {
+                                        true -> typography.labelMedium.copy(fontWeight = SemiBold)
+                                        false -> typography.labelMedium
+                                    },
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )

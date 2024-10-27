@@ -48,6 +48,8 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
 
             remove(KEY_PREFERRED_LIBRARY_ID)
             remove(KEY_PREFERRED_LIBRARY_NAME)
+
+            remove(KEY_PREFERRED_PLAYBACK_SPEED)
         }.apply()
     }
 
@@ -80,10 +82,10 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
     }
 
     fun savePlaybackSpeed(factor: Float) =
-        sharedPreferences.edit().putFloat(KEY_PREFERRED_SPEED, factor).apply()
+        sharedPreferences.edit().putFloat(KEY_PREFERRED_PLAYBACK_SPEED, factor).apply()
 
     fun getPlaybackSpeed(): Float =
-        sharedPreferences.getFloat(KEY_PREFERRED_SPEED, 1f)
+        sharedPreferences.getFloat(KEY_PREFERRED_PLAYBACK_SPEED, 1f)
 
     private fun saveActiveLibraryId(host: String) =
         sharedPreferences.edit().putString(KEY_PREFERRED_LIBRARY_ID, host).apply()
@@ -135,7 +137,7 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
         private const val KEY_PREFERRED_LIBRARY_ID = "preferred_library_id"
         private const val KEY_PREFERRED_LIBRARY_NAME = "preferred_library_name"
 
-        private const val KEY_PREFERRED_SPEED = "preferred_playback_speed"
+        private const val KEY_PREFERRED_PLAYBACK_SPEED = "preferred_playback_speed"
 
         private const val ANDROID_KEYSTORE = "AndroidKeyStore"
         private const val TRANSFORMATION = "AES/GCM/NoPadding"
@@ -170,7 +172,7 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
             return Base64.encodeToString(ivAndCipherText, Base64.DEFAULT)
         }
 
-        private fun decrypt(data: String): String {
+        private fun decrypt(data: String): String? {
             val decodedData = Base64.decode(data, Base64.DEFAULT)
             val iv = decodedData.sliceArray(0 until 12)
             val cipherText = decodedData.sliceArray(12 until decodedData.size)
@@ -179,7 +181,11 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
             val spec = GCMParameterSpec(128, iv)
             cipher.init(Cipher.DECRYPT_MODE, getSecretKey(), spec)
 
-            return String(cipher.doFinal(cipherText))
+            return try {
+                String(cipher.doFinal(cipherText))
+            } catch (ex: Exception) {
+                null
+            }
         }
     }
 }
