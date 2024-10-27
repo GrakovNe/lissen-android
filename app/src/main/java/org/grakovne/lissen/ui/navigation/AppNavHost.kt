@@ -31,7 +31,7 @@ fun AppNavHost(
         )
     }
     val startDestination = when {
-        hasCredentials -> "library_screen"
+        hasCredentials -> "player_screen/49fcdfab-2276-47b7-86c9-0b66098d4c5b?bookTitle=заглушка"
         else -> "login_screen"
     }
 
