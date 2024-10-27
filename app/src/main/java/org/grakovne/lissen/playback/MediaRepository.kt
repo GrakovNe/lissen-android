@@ -33,14 +33,14 @@ import javax.inject.Singleton
 
 @Singleton
 class MediaRepository @Inject constructor(
-        @ApplicationContext private val context: Context,
-        private val preferences: LissenSharedPreferences
+    @ApplicationContext private val context: Context,
+    private val preferences: LissenSharedPreferences
 ) {
 
     private lateinit var mediaController: MediaController
 
     private val token =
-            SessionToken(context, ComponentName(context, PlaybackService::class.java))
+        SessionToken(context, ComponentName(context, PlaybackService::class.java))
 
     private val _isPlaying = MutableLiveData(false)
     val isPlaying: LiveData<Boolean> = _isPlaying
@@ -72,34 +72,34 @@ class MediaRepository @Inject constructor(
         val futureController = controllerBuilder.buildAsync()
 
         Futures.addCallback(
-                futureController,
-                object : FutureCallback<MediaController> {
-                    override fun onSuccess(controller: MediaController) {
-                        mediaController = controller
+            futureController,
+            object : FutureCallback<MediaController> {
+                override fun onSuccess(controller: MediaController) {
+                    mediaController = controller
 
-                        LocalBroadcastManager
-                                .getInstance(context)
-                                .registerReceiver(bookDetailsReadyReceiver, IntentFilter(PLAYBACK_READY))
+                    LocalBroadcastManager
+                        .getInstance(context)
+                        .registerReceiver(bookDetailsReadyReceiver, IntentFilter(PLAYBACK_READY))
 
-                        mediaController.addListener(object : Player.Listener {
-                            override fun onIsPlayingChanged(isPlaying: Boolean) {
-                                _isPlaying.value = isPlaying
+                    mediaController.addListener(object : Player.Listener {
+                        override fun onIsPlayingChanged(isPlaying: Boolean) {
+                            _isPlaying.value = isPlaying
+                        }
+
+                        override fun onPlaybackStateChanged(playbackState: Int) {
+                            if (playbackState == Player.STATE_ENDED) {
+                                mediaController.seekTo(0, 0)
+                                mediaController.pause()
                             }
+                        }
+                    })
+                }
 
-                            override fun onPlaybackStateChanged(playbackState: Int) {
-                                if (playbackState == Player.STATE_ENDED) {
-                                    mediaController.seekTo(0, 0)
-                                    mediaController.pause()
-                                }
-                            }
-                        })
-                    }
-
-                    override fun onFailure(t: Throwable) {
-                        throw RuntimeException("Unable to add callback to player")
-                    }
-                },
-                MoreExecutors.directExecutor()
+                override fun onFailure(t: Throwable) {
+                    throw RuntimeException("Unable to add callback to player")
+                }
+            },
+            MoreExecutors.directExecutor()
         )
     }
 
@@ -159,13 +159,13 @@ class MediaRepository @Inject constructor(
         handler.removeCallbacksAndMessages(null)
 
         handler.postDelayed(
-                object : Runnable {
-                    override fun run() {
-                        updateProgress(detailedBook)
-                        handler.postDelayed(this, 500)
-                    }
-                },
-                500
+            object : Runnable {
+                override fun run() {
+                    updateProgress(detailedBook)
+                    handler.postDelayed(this, 500)
+                }
+            },
+            500
         )
     }
 

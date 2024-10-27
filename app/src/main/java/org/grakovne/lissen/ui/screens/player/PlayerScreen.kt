@@ -43,10 +43,10 @@ import org.grakovne.lissen.viewmodel.PlayerViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerScreen(
-        navController: AppNavigationService,
-        imageLoader: ImageLoader,
-        bookId: String?,
-        bookTitle: String?
+    navController: AppNavigationService,
+    imageLoader: ImageLoader,
+    bookId: String?,
+    bookTitle: String?
 ) {
     val viewModel: PlayerViewModel = hiltViewModel()
     val titleTextStyle = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
@@ -57,81 +57,81 @@ fun PlayerScreen(
 
     LaunchedEffect(bookId) {
         bookId
-                ?.takeIf { it != playingBook?.id }
-                ?.let { viewModel.preparePlayback(it) }
+            ?.takeIf { it != playingBook?.id }
+            ?.let { viewModel.preparePlayback(it) }
     }
 
     Scaffold(
-            topBar = {
-                TopAppBar(
-                        title = {
-                            Text(
-                                    text = stringResource(R.string.player_screen_library_navigation),
-                                    style = titleTextStyle,
-                                    color = colorScheme.onSurface
-                            )
-                        },
-                        navigationIcon = {
-                            IconButton(onClick = { navController.showLibrary() }) {
-                                Icon(
-                                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                                        contentDescription = "Back",
-                                        tint = colorScheme.onSurface
-                                )
-                            }
-                        }
-                )
-            },
-            bottomBar = {
-                NavigationBarComposable(
-                        viewModel,
-                        navController = navController,
-                        onChaptersClick = { viewModel.togglePlayingQueue() }
-                )
-            },
-            modifier = Modifier.systemBarsPadding(),
-            content = { innerPadding ->
-                Column(
-                        modifier = Modifier.padding(innerPadding),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    AnimatedVisibility(
-                            visible = playingQueueExpanded.not(),
-                            enter = expandVertically(animationSpec = tween(400)),
-                            exit = shrinkVertically(animationSpec = tween(400))
-                    ) {
-                        Column(
-                                horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            if (!isPlaybackReady) {
-                                TrackDetailsPlaceholderComposable(bookTitle)
-                            } else {
-                                TrackDetailsComposable(
-                                        viewModel = viewModel,
-                                        imageLoader = imageLoader
-                                )
-                            }
-
-                            TrackControlComposable(
-                                    viewModel = viewModel,
-                                    modifier = Modifier
-                            )
-
-                            Spacer(modifier = Modifier.height(8.dp))
-                        }
-                    }
-
-                    if (isPlaybackReady) {
-                        PlayingQueueComposable(
-                                viewModel = viewModel,
-                                modifier = Modifier
-                        )
-                    } else {
-                        PlayingQueuePlaceholderComposable(
-                                modifier = Modifier
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(R.string.player_screen_library_navigation),
+                        style = titleTextStyle,
+                        color = colorScheme.onSurface
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.showLibrary() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = "Back",
+                            tint = colorScheme.onSurface
                         )
                     }
                 }
+            )
+        },
+        bottomBar = {
+            NavigationBarComposable(
+                viewModel,
+                navController = navController,
+                onChaptersClick = { viewModel.togglePlayingQueue() }
+            )
+        },
+        modifier = Modifier.systemBarsPadding(),
+        content = { innerPadding ->
+            Column(
+                modifier = Modifier.padding(innerPadding),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                AnimatedVisibility(
+                    visible = playingQueueExpanded.not(),
+                    enter = expandVertically(animationSpec = tween(400)),
+                    exit = shrinkVertically(animationSpec = tween(400))
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        if (!isPlaybackReady) {
+                            TrackDetailsPlaceholderComposable(bookTitle)
+                        } else {
+                            TrackDetailsComposable(
+                                viewModel = viewModel,
+                                imageLoader = imageLoader
+                            )
+                        }
+
+                        TrackControlComposable(
+                            viewModel = viewModel,
+                            modifier = Modifier
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                }
+
+                if (isPlaybackReady) {
+                    PlayingQueueComposable(
+                        viewModel = viewModel,
+                        modifier = Modifier
+                    )
+                } else {
+                    PlayingQueuePlaceholderComposable(
+                        modifier = Modifier
+                    )
+                }
             }
+        }
     )
 }

@@ -36,85 +36,91 @@ import org.grakovne.lissen.ui.theme.ItemAccented
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlaybackSpeedComposable(
-        currentSpeed: Float ,
-        onSpeedChange: (Float) -> Unit,
-        onDismissRequest: () -> Unit
+    currentSpeed: Float,
+    onSpeedChange: (Float) -> Unit,
+    onDismissRequest: () -> Unit
 ) {
-    var selectedValue by remember { mutableFloatStateOf(currentSpeed) }
-    val values = listOf(1f, 1.25f, 1.5f, 2f, 3f)
+    var selectedPlaybackSpeed by remember { mutableFloatStateOf(currentSpeed) }
 
     ModalBottomSheet(
-            containerColor = Color(0xFFFAFAFA),
-            onDismissRequest = onDismissRequest,
-            content = {
-                Column(
-                        modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+        containerColor = Color(0xFFFAFAFA),
+        onDismissRequest = onDismissRequest,
+        content = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Playback speed",
+                    style = typography.titleMedium
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "${String.format("%.2f", selectedPlaybackSpeed)}x",
+                    style = typography.titleLarge
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Slider(
+                    value = selectedPlaybackSpeed,
+                    onValueChange = { value ->
+                        selectedPlaybackSpeed = value
+                    },
+                    onValueChangeFinished = {
+                        val snapThreshold = 0.01f
+                        val snappedValue = playbackSpeedPresets
+                            .find { kotlin.math.abs(it - selectedPlaybackSpeed) <= snapThreshold }
+                            ?: selectedPlaybackSpeed
+
+                        selectedPlaybackSpeed = snappedValue
+                        onSpeedChange(snappedValue)
+                    },
+                    valueRange = 0.5f..3f,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Text(
-                            text = "Playback speed",
-                            style = typography.titleMedium
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                            text = "${String.format("%.2f", selectedValue)}x",
-                            style = typography.titleLarge
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Slider(
-                            value = selectedValue,
-                            onValueChange = { value ->
-                                val snapThreshold = 0.01f
-                                val snappedValue = values.find { kotlin.math.abs(it - value) < snapThreshold }
-                                        ?: value
-                                selectedValue = snappedValue
-                                onSpeedChange(snappedValue)
-                            },
-                            valueRange = 0.5f..3f,
-                            modifier = Modifier
-                                    .fillMaxWidth()
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        values.forEach { value ->
+                    playbackSpeedPresets
+                        .forEach { value ->
                             Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier.size(48.dp)
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.size(48.dp)
                             ) {
                                 Button(
-                                        onClick = {
-                                            selectedValue = value
-                                            onSpeedChange(value)
-                                        },
-                                        shape = CircleShape,
-                                        colors = ButtonDefaults.buttonColors(
-                                                containerColor = when (selectedValue == value) {
-                                                    true -> colorScheme.primary
-                                                    else -> ItemAccented
-                                                }
-                                        ),
-                                        modifier = Modifier.fillMaxSize()
-                                ) {
-                                }
+                                    onClick = {
+                                        selectedPlaybackSpeed = value
+                                        onSpeedChange(value)
+                                    },
+                                    shape = CircleShape,
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = when (selectedPlaybackSpeed == value) {
+                                            true -> colorScheme.primary
+                                            else -> ItemAccented
+                                        }
+                                    ),
+                                    modifier = Modifier.fillMaxSize()
+                                ) {}
                                 Text(
-                                        text = String.format("%.2f", value),
-                                        color = Color.Black,
-                                        style = typography.labelMedium,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
+                                    text = String.format("%.2f", value),
+                                    color = Color.Black,
+                                    style = typography.labelMedium,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
                                 )
                             }
                         }
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
                 }
+
+                Spacer(modifier = Modifier.height(8.dp))
             }
+        }
     )
 }
+
+private val playbackSpeedPresets = listOf(1f, 1.25f, 1.5f, 2f, 3f)

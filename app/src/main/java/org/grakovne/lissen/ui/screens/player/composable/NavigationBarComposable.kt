@@ -35,10 +35,10 @@ import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
 fun NavigationBarComposable(
-        viewModel: PlayerViewModel,
-        navController: AppNavigationService,
-        modifier: Modifier = Modifier,
-        onChaptersClick: () -> Unit
+    viewModel: PlayerViewModel,
+    navController: AppNavigationService,
+    modifier: Modifier = Modifier,
+    onChaptersClick: () -> Unit
 ) {
     val playbackSpeed by viewModel.playbackSpeed.observeAsState(1f)
     val playingQueueExpanded by viewModel.playingQueueExpanded.observeAsState(false)
@@ -46,119 +46,119 @@ fun NavigationBarComposable(
     var playbackSpeedExpanded by remember { mutableStateOf(false) }
 
     Surface(
-            shadowElevation = 4.dp,
-            modifier = modifier.height(64.dp)
+        shadowElevation = 4.dp,
+        modifier = modifier.height(64.dp)
     ) {
         NavigationBar(
-                containerColor = Color.Transparent,
-                contentColor = colorScheme.onBackground,
-                modifier = Modifier.fillMaxWidth()
+            containerColor = Color.Transparent,
+            contentColor = colorScheme.onBackground,
+            modifier = Modifier.fillMaxWidth()
         ) {
             val iconSize = 24.dp
             val labelStyle = typography.labelSmall.copy(fontSize = 10.sp)
 
             NavigationBarItem(
-                    icon = {
-                        Icon(
-                                Icons.Outlined.Headset,
-                                contentDescription = stringResource(R.string.player_screen_library_navigation),
-                                modifier = Modifier.size(iconSize)
-                        )
-                    },
-                    label = {
-                        Text(
-                                text = stringResource(R.string.player_screen_library_navigation),
-                                style = labelStyle,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                        )
-                    },
-                    selected = false,
-                    onClick = { navController.showLibrary() },
-                    colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = colorScheme.primary,
-                            indicatorColor = ItemAccented
+                icon = {
+                    Icon(
+                        Icons.Outlined.Headset,
+                        contentDescription = stringResource(R.string.player_screen_library_navigation),
+                        modifier = Modifier.size(iconSize)
                     )
+                },
+                label = {
+                    Text(
+                        text = stringResource(R.string.player_screen_library_navigation),
+                        style = labelStyle,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
+                selected = false,
+                onClick = { navController.showLibrary() },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = colorScheme.primary,
+                    indicatorColor = ItemAccented
+                )
             )
 
             NavigationBarItem(
-                    icon = {
-                        Icon(
-                                Icons.Outlined.Book,
-                                contentDescription = stringResource(R.string.player_screen_chapter_list_navigation),
-                                modifier = Modifier.size(iconSize)
-                        )
-                    },
-                    label = {
-                        Text(
-                                text = stringResource(R.string.player_screen_chapter_list_navigation),
-                                style = labelStyle,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                        )
-                    },
-                    selected = playingQueueExpanded,
-                    onClick = { onChaptersClick() },
-                    colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = colorScheme.primary,
-                            indicatorColor = ItemAccented
+                icon = {
+                    Icon(
+                        Icons.Outlined.Book,
+                        contentDescription = stringResource(R.string.player_screen_chapter_list_navigation),
+                        modifier = Modifier.size(iconSize)
                     )
+                },
+                label = {
+                    Text(
+                        text = stringResource(R.string.player_screen_chapter_list_navigation),
+                        style = labelStyle,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
+                selected = playingQueueExpanded,
+                onClick = { onChaptersClick() },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = colorScheme.primary,
+                    indicatorColor = ItemAccented
+                )
             )
 
             NavigationBarItem(
-                    icon = {
-                        Icon(
-                                Icons.Outlined.Speed,
-                                contentDescription = stringResource(R.string.player_screen_playback_speed_navigation),
-                                modifier = Modifier.size(iconSize)
-                        )
-                    },
-                    label = {
-                        Text(
-                                text = stringResource(R.string.player_screen_playback_speed_navigation),
-                                style = labelStyle,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                        )
-                    },
-                    selected = false,
-                    onClick = { playbackSpeedExpanded = true },
-                    enabled = true,
-                    colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = colorScheme.primary,
-                            indicatorColor = ItemAccented
+                icon = {
+                    Icon(
+                        Icons.Outlined.Speed,
+                        contentDescription = stringResource(R.string.player_screen_playback_speed_navigation),
+                        modifier = Modifier.size(iconSize)
                     )
+                },
+                label = {
+                    Text(
+                        text = stringResource(R.string.player_screen_playback_speed_navigation),
+                        style = labelStyle,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
+                selected = false,
+                onClick = { playbackSpeedExpanded = true },
+                enabled = true,
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = colorScheme.primary,
+                    indicatorColor = ItemAccented
+                )
             )
 
             NavigationBarItem(
-                    icon = {
-                        Icon(
-                                Icons.Outlined.Settings,
-                                contentDescription = stringResource(R.string.player_screen_preferences_navigation),
-                                modifier = Modifier.size(iconSize)
-                        )
-                    },
-                    label = {
-                        Text(
-                                text = stringResource(R.string.player_screen_preferences_navigation),
-                                style = labelStyle,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                        )
-                    },
-                    selected = false,
-                    onClick = { navController.showSettings() },
-                    colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = colorScheme.primary,
-                            indicatorColor = ItemAccented
+                icon = {
+                    Icon(
+                        Icons.Outlined.Settings,
+                        contentDescription = stringResource(R.string.player_screen_preferences_navigation),
+                        modifier = Modifier.size(iconSize)
                     )
+                },
+                label = {
+                    Text(
+                        text = stringResource(R.string.player_screen_preferences_navigation),
+                        style = labelStyle,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
+                selected = false,
+                onClick = { navController.showSettings() },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = colorScheme.primary,
+                    indicatorColor = ItemAccented
+                )
             )
 
             if (playbackSpeedExpanded) {
                 PlaybackSpeedComposable(
-                        currentSpeed = playbackSpeed,
-                        onSpeedChange = { viewModel.setPlaybackSpeed(it) },
-                        onDismissRequest = { playbackSpeedExpanded = false }
+                    currentSpeed = playbackSpeed,
+                    onSpeedChange = { viewModel.setPlaybackSpeed(it) },
+                    onDismissRequest = { playbackSpeedExpanded = false }
                 )
             }
         }
