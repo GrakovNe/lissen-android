@@ -28,8 +28,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.theme.ItemAccented
 
 @SuppressLint("DefaultLocale")
@@ -53,7 +55,7 @@ fun PlaybackSpeedComposable(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Playback speed",
+                    text = stringResource(R.string.playback_speed_title),
                     style = typography.titleMedium
                 )
                 Spacer(modifier = Modifier.height(16.dp))

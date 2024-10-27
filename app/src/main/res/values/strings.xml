@@ -28,10 +28,6 @@
     <string name="login_error_credentials_are_invalid">Credentials are invalid</string>
     <string name="login_error_host_url_shall_be_https_or_http">Host URL shall be https:// or http://</string>
     <string name="login_error_connection_error">Connection Error</string>
-    <string name="playback_speed_normal">Normal</string>
-    <string name="playback_speed_faster">Faster</string>
-    <string name="playback_speed_fast">Fast</string>
-    <string name="playback_speed_custom" translatable="false">Custom</string>
     <string name="disable_offline">Turn off offline</string>
     <string name="enable_offline">Turn on offline</string>
     <string name="no_books_listened_to_yet">No books listened to yet</string>
@@ -44,4 +40,5 @@
     <string name="dialog_remove_from_cache_text">The book will remain available in the library and you can still stream it whenever you like</string>
     <string name="dialog_confirm_remove">Remove</string>
     <string name="dialog_dismiss_cancel">Cancel</string>
+    <string name="playback_speed_title">Playback speed</string>
 </resources>

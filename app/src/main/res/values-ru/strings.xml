@@ -28,9 +28,6 @@
     <string name="login_error_credentials_are_invalid">Данные для входа неверные</string>
     <string name="login_error_host_url_shall_be_https_or_http">URL должен начинаться с http:// или https://</string>
     <string name="login_error_connection_error">Ошибка подключения. Наши полномочия всё</string>
-    <string name="playback_speed_normal">Нормально</string>
-    <string name="playback_speed_faster">Быстрее</string>
-    <string name="playback_speed_fast">Быстро</string>
     <string name="disable_offline">Слушать онлайн</string>
     <string name="enable_offline">Только скачанные</string>
     <string name="no_books_listened_to_yet">Еще нет прослушанных книг</string>
@@ -43,4 +40,5 @@
     <string name="dialog_remove_from_cache_text">Книга останется доступна в библиотеке и её можно будет продолжить слушать</string>
     <string name="dialog_confirm_remove">Удалить</string>
     <string name="dialog_dismiss_cancel">Отмена</string>
+    <string name="playback_speed_title">Скорость воспроизведения</string>
 </resources>
