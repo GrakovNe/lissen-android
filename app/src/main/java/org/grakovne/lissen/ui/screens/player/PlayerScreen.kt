@@ -239,6 +239,7 @@ fun PlaybackSpeedBottomSheet(
                             }
                         }
                     }
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
     )
