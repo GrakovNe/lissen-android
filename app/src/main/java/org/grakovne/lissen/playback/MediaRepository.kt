@@ -36,7 +36,7 @@ class MediaRepository @Inject constructor(@ApplicationContext private val contex
     private lateinit var mediaController: MediaController
 
     private val token =
-        SessionToken(context, ComponentName(context, PlaybackService::class.java))
+            SessionToken(context, ComponentName(context, PlaybackService::class.java))
 
     private val _isPlaying = MutableLiveData(false)
     val isPlaying: LiveData<Boolean> = _isPlaying
@@ -68,34 +68,34 @@ class MediaRepository @Inject constructor(@ApplicationContext private val contex
         val futureController = controllerBuilder.buildAsync()
 
         Futures.addCallback(
-            futureController,
-            object : FutureCallback<MediaController> {
-                override fun onSuccess(controller: MediaController) {
-                    mediaController = controller
+                futureController,
+                object : FutureCallback<MediaController> {
+                    override fun onSuccess(controller: MediaController) {
+                        mediaController = controller
 
-                    LocalBroadcastManager
-                        .getInstance(context)
-                        .registerReceiver(bookDetailsReadyReceiver, IntentFilter(PLAYBACK_READY))
+                        LocalBroadcastManager
+                                .getInstance(context)
+                                .registerReceiver(bookDetailsReadyReceiver, IntentFilter(PLAYBACK_READY))
 
-                    mediaController.addListener(object : Player.Listener {
-                        override fun onIsPlayingChanged(isPlaying: Boolean) {
-                            _isPlaying.value = isPlaying
-                        }
-
-                        override fun onPlaybackStateChanged(playbackState: Int) {
-                            if (playbackState == Player.STATE_ENDED) {
-                                mediaController.seekTo(0,0)
-                                mediaController.pause()
+                        mediaController.addListener(object : Player.Listener {
+                            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                                _isPlaying.value = isPlaying
                             }
-                        }
-                    })
-                }
 
-                override fun onFailure(t: Throwable) {
-                    throw RuntimeException("Unable to add callback to player")
-                }
-            },
-            MoreExecutors.directExecutor()
+                            override fun onPlaybackStateChanged(playbackState: Int) {
+                                if (playbackState == Player.STATE_ENDED) {
+                                    mediaController.seekTo(0, 0)
+                                    mediaController.pause()
+                                }
+                            }
+                        })
+                    }
+
+                    override fun onFailure(t: Throwable) {
+                        throw RuntimeException("Unable to add callback to player")
+                    }
+                },
+                MoreExecutors.directExecutor()
         )
     }
 
@@ -138,12 +138,11 @@ class MediaRepository @Inject constructor(@ApplicationContext private val contex
         context.startService(intent)
     }
 
-    fun togglePlaybackSpeed() {
-        val speed = when (playbackSpeed.value) {
-            1f -> 1.5f
-            1.5f -> 2f
-            2f -> 1f
-            else -> 1f
+    fun setPlaybackSpeed(factor: Float) {
+        val speed = when {
+            factor < 0.5f -> 0.5f
+            factor > 3f -> 3f
+            else -> factor
         }
 
         mediaController.setPlaybackSpeed(speed)
@@ -154,13 +153,13 @@ class MediaRepository @Inject constructor(@ApplicationContext private val contex
         handler.removeCallbacksAndMessages(null)
 
         handler.postDelayed(
-            object : Runnable {
-                override fun run() {
-                    updateProgress(detailedBook)
-                    handler.postDelayed(this, 500)
-                }
-            },
-            500
+                object : Runnable {
+                    override fun run() {
+                        updateProgress(detailedBook)
+                        handler.postDelayed(this, 500)
+                    }
+                },
+                500
         )
     }
 

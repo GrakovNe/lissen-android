@@ -127,7 +127,7 @@ class PlayerViewModel @Inject constructor(
         mediaRepository.seekTo(chapterStartsAt)
     }
 
-    fun togglePlaybackSpeed() = mediaRepository.togglePlaybackSpeed()
+    fun setPlaybackSpeed(factor: Float) = mediaRepository.setPlaybackSpeed(factor)
 
     fun nextTrack() {
         val nextChapterIndex = currentChapterIndex.value?.let { it + 1 } ?: return
