@@ -38,6 +38,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -170,7 +171,7 @@ fun PlaybackSpeedBottomSheet(
         onSpeedChange: (Float) -> Unit = {},
         onDismissRequest: () -> Unit = {}
 ) {
-    var selectedValue by remember { mutableStateOf(currentSpeed) }
+    var selectedValue by remember { mutableFloatStateOf(currentSpeed) }
     val values = listOf(1f, 1.25f, 1.5f, 2f, 3f)
 
     ModalBottomSheet(
@@ -195,8 +196,10 @@ fun PlaybackSpeedBottomSheet(
                     Slider(
                             value = selectedValue,
                             onValueChange = { value ->
-                                selectedValue = value
-                                onSpeedChange(value)
+                                val snapThreshold = 0.01f
+                                val snappedValue = values.find { kotlin.math.abs(it - value) < snapThreshold } ?: value
+                                selectedValue = snappedValue
+                                onSpeedChange(snappedValue)
                             },
                             valueRange = 0.5f..3f,
                             modifier = Modifier
