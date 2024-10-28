@@ -6,6 +6,10 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import org.grakovne.lissen.channel.common.ChannelCode
 import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.domain.Library
@@ -96,7 +100,16 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
     fun getPlaybackSpeed(): Float =
             sharedPreferences.getFloat(KEY_PREFERRED_PLAYBACK_SPEED, 1f)
 
-    fun getColorThemeKey() = KEY_PREFERRED_COLOR_SCHEME
+    val colorSchemeFlow: Flow<ColorScheme> = callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == KEY_PREFERRED_COLOR_SCHEME) {
+                trySend(getColorScheme())
+            }
+        }
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+        trySend(getColorScheme())
+        awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
+    }.distinctUntilChanged()
 
     private fun saveActiveLibraryId(host: String) =
             sharedPreferences.edit().putString(KEY_PREFERRED_LIBRARY_ID, host).apply()
