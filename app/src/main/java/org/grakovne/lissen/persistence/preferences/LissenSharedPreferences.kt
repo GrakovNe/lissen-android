@@ -96,6 +96,8 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
     fun getPlaybackSpeed(): Float =
             sharedPreferences.getFloat(KEY_PREFERRED_PLAYBACK_SPEED, 1f)
 
+    fun getColorThemeKey() = KEY_PREFERRED_COLOR_SCHEME
+
     private fun saveActiveLibraryId(host: String) =
             sharedPreferences.edit().putString(KEY_PREFERRED_LIBRARY_ID, host).apply()
 
