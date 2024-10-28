@@ -11,14 +11,12 @@ import androidx.compose.ui.graphics.Color
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import org.grakovne.lissen.common.ColorScheme
 
-//val LightBackGroundColor = Color(0xFFFAFAFA)
-
 private val LightColorScheme = lightColorScheme(
         primary = FoxOrange,
         secondary = Dark,
         tertiary = FoxOrange,
-        background = Color.Black,
-        surface = Color.Black
+        background = Color(0xFFFAFAFA),
+        surface = Color(0xFFFAFAFA)
 )
 
 private val DarkColorScheme = darkColorScheme(
@@ -39,7 +37,6 @@ fun LissenTheme(
     val colors = if (isDarkTheme) DarkColorScheme else LightColorScheme
 
     val systemUiController = rememberSystemUiController()
-    val backgroundColor = colors.background
 
     SideEffect {
         systemUiController.setNavigationBarColor(
