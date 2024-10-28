@@ -41,4 +41,7 @@
     <string name="dialog_confirm_remove">Remove</string>
     <string name="dialog_dismiss_cancel">Cancel</string>
     <string name="playback_speed_title">Playback speed</string>
+    <string name="color_scheme_follow_system">System</string>
+    <string name="color_scheme_light">Light</string>
+    <string name="color_scheme_dark">Dark</string>
 </resources>
