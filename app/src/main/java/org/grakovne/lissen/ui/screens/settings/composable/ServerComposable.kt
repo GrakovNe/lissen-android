@@ -39,7 +39,7 @@ fun ServerComposable(
     Column {
         Text(
             text = stringResource(R.string.settings_screen_server_connection),
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
             modifier = Modifier.padding(start = 16.dp, bottom = 12.dp)
         )
 
