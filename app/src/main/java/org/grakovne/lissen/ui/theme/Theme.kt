@@ -22,18 +22,18 @@ fun LissenTheme(
 ) {
     val systemUiController = rememberSystemUiController()
 
-    MaterialTheme(
-        colorScheme = LightColorScheme,
-        content = content
-    )
-
     systemUiController.setNavigationBarColor(
-        color = backgroundColor,
-        darkIcons = true
+            color = backgroundColor,
+            darkIcons = true
     )
 
     systemUiController.setStatusBarColor(
-        color = backgroundColor,
-        darkIcons = true
+            color = backgroundColor,
+            darkIcons = true
+    )
+
+    MaterialTheme(
+        colorScheme = LightColorScheme,
+        content = content
     )
 }
