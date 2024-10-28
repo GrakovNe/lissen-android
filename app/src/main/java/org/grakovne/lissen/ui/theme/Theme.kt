@@ -5,19 +5,20 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import org.grakovne.lissen.common.ColorScheme
 
-val LightBackGroundColor = Color(0xFFFAFAFA)
+//val LightBackGroundColor = Color(0xFFFAFAFA)
 
 private val LightColorScheme = lightColorScheme(
         primary = FoxOrange,
         secondary = Dark,
         tertiary = FoxOrange,
-        background = LightBackGroundColor,
-        surface = LightBackGroundColor
+        background = Color.Black,
+        surface = Color.Black
 )
 
 private val DarkColorScheme = darkColorScheme(
@@ -26,39 +27,33 @@ private val DarkColorScheme = darkColorScheme(
 
 @Composable
 fun LissenTheme(
-        colorScheme: ColorScheme,
+        colorSchemePreference: ColorScheme,
         content: @Composable () -> Unit
 ) {
+    val isDarkTheme = when (colorSchemePreference) {
+        ColorScheme.FOLLOW_SYSTEM -> isSystemInDarkTheme()
+        ColorScheme.LIGHT -> false
+        ColorScheme.DARK -> true
+    }
+
+    val colors = if (isDarkTheme) DarkColorScheme else LightColorScheme
+
+    val systemUiController = rememberSystemUiController()
+    val backgroundColor = colors.background
+
+    SideEffect {
+        systemUiController.setNavigationBarColor(
+                color = Color.Black,
+                darkIcons = !isDarkTheme
+        )
+        systemUiController.setStatusBarColor(
+                color = Color.Black,
+                darkIcons = !isDarkTheme
+        )
+    }
 
     MaterialTheme(
-            colorScheme = colorScheme.toColorScheme(isSystemInDarkTheme()),
-            content = {
-                val systemUiController = rememberSystemUiController()
-                val backgroundColor = MaterialTheme.colorScheme.background
-
-                SideEffect {
-                    systemUiController.setNavigationBarColor(
-                            color = backgroundColor,
-                            darkIcons = true
-                    )
-                    systemUiController.setStatusBarColor(
-                            color = backgroundColor,
-                            darkIcons = true
-                    )
-                }
-
-                content()
-            }
+            colorScheme = colors,
+            content = content
     )
 }
-
-private fun ColorScheme.toColorScheme(systemDarkTheme: Boolean) =
-        when (this) {
-            ColorScheme.FOLLOW_SYSTEM -> when (systemDarkTheme) {
-                true -> DarkColorScheme
-                false -> LightColorScheme
-            }
-
-            ColorScheme.LIGHT -> LightColorScheme
-            ColorScheme.DARK -> DarkColorScheme
-        }

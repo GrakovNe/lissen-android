@@ -49,7 +49,6 @@ import org.grakovne.lissen.domain.BookCachedState
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.extensions.formatShortly
 import org.grakovne.lissen.ui.navigation.AppNavigationService
-import org.grakovne.lissen.ui.theme.LightBackGroundColor
 import org.grakovne.lissen.viewmodel.BookCacheAction
 import org.grakovne.lissen.viewmodel.CachingModelView
 
@@ -172,7 +171,7 @@ fun BookComposable(
                     Text(stringResource(R.string.dialog_dismiss_cancel))
                 }
             },
-            containerColor = LightBackGroundColor
+            containerColor = MaterialTheme.colorScheme.background
         )
     }
 }

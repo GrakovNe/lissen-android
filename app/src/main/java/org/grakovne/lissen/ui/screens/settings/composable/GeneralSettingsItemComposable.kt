@@ -14,6 +14,7 @@ import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,7 +24,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import org.grakovne.lissen.ui.theme.LightBackGroundColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,7 +37,7 @@ fun GeneralSettingsItemComposable(
     var activeItem by remember { mutableStateOf(selectedItem) }
 
     ModalBottomSheet(
-            containerColor = LightBackGroundColor,
+            containerColor = MaterialTheme.colorScheme.background,
             onDismissRequest = onDismissRequest,
             content = {
                 Column(
