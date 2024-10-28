@@ -23,7 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import org.grakovne.lissen.ui.theme.backgroundColor
+import org.grakovne.lissen.ui.theme.LightBackGroundColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,7 +37,7 @@ fun GeneralSettingsItemComposable(
     var activeItem by remember { mutableStateOf(selectedItem) }
 
     ModalBottomSheet(
-            containerColor = backgroundColor,
+            containerColor = LightBackGroundColor,
             onDismissRequest = onDismissRequest,
             content = {
                 Column(
