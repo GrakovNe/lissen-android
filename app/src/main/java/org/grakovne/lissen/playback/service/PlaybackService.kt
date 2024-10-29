@@ -1,6 +1,7 @@
 package org.grakovne.lissen.playback.service
 
 import android.content.Intent
+import android.util.Log
 import androidx.annotation.OptIn
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.media3.common.MediaItem
@@ -162,6 +163,11 @@ class PlaybackService : MediaSessionService() {
         items: List<BookFile>,
         position: Double?
     ) {
+        if (items.isEmpty()) {
+            Log.w(TAG, "Tried to seek position $position in the empty book. Skipping")
+            return
+        }
+
         when (position) {
             null -> exoPlayer.seekTo(0, 0)
             else -> {
@@ -201,5 +207,7 @@ class PlaybackService : MediaSessionService() {
         const val BOOK_EXTRA = "org.grakovne.lissen.player.service.BOOK"
         const val PLAYBACK_READY = "org.grakovne.lissen.player.service.PLAYBACK_READY"
         const val POSITION = "org.grakovne.lissen.player.service.POSITION"
+
+        private const val TAG: String = "PlaybackService"
     }
 }
