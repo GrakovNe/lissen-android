@@ -9,6 +9,7 @@ import androidx.compose.material.icons.outlined.Headset
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.NavigationBar
@@ -30,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.navigation.AppNavigationService
-import org.grakovne.lissen.ui.theme.ItemAccented
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
@@ -77,7 +77,7 @@ fun NavigationBarComposable(
                 onClick = { navController.showLibrary() },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = colorScheme.primary,
-                    indicatorColor = ItemAccented
+                    indicatorColor = MaterialTheme.colorScheme.surfaceContainer
                 )
             )
 
@@ -101,7 +101,7 @@ fun NavigationBarComposable(
                 onClick = { onChaptersClick() },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = colorScheme.primary,
-                    indicatorColor = ItemAccented
+                    indicatorColor = MaterialTheme.colorScheme.surfaceContainer
                 )
             )
 
@@ -126,7 +126,7 @@ fun NavigationBarComposable(
                 enabled = true,
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = colorScheme.primary,
-                    indicatorColor = ItemAccented
+                    indicatorColor = MaterialTheme.colorScheme.surfaceContainer
                 )
             )
 
@@ -150,7 +150,7 @@ fun NavigationBarComposable(
                 onClick = { navController.showSettings() },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = colorScheme.primary,
-                    indicatorColor = ItemAccented
+                    indicatorColor = MaterialTheme.colorScheme.surfaceContainer
                 )
             )
 

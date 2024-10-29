@@ -26,7 +26,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.NetworkQualityService
-import org.grakovne.lissen.ui.theme.ItemAccented
 import org.grakovne.lissen.viewmodel.CachingModelView
 
 @Composable
@@ -66,7 +65,7 @@ fun LibraryFallbackComposable(
                 modifier = Modifier
                     .size(120.dp)
                     .clip(CircleShape)
-                    .background(ItemAccented),
+                    .background(MaterialTheme.colorScheme.surfaceContainer),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(

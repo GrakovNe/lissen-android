@@ -15,7 +15,8 @@ private val LightColorScheme = lightColorScheme(
     secondary = Dark,
     tertiary = FoxOrange,
     background = Color(0xFFFAFAFA),
-    surface = Color(0xFFFAFAFA)
+    surface = Color(0xFFFAFAFA),
+    surfaceContainer = Color(0xFFEEEEEE)
 )
 
 private val DarkColorScheme = darkColorScheme(
@@ -34,7 +35,7 @@ fun LissenTheme(
     }
 
     val colors = if (isDarkTheme) DarkColorScheme else LightColorScheme
-
+    val itemAccented = if (isDarkTheme) Color(0xFF444444) else Color(0xFFEEEEEE)
     val systemUiController = rememberSystemUiController()
 
     SideEffect {

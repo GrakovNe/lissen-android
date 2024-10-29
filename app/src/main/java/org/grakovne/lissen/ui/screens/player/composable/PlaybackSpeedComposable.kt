@@ -28,13 +28,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight.Companion.SemiBold
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
-import org.grakovne.lissen.ui.theme.ItemAccented
 
 @SuppressLint("DefaultLocale")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,7 +45,7 @@ fun PlaybackSpeedComposable(
     var selectedPlaybackSpeed by remember { mutableFloatStateOf(currentSpeed) }
 
     ModalBottomSheet(
-        containerColor = Color(0xFFFAFAFA),
+        containerColor = colorScheme.background,
         onDismissRequest = onDismissRequest,
         content = {
             Column(
@@ -110,14 +108,13 @@ fun PlaybackSpeedComposable(
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = when (selectedPlaybackSpeed == value) {
                                             true -> colorScheme.primary
-                                            else -> ItemAccented
+                                            else -> colorScheme.surfaceContainer
                                         }
                                     ),
                                     modifier = Modifier.fillMaxSize()
                                 ) {}
                                 Text(
                                     text = String.format("%.2f", value),
-                                    color = Color.Black,
                                     style = when (selectedPlaybackSpeed == value) {
                                         true -> typography.labelMedium.copy(fontWeight = SemiBold)
                                         false -> typography.labelMedium
