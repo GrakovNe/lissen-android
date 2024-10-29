@@ -14,8 +14,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-        private val mediaChannel: LissenMediaProvider,
-        private val preferences: LissenSharedPreferences
+    private val mediaChannel: LissenMediaProvider,
+    private val preferences: LissenSharedPreferences
 ) : ViewModel() {
 
     private val _host = MutableLiveData(preferences.getHost())
@@ -55,8 +55,8 @@ class SettingsViewModel @Inject constructor(
                         null -> libraries.firstOrNull()
                         else ->
                             libraries
-                                    .find { it.id == preferredLibrary.id }
-                                    ?: libraries.firstOrNull()
+                                .find { it.id == preferredLibrary.id }
+                                ?: libraries.firstOrNull()
                     }
                 }
 

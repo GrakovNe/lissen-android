@@ -26,10 +26,10 @@ import javax.inject.Singleton
 class LissenSharedPreferences @Inject constructor(@ApplicationContext context: Context) {
 
     private val sharedPreferences: SharedPreferences =
-            context.getSharedPreferences("secure_prefs", Context.MODE_PRIVATE)
+        context.getSharedPreferences("secure_prefs", Context.MODE_PRIVATE)
 
     fun getPreferredChannel(): ChannelCode =
-            ChannelCode.AUDIOBOOKSHELF // TODO: Implement selector once second channel got
+        ChannelCode.AUDIOBOOKSHELF // TODO: Implement selector once second channel got
 
     fun hasCredentials(): Boolean {
         val host = getHost()
@@ -69,9 +69,9 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
         }
 
         return UUID
-                .randomUUID()
-                .toString()
-                .also { sharedPreferences.edit().putString(KEY_DEVICE_ID, it).apply() }
+            .randomUUID()
+            .toString()
+            .also { sharedPreferences.edit().putString(KEY_DEVICE_ID, it).apply() }
     }
 
     fun getPreferredLibrary(): Library? {
@@ -87,18 +87,18 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
     }
 
     fun saveColorScheme(colorScheme: ColorScheme) =
-            sharedPreferences.edit().putString(KEY_PREFERRED_COLOR_SCHEME, colorScheme.name).apply()
+        sharedPreferences.edit().putString(KEY_PREFERRED_COLOR_SCHEME, colorScheme.name).apply()
 
     fun getColorScheme(): ColorScheme =
-            sharedPreferences.getString(KEY_PREFERRED_COLOR_SCHEME, ColorScheme.FOLLOW_SYSTEM.name)
-                    ?.let { ColorScheme.valueOf(it) }
-                    ?: ColorScheme.FOLLOW_SYSTEM
+        sharedPreferences.getString(KEY_PREFERRED_COLOR_SCHEME, ColorScheme.FOLLOW_SYSTEM.name)
+            ?.let { ColorScheme.valueOf(it) }
+            ?: ColorScheme.FOLLOW_SYSTEM
 
     fun savePlaybackSpeed(factor: Float) =
-            sharedPreferences.edit().putFloat(KEY_PREFERRED_PLAYBACK_SPEED, factor).apply()
+        sharedPreferences.edit().putFloat(KEY_PREFERRED_PLAYBACK_SPEED, factor).apply()
 
     fun getPlaybackSpeed(): Float =
-            sharedPreferences.getFloat(KEY_PREFERRED_PLAYBACK_SPEED, 1f)
+        sharedPreferences.getFloat(KEY_PREFERRED_PLAYBACK_SPEED, 1f)
 
     val colorSchemeFlow: Flow<ColorScheme> = callbackFlow {
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
@@ -112,29 +112,29 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
     }.distinctUntilChanged()
 
     private fun saveActiveLibraryId(host: String) =
-            sharedPreferences.edit().putString(KEY_PREFERRED_LIBRARY_ID, host).apply()
+        sharedPreferences.edit().putString(KEY_PREFERRED_LIBRARY_ID, host).apply()
 
     private fun getPreferredLibraryId(): String? =
-            sharedPreferences.getString(KEY_PREFERRED_LIBRARY_ID, null)
+        sharedPreferences.getString(KEY_PREFERRED_LIBRARY_ID, null)
 
     private fun saveActiveLibraryName(host: String) =
-            sharedPreferences.edit().putString(KEY_PREFERRED_LIBRARY_NAME, host).apply()
+        sharedPreferences.edit().putString(KEY_PREFERRED_LIBRARY_NAME, host).apply()
 
     private fun getPreferredLibraryName(): String? =
-            sharedPreferences.getString(KEY_PREFERRED_LIBRARY_NAME, null)
+        sharedPreferences.getString(KEY_PREFERRED_LIBRARY_NAME, null)
 
     fun enableForceCache() =
-            sharedPreferences.edit().putBoolean(CACHE_FORCE_ENABLED_TOKEN, true).apply()
+        sharedPreferences.edit().putBoolean(CACHE_FORCE_ENABLED_TOKEN, true).apply()
 
     fun disableForceCache() =
-            sharedPreferences.edit().putBoolean(CACHE_FORCE_ENABLED_TOKEN, false).apply()
+        sharedPreferences.edit().putBoolean(CACHE_FORCE_ENABLED_TOKEN, false).apply()
 
     fun isForceCache(): Boolean {
         return sharedPreferences.getBoolean(CACHE_FORCE_ENABLED_TOKEN, false)
     }
 
     fun saveUsername(username: String) =
-            sharedPreferences.edit().putString(KEY_USERNAME, username).apply()
+        sharedPreferences.edit().putString(KEY_USERNAME, username).apply()
 
     fun getUsername(): String? = sharedPreferences.getString(KEY_USERNAME, null)
 
@@ -177,13 +177,13 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
             }
 
             val keyGenerator =
-                    KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, ANDROID_KEYSTORE)
+                KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, ANDROID_KEYSTORE)
             val keyGenParameterSpec = KeyGenParameterSpec.Builder(
-                    KEY_ALIAS,
-                    KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+                KEY_ALIAS,
+                KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
             ).setBlockModes(KeyProperties.BLOCK_MODE_GCM)
-                    .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-                    .build()
+                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+                .build()
             keyGenerator.init(keyGenParameterSpec)
             return keyGenerator.generateKey()
         }

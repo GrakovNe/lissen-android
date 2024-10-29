@@ -1,9 +1,12 @@
 package org.grakovne.lissen.ui.navigation
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -35,45 +38,49 @@ fun AppNavHost(
         else -> "login_screen"
     }
 
-    NavHost(
-        navController = navController,
-        startDestination = startDestination
-    ) {
-        composable("library_screen") {
-            LibraryScreen(
-                navController = navigationService,
-                imageLoader = imageLoader,
-                networkQualityService = networkQualityService
-            )
-        }
+    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+        println(innerPadding)
 
-        composable(
-            "player_screen/{bookId}?bookTitle={bookTitle}",
-            arguments = listOf(
-                navArgument("bookId") { type = NavType.StringType },
-                navArgument("bookTitle") { type = NavType.StringType; nullable = true }
-            )
-        ) { navigationStack ->
-            val bookId = navigationStack.arguments?.getString("bookId")
-            val bookTitle = navigationStack.arguments?.getString("bookTitle")
+        NavHost(
+            navController = navController,
+            startDestination = startDestination
+        ) {
+            composable("library_screen") {
+                LibraryScreen(
+                    navController = navigationService,
+                    imageLoader = imageLoader,
+                    networkQualityService = networkQualityService
+                )
+            }
 
-            PlayerScreen(
-                navController = navigationService,
-                imageLoader = imageLoader,
-                bookId = bookId,
-                bookTitle = bookTitle
-            )
-        }
+            composable(
+                "player_screen/{bookId}?bookTitle={bookTitle}",
+                arguments = listOf(
+                    navArgument("bookId") { type = NavType.StringType },
+                    navArgument("bookTitle") { type = NavType.StringType; nullable = true }
+                )
+            ) { navigationStack ->
+                val bookId = navigationStack.arguments?.getString("bookId")
+                val bookTitle = navigationStack.arguments?.getString("bookTitle")
 
-        composable("login_screen") {
-            LoginScreen(navigationService)
-        }
+                PlayerScreen(
+                    navController = navigationService,
+                    imageLoader = imageLoader,
+                    bookId = bookId,
+                    bookTitle = bookTitle
+                )
+            }
 
-        composable("settings_screen") {
-            SettingsScreen(
-                onBack = { navController.popBackStack() },
-                navController = navigationService
-            )
+            composable("login_screen") {
+                LoginScreen(navigationService)
+            }
+
+            composable("settings_screen") {
+                SettingsScreen(
+                    onBack = { navController.popBackStack() },
+                    navController = navigationService
+                )
+            }
         }
     }
 }

@@ -80,8 +80,8 @@ fun SettingsScreen(
             ) {
                 Column(
                     modifier = Modifier
-                            .fillMaxWidth()
-                            .verticalScroll(rememberScrollState()),
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     ServerComposable(navController, viewModel)

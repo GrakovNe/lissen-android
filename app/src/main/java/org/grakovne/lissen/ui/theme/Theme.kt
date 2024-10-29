@@ -5,28 +5,27 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import org.grakovne.lissen.common.ColorScheme
 
 private val LightColorScheme = lightColorScheme(
-        primary = FoxOrange,
-        secondary = Dark,
-        tertiary = FoxOrange,
-        background = Color(0xFFFAFAFA),
-        surface = Color(0xFFFAFAFA)
+    primary = FoxOrange,
+    secondary = Dark,
+    tertiary = FoxOrange,
+    background = Color(0xFFFAFAFA),
+    surface = Color(0xFFFAFAFA)
 )
 
 private val DarkColorScheme = darkColorScheme(
-        primary = FoxOrange
+    primary = FoxOrange
 )
 
 @Composable
 fun LissenTheme(
-        colorSchemePreference: ColorScheme,
-        content: @Composable () -> Unit
+    colorSchemePreference: ColorScheme,
+    content: @Composable () -> Unit
 ) {
     val isDarkTheme = when (colorSchemePreference) {
         ColorScheme.FOLLOW_SYSTEM -> isSystemInDarkTheme()
@@ -40,17 +39,17 @@ fun LissenTheme(
 
     SideEffect {
         systemUiController.setNavigationBarColor(
-                color = Color.Black,
-                darkIcons = !isDarkTheme
+            color = colors.background,
+            darkIcons = !isDarkTheme
         )
         systemUiController.setStatusBarColor(
-                color = Color.Black,
-                darkIcons = !isDarkTheme
+            color = colors.background,
+            darkIcons = !isDarkTheme
         )
     }
 
     MaterialTheme(
-            colorScheme = colors,
-            content = content
+        colorScheme = colors,
+        content = content
     )
 }

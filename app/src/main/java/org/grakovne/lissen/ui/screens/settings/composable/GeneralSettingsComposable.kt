@@ -35,74 +35,76 @@ fun GeneralSettingsComposable(viewModel: SettingsViewModel) {
 
     val context = LocalContext.current
 
-    Row(modifier = Modifier
+    Row(
+        modifier = Modifier
             .fillMaxWidth()
             .clickable { preferredLibraryExpanded = true }
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                    text = stringResource(R.string.settings_screen_preferred_library_title),
-                    style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                    modifier = Modifier.padding(bottom = 4.dp)
+                text = stringResource(R.string.settings_screen_preferred_library_title),
+                style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                modifier = Modifier.padding(bottom = 4.dp)
             )
             Text(
-                    text = preferredLibrary?.title ?: "",
-                    style = typography.bodyMedium,
-                    color = colorScheme.onSurfaceVariant
+                text = preferredLibrary?.title ?: "",
+                style = typography.bodyMedium,
+                color = colorScheme.onSurfaceVariant
             )
         }
     }
 
-    Row(modifier = Modifier
+    Row(
+        modifier = Modifier
             .fillMaxWidth()
             .clickable { colorSchemeExpanded = true }
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Column(
-                modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f)
         ) {
             Text(
-                    text = "Color Scheme",
-                    style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                    modifier = Modifier.padding(bottom = 4.dp)
+                text = "Color Scheme",
+                style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                modifier = Modifier.padding(bottom = 4.dp)
             )
             Text(
-                    text = preferredColorScheme?.toItem(context)?.name ?: "",
-                    style = typography.bodyMedium,
-                    color = colorScheme.onSurfaceVariant
+                text = preferredColorScheme?.toItem(context)?.name ?: "",
+                style = typography.bodyMedium,
+                color = colorScheme.onSurfaceVariant
             )
         }
     }
 
     if (preferredLibraryExpanded) {
         GeneralSettingsItemComposable(
-                items = libraries.map { GeneralSettingsItem(it.id, it.title) },
-                selectedItem = preferredLibrary?.let { GeneralSettingsItem(it.id, it.title) },
-                onDismissRequest = { preferredLibraryExpanded = false },
-                onItemSelected = { item ->
-                    libraries
-                            .find { it.id == item.id }
-                            ?.let { viewModel.preferLibrary(it) }
-                }
+            items = libraries.map { GeneralSettingsItem(it.id, it.title) },
+            selectedItem = preferredLibrary?.let { GeneralSettingsItem(it.id, it.title) },
+            onDismissRequest = { preferredLibraryExpanded = false },
+            onItemSelected = { item ->
+                libraries
+                    .find { it.id == item.id }
+                    ?.let { viewModel.preferLibrary(it) }
+            }
         )
     }
 
     if (colorSchemeExpanded) {
         GeneralSettingsItemComposable(
-                items = listOf(
-                        ColorScheme.LIGHT.toItem(context),
-                        ColorScheme.FOLLOW_SYSTEM.toItem(context),
-                        ColorScheme.DARK.toItem(context)
-                ),
-                selectedItem = preferredColorScheme?.toItem(context),
-                onDismissRequest = { colorSchemeExpanded = false },
-                onItemSelected = { item ->
-                    ColorScheme
-                            .entries
-                            .find { it.name == item.id }
-                            ?.let { viewModel.preferColorScheme(it) }
-                }
+            items = listOf(
+                ColorScheme.LIGHT.toItem(context),
+                ColorScheme.FOLLOW_SYSTEM.toItem(context),
+                ColorScheme.DARK.toItem(context)
+            ),
+            selectedItem = preferredColorScheme?.toItem(context),
+            onDismissRequest = { colorSchemeExpanded = false },
+            onItemSelected = { item ->
+                ColorScheme
+                    .entries
+                    .find { it.name == item.id }
+                    ?.let { viewModel.preferColorScheme(it) }
+            }
         )
     }
 }

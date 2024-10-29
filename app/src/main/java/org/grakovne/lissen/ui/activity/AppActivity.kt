@@ -37,18 +37,18 @@ class AppActivity : ComponentActivity() {
 
         setContent {
             val colorScheme by sharedPreferences
-                    .colorSchemeFlow
-                    .collectAsState(initial = sharedPreferences.getColorScheme())
+                .colorSchemeFlow
+                .collectAsState(initial = sharedPreferences.getColorScheme())
 
             LissenTheme(colorScheme) {
                 val navController = rememberNavController()
 
                 AppNavHost(
-                        navController = navController,
-                        navigationService = AppNavigationService(navController),
-                        preferences = preferences,
-                        imageLoader = imageLoader,
-                        networkQualityService = networkQualityService
+                    navController = navController,
+                    navigationService = AppNavigationService(navController),
+                    preferences = preferences,
+                    imageLoader = imageLoader,
+                    networkQualityService = networkQualityService
                 )
             }
         }
