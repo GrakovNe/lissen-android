@@ -51,7 +51,9 @@ class SettingsViewModel @Inject constructor(
                     val libraries = response.data
                     _libraries.value = libraries
 
-                    when (val preferredLibrary = preferences.getPreferredLibrary()) {
+                    val preferredLibrary = preferences.getPreferredLibrary()
+
+                    _preferredLibrary.value = when (preferredLibrary) {
                         null -> libraries.firstOrNull()
                         else ->
                             libraries
@@ -61,7 +63,7 @@ class SettingsViewModel @Inject constructor(
                 }
 
                 is ApiResult.Error -> {
-                    preferences.getPreferredLibrary()
+                    _libraries.value = preferences.getPreferredLibrary()?.let { listOf(it) }
                 }
             }
         }

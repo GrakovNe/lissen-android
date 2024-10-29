@@ -10,6 +10,7 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -37,9 +38,9 @@ fun GeneralSettingsComposable(viewModel: SettingsViewModel) {
 
     Row(
         modifier = Modifier
-                .fillMaxWidth()
-                .clickable { preferredLibraryExpanded = true }
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+            .fillMaxWidth()
+            .clickable { preferredLibraryExpanded = true }
+            .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
@@ -57,9 +58,9 @@ fun GeneralSettingsComposable(viewModel: SettingsViewModel) {
 
     Row(
         modifier = Modifier
-                .fillMaxWidth()
-                .clickable { colorSchemeExpanded = true }
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+            .fillMaxWidth()
+            .clickable { colorSchemeExpanded = true }
+            .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Column(
             modifier = Modifier.weight(1f)
@@ -78,6 +79,10 @@ fun GeneralSettingsComposable(viewModel: SettingsViewModel) {
     }
 
     if (preferredLibraryExpanded) {
+        SideEffect {
+            viewModel.fetchLibraries()
+        }
+
         GeneralSettingsItemComposable(
             items = libraries.map { GeneralSettingsItem(it.id, it.title) },
             selectedItem = preferredLibrary?.let { GeneralSettingsItem(it.id, it.title) },
