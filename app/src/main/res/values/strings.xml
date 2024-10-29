@@ -44,4 +44,5 @@
     <string name="color_scheme_follow_system">System</string>
     <string name="color_scheme_light">Light</string>
     <string name="color_scheme_dark">Dark</string>
+    <string name="settings_screen_color_scheme_title">Color Scheme</string>
 </resources>

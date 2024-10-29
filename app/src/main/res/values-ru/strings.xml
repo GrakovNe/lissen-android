@@ -41,4 +41,8 @@
     <string name="dialog_confirm_remove">Удалить</string>
     <string name="dialog_dismiss_cancel">Отмена</string>
     <string name="playback_speed_title">Скорость воспроизведения</string>
+    <string name="color_scheme_follow_system">Системная</string>
+    <string name="color_scheme_light">Светлая</string>
+    <string name="color_scheme_dark">Темная</string>
+    <string name="settings_screen_color_scheme_title">Цветовая схема</string>
 </resources>

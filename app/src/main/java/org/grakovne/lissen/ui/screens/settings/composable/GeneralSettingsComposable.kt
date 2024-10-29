@@ -37,9 +37,9 @@ fun GeneralSettingsComposable(viewModel: SettingsViewModel) {
 
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .clickable { preferredLibraryExpanded = true }
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+                .fillMaxWidth()
+                .clickable { preferredLibraryExpanded = true }
+                .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
@@ -57,15 +57,15 @@ fun GeneralSettingsComposable(viewModel: SettingsViewModel) {
 
     Row(
         modifier = Modifier
-            .fillMaxWidth()
-            .clickable { colorSchemeExpanded = true }
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+                .fillMaxWidth()
+                .clickable { colorSchemeExpanded = true }
+                .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Column(
             modifier = Modifier.weight(1f)
         ) {
             Text(
-                text = "Color Scheme",
+                text = stringResource(R.string.settings_screen_color_scheme_title),
                 style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
                 modifier = Modifier.padding(bottom = 4.dp)
             )
