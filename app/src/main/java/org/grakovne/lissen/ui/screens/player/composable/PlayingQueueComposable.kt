@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -35,10 +36,12 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
@@ -50,6 +53,7 @@ fun PlayingQueueComposable(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val density = LocalDensity.current
     val coroutineScope = rememberCoroutineScope()
 
     val book by viewModel.book.observeAsState()
@@ -61,6 +65,9 @@ fun PlayingQueueComposable(
 
     val playingQueueHeight = remember { mutableIntStateOf(0) }
     val isFlinging = remember { mutableStateOf(false) }
+
+    val itemsPerScreen = 6
+    val itemHeight = remember { mutableStateOf(0.dp) }
 
     val expandFlingThreshold =
         remember { ViewConfiguration.get(context).scaledMinimumFlingVelocity.toFloat() * 2 }
@@ -75,6 +82,12 @@ fun PlayingQueueComposable(
         animationSpec = tween(durationMillis = 500),
         label = "playing_queue_font_size"
     )
+
+    LaunchedEffect(Unit) {
+        val itemHeightPx = playingQueueHeight.intValue / itemsPerScreen
+        val itemHeightDp = with(density) { itemHeightPx.toDp() }
+        itemHeight.value = itemHeightDp
+    }
 
     LaunchedEffect(currentTrackIndex) {
         if (!playingQueueExpanded) {
@@ -150,12 +163,14 @@ fun PlayingQueueComposable(
                 }),
             state = listState
         ) {
+
             itemsIndexed(chapters) { index, track ->
+
                 PlaylistItemComposable(
                     track = track,
                     onClick = { viewModel.setChapter(index) },
                     isSelected = index == currentTrackIndex,
-                    modifier = Modifier.padding(vertical = 8.dp)
+                    modifier = Modifier.heightIn(min = itemHeight.value)
                 )
 
                 if (index < chapters.size - 1) {
