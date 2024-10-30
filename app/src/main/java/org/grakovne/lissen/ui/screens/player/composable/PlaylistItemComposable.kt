@@ -29,12 +29,12 @@ import org.grakovne.lissen.ui.extensions.formatLeadingMinutes
 fun PlaylistItemComposable(
     track: BookChapter,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .padding(vertical = 8.dp)
+        modifier = modifier
             .clickable(
                 onClick = onClick,
                 indication = null,

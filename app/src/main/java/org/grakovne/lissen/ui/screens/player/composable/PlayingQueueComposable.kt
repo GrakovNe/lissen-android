@@ -148,14 +148,14 @@ fun PlayingQueueComposable(
                         return available
                     }
                 }),
-            state = listState,
-            contentPadding = PaddingValues(bottom = 4.dp) // Добавьте нужный отступ
+            state = listState
         ) {
             itemsIndexed(chapters) { index, track ->
                 PlaylistItemComposable(
                     track = track,
                     onClick = { viewModel.setChapter(index) },
-                    isSelected = index == currentTrackIndex
+                    isSelected = index == currentTrackIndex,
+                    modifier = Modifier.padding(vertical = 8.dp)
                 )
 
                 if (index < chapters.size - 1) {
