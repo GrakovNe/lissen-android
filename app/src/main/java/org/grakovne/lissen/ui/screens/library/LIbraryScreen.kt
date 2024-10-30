@@ -172,10 +172,7 @@ fun LibraryScreen(
                 actions = {
                     AnimatedContent(
                         targetState = searchRequested,
-                        transitionSpec = {
-                            fadeIn(animationSpec = keyframes { durationMillis = 300 }) with
-                                fadeOut(animationSpec = keyframes { durationMillis = 300 })
-                        }
+                        label = "library_action_animation"
                     ) { isSearchRequested ->
                         if (isSearchRequested) {
                             SearchActionComposable(
@@ -193,22 +190,20 @@ fun LibraryScreen(
                     }
                 },
                 title = {
-                    Box(modifier = Modifier.width(IntrinsicSize.Max)) {
-                        AnimatedContent(
-                            targetState = searchRequested,
-                            transitionSpec = {
-                                fadeIn(animationSpec = keyframes { durationMillis = 300 }) with
-                                    fadeOut(animationSpec = keyframes { durationMillis = 300 })
-                            }
-                        ) { isSearchRequested ->
-                            if (!isSearchRequested) {
-                                Text(
-                                    text = navBarTitle,
-                                    style = titleTextStyle,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                            }
+                    AnimatedContent(
+                        targetState = searchRequested,
+                        transitionSpec = {
+                            fadeIn(animationSpec = keyframes { durationMillis = 300 }) with
+                                fadeOut(animationSpec = keyframes { durationMillis = 300 })
+                        }, label = "library_title_animation"
+                    ) { isSearchRequested ->
+                        if (!isSearchRequested) {
+                            Text(
+                                text = navBarTitle,
+                                style = titleTextStyle,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
                         }
                     }
                 },
