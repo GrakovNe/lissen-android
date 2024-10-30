@@ -61,6 +61,7 @@ import org.grakovne.lissen.ui.screens.library.composables.BookComposable
 import org.grakovne.lissen.ui.screens.library.composables.DefaultActionComposable
 import org.grakovne.lissen.ui.screens.library.composables.MiniPlayerComposable
 import org.grakovne.lissen.ui.screens.library.composables.RecentBooksComposable
+import org.grakovne.lissen.ui.screens.library.composables.SearchActionComposable
 import org.grakovne.lissen.ui.screens.library.composables.fallback.LibraryFallbackComposable
 import org.grakovne.lissen.ui.screens.library.composables.placeholder.LibraryPlaceholderComposable
 import org.grakovne.lissen.ui.screens.library.composables.placeholder.RecentBooksPlaceholderComposable
@@ -87,6 +88,8 @@ fun LibraryScreen(
 
     val recentBookRefreshing by libraryViewModel.recentBookUpdating.observeAsState(false)
     var pullRefreshing by remember { mutableStateOf(false) }
+
+    var searchRequested by remember { mutableStateOf(false) }
 
     val showingRecentBooks by remember(recentBooks, hiddenBooks) {
         derivedStateOf { filterRecentBooks(recentBooks, libraryViewModel) }
@@ -159,19 +162,29 @@ fun LibraryScreen(
         topBar = {
             TopAppBar(
                 actions = {
-                    DefaultActionComposable(
-                        navController = navController,
-                        cachingModelView = cachingModelView,
-                        libraryViewModel = libraryViewModel,
-                        onContentRefreshing = { refreshContent(showRefreshing = false) }
-                    )
+                    when (searchRequested) {
+                        true -> SearchActionComposable(
+                            onSearchDismissed = { searchRequested = false }
+                        )
+
+                        false -> DefaultActionComposable(
+                            navController = navController,
+                            cachingModelView = cachingModelView,
+                            libraryViewModel = libraryViewModel,
+                            onContentRefreshing = { refreshContent(showRefreshing = false) },
+                            onSearchRequested = { searchRequested = true }
+                        )
+                    }
+
                 },
                 title = {
-                    Crossfade(targetState = navBarTitle, label = "navbar_title_fade") { title ->
-                        Text(
-                            text = title,
-                            style = titleTextStyle
-                        )
+                    if (!searchRequested) {
+                        Crossfade(targetState = navBarTitle, label = "navbar_title_fade") { title ->
+                            Text(
+                                text = title,
+                                style = titleTextStyle
+                            )
+                        }
                     }
                 },
                 modifier = Modifier.systemBarsPadding()

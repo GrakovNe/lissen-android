@@ -26,8 +26,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun SearchActionComposable() {
-    var navigationItemSelected by remember { mutableStateOf(false) }
+fun SearchActionComposable(
+    onSearchDismissed: () -> Unit,
+) {
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -37,7 +38,7 @@ fun SearchActionComposable() {
             .height(40.dp)
     ) {
         IconButton(
-            onClick = { navigationItemSelected = true }
+            onClick = { onSearchDismissed() }
         ) {
             Icon(
                 imageVector = Icons.Outlined.ArrowBack,
