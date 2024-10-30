@@ -6,7 +6,10 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -84,7 +87,9 @@ fun PlayingQueueComposable(
         }
     }
 
-    Column(modifier = modifier.padding(horizontal = 16.dp)) {
+    Column(modifier = modifier
+        .fillMaxSize()
+        .padding(horizontal = 16.dp)) {
         Text(
             text = stringResource(R.string.player_screen_now_playing_title),
             fontSize = fontSize.sp,
@@ -93,10 +98,11 @@ fun PlayingQueueComposable(
             modifier = Modifier.padding(horizontal = 6.dp)
         )
 
-        Spacer(modifier = Modifier.padding(vertical = 4.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         LazyColumn(
             modifier = Modifier
+                .weight(1f)
                 .scrollable(
                     state = rememberScrollState(),
                     orientation = Orientation.Vertical,
@@ -142,7 +148,8 @@ fun PlayingQueueComposable(
                         return available
                     }
                 }),
-            state = listState
+            state = listState,
+            contentPadding = PaddingValues(bottom = 4.dp) // Добавьте нужный отступ
         ) {
             itemsIndexed(chapters) { index, track ->
                 PlaylistItemComposable(
