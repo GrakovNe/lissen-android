@@ -82,8 +82,6 @@ fun PlayingQueueComposable(
         label = "playing_queue_font_size"
     )
 
-    val measuredItemHeight = remember { mutableStateOf(0.dp) }
-
     LaunchedEffect(playingQueueHeight) {
         if (playingQueueHeight.intValue > 0 && !playingQueueExpanded && itemHeight.value == 0.dp) {
             with(density) {
