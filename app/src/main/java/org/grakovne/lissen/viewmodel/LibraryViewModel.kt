@@ -80,9 +80,14 @@ class LibraryViewModel @Inject constructor(
     fun fetchRecentListening() {
         _recentBookUpdating.postValue(true)
 
+        val preferredLibrary = preferences.getPreferredLibrary()?.id ?: run {
+            _recentBookUpdating.postValue(false)
+            return
+        }
+
         viewModelScope.launch {
             mediaChannel
-                .fetchRecentListenedBooks(preferences.getPreferredLibrary()?.id ?: return@launch)
+                .fetchRecentListenedBooks(preferredLibrary)
                 .fold(
                     onSuccess = {
                         _recentBooks.postValue(it)
@@ -104,6 +109,7 @@ class LibraryViewModel @Inject constructor(
     }
 
     companion object {
+
         private const val PAGE_SIZE = 20
     }
 }

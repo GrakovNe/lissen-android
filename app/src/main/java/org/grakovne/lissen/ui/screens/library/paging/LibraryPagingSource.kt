@@ -26,7 +26,7 @@ class LibraryPagingSource(
         val libraryId = preferences
             .getPreferredLibrary()
             ?.id
-            ?: return LoadResult.Error(IllegalStateException("Unable to find preferred Library"))
+            ?: return LoadResult.Page(emptyList(), null, null)
 
         return mediaChannel
             .fetchBooks(
@@ -46,7 +46,7 @@ class LibraryPagingSource(
                     )
                 },
                 onFailure = {
-                    LoadResult.Error(RuntimeException(""))
+                    LoadResult.Page(emptyList(), null, null)
                 }
             )
     }

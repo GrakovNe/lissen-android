@@ -45,4 +45,5 @@
     <string name="color_scheme_light">Light</string>
     <string name="color_scheme_dark">Dark</string>
     <string name="settings_screen_color_scheme_title">Color Scheme</string>
+    <string name="library_is_not_available">Library is not available</string>
 </resources>

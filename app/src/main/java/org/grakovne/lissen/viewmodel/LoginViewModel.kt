@@ -122,12 +122,15 @@ class LoginViewModel @Inject constructor(
                         }
                 },
                 onFailure = {
-                    preferences.savePreferredLibrary(
-                        Library(
-                            account.preferredLibraryId,
-                            "Default Library"
-                        )
-                    )
+                    account
+                        .preferredLibraryId
+                        ?.let { library ->
+                            Library(
+                                library,
+                                "Default Library"
+                            )
+                        }
+                        ?.let { preferences.savePreferredLibrary(it) }
                 }
             )
 
