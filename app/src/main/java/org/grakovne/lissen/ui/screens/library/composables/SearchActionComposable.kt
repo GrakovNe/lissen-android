@@ -26,7 +26,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun SearchBarAction() {
+fun SearchActionComposable() {
     var navigationItemSelected by remember { mutableStateOf(false) }
 
     Row(
