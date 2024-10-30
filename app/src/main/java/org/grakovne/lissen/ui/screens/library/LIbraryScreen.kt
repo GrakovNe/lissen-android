@@ -198,7 +198,8 @@ fun LibraryScreen(
                                 text = navBarTitle,
                                 style = titleTextStyle,
                                 maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
                     }
