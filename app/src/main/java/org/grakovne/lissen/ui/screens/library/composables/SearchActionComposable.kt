@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Clear
@@ -16,19 +17,27 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun SearchActionComposable(
-    onSearchDismissed: () -> Unit,
+    onSearchDismissed: () -> Unit
 ) {
+    val focusRequester = remember { FocusRequester() }
+    val searchText = remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -53,27 +62,30 @@ fun SearchActionComposable(
                 .background(colorScheme.surfaceContainer, RoundedCornerShape(36.dp))
                 .padding(start = 16.dp, end = 4.dp)
         ) {
-            val title = remember { mutableStateOf("") }
-
             BasicTextField(
-                value = title.value,
-                onValueChange = { title.value = it },
-                modifier = Modifier.weight(1f),
-                textStyle = typography.bodyMedium,
+                value = searchText.value,
+                onValueChange = { searchText.value = it },
+                modifier = Modifier
+                    .weight(1f)
+                    .focusRequester(focusRequester),
+                textStyle = typography.bodyLarge,
                 singleLine = true,
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Search
+                ),
                 decorationBox = { innerTextField ->
-                    if (title.value.isEmpty()) {
+                    if (searchText.value.isEmpty()) {
                         Text(
                             "Search",
                             color = Color.Gray,
-                            style = typography.bodyMedium
+                            style = typography.bodyLarge
                         )
                     }
                     innerTextField()
                 }
             )
             IconButton(
-                onClick = { /* Clear search action */ }
+                onClick = { searchText.value = "" }
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Clear,
