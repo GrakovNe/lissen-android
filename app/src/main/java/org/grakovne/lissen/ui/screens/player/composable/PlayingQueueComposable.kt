@@ -6,7 +6,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -41,7 +40,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
@@ -118,9 +116,11 @@ fun PlayingQueueComposable(
         }
     }
 
-    Column(modifier = modifier
-        .fillMaxSize()
-        .padding(horizontal = 16.dp)) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
+    ) {
         Text(
             text = stringResource(R.string.player_screen_now_playing_title),
             fontSize = fontSize.sp,
@@ -181,7 +181,6 @@ fun PlayingQueueComposable(
                 }),
             state = listState
         ) {
-
             itemsIndexed(chapters) { index, track ->
 
                 PlaylistItemComposable(
