@@ -41,13 +41,14 @@ fun DefaultActionComposable(
     navController: AppNavigationService,
     cachingModelView: CachingModelView,
     libraryViewModel: LibraryViewModel,
-    onContentRefreshing: (Boolean) -> Unit
+    onContentRefreshing: (Boolean) -> Unit,
+    onSearchRequested: () -> Unit
 ) {
     var navigationItemSelected by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
     IconButton(
-        onClick = {},
+        onClick = { onSearchRequested() },
         modifier = Modifier.offset(x = 4.dp)
     ) {
         Icon(
