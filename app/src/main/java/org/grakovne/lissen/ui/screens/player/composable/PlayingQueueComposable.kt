@@ -38,13 +38,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.viewmodel.PlayerViewModel
-import kotlin.math.max
 
 @Composable
 fun PlayingQueueComposable(
@@ -83,26 +84,7 @@ fun PlayingQueueComposable(
 
     LaunchedEffect(playingQueueHeight) {
         if (playingQueueHeight.intValue > 0 && !playingQueueExpanded && itemHeight.value == 0.dp) {
-            with(density) {
-                val minItemHeightDp = 32.dp
-                val minItemHeightPx = minItemHeightDp.toPx()
-
-                val itemPaddingPx = 8.dp.toPx()
-                val dividerHeightPx = 1.dp.toPx()
-
-                val totalHeightPerItemPx = minItemHeightPx + itemPaddingPx + dividerHeightPx
-
-                val computedItemsPerScreen = (playingQueueHeight.intValue / totalHeightPerItemPx).toInt()
-
-                val totalPaddingPx = itemPaddingPx * computedItemsPerScreen
-                val totalDividerHeightPx = dividerHeightPx * (computedItemsPerScreen - 1)
-
-                val availableHeightPx = playingQueueHeight.intValue - totalPaddingPx - totalDividerHeightPx
-                val singleItemHeightPx = availableHeightPx / computedItemsPerScreen
-                val singleItemHeightDp = singleItemHeightPx.toDp()
-
-                itemHeight.value = singleItemHeightDp
-            }
+            itemHeight.value = calculateQueueItemHeight(density, playingQueueHeight.intValue)
         }
     }
 
@@ -129,7 +111,7 @@ fun PlayingQueueComposable(
             modifier = Modifier.padding(horizontal = 6.dp)
         )
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         LazyColumn(
             modifier = Modifier
@@ -181,7 +163,6 @@ fun PlayingQueueComposable(
             state = listState
         ) {
             itemsIndexed(chapters) { index, track ->
-
                 PlaylistItemComposable(
                     track = track,
                     onClick = { viewModel.setChapter(index) },
@@ -189,10 +170,12 @@ fun PlayingQueueComposable(
                     modifier = Modifier.heightIn(min = itemHeight.value)
                 )
 
-                HorizontalDivider(
-                    thickness = 1.dp,
-                    modifier = Modifier.padding(start = 20.dp)
-                )
+                if (index < chapters.size - 1) {
+                    HorizontalDivider(
+                        thickness = 1.dp,
+                        modifier = Modifier.padding(start = 18.dp)
+                    )
+                }
             }
         }
     }
@@ -217,5 +200,30 @@ private suspend fun scrollPlayingQueue(
     when (animate) {
         true -> listState.animateScrollToItem(targetIndex)
         false -> listState.scrollToItem(targetIndex)
+    }
+}
+
+private fun calculateQueueItemHeight(
+    screenDensity: Density,
+    playingQueueHeight: Int): Dp {
+    with(screenDensity) {
+        val minItemHeightDp = 32.dp
+        val minItemHeightPx = minItemHeightDp.toPx()
+
+        val itemPaddingPx = 8.dp.toPx()
+        val dividerHeightPx = 1.dp.toPx()
+
+        val totalHeightPerItemPx = minItemHeightPx + itemPaddingPx + dividerHeightPx
+
+        val computedItemsPerScreen = (playingQueueHeight / totalHeightPerItemPx).toInt()
+
+        val totalPaddingPx = itemPaddingPx * computedItemsPerScreen
+        val totalDividerHeightPx = dividerHeightPx * (computedItemsPerScreen - 1)
+
+        val availableHeightPx = playingQueueHeight - totalPaddingPx - totalDividerHeightPx
+        val singleItemHeightPx = availableHeightPx / computedItemsPerScreen
+        val singleItemHeightDp = singleItemHeightPx.toDp()
+
+        return singleItemHeightDp
     }
 }
