@@ -66,7 +66,6 @@ fun PlayingQueueComposable(
     val playingQueueHeight = remember { mutableIntStateOf(0) }
     val isFlinging = remember { mutableStateOf(false) }
 
-    val itemsPerScreen = 6
     val itemHeight = remember { mutableStateOf(0.dp) }
 
     val expandFlingThreshold =
@@ -83,10 +82,31 @@ fun PlayingQueueComposable(
         label = "playing_queue_font_size"
     )
 
-    LaunchedEffect(Unit) {
-        val itemHeightPx = playingQueueHeight.intValue / itemsPerScreen
-        val itemHeightDp = with(density) { itemHeightPx.toDp() }
-        itemHeight.value = itemHeightDp
+    val measuredItemHeight = remember { mutableStateOf(0.dp) }
+
+    LaunchedEffect(playingQueueHeight) {
+        if (playingQueueHeight.intValue > 0 && !playingQueueExpanded && itemHeight.value == 0.dp) {
+            with(density) {
+                val minItemHeightDp = 32.dp
+                val minItemHeightPx = minItemHeightDp.toPx()
+
+                val itemPaddingPx = 8.dp.toPx()
+                val dividerHeightPx = 1.dp.toPx()
+
+                val totalHeightPerItemPx = minItemHeightPx + itemPaddingPx + dividerHeightPx
+
+                val computedItemsPerScreen = (playingQueueHeight.intValue / totalHeightPerItemPx).toInt()
+
+                val totalPaddingPx = itemPaddingPx * computedItemsPerScreen
+                val totalDividerHeightPx = dividerHeightPx * (computedItemsPerScreen - 1)
+
+                val availableHeightPx = playingQueueHeight.intValue - totalPaddingPx - totalDividerHeightPx
+                val singleItemHeightPx = availableHeightPx / computedItemsPerScreen
+                val singleItemHeightDp = singleItemHeightPx.toDp()
+
+                itemHeight.value = singleItemHeightDp
+            }
+        }
     }
 
     LaunchedEffect(currentTrackIndex) {
