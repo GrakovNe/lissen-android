@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.viewmodel.PlayerViewModel
+import kotlin.math.max
 
 @Composable
 fun PlayingQueueComposable(
@@ -106,14 +107,13 @@ fun PlayingQueueComposable(
     }
 
     LaunchedEffect(currentTrackIndex) {
-        if (!playingQueueExpanded) {
-            scrollPlayingQueue(
-                currentTrackIndex = currentTrackIndex,
-                listState = listState,
-                playbackReady = playbackReady,
-                animate = true
-            )
-        }
+        scrollPlayingQueue(
+            currentTrackIndex = currentTrackIndex,
+            listState = listState,
+            playbackReady = playbackReady,
+            animate = true,
+            playingQueueExpanded = playingQueueExpanded
+        )
     }
 
     Column(
@@ -144,14 +144,13 @@ fun PlayingQueueComposable(
                         playingQueueHeight.intValue = intSize.height
 
                         coroutineScope.launch {
-                            if (!playingQueueExpanded) {
-                                scrollPlayingQueue(
-                                    currentTrackIndex = currentTrackIndex,
-                                    listState = listState,
-                                    playbackReady = playbackReady,
-                                    animate = false
-                                )
-                            }
+                            scrollPlayingQueue(
+                                currentTrackIndex = currentTrackIndex,
+                                listState = listState,
+                                playbackReady = playbackReady,
+                                animate = false,
+                                playingQueueExpanded = playingQueueExpanded
+                            )
                         }
                     }
                 }
@@ -190,12 +189,10 @@ fun PlayingQueueComposable(
                     modifier = Modifier.heightIn(min = itemHeight.value)
                 )
 
-                if (index < chapters.size - 1) {
-                    HorizontalDivider(
-                        thickness = 1.dp,
-                        modifier = Modifier.padding(start = 20.dp)
-                    )
-                }
+                HorizontalDivider(
+                    thickness = 1.dp,
+                    modifier = Modifier.padding(start = 20.dp)
+                )
             }
         }
     }
@@ -205,14 +202,19 @@ private suspend fun scrollPlayingQueue(
     currentTrackIndex: Int,
     listState: LazyListState,
     playbackReady: Boolean,
-    animate: Boolean
+    animate: Boolean,
+    playingQueueExpanded: Boolean
 ) {
+    if (!playbackReady || playingQueueExpanded) {
+        return
+    }
+
     val targetIndex = when (currentTrackIndex > 0) {
         true -> currentTrackIndex - 1
         false -> 0
     }
 
-    when (animate && playbackReady) {
+    when (animate) {
         true -> listState.animateScrollToItem(targetIndex)
         false -> listState.scrollToItem(targetIndex)
     }
