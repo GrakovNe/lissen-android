@@ -1,6 +1,7 @@
 package org.grakovne.lissen.ui.screens.library.composables
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -47,22 +48,24 @@ fun DefaultActionComposable(
     var navigationItemSelected by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
-    IconButton(
-        onClick = { onSearchRequested() },
-        modifier = Modifier.offset(x = 4.dp)
-    ) {
-        Icon(
-            imageVector = Lucide.Search,
-            contentDescription = null
-        )
-    }
-    IconButton(onClick = {
-        navigationItemSelected = true
-    }) {
-        Icon(
-            imageVector = Icons.Outlined.MoreVert,
-            contentDescription = "Menu"
-        )
+    Row {
+        IconButton(
+            onClick = { onSearchRequested() },
+            modifier = Modifier.offset(x = 4.dp)
+        ) {
+            Icon(
+                imageVector = Lucide.Search,
+                contentDescription = null
+            )
+        }
+        IconButton(onClick = {
+            navigationItemSelected = true
+        }) {
+            Icon(
+                imageVector = Icons.Outlined.MoreVert,
+                contentDescription = "Menu"
+            )
+        }
     }
 
     DropdownMenu(

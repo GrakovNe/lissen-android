@@ -1,12 +1,18 @@
 package org.grakovne.lissen.ui.screens.library
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.animation.with
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.ExperimentalMaterialApi
@@ -41,6 +48,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.LoadState
@@ -69,7 +77,7 @@ import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun LibraryScreen(
     navController: AppNavigationService,
@@ -162,28 +170,45 @@ fun LibraryScreen(
         topBar = {
             TopAppBar(
                 actions = {
-                    when (searchRequested) {
-                        true -> SearchActionComposable(
-                            onSearchDismissed = { searchRequested = false }
-                        )
-
-                        false -> DefaultActionComposable(
-                            navController = navController,
-                            cachingModelView = cachingModelView,
-                            libraryViewModel = libraryViewModel,
-                            onContentRefreshing = { refreshContent(showRefreshing = false) },
-                            onSearchRequested = { searchRequested = true }
-                        )
+                    AnimatedContent(
+                        targetState = searchRequested,
+                        transitionSpec = {
+                            fadeIn(animationSpec = keyframes { durationMillis = 300 }) with
+                                fadeOut(animationSpec = keyframes { durationMillis = 300 })
+                        }
+                    ) { isSearchRequested ->
+                        if (isSearchRequested) {
+                            SearchActionComposable(
+                                onSearchDismissed = { searchRequested = false }
+                            )
+                        } else {
+                            DefaultActionComposable(
+                                navController = navController,
+                                cachingModelView = cachingModelView,
+                                libraryViewModel = libraryViewModel,
+                                onContentRefreshing = { refreshContent(showRefreshing = false) },
+                                onSearchRequested = { searchRequested = true }
+                            )
+                        }
                     }
-
                 },
                 title = {
-                    if (!searchRequested) {
-                        Crossfade(targetState = navBarTitle, label = "navbar_title_fade") { title ->
-                            Text(
-                                text = title,
-                                style = titleTextStyle
-                            )
+                    Box(modifier = Modifier.width(IntrinsicSize.Max)) {
+                        AnimatedContent(
+                            targetState = searchRequested,
+                            transitionSpec = {
+                                fadeIn(animationSpec = keyframes { durationMillis = 300 }) with
+                                    fadeOut(animationSpec = keyframes { durationMillis = 300 })
+                            }
+                        ) { isSearchRequested ->
+                            if (!isSearchRequested) {
+                                Text(
+                                    text = navBarTitle,
+                                    style = titleTextStyle,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
                         }
                     }
                 },
