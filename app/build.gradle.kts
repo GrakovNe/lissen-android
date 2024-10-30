@@ -92,6 +92,8 @@ dependencies {
     implementation(libs.androidx.media3.session)
     kapt(libs.hilt.android.compiler)
 
+    implementation(libs.icons.lucide)
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

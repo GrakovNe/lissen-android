@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -59,6 +60,8 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.ImageLoader
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Search
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -174,6 +177,15 @@ fun LibraryScreen(
         topBar = {
             TopAppBar(
                 actions = {
+                    IconButton(
+                        onClick = {},
+                        modifier = Modifier.offset(x = 4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Lucide.Search,
+                            contentDescription = null
+                        )
+                    }
                     IconButton(onClick = {
                         navigationItemSelected = true
                     }) {
@@ -182,6 +194,7 @@ fun LibraryScreen(
                             contentDescription = "Menu"
                         )
                     }
+
                     DropdownMenu(
                         expanded = navigationItemSelected,
                         onDismissRequest = { navigationItemSelected = false },
