@@ -10,6 +10,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,15 +41,17 @@ class LibraryViewModel @Inject constructor(
     private val _recentBookUpdating = MutableLiveData(false)
     val recentBookUpdating: LiveData<Boolean> = _recentBookUpdating
 
+    private val _searchRequested = MutableLiveData(false)
+    val searchRequested: LiveData<Boolean> = _searchRequested
+
     private val _searchToken = MutableStateFlow("")
-    val searchToken: StateFlow<String> = _searchToken
 
     private val _hiddenBooks = MutableStateFlow<List<String>>(emptyList())
     val hiddenBooks: StateFlow<List<String>> = _hiddenBooks
 
-    @OptIn(FlowPreview::class)
+    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     val libraryPager: Flow<PagingData<Book>> = _searchToken
-        .debounce(300) // Опционально
+        .debounce(300)
         .distinctUntilChanged()
         .flatMapLatest { token ->
             Pager(
@@ -69,6 +72,15 @@ class LibraryViewModel @Inject constructor(
             true -> !hiddenBooks.value.contains(bookId)
             false -> true
         }
+    }
+
+    fun requestSearch() {
+        _searchRequested.value = true
+    }
+
+    fun dismissSearch() {
+        _searchRequested.value = false
+        _searchToken.value = ""
     }
 
     fun searchLibrary(token: String) {
@@ -127,6 +139,7 @@ class LibraryViewModel @Inject constructor(
     }
 
     companion object {
+
         private const val PAGE_SIZE = 20
     }
 }

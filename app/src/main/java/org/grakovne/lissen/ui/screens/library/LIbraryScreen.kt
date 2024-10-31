@@ -93,14 +93,14 @@ fun LibraryScreen(
     val recentBookRefreshing by libraryViewModel.recentBookUpdating.observeAsState(false)
 
     var pullRefreshing by remember { mutableStateOf(false) }
-    var searchRequested by remember { mutableStateOf(false) }
+    val searchRequested by libraryViewModel.searchRequested.observeAsState(false)
 
     val showingRecentBooks by remember(recentBooks, hiddenBooks) {
         derivedStateOf { filterRecentBooks(recentBooks, libraryViewModel) }
     }
 
     BackHandler(enabled = searchRequested) {
-        searchRequested = false
+        libraryViewModel.dismissSearch()
     }
 
     fun refreshContent(showRefreshing: Boolean) {
@@ -183,7 +183,7 @@ fun LibraryScreen(
                     ) { isSearchRequested ->
                         if (isSearchRequested) {
                             SearchActionComposable(
-                                onSearchDismissed = { searchRequested = false },
+                                onSearchDismissed = { libraryViewModel.dismissSearch() },
                                 onSearchRequested = { libraryViewModel.searchLibrary(it) }
                             )
                         } else {
@@ -192,7 +192,7 @@ fun LibraryScreen(
                                 cachingModelView = cachingModelView,
                                 libraryViewModel = libraryViewModel,
                                 onContentRefreshing = { refreshContent(showRefreshing = false) },
-                                onSearchRequested = { searchRequested = true }
+                                onSearchRequested = { libraryViewModel.requestSearch() }
                             )
                         }
                     }
