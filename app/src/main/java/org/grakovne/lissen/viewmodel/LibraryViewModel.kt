@@ -26,6 +26,7 @@ import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.screens.library.paging.LibraryPagingSource
+import org.grakovne.lissen.ui.screens.library.paging.LibrarySearchPagingSource
 import javax.inject.Inject
 
 @HiltViewModel
@@ -44,7 +45,7 @@ class LibraryViewModel @Inject constructor(
     private val _searchRequested = MutableLiveData(false)
     val searchRequested: LiveData<Boolean> = _searchRequested
 
-    private val _searchToken = MutableStateFlow("")
+    private val _searchToken = MutableStateFlow(EMPTY_SEARCH)
 
     private val _hiddenBooks = MutableStateFlow<List<String>>(emptyList())
     val hiddenBooks: StateFlow<List<String>> = _hiddenBooks
@@ -61,7 +62,10 @@ class LibraryViewModel @Inject constructor(
                     prefetchDistance = PAGE_SIZE
                 ),
                 pagingSourceFactory = {
-                    LibraryPagingSource(preferences, mediaChannel, token)
+                    when(searchRequested.value) {
+                        true -> LibrarySearchPagingSource(preferences, mediaChannel, token)
+                        else -> LibraryPagingSource(preferences, mediaChannel)
+                    }
                 }
             ).flow
         }
@@ -80,7 +84,7 @@ class LibraryViewModel @Inject constructor(
 
     fun dismissSearch() {
         _searchRequested.value = false
-        _searchToken.value = ""
+        _searchToken.value = EMPTY_SEARCH
     }
 
     fun searchLibrary(token: String) {
@@ -140,6 +144,7 @@ class LibraryViewModel @Inject constructor(
 
     companion object {
 
+        private const val EMPTY_SEARCH = ""
         private const val PAGE_SIZE = 20
     }
 }
