@@ -67,8 +67,8 @@ class MediaRepository @Inject constructor(
 
                 val book = intent.getSerializableExtra(BOOK_EXTRA) as? DetailedBook
 
-                if (book != null) {
-                    _playingBook.postValue(book)
+                book?.let {
+                    _playingBook.postValue(it)
 
                     updateProgress(book)
                     startUpdatingProgress(book)
