@@ -38,7 +38,7 @@ class LibraryDefaultPagingSource(
                 )
             },
             onFailure = {
-            LoadResult.Page(emptyList(), null, null)
+                LoadResult.Page(emptyList(), null, null)
             }
         )
 }
