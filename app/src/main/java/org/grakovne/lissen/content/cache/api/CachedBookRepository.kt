@@ -51,6 +51,12 @@ class CachedBookRepository @Inject constructor(
         .fetchCachedBooks(pageNumber = pageNumber, pageSize = pageSize)
         .map { cachedBookEntityConverter.apply(it) }
 
+    suspend fun searchBooks(
+        query: String
+    ): List<Book> = bookDao
+        .searchCachedBooks(searchQuery = query)
+        .map { cachedBookEntityConverter.apply(it) }
+
     suspend fun fetchRecentBooks(): List<RecentBook> =
         bookDao
             .fetchRecentlyListenedCachedBooks()

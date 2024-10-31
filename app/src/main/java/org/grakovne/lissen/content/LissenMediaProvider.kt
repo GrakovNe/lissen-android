@@ -96,12 +96,19 @@ class LissenMediaProvider @Inject constructor(
         libraryId: String,
         query: String
     ): ApiResult<List<Book>> {
-        return providePreferredChannel()
-            .searchBooks(
-                libraryId = libraryId,
-                query = query,
-                limit = LIBRARY_SEARCH_LIMIT
-            )
+        Log.d(TAG, "Searching books with query $query of library: $libraryId")
+
+        return when (cacheConfiguration.localCacheUsing()) {
+            true -> localCacheRepository.searchBooks(query)
+            false -> {
+                providePreferredChannel()
+                    .searchBooks(
+                        libraryId = libraryId,
+                        query = query,
+                        limit = LIBRARY_SEARCH_LIMIT
+                    )
+            }
+        }
     }
 
     suspend fun fetchBooks(

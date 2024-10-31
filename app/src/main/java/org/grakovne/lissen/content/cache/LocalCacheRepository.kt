@@ -57,6 +57,13 @@ class LocalCacheRepository @Inject constructor(
         }
     }
 
+    suspend fun searchBooks(
+        query: String
+    ): ApiResult<List<Book>> = cachedBookRepository
+        .searchBooks(query = query)
+        .filter { checkBookIntegrity(it.id) }
+        .let { ApiResult.Success(it) }
+
     suspend fun fetchBooks(
         pageSize: Int,
         pageNumber: Int
