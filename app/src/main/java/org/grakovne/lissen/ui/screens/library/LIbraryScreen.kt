@@ -1,5 +1,6 @@
 package org.grakovne.lissen.ui.screens.library
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.keyframes
@@ -96,6 +97,10 @@ fun LibraryScreen(
 
     val showingRecentBooks by remember(recentBooks, hiddenBooks) {
         derivedStateOf { filterRecentBooks(recentBooks, libraryViewModel) }
+    }
+
+    BackHandler(enabled = searchRequested) {
+        searchRequested = false
     }
 
     fun refreshContent(showRefreshing: Boolean) {
