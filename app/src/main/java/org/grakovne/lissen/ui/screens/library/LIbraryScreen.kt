@@ -151,13 +151,7 @@ fun LibraryScreen(
 
     LaunchedEffect(searchRequested) {
         if (searchRequested) {
-            val targetIndex = library.itemSnapshotList.items.indexOfFirst { book ->
-                book.id.matches(Regex("^library_item_\\d+$"))
-            }
-
-            if (targetIndex != -1) {
-                libraryListState.animateScrollToItem(targetIndex)
-            }
+            libraryListState.animateScrollToItem(2)
         } else {
             libraryListState.animateScrollToItem(0)
         }
