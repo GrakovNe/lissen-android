@@ -47,7 +47,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.paging.LoadState
+import androidx.paging.LoadState.*
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.ImageLoader
@@ -91,8 +91,8 @@ fun LibraryScreen(
     val hiddenBooks by libraryViewModel.hiddenBooks.collectAsState()
 
     val recentBookRefreshing by libraryViewModel.recentBookUpdating.observeAsState(false)
-    var pullRefreshing by remember { mutableStateOf(false) }
 
+    var pullRefreshing by remember { mutableStateOf(false) }
     var searchRequested by remember { mutableStateOf(false) }
 
     val showingRecentBooks by remember(recentBooks, hiddenBooks) {
@@ -121,11 +121,10 @@ fun LibraryScreen(
         }
     }
 
-    val isContentLoading by remember {
+    val isPlaceholderRequired by remember {
         derivedStateOf {
-            pullRefreshing ||
-                recentBookRefreshing ||
-                library.loadState.refresh is LoadState.Loading
+            val loading = pullRefreshing || recentBookRefreshing || library.loadState.refresh is Loading
+            loading && !searchRequested
         }
     }
 
@@ -247,9 +246,8 @@ fun LibraryScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp)
                 ) {
                     item(key = "recent_books") {
-                        if (isContentLoading) {
+                        if (isPlaceholderRequired) {
                             RecentBooksPlaceholderComposable()
-
                             Spacer(modifier = Modifier.height(20.dp))
                         } else {
                             if (showingRecentBooks.isEmpty().not()) {
@@ -299,7 +297,7 @@ fun LibraryScreen(
 
                     item { Spacer(modifier = Modifier.height(8.dp)) }
 
-                    if (isContentLoading) {
+                    if (isPlaceholderRequired) {
                         item {
                             LibraryPlaceholderComposable()
                         }
