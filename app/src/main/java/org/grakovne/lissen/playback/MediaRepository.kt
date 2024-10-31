@@ -19,8 +19,11 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.grakovne.lissen.domain.DetailedBook
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.service.PlaybackService
@@ -66,12 +69,13 @@ class MediaRepository @Inject constructor(
                 val book = intent.getSerializableExtra(BOOK_EXTRA) as? DetailedBook
 
                 book?.let {
-                    _playingBook.postValue(it)
+                    CoroutineScope(Dispatchers.Main).launch {
+                        updateProgress(book).await()
+                        startUpdatingProgress(book)
 
-                    updateProgress(book)
-                    startUpdatingProgress(book)
-
-                    _isPlaybackReady.postValue(true)
+                        _playingBook.postValue(it)
+                        _isPlaybackReady.postValue(true)
+                    }
                 }
             }
         }
@@ -175,8 +179,8 @@ class MediaRepository @Inject constructor(
         )
     }
 
-    private fun updateProgress(detailedBook: DetailedBook) {
-        CoroutineScope(Dispatchers.Main).launch {
+    private fun updateProgress(detailedBook: DetailedBook): Deferred<Unit> {
+        return CoroutineScope(Dispatchers.Main).async {
             val currentIndex = mediaController.currentMediaItemIndex
             val accumulated = detailedBook.files.take(currentIndex).sumOf { it.duration }
             val currentFilePosition = mediaController.currentPosition / 1000.0
