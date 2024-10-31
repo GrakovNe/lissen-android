@@ -60,7 +60,7 @@ class LibraryViewModel @Inject constructor(
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     val libraryPager: Flow<PagingData<Book>> = combine(
         _searchToken.debounce(500).distinctUntilChanged(),
-        searchRequested.asFlow().distinctUntilChanged()
+        _searchRequested.asFlow().distinctUntilChanged()
     ) { token, requested -> Pair(token, requested) }
         .flatMapLatest { (token, requested) ->
             Pager(
@@ -80,7 +80,10 @@ class LibraryViewModel @Inject constructor(
                         else -> LibraryDefaultPagingSource(library, mediaChannel)
                     }
 
-                    currentPagingSource = pagingSource
+                    if (currentPagingSource != pagingSource) {
+                        currentPagingSource = pagingSource
+                    }
+
                     pagingSource
                 }
             ).flow
