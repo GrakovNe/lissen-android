@@ -39,6 +39,11 @@ interface MediaChannel {
         pageNumber: Int
     ): ApiResult<PagedItems<Book>>
 
+    suspend fun searchBooks(
+        libraryId: String,
+        query: String
+    ): ApiResult<List<Book>>
+
     suspend fun fetchLibraries(): ApiResult<List<Library>>
 
     suspend fun startPlayback(

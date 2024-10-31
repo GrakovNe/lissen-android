@@ -5,6 +5,7 @@ import org.grakovne.lissen.channel.audiobookshelf.converter.LoginResponseConvert
 import org.grakovne.lissen.channel.audiobookshelf.model.LibraryItemIdResponse
 import org.grakovne.lissen.channel.audiobookshelf.model.LibraryItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.model.LibraryResponse
+import org.grakovne.lissen.channel.audiobookshelf.model.LibrarySearchResponse
 import org.grakovne.lissen.channel.audiobookshelf.model.LoginRequest
 import org.grakovne.lissen.channel.audiobookshelf.model.LoginResponse
 import org.grakovne.lissen.channel.audiobookshelf.model.MediaProgressResponse
@@ -33,6 +34,19 @@ class AudioBookshelfDataRepository @Inject constructor(
 
     suspend fun fetchLibraries(): ApiResult<LibraryResponse> =
         safeApiCall { getClientInstance().fetchLibraries() }
+
+    suspend fun searchLibraryItems(
+        libraryId: String,
+        query: String,
+        limit: Int
+    ): ApiResult<LibrarySearchResponse> = safeApiCall {
+        getClientInstance()
+            .searchLibraryItems(
+                libraryId = libraryId,
+                request = query,
+                limit = limit
+            )
+    }
 
     suspend fun fetchLibraryItems(
         libraryId: String,

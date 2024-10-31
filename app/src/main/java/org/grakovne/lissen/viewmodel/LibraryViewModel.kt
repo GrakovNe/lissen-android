@@ -10,9 +10,13 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.LissenMediaProvider
@@ -36,26 +40,29 @@ class LibraryViewModel @Inject constructor(
     private val _recentBookUpdating = MutableLiveData(false)
     val recentBookUpdating: LiveData<Boolean> = _recentBookUpdating
 
-    private val _searchToken = MutableLiveData("")
-    val searchToken: LiveData<String> = _searchToken
+    private val _searchToken = MutableStateFlow("")
+    val searchToken: StateFlow<String> = _searchToken
 
     private val _hiddenBooks = MutableStateFlow<List<String>>(emptyList())
     val hiddenBooks: StateFlow<List<String>> = _hiddenBooks
 
-    private var currentPagingSource: LibraryPagingSource? = null
-
-    val libraryPager: Flow<PagingData<Book>> by lazy {
-        Pager(
-            config = PagingConfig(
-                pageSize = PAGE_SIZE,
-                initialLoadSize = PAGE_SIZE,
-                prefetchDistance = PAGE_SIZE
-            ),
-            pagingSourceFactory = {
-                LibraryPagingSource(preferences, mediaChannel).also { currentPagingSource = it }
-            }
-        ).flow.cachedIn(viewModelScope)
-    }
+    @OptIn(FlowPreview::class)
+    val libraryPager: Flow<PagingData<Book>> = _searchToken
+        .debounce(300) // Опционально
+        .distinctUntilChanged()
+        .flatMapLatest { token ->
+            Pager(
+                config = PagingConfig(
+                    pageSize = PAGE_SIZE,
+                    initialLoadSize = PAGE_SIZE,
+                    prefetchDistance = PAGE_SIZE
+                ),
+                pagingSourceFactory = {
+                    LibraryPagingSource(preferences, mediaChannel, token)
+                }
+            ).flow
+        }
+        .cachedIn(viewModelScope)
 
     fun isVisible(bookId: String): Boolean {
         return when (localCacheConfiguration.localCacheUsing()) {
@@ -65,13 +72,15 @@ class LibraryViewModel @Inject constructor(
     }
 
     fun searchLibrary(token: String) {
-        _searchToken.value = token
+        viewModelScope.launch {
+            _searchToken.emit(token)
+        }
     }
 
     fun refreshRecentListening() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                launch(Dispatchers.IO) { fetchRecentListening() }
+                fetchRecentListening()
             }
         }
     }
@@ -79,10 +88,12 @@ class LibraryViewModel @Inject constructor(
     fun refreshLibrary() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                launch(Dispatchers.IO) { currentPagingSource?.invalidate() }
+                currentPagingSource?.invalidate()
             }
         }
     }
+
+    private var currentPagingSource: LibraryPagingSource? = null
 
     fun fetchRecentListening() {
         _recentBookUpdating.postValue(true)
@@ -116,7 +127,6 @@ class LibraryViewModel @Inject constructor(
     }
 
     companion object {
-
         private const val PAGE_SIZE = 20
     }
 }

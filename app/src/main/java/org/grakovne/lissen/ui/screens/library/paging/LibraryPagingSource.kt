@@ -8,7 +8,8 @@ import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 
 class LibraryPagingSource(
     private val preferences: LissenSharedPreferences,
-    private val mediaChannel: LissenMediaProvider
+    private val mediaChannel: LissenMediaProvider,
+    private val searchToken: String
 ) : PagingSource<Int, Book>() {
 
     override fun getRefreshKey(state: PagingState<Int, Book>) = state
@@ -27,6 +28,19 @@ class LibraryPagingSource(
             .getPreferredLibrary()
             ?.id
             ?: return LoadResult.Page(emptyList(), null, null)
+
+        if (searchToken.isNotBlank()) {
+            return mediaChannel
+                .searchBooks(libraryId, searchToken)
+                .fold(
+                    onSuccess = {
+                        LoadResult.Page(it, null, null)
+                    },
+                    onFailure = {
+                        LoadResult.Page(emptyList(), null, null)
+                    }
+                )
+        }
 
         return mediaChannel
             .fetchBooks(

@@ -7,7 +7,7 @@ data class LibraryItemIdResponse(
 )
 
 data class LibraryIdMedia(
-    val metadata: org.grakovne.lissen.channel.audiobookshelf.model.MediaMetadataResponse,
+    val metadata: MediaMetadataResponse,
     val audioFiles: List<AudioFileResponse>,
     val chapters: List<PlaybackChapterResponse>
 )

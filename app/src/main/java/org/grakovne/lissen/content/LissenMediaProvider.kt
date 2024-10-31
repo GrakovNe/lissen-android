@@ -92,6 +92,13 @@ class LissenMediaProvider @Inject constructor(
         }
     }
 
+    suspend fun searchBooks(
+        libraryId: String,
+        query: String
+    ): ApiResult<List<Book>> {
+        return providePreferredChannel().searchBooks(libraryId, query)
+    }
+
     suspend fun fetchBooks(
         libraryId: String,
         pageSize: Int,
@@ -213,6 +220,7 @@ class LissenMediaProvider @Inject constructor(
                         book
                             .copy(cachedState = CACHED)
                             .also { Log.d(TAG, "${book.id} flagged as Cached") }
+
                     false -> book
                 }
             }
@@ -226,6 +234,7 @@ class LissenMediaProvider @Inject constructor(
         ?: throw IllegalStateException("Selected Channel has been requested but not selected")
 
     companion object {
+
         private const val TAG: String = "LissenMediaProvider"
     }
 }

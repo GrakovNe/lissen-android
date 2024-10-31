@@ -149,13 +149,13 @@ fun LibraryScreen(
         libraryViewModel.refreshLibrary()
     }
 
-    LaunchedEffect(searchRequested) {
-        if (searchRequested) {
-            libraryListState.animateScrollToItem(2)
-        } else {
-            libraryListState.animateScrollToItem(0)
-        }
-    }
+//    LaunchedEffect(searchRequested) {
+//        if (searchRequested) {
+//            libraryListState.animateScrollToItem(2)
+//        } else {
+//            libraryListState.animateScrollToItem(0)
+//        }
+//    }
 
     RequestNotificationPermissions()
 
