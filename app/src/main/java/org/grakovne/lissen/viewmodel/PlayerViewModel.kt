@@ -88,7 +88,7 @@ class PlayerViewModel @Inject constructor(
             result.foldAsync(
                 onSuccess = {
                     withContext(Dispatchers.IO) {
-                        mediaRepository.preparePlayingBook(it)
+                        mediaRepository.startPreparingPlayingBook(it)
                     }
                 },
                 onFailure = {

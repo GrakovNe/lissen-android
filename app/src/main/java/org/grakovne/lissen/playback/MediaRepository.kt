@@ -31,6 +31,7 @@ import org.grakovne.lissen.playback.service.PlaybackService.Companion.POSITION
 import javax.inject.Inject
 import javax.inject.Singleton
 
+@Suppress("DEPRECATION")
 @Singleton
 class MediaRepository @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -63,6 +64,15 @@ class MediaRepository @Inject constructor(
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == PLAYBACK_READY) {
                 _isPlaybackReady.postValue(true)
+
+                val book = intent.getSerializableExtra(BOOK_EXTRA) as? DetailedBook
+
+                if (book != null) {
+                    _playingBook.postValue(book)
+
+                    updateProgress(book)
+                    startUpdatingProgress(book)
+                }
             }
         }
     }
@@ -107,14 +117,10 @@ class MediaRepository @Inject constructor(
         _isPlaybackReady.postValue(false)
     }
 
-    fun preparePlayingBook(book: DetailedBook) {
+    fun startPreparingPlayingBook(book: DetailedBook) {
         if (::mediaController.isInitialized && _playingBook.value != book) {
-            preparePlay(book)
+            startPreparingPlayback(book)
         }
-        _playingBook.postValue(book)
-        updateProgress(book)
-
-        startUpdatingProgress(book)
     }
 
     fun play() {
@@ -179,7 +185,7 @@ class MediaRepository @Inject constructor(
         }
     }
 
-    private fun preparePlay(book: DetailedBook) {
+    private fun startPreparingPlayback(book: DetailedBook) {
         _mediaItemPosition.postValue(0.0)
         _isPlaying.postValue(false)
 

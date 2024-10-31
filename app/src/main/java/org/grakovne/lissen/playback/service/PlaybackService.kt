@@ -156,9 +156,13 @@ class PlaybackService : MediaSessionService() {
 
             awaitAll(prepareSession, prepareQueue)
 
+            val intent = Intent(PLAYBACK_READY).apply {
+                putExtra(BOOK_EXTRA, book)
+            }
+
             LocalBroadcastManager
                 .getInstance(baseContext)
-                .sendBroadcast(Intent(PLAYBACK_READY))
+                .sendBroadcast(intent)
         }
     }
 
