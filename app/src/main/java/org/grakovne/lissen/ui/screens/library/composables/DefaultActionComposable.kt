@@ -49,6 +49,7 @@ fun DefaultActionComposable(
     val coroutineScope = rememberCoroutineScope()
 
     Row {
+        /** Disabled for now
         IconButton(
             onClick = { onSearchRequested() },
             modifier = Modifier.offset(x = 4.dp)
@@ -58,6 +59,7 @@ fun DefaultActionComposable(
                 contentDescription = null
             )
         }
+        **/
         IconButton(onClick = {
             navigationItemSelected = true
         }) {
