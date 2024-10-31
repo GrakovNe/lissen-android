@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.PagingSource
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -51,6 +52,8 @@ class LibraryViewModel @Inject constructor(
     private val _hiddenBooks = MutableStateFlow<List<String>>(emptyList())
     val hiddenBooks: StateFlow<List<String>> = _hiddenBooks
 
+    private var currentPagingSource: PagingSource<Int, Book>? = null
+
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
     val libraryPager: Flow<PagingData<Book>> = _searchToken
         .debounce(300)
@@ -68,10 +71,13 @@ class LibraryViewModel @Inject constructor(
                         ?.id
                         ?: return@Pager LibraryEmptyPagingSource()
 
-                    when (searchRequested.value) {
+                    val pagingSource = when (searchRequested.value) {
                         true -> LibrarySearchPagingSource(library, mediaChannel, token)
                         else -> LibraryDefaultPagingSource(library, mediaChannel)
                     }
+
+                    currentPagingSource = pagingSource
+                    pagingSource
                 }
             ).flow
         }
@@ -114,8 +120,6 @@ class LibraryViewModel @Inject constructor(
             }
         }
     }
-
-    private var currentPagingSource: LibraryDefaultPagingSource? = null
 
     fun fetchRecentListening() {
         _recentBookUpdating.postValue(true)

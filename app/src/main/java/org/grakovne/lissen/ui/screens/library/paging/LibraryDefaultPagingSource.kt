@@ -20,25 +20,27 @@ class LibraryDefaultPagingSource(
                 ?: state.closestPageToPosition(anchorPosition)?.nextKey?.minus(1)
         }
 
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Book> = mediaChannel
-        .fetchBooks(
-            libraryId = libraryId,
-            pageSize = params.loadSize,
-            pageNumber = params.key ?: 0
-        )
-        .fold(
-            onSuccess = { result ->
-                val nextPage = if (result.items.isEmpty()) null else result.currentPage + 1
-                val prevKey = if (result.currentPage == 0) null else result.currentPage - 1
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Book> {
+        return mediaChannel
+            .fetchBooks(
+                libraryId = libraryId,
+                pageSize = params.loadSize,
+                pageNumber = params.key ?: 0
+            )
+            .fold(
+                onSuccess = { result ->
+                    val nextPage = if (result.items.isEmpty()) null else result.currentPage + 1
+                    val prevKey = if (result.currentPage == 0) null else result.currentPage - 1
 
-                LoadResult.Page(
-                    data = result.items,
-                    prevKey = prevKey,
-                    nextKey = nextPage
-                )
-            },
-            onFailure = {
+                    LoadResult.Page(
+                        data = result.items,
+                        prevKey = prevKey,
+                        nextKey = nextPage
+                    )
+                },
+                onFailure = {
                 LoadResult.Page(emptyList(), null, null)
-            }
-        )
+                }
+            )
+    }
 }

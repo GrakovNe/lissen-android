@@ -49,7 +49,7 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
             remove(KEY_USERNAME)
             remove(KEY_TOKEN)
 
-            remove(CACHE_FORCE_ENABLED_TOKEN)
+            remove(CACHE_FORCE_ENABLED)
 
             remove(KEY_PREFERRED_LIBRARY_ID)
             remove(KEY_PREFERRED_LIBRARY_NAME)
@@ -124,13 +124,13 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
         sharedPreferences.getString(KEY_PREFERRED_LIBRARY_NAME, null)
 
     fun enableForceCache() =
-        sharedPreferences.edit().putBoolean(CACHE_FORCE_ENABLED_TOKEN, true).apply()
+        sharedPreferences.edit().putBoolean(CACHE_FORCE_ENABLED, true).apply()
 
     fun disableForceCache() =
-        sharedPreferences.edit().putBoolean(CACHE_FORCE_ENABLED_TOKEN, false).apply()
+        sharedPreferences.edit().putBoolean(CACHE_FORCE_ENABLED, false).apply()
 
     fun isForceCache(): Boolean {
-        return sharedPreferences.getBoolean(CACHE_FORCE_ENABLED_TOKEN, false)
+        return sharedPreferences.getBoolean(CACHE_FORCE_ENABLED, false)
     }
 
     fun saveUsername(username: String) =
@@ -154,7 +154,7 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
         private const val KEY_HOST = "host"
         private const val KEY_USERNAME = "username"
         private const val KEY_TOKEN = "token"
-        private const val CACHE_FORCE_ENABLED_TOKEN = "cache_force_enabled"
+        private const val CACHE_FORCE_ENABLED = "cache_force_enabled"
 
         private const val KEY_DEVICE_ID = "device_id"
 
