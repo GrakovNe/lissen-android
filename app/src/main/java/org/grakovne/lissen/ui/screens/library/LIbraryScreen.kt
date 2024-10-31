@@ -149,6 +149,20 @@ fun LibraryScreen(
         libraryViewModel.refreshLibrary()
     }
 
+    LaunchedEffect(searchRequested) {
+        if (searchRequested) {
+            val targetIndex = library.itemSnapshotList.items.indexOfFirst { book ->
+                book.id.matches(Regex("^library_item_\\d+$"))
+            }
+
+            if (targetIndex != -1) {
+                libraryListState.animateScrollToItem(targetIndex)
+            }
+        } else {
+            libraryListState.animateScrollToItem(0)
+        }
+    }
+
     RequestNotificationPermissions()
 
     val navBarTitle by remember {
@@ -176,7 +190,8 @@ fun LibraryScreen(
                     ) { isSearchRequested ->
                         if (isSearchRequested) {
                             SearchActionComposable(
-                                onSearchDismissed = { searchRequested = false }
+                                onSearchDismissed = { searchRequested = false },
+                                onSearchRequested = { libraryViewModel.searchLibrary(it) }
                             )
                         } else {
                             DefaultActionComposable(
@@ -305,7 +320,7 @@ fun LibraryScreen(
                                 }
                             }
 
-                            false -> items(count = library.itemCount) {
+                            false -> items(count = library.itemCount, key = { "library_item_${library[it]?.id}" }) {
                                 val book = library[it] ?: return@items
                                 val isVisible = remember(hiddenBooks, book.id) {
                                     derivedStateOf { libraryViewModel.isVisible(book.id) }

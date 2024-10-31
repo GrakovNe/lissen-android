@@ -30,7 +30,8 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun SearchActionComposable(
-    onSearchDismissed: () -> Unit
+    onSearchDismissed: () -> Unit,
+    onSearchRequested: (String) -> Unit
 ) {
     val focusRequester = remember { FocusRequester() }
     val searchText = remember { mutableStateOf("") }
@@ -64,7 +65,11 @@ fun SearchActionComposable(
         ) {
             BasicTextField(
                 value = searchText.value,
-                onValueChange = { searchText.value = it },
+                onValueChange = {
+                    searchText.value = it
+
+                    onSearchRequested(searchText.value)
+                },
                 modifier = Modifier
                     .weight(1f)
                     .focusRequester(focusRequester),

@@ -36,6 +36,9 @@ class LibraryViewModel @Inject constructor(
     private val _recentBookUpdating = MutableLiveData(false)
     val recentBookUpdating: LiveData<Boolean> = _recentBookUpdating
 
+    private val _searchToken = MutableLiveData("")
+    val searchToken: LiveData<String> = _searchToken
+
     private val _hiddenBooks = MutableStateFlow<List<String>>(emptyList())
     val hiddenBooks: StateFlow<List<String>> = _hiddenBooks
 
@@ -59,6 +62,10 @@ class LibraryViewModel @Inject constructor(
             true -> !hiddenBooks.value.contains(bookId)
             false -> true
         }
+    }
+
+    fun searchLibrary(token: String) {
+        _searchToken.value = token
     }
 
     fun refreshRecentListening() {
