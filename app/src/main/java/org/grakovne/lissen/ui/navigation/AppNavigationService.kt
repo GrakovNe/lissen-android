@@ -11,7 +11,7 @@ class AppNavigationService(
             launchSingleTop = true
 
             popUpTo(host.graph.startDestinationId) {
-                inclusive = false
+                inclusive = true
             }
         }
     }
@@ -30,7 +30,7 @@ class AppNavigationService(
 
     fun showLogin() {
         host.navigate("login_screen") {
-            popUpTo("settings_screen") {
+            popUpTo(0) {
                 inclusive = true
             }
             launchSingleTop = true
