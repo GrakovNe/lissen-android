@@ -25,7 +25,7 @@ import org.grakovne.lissen.content.LocalCacheConfiguration
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
-import org.grakovne.lissen.ui.screens.library.paging.LibraryPagingSource
+import org.grakovne.lissen.ui.screens.library.paging.LibraryDefaultPagingSource
 import org.grakovne.lissen.ui.screens.library.paging.LibrarySearchPagingSource
 import javax.inject.Inject
 
@@ -62,9 +62,9 @@ class LibraryViewModel @Inject constructor(
                     prefetchDistance = PAGE_SIZE
                 ),
                 pagingSourceFactory = {
-                    when(searchRequested.value) {
+                    when (searchRequested.value) {
                         true -> LibrarySearchPagingSource(preferences, mediaChannel, token)
-                        else -> LibraryPagingSource(preferences, mediaChannel)
+                        else -> LibraryDefaultPagingSource(preferences, mediaChannel)
                     }
                 }
             ).flow
@@ -109,7 +109,7 @@ class LibraryViewModel @Inject constructor(
         }
     }
 
-    private var currentPagingSource: LibraryPagingSource? = null
+    private var currentPagingSource: LibraryDefaultPagingSource? = null
 
     fun fetchRecentListening() {
         _recentBookUpdating.postValue(true)

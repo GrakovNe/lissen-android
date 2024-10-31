@@ -6,7 +6,7 @@ import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 
-class LibraryPagingSource(
+class LibraryDefaultPagingSource(
     private val preferences: LissenSharedPreferences,
     private val mediaChannel: LissenMediaProvider
 ) : PagingSource<Int, Book>() {

@@ -12,15 +12,7 @@ class LibrarySearchPagingSource(
     private val searchToken: String
 ) : PagingSource<Int, Book>() {
 
-    override fun getRefreshKey(state: PagingState<Int, Book>) = state
-        .anchorPosition
-        ?.let { anchorPosition ->
-            state
-                .closestPageToPosition(anchorPosition)
-                ?.prevKey
-                ?.plus(1)
-                ?: state.closestPageToPosition(anchorPosition)?.nextKey?.minus(1)
-        }
+    override fun getRefreshKey(state: PagingState<Int, Book>) = null
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Book> {
         val libraryId = preferences
