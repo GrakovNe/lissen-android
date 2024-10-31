@@ -63,8 +63,6 @@ class MediaRepository @Inject constructor(
     private val bookDetailsReadyReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == PLAYBACK_READY) {
-                _isPlaybackReady.postValue(true)
-
                 val book = intent.getSerializableExtra(BOOK_EXTRA) as? DetailedBook
 
                 book?.let {
@@ -72,6 +70,8 @@ class MediaRepository @Inject constructor(
 
                     updateProgress(book)
                     startUpdatingProgress(book)
+
+                    _isPlaybackReady.postValue(true)
                 }
             }
         }
