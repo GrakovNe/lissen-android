@@ -181,13 +181,14 @@ fun LibraryScreen(
                         targetState = searchRequested,
                         label = "library_action_animation"
                     ) { isSearchRequested ->
-                        if (isSearchRequested) {
-                            SearchActionComposable(
+
+                        when (isSearchRequested) {
+                            true -> SearchActionComposable(
                                 onSearchDismissed = { libraryViewModel.dismissSearch() },
                                 onSearchRequested = { libraryViewModel.searchLibrary(it) }
                             )
-                        } else {
-                            DefaultActionComposable(
+
+                            false -> DefaultActionComposable(
                                 navController = navController,
                                 cachingModelView = cachingModelView,
                                 libraryViewModel = libraryViewModel,
