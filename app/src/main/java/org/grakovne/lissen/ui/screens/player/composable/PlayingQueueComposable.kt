@@ -205,7 +205,8 @@ private suspend fun scrollPlayingQueue(
 
 private fun calculateQueueItemHeight(
     screenDensity: Density,
-    playingQueueHeight: Int): Dp {
+    playingQueueHeight: Int
+): Dp {
     with(screenDensity) {
         val minItemHeightDp = 32.dp
         val minItemHeightPx = minItemHeightDp.toPx()
