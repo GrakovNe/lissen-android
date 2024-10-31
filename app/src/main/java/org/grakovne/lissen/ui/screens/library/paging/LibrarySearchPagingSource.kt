@@ -23,12 +23,8 @@ class LibrarySearchPagingSource(
         return mediaChannel
             .searchBooks(libraryId, searchToken)
             .fold(
-                onSuccess = {
-                    LoadResult.Page(it, null, null)
-                },
-                onFailure = {
-                    LoadResult.Page(emptyList(), null, null)
-                }
+                onSuccess = { LoadResult.Page(it, null, null) },
+                onFailure = { LoadResult.Page(emptyList(), null, null) }
             )
     }
 }
