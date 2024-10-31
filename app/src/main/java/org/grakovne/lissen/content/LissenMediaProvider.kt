@@ -96,7 +96,12 @@ class LissenMediaProvider @Inject constructor(
         libraryId: String,
         query: String
     ): ApiResult<List<Book>> {
-        return providePreferredChannel().searchBooks(libraryId, query)
+        return providePreferredChannel()
+            .searchBooks(
+                libraryId = libraryId,
+                query = query,
+                limit = LIBRARY_SEARCH_LIMIT
+            )
     }
 
     suspend fun fetchBooks(
@@ -235,6 +240,7 @@ class LissenMediaProvider @Inject constructor(
 
     companion object {
 
+        private const val LIBRARY_SEARCH_LIMIT = 20
         private const val TAG: String = "LissenMediaProvider"
     }
 }

@@ -93,7 +93,7 @@ class LibraryViewModel @Inject constructor(
         _searchToken.value = EMPTY_SEARCH
     }
 
-    fun searchLibrary(token: String) {
+    fun updateSearch(token: String) {
         viewModelScope.launch {
             _searchToken.emit(token)
         }
@@ -149,7 +149,6 @@ class LibraryViewModel @Inject constructor(
     }
 
     companion object {
-
         private const val EMPTY_SEARCH = ""
         private const val PAGE_SIZE = 20
     }

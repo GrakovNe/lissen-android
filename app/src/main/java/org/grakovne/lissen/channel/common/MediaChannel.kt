@@ -41,7 +41,8 @@ interface MediaChannel {
 
     suspend fun searchBooks(
         libraryId: String,
-        query: String
+        query: String,
+        limit: Int
     ): ApiResult<List<Book>>
 
     suspend fun fetchLibraries(): ApiResult<List<Library>>

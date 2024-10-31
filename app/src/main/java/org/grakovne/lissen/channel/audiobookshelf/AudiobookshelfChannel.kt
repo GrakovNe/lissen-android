@@ -93,10 +93,11 @@ class AudiobookshelfChannel @Inject constructor(
 
     override suspend fun searchBooks(
         libraryId: String,
-        query: String
+        query: String,
+        limit: Int
     ): ApiResult<List<Book>> {
         return dataRepository
-            .searchLibraryItems(libraryId, query, 10)
+            .searchLibraryItems(libraryId, query, limit)
             .map { librarySearchItemResponseConverter.apply(it) }
     }
 

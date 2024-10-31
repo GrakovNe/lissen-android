@@ -185,7 +185,7 @@ fun LibraryScreen(
                         when (isSearchRequested) {
                             true -> SearchActionComposable(
                                 onSearchDismissed = { libraryViewModel.dismissSearch() },
-                                onSearchRequested = { libraryViewModel.searchLibrary(it) }
+                                onSearchRequested = { libraryViewModel.updateSearch(it) }
                             )
 
                             false -> DefaultActionComposable(
