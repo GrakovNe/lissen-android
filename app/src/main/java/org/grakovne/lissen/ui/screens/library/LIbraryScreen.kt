@@ -8,7 +8,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.animation.with
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -38,7 +37,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -52,11 +50,9 @@ import androidx.paging.LoadState.*
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.ImageLoader
-import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.NetworkQualityService
 import org.grakovne.lissen.domain.Book
@@ -182,7 +178,6 @@ fun LibraryScreen(
                         targetState = searchRequested,
                         label = "library_action_animation"
                     ) { isSearchRequested ->
-
                         when (isSearchRequested) {
                             true -> SearchActionComposable(
                                 onSearchDismissed = { libraryViewModel.dismissSearch() },
@@ -248,11 +243,14 @@ fun LibraryScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp)
                 ) {
                     item(key = "recent_books") {
-                        if (isPlaceholderRequired) {
-                            RecentBooksPlaceholderComposable()
-                            Spacer(modifier = Modifier.height(20.dp))
-                        } else {
-                            if (!searchRequested && showingRecentBooks.isEmpty().not()) {
+                        val showRecent = !searchRequested && showingRecentBooks.isEmpty().not()
+
+                        when {
+                            isPlaceholderRequired -> {
+                                RecentBooksPlaceholderComposable()
+                                Spacer(modifier = Modifier.height(20.dp))
+                            }
+                            showRecent -> {
                                 RecentBooksComposable(
                                     navController = navController,
                                     recentBooks = showingRecentBooks,
@@ -299,48 +297,43 @@ fun LibraryScreen(
 
                     item { Spacer(modifier = Modifier.height(8.dp)) }
 
-                    if (isPlaceholderRequired) {
-                        item {
-                            LibraryPlaceholderComposable()
+                    when {
+                        isPlaceholderRequired -> item { LibraryPlaceholderComposable() }
+                        library.itemCount == 0 -> {
+                            item {
+                                LibraryFallbackComposable(
+                                    cachingModelView,
+                                    networkQualityService
+                                )
+                            }
                         }
-                    } else {
-                        when (library.itemCount == 0) {
-                            true -> {
-                                item {
-                                    LibraryFallbackComposable(
-                                        cachingModelView,
-                                        networkQualityService
-                                    )
-                                }
+
+                        else -> items(count = library.itemCount) {
+                            val book = library[it] ?: return@items
+                            val isVisible = remember(hiddenBooks, book.id) {
+                                derivedStateOf { libraryViewModel.isVisible(book.id) }
                             }
 
-                            false -> items(count = library.itemCount, key = { "library_item_${library[it]?.id}" }) {
-                                val book = library[it] ?: return@items
-                                val isVisible = remember(hiddenBooks, book.id) {
-                                    derivedStateOf { libraryViewModel.isVisible(book.id) }
-                                }
+                            if (isVisible.value) {
+                                BookComposable(
+                                    book = book,
+                                    imageLoader = imageLoader,
+                                    navController = navController,
+                                    cachingModelView = cachingModelView,
+                                    onRemoveBook = {
+                                        if (cachingModelView.localCacheUsing()) {
+                                            libraryViewModel.hideBook(book.id)
 
-                                if (isVisible.value) {
-                                    BookComposable(
-                                        book = book,
-                                        imageLoader = imageLoader,
-                                        navController = navController,
-                                        cachingModelView = cachingModelView,
-                                        onRemoveBook = {
-                                            if (cachingModelView.localCacheUsing()) {
-                                                libraryViewModel.hideBook(book.id)
+                                            val showingBooks = (0..<library.itemCount)
+                                                .mapNotNull { index -> library[index] }
+                                                .count { book -> libraryViewModel.isVisible(book.id) }
 
-                                                val showingBooks = (0..<library.itemCount)
-                                                    .mapNotNull { index -> library[index] }
-                                                    .count { book -> libraryViewModel.isVisible(book.id) }
-
-                                                if (showingBooks == 0) {
-                                                    refreshContent(false)
-                                                }
+                                            if (showingBooks == 0) {
+                                                refreshContent(false)
                                             }
                                         }
-                                    )
-                                }
+                                    }
+                                )
                             }
                         }
                     }
