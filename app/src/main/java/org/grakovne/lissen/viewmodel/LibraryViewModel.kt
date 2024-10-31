@@ -3,6 +3,8 @@ package org.grakovne.lissen.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asFlow
+import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -16,6 +18,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
@@ -55,10 +58,11 @@ class LibraryViewModel @Inject constructor(
     private var currentPagingSource: PagingSource<Int, Book>? = null
 
     @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-    val libraryPager: Flow<PagingData<Book>> = _searchToken
-        .debounce(300)
-        .distinctUntilChanged()
-        .flatMapLatest { token ->
+    val libraryPager: Flow<PagingData<Book>> = combine(
+        _searchToken.debounce(500).distinctUntilChanged(),
+        searchRequested.asFlow().distinctUntilChanged()
+    ) { token, requested -> Pair(token, requested) }
+        .flatMapLatest { (token, requested) ->
             Pager(
                 config = PagingConfig(
                     pageSize = PAGE_SIZE,
@@ -71,7 +75,7 @@ class LibraryViewModel @Inject constructor(
                         ?.id
                         ?: return@Pager LibraryEmptyPagingSource()
 
-                    val pagingSource = when (searchRequested.value) {
+                    val pagingSource = when (requested) {
                         true -> LibrarySearchPagingSource(library, mediaChannel, token)
                         else -> LibraryDefaultPagingSource(library, mediaChannel)
                     }
@@ -153,6 +157,7 @@ class LibraryViewModel @Inject constructor(
     }
 
     companion object {
+
         private const val EMPTY_SEARCH = ""
         private const val PAGE_SIZE = 20
     }

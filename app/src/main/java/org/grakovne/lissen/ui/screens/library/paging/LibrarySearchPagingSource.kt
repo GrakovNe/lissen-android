@@ -13,10 +13,16 @@ class LibrarySearchPagingSource(
 
     override fun getRefreshKey(state: PagingState<Int, Book>) = null
 
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Book> = mediaChannel
-        .searchBooks(libraryId, searchToken)
-        .fold(
-            onSuccess = { LoadResult.Page(it, null, null) },
-            onFailure = { LoadResult.Page(emptyList(), null, null) }
-        )
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Book> {
+        if (searchToken.isBlank()) {
+            return LoadResult.Page(emptyList(), null, null)
+        }
+
+        return mediaChannel
+            .searchBooks(libraryId, searchToken)
+            .fold(
+                onSuccess = { LoadResult.Page(it, null, null) },
+                onFailure = { LoadResult.Page(emptyList(), null, null) }
+            )
+    }
 }
