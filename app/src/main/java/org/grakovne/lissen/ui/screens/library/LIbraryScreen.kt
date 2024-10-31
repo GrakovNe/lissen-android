@@ -8,14 +8,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.ExperimentalMaterialApi
@@ -250,6 +243,7 @@ fun LibraryScreen(
                                 RecentBooksPlaceholderComposable()
                                 Spacer(modifier = Modifier.height(20.dp))
                             }
+
                             showRecent -> {
                                 RecentBooksComposable(
                                     navController = navController,
@@ -278,17 +272,18 @@ fun LibraryScreen(
                                 },
                                 label = "library_header_fade"
                             ) {
-                                if (it != stringResource(R.string.library_screen_library_title)) {
-                                    Text(
+                                when {
+                                    it == stringResource(R.string.library_screen_library_title) ->
+                                        Spacer(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .height(titleHeightDp)
+                                        )
+
+                                    else -> Text(
                                         style = titleTextStyle,
                                         text = stringResource(R.string.library_screen_library_title),
                                         modifier = Modifier.fillMaxWidth()
-                                    )
-                                } else {
-                                    Spacer(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(titleHeightDp)
                                     )
                                 }
                             }
