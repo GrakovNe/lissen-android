@@ -28,6 +28,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -43,6 +44,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.android.awaitFrame
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.viewmodel.PlayerViewModel
@@ -89,6 +92,7 @@ fun PlayingQueueComposable(
     }
 
     LaunchedEffect(currentTrackIndex) {
+        awaitFrame()
         scrollPlayingQueue(
             currentTrackIndex = currentTrackIndex,
             listState = listState,
@@ -96,6 +100,7 @@ fun PlayingQueueComposable(
             animate = true,
             playingQueueExpanded = playingQueueExpanded
         )
+
     }
 
     Column(
@@ -188,7 +193,7 @@ private suspend fun scrollPlayingQueue(
     animate: Boolean,
     playingQueueExpanded: Boolean
 ) {
-    if (!playbackReady || playingQueueExpanded) {
+    if (playingQueueExpanded) {
         return
     }
 
@@ -197,7 +202,7 @@ private suspend fun scrollPlayingQueue(
         false -> 0
     }
 
-    when (animate) {
+    when (animate && playbackReady) {
         true -> listState.animateScrollToItem(targetIndex)
         false -> listState.scrollToItem(targetIndex)
     }
