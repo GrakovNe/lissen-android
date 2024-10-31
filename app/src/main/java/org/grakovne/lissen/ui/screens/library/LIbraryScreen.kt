@@ -140,12 +140,6 @@ fun LibraryScreen(
         libraryViewModel.refreshLibrary()
     }
 
-    LaunchedEffect(searchRequested) {
-        if (!searchRequested) {
-            libraryListState.scrollToItem(0)
-        }
-    }
-
     RequestNotificationPermissions()
 
     val navBarTitle by remember {
