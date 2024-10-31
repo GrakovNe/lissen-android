@@ -26,6 +26,7 @@ import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.screens.library.paging.LibraryDefaultPagingSource
+import org.grakovne.lissen.ui.screens.library.paging.LibraryEmptyPagingSource
 import org.grakovne.lissen.ui.screens.library.paging.LibrarySearchPagingSource
 import javax.inject.Inject
 
@@ -62,9 +63,14 @@ class LibraryViewModel @Inject constructor(
                     prefetchDistance = PAGE_SIZE
                 ),
                 pagingSourceFactory = {
+                    val library = preferences
+                        .getPreferredLibrary()
+                        ?.id
+                        ?: return@Pager LibraryEmptyPagingSource()
+
                     when (searchRequested.value) {
-                        true -> LibrarySearchPagingSource(preferences, mediaChannel, token)
-                        else -> LibraryDefaultPagingSource(preferences, mediaChannel)
+                        true -> LibrarySearchPagingSource(library, mediaChannel, token)
+                        else -> LibraryDefaultPagingSource(library, mediaChannel)
                     }
                 }
             ).flow

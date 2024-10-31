@@ -148,13 +148,13 @@ fun LibraryScreen(
         libraryViewModel.refreshLibrary()
     }
 
-//    LaunchedEffect(searchRequested) {
-//        if (searchRequested) {
-//            libraryListState.animateScrollToItem(2)
-//        } else {
-//            libraryListState.animateScrollToItem(0)
-//        }
-//    }
+    LaunchedEffect(searchRequested) {
+        if (searchRequested) {
+            libraryListState.animateScrollToItem(3)
+        } else {
+            libraryListState.animateScrollToItem(0)
+        }
+    }
 
     RequestNotificationPermissions()
 
@@ -250,7 +250,7 @@ fun LibraryScreen(
                             RecentBooksPlaceholderComposable()
                             Spacer(modifier = Modifier.height(20.dp))
                         } else {
-                            if (showingRecentBooks.isEmpty().not()) {
+                            if (!searchRequested && showingRecentBooks.isEmpty().not()) {
                                 RecentBooksComposable(
                                     navController = navController,
                                     recentBooks = showingRecentBooks,
@@ -263,7 +263,7 @@ fun LibraryScreen(
                     }
 
                     item(key = "library_title") {
-                        if (filterRecentBooks(recentBooks, libraryViewModel).isNotEmpty()) {
+                        if (!searchRequested && filterRecentBooks(recentBooks, libraryViewModel).isNotEmpty()) {
                             AnimatedContent(
                                 targetState = navBarTitle,
                                 transitionSpec = {
