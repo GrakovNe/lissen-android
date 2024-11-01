@@ -62,7 +62,7 @@ class LissenMediaProvider @Inject constructor(
 
         return when (cacheConfiguration.localCacheUsing()) {
             true -> localCacheRepository.provideBookCover(bookId)
-            false -> providePreferredChannel().provideBookCover(bookId)
+            false -> providePreferredChannel().provideBookCoverUri(bookId)
         }
     }
 

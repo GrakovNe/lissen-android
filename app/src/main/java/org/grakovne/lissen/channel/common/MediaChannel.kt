@@ -20,7 +20,7 @@ interface MediaChannel {
         fileId: String
     ): Uri
 
-    fun provideBookCover(
+    fun provideBookCoverUri(
         bookId: String
     ): Uri
 

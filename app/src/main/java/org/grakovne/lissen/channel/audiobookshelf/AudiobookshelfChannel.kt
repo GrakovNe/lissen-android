@@ -59,7 +59,7 @@ class AudiobookshelfChannel @Inject constructor(
         .appendQueryParameter("token", preferences.getToken())
         .build()
 
-    override fun provideBookCover(
+    override fun provideBookCoverUri(
         bookId: String
     ): Uri = Uri.parse(preferences.getHost())
         .buildUpon()
