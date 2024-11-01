@@ -87,7 +87,11 @@ fun SettingsScreen(
                 ) {
                     ServerComposable(navController, viewModel)
                     GeneralSettingsComposable(viewModel)
-                    AdvancedSettingsItemComposable("Custom Headers", "Define headers for each app request") {}
+                    AdvancedSettingsItemComposable(
+                        title = "Custom Headers",
+                        description = "Define headers for each app request",
+                        onclick = { navController.showCustomHeadersSettings() }
+                    )
                 }
                 AdditionalComposable()
             }

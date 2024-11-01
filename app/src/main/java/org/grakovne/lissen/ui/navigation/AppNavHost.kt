@@ -19,6 +19,7 @@ import org.grakovne.lissen.ui.screens.library.LibraryScreen
 import org.grakovne.lissen.ui.screens.login.LoginScreen
 import org.grakovne.lissen.ui.screens.player.PlayerScreen
 import org.grakovne.lissen.ui.screens.settings.SettingsScreen
+import org.grakovne.lissen.ui.screens.settings.advanced.CustomHeadersSettingsScreen
 
 @Composable
 fun AppNavHost(
@@ -34,7 +35,7 @@ fun AppNavHost(
         )
     }
     val startDestination = when {
-        hasCredentials -> "settings_screen"
+        hasCredentials -> "settings_screen/custom_headers"
         else -> "login_screen"
     }
 
@@ -80,6 +81,10 @@ fun AppNavHost(
                     onBack = { navController.popBackStack() },
                     navController = navigationService
                 )
+            }
+
+            composable("settings_screen/custom_headers") {
+                CustomHeadersSettingsScreen()
             }
         }
     }

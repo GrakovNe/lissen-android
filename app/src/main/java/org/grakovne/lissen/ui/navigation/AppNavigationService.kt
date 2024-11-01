@@ -28,6 +28,10 @@ class AppNavigationService(
         host.navigate("settings_screen")
     }
 
+    fun showCustomHeadersSettings() {
+        host.navigate("settings_screen/custom_headers")
+    }
+
     fun showLogin() {
         host.navigate("login_screen") {
             popUpTo(0) {
