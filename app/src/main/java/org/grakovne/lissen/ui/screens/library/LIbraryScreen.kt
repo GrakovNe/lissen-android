@@ -84,14 +84,15 @@ fun LibraryScreen(
 
     val searchLibrary: LazyPagingItems<Book> = libraryViewModel.searchPager.collectAsLazyPagingItems()
     val defaultLibrary: LazyPagingItems<Book> = libraryViewModel.libraryPager.collectAsLazyPagingItems()
-    val library = if (searchRequested) searchLibrary else defaultLibrary
+    val library = remember(searchRequested) {
+        if (searchRequested) searchLibrary else defaultLibrary
+    }
 
     val hiddenBooks by libraryViewModel.hiddenBooks.collectAsState()
 
     val recentBookRefreshing by libraryViewModel.recentBookUpdating.observeAsState(false)
 
     var pullRefreshing by remember { mutableStateOf(false) }
-
 
     val showingRecentBooks by remember(recentBooks, hiddenBooks) {
         derivedStateOf { filterRecentBooks(recentBooks, libraryViewModel) }
@@ -148,6 +149,7 @@ fun LibraryScreen(
         libraryViewModel.refreshRecentListening()
         libraryViewModel.refreshLibrary()
     }
+
 
     val navBarTitle by remember {
         derivedStateOf {
