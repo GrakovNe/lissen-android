@@ -84,8 +84,12 @@ fun LibraryScreen(
 
     val searchLibrary: LazyPagingItems<Book> = libraryViewModel.searchPager.collectAsLazyPagingItems()
     val defaultLibrary: LazyPagingItems<Book> = libraryViewModel.libraryPager.collectAsLazyPagingItems()
+
     val library = remember(searchRequested) {
-        if (searchRequested) searchLibrary else defaultLibrary
+        when (searchRequested) {
+            true -> searchLibrary
+            false -> defaultLibrary
+        }
     }
 
     val hiddenBooks by libraryViewModel.hiddenBooks.collectAsState()
