@@ -55,16 +55,17 @@ class LibraryViewModel @Inject constructor(
     val hiddenBooks: StateFlow<List<String>> = _hiddenBooks
 
     private var currentPagingSource: PagingSource<Int, Book>? = null
-
     private val _libraryPager = MutableStateFlow(createPager())
-    val libraryPager: Flow<PagingData<Book>> = _libraryPager.flatMapLatest { it.flow.cachedIn(viewModelScope) }
+
+    val libraryPager: Flow<PagingData<Book>> = _libraryPager
+        .flatMapLatest { it.flow.cachedIn(viewModelScope) }
 
     init {
         viewModelScope
             .launch {
                 val combinedFlow = combine(
                     _searchRequested.asFlow(),
-                    _searchToken.debounce(300)
+                    _searchToken
                 ) { searchRequested, searchToken -> searchRequested to searchToken }
 
                 combinedFlow

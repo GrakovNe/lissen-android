@@ -39,7 +39,7 @@ android {
         }
         debug {
             matchingFallbacks.add("release")
-            isDebuggable = true
+            isDebuggable = false
         }
     }
 

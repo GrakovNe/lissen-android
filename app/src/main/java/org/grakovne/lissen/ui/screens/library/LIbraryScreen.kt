@@ -115,8 +115,11 @@ fun LibraryScreen(
 
     val isPlaceholderRequired by remember {
         derivedStateOf {
-            val loading = pullRefreshing || recentBookRefreshing || library.loadState.refresh is Loading
-            loading && !searchRequested
+            if (searchRequested) {
+                return@derivedStateOf false
+            }
+
+            pullRefreshing || recentBookRefreshing || library.loadState.refresh is Loading
         }
     }
 
