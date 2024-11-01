@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asFlow
-import androidx.lifecycle.distinctUntilChanged
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -30,11 +29,11 @@ import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.screens.library.paging.LibraryDefaultPagingSource
-import org.grakovne.lissen.ui.screens.library.paging.LibraryEmptyPagingSource
 import org.grakovne.lissen.ui.screens.library.paging.LibrarySearchPagingSource
 import javax.inject.Inject
 
 @HiltViewModel
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class LibraryViewModel @Inject constructor(
     private val mediaChannel: LissenMediaProvider,
     private val preferences: LissenSharedPreferences,
@@ -57,38 +56,41 @@ class LibraryViewModel @Inject constructor(
 
     private var currentPagingSource: PagingSource<Int, Book>? = null
 
-    @OptIn(FlowPreview::class, ExperimentalCoroutinesApi::class)
-    val libraryPager: Flow<PagingData<Book>> = combine(
-        _searchToken.debounce(500).distinctUntilChanged(),
-        _searchRequested.asFlow().distinctUntilChanged()
-    ) { token, requested -> Pair(token, requested) }
-        .flatMapLatest { (token, requested) ->
-            Pager(
-                config = PagingConfig(
-                    pageSize = PAGE_SIZE,
-                    initialLoadSize = PAGE_SIZE,
-                    prefetchDistance = PAGE_SIZE
-                ),
-                pagingSourceFactory = {
-                    val library = preferences
-                        .getPreferredLibrary()
-                        ?.id
-                        ?: return@Pager LibraryEmptyPagingSource()
+    private val _libraryPager = MutableStateFlow(createPager())
+    val libraryPager: Flow<PagingData<Book>> = _libraryPager.flatMapLatest { it.flow.cachedIn(viewModelScope) }
 
-                    val pagingSource = when (requested) {
-                        true -> LibrarySearchPagingSource(library, mediaChannel, token)
-                        else -> LibraryDefaultPagingSource(library, mediaChannel)
+    init {
+        viewModelScope
+            .launch {
+                val combinedFlow = combine(
+                    _searchRequested.asFlow(),
+                    _searchToken.debounce(300)
+                ) { searchRequested, searchToken -> searchRequested to searchToken }
+
+                combinedFlow
+                    .distinctUntilChanged()
+                    .collect { (searchRequested, searchToken) ->
+                        _libraryPager.value = createPager(searchRequested, searchToken)
                     }
+            }
+    }
 
-                    if (currentPagingSource != pagingSource) {
-                        currentPagingSource = pagingSource
-                    }
-
-                    pagingSource
+    private fun createPager(searchRequested: Boolean = false, searchToken: String = EMPTY_SEARCH): Pager<Int, Book> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = PAGE_SIZE,
+                initialLoadSize = PAGE_SIZE,
+                prefetchDistance = PAGE_SIZE
+            ),
+            pagingSourceFactory = {
+                when (searchRequested) {
+                    true -> LibrarySearchPagingSource(preferences, mediaChannel, searchToken).also { currentPagingSource = it }
+                    else -> LibraryDefaultPagingSource(preferences, mediaChannel).also { currentPagingSource = it }
                 }
-            ).flow
-        }
-        .cachedIn(viewModelScope)
+            }
+        )
+    }
+
 
     fun isVisible(bookId: String): Boolean {
         return when (localCacheConfiguration.localCacheUsing()) {
@@ -109,6 +111,7 @@ class LibraryViewModel @Inject constructor(
     fun updateSearch(token: String) {
         viewModelScope.launch {
             _searchToken.emit(token)
+            currentPagingSource?.invalidate()
         }
     }
 
