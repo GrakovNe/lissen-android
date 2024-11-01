@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -71,8 +72,8 @@ fun CustomHeadersSettingsScreen() {
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 12.dp, bottom = 12.dp, start = 16.dp, end = (16).dp),
-                    color = colorScheme.primary.copy(alpha = 0.05f),
+                        .padding(top = 12.dp, bottom = 0.dp, start = 16.dp, end = 16.dp),
+                    color = colorScheme.surfaceDim.copy(alpha = 0.1f),
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Row(
@@ -80,9 +81,9 @@ fun CustomHeadersSettingsScreen() {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Info,
+                            imageVector = Icons.Outlined.Info,
                             contentDescription = null,
-                            tint = colorScheme.primary
+                            tint = colorScheme.onBackground
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
@@ -134,7 +135,7 @@ fun CustomHeadersSettingsScreen() {
                         ) {
                             Text(
                                 fontSize = 24.sp,
-                                text = "+",
+                                text = "      +      ",
                                 style = typography.titleLarge,
                                 textAlign = TextAlign.Center
                             )
