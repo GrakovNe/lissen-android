@@ -29,6 +29,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.settings.composable.AdditionalComposable
+import org.grakovne.lissen.ui.screens.settings.composable.AdvancedSettingsItemComposable
 import org.grakovne.lissen.ui.screens.settings.composable.GeneralSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.ServerComposable
 import org.grakovne.lissen.viewmodel.SettingsViewModel
@@ -86,6 +87,7 @@ fun SettingsScreen(
                 ) {
                     ServerComposable(navController, viewModel)
                     GeneralSettingsComposable(viewModel)
+                    AdvancedSettingsItemComposable("Custom Headers", "Define headers for each app request") {}
                 }
                 AdditionalComposable()
             }
