@@ -170,7 +170,11 @@ fun LibraryScreen(
                 actions = {
                     AnimatedContent(
                         targetState = searchRequested,
-                        label = "library_action_animation"
+                        label = "library_action_animation",
+                        transitionSpec = {
+                            fadeIn(animationSpec = keyframes { durationMillis = 100 }) togetherWith
+                                fadeOut(animationSpec = keyframes { durationMillis = 100 })
+                        }
                     ) { isSearchRequested ->
                         when (isSearchRequested) {
                             true -> SearchActionComposable(
@@ -192,8 +196,8 @@ fun LibraryScreen(
                     AnimatedContent(
                         targetState = searchRequested,
                         transitionSpec = {
-                            fadeIn(animationSpec = keyframes { durationMillis = 300 }) togetherWith
-                                fadeOut(animationSpec = keyframes { durationMillis = 300 })
+                            fadeIn(animationSpec = keyframes { durationMillis = 100 }) togetherWith
+                                fadeOut(animationSpec = keyframes { durationMillis = 100 })
                         },
                         label = "library_title_animation"
                     ) { isSearchRequested ->
