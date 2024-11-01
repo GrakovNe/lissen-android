@@ -36,6 +36,11 @@ fun SearchActionComposable(
     val focusRequester = remember { FocusRequester() }
     val searchText = remember { mutableStateOf("") }
 
+    fun updateSearchText(text: String) {
+        searchText.value = text
+        onSearchRequested(searchText.value)
+    }
+
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
     }
@@ -48,6 +53,7 @@ fun SearchActionComposable(
             .height(40.dp)
     ) {
         IconButton(
+            modifier = Modifier.height(36.dp),
             onClick = { onSearchDismissed() }
         ) {
             Icon(
@@ -60,16 +66,13 @@ fun SearchActionComposable(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .weight(1f)
+                .height(36.dp)
                 .background(colorScheme.surfaceContainer, RoundedCornerShape(36.dp))
                 .padding(start = 16.dp, end = 4.dp)
         ) {
             BasicTextField(
                 value = searchText.value,
-                onValueChange = {
-                    searchText.value = it
-
-                    onSearchRequested(searchText.value)
-                },
+                onValueChange = { updateSearchText(it) },
                 modifier = Modifier
                     .weight(1f)
                     .focusRequester(focusRequester),
@@ -89,13 +92,17 @@ fun SearchActionComposable(
                     innerTextField()
                 }
             )
-            IconButton(
-                onClick = { searchText.value = "" }
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Clear,
-                    contentDescription = "Clear"
-                )
+
+            if (searchText.value.isNotEmpty()) {
+                IconButton(
+                    modifier = Modifier.height(36.dp),
+                    onClick = { updateSearchText("") }
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Clear,
+                        contentDescription = "Clear"
+                    )
+                }
             }
         }
     }
