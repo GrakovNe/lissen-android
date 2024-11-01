@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -31,7 +32,7 @@ import org.grakovne.lissen.ui.screens.library.paging.LibrarySearchPagingSource
 import javax.inject.Inject
 
 @HiltViewModel
-@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class LibraryViewModel @Inject constructor(
     private val mediaChannel: LissenMediaProvider,
     private val preferences: LissenSharedPreferences,
@@ -55,8 +56,9 @@ class LibraryViewModel @Inject constructor(
     private var defaultPagingSource: PagingSource<Int, Book>? = null
     private var searchPagingSource: PagingSource<Int, Book>? = null
 
+    @OptIn(FlowPreview::class)
     val searchPager: Flow<PagingData<Book>> = combine(
-        _searchToken,
+        _searchToken.debounce(100),
         searchRequested.asFlow()
     ) { token, requested ->
         Pair(token, requested)
@@ -68,11 +70,14 @@ class LibraryViewModel @Inject constructor(
                 prefetchDistance = PAGE_SIZE
             ),
             pagingSourceFactory = {
-                LibrarySearchPagingSource(
+                val source = LibrarySearchPagingSource(
                     preferences,
                     mediaChannel,
                     token
-                ).also { searchPagingSource = it }
+                )
+
+                searchPagingSource = source
+                source
             }
         ).flow
     }.cachedIn(viewModelScope)
@@ -85,7 +90,10 @@ class LibraryViewModel @Inject constructor(
                 prefetchDistance = PAGE_SIZE
             ),
             pagingSourceFactory = {
-                LibraryDefaultPagingSource(preferences, mediaChannel).also { defaultPagingSource = it }
+                val source = LibraryDefaultPagingSource(preferences, mediaChannel)
+                defaultPagingSource = source
+
+                source
             }
         ).flow.cachedIn(viewModelScope)
     }
@@ -121,8 +129,10 @@ class LibraryViewModel @Inject constructor(
     fun refreshLibrary() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                searchPagingSource?.invalidate()
-                defaultPagingSource?.invalidate()
+                when (searchRequested.value) {
+                    true -> searchPagingSource?.invalidate()
+                    else -> defaultPagingSource?.invalidate()
+                }
             }
         }
     }
