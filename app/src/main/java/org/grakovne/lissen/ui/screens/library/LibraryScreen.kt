@@ -346,11 +346,13 @@ fun LibraryScreen(
                     }
                 }
 
-                PullRefreshIndicator(
-                    refreshing = pullRefreshing,
-                    state = pullRefreshState,
-                    modifier = Modifier.align(Alignment.TopCenter)
-                )
+                if (!searchRequested) {
+                    PullRefreshIndicator(
+                        refreshing = pullRefreshing,
+                        state = pullRefreshState,
+                        modifier = Modifier.align(Alignment.TopCenter)
+                    )
+                }
             }
         }
     )

@@ -101,14 +101,12 @@ class LissenMediaProvider @Inject constructor(
 
         return when (cacheConfiguration.localCacheUsing()) {
             true -> localCacheRepository.searchBooks(query)
-            false -> {
-                providePreferredChannel()
-                    .searchBooks(
-                        libraryId = libraryId,
-                        query = query,
-                        limit = limit
-                    )
-            }
+            false -> providePreferredChannel()
+                .searchBooks(
+                    libraryId = libraryId,
+                    query = query,
+                    limit = limit
+                )
         }
     }
 
