@@ -62,9 +62,8 @@ class LibraryViewModel @Inject constructor(
         prefetchDistance = PAGE_SIZE
     )
 
-    @OptIn(FlowPreview::class)
     val searchPager: Flow<PagingData<Book>> = combine(
-        _searchToken.debounce(100),
+        _searchToken,
         searchRequested.asFlow()
     ) { token, requested ->
         Pair(token, requested)

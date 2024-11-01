@@ -39,8 +39,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.paging.LoadState
 import androidx.paging.LoadState.*
-import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.ImageLoader
 import kotlinx.coroutines.async
@@ -48,7 +48,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.NetworkQualityService
-import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.ui.navigation.AppNavigationService
@@ -75,28 +74,21 @@ fun LibraryScreen(
     imageLoader: ImageLoader,
     networkQualityService: NetworkQualityService
 ) {
-    val coroutineScope = rememberCoroutineScope()
     RequestNotificationPermissions()
+
+    val coroutineScope = rememberCoroutineScope()
 
     val recentBooks: List<RecentBook> by libraryViewModel.recentBooks.observeAsState(emptyList())
 
+    val hiddenBooks by libraryViewModel.hiddenBooks.collectAsState()
+    var pullRefreshing by remember { mutableStateOf(false) }
+    val recentBookRefreshing by libraryViewModel.recentBookUpdating.observeAsState(false)
     val searchRequested by libraryViewModel.searchRequested.observeAsState(false)
 
-    val searchLibrary: LazyPagingItems<Book> = libraryViewModel.searchPager.collectAsLazyPagingItems()
-    val defaultLibrary: LazyPagingItems<Book> = libraryViewModel.libraryPager.collectAsLazyPagingItems()
-
-    val library = remember(searchRequested) {
-        when (searchRequested) {
-            true -> searchLibrary
-            false -> defaultLibrary
-        }
+    val library = when (searchRequested) {
+        true -> libraryViewModel.searchPager.collectAsLazyPagingItems()
+        false -> libraryViewModel.libraryPager.collectAsLazyPagingItems()
     }
-
-    val hiddenBooks by libraryViewModel.hiddenBooks.collectAsState()
-
-    val recentBookRefreshing by libraryViewModel.recentBookUpdating.observeAsState(false)
-
-    var pullRefreshing by remember { mutableStateOf(false) }
 
     val showingRecentBooks by remember(recentBooks, hiddenBooks) {
         derivedStateOf { filterRecentBooks(recentBooks, libraryViewModel) }
@@ -152,6 +144,10 @@ fun LibraryScreen(
     LaunchedEffect(Unit) {
         libraryViewModel.refreshRecentListening()
         libraryViewModel.refreshLibrary()
+    }
+
+    LaunchedEffect(searchRequested) {
+        libraryListState.scrollToItem(0)
     }
 
     val navBarTitle by remember {
@@ -303,8 +299,9 @@ fun LibraryScreen(
                         library.itemCount == 0 -> {
                             item {
                                 LibraryFallbackComposable(
-                                    cachingModelView,
-                                    networkQualityService
+                                    searchRequested = searchRequested,
+                                    cachingModelView = cachingModelView,
+                                    networkQualityService = networkQualityService
                                 )
                             }
                         }

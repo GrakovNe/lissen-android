@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +31,7 @@ import org.grakovne.lissen.viewmodel.CachingModelView
 
 @Composable
 fun LibraryFallbackComposable(
+    searchRequested: Boolean,
     cachingModelView: CachingModelView,
     networkQualityService: NetworkQualityService
 ) {
@@ -50,39 +52,45 @@ fun LibraryFallbackComposable(
             val isLocalCache = cachingModelView.localCacheUsing()
 
             val text = when {
+                searchRequested -> null
                 isLocalCache -> stringResource(R.string.the_offline_library_is_empty)
                 hasNetwork.not() -> stringResource(R.string.no_internet_connection)
                 else -> stringResource(R.string.the_library_is_empty)
             }
 
             val icon = when {
+                searchRequested -> null
                 isLocalCache -> Icons.AutoMirrored.Filled.LibraryBooks
                 hasNetwork.not() -> Icons.Filled.WifiOff
                 else -> Icons.AutoMirrored.Filled.LibraryBooks
             }
 
-            Box(
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surfaceContainer),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = Color.White,
-                    modifier = Modifier.size(64.dp)
+            icon?.let {
+                Box(
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surfaceContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = it,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(64.dp)
+                    )
+                }
+            }
+
+            text?.let {
+                Text(
+                    textAlign = TextAlign.Center,
+                    text = it,
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.padding(top = 36.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(36.dp))
-
-            Text(
-                textAlign = TextAlign.Center,
-                text = text,
-                style = MaterialTheme.typography.headlineMedium
-            )
         }
     }
 }
