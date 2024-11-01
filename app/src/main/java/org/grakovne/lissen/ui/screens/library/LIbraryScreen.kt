@@ -76,6 +76,7 @@ fun LibraryScreen(
     networkQualityService: NetworkQualityService
 ) {
     val coroutineScope = rememberCoroutineScope()
+    RequestNotificationPermissions()
 
     val recentBooks: List<RecentBook> by libraryViewModel.recentBooks.observeAsState(emptyList())
     val library: LazyPagingItems<Book> = libraryViewModel.libraryPager.collectAsLazyPagingItems()
@@ -142,8 +143,6 @@ fun LibraryScreen(
         libraryViewModel.refreshRecentListening()
         libraryViewModel.refreshLibrary()
     }
-
-    RequestNotificationPermissions()
 
     val navBarTitle by remember {
         derivedStateOf {
