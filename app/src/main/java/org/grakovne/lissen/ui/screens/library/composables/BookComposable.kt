@@ -162,15 +162,22 @@ fun BookComposable(
                         showDeleteFromCacheDialog = false
                     }
                 ) {
-                    Text(stringResource(R.string.dialog_confirm_remove))
+                    Text(
+                        text = stringResource(R.string.dialog_confirm_remove),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteFromCacheDialog = false }) {
-                    Text(stringResource(R.string.dialog_dismiss_cancel))
+                    Text(
+                        text = stringResource(R.string.dialog_dismiss_cancel),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
                 }
             },
-            containerColor = MaterialTheme.colorScheme.background
+            containerColor = MaterialTheme.colorScheme.surface,
+            shape = MaterialTheme.shapes.medium
         )
     }
 }
