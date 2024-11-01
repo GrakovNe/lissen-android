@@ -18,7 +18,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -54,8 +53,27 @@ class LibraryViewModel @Inject constructor(
     val hiddenBooks: StateFlow<List<String>> = _hiddenBooks
 
     private var currentPagingSource: PagingSource<Int, Book>? = null
-    private val _searchPager = MutableStateFlow(createPager())
-    val searchPager: Flow<PagingData<Book>> = _searchPager.flatMapLatest { it.flow.cachedIn(viewModelScope) }
+
+    val searchPager: Flow<PagingData<Book>> = combine(
+        _searchToken,
+        searchRequested.asFlow()) { token, requested ->
+        Pair(token, requested)
+    }.flatMapLatest { (token, _) ->
+        Pager(
+            config = PagingConfig(
+                pageSize = PAGE_SIZE,
+                initialLoadSize = PAGE_SIZE,
+                prefetchDistance = PAGE_SIZE
+            ),
+            pagingSourceFactory = {
+                LibrarySearchPagingSource(
+                    preferences,
+                    mediaChannel,
+                    token
+                ).also { currentPagingSource = it }
+            }
+        ).flow
+    }.cachedIn(viewModelScope)
 
     val libraryPager: Flow<PagingData<Book>> by lazy {
         Pager(
@@ -69,40 +87,6 @@ class LibraryViewModel @Inject constructor(
             }
         ).flow.cachedIn(viewModelScope)
     }
-
-
-    init {
-        viewModelScope
-            .launch {
-                val combinedFlow = combine(
-                    _searchRequested.asFlow(),
-                    _searchToken
-                ) { searchRequested, searchToken -> searchRequested to searchToken }
-
-                combinedFlow
-                    .distinctUntilChanged()
-                    .collect { (searchRequested, searchToken) ->
-                        _searchPager.value = createPager(searchRequested, searchToken)
-                    }
-            }
-    }
-
-    private fun createPager(searchRequested: Boolean = false, searchToken: String = EMPTY_SEARCH): Pager<Int, Book> {
-        return Pager(
-            config = PagingConfig(
-                pageSize = PAGE_SIZE,
-                initialLoadSize = PAGE_SIZE,
-                prefetchDistance = PAGE_SIZE
-            ),
-            pagingSourceFactory = {
-                when (searchRequested) {
-                    true -> LibrarySearchPagingSource(preferences, mediaChannel, searchToken).also { currentPagingSource = it }
-                    else -> LibraryDefaultPagingSource(preferences, mediaChannel).also { currentPagingSource = it }
-                }
-            }
-        )
-    }
-
 
     fun isVisible(bookId: String): Boolean {
         return when (localCacheConfiguration.localCacheUsing()) {
@@ -121,10 +105,7 @@ class LibraryViewModel @Inject constructor(
     }
 
     fun updateSearch(token: String) {
-        viewModelScope.launch {
-            _searchToken.emit(token)
-            currentPagingSource?.invalidate()
-        }
+        viewModelScope.launch { _searchToken.emit(token) }
     }
 
     fun refreshRecentListening() {

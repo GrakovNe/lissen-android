@@ -79,18 +79,19 @@ fun LibraryScreen(
     RequestNotificationPermissions()
 
     val recentBooks: List<RecentBook> by libraryViewModel.recentBooks.observeAsState(emptyList())
-    val search: LazyPagingItems<Book> = libraryViewModel.searchPager.collectAsLazyPagingItems()
-    val libraryR: LazyPagingItems<Book> = libraryViewModel.libraryPager.collectAsLazyPagingItems()
 
+    val searchRequested by libraryViewModel.searchRequested.observeAsState(false)
+
+    val searchLibrary: LazyPagingItems<Book> = libraryViewModel.searchPager.collectAsLazyPagingItems()
+    val defaultLibrary: LazyPagingItems<Book> = libraryViewModel.libraryPager.collectAsLazyPagingItems()
+    val library = if (searchRequested) searchLibrary else defaultLibrary
 
     val hiddenBooks by libraryViewModel.hiddenBooks.collectAsState()
 
     val recentBookRefreshing by libraryViewModel.recentBookUpdating.observeAsState(false)
 
     var pullRefreshing by remember { mutableStateOf(false) }
-    val searchRequested by libraryViewModel.searchRequested.observeAsState(false)
 
-    val library = if (searchRequested) search else libraryR
 
     val showingRecentBooks by remember(recentBooks, hiddenBooks) {
         derivedStateOf { filterRecentBooks(recentBooks, libraryViewModel) }
