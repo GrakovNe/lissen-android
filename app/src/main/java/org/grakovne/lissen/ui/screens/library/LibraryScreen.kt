@@ -2,13 +2,19 @@ package org.grakovne.lissen.ui.screens.library
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.ExperimentalMaterialApi
@@ -39,7 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.paging.LoadState.*
+import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.ImageLoader
 import kotlinx.coroutines.async
@@ -63,7 +69,7 @@ import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun LibraryScreen(
     navController: AppNavigationService,
@@ -121,7 +127,7 @@ fun LibraryScreen(
                 return@derivedStateOf false
             }
 
-            pullRefreshing || recentBookRefreshing || library.loadState.refresh is Loading
+            pullRefreshing || recentBookRefreshing || library.loadState.refresh is LoadState.Loading
         }
     }
 
@@ -172,8 +178,8 @@ fun LibraryScreen(
                         targetState = searchRequested,
                         label = "library_action_animation",
                         transitionSpec = {
-                            fadeIn(animationSpec = keyframes { durationMillis = 100 }) togetherWith
-                                fadeOut(animationSpec = keyframes { durationMillis = 100 })
+                            fadeIn(animationSpec = keyframes { durationMillis = 150 }) togetherWith
+                                fadeOut(animationSpec = keyframes { durationMillis = 150 })
                         }
                     ) { isSearchRequested ->
                         when (isSearchRequested) {
@@ -196,8 +202,8 @@ fun LibraryScreen(
                     AnimatedContent(
                         targetState = searchRequested,
                         transitionSpec = {
-                            fadeIn(animationSpec = keyframes { durationMillis = 100 }) togetherWith
-                                fadeOut(animationSpec = keyframes { durationMillis = 100 })
+                            fadeIn(animationSpec = keyframes { durationMillis = 150 }) togetherWith
+                                fadeOut(animationSpec = keyframes { durationMillis = 150 })
                         },
                         label = "library_title_animation"
                     ) { isSearchRequested ->

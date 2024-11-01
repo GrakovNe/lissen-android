@@ -1,6 +1,7 @@
 package org.grakovne.lissen.ui.screens.login
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import android.widget.Toast.LENGTH_SHORT
 import androidx.compose.foundation.layout.Box
@@ -15,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -53,7 +55,9 @@ import org.grakovne.lissen.domain.error.LoginError.MissingCredentialsPassword
 import org.grakovne.lissen.domain.error.LoginError.MissingCredentialsUsername
 import org.grakovne.lissen.domain.error.LoginError.NetworkError
 import org.grakovne.lissen.domain.error.LoginError.Unauthorized
+import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.ui.navigation.AppNavigationService
+import org.grakovne.lissen.ui.theme.FoxOrange
 import org.grakovne.lissen.viewmodel.LoginViewModel
 import org.grakovne.lissen.viewmodel.LoginViewModel.LoginState
 
@@ -74,19 +78,19 @@ fun LoginScreen(
     val context = LocalContext.current
 
     LaunchedEffect(loginState) {
-        when (loginState) {
-            is LoginState.Success -> {
-                navController.showLibrary()
-            }
-
-            is LoginState.Error ->
-                loginError
-                    ?.let { Toast.makeText(context, it.makeText(context), LENGTH_SHORT).show() }
-
-            is LoginState.Idle -> {}
-            is LoginState.Loading -> {}
+        if (loginState is LoginState.Loading) {
+            return@LaunchedEffect
         }
 
+        withMinimumTime(500) {
+            Log.d(TAG, "Tried to log in with result $loginState and possible error is $loginError")
+        }
+
+        when (loginState) {
+            is LoginState.Success -> navController.showLibrary()
+            is LoginState.Error -> loginError?.let { Toast.makeText(context, it.makeText(context), LENGTH_SHORT).show() }
+            else -> {}
+        }
         viewModel.readyToLogin()
     }
 
@@ -179,6 +183,14 @@ fun LoginScreen(
                     ) {
                         Text(text = stringResource(R.string.login_screen_connect_button_text))
                     }
+
+                    CircularProgressIndicator(
+                        color = FoxOrange,
+                        strokeWidth = 4.dp,
+                        modifier = Modifier
+                            .padding(vertical = 16.dp)
+                            .alpha(if (loginState !is LoginState.Idle) 1f else 0f)
+                    )
                 }
 
                 Text(
@@ -200,6 +212,8 @@ fun LoginScreen(
         }
     )
 }
+
+private const val TAG: String = "LoginScreen"
 
 private fun LoginError.makeText(context: Context) = when (this) {
     InternalError -> context.getString(R.string.login_error_host_is_down)
