@@ -87,8 +87,6 @@ fun LibraryScreen(
     var pullRefreshing by remember { mutableStateOf(false) }
     val searchRequested by libraryViewModel.searchRequested.observeAsState(false)
 
-    var initiallyShown by remember { mutableStateOf(false) }
-
     val showingRecentBooks by remember(recentBooks, hiddenBooks) {
         derivedStateOf { filterRecentBooks(recentBooks, libraryViewModel) }
     }
@@ -117,12 +115,8 @@ fun LibraryScreen(
 
     val isPlaceholderRequired by remember {
         derivedStateOf {
-            if (pullRefreshing || recentBookRefreshing) {
-                return@derivedStateOf true
-            }
-
-            val loading = library.loadState.refresh is Loading
-            loading && !searchRequested && !initiallyShown
+            val loading = pullRefreshing || recentBookRefreshing || library.loadState.refresh is Loading
+            loading && !searchRequested
         }
     }
 
@@ -304,7 +298,6 @@ fun LibraryScreen(
                         }
 
                         else -> items(count = library.itemCount) {
-                            initiallyShown = true
                             val book = library[it] ?: return@items
                             val isVisible = remember(hiddenBooks, book.id) {
                                 derivedStateOf { libraryViewModel.isVisible(book.id) }
