@@ -94,7 +94,8 @@ class LissenMediaProvider @Inject constructor(
 
     suspend fun searchBooks(
         libraryId: String,
-        query: String
+        query: String,
+        limit: Int
     ): ApiResult<List<Book>> {
         Log.d(TAG, "Searching books with query $query of library: $libraryId")
 
@@ -105,7 +106,7 @@ class LissenMediaProvider @Inject constructor(
                     .searchBooks(
                         libraryId = libraryId,
                         query = query,
-                        limit = LIBRARY_SEARCH_LIMIT
+                        limit = limit
                     )
             }
         }
@@ -247,7 +248,6 @@ class LissenMediaProvider @Inject constructor(
 
     companion object {
 
-        private const val LIBRARY_SEARCH_LIMIT = 20
         private const val TAG: String = "LissenMediaProvider"
     }
 }
