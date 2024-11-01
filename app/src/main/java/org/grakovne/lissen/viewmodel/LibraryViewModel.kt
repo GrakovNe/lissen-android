@@ -56,6 +56,12 @@ class LibraryViewModel @Inject constructor(
     private var defaultPagingSource: PagingSource<Int, Book>? = null
     private var searchPagingSource: PagingSource<Int, Book>? = null
 
+    private val pageConfig = PagingConfig(
+        pageSize = PAGE_SIZE,
+        initialLoadSize = PAGE_SIZE,
+        prefetchDistance = PAGE_SIZE
+    )
+
     @OptIn(FlowPreview::class)
     val searchPager: Flow<PagingData<Book>> = combine(
         _searchToken.debounce(100),
@@ -64,11 +70,7 @@ class LibraryViewModel @Inject constructor(
         Pair(token, requested)
     }.flatMapLatest { (token, _) ->
         Pager(
-            config = PagingConfig(
-                pageSize = PAGE_SIZE,
-                initialLoadSize = PAGE_SIZE,
-                prefetchDistance = PAGE_SIZE
-            ),
+            config = pageConfig,
             pagingSourceFactory = {
                 val source = LibrarySearchPagingSource(
                     preferences,
@@ -84,11 +86,7 @@ class LibraryViewModel @Inject constructor(
 
     val libraryPager: Flow<PagingData<Book>> by lazy {
         Pager(
-            config = PagingConfig(
-                pageSize = PAGE_SIZE,
-                initialLoadSize = PAGE_SIZE,
-                prefetchDistance = PAGE_SIZE
-            ),
+            config = pageConfig,
             pagingSourceFactory = {
                 val source = LibraryDefaultPagingSource(preferences, mediaChannel)
                 defaultPagingSource = source
