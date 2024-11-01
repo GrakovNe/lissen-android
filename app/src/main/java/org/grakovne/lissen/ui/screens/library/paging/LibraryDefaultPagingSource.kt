@@ -5,10 +5,8 @@ import androidx.paging.PagingState
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
-import javax.inject.Inject
-import javax.inject.Singleton
 
-class LibraryDefaultPagingSource (
+class LibraryDefaultPagingSource(
     private val preferences: LissenSharedPreferences,
     private val mediaChannel: LissenMediaProvider
 ) : PagingSource<Int, Book>() {
@@ -47,7 +45,7 @@ class LibraryDefaultPagingSource (
                     )
                 },
                 onFailure = {
-                LoadResult.Page(emptyList(), null, null)
+                    LoadResult.Page(emptyList(), null, null)
                 }
             )
     }

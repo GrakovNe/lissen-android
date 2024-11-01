@@ -150,7 +150,6 @@ fun LibraryScreen(
         libraryViewModel.refreshLibrary()
     }
 
-
     val navBarTitle by remember {
         derivedStateOf {
             val firstVisibleItemIndex = libraryListState.firstVisibleItemIndex

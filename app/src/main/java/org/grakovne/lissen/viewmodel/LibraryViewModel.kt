@@ -52,11 +52,13 @@ class LibraryViewModel @Inject constructor(
     private val _hiddenBooks = MutableStateFlow<List<String>>(emptyList())
     val hiddenBooks: StateFlow<List<String>> = _hiddenBooks
 
-    private var currentPagingSource: PagingSource<Int, Book>? = null
+    private var defaultPagingSource: PagingSource<Int, Book>? = null
+    private var searchPagingSource: PagingSource<Int, Book>? = null
 
     val searchPager: Flow<PagingData<Book>> = combine(
         _searchToken,
-        searchRequested.asFlow()) { token, requested ->
+        searchRequested.asFlow()
+    ) { token, requested ->
         Pair(token, requested)
     }.flatMapLatest { (token, _) ->
         Pager(
@@ -70,7 +72,7 @@ class LibraryViewModel @Inject constructor(
                     preferences,
                     mediaChannel,
                     token
-                ).also { currentPagingSource = it }
+                ).also { searchPagingSource = it }
             }
         ).flow
     }.cachedIn(viewModelScope)
@@ -83,7 +85,7 @@ class LibraryViewModel @Inject constructor(
                 prefetchDistance = PAGE_SIZE
             ),
             pagingSourceFactory = {
-                LibraryDefaultPagingSource(preferences, mediaChannel).also { currentPagingSource = it }
+                LibraryDefaultPagingSource(preferences, mediaChannel).also { defaultPagingSource = it }
             }
         ).flow.cachedIn(viewModelScope)
     }
@@ -119,7 +121,8 @@ class LibraryViewModel @Inject constructor(
     fun refreshLibrary() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                currentPagingSource?.invalidate()
+                searchPagingSource?.invalidate()
+                defaultPagingSource?.invalidate()
             }
         }
     }
