@@ -9,7 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,9 +24,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import org.grakovne.lissen.R
 
 @Composable
 fun SearchActionComposable(
@@ -57,7 +58,7 @@ fun SearchActionComposable(
             onClick = { onSearchDismissed() }
         ) {
             Icon(
-                imageVector = Icons.Outlined.ArrowBack,
+                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                 contentDescription = "Back"
             )
         }
@@ -76,7 +77,7 @@ fun SearchActionComposable(
                 modifier = Modifier
                     .weight(1f)
                     .focusRequester(focusRequester),
-                textStyle = typography.bodyLarge,
+                textStyle = typography.bodyLarge.copy(color = colorScheme.onBackground),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions.Default.copy(
                     imeAction = ImeAction.Search
@@ -84,8 +85,8 @@ fun SearchActionComposable(
                 decorationBox = { innerTextField ->
                     if (searchText.value.isEmpty()) {
                         Text(
-                            "Search",
-                            color = Color.Gray,
+                            text = stringResource(R.string.library_search_hint),
+                            color = colorScheme.onSurfaceVariant,
                             style = typography.bodyLarge
                         )
                     }
