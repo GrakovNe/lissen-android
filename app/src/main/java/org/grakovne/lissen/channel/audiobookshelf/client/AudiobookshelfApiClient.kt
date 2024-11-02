@@ -1,5 +1,6 @@
 package org.grakovne.lissen.channel.audiobookshelf.client
 
+import org.grakovne.lissen.channel.audiobookshelf.model.AuthorResponse
 import org.grakovne.lissen.channel.audiobookshelf.model.LibraryItemIdResponse
 import org.grakovne.lissen.channel.audiobookshelf.model.LibraryItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.model.LibraryResponse
@@ -50,6 +51,11 @@ interface AudiobookshelfApiClient {
     suspend fun fetchLibraryItem(
         @Path("itemId") itemId: String
     ): Response<LibraryItemIdResponse>
+
+    @GET("/api/authors/{authorId}?include=items")
+    suspend fun fetchAuthorLibraryItems(
+        @Path("authorId") authorId: String
+    ): Response<AuthorResponse>
 
     @POST("/api/session/{itemId}/sync")
     suspend fun publishLibraryItemProgress(

@@ -9,7 +9,7 @@ import org.grakovne.lissen.channel.audiobookshelf.api.AudioBookshelfSyncService
 import org.grakovne.lissen.channel.audiobookshelf.converter.LibraryItemIdResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.converter.LibraryItemResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.converter.LibraryResponseConverter
-import org.grakovne.lissen.channel.audiobookshelf.converter.LibrarySearchItemResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.converter.LibrarySearchItemsConverter
 import org.grakovne.lissen.channel.audiobookshelf.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.converter.RecentBookResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.model.LibraryResponse
@@ -39,7 +39,7 @@ class AudiobookshelfChannel @Inject constructor(
     private val libraryResponseConverter: LibraryResponseConverter,
     private val libraryItemIdResponseConverter: LibraryItemIdResponseConverter,
     private val sessionResponseConverter: PlaybackSessionResponseConverter,
-    private val librarySearchItemResponseConverter: LibrarySearchItemResponseConverter,
+    private val librarySearchItemsConverter: LibrarySearchItemsConverter,
     private val preferences: LissenSharedPreferences,
     private val syncService: AudioBookshelfSyncService
 ) : MediaChannel {
@@ -96,9 +96,31 @@ class AudiobookshelfChannel @Inject constructor(
         query: String,
         limit: Int
     ): ApiResult<List<Book>> {
-        return dataRepository
+        val searchResult = dataRepository.searchLibraryItems(libraryId, query, limit)
+
+        val byTitle: ApiResult<List<Book>> = dataRepository
             .searchLibraryItems(libraryId, query, limit)
-            .map { librarySearchItemResponseConverter.apply(it) }
+            .map { it.book }
+            .map { it.map { response -> response.libraryItem } }
+            .map { librarySearchItemsConverter.apply(it) }
+
+        val byAuthor = searchResult
+            .map { it.authors }
+            .map { authors -> authors.map { it.id } }
+            .map { ids -> ids.map { dataRepository.fetchAuthorItems(it) } }
+            .map { response ->
+                response
+                    .flatMap { author ->
+                        author
+                            .fold(
+                                onSuccess = { it.libraryItems },
+                                onFailure = { emptyList() }
+                            )
+                    }
+            }
+            .map { librarySearchItemsConverter.apply(it) }
+
+        return byTitle.flatMap { title -> byAuthor.map { author -> title + author } }
     }
 
     override suspend fun fetchLibraries(): ApiResult<List<Library>> = dataRepository
