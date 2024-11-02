@@ -87,7 +87,7 @@ fun LoginScreen(
         }
 
         when (loginState) {
-            is LoginState.Success -> navController.showLibrary()
+            is LoginState.Success -> navController.showLibrary(clearHistory = true)
             is LoginState.Error -> loginError?.let { Toast.makeText(context, it.makeText(context), LENGTH_SHORT).show() }
             else -> {}
         }

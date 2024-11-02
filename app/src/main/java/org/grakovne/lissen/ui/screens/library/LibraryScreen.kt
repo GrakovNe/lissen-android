@@ -163,7 +163,9 @@ fun LibraryScreen(
     }
 
     LaunchedEffect(searchRequested) {
-        libraryListState.scrollToItem(0)
+        if (!searchRequested) {
+            libraryListState.scrollToItem(0)
+        }
     }
 
     val navBarTitle by remember {
