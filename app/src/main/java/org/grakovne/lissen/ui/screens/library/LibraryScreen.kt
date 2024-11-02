@@ -85,6 +85,7 @@ fun LibraryScreen(
 
     val recentBooks: List<RecentBook> by libraryViewModel.recentBooks.observeAsState(emptyList())
 
+    val networkStatus by networkQualityService.networkStatus.collectAsState()
     val hiddenBooks by libraryViewModel.hiddenBooks.collectAsState()
     var pullRefreshing by remember { mutableStateOf(false) }
     val recentBookRefreshing by libraryViewModel.recentBookUpdating.observeAsState(false)
@@ -131,6 +132,10 @@ fun LibraryScreen(
         }
     }
 
+    LaunchedEffect(networkStatus) {
+        refreshContent(false)
+    }
+
     val pullRefreshState = rememberPullRefreshState(
         refreshing = pullRefreshing,
         onRefresh = {
@@ -146,6 +151,12 @@ fun LibraryScreen(
     val playingBook by playerViewModel.book.observeAsState()
     val context = LocalContext.current
 
+    fun showRecent(): Boolean {
+        val fetchAvailable = networkStatus || cachingModelView.localCacheUsing()
+        val hasContent = showingRecentBooks.isEmpty().not()
+        return !searchRequested && hasContent && fetchAvailable
+    }
+
     LaunchedEffect(Unit) {
         libraryViewModel.refreshRecentListening()
         libraryViewModel.refreshLibrary()
@@ -157,15 +168,12 @@ fun LibraryScreen(
 
     val navBarTitle by remember {
         derivedStateOf {
-            val firstVisibleItemIndex = libraryListState.firstVisibleItemIndex
-            when {
-                firstVisibleItemIndex >= 1 ||
-                    filterRecentBooks(
-                        recentBooks,
-                        libraryViewModel
-                    ).isEmpty() -> context.getString(R.string.library_screen_library_title)
+            val showRecent = showRecent()
+            val recentBlockVisible = libraryListState.layoutInfo.visibleItemsInfo.firstOrNull()?.key == "recent_books"
 
-                else -> context.getString(R.string.library_screen_continue_listening_title)
+            when {
+                showRecent && recentBlockVisible -> context.getString(R.string.library_screen_continue_listening_title)
+                else -> context.getString(R.string.library_screen_library_title)
             }
         }
     }
@@ -247,7 +255,7 @@ fun LibraryScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp)
                 ) {
                     item(key = "recent_books") {
-                        val showRecent = !searchRequested && showingRecentBooks.isEmpty().not()
+                        val showRecent = showRecent()
 
                         when {
                             isPlaceholderRequired -> {
@@ -268,7 +276,7 @@ fun LibraryScreen(
                     }
 
                     item(key = "library_title") {
-                        if (!searchRequested && filterRecentBooks(recentBooks, libraryViewModel).isNotEmpty()) {
+                        if (!searchRequested && showRecent()) {
                             AnimatedContent(
                                 targetState = navBarTitle,
                                 transitionSpec = {
