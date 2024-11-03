@@ -66,7 +66,7 @@ fun PlayerScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = stringResource(R.string.player_screen_library_navigation),
+                        text = stringResource(R.string.player_screen_title),
                         style = titleTextStyle,
                         color = colorScheme.onSurface
                     )

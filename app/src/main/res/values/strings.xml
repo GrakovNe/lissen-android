@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name" translatable="false">Lissen</string>
     <string name="library_screen_library_title">Library</string>
-    <string name="library_screen_continue_listening_title">Continue Listening</string>
+    <string name="library_screen_continue_listening_title">Continue listening</string>
     <string name="library_screen_downloads_menu_item">Downloads</string>
     <string name="library_screen_preferences_menu_item">Preferences</string>
     <string name="library_screen_report_issue_menu_item">Report Issue</string>
@@ -47,4 +47,5 @@
     <string name="settings_screen_color_scheme_title">Color Scheme</string>
     <string name="library_is_not_available">Library is not available</string>
     <string name="library_search_hint">Search by title or author</string>
+    <string name="player_screen_title">Listening now</string>
 </resources>
