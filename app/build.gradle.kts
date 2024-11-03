@@ -38,7 +38,7 @@ android {
         release {}
         debug {
             matchingFallbacks.add("release")
-            isDebuggable = true
+            isDebuggable = false
         }
     }
 
@@ -69,6 +69,7 @@ dependencies {
     implementation(libs.accompanist.systemuicontroller)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
+    implementation (libs.material)
     implementation(libs.material3)
 
     implementation(libs.androidx.material)
