@@ -69,33 +69,6 @@ fun CustomHeadersSettingsScreen() {
                     .padding(innerPadding),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 12.dp, bottom = 0.dp, start = 16.dp, end = 16.dp),
-                    color = colorScheme.surfaceDim.copy(alpha = 0.1f),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Info,
-                            contentDescription = null,
-                            tint = colorScheme.onBackground
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(
-                            text = "Custom headers will be included in every request",
-                            style = typography.bodyMedium,
-                            color = colorScheme.onBackground,
-                            textAlign = TextAlign.Start,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
-
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
