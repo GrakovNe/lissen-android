@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -34,12 +35,16 @@ fun AdvancedSettingsItemComposable(
             Text(
                 text = title,
                 style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                modifier = Modifier.padding(bottom = 4.dp)
+                modifier = Modifier.padding(bottom = 4.dp),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
             Text(
                 text = description,
                 style = typography.bodyMedium,
-                color = colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                color = colorScheme.onSurfaceVariant.copy(alpha = 0.8f),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
         Icon(
