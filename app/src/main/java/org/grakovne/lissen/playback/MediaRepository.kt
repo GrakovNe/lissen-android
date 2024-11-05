@@ -158,9 +158,11 @@ class MediaRepository @Inject constructor(
             else -> factor
         }
 
-        mediaController.setPlaybackSpeed(speed)
-        _playbackSpeed.postValue(speed)
+        if (::mediaController.isInitialized) {
+            mediaController.setPlaybackSpeed(speed)
+        }
 
+        _playbackSpeed.postValue(speed)
         preferences.savePlaybackSpeed(speed)
     }
 

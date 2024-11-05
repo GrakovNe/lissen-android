@@ -34,7 +34,7 @@ data class CachedBookEntity(
 data class BookEntity(
     @PrimaryKey val id: String,
     val title: String,
-    val author: String,
+    val author: String?,
     val duration: Int
 ) : Serializable
 

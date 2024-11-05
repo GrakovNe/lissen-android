@@ -26,7 +26,9 @@ object LocalCacheModule {
             name = DATABASE_NAME
         )
 
-        return database.build()
+        return database
+            .addMigrations(MIGRATION_1_2)
+            .build()
     }
 
     @Provides
