@@ -31,31 +31,35 @@ fun GeneralSettingsComposable(viewModel: SettingsViewModel) {
     val preferredLibrary by viewModel.preferredLibrary.observeAsState()
     val preferredColorScheme by viewModel.preferredColorScheme.observeAsState()
 
+    val host by viewModel.host.observeAsState("")
     var preferredLibraryExpanded by remember { mutableStateOf(false) }
     var colorSchemeExpanded by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { preferredLibraryExpanded = true }
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = stringResource(R.string.settings_screen_preferred_library_title),
-                style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                modifier = Modifier.padding(bottom = 4.dp)
-            )
-            Text(
-                text = preferredLibrary?.title ?: stringResource(R.string.library_is_not_available),
-                style = typography.bodyMedium,
-                color = when (preferredLibrary?.title) {
-                    null -> colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                    else -> colorScheme.onSurfaceVariant
-                }
-            )
+    if (host?.isNotEmpty() == true) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { preferredLibraryExpanded = true }
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.settings_screen_preferred_library_title),
+                    style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+                Text(
+                    text = preferredLibrary?.title
+                        ?: stringResource(R.string.library_is_not_available),
+                    style = typography.bodyMedium,
+                    color = when (preferredLibrary?.title) {
+                        null -> colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        else -> colorScheme.onSurfaceVariant
+                    }
+                )
+            }
         }
     }
 

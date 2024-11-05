@@ -21,6 +21,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -31,7 +33,7 @@ import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.settings.composable.AdditionalComposable
 import org.grakovne.lissen.ui.screens.settings.composable.AdvancedSettingsItemComposable
 import org.grakovne.lissen.ui.screens.settings.composable.GeneralSettingsComposable
-import org.grakovne.lissen.ui.screens.settings.composable.ServerComposable
+import org.grakovne.lissen.ui.screens.settings.composable.ServerSettingsComposable
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
@@ -41,6 +43,7 @@ fun SettingsScreen(
     navController: AppNavigationService
 ) {
     val viewModel: SettingsViewModel = hiltViewModel()
+    val host by viewModel.host.observeAsState("")
     val titleTextStyle = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
 
     LaunchedEffect(Unit) {
@@ -85,7 +88,9 @@ fun SettingsScreen(
                         .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    ServerComposable(navController, viewModel)
+                    if (host?.isNotEmpty() == true) {
+                        ServerSettingsComposable(navController, viewModel)
+                    }
                     GeneralSettingsComposable(viewModel)
                     AdvancedSettingsItemComposable(
                         title = stringResource(R.string.settings_screen_custom_headers_title),

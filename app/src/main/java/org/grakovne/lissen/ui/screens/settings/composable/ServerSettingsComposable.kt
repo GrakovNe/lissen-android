@@ -29,7 +29,7 @@ import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
-fun ServerComposable(
+fun ServerSettingsComposable(
     navController: AppNavigationService,
     viewModel: SettingsViewModel
 ) {
@@ -66,6 +66,7 @@ fun ServerComposable(
                                 overflow = TextOverflow.Ellipsis
                             )
                         }
+                        username?.let { }
                         Text(
                             modifier = Modifier.padding(start = 10.dp, top = 4.dp),
                             text = stringResource(
