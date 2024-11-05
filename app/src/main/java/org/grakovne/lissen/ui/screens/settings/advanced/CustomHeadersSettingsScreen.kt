@@ -27,7 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import org.grakovne.lissen.domain.ServerCustomHeader
+import org.grakovne.lissen.domain.connection.ServerCustomHeader
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

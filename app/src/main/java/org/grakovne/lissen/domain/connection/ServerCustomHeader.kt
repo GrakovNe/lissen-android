@@ -1,4 +1,4 @@
-package org.grakovne.lissen.domain
+package org.grakovne.lissen.domain.connection
 
 import java.util.UUID
 

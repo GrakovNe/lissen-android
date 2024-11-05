@@ -19,7 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import org.grakovne.lissen.domain.ServerCustomHeader
+import org.grakovne.lissen.domain.connection.ServerCustomHeader
 
 @Composable
 fun CustomHeaderItemComposable(
