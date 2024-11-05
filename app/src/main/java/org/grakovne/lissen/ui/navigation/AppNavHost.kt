@@ -35,7 +35,7 @@ fun AppNavHost(
         )
     }
     val startDestination = when {
-        hasCredentials -> "login_screen"
+        hasCredentials -> "settings_screen/custom_headers"
         else -> "login_screen"
     }
 
