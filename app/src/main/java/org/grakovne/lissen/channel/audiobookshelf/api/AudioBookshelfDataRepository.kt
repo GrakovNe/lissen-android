@@ -31,7 +31,7 @@ class AudioBookshelfDataRepository @Inject constructor(
 ) {
 
     private var configCache: ApiClientConfig? = null
-    private var clientCache: AudiobookshelfApiClient = createClientInstance()
+    private var clientCache: AudiobookshelfApiClient? = null
 
     suspend fun fetchLibraries(): ApiResult<LibraryResponse> =
         safeApiCall { getClientInstance().fetchLibraries() }
@@ -164,14 +164,19 @@ class AudioBookshelfDataRepository @Inject constructor(
             customHeaders = preferences.getCustomHeaders()
         )
 
-        if (cache != configCache) {
-            val instance = createClientInstance()
-            configCache = cache
-            clientCache = instance
-            return instance
-        }
+        val currentClientCache = clientCache
 
-        return clientCache
+        return when (currentClientCache == null || cache != configCache) {
+            true -> {
+                val instance = createClientInstance()
+                configCache = cache
+                clientCache = instance
+                instance
+            }
+
+            else -> currentClientCache
+
+        }
     }
 
     private fun createClientInstance(): AudiobookshelfApiClient {
