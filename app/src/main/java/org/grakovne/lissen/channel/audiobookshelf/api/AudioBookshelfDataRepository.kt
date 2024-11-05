@@ -30,6 +30,9 @@ class AudioBookshelfDataRepository @Inject constructor(
     private val preferences: LissenSharedPreferences
 ) {
 
+    private var configCache: ApiClientConfig? = null
+    private var clientCache: AudiobookshelfApiClient = createClientInstance()
+
     suspend fun fetchLibraries(): ApiResult<LibraryResponse> =
         safeApiCall { getClientInstance().fetchLibraries() }
 
@@ -152,6 +155,26 @@ class AudioBookshelfDataRepository @Inject constructor(
     }
 
     private fun getClientInstance(): AudiobookshelfApiClient {
+        val host = preferences.getHost()
+        val token = preferences.getToken()
+
+        val cache = ApiClientConfig(
+            host = host,
+            token = token,
+            customHeaders = preferences.getCustomHeaders()
+        )
+
+        if (cache != configCache) {
+            val instance = createClientInstance()
+            configCache = cache
+            clientCache = instance
+            return instance
+        }
+
+        return clientCache
+    }
+
+    private fun createClientInstance(): AudiobookshelfApiClient {
         val host = preferences.getHost()
         val token = preferences.getToken()
 
