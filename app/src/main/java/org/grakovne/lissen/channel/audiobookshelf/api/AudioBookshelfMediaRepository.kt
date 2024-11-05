@@ -17,11 +17,6 @@ class AudioBookshelfMediaRepository @Inject constructor(
     private val preferences: LissenSharedPreferences
 ) {
 
-    @Volatile
-    private var secureClient: AudiobookshelfMediaClient? = null
-
-    private var cachedCustomHeaders = preferences.getCustomHeaders()
-
     suspend fun fetchBookCover(itemId: String): ApiResult<InputStream> =
         safeApiCall { getClientInstance().getItemCover(itemId) }
 
@@ -60,22 +55,9 @@ class AudioBookshelfMediaRepository @Inject constructor(
             throw IllegalStateException("Host or token is missing")
         }
 
-        return when (cachedCustomHeaders == preferences.getCustomHeaders()) {
-            true -> {
-                secureClient ?: run {
-                    val apiClient = apiClient(host, token)
-                    apiClient.retrofit.create(AudiobookshelfMediaClient::class.java)
-                }
-            }
-
-            false -> {
-                apiClient(host, token)
-                    .retrofit
-                    .create(AudiobookshelfMediaClient::class.java)
-                    .also { cachedCustomHeaders = preferences.getCustomHeaders() }
-                    .also { secureClient = it }
-            }
-        }
+        return apiClient(host, token)
+            .retrofit
+            .create(AudiobookshelfMediaClient::class.java)
     }
 
     private fun apiClient(
