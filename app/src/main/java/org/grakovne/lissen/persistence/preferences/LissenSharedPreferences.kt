@@ -5,6 +5,8 @@ import android.content.SharedPreferences
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -13,6 +15,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import org.grakovne.lissen.channel.common.ChannelCode
 import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.domain.Library
+import org.grakovne.lissen.domain.connection.ServerCustomHeader
 import java.security.KeyStore
 import java.util.UUID
 import javax.crypto.Cipher
@@ -148,6 +151,24 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
         return decrypt(encrypted)
     }
 
+    fun saveCustomHeaders(headers: List<ServerCustomHeader>) {
+        val editor = sharedPreferences.edit()
+
+        val json = gson.toJson(headers)
+        editor.putString(KEY_CUSTOM_HEADERS, json)
+        editor.apply()
+    }
+
+    fun getCustomHeaders(): List<ServerCustomHeader> {
+        val json = sharedPreferences.getString(KEY_CUSTOM_HEADERS, null)
+        val type = object : TypeToken<MutableList<ServerCustomHeader>>() {}.type
+
+        return when (json == null) {
+            true -> listOf()
+            false -> gson.fromJson(json, type)
+        }
+    }
+
     companion object {
 
         private const val KEY_ALIAS = "secure_key_alias"
@@ -164,6 +185,8 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
         private const val KEY_PREFERRED_PLAYBACK_SPEED = "preferred_playback_speed"
 
         private const val KEY_PREFERRED_COLOR_SCHEME = "preferred_color_scheme"
+
+        private const val KEY_CUSTOM_HEADERS = "custom_headers"
 
         private const val ANDROID_KEYSTORE = "AndroidKeyStore"
         private const val TRANSFORMATION = "AES/GCM/NoPadding"
@@ -213,5 +236,7 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
                 null
             }
         }
+
+        private val gson = Gson()
     }
 }
