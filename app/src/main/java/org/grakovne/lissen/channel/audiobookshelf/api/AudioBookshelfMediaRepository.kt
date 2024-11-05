@@ -45,7 +45,6 @@ class AudioBookshelfMediaRepository @Inject constructor(
         } catch (e: IOException) {
             ApiResult.Error(ApiError.NetworkError)
         } catch (e: Exception) {
-            println(e)
             ApiResult.Error(ApiError.InternalError)
         }
     }
