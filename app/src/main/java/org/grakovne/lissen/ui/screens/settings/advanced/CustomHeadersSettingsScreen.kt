@@ -27,11 +27,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomHeadersSettingsScreen() {
-    val headers = remember { mutableStateListOf("123" to "456", "789" to "012") }
+    val headers = remember { mutableStateListOf(CustomHeader("123", "234"), CustomHeader("345", "456")) }
 
     Scaffold(
         topBar = {
@@ -67,13 +68,16 @@ fun CustomHeadersSettingsScreen() {
             ) {
                 headers.forEachIndexed { index, header ->
                     CustomHeaderItemComposable(
-                        headerName = header.first,
-                        headerValue = header.second,
+                        header = header,
                         onChanged = { newPair ->
                             headers[index] = newPair
                         },
-                        onDelete = {
-                            headers.removeAt(index)
+                        onDelete = { pair ->
+                            headers.remove(pair)
+
+                            if (headers.isEmpty()) {
+                                headers.add(CustomHeader.empty())
+                            }
                         }
                     )
                 }
@@ -84,7 +88,7 @@ fun CustomHeadersSettingsScreen() {
             FloatingActionButton(
                 containerColor = colorScheme.primary,
                 shape = CircleShape,
-                onClick = { headers.add("" to "") }
+                onClick = { headers.add(CustomHeader.empty()) }
             ) {
                 Icon(
 
@@ -94,4 +98,16 @@ fun CustomHeadersSettingsScreen() {
             }
         }
     )
+}
+
+data class CustomHeader(
+    val name: String,
+    val value: String,
+    val id: UUID = UUID.randomUUID()
+) {
+
+    companion object {
+
+        fun empty() = CustomHeader("", "")
+    }
 }

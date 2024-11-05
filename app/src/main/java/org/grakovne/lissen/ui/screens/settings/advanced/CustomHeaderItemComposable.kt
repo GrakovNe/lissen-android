@@ -1,6 +1,5 @@
 package org.grakovne.lissen.ui.screens.settings.advanced
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -18,8 +17,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,14 +24,10 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun CustomHeaderItemComposable(
-    headerName: String = "",
-    headerValue: String = "",
-    onChanged: (Pair<String, String>) -> Unit,
-    onDelete: () -> Unit
+    header: CustomHeader,
+    onChanged: (CustomHeader) -> Unit,
+    onDelete: (CustomHeader) -> Unit
 ) {
-    var name by remember { mutableStateOf(headerName) }
-    var value by remember { mutableStateOf(headerValue) }
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -45,26 +38,24 @@ fun CustomHeaderItemComposable(
             modifier = Modifier.weight(1f)
         ) {
             OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
+                value = header.name,
+                onValueChange = { onChanged(header.copy(name = it, value = header.value)) },
                 label = { Text("Name") },
                 singleLine = true,
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onChanged(name to value) }
                     .padding(vertical = 4.dp)
             )
 
             OutlinedTextField(
-                value = value,
-                onValueChange = { value = it },
+                value = header.value,
+                onValueChange = { onChanged(header.copy(name = header.name, value = it)) },
                 label = { Text("Value") },
                 singleLine = true,
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { onChanged(name to value) }
                     .padding(vertical = 4.dp)
             )
         }
@@ -72,7 +63,7 @@ fun CustomHeaderItemComposable(
         Spacer(modifier = Modifier.width(16.dp))
 
         IconButton(
-            onClick = { onDelete() }
+            onClick = { onDelete(header) }
         ) {
             Icon(
                 imageVector = Icons.Default.DeleteOutline,
