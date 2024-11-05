@@ -27,7 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import java.util.UUID
+import org.grakovne.lissen.domain.CustomHeader
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -100,14 +100,3 @@ fun CustomHeadersSettingsScreen() {
     )
 }
 
-data class CustomHeader(
-    val name: String,
-    val value: String,
-    val id: UUID = UUID.randomUUID()
-) {
-
-    companion object {
-
-        fun empty() = CustomHeader("", "")
-    }
-}
