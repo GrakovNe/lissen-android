@@ -1,13 +1,12 @@
 package org.grakovne.lissen.ui.screens.settings.advanced
 
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -27,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.connection.ServerCustomHeader
@@ -39,6 +39,9 @@ fun CustomHeadersSettingsScreen(
 ) {
     val settingsViewModel: SettingsViewModel = hiltViewModel()
     val headers = settingsViewModel.customHeaders.observeAsState(emptyList())
+
+    val fabHeight = 56.dp
+    val additionalPadding = 16.dp
 
     Scaffold(
         topBar = {
@@ -65,36 +68,35 @@ fun CustomHeadersSettingsScreen(
             .systemBarsPadding()
             .fillMaxHeight(),
         content = { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .verticalScroll(rememberScrollState())
-                    .padding(innerPadding),
+            LazyColumn(
+                contentPadding = PaddingValues(
+                    top = innerPadding.calculateTopPadding(),
+                    bottom = innerPadding.calculateBottomPadding() + fabHeight + additionalPadding
+                ),
+                modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                headers
-                    .value
-                    .forEachIndexed { index, header ->
-                        CustomHeaderComposable(
-                            header = header,
-                            onChanged = { newPair ->
-                                val updatedList = headers.value.toMutableList()
-                                updatedList[index] = newPair
+                itemsIndexed(headers.value) { index, header ->
+                    CustomHeaderComposable(
+                        header = header,
+                        onChanged = { newPair ->
+                            val updatedList = headers.value.toMutableList()
+                            updatedList[index] = newPair
 
-                                settingsViewModel.updateCustomHeaders(updatedList)
-                            },
-                            onDelete = { pair ->
-                                val updatedList = headers.value.toMutableList()
-                                updatedList.remove(pair)
+                            settingsViewModel.updateCustomHeaders(updatedList)
+                        },
+                        onDelete = { pair ->
+                            val updatedList = headers.value.toMutableList()
+                            updatedList.remove(pair)
 
-                                if (updatedList.isEmpty()) {
-                                    updatedList.add(ServerCustomHeader.empty())
-                                }
-
-                                settingsViewModel.updateCustomHeaders(updatedList)
+                            if (updatedList.isEmpty()) {
+                                updatedList.add(ServerCustomHeader.empty())
                             }
-                        )
-                    }
+
+                            settingsViewModel.updateCustomHeaders(updatedList)
+                        }
+                    )
+                }
             }
         },
         floatingActionButtonPosition = FabPosition.Center,
@@ -105,12 +107,10 @@ fun CustomHeadersSettingsScreen(
                 onClick = {
                     val updatedList = headers.value.toMutableList()
                     updatedList.add(ServerCustomHeader.empty())
-
                     settingsViewModel.updateCustomHeaders(updatedList)
                 }
             ) {
                 Icon(
-
                     imageVector = Icons.Filled.Add,
                     contentDescription = "Add"
                 )
