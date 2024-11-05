@@ -39,7 +39,7 @@ fun AdvancedSettingsItemComposable(
             Text(
                 text = description,
                 style = typography.bodyMedium,
-                color = colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                color = colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
             )
         }
         Icon(
