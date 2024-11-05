@@ -33,6 +33,8 @@ class AudioBookshelfDataRepository @Inject constructor(
     @Volatile
     private var secureClient: AudiobookshelfApiClient? = null
 
+    private var cachedCustomHeaders = preferences.getCustomHeaders()
+
     suspend fun fetchLibraries(): ApiResult<LibraryResponse> =
         safeApiCall { getClientInstance().fetchLibraries() }
 
@@ -110,7 +112,7 @@ class AudioBookshelfDataRepository @Inject constructor(
         lateinit var apiService: AudiobookshelfApiClient
 
         try {
-            val apiClient = ApiClient(host = host)
+            val apiClient = ApiClient(host = host, customHeaders = preferences.getCustomHeaders())
             apiService = apiClient.retrofit.create(AudiobookshelfApiClient::class.java)
         } catch (e: Exception) {
             return ApiResult.Error(ApiError.InternalError)
@@ -118,14 +120,16 @@ class AudioBookshelfDataRepository @Inject constructor(
 
         val response: ApiResult<LoginResponse> =
             safeApiCall { apiService.login(LoginRequest(username, password)) }
-        return response.fold(
-            onSuccess = {
-                loginResponseConverter
-                    .apply(it)
-                    .let { ApiResult.Success(it) }
-            },
-            onFailure = { ApiResult.Error(it.code) }
-        )
+
+        return response
+            .fold(
+                onSuccess = {
+                    loginResponseConverter
+                        .apply(it)
+                        .let { ApiResult.Success(it) }
+                },
+                onFailure = { ApiResult.Error(it.code) }
+            )
     }
 
     private suspend fun <T> safeApiCall(
@@ -162,11 +166,32 @@ class AudioBookshelfDataRepository @Inject constructor(
             throw IllegalStateException("Host or token is missing")
         }
 
-        return secureClient ?: run {
-            val apiClient = ApiClient(host = host, token = token)
-            apiClient.retrofit.create(AudiobookshelfApiClient::class.java)
+        return when (cachedCustomHeaders == preferences.getCustomHeaders()) {
+            true -> {
+                secureClient ?: run {
+                    val apiClient = apiClient(host, token)
+                    apiClient.retrofit.create(AudiobookshelfApiClient::class.java)
+                }
+            }
+
+            false -> {
+                apiClient(host, token)
+                    .retrofit
+                    .create(AudiobookshelfApiClient::class.java)
+                    .also { cachedCustomHeaders = preferences.getCustomHeaders() }
+                    .also { secureClient = it }
+            }
         }
     }
+
+    private fun apiClient(
+        host: String,
+        token: String?
+    ): ApiClient = ApiClient(
+        host = host,
+        token = token,
+        customHeaders = preferences.getCustomHeaders()
+    )
 
     companion object {
 
