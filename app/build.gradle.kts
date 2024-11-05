@@ -32,6 +32,10 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        ksp {
+            arg("room.schemaLocation", "$projectDir/schemas")
+        }
     }
 
     buildTypes {
@@ -61,6 +65,7 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
 }
 
 dependencies {
@@ -69,7 +74,7 @@ dependencies {
     implementation(libs.accompanist.systemuicontroller)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
-    implementation (libs.material)
+    implementation(libs.material)
     implementation(libs.material3)
 
     implementation(libs.androidx.material)

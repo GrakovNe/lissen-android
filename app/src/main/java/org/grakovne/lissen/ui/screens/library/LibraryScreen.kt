@@ -66,7 +66,6 @@ import org.grakovne.lissen.ui.screens.library.composables.SearchActionComposable
 import org.grakovne.lissen.ui.screens.library.composables.fallback.LibraryFallbackComposable
 import org.grakovne.lissen.ui.screens.library.composables.placeholder.LibraryPlaceholderComposable
 import org.grakovne.lissen.ui.screens.library.composables.placeholder.RecentBooksPlaceholderComposable
-import org.grakovne.lissen.ui.theme.LissenTheme
 import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel

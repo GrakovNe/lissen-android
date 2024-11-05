@@ -3,8 +3,7 @@ package org.grakovne.lissen.channel.audiobookshelf.model
 data class MediaMetadataResponse(
     val title: String,
     val subtitle: String?,
-    val authors: List<org.grakovne.lissen.channel.audiobookshelf.model.Author>,
-    val genres: List<String>,
+    val authors: List<Author>?,
     val publishedYear: Int?,
     val publishedDate: String?,
     val publisher: String?,

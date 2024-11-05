@@ -50,7 +50,7 @@ class LibraryItemIdResponseConverter @Inject constructor() {
         return DetailedBook(
             id = item.id,
             title = item.media.metadata.title,
-            author = item.media.metadata.authors.joinToString(", ", transform = Author::name),
+            author = item.media.metadata.authors?.joinToString(", ", transform = Author::name),
             files = item
                 .media
                 .audioFiles

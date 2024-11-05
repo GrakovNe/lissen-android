@@ -5,7 +5,7 @@ import java.io.Serializable
 data class DetailedBook(
     val id: String,
     val title: String,
-    val author: String,
+    val author: String?,
     val files: List<BookFile>,
     val chapters: List<BookChapter>,
     val progress: MediaProgress?
