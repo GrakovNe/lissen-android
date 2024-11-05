@@ -175,7 +175,6 @@ class AudioBookshelfDataRepository @Inject constructor(
             }
 
             else -> currentClientCache
-
         }
     }
 
