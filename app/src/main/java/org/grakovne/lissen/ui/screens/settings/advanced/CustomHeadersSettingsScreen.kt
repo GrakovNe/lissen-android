@@ -32,7 +32,9 @@ import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CustomHeadersSettingsScreen() {
+fun CustomHeadersSettingsScreen(
+    onBack: () -> Unit
+) {
     val settingsViewModel: SettingsViewModel = hiltViewModel()
     val headers = settingsViewModel.customHeaders.observeAsState(emptyList())
 
@@ -47,7 +49,7 @@ fun CustomHeadersSettingsScreen() {
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = { onBack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "Back",

@@ -84,7 +84,9 @@ fun AppNavHost(
             }
 
             composable("settings_screen/custom_headers") {
-                CustomHeadersSettingsScreen()
+                CustomHeadersSettingsScreen(
+                    onBack = { navController.popBackStack() }
+                )
             }
         }
     }
