@@ -31,7 +31,6 @@ import androidx.compose.ui.text.font.FontWeight
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomHeadersSettingsScreen() {
-    // Make headers a mutableStateListOf
     val headers = remember { mutableStateListOf("123" to "456", "789" to "012") }
 
     Scaffold(
