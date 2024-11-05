@@ -29,7 +29,8 @@ import androidx.compose.ui.unit.dp
 fun CustomHeaderItemComposable(
     headerName: String = "",
     headerValue: String = "",
-    onChanged: (Pair<String, String>) -> Unit
+    onChanged: (Pair<String, String>) -> Unit,
+    onDelete: () -> Unit
 ) {
     var name by remember { mutableStateOf(headerName) }
     var value by remember { mutableStateOf(headerValue) }
@@ -51,7 +52,7 @@ fun CustomHeaderItemComposable(
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { }
+                    .clickable { onChanged(name to value) }
                     .padding(vertical = 4.dp)
             )
 
@@ -63,6 +64,7 @@ fun CustomHeaderItemComposable(
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
+                    .clickable { onChanged(name to value) }
                     .padding(vertical = 4.dp)
             )
         }
@@ -70,7 +72,7 @@ fun CustomHeaderItemComposable(
         Spacer(modifier = Modifier.width(16.dp))
 
         IconButton(
-            onClick = {}
+            onClick = { onDelete() }
         ) {
             Icon(
                 imageVector = Icons.Default.DeleteOutline,

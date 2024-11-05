@@ -22,6 +22,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -29,7 +31,8 @@ import androidx.compose.ui.text.font.FontWeight
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomHeadersSettingsScreen() {
-    val headers = listOf("123" to "456", "789" to "012")
+    // Make headers a mutableStateListOf
+    val headers = remember { mutableStateListOf("123" to "456", "789" to "012") }
 
     Scaffold(
         topBar = {
@@ -63,9 +66,18 @@ fun CustomHeadersSettingsScreen() {
                     .padding(innerPadding),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                CustomHeaderItemComposable() {}
-                CustomHeaderItemComposable() {}
-                CustomHeaderItemComposable() {}
+                headers.forEachIndexed { index, header ->
+                    CustomHeaderItemComposable(
+                        headerName = header.first,
+                        headerValue = header.second,
+                        onChanged = { newPair ->
+                            headers[index] = newPair
+                        },
+                        onDelete = {
+                            headers.removeAt(index)
+                        }
+                    )
+                }
             }
         },
         floatingActionButtonPosition = FabPosition.Center,
@@ -73,7 +85,7 @@ fun CustomHeadersSettingsScreen() {
             FloatingActionButton(
                 containerColor = colorScheme.primary,
                 shape = CircleShape,
-                onClick = { }
+                onClick = { headers.add("" to "") }
             ) {
                 Icon(
 
