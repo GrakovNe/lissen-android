@@ -88,8 +88,8 @@ fun SettingsScreen(
                     ServerComposable(navController, viewModel)
                     GeneralSettingsComposable(viewModel)
                     AdvancedSettingsItemComposable(
-                        title = "Custom Headers",
-                        description = "Define headers for each app request",
+                        title = stringResource(R.string.settings_screen_custom_headers_title),
+                        description = stringResource(R.string.settings_screen_custom_header_hint),
                         onclick = { navController.showCustomHeadersSettings() }
                     )
                 }

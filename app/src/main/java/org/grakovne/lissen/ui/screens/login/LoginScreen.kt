@@ -247,7 +247,7 @@ fun LoginScreen(
                         .alpha(0.5f)
                         .padding(bottom = 32.dp),
                     text = stringResource(R.string.audiobookshelf_server_is_required),
-                    style = MaterialTheme.typography.bodySmall.copy(
+                    style = typography.bodySmall.copy(
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Normal,
                         color = colorScheme.onBackground,

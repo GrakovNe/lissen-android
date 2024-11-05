@@ -47,4 +47,6 @@
     <string name="library_is_not_available">Library is not available</string>
     <string name="library_search_hint">Search by title or author</string>
     <string name="player_screen_title">Listening now</string>
+    <string name="settings_screen_custom_headers_title">Custom Headers</string>
+    <string name="settings_screen_custom_header_hint">Define headers for each request</string>
 </resources>
