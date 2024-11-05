@@ -2,6 +2,7 @@ package org.grakovne.lissen.channel.audiobookshelf
 
 import android.net.Uri
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import org.grakovne.lissen.channel.audiobookshelf.api.AudioBookshelfDataRepository
 import org.grakovne.lissen.channel.audiobookshelf.api.AudioBookshelfMediaRepository
@@ -9,7 +10,7 @@ import org.grakovne.lissen.channel.audiobookshelf.api.AudioBookshelfSyncService
 import org.grakovne.lissen.channel.audiobookshelf.converter.LibraryItemIdResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.converter.LibraryItemResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.converter.LibraryResponseConverter
-import org.grakovne.lissen.channel.audiobookshelf.converter.LibrarySearchItemResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.converter.LibrarySearchItemsConverter
 import org.grakovne.lissen.channel.audiobookshelf.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.converter.RecentBookResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.model.LibraryResponse
@@ -39,7 +40,7 @@ class AudiobookshelfChannel @Inject constructor(
     private val libraryResponseConverter: LibraryResponseConverter,
     private val libraryItemIdResponseConverter: LibraryItemIdResponseConverter,
     private val sessionResponseConverter: PlaybackSessionResponseConverter,
-    private val librarySearchItemResponseConverter: LibrarySearchItemResponseConverter,
+    private val librarySearchItemsConverter: LibrarySearchItemsConverter,
     private val preferences: LissenSharedPreferences,
     private val syncService: AudioBookshelfSyncService
 ) : MediaChannel {
@@ -95,10 +96,37 @@ class AudiobookshelfChannel @Inject constructor(
         libraryId: String,
         query: String,
         limit: Int
-    ): ApiResult<List<Book>> {
-        return dataRepository
-            .searchLibraryItems(libraryId, query, limit)
-            .map { librarySearchItemResponseConverter.apply(it) }
+    ): ApiResult<List<Book>> = coroutineScope {
+        val byTitle = async {
+            dataRepository
+                .searchLibraryItems(libraryId, query, limit)
+                .map { it.book }
+                .map { it.map { response -> response.libraryItem } }
+                .map { librarySearchItemsConverter.apply(it) }
+        }
+
+        val byAuthor = async {
+            val searchResult = dataRepository.searchLibraryItems(libraryId, query, limit)
+
+            searchResult
+                .map { it.authors }
+                .map { authors -> authors.map { it.id } }
+                .map { ids -> ids.map { id -> async { dataRepository.fetchAuthorItems(id) } } }
+                .map { it.awaitAll() }
+                .map { result ->
+                    result
+                        .flatMap { authorResponse ->
+                            authorResponse
+                                .fold(
+                                    onSuccess = { it.libraryItems },
+                                    onFailure = { emptyList() }
+                                )
+                        }
+                }
+                .map { librarySearchItemsConverter.apply(it) }
+        }
+
+        byTitle.await().flatMap { title -> byAuthor.await().map { author -> title + author } }
     }
 
     override suspend fun fetchLibraries(): ApiResult<List<Library>> = dataRepository

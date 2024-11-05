@@ -76,7 +76,7 @@ interface CachedBookDao {
     ): List<BookEntity>
 
     @Transaction
-    @Query("SELECT * FROM detailed_books WHERE title LIKE '%' || :searchQuery || '%' ORDER BY title")
+    @Query("SELECT * FROM detailed_books WHERE title LIKE '%' || :searchQuery || '%' OR author LIKE '%' || :searchQuery || '%' ORDER BY title")
     suspend fun searchCachedBooks(
         searchQuery: String
     ): List<BookEntity>

@@ -6,12 +6,12 @@ class AppNavigationService(
     private val host: NavHostController
 ) {
 
-    fun showLibrary() {
+    fun showLibrary(clearHistory: Boolean = false) {
         host.navigate("library_screen") {
             launchSingleTop = true
 
             popUpTo(host.graph.startDestinationId) {
-                inclusive = true
+                inclusive = clearHistory
             }
         }
     }

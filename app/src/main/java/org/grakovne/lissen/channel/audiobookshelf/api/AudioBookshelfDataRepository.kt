@@ -2,6 +2,7 @@ package org.grakovne.lissen.channel.audiobookshelf.api
 
 import org.grakovne.lissen.channel.audiobookshelf.client.AudiobookshelfApiClient
 import org.grakovne.lissen.channel.audiobookshelf.converter.LoginResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.model.AuthorResponse
 import org.grakovne.lissen.channel.audiobookshelf.model.LibraryItemIdResponse
 import org.grakovne.lissen.channel.audiobookshelf.model.LibraryItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.model.LibraryResponse
@@ -34,6 +35,15 @@ class AudioBookshelfDataRepository @Inject constructor(
 
     suspend fun fetchLibraries(): ApiResult<LibraryResponse> =
         safeApiCall { getClientInstance().fetchLibraries() }
+
+    suspend fun fetchAuthorItems(
+        authorId: String
+    ): ApiResult<AuthorResponse> = safeApiCall {
+        getClientInstance()
+            .fetchAuthorLibraryItems(
+                authorId = authorId
+            )
+    }
 
     suspend fun searchLibraryItems(
         libraryId: String,
@@ -159,6 +169,7 @@ class AudioBookshelfDataRepository @Inject constructor(
     }
 
     companion object {
+
         val urlPattern = Regex("^(http|https)://.*\$")
     }
 }

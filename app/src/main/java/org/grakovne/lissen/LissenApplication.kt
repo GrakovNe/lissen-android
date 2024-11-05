@@ -38,6 +38,7 @@ class LissenApplication : Application() {
 
             reportContent = listOf(
                 ReportField.APP_VERSION_NAME,
+                ReportField.APP_VERSION_CODE,
                 ReportField.ANDROID_VERSION,
                 ReportField.PHONE_MODEL,
                 ReportField.STACK_TRACE,
