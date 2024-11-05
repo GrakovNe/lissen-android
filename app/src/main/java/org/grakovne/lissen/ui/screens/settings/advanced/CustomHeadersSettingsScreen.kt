@@ -22,17 +22,21 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.hilt.navigation.compose.hiltViewModel
 import org.grakovne.lissen.domain.connection.ServerCustomHeader
+import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomHeadersSettingsScreen() {
-    val headers = remember { mutableStateListOf(ServerCustomHeader("123", "234"), ServerCustomHeader("345", "456")) }
+    val settingsViewModel: SettingsViewModel = hiltViewModel()
+    val headers = settingsViewModel.customHeaders.observeAsState(emptyList())
 
     Scaffold(
         topBar = {
@@ -66,21 +70,29 @@ fun CustomHeadersSettingsScreen() {
                     .padding(innerPadding),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                headers.forEachIndexed { index, header ->
-                    CustomHeaderItemComposable(
-                        header = header,
-                        onChanged = { newPair ->
-                            headers[index] = newPair
-                        },
-                        onDelete = { pair ->
-                            headers.remove(pair)
+                headers
+                    .value
+                    .forEachIndexed { index, header ->
+                        CustomHeaderItemComposable(
+                            header = header,
+                            onChanged = { newPair ->
+                                val updatedList = headers.value.toMutableList()
+                                updatedList[index] = newPair
 
-                            if (headers.isEmpty()) {
-                                headers.add(ServerCustomHeader.empty())
+                                settingsViewModel.updateCustomHeaders(updatedList)
+                            },
+                            onDelete = { pair ->
+                                val updatedList = headers.value.toMutableList()
+                                updatedList.remove(pair)
+
+                                if (updatedList.isEmpty()) {
+                                    updatedList.add(ServerCustomHeader.empty())
+                                }
+
+                                settingsViewModel.updateCustomHeaders(updatedList)
                             }
-                        }
-                    )
-                }
+                        )
+                    }
             }
         },
         floatingActionButtonPosition = FabPosition.Center,
@@ -88,7 +100,12 @@ fun CustomHeadersSettingsScreen() {
             FloatingActionButton(
                 containerColor = colorScheme.primary,
                 shape = CircleShape,
-                onClick = { headers.add(ServerCustomHeader.empty()) }
+                onClick = {
+                    val updatedList = headers.value.toMutableList()
+                    updatedList.add(ServerCustomHeader.empty())
+
+                    settingsViewModel.updateCustomHeaders(updatedList)
+                }
             ) {
                 Icon(
 
