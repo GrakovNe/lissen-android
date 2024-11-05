@@ -25,8 +25,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.navigation.compose.hiltViewModel
+import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.connection.ServerCustomHeader
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
@@ -43,7 +45,7 @@ fun CustomHeadersSettingsScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Custom Headers",
+                        text = stringResource(R.string.custom_headers_title),
                         style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
                         color = colorScheme.onSurface
                     )
@@ -73,7 +75,7 @@ fun CustomHeadersSettingsScreen(
                 headers
                     .value
                     .forEachIndexed { index, header ->
-                        CustomHeaderItemComposable(
+                        CustomHeaderComposable(
                             header = header,
                             onChanged = { newPair ->
                                 val updatedList = headers.value.toMutableList()

@@ -47,4 +47,9 @@
     <string name="library_is_not_available">Список библиотек недоступен</string>
     <string name="library_search_hint">Поиск по автору или названию</string>
     <string name="player_screen_title">Сейчас играет</string>
+    <string name="settings_screen_custom_headers_title">Прокси-заголовки</string>
+    <string name="settings_screen_custom_header_hint">Заголовки для подключения к серверу</string>
+    <string name="custom_header_hint_name">Ключ</string>
+    <string name="custom_header_hint_value">Значение</string>
+    <string name="custom_headers_title">Прокси-заголовки</string>
 </resources>

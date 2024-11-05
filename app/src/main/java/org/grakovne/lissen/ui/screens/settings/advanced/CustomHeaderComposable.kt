@@ -18,11 +18,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.connection.ServerCustomHeader
 
 @Composable
-fun CustomHeaderItemComposable(
+fun CustomHeaderComposable(
     header: ServerCustomHeader,
     onChanged: (ServerCustomHeader) -> Unit,
     onDelete: (ServerCustomHeader) -> Unit
@@ -39,7 +41,7 @@ fun CustomHeaderItemComposable(
             OutlinedTextField(
                 value = header.name,
                 onValueChange = { onChanged(header.copy(name = it, value = header.value)) },
-                label = { Text("Name") },
+                label = { Text(stringResource(R.string.custom_header_hint_name)) },
                 singleLine = true,
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
@@ -50,7 +52,7 @@ fun CustomHeaderItemComposable(
             OutlinedTextField(
                 value = header.value,
                 onValueChange = { onChanged(header.copy(name = header.name, value = it)) },
-                label = { Text("Value") },
+                label = { Text(stringResource(R.string.custom_header_hint_value)) },
                 singleLine = true,
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier

@@ -44,7 +44,6 @@ fun SettingsScreen(
 ) {
     val viewModel: SettingsViewModel = hiltViewModel()
     val host by viewModel.host.observeAsState("")
-    val titleTextStyle = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
 
     LaunchedEffect(Unit) {
         viewModel.fetchLibraries()
@@ -56,7 +55,7 @@ fun SettingsScreen(
                 title = {
                     Text(
                         text = stringResource(R.string.settings_screen_title),
-                        style = titleTextStyle,
+                        style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
                         color = colorScheme.onSurface
                     )
                 },

@@ -48,5 +48,8 @@
     <string name="library_search_hint">Search by title or author</string>
     <string name="player_screen_title">Listening now</string>
     <string name="settings_screen_custom_headers_title">Custom Headers</string>
-    <string name="settings_screen_custom_header_hint">Define headers for each request</string>
+    <string name="settings_screen_custom_header_hint">Specify headers for server connections</string>
+    <string name="custom_header_hint_name">Key</string>
+    <string name="custom_header_hint_value">Value</string>
+    <string name="custom_headers_title">Custom Headers</string>
 </resources>
