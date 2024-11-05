@@ -27,12 +27,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import org.grakovne.lissen.domain.CustomHeader
+import org.grakovne.lissen.domain.ServerCustomHeader
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomHeadersSettingsScreen() {
-    val headers = remember { mutableStateListOf(CustomHeader("123", "234"), CustomHeader("345", "456")) }
+    val headers = remember { mutableStateListOf(ServerCustomHeader("123", "234"), ServerCustomHeader("345", "456")) }
 
     Scaffold(
         topBar = {
@@ -76,7 +76,7 @@ fun CustomHeadersSettingsScreen() {
                             headers.remove(pair)
 
                             if (headers.isEmpty()) {
-                                headers.add(CustomHeader.empty())
+                                headers.add(ServerCustomHeader.empty())
                             }
                         }
                     )
@@ -88,7 +88,7 @@ fun CustomHeadersSettingsScreen() {
             FloatingActionButton(
                 containerColor = colorScheme.primary,
                 shape = CircleShape,
-                onClick = { headers.add(CustomHeader.empty()) }
+                onClick = { headers.add(ServerCustomHeader.empty()) }
             ) {
                 Icon(
 

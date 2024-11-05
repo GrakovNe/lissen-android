@@ -19,13 +19,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import org.grakovne.lissen.domain.CustomHeader
+import org.grakovne.lissen.domain.ServerCustomHeader
 
 @Composable
 fun CustomHeaderItemComposable(
-    header: CustomHeader,
-    onChanged: (CustomHeader) -> Unit,
-    onDelete: (CustomHeader) -> Unit
+    header: ServerCustomHeader,
+    onChanged: (ServerCustomHeader) -> Unit,
+    onDelete: (ServerCustomHeader) -> Unit
 ) {
     Row(
         modifier = Modifier
