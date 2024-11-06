@@ -20,10 +20,6 @@ interface MediaChannel {
         fileId: String
     ): RequestUri
 
-    fun provideBookCoverUri(
-        bookId: String
-    ): RequestUri
-
     suspend fun syncProgress(
         sessionId: String,
         progress: PlaybackProgress

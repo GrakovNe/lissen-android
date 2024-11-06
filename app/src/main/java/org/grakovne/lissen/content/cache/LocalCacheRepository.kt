@@ -1,6 +1,5 @@
 package org.grakovne.lissen.content.cache
 
-import android.net.Uri.parse
 import androidx.core.net.toFile
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
@@ -29,13 +28,6 @@ class LocalCacheRepository @Inject constructor(
             .provideFileUri(libraryItemId, fileId)
             .takeIf { it.toFile().exists() }
             ?.let { RequestUri(uri = it) }
-
-    fun provideBookCover(bookId: String): RequestUri =
-        cachedBookRepository
-            .provideBookCover(bookId)
-            .toString()
-            .let { parse(it) }
-            .let { RequestUri(uri = it) }
 
     /**
      * For the local cache we avoiding to create intermediary entity like Session and using BookId

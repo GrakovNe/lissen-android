@@ -70,24 +70,6 @@ class AudiobookshelfChannel @Inject constructor(
         )
     }
 
-    override fun provideBookCoverUri(
-        bookId: String
-    ): RequestUri {
-        val uri = Uri.parse(preferences.getHost())
-            .buildUpon()
-            .appendPath("api")
-            .appendPath("items")
-            .appendPath(bookId)
-            .appendPath("cover")
-            .appendQueryParameter("token", preferences.getToken())
-            .build()
-
-        return RequestUri(
-            uri = uri,
-            headers = requestHeadersProvider.fetchRequestHeaders()
-        )
-    }
-
     override suspend fun syncProgress(
         sessionId: String,
         progress: PlaybackProgress

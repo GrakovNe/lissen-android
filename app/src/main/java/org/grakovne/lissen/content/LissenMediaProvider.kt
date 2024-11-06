@@ -55,17 +55,6 @@ class LissenMediaProvider @Inject constructor(
         }
     }
 
-    fun provideBookCoverUri(
-        bookId: String
-    ): RequestUri {
-        Log.d(TAG, "Fetching Cover URI for $bookId")
-
-        return when (cacheConfiguration.localCacheUsing()) {
-            true -> localCacheRepository.provideBookCover(bookId)
-            false -> providePreferredChannel().provideBookCoverUri(bookId)
-        }
-    }
-
     suspend fun syncProgress(
         sessionId: String,
         bookId: String,
