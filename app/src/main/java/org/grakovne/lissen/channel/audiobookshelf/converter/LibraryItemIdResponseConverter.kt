@@ -32,19 +32,23 @@ class LibraryItemIdResponseConverter @Inject constructor() {
             }
 
         val filesAsChapters: () -> List<BookChapter> = {
-            item.media.audioFiles.fold(0.0 to mutableListOf<BookChapter>()) { (accDuration, chapters), file ->
-                chapters.add(
-                    BookChapter(
-                        start = accDuration,
-                        end = accDuration + file.duration,
-                        title = file.metaTags?.tagTitle
-                            ?: file.metadata.filename.removeSuffix(file.metadata.ext),
-                        duration = file.duration,
-                        id = file.ino
+            item
+                .media
+                .audioFiles
+                .sortedBy { it.index }
+                .fold(0.0 to mutableListOf<BookChapter>()) { (accDuration, chapters), file ->
+                    chapters.add(
+                        BookChapter(
+                            start = accDuration,
+                            end = accDuration + file.duration,
+                            title = file.metaTags?.tagTitle
+                                ?: file.metadata.filename.removeSuffix(file.metadata.ext),
+                            duration = file.duration,
+                            id = file.ino
+                        )
                     )
-                )
-                accDuration + file.duration to chapters
-            }.second
+                    accDuration + file.duration to chapters
+                }.second
         }
 
         return DetailedBook(
@@ -54,6 +58,7 @@ class LibraryItemIdResponseConverter @Inject constructor() {
             files = item
                 .media
                 .audioFiles
+                .sortedBy { it.index }
                 .map {
                     BookFile(
                         id = it.ino,
