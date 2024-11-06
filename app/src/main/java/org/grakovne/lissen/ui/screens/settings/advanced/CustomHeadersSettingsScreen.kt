@@ -13,7 +13,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -65,7 +64,10 @@ fun CustomHeadersSettingsScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = {
+                        onBack()
+                        settingsViewModel.saveCustomHeaders()
+                    }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "Back",
@@ -88,7 +90,12 @@ fun CustomHeadersSettingsScreen(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                itemsIndexed(headers.value) { index, header ->
+                val customHeaders = when (headers.value.isEmpty()) {
+                    true -> listOf(ServerCustomHeader.empty())
+                    false -> headers.value
+                }
+
+                itemsIndexed(customHeaders) { index, header ->
                     CustomHeaderComposable(
                         header = header,
                         onChanged = { newPair ->

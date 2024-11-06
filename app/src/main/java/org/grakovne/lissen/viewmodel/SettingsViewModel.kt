@@ -81,7 +81,15 @@ class SettingsViewModel @Inject constructor(
 
     fun updateCustomHeaders(headers: List<ServerCustomHeader>) {
         _customHeaders.value = headers
-        preferences.saveCustomHeaders(headers)
+    }
+
+    fun saveCustomHeaders() {
+        _customHeaders.value = _customHeaders
+            .value
+            ?.filterNot { it.name.isEmpty() }
+            ?.filterNot { it.value.isEmpty() }
+
+        preferences.saveCustomHeaders(_customHeaders.value ?: emptyList())
     }
 
     private fun fetchCustomHeaders(): List<ServerCustomHeader> = preferences
