@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Transaction
 import androidx.room.Update
 import org.grakovne.lissen.content.cache.entity.BookChapterEntity
@@ -82,6 +83,7 @@ interface CachedBookDao {
     ): List<BookEntity>
 
     @Transaction
+    @RewriteQueriesToDropUnusedColumns
     @Query(
         """
         SELECT * FROM detailed_books
