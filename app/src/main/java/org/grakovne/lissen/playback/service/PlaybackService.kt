@@ -7,8 +7,8 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.MediaMetadata.PICTURE_TYPE_FRONT_COVER
-import androidx.media3.common.MediaMetadata.PictureType
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
@@ -27,7 +27,6 @@ import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedBook
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
-import java.io.InputStream
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -122,7 +121,6 @@ class PlaybackService : MediaSessionService() {
 
         withContext(Dispatchers.IO) {
             val prepareQueue = async {
-
                 // remove me
                 val coverUri = mediaChannel.provideBookCoverUri(book.id)
 
@@ -146,12 +144,18 @@ class PlaybackService : MediaSessionService() {
                             .provideFileUri(book.id, file.id)
                             .fold(
                                 onSuccess = { request ->
-                                    val dataSourceFactory = DefaultHttpDataSource
+                                    val httpDataSourceFactory = DefaultHttpDataSource
                                         .Factory()
-                                        .setDefaultRequestProperties(request
-                                            .headers
-                                            .associate { it.name to it.value }
+                                        .setDefaultRequestProperties(
+                                            request
+                                                .headers
+                                                .associate { it.name to it.value }
                                         )
+
+                                    val dataSourceFactory = DefaultDataSource.Factory(
+                                        baseContext,
+                                        httpDataSourceFactory
+                                    )
 
                                     val mediaData = MediaMetadata.Builder()
                                         .setTitle(file.name)

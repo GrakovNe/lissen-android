@@ -88,15 +88,19 @@ class BookCachingService @Inject constructor(
         val downloads = book
             .files
             .map { file ->
-
-                // here
-                Request(channel.provideFileUri(book.id, file.id).uri)
+                val serverRequest = channel.provideFileUri(book.id, file.id)
+                val downloadRequest = Request(serverRequest.uri)
                     .setTitle(file.name)
                     .setNotificationVisibility(VISIBILITY_VISIBLE)
                     .setDestinationUri(properties.provideMediaCachePatch(book.id, file.id).toUri())
                     .setAllowedOverMetered(true)
                     .setAllowedOverRoaming(true)
-                    .let { downloadManager.enqueue(it) }
+
+                serverRequest
+                    .headers
+                    .forEach { downloadRequest.addRequestHeader(it.name, it.value) }
+
+                downloadRequest.let { downloadManager.enqueue(it) }
             }
 
         return awaitDownloadProgress(downloads, downloadManager)
