@@ -3,6 +3,9 @@ package org.grakovne.lissen.ui.screens.settings.advanced
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -14,6 +17,7 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -97,6 +101,13 @@ fun CustomHeadersSettingsScreen(
                             settingsViewModel.updateCustomHeaders(updatedList)
                         }
                     )
+
+                    if (index < headers.value.size - 1) {
+                        HorizontalDivider(modifier = Modifier
+                            .height(1.dp)
+                            .padding(horizontal = 24.dp)
+                        )
+                    }
                 }
             }
         },
