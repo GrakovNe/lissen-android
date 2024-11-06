@@ -72,7 +72,6 @@ object ImageLoaderModule {
         return ImageLoader
             .Builder(context)
             .components { add(bookCoverFetcherFactory) }
-            .memoryCache { MemoryCache.Builder(context).build() }
             .build()
     }
 }
