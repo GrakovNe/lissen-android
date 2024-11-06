@@ -130,7 +130,7 @@ class MediaRepository @Inject constructor(
         val intent = Intent(context, PlaybackService::class.java).apply {
             action = PlaybackService.ACTION_PLAY
         }
-        ContextCompat.startForegroundService(context, intent)
+        context.startForegroundService(intent)
     }
 
     fun pauseAudio() {
