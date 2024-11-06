@@ -6,8 +6,12 @@ import androidx.annotation.OptIn
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.MediaMetadata.PICTURE_TYPE_FRONT_COVER
+import androidx.media3.common.MediaMetadata.PictureType
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import dagger.hilt.android.AndroidEntryPoint
@@ -23,6 +27,7 @@ import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedBook
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import java.io.InputStream
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -117,37 +122,60 @@ class PlaybackService : MediaSessionService() {
 
         withContext(Dispatchers.IO) {
             val prepareQueue = async {
+
+                // remove me
                 val coverUri = mediaChannel.provideBookCoverUri(book.id)
+
+                val cover: ByteArray? = channelProvider
+                    .fetchBookCover(bookId = book.id)
+                    .fold(
+                        onSuccess = {
+                            try {
+                                it.readBytes()
+                            } catch (ex: Exception) {
+                                null
+                            }
+                        },
+                        onFailure = { null }
+                    )
 
                 val playingQueue = book
                     .files
                     .mapNotNull { file ->
-
                         mediaChannel
                             .provideFileUri(book.id, file.id)
                             .fold(
-                                onSuccess = {
-                                    MediaItem.Builder()
-                                        .setMediaId(file.id)
-                                        // here
-                                        .setUri(it.uri)
-                                        .setTag(book)
-                                        .setMediaMetadata(
-                                            MediaMetadata.Builder()
-                                                .setTitle(file.name)
-                                                .setArtist(book.title)
-                                                // here
-                                                .setArtworkUri(coverUri.uri)
-                                                .build()
+                                onSuccess = { request ->
+                                    val dataSourceFactory = DefaultHttpDataSource
+                                        .Factory()
+                                        .setDefaultRequestProperties(request
+                                            .headers
+                                            .associate { it.name to it.value }
                                         )
+
+                                    val mediaData = MediaMetadata.Builder()
+                                        .setTitle(file.name)
+                                        .setArtist(book.title)
+
+                                    cover?.let { mediaData.setArtworkData(it, PICTURE_TYPE_FRONT_COVER) }
+
+                                    val mediaItem = MediaItem.Builder()
+                                        .setMediaId(file.id)
+                                        .setUri(request.uri)
+                                        .setTag(book)
+                                        .setMediaMetadata(mediaData.build())
                                         .build()
+
+                                    ProgressiveMediaSource
+                                        .Factory(dataSourceFactory)
+                                        .createMediaSource(mediaItem)
                                 },
                                 onFailure = { null }
                             )
                     }
 
                 withContext(Dispatchers.Main) {
-                    exoPlayer.setMediaItems(playingQueue)
+                    exoPlayer.setMediaSources(playingQueue)
                     setPlaybackProgress(book.files, book.progress)
                 }
             }
