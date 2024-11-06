@@ -9,6 +9,7 @@ import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.LoadControl
 import androidx.media3.session.MediaSession
 import dagger.Module
 import dagger.Provides
@@ -30,12 +31,6 @@ object MediaModule {
             .setSeekBackIncrementMs(10_000)
             .setSeekForwardIncrementMs(30_000)
             .setHandleAudioBecomingNoisy(true)
-            .setLoadControl(
-                DefaultLoadControl
-                    .Builder()
-                    .setPrioritizeTimeOverSizeThresholds(true)
-                    .build()
-            )
             .setAudioAttributes(
                 AudioAttributes.Builder()
                     .setUsage(C.USAGE_MEDIA)
