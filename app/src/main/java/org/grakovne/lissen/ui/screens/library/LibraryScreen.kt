@@ -312,7 +312,7 @@ fun LibraryScreen(
                         }
                     }
 
-                    item { Spacer(modifier = Modifier.height(8.dp)) }
+                    item(key = "library_spacer") { Spacer(modifier = Modifier.height(8.dp)) }
 
                     when {
                         isPlaceholderRequired -> item { LibraryPlaceholderComposable() }
@@ -326,7 +326,7 @@ fun LibraryScreen(
                             }
                         }
 
-                        else -> items(count = library.itemCount) {
+                        else -> items(count = library.itemCount, key = { "library_item_$it" }) {
                             val book = library[it] ?: return@items
                             val isVisible = remember(hiddenBooks, book.id) {
                                 derivedStateOf { libraryViewModel.isVisible(book.id) }
