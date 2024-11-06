@@ -27,7 +27,8 @@ import javax.inject.Singleton
 @Singleton
 class AudioBookshelfDataRepository @Inject constructor(
     private val loginResponseConverter: LoginResponseConverter,
-    private val preferences: LissenSharedPreferences
+    private val preferences: LissenSharedPreferences,
+    private val requestHeadersProvider: RequestHeadersProvider
 ) {
 
     private var configCache: ApiClientConfig? = null
@@ -108,7 +109,11 @@ class AudioBookshelfDataRepository @Inject constructor(
         lateinit var apiService: AudiobookshelfApiClient
 
         try {
-            val apiClient = ApiClient(host = host, customHeaders = preferences.getCustomHeaders())
+            val apiClient = ApiClient(
+                host = host,
+                customHeaders = requestHeadersProvider.fetchRequestHeaders()
+            )
+
             apiService = apiClient.retrofit.create(AudiobookshelfApiClient::class.java)
         } catch (e: Exception) {
             return ApiResult.Error(ApiError.InternalError)
@@ -161,7 +166,7 @@ class AudioBookshelfDataRepository @Inject constructor(
         val cache = ApiClientConfig(
             host = host,
             token = token,
-            customHeaders = preferences.getCustomHeaders()
+            customHeaders = requestHeadersProvider.fetchRequestHeaders()
         )
 
         val currentClientCache = clientCache
@@ -197,7 +202,7 @@ class AudioBookshelfDataRepository @Inject constructor(
     ): ApiClient = ApiClient(
         host = host,
         token = token,
-        customHeaders = preferences.getCustomHeaders()
+        customHeaders = requestHeadersProvider.fetchRequestHeaders()
     )
 
     companion object {

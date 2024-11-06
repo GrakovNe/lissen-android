@@ -14,7 +14,8 @@ import javax.inject.Singleton
 
 @Singleton
 class AudioBookshelfMediaRepository @Inject constructor(
-    private val preferences: LissenSharedPreferences
+    private val preferences: LissenSharedPreferences,
+    private val requestHeadersProvider: RequestHeadersProvider
 ) {
 
     private var configCache: ApiClientConfig? = null
@@ -56,7 +57,7 @@ class AudioBookshelfMediaRepository @Inject constructor(
         val cache = ApiClientConfig(
             host = host,
             token = token,
-            customHeaders = preferences.getCustomHeaders()
+            customHeaders = requestHeadersProvider.fetchRequestHeaders()
         )
 
         val currentClientCache = clientCache
@@ -92,6 +93,6 @@ class AudioBookshelfMediaRepository @Inject constructor(
     ): BinaryApiClient = BinaryApiClient(
         host = host,
         token = token,
-        customHeaders = preferences.getCustomHeaders()
+        customHeaders = requestHeadersProvider.fetchRequestHeaders()
     )
 }
