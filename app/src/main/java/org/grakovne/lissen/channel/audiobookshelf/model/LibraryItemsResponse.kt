@@ -16,6 +16,6 @@ data class Media(
 )
 
 data class Metadata(
-    val title: String,
+    val title: String?,
     val authorName: String?
 )
