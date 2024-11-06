@@ -3,9 +3,7 @@ package org.grakovne.lissen.ui.screens.settings.advanced
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -35,13 +33,12 @@ fun CustomHeaderComposable(
         shape = RoundedCornerShape(12.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+            .padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 16.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(colorScheme.background)
-                .padding(start = 16.dp, end = 0.dp, top = 0.dp, bottom = 8.dp),
+                .background(colorScheme.background),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(
@@ -73,10 +70,9 @@ fun CustomHeaderComposable(
                     imageVector = Icons.Default.DeleteOutline,
                     contentDescription = null,
                     tint = colorScheme.error,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(28.dp)
                 )
             }
         }
     }
-
 }

@@ -4,11 +4,11 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -27,15 +27,18 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.connection.ServerCustomHeader
 import org.grakovne.lissen.viewmodel.SettingsViewModel
+import kotlin.math.max
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,6 +50,9 @@ fun CustomHeadersSettingsScreen(
 
     val fabHeight = 56.dp
     val additionalPadding = 16.dp
+
+    val state = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -74,6 +80,7 @@ fun CustomHeadersSettingsScreen(
             .fillMaxHeight(),
         content = { innerPadding ->
             LazyColumn(
+                state = state,
                 contentPadding = PaddingValues(
                     top = innerPadding.calculateTopPadding(),
                     bottom = innerPadding.calculateBottomPadding() + fabHeight + additionalPadding
@@ -103,9 +110,10 @@ fun CustomHeadersSettingsScreen(
                     )
 
                     if (index < headers.value.size - 1) {
-                        HorizontalDivider(modifier = Modifier
-                            .height(1.dp)
-                            .padding(horizontal = 24.dp)
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .height(1.dp)
+                                .padding(horizontal = 24.dp)
                         )
                     }
                 }
@@ -120,6 +128,10 @@ fun CustomHeadersSettingsScreen(
                     val updatedList = headers.value.toMutableList()
                     updatedList.add(ServerCustomHeader.empty())
                     settingsViewModel.updateCustomHeaders(updatedList)
+
+                    coroutineScope.launch {
+                        state.scrollToItem(max(0, updatedList.size - 1))
+                    }
                 }
             ) {
                 Icon(
