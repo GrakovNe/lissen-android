@@ -123,19 +123,14 @@ fun TrackControlComposable(
             ) {
                 IconButton(
                     onClick = {
-                        if (currentTrackIndex > 0) {
-                            viewModel.previousTrack()
-                        }
+                        viewModel.previousTrack()
                     },
-                    enabled = currentTrackIndex > 0
+                    enabled = true
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.SkipPrevious,
                         contentDescription = "Previous Track",
-                        tint = when (currentTrackIndex > 0) {
-                            true -> colorScheme.onBackground
-                            else -> colorScheme.onBackground.copy(alpha = 0.3f)
-                        },
+                        tint = colorScheme.onBackground,
                         modifier = Modifier.size(36.dp)
                     )
                 }

@@ -135,8 +135,15 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun previousTrack() {
-        val previousChapterIndex = currentChapterIndex.value?.let { it - 1 } ?: return
-        setChapter(previousChapterIndex)
+        val position = currentChapterPosition.value ?: return
+        val index = currentChapterIndex.value ?: return
+
+        val currentIndexReplay = (position > CURRENT_TRACK_REPLAY_THRESHOLD || index == 0)
+
+        when {
+            currentIndexReplay -> setChapter(index)
+            index > 0 -> setChapter(index - 1)
+        }
     }
 
     fun togglePlayPause() {
@@ -181,5 +188,10 @@ class PlayerViewModel @Inject constructor(
         }
 
         return 0.0
+    }
+
+    companion object {
+
+        private const val CURRENT_TRACK_REPLAY_THRESHOLD = 5
     }
 }
