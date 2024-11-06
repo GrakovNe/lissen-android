@@ -121,8 +121,6 @@ class PlaybackService : MediaSessionService() {
 
         withContext(Dispatchers.IO) {
             val prepareQueue = async {
-                // remove me
-
                 val cover: ByteArray? = channelProvider
                     .fetchBookCover(bookId = book.id)
                     .fold(
