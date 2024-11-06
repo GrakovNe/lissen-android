@@ -7,7 +7,6 @@ import coil.decode.ImageSource
 import coil.fetch.FetchResult
 import coil.fetch.Fetcher
 import coil.fetch.SourceResult
-import coil.memory.MemoryCache
 import coil.request.Options
 import dagger.Module
 import dagger.Provides
