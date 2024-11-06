@@ -4,6 +4,7 @@ import android.net.Uri
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import org.grakovne.lissen.BuildConfig
 import org.grakovne.lissen.channel.audiobookshelf.api.AudioBookshelfDataRepository
 import org.grakovne.lissen.channel.audiobookshelf.api.AudioBookshelfMediaRepository
 import org.grakovne.lissen.channel.audiobookshelf.api.AudioBookshelfSyncService
@@ -13,7 +14,9 @@ import org.grakovne.lissen.channel.audiobookshelf.converter.LibraryResponseConve
 import org.grakovne.lissen.channel.audiobookshelf.converter.LibrarySearchItemsConverter
 import org.grakovne.lissen.channel.audiobookshelf.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.converter.RecentBookResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.model.DeviceInfo
 import org.grakovne.lissen.channel.audiobookshelf.model.LibraryResponse
+import org.grakovne.lissen.channel.audiobookshelf.model.StartPlaybackRequest
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.ApiResult.Success
 import org.grakovne.lissen.channel.common.ChannelCode
@@ -147,9 +150,9 @@ class AudiobookshelfChannel @Inject constructor(
         supportedMimeTypes: List<String>,
         deviceId: String
     ): ApiResult<PlaybackSession> {
-        val request = org.grakovne.lissen.channel.audiobookshelf.model.StartPlaybackRequest(
+        val request = StartPlaybackRequest(
             supportedMimeTypes = supportedMimeTypes,
-            deviceInfo = org.grakovne.lissen.channel.audiobookshelf.model.DeviceInfo(
+            deviceInfo = DeviceInfo(
                 clientName = getClientName(),
                 deviceId = deviceId,
                 deviceName = getClientName()
@@ -195,7 +198,7 @@ class AudiobookshelfChannel @Inject constructor(
         password: String
     ): ApiResult<UserAccount> = dataRepository.authorize(host, username, password)
 
-    private fun getClientName() = "Lissen App Android"
+    private fun getClientName() = "Lissen App ${BuildConfig.VERSION_NAME}"
 
     private val supportedLibraryTypes = listOf("book")
 }
