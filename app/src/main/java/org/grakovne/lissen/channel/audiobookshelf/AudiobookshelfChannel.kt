@@ -25,6 +25,7 @@ import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.RecentBook
+import org.grakovne.lissen.domain.RequestUri
 import org.grakovne.lissen.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import java.io.InputStream
@@ -50,26 +51,34 @@ class AudiobookshelfChannel @Inject constructor(
     override fun provideFileUri(
         libraryItemId: String,
         fileId: String
-    ): Uri = Uri.parse(preferences.getHost())
-        .buildUpon()
-        .appendPath("api")
-        .appendPath("items")
-        .appendPath(libraryItemId)
-        .appendPath("file")
-        .appendPath(fileId)
-        .appendQueryParameter("token", preferences.getToken())
-        .build()
+    ): RequestUri {
+        val uri = Uri.parse(preferences.getHost())
+            .buildUpon()
+            .appendPath("api")
+            .appendPath("items")
+            .appendPath(libraryItemId)
+            .appendPath("file")
+            .appendPath(fileId)
+            .appendQueryParameter("token", preferences.getToken())
+            .build()
+
+        return RequestUri(uri = uri)
+    }
 
     override fun provideBookCoverUri(
         bookId: String
-    ): Uri = Uri.parse(preferences.getHost())
-        .buildUpon()
-        .appendPath("api")
-        .appendPath("items")
-        .appendPath(bookId)
-        .appendPath("cover")
-        .appendQueryParameter("token", preferences.getToken())
-        .build()
+    ): RequestUri {
+        val uri = Uri.parse(preferences.getHost())
+            .buildUpon()
+            .appendPath("api")
+            .appendPath("items")
+            .appendPath(bookId)
+            .appendPath("cover")
+            .appendQueryParameter("token", preferences.getToken())
+            .build()
+
+        return RequestUri(uri = uri)
+    }
 
     override suspend fun syncProgress(
         sessionId: String,

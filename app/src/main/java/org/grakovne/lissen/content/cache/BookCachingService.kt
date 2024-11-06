@@ -88,7 +88,9 @@ class BookCachingService @Inject constructor(
         val downloads = book
             .files
             .map { file ->
-                Request(channel.provideFileUri(book.id, file.id))
+
+                // here
+                Request(channel.provideFileUri(book.id, file.id).uri)
                     .setTitle(file.name)
                     .setNotificationVisibility(VISIBILITY_VISIBLE)
                     .setDestinationUri(properties.provideMediaCachePatch(book.id, file.id).toUri())

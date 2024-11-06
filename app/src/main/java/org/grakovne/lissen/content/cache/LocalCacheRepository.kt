@@ -13,6 +13,7 @@ import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.RecentBook
+import org.grakovne.lissen.domain.RequestUri
 import java.io.InputStream
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -24,16 +25,18 @@ class LocalCacheRepository @Inject constructor(
     private val properties: CacheBookStorageProperties
 ) {
 
-    fun provideFileUri(libraryItemId: String, fileId: String): Uri? =
+    fun provideFileUri(libraryItemId: String, fileId: String): RequestUri? =
         cachedBookRepository
             .provideFileUri(libraryItemId, fileId)
             .takeIf { it.toFile().exists() }
+            ?.let { RequestUri(uri = it) }
 
-    fun provideBookCover(bookId: String): Uri =
+    fun provideBookCover(bookId: String): RequestUri =
         cachedBookRepository
             .provideBookCover(bookId)
             .toString()
             .let { parse(it) }
+            .let { RequestUri(uri = it) }
 
     /**
      * For the local cache we avoiding to create intermediary entity like Session and using BookId

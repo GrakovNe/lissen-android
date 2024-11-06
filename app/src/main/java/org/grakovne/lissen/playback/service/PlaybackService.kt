@@ -129,13 +129,15 @@ class PlaybackService : MediaSessionService() {
                                 onSuccess = {
                                     MediaItem.Builder()
                                         .setMediaId(file.id)
-                                        .setUri(it)
+                                        // here
+                                        .setUri(it.uri)
                                         .setTag(book)
                                         .setMediaMetadata(
                                             MediaMetadata.Builder()
                                                 .setTitle(file.name)
                                                 .setArtist(book.title)
-                                                .setArtworkUri(coverUri)
+                                                // here
+                                                .setArtworkUri(coverUri.uri)
                                                 .build()
                                         )
                                         .build()
