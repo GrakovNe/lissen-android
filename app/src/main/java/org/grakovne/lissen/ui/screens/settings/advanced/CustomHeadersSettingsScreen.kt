@@ -99,13 +99,13 @@ fun CustomHeadersSettingsScreen(
                     CustomHeaderComposable(
                         header = header,
                         onChanged = { newPair ->
-                            val updatedList = headers.value.toMutableList()
+                            val updatedList = customHeaders.toMutableList()
                             updatedList[index] = newPair
 
                             settingsViewModel.updateCustomHeaders(updatedList)
                         },
                         onDelete = { pair ->
-                            val updatedList = headers.value.toMutableList()
+                            val updatedList = customHeaders.toMutableList()
                             updatedList.remove(pair)
 
                             if (updatedList.isEmpty()) {
@@ -116,7 +116,7 @@ fun CustomHeadersSettingsScreen(
                         }
                     )
 
-                    if (index < headers.value.size - 1) {
+                    if (index < customHeaders.size - 1) {
                         HorizontalDivider(
                             modifier = Modifier
                                 .height(1.dp)
