@@ -7,6 +7,7 @@ import kotlinx.coroutines.coroutineScope
 import org.grakovne.lissen.channel.audiobookshelf.api.AudioBookshelfDataRepository
 import org.grakovne.lissen.channel.audiobookshelf.api.AudioBookshelfMediaRepository
 import org.grakovne.lissen.channel.audiobookshelf.api.AudioBookshelfSyncService
+import org.grakovne.lissen.channel.audiobookshelf.api.RequestHeadersProvider
 import org.grakovne.lissen.channel.audiobookshelf.converter.LibraryItemIdResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.converter.LibraryItemResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.converter.LibraryResponseConverter
@@ -43,7 +44,8 @@ class AudiobookshelfChannel @Inject constructor(
     private val sessionResponseConverter: PlaybackSessionResponseConverter,
     private val librarySearchItemsConverter: LibrarySearchItemsConverter,
     private val preferences: LissenSharedPreferences,
-    private val syncService: AudioBookshelfSyncService
+    private val syncService: AudioBookshelfSyncService,
+    private val requestHeadersProvider: RequestHeadersProvider
 ) : MediaChannel {
 
     override fun getChannelCode() = ChannelCode.AUDIOBOOKSHELF
@@ -62,7 +64,10 @@ class AudiobookshelfChannel @Inject constructor(
             .appendQueryParameter("token", preferences.getToken())
             .build()
 
-        return RequestUri(uri = uri)
+        return RequestUri(
+            uri = uri,
+            headers = requestHeadersProvider.fetchRequestHeaders()
+        )
     }
 
     override fun provideBookCoverUri(
@@ -77,7 +82,10 @@ class AudiobookshelfChannel @Inject constructor(
             .appendQueryParameter("token", preferences.getToken())
             .build()
 
-        return RequestUri(uri = uri)
+        return RequestUri(
+            uri = uri,
+            headers = requestHeadersProvider.fetchRequestHeaders()
+        )
     }
 
     override suspend fun syncProgress(
