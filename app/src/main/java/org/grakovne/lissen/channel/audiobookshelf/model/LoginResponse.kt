@@ -7,10 +7,5 @@ data class LoginResponse(
 
 data class User(
     val id: String,
-    val username: String,
-    val email: String?,
-    val type: String,
-    val token: String,
-    val isActive: Boolean,
-    val isLocked: Boolean
+    val token: String
 )

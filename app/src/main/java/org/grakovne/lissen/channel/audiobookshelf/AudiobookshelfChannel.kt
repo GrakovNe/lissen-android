@@ -184,7 +184,9 @@ class AudiobookshelfChannel @Inject constructor(
                         onFailure = { Success(libraryItemIdResponseConverter.apply(item, null)) }
                     )
             },
-            onFailure = { ApiResult.Error(it.code) }
+            onFailure = {
+                ApiResult.Error(it.code)
+            }
         )
     }
 
