@@ -16,7 +16,6 @@ import androidx.compose.ui.layout.ContentScale
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.valentinilk.shimmer.shimmer
 
 @Composable
 fun AsyncShimmeringImage(
@@ -37,7 +36,6 @@ fun AsyncShimmeringImage(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .shimmer()
                     .background(Color.Gray)
             )
         }

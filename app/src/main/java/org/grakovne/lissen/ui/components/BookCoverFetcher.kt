@@ -4,11 +4,9 @@ import android.content.Context
 import android.net.Uri
 import coil.ImageLoader
 import coil.decode.ImageSource
-import coil.disk.DiskCache
 import coil.fetch.FetchResult
 import coil.fetch.Fetcher
 import coil.fetch.SourceResult
-import coil.memory.MemoryCache
 import coil.request.Options
 import dagger.Module
 import dagger.Provides
@@ -72,17 +70,7 @@ object ImageLoaderModule {
     ): ImageLoader {
         return ImageLoader
             .Builder(context)
-            .components {
-                add(bookCoverFetcherFactory)
-            }
-            .memoryCache {
-                MemoryCache.Builder(context).build()
-            }
-            .diskCache {
-                DiskCache.Builder()
-                    .directory(context.cacheDir.resolve("сover_cache"))
-                    .build()
-            }
+            .components { add(bookCoverFetcherFactory) }
             .build()
     }
 }

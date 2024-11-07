@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Handler
 import android.os.Looper
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -130,7 +129,7 @@ class MediaRepository @Inject constructor(
         val intent = Intent(context, PlaybackService::class.java).apply {
             action = PlaybackService.ACTION_PLAY
         }
-        ContextCompat.startForegroundService(context, intent)
+        context.startForegroundService(intent)
     }
 
     fun pauseAudio() {

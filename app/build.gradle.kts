@@ -98,8 +98,6 @@ dependencies {
     implementation(libs.androidx.media3.session)
     kapt(libs.hilt.android.compiler)
 
-    implementation(libs.icons.lucide)
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -121,7 +119,6 @@ dependencies {
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
-    annotationProcessor(libs.androidx.room.compiler)
     ksp(libs.androidx.room.compiler)
 
     testImplementation(libs.junit)

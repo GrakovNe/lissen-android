@@ -27,12 +27,11 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.composables.icons.lucide.Lucide
-import com.composables.icons.lucide.Search
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
+import org.grakovne.lissen.ui.icons.Search
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.LibraryViewModel
@@ -54,7 +53,7 @@ fun DefaultActionComposable(
             modifier = Modifier.offset(x = 4.dp)
         ) {
             Icon(
-                imageVector = Lucide.Search,
+                imageVector = Search,
                 contentDescription = null
             )
         }
