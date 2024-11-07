@@ -40,9 +40,7 @@ class LissenMediaProvider @Inject constructor(
             true ->
                 localCacheRepository
                     .provideFileUri(libraryItemId, chapterId)
-                    ?.let {
-                        ApiResult.Success(it)
-                    }
+                    ?.let { ApiResult.Success(it) }
                     ?: ApiResult.Error(ApiError.InternalError)
 
             false ->
