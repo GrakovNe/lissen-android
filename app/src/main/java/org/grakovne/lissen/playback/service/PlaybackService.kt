@@ -22,6 +22,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.grakovne.lissen.channel.audiobookshelf.api.RequestHeadersProvider
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedBook
@@ -49,6 +50,9 @@ class PlaybackService : MediaSessionService() {
 
     @Inject
     lateinit var channelProvider: LissenMediaProvider
+
+    @Inject
+    lateinit var requestHeadersProvider: RequestHeadersProvider
 
     private val playerServiceScope = MainScope()
 
@@ -134,6 +138,8 @@ class PlaybackService : MediaSessionService() {
                         onFailure = { null }
                     )
 
+                val sourceFactory = buildDataSourceFactory()
+
                 val playingQueue = book
                     .files
                     .mapNotNull { file ->
@@ -141,19 +147,6 @@ class PlaybackService : MediaSessionService() {
                             .provideFileUri(book.id, file.id)
                             .fold(
                                 onSuccess = { request ->
-                                    val httpDataSourceFactory = DefaultHttpDataSource
-                                        .Factory()
-                                        .setDefaultRequestProperties(
-                                            request
-                                                .headers
-                                                .associate { it.name to it.value }
-                                        )
-
-                                    val dataSourceFactory = DefaultDataSource.Factory(
-                                        baseContext,
-                                        httpDataSourceFactory
-                                    )
-
                                     val mediaData = MediaMetadata.Builder()
                                         .setTitle(file.name)
                                         .setArtist(book.title)
@@ -162,13 +155,13 @@ class PlaybackService : MediaSessionService() {
 
                                     val mediaItem = MediaItem.Builder()
                                         .setMediaId(file.id)
-                                        .setUri(request.uri)
+                                        .setUri(request)
                                         .setTag(book)
                                         .setMediaMetadata(mediaData.build())
                                         .build()
 
                                     ProgressiveMediaSource
-                                        .Factory(dataSourceFactory)
+                                        .Factory(sourceFactory)
                                         .createMediaSource(mediaItem)
                                 },
                                 onFailure = { null }
@@ -234,6 +227,22 @@ class PlaybackService : MediaSessionService() {
         chapters: List<BookFile>,
         progress: MediaProgress?
     ) = seek(chapters, progress?.currentTime)
+
+    @OptIn(UnstableApi::class)
+    private fun buildDataSourceFactory(): DefaultDataSource.Factory {
+        val requestHeaders = requestHeadersProvider
+            .fetchRequestHeaders()
+            .associate { it.name to it.value }
+
+        val networkDatasourceFactory = DefaultHttpDataSource
+            .Factory()
+            .setDefaultRequestProperties(requestHeaders)
+
+        return DefaultDataSource.Factory(
+            baseContext,
+            networkDatasourceFactory
+        )
+    }
 
     companion object {
 

@@ -1,5 +1,6 @@
 package org.grakovne.lissen.content
 
+import android.net.Uri
 import android.util.Log
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
@@ -15,7 +16,6 @@ import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.RecentBook
-import org.grakovne.lissen.domain.RequestUri
 import org.grakovne.lissen.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import java.io.InputStream
@@ -33,7 +33,7 @@ class LissenMediaProvider @Inject constructor(
     fun provideFileUri(
         libraryItemId: String,
         chapterId: String
-    ): ApiResult<RequestUri> {
+    ): ApiResult<Uri> {
         Log.d(TAG, "Fetching File $libraryItemId and $chapterId URI")
 
         return when (cacheConfiguration.localCacheUsing()) {

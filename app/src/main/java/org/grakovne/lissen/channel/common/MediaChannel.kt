@@ -1,5 +1,6 @@
 package org.grakovne.lissen.channel.common
 
+import android.net.Uri
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedBook
 import org.grakovne.lissen.domain.Library
@@ -7,7 +8,6 @@ import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.RecentBook
-import org.grakovne.lissen.domain.RequestUri
 import org.grakovne.lissen.domain.UserAccount
 import java.io.InputStream
 
@@ -18,7 +18,7 @@ interface MediaChannel {
     fun provideFileUri(
         libraryItemId: String,
         fileId: String
-    ): RequestUri
+    ): Uri
 
     suspend fun syncProgress(
         sessionId: String,

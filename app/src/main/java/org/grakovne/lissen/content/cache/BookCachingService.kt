@@ -17,6 +17,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
+import org.grakovne.lissen.channel.audiobookshelf.api.RequestHeadersProvider
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.content.cache.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.api.CachedLibraryRepository
@@ -30,7 +31,8 @@ class BookCachingService @Inject constructor(
     @ApplicationContext private val context: Context,
     private val bookRepository: CachedBookRepository,
     private val libraryRepository: CachedLibraryRepository,
-    private val properties: CacheBookStorageProperties
+    private val properties: CacheBookStorageProperties,
+    private val requestHeadersProvider: RequestHeadersProvider
 ) {
 
     fun cacheBook(
@@ -89,15 +91,15 @@ class BookCachingService @Inject constructor(
             .files
             .map { file ->
                 val serverRequest = channel.provideFileUri(book.id, file.id)
-                val downloadRequest = Request(serverRequest.uri)
+                val downloadRequest = Request(serverRequest)
                     .setTitle(file.name)
                     .setNotificationVisibility(VISIBILITY_VISIBLE)
                     .setDestinationUri(properties.provideMediaCachePatch(book.id, file.id).toUri())
                     .setAllowedOverMetered(true)
                     .setAllowedOverRoaming(true)
 
-                serverRequest
-                    .headers
+                requestHeadersProvider
+                    .fetchRequestHeaders()
                     .forEach { downloadRequest.addRequestHeader(it.name, it.value) }
 
                 downloadRequest.let { downloadManager.enqueue(it) }

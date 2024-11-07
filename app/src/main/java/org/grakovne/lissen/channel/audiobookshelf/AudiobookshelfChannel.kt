@@ -8,7 +8,6 @@ import org.grakovne.lissen.BuildConfig
 import org.grakovne.lissen.channel.audiobookshelf.api.AudioBookshelfDataRepository
 import org.grakovne.lissen.channel.audiobookshelf.api.AudioBookshelfMediaRepository
 import org.grakovne.lissen.channel.audiobookshelf.api.AudioBookshelfSyncService
-import org.grakovne.lissen.channel.audiobookshelf.api.RequestHeadersProvider
 import org.grakovne.lissen.channel.audiobookshelf.converter.LibraryItemIdResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.converter.LibraryItemResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.converter.LibraryResponseConverter
@@ -29,7 +28,6 @@ import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.RecentBook
-import org.grakovne.lissen.domain.RequestUri
 import org.grakovne.lissen.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import java.io.InputStream
@@ -47,8 +45,7 @@ class AudiobookshelfChannel @Inject constructor(
     private val sessionResponseConverter: PlaybackSessionResponseConverter,
     private val librarySearchItemsConverter: LibrarySearchItemsConverter,
     private val preferences: LissenSharedPreferences,
-    private val syncService: AudioBookshelfSyncService,
-    private val requestHeadersProvider: RequestHeadersProvider
+    private val syncService: AudioBookshelfSyncService
 ) : MediaChannel {
 
     override fun getChannelCode() = ChannelCode.AUDIOBOOKSHELF
@@ -56,22 +53,15 @@ class AudiobookshelfChannel @Inject constructor(
     override fun provideFileUri(
         libraryItemId: String,
         fileId: String
-    ): RequestUri {
-        val uri = Uri.parse(preferences.getHost())
-            .buildUpon()
-            .appendPath("api")
-            .appendPath("items")
-            .appendPath(libraryItemId)
-            .appendPath("file")
-            .appendPath(fileId)
-            .appendQueryParameter("token", preferences.getToken())
-            .build()
-
-        return RequestUri(
-            uri = uri,
-            headers = requestHeadersProvider.fetchRequestHeaders()
-        )
-    }
+    ): Uri = Uri.parse(preferences.getHost())
+        .buildUpon()
+        .appendPath("api")
+        .appendPath("items")
+        .appendPath(libraryItemId)
+        .appendPath("file")
+        .appendPath(fileId)
+        .appendQueryParameter("token", preferences.getToken())
+        .build()
 
     override suspend fun syncProgress(
         sessionId: String,
