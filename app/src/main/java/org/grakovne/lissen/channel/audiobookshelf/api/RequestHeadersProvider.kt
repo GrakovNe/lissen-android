@@ -12,9 +12,7 @@ class RequestHeadersProvider @Inject constructor(
 ) {
 
     fun fetchRequestHeaders(): List<ServerRequestHeader> {
-        val usersHeaders = preferences
-            .getCustomHeaders()
-            ?: emptyList()
+        val usersHeaders = preferences.getCustomHeaders()
 
         val userAgent = ServerRequestHeader("User-Agent", USER_AGENT)
         return usersHeaders + userAgent

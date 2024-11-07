@@ -159,12 +159,12 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
         editor.apply()
     }
 
-    fun getCustomHeaders(): List<ServerRequestHeader>? {
+    fun getCustomHeaders(): List<ServerRequestHeader> {
         val json = sharedPreferences.getString(KEY_CUSTOM_HEADERS, null)
         val type = object : TypeToken<MutableList<ServerRequestHeader>>() {}.type
 
         return when (json == null) {
-            true -> null
+            true -> emptyList()
             false -> gson.fromJson(json, type)
         }
     }

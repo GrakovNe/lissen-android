@@ -34,7 +34,7 @@ class SettingsViewModel @Inject constructor(
     private val _preferredColorScheme = MutableLiveData(preferences.getColorScheme())
     val preferredColorScheme = _preferredColorScheme
 
-    private val _customHeaders = MutableLiveData(fetchCustomHeaders())
+    private val _customHeaders = MutableLiveData(preferences.getCustomHeaders())
     val customHeaders = _customHeaders
 
     fun logout() {
@@ -83,13 +83,10 @@ class SettingsViewModel @Inject constructor(
         _customHeaders.value = headers
 
         val meaningfulHeaders = headers
+            .distinctBy { it.name }
             .filterNot { it.name.isEmpty() }
             .filterNot { it.value.isEmpty() }
 
         preferences.saveCustomHeaders(meaningfulHeaders)
     }
-
-    private fun fetchCustomHeaders(): List<ServerRequestHeader> = preferences
-        .getCustomHeaders()
-        ?: listOf(ServerRequestHeader.empty())
 }
