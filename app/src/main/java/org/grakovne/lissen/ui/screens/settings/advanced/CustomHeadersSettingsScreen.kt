@@ -66,7 +66,6 @@ fun CustomHeadersSettingsScreen(
                 navigationIcon = {
                     IconButton(onClick = {
                         onBack()
-                        settingsViewModel.saveCustomHeaders()
                     }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
