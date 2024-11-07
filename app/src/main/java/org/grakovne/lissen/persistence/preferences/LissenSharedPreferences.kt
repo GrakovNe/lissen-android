@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import org.grakovne.lissen.channel.common.ChannelCode
 import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.domain.Library
-import org.grakovne.lissen.domain.connection.ServerCustomHeader
+import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import java.security.KeyStore
 import java.util.UUID
 import javax.crypto.Cipher
@@ -151,7 +151,7 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
         return decrypt(encrypted)
     }
 
-    fun saveCustomHeaders(headers: List<ServerCustomHeader>) {
+    fun saveCustomHeaders(headers: List<ServerRequestHeader>) {
         val editor = sharedPreferences.edit()
 
         val json = gson.toJson(headers)
@@ -159,9 +159,9 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
         editor.apply()
     }
 
-    fun getCustomHeaders(): List<ServerCustomHeader>? {
+    fun getCustomHeaders(): List<ServerRequestHeader>? {
         val json = sharedPreferences.getString(KEY_CUSTOM_HEADERS, null)
-        val type = object : TypeToken<MutableList<ServerCustomHeader>>() {}.type
+        val type = object : TypeToken<MutableList<ServerRequestHeader>>() {}.type
 
         return when (json == null) {
             true -> null

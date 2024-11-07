@@ -111,7 +111,7 @@ class AudioBookshelfDataRepository @Inject constructor(
         try {
             val apiClient = ApiClient(
                 host = host,
-                customHeaders = requestHeadersProvider.fetchRequestHeaders()
+                requestHeaders = requestHeadersProvider.fetchRequestHeaders()
             )
 
             apiService = apiClient.retrofit.create(AudiobookshelfApiClient::class.java)
@@ -202,7 +202,7 @@ class AudioBookshelfDataRepository @Inject constructor(
     ): ApiClient = ApiClient(
         host = host,
         token = token,
-        customHeaders = requestHeadersProvider.fetchRequestHeaders()
+        requestHeaders = requestHeadersProvider.fetchRequestHeaders()
     )
 
     companion object {

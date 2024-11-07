@@ -93,6 +93,6 @@ class AudioBookshelfMediaRepository @Inject constructor(
     ): BinaryApiClient = BinaryApiClient(
         host = host,
         token = token,
-        customHeaders = requestHeadersProvider.fetchRequestHeaders()
+        requestHeaders = requestHeadersProvider.fetchRequestHeaders()
     )
 }

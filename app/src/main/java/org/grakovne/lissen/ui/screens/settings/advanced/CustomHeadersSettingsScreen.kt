@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
-import org.grakovne.lissen.domain.connection.ServerCustomHeader
+import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 import kotlin.math.max
 
@@ -91,7 +91,7 @@ fun CustomHeadersSettingsScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 val customHeaders = when (headers.value.isEmpty()) {
-                    true -> listOf(ServerCustomHeader.empty())
+                    true -> listOf(ServerRequestHeader.empty())
                     false -> headers.value
                 }
 
@@ -109,7 +109,7 @@ fun CustomHeadersSettingsScreen(
                             updatedList.remove(pair)
 
                             if (updatedList.isEmpty()) {
-                                updatedList.add(ServerCustomHeader.empty())
+                                updatedList.add(ServerRequestHeader.empty())
                             }
 
                             settingsViewModel.updateCustomHeaders(updatedList)
@@ -133,7 +133,7 @@ fun CustomHeadersSettingsScreen(
                 shape = CircleShape,
                 onClick = {
                     val updatedList = headers.value.toMutableList()
-                    updatedList.add(ServerCustomHeader.empty())
+                    updatedList.add(ServerRequestHeader.empty())
                     settingsViewModel.updateCustomHeaders(updatedList)
 
                     coroutineScope.launch {

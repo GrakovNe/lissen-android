@@ -2,14 +2,14 @@ package org.grakovne.lissen.domain.connection
 
 import java.util.UUID
 
-data class ServerCustomHeader(
+data class ServerRequestHeader(
     val name: String,
     val value: String,
     val id: UUID = UUID.randomUUID()
 ) {
 
     companion object {
-        fun empty() = ServerCustomHeader("", "")
+        fun empty() = ServerRequestHeader("", "")
 
         fun String.clean(): String {
             var sanitized = this.replace(Regex("[\\r\\n]"), "")

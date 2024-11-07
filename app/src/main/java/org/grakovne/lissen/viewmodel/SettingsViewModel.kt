@@ -9,7 +9,7 @@ import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Library
-import org.grakovne.lissen.domain.connection.ServerCustomHeader
+import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import javax.inject.Inject
 
@@ -79,7 +79,7 @@ class SettingsViewModel @Inject constructor(
         preferences.saveColorScheme(colorScheme)
     }
 
-    fun updateCustomHeaders(headers: List<ServerCustomHeader>) {
+    fun updateCustomHeaders(headers: List<ServerRequestHeader>) {
         _customHeaders.value = headers
     }
 
@@ -92,7 +92,7 @@ class SettingsViewModel @Inject constructor(
         preferences.saveCustomHeaders(_customHeaders.value ?: emptyList())
     }
 
-    private fun fetchCustomHeaders(): List<ServerCustomHeader> = preferences
+    private fun fetchCustomHeaders(): List<ServerRequestHeader> = preferences
         .getCustomHeaders()
-        ?: listOf(ServerCustomHeader.empty())
+        ?: listOf(ServerRequestHeader.empty())
 }

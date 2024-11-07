@@ -21,13 +21,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
-import org.grakovne.lissen.domain.connection.ServerCustomHeader
+import org.grakovne.lissen.domain.connection.ServerRequestHeader
 
 @Composable
 fun CustomHeaderComposable(
-    header: ServerCustomHeader,
-    onChanged: (ServerCustomHeader) -> Unit,
-    onDelete: (ServerCustomHeader) -> Unit
+    header: ServerRequestHeader,
+    onChanged: (ServerRequestHeader) -> Unit,
+    onDelete: (ServerRequestHeader) -> Unit
 ) {
     Card(
         shape = RoundedCornerShape(12.dp),

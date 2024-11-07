@@ -1,6 +1,5 @@
 package org.grakovne.lissen.channel.common
 
 import android.os.Build
-import org.grakovne.lissen.BuildConfig
 
-val USER_AGENT = "Lissen/${BuildConfig.VERSION_NAME} (Linux; Android ${Build.VERSION.RELEASE}; ${Build.MODEL}) ExoPlayer/1.4.1"
+val USER_AGENT = "Mozilla/5.0 (Linux; Android ${Build.VERSION.RELEASE}; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.106 Mobile Safari/537.36"
