@@ -70,7 +70,7 @@ fun CustomHeaderComposable(
                     imageVector = Icons.Default.DeleteOutline,
                     contentDescription = null,
                     tint = colorScheme.error,
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(32.dp)
                 )
             }
         }
