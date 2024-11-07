@@ -10,6 +10,7 @@ import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
+import org.grakovne.lissen.domain.connection.ServerRequestHeader.Companion.clean
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import javax.inject.Inject
 
@@ -83,6 +84,7 @@ class SettingsViewModel @Inject constructor(
         _customHeaders.value = headers
 
         val meaningfulHeaders = headers
+            .map { it.clean() }
             .distinctBy { it.name }
             .filterNot { it.name.isEmpty() }
             .filterNot { it.value.isEmpty() }
