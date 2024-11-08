@@ -45,20 +45,17 @@ import org.grakovne.lissen.viewmodel.PlayerViewModel
 fun PlayerScreen(
     navController: AppNavigationService,
     imageLoader: ImageLoader,
-    bookId: String?,
-    bookTitle: String?
+    bookId: String,
+    bookTitle: String
 ) {
     val viewModel: PlayerViewModel = hiltViewModel()
     val titleTextStyle = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
 
-    val playingBook by viewModel.book.observeAsState()
     val isPlaybackReady by viewModel.isPlaybackReady.observeAsState(false)
     val playingQueueExpanded by viewModel.playingQueueExpanded.observeAsState(false)
 
     LaunchedEffect(bookId) {
-        bookId
-            ?.takeIf { it != playingBook?.id }
-            ?.let { viewModel.preparePlayback(it) }
+        bookId.let { viewModel.preparePlayback(it) }
     }
 
     Scaffold(
@@ -84,9 +81,8 @@ fun PlayerScreen(
         },
         bottomBar = {
             NavigationBarComposable(
-                viewModel,
-                navController = navController,
-                onChaptersClick = { viewModel.togglePlayingQueue() }
+                viewModel = viewModel,
+                navController = navController
             )
         },
         modifier = Modifier.systemBarsPadding(),

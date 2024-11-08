@@ -37,8 +37,7 @@ import org.grakovne.lissen.viewmodel.PlayerViewModel
 fun NavigationBarComposable(
     viewModel: PlayerViewModel,
     navController: AppNavigationService,
-    modifier: Modifier = Modifier,
-    onChaptersClick: () -> Unit
+    modifier: Modifier = Modifier
 ) {
     val playbackSpeed by viewModel.playbackSpeed.observeAsState(1f)
     val playingQueueExpanded by viewModel.playingQueueExpanded.observeAsState(false)
@@ -98,10 +97,10 @@ fun NavigationBarComposable(
                     )
                 },
                 selected = playingQueueExpanded,
-                onClick = { onChaptersClick() },
+                onClick = { viewModel.togglePlayingQueue() },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = colorScheme.primary,
-                    indicatorColor = MaterialTheme.colorScheme.surfaceContainer
+                    indicatorColor = colorScheme.surfaceContainer
                 )
             )
 
@@ -126,7 +125,7 @@ fun NavigationBarComposable(
                 enabled = true,
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = colorScheme.primary,
-                    indicatorColor = MaterialTheme.colorScheme.surfaceContainer
+                    indicatorColor = colorScheme.surfaceContainer
                 )
             )
 
@@ -150,7 +149,7 @@ fun NavigationBarComposable(
                 onClick = { navController.showSettings() },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = colorScheme.primary,
-                    indicatorColor = MaterialTheme.colorScheme.surfaceContainer
+                    indicatorColor = colorScheme.surfaceContainer
                 )
             )
 

@@ -28,7 +28,7 @@ import org.grakovne.lissen.R
 
 @Composable
 fun TrackDetailsPlaceholderComposable(
-    bookTitle: String?,
+    bookTitle: String,
     modifier: Modifier = Modifier
 ) {
     val configuration = LocalConfiguration.current
@@ -51,7 +51,7 @@ fun TrackDetailsPlaceholderComposable(
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
-            text = "$bookTitle",
+            text = bookTitle,
             style = typography.headlineSmall,
             fontWeight = FontWeight.SemiBold,
             color = colorScheme.onBackground,
