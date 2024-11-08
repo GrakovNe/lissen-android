@@ -225,7 +225,7 @@ fun LoginScreen(
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Settings,
-                                contentDescription = null,
+                                contentDescription = "Settings",
                                 modifier = Modifier.size(24.dp)
                             )
                         }
