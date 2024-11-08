@@ -51,7 +51,7 @@ fun TrackDetailsPlaceholderComposable(
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
-            text = bookTitle ?: "",
+            text = "$bookTitle",
             style = typography.headlineSmall,
             fontWeight = FontWeight.SemiBold,
             color = colorScheme.onBackground,
