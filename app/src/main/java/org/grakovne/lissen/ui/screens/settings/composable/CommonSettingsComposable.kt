@@ -26,7 +26,7 @@ import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
-fun GeneralSettingsComposable(viewModel: SettingsViewModel) {
+fun CommonSettingsComposable(viewModel: SettingsViewModel) {
     val libraries by viewModel.libraries.observeAsState(emptyList())
     val preferredLibrary by viewModel.preferredLibrary.observeAsState()
     val preferredColorScheme by viewModel.preferredColorScheme.observeAsState()
@@ -42,7 +42,7 @@ fun GeneralSettingsComposable(viewModel: SettingsViewModel) {
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { preferredLibraryExpanded = true }
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .padding(horizontal = 24.dp, vertical = 12.dp)
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
@@ -67,7 +67,7 @@ fun GeneralSettingsComposable(viewModel: SettingsViewModel) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable { colorSchemeExpanded = true }
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .padding(horizontal = 24.dp, vertical = 12.dp)
     ) {
         Column(
             modifier = Modifier.weight(1f)

@@ -32,7 +32,7 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.settings.composable.AdditionalComposable
 import org.grakovne.lissen.ui.screens.settings.composable.AdvancedSettingsItemComposable
-import org.grakovne.lissen.ui.screens.settings.composable.GeneralSettingsComposable
+import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.ServerSettingsComposable
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
@@ -90,7 +90,7 @@ fun SettingsScreen(
                     if (host?.isNotEmpty() == true) {
                         ServerSettingsComposable(navController, viewModel)
                     }
-                    GeneralSettingsComposable(viewModel)
+                    CommonSettingsComposable(viewModel)
                     AdvancedSettingsItemComposable(
                         title = stringResource(R.string.settings_screen_custom_headers_title),
                         description = stringResource(R.string.settings_screen_custom_header_hint),
