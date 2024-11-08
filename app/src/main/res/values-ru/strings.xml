@@ -19,7 +19,7 @@
     <string name="settings_screen_title">Настройки</string>
     <string name="settings_screen_preferred_library_title">Выбранная библиотека</string>
     <string name="settings_screen_connected_as_title">Подключен как %1$s</string>
-    <string name="settings_screen_server_connection">Настройки сервера</string>
+    <string name="settings_screen_server_connection">Подключение к серверу</string>
     <string name="login_error_host_is_down">Сервер недоступен</string>
     <string name="login_error_host_url_is_missing">URL сервера не может быть пустым</string>
     <string name="login_error_username_is_missing">Имя пользователя не может быть пустым</string>

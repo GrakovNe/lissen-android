@@ -27,11 +27,11 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GeneralSettingsItemComposable(
-    items: List<GeneralSettingsItem>,
-    selectedItem: GeneralSettingsItem?,
+fun CommonSettingsItemComposable(
+    items: List<CommonSettingsItem>,
+    selectedItem: CommonSettingsItem?,
     onDismissRequest: () -> Unit,
-    onItemSelected: (GeneralSettingsItem) -> Unit
+    onItemSelected: (CommonSettingsItem) -> Unit
 ) {
     var activeItem by remember { mutableStateOf(selectedItem) }
 

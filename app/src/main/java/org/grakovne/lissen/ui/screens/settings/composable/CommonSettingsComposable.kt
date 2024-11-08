@@ -90,9 +90,9 @@ fun CommonSettingsComposable(viewModel: SettingsViewModel) {
             viewModel.fetchLibraries()
         }
 
-        GeneralSettingsItemComposable(
-            items = libraries.map { GeneralSettingsItem(it.id, it.title) },
-            selectedItem = preferredLibrary?.let { GeneralSettingsItem(it.id, it.title) },
+        CommonSettingsItemComposable(
+            items = libraries.map { CommonSettingsItem(it.id, it.title) },
+            selectedItem = preferredLibrary?.let { CommonSettingsItem(it.id, it.title) },
             onDismissRequest = { preferredLibraryExpanded = false },
             onItemSelected = { item ->
                 libraries
@@ -103,7 +103,7 @@ fun CommonSettingsComposable(viewModel: SettingsViewModel) {
     }
 
     if (colorSchemeExpanded) {
-        GeneralSettingsItemComposable(
+        CommonSettingsItemComposable(
             items = listOf(
                 ColorScheme.LIGHT.toItem(context),
                 ColorScheme.FOLLOW_SYSTEM.toItem(context),
@@ -121,7 +121,7 @@ fun CommonSettingsComposable(viewModel: SettingsViewModel) {
     }
 }
 
-private fun ColorScheme.toItem(context: Context): GeneralSettingsItem {
+private fun ColorScheme.toItem(context: Context): CommonSettingsItem {
     val id = this.name
     val name = when (this) {
         ColorScheme.FOLLOW_SYSTEM -> context.getString(R.string.color_scheme_follow_system)
@@ -129,5 +129,5 @@ private fun ColorScheme.toItem(context: Context): GeneralSettingsItem {
         ColorScheme.DARK -> context.getString(R.string.color_scheme_dark)
     }
 
-    return GeneralSettingsItem(id, name)
+    return CommonSettingsItem(id, name)
 }
