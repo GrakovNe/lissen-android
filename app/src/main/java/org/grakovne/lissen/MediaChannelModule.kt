@@ -6,7 +6,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfChannel
+import org.grakovne.lissen.channel.audiobookshelf.library.LibraryAudiobookshelfChannel
 import org.grakovne.lissen.channel.common.ChannelCode
 import org.grakovne.lissen.channel.common.MediaChannel
 import javax.inject.Singleton
@@ -19,10 +19,10 @@ object MediaChannelModule {
     @Provides
     @Singleton
     fun provideMediaChannels(
-        audiobookshelfChannel: AudiobookshelfChannel
+        libraryAudiobookshelfChannel: LibraryAudiobookshelfChannel
     ): Map<ChannelCode, @JvmSuppressWildcards MediaChannel> {
         return mapOf(
-            audiobookshelfChannel.getChannelCode() to audiobookshelfChannel
+            libraryAudiobookshelfChannel.getChannelCode() to libraryAudiobookshelfChannel
         )
     }
 }

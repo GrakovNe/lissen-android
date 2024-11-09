@@ -1,5 +1,6 @@
 package org.grakovne.lissen.channel.common
 
 enum class ChannelCode {
-    AUDIOBOOKSHELF
+    AUDIOBOOKSHELF_LIBRARY,
+    AUDIOBOOKSHELF_PODCAST,
 }

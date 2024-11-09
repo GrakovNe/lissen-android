@@ -32,7 +32,7 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
         context.getSharedPreferences("secure_prefs", Context.MODE_PRIVATE)
 
     fun getPreferredChannel(): ChannelCode =
-        ChannelCode.AUDIOBOOKSHELF // TODO: Implement selector once second channel got
+        ChannelCode.AUDIOBOOKSHELF_LIBRARY // TODO: Implement selector once second channel got
 
     fun hasCredentials(): Boolean {
         val host = getHost()

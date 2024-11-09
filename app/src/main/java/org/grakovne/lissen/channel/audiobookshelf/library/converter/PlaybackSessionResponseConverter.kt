@@ -1,0 +1,16 @@
+package org.grakovne.lissen.channel.audiobookshelf.library.converter
+
+import org.grakovne.lissen.channel.audiobookshelf.common.model.PlaybackSessionResponse
+import org.grakovne.lissen.domain.PlaybackSession
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class PlaybackSessionResponseConverter @Inject constructor() {
+
+    fun apply(response: PlaybackSessionResponse): PlaybackSession =
+        PlaybackSession(
+            sessionId = response.id,
+            bookId = response.libraryItemId
+        )
+}

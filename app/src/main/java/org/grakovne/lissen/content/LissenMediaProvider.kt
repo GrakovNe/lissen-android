@@ -5,7 +5,6 @@ import android.util.Log
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.ChannelCode
-import org.grakovne.lissen.channel.common.ChannelCode.AUDIOBOOKSHELF
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.content.cache.LocalCacheRepository
 import org.grakovne.lissen.domain.Book
@@ -178,10 +177,7 @@ class LissenMediaProvider @Inject constructor(
         password: String
     ): ApiResult<UserAccount> {
         Log.d(TAG, "Authorizing for $username@$host")
-
-        return when (sharedPreferences.getPreferredChannel()) {
-            AUDIOBOOKSHELF -> providePreferredChannel().authorize(host, username, password)
-        }
+        return providePreferredChannel().authorize(host, username, password)
     }
 
     private suspend fun syncFromLocalProgress(detailedBook: DetailedBook): DetailedBook {
