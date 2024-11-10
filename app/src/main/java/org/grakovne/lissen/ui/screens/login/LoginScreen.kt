@@ -42,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -140,6 +141,7 @@ fun LoginScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
+                            .testTag("hostInput")
                     )
 
                     OutlinedTextField(
@@ -153,6 +155,7 @@ fun LoginScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 12.dp)
+                            .testTag("usernameInput")
                     )
 
                     OutlinedTextField(
@@ -178,6 +181,7 @@ fun LoginScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
+                            .testTag("passwordInput")
                     )
 
                     Row(
@@ -187,7 +191,9 @@ fun LoginScreen(
                     ) {
                         Button(
                             onClick = { viewModel.login() },
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag("loginButton"),
                             shape = RoundedCornerShape(
                                 topStart = 16.dp,
                                 bottomStart = 16.dp,
