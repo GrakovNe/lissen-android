@@ -133,6 +133,7 @@ fun LoginScreen(
                         onValueChange = {
                             viewModel.setHost(it)
                         },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
                         label = { Text(stringResource(R.string.login_screen_server_url_input)) },
                         shape = RoundedCornerShape(16.dp),
                         singleLine = true,
