@@ -11,7 +11,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class LibraryItemIdResponseConverter @Inject constructor() {
+class BookResponseConverter @Inject constructor() {
 
     fun apply(
         item: LibraryItemIdResponse,

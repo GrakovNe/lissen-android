@@ -5,12 +5,12 @@ import org.grakovne.lissen.BuildConfig
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfDataRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfMediaRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfSyncService
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.DeviceInfo
 import org.grakovne.lissen.channel.audiobookshelf.common.model.LibraryResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.StartPlaybackRequest
-import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibraryResponseConverter
-import org.grakovne.lissen.channel.audiobookshelf.library.converter.PlaybackSessionResponseConverter
-import org.grakovne.lissen.channel.audiobookshelf.library.converter.RecentBookResponseConverter
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.domain.Library
@@ -28,7 +28,7 @@ abstract class AudiobookshelfChannel(
     private val syncService: AudioBookshelfSyncService,
     private val libraryResponseConverter: LibraryResponseConverter,
     private val mediaRepository: AudioBookshelfMediaRepository,
-    private val recentBookResponseConverter: RecentBookResponseConverter
+    private val recentBookResponseConverter: RecentListeningResponseConverter
 ) : MediaChannel {
 
     override fun provideFileUri(

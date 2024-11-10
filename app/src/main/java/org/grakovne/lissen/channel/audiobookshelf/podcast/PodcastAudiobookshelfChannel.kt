@@ -8,14 +8,14 @@ import org.grakovne.lissen.channel.audiobookshelf.common.AudiobookshelfChannel
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfDataRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfMediaRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfSyncService
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.DeviceInfo
 import org.grakovne.lissen.channel.audiobookshelf.common.model.StartPlaybackRequest
-import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibraryItemIdResponseConverter
-import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibraryItemResponseConverter
-import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibraryResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.library.converter.BookPageResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.library.converter.BookResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibrarySearchItemsConverter
-import org.grakovne.lissen.channel.audiobookshelf.library.converter.PlaybackSessionResponseConverter
-import org.grakovne.lissen.channel.audiobookshelf.library.converter.RecentBookResponseConverter
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.ApiResult.Success
 import org.grakovne.lissen.channel.common.LibraryType
@@ -32,18 +32,18 @@ import javax.inject.Singleton
 class PodcastAudiobookshelfChannel @Inject constructor(
     dataRepository: AudioBookshelfDataRepository,
     mediaRepository: AudioBookshelfMediaRepository,
-    recentBookResponseConverter: RecentBookResponseConverter,
+    recentListeningResponseConverter: RecentListeningResponseConverter,
     preferences: LissenSharedPreferences,
     syncService: AudioBookshelfSyncService,
     sessionResponseConverter: PlaybackSessionResponseConverter,
     libraryResponseConverter: LibraryResponseConverter,
-    private val libraryItemResponseConverter: LibraryItemResponseConverter,
-    private val libraryItemIdResponseConverter: LibraryItemIdResponseConverter,
+    private val bookPageResponseConverter: BookPageResponseConverter,
+    private val bookResponseConverter: BookResponseConverter,
     private val librarySearchItemsConverter: LibrarySearchItemsConverter
 ) : AudiobookshelfChannel(
     dataRepository = dataRepository,
     mediaRepository = mediaRepository,
-    recentBookResponseConverter = recentBookResponseConverter,
+    recentBookResponseConverter = recentListeningResponseConverter,
     sessionResponseConverter = sessionResponseConverter,
     preferences = preferences,
     syncService = syncService,
@@ -62,7 +62,7 @@ class PodcastAudiobookshelfChannel @Inject constructor(
             pageSize = pageSize,
             pageNumber = pageNumber
         )
-        .map { libraryItemResponseConverter.apply(it) }
+        .map { bookPageResponseConverter.apply(it) }
 
     override suspend fun searchBooks(
         libraryId: String,
@@ -135,8 +135,8 @@ class PodcastAudiobookshelfChannel @Inject constructor(
                 bookProgress
                     .await()
                     .fold(
-                        onSuccess = { Success(libraryItemIdResponseConverter.apply(item, it)) },
-                        onFailure = { Success(libraryItemIdResponseConverter.apply(item, null)) }
+                        onSuccess = { Success(bookResponseConverter.apply(item, it)) },
+                        onFailure = { Success(bookResponseConverter.apply(item, null)) }
                     )
             },
             onFailure = { ApiResult.Error(it.code) }

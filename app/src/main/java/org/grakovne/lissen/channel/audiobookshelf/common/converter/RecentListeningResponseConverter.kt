@@ -1,4 +1,4 @@
-package org.grakovne.lissen.channel.audiobookshelf.library.converter
+package org.grakovne.lissen.channel.audiobookshelf.common.converter
 
 import org.grakovne.lissen.channel.audiobookshelf.common.model.PersonalizedFeedResponse
 import org.grakovne.lissen.domain.RecentBook
@@ -6,7 +6,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class RecentBookResponseConverter @Inject constructor() {
+class RecentListeningResponseConverter @Inject constructor() {
 
     fun apply(response: List<PersonalizedFeedResponse>): List<RecentBook> = response
         .find { it.labelStringKey == LABEL_CONTINUE_LISTENING }

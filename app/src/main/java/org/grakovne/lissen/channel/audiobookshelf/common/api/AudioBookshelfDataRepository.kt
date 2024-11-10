@@ -1,6 +1,7 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.api
 
 import org.grakovne.lissen.channel.audiobookshelf.common.client.AudiobookshelfApiClient
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LoginResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.AuthorResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.LibraryItemIdResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.LibraryItemsResponse
@@ -13,7 +14,6 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.PersonalizedFeedR
 import org.grakovne.lissen.channel.audiobookshelf.common.model.PlaybackSessionResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.StartPlaybackRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.SyncProgressRequest
-import org.grakovne.lissen.channel.audiobookshelf.library.converter.LoginResponseConverter
 import org.grakovne.lissen.channel.common.ApiClient
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult

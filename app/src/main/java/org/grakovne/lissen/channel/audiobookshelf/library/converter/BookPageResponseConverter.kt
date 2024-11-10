@@ -8,7 +8,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class LibraryItemResponseConverter @Inject constructor() {
+class BookPageResponseConverter @Inject constructor() {
 
     fun apply(response: LibraryItemsResponse): PagedItems<Book> = response
         .results
