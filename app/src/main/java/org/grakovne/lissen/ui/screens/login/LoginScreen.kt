@@ -185,9 +185,7 @@ fun LoginScreen(
                             .padding(top = 32.dp)
                     ) {
                         Button(
-                            onClick = {
-                                viewModel.login()
-                            },
+                            onClick = { viewModel.login() },
                             modifier = Modifier.weight(1f),
                             shape = RoundedCornerShape(
                                 topStart = 16.dp,

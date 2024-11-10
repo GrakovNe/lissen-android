@@ -53,13 +53,9 @@ class SettingsViewModel @Inject constructor(
                     _libraries.value = libraries
 
                     val preferredLibrary = preferences.getPreferredLibrary()
-
                     _preferredLibrary.value = when (preferredLibrary) {
                         null -> libraries.firstOrNull()
-                        else ->
-                            libraries
-                                .find { it.id == preferredLibrary.id }
-                                ?: libraries.firstOrNull()
+                        else -> libraries.find { it.id == preferredLibrary.id }
                     }
                 }
 
