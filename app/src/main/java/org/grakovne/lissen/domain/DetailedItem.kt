@@ -2,7 +2,7 @@ package org.grakovne.lissen.domain
 
 import java.io.Serializable
 
-data class DetailedBook(
+data class DetailedItem(
     val id: String,
     val title: String,
     val author: String?,

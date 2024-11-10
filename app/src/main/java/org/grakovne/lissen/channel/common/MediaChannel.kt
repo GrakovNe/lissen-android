@@ -2,7 +2,7 @@ package org.grakovne.lissen.channel.common
 
 import android.net.Uri
 import org.grakovne.lissen.domain.Book
-import org.grakovne.lissen.domain.DetailedBook
+import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
@@ -51,7 +51,7 @@ interface MediaChannel {
 
     suspend fun fetchRecentListenedBooks(libraryId: String): ApiResult<List<RecentBook>>
 
-    suspend fun fetchBook(bookId: String): ApiResult<DetailedBook>
+    suspend fun fetchBook(bookId: String): ApiResult<DetailedItem>
 
     suspend fun authorize(
         host: String,

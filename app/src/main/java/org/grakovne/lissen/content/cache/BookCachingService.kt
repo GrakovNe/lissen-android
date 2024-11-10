@@ -22,7 +22,7 @@ import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.content.cache.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.api.CachedLibraryRepository
 import org.grakovne.lissen.domain.Book
-import org.grakovne.lissen.domain.DetailedBook
+import org.grakovne.lissen.domain.DetailedItem
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -85,7 +85,7 @@ class BookCachingService @Inject constructor(
         return@flow emit(CacheProgress.Removed)
     }
 
-    private suspend fun cacheBookMedia(book: DetailedBook, channel: MediaChannel): CacheProgress {
+    private suspend fun cacheBookMedia(book: DetailedItem, channel: MediaChannel): CacheProgress {
         val downloadManager = context.getSystemService(DOWNLOAD_SERVICE) as DownloadManager
         val downloads = book
             .files
@@ -143,7 +143,7 @@ class BookCachingService @Inject constructor(
         }
     }
 
-    private suspend fun cacheBookCover(book: DetailedBook, channel: MediaChannel): CacheProgress {
+    private suspend fun cacheBookCover(book: DetailedItem, channel: MediaChannel): CacheProgress {
         val file = properties.provideBookCoverPath(book.id)
 
         return withContext(Dispatchers.IO) {
@@ -180,7 +180,7 @@ class BookCachingService @Inject constructor(
             }
         )
 
-    private suspend fun cacheBookInfo(book: DetailedBook) = bookRepository
+    private suspend fun cacheBookInfo(book: DetailedItem) = bookRepository
         .cacheBook(book)
         .let { CacheProgress.Completed }
 }

@@ -9,8 +9,8 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryRespon
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.DeviceInfo
-import org.grakovne.lissen.channel.audiobookshelf.common.model.LibraryResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.StartPlaybackRequest
+import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LibraryResponse
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.domain.Library

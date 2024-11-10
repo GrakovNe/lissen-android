@@ -8,7 +8,7 @@ import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.domain.DetailedBook
+import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
@@ -21,7 +21,7 @@ class PlaybackSynchronizationService @Inject constructor(
     private val mediaChannel: LissenMediaProvider,
     private val sharedPreferences: LissenSharedPreferences
 ) {
-    private var currentBook: DetailedBook? = null
+    private var currentBook: DetailedItem? = null
     private var playbackSession: PlaybackSession? = null
     private val serviceScope = MainScope()
 
@@ -37,7 +37,7 @@ class PlaybackSynchronizationService @Inject constructor(
         })
     }
 
-    fun startPlaybackSynchronization(book: DetailedBook) {
+    fun startPlaybackSynchronization(book: DetailedItem) {
         serviceScope.coroutineContext.cancelChildren()
         currentBook = book
     }
@@ -99,7 +99,7 @@ class PlaybackSynchronizationService @Inject constructor(
         val currentBook = exoPlayer
             .currentMediaItem
             ?.localConfiguration
-            ?.tag as? DetailedBook
+            ?.tag as? DetailedItem
             ?: return PlaybackProgress(0.0, 0.0)
 
         val currentIndex = exoPlayer.currentMediaItemIndex

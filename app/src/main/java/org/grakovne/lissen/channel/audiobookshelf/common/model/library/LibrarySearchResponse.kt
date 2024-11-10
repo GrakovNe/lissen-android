@@ -1,4 +1,6 @@
-package org.grakovne.lissen.channel.audiobookshelf.common.model
+package org.grakovne.lissen.channel.audiobookshelf.common.model.library
+
+import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LibraryItem
 
 data class LibrarySearchResponse(
     val book: List<LibrarySearchItemResponse>,

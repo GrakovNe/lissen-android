@@ -1,6 +1,6 @@
-package org.grakovne.lissen.channel.audiobookshelf.common.model
+package org.grakovne.lissen.channel.audiobookshelf.common.model.library
 
-data class AudioFileResponse(
+data class BookAudioFileResponse(
     val index: Int,
     val ino: String,
     val duration: Double,

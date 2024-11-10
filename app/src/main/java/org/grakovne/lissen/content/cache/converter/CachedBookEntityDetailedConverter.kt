@@ -3,7 +3,7 @@ package org.grakovne.lissen.content.cache.converter
 import org.grakovne.lissen.content.cache.entity.CachedBookEntity
 import org.grakovne.lissen.domain.BookChapter
 import org.grakovne.lissen.domain.BookFile
-import org.grakovne.lissen.domain.DetailedBook
+import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.MediaProgress
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -11,7 +11,7 @@ import javax.inject.Singleton
 @Singleton
 class CachedBookEntityDetailedConverter @Inject constructor() {
 
-    fun apply(entity: CachedBookEntity): DetailedBook = DetailedBook(
+    fun apply(entity: CachedBookEntity): DetailedItem = DetailedItem(
         id = entity.detailedBook.id,
         title = entity.detailedBook.title,
         author = entity.detailedBook.author,

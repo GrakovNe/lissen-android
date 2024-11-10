@@ -22,7 +22,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
-import org.grakovne.lissen.domain.DetailedBook
+import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.ACTION_SEEK_TO
@@ -53,8 +53,8 @@ class MediaRepository @Inject constructor(
     private val _mediaItemPosition = MutableLiveData<Double>()
     val mediaItemPosition: LiveData<Double> = _mediaItemPosition
 
-    private val _playingBook = MutableLiveData<DetailedBook>()
-    val playingBook: LiveData<DetailedBook> = _playingBook
+    private val _playingBook = MutableLiveData<DetailedItem>()
+    val playingBook: LiveData<DetailedItem> = _playingBook
 
     private val _playbackSpeed = MutableLiveData(preferences.getPlaybackSpeed())
     val playbackSpeed: LiveData<Float> = _playbackSpeed
@@ -64,7 +64,7 @@ class MediaRepository @Inject constructor(
     private val bookDetailsReadyReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == PLAYBACK_READY) {
-                val book = intent.getSerializableExtra(BOOK_EXTRA) as? DetailedBook
+                val book = intent.getSerializableExtra(BOOK_EXTRA) as? DetailedItem
 
                 book?.let {
                     CoroutineScope(Dispatchers.Main).launch {
@@ -119,7 +119,7 @@ class MediaRepository @Inject constructor(
         _isPlaybackReady.postValue(false)
     }
 
-    fun startPreparingPlayingBook(book: DetailedBook) {
+    fun startPreparingPlayingBook(book: DetailedItem) {
         if (::mediaController.isInitialized && _playingBook.value != book) {
             startPreparingPlayback(book)
         }
@@ -165,13 +165,13 @@ class MediaRepository @Inject constructor(
         preferences.savePlaybackSpeed(speed)
     }
 
-    private fun startUpdatingProgress(detailedBook: DetailedBook) {
+    private fun startUpdatingProgress(detailedItem: DetailedItem) {
         handler.removeCallbacksAndMessages(null)
 
         handler.postDelayed(
             object : Runnable {
                 override fun run() {
-                    updateProgress(detailedBook)
+                    updateProgress(detailedItem)
                     handler.postDelayed(this, 500)
                 }
             },
@@ -179,17 +179,17 @@ class MediaRepository @Inject constructor(
         )
     }
 
-    private fun updateProgress(detailedBook: DetailedBook): Deferred<Unit> {
+    private fun updateProgress(detailedItem: DetailedItem): Deferred<Unit> {
         return CoroutineScope(Dispatchers.Main).async {
             val currentIndex = mediaController.currentMediaItemIndex
-            val accumulated = detailedBook.files.take(currentIndex).sumOf { it.duration }
+            val accumulated = detailedItem.files.take(currentIndex).sumOf { it.duration }
             val currentFilePosition = mediaController.currentPosition / 1000.0
 
             _mediaItemPosition.value = (accumulated + currentFilePosition)
         }
     }
 
-    private fun startPreparingPlayback(book: DetailedBook) {
+    private fun startPreparingPlayback(book: DetailedItem) {
         _mediaItemPosition.postValue(0.0)
         _isPlaying.postValue(false)
 

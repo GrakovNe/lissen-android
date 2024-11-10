@@ -1,4 +1,4 @@
-package org.grakovne.lissen.channel.audiobookshelf.common.model
+package org.grakovne.lissen.channel.audiobookshelf.common.model.common
 
 data class LoginResponse(
     val user: User,

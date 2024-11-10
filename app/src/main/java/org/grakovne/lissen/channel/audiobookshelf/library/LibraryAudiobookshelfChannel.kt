@@ -8,19 +8,19 @@ import org.grakovne.lissen.channel.audiobookshelf.common.AudiobookshelfChannel
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfDataRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfMediaRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfSyncService
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryPageResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.DeviceInfo
 import org.grakovne.lissen.channel.audiobookshelf.common.model.StartPlaybackRequest
-import org.grakovne.lissen.channel.audiobookshelf.library.converter.BookPageResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.BookResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibrarySearchItemsConverter
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.ApiResult.Success
 import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.domain.Book
-import org.grakovne.lissen.domain.DetailedBook
+import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.UserAccount
@@ -37,7 +37,7 @@ class LibraryAudiobookshelfChannel @Inject constructor(
     syncService: AudioBookshelfSyncService,
     sessionResponseConverter: PlaybackSessionResponseConverter,
     libraryResponseConverter: LibraryResponseConverter,
-    private val bookPageResponseConverter: BookPageResponseConverter,
+    private val libraryPageResponseConverter: LibraryPageResponseConverter,
     private val bookResponseConverter: BookResponseConverter,
     private val librarySearchItemsConverter: LibrarySearchItemsConverter
 ) : AudiobookshelfChannel(
@@ -62,7 +62,7 @@ class LibraryAudiobookshelfChannel @Inject constructor(
             pageSize = pageSize,
             pageNumber = pageNumber
         )
-        .map { bookPageResponseConverter.apply(it) }
+        .map { libraryPageResponseConverter.apply(it) }
 
     override suspend fun searchBooks(
         libraryId: String,
@@ -126,8 +126,8 @@ class LibraryAudiobookshelfChannel @Inject constructor(
             .map { sessionResponseConverter.apply(it) }
     }
 
-    override suspend fun fetchBook(bookId: String): ApiResult<DetailedBook> = coroutineScope {
-        val book = async { dataRepository.fetchLibraryItem(bookId) }
+    override suspend fun fetchBook(bookId: String): ApiResult<DetailedItem> = coroutineScope {
+        val book = async { dataRepository.fetchBook(bookId) }
         val bookProgress = async { dataRepository.fetchLibraryItemProgress(bookId) }
 
         book.await().foldAsync(

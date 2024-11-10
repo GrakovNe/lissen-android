@@ -1,17 +1,18 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.client
 
-import org.grakovne.lissen.channel.audiobookshelf.common.model.AuthorResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.LibraryItemIdResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.LibraryItemsResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.LibraryResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.LibrarySearchResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.LoginRequest
-import org.grakovne.lissen.channel.audiobookshelf.common.model.LoginResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.PersonalizedFeedResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.PlaybackSessionResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.PodcastResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.StartPlaybackRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.SyncProgressRequest
+import org.grakovne.lissen.channel.audiobookshelf.common.model.common.AuthorResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LibraryItemsResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LibraryResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LoginRequest
+import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LoginResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.common.PersonalizedFeedResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.library.BookResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.library.LibrarySearchResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -51,7 +52,12 @@ interface AudiobookshelfApiClient {
     @GET("/api/items/{itemId}")
     suspend fun fetchLibraryItem(
         @Path("itemId") itemId: String
-    ): Response<LibraryItemIdResponse>
+    ): Response<BookResponse>
+
+    @GET("/api/items/{itemId}")
+    suspend fun fetchPodcastEpisode(
+        @Path("itemId") itemId: String
+    ): Response<PodcastResponse>
 
     @GET("/api/authors/{authorId}?include=items")
     suspend fun fetchAuthorLibraryItems(

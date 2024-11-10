@@ -8,19 +8,19 @@ import org.grakovne.lissen.channel.audiobookshelf.common.AudiobookshelfChannel
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfDataRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfMediaRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfSyncService
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryPageResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.DeviceInfo
 import org.grakovne.lissen.channel.audiobookshelf.common.model.StartPlaybackRequest
-import org.grakovne.lissen.channel.audiobookshelf.library.converter.BookPageResponseConverter
-import org.grakovne.lissen.channel.audiobookshelf.library.converter.BookResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibrarySearchItemsConverter
+import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastResponseConverter
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.ApiResult.Success
 import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.domain.Book
-import org.grakovne.lissen.domain.DetailedBook
+import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.UserAccount
@@ -37,8 +37,8 @@ class PodcastAudiobookshelfChannel @Inject constructor(
     syncService: AudioBookshelfSyncService,
     sessionResponseConverter: PlaybackSessionResponseConverter,
     libraryResponseConverter: LibraryResponseConverter,
-    private val bookPageResponseConverter: BookPageResponseConverter,
-    private val bookResponseConverter: BookResponseConverter,
+    private val libraryPageResponseConverter: LibraryPageResponseConverter,
+    private val podcastResponseConverter: PodcastResponseConverter,
     private val librarySearchItemsConverter: LibrarySearchItemsConverter
 ) : AudiobookshelfChannel(
     dataRepository = dataRepository,
@@ -62,7 +62,7 @@ class PodcastAudiobookshelfChannel @Inject constructor(
             pageSize = pageSize,
             pageNumber = pageNumber
         )
-        .map { bookPageResponseConverter.apply(it) }
+        .map { libraryPageResponseConverter.apply(it) }
 
     override suspend fun searchBooks(
         libraryId: String,
@@ -126,17 +126,18 @@ class PodcastAudiobookshelfChannel @Inject constructor(
             .map { sessionResponseConverter.apply(it) }
     }
 
-    override suspend fun fetchBook(bookId: String): ApiResult<DetailedBook> = coroutineScope {
-        val book = async { dataRepository.fetchLibraryItem(bookId) }
-        val bookProgress = async { dataRepository.fetchLibraryItemProgress(bookId) }
+    override suspend fun fetchBook(bookId: String): ApiResult<DetailedItem> = coroutineScope {
+        val episode = async { dataRepository.fetchPodcastEpisode(bookId) }
+        // val bookProgress = async { dataRepository.fetchLibraryItemProgress(bookId) }
+        val bookProgress = async { ApiResult.Success(null) }
 
-        book.await().foldAsync(
+        episode.await().foldAsync(
             onSuccess = { item ->
                 bookProgress
                     .await()
                     .fold(
-                        onSuccess = { Success(bookResponseConverter.apply(item, it)) },
-                        onFailure = { Success(bookResponseConverter.apply(item, null)) }
+                        onSuccess = { Success(podcastResponseConverter.apply(item, it)) },
+                        onFailure = { Success(podcastResponseConverter.apply(item, null)) }
                     )
             },
             onFailure = { ApiResult.Error(it.code) }

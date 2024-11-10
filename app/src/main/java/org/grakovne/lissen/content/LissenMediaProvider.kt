@@ -9,7 +9,7 @@ import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.content.cache.LocalCacheRepository
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.BookCachedState.CACHED
-import org.grakovne.lissen.domain.DetailedBook
+import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
@@ -155,7 +155,7 @@ class LissenMediaProvider @Inject constructor(
 
     suspend fun fetchBook(
         bookId: String
-    ): ApiResult<DetailedBook> {
+    ): ApiResult<DetailedItem> {
         Log.d(TAG, "Fetching Detailed book info for $bookId")
 
         return when (cacheConfiguration.localCacheUsing()) {
@@ -180,15 +180,15 @@ class LissenMediaProvider @Inject constructor(
         return providePreferredChannel().authorize(host, username, password)
     }
 
-    private suspend fun syncFromLocalProgress(detailedBook: DetailedBook): DetailedBook {
-        val cachedBook = localCacheRepository.fetchBook(detailedBook.id) ?: return detailedBook
+    private suspend fun syncFromLocalProgress(detailedItem: DetailedItem): DetailedItem {
+        val cachedBook = localCacheRepository.fetchBook(detailedItem.id) ?: return detailedItem
 
-        val cachedProgress = cachedBook.progress ?: return detailedBook
-        val channelProgress = detailedBook.progress
+        val cachedProgress = cachedBook.progress ?: return detailedItem
+        val channelProgress = detailedItem.progress
 
         val updatedProgress = listOfNotNull(cachedProgress, channelProgress)
             .maxByOrNull { it.lastUpdate }
-            ?: return detailedBook
+            ?: return detailedItem
 
         Log.d(
             TAG,
@@ -200,7 +200,7 @@ class LissenMediaProvider @Inject constructor(
             """.trimIndent()
         )
 
-        return detailedBook.copy(progress = updatedProgress)
+        return detailedItem.copy(progress = updatedProgress)
     }
 
     private suspend fun flagCached(page: PagedItems<Book>): PagedItems<Book> {

@@ -25,7 +25,7 @@ import kotlinx.coroutines.withContext
 import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.BookFile
-import org.grakovne.lissen.domain.DetailedBook
+import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import javax.inject.Inject
@@ -86,7 +86,7 @@ class PlaybackService : MediaSessionService() {
             }
 
             ACTION_SET_PLAYBACK -> {
-                val book = intent.getSerializableExtra(BOOK_EXTRA) as? DetailedBook
+                val book = intent.getSerializableExtra(BOOK_EXTRA) as? DetailedItem
                 book?.let {
                     playerServiceScope
                         .launch { preparePlayback(it) }
@@ -95,7 +95,7 @@ class PlaybackService : MediaSessionService() {
             }
 
             ACTION_SEEK_TO -> {
-                val book = intent.getSerializableExtra(BOOK_EXTRA) as? DetailedBook
+                val book = intent.getSerializableExtra(BOOK_EXTRA) as? DetailedItem
                 val position = intent.getDoubleExtra(POSITION, 0.0)
                 book?.let { seek(it.files, position) }
                 return START_NOT_STICKY
@@ -120,7 +120,7 @@ class PlaybackService : MediaSessionService() {
     }
 
     @OptIn(UnstableApi::class)
-    private suspend fun preparePlayback(book: DetailedBook) {
+    private suspend fun preparePlayback(book: DetailedItem) {
         exoPlayer.playWhenReady = false
 
         withContext(Dispatchers.IO) {

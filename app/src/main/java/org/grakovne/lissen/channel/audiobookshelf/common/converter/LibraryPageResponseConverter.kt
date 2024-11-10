@@ -1,6 +1,6 @@
-package org.grakovne.lissen.channel.audiobookshelf.library.converter
+package org.grakovne.lissen.channel.audiobookshelf.common.converter
 
-import org.grakovne.lissen.channel.audiobookshelf.common.model.LibraryItemsResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LibraryItemsResponse
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.BookCachedState
 import org.grakovne.lissen.domain.PagedItems
@@ -8,7 +8,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class BookPageResponseConverter @Inject constructor() {
+class LibraryPageResponseConverter @Inject constructor() {
 
     fun apply(response: LibraryItemsResponse): PagedItems<Book> = response
         .results

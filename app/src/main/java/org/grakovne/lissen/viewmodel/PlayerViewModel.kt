@@ -10,7 +10,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.domain.DetailedBook
+import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.playback.MediaRepository
 import javax.inject.Inject
 
@@ -20,7 +20,7 @@ class PlayerViewModel @Inject constructor(
     private val mediaRepository: MediaRepository
 ) : ViewModel() {
 
-    val book: LiveData<DetailedBook> = mediaRepository.playingBook
+    val book: LiveData<DetailedItem> = mediaRepository.playingBook
 
     private val mediaItemPosition: LiveData<Double> = mediaRepository.mediaItemPosition
 
