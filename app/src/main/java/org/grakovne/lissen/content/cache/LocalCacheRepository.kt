@@ -105,8 +105,11 @@ class LocalCacheRepository @Inject constructor(
 
     suspend fun fetchBook(bookId: String) = cachedBookRepository
         .fetchBook(bookId)
+        ?.takeIf { checkBookIntegrity(bookId) }
 
-    suspend fun fetchCachedBookIds() = cachedBookRepository.fetchCachedBooksIds()
+    suspend fun fetchCachedBookIds() = cachedBookRepository
+        .fetchCachedBooksIds()
+        .filter { checkBookIntegrity(it) }
 
     private suspend fun checkBookIntegrity(bookId: String): Boolean {
         val book = cachedBookRepository.fetchBook(bookId) ?: return false

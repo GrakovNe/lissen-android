@@ -40,9 +40,6 @@ class SettingsViewModel @Inject constructor(
 
     fun logout() {
         preferences.clearPreferences()
-
-        _host.value = preferences.getHost()
-        _username.value = preferences.getUsername()
     }
 
     fun fetchLibraries() {
@@ -53,13 +50,9 @@ class SettingsViewModel @Inject constructor(
                     _libraries.value = libraries
 
                     val preferredLibrary = preferences.getPreferredLibrary()
-
                     _preferredLibrary.value = when (preferredLibrary) {
                         null -> libraries.firstOrNull()
-                        else ->
-                            libraries
-                                .find { it.id == preferredLibrary.id }
-                                ?: libraries.firstOrNull()
+                        else -> libraries.find { it.id == preferredLibrary.id }
                     }
                 }
 

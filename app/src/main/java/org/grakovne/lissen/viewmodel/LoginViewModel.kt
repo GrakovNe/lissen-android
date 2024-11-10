@@ -115,11 +115,12 @@ class LoginViewModel @Inject constructor(
             .fetchLibraries()
             .fold(
                 onSuccess = {
-                    it
+                    val preferredLibrary = it
                         .find { item -> item.id == account.preferredLibraryId }
-                        ?.let { library ->
-                            preferences.savePreferredLibrary(Library(library.id, library.title))
-                        }
+                        ?: it.firstOrNull()
+
+                    preferredLibrary
+                        ?.let { library -> preferences.savePreferredLibrary(Library(library.id, library.title)) }
                 },
                 onFailure = {
                     account

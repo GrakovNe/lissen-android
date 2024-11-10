@@ -42,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -133,12 +134,14 @@ fun LoginScreen(
                         onValueChange = {
                             viewModel.setHost(it)
                         },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
                         label = { Text(stringResource(R.string.login_screen_server_url_input)) },
                         shape = RoundedCornerShape(16.dp),
                         singleLine = true,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
+                            .testTag("hostInput")
                     )
 
                     OutlinedTextField(
@@ -152,6 +155,7 @@ fun LoginScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 12.dp)
+                            .testTag("usernameInput")
                     )
 
                     OutlinedTextField(
@@ -177,6 +181,7 @@ fun LoginScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
+                            .testTag("passwordInput")
                     )
 
                     Row(
@@ -185,10 +190,10 @@ fun LoginScreen(
                             .padding(top = 32.dp)
                     ) {
                         Button(
-                            onClick = {
-                                viewModel.login()
-                            },
-                            modifier = Modifier.weight(1f),
+                            onClick = { viewModel.login() },
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag("loginButton"),
                             shape = RoundedCornerShape(
                                 topStart = 16.dp,
                                 bottomStart = 16.dp,
