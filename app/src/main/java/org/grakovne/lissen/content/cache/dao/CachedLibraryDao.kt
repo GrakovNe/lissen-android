@@ -16,7 +16,8 @@ interface CachedLibraryDao {
         val entities = libraries.map {
             CachedLibraryEntity(
                 id = it.id,
-                title = it.title
+                title = it.title,
+                type = it.type
             )
         }
 

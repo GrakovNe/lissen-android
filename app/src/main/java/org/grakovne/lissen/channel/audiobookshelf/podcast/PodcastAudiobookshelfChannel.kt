@@ -1,4 +1,4 @@
-package org.grakovne.lissen.channel.audiobookshelf.library
+package org.grakovne.lissen.channel.audiobookshelf.podcast
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -29,7 +29,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class LibraryAudiobookshelfChannel @Inject constructor(
+class PodcastAudiobookshelfChannel @Inject constructor(
     dataRepository: AudioBookshelfDataRepository,
     mediaRepository: AudioBookshelfMediaRepository,
     recentBookResponseConverter: RecentBookResponseConverter,
@@ -50,7 +50,7 @@ class LibraryAudiobookshelfChannel @Inject constructor(
     libraryResponseConverter = libraryResponseConverter
 ) {
 
-    override fun getChannelCode() = LibraryType.AUDIOBOOKSHELF_LIBRARY
+    override fun getChannelCode() = LibraryType.AUDIOBOOKSHELF_PODCAST
 
     override suspend fun fetchBooks(
         libraryId: String,

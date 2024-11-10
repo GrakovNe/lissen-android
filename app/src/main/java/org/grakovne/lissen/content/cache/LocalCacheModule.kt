@@ -28,6 +28,7 @@ object LocalCacheModule {
 
         return database
             .addMigrations(MIGRATION_1_2)
+            .addMigrations(MIGRATION_2_3)
             .build()
     }
 

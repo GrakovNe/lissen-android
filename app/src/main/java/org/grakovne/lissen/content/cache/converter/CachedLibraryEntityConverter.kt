@@ -8,5 +8,9 @@ import javax.inject.Singleton
 @Singleton
 class CachedLibraryEntityConverter @Inject constructor() {
 
-    fun apply(entity: CachedLibraryEntity): Library = Library(entity.id, entity.title)
+    fun apply(entity: CachedLibraryEntity): Library = Library(
+        id = entity.id,
+        title = entity.title,
+        type = entity.type
+    )
 }

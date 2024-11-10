@@ -15,6 +15,7 @@ import org.grakovne.lissen.channel.common.ApiError.MissingCredentialsHost
 import org.grakovne.lissen.channel.common.ApiError.MissingCredentialsPassword
 import org.grakovne.lissen.channel.common.ApiError.MissingCredentialsUsername
 import org.grakovne.lissen.channel.common.ApiError.Unauthorized
+import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.UserAccount
@@ -120,15 +121,24 @@ class LoginViewModel @Inject constructor(
                         ?: it.firstOrNull()
 
                     preferredLibrary
-                        ?.let { library -> preferences.savePreferredLibrary(Library(library.id, library.title)) }
+                        ?.let { library ->
+                            preferences.savePreferredLibrary(
+                                Library(
+                                    id = library.id,
+                                    title = library.title,
+                                    type = library.type
+                                )
+                            )
+                        }
                 },
                 onFailure = {
                     account
                         .preferredLibraryId
                         ?.let { library ->
                             Library(
-                                library,
-                                "Default Library"
+                                id = library,
+                                title = "Default Library",
+                                type = LibraryType.AUDIOBOOKSHELF_LIBRARY
                             )
                         }
                         ?.let { preferences.savePreferredLibrary(it) }

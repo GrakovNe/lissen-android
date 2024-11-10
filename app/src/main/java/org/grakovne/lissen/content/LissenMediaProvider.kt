@@ -4,7 +4,7 @@ import android.net.Uri
 import android.util.Log
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
-import org.grakovne.lissen.channel.common.ChannelCode
+import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.content.cache.LocalCacheRepository
 import org.grakovne.lissen.domain.Book
@@ -24,7 +24,7 @@ import javax.inject.Singleton
 @Singleton
 class LissenMediaProvider @Inject constructor(
     private val sharedPreferences: LissenSharedPreferences,
-    private val channels: Map<ChannelCode, @JvmSuppressWildcards MediaChannel>,
+    private val channels: Map<LibraryType, @JvmSuppressWildcards MediaChannel>,
     private val localCacheRepository: LocalCacheRepository,
     private val cacheConfiguration: LocalCacheConfiguration
 ) {
@@ -222,10 +222,12 @@ class LissenMediaProvider @Inject constructor(
         return page.copy(items = items)
     }
 
-    fun providePreferredChannel(): MediaChannel = sharedPreferences
-        .getPreferredChannel()
-        .let { channels[it] }
-        ?: throw IllegalStateException("Selected Channel has been requested but not selected")
+    fun providePreferredChannel(): MediaChannel {
+        return sharedPreferences
+            .getPreferredLibrary()
+            .let { channels[it?.type] }
+            ?: throw IllegalStateException("Selected Channel has been requested but not selected")
+    }
 
     companion object {
 

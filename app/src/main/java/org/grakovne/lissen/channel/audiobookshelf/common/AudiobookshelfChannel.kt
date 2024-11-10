@@ -104,5 +104,5 @@ abstract class AudiobookshelfChannel(
 
     private fun getClientName() = "Lissen App ${BuildConfig.VERSION_NAME}"
 
-    private val supportedLibraryTypes = listOf("book")
+    private val supportedLibraryTypes = listOf("book", "podcast")
 }
