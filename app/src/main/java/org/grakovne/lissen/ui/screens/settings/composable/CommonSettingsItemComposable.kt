@@ -2,6 +2,7 @@ package org.grakovne.lissen.ui.screens.settings.composable
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -48,7 +49,17 @@ fun CommonSettingsItemComposable(
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     items(items) { item ->
                         ListItem(
-                            headlineContent = { Text(item.name) },
+                            leadingContent = {
+                                item.icon?.let {
+                                    Icon(
+                                        imageVector = it,
+                                        contentDescription = "Settings Item Icon"
+                                    )
+                                }
+                            },
+                            headlineContent = {
+                                Row { Text(item.name) }
+                            },
                             trailingContent = {
                                 if (item.id == activeItem?.id) {
                                     Icon(

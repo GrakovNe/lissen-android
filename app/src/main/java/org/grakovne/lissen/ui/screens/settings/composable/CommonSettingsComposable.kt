@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Podcasts
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
@@ -22,7 +24,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
+import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.common.ColorScheme
+import org.grakovne.lissen.ui.icons.Book_2
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
@@ -91,8 +95,8 @@ fun CommonSettingsComposable(viewModel: SettingsViewModel) {
         }
 
         CommonSettingsItemComposable(
-            items = libraries.map { CommonSettingsItem(it.id, it.title) },
-            selectedItem = preferredLibrary?.let { CommonSettingsItem(it.id, it.title) },
+            items = libraries.map { CommonSettingsItem(it.id, it.title, it.type.provideIcon()) },
+            selectedItem = preferredLibrary?.let { CommonSettingsItem(it.id, it.title, it.type.provideIcon()) },
             onDismissRequest = { preferredLibraryExpanded = false },
             onItemSelected = { item ->
                 libraries
@@ -129,5 +133,10 @@ private fun ColorScheme.toItem(context: Context): CommonSettingsItem {
         ColorScheme.DARK -> context.getString(R.string.color_scheme_dark)
     }
 
-    return CommonSettingsItem(id, name)
+    return CommonSettingsItem(id, name, null)
+}
+
+private fun LibraryType.provideIcon() = when (this) {
+    LibraryType.AUDIOBOOKSHELF_LIBRARY -> Book_2
+    LibraryType.AUDIOBOOKSHELF_PODCAST -> Icons.Outlined.Podcasts
 }
