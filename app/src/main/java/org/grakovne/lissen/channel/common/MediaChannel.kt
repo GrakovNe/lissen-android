@@ -12,7 +12,7 @@ import java.io.InputStream
 
 interface MediaChannel {
 
-    fun getChannelCode(): LibraryType
+    fun getLibraryType(): LibraryType
 
     fun provideFileUri(
         libraryItemId: String,

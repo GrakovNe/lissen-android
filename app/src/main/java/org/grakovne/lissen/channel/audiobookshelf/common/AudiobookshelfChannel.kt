@@ -10,7 +10,6 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessi
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.DeviceInfo
 import org.grakovne.lissen.channel.audiobookshelf.common.model.StartPlaybackRequest
-import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LibraryResponse
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.domain.Library
@@ -79,16 +78,7 @@ abstract class AudiobookshelfChannel(
 
     override suspend fun fetchLibraries(): ApiResult<List<Library>> = dataRepository
         .fetchLibraries()
-        .map { filterSupportingLibraries(it) }
         .map { libraryResponseConverter.apply(it) }
-
-    private fun filterSupportingLibraries(response: LibraryResponse): LibraryResponse {
-        val filteredLibraries = response
-            .libraries
-            .filter { supportedLibraryTypes.contains(it.mediaType) }
-
-        return response.copy(libraries = filteredLibraries)
-    }
 
     override suspend fun fetchRecentListenedBooks(libraryId: String): ApiResult<List<RecentBook>> =
         dataRepository
@@ -96,6 +86,4 @@ abstract class AudiobookshelfChannel(
             .map { recentBookResponseConverter.apply(it) }
 
     private fun getClientName() = "Lissen App ${BuildConfig.VERSION_NAME}"
-
-    private val supportedLibraryTypes = listOf("book", "podcast")
 }

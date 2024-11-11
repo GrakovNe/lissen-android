@@ -4,9 +4,9 @@ import android.net.Uri
 import android.util.Log
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
-import org.grakovne.lissen.channel.common.AuthType
 import org.grakovne.lissen.channel.common.ChannelAuthService
-import org.grakovne.lissen.channel.common.LibraryType
+import org.grakovne.lissen.channel.common.ChannelCode
+import org.grakovne.lissen.channel.common.ChannelProvider
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.content.cache.LocalCacheRepository
 import org.grakovne.lissen.domain.Book
@@ -26,8 +26,7 @@ import javax.inject.Singleton
 @Singleton
 class LissenMediaProvider @Inject constructor(
     private val sharedPreferences: LissenSharedPreferences,
-    private val channels: Map<LibraryType, @JvmSuppressWildcards MediaChannel>,
-    private val authService: Map<AuthType, @JvmSuppressWildcards ChannelAuthService>,
+    private val channels: Map<ChannelCode, @JvmSuppressWildcards ChannelProvider>,
     private val localCacheRepository: LocalCacheRepository,
     private val cacheConfiguration: LocalCacheConfiguration
 ) {
@@ -226,17 +225,15 @@ class LissenMediaProvider @Inject constructor(
     }
 
     fun provideAuthService(): ChannelAuthService {
-        return sharedPreferences
-            .getAuthService()
-            .let { authService[it] }
+        return channels[sharedPreferences.getChannel()]
+            ?.provideChannelAuth()
             ?: throw IllegalStateException("Selected auth service has been requested but not selected")
     }
 
     fun providePreferredChannel(): MediaChannel {
-        return sharedPreferences
-            .getPreferredLibrary()
-            .let { channels[it?.type] }
-            ?: throw IllegalStateException("Selected Channel has been requested but not selected")
+        return channels[sharedPreferences.getChannel()]
+            ?.provideMediaChannel()
+            ?: throw IllegalStateException("Selected auth service has been requested but not selected")
     }
 
     companion object {

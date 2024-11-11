@@ -37,7 +37,7 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
         db.execSQL(
             """
             UPDATE libraries
-            SET type = '${LibraryType.AUDIOBOOKSHELF_LIBRARY.name}'
+            SET type = '${LibraryType.LIBRARY.name}'
             """.trimIndent()
         )
 

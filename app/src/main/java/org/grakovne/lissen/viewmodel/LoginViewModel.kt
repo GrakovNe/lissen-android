@@ -138,7 +138,7 @@ class LoginViewModel @Inject constructor(
                             Library(
                                 id = library,
                                 title = "Default Library",
-                                type = LibraryType.AUDIOBOOKSHELF_LIBRARY
+                                type = LibraryType.LIBRARY
                             )
                         }
                         ?.let { preferences.savePreferredLibrary(it) }

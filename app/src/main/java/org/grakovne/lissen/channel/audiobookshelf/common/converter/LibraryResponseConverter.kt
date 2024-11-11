@@ -11,16 +11,16 @@ class LibraryResponseConverter @Inject constructor() {
 
     fun apply(response: LibraryResponse): List<Library> = response
         .libraries
-        .mapNotNull {
+        .map {
             it
                 .mediaType
                 .toLibraryType()
-                ?.let { type -> Library(it.id, it.name, type) }
+                .let { type -> Library(it.id, it.name, type) }
         }
 
     private fun String.toLibraryType() = when (this) {
-        "podcast" -> LibraryType.AUDIOBOOKSHELF_PODCAST
-        "book" -> LibraryType.AUDIOBOOKSHELF_LIBRARY
-        else -> null
+        "podcast" -> LibraryType.PODCAST
+        "book" -> LibraryType.LIBRARY
+        else -> LibraryType.UNKNOWN
     }
 }

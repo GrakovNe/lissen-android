@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.NotInterested
 import androidx.compose.material.icons.outlined.Podcasts
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
@@ -137,6 +138,7 @@ private fun ColorScheme.toItem(context: Context): CommonSettingsItem {
 }
 
 private fun LibraryType.provideIcon() = when (this) {
-    LibraryType.AUDIOBOOKSHELF_LIBRARY -> Book_2
-    LibraryType.AUDIOBOOKSHELF_PODCAST -> Icons.Outlined.Podcasts
+    LibraryType.LIBRARY -> Book_2
+    LibraryType.PODCAST -> Icons.Outlined.Podcasts
+    LibraryType.UNKNOWN -> Icons.Outlined.NotInterested
 }

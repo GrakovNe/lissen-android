@@ -12,7 +12,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import org.grakovne.lissen.channel.common.AuthType
+import org.grakovne.lissen.channel.common.ChannelCode
 import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.domain.Library
@@ -75,14 +75,15 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
             .also { sharedPreferences.edit().putString(KEY_DEVICE_ID, it).apply() }
     }
 
-    fun getAuthService() = AuthType.AUDIOBOOKSHELF_CREDENTIALS
+    // Once the different channel will supported, this shall be extended
+    fun getChannel() = ChannelCode.AUDIOBOOKSHELF
 
     fun getPreferredLibrary(): Library? {
         val id = getPreferredLibraryId() ?: return null
         val name = getPreferredLibraryName() ?: return null
 
         // We shall set the library type AUDIOBOOKSHELF_LIBRARY for backward compatibility
-        val type = getPreferredLibraryType() ?: LibraryType.AUDIOBOOKSHELF_LIBRARY
+        val type = getPreferredLibraryType() ?: LibraryType.LIBRARY
 
         return Library(
             id = id,

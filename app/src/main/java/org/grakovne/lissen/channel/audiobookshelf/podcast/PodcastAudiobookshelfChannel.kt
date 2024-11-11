@@ -49,7 +49,7 @@ class PodcastAudiobookshelfChannel @Inject constructor(
     libraryResponseConverter = libraryResponseConverter
 ) {
 
-    override fun getChannelCode() = LibraryType.AUDIOBOOKSHELF_PODCAST
+    override fun getLibraryType() = LibraryType.PODCAST
 
     override suspend fun fetchBooks(
         libraryId: String,
