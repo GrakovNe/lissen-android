@@ -126,29 +126,30 @@ fun BookComposable(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            IconButton(
-                onClick = {
-                    cachingModelView
-                        .provideCacheAction(book)
-                        ?.let {
-                            when (it) {
-                                BookCacheAction.CACHE -> cachingModelView.cacheBook(book)
-                                BookCacheAction.DROP -> {
-                                    showDeleteFromCacheDialog = true
+            provideCachingStateIcon(book, cacheProgress)
+                ?.let { icon ->
+                    IconButton(
+                        onClick = {
+                            cachingModelView
+                                .provideCacheAction(book)
+                                ?.let {
+                                    when (it) {
+                                        BookCacheAction.CACHE -> cachingModelView.cacheBook(book)
+                                        BookCacheAction.DROP -> {
+                                            showDeleteFromCacheDialog = true
+                                        }
+                                    }
                                 }
-                            }
-                        }
-                },
-                modifier = Modifier.size(36.dp)
-            ) {
-                provideCachingStateIcon(book, cacheProgress)
-                    ?.let { icon ->
+                        },
+                        modifier = Modifier.size(36.dp)
+                    ) {
                         Icon(
                             imageVector = icon,
                             contentDescription = "Caching Book State"
                         )
                     }
-            }
+                }
+
             if (book.duration > 0) {
                 Text(
                     text = book.duration.formatShortly(),
@@ -207,6 +208,7 @@ private fun provideCachingStateIcon(
 private fun provideIdleStateIcon(book: Book): ImageVector? = when (book.cachedState) {
     BookCachedState.ABLE_TO_CACHE -> ableToCacheIcon
     BookCachedState.CACHED -> cachedIcon
+    BookCachedState.UNABLE_TO_CACHE -> null
 }
 
 private val ableToCacheIcon = Icons.Outlined.Cloud
