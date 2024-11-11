@@ -1,5 +1,6 @@
 package org.grakovne.lissen.channel.common
 
 enum class AuthType {
-    CREDENTIALS
+    CREDENTIALS,
+    O_AUTH
 }
