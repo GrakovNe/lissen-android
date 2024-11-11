@@ -54,6 +54,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
+import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.common.NetworkQualityService
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.ui.extensions.withMinimumTime
@@ -92,6 +93,7 @@ fun LibraryScreen(
     var pullRefreshing by remember { mutableStateOf(false) }
     val recentBookRefreshing by libraryViewModel.recentBookUpdating.observeAsState(false)
     val searchRequested by libraryViewModel.searchRequested.observeAsState(false)
+
 
     val library = when (searchRequested) {
         true -> libraryViewModel.searchPager.collectAsLazyPagingItems()
@@ -170,6 +172,16 @@ fun LibraryScreen(
         }
     }
 
+    fun provideLibraryTitle(): String {
+        val type = libraryViewModel.fetchPreferredLibraryType()
+
+        return when(type) {
+            LibraryType.LIBRARY -> context.getString(R.string.library_screen_library_title)
+            LibraryType.PODCAST -> context.getString(R.string.library_screen_podcast_title)
+            LibraryType.UNKNOWN -> ""
+        }
+    }
+
     val navBarTitle by remember {
         derivedStateOf {
             val showRecent = showRecent()
@@ -177,10 +189,12 @@ fun LibraryScreen(
 
             when {
                 showRecent && recentBlockVisible -> context.getString(R.string.library_screen_continue_listening_title)
-                else -> context.getString(R.string.library_screen_library_title)
+                else -> provideLibraryTitle()
             }
         }
     }
+
+
 
     Scaffold(
         topBar = {
@@ -297,7 +311,7 @@ fun LibraryScreen(
                                 label = "library_header_fade"
                             ) {
                                 when {
-                                    it == stringResource(R.string.library_screen_library_title) ->
+                                    it == provideLibraryTitle() ->
                                         Spacer(
                                             modifier = Modifier
                                                 .fillMaxWidth()
@@ -306,7 +320,7 @@ fun LibraryScreen(
 
                                     else -> Text(
                                         style = titleTextStyle,
-                                        text = stringResource(R.string.library_screen_library_title),
+                                        text = provideLibraryTitle(),
                                         modifier = Modifier.fillMaxWidth()
                                     )
                                 }

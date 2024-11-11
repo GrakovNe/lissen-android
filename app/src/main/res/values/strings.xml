@@ -52,4 +52,5 @@
     <string name="custom_header_hint_name">Key</string>
     <string name="custom_header_hint_value">Value</string>
     <string name="custom_headers_title">Custom Headers</string>
+    <string name="library_screen_podcast_title">Podcasts</string>
 </resources>

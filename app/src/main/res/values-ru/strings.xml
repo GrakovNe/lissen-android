@@ -52,4 +52,5 @@
     <string name="custom_header_hint_name">Ключ</string>
     <string name="custom_header_hint_value">Значение</string>
     <string name="custom_headers_title">Прокси-заголовки</string>
+    <string name="library_screen_podcast_title">Подкасты</string>
 </resources>

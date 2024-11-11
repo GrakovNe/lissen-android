@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.LocalCacheConfiguration
 import org.grakovne.lissen.domain.Book
@@ -113,6 +114,11 @@ class LibraryViewModel @Inject constructor(
     fun updateSearch(token: String) {
         viewModelScope.launch { _searchToken.emit(token) }
     }
+
+    fun fetchPreferredLibraryType() = preferences
+        .getPreferredLibrary()
+        ?.type
+        ?: LibraryType.UNKNOWN
 
     fun refreshRecentListening() {
         viewModelScope.launch {
