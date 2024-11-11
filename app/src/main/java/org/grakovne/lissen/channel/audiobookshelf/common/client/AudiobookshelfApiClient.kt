@@ -14,6 +14,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.common.Personaliz
 import org.grakovne.lissen.channel.audiobookshelf.common.model.library.BookResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.library.LibrarySearchResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.podcast.PodcastSearchResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.podcast.UserInfoResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -35,6 +36,9 @@ interface AudiobookshelfApiClient {
     suspend fun fetchLibraryItemProgress(
         @Path("itemId") itemId: String
     ): Response<MediaProgressResponse>
+
+    @POST("/api/authorize")
+    suspend fun fetchUserInfoResponse(): Response<UserInfoResponse>
 
     @GET("api/libraries/{libraryId}/items?sort=media.metadata.title&minified=1")
     suspend fun fetchLibraryItems(

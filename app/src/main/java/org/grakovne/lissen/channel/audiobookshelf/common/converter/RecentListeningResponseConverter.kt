@@ -11,6 +11,7 @@ class RecentListeningResponseConverter @Inject constructor() {
     fun apply(response: List<PersonalizedFeedResponse>): List<RecentBook> = response
         .find { it.labelStringKey == LABEL_CONTINUE_LISTENING }
         ?.entities
+        ?.distinctBy { it.id }
         ?.map {
             RecentBook(
                 id = it.id,

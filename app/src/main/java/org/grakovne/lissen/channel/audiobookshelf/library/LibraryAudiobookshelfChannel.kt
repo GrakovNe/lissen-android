@@ -3,7 +3,6 @@ package org.grakovne.lissen.channel.audiobookshelf.library
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import org.grakovne.lissen.BuildConfig
 import org.grakovne.lissen.channel.audiobookshelf.common.AudiobookshelfChannel
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfDataRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfMediaRepository
@@ -142,6 +141,4 @@ class LibraryAudiobookshelfChannel @Inject constructor(
             onFailure = { ApiResult.Error(it.code) }
         )
     }
-
-    private fun getClientName() = "Lissen App ${BuildConfig.VERSION_NAME}"
 }

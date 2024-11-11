@@ -15,7 +15,6 @@ data class PodcastMedia(
 
 data class PodcastEpisodeResponse(
     val id: String,
-    val podcastId: String, // one of them shall to die
     val season: String?,
     val episode: String?,
     val title: String,

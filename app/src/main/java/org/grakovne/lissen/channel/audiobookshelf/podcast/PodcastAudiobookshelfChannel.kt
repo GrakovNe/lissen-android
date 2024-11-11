@@ -2,7 +2,6 @@ package org.grakovne.lissen.channel.audiobookshelf.podcast
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import org.grakovne.lissen.BuildConfig
 import org.grakovne.lissen.channel.audiobookshelf.common.AudiobookshelfChannel
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfDataRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfMediaRepository
@@ -15,7 +14,6 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.StartPlaybackRequ
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibrarySearchItemsConverter
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastResponseConverter
 import org.grakovne.lissen.channel.common.ApiResult
-import org.grakovne.lissen.channel.common.ApiResult.Success
 import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
@@ -105,21 +103,25 @@ class PodcastAudiobookshelfChannel @Inject constructor(
     }
 
     override suspend fun fetchBook(bookId: String): ApiResult<DetailedItem> = coroutineScope {
-        val episode = async { dataRepository.fetchPodcastEpisode(bookId) }
-        val bookProgress = async { dataRepository.fetchLibraryItemProgress(bookId) }
+        val mediaProgress = async {
+            val progress = dataRepository
+                .fetchUserInfoResponse()
+                .fold(
+                    onSuccess = { it.user.mediaProgress ?: emptyList() },
+                    onFailure = { emptyList() }
+                )
 
-        episode.await().foldAsync(
-            onSuccess = { item ->
-                bookProgress
-                    .await()
-                    .fold(
-                        onSuccess = { Success(podcastResponseConverter.apply(item, it)) },
-                        onFailure = { Success(podcastResponseConverter.apply(item, null)) }
-                    )
-            },
-            onFailure = { ApiResult.Error(it.code) }
-        )
+            if (progress.isEmpty()) {
+                return@async null
+            }
+
+            progress
+                .filter { it.libraryItemId == bookId }
+                .maxByOrNull { it.lastUpdate }
+        }
+
+        async { dataRepository.fetchPodcastItem(bookId) }
+            .await()
+            .map { podcastResponseConverter.apply(it, mediaProgress.await()) }
     }
-
-    private fun getClientName() = "Lissen App ${BuildConfig.VERSION_NAME}"
 }

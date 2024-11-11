@@ -8,13 +8,10 @@ import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfSyncS
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
-import org.grakovne.lissen.channel.audiobookshelf.common.model.DeviceInfo
-import org.grakovne.lissen.channel.audiobookshelf.common.model.StartPlaybackRequest
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.PlaybackProgress
-import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import java.io.InputStream
@@ -60,5 +57,5 @@ abstract class AudiobookshelfChannel(
             .fetchPersonalizedFeed(libraryId)
             .map { recentBookResponseConverter.apply(it) }
 
-    private fun getClientName() = "Lissen App ${BuildConfig.VERSION_NAME}"
+    protected fun getClientName() = "Lissen App ${BuildConfig.VERSION_NAME}"
 }
