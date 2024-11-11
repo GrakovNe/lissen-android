@@ -141,15 +141,20 @@ fun BookComposable(
                 },
                 modifier = Modifier.size(36.dp)
             ) {
-                Icon(
-                    imageVector = provideCachingStateIcon(book, cacheProgress),
-                    contentDescription = "Caching Book State"
+                provideCachingStateIcon(book, cacheProgress)
+                    ?.let { icon ->
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = "Caching Book State"
+                        )
+                    }
+            }
+            if (book.duration > 0) {
+                Text(
+                    text = book.duration.formatShortly(),
+                    style = MaterialTheme.typography.bodySmall
                 )
             }
-            Text(
-                text = book.duration.formatShortly(),
-                style = MaterialTheme.typography.bodySmall
-            )
 
             Spacer(Modifier.height(6.dp))
         }
@@ -191,7 +196,7 @@ fun BookComposable(
 private fun provideCachingStateIcon(
     book: Book,
     cacheProgress: CacheProgress
-): ImageVector = when (cacheProgress) {
+): ImageVector? = when (cacheProgress) {
     CacheProgress.Completed -> cachedIcon
     CacheProgress.Removed -> ableToCacheIcon
     CacheProgress.Error -> ableToCacheIcon
@@ -199,9 +204,10 @@ private fun provideCachingStateIcon(
     is CacheProgress.Caching -> cachingIcon
 }
 
-private fun provideIdleStateIcon(book: Book): ImageVector = when (book.cachedState) {
+private fun provideIdleStateIcon(book: Book): ImageVector? = when (book.cachedState) {
     BookCachedState.ABLE_TO_CACHE -> ableToCacheIcon
     BookCachedState.CACHED -> cachedIcon
+    BookCachedState.NOT_ABLE_TO_CACHE -> null
 }
 
 private val ableToCacheIcon = Icons.Outlined.Cloud
