@@ -21,6 +21,7 @@ class PlaybackSynchronizationService @Inject constructor(
     private val mediaChannel: LissenMediaProvider,
     private val sharedPreferences: LissenSharedPreferences
 ) {
+
     private var currentBook: DetailedItem? = null
     private var playbackSession: PlaybackSession? = null
     private val serviceScope = MainScope()
@@ -80,27 +81,21 @@ class PlaybackSynchronizationService @Inject constructor(
             onFailure = { openPlaybackSession(overallProgress) }
         )
 
-    private suspend fun openPlaybackSession(overallProgress: PlaybackProgress): Unit? {
-        return currentBook
-            ?.let { book ->
-                val chapterIndex = calculateChapterIndex(book, overallProgress.currentTime)
-                mediaChannel
-                    .startPlayback(
-                        bookId = book.id,
-                        deviceId = sharedPreferences.getDeviceId(),
-                        supportedMimeTypes = MimeTypeProvider.getSupportedMimeTypes(),
-                        chapterId = book.chapters[chapterIndex].id
-                    )
-                    .fold(
-                        onSuccess = {
-                            playbackSession = it
-                                    },
-                        onFailure = {
-                            println("no")
-                        }
-                    )
-            }
-    }
+    private suspend fun openPlaybackSession(overallProgress: PlaybackProgress) = currentBook
+        ?.let { book ->
+            val chapterIndex = calculateChapterIndex(book, overallProgress.currentTime)
+            mediaChannel
+                .startPlayback(
+                    bookId = book.id,
+                    deviceId = sharedPreferences.getDeviceId(),
+                    supportedMimeTypes = MimeTypeProvider.getSupportedMimeTypes(),
+                    chapterId = book.chapters[chapterIndex].id
+                )
+                .fold(
+                    onSuccess = { playbackSession = it },
+                    onFailure = {}
+                )
+        }
 
     private fun getProgress(currentElapsedMs: Long): PlaybackProgress {
         val currentBook = exoPlayer
@@ -126,6 +121,7 @@ class PlaybackSynchronizationService @Inject constructor(
     }
 
     companion object {
+
         private const val SYNC_INTERVAL = 30_000L
     }
 }
