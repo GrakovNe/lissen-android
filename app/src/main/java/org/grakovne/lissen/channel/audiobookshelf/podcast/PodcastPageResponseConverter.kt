@@ -1,6 +1,6 @@
 package org.grakovne.lissen.channel.audiobookshelf.podcast
 
-import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LibraryItemsResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.podcast.PodcastItemsResponse
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.BookCachedState
 import org.grakovne.lissen.domain.PagedItems
@@ -10,7 +10,7 @@ import javax.inject.Singleton
 @Singleton
 class PodcastPageResponseConverter @Inject constructor() {
 
-    fun apply(response: LibraryItemsResponse): PagedItems<Book> = response
+    fun apply(response: PodcastItemsResponse): PagedItems<Book> = response
         .results
         .mapNotNull {
             val title = it.media.metadata.title ?: return@mapNotNull null
@@ -18,7 +18,7 @@ class PodcastPageResponseConverter @Inject constructor() {
             Book(
                 id = it.id,
                 title = title,
-                author = it.media.metadata.authorName,
+                author = it.media.metadata.author,
                 cachedState = BookCachedState.ABLE_TO_CACHE,
                 duration = it.media.duration.toInt()
             )

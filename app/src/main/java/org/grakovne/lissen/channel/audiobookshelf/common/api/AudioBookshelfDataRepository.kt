@@ -7,11 +7,12 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.PodcastResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.StartPlaybackRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.SyncProgressRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.common.AuthorResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LibraryItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LibraryResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.common.PersonalizedFeedResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.library.BookResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.library.LibraryItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.library.LibrarySearchResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.podcast.PodcastItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.podcast.PodcastSearchResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.podcast.UserInfoResponse
 import org.grakovne.lissen.channel.common.ApiClient
@@ -88,7 +89,7 @@ class AudioBookshelfDataRepository @Inject constructor(
         libraryId: String,
         pageSize: Int,
         pageNumber: Int
-    ): ApiResult<LibraryItemsResponse> =
+    ): ApiResult<PodcastItemsResponse> =
         safeApiCall {
             getClientInstance()
                 .fetchPodcastItems(

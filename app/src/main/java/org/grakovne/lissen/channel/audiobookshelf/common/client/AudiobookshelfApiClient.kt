@@ -6,13 +6,14 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.PodcastResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.StartPlaybackRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.SyncProgressRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.common.AuthorResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LibraryItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LibraryResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LoginRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LoginResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.common.PersonalizedFeedResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.library.BookResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.library.LibraryItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.library.LibrarySearchResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.podcast.PodcastItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.podcast.PodcastSearchResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.podcast.UserInfoResponse
 import retrofit2.Response
@@ -52,7 +53,7 @@ interface AudiobookshelfApiClient {
         @Path("libraryId") libraryId: String,
         @Query("limit") pageSize: Int,
         @Query("page") pageNumber: Int
-    ): Response<LibraryItemsResponse>
+    ): Response<PodcastItemsResponse>
 
     @GET("api/libraries/{libraryId}/search")
     suspend fun searchLibraryItems(

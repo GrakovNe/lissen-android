@@ -1,4 +1,4 @@
-package org.grakovne.lissen.channel.audiobookshelf.common.model.common
+package org.grakovne.lissen.channel.audiobookshelf.common.model.library
 
 data class LibraryItemsResponse(
     val results: List<LibraryItem>,
@@ -12,10 +12,10 @@ data class LibraryItem(
 
 data class Media(
     val duration: Double,
-    val metadata: Metadata
+    val metadata: LibraryMetadata
 )
 
-data class Metadata(
+data class LibraryMetadata(
     val title: String?,
     val authorName: String?
 )
