@@ -23,7 +23,6 @@ import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackSession
-import org.grakovne.lissen.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -128,8 +127,7 @@ class PodcastAudiobookshelfChannel @Inject constructor(
 
     override suspend fun fetchBook(bookId: String): ApiResult<DetailedItem> = coroutineScope {
         val episode = async { dataRepository.fetchPodcastEpisode(bookId) }
-        // val bookProgress = async { dataRepository.fetchLibraryItemProgress(bookId) }
-        val bookProgress = async { ApiResult.Success(null) }
+        val bookProgress = async { dataRepository.fetchLibraryItemProgress(bookId) }
 
         episode.await().foldAsync(
             onSuccess = { item ->
@@ -143,12 +141,6 @@ class PodcastAudiobookshelfChannel @Inject constructor(
             onFailure = { ApiResult.Error(it.code) }
         )
     }
-
-    override suspend fun authorize(
-        host: String,
-        username: String,
-        password: String
-    ): ApiResult<UserAccount> = dataRepository.authorize(host, username, password)
 
     private fun getClientName() = "Lissen App ${BuildConfig.VERSION_NAME}"
 }

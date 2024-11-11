@@ -8,7 +8,6 @@ import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.RecentBook
-import org.grakovne.lissen.domain.UserAccount
 import java.io.InputStream
 
 interface MediaChannel {
@@ -52,10 +51,4 @@ interface MediaChannel {
     suspend fun fetchRecentListenedBooks(libraryId: String): ApiResult<List<RecentBook>>
 
     suspend fun fetchBook(bookId: String): ApiResult<DetailedItem>
-
-    suspend fun authorize(
-        host: String,
-        username: String,
-        password: String
-    ): ApiResult<UserAccount>
 }

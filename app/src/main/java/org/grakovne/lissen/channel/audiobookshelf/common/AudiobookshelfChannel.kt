@@ -17,7 +17,6 @@ import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.RecentBook
-import org.grakovne.lissen.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import java.io.InputStream
 
@@ -95,12 +94,6 @@ abstract class AudiobookshelfChannel(
         dataRepository
             .fetchPersonalizedFeed(libraryId)
             .map { recentBookResponseConverter.apply(it) }
-
-    override suspend fun authorize(
-        host: String,
-        username: String,
-        password: String
-    ): ApiResult<UserAccount> = dataRepository.authorize(host, username, password)
 
     private fun getClientName() = "Lissen App ${BuildConfig.VERSION_NAME}"
 

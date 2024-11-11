@@ -4,6 +4,8 @@ import android.net.Uri
 import android.util.Log
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
+import org.grakovne.lissen.channel.common.AuthType
+import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.content.cache.LocalCacheRepository
@@ -25,6 +27,7 @@ import javax.inject.Singleton
 class LissenMediaProvider @Inject constructor(
     private val sharedPreferences: LissenSharedPreferences,
     private val channels: Map<LibraryType, @JvmSuppressWildcards MediaChannel>,
+    private val authService: Map<AuthType, @JvmSuppressWildcards ChannelAuthService>,
     private val localCacheRepository: LocalCacheRepository,
     private val cacheConfiguration: LocalCacheConfiguration
 ) {
@@ -177,7 +180,7 @@ class LissenMediaProvider @Inject constructor(
         password: String
     ): ApiResult<UserAccount> {
         Log.d(TAG, "Authorizing for $username@$host")
-        return providePreferredChannel().authorize(host, username, password)
+        return provideAuthService().authorize(host, username, password)
     }
 
     private suspend fun syncFromLocalProgress(detailedItem: DetailedItem): DetailedItem {
@@ -220,6 +223,13 @@ class LissenMediaProvider @Inject constructor(
             }
 
         return page.copy(items = items)
+    }
+
+    fun provideAuthService(): ChannelAuthService {
+        return sharedPreferences
+            .getAuthService()
+            .let { authService[it] }
+            ?: throw IllegalStateException("Selected auth service has been requested but not selected")
     }
 
     fun providePreferredChannel(): MediaChannel {

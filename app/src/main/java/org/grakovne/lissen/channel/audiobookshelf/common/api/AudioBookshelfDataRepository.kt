@@ -1,7 +1,6 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.api
 
 import org.grakovne.lissen.channel.audiobookshelf.common.client.AudiobookshelfApiClient
-import org.grakovne.lissen.channel.audiobookshelf.common.converter.LoginResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.PlaybackSessionResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.PodcastResponse
@@ -10,15 +9,12 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.SyncProgressReque
 import org.grakovne.lissen.channel.audiobookshelf.common.model.common.AuthorResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LibraryItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LibraryResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LoginRequest
-import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LoginResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.common.PersonalizedFeedResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.library.BookResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.library.LibrarySearchResponse
 import org.grakovne.lissen.channel.common.ApiClient
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
-import org.grakovne.lissen.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import retrofit2.Response
 import java.io.IOException
@@ -27,7 +23,6 @@ import javax.inject.Singleton
 
 @Singleton
 class AudioBookshelfDataRepository @Inject constructor(
-    private val loginResponseConverter: LoginResponseConverter,
     private val preferences: LissenSharedPreferences,
     private val requestHeadersProvider: RequestHeadersProvider
 ) {
@@ -100,42 +95,6 @@ class AudioBookshelfDataRepository @Inject constructor(
         progress: SyncProgressRequest
     ): ApiResult<Unit> =
         safeApiCall { getClientInstance().publishLibraryItemProgress(itemId, progress) }
-
-    suspend fun authorize(
-        host: String,
-        username: String,
-        password: String
-    ): ApiResult<UserAccount> {
-        if (host.isBlank() || !urlPattern.matches(host)) {
-            return ApiResult.Error(ApiError.InvalidCredentialsHost)
-        }
-
-        lateinit var apiService: AudiobookshelfApiClient
-
-        try {
-            val apiClient = ApiClient(
-                host = host,
-                requestHeaders = requestHeadersProvider.fetchRequestHeaders()
-            )
-
-            apiService = apiClient.retrofit.create(AudiobookshelfApiClient::class.java)
-        } catch (e: Exception) {
-            return ApiResult.Error(ApiError.InternalError)
-        }
-
-        val response: ApiResult<LoginResponse> =
-            safeApiCall { apiService.login(LoginRequest(username, password)) }
-
-        return response
-            .fold(
-                onSuccess = {
-                    loginResponseConverter
-                        .apply(it)
-                        .let { ApiResult.Success(it) }
-                },
-                onFailure = { ApiResult.Error(it.code) }
-            )
-    }
 
     private suspend fun <T> safeApiCall(
         apiCall: suspend () -> Response<T>

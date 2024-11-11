@@ -12,6 +12,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import org.grakovne.lissen.channel.common.AuthType
 import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.domain.Library
@@ -73,6 +74,8 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
             .toString()
             .also { sharedPreferences.edit().putString(KEY_DEVICE_ID, it).apply() }
     }
+
+    fun getAuthService() = AuthType.AUDIOBOOKSHELF_CREDENTIALS
 
     fun getPreferredLibrary(): Library? {
         val id = getPreferredLibraryId() ?: return null
