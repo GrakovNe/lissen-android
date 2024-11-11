@@ -12,7 +12,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LibraryRes
 import org.grakovne.lissen.channel.audiobookshelf.common.model.common.PersonalizedFeedResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.library.BookResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.library.LibrarySearchResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.library.PodcastSearchResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.podcast.PodcastSearchResponse
 import org.grakovne.lissen.channel.common.ApiClient
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
@@ -83,6 +83,20 @@ class AudioBookshelfDataRepository @Inject constructor(
                 )
         }
 
+    suspend fun fetchPodcastItems(
+        libraryId: String,
+        pageSize: Int,
+        pageNumber: Int
+    ): ApiResult<LibraryItemsResponse> =
+        safeApiCall {
+            getClientInstance()
+                .fetchPodcastItems(
+                    libraryId = libraryId,
+                    pageSize = pageSize,
+                    pageNumber = pageNumber
+                )
+        }
+
     suspend fun fetchBook(itemId: String): ApiResult<BookResponse> =
         safeApiCall { getClientInstance().fetchLibraryItem(itemId) }
 
@@ -129,9 +143,11 @@ class AudioBookshelfDataRepository @Inject constructor(
                 500 -> ApiResult.Error(ApiError.InternalError)
                 else -> ApiResult.Error(ApiError.InternalError)
             }
+            // log is required
         } catch (e: IOException) {
             ApiResult.Error(ApiError.NetworkError)
         } catch (e: Exception) {
+            println(e)
             ApiResult.Error(ApiError.InternalError)
         }
     }

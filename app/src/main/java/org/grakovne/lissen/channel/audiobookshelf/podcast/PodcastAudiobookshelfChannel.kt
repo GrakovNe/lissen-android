@@ -7,7 +7,6 @@ import org.grakovne.lissen.channel.audiobookshelf.common.AudiobookshelfChannel
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfDataRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfMediaRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfSyncService
-import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryPageResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
@@ -35,7 +34,7 @@ class PodcastAudiobookshelfChannel @Inject constructor(
     syncService: AudioBookshelfSyncService,
     sessionResponseConverter: PlaybackSessionResponseConverter,
     libraryResponseConverter: LibraryResponseConverter,
-    private val libraryPageResponseConverter: LibraryPageResponseConverter,
+    private val podcastPageResponseConverter: PodcastPageResponseConverter,
     private val podcastResponseConverter: PodcastResponseConverter,
     private val librarySearchItemsConverter: LibrarySearchItemsConverter
 ) : AudiobookshelfChannel(
@@ -55,12 +54,12 @@ class PodcastAudiobookshelfChannel @Inject constructor(
         pageSize: Int,
         pageNumber: Int
     ): ApiResult<PagedItems<Book>> = dataRepository
-        .fetchLibraryItems(
+        .fetchPodcastItems(
             libraryId = libraryId,
             pageSize = pageSize,
             pageNumber = pageNumber
         )
-        .map { libraryPageResponseConverter.apply(it) }
+        .map { podcastPageResponseConverter.apply(it) }
 
     override suspend fun searchBooks(
         libraryId: String,

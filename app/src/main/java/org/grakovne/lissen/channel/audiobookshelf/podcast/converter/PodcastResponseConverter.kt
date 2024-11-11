@@ -21,6 +21,7 @@ class PodcastResponseConverter @Inject constructor() {
             item
                 .media
                 .episodes
+                ?.sortedWith(compareBy({ it.season.safeToInt() }, { it.episode.safeToInt() }))
                 ?.fold(0.0 to mutableListOf<BookChapter>()) { (accDuration, chapters), file ->
                     chapters.add(
                         BookChapter(
@@ -43,6 +44,7 @@ class PodcastResponseConverter @Inject constructor() {
             files = item
                 .media
                 .episodes
+                ?.sortedWith(compareBy({ it.season.safeToInt() }, { it.episode.safeToInt() }))
                 ?.map {
                     BookFile(
                         id = it.audioFile.ino,
@@ -62,5 +64,17 @@ class PodcastResponseConverter @Inject constructor() {
                     )
                 }
         )
+    }
+
+    companion object {
+        private fun String?.safeToInt(): Int? {
+            val maybeNumber = this?.takeIf { it.isNotBlank() }
+
+            return try {
+                maybeNumber?.toInt()
+            } catch (ex: Exception) {
+                null
+            }
+        }
     }
 }
