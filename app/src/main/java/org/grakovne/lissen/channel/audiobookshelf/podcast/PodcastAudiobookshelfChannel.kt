@@ -11,8 +11,9 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessi
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.DeviceInfo
 import org.grakovne.lissen.channel.audiobookshelf.common.model.StartPlaybackRequest
-import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibrarySearchItemsConverter
+import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastPageResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastSearchItemsConverter
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.domain.Book
@@ -34,7 +35,7 @@ class PodcastAudiobookshelfChannel @Inject constructor(
     libraryResponseConverter: LibraryResponseConverter,
     private val podcastPageResponseConverter: PodcastPageResponseConverter,
     private val podcastResponseConverter: PodcastResponseConverter,
-    private val librarySearchItemsConverter: LibrarySearchItemsConverter
+    private val podcastSearchItemsConverter: PodcastSearchItemsConverter
 ) : AudiobookshelfChannel(
     dataRepository = dataRepository,
     mediaRepository = mediaRepository,
@@ -69,7 +70,7 @@ class PodcastAudiobookshelfChannel @Inject constructor(
                 .searchPodcasts(libraryId, query, limit)
                 .map { it.podcast }
                 .map { it.map { response -> response.libraryItem } }
-                .map { librarySearchItemsConverter.apply(it) }
+                .map { podcastSearchItemsConverter.apply(it) }
         }
 
         byTitle.await()

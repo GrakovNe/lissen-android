@@ -1,4 +1,4 @@
-package org.grakovne.lissen.channel.audiobookshelf.podcast
+package org.grakovne.lissen.channel.audiobookshelf.podcast.converter
 
 import org.grakovne.lissen.channel.audiobookshelf.common.model.podcast.PodcastItemsResponse
 import org.grakovne.lissen.domain.Book
