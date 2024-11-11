@@ -70,16 +70,18 @@ class PlaybackSynchronizationService @Inject constructor(
     private suspend fun synchronizeProgress(
         it: PlaybackSession,
         overallProgress: PlaybackProgress
-    ) = mediaChannel
-        .syncProgress(
-            sessionId = it.sessionId,
-            bookId = it.bookId,
-            progress = overallProgress
-        )
-        .foldAsync(
-            onSuccess = {},
-            onFailure = { openPlaybackSession(overallProgress) }
-        )
+    ): Unit? {
+        return mediaChannel
+            .syncProgress(
+                sessionId = it.sessionId,
+                bookId = it.bookId,
+                progress = overallProgress
+            )
+            .foldAsync(
+                onSuccess = {},
+                onFailure = { openPlaybackSession(overallProgress) }
+            )
+    }
 
     private suspend fun openPlaybackSession(overallProgress: PlaybackProgress) = currentBook
         ?.let { book ->

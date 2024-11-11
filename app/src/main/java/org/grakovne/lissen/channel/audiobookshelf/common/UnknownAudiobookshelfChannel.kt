@@ -12,6 +12,7 @@ import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PagedItems
+import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -48,6 +49,10 @@ class UnknownAudiobookshelfChannel @Inject constructor(
         query: String,
         limit: Int
     ): ApiResult<List<Book>> = ApiResult.Error(ApiError.UnsupportedError)
+
+    override suspend fun startPlayback(bookId: String, episodeId: String, supportedMimeTypes: List<String>, deviceId: String): ApiResult<PlaybackSession> {
+        TODO("Not yet implemented")
+    }
 
     override suspend fun fetchBook(
         bookId: String

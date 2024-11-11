@@ -51,33 +51,6 @@ abstract class AudiobookshelfChannel(
         bookId: String
     ): ApiResult<InputStream> = mediaRepository.fetchBookCover(bookId)
 
-    override suspend fun startPlayback(
-        bookId: String,
-        episodeId: String,
-        supportedMimeTypes: List<String>,
-        deviceId: String
-    ): ApiResult<PlaybackSession> {
-        val request = StartPlaybackRequest(
-            supportedMimeTypes = supportedMimeTypes,
-            deviceInfo = DeviceInfo(
-                clientName = getClientName(),
-                deviceId = deviceId,
-                deviceName = getClientName()
-            ),
-            forceTranscode = false,
-            forceDirectPlay = false,
-            mediaPlayer = getClientName()
-        )
-
-        return dataRepository
-            .startPlayback(
-                itemId = bookId,
-                episodeId = episodeId,
-                request = request
-            )
-            .map { sessionResponseConverter.apply(it) }
-    }
-
     override suspend fun fetchLibraries(): ApiResult<List<Library>> = dataRepository
         .fetchLibraries()
         .map { libraryResponseConverter.apply(it) }

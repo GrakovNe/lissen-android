@@ -100,6 +100,32 @@ class LibraryAudiobookshelfChannel @Inject constructor(
         byTitle.await().flatMap { title -> byAuthor.await().map { author -> title + author } }
     }
 
+    override suspend fun startPlayback(
+        bookId: String,
+        episodeId: String,
+        supportedMimeTypes: List<String>,
+        deviceId: String
+    ): ApiResult<PlaybackSession> {
+        val request = StartPlaybackRequest(
+            supportedMimeTypes = supportedMimeTypes,
+            deviceInfo = DeviceInfo(
+                clientName = getClientName(),
+                deviceId = deviceId,
+                deviceName = getClientName()
+            ),
+            forceTranscode = false,
+            forceDirectPlay = false,
+            mediaPlayer = getClientName()
+        )
+
+        return dataRepository
+            .startPlayback(
+                itemId = bookId,
+                request = request
+            )
+            .map { sessionResponseConverter.apply(it) }
+    }
+
     override suspend fun fetchBook(bookId: String): ApiResult<DetailedItem> = coroutineScope {
         val book = async { dataRepository.fetchBook(bookId) }
         val bookProgress = async { dataRepository.fetchLibraryItemProgress(bookId) }
