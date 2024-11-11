@@ -1,7 +1,6 @@
 package org.grakovne.lissen.channel.audiobookshelf.podcast
 
 import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import org.grakovne.lissen.BuildConfig
 import org.grakovne.lissen.channel.audiobookshelf.common.AudiobookshelfChannel
@@ -70,34 +69,13 @@ class PodcastAudiobookshelfChannel @Inject constructor(
     ): ApiResult<List<Book>> = coroutineScope {
         val byTitle = async {
             dataRepository
-                .searchLibraryItems(libraryId, query, limit)
-                .map { it.book }
+                .searchPodcasts(libraryId, query, limit)
+                .map { it.podcast }
                 .map { it.map { response -> response.libraryItem } }
                 .map { librarySearchItemsConverter.apply(it) }
         }
 
-        val byAuthor = async {
-            val searchResult = dataRepository.searchLibraryItems(libraryId, query, limit)
-
-            searchResult
-                .map { it.authors }
-                .map { authors -> authors.map { it.id } }
-                .map { ids -> ids.map { id -> async { dataRepository.fetchAuthorItems(id) } } }
-                .map { it.awaitAll() }
-                .map { result ->
-                    result
-                        .flatMap { authorResponse ->
-                            authorResponse
-                                .fold(
-                                    onSuccess = { it.libraryItems },
-                                    onFailure = { emptyList() }
-                                )
-                        }
-                }
-                .map { librarySearchItemsConverter.apply(it) }
-        }
-
-        byTitle.await().flatMap { title -> byAuthor.await().map { author -> title + author } }
+        byTitle.await()
     }
 
     override suspend fun startPlayback(

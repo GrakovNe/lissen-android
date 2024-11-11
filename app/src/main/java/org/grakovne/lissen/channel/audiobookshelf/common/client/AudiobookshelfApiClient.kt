@@ -13,6 +13,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LoginRespo
 import org.grakovne.lissen.channel.audiobookshelf.common.model.common.PersonalizedFeedResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.library.BookResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.library.LibrarySearchResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.library.PodcastSearchResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -48,6 +49,13 @@ interface AudiobookshelfApiClient {
         @Query("q") request: String,
         @Query("limit") limit: Int
     ): Response<LibrarySearchResponse>
+
+    @GET("api/libraries/{libraryId}/search")
+    suspend fun searchPodcasts(
+        @Path("libraryId") libraryId: String,
+        @Query("q") request: String,
+        @Query("limit") limit: Int
+    ): Response<PodcastSearchResponse>
 
     @GET("/api/items/{itemId}")
     suspend fun fetchLibraryItem(

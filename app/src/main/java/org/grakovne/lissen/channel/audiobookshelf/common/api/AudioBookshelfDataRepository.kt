@@ -12,6 +12,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LibraryRes
 import org.grakovne.lissen.channel.audiobookshelf.common.model.common.PersonalizedFeedResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.library.BookResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.library.LibrarySearchResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.library.PodcastSearchResponse
 import org.grakovne.lissen.channel.common.ApiClient
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
@@ -42,7 +43,20 @@ class AudioBookshelfDataRepository @Inject constructor(
             )
     }
 
-    suspend fun searchLibraryItems(
+    suspend fun searchPodcasts(
+        libraryId: String,
+        query: String,
+        limit: Int
+    ): ApiResult<PodcastSearchResponse> = safeApiCall {
+        getClientInstance()
+            .searchPodcasts(
+                libraryId = libraryId,
+                request = query,
+                limit = limit
+            )
+    }
+
+    suspend fun searchBooks(
         libraryId: String,
         query: String,
         limit: Int

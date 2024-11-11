@@ -70,14 +70,14 @@ class LibraryAudiobookshelfChannel @Inject constructor(
     ): ApiResult<List<Book>> = coroutineScope {
         val byTitle = async {
             dataRepository
-                .searchLibraryItems(libraryId, query, limit)
+                .searchBooks(libraryId, query, limit)
                 .map { it.book }
                 .map { it.map { response -> response.libraryItem } }
                 .map { librarySearchItemsConverter.apply(it) }
         }
 
         val byAuthor = async {
-            val searchResult = dataRepository.searchLibraryItems(libraryId, query, limit)
+            val searchResult = dataRepository.searchBooks(libraryId, query, limit)
 
             searchResult
                 .map { it.authors }
