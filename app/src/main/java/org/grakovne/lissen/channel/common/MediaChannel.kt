@@ -44,6 +44,7 @@ interface MediaChannel {
 
     suspend fun startPlayback(
         bookId: String,
+        episodeId: String,
         supportedMimeTypes: List<String>,
         deviceId: String
     ): ApiResult<PlaybackSession>

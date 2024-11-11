@@ -133,6 +133,7 @@ class LissenMediaProvider @Inject constructor(
 
     suspend fun startPlayback(
         bookId: String,
+        chapterId: String,
         supportedMimeTypes: List<String>,
         deviceId: String
     ): ApiResult<PlaybackSession> {
@@ -140,7 +141,12 @@ class LissenMediaProvider @Inject constructor(
 
         return when (cacheConfiguration.localCacheUsing()) {
             true -> localCacheRepository.startPlayback(bookId)
-            false -> providePreferredChannel().startPlayback(bookId, supportedMimeTypes, deviceId)
+            false -> providePreferredChannel().startPlayback(
+                bookId = bookId,
+                episodeId = chapterId,
+                supportedMimeTypes = supportedMimeTypes,
+                deviceId = deviceId
+            )
         }
     }
 

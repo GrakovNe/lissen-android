@@ -62,7 +62,7 @@ class PlaybackSynchronizationService @Inject constructor(
                 playbackSession
                     ?.takeIf { it.bookId == currentBook?.id }
                     ?.let { synchronizeProgress(it, overallProgress) }
-                    ?: openPlaybackSession()
+                    ?: openPlaybackSession(overallProgress)
             }
     }
 
@@ -77,23 +77,30 @@ class PlaybackSynchronizationService @Inject constructor(
         )
         .foldAsync(
             onSuccess = {},
-            onFailure = { openPlaybackSession() }
+            onFailure = { openPlaybackSession(overallProgress) }
         )
 
-    private suspend fun openPlaybackSession() =
-        currentBook
+    private suspend fun openPlaybackSession(overallProgress: PlaybackProgress): Unit? {
+        return currentBook
             ?.let { book ->
+                val chapterIndex = calculateChapterIndex(book, overallProgress.currentTime)
                 mediaChannel
                     .startPlayback(
                         bookId = book.id,
                         deviceId = sharedPreferences.getDeviceId(),
-                        supportedMimeTypes = MimeTypeProvider.getSupportedMimeTypes()
+                        supportedMimeTypes = MimeTypeProvider.getSupportedMimeTypes(),
+                        chapterId = book.chapters[chapterIndex].id
                     )
                     .fold(
-                        onSuccess = { playbackSession = it },
-                        onFailure = {}
+                        onSuccess = {
+                            playbackSession = it
+                                    },
+                        onFailure = {
+                            println("no")
+                        }
                     )
             }
+    }
 
     private fun getProgress(currentElapsedMs: Long): PlaybackProgress {
         val currentBook = exoPlayer
@@ -111,6 +118,7 @@ class PlaybackSynchronizationService @Inject constructor(
         val totalDuration = currentBook.files.sumOf { it.duration * 1000 }
 
         val totalElapsedMs = previousDuration + currentElapsedMs
+
         return PlaybackProgress(
             currentTime = totalElapsedMs / 1000.0,
             totalTime = totalDuration / 1000.0

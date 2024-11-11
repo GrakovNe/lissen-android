@@ -85,9 +85,10 @@ interface AudiobookshelfApiClient {
         @Body syncProgressRequest: SyncProgressRequest
     ): Response<Unit>
 
-    @POST("/api/items/{itemId}/play")
+    @POST("/api/items/{itemId}/play/{episodeId}")
     suspend fun startPlayback(
         @Path("itemId") itemId: String,
+        @Path("episodeId") episodeId: String,
         @Body syncProgressRequest: StartPlaybackRequest
     ): Response<PlaybackSessionResponse>
 

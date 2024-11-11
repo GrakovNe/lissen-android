@@ -53,6 +53,7 @@ abstract class AudiobookshelfChannel(
 
     override suspend fun startPlayback(
         bookId: String,
+        episodeId: String,
         supportedMimeTypes: List<String>,
         deviceId: String
     ): ApiResult<PlaybackSession> {
@@ -71,6 +72,7 @@ abstract class AudiobookshelfChannel(
         return dataRepository
             .startPlayback(
                 itemId = bookId,
+                episodeId = episodeId,
                 request = request
             )
             .map { sessionResponseConverter.apply(it) }

@@ -12,6 +12,8 @@ import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.playback.MediaRepository
+import org.grakovne.lissen.playback.service.calculateChapterIndex
+import org.grakovne.lissen.playback.service.calculateChapterPosition
 import javax.inject.Inject
 
 @HiltViewModel
@@ -64,10 +66,10 @@ class PlayerViewModel @Inject constructor(
 
     private fun updateCurrentTrackData() {
         val book = book.value ?: return
-        val position = mediaRepository.mediaItemPosition.value ?: return
+        val totalPosition = mediaRepository.mediaItemPosition.value ?: return
 
-        val trackIndex = calculateChapterIndex(position)
-        val trackPosition = calculateChapterPosition(position)
+        val trackIndex = calculateChapterIndex(book, totalPosition)
+        val trackPosition = calculateChapterPosition(book, totalPosition)
 
         _currentChapterIndex.value = trackIndex
         _currentChapterPosition.value = trackPosition
@@ -159,35 +161,6 @@ class PlayerViewModel @Inject constructor(
 
     private fun pause() {
         mediaRepository.pauseAudio()
-    }
-
-    private fun calculateChapterIndex(position: Double): Int {
-        val currentBook = book.value ?: return 0
-        var accumulatedDuration = 0.0
-
-        for ((index, chapter) in currentBook.chapters.withIndex()) {
-            accumulatedDuration += chapter.duration
-            if (position < accumulatedDuration - 0.1) {
-                return index
-            }
-        }
-
-        return currentBook.chapters.size - 1
-    }
-
-    private fun calculateChapterPosition(overallPosition: Double): Double {
-        val currentBook = book.value ?: return 0.0
-        var accumulatedDuration = 0.0
-
-        for (chapter in currentBook.chapters) {
-            val chapterEnd = accumulatedDuration + chapter.duration
-            if (overallPosition < chapterEnd - 0.1) {
-                return (overallPosition - accumulatedDuration)
-            }
-            accumulatedDuration = chapterEnd
-        }
-
-        return 0.0
     }
 
     companion object {
