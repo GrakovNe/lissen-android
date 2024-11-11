@@ -1,6 +1,6 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.model.common
 
-data class MediaMetadataResponse(
+data class LibraryMediaMetadataResponse(
     val title: String,
     val authors: List<Author>?
 )

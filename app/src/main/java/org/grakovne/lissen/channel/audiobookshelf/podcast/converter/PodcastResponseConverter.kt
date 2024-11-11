@@ -2,7 +2,6 @@ package org.grakovne.lissen.channel.audiobookshelf.podcast.converter
 
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.PodcastResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.common.Author
 import org.grakovne.lissen.domain.BookChapter
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
@@ -40,7 +39,7 @@ class PodcastResponseConverter @Inject constructor() {
         return DetailedItem(
             id = item.id,
             title = item.media.metadata.title,
-            author = item.media.metadata.authors?.joinToString(", ", transform = Author::name),
+            author = item.media.metadata.author,
             files = item
                 .media
                 .episodes

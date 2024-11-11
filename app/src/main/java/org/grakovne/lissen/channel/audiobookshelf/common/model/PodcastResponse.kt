@@ -1,7 +1,5 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.model
 
-import org.grakovne.lissen.channel.audiobookshelf.common.model.common.MediaMetadataResponse
-
 data class PodcastResponse(
     val id: String,
     val ino: String,
@@ -9,8 +7,13 @@ data class PodcastResponse(
 )
 
 data class PodcastMedia(
-    val metadata: MediaMetadataResponse,
+    val metadata: PodcastMediaMetadataResponse,
     val episodes: List<PodcastEpisodeResponse>?
+)
+
+data class PodcastMediaMetadataResponse(
+    val title: String,
+    val author: String?
 )
 
 data class PodcastEpisodeResponse(
