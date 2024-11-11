@@ -207,7 +207,6 @@ private fun provideCachingStateIcon(
 private fun provideIdleStateIcon(book: Book): ImageVector? = when (book.cachedState) {
     BookCachedState.ABLE_TO_CACHE -> ableToCacheIcon
     BookCachedState.CACHED -> cachedIcon
-    BookCachedState.NOT_ABLE_TO_CACHE -> null
 }
 
 private val ableToCacheIcon = Icons.Outlined.Cloud
