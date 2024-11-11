@@ -17,7 +17,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class CommonAudiobookshelfChannel @Inject constructor(
+class UnknownAudiobookshelfChannel @Inject constructor(
     dataRepository: AudioBookshelfDataRepository,
     mediaRepository: AudioBookshelfMediaRepository,
     recentListeningResponseConverter: RecentListeningResponseConverter,
@@ -37,9 +37,19 @@ class CommonAudiobookshelfChannel @Inject constructor(
 
     override fun getLibraryType(): LibraryType = LibraryType.UNKNOWN
 
-    override suspend fun fetchBooks(libraryId: String, pageSize: Int, pageNumber: Int): ApiResult<PagedItems<Book>> = ApiResult.Error(ApiError.UnsupportedError)
+    override suspend fun fetchBooks(
+        libraryId: String,
+        pageSize: Int,
+        pageNumber: Int
+    ): ApiResult<PagedItems<Book>> = ApiResult.Error(ApiError.UnsupportedError)
 
-    override suspend fun searchBooks(libraryId: String, query: String, limit: Int): ApiResult<List<Book>> = ApiResult.Error(ApiError.UnsupportedError)
+    override suspend fun searchBooks(
+        libraryId: String,
+        query: String,
+        limit: Int
+    ): ApiResult<List<Book>> = ApiResult.Error(ApiError.UnsupportedError)
 
-    override suspend fun fetchBook(bookId: String): ApiResult<DetailedItem> = ApiResult.Error(ApiError.UnsupportedError)
+    override suspend fun fetchBook(
+        bookId: String
+    ): ApiResult<DetailedItem> = ApiResult.Error(ApiError.UnsupportedError)
 }

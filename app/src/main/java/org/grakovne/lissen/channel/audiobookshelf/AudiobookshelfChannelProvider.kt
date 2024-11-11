@@ -1,6 +1,6 @@
 package org.grakovne.lissen.channel.audiobookshelf
 
-import org.grakovne.lissen.channel.audiobookshelf.common.CommonAudiobookshelfChannel
+import org.grakovne.lissen.channel.audiobookshelf.common.UnknownAudiobookshelfChannel
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudiobookshelfAuthService
 import org.grakovne.lissen.channel.audiobookshelf.library.LibraryAudiobookshelfChannel
 import org.grakovne.lissen.channel.audiobookshelf.podcast.PodcastAudiobookshelfChannel
@@ -17,7 +17,7 @@ import javax.inject.Singleton
 class AudiobookshelfChannelProvider @Inject constructor(
     private val podcastAudiobookshelfChannel: PodcastAudiobookshelfChannel,
     private val libraryAudiobookshelfChannel: LibraryAudiobookshelfChannel,
-    private val commonAudiobookshelfChannel: CommonAudiobookshelfChannel,
+    private val unknownAudiobookshelfChannel: UnknownAudiobookshelfChannel,
     private val audiobookshelfAuthService: AudiobookshelfAuthService,
     private val sharedPreferences: LissenSharedPreferences
 ) : ChannelProvider {
@@ -31,7 +31,7 @@ class AudiobookshelfChannelProvider @Inject constructor(
         return when (libraryType) {
             LibraryType.LIBRARY -> libraryAudiobookshelfChannel
             LibraryType.PODCAST -> podcastAudiobookshelfChannel
-            LibraryType.UNKNOWN -> commonAudiobookshelfChannel
+            LibraryType.UNKNOWN -> unknownAudiobookshelfChannel
         }
     }
 

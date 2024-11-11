@@ -224,17 +224,13 @@ class LissenMediaProvider @Inject constructor(
         return page.copy(items = items)
     }
 
-    fun provideAuthService(): ChannelAuthService {
-        return channels[sharedPreferences.getChannel()]
-            ?.provideChannelAuth()
-            ?: throw IllegalStateException("Selected auth service has been requested but not selected")
-    }
+    fun provideAuthService(): ChannelAuthService = channels[sharedPreferences.getChannel()]
+        ?.provideChannelAuth()
+        ?: throw IllegalStateException("Selected auth service has been requested but not selected")
 
-    fun providePreferredChannel(): MediaChannel {
-        return channels[sharedPreferences.getChannel()]
-            ?.provideMediaChannel()
-            ?: throw IllegalStateException("Selected auth service has been requested but not selected")
-    }
+    fun providePreferredChannel(): MediaChannel = channels[sharedPreferences.getChannel()]
+        ?.provideMediaChannel()
+        ?: throw IllegalStateException("Selected auth service has been requested but not selected")
 
     companion object {
 

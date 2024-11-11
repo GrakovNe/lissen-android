@@ -56,5 +56,5 @@ class AudiobookshelfAuthService @Inject constructor(
             )
     }
 
-    override fun getAuthType(): AuthType = AuthType.AUDIOBOOKSHELF_CREDENTIALS
+    override fun getAuthType(): AuthType = AuthType.CREDENTIALS
 }
