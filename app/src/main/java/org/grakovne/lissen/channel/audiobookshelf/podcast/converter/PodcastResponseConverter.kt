@@ -16,11 +16,13 @@ class PodcastResponseConverter @Inject constructor() {
         item: PodcastResponse,
         progressResponse: MediaProgressResponse? = null
     ): DetailedItem {
+        val orderedEpisodes = item
+            .media
+            .episodes
+            ?.sortedWith(compareBy({ it.season.safeToInt() }, { it.episode.safeToInt() }))
+
         val filesAsChapters: List<BookChapter> =
-            item
-                .media
-                .episodes
-                ?.sortedWith(compareBy({ it.season.safeToInt() }, { it.episode.safeToInt() }))
+            orderedEpisodes
                 ?.fold(0.0 to mutableListOf<BookChapter>()) { (accDuration, chapters), file ->
                     chapters.add(
                         BookChapter(
@@ -40,10 +42,7 @@ class PodcastResponseConverter @Inject constructor() {
             id = item.id,
             title = item.media.metadata.title,
             author = item.media.metadata.author,
-            files = item
-                .media
-                .episodes
-                ?.sortedWith(compareBy({ it.season.safeToInt() }, { it.episode.safeToInt() }))
+            files = orderedEpisodes
                 ?.map {
                     BookFile(
                         id = it.audioFile.ino,
@@ -66,6 +65,7 @@ class PodcastResponseConverter @Inject constructor() {
     }
 
     companion object {
+
         private fun String?.safeToInt(): Int? {
             val maybeNumber = this?.takeIf { it.isNotBlank() }
 
