@@ -6,6 +6,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.PodcastResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.StartPlaybackRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.SyncProgressRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.common.AuthorResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.common.ConnectionInfoResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LibraryResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LoginRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LoginResponse
@@ -39,7 +40,10 @@ interface AudiobookshelfApiClient {
     ): Response<MediaProgressResponse>
 
     @POST("/api/authorize")
-    suspend fun fetchUserInfoResponse(): Response<UserInfoResponse>
+    suspend fun fetchConnectionInfo(): Response<ConnectionInfoResponse>
+
+    @POST("/api/authorize")
+    suspend fun fetchUserInfo(): Response<UserInfoResponse>
 
     @GET("api/libraries/{libraryId}/items?sort=media.metadata.title&minified=1")
     suspend fun fetchLibraryItems(

@@ -49,6 +49,8 @@ interface MediaChannel {
         deviceId: String
     ): ApiResult<PlaybackSession>
 
+    suspend fun fetchConnectionInfo(): ApiResult<ConnectionInfo>
+
     suspend fun fetchRecentListenedBooks(libraryId: String): ApiResult<List<RecentBook>>
 
     suspend fun fetchBook(bookId: String): ApiResult<DetailedItem>

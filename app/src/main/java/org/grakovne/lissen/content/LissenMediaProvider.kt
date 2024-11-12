@@ -211,6 +211,8 @@ class LissenMediaProvider @Inject constructor(
         return detailedItem.copy(progress = updatedProgress)
     }
 
+    suspend fun fetchConnectionInfo() = providePreferredChannel().fetchConnectionInfo()
+
     private suspend fun flagCached(page: PagedItems<Book>): PagedItems<Book> {
         val cachedBooks = localCacheRepository.fetchCachedBookIds()
 

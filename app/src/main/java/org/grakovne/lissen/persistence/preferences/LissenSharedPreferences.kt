@@ -50,6 +50,8 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
             remove(KEY_USERNAME)
             remove(KEY_TOKEN)
 
+            remove(KEY_SERVER_VERSION)
+
             remove(CACHE_FORCE_ENABLED)
 
             remove(KEY_PREFERRED_LIBRARY_ID)
@@ -158,6 +160,11 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
 
     fun getUsername(): String? = sharedPreferences.getString(KEY_USERNAME, null)
 
+    fun saveServerVersion(version: String) =
+        sharedPreferences.edit().putString(KEY_SERVER_VERSION, version).apply()
+
+    fun getServerVersion(): String? = sharedPreferences.getString(KEY_SERVER_VERSION, null)
+
     fun saveToken(password: String) {
         val encrypted = encrypt(password)
         sharedPreferences.edit().putString(KEY_TOKEN, encrypted).apply()
@@ -193,6 +200,8 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
         private const val KEY_USERNAME = "username"
         private const val KEY_TOKEN = "token"
         private const val CACHE_FORCE_ENABLED = "cache_force_enabled"
+
+        private const val KEY_SERVER_VERSION = "server_version"
 
         private const val KEY_DEVICE_ID = "device_id"
 

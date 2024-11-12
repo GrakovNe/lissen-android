@@ -6,6 +6,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.AudiobookshelfChannel
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfDataRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfMediaRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfSyncService
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
@@ -33,6 +34,7 @@ class PodcastAudiobookshelfChannel @Inject constructor(
     syncService: AudioBookshelfSyncService,
     sessionResponseConverter: PlaybackSessionResponseConverter,
     libraryResponseConverter: LibraryResponseConverter,
+    connectionInfoResponseConverter: ConnectionInfoResponseConverter,
     private val podcastPageResponseConverter: PodcastPageResponseConverter,
     private val podcastResponseConverter: PodcastResponseConverter,
     private val podcastSearchItemsConverter: PodcastSearchItemsConverter
@@ -43,7 +45,8 @@ class PodcastAudiobookshelfChannel @Inject constructor(
     sessionResponseConverter = sessionResponseConverter,
     preferences = preferences,
     syncService = syncService,
-    libraryResponseConverter = libraryResponseConverter
+    libraryResponseConverter = libraryResponseConverter,
+    connectionInfoResponseConverter = connectionInfoResponseConverter
 ) {
 
     override fun getLibraryType() = LibraryType.PODCAST

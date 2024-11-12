@@ -5,10 +5,12 @@ import org.grakovne.lissen.BuildConfig
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfDataRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfMediaRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfSyncService
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
 import org.grakovne.lissen.channel.common.ApiResult
+import org.grakovne.lissen.channel.common.ConnectionInfo
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.PlaybackProgress
@@ -23,7 +25,8 @@ abstract class AudiobookshelfChannel(
     private val syncService: AudioBookshelfSyncService,
     private val libraryResponseConverter: LibraryResponseConverter,
     private val mediaRepository: AudioBookshelfMediaRepository,
-    private val recentBookResponseConverter: RecentListeningResponseConverter
+    private val recentBookResponseConverter: RecentListeningResponseConverter,
+    private val connectionInfoResponseConverter: ConnectionInfoResponseConverter
 ) : MediaChannel {
 
     override fun provideFileUri(
@@ -56,6 +59,10 @@ abstract class AudiobookshelfChannel(
         dataRepository
             .fetchPersonalizedFeed(libraryId)
             .map { recentBookResponseConverter.apply(it) }
+
+    override suspend fun fetchConnectionInfo(): ApiResult<ConnectionInfo> = dataRepository
+        .fetchConnectionInfo()
+        .map { connectionInfoResponseConverter.apply(it) }
 
     protected fun getClientName() = "Lissen App ${BuildConfig.VERSION_NAME}"
 }

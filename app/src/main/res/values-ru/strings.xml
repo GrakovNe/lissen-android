@@ -53,4 +53,6 @@
     <string name="custom_header_hint_value">Значение</string>
     <string name="custom_headers_title">Прокси-заголовки</string>
     <string name="library_screen_podcast_title">Подкасты</string>
+    <string name="settings_screen_server_details">Параметры подключения</string>
+    <string name="settings_screen_server_version">Версия сервера</string>
 </resources>

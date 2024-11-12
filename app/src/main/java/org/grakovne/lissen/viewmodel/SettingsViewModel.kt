@@ -23,6 +23,9 @@ class SettingsViewModel @Inject constructor(
     private val _host = MutableLiveData(preferences.getHost())
     val host = _host
 
+    private val _serverVersion = MutableLiveData(preferences.getServerVersion())
+    val serverVersion = _serverVersion
+
     private val _username = MutableLiveData(preferences.getUsername())
     val username = _username
 
@@ -40,6 +43,20 @@ class SettingsViewModel @Inject constructor(
 
     fun logout() {
         preferences.clearPreferences()
+    }
+
+    fun refreshConnectionInfo() {
+        viewModelScope.launch {
+            when (val response = mediaChannel.fetchConnectionInfo()) {
+                is ApiResult.Error -> Unit
+                is ApiResult.Success -> {
+                    _username.value = response.data.username
+                    _serverVersion.value = response.data.serverVersion
+
+                    updateServerInfo()
+                }
+            }
+        }
     }
 
     fun fetchLibraries() {
@@ -83,5 +100,10 @@ class SettingsViewModel @Inject constructor(
             .filterNot { it.value.isEmpty() }
 
         preferences.saveCustomHeaders(meaningfulHeaders)
+    }
+
+    private fun updateServerInfo() {
+        serverVersion.value?.let { preferences.saveServerVersion(it) }
+        username.value?.let { preferences.saveUsername(it) }
     }
 }

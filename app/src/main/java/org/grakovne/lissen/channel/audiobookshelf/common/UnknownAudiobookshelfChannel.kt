@@ -3,6 +3,7 @@ package org.grakovne.lissen.channel.audiobookshelf.common
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfDataRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfMediaRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfSyncService
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
@@ -25,7 +26,8 @@ class UnknownAudiobookshelfChannel @Inject constructor(
     preferences: LissenSharedPreferences,
     syncService: AudioBookshelfSyncService,
     sessionResponseConverter: PlaybackSessionResponseConverter,
-    libraryResponseConverter: LibraryResponseConverter
+    libraryResponseConverter: LibraryResponseConverter,
+    connectionInfoResponseConverter: ConnectionInfoResponseConverter
 ) : AudiobookshelfChannel(
     dataRepository = dataRepository,
     mediaRepository = mediaRepository,
@@ -33,7 +35,8 @@ class UnknownAudiobookshelfChannel @Inject constructor(
     sessionResponseConverter = sessionResponseConverter,
     preferences = preferences,
     syncService = syncService,
-    libraryResponseConverter = libraryResponseConverter
+    libraryResponseConverter = libraryResponseConverter,
+    connectionInfoResponseConverter = connectionInfoResponseConverter
 ) {
 
     override fun getLibraryType(): LibraryType = LibraryType.UNKNOWN
@@ -50,9 +53,12 @@ class UnknownAudiobookshelfChannel @Inject constructor(
         limit: Int
     ): ApiResult<List<Book>> = ApiResult.Error(ApiError.UnsupportedError)
 
-    override suspend fun startPlayback(bookId: String, episodeId: String, supportedMimeTypes: List<String>, deviceId: String): ApiResult<PlaybackSession> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun startPlayback(
+        bookId: String,
+        episodeId: String,
+        supportedMimeTypes: List<String>,
+        deviceId: String
+    ): ApiResult<PlaybackSession> = ApiResult.Error(ApiError.UnsupportedError)
 
     override suspend fun fetchBook(
         bookId: String
