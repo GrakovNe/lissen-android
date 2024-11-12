@@ -1,5 +1,6 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.api
 
+import android.util.Log
 import org.grakovne.lissen.channel.audiobookshelf.common.client.AudiobookshelfApiClient
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.PlaybackSessionResponse
@@ -159,11 +160,11 @@ class AudioBookshelfDataRepository @Inject constructor(
                 500 -> ApiResult.Error(ApiError.InternalError)
                 else -> ApiResult.Error(ApiError.InternalError)
             }
-            // log is required
         } catch (e: IOException) {
+            Log.e(TAG, "Unable to make network api call $apiCall due to: $e")
             ApiResult.Error(ApiError.NetworkError)
         } catch (e: Exception) {
-            println(e)
+            Log.e(TAG, "Unable to make network api call $apiCall due to: $e")
             ApiResult.Error(ApiError.InternalError)
         }
     }
@@ -216,6 +217,6 @@ class AudioBookshelfDataRepository @Inject constructor(
 
     companion object {
 
-        val urlPattern = Regex("^(http|https)://.*\$")
+        private const val TAG: String = "AudioBookshelfDataRepository"
     }
 }

@@ -1,6 +1,5 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.api
 
-import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfDataRepository.Companion.urlPattern
 import org.grakovne.lissen.channel.audiobookshelf.common.client.AudiobookshelfApiClient
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LoginResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LoginRequest
@@ -57,4 +56,9 @@ class AudiobookshelfAuthService @Inject constructor(
     }
 
     override fun getAuthType(): AuthType = AuthType.CREDENTIALS
+
+    private companion object {
+
+        val urlPattern = Regex("^(http|https)://.*\$")
+    }
 }
