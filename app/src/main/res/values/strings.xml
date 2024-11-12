@@ -18,7 +18,7 @@
     <string name="player_screen_now_playing_title_chapter_of">Chapter %1$s of %2$s</string>
     <string name="settings_screen_title">Preferences</string>
     <string name="settings_screen_preferred_library_title">Preferred library</string>
-    <string name="settings_screen_connected_as_title">Connected as %1$s</string>
+    <string name="settings_screen_connected_as_title">Connected as</string>
     <string name="settings_screen_server_connection">Server connection</string>
     <string name="login_error_host_is_down">Host is down</string>
     <string name="login_error_host_url_is_missing">Host URL is missing</string>
