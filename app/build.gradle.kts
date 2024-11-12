@@ -96,6 +96,7 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.hilt.android)
     implementation(libs.androidx.media3.session)
+    implementation(libs.androidx.media3.datasource.okhttp)
     kapt(libs.hilt.android.compiler)
 
     implementation(libs.androidx.core.ktx)

@@ -19,7 +19,7 @@ class PodcastPageResponseConverter @Inject constructor() {
                 id = it.id,
                 title = title,
                 author = it.media.metadata.author,
-                cachedState = BookCachedState.UNABLE_TO_CACHE,
+                cachedState = BookCachedState.ABLE_TO_CACHE,
                 duration = it.media.duration.toInt()
             )
         }

@@ -31,6 +31,7 @@ roomRuntime = "2.6.1"
 rules = "1.6.1"
 runtimeLivedata = "1.7.5"
 media3Session = "1.4.1"
+media3DatasourceOkhttp = "1.4.1"
 
 [libraries]
 accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanistSystemuicontroller" }
@@ -80,6 +81,7 @@ material3 = { module = "androidx.compose.material3:material3", version.ref = "ma
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 androidx-media3-session = { group = "androidx.media3", name = "media3-session", version.ref = "media3Session" }
+androidx-media3-datasource-okhttp = { group = "androidx.media3", name = "media3-datasource-okhttp", version.ref = "media3DatasourceOkhttp" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -37,9 +37,7 @@ class AudiobookshelfAuthService @Inject constructor(
             )
 
             apiService = apiClient.retrofit.create(AudiobookshelfApiClient::class.java)
-        } catch (e: Exception) {
-            return ApiResult.Error(ApiError.InternalError)
-        }
+
 
         val response: ApiResult<LoggedUserResponse> =
             safeApiCall { apiService.login(CredentialsLoginRequest(username, password)) }
@@ -53,6 +51,9 @@ class AudiobookshelfAuthService @Inject constructor(
                 },
                 onFailure = { ApiResult.Error(it.code) }
             )
+        } catch (e: Exception) {
+            return ApiResult.Error(ApiError.InternalError)
+        }
     }
 
     override fun getAuthType(): AuthType = AuthType.CREDENTIALS

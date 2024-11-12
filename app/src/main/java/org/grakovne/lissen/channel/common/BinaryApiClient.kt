@@ -5,7 +5,11 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import retrofit2.Retrofit
+import java.security.KeyStore
 import java.util.concurrent.TimeUnit
+import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManagerFactory
+import javax.net.ssl.X509TrustManager
 
 class BinaryApiClient(
     host: String,
@@ -13,7 +17,25 @@ class BinaryApiClient(
     token: String
 ) {
 
-    private val httpClient = OkHttpClient.Builder()
+    fun getSystemTrustManager(): X509TrustManager {
+        val keyStore = KeyStore.getInstance("AndroidCAStore")
+        keyStore.load(null)
+
+        val trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
+        trustManagerFactory.init(keyStore)
+
+        return trustManagerFactory.trustManagers.first { it is X509TrustManager } as X509TrustManager
+    }
+
+    fun getSystemSSLContext(trustManager: X509TrustManager): SSLContext {
+        val sslContext = SSLContext.getInstance("TLS")
+        sslContext.init(null, arrayOf(trustManager), null)
+        return sslContext
+    }
+
+    private val httpClient = OkHttpClient
+        .Builder()
+        .sslSocketFactory(getSystemSSLContext(getSystemTrustManager()).socketFactory, getSystemTrustManager())
         .addInterceptor(
             HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.NONE
