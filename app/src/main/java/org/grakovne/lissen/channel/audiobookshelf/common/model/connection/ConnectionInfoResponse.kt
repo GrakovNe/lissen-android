@@ -1,4 +1,4 @@
-package org.grakovne.lissen.channel.audiobookshelf.common.model.common
+package org.grakovne.lissen.channel.audiobookshelf.common.model.connection
 
 data class ConnectionInfoResponse(
     val user: ConnectionInfoUserResponse,

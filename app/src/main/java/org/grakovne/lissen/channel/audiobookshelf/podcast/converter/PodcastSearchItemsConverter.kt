@@ -1,6 +1,6 @@
 package org.grakovne.lissen.channel.audiobookshelf.podcast.converter
 
-import org.grakovne.lissen.channel.audiobookshelf.common.model.podcast.PodcastItem
+import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastItem
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.BookCachedState
 import javax.inject.Inject

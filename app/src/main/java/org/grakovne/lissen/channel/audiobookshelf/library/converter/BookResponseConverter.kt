@@ -1,8 +1,8 @@
 package org.grakovne.lissen.channel.audiobookshelf.library.converter
 
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.common.Author
-import org.grakovne.lissen.channel.audiobookshelf.common.model.library.BookResponse
+import org.grakovne.lissen.channel.audiobookshelf.library.model.BookResponse
+import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryAuthorResponse
 import org.grakovne.lissen.domain.BookChapter
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
@@ -56,7 +56,7 @@ class BookResponseConverter @Inject constructor() {
         return DetailedItem(
             id = item.id,
             title = item.media.metadata.title,
-            author = item.media.metadata.authors?.joinToString(", ", transform = Author::name),
+            author = item.media.metadata.authors?.joinToString(", ", transform = LibraryAuthorResponse::name),
             files = item
                 .media
                 .audioFiles

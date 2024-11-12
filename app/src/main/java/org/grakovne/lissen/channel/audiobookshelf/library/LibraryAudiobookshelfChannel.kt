@@ -12,8 +12,8 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryPageRe
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
-import org.grakovne.lissen.channel.audiobookshelf.common.model.DeviceInfo
-import org.grakovne.lissen.channel.audiobookshelf.common.model.StartPlaybackRequest
+import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.DeviceInfo
+import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.BookResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibrarySearchItemsConverter
 import org.grakovne.lissen.channel.common.ApiResult
@@ -108,7 +108,7 @@ class LibraryAudiobookshelfChannel @Inject constructor(
         supportedMimeTypes: List<String>,
         deviceId: String
     ): ApiResult<PlaybackSession> {
-        val request = StartPlaybackRequest(
+        val request = PlaybackStartRequest(
             supportedMimeTypes = supportedMimeTypes,
             deviceInfo = DeviceInfo(
                 clientName = getClientName(),

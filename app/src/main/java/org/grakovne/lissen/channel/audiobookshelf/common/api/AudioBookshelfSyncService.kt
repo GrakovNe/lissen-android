@@ -1,6 +1,6 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.api
 
-import org.grakovne.lissen.channel.audiobookshelf.common.model.SyncProgressRequest
+import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.ProgressSyncRequest
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.domain.PlaybackProgress
 import javax.inject.Inject
@@ -24,7 +24,7 @@ class AudioBookshelfSyncService @Inject constructor(
             ?.toInt()
             ?: 0
 
-        val request = SyncProgressRequest(
+        val request = ProgressSyncRequest(
             currentTime = progress.currentTime,
             duration = progress.totalTime,
             timeListened = trackedTime

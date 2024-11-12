@@ -1,6 +1,6 @@
-package org.grakovne.lissen.channel.audiobookshelf.common.model
+package org.grakovne.lissen.channel.audiobookshelf.common.model.playback
 
-data class StartPlaybackRequest(
+data class PlaybackStartRequest(
     val deviceInfo: DeviceInfo,
     val supportedMimeTypes: List<String>,
     val mediaPlayer: String,

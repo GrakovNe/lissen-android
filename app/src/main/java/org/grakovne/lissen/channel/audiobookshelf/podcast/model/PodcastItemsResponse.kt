@@ -1,4 +1,4 @@
-package org.grakovne.lissen.channel.audiobookshelf.common.model.podcast
+package org.grakovne.lissen.channel.audiobookshelf.podcast.model
 
 data class PodcastItemsResponse(
     val results: List<PodcastItem>,
@@ -7,10 +7,10 @@ data class PodcastItemsResponse(
 
 data class PodcastItem(
     val id: String,
-    val media: PodcastMedia
+    val media: PodcastItemMedia
 )
 
-data class PodcastMedia(
+data class PodcastItemMedia(
     val duration: Double,
     val metadata: PodcastMetadata
 )

@@ -1,6 +1,6 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.converter
 
-import org.grakovne.lissen.channel.audiobookshelf.common.model.common.ConnectionInfoResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.connection.ConnectionInfoResponse
 import org.grakovne.lissen.channel.common.ConnectionInfo
 import javax.inject.Inject
 import javax.inject.Singleton

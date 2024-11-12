@@ -1,22 +1,22 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.client
 
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.PlaybackSessionResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.PodcastResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.StartPlaybackRequest
-import org.grakovne.lissen.channel.audiobookshelf.common.model.SyncProgressRequest
-import org.grakovne.lissen.channel.audiobookshelf.common.model.common.AuthorResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.common.ConnectionInfoResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LibraryResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LoginRequest
-import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LoginResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.common.PersonalizedFeedResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.library.BookResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.library.LibraryItemsResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.library.LibrarySearchResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.podcast.PodcastItemsResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.podcast.PodcastSearchResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.podcast.UserInfoResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.connection.ConnectionInfoResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.AuthorItemsResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackSessionResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
+import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.ProgressSyncRequest
+import org.grakovne.lissen.channel.audiobookshelf.common.model.user.CredentialsLoginRequest
+import org.grakovne.lissen.channel.audiobookshelf.common.model.user.LoggedUserResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.user.PersonalizedFeedResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.user.UserInfoResponse
+import org.grakovne.lissen.channel.audiobookshelf.library.model.BookResponse
+import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsResponse
+import org.grakovne.lissen.channel.audiobookshelf.library.model.LibrarySearchResponse
+import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastItemsResponse
+import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
+import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastSearchResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -86,25 +86,25 @@ interface AudiobookshelfApiClient {
     @GET("/api/authors/{authorId}?include=items")
     suspend fun fetchAuthorLibraryItems(
         @Path("authorId") authorId: String
-    ): Response<AuthorResponse>
+    ): Response<AuthorItemsResponse>
 
     @POST("/api/session/{itemId}/sync")
     suspend fun publishLibraryItemProgress(
         @Path("itemId") itemId: String,
-        @Body syncProgressRequest: SyncProgressRequest
+        @Body syncProgressRequest: ProgressSyncRequest
     ): Response<Unit>
 
     @POST("/api/items/{itemId}/play/{episodeId}")
     suspend fun startPodcastPlayback(
         @Path("itemId") itemId: String,
         @Path("episodeId") episodeId: String,
-        @Body syncProgressRequest: StartPlaybackRequest
+        @Body syncProgressRequest: PlaybackStartRequest
     ): Response<PlaybackSessionResponse>
 
     @POST("/api/items/{itemId}/play")
     suspend fun startLibraryPlayback(
         @Path("itemId") itemId: String,
-        @Body syncProgressRequest: StartPlaybackRequest
+        @Body syncProgressRequest: PlaybackStartRequest
     ): Response<PlaybackSessionResponse>
 
     @POST("/api/session/{sessionId}/close")
@@ -113,5 +113,5 @@ interface AudiobookshelfApiClient {
     ): Response<Unit>
 
     @POST("login")
-    suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
+    suspend fun login(@Body request: CredentialsLoginRequest): Response<LoggedUserResponse>
 }

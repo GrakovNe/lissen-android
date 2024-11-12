@@ -1,4 +1,4 @@
-package org.grakovne.lissen.channel.audiobookshelf.common.model.podcast
+package org.grakovne.lissen.channel.audiobookshelf.common.model.user
 
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
 

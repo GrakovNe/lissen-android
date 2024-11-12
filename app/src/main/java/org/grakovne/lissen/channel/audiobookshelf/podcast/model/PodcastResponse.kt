@@ -1,4 +1,4 @@
-package org.grakovne.lissen.channel.audiobookshelf.common.model
+package org.grakovne.lissen.channel.audiobookshelf.podcast.model
 
 data class PodcastResponse(
     val id: String,

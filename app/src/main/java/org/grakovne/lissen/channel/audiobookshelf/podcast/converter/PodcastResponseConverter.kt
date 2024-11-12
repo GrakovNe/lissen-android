@@ -1,7 +1,7 @@
 package org.grakovne.lissen.channel.audiobookshelf.podcast.converter
 
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.PodcastResponse
+import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
 import org.grakovne.lissen.domain.BookChapter
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem

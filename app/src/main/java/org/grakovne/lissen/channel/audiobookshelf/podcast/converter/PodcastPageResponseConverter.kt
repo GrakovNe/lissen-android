@@ -1,6 +1,6 @@
 package org.grakovne.lissen.channel.audiobookshelf.podcast.converter
 
-import org.grakovne.lissen.channel.audiobookshelf.common.model.podcast.PodcastItemsResponse
+import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastItemsResponse
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.BookCachedState
 import org.grakovne.lissen.domain.PagedItems

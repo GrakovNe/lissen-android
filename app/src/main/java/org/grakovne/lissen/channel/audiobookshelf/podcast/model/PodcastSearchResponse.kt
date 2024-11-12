@@ -1,4 +1,4 @@
-package org.grakovne.lissen.channel.audiobookshelf.common.model.podcast
+package org.grakovne.lissen.channel.audiobookshelf.podcast.model
 
 data class PodcastSearchResponse(
     val podcast: List<PodcastSearchItemResponse>

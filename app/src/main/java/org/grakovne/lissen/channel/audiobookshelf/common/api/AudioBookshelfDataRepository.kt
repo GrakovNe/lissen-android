@@ -2,20 +2,20 @@ package org.grakovne.lissen.channel.audiobookshelf.common.api
 
 import org.grakovne.lissen.channel.audiobookshelf.common.client.AudiobookshelfApiClient
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.PlaybackSessionResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.PodcastResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.StartPlaybackRequest
-import org.grakovne.lissen.channel.audiobookshelf.common.model.SyncProgressRequest
-import org.grakovne.lissen.channel.audiobookshelf.common.model.common.AuthorResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.common.ConnectionInfoResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LibraryResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.common.PersonalizedFeedResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.library.BookResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.library.LibraryItemsResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.library.LibrarySearchResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.podcast.PodcastItemsResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.podcast.PodcastSearchResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.podcast.UserInfoResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.connection.ConnectionInfoResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.AuthorItemsResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackSessionResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
+import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.ProgressSyncRequest
+import org.grakovne.lissen.channel.audiobookshelf.common.model.user.PersonalizedFeedResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.user.UserInfoResponse
+import org.grakovne.lissen.channel.audiobookshelf.library.model.BookResponse
+import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsResponse
+import org.grakovne.lissen.channel.audiobookshelf.library.model.LibrarySearchResponse
+import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastItemsResponse
+import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
+import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastSearchResponse
 import org.grakovne.lissen.channel.common.ApiClient
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
@@ -36,7 +36,7 @@ class AudioBookshelfDataRepository @Inject constructor(
 
     suspend fun fetchAuthorItems(
         authorId: String
-    ): ApiResult<AuthorResponse> = safeApiCall {
+    ): ApiResult<AuthorItemsResponse> = safeApiCall {
         getClientInstance()
             .fetchAuthorLibraryItems(
                 authorId = authorId
@@ -117,14 +117,14 @@ class AudioBookshelfDataRepository @Inject constructor(
 
     suspend fun startPlayback(
         itemId: String,
-        request: StartPlaybackRequest
+        request: PlaybackStartRequest
     ): ApiResult<PlaybackSessionResponse> =
         safeApiCall { getClientInstance().startLibraryPlayback(itemId, request) }
 
     suspend fun startPodcastPlayback(
         itemId: String,
         episodeId: String,
-        request: StartPlaybackRequest
+        request: PlaybackStartRequest
     ): ApiResult<PlaybackSessionResponse> =
         safeApiCall { getClientInstance().startPodcastPlayback(itemId, episodeId, request) }
 
@@ -133,7 +133,7 @@ class AudioBookshelfDataRepository @Inject constructor(
 
     suspend fun publishLibraryItemProgress(
         itemId: String,
-        progress: SyncProgressRequest
+        progress: ProgressSyncRequest
     ): ApiResult<Unit> =
         safeApiCall { getClientInstance().publishLibraryItemProgress(itemId, progress) }
 

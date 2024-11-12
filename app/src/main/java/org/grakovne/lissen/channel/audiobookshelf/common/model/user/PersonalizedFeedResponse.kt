@@ -1,4 +1,4 @@
-package org.grakovne.lissen.channel.audiobookshelf.common.model.common
+package org.grakovne.lissen.channel.audiobookshelf.common.model.user
 
 data class PersonalizedFeedResponse(
     val id: String,

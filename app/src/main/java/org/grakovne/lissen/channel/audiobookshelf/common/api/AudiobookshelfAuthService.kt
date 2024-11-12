@@ -2,8 +2,8 @@ package org.grakovne.lissen.channel.audiobookshelf.common.api
 
 import org.grakovne.lissen.channel.audiobookshelf.common.client.AudiobookshelfApiClient
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LoginResponseConverter
-import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LoginRequest
-import org.grakovne.lissen.channel.audiobookshelf.common.model.common.LoginResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.user.CredentialsLoginRequest
+import org.grakovne.lissen.channel.audiobookshelf.common.model.user.LoggedUserResponse
 import org.grakovne.lissen.channel.common.ApiClient
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
@@ -41,8 +41,8 @@ class AudiobookshelfAuthService @Inject constructor(
             return ApiResult.Error(ApiError.InternalError)
         }
 
-        val response: ApiResult<LoginResponse> =
-            safeApiCall { apiService.login(LoginRequest(username, password)) }
+        val response: ApiResult<LoggedUserResponse> =
+            safeApiCall { apiService.login(CredentialsLoginRequest(username, password)) }
 
         return response
             .fold(

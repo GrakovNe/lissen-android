@@ -10,8 +10,8 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInf
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
-import org.grakovne.lissen.channel.audiobookshelf.common.model.DeviceInfo
-import org.grakovne.lissen.channel.audiobookshelf.common.model.StartPlaybackRequest
+import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.DeviceInfo
+import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastPageResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastSearchItemsConverter
@@ -85,7 +85,7 @@ class PodcastAudiobookshelfChannel @Inject constructor(
         supportedMimeTypes: List<String>,
         deviceId: String
     ): ApiResult<PlaybackSession> {
-        val request = StartPlaybackRequest(
+        val request = PlaybackStartRequest(
             supportedMimeTypes = supportedMimeTypes,
             deviceInfo = DeviceInfo(
                 clientName = getClientName(),
