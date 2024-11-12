@@ -23,6 +23,7 @@ class PlaybackSynchronizationService @Inject constructor(
 ) {
 
     private var currentBook: DetailedItem? = null
+    private var currentChapterIndex: Int? = null
     private var playbackSession: PlaybackSession? = null
     private val serviceScope = MainScope()
 
@@ -71,6 +72,15 @@ class PlaybackSynchronizationService @Inject constructor(
         it: PlaybackSession,
         overallProgress: PlaybackProgress
     ): Unit? {
+        val currentIndex = currentBook
+            ?.let { calculateChapterIndex(it, overallProgress.currentTime) }
+            ?: 0
+
+        if (currentIndex != currentChapterIndex) {
+            openPlaybackSession(overallProgress)
+            currentChapterIndex = currentIndex
+        }
+
         return mediaChannel
             .syncProgress(
                 sessionId = it.sessionId,

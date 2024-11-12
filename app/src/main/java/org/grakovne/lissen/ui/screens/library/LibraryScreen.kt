@@ -42,7 +42,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -93,7 +92,6 @@ fun LibraryScreen(
     var pullRefreshing by remember { mutableStateOf(false) }
     val recentBookRefreshing by libraryViewModel.recentBookUpdating.observeAsState(false)
     val searchRequested by libraryViewModel.searchRequested.observeAsState(false)
-
 
     val library = when (searchRequested) {
         true -> libraryViewModel.searchPager.collectAsLazyPagingItems()
@@ -175,7 +173,7 @@ fun LibraryScreen(
     fun provideLibraryTitle(): String {
         val type = libraryViewModel.fetchPreferredLibraryType()
 
-        return when(type) {
+        return when (type) {
             LibraryType.LIBRARY -> context.getString(R.string.library_screen_library_title)
             LibraryType.PODCAST -> context.getString(R.string.library_screen_podcast_title)
             LibraryType.UNKNOWN -> ""
@@ -193,8 +191,6 @@ fun LibraryScreen(
             }
         }
     }
-
-
 
     Scaffold(
         topBar = {
