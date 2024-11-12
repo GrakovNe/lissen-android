@@ -1,5 +1,6 @@
 package org.grakovne.lissen.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
@@ -111,9 +112,17 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun seekTo(chapterPosition: Double) {
-        val absolutePosition = currentChapterIndex.value
-            ?.let { chapterIndex -> book.value?.chapters?.get(chapterIndex)?.start }
-            ?.let { it + chapterPosition } ?: return
+        val currentIndex = currentChapterIndex.value ?: return
+
+        if (currentIndex < 0) {
+            Log.w(TAG, "Unable seek to $chapterPosition because there is no chapter")
+            return
+        }
+
+        val absolutePosition = currentIndex
+            .let { chapterIndex -> book.value?.chapters?.get(chapterIndex)?.start }
+            ?.let { it + chapterPosition }
+            ?: return
 
         mediaRepository.seekTo(absolutePosition)
     }
@@ -164,7 +173,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     companion object {
-
+        private const val TAG = "PlayerViewModel"
         private const val CURRENT_TRACK_REPLAY_THRESHOLD = 5
     }
 }
