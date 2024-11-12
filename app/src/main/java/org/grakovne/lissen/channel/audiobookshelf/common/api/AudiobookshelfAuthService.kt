@@ -37,22 +37,22 @@ class AudiobookshelfAuthService @Inject constructor(
             )
 
             apiService = apiClient.retrofit.create(AudiobookshelfApiClient::class.java)
-
-            val response: ApiResult<LoggedUserResponse> =
-                safeApiCall { apiService.login(CredentialsLoginRequest(username, password)) }
-
-            return response
-                .fold(
-                    onSuccess = {
-                        loginResponseConverter
-                            .apply(it)
-                            .let { ApiResult.Success(it) }
-                    },
-                    onFailure = { ApiResult.Error(it.code) }
-                )
         } catch (e: Exception) {
             return ApiResult.Error(ApiError.InternalError)
         }
+
+        val response: ApiResult<LoggedUserResponse> =
+            safeApiCall { apiService.login(CredentialsLoginRequest(username, password)) }
+
+        return response
+            .fold(
+                onSuccess = {
+                    loginResponseConverter
+                        .apply(it)
+                        .let { ApiResult.Success(it) }
+                },
+                onFailure = { ApiResult.Error(it.code) }
+            )
     }
 
     override fun getAuthType(): AuthType = AuthType.CREDENTIALS
