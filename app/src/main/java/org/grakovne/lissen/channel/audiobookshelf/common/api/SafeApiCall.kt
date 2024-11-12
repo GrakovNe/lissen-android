@@ -1,9 +1,12 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.api
 
+import android.util.Log
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
 import retrofit2.Response
 import java.io.IOException
+
+private const val TAG: String = "safeApiCall"
 
 suspend fun <T> safeApiCall(
     apiCall: suspend () -> Response<T>
@@ -25,8 +28,10 @@ suspend fun <T> safeApiCall(
             else -> ApiResult.Error(ApiError.InternalError)
         }
     } catch (e: IOException) {
+        Log.e(TAG, "Unable to make network api call $apiCall due to: $e")
         ApiResult.Error(ApiError.NetworkError)
     } catch (e: Exception) {
+        Log.e(TAG, "Unable to make network api call $apiCall due to: $e")
         ApiResult.Error(ApiError.InternalError)
     }
 }

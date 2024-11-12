@@ -23,9 +23,9 @@ class AudioBookshelfMediaRepository @Inject constructor(
     private var clientCache: AudiobookshelfMediaClient? = null
 
     suspend fun fetchBookCover(itemId: String): ApiResult<InputStream> =
-        safeApiCall { getClientInstance().getItemCover(itemId) }
+        safeCall { getClientInstance().getItemCover(itemId) }
 
-    private suspend fun safeApiCall(
+    private suspend fun safeCall(
         apiCall: suspend () -> Response<ResponseBody>
     ): ApiResult<InputStream> {
         return try {

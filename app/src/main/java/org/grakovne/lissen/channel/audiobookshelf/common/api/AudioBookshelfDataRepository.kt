@@ -1,6 +1,5 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.api
 
-import android.util.Log
 import org.grakovne.lissen.channel.audiobookshelf.common.client.AudiobookshelfApiClient
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.PlaybackSessionResponse
@@ -18,11 +17,8 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.podcast.PodcastIt
 import org.grakovne.lissen.channel.audiobookshelf.common.model.podcast.PodcastSearchResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.podcast.UserInfoResponse
 import org.grakovne.lissen.channel.common.ApiClient
-import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
-import retrofit2.Response
-import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -141,34 +137,6 @@ class AudioBookshelfDataRepository @Inject constructor(
     ): ApiResult<Unit> =
         safeApiCall { getClientInstance().publishLibraryItemProgress(itemId, progress) }
 
-    private suspend fun <T> safeApiCall(
-        apiCall: suspend () -> Response<T>
-    ): ApiResult<T> {
-        return try {
-            val response = apiCall.invoke()
-
-            return when (response.code()) {
-                200 -> when (val body = response.body()) {
-                    null -> ApiResult.Error(ApiError.InternalError)
-                    else -> ApiResult.Success(body)
-                }
-
-                400 -> ApiResult.Error(ApiError.InternalError)
-                401 -> ApiResult.Error(ApiError.Unauthorized)
-                403 -> ApiResult.Error(ApiError.Unauthorized)
-                404 -> ApiResult.Error(ApiError.InternalError)
-                500 -> ApiResult.Error(ApiError.InternalError)
-                else -> ApiResult.Error(ApiError.InternalError)
-            }
-        } catch (e: IOException) {
-            Log.e(TAG, "Unable to make network api call $apiCall due to: $e")
-            ApiResult.Error(ApiError.NetworkError)
-        } catch (e: Exception) {
-            Log.e(TAG, "Unable to make network api call $apiCall due to: $e")
-            ApiResult.Error(ApiError.InternalError)
-        }
-    }
-
     private fun getClientInstance(): AudiobookshelfApiClient {
         val host = preferences.getHost()
         val token = preferences.getToken()
@@ -214,9 +182,4 @@ class AudioBookshelfDataRepository @Inject constructor(
         token = token,
         requestHeaders = requestHeadersProvider.fetchRequestHeaders()
     )
-
-    companion object {
-
-        private const val TAG: String = "AudioBookshelfDataRepository"
-    }
 }
