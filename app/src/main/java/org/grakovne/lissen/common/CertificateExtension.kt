@@ -8,10 +8,15 @@ import javax.net.ssl.TrustManagerFactory.getInstance
 import javax.net.ssl.X509TrustManager
 
 fun OkHttpClient.Builder.withTrustedCertificates(): OkHttpClient.Builder {
-    val trustManager = getSystemTrustManager()
-    val sslContext = getSystemSSLContext(trustManager)
-    this.sslSocketFactory(sslContext.socketFactory, trustManager)
-    return this
+    return try {
+        val trustManager = getSystemTrustManager()
+        val sslContext = getSystemSSLContext(trustManager)
+        this.sslSocketFactory(sslContext.socketFactory, trustManager)
+
+        this
+    } catch (ex: Exception) {
+        this
+    }
 }
 
 private fun getSystemTrustManager(): X509TrustManager {
