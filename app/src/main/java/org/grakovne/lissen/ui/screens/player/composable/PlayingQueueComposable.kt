@@ -37,6 +37,7 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -64,6 +65,7 @@ fun PlayingQueueComposable(
     val playbackReady by viewModel.isPlaybackReady.observeAsState(false)
     val playingQueueExpanded by viewModel.playingQueueExpanded.observeAsState(false)
 
+    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
     val playingQueueHeight = remember { mutableIntStateOf(0) }
     val isFlinging = remember { mutableStateOf(false) }
 
@@ -109,9 +111,8 @@ fun PlayingQueueComposable(
         Spacer(modifier = Modifier.height(8.dp))
 
         LazyColumn(
-            contentPadding = PaddingValues(bottom = 420.dp),
+            contentPadding = PaddingValues(bottom = screenHeight),
             modifier = Modifier
-                .weight(1f)
                 .scrollable(
                     state = rememberScrollState(),
                     orientation = Orientation.Vertical,
