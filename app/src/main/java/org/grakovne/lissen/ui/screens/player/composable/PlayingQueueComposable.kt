@@ -111,7 +111,7 @@ fun PlayingQueueComposable(
         Spacer(modifier = Modifier.height(8.dp))
 
         LazyColumn(
-            contentPadding = PaddingValues(bottom = screenHeight),
+            contentPadding = if (!playingQueueExpanded) PaddingValues(bottom = screenHeight) else PaddingValues(0.dp),
             modifier = Modifier
                 .scrollable(
                     state = rememberScrollState(),
