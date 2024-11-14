@@ -58,7 +58,6 @@ fun PlaylistItemComposable(
             style = MaterialTheme.typography.bodyMedium,
             color = colorScheme.onBackground,
             overflow = TextOverflow.Ellipsis,
-            maxLines = 1,
             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
             modifier = Modifier.weight(1f)
         )
