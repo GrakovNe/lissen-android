@@ -123,6 +123,7 @@ fun PlayingQueueComposable(
                         playingQueueHeight.intValue = intSize.height
 
                         coroutineScope.launch {
+                            awaitFrame()
                             scrollPlayingQueue(
                                 currentTrackIndex = currentTrackIndex,
                                 listState = listState,
