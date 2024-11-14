@@ -53,7 +53,7 @@ fun PlayingQueuePlaceholderComposable(modifier: Modifier = Modifier) {
                 Spacer(Modifier.height(8.dp))
 
                 HorizontalDivider(
-                    thickness = 1.dp,
+                    thickness = 0.dp,
                     modifier = Modifier.padding(horizontal = 4.dp)
                 )
 
