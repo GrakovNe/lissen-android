@@ -8,7 +8,9 @@ import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -107,6 +109,7 @@ fun PlayingQueueComposable(
         Spacer(modifier = Modifier.height(8.dp))
 
         LazyColumn(
+            contentPadding = PaddingValues(bottom = 420.dp),
             modifier = Modifier
                 .weight(1f)
                 .scrollable(
@@ -183,7 +186,26 @@ private suspend fun scrollPlayingQueue(
     playingQueueExpanded: Boolean,
     chaptersSize: Int
 ) {
-    if (playingQueueExpanded) {
+    if (playingQueueExpanded || chaptersSize <= 2) {
+        return
+    }
+
+    val layoutInfo = listState.layoutInfo
+    val viewportSize: Int = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
+
+    val visibleItems = layoutInfo
+        .visibleItemsInfo
+        .filter { item -> item.offset >= 0 && (item.offset + item.size) <= viewportSize }
+
+    val lastVisibleIndex = visibleItems.lastOrNull()?.index ?: 0
+    val scrolledBottom = (chaptersSize - 1) == lastVisibleIndex
+
+    val currentVisible = visibleItems
+        .drop(1)
+        .map { it.index }
+        .contains(currentTrackIndex)
+
+    if (scrolledBottom && currentVisible) {
         return
     }
 
