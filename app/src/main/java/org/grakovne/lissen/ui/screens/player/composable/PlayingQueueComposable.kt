@@ -166,7 +166,7 @@ fun PlayingQueueComposable(
 
                 if (index < chapters.size - 1) {
                     HorizontalDivider(
-                        thickness = 0.dp,
+                        thickness = 1.dp,
                         modifier = Modifier.padding(start = 20.dp, top = 8.dp, bottom = 8.dp)
                     )
                 }
@@ -189,7 +189,6 @@ private suspend fun scrollPlayingQueue(
 
     val targetIndex = when {
         currentTrackIndex <= 1 -> 0
-        currentTrackIndex >= chaptersSize - 1 -> currentTrackIndex - 1
         else -> currentTrackIndex - 1
     }
 
