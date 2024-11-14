@@ -189,37 +189,28 @@ private suspend fun scrollPlayingQueue(
     playingQueueExpanded: Boolean,
     chaptersSize: Int
 ) {
-    if (playingQueueExpanded || chaptersSize <= 2) {
-        return
-    }
+    if (playingQueueExpanded || chaptersSize <= 2) return
 
     val layoutInfo = listState.layoutInfo
-    val viewportSize: Int = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
+    val viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
 
-    val visibleItems = layoutInfo
-        .visibleItemsInfo
-        .filter { item -> item.offset >= 0 && (item.offset + item.size) <= viewportSize }
+    val visibleItems = layoutInfo.visibleItemsInfo.filter { item ->
+        item.offset >= 0 && (item.offset + item.size) <= viewportSize
+    }
 
     val lastVisibleIndex = visibleItems.lastOrNull()?.index ?: 0
-    val scrolledBottom = (chaptersSize - 1) == lastVisibleIndex
+    val isScrolledToBottom = (chaptersSize - 1) == lastVisibleIndex
+    val isCurrentVisible = visibleItems.drop(1).any { it.index == currentTrackIndex }
 
-    val currentVisible = visibleItems
-        .drop(1)
-        .map { it.index }
-        .contains(currentTrackIndex)
+    if (isScrolledToBottom && isCurrentVisible) return
 
-    if (scrolledBottom && currentVisible) {
-        return
-    }
+    val targetIndex = if (currentTrackIndex <= 1) 0 else currentTrackIndex - 1
 
-    val targetIndex = when {
-        currentTrackIndex <= 1 -> 0
-        else -> currentTrackIndex - 1
-    }
-
-    if (animate && playbackReady) {
-        listState.animateScrollToItem(targetIndex)
-    } else {
-        listState.scrollToItem(targetIndex)
+    if (playbackReady) {
+        if (animate) {
+            listState.animateScrollToItem(targetIndex)
+        } else {
+            listState.scrollToItem(targetIndex)
+        }
     }
 }
