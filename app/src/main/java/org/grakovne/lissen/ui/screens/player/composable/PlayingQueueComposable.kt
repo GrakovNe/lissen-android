@@ -122,15 +122,17 @@ fun PlayingQueueComposable(
                     if (intSize.height != playingQueueHeight.intValue) {
                         playingQueueHeight.intValue = intSize.height
 
-                        coroutineScope.launch {
-                            scrollPlayingQueue(
-                                currentTrackIndex = currentTrackIndex,
-                                listState = listState,
-                                playbackReady = playbackReady,
-                                animate = false,
-                                playingQueueExpanded = playingQueueExpanded,
-                                chapters.size
-                            )
+                        if (!playingQueueExpanded) {
+                            coroutineScope.launch {
+                                scrollPlayingQueue(
+                                    currentTrackIndex = currentTrackIndex,
+                                    listState = listState,
+                                    playbackReady = playbackReady,
+                                    animate = false,
+                                    playingQueueExpanded = playingQueueExpanded,
+                                    chapters.size
+                                )
+                            }
                         }
                     }
                 }
