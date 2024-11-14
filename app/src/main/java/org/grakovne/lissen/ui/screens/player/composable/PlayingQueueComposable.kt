@@ -8,9 +8,7 @@ import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -36,12 +34,13 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -66,7 +65,7 @@ fun PlayingQueueComposable(
     val playingQueueExpanded by viewModel.playingQueueExpanded.observeAsState(false)
 
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
-    val playingQueueHeight = remember { mutableIntStateOf(0) }
+    val collapsedPlayingQueueHeight = remember { mutableIntStateOf(0) }
     val isFlinging = remember { mutableStateOf(false) }
 
     val expandFlingThreshold =
@@ -118,10 +117,13 @@ fun PlayingQueueComposable(
                     orientation = Orientation.Vertical,
                     enabled = playingQueueExpanded
                 )
+                .onGloballyPositioned {
+                    if (collapsedPlayingQueueHeight.intValue == 0) {
+                        collapsedPlayingQueueHeight.intValue = it.size.height
+                    }
+                }
                 .onSizeChanged { intSize ->
-                    if (intSize.height != playingQueueHeight.intValue) {
-                        playingQueueHeight.intValue = intSize.height
-
+                    if (intSize.height != collapsedPlayingQueueHeight.intValue) {
                         coroutineScope.launch {
                             awaitFrame()
                             scrollPlayingQueue(
@@ -188,28 +190,17 @@ private suspend fun scrollPlayingQueue(
     playingQueueExpanded: Boolean,
     chaptersSize: Int
 ) {
-    if (playingQueueExpanded || chaptersSize <= 2) return
-
-    val layoutInfo = listState.layoutInfo
-    val viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
-
-    val visibleItems = layoutInfo.visibleItemsInfo.filter { item ->
-        item.offset >= 0 && (item.offset + item.size) <= viewportSize
+    if (playingQueueExpanded) {
+        return
     }
 
-    val lastVisibleIndex = visibleItems.lastOrNull()?.index ?: 0
-    val isScrolledToBottom = (chaptersSize - 1) == lastVisibleIndex
-    val isCurrentVisible = visibleItems.drop(1).any { it.index == currentTrackIndex }
+    val targetIndex = when (currentTrackIndex > 0) {
+        true -> currentTrackIndex - 1
+        false -> 0
+    }
 
-    if (isScrolledToBottom && isCurrentVisible) return
-
-    val targetIndex = if (currentTrackIndex <= 1) 0 else currentTrackIndex - 1
-
-    if (playbackReady) {
-        if (animate) {
-            listState.animateScrollToItem(targetIndex)
-        } else {
-            listState.scrollToItem(targetIndex)
-        }
+    when (animate && playbackReady) {
+        true -> listState.animateScrollToItem(targetIndex)
+        false -> listState.scrollToItem(targetIndex)
     }
 }
