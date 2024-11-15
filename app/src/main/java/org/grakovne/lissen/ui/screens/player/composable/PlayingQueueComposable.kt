@@ -4,16 +4,15 @@ import android.view.ViewConfiguration
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListItemInfo
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -44,7 +43,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -68,12 +66,10 @@ fun PlayingQueueComposable(
     val playbackReady by viewModel.isPlaybackReady.observeAsState(false)
     val playingQueueExpanded by viewModel.playingQueueExpanded.observeAsState(false)
 
-    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
     var collapsedPlayingQueueHeight by remember { mutableIntStateOf(0) }
     val isFlinging = remember { mutableStateOf(false) }
 
     val density = LocalDensity.current
-    val extraPadding = remember { mutableStateOf(0.dp) }
 
 
     val expandFlingThreshold =
@@ -187,14 +183,14 @@ fun PlayingQueueComposable(
             item {
                 val layoutInfo by remember { derivedStateOf { listState.layoutInfo } }
 
-                val listViewportHeight = layoutInfo.viewportEndOffset
-                val sum = layoutInfo.visibleItemsInfo.filter { item ->
-                    item.offset >= 0 && (item.offset + item.size) <= listViewportHeight
-                }.sumOf { it.size }
-                val visibleHeight = with(density) { sum.toDp() }
-                val totalHeight = with(density) { collapsedPlayingQueueHeight.toDp() }
+                val visibleItemHeight = layoutInfo.visibleItemsInfo
+                    .remainVisible(layoutInfo.viewportEndOffset)
+                    .sumOf { it.size }
+                    .let { with(density) { it.toDp() } }
+
+                val containerHeight = with(density) { collapsedPlayingQueueHeight.toDp() }
                 val stableDiff by remember {
-                    derivedStateOf { (totalHeight - visibleHeight).coerceAtLeast(0.dp) }
+                    derivedStateOf { (containerHeight - visibleItemHeight).coerceAtLeast(0.dp) }
                 }
 
                 Spacer(modifier = Modifier.height(stableDiff))
@@ -202,6 +198,9 @@ fun PlayingQueueComposable(
         }
     }
 }
+
+private fun List<LazyListItemInfo>.remainVisible(listViewportHeight: Int) = this
+    .filter { item -> item.offset >= 0 && (item.offset + item.size) <= listViewportHeight }
 
 private suspend fun scrollPlayingQueue(
     currentTrackIndex: Int,
