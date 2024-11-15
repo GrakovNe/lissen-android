@@ -1,5 +1,6 @@
 package org.grakovne.lissen.ui.screens.player.composable
 
+import android.content.Context
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,7 +22,9 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.TimerOption
@@ -33,6 +36,9 @@ fun TimerComposable(
     onOptionSelected: (TimerOption?) -> Unit,
     onDismissRequest: () -> Unit
 ) {
+
+    val context = LocalContext.current
+
     ModalBottomSheet(
         containerColor = colorScheme.background,
         onDismissRequest = onDismissRequest,
@@ -47,7 +53,7 @@ fun TimerComposable(
                     itemsIndexed(TimerOptions) { index, item ->
                         ListItem(
                             headlineContent = {
-                                Row { Text(item.makeText()) }
+                                Row { Text(item.makeText(context)) }
                             },
                             trailingContent = {
                                 if (item == currentOption) {
@@ -106,7 +112,8 @@ private val TimerOptions = listOf(
     CurrentEpisodeTimerOption
 )
 
-fun TimerOption.makeText(): String = when (this) {
-    CurrentEpisodeTimerOption -> "After current episode"
-    is DurationTimerOption -> "After ${this.duration} minutes"
+fun TimerOption.makeText(context: Context): String = when (this) {
+    CurrentEpisodeTimerOption -> context.getString(R.string.timer_option_after_current_episode)
+    is DurationTimerOption -> context.getString(R.string.timer_option_after_minutes, this.duration)
 }
+

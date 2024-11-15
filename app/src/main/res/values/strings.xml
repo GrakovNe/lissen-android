@@ -54,4 +54,6 @@
     <string name="custom_headers_title">Custom Headers</string>
     <string name="library_screen_podcast_title">Podcasts</string>
     <string name="settings_screen_server_version">Server Version</string>
+    <string name="timer_option_after_current_episode">After current episode</string>
+    <string name="timer_option_after_minutes">After %1$s minutes</string>
 </resources>
