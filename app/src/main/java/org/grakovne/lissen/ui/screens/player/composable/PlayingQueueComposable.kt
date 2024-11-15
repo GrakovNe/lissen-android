@@ -5,7 +5,6 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -91,7 +90,8 @@ fun PlayingQueueComposable(
             listState = listState,
             playbackReady = playbackReady,
             animate = true,
-            playingQueueExpanded = playingQueueExpanded
+            playingQueueExpanded = playingQueueExpanded,
+            chapterSize = chapters.size
         )
     }
 
@@ -111,7 +111,6 @@ fun PlayingQueueComposable(
         Spacer(modifier = Modifier.height(8.dp))
 
         LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding = PaddingValues(bottom = with(density) { collapsedPlayingQueueHeight.toDp() }),
             modifier = Modifier
                 .scrollable(
@@ -133,7 +132,8 @@ fun PlayingQueueComposable(
                                 listState = listState,
                                 playbackReady = playbackReady,
                                 animate = false,
-                                playingQueueExpanded = playingQueueExpanded
+                                playingQueueExpanded = playingQueueExpanded,
+                                chapterSize = chapters.size
                             )
                         }
                     }
@@ -175,7 +175,9 @@ fun PlayingQueueComposable(
                 if (index < chapters.size - 1) {
                     HorizontalDivider(
                         thickness = 1.dp,
-                        modifier = Modifier.padding(start = 20.dp)
+                        modifier = Modifier
+                            .padding(start = 20.dp)
+                            .padding(vertical = 8.dp)
                     )
                 }
             }
@@ -188,7 +190,8 @@ private suspend fun scrollPlayingQueue(
     listState: LazyListState,
     playbackReady: Boolean,
     animate: Boolean,
-    playingQueueExpanded: Boolean
+    playingQueueExpanded: Boolean,
+    chapterSize: Int
 ) {
     if (playingQueueExpanded) {
         return
@@ -201,4 +204,3 @@ private suspend fun scrollPlayingQueue(
         false -> listState.scrollToItem(targetIndex)
     }
 }
-
