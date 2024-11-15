@@ -8,6 +8,7 @@ import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.Headset
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Speed
+import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -43,6 +44,7 @@ fun NavigationBarComposable(
     val playingQueueExpanded by viewModel.playingQueueExpanded.observeAsState(false)
 
     var playbackSpeedExpanded by remember { mutableStateOf(false) }
+    var timerExpanded by remember { mutableStateOf(false) }
 
     Surface(
         shadowElevation = 4.dp,
@@ -132,21 +134,21 @@ fun NavigationBarComposable(
             NavigationBarItem(
                 icon = {
                     Icon(
-                        Icons.Outlined.Settings,
-                        contentDescription = stringResource(R.string.player_screen_preferences_navigation),
+                        Icons.Outlined.Timer,
+                        contentDescription = "Timer",
                         modifier = Modifier.size(iconSize)
                     )
                 },
                 label = {
                     Text(
-                        text = stringResource(R.string.player_screen_preferences_navigation),
+                        text = "Timer",
                         style = labelStyle,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                 },
                 selected = false,
-                onClick = { navController.showSettings() },
+                onClick = { timerExpanded = true },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = colorScheme.primary,
                     indicatorColor = colorScheme.surfaceContainer
@@ -158,6 +160,14 @@ fun NavigationBarComposable(
                     currentSpeed = playbackSpeed,
                     onSpeedChange = { viewModel.setPlaybackSpeed(it) },
                     onDismissRequest = { playbackSpeedExpanded = false }
+                )
+            }
+
+            if (timerExpanded) {
+                TimerComposable(
+                    currentOption = null,
+                    onOptionSelected = {},
+                    onDismissRequest = { timerExpanded = false }
                 )
             }
         }
