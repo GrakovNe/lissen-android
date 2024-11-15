@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.playback.MediaRepository
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.playback.service.calculateChapterPosition
@@ -26,6 +27,8 @@ class PlayerViewModel @Inject constructor(
     val book: LiveData<DetailedItem> = mediaRepository.playingBook
 
     private val mediaItemPosition: LiveData<Double> = mediaRepository.mediaItemPosition
+
+    val timerOption: LiveData<TimerOption?> = mediaRepository.timerOption
 
     private val _playingQueueExpanded = MutableLiveData(false)
     val playingQueueExpanded: LiveData<Boolean> = _playingQueueExpanded
@@ -55,6 +58,10 @@ class PlayerViewModel @Inject constructor(
 
     fun expandPlayingQueue() {
         _playingQueueExpanded.value = true
+    }
+
+    fun setTimer(option: TimerOption?) {
+        mediaRepository.setTimer(option)
     }
 
     fun collapsePlayingQueue() {

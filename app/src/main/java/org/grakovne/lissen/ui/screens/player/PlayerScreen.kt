@@ -23,8 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,7 +36,6 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.player.composable.NavigationBarComposable
 import org.grakovne.lissen.ui.screens.player.composable.PlayingQueueComposable
-import org.grakovne.lissen.ui.screens.player.composable.TimerComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackControlComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackDetailsComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.PlayingQueuePlaceholderComposable

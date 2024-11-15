@@ -6,11 +6,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.Headset
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Speed
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.NavigationBar
@@ -40,6 +38,7 @@ fun NavigationBarComposable(
     navController: AppNavigationService,
     modifier: Modifier = Modifier
 ) {
+    val timerOption by viewModel.timerOption.observeAsState(null)
     val playbackSpeed by viewModel.playbackSpeed.observeAsState(1f)
     val playingQueueExpanded by viewModel.playingQueueExpanded.observeAsState(false)
 
@@ -78,7 +77,7 @@ fun NavigationBarComposable(
                 onClick = { navController.showLibrary() },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = colorScheme.primary,
-                    indicatorColor = MaterialTheme.colorScheme.surfaceContainer
+                    indicatorColor = colorScheme.surfaceContainer
                 )
             )
 
@@ -165,8 +164,8 @@ fun NavigationBarComposable(
 
             if (timerExpanded) {
                 TimerComposable(
-                    currentOption = null,
-                    onOptionSelected = {},
+                    currentOption = timerOption,
+                    onOptionSelected = { viewModel.setTimer(it) },
                     onDismissRequest = { timerExpanded = false }
                 )
             }

@@ -23,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.ACTION_SEEK_TO
@@ -46,6 +47,9 @@ class MediaRepository @Inject constructor(
 
     private val _isPlaying = MutableLiveData(false)
     val isPlaying: LiveData<Boolean> = _isPlaying
+
+    private val _timerOption = MutableLiveData<TimerOption?>(null)
+    val timerOption = _timerOption
 
     private val _isPlaybackReady = MutableLiveData(false)
     val isPlaybackReady: LiveData<Boolean> = _isPlaybackReady
@@ -113,6 +117,10 @@ class MediaRepository @Inject constructor(
             },
             MoreExecutors.directExecutor()
         )
+    }
+
+    fun setTimer(timerOption: TimerOption?) {
+        _timerOption.value = timerOption
     }
 
     fun mediaPreparing() {
