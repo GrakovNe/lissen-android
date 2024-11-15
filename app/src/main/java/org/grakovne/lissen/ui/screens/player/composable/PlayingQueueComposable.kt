@@ -90,8 +90,7 @@ fun PlayingQueueComposable(
             listState = listState,
             playbackReady = playbackReady,
             animate = true,
-            playingQueueExpanded = playingQueueExpanded,
-            chapterSize = chapters.size
+            playingQueueExpanded = playingQueueExpanded
         )
     }
 
@@ -135,8 +134,7 @@ fun PlayingQueueComposable(
                                 listState = listState,
                                 playbackReady = playbackReady,
                                 animate = false,
-                                playingQueueExpanded = playingQueueExpanded,
-                                chapterSize = chapters.size
+                                playingQueueExpanded = playingQueueExpanded
                             )
                         }
                     }
@@ -193,8 +191,7 @@ private suspend fun scrollPlayingQueue(
     listState: LazyListState,
     playbackReady: Boolean,
     animate: Boolean,
-    playingQueueExpanded: Boolean,
-    chapterSize: Int
+    playingQueueExpanded: Boolean
 ) {
     if (playingQueueExpanded) {
         return
