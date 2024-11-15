@@ -32,6 +32,7 @@ import org.grakovne.lissen.playback.service.PlaybackService.Companion.ACTION_SEE
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.BOOK_EXTRA
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.PLAYBACK_READY
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.POSITION
+import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_EXPIRED
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_VALUE_EXTRA
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.playback.service.calculateChapterPosition
@@ -88,6 +89,14 @@ class MediaRepository @Inject constructor(
         }
     }
 
+    private val timerExpiredReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == TIMER_EXPIRED) {
+                _timerOption.postValue(null)
+            }
+        }
+    }
+
     init {
         val controllerBuilder = MediaController.Builder(context, token)
         val futureController = controllerBuilder.buildAsync()
@@ -101,6 +110,10 @@ class MediaRepository @Inject constructor(
                     LocalBroadcastManager
                         .getInstance(context)
                         .registerReceiver(bookDetailsReadyReceiver, IntentFilter(PLAYBACK_READY))
+
+                    LocalBroadcastManager
+                        .getInstance(context)
+                        .registerReceiver(timerExpiredReceiver, IntentFilter(TIMER_EXPIRED))
 
                     mediaController.addListener(object : Player.Listener {
                         override fun onIsPlayingChanged(isPlaying: Boolean) {

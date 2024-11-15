@@ -210,7 +210,14 @@ class PlaybackService : MediaSessionService() {
     private fun setTimer(delay: Double) {
         cancelTimer()
 
-        handler.postDelayed({ pause() }, delay.toLong())
+        handler.postDelayed({
+            pause()
+            LocalBroadcastManager
+                .getInstance(baseContext)
+                .sendBroadcast(Intent(TIMER_EXPIRED))
+        },
+            delay.toLong()
+        )
         Log.d(TAG, "Timer started for $delay ms.")
     }
 
@@ -307,6 +314,8 @@ class PlaybackService : MediaSessionService() {
 
         const val BOOK_EXTRA = "org.grakovne.lissen.player.service.BOOK"
         const val TIMER_VALUE_EXTRA = "org.grakovne.lissen.player.service.TIMER_VALUE"
+        const val TIMER_EXPIRED = "org.grakovne.lissen.player.service.TIMER_EXPIRED"
+
         const val PLAYBACK_READY = "org.grakovne.lissen.player.service.PLAYBACK_READY"
         const val POSITION = "org.grakovne.lissen.player.service.POSITION"
 
