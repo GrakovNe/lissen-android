@@ -22,7 +22,9 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
+import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.service.PlaybackService
@@ -30,6 +32,9 @@ import org.grakovne.lissen.playback.service.PlaybackService.Companion.ACTION_SEE
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.BOOK_EXTRA
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.PLAYBACK_READY
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.POSITION
+import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_VALUE_EXTRA
+import org.grakovne.lissen.playback.service.calculateChapterIndex
+import org.grakovne.lissen.playback.service.calculateChapterPosition
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -121,6 +126,47 @@ class MediaRepository @Inject constructor(
 
     fun setTimer(timerOption: TimerOption?) {
         _timerOption.value = timerOption
+        when (timerOption) {
+            is DurationTimerOption -> {
+                val durationMillis = timerOption.duration * 60 * 1000.0
+                scheduleTimer(durationMillis)
+            }
+
+            is CurrentEpisodeTimerOption -> {
+                val playingBook = playingBook.value ?: return
+                val currentPosition = mediaItemPosition.value ?: return
+
+                val chapterDuration = calculateChapterIndex(playingBook, currentPosition)
+                    .let { playingBook.chapters[it] }
+                    .duration
+
+                val chapterPosition = calculateChapterPosition(
+                    book = playingBook,
+                    overallPosition = currentPosition
+                )
+
+                scheduleTimer((chapterDuration - chapterPosition) * 1000)
+            }
+
+            null -> cancelTimer()
+        }
+    }
+
+    private fun scheduleTimer(delay: Double) {
+        val intent = Intent(context, PlaybackService::class.java).apply {
+            action = PlaybackService.ACTION_SET_TIMER
+            putExtra(TIMER_VALUE_EXTRA, delay)
+        }
+
+        context.startService(intent)
+    }
+
+    private fun cancelTimer() {
+        val intent = Intent(context, PlaybackService::class.java).apply {
+            action = PlaybackService.ACTION_CANCEL_TIMER
+        }
+
+        context.startService(intent)
     }
 
     fun mediaPreparing() {

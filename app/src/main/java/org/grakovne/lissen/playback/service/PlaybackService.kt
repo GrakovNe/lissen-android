@@ -1,6 +1,8 @@
 package org.grakovne.lissen.playback.service
 
 import android.content.Intent
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -59,6 +61,8 @@ class PlaybackService : MediaSessionService() {
 
     private val playerServiceScope = MainScope()
 
+    private val handler = Handler(Looper.getMainLooper())
+
     @Suppress("DEPRECATION")
     override fun onStartCommand(
         intent: Intent?,
@@ -68,6 +72,21 @@ class PlaybackService : MediaSessionService() {
         super.onStartCommand(intent, flags, startId)
 
         when (intent?.action) {
+            ACTION_SET_TIMER -> {
+                val delay = intent.getDoubleExtra(TIMER_VALUE_EXTRA, 0.0)
+
+                if (delay > 0) {
+                    setTimer(delay)
+                }
+
+                return START_NOT_STICKY
+            }
+
+            ACTION_CANCEL_TIMER -> {
+                cancelTimer()
+                return START_NOT_STICKY
+            }
+
             ACTION_PLAY -> {
                 playerServiceScope
                     .launch {
@@ -79,12 +98,7 @@ class PlaybackService : MediaSessionService() {
             }
 
             ACTION_PAUSE -> {
-                playerServiceScope
-                    .launch {
-                        exoPlayer.playWhenReady = false
-                        stopForeground(STOP_FOREGROUND_REMOVE)
-                        stopSelf()
-                    }
+                pause()
                 return START_NOT_STICKY
             }
 
@@ -193,6 +207,27 @@ class PlaybackService : MediaSessionService() {
         }
     }
 
+    private fun setTimer(delay: Double) {
+        cancelTimer()
+
+        handler.postDelayed({ pause() }, delay.toLong())
+        Log.d(TAG, "Timer started for $delay ms.")
+    }
+
+    private fun cancelTimer() {
+        handler.removeCallbacksAndMessages(null)
+        Log.d(TAG, "Timer canceled.")
+    }
+
+    private fun pause() {
+        playerServiceScope
+            .launch {
+                exoPlayer.playWhenReady = false
+                stopForeground(STOP_FOREGROUND_REMOVE)
+                stopSelf()
+            }
+    }
+
     private fun seek(
         items: List<BookFile>,
         position: Double?
@@ -267,8 +302,11 @@ class PlaybackService : MediaSessionService() {
         const val ACTION_PAUSE = "org.grakovne.lissen.player.service.PAUSE"
         const val ACTION_SET_PLAYBACK = "org.grakovne.lissen.player.service.SET_PLAYBACK"
         const val ACTION_SEEK_TO = "org.grakovne.lissen.player.service.ACTION_SEEK_TO"
+        const val ACTION_SET_TIMER = "org.grakovne.lissen.player.service.ACTION_SET_TIMER"
+        const val ACTION_CANCEL_TIMER = "org.grakovne.lissen.player.service.CANCEL_TIMER"
 
         const val BOOK_EXTRA = "org.grakovne.lissen.player.service.BOOK"
+        const val TIMER_VALUE_EXTRA = "org.grakovne.lissen.player.service.TIMER_VALUE"
         const val PLAYBACK_READY = "org.grakovne.lissen.player.service.PLAYBACK_READY"
         const val POSITION = "org.grakovne.lissen.player.service.POSITION"
 
