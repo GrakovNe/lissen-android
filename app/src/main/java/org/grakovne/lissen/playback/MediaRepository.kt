@@ -39,7 +39,7 @@ import org.grakovne.lissen.playback.service.calculateChapterPosition
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Suppress("DEPRECATION")
+
 @Singleton
 class MediaRepository @Inject constructor(
     @ApplicationContext private val context: Context,
