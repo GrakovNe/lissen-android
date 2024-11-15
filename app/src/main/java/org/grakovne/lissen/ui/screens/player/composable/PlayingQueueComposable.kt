@@ -4,6 +4,7 @@ import android.view.ViewConfiguration
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -23,12 +24,14 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -38,6 +41,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntSize
@@ -65,8 +69,12 @@ fun PlayingQueueComposable(
     val playingQueueExpanded by viewModel.playingQueueExpanded.observeAsState(false)
 
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
-    val collapsedPlayingQueueHeight = remember { mutableIntStateOf(0) }
+    var collapsedPlayingQueueHeight by remember { mutableIntStateOf(0) }
     val isFlinging = remember { mutableStateOf(false) }
+
+    val density = LocalDensity.current
+    val extraPadding = remember { mutableStateOf(0.dp) }
+
 
     val expandFlingThreshold =
         remember { ViewConfiguration.get(context).scaledMinimumFlingVelocity.toFloat() * 2 }
@@ -89,8 +97,7 @@ fun PlayingQueueComposable(
             listState = listState,
             playbackReady = playbackReady,
             animate = true,
-            playingQueueExpanded = playingQueueExpanded,
-            chaptersSize = chapters.size
+            playingQueueExpanded = playingQueueExpanded
         )
     }
 
@@ -110,7 +117,6 @@ fun PlayingQueueComposable(
         Spacer(modifier = Modifier.height(8.dp))
 
         LazyColumn(
-            contentPadding = if (!playingQueueExpanded) PaddingValues(bottom = screenHeight) else PaddingValues(0.dp),
             modifier = Modifier
                 .scrollable(
                     state = rememberScrollState(),
@@ -118,12 +124,12 @@ fun PlayingQueueComposable(
                     enabled = playingQueueExpanded
                 )
                 .onGloballyPositioned {
-                    if (collapsedPlayingQueueHeight.intValue == 0) {
-                        collapsedPlayingQueueHeight.intValue = it.size.height
+                    if (collapsedPlayingQueueHeight == 0) {
+                        collapsedPlayingQueueHeight = it.size.height
                     }
                 }
                 .onSizeChanged { intSize ->
-                    if (intSize.height != collapsedPlayingQueueHeight.intValue) {
+                    if (intSize.height != collapsedPlayingQueueHeight) {
                         coroutineScope.launch {
                             awaitFrame()
                             scrollPlayingQueue(
@@ -131,8 +137,7 @@ fun PlayingQueueComposable(
                                 listState = listState,
                                 playbackReady = playbackReady,
                                 animate = false,
-                                playingQueueExpanded = playingQueueExpanded,
-                                chapters.size
+                                playingQueueExpanded = playingQueueExpanded
                             )
                         }
                     }
@@ -178,6 +183,22 @@ fun PlayingQueueComposable(
                     )
                 }
             }
+
+            item {
+                val layoutInfo = listState.layoutInfo
+
+                val listViewportHeight = layoutInfo.viewportEndOffset
+                val sum = layoutInfo.visibleItemsInfo.filter { item ->
+                    item.offset >= 0 && (item.offset + item.size) <= listViewportHeight
+                }.sumOf { it.size }
+                val visibleHeight = with(density) { sum.toDp() }
+                val totalHeight = with(density) { collapsedPlayingQueueHeight.toDp() }
+                val stableDiff by remember {
+                    derivedStateOf { (totalHeight - visibleHeight).coerceAtLeast(0.dp) }
+                }
+
+                Spacer(modifier = Modifier.height(stableDiff))
+            }
         }
     }
 }
@@ -187,8 +208,7 @@ private suspend fun scrollPlayingQueue(
     listState: LazyListState,
     playbackReady: Boolean,
     animate: Boolean,
-    playingQueueExpanded: Boolean,
-    chaptersSize: Int
+    playingQueueExpanded: Boolean
 ) {
     if (playingQueueExpanded) {
         return
