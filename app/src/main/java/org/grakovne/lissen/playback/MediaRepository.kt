@@ -39,7 +39,6 @@ import org.grakovne.lissen.playback.service.calculateChapterPosition
 import javax.inject.Inject
 import javax.inject.Singleton
 
-
 @Singleton
 class MediaRepository @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -72,6 +71,7 @@ class MediaRepository @Inject constructor(
     private val handler = Handler(Looper.getMainLooper())
 
     private val bookDetailsReadyReceiver = object : BroadcastReceiver() {
+        @Suppress("DEPRECATION")
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == PLAYBACK_READY) {
                 val book = intent.getSerializableExtra(BOOK_EXTRA) as? DetailedItem
@@ -137,7 +137,10 @@ class MediaRepository @Inject constructor(
         )
     }
 
-    fun setTimer(timerOption: TimerOption?) {
+    fun setTimer(
+        timerOption: TimerOption?,
+        position: Double? = null
+    ) {
         _timerOption.value = timerOption
         when (timerOption) {
             is DurationTimerOption -> {
@@ -147,7 +150,7 @@ class MediaRepository @Inject constructor(
 
             is CurrentEpisodeTimerOption -> {
                 val playingBook = playingBook.value ?: return
-                val currentPosition = mediaItemPosition.value ?: return
+                val currentPosition = position ?: mediaItemPosition.value ?: return
 
                 val chapterDuration = calculateChapterIndex(playingBook, currentPosition)
                     .let { playingBook.chapters[it] }
@@ -215,6 +218,13 @@ class MediaRepository @Inject constructor(
         }
 
         context.startService(intent)
+
+        if (_timerOption.value is CurrentEpisodeTimerOption) {
+            setTimer(
+                timerOption = _timerOption.value,
+                position = position
+            )
+        }
     }
 
     fun setPlaybackSpeed(factor: Float) {

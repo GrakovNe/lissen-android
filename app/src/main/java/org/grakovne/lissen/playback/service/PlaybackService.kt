@@ -210,12 +210,13 @@ class PlaybackService : MediaSessionService() {
     private fun setTimer(delay: Double) {
         cancelTimer()
 
-        handler.postDelayed({
-            pause()
-            LocalBroadcastManager
-                .getInstance(baseContext)
-                .sendBroadcast(Intent(TIMER_EXPIRED))
-        },
+        handler.postDelayed(
+            {
+                pause()
+                LocalBroadcastManager
+                    .getInstance(baseContext)
+                    .sendBroadcast(Intent(TIMER_EXPIRED))
+            },
             delay.toLong()
         )
         Log.d(TAG, "Timer started for $delay ms.")
