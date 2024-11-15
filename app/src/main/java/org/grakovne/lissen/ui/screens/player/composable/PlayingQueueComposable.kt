@@ -185,7 +185,7 @@ fun PlayingQueueComposable(
             }
 
             item {
-                val layoutInfo = listState.layoutInfo
+                val layoutInfo by remember { derivedStateOf { listState.layoutInfo } }
 
                 val listViewportHeight = layoutInfo.viewportEndOffset
                 val sum = layoutInfo.visibleItemsInfo.filter { item ->
