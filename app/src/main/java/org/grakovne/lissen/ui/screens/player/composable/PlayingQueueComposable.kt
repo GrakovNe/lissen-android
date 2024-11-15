@@ -1,6 +1,7 @@
 package org.grakovne.lissen.ui.screens.player.composable
 
 import android.view.ViewConfiguration
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.Orientation
@@ -77,6 +78,10 @@ fun PlayingQueueComposable(
 
     val listState = rememberLazyListState()
 
+    val animatedPaddingBottom by animateDpAsState(
+        targetValue = if (playingQueueExpanded) 0.dp else with(density) { collapsedPlayingQueueHeight.toDp() }
+    )
+
     val fontSize by animateFloatAsState(
         targetValue = typography.titleMedium.fontSize.value * 1.25f,
         animationSpec = tween(durationMillis = 500),
@@ -111,7 +116,7 @@ fun PlayingQueueComposable(
         Spacer(modifier = Modifier.height(8.dp))
 
         LazyColumn(
-            contentPadding = PaddingValues(bottom = with(density) { collapsedPlayingQueueHeight.toDp() }),
+            contentPadding = PaddingValues(bottom = animatedPaddingBottom),
             modifier = Modifier
                 .scrollable(
                     state = rememberScrollState(),
