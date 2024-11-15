@@ -197,7 +197,10 @@ private suspend fun scrollPlayingQueue(
         return
     }
 
-    val targetIndex = if (currentTrackIndex > 0) currentTrackIndex - 1 else 0
+    val targetIndex = when (currentTrackIndex > 0) {
+        true -> currentTrackIndex - 1
+        false -> 0
+    }
 
     when (animate && playbackReady) {
         true -> listState.animateScrollToItem(targetIndex)
