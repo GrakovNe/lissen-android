@@ -29,6 +29,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.grakovne.lissen.R
+import org.grakovne.lissen.ui.icons.Timer_play
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
@@ -133,7 +134,10 @@ fun NavigationBarComposable(
             NavigationBarItem(
                 icon = {
                     Icon(
-                        Icons.Outlined.Timer,
+                        when (timerOption) {
+                            null -> Icons.Outlined.Timer
+                            else -> Timer_play
+                        },
                         contentDescription = "Timer",
                         modifier = Modifier.size(iconSize)
                     )
