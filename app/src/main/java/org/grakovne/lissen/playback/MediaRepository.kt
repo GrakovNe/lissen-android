@@ -47,8 +47,10 @@ class MediaRepository @Inject constructor(
 
     private lateinit var mediaController: MediaController
 
-    private val token =
-        SessionToken(context, ComponentName(context, PlaybackService::class.java))
+    private val token = SessionToken(
+        context,
+        ComponentName(context, PlaybackService::class.java)
+    )
 
     private val _isPlaying = MutableLiveData(false)
     val isPlaying: LiveData<Boolean> = _isPlaying

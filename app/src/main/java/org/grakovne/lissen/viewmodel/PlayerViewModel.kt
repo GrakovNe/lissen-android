@@ -135,14 +135,19 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun setChapter(index: Int) {
-        val chapterStartsAt = book
-            .value
-            ?.chapters
-            ?.get(index)
-            ?.start
-            ?: 0.0
+        try {
+            val chapterStartsAt = book
+                .value
+                ?.chapters
+                ?.get(index)
+                ?.start
+                ?: 0.0
 
-        mediaRepository.seekTo(chapterStartsAt)
+            mediaRepository.seekTo(chapterStartsAt)
+        } catch (ex: Exception) {
+            Log.e(TAG, "Tried to play $index element on $book state, but index is not exist")
+            return
+        }
     }
 
     fun setPlaybackSpeed(factor: Float) = mediaRepository.setPlaybackSpeed(factor)
@@ -180,6 +185,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     companion object {
+
         private const val TAG = "PlayerViewModel"
         private const val CURRENT_TRACK_REPLAY_THRESHOLD = 5
     }

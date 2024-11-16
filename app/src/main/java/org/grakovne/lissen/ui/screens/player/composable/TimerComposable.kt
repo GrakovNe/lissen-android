@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
@@ -36,7 +37,6 @@ fun TimerComposable(
     onOptionSelected: (TimerOption?) -> Unit,
     onDismissRequest: () -> Unit
 ) {
-
     val context = LocalContext.current
 
     ModalBottomSheet(
@@ -84,7 +84,7 @@ fun TimerComposable(
                                 headlineContent = {
                                     Row {
                                         Text(
-                                            text = "Disable Timer",
+                                            text = stringResource(R.string.timer_option_disable_timer),
                                             color = colorScheme.error
                                         )
                                     }
@@ -116,4 +116,3 @@ fun TimerOption.makeText(context: Context): String = when (this) {
     CurrentEpisodeTimerOption -> context.getString(R.string.timer_option_after_current_episode)
     is DurationTimerOption -> context.getString(R.string.timer_option_after_minutes, this.duration)
 }
-

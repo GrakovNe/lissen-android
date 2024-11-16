@@ -61,7 +61,7 @@ fun AppNavHost(
                     navArgument("bookTitle") { type = NavType.StringType; nullable = true }
                 )
             ) { navigationStack ->
-                val bookId = navigationStack.arguments?.getString("bookId")!!
+                val bookId = navigationStack.arguments?.getString("bookId") ?: return@composable
                 val bookTitle = navigationStack.arguments?.getString("bookTitle") ?: ""
 
                 PlayerScreen(
@@ -78,14 +78,22 @@ fun AppNavHost(
 
             composable("settings_screen") {
                 SettingsScreen(
-                    onBack = { navController.popBackStack() },
+                    onBack = {
+                        if (navController.previousBackStackEntry != null) {
+                            navController.popBackStack()
+                        }
+                    },
                     navController = navigationService
                 )
             }
 
             composable("settings_screen/custom_headers") {
                 CustomHeadersSettingsScreen(
-                    onBack = { navController.popBackStack() }
+                    onBack = {
+                        if (navController.previousBackStackEntry != null) {
+                            navController.popBackStack()
+                        }
+                    }
                 )
             }
         }

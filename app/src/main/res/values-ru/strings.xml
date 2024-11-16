@@ -55,5 +55,6 @@
     <string name="library_screen_podcast_title">Подкасты</string>
     <string name="settings_screen_server_version">Версия сервера</string>
     <string name="timer_option_after_current_episode">В конце текущего эпизода</string>
-    <string name="timer_option_after_minutes">Через %1$s минут</string>
+    <string name="timer_option_after_minutes">Через %1$d минут</string>
+    <string name="timer_option_disable_timer">Выключить таймер</string>
 </resources>
