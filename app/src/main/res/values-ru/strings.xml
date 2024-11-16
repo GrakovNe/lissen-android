@@ -54,7 +54,7 @@
     <string name="custom_headers_title">Прокси-заголовки</string>
     <string name="library_screen_podcast_title">Подкасты</string>
     <string name="settings_screen_server_version">Версия сервера</string>
-    <string name="timer_option_after_current_episode">Когда закончится эпизода</string>
+    <string name="timer_option_after_current_episode">Когда закончится эпизод</string>
     <string name="timer_option_after_minutes">%1$d минут</string>
     <string name="timer_option_disable_timer">Выключить таймер</string>
     <string name="timer_title">Таймер сна</string>
