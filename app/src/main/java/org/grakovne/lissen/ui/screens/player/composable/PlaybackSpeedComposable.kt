@@ -57,7 +57,7 @@ fun PlaybackSpeedComposable(
             ) {
                 Text(
                     text = stringResource(R.string.playback_speed_title),
-                    style = typography.titleMedium
+                    style = typography.bodyLarge
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))

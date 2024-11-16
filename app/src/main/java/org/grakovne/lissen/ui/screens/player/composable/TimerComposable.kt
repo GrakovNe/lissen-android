@@ -18,9 +18,11 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -46,14 +48,25 @@ fun TimerComposable(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 16.dp)
+                    .padding(horizontal = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Text(
+                    text = stringResource(R.string.timer_title),
+                    style = typography.bodyLarge
+                )
+
                 Spacer(modifier = Modifier.height(8.dp))
+
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
                     itemsIndexed(TimerOptions) { index, item ->
                         ListItem(
                             headlineContent = {
-                                Row { Text(item.makeText(context)) }
+                                Row { Text(
+                                    text = item.makeText(context),
+                                    style = typography.bodyMedium
+                                ) }
                             },
                             trailingContent = {
                                 if (item == currentOption) {
@@ -85,7 +98,8 @@ fun TimerComposable(
                                     Row {
                                         Text(
                                             text = stringResource(R.string.timer_option_disable_timer),
-                                            color = colorScheme.error
+                                            color = colorScheme.error,
+                                            style = typography.bodyMedium
                                         )
                                     }
                                 },
