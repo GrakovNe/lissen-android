@@ -61,7 +61,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun setTimer(option: TimerOption?) {
-        mediaRepository.setTimer(option)
+        mediaRepository.updateTimer(option)
     }
 
     fun collapsePlayingQueue() {
@@ -98,7 +98,7 @@ class PlayerViewModel @Inject constructor(
             result.foldAsync(
                 onSuccess = {
                     withContext(Dispatchers.IO) {
-                        mediaRepository.startPreparingPlayingBook(it)
+                        mediaRepository.startPreparingPlayback(it)
                     }
                 },
                 onFailure = {

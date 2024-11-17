@@ -140,15 +140,16 @@ class MediaRepository @Inject constructor(
         )
     }
 
-    fun setTimer(
+    fun updateTimer(
         timerOption: TimerOption?,
         position: Double? = null
     ) {
-        _timerOption.value = timerOption
+        _timerOption.postValue(timerOption)
+
         when (timerOption) {
             is DurationTimerOption -> {
                 val durationMillis = timerOption.duration * 60 * 1000.0
-                scheduleTimer(durationMillis)
+                scheduleServiceTimer(durationMillis)
             }
 
             is CurrentEpisodeTimerOption -> {
@@ -164,14 +165,14 @@ class MediaRepository @Inject constructor(
                     overallPosition = currentPosition
                 )
 
-                scheduleTimer((chapterDuration - chapterPosition) * 1000)
+                scheduleServiceTimer((chapterDuration - chapterPosition) * 1000)
             }
 
-            null -> cancelTimer()
+            null -> cancelServiceTimer()
         }
     }
 
-    private fun scheduleTimer(delay: Double) {
+    private fun scheduleServiceTimer(delay: Double) {
         val intent = Intent(context, PlaybackService::class.java).apply {
             action = PlaybackService.ACTION_SET_TIMER
             putExtra(TIMER_VALUE_EXTRA, delay)
@@ -180,7 +181,7 @@ class MediaRepository @Inject constructor(
         context.startService(intent)
     }
 
-    private fun cancelTimer() {
+    private fun cancelServiceTimer() {
         val intent = Intent(context, PlaybackService::class.java).apply {
             action = PlaybackService.ACTION_CANCEL_TIMER
         }
@@ -189,14 +190,8 @@ class MediaRepository @Inject constructor(
     }
 
     fun mediaPreparing() {
-        cancelTimer()
+        updateTimer(timerOption = null)
         _isPlaybackReady.postValue(false)
-    }
-
-    fun startPreparingPlayingBook(book: DetailedItem) {
-        if (::mediaController.isInitialized && _playingBook.value != book) {
-            startPreparingPlayback(book)
-        }
     }
 
     fun play() {
@@ -223,11 +218,12 @@ class MediaRepository @Inject constructor(
 
         context.startService(intent)
 
-        when(_timerOption.value) {
-            is CurrentEpisodeTimerOption -> setTimer(
+        when (_timerOption.value) {
+            is CurrentEpisodeTimerOption -> updateTimer(
                 timerOption = _timerOption.value,
                 position = position
             )
+
             is DurationTimerOption -> Unit
             null -> Unit
         }
@@ -246,6 +242,20 @@ class MediaRepository @Inject constructor(
 
         _playbackSpeed.postValue(speed)
         preferences.savePlaybackSpeed(speed)
+    }
+
+    fun startPreparingPlayback(book: DetailedItem) {
+        if (::mediaController.isInitialized && _playingBook.value != book) {
+            _mediaItemPosition.postValue(0.0)
+            _isPlaying.postValue(false)
+
+            val intent = Intent(context, PlaybackService::class.java).apply {
+                action = PlaybackService.ACTION_SET_PLAYBACK
+                putExtra(BOOK_EXTRA, book)
+            }
+
+            context.startService(intent)
+        }
     }
 
     private fun startUpdatingProgress(detailedItem: DetailedItem) {
@@ -270,18 +280,6 @@ class MediaRepository @Inject constructor(
 
             _mediaItemPosition.value = (accumulated + currentFilePosition)
         }
-    }
-
-    private fun startPreparingPlayback(book: DetailedItem) {
-        _mediaItemPosition.postValue(0.0)
-        _isPlaying.postValue(false)
-
-        val intent = Intent(context, PlaybackService::class.java).apply {
-            action = PlaybackService.ACTION_SET_PLAYBACK
-            putExtra(BOOK_EXTRA, book)
-        }
-
-        context.startService(intent)
     }
 
     private companion object {
