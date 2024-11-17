@@ -8,6 +8,7 @@ import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -115,6 +116,7 @@ fun PlayingQueueComposable(
                 false -> PaddingValues(bottom = with(density) { collapsedPlayingQueueHeight.toDp() })
             },
             modifier = Modifier
+                .fillMaxHeight()
                 .scrollable(
                     state = rememberScrollState(),
                     orientation = Orientation.Vertical,
