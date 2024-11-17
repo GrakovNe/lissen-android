@@ -56,7 +56,7 @@ class MediaRepository @Inject constructor(
     private val _isPlaying = MutableLiveData(false)
     val isPlaying: LiveData<Boolean> = _isPlaying
 
-    private val _timerOption = MutableLiveData<TimerOption?>(null)
+    private val _timerOption = MutableLiveData<TimerOption?>()
     val timerOption = _timerOption
 
     private val _isPlaybackReady = MutableLiveData(false)
@@ -189,6 +189,7 @@ class MediaRepository @Inject constructor(
     }
 
     fun mediaPreparing() {
+        cancelTimer()
         _isPlaybackReady.postValue(false)
     }
 
@@ -282,6 +283,7 @@ class MediaRepository @Inject constructor(
     }
 
     private companion object {
+
         private const val TAG = "MediaRepository"
     }
 }
