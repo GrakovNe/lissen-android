@@ -208,6 +208,8 @@ class PlaybackService : MediaSessionService() {
     }
 
     private fun setTimer(delay: Double) {
+        val delayMs = delay * 1000
+
         cancelTimer()
 
         handler.postDelayed(
@@ -217,9 +219,9 @@ class PlaybackService : MediaSessionService() {
                     .getInstance(baseContext)
                     .sendBroadcast(Intent(TIMER_EXPIRED))
             },
-            delay.toLong()
+            delayMs.toLong()
         )
-        Log.d(TAG, "Timer started for $delay ms.")
+        Log.d(TAG, "Timer started for $delayMs ms.")
     }
 
     private fun cancelTimer() {

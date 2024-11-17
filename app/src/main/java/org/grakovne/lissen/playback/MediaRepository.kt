@@ -147,10 +147,7 @@ class MediaRepository @Inject constructor(
         _timerOption.postValue(timerOption)
 
         when (timerOption) {
-            is DurationTimerOption -> {
-                val durationMillis = timerOption.duration * 60 * 1000.0
-                scheduleServiceTimer(durationMillis)
-            }
+            is DurationTimerOption -> scheduleServiceTimer(timerOption.duration * 60.0)
 
             is CurrentEpisodeTimerOption -> {
                 val playingBook = playingBook.value ?: return
@@ -165,7 +162,7 @@ class MediaRepository @Inject constructor(
                     overallPosition = currentPosition
                 )
 
-                scheduleServiceTimer((chapterDuration - chapterPosition) * 1000)
+                scheduleServiceTimer(chapterDuration - chapterPosition)
             }
 
             null -> cancelServiceTimer()

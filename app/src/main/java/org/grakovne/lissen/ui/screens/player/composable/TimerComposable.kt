@@ -63,10 +63,12 @@ fun TimerComposable(
                     itemsIndexed(TimerOptions) { index, item ->
                         ListItem(
                             headlineContent = {
-                                Row { Text(
-                                    text = item.makeText(context),
-                                    style = typography.bodyMedium
-                                ) }
+                                Row {
+                                    Text(
+                                        text = item.makeText(context),
+                                        style = typography.bodyMedium
+                                    )
+                                }
                             },
                             trailingContent = {
                                 if (item == currentOption) {
