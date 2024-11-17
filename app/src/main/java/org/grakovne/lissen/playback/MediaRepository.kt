@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -132,7 +133,7 @@ class MediaRepository @Inject constructor(
                 }
 
                 override fun onFailure(t: Throwable) {
-                    throw RuntimeException("Unable to add callback to player")
+                    Log.e(TAG, "Unable to add callback to player")
                 }
             },
             MoreExecutors.directExecutor()
@@ -278,5 +279,9 @@ class MediaRepository @Inject constructor(
         }
 
         context.startService(intent)
+    }
+
+    private companion object {
+        private const val TAG = "MediaRepository"
     }
 }
