@@ -223,11 +223,13 @@ class MediaRepository @Inject constructor(
 
         context.startService(intent)
 
-        if (_timerOption.value is CurrentEpisodeTimerOption) {
-            setTimer(
+        when(_timerOption.value) {
+            is CurrentEpisodeTimerOption -> setTimer(
                 timerOption = _timerOption.value,
                 position = position
             )
+            is DurationTimerOption -> Unit
+            null -> Unit
         }
     }
 
