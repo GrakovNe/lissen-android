@@ -2,6 +2,7 @@ package org.grakovne.lissen.playback.service
 
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import dagger.hilt.android.scopes.ServiceScoped
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancelChildren
@@ -15,7 +16,7 @@ import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@Singleton
+@ServiceScoped
 class PlaybackSynchronizationService @Inject constructor(
     private val exoPlayer: ExoPlayer,
     private val mediaChannel: LissenMediaProvider,
