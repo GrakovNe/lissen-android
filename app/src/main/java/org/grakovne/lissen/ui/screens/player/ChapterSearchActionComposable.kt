@@ -22,8 +22,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import org.grakovne.lissen.R
 
 @Composable
 fun ChapterSearchActionComposable(
@@ -69,7 +71,7 @@ fun ChapterSearchActionComposable(
                 decorationBox = { innerTextField ->
                     if (searchText.value.isEmpty()) {
                         Text(
-                            text = "Search for a chapter",
+                            text = stringResource(R.string.chapter_search_hint),
                             color = colorScheme.onSurfaceVariant,
                             style = typography.bodyLarge
                         )

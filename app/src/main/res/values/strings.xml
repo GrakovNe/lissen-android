@@ -59,4 +59,5 @@
     <string name="timer_option_disable_timer">Disable Timer</string>
     <string name="timer_title">Sleep Timer</string>
     <string name="player_screen_timer_navigation">Timer</string>
+    <string name="chapter_search_hint">Search by chapter title</string>
 </resources>

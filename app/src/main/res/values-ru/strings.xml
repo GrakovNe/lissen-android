@@ -59,4 +59,5 @@
     <string name="timer_option_disable_timer">Выключить таймер</string>
     <string name="timer_title">Таймер сна</string>
     <string name="player_screen_timer_navigation">Таймер</string>
+    <string name="chapter_search_hint">Поиск по названию эпизода</string>
 </resources>
