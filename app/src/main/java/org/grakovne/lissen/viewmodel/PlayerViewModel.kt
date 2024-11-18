@@ -11,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.LissenMediaProvider
+import org.grakovne.lissen.domain.BookChapter
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.playback.MediaRepository
@@ -151,6 +152,11 @@ class PlayerViewModel @Inject constructor(
             ?: return
 
         mediaRepository.seekTo(absolutePosition)
+    }
+
+    fun setChapter(chapter: BookChapter) {
+        val index = book.value?.chapters?.indexOf(chapter) ?: -1
+        setChapter(index)
     }
 
     fun setChapter(index: Int) {

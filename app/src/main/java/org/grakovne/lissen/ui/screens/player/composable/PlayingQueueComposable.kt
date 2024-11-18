@@ -180,10 +180,10 @@ fun PlayingQueueComposable(
                 }),
             state = listState
         ) {
-            itemsIndexed(chapters) { index, track ->
+            itemsIndexed(chapters) { index, chapter ->
                 PlaylistItemComposable(
-                    track = track,
-                    onClick = { viewModel.setChapter(index) },
+                    track = chapter,
+                    onClick = { viewModel.setChapter(chapter) },
                     isSelected = index == currentTrackIndex,
                     modifier = Modifier.wrapContentWidth()
                 )
