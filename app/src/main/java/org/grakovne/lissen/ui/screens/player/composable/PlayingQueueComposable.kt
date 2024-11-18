@@ -24,6 +24,7 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
@@ -59,7 +60,17 @@ fun PlayingQueueComposable(
     val coroutineScope = rememberCoroutineScope()
 
     val book by viewModel.book.observeAsState()
-    val chapters = book?.chapters ?: emptyList()
+    val searchToken by viewModel.searchToken.observeAsState("")
+
+    val chapters by remember {
+        derivedStateOf {
+            when (searchToken) {
+                "" -> book?.chapters ?: emptyList()
+                else -> book?.chapters?.filter { it.title.contains(searchToken) } ?: emptyList()
+            }
+        }
+    }
+
     val currentTrackIndex by viewModel.currentChapterIndex.observeAsState(0)
 
     val playbackReady by viewModel.isPlaybackReady.observeAsState(false)

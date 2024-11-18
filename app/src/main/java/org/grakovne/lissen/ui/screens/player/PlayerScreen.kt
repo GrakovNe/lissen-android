@@ -110,7 +110,6 @@ fun PlayerScreen(
                         ) { isSearchRequested ->
                             when (isSearchRequested) {
                                 true -> ChapterSearchActionComposable(
-                                    onSearchDismissed = { viewModel.dismissSearch() },
                                     onSearchRequested = { viewModel.updateSearch(it) }
                                 )
 

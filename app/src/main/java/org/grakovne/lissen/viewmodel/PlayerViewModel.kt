@@ -8,7 +8,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.LissenMediaProvider
@@ -17,7 +16,6 @@ import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.playback.MediaRepository
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.playback.service.calculateChapterPosition
-import org.grakovne.lissen.viewmodel.LibraryViewModel.Companion
 import javax.inject.Inject
 
 @HiltViewModel
@@ -41,7 +39,8 @@ class PlayerViewModel @Inject constructor(
     private val _searchRequested = MutableLiveData(false)
     val searchRequested: LiveData<Boolean> = _searchRequested
 
-    private val _searchToken = MutableStateFlow(EMPTY_SEARCH)
+    private val _searchToken = MutableLiveData(EMPTY_SEARCH)
+    val searchToken: LiveData<String> = _searchToken
 
     val isPlaying: LiveData<Boolean> = mediaRepository.isPlaying
 
@@ -89,7 +88,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun updateSearch(token: String) {
-        viewModelScope.launch { _searchToken.emit(token) }
+        _searchToken.value = token
     }
 
     private fun updateCurrentTrackData() {
