@@ -62,16 +62,17 @@ fun PlayingQueueComposable(
     val book by viewModel.book.observeAsState()
     val searchToken by viewModel.searchToken.observeAsState("")
 
-    val chapters by remember {
+    val showingChapters by remember {
         derivedStateOf {
-            when (searchToken) {
-                "" -> book?.chapters ?: emptyList()
-                else -> book?.chapters?.filter { it.title.contains(searchToken) } ?: emptyList()
+            when (searchToken.isEmpty()) {
+                true -> book?.chapters ?: emptyList()
+                false -> book?.chapters?.filter { it.title.contains(searchToken) } ?: emptyList()
             }
         }
     }
 
     val currentTrackIndex by viewModel.currentChapterIndex.observeAsState(0)
+    val currentTrackId by remember { derivedStateOf { currentTrackIndex.let { book?.chapters?.get(it) } } }
 
     val playbackReady by viewModel.isPlaybackReady.observeAsState(false)
     val playingQueueExpanded by viewModel.playingQueueExpanded.observeAsState(false)
@@ -180,15 +181,15 @@ fun PlayingQueueComposable(
                 }),
             state = listState
         ) {
-            itemsIndexed(chapters) { index, chapter ->
+            itemsIndexed(showingChapters) { index, chapter ->
                 PlaylistItemComposable(
                     track = chapter,
                     onClick = { viewModel.setChapter(chapter) },
-                    isSelected = index == currentTrackIndex,
+                    isSelected = chapter.id == currentTrackId?.id,
                     modifier = Modifier.wrapContentWidth()
                 )
 
-                if (index < chapters.size - 1) {
+                if (index < showingChapters.size - 1) {
                     HorizontalDivider(
                         thickness = 1.dp,
                         modifier = Modifier
