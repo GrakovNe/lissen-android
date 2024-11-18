@@ -65,8 +65,16 @@ fun PlayingQueueComposable(
     val showingChapters by remember {
         derivedStateOf {
             when (searchToken.isEmpty()) {
-                true -> book?.chapters ?: emptyList()
-                false -> book?.chapters?.filter { it.title.contains(searchToken) } ?: emptyList()
+                true ->
+                    book
+                        ?.chapters
+                        ?: emptyList()
+
+                false ->
+                    book
+                        ?.chapters
+                        ?.filter { it.title.lowercase().contains(searchToken.lowercase()) }
+                        ?: emptyList()
             }
         }
     }
