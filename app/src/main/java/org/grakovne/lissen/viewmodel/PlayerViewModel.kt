@@ -88,6 +88,10 @@ class PlayerViewModel @Inject constructor(
         _searchToken.value = EMPTY_SEARCH
     }
 
+    fun updateSearch(token: String) {
+        viewModelScope.launch { _searchToken.emit(token) }
+    }
+
     private fun updateCurrentTrackData() {
         val book = book.value ?: return
         val totalPosition = mediaRepository.mediaItemPosition.value ?: return

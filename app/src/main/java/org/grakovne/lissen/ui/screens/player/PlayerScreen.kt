@@ -71,7 +71,7 @@ fun PlayerScreen(
         false -> stringResource(R.string.player_screen_title)
     }
 
-    fun onBack() {
+    fun stepBack() {
         when {
             searchRequested -> viewModel.dismissSearch()
             playingQueueExpanded -> viewModel.collapsePlayingQueue()
@@ -80,7 +80,7 @@ fun PlayerScreen(
     }
 
     BackHandler(enabled = searchRequested || playingQueueExpanded) {
-        onBack()
+        stepBack()
     }
 
     LaunchedEffect(bookId) {
@@ -110,8 +110,8 @@ fun PlayerScreen(
                         ) { isSearchRequested ->
                             when (isSearchRequested) {
                                 true -> ChapterSearchActionComposable(
-                                    { viewModel.dismissSearch() },
-                                    {}
+                                    onSearchDismissed = { viewModel.dismissSearch() },
+                                    onSearchRequested = { viewModel.updateSearch(it) }
                                 )
 
                                 false -> Row {
@@ -139,7 +139,7 @@ fun PlayerScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { onBack() }) {
+                    IconButton(onClick = { stepBack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "Back",
