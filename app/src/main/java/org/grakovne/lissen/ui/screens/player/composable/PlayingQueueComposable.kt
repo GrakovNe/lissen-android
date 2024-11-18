@@ -100,15 +100,17 @@ fun PlayingQueueComposable(
             .fillMaxSize()
             .padding(horizontal = 16.dp)
     ) {
-        Text(
-            text = stringResource(R.string.player_screen_now_playing_title),
-            fontSize = fontSize.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(horizontal = 6.dp)
-        )
+        if (playingQueueExpanded.not()) {
+            Text(
+                text = stringResource(R.string.player_screen_now_playing_title),
+                fontSize = fontSize.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(horizontal = 6.dp)
+            )
 
-        Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(12.dp))
+        }
 
         LazyColumn(
             contentPadding = when (playingQueueExpanded) {

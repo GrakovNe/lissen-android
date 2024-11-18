@@ -1,10 +1,12 @@
-package org.grakovne.lissen.ui.screens.library.composables
+package org.grakovne.lissen.ui.screens.player
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -30,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 
 @Composable
-fun SearchActionComposable(
+fun ChapterSearchActionComposable(
     onSearchDismissed: () -> Unit,
     onSearchRequested: (String) -> Unit
 ) {
@@ -49,20 +51,9 @@ fun SearchActionComposable(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 8.dp)
+            .padding(start = 48.dp, end = 8.dp)
             .height(40.dp)
     ) {
-        IconButton(
-            modifier = Modifier.height(36.dp),
-            onClick = { onSearchDismissed() }
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = "Back"
-            )
-        }
-
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
@@ -85,7 +76,7 @@ fun SearchActionComposable(
                 decorationBox = { innerTextField ->
                     if (searchText.value.isEmpty()) {
                         Text(
-                            text = stringResource(R.string.library_search_hint),
+                            text = "Search for a chapter",
                             color = colorScheme.onSurfaceVariant,
                             style = typography.bodyLarge
                         )

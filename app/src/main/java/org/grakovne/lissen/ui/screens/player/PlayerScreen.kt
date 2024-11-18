@@ -1,11 +1,19 @@
 package org.grakovne.lissen.ui.screens.player
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -23,7 +31,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
@@ -33,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.ImageLoader
 import org.grakovne.lissen.R
+import org.grakovne.lissen.ui.icons.Search
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.player.composable.NavigationBarComposable
 import org.grakovne.lissen.ui.screens.player.composable.PlayingQueueComposable
@@ -56,6 +64,23 @@ fun PlayerScreen(
     val playingBook by viewModel.book.observeAsState()
     val isPlaybackReady by viewModel.isPlaybackReady.observeAsState(false)
     val playingQueueExpanded by viewModel.playingQueueExpanded.observeAsState(false)
+    val searchRequested by viewModel.searchRequested.observeAsState(false)
+
+    val screenTitle = when (playingQueueExpanded) {
+        true -> stringResource(R.string.player_screen_now_playing_title)
+        false -> stringResource(R.string.player_screen_title)
+    }
+
+    fun onBack() {
+        when {
+            searchRequested -> viewModel.dismissSearch()
+            else -> navController.showLibrary()
+        }
+    }
+
+    BackHandler(enabled = searchRequested) {
+        onBack()
+    }
 
     LaunchedEffect(bookId) {
         bookId
@@ -63,18 +88,57 @@ fun PlayerScreen(
             ?.let { viewModel.preparePlayback(it) }
     }
 
+    LaunchedEffect(playingQueueExpanded) {
+        if (playingQueueExpanded.not()) {
+            viewModel.dismissSearch()
+        }
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
+                actions = {
+                    if (playingQueueExpanded) {
+                        AnimatedContent(
+                            targetState = searchRequested,
+                            label = "library_action_animation",
+                            transitionSpec = {
+                                fadeIn(animationSpec = keyframes { durationMillis = 150 }) togetherWith
+                                    fadeOut(animationSpec = keyframes { durationMillis = 150 })
+                            }
+                        ) { isSearchRequested ->
+                            when (isSearchRequested) {
+                                true -> ChapterSearchActionComposable(
+                                    { viewModel.dismissSearch() },
+                                    {}
+                                )
+
+                                false -> Row {
+                                    IconButton(
+                                        onClick = { viewModel.requestSearch() },
+                                        modifier = Modifier.padding(end = 4.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Search,
+                                            contentDescription = null
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
                 title = {
                     Text(
-                        text = stringResource(R.string.player_screen_title),
+                        text = screenTitle,
                         style = titleTextStyle,
-                        color = colorScheme.onSurface
+                        color = colorScheme.onSurface,
+                        maxLines = 1,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.showLibrary() }) {
+                    IconButton(onClick = { onBack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "Back",

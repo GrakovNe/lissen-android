@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.LissenMediaProvider
@@ -16,6 +17,7 @@ import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.playback.MediaRepository
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.playback.service.calculateChapterPosition
+import org.grakovne.lissen.viewmodel.LibraryViewModel.Companion
 import javax.inject.Inject
 
 @HiltViewModel
@@ -35,6 +37,11 @@ class PlayerViewModel @Inject constructor(
 
     val isPlaybackReady: LiveData<Boolean> = mediaRepository.isPlaybackReady
     val playbackSpeed: LiveData<Float> = mediaRepository.playbackSpeed
+
+    private val _searchRequested = MutableLiveData(false)
+    val searchRequested: LiveData<Boolean> = _searchRequested
+
+    private val _searchToken = MutableStateFlow(EMPTY_SEARCH)
 
     val isPlaying: LiveData<Boolean> = mediaRepository.isPlaying
 
@@ -70,6 +77,15 @@ class PlayerViewModel @Inject constructor(
 
     fun togglePlayingQueue() {
         _playingQueueExpanded.value = !(_playingQueueExpanded.value ?: false)
+    }
+
+    fun requestSearch() {
+        _searchRequested.value = true
+    }
+
+    fun dismissSearch() {
+        _searchRequested.value = false
+        _searchToken.value = EMPTY_SEARCH
     }
 
     private fun updateCurrentTrackData() {
@@ -186,6 +202,7 @@ class PlayerViewModel @Inject constructor(
 
     companion object {
 
+        private const val EMPTY_SEARCH = ""
         private const val TAG = "PlayerViewModel"
         private const val CURRENT_TRACK_REPLAY_THRESHOLD = 5
     }
