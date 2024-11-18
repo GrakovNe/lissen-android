@@ -74,11 +74,12 @@ fun PlayerScreen(
     fun onBack() {
         when {
             searchRequested -> viewModel.dismissSearch()
+            playingQueueExpanded -> viewModel.collapsePlayingQueue()
             else -> navController.showLibrary()
         }
     }
 
-    BackHandler(enabled = searchRequested) {
+    BackHandler(enabled = searchRequested || playingQueueExpanded) {
         onBack()
     }
 
