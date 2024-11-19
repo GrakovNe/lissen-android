@@ -1,4 +1,4 @@
-package org.grakovne.lissen.ui.windget
+package org.grakovne.lissen.ui.widget
 
 import android.content.Context
 import androidx.compose.ui.graphics.Color
@@ -12,7 +12,6 @@ import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.appwidget.GlanceAppWidget
-import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.currentState
@@ -29,16 +28,9 @@ import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 
-class MiniPlayerWidget : GlanceAppWidget() {
+class PlayerWidget : GlanceAppWidget() {
 
     override val stateDefinition: GlanceStateDefinition<*> = PreferencesGlanceStateDefinition
-
-
-    companion object {
-        val bookTitleKey = stringPreferencesKey("bookTitle")
-        val bookAuthorKey = stringPreferencesKey("bookAuthor")
-        val isPlayingKey = booleanPreferencesKey("isPlaying")
-    }
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
@@ -59,7 +51,6 @@ class MiniPlayerWidget : GlanceAppWidget() {
                     modifier = GlanceModifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-
                     Spacer(modifier = GlanceModifier.width(16.dp))
 
                     Column(
@@ -75,7 +66,7 @@ class MiniPlayerWidget : GlanceAppWidget() {
                         Text(
                             text = bookAuthor,
                             style = TextStyle(
-                                fontSize = 14.sp,
+                                fontSize = 14.sp
                             ),
                             maxLines = 1
                         )
@@ -94,11 +85,10 @@ class MiniPlayerWidget : GlanceAppWidget() {
             }
         }
     }
-}
 
-
-// Ресивер для виджета
-class MiniPlayerWidgetReceiver : GlanceAppWidgetReceiver() {
-
-    override val glanceAppWidget: GlanceAppWidget = MiniPlayerWidget()
+    companion object {
+        val bookTitleKey = stringPreferencesKey("bookTitle")
+        val bookAuthorKey = stringPreferencesKey("bookAuthor")
+        val isPlayingKey = booleanPreferencesKey("isPlaying")
+    }
 }

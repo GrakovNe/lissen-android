@@ -9,12 +9,20 @@ import org.acra.config.toast
 import org.acra.data.StringFormat
 import org.acra.ktx.initAcra
 import org.acra.sender.HttpSender
+import org.grakovne.lissen.common.RunningComponent
+import javax.inject.Inject
 
 @HiltAndroidApp
 class LissenApplication : Application() {
+
+    @Inject
+    lateinit var runningComponents: Set<@JvmSuppressWildcards RunningComponent>
+
     override fun onCreate() {
         super.onCreate()
         appContext = applicationContext
+
+        runningComponents.forEach { it.onCreate() }
     }
 
     override fun attachBaseContext(base: Context) {
@@ -48,6 +56,7 @@ class LissenApplication : Application() {
     }
 
     companion object {
+
         lateinit var appContext: Context
             private set
     }
