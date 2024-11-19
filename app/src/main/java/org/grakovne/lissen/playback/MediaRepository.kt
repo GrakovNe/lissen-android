@@ -37,6 +37,8 @@ import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_EXPI
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_VALUE_EXTRA
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.playback.service.calculateChapterPosition
+import org.grakovne.lissen.viewmodel.PlayerViewModel
+import org.grakovne.lissen.viewmodel.PlayerViewModel.Companion
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -169,6 +171,56 @@ class MediaRepository @Inject constructor(
         }
     }
 
+    fun rewind() {
+        val currentPosition = mediaItemPosition.value ?: 0.0
+        seekTo(maxOf(0.0, currentPosition - 10L))
+    }
+
+    fun forward() {
+        val book = playingBook.value ?: return
+        val overallPosition = mediaItemPosition.value ?: return
+
+        val trackIndex = calculateChapterIndex(book, overallPosition)
+
+        val duration = book
+            .chapters
+            .getOrNull(trackIndex)
+            ?.duration
+            ?: 0.0
+
+        seekTo(minOf(duration, overallPosition + 30L))
+    }
+
+    fun setChapter(index: Int) {
+        val book = playingBook.value ?: return
+        try {
+            val chapterStartsAt = book
+                .chapters[index]
+                .start
+
+            seekTo(chapterStartsAt)
+        } catch (ex: Exception) {
+            return
+        }
+    }
+
+    fun setChapterPosition(chapterPosition: Double) {
+        val book = playingBook.value ?: return
+        val overallPosition = mediaItemPosition.value ?: return
+
+        val currentIndex = calculateChapterIndex(book, overallPosition)
+
+        if (currentIndex < 0) {
+            return
+        }
+
+        val absolutePosition = currentIndex
+            .let { chapterIndex -> book.chapters.get(chapterIndex).start }
+            .let { it + chapterPosition }
+
+        seekTo(absolutePosition)
+    }
+
     private fun scheduleServiceTimer(delay: Double) {
         val intent = Intent(context, PlaybackService::class.java).apply {
             action = PlaybackService.ACTION_SET_TIMER
@@ -262,6 +314,34 @@ class MediaRepository @Inject constructor(
         }
     }
 
+    fun nextTrack() {
+        val book = playingBook.value ?: return
+        val overallPosition = mediaItemPosition.value ?: return
+
+        val currentIndex = calculateChapterIndex(book, overallPosition)
+
+        val nextChapterIndex = currentIndex + 1
+        setChapter(nextChapterIndex)
+    }
+
+    fun previousTrack() {
+        val book = playingBook.value ?: return
+        val overallPosition = mediaItemPosition.value ?: return
+
+        val currentIndex = calculateChapterIndex(book, overallPosition)
+        val chapterPosition = calculateChapterPosition(
+            book = book,
+            overallPosition = overallPosition
+        )
+
+        val currentIndexReplay = (chapterPosition > CURRENT_TRACK_REPLAY_THRESHOLD || currentIndex == 0)
+
+        when {
+            currentIndexReplay ->  setChapter(currentIndex)
+            currentIndex > 0 ->  setChapter(currentIndex - 1)
+        }
+    }
+
     private fun startUpdatingProgress(detailedItem: DetailedItem) {
         handler.removeCallbacksAndMessages(null)
 
@@ -288,6 +368,7 @@ class MediaRepository @Inject constructor(
 
     private companion object {
 
+        private const val CURRENT_TRACK_REPLAY_THRESHOLD = 5
         private const val TAG = "MediaRepository"
     }
 }

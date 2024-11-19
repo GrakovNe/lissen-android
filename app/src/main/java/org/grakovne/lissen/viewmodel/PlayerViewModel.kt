@@ -1,6 +1,5 @@
 package org.grakovne.lissen.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
@@ -129,71 +128,27 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun rewind() {
-        val currentPosition = _currentChapterPosition.value ?: 0.0
-        seekTo(maxOf(0.0, currentPosition - 10L))
+        mediaRepository.rewind()
     }
 
     fun forward() {
-        val currentPosition = _currentChapterPosition.value ?: 0.0
-        val currentDuration = _currentChapterDuration.value ?: 0.0
-        seekTo(minOf(currentDuration, currentPosition + 30L))
+        mediaRepository.forward()
     }
 
     fun seekTo(chapterPosition: Double) {
-        val currentIndex = currentChapterIndex.value ?: return
-
-        if (currentIndex < 0) {
-            Log.w(TAG, "Unable seek to $chapterPosition because there is no chapter")
-            return
-        }
-
-        val absolutePosition = currentIndex
-            .let { chapterIndex -> book.value?.chapters?.get(chapterIndex)?.start }
-            ?.let { it + chapterPosition }
-            ?: return
-
-        mediaRepository.seekTo(absolutePosition)
+        mediaRepository.setChapterPosition(chapterPosition)
     }
 
     fun setChapter(chapter: BookChapter) {
         val index = book.value?.chapters?.indexOf(chapter) ?: -1
-        setChapter(index)
-    }
-
-    fun setChapter(index: Int) {
-        try {
-            val chapterStartsAt = book
-                .value
-                ?.chapters
-                ?.get(index)
-                ?.start
-                ?: 0.0
-
-            mediaRepository.seekTo(chapterStartsAt)
-        } catch (ex: Exception) {
-            Log.e(TAG, "Tried to play $index element on $book state, but index is not exist")
-            return
-        }
+        mediaRepository.setChapter(index)
     }
 
     fun setPlaybackSpeed(factor: Float) = mediaRepository.setPlaybackSpeed(factor)
 
-    fun nextTrack() {
-        val nextChapterIndex = currentChapterIndex.value?.let { it + 1 } ?: return
-        setChapter(nextChapterIndex)
-    }
+    fun nextTrack() = mediaRepository.nextTrack()
 
-    fun previousTrack() {
-        val position = currentChapterPosition.value ?: return
-        val index = currentChapterIndex.value ?: return
-
-        val currentIndexReplay = (position > CURRENT_TRACK_REPLAY_THRESHOLD || index == 0)
-
-        when {
-            currentIndexReplay -> setChapter(index)
-            index > 0 -> setChapter(index - 1)
-        }
-    }
+    fun previousTrack() = mediaRepository.previousTrack()
 
     fun togglePlayPause() = mediaRepository.togglePlayPause()
 
@@ -201,6 +156,5 @@ class PlayerViewModel @Inject constructor(
 
         private const val EMPTY_SEARCH = ""
         private const val TAG = "PlayerViewModel"
-        private const val CURRENT_TRACK_REPLAY_THRESHOLD = 5
     }
 }
