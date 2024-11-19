@@ -2,10 +2,7 @@ package org.grakovne.lissen.ui.widget
 
 import android.content.Context
 import android.os.PowerManager
-import androidx.glance.GlanceId
-import androidx.glance.action.ActionParameters
 import androidx.glance.appwidget.GlanceAppWidgetManager
-import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.lifecycle.asFlow
 import dagger.hilt.android.qualifiers.ApplicationContext

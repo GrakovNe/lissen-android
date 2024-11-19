@@ -171,5 +171,3 @@ class PlayToggleActionCallback : ActionCallback {
         mediaRepository.togglePlayPause()
     }
 }
-
-

@@ -1,6 +1,5 @@
 package org.grakovne.lissen.viewmodel
 
-
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
@@ -92,7 +91,6 @@ class PlayerViewModel @Inject constructor(
     fun updateSearch(token: String) {
         _searchToken.value = token
     }
-
 
     fun preparePlayback(bookId: String) {
         viewModelScope.launch {
