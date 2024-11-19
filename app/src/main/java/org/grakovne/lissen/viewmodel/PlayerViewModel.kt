@@ -93,21 +93,6 @@ class PlayerViewModel @Inject constructor(
         _searchToken.value = token
     }
 
-    private fun updateCurrentTrackData() {
-        val book = book.value ?: return
-        val totalPosition = mediaRepository.mediaItemPosition.value ?: return
-
-        val trackIndex = calculateChapterIndex(book, totalPosition)
-        val trackPosition = calculateChapterPosition(book, totalPosition)
-
-        _currentChapterIndex.value = trackIndex
-        _currentChapterPosition.value = trackPosition
-        _currentChapterDuration.value = book
-            .chapters
-            .getOrNull(trackIndex)
-            ?.duration
-            ?: 0.0
-    }
 
     fun preparePlayback(bookId: String) {
         viewModelScope.launch {
@@ -152,6 +137,22 @@ class PlayerViewModel @Inject constructor(
     fun previousTrack() = mediaRepository.previousTrack()
 
     fun togglePlayPause() = mediaRepository.togglePlayPause()
+
+    private fun updateCurrentTrackData() {
+        val book = book.value ?: return
+        val totalPosition = mediaRepository.mediaItemPosition.value ?: return
+
+        val trackIndex = calculateChapterIndex(book, totalPosition)
+        val trackPosition = calculateChapterPosition(book, totalPosition)
+
+        _currentChapterIndex.value = trackIndex
+        _currentChapterPosition.value = trackPosition
+        _currentChapterDuration.value = book
+            .chapters
+            .getOrNull(trackIndex)
+            ?.duration
+            ?: 0.0
+    }
 
     companion object {
         private const val EMPTY_SEARCH = ""
