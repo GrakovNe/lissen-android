@@ -114,6 +114,10 @@ dependencies {
     implementation(libs.androidx.media3.exoplayer.hls)
     implementation(libs.androidx.media3.ui)
 
+    implementation(libs.androidx.glance)
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.wear.tiles)
+
     implementation(libs.acra.core)
     implementation(libs.acra.http)
     implementation(libs.acra.toast)

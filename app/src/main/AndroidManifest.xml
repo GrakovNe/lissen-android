@@ -44,6 +44,18 @@
             </intent-filter>
         </service>
 
+        <receiver
+            android:name=".ui.windget.MiniPlayerWidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/mini_player_widget_info" />
+        </receiver>
+
     </application>
 
 </manifest>

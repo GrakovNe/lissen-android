@@ -1,14 +1,20 @@
 package org.grakovne.lissen.viewmodel
 
+import android.content.Context
 import android.util.Log
+import androidx.glance.appwidget.GlanceAppWidgetManager
+import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.BookChapter
@@ -17,10 +23,12 @@ import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.playback.MediaRepository
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.playback.service.calculateChapterPosition
+import org.grakovne.lissen.ui.windget.MiniPlayerWidget
 import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val mediaChannel: LissenMediaProvider,
     private val mediaRepository: MediaRepository
 ) : ViewModel() {
@@ -61,6 +69,23 @@ class PlayerViewModel @Inject constructor(
         addSource(mediaItemPosition) { updateCurrentTrackData() }
         addSource(book) { updateCurrentTrackData() }
     }
+
+    private suspend fun updateWidgetState(book: DetailedItem) {
+        val manager = GlanceAppWidgetManager(context)
+        val glanceIds = manager.getGlanceIds(MiniPlayerWidget::class.java)
+
+        glanceIds.forEach { glanceId ->
+            // Обновляем состояние виджета
+            updateAppWidgetState(context, glanceId) { prefs ->
+                prefs[MiniPlayerWidget.bookTitleKey] = book.title
+                prefs[MiniPlayerWidget.bookAuthorKey] = book.title
+                prefs[MiniPlayerWidget.isPlayingKey] = true
+            }
+            // Обновляем виджет
+            MiniPlayerWidget().update(context, glanceId)
+        }
+    }
+
     val currentChapterDuration: LiveData<Double> = _currentChapterDuration
 
     fun expandPlayingQueue() {
@@ -199,6 +224,8 @@ class PlayerViewModel @Inject constructor(
             true -> pause()
             else -> play()
         }
+
+        runBlocking { book.value?.let { updateWidgetState(it) } }
     }
 
     private fun play() {
