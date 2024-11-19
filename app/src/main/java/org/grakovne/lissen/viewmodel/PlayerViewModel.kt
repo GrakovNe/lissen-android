@@ -1,5 +1,6 @@
 package org.grakovne.lissen.viewmodel
 
+
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
@@ -153,8 +154,6 @@ class PlayerViewModel @Inject constructor(
     fun togglePlayPause() = mediaRepository.togglePlayPause()
 
     companion object {
-
         private const val EMPTY_SEARCH = ""
-        private const val TAG = "PlayerViewModel"
     }
 }
