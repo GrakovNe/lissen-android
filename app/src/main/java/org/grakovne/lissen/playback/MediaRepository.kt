@@ -22,7 +22,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DurationTimerOption
@@ -43,7 +46,8 @@ import javax.inject.Singleton
 @Singleton
 class MediaRepository @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val preferences: LissenSharedPreferences
+    private val preferences: LissenSharedPreferences,
+    private val mediaChannel: LissenMediaProvider,
 ) {
 
     private lateinit var mediaController: MediaController
@@ -219,11 +223,6 @@ class MediaRepository @Inject constructor(
         seekTo(absolutePosition)
     }
 
-    fun mediaPreparing() {
-        updateTimer(timerOption = null)
-        _isPlaybackReady.postValue(false)
-    }
-
     fun togglePlayPause() {
         when (isPlaying.value) {
             true -> pause()
@@ -246,18 +245,25 @@ class MediaRepository @Inject constructor(
         preferences.savePlaybackSpeed(speed)
     }
 
-    fun startPreparingPlayback(book: DetailedItem) {
-        if (::mediaController.isInitialized && _playingBook.value != book) {
-            _mediaItemPosition.postValue(0.0)
-            _isPlaying.postValue(false)
+    suspend fun preparePlayback(bookId: String) {
+        mediaPreparing()
 
-            val intent = Intent(context, PlaybackService::class.java).apply {
-                action = PlaybackService.ACTION_SET_PLAYBACK
-                putExtra(BOOK_EXTRA, book)
+        val result = coroutineScope {
+            withContext(Dispatchers.IO) {
+                mediaChannel.fetchBook(bookId)
             }
-
-            context.startService(intent)
         }
+
+        result
+            .foldAsync(
+            onSuccess = {
+                withContext(Dispatchers.IO) {
+                    startPreparingPlayback(it)
+                }
+            },
+            onFailure = {
+            }
+        )
     }
 
     fun nextTrack() {
@@ -317,6 +323,25 @@ class MediaRepository @Inject constructor(
             },
             500
         )
+    }
+
+    private fun mediaPreparing() {
+        updateTimer(timerOption = null)
+        _isPlaybackReady.postValue(false)
+    }
+
+    private fun startPreparingPlayback(book: DetailedItem) {
+        if (::mediaController.isInitialized && _playingBook.value != book) {
+            _mediaItemPosition.postValue(0.0)
+            _isPlaying.postValue(false)
+
+            val intent = Intent(context, PlaybackService::class.java).apply {
+                action = PlaybackService.ACTION_SET_PLAYBACK
+                putExtra(BOOK_EXTRA, book)
+            }
+
+            context.startService(intent)
+        }
     }
 
     private fun updateProgress(detailedItem: DetailedItem): Deferred<Unit> {

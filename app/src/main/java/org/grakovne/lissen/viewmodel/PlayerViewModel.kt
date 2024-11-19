@@ -20,7 +20,6 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
-    private val mediaChannel: LissenMediaProvider,
     private val mediaRepository: MediaRepository
 ) : ViewModel() {
 
@@ -93,22 +92,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun preparePlayback(bookId: String) {
-        viewModelScope.launch {
-            val result = withContext(Dispatchers.IO) {
-                mediaRepository.mediaPreparing()
-                mediaChannel.fetchBook(bookId)
-            }
-
-            result.foldAsync(
-                onSuccess = {
-                    withContext(Dispatchers.IO) {
-                        mediaRepository.startPreparingPlayback(it)
-                    }
-                },
-                onFailure = {
-                }
-            )
-        }
+        viewModelScope.launch { mediaRepository.preparePlayback(bookId) }
     }
 
     fun rewind() {
@@ -153,6 +137,7 @@ class PlayerViewModel @Inject constructor(
     }
 
     companion object {
+
         private const val EMPTY_SEARCH = ""
     }
 }
