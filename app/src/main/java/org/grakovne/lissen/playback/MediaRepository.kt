@@ -219,23 +219,6 @@ class MediaRepository @Inject constructor(
         seekTo(absolutePosition)
     }
 
-    private fun scheduleServiceTimer(delay: Double) {
-        val intent = Intent(context, PlaybackService::class.java).apply {
-            action = PlaybackService.ACTION_SET_TIMER
-            putExtra(TIMER_VALUE_EXTRA, delay)
-        }
-
-        context.startService(intent)
-    }
-
-    private fun cancelServiceTimer() {
-        val intent = Intent(context, PlaybackService::class.java).apply {
-            action = PlaybackService.ACTION_CANCEL_TIMER
-        }
-
-        context.startService(intent)
-    }
-
     fun mediaPreparing() {
         updateTimer(timerOption = null)
         _isPlaybackReady.postValue(false)
@@ -303,6 +286,23 @@ class MediaRepository @Inject constructor(
             currentIndexReplay -> setChapter(currentIndex)
             currentIndex > 0 -> setChapter(currentIndex - 1)
         }
+    }
+
+    private fun scheduleServiceTimer(delay: Double) {
+        val intent = Intent(context, PlaybackService::class.java).apply {
+            action = PlaybackService.ACTION_SET_TIMER
+            putExtra(TIMER_VALUE_EXTRA, delay)
+        }
+
+        context.startService(intent)
+    }
+
+    private fun cancelServiceTimer() {
+        val intent = Intent(context, PlaybackService::class.java).apply {
+            action = PlaybackService.ACTION_CANCEL_TIMER
+        }
+
+        context.startService(intent)
     }
 
     private fun startUpdatingProgress(detailedItem: DetailedItem) {
