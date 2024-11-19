@@ -198,20 +198,7 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    fun togglePlayPause() {
-        when (isPlaying.value) {
-            true -> pause()
-            else -> play()
-        }
-    }
-
-    private fun play() {
-        mediaRepository.play()
-    }
-
-    private fun pause() {
-        mediaRepository.pauseAudio()
-    }
+    fun togglePlayPause() = mediaRepository.togglePlayPause()
 
     companion object {
 

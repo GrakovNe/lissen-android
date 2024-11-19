@@ -2,15 +2,16 @@ package org.grakovne.lissen.ui.widget
 
 import android.content.Context
 import android.os.PowerManager
+import androidx.glance.GlanceId
+import androidx.glance.action.ActionParameters
 import androidx.glance.appwidget.GlanceAppWidgetManager
+import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.lifecycle.asFlow
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.domain.DetailedItem
@@ -18,7 +19,6 @@ import org.grakovne.lissen.playback.MediaRepository
 import javax.inject.Inject
 import javax.inject.Singleton
 
-@OptIn(FlowPreview::class)
 @Singleton
 class PlayerWidgetStateService @Inject constructor(
     @ApplicationContext private val context: Context,

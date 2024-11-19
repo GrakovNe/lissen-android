@@ -191,6 +191,13 @@ class MediaRepository @Inject constructor(
         _isPlaybackReady.postValue(false)
     }
 
+    fun togglePlayPause() {
+        when (isPlaying.value) {
+            true -> pause()
+            else -> play()
+        }
+    }
+
     fun play() {
         val intent = Intent(context, PlaybackService::class.java).apply {
             action = PlaybackService.ACTION_PLAY
@@ -198,7 +205,7 @@ class MediaRepository @Inject constructor(
         context.startForegroundService(intent)
     }
 
-    fun pauseAudio() {
+    fun pause() {
         val intent = Intent(context, PlaybackService::class.java).apply {
             action = PlaybackService.ACTION_PAUSE
         }
