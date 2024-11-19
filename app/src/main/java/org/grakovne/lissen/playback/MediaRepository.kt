@@ -37,8 +37,6 @@ import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_EXPI
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_VALUE_EXTRA
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.playback.service.calculateChapterPosition
-import org.grakovne.lissen.viewmodel.PlayerViewModel
-import org.grakovne.lissen.viewmodel.PlayerViewModel.Companion
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -74,33 +72,6 @@ class MediaRepository @Inject constructor(
     val playbackSpeed: LiveData<Float> = _playbackSpeed
 
     private val handler = Handler(Looper.getMainLooper())
-
-    private val bookDetailsReadyReceiver = object : BroadcastReceiver() {
-        @Suppress("DEPRECATION")
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == PLAYBACK_READY) {
-                val book = intent.getSerializableExtra(BOOK_EXTRA) as? DetailedItem
-
-                book?.let {
-                    CoroutineScope(Dispatchers.Main).launch {
-                        updateProgress(book).await()
-                        startUpdatingProgress(book)
-
-                        _playingBook.postValue(it)
-                        _isPlaybackReady.postValue(true)
-                    }
-                }
-            }
-        }
-    }
-
-    private val timerExpiredReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == TIMER_EXPIRED) {
-                _timerOption.postValue(null)
-            }
-        }
-    }
 
     init {
         val controllerBuilder = MediaController.Builder(context, token)
@@ -140,6 +111,33 @@ class MediaRepository @Inject constructor(
             },
             MoreExecutors.directExecutor()
         )
+    }
+
+    private val bookDetailsReadyReceiver = object : BroadcastReceiver() {
+        @Suppress("DEPRECATION")
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == PLAYBACK_READY) {
+                val book = intent.getSerializableExtra(BOOK_EXTRA) as? DetailedItem
+
+                book?.let {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        updateProgress(book).await()
+                        startUpdatingProgress(book)
+
+                        _playingBook.postValue(it)
+                        _isPlaybackReady.postValue(true)
+                    }
+                }
+            }
+        }
+    }
+
+    private val timerExpiredReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == TIMER_EXPIRED) {
+                _timerOption.postValue(null)
+            }
+        }
     }
 
     fun updateTimer(
@@ -250,41 +248,6 @@ class MediaRepository @Inject constructor(
         }
     }
 
-    fun play() {
-        val intent = Intent(context, PlaybackService::class.java).apply {
-            action = PlaybackService.ACTION_PLAY
-        }
-        context.startForegroundService(intent)
-    }
-
-    fun pause() {
-        val intent = Intent(context, PlaybackService::class.java).apply {
-            action = PlaybackService.ACTION_PAUSE
-        }
-        context.startService(intent)
-    }
-
-    fun seekTo(position: Double) {
-        val intent = Intent(context, PlaybackService::class.java).apply {
-            action = ACTION_SEEK_TO
-
-            putExtra(BOOK_EXTRA, playingBook.value)
-            putExtra(POSITION, position)
-        }
-
-        context.startService(intent)
-
-        when (_timerOption.value) {
-            is CurrentEpisodeTimerOption -> updateTimer(
-                timerOption = _timerOption.value,
-                position = position
-            )
-
-            is DurationTimerOption -> Unit
-            null -> Unit
-        }
-    }
-
     fun setPlaybackSpeed(factor: Float) {
         val speed = when {
             factor < 0.5f -> 0.5f
@@ -337,8 +300,8 @@ class MediaRepository @Inject constructor(
         val currentIndexReplay = (chapterPosition > CURRENT_TRACK_REPLAY_THRESHOLD || currentIndex == 0)
 
         when {
-            currentIndexReplay ->  setChapter(currentIndex)
-            currentIndex > 0 ->  setChapter(currentIndex - 1)
+            currentIndexReplay -> setChapter(currentIndex)
+            currentIndex > 0 -> setChapter(currentIndex - 1)
         }
     }
 
@@ -363,6 +326,41 @@ class MediaRepository @Inject constructor(
             val currentFilePosition = mediaController.currentPosition / 1000.0
 
             _mediaItemPosition.value = (accumulated + currentFilePosition)
+        }
+    }
+
+    private fun play() {
+        val intent = Intent(context, PlaybackService::class.java).apply {
+            action = PlaybackService.ACTION_PLAY
+        }
+        context.startForegroundService(intent)
+    }
+
+    private fun pause() {
+        val intent = Intent(context, PlaybackService::class.java).apply {
+            action = PlaybackService.ACTION_PAUSE
+        }
+        context.startService(intent)
+    }
+
+    private fun seekTo(position: Double) {
+        val intent = Intent(context, PlaybackService::class.java).apply {
+            action = ACTION_SEEK_TO
+
+            putExtra(BOOK_EXTRA, playingBook.value)
+            putExtra(POSITION, position)
+        }
+
+        context.startService(intent)
+
+        when (_timerOption.value) {
+            is CurrentEpisodeTimerOption -> updateTimer(
+                timerOption = _timerOption.value,
+                position = position
+            )
+
+            is DurationTimerOption -> Unit
+            null -> Unit
         }
     }
 
