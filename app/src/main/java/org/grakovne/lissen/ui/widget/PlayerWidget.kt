@@ -111,8 +111,10 @@ class PlayerWidget : GlanceAppWidget() {
 
                     Image(
                         provider = ImageProvider(previousIcon),
-                        contentDescription = if (isPlaying) "Pause" else "Play",
-                        modifier = GlanceModifier.size(36.dp)
+                        contentDescription = "Previous Chapter",
+                        modifier = GlanceModifier
+                            .size(36.dp)
+                            .clickable(actionRunCallback<PreviousChapterActionCallback>())
 
                     )
                     Image(
@@ -127,8 +129,10 @@ class PlayerWidget : GlanceAppWidget() {
                     )
                     Image(
                         provider = ImageProvider(nextIcon),
-                        contentDescription = if (isPlaying) "Pause" else "Play",
-                        modifier = GlanceModifier.size(36.dp)
+                        contentDescription = "Next Chapter",
+                        modifier = GlanceModifier
+                            .size(36.dp)
+                            .clickable(actionRunCallback<NextChapterActionCallback>())
                     )
                 }
             }
@@ -169,5 +173,41 @@ class PlayToggleActionCallback : ActionCallback {
             .mediaRepository()
 
         mediaRepository.togglePlayPause()
+    }
+}
+
+class NextChapterActionCallback : ActionCallback {
+
+    override suspend fun onAction(
+        context: Context,
+        glanceId: GlanceId,
+        parameters: ActionParameters
+    ) {
+        val mediaRepository = EntryPointAccessors
+            .fromApplication(
+                context = context.applicationContext,
+                entryPoint = MediaRepositoryEntryPoint::class.java
+            )
+            .mediaRepository()
+
+        mediaRepository.nextTrack()
+    }
+}
+
+class PreviousChapterActionCallback : ActionCallback {
+
+    override suspend fun onAction(
+        context: Context,
+        glanceId: GlanceId,
+        parameters: ActionParameters
+    ) {
+        val mediaRepository = EntryPointAccessors
+            .fromApplication(
+                context = context.applicationContext,
+                entryPoint = MediaRepositoryEntryPoint::class.java
+            )
+            .mediaRepository()
+
+        mediaRepository.nextTrack()
     }
 }
