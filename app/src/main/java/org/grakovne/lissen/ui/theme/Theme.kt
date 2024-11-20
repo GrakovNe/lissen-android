@@ -14,8 +14,8 @@ private val LightColorScheme = lightColorScheme(
     primary = FoxOrange,
     secondary = Dark,
     tertiary = FoxOrange,
-    background = Color(0xFFFAFAFA),
-    surface = Color(0xFFFAFAFA),
+    background = LightBackground,
+    surface = LightBackground,
     surfaceContainer = Color(0xFFEEEEEE)
 )
 

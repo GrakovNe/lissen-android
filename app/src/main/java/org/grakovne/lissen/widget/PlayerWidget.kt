@@ -5,7 +5,6 @@ import android.content.Intent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -42,19 +41,19 @@ import org.grakovne.lissen.R.drawable
 import org.grakovne.lissen.common.clip
 import org.grakovne.lissen.common.fromBase64
 import org.grakovne.lissen.playback.WidgetPlaybackControllerEntryPoint
+import org.grakovne.lissen.ui.theme.LightBackground
 import org.grakovne.lissen.widget.PlayerWidget.Companion.bookIdKey
 
 class PlayerWidget : GlanceAppWidget() {
 
     override val stateDefinition: GlanceStateDefinition<*> = PreferencesGlanceStateDefinition
 
-
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
             GlanceTheme(
                 colors = ColorProviders(
                     light = lightColorScheme(
-                        background = Color(0xFFFAFAFA)
+                        background = LightBackground
                     ),
                     dark = darkColorScheme()
                 )
