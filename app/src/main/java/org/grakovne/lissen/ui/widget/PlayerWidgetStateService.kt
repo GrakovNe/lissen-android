@@ -11,9 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.RunningComponent
-import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.playback.MediaRepository
-import org.grakovne.lissen.playback.service.calculateChapterIndex
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -53,7 +51,7 @@ class PlayerWidgetStateService @Inject constructor(
             .forEach { glanceId ->
                 updateAppWidgetState(context, glanceId) { prefs ->
                     prefs[PlayerWidget.bookTitleKey] = state.title
-                    prefs[PlayerWidget.currentChapterKey] = state.authorName ?: ""
+                    prefs[PlayerWidget.bookAuthorKey] = state.authorName ?: ""
                     prefs[PlayerWidget.isPlayingKey] = state.isPlaying
                 }
                 PlayerWidget().update(context, glanceId)
