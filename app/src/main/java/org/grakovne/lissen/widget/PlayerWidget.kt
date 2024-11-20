@@ -1,6 +1,7 @@
 package org.grakovne.lissen.widget
 
 import android.content.Context
+import android.content.Intent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -16,6 +17,7 @@ import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.action.ActionParameters
 import androidx.glance.action.actionParametersOf
+import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
@@ -46,6 +48,7 @@ class PlayerWidget : GlanceAppWidget() {
 
     override val stateDefinition: GlanceStateDefinition<*> = PreferencesGlanceStateDefinition
 
+
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
             GlanceTheme(
@@ -68,7 +71,8 @@ class PlayerWidget : GlanceAppWidget() {
                     modifier = GlanceModifier
                         .fillMaxWidth()
                         .background(GlanceTheme.colors.background)
-                        .padding(16.dp),
+                        .padding(16.dp)
+                        .clickable(onClick = actionRunCallback<RunLissenActionCallback>()),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Row(
@@ -257,6 +261,24 @@ class PreviousChapterActionCallback : ActionCallback {
             playingItemId = parameters[bookIdKey] ?: return,
             context = context
         ) { it.previousTrack() }
+    }
+}
+
+class RunLissenActionCallback : ActionCallback {
+
+    override suspend fun onAction(
+        context: Context,
+        glanceId: GlanceId,
+        parameters: ActionParameters
+    ) {
+        val launchIntent = context
+            .packageManager
+            .getLaunchIntentForPackage(context.packageName)
+            ?: return
+
+        context.startActivity(launchIntent.apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        })
     }
 }
 
