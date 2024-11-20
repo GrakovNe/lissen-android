@@ -66,7 +66,6 @@ class PlayerWidget : GlanceAppWidget() {
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Top Row: Image with Text
                     Row(
                         modifier = GlanceModifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
@@ -104,7 +103,6 @@ class PlayerWidget : GlanceAppWidget() {
 
                     Spacer(modifier = GlanceModifier.height(16.dp))
 
-                    // Bottom Row: Controls centered with padding from edges
                     Row(
                         modifier = GlanceModifier.wrapContentWidth(),
                         verticalAlignment = Alignment.CenterVertically
@@ -115,7 +113,7 @@ class PlayerWidget : GlanceAppWidget() {
                             onClick = actionRunCallback<PreviousChapterActionCallback>()
                         )
 
-                        Spacer(modifier = GlanceModifier.width(8.dp))
+                        Spacer(modifier = GlanceModifier.width(16.dp))
 
                         WidgetControlButton(
                             icon = ImageProvider(R.drawable.media3_icon_previous),
@@ -123,7 +121,7 @@ class PlayerWidget : GlanceAppWidget() {
                             onClick = actionRunCallback<PreviousChapterActionCallback>()
                         )
 
-                        Spacer(modifier = GlanceModifier.width(8.dp))
+                        Spacer(modifier = GlanceModifier.width(16.dp))
 
                         WidgetControlButton(
                             icon = if (isPlaying) {
@@ -135,7 +133,7 @@ class PlayerWidget : GlanceAppWidget() {
                             onClick = actionRunCallback<PlayToggleActionCallback>()
                         )
 
-                        Spacer(modifier = GlanceModifier.width(8.dp))
+                        Spacer(modifier = GlanceModifier.width(16.dp))
 
                         WidgetControlButton(
                             icon = ImageProvider(R.drawable.media3_icon_next),
@@ -143,7 +141,7 @@ class PlayerWidget : GlanceAppWidget() {
                             onClick = actionRunCallback<NextChapterActionCallback>()
                         )
 
-                        Spacer(modifier = GlanceModifier.width(8.dp))
+                        Spacer(modifier = GlanceModifier.width(16.dp))
 
                         WidgetControlButton(
                             icon = ImageProvider(R.drawable.media3_icon_skip_forward_30),
