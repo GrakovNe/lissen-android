@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.playback.MediaRepository
+import org.grakovne.lissen.playback.service.calculateChapterIndex
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -29,14 +30,21 @@ class PlayerWidgetStateService @Inject constructor(
             mediaRepository
                 .playingBook
                 .asFlow()
-                .combine(mediaRepository.isPlaying.asFlow()) { book, isPlaying -> book to isPlaying }
-                .collect { (book, isPlaying) -> updateWidgetState(book, isPlaying) }
+                .combine(mediaRepository.isPlaying.asFlow()) { book, isPlaying ->
+
+                    PlayingItemState(
+                        title = book.title,
+                        authorName = book.author,
+                        isPlaying = isPlaying
+                    )
+                }
+                .collect { updateWidgetState(it) }
         }
     }
 
-    private suspend fun updateWidgetState(book: DetailedItem?, isPlaying: Boolean) {
-        if (book == null) return
-
+    private suspend fun updateWidgetState(
+        state: PlayingItemState
+    ) {
         val manager = GlanceAppWidgetManager(context)
         val glanceIds = manager.getGlanceIds(PlayerWidget::class.java)
         if (glanceIds.isEmpty() || isScreenOn().not()) return
@@ -44,9 +52,9 @@ class PlayerWidgetStateService @Inject constructor(
         glanceIds
             .forEach { glanceId ->
                 updateAppWidgetState(context, glanceId) { prefs ->
-                    prefs[PlayerWidget.bookTitleKey] = book.title
-                    prefs[PlayerWidget.bookAuthorKey] = book.author ?: ""
-                    prefs[PlayerWidget.isPlayingKey] = isPlaying
+                    prefs[PlayerWidget.bookTitleKey] = state.title
+                    prefs[PlayerWidget.currentChapterKey] = state.authorName ?: ""
+                    prefs[PlayerWidget.isPlayingKey] = state.isPlaying
                 }
                 PlayerWidget().update(context, glanceId)
             }
@@ -57,3 +65,9 @@ class PlayerWidgetStateService @Inject constructor(
         return powerManager.isInteractive
     }
 }
+
+data class PlayingItemState(
+    val title: String,
+    val authorName: String?,
+    val isPlaying: Boolean = false
+)
