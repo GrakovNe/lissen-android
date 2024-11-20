@@ -180,17 +180,15 @@ class MediaRepository @Inject constructor(
 
     fun forward() {
         val book = playingBook.value ?: return
-        val overallPosition = totalPosition.value ?: return
+        val overallPosition = totalPosition
+            .value
+            ?: return
 
-        val trackIndex = calculateChapterIndex(book, overallPosition)
-
-        val duration = book
+        val overallDuration = book
             .chapters
-            .getOrNull(trackIndex)
-            ?.duration
-            ?: 0.0
+            .sumOf { it.duration }
 
-        seekTo(minOf(duration, overallPosition + 30L))
+        seekTo(minOf(overallDuration, overallPosition + 30L))
     }
 
     fun setChapter(index: Int) {
