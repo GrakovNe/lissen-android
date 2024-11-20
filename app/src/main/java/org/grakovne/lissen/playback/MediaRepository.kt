@@ -262,7 +262,10 @@ class MediaRepository @Inject constructor(
         preferences.savePlaybackSpeed(speed)
     }
 
-    suspend fun preparePlayback(bookId: String) {
+    suspend fun preparePlayback(
+        bookId: String,
+        fromBackground: Boolean = false,
+    ) {
         mediaPreparing()
 
         coroutineScope {
@@ -270,7 +273,7 @@ class MediaRepository @Inject constructor(
                 mediaChannel
                     .fetchBook(bookId)
                     .foldAsync(
-                        onSuccess = { startPreparingPlayback(it) },
+                        onSuccess = { startPreparingPlayback(it, fromBackground) },
                         onFailure = {}
                     )
             }
@@ -344,7 +347,10 @@ class MediaRepository @Inject constructor(
         _isPlaybackReady.postValue(false)
     }
 
-    private fun startPreparingPlayback(book: DetailedItem) {
+    private fun startPreparingPlayback(
+        book: DetailedItem,
+        fromBackground: Boolean
+    ) {
         if (::mediaController.isInitialized && _playingBook.value != book) {
             _totalPosition.postValue(0.0)
             _isPlaying.postValue(false)
@@ -354,7 +360,11 @@ class MediaRepository @Inject constructor(
                 putExtra(BOOK_EXTRA, book)
             }
 
-            context.startService(intent)
+            when(fromBackground) {
+                true -> context.startForegroundService(intent)
+                false -> context.startService(intent)
+            }
+
         }
     }
 

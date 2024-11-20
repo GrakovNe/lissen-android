@@ -66,6 +66,6 @@ class WidgetPlaybackController @Inject constructor(
         onPlaybackReady: () -> Unit
     ) {
         playbackReadyAction = onPlaybackReady
-        mediaRepository.preparePlayback(itemId)
+        mediaRepository.preparePlayback(bookId = itemId, fromBackground = true)
     }
 }
