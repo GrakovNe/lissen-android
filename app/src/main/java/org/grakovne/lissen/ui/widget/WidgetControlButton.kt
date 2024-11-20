@@ -1,7 +1,7 @@
 package org.grakovne.lissen.ui.widget
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import androidx.glance.ColorFilter
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
@@ -18,7 +18,8 @@ fun WidgetControlButton(
     icon: ImageProvider,
     contentColor: ColorProvider,
     onClick: Action,
-    modifier: GlanceModifier
+    modifier: GlanceModifier,
+    size: Dp
 ) {
     Row(
         modifier = modifier,
@@ -29,7 +30,7 @@ fun WidgetControlButton(
             contentDescription = null,
             colorFilter = ColorFilter.tint(contentColor),
             modifier = GlanceModifier
-                .size(42.dp)
+                .size(size)
                 .clickable(onClick)
         )
     }

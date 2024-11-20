@@ -81,7 +81,7 @@ class PlayerWidget : GlanceAppWidget() {
                         Column(
                             modifier = GlanceModifier
                                 .fillMaxWidth()
-                                .padding(start = 32.dp)
+                                .padding(start = 24.dp)
                         ) {
                             Text(
                                 text = bookAuthor,
@@ -111,13 +111,15 @@ class PlayerWidget : GlanceAppWidget() {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         WidgetControlButton(
+                            size = 36.dp,
                             icon = ImageProvider(R.drawable.media3_icon_skip_back_10),
                             contentColor = GlanceTheme.colors.onBackground,
                             onClick = actionRunCallback<PreviousChapterActionCallback>(),
-                            modifier = GlanceModifier.padding(end = 16.dp)
+                            modifier = GlanceModifier.padding(end = 24.dp)
                         )
 
                         WidgetControlButton(
+                            size = 48.dp,
                             icon = ImageProvider(R.drawable.media3_icon_previous),
                             contentColor = GlanceTheme.colors.onBackground,
                             onClick = actionRunCallback<PreviousChapterActionCallback>(),
@@ -130,6 +132,7 @@ class PlayerWidget : GlanceAppWidget() {
                             } else {
                                 ImageProvider(R.drawable.media3_icon_play)
                             },
+                            size = 48.dp,
                             contentColor = GlanceTheme.colors.onBackground,
                             onClick = actionRunCallback<PlayToggleActionCallback>(),
                             modifier = GlanceModifier.padding(end = 16.dp)
@@ -137,13 +140,15 @@ class PlayerWidget : GlanceAppWidget() {
 
                         WidgetControlButton(
                             icon = ImageProvider(R.drawable.media3_icon_next),
+                            size = 48.dp,
                             contentColor = GlanceTheme.colors.onBackground,
                             onClick = actionRunCallback<NextChapterActionCallback>(),
-                            modifier = GlanceModifier.padding(end = 16.dp)
+                            modifier = GlanceModifier.padding(end = 24.dp)
                         )
 
                         WidgetControlButton(
                             icon = ImageProvider(R.drawable.media3_icon_skip_forward_30),
+                            size = 36.dp,
                             contentColor = GlanceTheme.colors.onBackground,
                             onClick = actionRunCallback<NextChapterActionCallback>(),
                             modifier = GlanceModifier
