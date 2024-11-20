@@ -3,6 +3,7 @@ package org.grakovne.lissen.ui.widget
 import android.content.Context
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.Preferences
@@ -43,7 +44,9 @@ class PlayerWidget : GlanceAppWidget() {
         provideContent {
             GlanceTheme(
                 colors = ColorProviders(
-                    light = lightColorScheme(),
+                    light = lightColorScheme(
+                        background = Color(0xFFFAFAFA)
+                    ),
                     dark = darkColorScheme()
                 )
             ) {
