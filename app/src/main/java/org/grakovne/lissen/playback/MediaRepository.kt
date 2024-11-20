@@ -174,21 +174,15 @@ class MediaRepository @Inject constructor(
     }
 
     fun rewind() {
-        val currentPosition = totalPosition.value ?: 0.0
-        seekTo(maxOf(0.0, currentPosition - 10L))
+        totalPosition
+            .value
+            ?.let { seekTo(it - 10L) }
     }
 
     fun forward() {
-        val book = playingBook.value ?: return
-        val overallPosition = totalPosition
+        totalPosition
             .value
-            ?: return
-
-        val overallDuration = book
-            .chapters
-            .sumOf { it.duration }
-
-        seekTo(minOf(overallDuration, overallPosition + 30L))
+            ?.let { seekTo(it + 30L) }
     }
 
     fun setChapter(index: Int) {
@@ -250,21 +244,16 @@ class MediaRepository @Inject constructor(
     suspend fun preparePlayback(bookId: String) {
         mediaPreparing()
 
-        val result = coroutineScope {
+        coroutineScope {
             withContext(Dispatchers.IO) {
-                mediaChannel.fetchBook(bookId)
+                mediaChannel
+                    .fetchBook(bookId)
+                    .foldAsync(
+                        onSuccess = { startPreparingPlayback(it) },
+                        onFailure = {}
+                    )
             }
         }
-
-        result.foldAsync(
-            onSuccess = {
-                withContext(Dispatchers.IO) {
-                    startPreparingPlayback(it)
-                }
-            },
-            onFailure = {
-            }
-        )
     }
 
     fun nextTrack() {
@@ -370,11 +359,19 @@ class MediaRepository @Inject constructor(
     }
 
     private fun seekTo(position: Double) {
+        val book = playingBook.value ?: return
+
+        val overallDuration = book
+            .chapters
+            .sumOf { it.duration }
+
+        val safePosition = minOf(overallDuration, maxOf(0.0, position))
+
         val intent = Intent(context, PlaybackService::class.java).apply {
             action = ACTION_SEEK_TO
 
             putExtra(BOOK_EXTRA, playingBook.value)
-            putExtra(POSITION, position)
+            putExtra(POSITION, safePosition)
         }
 
         context.startService(intent)
@@ -382,7 +379,7 @@ class MediaRepository @Inject constructor(
         when (_timerOption.value) {
             is CurrentEpisodeTimerOption -> updateTimer(
                 timerOption = _timerOption.value,
-                position = position
+                position = safePosition
             )
 
             is DurationTimerOption -> Unit
