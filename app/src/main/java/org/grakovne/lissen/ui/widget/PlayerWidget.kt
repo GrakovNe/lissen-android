@@ -59,6 +59,7 @@ class PlayerWidget : GlanceAppWidget() {
                 val cover = prefs[encodedCover]?.toBitmap()?.let { ImageProvider(it) }
                 val bookTitle = prefs[title] ?: "Nothing Playing"
                 val bookAuthor = prefs[authorName] ?: ""
+
                 val isPlaying = prefs[isPlaying] ?: false
 
                 Column(
@@ -165,6 +166,7 @@ class PlayerWidget : GlanceAppWidget() {
         val id = stringPreferencesKey("player_widget_key_id")
         val title = stringPreferencesKey("player_widget_key_title")
         val authorName = stringPreferencesKey("player_widget_key_author_name")
+
         val isPlaying = booleanPreferencesKey("player_widget_key_is_playing")
     }
 }

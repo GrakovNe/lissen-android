@@ -28,30 +28,50 @@ class PlayerWidgetStateService @Inject constructor(
 
     override fun onCreate() {
         scope.launch {
-            mediaRepository
-                .playingBook
-                .asFlow()
-                .combine(mediaRepository.isPlaying.asFlow()) { book, isPlaying ->
-                    val maybeCover = mediaProvider
-                        .fetchBookCover(book.id)
-                        .fold(
-                            onSuccess = { it.readBytes() },
-                            onFailure = { null }
-                        )
-
-                    PlayingItemState(
-                        id = book.id,
-                        title = book.title,
-                        authorName = book.author,
-                        isPlaying = isPlaying,
-                        imageCover = maybeCover
+            mediaRepository.playingBook.asFlow().collect { book ->
+                val maybeCover = mediaProvider
+                    .fetchBookCover(book.id)
+                    .fold(
+                        onSuccess = { it.readBytes() },
+                        onFailure = { null }
                     )
-                }
-                .collect { updateWidgetState(it) }
+
+                val playingItemState = PlayingItemState(
+                    id = book.id,
+                    title = book.title,
+                    authorName = book.author,
+                    isPlaying = mediaRepository.isPlaying.value ?: false,
+                    imageCover = maybeCover
+                )
+
+                updatePlayingItem(playingItemState)
+            }
+        }
+
+        scope.launch {
+            mediaRepository.isPlaying.asFlow().collect { isPlaying ->
+                updatePlayingState(isPlaying)
+            }
         }
     }
 
-    private suspend fun updateWidgetState(
+    private suspend fun updatePlayingState(
+        isPlaying: Boolean
+    ) {
+        val manager = GlanceAppWidgetManager(context)
+        val glanceIds = manager.getGlanceIds(PlayerWidget::class.java)
+        if (glanceIds.isEmpty() || isScreenOn().not()) return
+
+        glanceIds
+            .forEach { glanceId ->
+                updateAppWidgetState(context, glanceId) { prefs ->
+                    prefs[PlayerWidget.isPlaying] = isPlaying
+                }
+                PlayerWidget().update(context, glanceId)
+            }
+    }
+
+    private suspend fun updatePlayingItem(
         state: PlayingItemState
     ) {
         val manager = GlanceAppWidgetManager(context)
@@ -84,7 +104,6 @@ data class PlayingItemState(
     val isPlaying: Boolean = false,
     val imageCover: ByteArray?
 )
-
 
 
 fun ByteArray.toBase64(): String = Base64.encodeToString(this, Base64.DEFAULT)
