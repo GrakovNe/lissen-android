@@ -1,4 +1,4 @@
-package org.grakovne.lissen.ui.widget
+package org.grakovne.lissen.widget
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.Dp

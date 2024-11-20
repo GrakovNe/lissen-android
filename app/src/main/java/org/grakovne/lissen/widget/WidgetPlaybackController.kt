@@ -1,4 +1,4 @@
-package org.grakovne.lissen.ui.widget
+package org.grakovne.lissen.widget
 
 import android.content.BroadcastReceiver
 import android.content.Context

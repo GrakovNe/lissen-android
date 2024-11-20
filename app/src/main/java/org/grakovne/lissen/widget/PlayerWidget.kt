@@ -1,4 +1,4 @@
-package org.grakovne.lissen.ui.widget
+package org.grakovne.lissen.widget
 
 import android.content.Context
 import androidx.compose.material3.MaterialTheme
@@ -40,7 +40,7 @@ import org.grakovne.lissen.R.drawable
 import org.grakovne.lissen.common.clip
 import org.grakovne.lissen.common.fromBase64
 import org.grakovne.lissen.playback.WidgetPlaybackControllerEntryPoint
-import org.grakovne.lissen.ui.widget.PlayerWidget.Companion.bookIdKey
+import org.grakovne.lissen.widget.PlayerWidget.Companion.bookIdKey
 
 class PlayerWidget : GlanceAppWidget() {
 
