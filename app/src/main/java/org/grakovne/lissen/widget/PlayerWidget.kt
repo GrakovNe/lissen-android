@@ -111,7 +111,7 @@ class PlayerWidget : GlanceAppWidget() {
                                     fontSize = MaterialTheme.typography.titleLarge.fontSize,
                                     color = GlanceTheme.colors.onBackground
                                 ),
-                                maxLines = 1
+                                maxLines = 2
                             )
                         }
                     }
