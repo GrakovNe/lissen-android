@@ -9,6 +9,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.media3.common.Player
@@ -74,6 +75,26 @@ class MediaRepository @Inject constructor(
 
     private val _playbackSpeed = MutableLiveData(preferences.getPlaybackSpeed())
     val playbackSpeed: LiveData<Float> = _playbackSpeed
+
+    private val _currentChapterIndex = MediatorLiveData<Int>().apply {
+        addSource(totalPosition) { updateCurrentTrackData() }
+        addSource(playingBook) { updateCurrentTrackData() }
+    }
+
+    val currentChapterIndex: LiveData<Int> = _currentChapterIndex
+
+    private val _currentChapterPosition = MediatorLiveData<Double>().apply {
+        addSource(totalPosition) { updateCurrentTrackData() }
+        addSource(playingBook) { updateCurrentTrackData() }
+    }
+    val currentChapterPosition: LiveData<Double> = _currentChapterPosition
+
+    private val _currentChapterDuration = MediatorLiveData<Double>().apply {
+        addSource(totalPosition) { updateCurrentTrackData() }
+        addSource(playingBook) { updateCurrentTrackData() }
+    }
+
+    val currentChapterDuration: LiveData<Double> = _currentChapterDuration
 
     private val handler = Handler(Looper.getMainLooper())
 
@@ -388,6 +409,22 @@ class MediaRepository @Inject constructor(
             is DurationTimerOption -> Unit
             null -> Unit
         }
+    }
+
+    private fun updateCurrentTrackData() {
+        val book = playingBook.value ?: return
+        val totalPosition = totalPosition.value ?: return
+
+        val trackIndex = calculateChapterIndex(book, totalPosition)
+        val trackPosition = calculateChapterPosition(book, totalPosition)
+
+        _currentChapterIndex.value = trackIndex
+        _currentChapterPosition.value = trackPosition
+        _currentChapterDuration.value = book
+            .chapters
+            .getOrNull(trackIndex)
+            ?.duration
+            ?: 0.0
     }
 
     private companion object {

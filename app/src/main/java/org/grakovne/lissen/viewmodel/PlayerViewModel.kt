@@ -22,7 +22,9 @@ class PlayerViewModel @Inject constructor(
 
     val book: LiveData<DetailedItem> = mediaRepository.playingBook
 
-    private val totalPosition: LiveData<Double> = mediaRepository.totalPosition
+    val currentChapterIndex: LiveData<Int> = mediaRepository.currentChapterIndex
+    val currentChapterPosition: LiveData<Double> = mediaRepository.currentChapterPosition
+    val currentChapterDuration: LiveData<Double> = mediaRepository.currentChapterDuration
 
     val timerOption: LiveData<TimerOption?> = mediaRepository.timerOption
 
@@ -39,25 +41,6 @@ class PlayerViewModel @Inject constructor(
     val searchToken: LiveData<String> = _searchToken
 
     val isPlaying: LiveData<Boolean> = mediaRepository.isPlaying
-
-    private val _currentChapterIndex = MediatorLiveData<Int>().apply {
-        addSource(totalPosition) { updateCurrentTrackData() }
-        addSource(book) { updateCurrentTrackData() }
-    }
-    val currentChapterIndex: LiveData<Int> = _currentChapterIndex
-
-    private val _currentChapterPosition = MediatorLiveData<Double>().apply {
-        addSource(totalPosition) { updateCurrentTrackData() }
-        addSource(book) { updateCurrentTrackData() }
-    }
-    val currentChapterPosition: LiveData<Double> = _currentChapterPosition
-
-    private val _currentChapterDuration = MediatorLiveData<Double>().apply {
-        addSource(totalPosition) { updateCurrentTrackData() }
-        addSource(book) { updateCurrentTrackData() }
-    }
-
-    val currentChapterDuration: LiveData<Double> = _currentChapterDuration
 
     fun expandPlayingQueue() {
         _playingQueueExpanded.value = true
@@ -116,22 +99,6 @@ class PlayerViewModel @Inject constructor(
     fun previousTrack() = mediaRepository.previousTrack()
 
     fun togglePlayPause() = mediaRepository.togglePlayPause()
-
-    private fun updateCurrentTrackData() {
-        val book = book.value ?: return
-        val totalPosition = mediaRepository.totalPosition.value ?: return
-
-        val trackIndex = calculateChapterIndex(book, totalPosition)
-        val trackPosition = calculateChapterPosition(book, totalPosition)
-
-        _currentChapterIndex.value = trackIndex
-        _currentChapterPosition.value = trackPosition
-        _currentChapterDuration.value = book
-            .chapters
-            .getOrNull(trackIndex)
-            ?.duration
-            ?: 0.0
-    }
 
     companion object {
 
