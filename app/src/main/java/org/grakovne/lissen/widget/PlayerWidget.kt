@@ -60,7 +60,7 @@ class PlayerWidget : GlanceAppWidget() {
                 val cover = prefs[encodedCover]?.fromBase64()
                 val bookId = prefs[bookId] ?: ""
                 val bookTitle = prefs[title] ?: "Nothing Playing"
-                val bookAuthor = prefs[authorName] ?: ""
+                val chapterTitle = prefs[chapterTitle] ?: ""
 
                 val isPlaying = prefs[isPlaying] ?: false
 
@@ -92,7 +92,7 @@ class PlayerWidget : GlanceAppWidget() {
                                 .padding(start = 24.dp)
                         ) {
                             Text(
-                                text = bookAuthor,
+                                text = bookTitle,
                                 style = TextStyle(
                                     fontSize = MaterialTheme.typography.titleSmall.fontSize,
                                     color = GlanceTheme.colors.onBackground
@@ -102,7 +102,7 @@ class PlayerWidget : GlanceAppWidget() {
                             )
 
                             Text(
-                                text = bookTitle,
+                                text = chapterTitle,
                                 style = TextStyle(
                                     fontSize = MaterialTheme.typography.titleLarge.fontSize,
                                     color = GlanceTheme.colors.onBackground
@@ -184,7 +184,7 @@ class PlayerWidget : GlanceAppWidget() {
         val encodedCover = stringPreferencesKey("player_widget_key_cover")
         val bookId = stringPreferencesKey("player_widget_key_id")
         val title = stringPreferencesKey("player_widget_key_title")
-        val authorName = stringPreferencesKey("player_widget_key_author_name")
+        val chapterTitle = stringPreferencesKey("player_widget_key_chapter_title")
 
         val isPlaying = booleanPreferencesKey("player_widget_key_is_playing")
     }
@@ -232,11 +232,11 @@ class PreviousChapterActionCallback : ActionCallback {
     }
 }
 
-
 private suspend fun safelyRun(
     playingItemId: String,
     context: Context,
-    action: (WidgetPlaybackController) -> Unit) {
+    action: (WidgetPlaybackController) -> Unit
+) {
     val playbackController = EntryPointAccessors
         .fromApplication(
             context = context.applicationContext,
@@ -248,5 +248,4 @@ private suspend fun safelyRun(
         null -> playbackController.prepareAndRun(playingItemId) { action(playbackController) }
         else -> action(playbackController)
     }
-
 }

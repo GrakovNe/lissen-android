@@ -35,10 +35,16 @@ class PlayerWidgetStateService @Inject constructor(
                         onFailure = { null }
                     )
 
+                val chapterTitle = mediaRepository
+                    .currentChapterIndex
+                    .value
+                    ?.let { book.chapters[it] }
+                    ?.title
+
                 val playingItemState = PlayingItemState(
                     id = book.id,
                     title = book.title,
-                    authorName = book.author,
+                    chapterTitle = chapterTitle,
                     isPlaying = mediaRepository.isPlaying.value ?: false,
                     imageCover = maybeCover
                 )
@@ -52,6 +58,35 @@ class PlayerWidgetStateService @Inject constructor(
                 updatePlayingState(isPlaying)
             }
         }
+
+        scope.launch {
+            mediaRepository.currentChapterIndex.asFlow().collect { chapterIndex ->
+
+                val book = mediaRepository.playingBook.value ?: return@collect
+
+                val chapterTitle = book
+                    .chapters[chapterIndex]
+                    .title
+
+                updateChapterTitle(chapterTitle)
+            }
+        }
+    }
+
+    private suspend fun updateChapterTitle(
+        title: String
+    ) {
+        val manager = GlanceAppWidgetManager(context)
+        val glanceIds = manager.getGlanceIds(PlayerWidget::class.java)
+        if (glanceIds.isEmpty() || isScreenOn().not()) return
+
+        glanceIds
+            .forEach { glanceId ->
+                updateAppWidgetState(context, glanceId) { prefs ->
+                    prefs[PlayerWidget.chapterTitle] = title
+                }
+                PlayerWidget().update(context, glanceId)
+            }
     }
 
     private suspend fun updatePlayingState(
@@ -83,7 +118,7 @@ class PlayerWidgetStateService @Inject constructor(
                     prefs[PlayerWidget.bookId] = state.id
                     prefs[PlayerWidget.encodedCover] = state.imageCover?.toBase64() ?: ""
                     prefs[PlayerWidget.title] = state.title
-                    prefs[PlayerWidget.authorName] = state.authorName ?: ""
+                    prefs[PlayerWidget.chapterTitle] = state.chapterTitle ?: ""
                     prefs[PlayerWidget.isPlaying] = state.isPlaying
                 }
                 PlayerWidget().update(context, glanceId)
@@ -99,7 +134,7 @@ class PlayerWidgetStateService @Inject constructor(
 data class PlayingItemState(
     val id: String,
     val title: String,
-    val authorName: String?,
+    val chapterTitle: String?,
     val isPlaying: Boolean = false,
     val imageCover: ByteArray?
 )

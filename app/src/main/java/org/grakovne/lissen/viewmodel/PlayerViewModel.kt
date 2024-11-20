@@ -1,7 +1,6 @@
 package org.grakovne.lissen.viewmodel
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,8 +10,6 @@ import org.grakovne.lissen.domain.BookChapter
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.playback.MediaRepository
-import org.grakovne.lissen.playback.service.calculateChapterIndex
-import org.grakovne.lissen.playback.service.calculateChapterPosition
 import javax.inject.Inject
 
 @HiltViewModel
