@@ -216,11 +216,15 @@ class MediaRepository @Inject constructor(
             return
         }
 
-        val absolutePosition = currentIndex
-            .let { chapterIndex -> book.chapters.get(chapterIndex).start }
-            .let { it + chapterPosition }
+        try {
+            val absolutePosition = currentIndex
+                .let { chapterIndex -> book.chapters[chapterIndex].start }
+                .let { it + chapterPosition }
 
-        seekTo(absolutePosition)
+            seekTo(absolutePosition)
+        } catch (ex: Exception) {
+            return
+        }
     }
 
     fun togglePlayPause() {
