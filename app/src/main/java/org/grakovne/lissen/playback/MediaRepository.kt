@@ -47,7 +47,7 @@ import javax.inject.Singleton
 class MediaRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val preferences: LissenSharedPreferences,
-    private val mediaChannel: LissenMediaProvider,
+    private val mediaChannel: LissenMediaProvider
 ) {
 
     private lateinit var mediaController: MediaController
@@ -254,8 +254,7 @@ class MediaRepository @Inject constructor(
             }
         }
 
-        result
-            .foldAsync(
+        result.foldAsync(
             onSuccess = {
                 withContext(Dispatchers.IO) {
                     startPreparingPlayback(it)
