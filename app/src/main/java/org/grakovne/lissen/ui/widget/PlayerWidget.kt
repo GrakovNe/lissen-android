@@ -1,9 +1,6 @@
 package org.grakovne.lissen.ui.widget
 
 import android.content.Context
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
@@ -28,7 +25,6 @@ import androidx.glance.layout.Alignment
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
-import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
@@ -38,7 +34,6 @@ import androidx.glance.layout.wrapContentWidth
 import androidx.glance.material3.ColorProviders
 import androidx.glance.state.GlanceStateDefinition
 import androidx.glance.state.PreferencesGlanceStateDefinition
-import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.media3.session.R
@@ -64,100 +59,102 @@ class PlayerWidget : GlanceAppWidget() {
                 val bookAuthor = prefs[bookAuthorKey] ?: ""
                 val isPlaying = prefs[isPlayingKey] ?: false
 
-                Row(
+                Column(
                     modifier = GlanceModifier
                         .fillMaxWidth()
                         .background(GlanceTheme.colors.background)
                         .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.Top
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Слева: Иконка, занимающая всю высоту и имеющая аспект 1:1
-                    Image(
-                        provider = ImageProvider(R.drawable.media3_icon_play), // Используем заглушку media3_icon_play
-                        contentDescription = null,
-                        modifier = GlanceModifier
-                            .size(80.dp) // Устанавливаем фиксированный размер для имитации полного заполнения по высоте
-                    )
-
-                    Spacer(modifier = GlanceModifier.width(8.dp))
-
-                    // Справа: Колонка с метаданными и контролами, выровненная влево
-                    Column(
+                    // Top Row: Image with Text
+                    Row(
                         modifier = GlanceModifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.Start
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Метаданные книги
-                        Text(
-                            text = bookTitle,
-                            style = TextStyle(
-                                fontSize = 16.sp,
-                                color = GlanceTheme.colors.onBackground
-                            ),
-                            maxLines = 1
-                        )
-                        Text(
-                            text = bookAuthor,
-                            style = TextStyle(
-                                fontSize = 14.sp,
-                                color = GlanceTheme.colors.onBackground
-                            ),
-                            maxLines = 1
+                        Image(
+                            provider = ImageProvider(R.drawable.media3_icon_play),
+                            contentDescription = null,
+                            modifier = GlanceModifier.size(80.dp)
                         )
 
-                        Spacer(modifier = GlanceModifier.height(8.dp))
+                        Spacer(modifier = GlanceModifier.width(8.dp))
 
-                        // Контролы
-                        Row(
+                        Column(
                             modifier = GlanceModifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
+                            horizontalAlignment = Alignment.Start
                         ) {
-                            // Все контролы начинаются с того же левого смещения, что и текст
-                            WidgetControlButton(
-                                icon = ImageProvider(R.drawable.media3_icon_skip_back_10),
-                                contentColor = GlanceTheme.colors.onBackground,
-                                onClick = actionRunCallback<PreviousChapterActionCallback>()
+                            Text(
+                                text = bookTitle,
+                                style = TextStyle(
+                                    fontSize = 16.sp,
+                                    color = GlanceTheme.colors.onBackground
+                                ),
+                                maxLines = 1
                             )
-
-                            Spacer(modifier = GlanceModifier.width(8.dp))
-
-                            WidgetControlButton(
-                                icon = ImageProvider(R.drawable.media3_icon_previous),
-                                contentColor = GlanceTheme.colors.onBackground,
-                                onClick = actionRunCallback<PreviousChapterActionCallback>()
-                            )
-
-                            Spacer(modifier = GlanceModifier.width(8.dp))
-
-                            WidgetControlButton(
-                                icon = if (isPlaying) {
-                                    ImageProvider(R.drawable.media3_icon_pause)
-                                } else {
-                                    ImageProvider(R.drawable.media3_icon_play)
-                                },
-                                contentColor = GlanceTheme.colors.onBackground,
-                                onClick = actionRunCallback<PlayToggleActionCallback>()
-                            )
-
-                            Spacer(modifier = GlanceModifier.width(8.dp))
-
-                            WidgetControlButton(
-                                icon = ImageProvider(R.drawable.media3_icon_next),
-                                contentColor = GlanceTheme.colors.onBackground,
-                                onClick = actionRunCallback<NextChapterActionCallback>()
-                            )
-
-                            Spacer(modifier = GlanceModifier.width(8.dp))
-
-                            WidgetControlButton(
-                                icon = ImageProvider(R.drawable.media3_icon_skip_forward_30),
-                                contentColor = GlanceTheme.colors.onBackground,
-                                onClick = actionRunCallback<NextChapterActionCallback>()
+                            Text(
+                                text = bookAuthor,
+                                style = TextStyle(
+                                    fontSize = 14.sp,
+                                    color = GlanceTheme.colors.onBackground
+                                ),
+                                maxLines = 1
                             )
                         }
+                    }
+
+                    Spacer(modifier = GlanceModifier.height(16.dp))
+
+                    // Bottom Row: Controls centered with padding from edges
+                    Row(
+                        modifier = GlanceModifier.wrapContentWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        WidgetControlButton(
+                            icon = ImageProvider(R.drawable.media3_icon_skip_back_10),
+                            contentColor = GlanceTheme.colors.onBackground,
+                            onClick = actionRunCallback<PreviousChapterActionCallback>()
+                        )
+
+                        Spacer(modifier = GlanceModifier.width(8.dp))
+
+                        WidgetControlButton(
+                            icon = ImageProvider(R.drawable.media3_icon_previous),
+                            contentColor = GlanceTheme.colors.onBackground,
+                            onClick = actionRunCallback<PreviousChapterActionCallback>()
+                        )
+
+                        Spacer(modifier = GlanceModifier.width(8.dp))
+
+                        WidgetControlButton(
+                            icon = if (isPlaying) {
+                                ImageProvider(R.drawable.media3_icon_pause)
+                            } else {
+                                ImageProvider(R.drawable.media3_icon_play)
+                            },
+                            contentColor = GlanceTheme.colors.onBackground,
+                            onClick = actionRunCallback<PlayToggleActionCallback>()
+                        )
+
+                        Spacer(modifier = GlanceModifier.width(8.dp))
+
+                        WidgetControlButton(
+                            icon = ImageProvider(R.drawable.media3_icon_next),
+                            contentColor = GlanceTheme.colors.onBackground,
+                            onClick = actionRunCallback<NextChapterActionCallback>()
+                        )
+
+                        Spacer(modifier = GlanceModifier.width(8.dp))
+
+                        WidgetControlButton(
+                            icon = ImageProvider(R.drawable.media3_icon_skip_forward_30),
+                            contentColor = GlanceTheme.colors.onBackground,
+                            onClick = actionRunCallback<NextChapterActionCallback>()
+                        )
                     }
                 }
             }
         }
+
     }
 
     companion object {
