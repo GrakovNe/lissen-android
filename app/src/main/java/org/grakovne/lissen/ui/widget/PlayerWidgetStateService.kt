@@ -2,7 +2,6 @@ package org.grakovne.lissen.ui.widget
 
 import android.content.Context
 import android.os.PowerManager
-import android.util.Base64
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.lifecycle.asFlow
@@ -11,6 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.RunningComponent
+import org.grakovne.lissen.common.toBase64
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.playback.MediaRepository
 import javax.inject.Inject
@@ -103,6 +103,3 @@ data class PlayingItemState(
     val isPlaying: Boolean = false,
     val imageCover: ByteArray?
 )
-
-
-fun ByteArray.toBase64(): String = Base64.encodeToString(this, Base64.DEFAULT)

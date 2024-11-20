@@ -1,9 +1,6 @@
 package org.grakovne.lissen.ui.widget
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.util.Base64
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -40,6 +37,8 @@ import androidx.glance.text.TextStyle
 import androidx.media3.session.R
 import dagger.hilt.android.EntryPointAccessors
 import org.grakovne.lissen.R.drawable
+import org.grakovne.lissen.common.clip
+import org.grakovne.lissen.common.fromBase64
 import org.grakovne.lissen.playback.WidgetPlaybackControllerEntryPoint
 import org.grakovne.lissen.ui.widget.PlayerWidget.Companion.bookIdKey
 
@@ -58,7 +57,7 @@ class PlayerWidget : GlanceAppWidget() {
                 )
             ) {
                 val prefs = currentState<Preferences>()
-                val cover = prefs[encodedCover]?.toBitmap()?.let { ImageProvider(it) }
+                val cover = prefs[encodedCover]?.fromBase64()
                 val bookId = prefs[bookId] ?: ""
                 val bookTitle = prefs[title] ?: "Nothing Playing"
                 val bookAuthor = prefs[authorName] ?: ""
@@ -76,8 +75,13 @@ class PlayerWidget : GlanceAppWidget() {
                         modifier = GlanceModifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        val coverImageProvider = cover
+                            ?.clip(context, 16.dp)
+                            ?.let { ImageProvider(it) }
+                            ?: ImageProvider(drawable.cover_fallback)
+
                         Image(
-                            provider = cover ?: ImageProvider(drawable.cover_fallback),
+                            provider = coverImageProvider,
                             contentDescription = null,
                             modifier = GlanceModifier.size(80.dp)
                         )
@@ -163,7 +167,6 @@ class PlayerWidget : GlanceAppWidget() {
                 }
             }
         }
-
     }
 
     companion object {
@@ -236,9 +239,4 @@ class PreviousChapterActionCallback : ActionCallback {
 
         mediaRepository.previousTrack()
     }
-}
-
-fun String.toBitmap(): Bitmap? {
-    val bytes = Base64.decode(this, Base64.DEFAULT)
-    return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
 }
