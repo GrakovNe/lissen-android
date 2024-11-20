@@ -122,7 +122,7 @@ class PlayerWidget : GlanceAppWidget() {
                             size = 36.dp,
                             icon = ImageProvider(R.drawable.media3_icon_skip_back_10),
                             contentColor = GlanceTheme.colors.onBackground,
-                            onClick = actionRunCallback<PreviousChapterActionCallback>(
+                            onClick = actionRunCallback<RewindActionCallback>(
                                 actionParametersOf(bookIdKey to bookId)
                             ),
                             modifier = GlanceModifier.padding(end = 24.dp)
@@ -166,7 +166,7 @@ class PlayerWidget : GlanceAppWidget() {
                             icon = ImageProvider(R.drawable.media3_icon_skip_forward_30),
                             size = 36.dp,
                             contentColor = GlanceTheme.colors.onBackground,
-                            onClick = actionRunCallback<NextChapterActionCallback>(
+                            onClick = actionRunCallback<ForwardActionCallback>(
                                 actionParametersOf(bookIdKey to bookId)
                             ),
                             modifier = GlanceModifier
@@ -201,6 +201,34 @@ class PlayToggleActionCallback : ActionCallback {
             playingItemId = parameters[bookIdKey] ?: return,
             context = context
         ) { it.togglePlayPause() }
+    }
+}
+
+class ForwardActionCallback : ActionCallback {
+
+    override suspend fun onAction(
+        context: Context,
+        glanceId: GlanceId,
+        parameters: ActionParameters
+    ) {
+        safelyRun(
+            playingItemId = parameters[bookIdKey] ?: return,
+            context = context
+        ) { it.forward() }
+    }
+}
+
+class RewindActionCallback : ActionCallback {
+
+    override suspend fun onAction(
+        context: Context,
+        glanceId: GlanceId,
+        parameters: ActionParameters
+    ) {
+        safelyRun(
+            playingItemId = parameters[bookIdKey] ?: return,
+            context = context
+        ) { it.rewind() }
     }
 }
 
