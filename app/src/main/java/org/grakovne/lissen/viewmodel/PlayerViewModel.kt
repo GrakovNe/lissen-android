@@ -6,10 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.BookChapter
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.TimerOption
@@ -25,7 +22,7 @@ class PlayerViewModel @Inject constructor(
 
     val book: LiveData<DetailedItem> = mediaRepository.playingBook
 
-    private val mediaItemPosition: LiveData<Double> = mediaRepository.mediaItemPosition
+    private val totalPosition: LiveData<Double> = mediaRepository.totalPosition
 
     val timerOption: LiveData<TimerOption?> = mediaRepository.timerOption
 
@@ -44,19 +41,19 @@ class PlayerViewModel @Inject constructor(
     val isPlaying: LiveData<Boolean> = mediaRepository.isPlaying
 
     private val _currentChapterIndex = MediatorLiveData<Int>().apply {
-        addSource(mediaItemPosition) { updateCurrentTrackData() }
+        addSource(totalPosition) { updateCurrentTrackData() }
         addSource(book) { updateCurrentTrackData() }
     }
     val currentChapterIndex: LiveData<Int> = _currentChapterIndex
 
     private val _currentChapterPosition = MediatorLiveData<Double>().apply {
-        addSource(mediaItemPosition) { updateCurrentTrackData() }
+        addSource(totalPosition) { updateCurrentTrackData() }
         addSource(book) { updateCurrentTrackData() }
     }
     val currentChapterPosition: LiveData<Double> = _currentChapterPosition
 
     private val _currentChapterDuration = MediatorLiveData<Double>().apply {
-        addSource(mediaItemPosition) { updateCurrentTrackData() }
+        addSource(totalPosition) { updateCurrentTrackData() }
         addSource(book) { updateCurrentTrackData() }
     }
 
@@ -122,7 +119,7 @@ class PlayerViewModel @Inject constructor(
 
     private fun updateCurrentTrackData() {
         val book = book.value ?: return
-        val totalPosition = mediaRepository.mediaItemPosition.value ?: return
+        val totalPosition = mediaRepository.totalPosition.value ?: return
 
         val trackIndex = calculateChapterIndex(book, totalPosition)
         val trackPosition = calculateChapterPosition(book, totalPosition)

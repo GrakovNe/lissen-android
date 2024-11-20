@@ -66,8 +66,8 @@ class MediaRepository @Inject constructor(
     private val _isPlaybackReady = MutableLiveData(false)
     val isPlaybackReady: LiveData<Boolean> = _isPlaybackReady
 
-    private val _mediaItemPosition = MutableLiveData<Double>()
-    val mediaItemPosition: LiveData<Double> = _mediaItemPosition
+    private val _totalPosition = MutableLiveData<Double>()
+    val totalPosition: LiveData<Double> = _totalPosition
 
     private val _playingBook = MutableLiveData<DetailedItem>()
     val playingBook: LiveData<DetailedItem> = _playingBook
@@ -155,7 +155,7 @@ class MediaRepository @Inject constructor(
 
             is CurrentEpisodeTimerOption -> {
                 val playingBook = playingBook.value ?: return
-                val currentPosition = position ?: mediaItemPosition.value ?: return
+                val currentPosition = position ?: totalPosition.value ?: return
 
                 val chapterDuration = calculateChapterIndex(playingBook, currentPosition)
                     .let { playingBook.chapters[it] }
@@ -174,13 +174,13 @@ class MediaRepository @Inject constructor(
     }
 
     fun rewind() {
-        val currentPosition = mediaItemPosition.value ?: 0.0
+        val currentPosition = totalPosition.value ?: 0.0
         seekTo(maxOf(0.0, currentPosition - 10L))
     }
 
     fun forward() {
         val book = playingBook.value ?: return
-        val overallPosition = mediaItemPosition.value ?: return
+        val overallPosition = totalPosition.value ?: return
 
         val trackIndex = calculateChapterIndex(book, overallPosition)
 
@@ -208,7 +208,7 @@ class MediaRepository @Inject constructor(
 
     fun setChapterPosition(chapterPosition: Double) {
         val book = playingBook.value ?: return
-        val overallPosition = mediaItemPosition.value ?: return
+        val overallPosition = totalPosition.value ?: return
 
         val currentIndex = calculateChapterIndex(book, overallPosition)
 
@@ -268,7 +268,7 @@ class MediaRepository @Inject constructor(
 
     fun nextTrack() {
         val book = playingBook.value ?: return
-        val overallPosition = mediaItemPosition.value ?: return
+        val overallPosition = totalPosition.value ?: return
 
         val currentIndex = calculateChapterIndex(book, overallPosition)
 
@@ -278,7 +278,7 @@ class MediaRepository @Inject constructor(
 
     fun previousTrack() {
         val book = playingBook.value ?: return
-        val overallPosition = mediaItemPosition.value ?: return
+        val overallPosition = totalPosition.value ?: return
 
         val currentIndex = calculateChapterIndex(book, overallPosition)
         val chapterPosition = calculateChapterPosition(
@@ -332,7 +332,7 @@ class MediaRepository @Inject constructor(
 
     private fun startPreparingPlayback(book: DetailedItem) {
         if (::mediaController.isInitialized && _playingBook.value != book) {
-            _mediaItemPosition.postValue(0.0)
+            _totalPosition.postValue(0.0)
             _isPlaying.postValue(false)
 
             val intent = Intent(context, PlaybackService::class.java).apply {
@@ -350,7 +350,7 @@ class MediaRepository @Inject constructor(
             val accumulated = detailedItem.files.take(currentIndex).sumOf { it.duration }
             val currentFilePosition = mediaController.currentPosition / 1000.0
 
-            _mediaItemPosition.value = (accumulated + currentFilePosition)
+            _totalPosition.value = (accumulated + currentFilePosition)
         }
     }
 
