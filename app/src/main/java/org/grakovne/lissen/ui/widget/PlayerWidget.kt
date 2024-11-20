@@ -18,6 +18,7 @@ import androidx.glance.GlanceTheme
 import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.action.ActionParameters
+import androidx.glance.action.actionParametersOf
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
@@ -40,6 +41,7 @@ import androidx.media3.session.R
 import dagger.hilt.android.EntryPointAccessors
 import org.grakovne.lissen.R.drawable
 import org.grakovne.lissen.playback.MediaRepositoryEntryPoint
+import org.grakovne.lissen.ui.widget.PlayerWidget.Companion.bookIdKey
 
 class PlayerWidget : GlanceAppWidget() {
 
@@ -57,6 +59,7 @@ class PlayerWidget : GlanceAppWidget() {
             ) {
                 val prefs = currentState<Preferences>()
                 val cover = prefs[encodedCover]?.toBitmap()?.let { ImageProvider(it) }
+                val bookId = prefs[bookId] ?: ""
                 val bookTitle = prefs[title] ?: "Nothing Playing"
                 val bookAuthor = prefs[authorName] ?: ""
 
@@ -135,7 +138,9 @@ class PlayerWidget : GlanceAppWidget() {
                             },
                             size = 48.dp,
                             contentColor = GlanceTheme.colors.onBackground,
-                            onClick = actionRunCallback<PlayToggleActionCallback>(),
+                            onClick = actionRunCallback<PlayToggleActionCallback>(
+                                actionParametersOf(bookIdKey to bookId)
+                            ),
                             modifier = GlanceModifier.padding(end = 16.dp)
                         )
 
@@ -162,8 +167,10 @@ class PlayerWidget : GlanceAppWidget() {
     }
 
     companion object {
+        val bookIdKey = ActionParameters.Key<String>("book_id")
+
         val encodedCover = stringPreferencesKey("player_widget_key_cover")
-        val id = stringPreferencesKey("player_widget_key_id")
+        val bookId = stringPreferencesKey("player_widget_key_id")
         val title = stringPreferencesKey("player_widget_key_title")
         val authorName = stringPreferencesKey("player_widget_key_author_name")
 
@@ -178,6 +185,8 @@ class PlayToggleActionCallback : ActionCallback {
         glanceId: GlanceId,
         parameters: ActionParameters
     ) {
+        val id = parameters[bookIdKey] ?: return
+
         val mediaRepository = EntryPointAccessors
             .fromApplication(
                 context = context.applicationContext,
@@ -185,7 +194,13 @@ class PlayToggleActionCallback : ActionCallback {
             )
             .mediaRepository()
 
-        mediaRepository.togglePlayPause()
+        when(mediaRepository.playingBook.value) {
+            null -> {
+                println("LISSENTEST: PREPARING")
+                mediaRepository.startPlaying(id)
+            }
+            else ->  mediaRepository.togglePlayPause()
+        }
     }
 }
 

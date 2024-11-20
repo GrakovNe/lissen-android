@@ -241,6 +241,11 @@ class MediaRepository @Inject constructor(
         preferences.savePlaybackSpeed(speed)
     }
 
+    suspend fun startPlaying(bookId: String) {
+        preparePlayback(bookId)
+        play()
+    }
+
     suspend fun preparePlayback(bookId: String) {
         mediaPreparing()
 
@@ -316,7 +321,10 @@ class MediaRepository @Inject constructor(
     }
 
     private fun mediaPreparing() {
-        updateTimer(timerOption = null)
+        timerOption
+            .value
+            ?.let { updateTimer(timerOption = null) }
+
         _isPlaybackReady.postValue(false)
     }
 

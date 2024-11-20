@@ -9,7 +9,6 @@ import androidx.lifecycle.asFlow
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.content.LissenMediaProvider
@@ -81,7 +80,7 @@ class PlayerWidgetStateService @Inject constructor(
         glanceIds
             .forEach { glanceId ->
                 updateAppWidgetState(context, glanceId) { prefs ->
-                    prefs[PlayerWidget.id] = state.id
+                    prefs[PlayerWidget.bookId] = state.id
                     prefs[PlayerWidget.encodedCover] = state.imageCover?.toBase64() ?: ""
                     prefs[PlayerWidget.title] = state.title
                     prefs[PlayerWidget.authorName] = state.authorName ?: ""
