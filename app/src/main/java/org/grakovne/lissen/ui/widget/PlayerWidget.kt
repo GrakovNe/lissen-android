@@ -1,11 +1,14 @@
 package org.grakovne.lissen.ui.widget
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -24,12 +27,9 @@ import androidx.glance.currentState
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
-import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxWidth
-import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
-import androidx.glance.layout.width
 import androidx.glance.layout.wrapContentWidth
 import androidx.glance.material3.ColorProviders
 import androidx.glance.state.GlanceStateDefinition
@@ -38,6 +38,7 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.media3.session.R
 import dagger.hilt.android.EntryPointAccessors
+import org.grakovne.lissen.R.drawable
 import org.grakovne.lissen.playback.MediaRepositoryEntryPoint
 
 class PlayerWidget : GlanceAppWidget() {
@@ -55,15 +56,16 @@ class PlayerWidget : GlanceAppWidget() {
                 )
             ) {
                 val prefs = currentState<Preferences>()
-                val bookTitle = prefs[bookTitleKey] ?: "Nothing Playing"
-                val bookAuthor = prefs[bookAuthorKey] ?: ""
-                val isPlaying = prefs[isPlayingKey] ?: false
+                val cover = prefs[encodedCover]?.toBitmap()?.let { ImageProvider(it) }
+                val bookTitle = prefs[title] ?: "Nothing Playing"
+                val bookAuthor = prefs[authorName] ?: ""
+                val isPlaying = prefs[isPlaying] ?: false
 
                 Column(
                     modifier = GlanceModifier
                         .fillMaxWidth()
                         .background(GlanceTheme.colors.background)
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                        .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Row(
@@ -71,29 +73,30 @@ class PlayerWidget : GlanceAppWidget() {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Image(
-                            provider = ImageProvider(R.drawable.media3_icon_play),
+                            provider = cover ?: ImageProvider(drawable.cover_fallback),
                             contentDescription = null,
                             modifier = GlanceModifier.size(80.dp)
                         )
 
-                        Spacer(modifier = GlanceModifier.width(8.dp))
-
                         Column(
-                            modifier = GlanceModifier.fillMaxWidth(),
-                            horizontalAlignment = Alignment.Start
+                            modifier = GlanceModifier
+                                .fillMaxWidth()
+                                .padding(start = 32.dp)
                         ) {
-                            Text(
-                                text = bookTitle,
-                                style = TextStyle(
-                                    fontSize = 16.sp,
-                                    color = GlanceTheme.colors.onBackground
-                                ),
-                                maxLines = 1
-                            )
                             Text(
                                 text = bookAuthor,
                                 style = TextStyle(
-                                    fontSize = 14.sp,
+                                    fontSize = MaterialTheme.typography.titleSmall.fontSize,
+                                    color = GlanceTheme.colors.onBackground
+                                ),
+                                maxLines = 1,
+                                modifier = GlanceModifier.padding(bottom = 4.dp)
+                            )
+
+                            Text(
+                                text = bookTitle,
+                                style = TextStyle(
+                                    fontSize = MaterialTheme.typography.titleLarge.fontSize,
                                     color = GlanceTheme.colors.onBackground
                                 ),
                                 maxLines = 1
@@ -101,27 +104,25 @@ class PlayerWidget : GlanceAppWidget() {
                         }
                     }
 
-                    Spacer(modifier = GlanceModifier.height(16.dp))
-
                     Row(
-                        modifier = GlanceModifier.wrapContentWidth(),
+                        modifier = GlanceModifier
+                            .padding(top = 16.dp)
+                            .wrapContentWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         WidgetControlButton(
                             icon = ImageProvider(R.drawable.media3_icon_skip_back_10),
                             contentColor = GlanceTheme.colors.onBackground,
-                            onClick = actionRunCallback<PreviousChapterActionCallback>()
+                            onClick = actionRunCallback<PreviousChapterActionCallback>(),
+                            modifier = GlanceModifier.padding(end = 16.dp)
                         )
-
-                        Spacer(modifier = GlanceModifier.width(16.dp))
 
                         WidgetControlButton(
                             icon = ImageProvider(R.drawable.media3_icon_previous),
                             contentColor = GlanceTheme.colors.onBackground,
-                            onClick = actionRunCallback<PreviousChapterActionCallback>()
+                            onClick = actionRunCallback<PreviousChapterActionCallback>(),
+                            modifier = GlanceModifier.padding(end = 16.dp)
                         )
-
-                        Spacer(modifier = GlanceModifier.width(16.dp))
 
                         WidgetControlButton(
                             icon = if (isPlaying) {
@@ -130,23 +131,22 @@ class PlayerWidget : GlanceAppWidget() {
                                 ImageProvider(R.drawable.media3_icon_play)
                             },
                             contentColor = GlanceTheme.colors.onBackground,
-                            onClick = actionRunCallback<PlayToggleActionCallback>()
+                            onClick = actionRunCallback<PlayToggleActionCallback>(),
+                            modifier = GlanceModifier.padding(end = 16.dp)
                         )
-
-                        Spacer(modifier = GlanceModifier.width(16.dp))
 
                         WidgetControlButton(
                             icon = ImageProvider(R.drawable.media3_icon_next),
                             contentColor = GlanceTheme.colors.onBackground,
-                            onClick = actionRunCallback<NextChapterActionCallback>()
+                            onClick = actionRunCallback<NextChapterActionCallback>(),
+                            modifier = GlanceModifier.padding(end = 16.dp)
                         )
-
-                        Spacer(modifier = GlanceModifier.width(16.dp))
 
                         WidgetControlButton(
                             icon = ImageProvider(R.drawable.media3_icon_skip_forward_30),
                             contentColor = GlanceTheme.colors.onBackground,
-                            onClick = actionRunCallback<NextChapterActionCallback>()
+                            onClick = actionRunCallback<NextChapterActionCallback>(),
+                            modifier = GlanceModifier
                         )
                     }
                 }
@@ -156,10 +156,11 @@ class PlayerWidget : GlanceAppWidget() {
     }
 
     companion object {
-
-        val bookTitleKey = stringPreferencesKey("bookTitle")
-        val bookAuthorKey = stringPreferencesKey("bookAuthor")
-        val isPlayingKey = booleanPreferencesKey("isPlaying")
+        val encodedCover = stringPreferencesKey("player_widget_key_cover")
+        val id = stringPreferencesKey("player_widget_key_id")
+        val title = stringPreferencesKey("player_widget_key_title")
+        val authorName = stringPreferencesKey("player_widget_key_author_name")
+        val isPlaying = booleanPreferencesKey("player_widget_key_is_playing")
     }
 }
 
@@ -215,4 +216,9 @@ class PreviousChapterActionCallback : ActionCallback {
 
         mediaRepository.nextTrack()
     }
+}
+
+fun String.toBitmap(): Bitmap? {
+    val bytes = Base64.decode(this, Base64.DEFAULT)
+    return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
 }

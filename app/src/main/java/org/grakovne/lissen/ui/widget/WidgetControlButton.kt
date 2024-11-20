@@ -17,9 +17,13 @@ import androidx.glance.unit.ColorProvider
 fun WidgetControlButton(
     icon: ImageProvider,
     contentColor: ColorProvider,
-    onClick: Action
+    onClick: Action,
+    modifier: GlanceModifier
 ) {
-    Row(verticalAlignment = Alignment.Vertical.CenterVertically) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.Vertical.CenterVertically
+    ) {
         Image(
             provider = icon,
             contentDescription = null,
