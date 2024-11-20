@@ -40,7 +40,7 @@ import androidx.glance.text.TextStyle
 import androidx.media3.session.R
 import dagger.hilt.android.EntryPointAccessors
 import org.grakovne.lissen.R.drawable
-import org.grakovne.lissen.playback.MediaRepositoryEntryPoint
+import org.grakovne.lissen.playback.WidgetPlaybackControllerEntryPoint
 import org.grakovne.lissen.ui.widget.PlayerWidget.Companion.bookIdKey
 
 class PlayerWidget : GlanceAppWidget() {
@@ -167,6 +167,7 @@ class PlayerWidget : GlanceAppWidget() {
     }
 
     companion object {
+
         val bookIdKey = ActionParameters.Key<String>("book_id")
 
         val encodedCover = stringPreferencesKey("player_widget_key_cover")
@@ -187,19 +188,16 @@ class PlayToggleActionCallback : ActionCallback {
     ) {
         val id = parameters[bookIdKey] ?: return
 
-        val mediaRepository = EntryPointAccessors
+        val playbackController = EntryPointAccessors
             .fromApplication(
                 context = context.applicationContext,
-                entryPoint = MediaRepositoryEntryPoint::class.java
+                entryPoint = WidgetPlaybackControllerEntryPoint::class.java
             )
-            .mediaRepository()
+            .widgetPlaybackController()
 
-        when(mediaRepository.playingBook.value) {
-            null -> {
-                println("LISSENTEST: PREPARING")
-                mediaRepository.startPlaying(id)
-            }
-            else ->  mediaRepository.togglePlayPause()
+        when (playbackController.fetchPlayingBook()) {
+            null -> playbackController.prepareAndRun(id) { playbackController.togglePlayPause() }
+            else -> playbackController.togglePlayPause()
         }
     }
 }
@@ -214,9 +212,9 @@ class NextChapterActionCallback : ActionCallback {
         val mediaRepository = EntryPointAccessors
             .fromApplication(
                 context = context.applicationContext,
-                entryPoint = MediaRepositoryEntryPoint::class.java
+                entryPoint = WidgetPlaybackControllerEntryPoint::class.java
             )
-            .mediaRepository()
+            .widgetPlaybackController()
 
         mediaRepository.nextTrack()
     }
@@ -232,11 +230,11 @@ class PreviousChapterActionCallback : ActionCallback {
         val mediaRepository = EntryPointAccessors
             .fromApplication(
                 context = context.applicationContext,
-                entryPoint = MediaRepositoryEntryPoint::class.java
+                entryPoint = WidgetPlaybackControllerEntryPoint::class.java
             )
-            .mediaRepository()
+            .widgetPlaybackController()
 
-        mediaRepository.nextTrack()
+        mediaRepository.previousTrack()
     }
 }
 

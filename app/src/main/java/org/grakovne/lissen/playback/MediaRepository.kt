@@ -241,11 +241,6 @@ class MediaRepository @Inject constructor(
         preferences.savePlaybackSpeed(speed)
     }
 
-    suspend fun startPlaying(bookId: String) {
-        preparePlayback(bookId)
-        play()
-    }
-
     suspend fun preparePlayback(bookId: String) {
         mediaPreparing()
 
