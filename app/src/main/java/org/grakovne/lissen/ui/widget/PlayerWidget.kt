@@ -122,7 +122,9 @@ class PlayerWidget : GlanceAppWidget() {
                             size = 36.dp,
                             icon = ImageProvider(R.drawable.media3_icon_skip_back_10),
                             contentColor = GlanceTheme.colors.onBackground,
-                            onClick = actionRunCallback<PreviousChapterActionCallback>(),
+                            onClick = actionRunCallback<PreviousChapterActionCallback>(
+                                actionParametersOf(bookIdKey to bookId)
+                            ),
                             modifier = GlanceModifier.padding(end = 24.dp)
                         )
 
@@ -130,7 +132,9 @@ class PlayerWidget : GlanceAppWidget() {
                             size = 48.dp,
                             icon = ImageProvider(R.drawable.media3_icon_previous),
                             contentColor = GlanceTheme.colors.onBackground,
-                            onClick = actionRunCallback<PreviousChapterActionCallback>(),
+                            onClick = actionRunCallback<PreviousChapterActionCallback>(
+                                actionParametersOf(bookIdKey to bookId)
+                            ),
                             modifier = GlanceModifier.padding(end = 16.dp)
                         )
 
@@ -152,7 +156,9 @@ class PlayerWidget : GlanceAppWidget() {
                             icon = ImageProvider(R.drawable.media3_icon_next),
                             size = 48.dp,
                             contentColor = GlanceTheme.colors.onBackground,
-                            onClick = actionRunCallback<NextChapterActionCallback>(),
+                            onClick = actionRunCallback<NextChapterActionCallback>(
+                                actionParametersOf(bookIdKey to bookId)
+                            ),
                             modifier = GlanceModifier.padding(end = 24.dp)
                         )
 
@@ -160,7 +166,9 @@ class PlayerWidget : GlanceAppWidget() {
                             icon = ImageProvider(R.drawable.media3_icon_skip_forward_30),
                             size = 36.dp,
                             contentColor = GlanceTheme.colors.onBackground,
-                            onClick = actionRunCallback<NextChapterActionCallback>(),
+                            onClick = actionRunCallback<NextChapterActionCallback>(
+                                actionParametersOf(bookIdKey to bookId)
+                            ),
                             modifier = GlanceModifier
                         )
                     }
@@ -189,19 +197,10 @@ class PlayToggleActionCallback : ActionCallback {
         glanceId: GlanceId,
         parameters: ActionParameters
     ) {
-        val id = parameters[bookIdKey] ?: return
-
-        val playbackController = EntryPointAccessors
-            .fromApplication(
-                context = context.applicationContext,
-                entryPoint = WidgetPlaybackControllerEntryPoint::class.java
-            )
-            .widgetPlaybackController()
-
-        when (playbackController.fetchPlayingBook()) {
-            null -> playbackController.prepareAndRun(id) { playbackController.togglePlayPause() }
-            else -> playbackController.togglePlayPause()
-        }
+        safelyRun(
+            playingItemId = parameters[bookIdKey] ?: return,
+            context = context
+        ) { it.togglePlayPause() }
     }
 }
 
@@ -212,14 +211,10 @@ class NextChapterActionCallback : ActionCallback {
         glanceId: GlanceId,
         parameters: ActionParameters
     ) {
-        val mediaRepository = EntryPointAccessors
-            .fromApplication(
-                context = context.applicationContext,
-                entryPoint = WidgetPlaybackControllerEntryPoint::class.java
-            )
-            .widgetPlaybackController()
-
-        mediaRepository.nextTrack()
+        safelyRun(
+            playingItemId = parameters[bookIdKey] ?: return,
+            context = context
+        ) { it.nextTrack() }
     }
 }
 
@@ -230,13 +225,28 @@ class PreviousChapterActionCallback : ActionCallback {
         glanceId: GlanceId,
         parameters: ActionParameters
     ) {
-        val mediaRepository = EntryPointAccessors
-            .fromApplication(
-                context = context.applicationContext,
-                entryPoint = WidgetPlaybackControllerEntryPoint::class.java
-            )
-            .widgetPlaybackController()
-
-        mediaRepository.previousTrack()
+        safelyRun(
+            playingItemId = parameters[bookIdKey] ?: return,
+            context = context
+        ) { it.previousTrack() }
     }
+}
+
+
+private suspend fun safelyRun(
+    playingItemId: String,
+    context: Context,
+    action: (WidgetPlaybackController) -> Unit) {
+    val playbackController = EntryPointAccessors
+        .fromApplication(
+            context = context.applicationContext,
+            entryPoint = WidgetPlaybackControllerEntryPoint::class.java
+        )
+        .widgetPlaybackController()
+
+    when (playbackController.providePlayingItem()) {
+        null -> playbackController.prepareAndRun(playingItemId) { action(playbackController) }
+        else -> action(playbackController)
+    }
+
 }

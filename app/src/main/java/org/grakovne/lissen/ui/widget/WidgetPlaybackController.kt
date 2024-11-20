@@ -49,7 +49,7 @@ class WidgetPlaybackController @Inject constructor(
             .registerReceiver(bookDetailsReadyReceiver, IntentFilter(PLAYBACK_READY))
     }
 
-    fun fetchPlayingBook() = mediaRepository.playingBook.value
+    fun providePlayingItem() = mediaRepository.playingBook.value
 
     fun togglePlayPause() = mediaRepository.togglePlayPause()
 
