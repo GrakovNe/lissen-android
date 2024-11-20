@@ -264,7 +264,7 @@ class MediaRepository @Inject constructor(
 
     suspend fun preparePlayback(
         bookId: String,
-        fromBackground: Boolean = false,
+        fromBackground: Boolean = false
     ) {
         mediaPreparing()
 
@@ -360,11 +360,10 @@ class MediaRepository @Inject constructor(
                 putExtra(BOOK_EXTRA, book)
             }
 
-            when(fromBackground) {
+            when (fromBackground) {
                 true -> context.startForegroundService(intent)
                 false -> context.startService(intent)
             }
-
         }
     }
 

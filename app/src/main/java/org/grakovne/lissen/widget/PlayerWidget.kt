@@ -2,6 +2,7 @@ package org.grakovne.lissen.widget
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory.decodeResource
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -59,7 +60,7 @@ class PlayerWidget : GlanceAppWidget() {
                 )
             ) {
                 val prefs = currentState<Preferences>()
-                val cover = prefs[encodedCover]?.fromBase64()
+                val maybeCover = prefs[encodedCover]?.fromBase64()
                 val bookId = prefs[bookId] ?: ""
                 val bookTitle = prefs[title] ?: "Nothing Playing"
                 val chapterTitle = prefs[chapterTitle] ?: ""
@@ -78,10 +79,12 @@ class PlayerWidget : GlanceAppWidget() {
                         modifier = GlanceModifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        val cover = maybeCover
+                            ?: decodeResource(context.resources, drawable.cover_fallback)
+
                         val coverImageProvider = cover
-                            ?.clip(context, 16.dp)
-                            ?.let { ImageProvider(it) }
-                            ?: ImageProvider(drawable.cover_fallback)
+                            .clip(context, 16.dp)
+                            .let { ImageProvider(it) }
 
                         Image(
                             provider = coverImageProvider,
@@ -275,9 +278,11 @@ class RunLissenActionCallback : ActionCallback {
             .getLaunchIntentForPackage(context.packageName)
             ?: return
 
-        context.startActivity(launchIntent.apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        })
+        context.startActivity(
+            launchIntent.apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            }
+        )
     }
 }
 
