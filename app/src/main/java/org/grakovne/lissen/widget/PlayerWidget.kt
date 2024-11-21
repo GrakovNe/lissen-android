@@ -86,7 +86,7 @@ class PlayerWidget : GlanceAppWidget() {
                             ?: decodeResource(context.resources, drawable.cover_fallback_png)
 
                         val coverImageProvider = cover
-                            .clip(context, 6.dp)
+                            .clip(context, 8.dp)
                             .let { ImageProvider(it) }
 
                         Image(
