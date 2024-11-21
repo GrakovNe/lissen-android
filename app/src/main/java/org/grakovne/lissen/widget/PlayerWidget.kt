@@ -135,7 +135,9 @@ class PlayerWidget : GlanceAppWidget() {
                     )
 
                     Row(
-                        modifier = GlanceModifier.wrapContentWidth(),
+                        modifier = GlanceModifier
+                            .padding(top = 18.dp)
+                            .wrapContentWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         WidgetControlButton(
