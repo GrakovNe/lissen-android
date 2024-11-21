@@ -55,7 +55,7 @@ class WidgetPlaybackController @Inject constructor(
 
     fun nextTrack() = mediaRepository.nextTrack()
 
-    fun previousTrack() = mediaRepository.previousTrack()
+    fun previousTrack() = mediaRepository.previousTrack(false)
 
     fun rewind() = mediaRepository.rewind()
 

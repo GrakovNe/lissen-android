@@ -290,7 +290,7 @@ class MediaRepository @Inject constructor(
         setChapter(nextChapterIndex)
     }
 
-    fun previousTrack() {
+    fun previousTrack(rewindRequired: Boolean = true) {
         val book = playingBook.value ?: return
         val overallPosition = totalPosition.value ?: return
 
@@ -303,7 +303,7 @@ class MediaRepository @Inject constructor(
         val currentIndexReplay = (chapterPosition > CURRENT_TRACK_REPLAY_THRESHOLD || currentIndex == 0)
 
         when {
-            currentIndexReplay -> setChapter(currentIndex)
+            currentIndexReplay && rewindRequired -> setChapter(currentIndex)
             currentIndex > 0 -> setChapter(currentIndex - 1)
         }
     }
