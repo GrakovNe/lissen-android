@@ -3,7 +3,6 @@ package org.grakovne.lissen.widget
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory.decodeResource
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
@@ -40,7 +39,6 @@ import androidx.glance.material3.ColorProviders
 import androidx.glance.state.GlanceStateDefinition
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.glance.text.FontFamily.Companion.SansSerif
-import androidx.glance.text.FontFamily.Companion.Serif
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.media3.session.R

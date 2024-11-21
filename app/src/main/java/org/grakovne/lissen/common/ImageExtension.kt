@@ -1,6 +1,5 @@
 package org.grakovne.lissen.common
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -11,8 +10,6 @@ import android.graphics.PorterDuffXfermode
 import android.graphics.RectF
 import android.util.Base64
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import java.io.ByteArrayOutputStream
 
 fun Bitmap.clip(
     context: Context,
@@ -34,10 +31,14 @@ fun Bitmap.clip(
         addRoundRect(
             rectF,
             floatArrayOf(
-                cornerRadiusPx, cornerRadiusPx,
-                cornerRadiusPx, cornerRadiusPx,
-                cornerRadiusPx, cornerRadiusPx,
-                cornerRadiusPx, cornerRadiusPx
+                cornerRadiusPx,
+                cornerRadiusPx,
+                cornerRadiusPx,
+                cornerRadiusPx,
+                cornerRadiusPx,
+                cornerRadiusPx,
+                cornerRadiusPx,
+                cornerRadiusPx
             ),
             android.graphics.Path.Direction.CW
         )
@@ -53,7 +54,6 @@ fun Bitmap.clip(
     this
 }
 
-
 fun String.fromBase64(): Bitmap? = try {
     val bytes = Base64.decode(this, Base64.DEFAULT)
     BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
@@ -62,4 +62,3 @@ fun String.fromBase64(): Bitmap? = try {
 }
 
 fun ByteArray.toBase64(): String = Base64.encodeToString(this, Base64.DEFAULT)
-
