@@ -28,6 +28,7 @@ import androidx.glance.currentState
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
+import androidx.glance.layout.ContentScale
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxWidth
@@ -91,6 +92,7 @@ class PlayerWidget : GlanceAppWidget() {
                             .let { ImageProvider(it) }
 
                         Image(
+                            contentScale = ContentScale.Crop,
                             provider = coverImageProvider,
                             contentDescription = null,
                             modifier = GlanceModifier.size(80.dp)
@@ -99,7 +101,7 @@ class PlayerWidget : GlanceAppWidget() {
                         Column(
                             modifier = GlanceModifier
                                 .fillMaxWidth()
-                                .padding(start = 24.dp)
+                                .padding(start = 20.dp)
                         ) {
                             Text(
                                 text = bookTitle,
