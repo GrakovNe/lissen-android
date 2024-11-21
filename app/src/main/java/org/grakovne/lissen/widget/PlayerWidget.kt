@@ -80,7 +80,7 @@ class PlayerWidget : GlanceAppWidget() {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Row(
-                        modifier = GlanceModifier.fillMaxWidth().padding(bottom = 16.dp),
+                        modifier = GlanceModifier.fillMaxWidth().padding(bottom = 20.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         val cover = maybeCover
