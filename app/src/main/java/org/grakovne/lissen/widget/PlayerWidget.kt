@@ -63,7 +63,7 @@ class PlayerWidget : GlanceAppWidget() {
                 )
             ) {
                 val prefs = currentState<Preferences>()
-                val maybeCover = prefs[encodedCover]?.fromBase64()
+                val maybeCover = prefs[encodedCover]?.takeIf { it.isNotBlank() }?.fromBase64()
                 val bookId = prefs[bookId] ?: ""
                 val bookTitle = prefs[title] ?: "Nothing Playing"
                 val chapterTitle = prefs[chapterTitle] ?: ""
