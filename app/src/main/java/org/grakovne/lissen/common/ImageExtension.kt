@@ -20,12 +20,6 @@ fun Bitmap.clip(
     val density = context.resources.displayMetrics.density
     val cornerRadiusPx = cornerRadiusDp.value * density
 
-    val minDimension = minOf(this.width, this.height).toFloat()
-    val proportionalRadius = minDimension * (cornerRadiusPx / density) / 100f
-
-    val width = this.width
-    val height = this.height
-
     val output = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
     val canvas = Canvas(output)
 
@@ -33,8 +27,22 @@ fun Bitmap.clip(
         isAntiAlias = true
     }
 
-    val rect = RectF(0f, 0f, width.toFloat(), height.toFloat())
-    canvas.drawRoundRect(rect, proportionalRadius, proportionalRadius, paint)
+    val rectF = RectF(0f, 0f, width.toFloat(), height.toFloat())
+
+    val path = android.graphics.Path().apply {
+        addRoundRect(
+            rectF,
+            floatArrayOf(
+                cornerRadiusPx, cornerRadiusPx,
+                cornerRadiusPx, cornerRadiusPx,
+                cornerRadiusPx, cornerRadiusPx,
+                cornerRadiusPx, cornerRadiusPx
+            ),
+            android.graphics.Path.Direction.CW
+        )
+    }
+
+    canvas.drawPath(path, paint)
 
     paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
     canvas.drawBitmap(this, 0f, 0f, paint)
