@@ -7,6 +7,7 @@ import androidx.lifecycle.asFlow
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.common.toBase64
@@ -26,47 +27,54 @@ class PlayerWidgetStateService @Inject constructor(
 
     override fun onCreate() {
         scope.launch {
-            mediaRepository.playingBook.asFlow().collect { book ->
-                val maybeCover = mediaProvider
-                    .fetchBookCover(book.id)
-                    .fold(
-                        onSuccess = { it.readBytes() },
-                        onFailure = { null }
+            mediaRepository
+                .playingBook
+                .asFlow()
+                .distinctUntilChanged().collect { book ->
+                    val maybeCover = mediaProvider
+                        .fetchBookCover(book.id)
+                        .fold(
+                            onSuccess = { it.readBytes() },
+                            onFailure = { null }
+                        )
+
+                    val chapterTitle = mediaRepository
+                        .currentChapterIndex
+                        .value
+                        ?.let { provideChapterTitle(book, it) }
+
+                    val playingItemState = PlayingItemState(
+                        id = book.id,
+                        title = book.title,
+                        chapterTitle = chapterTitle,
+                        isPlaying = mediaRepository.isPlaying.value ?: false,
+                        imageCover = maybeCover
                     )
 
-                val chapterTitle = mediaRepository
-                    .currentChapterIndex
-                    .value
-                    ?.let { provideChapterTitle(book, it) }
-
-                val playingItemState = PlayingItemState(
-                    id = book.id,
-                    title = book.title,
-                    chapterTitle = chapterTitle,
-                    isPlaying = mediaRepository.isPlaying.value ?: false,
-                    imageCover = maybeCover
-                )
-
-                updatePlayingItem(playingItemState)
-            }
+                    updatePlayingItem(playingItemState)
+                }
         }
 
         scope.launch {
             mediaRepository
                 .isPlaying
                 .asFlow()
+                .distinctUntilChanged()
                 .collect { isPlaying -> updatePlayingState(isPlaying) }
         }
 
         scope.launch {
-            mediaRepository.currentChapterIndex.asFlow().collect { chapterIndex ->
+            mediaRepository
+                .currentChapterIndex
+                .asFlow()
+                .distinctUntilChanged()
+                .collect { chapterIndex ->
+                    val book = mediaRepository.playingBook.value ?: return@collect
 
-                val book = mediaRepository.playingBook.value ?: return@collect
+                    val chapterTitle = provideChapterTitle(book, chapterIndex)
 
-                val chapterTitle = provideChapterTitle(book, chapterIndex)
-
-                updateChapterTitle(chapterTitle)
-            }
+                    updateChapterTitle(chapterTitle)
+                }
         }
     }
 
