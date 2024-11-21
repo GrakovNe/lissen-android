@@ -1,7 +1,6 @@
 package org.grakovne.lissen.widget
 
 import android.content.Context
-import android.os.PowerManager
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.lifecycle.asFlow
@@ -54,9 +53,10 @@ class PlayerWidgetStateService @Inject constructor(
         }
 
         scope.launch {
-            mediaRepository.isPlaying.asFlow().collect { isPlaying ->
-                updatePlayingState(isPlaying)
-            }
+            mediaRepository
+                .isPlaying
+                .asFlow()
+                .collect { isPlaying -> updatePlayingState(isPlaying) }
         }
 
         scope.launch {
