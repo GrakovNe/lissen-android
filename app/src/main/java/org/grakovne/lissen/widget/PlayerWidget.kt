@@ -112,7 +112,7 @@ class PlayerWidget : GlanceAppWidget() {
                                     color = GlanceTheme.colors.onBackground
                                 ),
                                 maxLines = 2,
-                                modifier = GlanceModifier.padding(bottom = 6.dp)
+                                modifier = GlanceModifier.padding(bottom = 8.dp)
                             )
 
                             Text(
