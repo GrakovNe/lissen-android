@@ -1,5 +1,6 @@
 package org.grakovne.lissen.common
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -10,6 +11,7 @@ import android.graphics.PorterDuffXfermode
 import android.graphics.RectF
 import android.util.Base64
 import androidx.compose.ui.unit.Dp
+import java.io.ByteArrayOutputStream
 
 fun Bitmap.clip(
     context: Context,
@@ -47,3 +49,26 @@ fun String.fromBase64(): Bitmap? = try {
 }
 
 fun ByteArray.toBase64(): String = Base64.encodeToString(this, Base64.DEFAULT)
+
+@SuppressLint("UseCompatLoadingForDrawables")
+fun Int.toBase64(context: Context): String {
+    try {
+        val drawable = context.getDrawable(this) ?: return ""
+        val bitmap = Bitmap.createBitmap(
+            drawable.intrinsicWidth,
+            drawable.intrinsicHeight,
+            Bitmap.Config.ARGB_8888
+        )
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+
+        val outputStream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+        val byteArray = outputStream.toByteArray()
+
+        return Base64.encodeToString(byteArray, Base64.DEFAULT)
+    } catch (ex: Exception) {
+        return ""
+    }
+}

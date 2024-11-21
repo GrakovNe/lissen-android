@@ -1,6 +1,11 @@
 package org.grakovne.lissen.widget
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.util.Base64
+import androidx.annotation.DrawableRes
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
@@ -8,6 +13,9 @@ import androidx.glance.appwidget.state.updateAppWidgetState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.grakovne.lissen.R
+import org.grakovne.lissen.common.toBase64
+import java.io.ByteArrayOutputStream
 
 class PlayerWidgetReceiver : GlanceAppWidgetReceiver() {
 
@@ -26,9 +34,9 @@ class PlayerWidgetReceiver : GlanceAppWidgetReceiver() {
                 .forEach { glanceId ->
                     updateAppWidgetState(context, glanceId) { prefs ->
                         prefs[PlayerWidget.bookId] = ""
-                        prefs[PlayerWidget.encodedCover] = ""
-                        prefs[PlayerWidget.title] = "Lissen"
-                        prefs[PlayerWidget.chapterTitle] = "Click to open App"
+                        prefs[PlayerWidget.encodedCover] = R.drawable.ic_launcher_foreground.toBase64(context)
+                        prefs[PlayerWidget.title] = context.getString(R.string.app_name)
+                        prefs[PlayerWidget.chapterTitle] = context.getString(R.string.widget_placeholder_text)
                         prefs[PlayerWidget.isPlaying] = false
                     }
                     PlayerWidget().update(context, glanceId)
