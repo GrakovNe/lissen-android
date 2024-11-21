@@ -131,7 +131,7 @@ class PlayerWidget : GlanceAppWidget() {
 
                     Row(
                         modifier = GlanceModifier
-                            .padding(top = 16.dp)
+                            .padding(top = 18.dp)
                             .wrapContentWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
