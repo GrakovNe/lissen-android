@@ -90,7 +90,7 @@ class PlayerWidget : GlanceAppWidget() {
                             .let { ImageProvider(it) }
 
                         Image(
-                            contentScale = ContentScale.Crop,
+                            contentScale = ContentScale.FillBounds,
                             provider = coverImageProvider,
                             contentDescription = null,
                             modifier = GlanceModifier.size(100.dp)
