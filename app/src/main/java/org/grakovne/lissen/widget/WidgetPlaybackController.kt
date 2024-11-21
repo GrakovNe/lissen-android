@@ -32,8 +32,6 @@ class WidgetPlaybackController @Inject constructor(
 
                 book?.let {
                     CoroutineScope(Dispatchers.Main).launch {
-                        println("LISSENAPP: READY")
-
                         playbackReadyAction
                             .invoke()
                             .also { playbackReadyAction = { } }
