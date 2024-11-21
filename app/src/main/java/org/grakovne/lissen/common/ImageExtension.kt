@@ -20,6 +20,9 @@ fun Bitmap.clip(
     val density = context.resources.displayMetrics.density
     val cornerRadiusPx = cornerRadiusDp.value * density
 
+    val minDimension = minOf(this.width, this.height).toFloat()
+    val proportionalRadius = minDimension * (cornerRadiusPx / density) / 100f
+
     val width = this.width
     val height = this.height
 
@@ -31,7 +34,7 @@ fun Bitmap.clip(
     }
 
     val rect = RectF(0f, 0f, width.toFloat(), height.toFloat())
-    canvas.drawRoundRect(rect, cornerRadiusPx, cornerRadiusPx, paint)
+    canvas.drawRoundRect(rect, proportionalRadius, proportionalRadius, paint)
 
     paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
     canvas.drawBitmap(this, 0f, 0f, paint)
@@ -40,6 +43,7 @@ fun Bitmap.clip(
 } catch (e: Exception) {
     this
 }
+
 
 fun String.fromBase64(): Bitmap? = try {
     val bytes = Base64.decode(this, Base64.DEFAULT)
