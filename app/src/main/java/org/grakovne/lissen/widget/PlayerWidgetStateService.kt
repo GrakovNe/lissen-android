@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.common.toBase64
 import org.grakovne.lissen.content.LissenMediaProvider
+import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.playback.MediaRepository
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -37,8 +38,7 @@ class PlayerWidgetStateService @Inject constructor(
                 val chapterTitle = mediaRepository
                     .currentChapterIndex
                     .value
-                    ?.let { book.chapters[it] }
-                    ?.title
+                    ?.let { provideChapterTitle(book, it) }
 
                 val playingItemState = PlayingItemState(
                     id = book.id,
@@ -64,12 +64,17 @@ class PlayerWidgetStateService @Inject constructor(
 
                 val book = mediaRepository.playingBook.value ?: return@collect
 
-                val chapterTitle = book
-                    .chapters[chapterIndex]
-                    .title
+                val chapterTitle = provideChapterTitle(book, chapterIndex)
 
                 updateChapterTitle(chapterTitle)
             }
+        }
+    }
+
+    private fun provideChapterTitle(book: DetailedItem, chapterIndex: Int): String {
+        return when (book.chapters.size >= chapterIndex && chapterIndex >= 0) {
+            true -> book.chapters[chapterIndex].title
+            false -> book.title // as a fallback for items without chapters
         }
     }
 

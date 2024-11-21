@@ -22,12 +22,10 @@ import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
-import androidx.glance.appwidget.components.FilledButton
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.currentState
 import androidx.glance.layout.Alignment
-import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.ContentScale
 import androidx.glance.layout.Row
