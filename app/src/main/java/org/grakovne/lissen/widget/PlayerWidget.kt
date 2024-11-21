@@ -80,7 +80,7 @@ class PlayerWidget : GlanceAppWidget() {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Row(
-                        modifier = GlanceModifier.fillMaxWidth().padding(bottom = 20.dp),
+                        modifier = GlanceModifier.fillMaxWidth().padding(bottom = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         val cover = maybeCover
@@ -94,7 +94,7 @@ class PlayerWidget : GlanceAppWidget() {
                             contentDescription = null,
                             modifier = GlanceModifier
                                 .size(80.dp)
-                                .cornerRadius(12.dp)
+                                .cornerRadius(8.dp)
                         )
 
                         Column(
@@ -103,24 +103,24 @@ class PlayerWidget : GlanceAppWidget() {
                                 .padding(start = 20.dp)
                         ) {
                             Text(
+                                text = chapterTitle,
+                                style = TextStyle(
+                                    fontFamily = SansSerif,
+                                    fontSize = 20.sp,
+                                    color = GlanceTheme.colors.onBackground
+                                ),
+                                maxLines = 2,
+                                modifier = GlanceModifier.padding(bottom = 6.dp)
+                            )
+
+                            Text(
                                 text = bookTitle,
                                 style = TextStyle(
                                     fontFamily = SansSerif,
                                     fontSize = 14.sp,
                                     color = GlanceTheme.colors.onBackground
                                 ),
-                                maxLines = 1,
-                                modifier = GlanceModifier.padding(bottom = 10.dp)
-                            )
-
-                            Text(
-                                text = chapterTitle,
-                                style = TextStyle(
-                                    fontFamily = SansSerif,
-                                    fontSize = 22.sp,
-                                    color = GlanceTheme.colors.onBackground
-                                ),
-                                maxLines = 2
+                                maxLines = 1
                             )
                         }
                     }
@@ -134,7 +134,7 @@ class PlayerWidget : GlanceAppWidget() {
 
                     Row(
                         modifier = GlanceModifier
-                            .padding(top = 18.dp)
+                            .padding(top = 12.dp)
                             .wrapContentWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
