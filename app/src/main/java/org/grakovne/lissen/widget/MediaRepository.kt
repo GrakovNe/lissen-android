@@ -1,4 +1,4 @@
-package org.grakovne.lissen.playback
+package org.grakovne.lissen.widget
 
 import android.content.BroadcastReceiver
 import android.content.ComponentName

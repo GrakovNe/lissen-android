@@ -12,7 +12,6 @@ import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.common.toBase64
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.DetailedItem
-import org.grakovne.lissen.playback.MediaRepository
 import javax.inject.Inject
 import javax.inject.Singleton
 

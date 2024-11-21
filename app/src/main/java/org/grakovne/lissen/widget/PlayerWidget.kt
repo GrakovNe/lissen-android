@@ -45,7 +45,6 @@ import dagger.hilt.android.EntryPointAccessors
 import org.grakovne.lissen.R.drawable
 import org.grakovne.lissen.common.clip
 import org.grakovne.lissen.common.fromBase64
-import org.grakovne.lissen.playback.WidgetPlaybackControllerEntryPoint
 import org.grakovne.lissen.ui.theme.LightBackground
 import org.grakovne.lissen.widget.PlayerWidget.Companion.bookIdKey
 

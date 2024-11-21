@@ -1,9 +1,8 @@
-package org.grakovne.lissen.playback
+package org.grakovne.lissen.widget
 
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import org.grakovne.lissen.widget.WidgetPlaybackController
 
 @EntryPoint
 @InstallIn(SingletonComponent::class)

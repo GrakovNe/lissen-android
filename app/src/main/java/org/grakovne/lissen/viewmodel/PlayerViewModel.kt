@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.domain.BookChapter
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.TimerOption
-import org.grakovne.lissen.playback.MediaRepository
+import org.grakovne.lissen.widget.MediaRepository
 import javax.inject.Inject
 
 @HiltViewModel
