@@ -100,7 +100,7 @@ class PlayerWidget : GlanceAppWidget() {
                         Column(
                             modifier = GlanceModifier
                                 .fillMaxWidth()
-                                .padding(start = 18.dp)
+                                .padding(start = 16.dp)
                         ) {
                             Text(
                                 text = bookTitle,
