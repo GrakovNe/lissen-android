@@ -8,6 +8,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -38,6 +39,8 @@ import androidx.glance.layout.wrapContentWidth
 import androidx.glance.material3.ColorProviders
 import androidx.glance.state.GlanceStateDefinition
 import androidx.glance.state.PreferencesGlanceStateDefinition
+import androidx.glance.text.FontFamily.Companion.SansSerif
+import androidx.glance.text.FontFamily.Companion.Serif
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.media3.session.R
@@ -99,12 +102,13 @@ class PlayerWidget : GlanceAppWidget() {
                         Column(
                             modifier = GlanceModifier
                                 .fillMaxWidth()
-                                .padding(start = 18.dp)
+                                .padding(start = 16.dp)
                         ) {
                             Text(
                                 text = bookTitle,
                                 style = TextStyle(
-                                    fontSize = MaterialTheme.typography.titleSmall.fontSize,
+                                    fontFamily = SansSerif,
+                                    fontSize = 14.sp,
                                     color = GlanceTheme.colors.onBackground
                                 ),
                                 maxLines = 1,
@@ -114,7 +118,8 @@ class PlayerWidget : GlanceAppWidget() {
                             Text(
                                 text = chapterTitle,
                                 style = TextStyle(
-                                    fontSize = MaterialTheme.typography.titleLarge.fontSize,
+                                    fontFamily = SansSerif,
+                                    fontSize = 22.sp,
                                     color = GlanceTheme.colors.onBackground
                                 ),
                                 maxLines = 2
