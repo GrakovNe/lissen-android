@@ -137,7 +137,7 @@ class PlayerWidget : GlanceAppWidget() {
                     Row(
                         modifier = GlanceModifier
                             .padding(top = 16.dp)
-                            .wrapContentWidth(),
+                            .fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         WidgetControlButton(
@@ -147,7 +147,7 @@ class PlayerWidget : GlanceAppWidget() {
                             onClick = actionRunCallback<RewindActionCallback>(
                                 actionParametersOf(bookIdKey to bookId)
                             ),
-                            modifier = GlanceModifier.padding(end = 24.dp)
+                            modifier = GlanceModifier.defaultWeight()
                         )
 
                         WidgetControlButton(
@@ -157,7 +157,7 @@ class PlayerWidget : GlanceAppWidget() {
                             onClick = actionRunCallback<PreviousChapterActionCallback>(
                                 actionParametersOf(bookIdKey to bookId)
                             ),
-                            modifier = GlanceModifier.padding(end = 16.dp)
+                            modifier = GlanceModifier.defaultWeight()
                         )
 
                         WidgetControlButton(
@@ -171,7 +171,7 @@ class PlayerWidget : GlanceAppWidget() {
                             onClick = actionRunCallback<PlayToggleActionCallback>(
                                 actionParametersOf(bookIdKey to bookId)
                             ),
-                            modifier = GlanceModifier.padding(end = 16.dp)
+                            modifier = GlanceModifier.defaultWeight()
                         )
 
                         WidgetControlButton(
@@ -181,7 +181,7 @@ class PlayerWidget : GlanceAppWidget() {
                             onClick = actionRunCallback<NextChapterActionCallback>(
                                 actionParametersOf(bookIdKey to bookId)
                             ),
-                            modifier = GlanceModifier.padding(end = 24.dp)
+                            modifier = GlanceModifier.defaultWeight()
                         )
 
                         WidgetControlButton(
@@ -191,7 +191,7 @@ class PlayerWidget : GlanceAppWidget() {
                             onClick = actionRunCallback<ForwardActionCallback>(
                                 actionParametersOf(bookIdKey to bookId)
                             ),
-                            modifier = GlanceModifier
+                            modifier = GlanceModifier.defaultWeight()
                         )
                     }
                 }
