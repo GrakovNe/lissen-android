@@ -84,7 +84,7 @@ class PlayerWidget : GlanceAppWidget() {
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         val cover = maybeCover
-                            ?: decodeResource(context.resources, drawable.cover_fallback)
+                            ?: decodeResource(context.resources, drawable.cover_fallback_png)
 
                         val coverImageProvider = cover
                             .clip(context, 16.dp)
