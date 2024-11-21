@@ -7,6 +7,7 @@ import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
 import androidx.glance.action.Action
+import androidx.glance.action.NoRippleOverride
 import androidx.glance.action.clickable
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Row
@@ -23,7 +24,8 @@ fun WidgetControlButton(
 ) {
     Row(
         modifier = modifier,
-        verticalAlignment = Alignment.Vertical.CenterVertically
+        verticalAlignment = Alignment.Vertical.CenterVertically,
+        horizontalAlignment = Alignment.Horizontal.CenterHorizontally
     ) {
         Image(
             provider = icon,
@@ -31,7 +33,10 @@ fun WidgetControlButton(
             colorFilter = ColorFilter.tint(contentColor),
             modifier = GlanceModifier
                 .size(size)
-                .clickable(onClick)
+                .clickable(
+                    onClick = onClick,
+                    rippleOverride = NoRippleOverride
+                )
         )
     }
 }
