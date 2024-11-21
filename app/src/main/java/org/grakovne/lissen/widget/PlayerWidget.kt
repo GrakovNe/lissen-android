@@ -80,8 +80,10 @@ class PlayerWidget : GlanceAppWidget() {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Row(
-                        modifier = GlanceModifier.fillMaxWidth().padding(bottom = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = GlanceModifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp)
                     ) {
                         val cover = maybeCover
                             ?: decodeResource(context.resources, drawable.cover_fallback_png)
@@ -134,7 +136,7 @@ class PlayerWidget : GlanceAppWidget() {
 
                     Row(
                         modifier = GlanceModifier
-                            .padding(top = 12.dp)
+                            .padding(top = 16.dp)
                             .wrapContentWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
