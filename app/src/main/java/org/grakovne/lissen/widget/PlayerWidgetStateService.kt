@@ -78,7 +78,6 @@ class PlayerWidgetStateService @Inject constructor(
     ) {
         val manager = GlanceAppWidgetManager(context)
         val glanceIds = manager.getGlanceIds(PlayerWidget::class.java)
-        if (glanceIds.isEmpty() || isScreenOn().not()) return
 
         glanceIds
             .forEach { glanceId ->
@@ -94,7 +93,6 @@ class PlayerWidgetStateService @Inject constructor(
     ) {
         val manager = GlanceAppWidgetManager(context)
         val glanceIds = manager.getGlanceIds(PlayerWidget::class.java)
-        if (glanceIds.isEmpty() || isScreenOn().not()) return
 
         glanceIds
             .forEach { glanceId ->
@@ -110,7 +108,6 @@ class PlayerWidgetStateService @Inject constructor(
     ) {
         val manager = GlanceAppWidgetManager(context)
         val glanceIds = manager.getGlanceIds(PlayerWidget::class.java)
-        if (glanceIds.isEmpty() || isScreenOn().not()) return
 
         glanceIds
             .forEach { glanceId ->
@@ -123,11 +120,6 @@ class PlayerWidgetStateService @Inject constructor(
                 }
                 PlayerWidget().update(context, glanceId)
             }
-    }
-
-    private fun isScreenOn(): Boolean {
-        val powerManager = context.getSystemService(Context.POWER_SERVICE) as PowerManager
-        return powerManager.isInteractive
     }
 }
 

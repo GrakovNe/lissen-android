@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory.decodeResource
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -25,9 +26,12 @@ import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.currentState
 import androidx.glance.layout.Alignment
+import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
+import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxWidth
+import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
 import androidx.glance.layout.wrapContentWidth
@@ -76,7 +80,7 @@ class PlayerWidget : GlanceAppWidget() {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Row(
-                        modifier = GlanceModifier.fillMaxWidth(),
+                        modifier = GlanceModifier.fillMaxWidth().padding(bottom = 16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         val cover = maybeCover
@@ -117,6 +121,13 @@ class PlayerWidget : GlanceAppWidget() {
                             )
                         }
                     }
+
+                    Spacer(
+                        modifier = GlanceModifier
+                            .fillMaxWidth()
+                            .height(1.dp)
+                            .background(Color(0xFFDADADA))
+                    )
 
                     Row(
                         modifier = GlanceModifier
