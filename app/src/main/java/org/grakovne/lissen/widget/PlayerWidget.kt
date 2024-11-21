@@ -22,6 +22,7 @@ import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
+import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.currentState
@@ -44,7 +45,6 @@ import androidx.glance.text.TextStyle
 import androidx.media3.session.R
 import dagger.hilt.android.EntryPointAccessors
 import org.grakovne.lissen.R.drawable
-import org.grakovne.lissen.common.clip
 import org.grakovne.lissen.common.fromBase64
 import org.grakovne.lissen.ui.theme.LightBackground
 import org.grakovne.lissen.widget.PlayerWidget.Companion.bookIdKey
@@ -86,21 +86,21 @@ class PlayerWidget : GlanceAppWidget() {
                         val cover = maybeCover
                             ?: decodeResource(context.resources, drawable.cover_fallback_png)
 
-                        val coverImageProvider = cover
-                            .clip(context, 6.dp)
-                            .let { ImageProvider(it) }
+                        val coverImageProvider = ImageProvider(cover)
 
                         Image(
                             contentScale = ContentScale.FillBounds,
                             provider = coverImageProvider,
                             contentDescription = null,
-                            modifier = GlanceModifier.size(100.dp)
+                            modifier = GlanceModifier
+                                .size(80.dp)
+                                .cornerRadius(12.dp)
                         )
 
                         Column(
                             modifier = GlanceModifier
                                 .fillMaxWidth()
-                                .padding(start = 16.dp)
+                                .padding(start = 20.dp)
                         ) {
                             Text(
                                 text = bookTitle,
