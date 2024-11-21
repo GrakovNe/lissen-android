@@ -1,13 +1,6 @@
 package org.grakovne.lissen.widget
 
-import android.annotation.SuppressLint
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory.decodeResource
-import android.graphics.Canvas
-import android.util.Base64
-import androidx.annotation.DrawableRes
-import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
@@ -16,9 +9,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
-import org.grakovne.lissen.common.clip
-import org.grakovne.lissen.common.toBase64
-import java.io.ByteArrayOutputStream
 
 class PlayerWidgetReceiver : GlanceAppWidgetReceiver() {
 
@@ -29,7 +19,7 @@ class PlayerWidgetReceiver : GlanceAppWidgetReceiver() {
             return
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.Main).launch {
             val manager = GlanceAppWidgetManager(context)
             val glanceIds = manager.getGlanceIds(PlayerWidget::class.java)
 
