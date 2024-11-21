@@ -7,6 +7,7 @@ import androidx.lifecycle.asFlow
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.RunningComponent
@@ -27,54 +28,30 @@ class PlayerWidgetStateService @Inject constructor(
 
     override fun onCreate() {
         scope.launch {
-            mediaRepository
-                .playingBook
-                .asFlow()
-                .distinctUntilChanged().collect { book ->
-                    val maybeCover = mediaProvider
-                        .fetchBookCover(book.id)
-                        .fold(
-                            onSuccess = { it.readBytes() },
-                            onFailure = { null }
-                        )
+            combine(
+                mediaRepository.playingBook.asFlow().distinctUntilChanged(),
+                mediaRepository.isPlaying.asFlow().distinctUntilChanged(),
+                mediaRepository.currentChapterIndex.asFlow().distinctUntilChanged()
+            ) { book, isPlaying, chapterIndex ->
+                val chapterTitle = provideChapterTitle(book, chapterIndex)
 
-                    val chapterTitle = mediaRepository
-                        .currentChapterIndex
-                        .value
-                        ?.let { provideChapterTitle(book, it) }
-
-                    val playingItemState = PlayingItemState(
-                        id = book.id,
-                        title = book.title,
-                        chapterTitle = chapterTitle,
-                        isPlaying = mediaRepository.isPlaying.value ?: false,
-                        imageCover = maybeCover
+                val maybeCover = book
+                    .let { mediaProvider.fetchBookCover(it.id) }
+                    .fold(
+                        onSuccess = { it.readBytes() },
+                        onFailure = { null }
                     )
 
-                    updatePlayingItem(playingItemState)
-                }
-        }
-
-        scope.launch {
-            mediaRepository
-                .isPlaying
-                .asFlow()
-                .distinctUntilChanged()
-                .collect { isPlaying -> updatePlayingState(isPlaying) }
-        }
-
-        scope.launch {
-            mediaRepository
-                .currentChapterIndex
-                .asFlow()
-                .distinctUntilChanged()
-                .collect { chapterIndex ->
-                    val book = mediaRepository.playingBook.value ?: return@collect
-
-                    val chapterTitle = provideChapterTitle(book, chapterIndex)
-
-                    updateChapterTitle(chapterTitle)
-                }
+                PlayingItemState(
+                    id = book.id,
+                    title = book.title,
+                    chapterTitle = chapterTitle,
+                    isPlaying = isPlaying,
+                    imageCover = maybeCover
+                )
+            }.collect { playingItemState ->
+                updatePlayingItem(playingItemState)
+            }
         }
     }
 
@@ -83,36 +60,6 @@ class PlayerWidgetStateService @Inject constructor(
             true -> book.chapters[chapterIndex].title
             false -> book.title // as a fallback for items without chapters
         }
-    }
-
-    private suspend fun updateChapterTitle(
-        title: String
-    ) {
-        val manager = GlanceAppWidgetManager(context)
-        val glanceIds = manager.getGlanceIds(PlayerWidget::class.java)
-
-        glanceIds
-            .forEach { glanceId ->
-                updateAppWidgetState(context, glanceId) { prefs ->
-                    prefs[PlayerWidget.chapterTitle] = title
-                }
-                PlayerWidget().update(context, glanceId)
-            }
-    }
-
-    private suspend fun updatePlayingState(
-        isPlaying: Boolean
-    ) {
-        val manager = GlanceAppWidgetManager(context)
-        val glanceIds = manager.getGlanceIds(PlayerWidget::class.java)
-
-        glanceIds
-            .forEach { glanceId ->
-                updateAppWidgetState(context, glanceId) { prefs ->
-                    prefs[PlayerWidget.isPlaying] = isPlaying
-                }
-                PlayerWidget().update(context, glanceId)
-            }
     }
 
     private suspend fun updatePlayingItem(
