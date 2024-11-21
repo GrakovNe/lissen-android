@@ -28,7 +28,7 @@ class PlayerWidgetReceiver : GlanceAppWidgetReceiver() {
                     updateAppWidgetState(context, glanceId) { prefs ->
                         prefs[PlayerWidget.bookId] = ""
                         prefs[PlayerWidget.encodedCover] = ""
-                        prefs[PlayerWidget.title] = context.getString(R.string.app_name)
+                        prefs[PlayerWidget.title] = ""
                         prefs[PlayerWidget.chapterTitle] = context.getString(R.string.widget_placeholder_text)
                         prefs[PlayerWidget.isPlaying] = false
                     }
