@@ -71,7 +71,7 @@ import org.grakovne.lissen.viewmodel.LoginViewModel.LoginState
 @Composable
 fun LoginScreen(
     navController: AppNavigationService,
-    viewModel: LoginViewModel = hiltViewModel()
+    viewModel: LoginViewModel = hiltViewModel(),
 ) {
     val loginState by viewModel.loginState.collectAsState()
     val loginError by viewModel.loginError.observeAsState()
@@ -109,13 +109,13 @@ fun LoginScreen(
             Box(
                 modifier = Modifier
                     .padding(innerPadding)
-                    .fillMaxSize()
+                    .fillMaxSize(),
             ) {
                 Column(
                     modifier = Modifier
                         .align(Alignment.Center)
                         .fillMaxWidth(0.8f),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(
                         text = stringResource(R.string.login_screen_title),
@@ -123,10 +123,10 @@ fun LoginScreen(
                             fontSize = 24.sp,
                             fontWeight = FontWeight.SemiBold,
                             letterSpacing = 2.sp,
-                            textAlign = TextAlign.Center
+                            textAlign = TextAlign.Center,
                         ),
                         modifier = Modifier
-                            .padding(vertical = 32.dp)
+                            .padding(vertical = 32.dp),
                     )
 
                     OutlinedTextField(
@@ -139,7 +139,7 @@ fun LoginScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
-                            .testTag("hostInput")
+                            .testTag("hostInput"),
                     )
 
                     OutlinedTextField(
@@ -151,7 +151,7 @@ fun LoginScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 12.dp)
-                            .testTag("usernameInput")
+                            .testTag("usernameInput"),
                     )
 
                     OutlinedTextField(
@@ -160,11 +160,11 @@ fun LoginScreen(
                         onValueChange = { viewModel.setPassword(it) },
                         trailingIcon = {
                             IconButton(
-                                onClick = { showPassword = !showPassword }
+                                onClick = { showPassword = !showPassword },
                             ) {
                                 Icon(
                                     imageVector = if (showPassword) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                                    contentDescription = stringResource(R.string.login_screen_show_password_hint)
+                                    contentDescription = stringResource(R.string.login_screen_show_password_hint),
                                 )
                             }
                         },
@@ -175,13 +175,13 @@ fun LoginScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
-                            .testTag("passwordInput")
+                            .testTag("passwordInput"),
                     )
 
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 32.dp)
+                            .padding(top = 32.dp),
                     ) {
                         Button(
                             onClick = { viewModel.login() },
@@ -192,17 +192,17 @@ fun LoginScreen(
                                 topStart = 16.dp,
                                 bottomStart = 16.dp,
                                 topEnd = 0.dp,
-                                bottomEnd = 0.dp
-                            )
+                                bottomEnd = 0.dp,
+                            ),
                         ) {
                             Spacer(modifier = Modifier.width(28.dp))
                             Box(
                                 modifier = Modifier.fillMaxWidth(),
-                                contentAlignment = Alignment.Center
+                                contentAlignment = Alignment.Center,
                             ) {
                                 Text(
                                     text = stringResource(R.string.login_screen_connect_button_text),
-                                    fontSize = 16.sp
+                                    fontSize = 16.sp,
                                 )
                             }
                         }
@@ -218,14 +218,14 @@ fun LoginScreen(
                                 topStart = 0.dp,
                                 bottomStart = 0.dp,
                                 topEnd = 16.dp,
-                                bottomEnd = 16.dp
+                                bottomEnd = 16.dp,
                             ),
-                            contentPadding = PaddingValues(0.dp)
+                            contentPadding = PaddingValues(0.dp),
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Settings,
                                 contentDescription = "Settings",
-                                modifier = Modifier.size(24.dp)
+                                modifier = Modifier.size(24.dp),
                             )
                         }
                     }
@@ -235,7 +235,7 @@ fun LoginScreen(
                         strokeWidth = 4.dp,
                         modifier = Modifier
                             .padding(vertical = 16.dp)
-                            .alpha(if (loginState !is LoginState.Idle) 1f else 0f)
+                            .alpha(if (loginState !is LoginState.Idle) 1f else 0f),
                     )
                 }
 
@@ -250,12 +250,12 @@ fun LoginScreen(
                         fontWeight = FontWeight.Normal,
                         color = colorScheme.onBackground,
                         letterSpacing = 0.5.sp,
-                        lineHeight = 32.sp
+                        lineHeight = 32.sp,
                     ),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
                 )
             }
-        }
+        },
     )
 }
 

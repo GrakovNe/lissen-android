@@ -19,7 +19,7 @@ import javax.inject.Singleton
 class PlaybackSynchronizationService @Inject constructor(
     private val exoPlayer: ExoPlayer,
     private val mediaChannel: LissenMediaProvider,
-    private val sharedPreferences: LissenSharedPreferences
+    private val sharedPreferences: LissenSharedPreferences,
 ) {
 
     private var currentBook: DetailedItem? = null
@@ -70,7 +70,7 @@ class PlaybackSynchronizationService @Inject constructor(
 
     private suspend fun synchronizeProgress(
         it: PlaybackSession,
-        overallProgress: PlaybackProgress
+        overallProgress: PlaybackProgress,
     ): Unit? {
         val currentIndex = currentBook
             ?.let { calculateChapterIndex(it, overallProgress.currentTime) }
@@ -85,11 +85,11 @@ class PlaybackSynchronizationService @Inject constructor(
             .syncProgress(
                 sessionId = it.sessionId,
                 bookId = it.bookId,
-                progress = overallProgress
+                progress = overallProgress,
             )
             .foldAsync(
                 onSuccess = {},
-                onFailure = { openPlaybackSession(overallProgress) }
+                onFailure = { openPlaybackSession(overallProgress) },
             )
     }
 
@@ -101,11 +101,11 @@ class PlaybackSynchronizationService @Inject constructor(
                     bookId = book.id,
                     deviceId = sharedPreferences.getDeviceId(),
                     supportedMimeTypes = MimeTypeProvider.getSupportedMimeTypes(),
-                    chapterId = book.chapters[chapterIndex].id
+                    chapterId = book.chapters[chapterIndex].id,
                 )
                 .fold(
                     onSuccess = { playbackSession = it },
-                    onFailure = {}
+                    onFailure = {},
                 )
         }
 
@@ -128,7 +128,7 @@ class PlaybackSynchronizationService @Inject constructor(
 
         return PlaybackProgress(
             currentTime = totalElapsedMs / 1000.0,
-            totalTime = totalDuration / 1000.0
+            totalTime = totalDuration / 1000.0,
         )
     }
 

@@ -17,10 +17,10 @@ object ChannelModule {
     @Provides
     @Singleton
     fun getChannelProviders(
-        audiobookshelfChannelProvider: AudiobookshelfChannelProvider
+        audiobookshelfChannelProvider: AudiobookshelfChannelProvider,
     ): Map<ChannelCode, @JvmSuppressWildcards ChannelProvider> {
         return mapOf(
-            audiobookshelfChannelProvider.getChannelCode() to audiobookshelfChannelProvider
+            audiobookshelfChannelProvider.getChannelCode() to audiobookshelfChannelProvider,
         )
     }
 }

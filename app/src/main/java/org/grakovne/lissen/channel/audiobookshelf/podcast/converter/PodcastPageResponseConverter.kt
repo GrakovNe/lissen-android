@@ -20,13 +20,13 @@ class PodcastPageResponseConverter @Inject constructor() {
                 title = title,
                 author = it.media.metadata.author,
                 cachedState = BookCachedState.UNABLE_TO_CACHE,
-                duration = it.media.duration.toInt()
+                duration = it.media.duration.toInt(),
             )
         }
         .let {
             PagedItems(
                 items = it,
-                currentPage = response.page
+                currentPage = response.page,
             )
         }
 }

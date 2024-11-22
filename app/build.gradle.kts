@@ -1,16 +1,16 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.compose.compiler)
 
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
-    id("org.jmailen.kotlinter") version "3.10.0"
+    id("org.jmailen.kotlinter") version "3.15.0"
     id("com.google.devtools.ksp")
 }
 
 kotlinter {
     reporters = arrayOf("checkstyle", "plain")
-    experimentalRules = true
 }
 
 tasks.lintKotlinMain {

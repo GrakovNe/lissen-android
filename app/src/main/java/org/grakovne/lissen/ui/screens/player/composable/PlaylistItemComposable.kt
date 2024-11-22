@@ -30,7 +30,7 @@ fun PlaylistItemComposable(
     track: BookChapter,
     isSelected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier
+    modifier: Modifier,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -38,14 +38,14 @@ fun PlaylistItemComposable(
             .clickable(
                 onClick = onClick,
                 indication = null,
-                interactionSource = remember { MutableInteractionSource() }
-            )
+                interactionSource = remember { MutableInteractionSource() },
+            ),
     ) {
         if (isSelected) {
             Icon(
                 imageVector = Icons.Outlined.Audiotrack,
                 contentDescription = stringResource(R.string.player_screen_now_playing_title),
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier.size(16.dp),
             )
         } else {
             Spacer(modifier = Modifier.size(16.dp))
@@ -59,14 +59,14 @@ fun PlaylistItemComposable(
             color = colorScheme.onBackground,
             overflow = TextOverflow.Ellipsis,
             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         )
         Text(
             text = track.duration.toInt().formatLeadingMinutes(),
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(start = 8.dp),
             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-            color = colorScheme.onBackground.copy(alpha = 0.6f)
+            color = colorScheme.onBackground.copy(alpha = 0.6f),
         )
     }
 }

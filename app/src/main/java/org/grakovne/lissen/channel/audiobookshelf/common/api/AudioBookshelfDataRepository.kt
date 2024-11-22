@@ -25,7 +25,7 @@ import javax.inject.Singleton
 @Singleton
 class AudioBookshelfDataRepository @Inject constructor(
     private val preferences: LissenSharedPreferences,
-    private val requestHeadersProvider: RequestHeadersProvider
+    private val requestHeadersProvider: RequestHeadersProvider,
 ) {
 
     private var configCache: ApiClientConfig? = null
@@ -35,65 +35,65 @@ class AudioBookshelfDataRepository @Inject constructor(
         safeApiCall { getClientInstance().fetchLibraries() }
 
     suspend fun fetchAuthorItems(
-        authorId: String
+        authorId: String,
     ): ApiResult<AuthorItemsResponse> = safeApiCall {
         getClientInstance()
             .fetchAuthorLibraryItems(
-                authorId = authorId
+                authorId = authorId,
             )
     }
 
     suspend fun searchPodcasts(
         libraryId: String,
         query: String,
-        limit: Int
+        limit: Int,
     ): ApiResult<PodcastSearchResponse> = safeApiCall {
         getClientInstance()
             .searchPodcasts(
                 libraryId = libraryId,
                 request = query,
-                limit = limit
+                limit = limit,
             )
     }
 
     suspend fun searchBooks(
         libraryId: String,
         query: String,
-        limit: Int
+        limit: Int,
     ): ApiResult<LibrarySearchResponse> = safeApiCall {
         getClientInstance()
             .searchLibraryItems(
                 libraryId = libraryId,
                 request = query,
-                limit = limit
+                limit = limit,
             )
     }
 
     suspend fun fetchLibraryItems(
         libraryId: String,
         pageSize: Int,
-        pageNumber: Int
+        pageNumber: Int,
     ): ApiResult<LibraryItemsResponse> =
         safeApiCall {
             getClientInstance()
                 .fetchLibraryItems(
                     libraryId = libraryId,
                     pageSize = pageSize,
-                    pageNumber = pageNumber
+                    pageNumber = pageNumber,
                 )
         }
 
     suspend fun fetchPodcastItems(
         libraryId: String,
         pageSize: Int,
-        pageNumber: Int
+        pageNumber: Int,
     ): ApiResult<PodcastItemsResponse> =
         safeApiCall {
             getClientInstance()
                 .fetchPodcastItems(
                     libraryId = libraryId,
                     pageSize = pageSize,
-                    pageNumber = pageNumber
+                    pageNumber = pageNumber,
                 )
         }
 
@@ -117,14 +117,14 @@ class AudioBookshelfDataRepository @Inject constructor(
 
     suspend fun startPlayback(
         itemId: String,
-        request: PlaybackStartRequest
+        request: PlaybackStartRequest,
     ): ApiResult<PlaybackSessionResponse> =
         safeApiCall { getClientInstance().startLibraryPlayback(itemId, request) }
 
     suspend fun startPodcastPlayback(
         itemId: String,
         episodeId: String,
-        request: PlaybackStartRequest
+        request: PlaybackStartRequest,
     ): ApiResult<PlaybackSessionResponse> =
         safeApiCall { getClientInstance().startPodcastPlayback(itemId, episodeId, request) }
 
@@ -133,7 +133,7 @@ class AudioBookshelfDataRepository @Inject constructor(
 
     suspend fun publishLibraryItemProgress(
         itemId: String,
-        progress: ProgressSyncRequest
+        progress: ProgressSyncRequest,
     ): ApiResult<Unit> =
         safeApiCall { getClientInstance().publishLibraryItemProgress(itemId, progress) }
 
@@ -144,7 +144,7 @@ class AudioBookshelfDataRepository @Inject constructor(
         val cache = ApiClientConfig(
             host = host,
             token = token,
-            customHeaders = requestHeadersProvider.fetchRequestHeaders()
+            customHeaders = requestHeadersProvider.fetchRequestHeaders(),
         )
 
         val currentClientCache = clientCache
@@ -176,10 +176,10 @@ class AudioBookshelfDataRepository @Inject constructor(
 
     private fun apiClient(
         host: String,
-        token: String?
+        token: String?,
     ): ApiClient = ApiClient(
         host = host,
         token = token,
-        requestHeaders = requestHeadersProvider.fetchRequestHeaders()
+        requestHeaders = requestHeadersProvider.fetchRequestHeaders(),
     )
 }

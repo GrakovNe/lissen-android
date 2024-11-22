@@ -21,12 +21,12 @@ fun WidgetControlButton(
     contentColor: ColorProvider,
     onClick: Action,
     modifier: GlanceModifier,
-    size: Dp
+    size: Dp,
 ) {
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.Vertical.CenterVertically,
-        horizontalAlignment = Alignment.Horizontal.CenterHorizontally
+        horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
     ) {
         Image(
             provider = icon,
@@ -36,8 +36,8 @@ fun WidgetControlButton(
                 .size(size)
                 .cornerRadius(16.dp)
                 .clickable(
-                    onClick = onClick
-                )
+                    onClick = onClick,
+                ),
         )
     }
 }

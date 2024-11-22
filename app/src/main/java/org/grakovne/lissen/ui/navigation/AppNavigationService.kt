@@ -3,7 +3,7 @@ package org.grakovne.lissen.ui.navigation
 import androidx.navigation.NavHostController
 
 class AppNavigationService(
-    private val host: NavHostController
+    private val host: NavHostController,
 ) {
 
     fun showLibrary(clearHistory: Boolean = false) {

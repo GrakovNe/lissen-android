@@ -16,28 +16,28 @@ interface MediaChannel {
 
     fun provideFileUri(
         libraryItemId: String,
-        fileId: String
+        fileId: String,
     ): Uri
 
     suspend fun syncProgress(
         sessionId: String,
-        progress: PlaybackProgress
+        progress: PlaybackProgress,
     ): ApiResult<Unit>
 
     suspend fun fetchBookCover(
-        bookId: String
+        bookId: String,
     ): ApiResult<InputStream>
 
     suspend fun fetchBooks(
         libraryId: String,
         pageSize: Int,
-        pageNumber: Int
+        pageNumber: Int,
     ): ApiResult<PagedItems<Book>>
 
     suspend fun searchBooks(
         libraryId: String,
         query: String,
-        limit: Int
+        limit: Int,
     ): ApiResult<List<Book>>
 
     suspend fun fetchLibraries(): ApiResult<List<Library>>
@@ -46,7 +46,7 @@ interface MediaChannel {
         bookId: String,
         episodeId: String,
         supportedMimeTypes: List<String>,
-        deviceId: String
+        deviceId: String,
     ): ApiResult<PlaybackSession>
 
     suspend fun fetchConnectionInfo(): ApiResult<ConnectionInfo>

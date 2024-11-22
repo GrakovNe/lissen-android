@@ -8,7 +8,7 @@ converterGson = "2.9.0"
 glance = "1.1.1"
 hiltAndroid = "2.52"
 hiltNavigationCompose = "1.2.0"
-kotlin = "1.9.24"
+kotlin = "2.0.21"
 coreKtx = "1.15.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -88,6 +88,7 @@ androidx-media3-session = { group = "androidx.media3", name = "media3-session", 
 androidx-media3-datasource-okhttp = { group = "androidx.media3", name = "media3-datasource-okhttp", version.ref = "media3DatasourceOkhttp" }
 
 [plugins]
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 

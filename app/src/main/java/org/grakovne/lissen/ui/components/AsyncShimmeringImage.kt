@@ -25,20 +25,20 @@ fun AsyncShimmeringImage(
     contentDescription: String,
     contentScale: ContentScale,
     modifier: Modifier = Modifier,
-    error: Painter
+    error: Painter,
 ) {
     var isLoading by remember { mutableStateOf(true) }
 
     Box(
         modifier = modifier,
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         if (isLoading) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.Gray)
-                    .shimmer()
+                    .shimmer(),
             )
         }
 
@@ -50,7 +50,7 @@ fun AsyncShimmeringImage(
             modifier = Modifier.fillMaxSize(),
             onSuccess = { isLoading = false },
             onError = { isLoading = false },
-            error = error
+            error = error,
         )
     }
 }

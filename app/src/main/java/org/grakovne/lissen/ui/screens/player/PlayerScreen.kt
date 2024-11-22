@@ -56,7 +56,7 @@ fun PlayerScreen(
     navController: AppNavigationService,
     imageLoader: ImageLoader,
     bookId: String,
-    bookTitle: String
+    bookTitle: String,
 ) {
     val viewModel: PlayerViewModel = hiltViewModel()
     val titleTextStyle = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
@@ -106,21 +106,21 @@ fun PlayerScreen(
                             transitionSpec = {
                                 fadeIn(animationSpec = keyframes { durationMillis = 150 }) togetherWith
                                     fadeOut(animationSpec = keyframes { durationMillis = 150 })
-                            }
+                            },
                         ) { isSearchRequested ->
                             when (isSearchRequested) {
                                 true -> ChapterSearchActionComposable(
-                                    onSearchRequested = { viewModel.updateSearch(it) }
+                                    onSearchRequested = { viewModel.updateSearch(it) },
                                 )
 
                                 false -> Row {
                                     IconButton(
                                         onClick = { viewModel.requestSearch() },
-                                        modifier = Modifier.padding(end = 4.dp)
+                                        modifier = Modifier.padding(end = 4.dp),
                                     ) {
                                         Icon(
                                             imageVector = Search,
-                                            contentDescription = null
+                                            contentDescription = null,
                                         )
                                     }
                                 }
@@ -134,7 +134,7 @@ fun PlayerScreen(
                         style = titleTextStyle,
                         color = colorScheme.onSurface,
                         maxLines = 1,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     )
                 },
                 navigationIcon = {
@@ -142,16 +142,16 @@ fun PlayerScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "Back",
-                            tint = colorScheme.onSurface
+                            tint = colorScheme.onSurface,
                         )
                     }
-                }
+                },
             )
         },
         bottomBar = {
             NavigationBarComposable(
                 viewModel = viewModel,
-                navController = navController
+                navController = navController,
             )
         },
         modifier = Modifier.systemBarsPadding(),
@@ -160,28 +160,28 @@ fun PlayerScreen(
                 modifier = Modifier
                     .testTag("playerScreen")
                     .padding(innerPadding),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 AnimatedVisibility(
                     visible = playingQueueExpanded.not(),
                     enter = expandVertically(animationSpec = tween(400)),
-                    exit = shrinkVertically(animationSpec = tween(400))
+                    exit = shrinkVertically(animationSpec = tween(400)),
                 ) {
                     Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         if (!isPlaybackReady) {
                             TrackDetailsPlaceholderComposable(bookTitle)
                         } else {
                             TrackDetailsComposable(
                                 viewModel = viewModel,
-                                imageLoader = imageLoader
+                                imageLoader = imageLoader,
                             )
                         }
 
                         TrackControlComposable(
                             viewModel = viewModel,
-                            modifier = Modifier
+                            modifier = Modifier,
                         )
                     }
                 }
@@ -191,14 +191,14 @@ fun PlayerScreen(
                 if (isPlaybackReady) {
                     PlayingQueueComposable(
                         viewModel = viewModel,
-                        modifier = Modifier
+                        modifier = Modifier,
                     )
                 } else {
                     PlayingQueuePlaceholderComposable(
-                        modifier = Modifier
+                        modifier = Modifier,
                     )
                 }
             }
-        }
+        },
     )
 }

@@ -24,11 +24,11 @@ fun AdditionalComposable() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(16.dp),
     ) {
         HorizontalDivider(
             modifier = Modifier.padding(horizontal = 12.dp),
-            color = colorScheme.onSurface.copy(alpha = 0.2f)
+            color = colorScheme.onSurface.copy(alpha = 0.2f),
         )
 
         Text(
@@ -40,8 +40,8 @@ fun AdditionalComposable() {
             text = "Lissen v ${BuildConfig.VERSION_NAME}",
             style = TextStyle(
                 fontFamily = FontFamily.Monospace,
-                textAlign = TextAlign.Center
-            )
+                textAlign = TextAlign.Center,
+            ),
         )
         Text(
             modifier = Modifier
@@ -51,8 +51,8 @@ fun AdditionalComposable() {
             text = "© 2024 Max Grakov. MIT License",
             style = TextStyle(
                 fontFamily = FontFamily.Monospace,
-                textAlign = TextAlign.Center
-            )
+                textAlign = TextAlign.Center,
+            ),
         )
     }
 }

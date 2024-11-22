@@ -15,7 +15,7 @@ class BookResponseConverter @Inject constructor() {
 
     fun apply(
         item: BookResponse,
-        progressResponse: MediaProgressResponse? = null
+        progressResponse: MediaProgressResponse? = null,
     ): DetailedItem {
         val maybeChapters = item
             .media
@@ -27,7 +27,7 @@ class BookResponseConverter @Inject constructor() {
                     end = it.end,
                     title = it.title,
                     id = it.id,
-                    duration = it.end - it.start
+                    duration = it.end - it.start,
                 )
             }
 
@@ -44,8 +44,8 @@ class BookResponseConverter @Inject constructor() {
                             title = file.metaTags?.tagTitle
                                 ?: file.metadata.filename.removeSuffix(file.metadata.ext),
                             duration = file.duration,
-                            id = file.ino
-                        )
+                            id = file.ino,
+                        ),
                     )
                     accDuration + file.duration to chapters
                 }
@@ -68,7 +68,7 @@ class BookResponseConverter @Inject constructor() {
                             ?.tagTitle
                             ?: (it.metadata.filename.removeSuffix(it.metadata.ext)),
                         duration = it.duration,
-                        mimeType = it.mimeType
+                        mimeType = it.mimeType,
                     )
                 }
                 ?: emptyList(),
@@ -78,9 +78,9 @@ class BookResponseConverter @Inject constructor() {
                     MediaProgress(
                         currentTime = it.currentTime,
                         isFinished = it.isFinished,
-                        lastUpdate = it.lastUpdate
+                        lastUpdate = it.lastUpdate,
                     )
-                }
+                },
         )
     }
 }

@@ -57,7 +57,7 @@ class LibraryNavigationTest {
             timeoutMillis = 2000,
             condition = {
                 composeTestRule.onAllNodesWithTag("libraryScreen").fetchSemanticsNodes().isNotEmpty()
-            }
+            },
         )
 
         composeTestRule.onNodeWithTag("libraryScreen").assertExists()
@@ -72,7 +72,7 @@ class LibraryNavigationTest {
             timeoutMillis = 2000,
             condition = {
                 composeTestRule.onAllNodesWithTag("playerScreen").fetchSemanticsNodes().isNotEmpty()
-            }
+            },
         )
 
         composeTestRule.onNodeWithTag("playerScreen").assertExists()

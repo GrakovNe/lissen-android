@@ -5,5 +5,5 @@ data class MediaProgressResponse(
     val episodeId: String?,
     val currentTime: Double,
     val isFinished: Boolean,
-    val lastUpdate: Long
+    val lastUpdate: Long,
 )

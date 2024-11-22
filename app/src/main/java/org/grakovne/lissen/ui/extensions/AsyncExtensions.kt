@@ -6,7 +6,7 @@ import kotlin.system.measureTimeMillis
 
 suspend fun <T> CoroutineScope.withMinimumTime(
     minimumTimeMillis: Long,
-    block: suspend CoroutineScope.() -> T
+    block: suspend CoroutineScope.() -> T,
 ): T {
     var result: T
     val elapsedTime = measureTimeMillis {

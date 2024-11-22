@@ -48,14 +48,14 @@ import javax.inject.Singleton
 class MediaRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val preferences: LissenSharedPreferences,
-    private val mediaChannel: LissenMediaProvider
+    private val mediaChannel: LissenMediaProvider,
 ) {
 
     private lateinit var mediaController: MediaController
 
     private val token = SessionToken(
         context,
-        ComponentName(context, PlaybackService::class.java)
+        ComponentName(context, PlaybackService::class.java),
     )
 
     private val _isPlaying = MutableLiveData(false)
@@ -134,7 +134,7 @@ class MediaRepository @Inject constructor(
                     Log.e(TAG, "Unable to add callback to player")
                 }
             },
-            MoreExecutors.directExecutor()
+            MoreExecutors.directExecutor(),
         )
     }
 
@@ -167,7 +167,7 @@ class MediaRepository @Inject constructor(
 
     fun updateTimer(
         timerOption: TimerOption?,
-        position: Double? = null
+        position: Double? = null,
     ) {
         _timerOption.postValue(timerOption)
 
@@ -184,7 +184,7 @@ class MediaRepository @Inject constructor(
 
                 val chapterPosition = calculateChapterPosition(
                     book = playingBook,
-                    overallPosition = currentPosition
+                    overallPosition = currentPosition,
                 )
 
                 scheduleServiceTimer(chapterDuration - chapterPosition)
@@ -264,7 +264,7 @@ class MediaRepository @Inject constructor(
 
     suspend fun preparePlayback(
         bookId: String,
-        fromBackground: Boolean = false
+        fromBackground: Boolean = false,
     ) {
         mediaPreparing()
 
@@ -274,7 +274,7 @@ class MediaRepository @Inject constructor(
                     .fetchBook(bookId)
                     .foldAsync(
                         onSuccess = { startPreparingPlayback(it, fromBackground) },
-                        onFailure = {}
+                        onFailure = {},
                     )
             }
         }
@@ -297,7 +297,7 @@ class MediaRepository @Inject constructor(
         val currentIndex = calculateChapterIndex(book, overallPosition)
         val chapterPosition = calculateChapterPosition(
             book = book,
-            overallPosition = overallPosition
+            overallPosition = overallPosition,
         )
 
         val currentIndexReplay = (chapterPosition > CURRENT_TRACK_REPLAY_THRESHOLD || currentIndex == 0)
@@ -335,7 +335,7 @@ class MediaRepository @Inject constructor(
                     handler.postDelayed(this, 500)
                 }
             },
-            500
+            500,
         )
     }
 
@@ -349,7 +349,7 @@ class MediaRepository @Inject constructor(
 
     private fun startPreparingPlayback(
         book: DetailedItem,
-        fromBackground: Boolean
+        fromBackground: Boolean,
     ) {
         if (::mediaController.isInitialized && _playingBook.value != book) {
             _totalPosition.postValue(0.0)
@@ -412,7 +412,7 @@ class MediaRepository @Inject constructor(
         when (_timerOption.value) {
             is CurrentEpisodeTimerOption -> updateTimer(
                 timerOption = _timerOption.value,
-                position = safePosition
+                position = safePosition,
             )
 
             is DurationTimerOption -> Unit

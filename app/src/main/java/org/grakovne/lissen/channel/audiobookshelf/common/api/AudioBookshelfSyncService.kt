@@ -8,7 +8,7 @@ import javax.inject.Singleton
 
 @Singleton
 class AudioBookshelfSyncService @Inject constructor(
-    private val dataRepository: AudioBookshelfDataRepository
+    private val dataRepository: AudioBookshelfDataRepository,
 ) {
 
     private var previousItemId: String? = null
@@ -16,7 +16,7 @@ class AudioBookshelfSyncService @Inject constructor(
 
     suspend fun syncProgress(
         itemId: String,
-        progress: PlaybackProgress
+        progress: PlaybackProgress,
     ): ApiResult<Unit> {
         val trackedTime = previousTrackedTime
             .takeIf { itemId == previousItemId }
@@ -27,7 +27,7 @@ class AudioBookshelfSyncService @Inject constructor(
         val request = ProgressSyncRequest(
             currentTime = progress.currentTime,
             duration = progress.totalTime,
-            timeListened = trackedTime
+            timeListened = trackedTime,
         )
 
         return dataRepository

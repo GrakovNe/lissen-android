@@ -8,7 +8,7 @@ import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 
 class LibraryDefaultPagingSource(
     private val preferences: LissenSharedPreferences,
-    private val mediaChannel: LissenMediaProvider
+    private val mediaChannel: LissenMediaProvider,
 ) : PagingSource<Int, Book>() {
 
     override fun getRefreshKey(state: PagingState<Int, Book>) = state
@@ -31,7 +31,7 @@ class LibraryDefaultPagingSource(
             .fetchBooks(
                 libraryId = libraryId,
                 pageSize = params.loadSize,
-                pageNumber = params.key ?: 0
+                pageNumber = params.key ?: 0,
             )
             .fold(
                 onSuccess = { result ->
@@ -41,12 +41,12 @@ class LibraryDefaultPagingSource(
                     LoadResult.Page(
                         data = result.items,
                         prevKey = prevKey,
-                        nextKey = nextPage
+                        nextKey = nextPage,
                     )
                 },
                 onFailure = {
                     LoadResult.Page(emptyList(), null, null)
-                }
+                },
             )
     }
 }

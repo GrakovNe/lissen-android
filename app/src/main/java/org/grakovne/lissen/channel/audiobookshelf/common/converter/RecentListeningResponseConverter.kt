@@ -16,7 +16,7 @@ class RecentListeningResponseConverter @Inject constructor() {
             RecentBook(
                 id = it.id,
                 title = it.media.metadata.title,
-                author = it.media.metadata.authorName
+                author = it.media.metadata.authorName,
             )
         } ?: emptyList()
 

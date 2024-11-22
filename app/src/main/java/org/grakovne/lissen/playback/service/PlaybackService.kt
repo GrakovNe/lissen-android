@@ -67,7 +67,7 @@ class PlaybackService : MediaSessionService() {
     override fun onStartCommand(
         intent: Intent?,
         flags: Int,
-        startId: Int
+        startId: Int,
     ): Int {
         super.onStartCommand(intent, flags, startId)
 
@@ -152,7 +152,7 @@ class PlaybackService : MediaSessionService() {
                                 null
                             }
                         },
-                        onFailure = { null }
+                        onFailure = { null },
                     )
 
                 val sourceFactory = buildDataSourceFactory()
@@ -181,7 +181,7 @@ class PlaybackService : MediaSessionService() {
                                         .Factory(sourceFactory)
                                         .createMediaSource(mediaItem)
                                 },
-                                onFailure = { null }
+                                onFailure = { null },
                             )
                     }
 
@@ -219,7 +219,7 @@ class PlaybackService : MediaSessionService() {
                     .getInstance(baseContext)
                     .sendBroadcast(Intent(TIMER_EXPIRED))
             },
-            delayMs.toLong()
+            delayMs.toLong(),
         )
         Log.d(TAG, "Timer started for $delayMs ms.")
     }
@@ -240,7 +240,7 @@ class PlaybackService : MediaSessionService() {
 
     private fun seek(
         items: List<BookFile>,
-        position: Double?
+        position: Double?,
     ) {
         if (items.isEmpty()) {
             Log.w(TAG, "Tried to seek position $position in the empty book. Skipping")
@@ -273,7 +273,7 @@ class PlaybackService : MediaSessionService() {
 
     private fun setPlaybackProgress(
         chapters: List<BookFile>,
-        progress: MediaProgress?
+        progress: MediaProgress?,
     ) = seek(chapters, progress?.currentTime)
 
     private fun createOkHttpClient(): OkHttpClient {
@@ -283,7 +283,7 @@ class PlaybackService : MediaSessionService() {
             .addInterceptor(
                 HttpLoggingInterceptor().apply {
                     level = HttpLoggingInterceptor.Level.NONE
-                }
+                },
             )
             .build()
     }
@@ -302,7 +302,7 @@ class PlaybackService : MediaSessionService() {
 
         return DefaultDataSource.Factory(
             baseContext,
-            okHttpDataSourceFactory
+            okHttpDataSourceFactory,
         )
     }
 

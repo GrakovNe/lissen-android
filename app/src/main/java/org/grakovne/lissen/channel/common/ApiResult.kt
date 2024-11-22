@@ -6,7 +6,7 @@ sealed class ApiResult<T> {
 
     fun <R> fold(
         onSuccess: (T) -> R,
-        onFailure: (Error<T>) -> R
+        onFailure: (Error<T>) -> R,
     ): R {
         return when (this) {
             is Success -> onSuccess(this.data)
@@ -16,7 +16,7 @@ sealed class ApiResult<T> {
 
     suspend fun <R> foldAsync(
         onSuccess: suspend (T) -> R,
-        onFailure: suspend (Error<T>) -> R
+        onFailure: suspend (Error<T>) -> R,
     ): R {
         return when (this) {
             is Success -> onSuccess(this.data)

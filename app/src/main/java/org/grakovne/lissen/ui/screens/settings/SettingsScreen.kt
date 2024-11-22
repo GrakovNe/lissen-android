@@ -40,7 +40,7 @@ import org.grakovne.lissen.viewmodel.SettingsViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 fun SettingsScreen(
     onBack: () -> Unit,
-    navController: AppNavigationService
+    navController: AppNavigationService,
 ) {
     val viewModel: SettingsViewModel = hiltViewModel()
     val host by viewModel.host.observeAsState("")
@@ -56,7 +56,7 @@ fun SettingsScreen(
                     Text(
                         text = stringResource(R.string.settings_screen_title),
                         style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-                        color = colorScheme.onSurface
+                        color = colorScheme.onSurface,
                     )
                 },
                 navigationIcon = {
@@ -64,10 +64,10 @@ fun SettingsScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "Back",
-                            tint = colorScheme.onSurface
+                            tint = colorScheme.onSurface,
                         )
                     }
-                }
+                },
             )
         },
         modifier = Modifier
@@ -79,13 +79,13 @@ fun SettingsScreen(
                     .fillMaxSize()
                     .padding(innerPadding),
                 verticalArrangement = Arrangement.SpaceBetween,
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .verticalScroll(rememberScrollState()),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     if (host?.isNotEmpty() == true) {
                         ServerSettingsComposable(navController, viewModel)
@@ -94,11 +94,11 @@ fun SettingsScreen(
                     AdvancedSettingsItemComposable(
                         title = stringResource(R.string.settings_screen_custom_headers_title),
                         description = stringResource(R.string.settings_screen_custom_header_hint),
-                        onclick = { navController.showCustomHeadersSettings() }
+                        onclick = { navController.showCustomHeadersSettings() },
                     )
                 }
                 AdditionalComposable()
             }
-        }
+        },
     )
 }

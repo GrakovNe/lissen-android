@@ -27,12 +27,12 @@ import javax.inject.Singleton
 class LissenMediaProvider @Inject constructor(
     private val sharedPreferences: LissenSharedPreferences,
     private val channels: Map<ChannelCode, @JvmSuppressWildcards ChannelProvider>,
-    private val localCacheRepository: LocalCacheRepository
+    private val localCacheRepository: LocalCacheRepository,
 ) {
 
     fun provideFileUri(
         libraryItemId: String,
-        chapterId: String
+        chapterId: String,
     ): ApiResult<Uri> {
         Log.d(TAG, "Fetching File $libraryItemId and $chapterId URI")
 
@@ -56,7 +56,7 @@ class LissenMediaProvider @Inject constructor(
     suspend fun syncProgress(
         sessionId: String,
         bookId: String,
-        progress: PlaybackProgress
+        progress: PlaybackProgress,
     ): ApiResult<Unit> {
         Log.d(TAG, "Syncing Progress for $bookId. $progress")
 
@@ -69,7 +69,7 @@ class LissenMediaProvider @Inject constructor(
     }
 
     suspend fun fetchBookCover(
-        bookId: String
+        bookId: String,
     ): ApiResult<InputStream> {
         Log.d(TAG, "Fetching Cover stream for $bookId")
 
@@ -82,7 +82,7 @@ class LissenMediaProvider @Inject constructor(
     suspend fun searchBooks(
         libraryId: String,
         query: String,
-        limit: Int
+        limit: Int,
     ): ApiResult<List<Book>> {
         Log.d(TAG, "Searching books with query $query of library: $libraryId")
 
@@ -92,7 +92,7 @@ class LissenMediaProvider @Inject constructor(
                 .searchBooks(
                     libraryId = libraryId,
                     query = query,
-                    limit = limit
+                    limit = limit,
                 )
         }
     }
@@ -100,7 +100,7 @@ class LissenMediaProvider @Inject constructor(
     suspend fun fetchBooks(
         libraryId: String,
         pageSize: Int,
-        pageNumber: Int
+        pageNumber: Int,
     ): ApiResult<PagedItems<Book>> {
         Log.d(TAG, "Fetching page $pageNumber of library: $libraryId")
 
@@ -124,7 +124,7 @@ class LissenMediaProvider @Inject constructor(
                 .also {
                     it.foldAsync(
                         onSuccess = { libraries -> localCacheRepository.updateLibraries(libraries) },
-                        onFailure = {}
+                        onFailure = {},
                     )
                 }
         }
@@ -134,7 +134,7 @@ class LissenMediaProvider @Inject constructor(
         bookId: String,
         chapterId: String,
         supportedMimeTypes: List<String>,
-        deviceId: String
+        deviceId: String,
     ): ApiResult<PlaybackSession> {
         Log.d(TAG, "Starting Playback for $bookId. $supportedMimeTypes are supported")
 
@@ -144,13 +144,13 @@ class LissenMediaProvider @Inject constructor(
                 bookId = bookId,
                 episodeId = chapterId,
                 supportedMimeTypes = supportedMimeTypes,
-                deviceId = deviceId
+                deviceId = deviceId,
             )
         }
     }
 
     suspend fun fetchRecentListenedBooks(
-        libraryId: String
+        libraryId: String,
     ): ApiResult<List<RecentBook>> {
         Log.d(TAG, "Fetching Recent books of library $libraryId")
 
@@ -161,7 +161,7 @@ class LissenMediaProvider @Inject constructor(
     }
 
     suspend fun fetchBook(
-        bookId: String
+        bookId: String,
     ): ApiResult<DetailedItem> {
         Log.d(TAG, "Fetching Detailed book info for $bookId")
 
@@ -181,7 +181,7 @@ class LissenMediaProvider @Inject constructor(
     suspend fun authorize(
         host: String,
         username: String,
-        password: String
+        password: String,
     ): ApiResult<UserAccount> {
         Log.d(TAG, "Authorizing for $username@$host")
         return provideAuthService().authorize(host, username, password)
@@ -204,7 +204,7 @@ class LissenMediaProvider @Inject constructor(
                 Channel Progress: $channelProgress
                 Local Progress: $cachedProgress
                 Final Progress: $updatedProgress
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         return detailedItem.copy(progress = updatedProgress)

@@ -24,7 +24,7 @@ interface CachedBookDao {
             id = book.id,
             title = book.title,
             author = book.author,
-            duration = book.chapters.sumOf { it.duration }.toInt()
+            duration = book.chapters.sumOf { it.duration }.toInt(),
         )
 
         val bookFiles = book
@@ -35,7 +35,7 @@ interface CachedBookDao {
                     name = file.name,
                     duration = file.duration,
                     mimeType = file.mimeType,
-                    bookId = book.id
+                    bookId = book.id,
                 )
             }
 
@@ -48,7 +48,7 @@ interface CachedBookDao {
                     start = chapter.start,
                     end = chapter.end,
                     title = chapter.title,
-                    bookId = book.id
+                    bookId = book.id,
                 )
             }
 
@@ -59,7 +59,7 @@ interface CachedBookDao {
                     bookId = book.id,
                     currentTime = progress.currentTime,
                     isFinished = progress.isFinished,
-                    lastUpdate = progress.lastUpdate
+                    lastUpdate = progress.lastUpdate,
                 )
             }
 
@@ -73,13 +73,13 @@ interface CachedBookDao {
     @Query("SELECT * FROM detailed_books ORDER BY title LIMIT :pageSize OFFSET :pageNumber * :pageSize")
     suspend fun fetchCachedBooks(
         pageNumber: Int,
-        pageSize: Int
+        pageSize: Int,
     ): List<BookEntity>
 
     @Transaction
     @Query("SELECT * FROM detailed_books WHERE title LIKE '%' || :searchQuery || '%' OR author LIKE '%' || :searchQuery || '%' ORDER BY title")
     suspend fun searchCachedBooks(
-        searchQuery: String
+        searchQuery: String,
     ): List<BookEntity>
 
     @Transaction
@@ -90,7 +90,7 @@ interface CachedBookDao {
         INNER JOIN media_progress ON detailed_books.id = media_progress.bookId
         ORDER BY media_progress.lastUpdate DESC
         LIMIT 10
-    """
+    """,
     )
     suspend fun fetchRecentlyListenedCachedBooks(): List<BookEntity>
 

@@ -11,6 +11,6 @@ class CachedBookEntityRecentConverter @Inject constructor() {
     fun apply(entity: BookEntity): RecentBook = RecentBook(
         id = entity.id,
         title = entity.title,
-        author = entity.author
+        author = entity.author,
     )
 }

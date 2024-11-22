@@ -34,7 +34,7 @@ object MediaModule {
                     .setUsage(C.USAGE_MEDIA)
                     .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
                     .build(),
-                true
+                true,
             )
             .build()
     }
@@ -43,13 +43,13 @@ object MediaModule {
     @Singleton
     fun provideMediaSession(
         @ApplicationContext context: Context,
-        exoPlayer: ExoPlayer
+        exoPlayer: ExoPlayer,
     ): MediaSession {
         val sessionActivityPendingIntent = PendingIntent.getActivity(
             context,
             0,
             Intent(context, AppActivity::class.java),
-            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
 
         return MediaSession.Builder(context, exoPlayer)

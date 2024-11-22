@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 class BinaryApiClient(
     host: String,
     requestHeaders: List<ServerRequestHeader>?,
-    token: String
+    token: String,
 ) {
 
     private val httpClient = OkHttpClient
@@ -20,7 +20,7 @@ class BinaryApiClient(
         .addInterceptor(
             HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.NONE
-            }
+            },
         )
         .addInterceptor { chain: Interceptor.Chain ->
             val request = chain

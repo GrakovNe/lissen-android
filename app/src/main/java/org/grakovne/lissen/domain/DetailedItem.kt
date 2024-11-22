@@ -8,20 +8,20 @@ data class DetailedItem(
     val author: String?,
     val files: List<BookFile>,
     val chapters: List<BookChapter>,
-    val progress: MediaProgress?
+    val progress: MediaProgress?,
 ) : Serializable
 
 data class BookFile(
     val id: String,
     val name: String,
     val duration: Double,
-    val mimeType: String
+    val mimeType: String,
 ) : Serializable
 
 data class MediaProgress(
     val currentTime: Double,
     val isFinished: Boolean,
-    val lastUpdate: Long
+    val lastUpdate: Long,
 ) : Serializable
 
 data class BookChapter(
@@ -29,5 +29,5 @@ data class BookChapter(
     val start: Double,
     val end: Double,
     val title: String,
-    val id: String
+    val id: String,
 ) : Serializable

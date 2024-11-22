@@ -37,7 +37,7 @@ import org.grakovne.lissen.domain.TimerOption
 fun TimerComposable(
     currentOption: TimerOption?,
     onOptionSelected: (TimerOption?) -> Unit,
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
 ) {
     val context = LocalContext.current
 
@@ -50,11 +50,11 @@ fun TimerComposable(
                     .fillMaxWidth()
                     .padding(bottom = 16.dp)
                     .padding(horizontal = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     text = stringResource(R.string.timer_title),
-                    style = typography.bodyLarge
+                    style = typography.bodyLarge,
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -66,7 +66,7 @@ fun TimerComposable(
                                 Row {
                                     Text(
                                         text = item.makeText(context),
-                                        style = typography.bodyMedium
+                                        style = typography.bodyMedium,
                                     )
                                 }
                             },
@@ -75,7 +75,7 @@ fun TimerComposable(
                                     Icon(
                                         imageVector = Icons.Outlined.Check,
                                         contentDescription = null,
-                                        modifier = Modifier.size(24.dp)
+                                        modifier = Modifier.size(24.dp),
                                     )
                                 }
                             },
@@ -84,7 +84,7 @@ fun TimerComposable(
                                 .clickable {
                                     onOptionSelected(item)
                                     onDismissRequest()
-                                }
+                                },
                         )
                         if (index < TimerOptions.size - 1) {
                             HorizontalDivider()
@@ -101,7 +101,7 @@ fun TimerComposable(
                                         Text(
                                             text = stringResource(R.string.timer_option_disable_timer),
                                             color = colorScheme.error,
-                                            style = typography.bodyMedium
+                                            style = typography.bodyMedium,
                                         )
                                     }
                                 },
@@ -110,13 +110,13 @@ fun TimerComposable(
                                     .clickable {
                                         onOptionSelected(null)
                                         onDismissRequest()
-                                    }
+                                    },
                             )
                         }
                     }
                 }
             }
-        }
+        },
     )
 }
 
@@ -125,7 +125,7 @@ private val TimerOptions = listOf(
     DurationTimerOption(15),
     DurationTimerOption(30),
     DurationTimerOption(60),
-    CurrentEpisodeTimerOption
+    CurrentEpisodeTimerOption,
 )
 
 fun TimerOption.makeText(context: Context): String = when (this) {

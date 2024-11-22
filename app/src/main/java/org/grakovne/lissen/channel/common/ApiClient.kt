@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit
 class ApiClient(
     host: String,
     requestHeaders: List<ServerRequestHeader>?,
-    token: String? = null
+    token: String? = null,
 ) {
 
     private val httpClient = OkHttpClient
@@ -22,7 +22,7 @@ class ApiClient(
         .addInterceptor(
             HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.NONE
-            }
+            },
         )
         .addInterceptor { chain: Interceptor.Chain ->
             val original: Request = chain.request()

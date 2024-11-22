@@ -29,7 +29,7 @@ import org.grakovne.lissen.R
 @Composable
 fun TrackDetailsPlaceholderComposable(
     bookTitle: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
@@ -37,7 +37,7 @@ fun TrackDetailsPlaceholderComposable(
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
+        modifier = modifier,
     ) {
         Box(
             modifier = Modifier
@@ -45,7 +45,7 @@ fun TrackDetailsPlaceholderComposable(
                 .aspectRatio(1f)
                 .clip(RoundedCornerShape(8.dp))
                 .shimmer()
-                .background(Color.Gray)
+                .background(Color.Gray),
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -58,7 +58,7 @@ fun TrackDetailsPlaceholderComposable(
             textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,
             maxLines = 2,
-            modifier = Modifier.padding(horizontal = 16.dp)
+            modifier = Modifier.padding(horizontal = 16.dp),
         )
         Spacer(modifier = Modifier.height(4.dp))
 
@@ -69,7 +69,7 @@ fun TrackDetailsPlaceholderComposable(
             modifier = Modifier
                 .shimmer()
                 .clip(RoundedCornerShape(8.dp))
-                .background(Color.Gray)
+                .background(Color.Gray),
         )
     }
 }

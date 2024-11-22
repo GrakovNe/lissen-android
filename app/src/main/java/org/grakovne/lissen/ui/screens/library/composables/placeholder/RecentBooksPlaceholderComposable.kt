@@ -27,7 +27,7 @@ import com.valentinilk.shimmer.shimmer
 
 @Composable
 fun RecentBooksPlaceholderComposable(
-    itemCount: Int = 5
+    itemCount: Int = 5,
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = remember { configuration.screenWidthDp.dp }
@@ -40,7 +40,7 @@ fun RecentBooksPlaceholderComposable(
     LazyRow(
         contentPadding = PaddingValues(horizontal = 4.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         items(itemCount) { RecentBookItemComposable(width = itemWidth) }
     }
@@ -48,11 +48,11 @@ fun RecentBooksPlaceholderComposable(
 
 @Composable
 fun RecentBookItemComposable(
-    width: Dp
+    width: Dp,
 ) {
     Column(
         modifier = Modifier
-            .width(width)
+            .width(width),
     ) {
         Spacer(
             modifier = Modifier
@@ -60,7 +60,7 @@ fun RecentBookItemComposable(
                 .aspectRatio(1f)
                 .clip(RoundedCornerShape(8.dp))
                 .shimmer()
-                .background(Color.Gray)
+                .background(Color.Gray),
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -74,7 +74,7 @@ fun RecentBookItemComposable(
                 modifier = Modifier
                     .clip(RoundedCornerShape(4.dp))
                     .shimmer()
-                    .background(Color.Gray)
+                    .background(Color.Gray),
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -84,14 +84,14 @@ fun RecentBookItemComposable(
                 text = "Fyodor Dostoevsky",
                 style = MaterialTheme.typography.bodySmall.copy(
                     color = MaterialTheme.colorScheme.onBackground.copy(
-                        alpha = 0.6f
-                    )
+                        alpha = 0.6f,
+                    ),
                 ),
                 maxLines = 1,
                 modifier = Modifier
                     .clip(RoundedCornerShape(4.dp))
                     .shimmer()
-                    .background(Color.Gray)
+                    .background(Color.Gray),
             )
         }
     }

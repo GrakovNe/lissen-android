@@ -5,11 +5,11 @@ data class PlaybackStartRequest(
     val supportedMimeTypes: List<String>,
     val mediaPlayer: String,
     val forceTranscode: Boolean,
-    val forceDirectPlay: Boolean
+    val forceDirectPlay: Boolean,
 )
 
 data class DeviceInfo(
     val clientName: String,
     val deviceId: String,
-    val deviceName: String
+    val deviceName: String,
 )

@@ -16,17 +16,17 @@ private val LightColorScheme = lightColorScheme(
     tertiary = FoxOrange,
     background = LightBackground,
     surface = LightBackground,
-    surfaceContainer = Color(0xFFEEEEEE)
+    surfaceContainer = Color(0xFFEEEEEE),
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = FoxOrange
+    primary = FoxOrange,
 )
 
 @Composable
 fun LissenTheme(
     colorSchemePreference: ColorScheme,
-    content: @Composable () -> Unit
+    content: @Composable () -> Unit,
 ) {
     val isDarkTheme = when (colorSchemePreference) {
         ColorScheme.FOLLOW_SYSTEM -> isSystemInDarkTheme()
@@ -40,16 +40,16 @@ fun LissenTheme(
     SideEffect {
         systemUiController.setNavigationBarColor(
             color = colors.background,
-            darkIcons = !isDarkTheme
+            darkIcons = !isDarkTheme,
         )
         systemUiController.setStatusBarColor(
             color = colors.background,
-            darkIcons = !isDarkTheme
+            darkIcons = !isDarkTheme,
         )
     }
 
     MaterialTheme(
         colorScheme = colors,
-        content = content
+        content = content,
     )
 }

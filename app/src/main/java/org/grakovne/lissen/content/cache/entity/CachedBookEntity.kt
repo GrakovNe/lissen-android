@@ -13,21 +13,21 @@ data class CachedBookEntity(
 
     @Relation(
         parentColumn = "id",
-        entityColumn = "bookId"
+        entityColumn = "bookId",
     )
     val files: List<BookFileEntity>,
 
     @Relation(
         parentColumn = "id",
-        entityColumn = "bookId"
+        entityColumn = "bookId",
     )
     val chapters: List<BookChapterEntity>,
 
     @Relation(
         parentColumn = "id",
-        entityColumn = "bookId"
+        entityColumn = "bookId",
     )
-    val progress: MediaProgressEntity?
+    val progress: MediaProgressEntity?,
 )
 
 @Entity(tableName = "detailed_books")
@@ -35,7 +35,7 @@ data class BookEntity(
     @PrimaryKey val id: String,
     val title: String,
     val author: String?,
-    val duration: Int
+    val duration: Int,
 ) : Serializable
 
 @Entity(
@@ -45,10 +45,10 @@ data class BookEntity(
             entity = BookEntity::class,
             parentColumns = ["id"],
             childColumns = ["bookId"],
-            onDelete = ForeignKey.CASCADE
-        )
+            onDelete = ForeignKey.CASCADE,
+        ),
     ],
-    indices = [Index(value = ["bookId"])]
+    indices = [Index(value = ["bookId"])],
 )
 data class BookFileEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0L,
@@ -56,7 +56,7 @@ data class BookFileEntity(
     val name: String,
     val duration: Double,
     val mimeType: String,
-    val bookId: String
+    val bookId: String,
 ) : Serializable
 
 @Entity(
@@ -66,10 +66,10 @@ data class BookFileEntity(
             entity = BookEntity::class,
             parentColumns = ["id"],
             childColumns = ["bookId"],
-            onDelete = ForeignKey.CASCADE
-        )
+            onDelete = ForeignKey.CASCADE,
+        ),
     ],
-    indices = [Index(value = ["bookId"])]
+    indices = [Index(value = ["bookId"])],
 )
 data class BookChapterEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0L,
@@ -78,7 +78,7 @@ data class BookChapterEntity(
     val start: Double,
     val end: Double,
     val title: String,
-    val bookId: String
+    val bookId: String,
 ) : Serializable
 
 @Entity(
@@ -88,14 +88,14 @@ data class BookChapterEntity(
             entity = BookEntity::class,
             parentColumns = ["id"],
             childColumns = ["bookId"],
-            onDelete = ForeignKey.CASCADE
-        )
+            onDelete = ForeignKey.CASCADE,
+        ),
     ],
-    indices = [Index(value = ["bookId"])]
+    indices = [Index(value = ["bookId"])],
 )
 data class MediaProgressEntity(
     @PrimaryKey val bookId: String,
     val currentTime: Double,
     val isFinished: Boolean,
-    val lastUpdate: Long
+    val lastUpdate: Long,
 ) : Serializable

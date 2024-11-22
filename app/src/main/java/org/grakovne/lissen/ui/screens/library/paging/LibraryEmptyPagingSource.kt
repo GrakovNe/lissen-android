@@ -9,6 +9,6 @@ class LibraryEmptyPagingSource() : PagingSource<Int, Book>() {
     override fun getRefreshKey(state: PagingState<Int, Book>) = null
 
     override suspend fun load(
-        params: LoadParams<Int>
+        params: LoadParams<Int>,
     ): LoadResult<Int, Book> = LoadResult.Page(emptyList(), null, null)
 }

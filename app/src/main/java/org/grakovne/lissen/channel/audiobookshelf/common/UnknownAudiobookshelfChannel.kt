@@ -27,7 +27,7 @@ class UnknownAudiobookshelfChannel @Inject constructor(
     syncService: AudioBookshelfSyncService,
     sessionResponseConverter: PlaybackSessionResponseConverter,
     libraryResponseConverter: LibraryResponseConverter,
-    connectionInfoResponseConverter: ConnectionInfoResponseConverter
+    connectionInfoResponseConverter: ConnectionInfoResponseConverter,
 ) : AudiobookshelfChannel(
     dataRepository = dataRepository,
     mediaRepository = mediaRepository,
@@ -36,7 +36,7 @@ class UnknownAudiobookshelfChannel @Inject constructor(
     preferences = preferences,
     syncService = syncService,
     libraryResponseConverter = libraryResponseConverter,
-    connectionInfoResponseConverter = connectionInfoResponseConverter
+    connectionInfoResponseConverter = connectionInfoResponseConverter,
 ) {
 
     override fun getLibraryType(): LibraryType = LibraryType.UNKNOWN
@@ -44,23 +44,23 @@ class UnknownAudiobookshelfChannel @Inject constructor(
     override suspend fun fetchBooks(
         libraryId: String,
         pageSize: Int,
-        pageNumber: Int
+        pageNumber: Int,
     ): ApiResult<PagedItems<Book>> = ApiResult.Error(ApiError.UnsupportedError)
 
     override suspend fun searchBooks(
         libraryId: String,
         query: String,
-        limit: Int
+        limit: Int,
     ): ApiResult<List<Book>> = ApiResult.Error(ApiError.UnsupportedError)
 
     override suspend fun startPlayback(
         bookId: String,
         episodeId: String,
         supportedMimeTypes: List<String>,
-        deviceId: String
+        deviceId: String,
     ): ApiResult<PlaybackSession> = ApiResult.Error(ApiError.UnsupportedError)
 
     override suspend fun fetchBook(
-        bookId: String
+        bookId: String,
     ): ApiResult<DetailedItem> = ApiResult.Error(ApiError.UnsupportedError)
 }

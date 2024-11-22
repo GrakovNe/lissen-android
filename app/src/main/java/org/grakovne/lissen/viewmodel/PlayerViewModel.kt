@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
-    private val mediaRepository: MediaRepository
+    private val mediaRepository: MediaRepository,
 ) : ViewModel() {
 
     val book: LiveData<DetailedItem> = mediaRepository.playingBook

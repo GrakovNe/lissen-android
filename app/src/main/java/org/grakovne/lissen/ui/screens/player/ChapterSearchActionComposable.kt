@@ -29,7 +29,7 @@ import org.grakovne.lissen.R
 
 @Composable
 fun ChapterSearchActionComposable(
-    onSearchRequested: (String) -> Unit
+    onSearchRequested: (String) -> Unit,
 ) {
     val focusRequester = remember { FocusRequester() }
     val searchText = remember { mutableStateOf("") }
@@ -47,7 +47,7 @@ fun ChapterSearchActionComposable(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .padding(start = 48.dp, end = 8.dp)
-            .height(40.dp)
+            .height(40.dp),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -55,7 +55,7 @@ fun ChapterSearchActionComposable(
                 .weight(1f)
                 .height(36.dp)
                 .background(colorScheme.surfaceContainer, RoundedCornerShape(36.dp))
-                .padding(start = 16.dp, end = 4.dp)
+                .padding(start = 16.dp, end = 4.dp),
         ) {
             BasicTextField(
                 value = searchText.value,
@@ -66,28 +66,28 @@ fun ChapterSearchActionComposable(
                 textStyle = typography.bodyLarge.copy(color = colorScheme.onBackground),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions.Default.copy(
-                    imeAction = ImeAction.Search
+                    imeAction = ImeAction.Search,
                 ),
                 decorationBox = { innerTextField ->
                     if (searchText.value.isEmpty()) {
                         Text(
                             text = stringResource(R.string.chapter_search_hint),
                             color = colorScheme.onSurfaceVariant,
-                            style = typography.bodyLarge
+                            style = typography.bodyLarge,
                         )
                     }
                     innerTextField()
-                }
+                },
             )
 
             if (searchText.value.isNotEmpty()) {
                 IconButton(
                     modifier = Modifier.height(36.dp),
-                    onClick = { updateSearchText("") }
+                    onClick = { updateSearchText("") },
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Clear,
-                        contentDescription = "Clear"
+                        contentDescription = "Clear",
                     )
                 }
             }

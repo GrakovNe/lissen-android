@@ -78,7 +78,7 @@ fun LibraryScreen(
     cachingModelView: CachingModelView = hiltViewModel(),
     playerViewModel: PlayerViewModel = hiltViewModel(),
     imageLoader: ImageLoader,
-    networkQualityService: NetworkQualityService
+    networkQualityService: NetworkQualityService,
 ) {
     RequestNotificationPermissions()
 
@@ -115,7 +115,7 @@ fun LibraryScreen(
                 listOf(
                     async { libraryViewModel.dropHiddenBooks() },
                     async { libraryViewModel.refreshLibrary() },
-                    async { libraryViewModel.fetchRecentListening() }
+                    async { libraryViewModel.fetchRecentListening() },
                 ).awaitAll()
             }
 
@@ -141,7 +141,7 @@ fun LibraryScreen(
         refreshing = pullRefreshing,
         onRefresh = {
             refreshContent(showRefreshing = true)
-        }
+        },
     )
 
     val titleTextStyle = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
@@ -201,12 +201,12 @@ fun LibraryScreen(
                         transitionSpec = {
                             fadeIn(animationSpec = keyframes { durationMillis = 150 }) togetherWith
                                 fadeOut(animationSpec = keyframes { durationMillis = 150 })
-                        }
+                        },
                     ) { isSearchRequested ->
                         when (isSearchRequested) {
                             true -> LibrarySearchActionComposable(
                                 onSearchDismissed = { libraryViewModel.dismissSearch() },
-                                onSearchRequested = { libraryViewModel.updateSearch(it) }
+                                onSearchRequested = { libraryViewModel.updateSearch(it) },
                             )
 
                             false -> DefaultActionComposable(
@@ -214,7 +214,7 @@ fun LibraryScreen(
                                 cachingModelView = cachingModelView,
                                 libraryViewModel = libraryViewModel,
                                 onContentRefreshing = { refreshContent(showRefreshing = false) },
-                                onSearchRequested = { libraryViewModel.requestSearch() }
+                                onSearchRequested = { libraryViewModel.requestSearch() },
                             )
                         }
                     }
@@ -225,11 +225,11 @@ fun LibraryScreen(
                             text = navBarTitle,
                             style = titleTextStyle,
                             maxLines = 1,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
                         )
                     }
                 },
-                modifier = Modifier.systemBarsPadding()
+                modifier = Modifier.systemBarsPadding(),
             )
         },
         bottomBar = {
@@ -238,7 +238,7 @@ fun LibraryScreen(
                     navController = navController,
                     book = it,
                     imageLoader = imageLoader,
-                    playerViewModel = playerViewModel
+                    playerViewModel = playerViewModel,
                 )
             }
         },
@@ -251,12 +251,12 @@ fun LibraryScreen(
                     .padding(innerPadding)
                     .testTag("libraryScreen")
                     .pullRefresh(pullRefreshState)
-                    .fillMaxSize()
+                    .fillMaxSize(),
             ) {
                 LazyColumn(
                     state = libraryListState,
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 16.dp)
+                    contentPadding = PaddingValues(horizontal = 16.dp),
                 ) {
                     item(key = "recent_books") {
                         val showRecent = showRecent()
@@ -271,7 +271,7 @@ fun LibraryScreen(
                                 RecentBooksComposable(
                                     navController = navController,
                                     recentBooks = showingRecentBooks,
-                                    imageLoader = imageLoader
+                                    imageLoader = imageLoader,
                                 )
 
                                 Spacer(modifier = Modifier.height(20.dp))
@@ -286,27 +286,27 @@ fun LibraryScreen(
                                 transitionSpec = {
                                     fadeIn(
                                         animationSpec =
-                                        tween(300)
+                                        tween(300),
                                     ) togetherWith fadeOut(
                                         animationSpec = tween(
-                                            300
-                                        )
+                                            300,
+                                        ),
                                     )
                                 },
-                                label = "library_header_fade"
+                                label = "library_header_fade",
                             ) {
                                 when {
                                     it == provideLibraryTitle() ->
                                         Spacer(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .height(titleHeightDp)
+                                                .height(titleHeightDp),
                                         )
 
                                     else -> Text(
                                         style = titleTextStyle,
                                         text = provideLibraryTitle(),
-                                        modifier = Modifier.fillMaxWidth()
+                                        modifier = Modifier.fillMaxWidth(),
                                     )
                                 }
                             }
@@ -322,7 +322,7 @@ fun LibraryScreen(
                                 LibraryFallbackComposable(
                                     searchRequested = searchRequested,
                                     cachingModelView = cachingModelView,
-                                    networkQualityService = networkQualityService
+                                    networkQualityService = networkQualityService,
                                 )
                             }
                         }
@@ -351,7 +351,7 @@ fun LibraryScreen(
                                                 refreshContent(false)
                                             }
                                         }
-                                    }
+                                    },
                                 )
                             }
                         }
@@ -363,15 +363,15 @@ fun LibraryScreen(
                         refreshing = pullRefreshing,
                         state = pullRefreshState,
                         contentColor = colorScheme.primary,
-                        modifier = Modifier.align(Alignment.TopCenter)
+                        modifier = Modifier.align(Alignment.TopCenter),
                     )
                 }
             }
-        }
+        },
     )
 }
 
 private fun filterRecentBooks(
     books: List<RecentBook>,
-    libraryViewModel: LibraryViewModel
+    libraryViewModel: LibraryViewModel,
 ) = books.filter { libraryViewModel.isVisible(it.id) }

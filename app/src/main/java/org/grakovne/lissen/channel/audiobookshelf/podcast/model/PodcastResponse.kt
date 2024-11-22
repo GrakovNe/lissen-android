@@ -3,17 +3,17 @@ package org.grakovne.lissen.channel.audiobookshelf.podcast.model
 data class PodcastResponse(
     val id: String,
     val ino: String,
-    val media: PodcastMedia
+    val media: PodcastMedia,
 )
 
 data class PodcastMedia(
     val metadata: PodcastMediaMetadataResponse,
-    val episodes: List<PodcastEpisodeResponse>?
+    val episodes: List<PodcastEpisodeResponse>?,
 )
 
 data class PodcastMediaMetadataResponse(
     val title: String,
-    val author: String?
+    val author: String?,
 )
 
 data class PodcastEpisodeResponse(
@@ -22,12 +22,12 @@ data class PodcastEpisodeResponse(
     val episode: String?,
     val pubDate: String?,
     val title: String,
-    val audioFile: PodcastAudioFileResponse
+    val audioFile: PodcastAudioFileResponse,
 )
 
 data class PodcastAudioFileResponse(
     val index: Int,
     val ino: String,
     val duration: Double,
-    val mimeType: String
+    val mimeType: String,
 )

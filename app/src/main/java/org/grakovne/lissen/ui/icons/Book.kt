@@ -26,7 +26,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 
-val Book_2: ImageVector
+val Book: ImageVector
     get() {
         if (_Book_2 != null) {
             return _Book_2!!
@@ -36,7 +36,7 @@ val Book_2: ImageVector
             defaultWidth = 24.dp,
             defaultHeight = 24.dp,
             viewportWidth = 960f,
-            viewportHeight = 960f
+            viewportHeight = 960f,
         ).apply {
             path(
                 fill = SolidColor(Color.Black),
@@ -47,7 +47,7 @@ val Book_2: ImageVector
                 strokeLineCap = StrokeCap.Butt,
                 strokeLineJoin = StrokeJoin.Miter,
                 strokeLineMiter = 1.0f,
-                pathFillType = PathFillType.NonZero
+                pathFillType = PathFillType.NonZero,
             ) {
                 moveTo(300f, 880f)
                 quadToRelative(-58f, 0f, -99f, -41f)

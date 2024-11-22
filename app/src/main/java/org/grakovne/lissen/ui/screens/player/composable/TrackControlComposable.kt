@@ -40,7 +40,7 @@ import org.grakovne.lissen.viewmodel.PlayerViewModel
 @Composable
 fun TrackControlComposable(
     viewModel: PlayerViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val isPlaying by viewModel.isPlaying.observeAsState(false)
     val playbackReady by viewModel.isPlaybackReady.observeAsState(false)
@@ -63,10 +63,10 @@ fun TrackControlComposable(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 16.dp),
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Slider(
                 value = sliderPosition.toFloat(),
@@ -81,33 +81,33 @@ fun TrackControlComposable(
                 valueRange = 0f..currentTrackDuration.toFloat(),
                 colors = SliderDefaults.colors(
                     thumbColor = colorScheme.primary,
-                    activeTrackColor = colorScheme.primary
+                    activeTrackColor = colorScheme.primary,
                 ),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
             )
         }
 
         Box(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Column {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(
                         text = currentTrackPosition.toInt().formatFully(),
                         style = typography.bodySmall,
-                        color = colorScheme.onBackground.copy(alpha = 0.6f)
+                        color = colorScheme.onBackground.copy(alpha = 0.6f),
                     )
                     Text(
                         text = maxOf(0.0, currentTrackDuration - currentTrackPosition)
                             .toInt()
                             .formatFully(),
                         style = typography.bodySmall,
-                        color = colorScheme.onBackground.copy(alpha = 0.6f)
+                        color = colorScheme.onBackground.copy(alpha = 0.6f),
                     )
                 }
 
@@ -119,53 +119,53 @@ fun TrackControlComposable(
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter),
                 horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 IconButton(
                     onClick = {
                         viewModel.previousTrack()
                     },
-                    enabled = true
+                    enabled = true,
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.SkipPrevious,
                         contentDescription = "Previous Track",
                         tint = colorScheme.onBackground,
-                        modifier = Modifier.size(36.dp)
+                        modifier = Modifier.size(36.dp),
                     )
                 }
 
                 IconButton(
-                    onClick = { viewModel.rewind() }
+                    onClick = { viewModel.rewind() },
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Replay10,
                         contentDescription = "Rewind",
                         tint = colorScheme.onBackground,
-                        modifier = Modifier.size(48.dp)
+                        modifier = Modifier.size(48.dp),
                     )
                 }
 
                 IconButton(
                     onClick = { viewModel.togglePlayPause() },
-                    modifier = Modifier.size(72.dp)
+                    modifier = Modifier.size(72.dp),
                 ) {
                     Icon(
                         imageVector = if (isPlaying) Icons.Rounded.PauseCircleFilled else Icons.Rounded.PlayCircleFilled,
                         contentDescription = "Play / Pause",
                         tint = colorScheme.primary,
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
                     )
                 }
 
                 IconButton(
-                    onClick = { viewModel.forward() }
+                    onClick = { viewModel.forward() },
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Forward30,
                         contentDescription = "Forward",
                         tint = colorScheme.onBackground,
-                        modifier = Modifier.size(48.dp)
+                        modifier = Modifier.size(48.dp),
                     )
                 }
 
@@ -175,15 +175,17 @@ fun TrackControlComposable(
                             viewModel.nextTrack()
                         }
                     },
-                    enabled = currentTrackIndex < chapters.size - 1
+                    enabled = currentTrackIndex < chapters.size - 1,
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.SkipNext,
                         contentDescription = "Next Track",
-                        tint = if (currentTrackIndex < chapters.size - 1) colorScheme.onBackground else colorScheme.onBackground.copy(
-                            alpha = 0.3f
+                        tint = if (currentTrackIndex < chapters.size - 1) {
+                            colorScheme.onBackground
+                        } else colorScheme.onBackground.copy(
+                            alpha = 0.3f,
                         ),
-                        modifier = Modifier.size(36.dp)
+                        modifier = Modifier.size(36.dp),
                     )
                 }
             }

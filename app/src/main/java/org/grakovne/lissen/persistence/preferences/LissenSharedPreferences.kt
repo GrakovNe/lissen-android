@@ -90,7 +90,7 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
         return Library(
             id = id,
             title = name,
-            type = type
+            type = type,
         )
     }
 
@@ -230,7 +230,7 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
                 KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, ANDROID_KEYSTORE)
             val keyGenParameterSpec = KeyGenParameterSpec.Builder(
                 KEY_ALIAS,
-                KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+                KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT,
             ).setBlockModes(KeyProperties.BLOCK_MODE_GCM)
                 .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
                 .build()

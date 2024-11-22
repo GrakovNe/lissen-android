@@ -5,11 +5,11 @@ data class Book(
     val title: String,
     val author: String?,
     val duration: Int,
-    val cachedState: BookCachedState
+    val cachedState: BookCachedState,
 )
 
 enum class BookCachedState {
     ABLE_TO_CACHE,
     UNABLE_TO_CACHE,
-    CACHED
+    CACHED,
 }

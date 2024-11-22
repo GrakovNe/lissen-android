@@ -9,7 +9,7 @@ import java.io.IOException
 private const val TAG: String = "safeApiCall"
 
 suspend fun <T> safeApiCall(
-    apiCall: suspend () -> Response<T>
+    apiCall: suspend () -> Response<T>,
 ): ApiResult<T> {
     return try {
         val response = apiCall.invoke()

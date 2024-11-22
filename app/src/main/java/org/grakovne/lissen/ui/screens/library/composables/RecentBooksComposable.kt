@@ -39,7 +39,7 @@ fun RecentBooksComposable(
     navController: AppNavigationService,
     recentBooks: List<RecentBook>,
     imageLoader: ImageLoader,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = remember { configuration.screenWidthDp.dp }
@@ -54,7 +54,7 @@ fun RecentBooksComposable(
             .fillMaxWidth()
             .horizontalScroll(rememberScrollState())
             .padding(horizontal = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         recentBooks
             .forEach { book ->
@@ -62,7 +62,7 @@ fun RecentBooksComposable(
                     book = book,
                     width = itemWidth,
                     imageLoader = imageLoader,
-                    navController = navController
+                    navController = navController,
                 )
             }
     }
@@ -73,12 +73,12 @@ fun RecentBookItemComposable(
     navController: AppNavigationService,
     book: RecentBook,
     width: Dp,
-    imageLoader: ImageLoader
+    imageLoader: ImageLoader,
 ) {
     Column(
         modifier = Modifier
             .width(width)
-            .clickable { navController.showPlayer(book.id, book.title) }
+            .clickable { navController.showPlayer(book.id, book.title) },
     ) {
         val context = LocalContext.current
 
@@ -99,7 +99,7 @@ fun RecentBookItemComposable(
                 .fillMaxWidth()
                 .aspectRatio(1f)
                 .clip(RoundedCornerShape(8.dp)),
-            error = painterResource(R.drawable.cover_fallback)
+            error = painterResource(R.drawable.cover_fallback),
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -109,7 +109,7 @@ fun RecentBookItemComposable(
                 text = book.title,
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                 maxLines = 1,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
             )
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -119,11 +119,11 @@ fun RecentBookItemComposable(
                     text = book.author,
                     style = MaterialTheme.typography.bodySmall.copy(
                         color = MaterialTheme.colorScheme.onBackground.copy(
-                            alpha = 0.6f
-                        )
+                            alpha = 0.6f,
+                        ),
                     ),
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }

@@ -37,7 +37,7 @@ import org.grakovne.lissen.viewmodel.PlayerViewModel
 fun TrackDetailsComposable(
     viewModel: PlayerViewModel,
     modifier: Modifier = Modifier,
-    imageLoader: ImageLoader
+    imageLoader: ImageLoader,
 ) {
     val currentTrackIndex by viewModel.currentChapterIndex.observeAsState(0)
     val book by viewModel.book.observeAsState()
@@ -57,7 +57,7 @@ fun TrackDetailsComposable(
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier
+        modifier = modifier,
     ) {
         AsyncShimmeringImage(
             imageRequest = imageRequest,
@@ -68,7 +68,7 @@ fun TrackDetailsComposable(
                 .heightIn(max = maxImageHeight)
                 .aspectRatio(1f)
                 .clip(RoundedCornerShape(8.dp)),
-            error = painterResource(R.drawable.cover_fallback)
+            error = painterResource(R.drawable.cover_fallback),
         )
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -83,7 +83,7 @@ fun TrackDetailsComposable(
             maxLines = 2,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.dp),
         )
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -92,12 +92,12 @@ fun TrackDetailsComposable(
             text = stringResource(
                 R.string.player_screen_now_playing_title_chapter_of,
                 currentTrackIndex + 1,
-                book?.chapters?.size ?: "?"
+                book?.chapters?.size ?: "?",
             ),
             style = typography.bodySmall,
             color = colorScheme.onBackground.copy(alpha = 0.6f),
             textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }

@@ -24,10 +24,10 @@ import com.valentinilk.shimmer.shimmer
 
 @Composable
 fun LibraryPlaceholderComposable(
-    itemCount: Int = 15
+    itemCount: Int = 15,
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
     ) {
         repeat(itemCount) { LibraryItemPlaceholderComposable() }
     }
@@ -39,7 +39,7 @@ fun LibraryItemPlaceholderComposable() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 4.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
             modifier = Modifier
@@ -47,7 +47,7 @@ fun LibraryItemPlaceholderComposable() {
                 .aspectRatio(1f)
                 .clip(RoundedCornerShape(4.dp))
                 .shimmer()
-                .background(Color.Gray)
+                .background(Color.Gray),
         )
 
         Spacer(modifier = Modifier.width(16.dp))
@@ -59,7 +59,7 @@ fun LibraryItemPlaceholderComposable() {
                     .height(16.dp)
                     .clip(RoundedCornerShape(4.dp))
                     .shimmer()
-                    .background(Color.Gray)
+                    .background(Color.Gray),
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -70,7 +70,7 @@ fun LibraryItemPlaceholderComposable() {
                     .height(12.dp)
                     .clip(RoundedCornerShape(4.dp))
                     .shimmer()
-                    .background(Color.Gray)
+                    .background(Color.Gray),
             )
         }
 
@@ -79,14 +79,14 @@ fun LibraryItemPlaceholderComposable() {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.width(36.dp)
+            modifier = Modifier.width(36.dp),
         ) {
             Box(
                 modifier = Modifier
                     .size(36.dp)
                     .clip(CircleShape)
                     .shimmer()
-                    .background(Color.Gray)
+                    .background(Color.Gray),
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -97,7 +97,7 @@ fun LibraryItemPlaceholderComposable() {
                     .height(12.dp)
                     .clip(RoundedCornerShape(4.dp))
                     .shimmer()
-                    .background(Color.Gray)
+                    .background(Color.Gray),
             )
         }
     }

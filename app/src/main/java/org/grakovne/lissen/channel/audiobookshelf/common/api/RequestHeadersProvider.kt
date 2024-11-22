@@ -8,7 +8,7 @@ import javax.inject.Singleton
 
 @Singleton
 class RequestHeadersProvider @Inject constructor(
-    private val preferences: LissenSharedPreferences
+    private val preferences: LissenSharedPreferences,
 ) {
 
     fun fetchRequestHeaders(): List<ServerRequestHeader> {

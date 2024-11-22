@@ -27,22 +27,22 @@ import org.grakovne.lissen.domain.connection.ServerRequestHeader
 fun CustomHeaderComposable(
     header: ServerRequestHeader,
     onChanged: (ServerRequestHeader) -> Unit,
-    onDelete: (ServerRequestHeader) -> Unit
+    onDelete: (ServerRequestHeader) -> Unit,
 ) {
     Card(
         shape = RoundedCornerShape(12.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 16.dp)
+            .padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 16.dp),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(colorScheme.background),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             ) {
                 OutlinedTextField(
                     value = header.name,
@@ -50,7 +50,7 @@ fun CustomHeaderComposable(
                     label = { Text(stringResource(R.string.custom_header_hint_name)) },
                     singleLine = true,
                     shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
                 )
 
                 OutlinedTextField(
@@ -59,18 +59,18 @@ fun CustomHeaderComposable(
                     label = { Text(stringResource(R.string.custom_header_hint_value)) },
                     singleLine = true,
                     shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
 
             IconButton(
-                onClick = { onDelete(header) }
+                onClick = { onDelete(header) },
             ) {
                 Icon(
                     imageVector = Icons.Default.DeleteOutline,
                     contentDescription = "Delete from cache",
                     tint = colorScheme.error,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(32.dp),
                 )
             }
         }

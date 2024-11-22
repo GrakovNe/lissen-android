@@ -3,23 +3,23 @@ package org.grakovne.lissen.channel.audiobookshelf.library.model
 data class BookResponse(
     val id: String,
     val ino: String,
-    val media: BookMedia
+    val media: BookMedia,
 )
 
 data class BookMedia(
     val metadata: LibraryMetadataResponse,
     val audioFiles: List<BookAudioFileResponse>?,
-    val chapters: List<LibraryChapterResponse>?
+    val chapters: List<LibraryChapterResponse>?,
 )
 
 data class LibraryMetadataResponse(
     val title: String,
-    val authors: List<LibraryAuthorResponse>?
+    val authors: List<LibraryAuthorResponse>?,
 )
 
 data class LibraryAuthorResponse(
     val id: String,
-    val name: String
+    val name: String,
 )
 
 data class BookAudioFileResponse(
@@ -28,23 +28,23 @@ data class BookAudioFileResponse(
     val duration: Double,
     val metadata: AudioFileMetadata,
     val metaTags: AudioFileTag?,
-    val mimeType: String
+    val mimeType: String,
 )
 
 data class AudioFileMetadata(
     val filename: String,
     val ext: String,
-    val size: Long
+    val size: Long,
 )
 
 data class AudioFileTag(
     val tagAlbum: String,
-    val tagTitle: String
+    val tagTitle: String,
 )
 
 data class LibraryChapterResponse(
     val start: Double,
     val end: Double,
     val title: String,
-    val id: String
+    val id: String,
 )

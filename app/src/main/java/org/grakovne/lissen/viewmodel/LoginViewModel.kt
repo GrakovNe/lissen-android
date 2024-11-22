@@ -26,7 +26,7 @@ import javax.inject.Inject
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val mediaChannel: LissenMediaProvider,
-    private val preferences: LissenSharedPreferences
+    private val preferences: LissenSharedPreferences,
 ) : ViewModel() {
 
     private val _loginError: MutableLiveData<LoginError> = MutableLiveData()
@@ -84,7 +84,7 @@ class LoginViewModel @Inject constructor(
             val result = response
                 .foldAsync(
                     onSuccess = { account -> onLoginSuccessful(host, username, account) },
-                    onFailure = { error -> onLoginFailure(error.code) }
+                    onFailure = { error -> onLoginFailure(error.code) },
                 )
 
             _loginState.value = result
@@ -94,7 +94,7 @@ class LoginViewModel @Inject constructor(
     private fun persistCredentials(
         host: String,
         username: String,
-        token: String
+        token: String,
     ) {
         preferences.saveHost(host)
         preferences.saveUsername(username)
@@ -104,12 +104,12 @@ class LoginViewModel @Inject constructor(
     private suspend fun onLoginSuccessful(
         host: String,
         username: String,
-        account: UserAccount
+        account: UserAccount,
     ): LoginState.Success {
         persistCredentials(
             host = host,
             username = username,
-            token = account.token
+            token = account.token,
         )
 
         mediaChannel
@@ -126,8 +126,8 @@ class LoginViewModel @Inject constructor(
                                 Library(
                                     id = library.id,
                                     title = library.title,
-                                    type = library.type
-                                )
+                                    type = library.type,
+                                ),
                             )
                         }
                 },
@@ -138,11 +138,11 @@ class LoginViewModel @Inject constructor(
                             Library(
                                 id = library,
                                 title = "Default Library",
-                                type = LibraryType.LIBRARY
+                                type = LibraryType.LIBRARY,
                             )
                         }
                         ?.let { preferences.savePreferredLibrary(it) }
-                }
+                },
             )
 
         return LoginState.Success

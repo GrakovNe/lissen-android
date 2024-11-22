@@ -7,7 +7,7 @@ interface ChannelAuthService {
     suspend fun authorize(
         host: String,
         username: String,
-        password: String
+        password: String,
     ): ApiResult<UserAccount>
 
     fun getAuthType(): AuthType

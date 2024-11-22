@@ -9,7 +9,7 @@ import javax.inject.Singleton
 @Singleton
 class CachedLibraryRepository @Inject constructor(
     private val dao: CachedLibraryDao,
-    private val converter: CachedLibraryEntityConverter
+    private val converter: CachedLibraryEntityConverter,
 ) {
 
     suspend fun cacheLibraries(libraries: List<Library>) = dao.updateLibraries(libraries)

@@ -21,7 +21,7 @@ import javax.inject.Singleton
 class PlayerWidgetStateService @Inject constructor(
     @ApplicationContext private val context: Context,
     private val mediaRepository: MediaRepository,
-    private val mediaProvider: LissenMediaProvider
+    private val mediaProvider: LissenMediaProvider,
 ) : RunningComponent {
 
     private var playingBookId: String? = null
@@ -34,7 +34,7 @@ class PlayerWidgetStateService @Inject constructor(
             combine(
                 mediaRepository.playingBook.asFlow().distinctUntilChanged(),
                 mediaRepository.isPlaying.asFlow().distinctUntilChanged(),
-                mediaRepository.currentChapterIndex.asFlow().distinctUntilChanged()
+                mediaRepository.currentChapterIndex.asFlow().distinctUntilChanged(),
             ) { book, isPlaying, chapterIndex ->
                 val chapterTitle = provideChapterTitle(book, chapterIndex)
 
@@ -49,7 +49,7 @@ class PlayerWidgetStateService @Inject constructor(
                                         .also { cover -> cachedCover = cover }
                                         .also { playingBookId = book.id }
                                 },
-                                onFailure = { null }
+                                onFailure = { null },
                             )
 
                     false -> cachedCover
@@ -60,7 +60,7 @@ class PlayerWidgetStateService @Inject constructor(
                     title = book.title,
                     chapterTitle = chapterTitle,
                     isPlaying = isPlaying,
-                    imageCover = maybeCover
+                    imageCover = maybeCover,
                 )
             }.collect { playingItemState ->
                 updatePlayingItem(playingItemState)
@@ -76,7 +76,7 @@ class PlayerWidgetStateService @Inject constructor(
     }
 
     private suspend fun updatePlayingItem(
-        state: PlayingItemState
+        state: PlayingItemState,
     ) {
         val manager = GlanceAppWidgetManager(context)
         val glanceIds = manager.getGlanceIds(PlayerWidget::class.java)
@@ -100,5 +100,5 @@ data class PlayingItemState(
     val title: String,
     val chapterTitle: String?,
     val isPlaying: Boolean = false,
-    val imageCover: ByteArray?
+    val imageCover: ByteArray?,
 )

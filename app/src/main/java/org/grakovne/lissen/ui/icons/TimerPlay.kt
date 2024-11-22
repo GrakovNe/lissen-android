@@ -32,7 +32,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.dp
 
-val Timer_play: ImageVector
+val TimerPlay: ImageVector
     get() {
         if (_Timer_play != null) {
             return _Timer_play!!
@@ -42,7 +42,7 @@ val Timer_play: ImageVector
             defaultWidth = 24.dp,
             defaultHeight = 24.dp,
             viewportWidth = 960f,
-            viewportHeight = 960f
+            viewportHeight = 960f,
         ).apply {
             path(
                 fill = SolidColor(Color.Black),
@@ -53,7 +53,7 @@ val Timer_play: ImageVector
                 strokeLineCap = StrokeCap.Butt,
                 strokeLineJoin = StrokeJoin.Miter,
                 strokeLineMiter = 1.0f,
-                pathFillType = PathFillType.NonZero
+                pathFillType = PathFillType.NonZero,
             ) {
                 moveTo(360f, 120f)
                 verticalLineToRelative(-80f)

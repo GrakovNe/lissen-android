@@ -42,7 +42,7 @@ fun DefaultActionComposable(
     cachingModelView: CachingModelView,
     libraryViewModel: LibraryViewModel,
     onContentRefreshing: (Boolean) -> Unit,
-    onSearchRequested: () -> Unit
+    onSearchRequested: () -> Unit,
 ) {
     var navigationItemSelected by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
@@ -50,11 +50,11 @@ fun DefaultActionComposable(
     Row {
         IconButton(
             onClick = { onSearchRequested() },
-            modifier = Modifier.offset(x = 4.dp)
+            modifier = Modifier.offset(x = 4.dp),
         ) {
             Icon(
                 imageVector = Search,
-                contentDescription = null
+                contentDescription = null,
             )
         }
         IconButton(onClick = {
@@ -62,7 +62,7 @@ fun DefaultActionComposable(
         }) {
             Icon(
                 imageVector = Icons.Outlined.MoreVert,
-                contentDescription = "Menu"
+                contentDescription = "Menu",
             )
         }
     }
@@ -72,7 +72,7 @@ fun DefaultActionComposable(
         onDismissRequest = { navigationItemSelected = false },
         modifier = Modifier
             .background(colorScheme.background)
-            .padding(4.dp)
+            .padding(4.dp),
     ) {
         DropdownMenuItem(
             leadingIcon = {
@@ -81,7 +81,7 @@ fun DefaultActionComposable(
                         true -> Icons.Outlined.Cloud
                         else -> Icons.Outlined.CloudOff
                     },
-                    contentDescription = null
+                    contentDescription = null,
                 )
             },
             text = {
@@ -91,7 +91,7 @@ fun DefaultActionComposable(
                         else -> stringResource(R.string.enable_offline)
                     },
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(start = 8.dp)
+                    modifier = Modifier.padding(start = 8.dp),
                 )
             },
             onClick = {
@@ -110,21 +110,21 @@ fun DefaultActionComposable(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 4.dp)
+                .padding(vertical = 4.dp),
         )
 
         DropdownMenuItem(
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Outlined.Settings,
-                    contentDescription = null
+                    contentDescription = null,
                 )
             },
             text = {
                 Text(
                     stringResource(R.string.library_screen_preferences_menu_item),
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(start = 8.dp)
+                    modifier = Modifier.padding(start = 8.dp),
                 )
             },
             onClick = {
@@ -133,7 +133,7 @@ fun DefaultActionComposable(
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 4.dp)
+                .padding(vertical = 4.dp),
         )
     }
 }

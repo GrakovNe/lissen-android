@@ -36,7 +36,7 @@ val Search: ImageVector
             defaultWidth = 24.dp,
             defaultHeight = 24.dp,
             viewportWidth = 24f,
-            viewportHeight = 24f
+            viewportHeight = 24f,
         ).apply {
             path(
                 fill = null,
@@ -47,7 +47,7 @@ val Search: ImageVector
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round,
                 strokeLineMiter = 1.0f,
-                pathFillType = PathFillType.NonZero
+                pathFillType = PathFillType.NonZero,
             ) {
                 moveTo(19f, 11f)
                 arcTo(8f, 8f, 0f, isMoreThanHalf = false, isPositiveArc = true, 11f, 19f)
@@ -64,7 +64,7 @@ val Search: ImageVector
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round,
                 strokeLineMiter = 1.0f,
-                pathFillType = PathFillType.NonZero
+                pathFillType = PathFillType.NonZero,
             ) {
                 moveTo(21f, 21f)
                 lineToRelative(-4.3f, -4.3f)

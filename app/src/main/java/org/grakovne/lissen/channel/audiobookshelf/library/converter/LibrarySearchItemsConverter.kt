@@ -18,7 +18,7 @@ class LibrarySearchItemsConverter @Inject constructor() {
                     title = title,
                     author = it.media.metadata.authorName,
                     cachedState = BookCachedState.ABLE_TO_CACHE,
-                    duration = it.media.duration.toInt()
+                    duration = it.media.duration.toInt(),
                 )
             }
     }

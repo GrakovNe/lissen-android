@@ -33,7 +33,7 @@ import javax.inject.Inject
 @OptIn(ExperimentalCoroutinesApi::class)
 class LibraryViewModel @Inject constructor(
     private val mediaChannel: LissenMediaProvider,
-    private val preferences: LissenSharedPreferences
+    private val preferences: LissenSharedPreferences,
 ) : ViewModel() {
 
     private val _recentBooks = MutableLiveData<List<RecentBook>>(emptyList())
@@ -56,12 +56,12 @@ class LibraryViewModel @Inject constructor(
     private val pageConfig = PagingConfig(
         pageSize = PAGE_SIZE,
         initialLoadSize = PAGE_SIZE,
-        prefetchDistance = PAGE_SIZE
+        prefetchDistance = PAGE_SIZE,
     )
 
     val searchPager: Flow<PagingData<Book>> = combine(
         _searchToken,
-        searchRequested.asFlow()
+        searchRequested.asFlow(),
     ) { token, requested ->
         Pair(token, requested)
     }.flatMapLatest { (token, _) ->
@@ -72,12 +72,12 @@ class LibraryViewModel @Inject constructor(
                     preferences = preferences,
                     mediaChannel = mediaChannel,
                     searchToken = token,
-                    limit = PAGE_SIZE
+                    limit = PAGE_SIZE,
                 )
 
                 searchPagingSource = source
                 source
-            }
+            },
         ).flow
     }.cachedIn(viewModelScope)
 
@@ -89,7 +89,7 @@ class LibraryViewModel @Inject constructor(
                 defaultPagingSource = source
 
                 source
-            }
+            },
         ).flow.cachedIn(viewModelScope)
     }
 
@@ -155,7 +155,7 @@ class LibraryViewModel @Inject constructor(
                     },
                     onFailure = {
                         _recentBookUpdating.postValue(false)
-                    }
+                    },
                 )
         }
     }

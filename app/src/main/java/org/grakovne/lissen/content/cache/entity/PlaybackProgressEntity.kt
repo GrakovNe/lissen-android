@@ -7,5 +7,5 @@ import androidx.room.PrimaryKey
 data class PlaybackProgressEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val currentTime: Double,
-    val totalTime: Double
+    val totalTime: Double,
 )

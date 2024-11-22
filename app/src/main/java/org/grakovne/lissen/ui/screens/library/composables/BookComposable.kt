@@ -58,7 +58,7 @@ fun BookComposable(
     imageLoader: ImageLoader,
     navController: AppNavigationService,
     cachingModelView: CachingModelView,
-    onRemoveBook: () -> Unit
+    onRemoveBook: () -> Unit,
 ) {
     val cacheProgress by cachingModelView.getCacheProgress(book.id).collectAsState()
     val context = LocalContext.current
@@ -77,7 +77,7 @@ fun BookComposable(
             .clickable { navController.showPlayer(book.id, book.title) }
             .testTag("bookItem_${book.id}")
             .padding(horizontal = 4.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         AsyncShimmeringImage(
             imageRequest = imageRequest,
@@ -88,22 +88,22 @@ fun BookComposable(
                 .size(64.dp)
                 .aspectRatio(1f)
                 .clip(RoundedCornerShape(4.dp)),
-            error = painterResource(R.drawable.cover_fallback)
+            error = painterResource(R.drawable.cover_fallback),
         )
 
         Spacer(modifier = Modifier.width(16.dp))
 
         Column(
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         ) {
             Text(
                 text = book.title,
                 style = MaterialTheme.typography.bodyMedium.copy(
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onBackground
+                    color = MaterialTheme.colorScheme.onBackground,
                 ),
                 maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
             )
             book
                 .author
@@ -112,10 +112,10 @@ fun BookComposable(
                     Text(
                         text = it,
                         style = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                         ),
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
         }
@@ -124,7 +124,7 @@ fun BookComposable(
 
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
         ) {
             provideCachingStateIcon(book, cacheProgress)
                 ?.let { icon ->
@@ -141,11 +141,11 @@ fun BookComposable(
                                     }
                                 }
                         },
-                        modifier = Modifier.size(36.dp)
+                        modifier = Modifier.size(36.dp),
                     ) {
                         Icon(
                             imageVector = icon,
-                            contentDescription = "Caching Book State"
+                            contentDescription = "Caching Book State",
                         )
                     }
                 }
@@ -153,7 +153,7 @@ fun BookComposable(
             if (book.duration > 0) {
                 Text(
                     text = book.duration.formatShortly(),
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodySmall,
                 )
             }
 
@@ -172,11 +172,11 @@ fun BookComposable(
                         cachingModelView.dropCache(book)
                         onRemoveBook.invoke()
                         showDeleteFromCacheDialog = false
-                    }
+                    },
                 ) {
                     Text(
                         text = stringResource(R.string.dialog_confirm_remove),
-                        style = MaterialTheme.typography.bodyLarge
+                        style = MaterialTheme.typography.bodyLarge,
                     )
                 }
             },
@@ -184,19 +184,19 @@ fun BookComposable(
                 TextButton(onClick = { showDeleteFromCacheDialog = false }) {
                     Text(
                         text = stringResource(R.string.dialog_dismiss_cancel),
-                        style = MaterialTheme.typography.bodyLarge
+                        style = MaterialTheme.typography.bodyLarge,
                     )
                 }
             },
             containerColor = MaterialTheme.colorScheme.surface,
-            shape = MaterialTheme.shapes.medium
+            shape = MaterialTheme.shapes.medium,
         )
     }
 }
 
 private fun provideCachingStateIcon(
     book: Book,
-    cacheProgress: CacheProgress
+    cacheProgress: CacheProgress,
 ): ImageVector? = when (cacheProgress) {
     CacheProgress.Completed -> cachedIcon
     CacheProgress.Removed -> ableToCacheIcon

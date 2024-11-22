@@ -36,7 +36,7 @@ public val Podcast: ImageVector
             defaultWidth = 24.dp,
             defaultHeight = 24.dp,
             viewportWidth = 24f,
-            viewportHeight = 24f
+            viewportHeight = 24f,
         ).apply {
             path(
                 fill = null,
@@ -47,7 +47,7 @@ public val Podcast: ImageVector
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round,
                 strokeLineMiter = 1.0f,
-                pathFillType = PathFillType.NonZero
+                pathFillType = PathFillType.NonZero,
             ) {
                 moveTo(16.85f, 18.58f)
                 arcToRelative(9f, 9f, 0f, isMoreThanHalf = true, isPositiveArc = false, -9.7f, 0f)
@@ -61,7 +61,7 @@ public val Podcast: ImageVector
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round,
                 strokeLineMiter = 1.0f,
-                pathFillType = PathFillType.NonZero
+                pathFillType = PathFillType.NonZero,
             ) {
                 moveTo(8f, 14f)
                 arcToRelative(5f, 5f, 0f, isMoreThanHalf = true, isPositiveArc = true, 8f, 0f)
@@ -75,7 +75,7 @@ public val Podcast: ImageVector
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round,
                 strokeLineMiter = 1.0f,
-                pathFillType = PathFillType.NonZero
+                pathFillType = PathFillType.NonZero,
             ) {
                 moveTo(13f, 11f)
                 arcTo(1f, 1f, 0f, isMoreThanHalf = false, isPositiveArc = true, 12f, 12f)
@@ -92,7 +92,7 @@ public val Podcast: ImageVector
                 strokeLineCap = StrokeCap.Round,
                 strokeLineJoin = StrokeJoin.Round,
                 strokeLineMiter = 1.0f,
-                pathFillType = PathFillType.NonZero
+                pathFillType = PathFillType.NonZero,
             ) {
                 moveTo(13f, 17f)
                 arcToRelative(1f, 1f, 0f, isMoreThanHalf = true, isPositiveArc = false, -2f, 0f)

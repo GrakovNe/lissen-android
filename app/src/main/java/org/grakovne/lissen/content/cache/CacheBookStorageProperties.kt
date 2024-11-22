@@ -8,7 +8,7 @@ import javax.inject.Singleton
 
 @Singleton
 class CacheBookStorageProperties @Inject constructor(
-    @ApplicationContext private val context: Context
+    @ApplicationContext private val context: Context,
 ) {
 
     fun provideBookCache(bookId: String) = context

@@ -16,14 +16,14 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
                 author TEXT,
                 duration INTEGER NOT NULL
             )
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         db.execSQL(
             """
             INSERT INTO detailed_books (id, title, author, duration)
             SELECT id, title, author, duration FROM detailed_books_old
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         db.execSQL("DROP TABLE detailed_books_old")
@@ -38,7 +38,7 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
             """
             UPDATE libraries
             SET type = '${LibraryType.LIBRARY.name}'
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         db.execSQL(
@@ -48,14 +48,14 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
                 title TEXT NOT NULL,
                 type TEXT NOT NULL
             )
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         db.execSQL(
             """
             INSERT INTO libraries_new (id, title, type)
             SELECT id, title, type FROM libraries
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         db.execSQL("DROP TABLE libraries")

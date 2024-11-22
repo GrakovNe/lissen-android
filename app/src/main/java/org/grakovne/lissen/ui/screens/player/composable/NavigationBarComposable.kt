@@ -29,7 +29,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.grakovne.lissen.R
-import org.grakovne.lissen.ui.icons.Timer_play
+import org.grakovne.lissen.ui.icons.TimerPlay
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
@@ -37,7 +37,7 @@ import org.grakovne.lissen.viewmodel.PlayerViewModel
 fun NavigationBarComposable(
     viewModel: PlayerViewModel,
     navController: AppNavigationService,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val timerOption by viewModel.timerOption.observeAsState(null)
     val playbackSpeed by viewModel.playbackSpeed.observeAsState(1f)
@@ -48,12 +48,12 @@ fun NavigationBarComposable(
 
     Surface(
         shadowElevation = 4.dp,
-        modifier = modifier.height(64.dp)
+        modifier = modifier.height(64.dp),
     ) {
         NavigationBar(
             containerColor = Color.Transparent,
             contentColor = colorScheme.onBackground,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             val iconSize = 24.dp
             val labelStyle = typography.labelSmall.copy(fontSize = 10.sp)
@@ -63,7 +63,7 @@ fun NavigationBarComposable(
                     Icon(
                         Icons.Outlined.Headset,
                         contentDescription = stringResource(R.string.player_screen_library_navigation),
-                        modifier = Modifier.size(iconSize)
+                        modifier = Modifier.size(iconSize),
                     )
                 },
                 label = {
@@ -71,15 +71,15 @@ fun NavigationBarComposable(
                         text = stringResource(R.string.player_screen_library_navigation),
                         style = labelStyle,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
                     )
                 },
                 selected = false,
                 onClick = { navController.showLibrary() },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = colorScheme.primary,
-                    indicatorColor = colorScheme.surfaceContainer
-                )
+                    indicatorColor = colorScheme.surfaceContainer,
+                ),
             )
 
             NavigationBarItem(
@@ -87,7 +87,7 @@ fun NavigationBarComposable(
                     Icon(
                         Icons.Outlined.Book,
                         contentDescription = stringResource(R.string.player_screen_chapter_list_navigation),
-                        modifier = Modifier.size(iconSize)
+                        modifier = Modifier.size(iconSize),
                     )
                 },
                 label = {
@@ -95,15 +95,15 @@ fun NavigationBarComposable(
                         text = stringResource(R.string.player_screen_chapter_list_navigation),
                         style = labelStyle,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
                     )
                 },
                 selected = playingQueueExpanded,
                 onClick = { viewModel.togglePlayingQueue() },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = colorScheme.primary,
-                    indicatorColor = colorScheme.surfaceContainer
-                )
+                    indicatorColor = colorScheme.surfaceContainer,
+                ),
             )
 
             NavigationBarItem(
@@ -111,7 +111,7 @@ fun NavigationBarComposable(
                     Icon(
                         Icons.Outlined.SlowMotionVideo,
                         contentDescription = stringResource(R.string.player_screen_playback_speed_navigation),
-                        modifier = Modifier.size(iconSize)
+                        modifier = Modifier.size(iconSize),
                     )
                 },
                 label = {
@@ -119,7 +119,7 @@ fun NavigationBarComposable(
                         text = stringResource(R.string.player_screen_playback_speed_navigation),
                         style = labelStyle,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
                     )
                 },
                 selected = false,
@@ -127,8 +127,8 @@ fun NavigationBarComposable(
                 enabled = true,
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = colorScheme.primary,
-                    indicatorColor = colorScheme.surfaceContainer
-                )
+                    indicatorColor = colorScheme.surfaceContainer,
+                ),
             )
 
             NavigationBarItem(
@@ -136,10 +136,10 @@ fun NavigationBarComposable(
                     Icon(
                         when (timerOption) {
                             null -> Icons.Outlined.Timer
-                            else -> Timer_play
+                            else -> TimerPlay
                         },
                         contentDescription = stringResource(R.string.player_screen_timer_navigation),
-                        modifier = Modifier.size(iconSize)
+                        modifier = Modifier.size(iconSize),
                     )
                 },
                 label = {
@@ -147,22 +147,22 @@ fun NavigationBarComposable(
                         text = stringResource(R.string.player_screen_timer_navigation),
                         style = labelStyle,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
                     )
                 },
                 selected = false,
                 onClick = { timerExpanded = true },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = colorScheme.primary,
-                    indicatorColor = colorScheme.surfaceContainer
-                )
+                    indicatorColor = colorScheme.surfaceContainer,
+                ),
             )
 
             if (playbackSpeedExpanded) {
                 PlaybackSpeedComposable(
                     currentSpeed = playbackSpeed,
                     onSpeedChange = { viewModel.setPlaybackSpeed(it) },
-                    onDismissRequest = { playbackSpeedExpanded = false }
+                    onDismissRequest = { playbackSpeedExpanded = false },
                 )
             }
 
@@ -170,7 +170,7 @@ fun NavigationBarComposable(
                 TimerComposable(
                     currentOption = timerOption,
                     onOptionSelected = { viewModel.setTimer(it) },
-                    onDismissRequest = { timerExpanded = false }
+                    onDismissRequest = { timerExpanded = false },
                 )
             }
         }

@@ -40,7 +40,7 @@ import org.grakovne.lissen.R
 fun PlaybackSpeedComposable(
     currentSpeed: Float,
     onSpeedChange: (Float) -> Unit,
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
 ) {
     var selectedPlaybackSpeed by remember { mutableFloatStateOf(currentSpeed) }
 
@@ -53,18 +53,18 @@ fun PlaybackSpeedComposable(
                     .fillMaxWidth()
                     .padding(bottom = 16.dp)
                     .padding(horizontal = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
                     text = stringResource(R.string.playback_speed_title),
-                    style = typography.bodyLarge
+                    style = typography.bodyLarge,
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
                     text = "${String.format("%.2f", selectedPlaybackSpeed)}x",
-                    style = typography.titleLarge.copy(fontWeight = SemiBold)
+                    style = typography.titleLarge.copy(fontWeight = SemiBold),
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -88,21 +88,21 @@ fun PlaybackSpeedComposable(
                     colors = SliderDefaults.colors(
                         thumbColor = colorScheme.primary,
                         activeTrackColor = colorScheme.primary,
-                        inactiveTrackColor = colorScheme.primary.copy(alpha = 0.2f)
-                    )
+                        inactiveTrackColor = colorScheme.primary.copy(alpha = 0.2f),
+                    ),
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                    horizontalArrangement = Arrangement.SpaceEvenly,
                 ) {
                     playbackSpeedPresets
                         .forEach { value ->
                             Box(
                                 contentAlignment = Alignment.Center,
-                                modifier = Modifier.size(56.dp)
+                                modifier = Modifier.size(56.dp),
                             ) {
                                 Button(
                                     onClick = {
@@ -114,9 +114,9 @@ fun PlaybackSpeedComposable(
                                         containerColor = when (selectedPlaybackSpeed == value) {
                                             true -> colorScheme.primary
                                             else -> colorScheme.surfaceContainer
-                                        }
+                                        },
                                     ),
-                                    modifier = Modifier.fillMaxSize()
+                                    modifier = Modifier.fillMaxSize(),
                                 ) {}
                                 Text(
                                     text = String.format("%.2f", value),
@@ -125,7 +125,7 @@ fun PlaybackSpeedComposable(
                                         false -> typography.labelMedium
                                     },
                                     maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                                    overflow = TextOverflow.Ellipsis,
                                 )
                             }
                         }
@@ -133,7 +133,7 @@ fun PlaybackSpeedComposable(
 
                 Spacer(modifier = Modifier.height(8.dp))
             }
-        }
+        },
     )
 }
 

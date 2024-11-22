@@ -16,7 +16,7 @@ import javax.inject.Singleton
 @Singleton
 class AudioBookshelfMediaRepository @Inject constructor(
     private val preferences: LissenSharedPreferences,
-    private val requestHeadersProvider: RequestHeadersProvider
+    private val requestHeadersProvider: RequestHeadersProvider,
 ) {
 
     private var configCache: ApiClientConfig? = null
@@ -26,7 +26,7 @@ class AudioBookshelfMediaRepository @Inject constructor(
         safeCall { getClientInstance().getItemCover(itemId) }
 
     private suspend fun safeCall(
-        apiCall: suspend () -> Response<ResponseBody>
+        apiCall: suspend () -> Response<ResponseBody>,
     ): ApiResult<InputStream> {
         return try {
             val response = apiCall.invoke()
@@ -60,7 +60,7 @@ class AudioBookshelfMediaRepository @Inject constructor(
         val cache = ApiClientConfig(
             host = host,
             token = token,
-            customHeaders = requestHeadersProvider.fetchRequestHeaders()
+            customHeaders = requestHeadersProvider.fetchRequestHeaders(),
         )
 
         val currentClientCache = clientCache
@@ -92,11 +92,11 @@ class AudioBookshelfMediaRepository @Inject constructor(
 
     private fun apiClient(
         host: String,
-        token: String
+        token: String,
     ): BinaryApiClient = BinaryApiClient(
         host = host,
         token = token,
-        requestHeaders = requestHeadersProvider.fetchRequestHeaders()
+        requestHeaders = requestHeadersProvider.fetchRequestHeaders(),
     )
 
     companion object {

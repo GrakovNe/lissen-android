@@ -10,6 +10,6 @@ class LoginResponseConverter @Inject constructor() {
 
     fun apply(response: LoggedUserResponse): UserAccount = UserAccount(
         token = response.user.token,
-        preferredLibraryId = response.userDefaultLibraryId
+        preferredLibraryId = response.userDefaultLibraryId,
     )
 }

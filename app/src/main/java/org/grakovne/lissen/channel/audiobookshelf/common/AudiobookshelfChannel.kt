@@ -26,12 +26,12 @@ abstract class AudiobookshelfChannel(
     private val libraryResponseConverter: LibraryResponseConverter,
     private val mediaRepository: AudioBookshelfMediaRepository,
     private val recentBookResponseConverter: RecentListeningResponseConverter,
-    private val connectionInfoResponseConverter: ConnectionInfoResponseConverter
+    private val connectionInfoResponseConverter: ConnectionInfoResponseConverter,
 ) : MediaChannel {
 
     override fun provideFileUri(
         libraryItemId: String,
-        fileId: String
+        fileId: String,
     ): Uri = Uri.parse(preferences.getHost())
         .buildUpon()
         .appendPath("api")
@@ -44,11 +44,11 @@ abstract class AudiobookshelfChannel(
 
     override suspend fun syncProgress(
         sessionId: String,
-        progress: PlaybackProgress
+        progress: PlaybackProgress,
     ): ApiResult<Unit> = syncService.syncProgress(sessionId, progress)
 
     override suspend fun fetchBookCover(
-        bookId: String
+        bookId: String,
     ): ApiResult<InputStream> = mediaRepository.fetchBookCover(bookId)
 
     override suspend fun fetchLibraries(): ApiResult<List<Library>> = dataRepository

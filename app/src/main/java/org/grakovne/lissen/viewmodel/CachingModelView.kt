@@ -17,7 +17,7 @@ import javax.inject.Inject
 class CachingModelView @Inject constructor(
     private val cachingService: BookCachingService,
     private val preferences: LissenSharedPreferences,
-    private val mediaProvider: LissenMediaProvider
+    private val mediaProvider: LissenMediaProvider,
 ) : ViewModel() {
 
     private val _bookCachingProgress = mutableMapOf<String, MutableStateFlow<CacheProgress>>()

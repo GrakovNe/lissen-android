@@ -32,12 +32,12 @@ class BookCachingService @Inject constructor(
     private val bookRepository: CachedBookRepository,
     private val libraryRepository: CachedLibraryRepository,
     private val properties: CacheBookStorageProperties,
-    private val requestHeadersProvider: RequestHeadersProvider
+    private val requestHeadersProvider: RequestHeadersProvider,
 ) {
 
     fun cacheBook(
         book: Book,
-        channel: MediaChannel
+        channel: MediaChannel,
     ) = flow {
         emit(CacheProgress.Caching)
 
@@ -45,7 +45,7 @@ class BookCachingService @Inject constructor(
             .fetchBook(book.id)
             .fold(
                 onSuccess = { it },
-                onFailure = { null }
+                onFailure = { null },
             )
 
         if (null == detailedBook) {
@@ -58,7 +58,7 @@ class BookCachingService @Inject constructor(
                 async { cacheBookCover(detailedBook, channel) },
                 async { cacheBookMedia(detailedBook, channel) },
                 async { cacheLibraries(channel) },
-                async { cacheBookInfo(detailedBook) }
+                async { cacheBookInfo(detailedBook) },
             ).awaitAll()
         }
 
@@ -111,7 +111,7 @@ class BookCachingService @Inject constructor(
 
     private suspend fun awaitDownloadProgress(
         jobs: List<Long>,
-        downloadManager: DownloadManager
+        downloadManager: DownloadManager,
     ): CacheProgress {
         val result = checkDownloads(jobs, downloadManager)
 
@@ -161,7 +161,7 @@ class BookCachingService @Inject constructor(
                         }
                     },
                     onFailure = {
-                    }
+                    },
                 )
 
             CacheProgress.Completed
@@ -177,7 +177,7 @@ class BookCachingService @Inject constructor(
             },
             onFailure = {
                 CacheProgress.Error
-            }
+            },
         )
 
     private suspend fun cacheBookInfo(book: DetailedItem) = bookRepository

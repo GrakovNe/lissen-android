@@ -17,7 +17,7 @@ class PodcastResponseConverter @Inject constructor() {
 
     fun apply(
         item: PodcastResponse,
-        progressResponse: MediaProgressResponse? = null
+        progressResponse: MediaProgressResponse? = null,
     ): DetailedItem {
         val orderedEpisodes = item
             .media
@@ -33,8 +33,8 @@ class PodcastResponseConverter @Inject constructor() {
                             end = accDuration + file.audioFile.duration,
                             title = file.title,
                             duration = file.audioFile.duration,
-                            id = file.id
-                        )
+                            id = file.id,
+                        ),
                     )
                     accDuration + file.audioFile.duration to chapters
                 }
@@ -51,7 +51,7 @@ class PodcastResponseConverter @Inject constructor() {
                         id = it.audioFile.ino,
                         name = it.title,
                         duration = it.audioFile.duration,
-                        mimeType = it.audioFile.mimeType
+                        mimeType = it.audioFile.mimeType,
                     )
                 }
                 ?: emptyList(),
@@ -61,9 +61,9 @@ class PodcastResponseConverter @Inject constructor() {
                     MediaProgress(
                         currentTime = it.currentTime,
                         isFinished = it.isFinished,
-                        lastUpdate = it.lastUpdate
+                        lastUpdate = it.lastUpdate,
                     )
-                }
+                },
         )
     }
 
@@ -80,7 +80,7 @@ class PodcastResponseConverter @Inject constructor() {
                     }
                 }
                     .thenBy { it.season.safeToInt() }
-                    .thenBy { it.episode.safeToInt() }
+                    .thenBy { it.episode.safeToInt() },
             )
 
         private fun String?.safeToInt(): Int? {

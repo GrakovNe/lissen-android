@@ -16,13 +16,13 @@ import javax.inject.Singleton
 @Singleton
 class AudiobookshelfAuthService @Inject constructor(
     private val loginResponseConverter: LoginResponseConverter,
-    private val requestHeadersProvider: RequestHeadersProvider
+    private val requestHeadersProvider: RequestHeadersProvider,
 ) : ChannelAuthService {
 
     override suspend fun authorize(
         host: String,
         username: String,
-        password: String
+        password: String,
     ): ApiResult<UserAccount> {
         if (host.isBlank() || !urlPattern.matches(host)) {
             return ApiResult.Error(ApiError.InvalidCredentialsHost)
@@ -33,7 +33,7 @@ class AudiobookshelfAuthService @Inject constructor(
         try {
             val apiClient = ApiClient(
                 host = host,
-                requestHeaders = requestHeadersProvider.fetchRequestHeaders()
+                requestHeaders = requestHeadersProvider.fetchRequestHeaders(),
             )
 
             apiService = apiClient.retrofit.create(AudiobookshelfApiClient::class.java)
@@ -51,7 +51,7 @@ class AudiobookshelfAuthService @Inject constructor(
                         .apply(it)
                         .let { ApiResult.Success(it) }
                 },
-                onFailure = { ApiResult.Error(it.code) }
+                onFailure = { ApiResult.Error(it.code) },
             )
     }
 

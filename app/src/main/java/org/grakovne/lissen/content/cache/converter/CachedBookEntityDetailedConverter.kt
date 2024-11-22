@@ -20,7 +20,7 @@ class CachedBookEntityDetailedConverter @Inject constructor() {
                 id = fileEntity.bookFileId,
                 name = fileEntity.name,
                 duration = fileEntity.duration,
-                mimeType = fileEntity.mimeType
+                mimeType = fileEntity.mimeType,
             )
         },
         chapters = entity.chapters.map { chapterEntity ->
@@ -29,15 +29,15 @@ class CachedBookEntityDetailedConverter @Inject constructor() {
                 start = chapterEntity.start,
                 end = chapterEntity.end,
                 title = chapterEntity.title,
-                id = chapterEntity.bookChapterId
+                id = chapterEntity.bookChapterId,
             )
         },
         progress = entity.progress?.let { progressEntity ->
             MediaProgress(
                 currentTime = progressEntity.currentTime,
                 isFinished = progressEntity.isFinished,
-                lastUpdate = progressEntity.lastUpdate
+                lastUpdate = progressEntity.lastUpdate,
             )
-        }
+        },
     )
 }

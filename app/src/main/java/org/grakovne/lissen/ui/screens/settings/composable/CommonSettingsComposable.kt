@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.common.ColorScheme
-import org.grakovne.lissen.ui.icons.Book_2
+import org.grakovne.lissen.ui.icons.Book
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
@@ -51,13 +51,13 @@ fun CommonSettingsComposable(viewModel: SettingsViewModel) {
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { preferredLibraryExpanded = true }
-                .padding(horizontal = 24.dp, vertical = 12.dp)
+                .padding(horizontal = 24.dp, vertical = 12.dp),
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = stringResource(R.string.settings_screen_preferred_library_title),
                     style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                    modifier = Modifier.padding(bottom = 4.dp)
+                    modifier = Modifier.padding(bottom = 4.dp),
                 )
                 Text(
                     text = preferredLibrary?.title
@@ -66,7 +66,7 @@ fun CommonSettingsComposable(viewModel: SettingsViewModel) {
                     color = when (preferredLibrary?.title) {
                         null -> colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
                         else -> colorScheme.onSurfaceVariant
-                    }
+                    },
                 )
             }
         }
@@ -76,20 +76,20 @@ fun CommonSettingsComposable(viewModel: SettingsViewModel) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable { colorSchemeExpanded = true }
-            .padding(horizontal = 24.dp, vertical = 12.dp)
+            .padding(horizontal = 24.dp, vertical = 12.dp),
     ) {
         Column(
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
         ) {
             Text(
                 text = stringResource(R.string.settings_screen_color_scheme_title),
                 style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                modifier = Modifier.padding(bottom = 4.dp)
+                modifier = Modifier.padding(bottom = 4.dp),
             )
             Text(
                 text = preferredColorScheme?.toItem(context)?.name ?: "",
                 style = typography.bodyMedium,
-                color = colorScheme.onSurfaceVariant
+                color = colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -103,7 +103,7 @@ fun CommonSettingsComposable(viewModel: SettingsViewModel) {
                 libraries
                     .find { it.id == item.id }
                     ?.let { viewModel.preferLibrary(it) }
-            }
+            },
         )
     }
 
@@ -112,7 +112,7 @@ fun CommonSettingsComposable(viewModel: SettingsViewModel) {
             items = listOf(
                 ColorScheme.LIGHT.toItem(context),
                 ColorScheme.FOLLOW_SYSTEM.toItem(context),
-                ColorScheme.DARK.toItem(context)
+                ColorScheme.DARK.toItem(context),
             ),
             selectedItem = preferredColorScheme?.toItem(context),
             onDismissRequest = { colorSchemeExpanded = false },
@@ -121,7 +121,7 @@ fun CommonSettingsComposable(viewModel: SettingsViewModel) {
                     .entries
                     .find { it.name == item.id }
                     ?.let { viewModel.preferColorScheme(it) }
-            }
+            },
         )
     }
 }
@@ -138,7 +138,7 @@ private fun ColorScheme.toItem(context: Context): CommonSettingsItem {
 }
 
 private fun LibraryType.provideIcon() = when (this) {
-    LibraryType.LIBRARY -> Book_2
+    LibraryType.LIBRARY -> Book
     LibraryType.PODCAST -> Icons.Outlined.Podcasts
     LibraryType.UNKNOWN -> Icons.Outlined.NotInterested
 }

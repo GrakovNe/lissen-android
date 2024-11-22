@@ -27,11 +27,11 @@ fun AppNavHost(
     preferences: LissenSharedPreferences,
     networkQualityService: NetworkQualityService,
     navigationService: AppNavigationService,
-    imageLoader: ImageLoader
+    imageLoader: ImageLoader,
 ) {
     val hasCredentials by remember {
         mutableStateOf(
-            preferences.hasCredentials()
+            preferences.hasCredentials(),
         )
     }
     val startDestination = when {
@@ -44,13 +44,13 @@ fun AppNavHost(
 
         NavHost(
             navController = navController,
-            startDestination = startDestination
+            startDestination = startDestination,
         ) {
             composable("library_screen") {
                 LibraryScreen(
                     navController = navigationService,
                     imageLoader = imageLoader,
-                    networkQualityService = networkQualityService
+                    networkQualityService = networkQualityService,
                 )
             }
 
@@ -58,8 +58,8 @@ fun AppNavHost(
                 "player_screen/{bookId}?bookTitle={bookTitle}",
                 arguments = listOf(
                     navArgument("bookId") { type = NavType.StringType },
-                    navArgument("bookTitle") { type = NavType.StringType; nullable = true }
-                )
+                    navArgument("bookTitle") { type = NavType.StringType; nullable = true },
+                ),
             ) { navigationStack ->
                 val bookId = navigationStack.arguments?.getString("bookId") ?: return@composable
                 val bookTitle = navigationStack.arguments?.getString("bookTitle") ?: ""
@@ -68,7 +68,7 @@ fun AppNavHost(
                     navController = navigationService,
                     imageLoader = imageLoader,
                     bookId = bookId,
-                    bookTitle = bookTitle
+                    bookTitle = bookTitle,
                 )
             }
 
@@ -83,7 +83,7 @@ fun AppNavHost(
                             navController.popBackStack()
                         }
                     },
-                    navController = navigationService
+                    navController = navigationService,
                 )
             }
 
@@ -93,7 +93,7 @@ fun AppNavHost(
                         if (navController.previousBackStackEntry != null) {
                             navController.popBackStack()
                         }
-                    }
+                    },
                 )
             }
         }

@@ -39,7 +39,7 @@ class LibraryAudiobookshelfChannel @Inject constructor(
     connectionInfoResponseConverter: ConnectionInfoResponseConverter,
     private val libraryPageResponseConverter: LibraryPageResponseConverter,
     private val bookResponseConverter: BookResponseConverter,
-    private val librarySearchItemsConverter: LibrarySearchItemsConverter
+    private val librarySearchItemsConverter: LibrarySearchItemsConverter,
 ) : AudiobookshelfChannel(
     dataRepository = dataRepository,
     mediaRepository = mediaRepository,
@@ -48,7 +48,7 @@ class LibraryAudiobookshelfChannel @Inject constructor(
     preferences = preferences,
     syncService = syncService,
     libraryResponseConverter = libraryResponseConverter,
-    connectionInfoResponseConverter = connectionInfoResponseConverter
+    connectionInfoResponseConverter = connectionInfoResponseConverter,
 ) {
 
     override fun getLibraryType() = LibraryType.LIBRARY
@@ -56,19 +56,19 @@ class LibraryAudiobookshelfChannel @Inject constructor(
     override suspend fun fetchBooks(
         libraryId: String,
         pageSize: Int,
-        pageNumber: Int
+        pageNumber: Int,
     ): ApiResult<PagedItems<Book>> = dataRepository
         .fetchLibraryItems(
             libraryId = libraryId,
             pageSize = pageSize,
-            pageNumber = pageNumber
+            pageNumber = pageNumber,
         )
         .map { libraryPageResponseConverter.apply(it) }
 
     override suspend fun searchBooks(
         libraryId: String,
         query: String,
-        limit: Int
+        limit: Int,
     ): ApiResult<List<Book>> = coroutineScope {
         val byTitle = async {
             dataRepository
@@ -92,7 +92,7 @@ class LibraryAudiobookshelfChannel @Inject constructor(
                             authorResponse
                                 .fold(
                                     onSuccess = { it.libraryItems },
-                                    onFailure = { emptyList() }
+                                    onFailure = { emptyList() },
                                 )
                         }
                 }
@@ -106,24 +106,24 @@ class LibraryAudiobookshelfChannel @Inject constructor(
         bookId: String,
         episodeId: String,
         supportedMimeTypes: List<String>,
-        deviceId: String
+        deviceId: String,
     ): ApiResult<PlaybackSession> {
         val request = PlaybackStartRequest(
             supportedMimeTypes = supportedMimeTypes,
             deviceInfo = DeviceInfo(
                 clientName = getClientName(),
                 deviceId = deviceId,
-                deviceName = getClientName()
+                deviceName = getClientName(),
             ),
             forceTranscode = false,
             forceDirectPlay = false,
-            mediaPlayer = getClientName()
+            mediaPlayer = getClientName(),
         )
 
         return dataRepository
             .startPlayback(
                 itemId = bookId,
-                request = request
+                request = request,
             )
             .map { sessionResponseConverter.apply(it) }
     }
@@ -138,10 +138,10 @@ class LibraryAudiobookshelfChannel @Inject constructor(
                     .await()
                     .fold(
                         onSuccess = { Success(bookResponseConverter.apply(item, it)) },
-                        onFailure = { Success(bookResponseConverter.apply(item, null)) }
+                        onFailure = { Success(bookResponseConverter.apply(item, null)) },
                     )
             },
-            onFailure = { ApiResult.Error(it.code) }
+            onFailure = { ApiResult.Error(it.code) },
         )
     }
 }

@@ -33,7 +33,7 @@ fun CommonSettingsItemComposable(
     items: List<CommonSettingsItem>,
     selectedItem: CommonSettingsItem?,
     onDismissRequest: () -> Unit,
-    onItemSelected: (CommonSettingsItem) -> Unit
+    onItemSelected: (CommonSettingsItem) -> Unit,
 ) {
     var activeItem by remember { mutableStateOf(selectedItem) }
 
@@ -45,7 +45,7 @@ fun CommonSettingsItemComposable(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 16.dp)
-                    .padding(horizontal = 16.dp)
+                    .padding(horizontal = 16.dp),
             ) {
                 Spacer(modifier = Modifier.height(8.dp))
                 LazyColumn(modifier = Modifier.fillMaxWidth()) {
@@ -56,7 +56,7 @@ fun CommonSettingsItemComposable(
                                     Icon(
                                         imageVector = it,
                                         contentDescription = "Settings Item Icon",
-                                        modifier = Modifier.size(24.dp)
+                                        modifier = Modifier.size(24.dp),
                                     )
                                 }
                             },
@@ -68,7 +68,7 @@ fun CommonSettingsItemComposable(
                                     Icon(
                                         imageVector = Icons.Outlined.Check,
                                         contentDescription = null,
-                                        modifier = Modifier.size(24.dp)
+                                        modifier = Modifier.size(24.dp),
                                     )
                                 }
                             },
@@ -78,12 +78,12 @@ fun CommonSettingsItemComposable(
                                     activeItem = item
                                     onItemSelected(item)
                                     onDismissRequest()
-                                }
+                                },
                         )
                         HorizontalDivider()
                     }
                 }
             }
-        }
+        },
     )
 }

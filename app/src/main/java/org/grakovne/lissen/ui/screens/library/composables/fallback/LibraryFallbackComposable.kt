@@ -31,7 +31,7 @@ import org.grakovne.lissen.viewmodel.CachingModelView
 fun LibraryFallbackComposable(
     searchRequested: Boolean,
     cachingModelView: CachingModelView,
-    networkQualityService: NetworkQualityService
+    networkQualityService: NetworkQualityService,
 ) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
@@ -41,10 +41,10 @@ fun LibraryFallbackComposable(
             .fillMaxWidth()
             .height(screenHeight / 2)
             .padding(horizontal = 16.dp),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             val hasNetwork = networkQualityService.isNetworkAvailable()
             val isLocalCache = cachingModelView.localCacheUsing()
@@ -69,13 +69,13 @@ fun LibraryFallbackComposable(
                         .size(120.dp)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.surfaceContainer),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Icon(
                         imageVector = it,
                         contentDescription = "Library placeholder",
                         tint = Color.White,
-                        modifier = Modifier.size(64.dp)
+                        modifier = Modifier.size(64.dp),
                     )
                 }
             }
@@ -85,7 +85,7 @@ fun LibraryFallbackComposable(
                     textAlign = TextAlign.Center,
                     text = it,
                     style = MaterialTheme.typography.headlineMedium,
-                    modifier = Modifier.padding(top = 36.dp)
+                    modifier = Modifier.padding(top = 36.dp),
                 )
             }
         }

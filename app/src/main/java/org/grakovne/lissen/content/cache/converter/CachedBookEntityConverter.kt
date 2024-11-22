@@ -14,6 +14,6 @@ class CachedBookEntityConverter @Inject constructor() {
         title = entity.title,
         author = entity.author,
         duration = entity.duration,
-        cachedState = BookCachedState.CACHED
+        cachedState = BookCachedState.CACHED,
     )
 }

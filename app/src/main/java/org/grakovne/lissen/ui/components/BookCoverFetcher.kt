@@ -22,7 +22,7 @@ import javax.inject.Singleton
 class BookCoverFetcher(
     private val mediaChannel: LissenMediaProvider,
     private val uri: Uri,
-    private val context: Context
+    private val context: Context,
 ) : Fetcher {
 
     override suspend fun fetch(): FetchResult? =
@@ -36,7 +36,7 @@ class BookCoverFetcher(
                 SourceResult(
                     source = imageSource,
                     mimeType = null,
-                    dataSource = coil.decode.DataSource.NETWORK
+                    dataSource = coil.decode.DataSource.NETWORK,
                 )
             }
         }
@@ -44,7 +44,7 @@ class BookCoverFetcher(
 
 class BookCoverFetcherFactory(
     private val dataProvider: LissenMediaProvider,
-    private val context: Context
+    private val context: Context,
 ) : Fetcher.Factory<Uri> {
 
     override fun create(data: Uri, options: Options, imageLoader: ImageLoader) =
@@ -59,14 +59,14 @@ object ImageLoaderModule {
     @Provides
     fun provideBookCoverFetcherFactory(
         mediaChannel: LissenMediaProvider,
-        @ApplicationContext context: Context
+        @ApplicationContext context: Context,
     ): BookCoverFetcherFactory = BookCoverFetcherFactory(mediaChannel, context)
 
     @Singleton
     @Provides
     fun provideCustomImageLoader(
         @ApplicationContext context: Context,
-        bookCoverFetcherFactory: BookCoverFetcherFactory
+        bookCoverFetcherFactory: BookCoverFetcherFactory,
     ): ImageLoader {
         return ImageLoader
             .Builder(context)

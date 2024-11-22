@@ -20,7 +20,7 @@ import javax.inject.Singleton
 class LocalCacheRepository @Inject constructor(
     private val cachedBookRepository: CachedBookRepository,
     private val cachedLibraryRepository: CachedLibraryRepository,
-    private val properties: CacheBookStorageProperties
+    private val properties: CacheBookStorageProperties,
 ) {
 
     fun provideFileUri(libraryItemId: String, fileId: String): Uri? =
@@ -34,7 +34,7 @@ class LocalCacheRepository @Inject constructor(
      */
     suspend fun syncProgress(
         bookId: String,
-        progress: PlaybackProgress
+        progress: PlaybackProgress,
     ): ApiResult<Unit> {
         cachedBookRepository.syncProgress(bookId, progress)
         return ApiResult.Success(Unit)
@@ -51,7 +51,7 @@ class LocalCacheRepository @Inject constructor(
     }
 
     suspend fun searchBooks(
-        query: String
+        query: String,
     ): ApiResult<List<Book>> = cachedBookRepository
         .searchBooks(query = query)
         .filter { checkBookIntegrity(it.id) }
@@ -59,7 +59,7 @@ class LocalCacheRepository @Inject constructor(
 
     suspend fun fetchBooks(
         pageSize: Int,
-        pageNumber: Int
+        pageNumber: Int,
     ): ApiResult<PagedItems<Book>> {
         val books = cachedBookRepository
             .fetchBooks(pageNumber = pageNumber, pageSize = pageSize)
@@ -69,8 +69,8 @@ class LocalCacheRepository @Inject constructor(
             .Success(
                 PagedItems(
                     items = books,
-                    currentPage = pageNumber
-                )
+                    currentPage = pageNumber,
+                ),
             )
     }
 
@@ -87,14 +87,14 @@ class LocalCacheRepository @Inject constructor(
      * as a Playback Session Key
      */
     fun startPlayback(
-        bookId: String
+        bookId: String,
     ): ApiResult<PlaybackSession> =
         ApiResult
             .Success(
                 PlaybackSession(
                     bookId = bookId,
-                    sessionId = bookId
-                )
+                    sessionId = bookId,
+                ),
             )
 
     suspend fun fetchRecentListenedBooks(): ApiResult<List<RecentBook>> =

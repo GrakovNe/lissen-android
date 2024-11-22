@@ -54,7 +54,7 @@ import org.grakovne.lissen.viewmodel.PlayerViewModel
 @Composable
 fun PlayingQueueComposable(
     viewModel: PlayerViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -101,7 +101,7 @@ fun PlayingQueueComposable(
     val fontSize by animateFloatAsState(
         targetValue = typography.titleMedium.fontSize.value * 1.25f,
         animationSpec = tween(durationMillis = 500),
-        label = "playing_queue_font_size"
+        label = "playing_queue_font_size",
     )
 
     LaunchedEffect(currentTrackIndex) {
@@ -111,14 +111,14 @@ fun PlayingQueueComposable(
             listState = listState,
             playbackReady = playbackReady,
             animate = true,
-            playingQueueExpanded = playingQueueExpanded
+            playingQueueExpanded = playingQueueExpanded,
         )
     }
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = 16.dp),
     ) {
         if (playingQueueExpanded.not()) {
             Text(
@@ -126,7 +126,7 @@ fun PlayingQueueComposable(
                 fontSize = fontSize.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(horizontal = 6.dp)
+                modifier = Modifier.padding(horizontal = 6.dp),
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -142,7 +142,7 @@ fun PlayingQueueComposable(
                 .scrollable(
                     state = rememberScrollState(),
                     orientation = Orientation.Vertical,
-                    enabled = playingQueueExpanded
+                    enabled = playingQueueExpanded,
                 )
                 .onGloballyPositioned {
                     if (collapsedPlayingQueueHeight == 0) {
@@ -158,7 +158,7 @@ fun PlayingQueueComposable(
                                 listState = listState,
                                 playbackReady = playbackReady,
                                 animate = false,
-                                playingQueueExpanded = playingQueueExpanded
+                                playingQueueExpanded = playingQueueExpanded,
                             )
                         }
                     }
@@ -166,7 +166,7 @@ fun PlayingQueueComposable(
                 .nestedScroll(object : NestedScrollConnection {
                     override fun onPreScroll(
                         available: Offset,
-                        source: NestedScrollSource
+                        source: NestedScrollSource,
                     ): Offset {
                         return if (playingQueueExpanded) Offset.Zero else available
                     }
@@ -187,14 +187,14 @@ fun PlayingQueueComposable(
                         return available
                     }
                 }),
-            state = listState
+            state = listState,
         ) {
             itemsIndexed(showingChapters) { index, chapter ->
                 PlaylistItemComposable(
                     track = chapter,
                     onClick = { viewModel.setChapter(chapter) },
                     isSelected = chapter.id == currentTrackId?.id,
-                    modifier = Modifier.wrapContentWidth()
+                    modifier = Modifier.wrapContentWidth(),
                 )
 
                 if (index < showingChapters.size - 1) {
@@ -202,7 +202,7 @@ fun PlayingQueueComposable(
                         thickness = 1.dp,
                         modifier = Modifier
                             .padding(start = 20.dp)
-                            .padding(vertical = 8.dp)
+                            .padding(vertical = 8.dp),
                     )
                 }
             }
@@ -215,7 +215,7 @@ private suspend fun scrollPlayingQueue(
     listState: LazyListState,
     playbackReady: Boolean,
     animate: Boolean,
-    playingQueueExpanded: Boolean
+    playingQueueExpanded: Boolean,
 ) {
     if (playingQueueExpanded) {
         return

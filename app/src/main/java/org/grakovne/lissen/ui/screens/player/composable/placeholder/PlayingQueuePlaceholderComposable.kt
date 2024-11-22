@@ -31,14 +31,14 @@ fun PlayingQueuePlaceholderComposable(modifier: Modifier = Modifier) {
             fontSize = typography.titleMedium.fontSize * 1.25f,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(horizontal = 6.dp)
+            modifier = Modifier.padding(horizontal = 6.dp),
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
         LazyColumn(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxWidth(),
         ) {
             items(10) {
                 Box(
@@ -47,14 +47,14 @@ fun PlayingQueuePlaceholderComposable(modifier: Modifier = Modifier) {
                         .height(36.dp)
                         .clip(RoundedCornerShape(8.dp))
                         .shimmer()
-                        .background(Color.Gray)
+                        .background(Color.Gray),
                 )
 
                 Spacer(Modifier.height(8.dp))
 
                 HorizontalDivider(
                     thickness = 1.dp,
-                    modifier = Modifier.padding(horizontal = 4.dp)
+                    modifier = Modifier.padding(horizontal = 4.dp),
                 )
 
                 Spacer(Modifier.height(8.dp))

@@ -17,7 +17,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val mediaChannel: LissenMediaProvider,
-    private val preferences: LissenSharedPreferences
+    private val preferences: LissenSharedPreferences,
 ) : ViewModel() {
 
     private val _host = MutableLiveData(preferences.getHost())

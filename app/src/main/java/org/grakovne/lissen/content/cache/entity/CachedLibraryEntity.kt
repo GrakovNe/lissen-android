@@ -6,11 +6,11 @@ import org.grakovne.lissen.channel.common.LibraryType
 import java.io.Serializable
 
 @Entity(
-    tableName = "libraries"
+    tableName = "libraries",
 )
 data class CachedLibraryEntity(
     @PrimaryKey
     val id: String,
     val title: String,
-    val type: LibraryType
+    val type: LibraryType,
 ) : Serializable

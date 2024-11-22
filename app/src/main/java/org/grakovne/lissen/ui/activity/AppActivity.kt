@@ -48,7 +48,7 @@ class AppActivity : ComponentActivity() {
                     navigationService = AppNavigationService(navController),
                     preferences = preferences,
                     imageLoader = imageLoader,
-                    networkQualityService = networkQualityService
+                    networkQualityService = networkQualityService,
                 )
             }
         }

@@ -42,7 +42,7 @@ import kotlin.math.max
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomHeadersSettingsScreen(
-    onBack: () -> Unit
+    onBack: () -> Unit,
 ) {
     val settingsViewModel: SettingsViewModel = hiltViewModel()
     val headers = settingsViewModel.customHeaders.observeAsState(emptyList())
@@ -60,7 +60,7 @@ fun CustomHeadersSettingsScreen(
                     Text(
                         text = stringResource(R.string.custom_headers_title),
                         style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-                        color = colorScheme.onSurface
+                        color = colorScheme.onSurface,
                     )
                 },
                 navigationIcon = {
@@ -70,10 +70,10 @@ fun CustomHeadersSettingsScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "Back",
-                            tint = colorScheme.onSurface
+                            tint = colorScheme.onSurface,
                         )
                     }
-                }
+                },
             )
         },
         modifier = Modifier
@@ -84,10 +84,10 @@ fun CustomHeadersSettingsScreen(
                 state = state,
                 contentPadding = PaddingValues(
                     top = innerPadding.calculateTopPadding(),
-                    bottom = innerPadding.calculateBottomPadding() + fabHeight + additionalPadding
+                    bottom = innerPadding.calculateBottomPadding() + fabHeight + additionalPadding,
                 ),
                 modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 val customHeaders = when (headers.value.isEmpty()) {
                     true -> listOf(ServerRequestHeader.empty())
@@ -112,14 +112,14 @@ fun CustomHeadersSettingsScreen(
                             }
 
                             settingsViewModel.updateCustomHeaders(updatedList)
-                        }
+                        },
                     )
 
                     if (index < customHeaders.size - 1) {
                         HorizontalDivider(
                             modifier = Modifier
                                 .height(1.dp)
-                                .padding(horizontal = 24.dp)
+                                .padding(horizontal = 24.dp),
                         )
                     }
                 }
@@ -138,13 +138,13 @@ fun CustomHeadersSettingsScreen(
                     coroutineScope.launch {
                         state.scrollToItem(max(0, updatedList.size - 1))
                     }
-                }
+                },
             ) {
                 Icon(
                     imageVector = Icons.Filled.Add,
-                    contentDescription = "Add"
+                    contentDescription = "Add",
                 )
             }
-        }
+        },
     )
 }

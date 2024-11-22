@@ -23,7 +23,7 @@ class CachedBookRepository @Inject constructor(
     private val properties: CacheBookStorageProperties,
     private val cachedBookEntityConverter: CachedBookEntityConverter,
     private val cachedBookEntityDetailedConverter: CachedBookEntityDetailedConverter,
-    private val cachedBookEntityRecentConverter: CachedBookEntityRecentConverter
+    private val cachedBookEntityRecentConverter: CachedBookEntityRecentConverter,
 ) {
 
     fun provideFileUri(bookId: String, fileId: String): Uri = properties
@@ -46,13 +46,13 @@ class CachedBookRepository @Inject constructor(
 
     suspend fun fetchBooks(
         pageNumber: Int,
-        pageSize: Int
+        pageSize: Int,
     ): List<Book> = bookDao
         .fetchCachedBooks(pageNumber = pageNumber, pageSize = pageSize)
         .map { cachedBookEntityConverter.apply(it) }
 
     suspend fun searchBooks(
-        query: String
+        query: String,
     ): List<Book> = bookDao
         .searchCachedBooks(searchQuery = query)
         .map { cachedBookEntityConverter.apply(it) }
@@ -63,7 +63,7 @@ class CachedBookRepository @Inject constructor(
             .map { cachedBookEntityRecentConverter.apply(it) }
 
     suspend fun fetchBook(
-        bookId: String
+        bookId: String,
     ): DetailedItem? = bookDao
         .fetchCachedBook(bookId)
         ?.let { cachedBookEntityDetailedConverter.apply(it) }
@@ -75,7 +75,7 @@ class CachedBookRepository @Inject constructor(
             bookId = bookId,
             currentTime = progress.currentTime,
             isFinished = progress.currentTime == book.chapters.sumOf { it.duration },
-            lastUpdate = Instant.now().toEpochMilli()
+            lastUpdate = Instant.now().toEpochMilli(),
         )
 
         bookDao.upsertMediaProgress(entity)

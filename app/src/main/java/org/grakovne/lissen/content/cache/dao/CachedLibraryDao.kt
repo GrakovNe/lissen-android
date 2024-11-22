@@ -17,7 +17,7 @@ interface CachedLibraryDao {
             CachedLibraryEntity(
                 id = it.id,
                 title = it.title,
-                type = it.type
+                type = it.type,
             )
         }
 

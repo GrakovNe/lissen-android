@@ -23,7 +23,7 @@ object LocalCacheModule {
         val database = Room.databaseBuilder(
             context = context,
             klass = LocalCacheStorage::class.java,
-            name = DATABASE_NAME
+            name = DATABASE_NAME,
         )
 
         return database

@@ -16,13 +16,13 @@ fun RequestNotificationPermissions() {
 
     val permissionRequestLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
-        onResult = { }
+        onResult = { },
     )
     LaunchedEffect(Unit) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val permissionStatus = ContextCompat.checkSelfPermission(
                 context,
-                Manifest.permission.POST_NOTIFICATIONS
+                Manifest.permission.POST_NOTIFICATIONS,
             )
 
             when (permissionStatus == PackageManager.PERMISSION_GRANTED) {

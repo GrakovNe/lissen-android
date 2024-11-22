@@ -10,7 +10,7 @@ class LibrarySearchPagingSource(
     private val preferences: LissenSharedPreferences,
     private val mediaChannel: LissenMediaProvider,
     private val searchToken: String,
-    private val limit: Int
+    private val limit: Int,
 ) : PagingSource<Int, Book>() {
 
     override fun getRefreshKey(state: PagingState<Int, Book>) = null
@@ -29,7 +29,7 @@ class LibrarySearchPagingSource(
             .searchBooks(libraryId, searchToken, limit)
             .fold(
                 onSuccess = { LoadResult.Page(it, null, null) },
-                onFailure = { LoadResult.Page(emptyList(), null, null) }
+                onFailure = { LoadResult.Page(emptyList(), null, null) },
             )
     }
 }

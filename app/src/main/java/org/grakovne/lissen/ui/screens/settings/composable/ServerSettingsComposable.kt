@@ -37,7 +37,7 @@ import org.grakovne.lissen.viewmodel.SettingsViewModel
 @Composable
 fun ServerSettingsComposable(
     navController: AppNavigationService,
-    viewModel: SettingsViewModel
+    viewModel: SettingsViewModel,
 ) {
     var connectionInfoExpanded by remember { mutableStateOf(false) }
 
@@ -50,13 +50,13 @@ fun ServerSettingsComposable(
             .fillMaxWidth()
             .clickable { connectionInfoExpanded = true }
             .padding(start = 24.dp, end = 12.dp, top = 12.dp, bottom = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = stringResource(R.string.settings_screen_server_connection),
                 style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                modifier = Modifier.padding(bottom = 4.dp)
+                modifier = Modifier.padding(bottom = 4.dp),
             )
 
             Text(
@@ -64,18 +64,18 @@ fun ServerSettingsComposable(
                 style = typography.bodyMedium,
                 maxLines = 1,
                 modifier = Modifier.padding(bottom = 4.dp),
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
             )
         }
         IconButton(
             onClick = {
                 navController.showLogin()
                 viewModel.logout()
-            }
+            },
         ) {
             Icon(
                 imageVector = Icons.Outlined.Delete,
-                contentDescription = "Logout"
+                contentDescription = "Logout",
             )
         }
     }
@@ -89,23 +89,23 @@ fun ServerSettingsComposable(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp)
-                        .padding(horizontal = 16.dp)
+                        .padding(horizontal = 16.dp),
                 ) {
                     viewModel.username.value?.let {
                         InfoRow(
                             label = stringResource(R.string.settings_screen_connected_as_title),
-                            value = it
+                            value = it,
                         )
                         HorizontalDivider()
                     }
                     viewModel.serverVersion.value?.let {
                         InfoRow(
                             label = stringResource(R.string.settings_screen_server_version),
-                            value = it
+                            value = it,
                         )
                     }
                 }
-            }
+            },
         )
     }
 }
@@ -116,11 +116,11 @@ fun InfoRow(label: String, value: String) {
         headlineContent = {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(text = label)
                 Text(text = value)
             }
-        }
+        },
     )
 }

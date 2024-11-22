@@ -12,7 +12,7 @@ class MimeTypeProvider {
             "audio/webm",
             "audio/ac3",
             "audio/opus",
-            "audio/vorbis"
+            "audio/vorbis",
         )
     }
 }

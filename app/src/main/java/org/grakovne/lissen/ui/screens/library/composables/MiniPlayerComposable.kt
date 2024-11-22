@@ -46,19 +46,19 @@ fun MiniPlayerComposable(
     modifier: Modifier = Modifier,
     book: DetailedItem,
     imageLoader: ImageLoader,
-    playerViewModel: PlayerViewModel
+    playerViewModel: PlayerViewModel,
 ) {
     val isPlaying: Boolean by playerViewModel.isPlaying.observeAsState(false)
 
     Surface(
         shadowElevation = 4.dp,
-        modifier = modifier.clickable { navController.showPlayer(book.id, book.title) }
+        modifier = modifier.clickable { navController.showPlayer(book.id, book.title) },
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             val context = LocalContext.current
             val imageRequest = remember(book.id) {
@@ -77,22 +77,22 @@ fun MiniPlayerComposable(
                     .size(48.dp)
                     .aspectRatio(1f)
                     .clip(RoundedCornerShape(4.dp)),
-                error = painterResource(R.drawable.cover_fallback)
+                error = painterResource(R.drawable.cover_fallback),
             )
 
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             ) {
                 Text(
                     text = book.title,
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onBackground
+                        color = MaterialTheme.colorScheme.onBackground,
                     ),
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
                 )
                 book
                     .author
@@ -100,26 +100,26 @@ fun MiniPlayerComposable(
                         Text(
                             text = it,
                             style = MaterialTheme.typography.bodyMedium.copy(
-                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                             ),
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
             }
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.Center,
             ) {
                 Row {
                     IconButton(
-                        onClick = { playerViewModel.togglePlayPause() }
+                        onClick = { playerViewModel.togglePlayPause() },
                     ) {
                         Icon(
                             imageVector = if (isPlaying) Icons.Outlined.Pause else Icons.Filled.PlayArrow,
                             contentDescription = if (isPlaying) "Pause" else "Play",
-                            modifier = Modifier.size(36.dp)
+                            modifier = Modifier.size(36.dp),
                         )
                     }
                 }

@@ -18,7 +18,7 @@ import javax.inject.Singleton
 @Singleton
 class WidgetPlaybackController @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val mediaRepository: MediaRepository
+    private val mediaRepository: MediaRepository,
 ) {
 
     private var playbackReadyAction: () -> Unit = {}
@@ -60,7 +60,7 @@ class WidgetPlaybackController @Inject constructor(
 
     suspend fun prepareAndRun(
         itemId: String,
-        onPlaybackReady: () -> Unit
+        onPlaybackReady: () -> Unit,
     ) {
         playbackReadyAction = onPlaybackReady
         mediaRepository.preparePlayback(bookId = itemId, fromBackground = true)

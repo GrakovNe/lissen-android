@@ -37,7 +37,7 @@ class PodcastAudiobookshelfChannel @Inject constructor(
     connectionInfoResponseConverter: ConnectionInfoResponseConverter,
     private val podcastPageResponseConverter: PodcastPageResponseConverter,
     private val podcastResponseConverter: PodcastResponseConverter,
-    private val podcastSearchItemsConverter: PodcastSearchItemsConverter
+    private val podcastSearchItemsConverter: PodcastSearchItemsConverter,
 ) : AudiobookshelfChannel(
     dataRepository = dataRepository,
     mediaRepository = mediaRepository,
@@ -46,7 +46,7 @@ class PodcastAudiobookshelfChannel @Inject constructor(
     preferences = preferences,
     syncService = syncService,
     libraryResponseConverter = libraryResponseConverter,
-    connectionInfoResponseConverter = connectionInfoResponseConverter
+    connectionInfoResponseConverter = connectionInfoResponseConverter,
 ) {
 
     override fun getLibraryType() = LibraryType.PODCAST
@@ -54,19 +54,19 @@ class PodcastAudiobookshelfChannel @Inject constructor(
     override suspend fun fetchBooks(
         libraryId: String,
         pageSize: Int,
-        pageNumber: Int
+        pageNumber: Int,
     ): ApiResult<PagedItems<Book>> = dataRepository
         .fetchPodcastItems(
             libraryId = libraryId,
             pageSize = pageSize,
-            pageNumber = pageNumber
+            pageNumber = pageNumber,
         )
         .map { podcastPageResponseConverter.apply(it) }
 
     override suspend fun searchBooks(
         libraryId: String,
         query: String,
-        limit: Int
+        limit: Int,
     ): ApiResult<List<Book>> = coroutineScope {
         val byTitle = async {
             dataRepository
@@ -83,25 +83,25 @@ class PodcastAudiobookshelfChannel @Inject constructor(
         bookId: String,
         episodeId: String,
         supportedMimeTypes: List<String>,
-        deviceId: String
+        deviceId: String,
     ): ApiResult<PlaybackSession> {
         val request = PlaybackStartRequest(
             supportedMimeTypes = supportedMimeTypes,
             deviceInfo = DeviceInfo(
                 clientName = getClientName(),
                 deviceId = deviceId,
-                deviceName = getClientName()
+                deviceName = getClientName(),
             ),
             forceTranscode = false,
             forceDirectPlay = false,
-            mediaPlayer = getClientName()
+            mediaPlayer = getClientName(),
         )
 
         return dataRepository
             .startPodcastPlayback(
                 itemId = bookId,
                 episodeId = episodeId,
-                request = request
+                request = request,
             )
             .map { sessionResponseConverter.apply(it) }
     }
@@ -112,7 +112,7 @@ class PodcastAudiobookshelfChannel @Inject constructor(
                 .fetchUserInfoResponse()
                 .fold(
                     onSuccess = { it.user.mediaProgress ?: emptyList() },
-                    onFailure = { emptyList() }
+                    onFailure = { emptyList() },
                 )
 
             if (progress.isEmpty()) {

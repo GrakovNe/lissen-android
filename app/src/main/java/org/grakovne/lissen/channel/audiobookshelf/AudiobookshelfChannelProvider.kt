@@ -19,7 +19,7 @@ class AudiobookshelfChannelProvider @Inject constructor(
     private val libraryAudiobookshelfChannel: LibraryAudiobookshelfChannel,
     private val unknownAudiobookshelfChannel: UnknownAudiobookshelfChannel,
     private val audiobookshelfAuthService: AudiobookshelfAuthService,
-    private val sharedPreferences: LissenSharedPreferences
+    private val sharedPreferences: LissenSharedPreferences,
 ) : ChannelProvider {
 
     override fun provideMediaChannel(): MediaChannel {
