@@ -24,6 +24,9 @@ class PlayerWidgetStateService @Inject constructor(
     private val mediaProvider: LissenMediaProvider
 ) : RunningComponent {
 
+    private var playingBookId: String? = null
+    private var cachedCover: ByteArray? = null
+
     private val scope = CoroutineScope(Dispatchers.IO)
 
     override fun onCreate() {
@@ -35,12 +38,22 @@ class PlayerWidgetStateService @Inject constructor(
             ) { book, isPlaying, chapterIndex ->
                 val chapterTitle = provideChapterTitle(book, chapterIndex)
 
-                val maybeCover = book
-                    .let { mediaProvider.fetchBookCover(it.id) }
-                    .fold(
-                        onSuccess = { it.readBytes() },
-                        onFailure = { null }
-                    )
+                val maybeCover = when (playingBookId != book.id || cachedCover == null) {
+                    true ->
+                        book
+                            .let { mediaProvider.fetchBookCover(it.id) }
+                            .fold(
+                                onSuccess = {
+                                    it
+                                        .readBytes()
+                                        .also { cover -> cachedCover = cover }
+                                        .also { playingBookId = book.id }
+                                },
+                                onFailure = { null }
+                            )
+
+                    false -> cachedCover
+                }
 
                 PlayingItemState(
                     id = book.id,
