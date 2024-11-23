@@ -10,6 +10,6 @@ data class ConnectionInfoUserResponse(
 )
 
 data class ConnectionInfoServerResponse(
-    val version: String,
-    val buildNumber: String,
+    val version: String?,
+    val buildNumber: String?,
 )
