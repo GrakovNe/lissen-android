@@ -37,7 +37,6 @@ import coil.ImageLoader
 import coil.request.ImageRequest
 import org.grakovne.lissen.R
 import org.grakovne.lissen.channel.common.LibraryType
-import org.grakovne.lissen.channel.common.LibraryType.*
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.navigation.AppNavigationService
@@ -190,5 +189,5 @@ fun RecentBookItemComposable(
 
 private fun shouldShowProgress(book: RecentBook, libraryType: LibraryType): Boolean =
     book.listenedPercentage != null &&
-        libraryType == LIBRARY &&
+        libraryType == LibraryType.LIBRARY &&
         book.listenedPercentage > 0

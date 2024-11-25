@@ -29,8 +29,12 @@ interface CachedLibraryDao {
     @Query("SELECT * FROM libraries WHERE id = :libraryId")
     suspend fun fetchLibrary(libraryId: String): CachedLibraryEntity?
 
+    /**
+     * Due to we are not allows to download podcast for now,
+     * it's strictly required to hide podcast libraries from the list
+     */
     @Transaction
-    @Query("SELECT * FROM libraries")
+    @Query("SELECT * FROM libraries WHERE type = 'LIBRARY'")
     suspend fun fetchLibraries(): List<CachedLibraryEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
