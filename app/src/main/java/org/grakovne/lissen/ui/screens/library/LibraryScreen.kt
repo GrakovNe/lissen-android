@@ -272,6 +272,7 @@ fun LibraryScreen(
                                     navController = navController,
                                     recentBooks = showingRecentBooks,
                                     imageLoader = imageLoader,
+                                    libraryViewModel = libraryViewModel,
                                 )
 
                                 Spacer(modifier = Modifier.height(20.dp))

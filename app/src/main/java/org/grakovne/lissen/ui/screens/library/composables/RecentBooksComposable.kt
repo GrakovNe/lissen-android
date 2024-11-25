@@ -36,10 +36,13 @@ import androidx.compose.ui.unit.dp
 import coil.ImageLoader
 import coil.request.ImageRequest
 import org.grakovne.lissen.R
+import org.grakovne.lissen.channel.common.LibraryType
+import org.grakovne.lissen.channel.common.LibraryType.*
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.theme.FoxOrange
+import org.grakovne.lissen.viewmodel.LibraryViewModel
 
 @Composable
 fun RecentBooksComposable(
@@ -47,6 +50,7 @@ fun RecentBooksComposable(
     recentBooks: List<RecentBook>,
     imageLoader: ImageLoader,
     modifier: Modifier = Modifier,
+    libraryViewModel: LibraryViewModel,
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = remember { configuration.screenWidthDp.dp }
@@ -70,6 +74,7 @@ fun RecentBooksComposable(
                     width = itemWidth,
                     imageLoader = imageLoader,
                     navController = navController,
+                    libraryViewModel = libraryViewModel,
                 )
             }
     }
@@ -81,6 +86,7 @@ fun RecentBookItemComposable(
     book: RecentBook,
     width: Dp,
     imageLoader: ImageLoader,
+    libraryViewModel: LibraryViewModel,
 ) {
     Column(
         modifier = Modifier
@@ -130,7 +136,7 @@ fun RecentBookItemComposable(
                         .clip(RoundedCornerShape(8.dp)),
                     error = painterResource(R.drawable.cover_fallback),
                 )
-                if (shouldShowProgress(book)) {
+                if (shouldShowProgress(book, libraryViewModel.fetchPreferredLibraryType())) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -182,6 +188,7 @@ fun RecentBookItemComposable(
     }
 }
 
-
-private fun shouldShowProgress(book: RecentBook): Boolean =
-    book.listenedPercentage != null
+private fun shouldShowProgress(book: RecentBook, libraryType: LibraryType): Boolean =
+    book.listenedPercentage != null &&
+        libraryType == LIBRARY &&
+        book.listenedPercentage > 0
