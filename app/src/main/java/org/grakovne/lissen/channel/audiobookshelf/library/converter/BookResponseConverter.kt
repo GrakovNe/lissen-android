@@ -73,6 +73,7 @@ class BookResponseConverter @Inject constructor() {
                 }
                 ?: emptyList(),
             chapters = maybeChapters ?: filesAsChapters(),
+            libraryId = item.libraryId,
             progress = progressResponse
                 ?.let {
                     MediaProgress(

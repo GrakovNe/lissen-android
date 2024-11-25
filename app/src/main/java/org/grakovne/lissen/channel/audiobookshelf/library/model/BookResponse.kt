@@ -3,6 +3,7 @@ package org.grakovne.lissen.channel.audiobookshelf.library.model
 data class BookResponse(
     val id: String,
     val ino: String,
+    val libraryId: String,
     val media: BookMedia,
 )
 

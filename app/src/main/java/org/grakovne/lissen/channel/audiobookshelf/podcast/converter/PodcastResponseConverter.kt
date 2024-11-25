@@ -44,6 +44,7 @@ class PodcastResponseConverter @Inject constructor() {
         return DetailedItem(
             id = item.id,
             title = item.media.metadata.title,
+            libraryId = item.libraryId,
             author = item.media.metadata.author,
             files = orderedEpisodes
                 ?.map {

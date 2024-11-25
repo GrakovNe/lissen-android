@@ -25,6 +25,7 @@ interface CachedBookDao {
             title = book.title,
             author = book.author,
             duration = book.chapters.sumOf { it.duration }.toInt(),
+            libraryId = book.libraryId
         )
 
         val bookFiles = book
