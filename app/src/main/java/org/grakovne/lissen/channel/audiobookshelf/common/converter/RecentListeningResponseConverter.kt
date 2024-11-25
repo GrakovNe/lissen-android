@@ -8,7 +8,10 @@ import javax.inject.Singleton
 @Singleton
 class RecentListeningResponseConverter @Inject constructor() {
 
-    fun apply(response: List<PersonalizedFeedResponse>): List<RecentBook> = response
+    fun apply(
+        response: List<PersonalizedFeedResponse>,
+        progress: Map<String, Double>
+    ): List<RecentBook> = response
         .find { it.labelStringKey == LABEL_CONTINUE_LISTENING }
         ?.entities
         ?.distinctBy { it.id }
@@ -17,10 +20,12 @@ class RecentListeningResponseConverter @Inject constructor() {
                 id = it.id,
                 title = it.media.metadata.title,
                 author = it.media.metadata.authorName,
+                listenedPercentage = progress[it.id]?.let { it * 100 }?.toInt()
             )
         } ?: emptyList()
 
     companion object {
+
         private const val LABEL_CONTINUE_LISTENING = "LabelContinueListening"
     }
 }
