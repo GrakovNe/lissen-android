@@ -1,12 +1,16 @@
 package org.grakovne.lissen.ui.screens.library.composables
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -17,8 +21,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -33,6 +39,7 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.navigation.AppNavigationService
+import org.grakovne.lissen.ui.theme.FoxOrange
 
 @Composable
 fun RecentBooksComposable(
@@ -90,17 +97,62 @@ fun RecentBookItemComposable(
                 .build()
         }
 
-        AsyncShimmeringImage(
-            imageRequest = imageRequest,
-            imageLoader = imageLoader,
-            contentDescription = "${book.title} cover",
-            contentScale = ContentScale.FillBounds,
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(1f)
-                .clip(RoundedCornerShape(8.dp)),
-            error = painterResource(R.drawable.cover_fallback),
-        )
+                .clip(RoundedCornerShape(8.dp))
+                .aspectRatio(1f),
+        ) {
+            AsyncShimmeringImage(
+                imageRequest = imageRequest,
+                imageLoader = imageLoader,
+                contentDescription = "${book.title} cover",
+                contentScale = ContentScale.FillBounds,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp)),
+                error = painterResource(R.drawable.cover_fallback),
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .aspectRatio(1f),
+            ) {
+                AsyncShimmeringImage(
+                    imageRequest = imageRequest,
+                    imageLoader = imageLoader,
+                    contentDescription = "${book.title} cover",
+                    contentScale = ContentScale.FillBounds,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp)),
+                    error = painterResource(R.drawable.cover_fallback),
+                )
+                if (book.listenedPercentage != null) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(4.dp)
+                            .align(Alignment.BottomCenter),
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Gray.copy(alpha = 0.4f)),
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(book.listenedPercentage / 100.0f)
+                                .fillMaxHeight()
+                                .background(FoxOrange),
+                        )
+                    }
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
