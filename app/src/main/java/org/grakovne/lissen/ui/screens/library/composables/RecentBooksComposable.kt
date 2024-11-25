@@ -130,7 +130,7 @@ fun RecentBookItemComposable(
                         .clip(RoundedCornerShape(8.dp)),
                     error = painterResource(R.drawable.cover_fallback),
                 )
-                if (book.listenedPercentage != null) {
+                if (shouldShowProgress(book)) {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -145,7 +145,7 @@ fun RecentBookItemComposable(
 
                         Box(
                             modifier = Modifier
-                                .fillMaxWidth(book.listenedPercentage / 100.0f)
+                                .fillMaxWidth(book.listenedPercentage?.div(100.0f) ?: 0.0f)
                                 .fillMaxHeight()
                                 .background(FoxOrange),
                         )
@@ -181,3 +181,7 @@ fun RecentBookItemComposable(
         }
     }
 }
+
+
+private fun shouldShowProgress(book: RecentBook): Boolean =
+    book.listenedPercentage != null
