@@ -66,9 +66,8 @@ abstract class AudiobookshelfChannel(
                         ?.associate { item -> item.libraryItemId to item.progress }
                         ?: emptyMap()
                 },
-                onFailure = { emptyMap() }
+                onFailure = { emptyMap() },
             )
-
 
         return dataRepository
             .fetchPersonalizedFeed(libraryId)

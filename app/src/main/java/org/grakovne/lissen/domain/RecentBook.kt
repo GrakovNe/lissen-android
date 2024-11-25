@@ -4,5 +4,5 @@ data class RecentBook(
     val id: String,
     val title: String,
     val author: String?,
-    val listenedPercentage: Int? = 42,
+    val listenedPercentage: Int?,
 )

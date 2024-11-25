@@ -6,5 +6,5 @@ data class MediaProgressResponse(
     val currentTime: Double,
     val isFinished: Boolean,
     val lastUpdate: Long,
-    val progress: Double
+    val progress: Double,
 )

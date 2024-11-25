@@ -57,10 +57,17 @@ class CachedBookRepository @Inject constructor(
         .searchCachedBooks(searchQuery = query)
         .map { cachedBookEntityConverter.apply(it) }
 
-    suspend fun fetchRecentBooks(): List<RecentBook> =
-        bookDao
-            .fetchRecentlyListenedCachedBooks()
-            .map { cachedBookEntityRecentConverter.apply(it) }
+    suspend fun fetchRecentBooks(): List<RecentBook> {
+        val recentBooks = bookDao.fetchRecentlyListenedCachedBooks()
+
+        val progress = recentBooks
+            .map { it.id }
+            .mapNotNull { bookDao.fetchMediaProgress(it) }
+            .associate { it.bookId to it.currentTime }
+
+        return recentBooks
+            .map { cachedBookEntityRecentConverter.apply(it, progress[it.id]) }
+    }
 
     suspend fun fetchBook(
         bookId: String,
