@@ -36,7 +36,7 @@ data class BookEntity(
     val title: String,
     val author: String?,
     val duration: Int,
-    val libraryId: String?
+    val libraryId: String?,
 ) : Serializable
 
 @Entity(

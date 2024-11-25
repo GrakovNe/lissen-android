@@ -71,7 +71,7 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
             """
             UPDATE detailed_books
             SET libraryId = NULL
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 }

@@ -25,7 +25,7 @@ interface CachedBookDao {
             title = book.title,
             author = book.author,
             duration = book.chapters.sumOf { it.duration }.toInt(),
-            libraryId = book.libraryId
+            libraryId = book.libraryId,
         )
 
         val bookFiles = book
@@ -71,15 +71,31 @@ interface CachedBookDao {
     }
 
     @Transaction
-    @Query("SELECT * FROM detailed_books ORDER BY title LIMIT :pageSize OFFSET :pageNumber * :pageSize")
+    @Query(
+        """
+        SELECT * FROM detailed_books
+        WHERE (libraryId IS NULL OR libraryId = :libraryId)
+        ORDER BY title
+        LIMIT :pageSize OFFSET :pageNumber * :pageSize
+    """,
+    )
     suspend fun fetchCachedBooks(
+        libraryId: String?,
         pageNumber: Int,
         pageSize: Int,
     ): List<BookEntity>
 
     @Transaction
-    @Query("SELECT * FROM detailed_books WHERE title LIKE '%' || :searchQuery || '%' OR author LIKE '%' || :searchQuery || '%' ORDER BY title")
+    @Query(
+        """
+        SELECT * FROM detailed_books
+        WHERE (libraryId IS NULL OR libraryId = :libraryId)
+        AND (title LIKE '%' || :searchQuery || '%' OR author LIKE '%' || :searchQuery || '%')
+        ORDER BY title
+    """,
+    )
     suspend fun searchCachedBooks(
+        libraryId: String?,
         searchQuery: String,
     ): List<BookEntity>
 
@@ -87,13 +103,13 @@ interface CachedBookDao {
     @RewriteQueriesToDropUnusedColumns
     @Query(
         """
-        SELECT * FROM detailed_books
-        INNER JOIN media_progress ON detailed_books.id = media_progress.bookId
+        SELECT * FROM detailed_books 
+        INNER JOIN media_progress ON detailed_books.id = media_progress.bookId WHERE (libraryId IS NULL OR libraryId = :libraryId) 
         ORDER BY media_progress.lastUpdate DESC
         LIMIT 10
     """,
     )
-    suspend fun fetchRecentlyListenedCachedBooks(): List<BookEntity>
+    suspend fun fetchRecentlyListenedCachedBooks(libraryId: String?): List<BookEntity>
 
     @Transaction
     @Query("SELECT * FROM detailed_books WHERE id = :bookId")
@@ -104,8 +120,8 @@ interface CachedBookDao {
     suspend fun fetchBook(bookId: String): BookEntity?
 
     @Transaction
-    @Query("SELECT id FROM detailed_books")
-    suspend fun fetchBookIds(): List<String>
+    @Query("SELECT id FROM detailed_books WHERE (libraryId IS NULL OR libraryId = :libraryId) ")
+    suspend fun fetchBookIds(libraryId: String?): List<String>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertBook(book: BookEntity)

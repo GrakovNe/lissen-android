@@ -12,6 +12,7 @@ import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.RecentBook
+import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import java.io.File
 import java.time.Instant
 import javax.inject.Inject
@@ -24,6 +25,7 @@ class CachedBookRepository @Inject constructor(
     private val cachedBookEntityConverter: CachedBookEntityConverter,
     private val cachedBookEntityDetailedConverter: CachedBookEntityDetailedConverter,
     private val cachedBookEntityRecentConverter: CachedBookEntityRecentConverter,
+    private val preferences: LissenSharedPreferences,
 ) {
 
     fun provideFileUri(bookId: String, fileId: String): Uri = properties
@@ -42,23 +44,34 @@ class CachedBookRepository @Inject constructor(
         bookDao.upsertCachedBook(book)
     }
 
-    suspend fun fetchCachedBooksIds() = bookDao.fetchBookIds()
+    suspend fun fetchCachedBooksIds() = bookDao.fetchBookIds(
+        libraryId = preferences.getPreferredLibrary()?.id,
+    )
 
     suspend fun fetchBooks(
         pageNumber: Int,
         pageSize: Int,
     ): List<Book> = bookDao
-        .fetchCachedBooks(pageNumber = pageNumber, pageSize = pageSize)
+        .fetchCachedBooks(
+            pageNumber = pageNumber,
+            pageSize = pageSize,
+            libraryId = preferences.getPreferredLibrary()?.id,
+        )
         .map { cachedBookEntityConverter.apply(it) }
 
     suspend fun searchBooks(
         query: String,
     ): List<Book> = bookDao
-        .searchCachedBooks(searchQuery = query)
+        .searchCachedBooks(
+            searchQuery = query,
+            libraryId = preferences.getPreferredLibrary()?.id,
+        )
         .map { cachedBookEntityConverter.apply(it) }
 
     suspend fun fetchRecentBooks(): List<RecentBook> {
-        val recentBooks = bookDao.fetchRecentlyListenedCachedBooks()
+        val recentBooks = bookDao.fetchRecentlyListenedCachedBooks(
+            libraryId = preferences.getPreferredLibrary()?.id,
+        )
 
         val progress = recentBooks
             .map { it.id }
