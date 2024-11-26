@@ -61,4 +61,5 @@
     <string name="player_screen_timer_navigation">Timer</string>
     <string name="chapter_search_hint">Search by chapter title</string>
     <string name="widget_placeholder_text">Click to open the app</string>
+    <string name="the_offline_podcasts_is_empty">Saving podcasts is not available</string>
 </resources>

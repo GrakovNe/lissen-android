@@ -61,4 +61,5 @@
     <string name="player_screen_timer_navigation">Таймер</string>
     <string name="chapter_search_hint">Поиск по названию эпизода</string>
     <string name="widget_placeholder_text">Нажмите чтобы запустить</string>
+    <string name="the_offline_podcasts_is_empty">Загрузка подкастов не поддерживается</string>
 </resources>

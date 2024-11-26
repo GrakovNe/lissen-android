@@ -324,6 +324,7 @@ fun LibraryScreen(
                                     searchRequested = searchRequested,
                                     cachingModelView = cachingModelView,
                                     networkQualityService = networkQualityService,
+                                    libraryViewModel = libraryViewModel,
                                 )
                             }
                         }

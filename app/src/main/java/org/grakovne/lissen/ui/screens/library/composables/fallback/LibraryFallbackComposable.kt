@@ -24,13 +24,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
+import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.common.NetworkQualityService
 import org.grakovne.lissen.viewmodel.CachingModelView
+import org.grakovne.lissen.viewmodel.LibraryViewModel
 
 @Composable
 fun LibraryFallbackComposable(
     searchRequested: Boolean,
     cachingModelView: CachingModelView,
+    libraryViewModel: LibraryViewModel,
     networkQualityService: NetworkQualityService,
 ) {
     val configuration = LocalConfiguration.current
@@ -51,7 +54,10 @@ fun LibraryFallbackComposable(
 
             val text = when {
                 searchRequested -> null
-                isLocalCache -> stringResource(R.string.the_offline_library_is_empty)
+                isLocalCache -> when (libraryViewModel.fetchPreferredLibraryType()) {
+                    LibraryType.PODCAST -> stringResource(R.string.the_offline_podcasts_is_empty)
+                    else -> stringResource(R.string.the_offline_library_is_empty)
+                }
                 hasNetwork.not() -> stringResource(R.string.no_internet_connection)
                 else -> stringResource(R.string.the_library_is_empty)
             }
@@ -84,7 +90,7 @@ fun LibraryFallbackComposable(
                 Text(
                     textAlign = TextAlign.Center,
                     text = it,
-                    style = MaterialTheme.typography.headlineMedium,
+                    style = MaterialTheme.typography.headlineSmall,
                     modifier = Modifier.padding(top = 36.dp),
                 )
             }
