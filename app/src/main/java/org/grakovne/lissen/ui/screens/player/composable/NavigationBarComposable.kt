@@ -4,7 +4,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowCircleDown
+import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.Book
+import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.DownloadForOffline
+import androidx.compose.material.icons.outlined.Downloading
 import androidx.compose.material.icons.outlined.Headset
 import androidx.compose.material.icons.outlined.SlowMotionVideo
 import androidx.compose.material.icons.outlined.Timer
@@ -61,30 +66,6 @@ fun NavigationBarComposable(
             NavigationBarItem(
                 icon = {
                     Icon(
-                        Icons.Outlined.Headset,
-                        contentDescription = stringResource(R.string.player_screen_library_navigation),
-                        modifier = Modifier.size(iconSize),
-                    )
-                },
-                label = {
-                    Text(
-                        text = stringResource(R.string.player_screen_library_navigation),
-                        style = labelStyle,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                },
-                selected = false,
-                onClick = { navController.showLibrary() },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = colorScheme.primary,
-                    indicatorColor = colorScheme.surfaceContainer,
-                ),
-            )
-
-            NavigationBarItem(
-                icon = {
-                    Icon(
                         Icons.Outlined.Book,
                         contentDescription = stringResource(R.string.player_screen_chapter_list_navigation),
                         modifier = Modifier.size(iconSize),
@@ -100,6 +81,30 @@ fun NavigationBarComposable(
                 },
                 selected = playingQueueExpanded,
                 onClick = { viewModel.togglePlayingQueue() },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = colorScheme.primary,
+                    indicatorColor = colorScheme.surfaceContainer,
+                ),
+            )
+
+            NavigationBarItem(
+                icon = {
+                    Icon(
+                        Icons.Outlined.ArrowDownward,
+                        contentDescription = "Downloads",
+                        modifier = Modifier.size(iconSize),
+                    )
+                },
+                label = {
+                    Text(
+                        text = "Downloads",
+                        style = labelStyle,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
+                selected = false,
+                onClick = {  },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = colorScheme.primary,
                     indicatorColor = colorScheme.surfaceContainer,
@@ -157,6 +162,10 @@ fun NavigationBarComposable(
                     indicatorColor = colorScheme.surfaceContainer,
                 ),
             )
+
+
+
+
 
             if (playbackSpeedExpanded) {
                 PlaybackSpeedComposable(
