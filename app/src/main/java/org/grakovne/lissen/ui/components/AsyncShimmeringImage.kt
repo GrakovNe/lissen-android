@@ -26,6 +26,7 @@ fun AsyncShimmeringImage(
     contentScale: ContentScale,
     modifier: Modifier = Modifier,
     error: Painter,
+    onLoadingStateChanged: (Boolean) -> Unit = {},
 ) {
     var isLoading by remember { mutableStateOf(true) }
 
@@ -48,8 +49,14 @@ fun AsyncShimmeringImage(
             contentDescription = contentDescription,
             contentScale = contentScale,
             modifier = Modifier.fillMaxSize(),
-            onSuccess = { isLoading = false },
-            onError = { isLoading = false },
+            onSuccess = {
+                isLoading = false
+                onLoadingStateChanged(false)
+            },
+            onError = {
+                isLoading = false
+                onLoadingStateChanged(false)
+            },
             error = error,
         )
     }

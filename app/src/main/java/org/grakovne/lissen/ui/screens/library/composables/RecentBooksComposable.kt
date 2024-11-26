@@ -20,7 +20,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -93,6 +96,7 @@ fun RecentBookItemComposable(
             .clickable { navController.showPlayer(book.id, book.title) },
     ) {
         val context = LocalContext.current
+        var imageLoading by remember { mutableStateOf(true) }
 
         val imageRequest = remember(book.id) {
             ImageRequest
@@ -117,44 +121,28 @@ fun RecentBookItemComposable(
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(8.dp)),
                 error = painterResource(R.drawable.cover_fallback),
+                onLoadingStateChanged = { imageLoading = it },
             )
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .aspectRatio(1f),
-            ) {
-                AsyncShimmeringImage(
-                    imageRequest = imageRequest,
-                    imageLoader = imageLoader,
-                    contentDescription = "${book.title} cover",
-                    contentScale = ContentScale.FillBounds,
+            if (!imageLoading && shouldShowProgress(book, libraryViewModel.fetchPreferredLibraryType())) {
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp)),
-                    error = painterResource(R.drawable.cover_fallback),
-                )
-                if (shouldShowProgress(book, libraryViewModel.fetchPreferredLibraryType())) {
+                        .height(4.dp)
+                        .align(Alignment.BottomCenter),
+                ) {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(4.dp)
-                            .align(Alignment.BottomCenter),
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.Gray.copy(alpha = 0.4f)),
-                        )
+                            .fillMaxSize()
+                            .background(Color.Gray.copy(alpha = 0.4f)),
+                    )
 
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(book.listenedPercentage?.div(100.0f) ?: 0.0f)
-                                .fillMaxHeight()
-                                .background(FoxOrange),
-                        )
-                    }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(calculateProgress(book))
+                            .fillMaxHeight()
+                            .background(FoxOrange),
+                    )
                 }
             }
         }
@@ -185,6 +173,10 @@ fun RecentBookItemComposable(
             }
         }
     }
+}
+
+private fun calculateProgress(book: RecentBook): Float {
+    return book.listenedPercentage?.div(100.0f) ?: 0.0f
 }
 
 private fun shouldShowProgress(book: RecentBook, libraryType: LibraryType): Boolean =
