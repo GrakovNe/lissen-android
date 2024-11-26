@@ -96,7 +96,7 @@ fun RecentBookItemComposable(
             .clickable { navController.showPlayer(book.id, book.title) },
     ) {
         val context = LocalContext.current
-        var imageLoading by remember { mutableStateOf(true) }
+        var coverLoading by remember { mutableStateOf(true) }
 
         val imageRequest = remember(book.id) {
             ImageRequest
@@ -121,10 +121,10 @@ fun RecentBookItemComposable(
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(8.dp)),
                 error = painterResource(R.drawable.cover_fallback),
-                onLoadingStateChanged = { imageLoading = it },
+                onLoadingStateChanged = { coverLoading = it },
             )
 
-            if (!imageLoading && shouldShowProgress(book, libraryViewModel.fetchPreferredLibraryType())) {
+            if (!coverLoading && shouldShowProgress(book, libraryViewModel.fetchPreferredLibraryType())) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
