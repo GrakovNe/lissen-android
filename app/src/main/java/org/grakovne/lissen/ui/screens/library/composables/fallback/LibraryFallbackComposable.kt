@@ -42,8 +42,7 @@ fun LibraryFallbackComposable(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(screenHeight / 2)
-            .padding(horizontal = 16.dp),
+            .height(screenHeight / 2),
         contentAlignment = Alignment.Center,
     ) {
         Column(
