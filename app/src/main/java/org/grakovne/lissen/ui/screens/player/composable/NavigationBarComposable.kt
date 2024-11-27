@@ -89,7 +89,10 @@ fun NavigationBarComposable(
             NavigationBarItem(
                 icon = {
                     Icon(
-                        Icons.Outlined.Cloud,
+                        imageVector = when (viewModel.isPlayingBookCached()) {
+                            true -> Icons.Outlined.CloudDownload
+                            false -> Icons.Outlined.Cloud
+                        },
                         contentDescription = "Downloads",
                         modifier = Modifier.size(iconSize),
                     )
