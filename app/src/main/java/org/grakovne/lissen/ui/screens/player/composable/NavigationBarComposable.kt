@@ -193,7 +193,15 @@ fun NavigationBarComposable(
                             )
                         }
                     },
-                    onRequestedDrop = { playerViewModel.book.value?.let { cachingModelView.dropCache(it.id) } },
+                    onRequestedDrop = {
+                        playerViewModel
+                            .book
+                            .value
+                            ?.let {
+                                cachingModelView.dropCache(it.id)
+                                navController.showLibrary(true)
+                            }
+                    },
                     onDismissRequest = { downloadsExpanded = false },
                 )
             }
