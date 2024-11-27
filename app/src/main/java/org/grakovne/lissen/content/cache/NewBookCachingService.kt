@@ -10,6 +10,7 @@ import org.grakovne.lissen.content.cache.api.CachedLibraryRepository
 import org.grakovne.lissen.domain.AllItemsDownloadOption
 import org.grakovne.lissen.domain.BookChapter
 import org.grakovne.lissen.domain.CurrentItemDownloadOption
+import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.domain.NumberItemDownloadOption
 import org.grakovne.lissen.playback.service.calculateChapterIndex
@@ -26,32 +27,6 @@ class NewBookCachingService @Inject constructor(
     private val requestHeadersProvider: RequestHeadersProvider,
 ) {
 
-    private suspend fun calculateRequestedChapters(
-        bookId: String,
-        option: DownloadOption,
-        currentTotalPosition: Double,
-        channel: MediaChannel,
-    ): List<BookChapter>? {
-        return channel
-            .fetchBook(bookId)
-            .map { item ->
-                val chapterIndex = calculateChapterIndex(item, currentTotalPosition)
-
-                when (option) {
-                    AllItemsDownloadOption -> item.chapters
-                    CurrentItemDownloadOption -> listOf(item.chapters[chapterIndex])
-                    is NumberItemDownloadOption -> item.chapters.subList(
-                        fromIndex = chapterIndex,
-                        toIndex = (chapterIndex + option.itemsNumber).coerceAtMost(item.chapters.size)
-                    )
-                }
-            }
-            .fold(
-                onSuccess = { it },
-                onFailure = { null }
-            )
-    }
-
     suspend fun cacheBook(
         bookId: String,
         option: DownloadOption,
@@ -61,18 +36,43 @@ class NewBookCachingService @Inject constructor(
 
         emit(CacheProgress.Caching)
 
-        val requestedChapters =
-            calculateRequestedChapters(
-                bookId = bookId,
-                option = option,
-                currentTotalPosition = currentTotalPosition,
-                channel = channel
-            ) ?: run {
+        val book = channel
+            .fetchBook(bookId)
+            .fold(
+                onSuccess = { it },
+                onFailure = { null }
+            )
+            ?: run {
                 emit(CacheProgress.Error)
                 return@flow
             }
 
+        val requestedChapters =
+            calculateRequestedChapters(
+                book = book,
+                option = option,
+                currentTotalPosition = currentTotalPosition
+            )
+
         requestedChapters
+    }
+
+    private fun calculateRequestedChapters(
+        book: DetailedItem,
+        option: DownloadOption,
+        currentTotalPosition: Double
+    ): List<BookChapter> {
+
+        val chapterIndex = calculateChapterIndex(book, currentTotalPosition)
+
+        return when (option) {
+            AllItemsDownloadOption -> book.chapters
+            CurrentItemDownloadOption -> listOf(book.chapters[chapterIndex])
+            is NumberItemDownloadOption -> book.chapters.subList(
+                fromIndex = chapterIndex,
+                toIndex = (chapterIndex + option.itemsNumber).coerceAtMost(book.chapters.size)
+            )
+        }
     }
 
 }
