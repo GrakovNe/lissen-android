@@ -59,8 +59,13 @@ class NewBookCachingService @Inject constructor(
                 return@flow
             }
 
-        val requestedFiles = findRequestedFiles(book, option, currentTotalPosition)
+        val requestedChapters = calculateRequestedChapters(
+            book = book,
+            option = option,
+            currentTotalPosition = currentTotalPosition,
+        )
 
+        val requestedFiles = findRequestedFiles(book, requestedChapters)
         val mediaCachingResult = cacheBookMedia(bookId, requestedFiles, channel)
         val coverCachingResult = cacheBookCover(book, channel)
         val librariesCachingResult = cacheLibraries(channel)
@@ -72,7 +77,7 @@ class NewBookCachingService @Inject constructor(
                 librariesCachingResult,
             )
                 .all { it == CacheProgress.Completed } -> {
-                cacheBookInfo(book)
+                cacheBookInfo(book, requestedChapters)
                 emit(CacheProgress.Completed)
             }
 
@@ -94,8 +99,11 @@ class NewBookCachingService @Inject constructor(
             },
         )
 
-    private suspend fun cacheBookInfo(book: DetailedItem) = bookRepository
-        .cacheBook(book)
+    private suspend fun cacheBookInfo(
+        book: DetailedItem,
+        fetchedChapters: List<BookChapter>
+    ) = bookRepository
+        .cacheBook(book, fetchedChapters)
         .let { CacheProgress.Completed }
 
     private suspend fun cacheBookCover(book: DetailedItem, channel: MediaChannel): CacheProgress {
@@ -186,15 +194,8 @@ class NewBookCachingService @Inject constructor(
 
     private fun findRequestedFiles(
         book: DetailedItem,
-        option: DownloadOption,
-        currentTotalPosition: Double,
+        requestedChapters: List<BookChapter>
     ): List<BookFile> {
-        val requestedChapters =
-            calculateRequestedChapters(
-                book = book,
-                option = option,
-                currentTotalPosition = currentTotalPosition,
-            )
 
         val files = requestedChapters
             .flatMap { findRelatedFiles(it, book.files) }
