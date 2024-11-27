@@ -1,6 +1,7 @@
 package org.grakovne.lissen.playback.service
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -14,6 +15,7 @@ import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
+import androidx.media3.exoplayer.source.SilenceMediaSource
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import dagger.hilt.android.AndroidEntryPoint
@@ -181,7 +183,9 @@ class PlaybackService : MediaSessionService() {
                                         .Factory(sourceFactory)
                                         .createMediaSource(mediaItem)
                                 },
-                                onFailure = { null },
+                                onFailure = {
+                                    SilenceMediaSource((file.duration * 1000).toLong())
+                                },
                             )
                     }
 
