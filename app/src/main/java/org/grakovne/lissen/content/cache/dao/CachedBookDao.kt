@@ -73,8 +73,6 @@ interface CachedBookDao {
                 )
             }
 
-        println(cachedBookChapters)
-
         upsertBook(bookEntity)
         upsertBookFiles(bookFiles)
         upsertBookChapters(bookChapters)
