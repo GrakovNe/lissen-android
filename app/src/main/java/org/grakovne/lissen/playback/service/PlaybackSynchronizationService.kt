@@ -1,5 +1,6 @@
 package org.grakovne.lissen.playback.service
 
+import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.Dispatchers
@@ -27,6 +28,8 @@ class PlaybackSynchronizationService @Inject constructor(
     private var playbackSession: PlaybackSession? = null
     private val serviceScope = MainScope()
 
+    private var previousIndex: Int = exoPlayer.currentMediaItemIndex
+
     init {
         exoPlayer.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -34,6 +37,31 @@ class PlaybackSynchronizationService @Inject constructor(
                     scheduleSynchronization()
                 } else {
                     executeSynchronization()
+                }
+            }
+
+            override fun onPositionDiscontinuity(oldPosition: Player.PositionInfo, newPosition: Player.PositionInfo, reason: Int) {
+                val currentIndex = exoPlayer.currentMediaItemIndex
+
+                if (exoPlayer.currentMediaItem?.mediaId != "SilenceMediaSource") {
+                    previousIndex = currentIndex
+                    return
+                }
+
+                if (currentIndex != previousIndex) {
+                    val forward = if (currentIndex > previousIndex || (currentIndex == 0 && previousIndex == exoPlayer.mediaItemCount - 1)) {
+                        true
+                    } else {
+                        false
+                    }
+                    previousIndex = currentIndex
+
+
+                    if (forward) {
+                        exoPlayer.seekTo(exoPlayer.currentMediaItemIndex + 1, 0)
+                    } else {
+                        exoPlayer.seekTo(exoPlayer.currentMediaItemIndex - 1, 0)
+                    }
                 }
             }
         })
