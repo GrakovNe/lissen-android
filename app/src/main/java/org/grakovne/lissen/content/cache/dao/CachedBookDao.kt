@@ -13,13 +13,17 @@ import org.grakovne.lissen.content.cache.entity.BookEntity
 import org.grakovne.lissen.content.cache.entity.BookFileEntity
 import org.grakovne.lissen.content.cache.entity.CachedBookEntity
 import org.grakovne.lissen.content.cache.entity.MediaProgressEntity
+import org.grakovne.lissen.domain.BookChapter
 import org.grakovne.lissen.domain.DetailedItem
 
 @Dao
 interface CachedBookDao {
 
     @Transaction
-    suspend fun upsertCachedBook(book: DetailedItem) {
+    suspend fun upsertCachedBook(
+        book: DetailedItem,
+        fetchedChapters: List<BookChapter>
+    ) {
         val bookEntity = BookEntity(
             id = book.id,
             title = book.title,
@@ -50,6 +54,7 @@ interface CachedBookDao {
                     end = chapter.end,
                     title = chapter.title,
                     bookId = book.id,
+                    isCached = true // change me!
                 )
             }
 

@@ -34,6 +34,7 @@ class PodcastResponseConverter @Inject constructor() {
                             title = file.title,
                             duration = file.audioFile.duration,
                             id = file.id,
+                            available = true
                         ),
                     )
                     accDuration + file.audioFile.duration to chapters

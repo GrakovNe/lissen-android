@@ -26,6 +26,7 @@ data class MediaProgress(
 ) : Serializable
 
 data class BookChapter(
+    val available: Boolean,
     val duration: Double,
     val start: Double,
     val end: Double,

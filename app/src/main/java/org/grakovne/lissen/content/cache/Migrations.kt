@@ -75,3 +75,16 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
         )
     }
 }
+
+val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE book_chapters ADD COLUMN isCached INTEGER NOT NULL DEFAULT 0")
+
+        db.execSQL(
+            """
+            UPDATE book_chapters
+            SET isCached = 1
+            """.trimIndent(),
+        )
+    }
+}

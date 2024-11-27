@@ -28,31 +28,31 @@ class LissenApplication : Application() {
     override fun attachBaseContext(base: Context) {
         super.attachBaseContext(base)
 
-        initAcra {
-            buildConfigClass = BuildConfig::class.java
-            reportFormat = StringFormat.JSON
-
-            httpSender {
-                uri = "https://acrarium.grakovne.org/report"
-                basicAuthLogin = "6KmG6qnp09eDT4Wo"
-                basicAuthPassword = "ZWBOP83LM0SjrOFC"
-                httpMethod = HttpSender.Method.POST
-                dropReportsOnTimeout = false
-            }
-
-            toast {
-                text = getString(R.string.app_crach_toast)
-            }
-
-            reportContent = listOf(
-                ReportField.APP_VERSION_NAME,
-                ReportField.APP_VERSION_CODE,
-                ReportField.ANDROID_VERSION,
-                ReportField.PHONE_MODEL,
-                ReportField.STACK_TRACE,
-                ReportField.LOGCAT,
-            )
-        }
+//        initAcra {
+//            buildConfigClass = BuildConfig::class.java
+//            reportFormat = StringFormat.JSON
+//
+//            httpSender {
+//                uri = "https://acrarium.grakovne.org/report"
+//                basicAuthLogin = "6KmG6qnp09eDT4Wo"
+//                basicAuthPassword = "ZWBOP83LM0SjrOFC"
+//                httpMethod = HttpSender.Method.POST
+//                dropReportsOnTimeout = false
+//            }
+//
+//            toast {
+//                text = getString(R.string.app_crach_toast)
+//            }
+//
+//            reportContent = listOf(
+//                ReportField.APP_VERSION_NAME,
+//                ReportField.APP_VERSION_CODE,
+//                ReportField.ANDROID_VERSION,
+//                ReportField.PHONE_MODEL,
+//                ReportField.STACK_TRACE,
+//                ReportField.LOGCAT,
+//            )
+//        }
     }
 
     companion object {

@@ -182,6 +182,6 @@ class BookCachingService @Inject constructor(
         )
 
     private suspend fun cacheBookInfo(book: DetailedItem) = bookRepository
-        .cacheBook(book)
+        .cacheBook(book, emptyList())
         .let { CacheProgress.Completed }
 }
