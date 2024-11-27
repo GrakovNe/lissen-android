@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.cache.BookCachingService
-import org.grakovne.lissen.content.cache.CacheProgress
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.BookCachedState
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences

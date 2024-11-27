@@ -41,8 +41,8 @@ class NewBookCachingService @Inject constructor(
                     AllItemsDownloadOption -> item.chapters
                     CurrentItemDownloadOption -> listOf(item.chapters[chapterIndex])
                     is NumberItemDownloadOption -> item.chapters.subList(
-                        chapterIndex,
-                        (chapterIndex + option.itemsNumber).coerceAtMost(item.chapters.size)
+                        fromIndex = chapterIndex,
+                        toIndex = (chapterIndex + option.itemsNumber).coerceAtMost(item.chapters.size)
                     )
                 }
             }

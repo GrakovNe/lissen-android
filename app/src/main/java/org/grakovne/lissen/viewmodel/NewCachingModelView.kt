@@ -28,12 +28,14 @@ class NewCachingModelView @Inject constructor(
     ) {
 
         viewModelScope.launch {
-            cachingService.cacheBook(
-                bookId = bookId,
-                option = option,
-                channel = mediaProvider.providePreferredChannel(),
-                currentTotalPosition = currentPosition
-            )
+            cachingService
+                .cacheBook(
+                    bookId = bookId,
+                    option = option,
+                    channel = mediaProvider.providePreferredChannel(),
+                    currentTotalPosition = currentPosition
+                )
+                .collect { _bookCachingProgress[bookId]?.value = it }
         }
 
     }

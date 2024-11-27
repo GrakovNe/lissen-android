@@ -43,13 +43,13 @@ import androidx.compose.ui.unit.dp
 import coil.ImageLoader
 import coil.request.ImageRequest
 import org.grakovne.lissen.R
-import org.grakovne.lissen.content.cache.CacheProgress
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.BookCachedState
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.extensions.formatShortly
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.BookCacheAction
+import org.grakovne.lissen.viewmodel.CacheProgress
 import org.grakovne.lissen.viewmodel.CachingModelView
 
 @Composable
