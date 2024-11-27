@@ -101,7 +101,7 @@ class NewBookCachingService @Inject constructor(
 
     private suspend fun cacheBookInfo(
         book: DetailedItem,
-        fetchedChapters: List<BookChapter>
+        fetchedChapters: List<BookChapter>,
     ) = bookRepository
         .cacheBook(book, fetchedChapters)
         .let { CacheProgress.Completed }
@@ -194,9 +194,8 @@ class NewBookCachingService @Inject constructor(
 
     private fun findRequestedFiles(
         book: DetailedItem,
-        requestedChapters: List<BookChapter>
+        requestedChapters: List<BookChapter>,
     ): List<BookFile> {
-
         val files = requestedChapters
             .flatMap { findRelatedFiles(it, book.files) }
             .distinctBy { it.id }

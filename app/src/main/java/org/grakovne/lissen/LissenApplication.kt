@@ -3,12 +3,6 @@ package org.grakovne.lissen
 import android.app.Application
 import android.content.Context
 import dagger.hilt.android.HiltAndroidApp
-import org.acra.ReportField
-import org.acra.config.httpSender
-import org.acra.config.toast
-import org.acra.data.StringFormat
-import org.acra.ktx.initAcra
-import org.acra.sender.HttpSender
 import org.grakovne.lissen.common.RunningComponent
 import javax.inject.Inject
 

@@ -80,7 +80,7 @@ data class BookChapterEntity(
     val end: Double,
     val title: String,
     val bookId: String,
-    val isCached: Boolean
+    val isCached: Boolean,
 ) : Serializable
 
 @Entity(

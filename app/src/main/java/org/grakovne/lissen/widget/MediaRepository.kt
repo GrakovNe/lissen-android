@@ -398,7 +398,21 @@ class MediaRepository @Inject constructor(
             .chapters
             .sumOf { it.duration }
 
-        val safePosition = minOf(overallDuration, maxOf(0.0, position))
+        val current = totalPosition.value ?: 0.0
+
+        val direction = when (current > maxOf(0.0, position)) {
+            true -> ScrollingDirection.BACKWARD
+            false -> ScrollingDirection.FORWARD
+        }
+
+        var safePosition = minOf(overallDuration, maxOf(0.0, position))
+
+        while (book.chapters[calculateChapterIndex(book, safePosition)].available.not()) {
+            safePosition = when (direction) {
+                ScrollingDirection.FORWARD -> book.chapters[calculateChapterIndex(book, safePosition) + 1].start
+                ScrollingDirection.BACKWARD -> book.chapters[calculateChapterIndex(book, safePosition) - 1].start
+            }
+        }
 
         val intent = Intent(context, PlaybackService::class.java).apply {
             action = ACTION_SEEK_TO
@@ -441,4 +455,9 @@ class MediaRepository @Inject constructor(
         private const val CURRENT_TRACK_REPLAY_THRESHOLD = 5
         private const val TAG = "MediaRepository"
     }
+}
+
+enum class ScrollingDirection {
+    FORWARD,
+    BACKWARD,
 }

@@ -22,7 +22,7 @@ interface CachedBookDao {
     @Transaction
     suspend fun upsertCachedBook(
         book: DetailedItem,
-        fetchedChapters: List<BookChapter>
+        fetchedChapters: List<BookChapter>,
     ) {
         val bookEntity = BookEntity(
             id = book.id,
@@ -58,7 +58,7 @@ interface CachedBookDao {
                     end = chapter.end,
                     title = chapter.title,
                     bookId = book.id,
-                    isCached = fetchedChapters.any { it.id == chapter.id } || cachedBookChapters.any { it.bookChapterId == chapter.id && it.isCached }
+                    isCached = fetchedChapters.any { it.id == chapter.id } || cachedBookChapters.any { it.bookChapterId == chapter.id && it.isCached },
                 )
             }
 

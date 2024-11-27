@@ -112,7 +112,6 @@ class LocalCacheRepository @Inject constructor(
         .filter { checkBookIntegrity(it) }
 
     private suspend fun checkBookIntegrity(bookId: String): Boolean {
-
         // change me!
         return true
     }
