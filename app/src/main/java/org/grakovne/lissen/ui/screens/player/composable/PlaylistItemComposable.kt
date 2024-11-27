@@ -56,7 +56,10 @@ fun PlaylistItemComposable(
         Text(
             text = track.title,
             style = MaterialTheme.typography.bodyMedium,
-            color = colorScheme.onBackground,
+            color = when (track.available) {
+                true -> colorScheme.onBackground
+                false -> colorScheme.onBackground.copy(alpha = 0.6f)
+            },
             overflow = TextOverflow.Ellipsis,
             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
             modifier = Modifier.weight(1f),
