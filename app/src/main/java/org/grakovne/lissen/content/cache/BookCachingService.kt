@@ -23,6 +23,7 @@ import org.grakovne.lissen.content.cache.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.api.CachedLibraryRepository
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.viewmodel.CacheProgress
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -183,12 +184,4 @@ class BookCachingService @Inject constructor(
     private suspend fun cacheBookInfo(book: DetailedItem) = bookRepository
         .cacheBook(book)
         .let { CacheProgress.Completed }
-}
-
-sealed class CacheProgress {
-    data object Idle : CacheProgress()
-    data object Caching : CacheProgress()
-    data object Completed : CacheProgress()
-    data object Removed : CacheProgress()
-    data object Error : CacheProgress()
 }

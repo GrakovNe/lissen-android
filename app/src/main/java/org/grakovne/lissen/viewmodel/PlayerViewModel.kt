@@ -22,7 +22,9 @@ class PlayerViewModel @Inject constructor(
 
     val currentChapterIndex: LiveData<Int> = mediaRepository.currentChapterIndex
     val currentChapterPosition: LiveData<Double> = mediaRepository.currentChapterPosition
+
     val currentChapterDuration: LiveData<Double> = mediaRepository.currentChapterDuration
+    val totalPosition: LiveData<Double> = mediaRepository.totalPosition
 
     val timerOption: LiveData<TimerOption?> = mediaRepository.timerOption
 
