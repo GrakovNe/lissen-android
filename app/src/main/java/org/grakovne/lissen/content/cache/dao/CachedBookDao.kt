@@ -44,6 +44,10 @@ interface CachedBookDao {
                 )
             }
 
+        val cachedBookChapters = fetchCachedBook(book.id)
+            ?.chapters
+            ?: emptyList()
+
         val bookChapters = book
             .chapters
             .map { chapter ->
@@ -54,7 +58,7 @@ interface CachedBookDao {
                     end = chapter.end,
                     title = chapter.title,
                     bookId = book.id,
-                    isCached = true // change me!
+                    isCached = fetchedChapters.any { it.id == chapter.id } || cachedBookChapters.any { it.bookChapterId == chapter.id && it.isCached }
                 )
             }
 
@@ -68,6 +72,8 @@ interface CachedBookDao {
                     lastUpdate = progress.lastUpdate,
                 )
             }
+
+        println(cachedBookChapters)
 
         upsertBook(bookEntity)
         upsertBookFiles(bookFiles)
