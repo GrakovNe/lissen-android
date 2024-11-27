@@ -87,6 +87,20 @@ class NewBookCachingService @Inject constructor(
         }
     }
 
+    fun dropCache(bookId: String) = flow {
+        bookRepository.removeBook(bookId)
+
+        val cachedContent = properties
+            .provideBookCache(bookId)
+            ?: return@flow emit(CacheProgress.Removed)
+
+        if (cachedContent.exists()) {
+            cachedContent.deleteRecursively()
+        }
+
+        return@flow emit(CacheProgress.Removed)
+    }
+
     private suspend fun cacheLibraries(channel: MediaChannel) = channel
         .fetchLibraries()
         .foldAsync(

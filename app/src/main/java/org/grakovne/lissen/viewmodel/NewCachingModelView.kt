@@ -38,7 +38,21 @@ class NewCachingModelView @Inject constructor(
     }
 
     fun dropCache(bookId: String) {
+        viewModelScope.launch {
+            cachingService
+                .dropCache(bookId)
+                .collect { _bookCachingProgress[bookId]?.value = it }
+        }
     }
+
+    fun toggleCacheForce() {
+        when (localCacheUsing()) {
+            true -> preferences.disableForceCache()
+            false -> preferences.enableForceCache()
+        }
+    }
+
+    fun localCacheUsing() = preferences.isForceCache()
 
     fun isPlayingBookCached(): Boolean = true
 }
