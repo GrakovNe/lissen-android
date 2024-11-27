@@ -112,7 +112,8 @@ class LocalCacheRepository @Inject constructor(
         .filter { checkBookIntegrity(it) }
 
     private suspend fun checkBookIntegrity(bookId: String): Boolean {
-        val book = cachedBookRepository.fetchBook(bookId) ?: return false
-        return book.files.all { properties.provideMediaCachePatch(bookId, it.id).exists() }
+
+        // change me!
+        return true
     }
 }
