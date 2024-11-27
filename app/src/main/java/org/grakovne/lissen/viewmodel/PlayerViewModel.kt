@@ -87,8 +87,10 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun setChapter(chapter: BookChapter) {
-        val index = book.value?.chapters?.indexOf(chapter) ?: -1
-        mediaRepository.setChapter(index)
+        if (chapter.available) {
+            val index = book.value?.chapters?.indexOf(chapter) ?: -1
+            mediaRepository.setChapter(index)
+        }
     }
 
     fun setPlaybackSpeed(factor: Float) = mediaRepository.setPlaybackSpeed(factor)
