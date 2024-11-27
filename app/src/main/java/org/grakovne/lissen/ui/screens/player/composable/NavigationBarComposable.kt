@@ -4,8 +4,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowCircleDown
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.Book
+import androidx.compose.material.icons.outlined.Cloud
+import androidx.compose.material.icons.outlined.CloudDownload
 import androidx.compose.material.icons.outlined.SlowMotionVideo
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.Icon
@@ -86,7 +89,7 @@ fun NavigationBarComposable(
             NavigationBarItem(
                 icon = {
                     Icon(
-                        Icons.Outlined.ArrowDownward,
+                        Icons.Outlined.Cloud,
                         contentDescription = "Downloads",
                         modifier = Modifier.size(iconSize),
                     )
@@ -158,6 +161,7 @@ fun NavigationBarComposable(
                     indicatorColor = colorScheme.surfaceContainer,
                 ),
             )
+
 
             if (playbackSpeedExpanded) {
                 PlaybackSpeedComposable(

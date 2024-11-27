@@ -49,7 +49,7 @@ fun DownloadsComposable(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "Download book",
+                    text = "Save to cache",
                     style = typography.bodyLarge,
                 )
 
@@ -86,7 +86,7 @@ fun DownloadsComposable(
                                 headlineContent = {
                                     Row {
                                         Text(
-                                            text = "Remove from downloads",
+                                            text = "Remove cached chapters",
                                             color = colorScheme.error,
                                             style = typography.bodyMedium,
                                         )
@@ -112,12 +112,11 @@ private val DownloadOptions = listOf(
     NumberItemDownloadOption(5),
     NumberItemDownloadOption(10),
     NumberItemDownloadOption(20),
-    NumberItemDownloadOption(50),
     AllItemsDownloadOption,
 )
 
 fun DownloadOption.makeText(context: Context): String = when (this) {
-    CurrentItemDownloadOption -> "Current episode"
-    AllItemsDownloadOption -> "Whole book"
-    is NumberItemDownloadOption -> "$itemsNumber episodes"
+    CurrentItemDownloadOption -> "Current chapter only"
+    AllItemsDownloadOption -> "All chapters"
+    is NumberItemDownloadOption -> "$itemsNumber forward chapters"
 }
