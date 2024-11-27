@@ -49,6 +49,16 @@ class NewBookCachingService @Inject constructor(
                 return@flow
             }
 
+        val files = findRequestedFiles(book, option, currentTotalPosition)
+
+        println(files)
+    }
+
+    private fun findRequestedFiles(
+        book: DetailedItem,
+        option: DownloadOption,
+        currentTotalPosition: Double
+    ): List<BookFile> {
         val requestedChapters =
             calculateRequestedChapters(
                 book = book,
@@ -59,8 +69,7 @@ class NewBookCachingService @Inject constructor(
         val files = requestedChapters
             .flatMap { findRelatedFiles(it, book.files) }
             .distinctBy { it.id }
-
-        println(files)
+        return files
     }
 
     private fun calculateRequestedChapters(
