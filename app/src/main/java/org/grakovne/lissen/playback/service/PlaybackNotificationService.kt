@@ -17,7 +17,11 @@ class PlaybackNotificationService @Inject constructor(
 
     override fun onCreate() {
         exoPlayer.addListener(object : Player.Listener {
-            override fun onPositionDiscontinuity(oldPosition: Player.PositionInfo, newPosition: Player.PositionInfo, reason: Int) {
+            override fun onPositionDiscontinuity(
+                oldPosition: Player.PositionInfo,
+                newPosition: Player.PositionInfo,
+                reason: Int
+            ) {
                 val currentIndex = exoPlayer.currentMediaItemIndex
 
                 if (exoPlayer.currentMediaItem?.mediaId != "SilenceMediaSource") {
@@ -30,7 +34,7 @@ class PlaybackNotificationService @Inject constructor(
                     previousIndex = currentIndex
 
                     val targetIndex = when (forward) {
-                        true -> min(exoPlayer.currentMediaItemIndex + 1, exoPlayer.mediaItemCount)
+                        true -> min(exoPlayer.currentMediaItemIndex + 1, exoPlayer.mediaItemCount - 1)
                         false -> max(0, exoPlayer.currentMediaItemIndex - 1)
                     }
 
