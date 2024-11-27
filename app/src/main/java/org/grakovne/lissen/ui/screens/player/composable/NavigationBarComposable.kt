@@ -4,8 +4,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ArrowCircleDown
-import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.CloudDownload
@@ -34,17 +32,19 @@ import androidx.compose.ui.unit.sp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.icons.TimerPlay
 import org.grakovne.lissen.ui.navigation.AppNavigationService
+import org.grakovne.lissen.viewmodel.NewCachingModelView
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
 fun NavigationBarComposable(
-    viewModel: PlayerViewModel,
+    playerViewModel: PlayerViewModel,
+    cachingModelView: NewCachingModelView,
     navController: AppNavigationService,
     modifier: Modifier = Modifier,
 ) {
-    val timerOption by viewModel.timerOption.observeAsState(null)
-    val playbackSpeed by viewModel.playbackSpeed.observeAsState(1f)
-    val playingQueueExpanded by viewModel.playingQueueExpanded.observeAsState(false)
+    val timerOption by playerViewModel.timerOption.observeAsState(null)
+    val playbackSpeed by playerViewModel.playbackSpeed.observeAsState(1f)
+    val playingQueueExpanded by playerViewModel.playingQueueExpanded.observeAsState(false)
 
     var playbackSpeedExpanded by remember { mutableStateOf(false) }
     var timerExpanded by remember { mutableStateOf(false) }
@@ -79,7 +79,7 @@ fun NavigationBarComposable(
                     )
                 },
                 selected = playingQueueExpanded,
-                onClick = { viewModel.togglePlayingQueue() },
+                onClick = { playerViewModel.togglePlayingQueue() },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = colorScheme.primary,
                     indicatorColor = colorScheme.surfaceContainer,
@@ -89,7 +89,7 @@ fun NavigationBarComposable(
             NavigationBarItem(
                 icon = {
                     Icon(
-                        imageVector = when (viewModel.isPlayingBookCached()) {
+                        imageVector = when (cachingModelView.isPlayingBookCached()) {
                             true -> Icons.Outlined.CloudDownload
                             false -> Icons.Outlined.Cloud
                         },
@@ -169,7 +169,7 @@ fun NavigationBarComposable(
             if (playbackSpeedExpanded) {
                 PlaybackSpeedComposable(
                     currentSpeed = playbackSpeed,
-                    onSpeedChange = { viewModel.setPlaybackSpeed(it) },
+                    onSpeedChange = { playerViewModel.setPlaybackSpeed(it) },
                     onDismissRequest = { playbackSpeedExpanded = false },
                 )
             }
@@ -177,16 +177,16 @@ fun NavigationBarComposable(
             if (timerExpanded) {
                 TimerComposable(
                     currentOption = timerOption,
-                    onOptionSelected = { viewModel.setTimer(it) },
+                    onOptionSelected = { playerViewModel.setTimer(it) },
                     onDismissRequest = { timerExpanded = false },
                 )
             }
 
             if (downloadsExpanded) {
                 DownloadsComposable(
-                    hasCachedEpisodes = viewModel.isPlayingBookCached(),
-                    onRequestedDownload = { viewModel.requestCache(it) },
-                    onRequestedDrop = { viewModel.dropCache() },
+                    hasCachedEpisodes = cachingModelView.isPlayingBookCached(),
+                    onRequestedDownload = { cachingModelView.requestCache(it) },
+                    onRequestedDrop = { cachingModelView.dropCache() },
                     onDismissRequest = { downloadsExpanded = false },
                 )
             }

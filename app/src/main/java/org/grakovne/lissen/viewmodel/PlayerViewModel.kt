@@ -98,16 +98,6 @@ class PlayerViewModel @Inject constructor(
 
     fun togglePlayPause() = mediaRepository.togglePlayPause()
 
-    fun requestCache(option: DownloadOption) {
-
-    }
-
-    fun dropCache() {
-
-    }
-
-    fun isPlayingBookCached() : Boolean = true
-
     companion object {
         private const val EMPTY_SEARCH = ""
     }

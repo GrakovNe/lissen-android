@@ -48,6 +48,7 @@ import org.grakovne.lissen.ui.screens.player.composable.TrackControlComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackDetailsComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.PlayingQueuePlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackDetailsPlaceholderComposable
+import org.grakovne.lissen.viewmodel.NewCachingModelView
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,13 +59,14 @@ fun PlayerScreen(
     bookId: String,
     bookTitle: String,
 ) {
-    val viewModel: PlayerViewModel = hiltViewModel()
+    val cachingModelView: NewCachingModelView = hiltViewModel()
+    val playerViewModel: PlayerViewModel = hiltViewModel()
     val titleTextStyle = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
 
-    val playingBook by viewModel.book.observeAsState()
-    val isPlaybackReady by viewModel.isPlaybackReady.observeAsState(false)
-    val playingQueueExpanded by viewModel.playingQueueExpanded.observeAsState(false)
-    val searchRequested by viewModel.searchRequested.observeAsState(false)
+    val playingBook by playerViewModel.book.observeAsState()
+    val isPlaybackReady by playerViewModel.isPlaybackReady.observeAsState(false)
+    val playingQueueExpanded by playerViewModel.playingQueueExpanded.observeAsState(false)
+    val searchRequested by playerViewModel.searchRequested.observeAsState(false)
 
     val screenTitle = when (playingQueueExpanded) {
         true -> stringResource(R.string.player_screen_now_playing_title)
@@ -73,8 +75,8 @@ fun PlayerScreen(
 
     fun stepBack() {
         when {
-            searchRequested -> viewModel.dismissSearch()
-            playingQueueExpanded -> viewModel.collapsePlayingQueue()
+            searchRequested -> playerViewModel.dismissSearch()
+            playingQueueExpanded -> playerViewModel.collapsePlayingQueue()
             else -> navController.showLibrary()
         }
     }
@@ -86,12 +88,12 @@ fun PlayerScreen(
     LaunchedEffect(bookId) {
         bookId
             .takeIf { it != playingBook?.id }
-            ?.let { viewModel.preparePlayback(it) }
+            ?.let { playerViewModel.preparePlayback(it) }
     }
 
     LaunchedEffect(playingQueueExpanded) {
         if (playingQueueExpanded.not()) {
-            viewModel.dismissSearch()
+            playerViewModel.dismissSearch()
         }
     }
 
@@ -110,12 +112,12 @@ fun PlayerScreen(
                         ) { isSearchRequested ->
                             when (isSearchRequested) {
                                 true -> ChapterSearchActionComposable(
-                                    onSearchRequested = { viewModel.updateSearch(it) },
+                                    onSearchRequested = { playerViewModel.updateSearch(it) },
                                 )
 
                                 false -> Row {
                                     IconButton(
-                                        onClick = { viewModel.requestSearch() },
+                                        onClick = { playerViewModel.requestSearch() },
                                         modifier = Modifier.padding(end = 4.dp),
                                     ) {
                                         Icon(
@@ -150,7 +152,8 @@ fun PlayerScreen(
         },
         bottomBar = {
             NavigationBarComposable(
-                viewModel = viewModel,
+                playerViewModel = playerViewModel,
+                cachingModelView = cachingModelView,
                 navController = navController,
             )
         },
@@ -174,13 +177,13 @@ fun PlayerScreen(
                             TrackDetailsPlaceholderComposable(bookTitle)
                         } else {
                             TrackDetailsComposable(
-                                viewModel = viewModel,
+                                viewModel = playerViewModel,
                                 imageLoader = imageLoader,
                             )
                         }
 
                         TrackControlComposable(
-                            viewModel = viewModel,
+                            viewModel = playerViewModel,
                             modifier = Modifier,
                         )
                     }
@@ -190,7 +193,7 @@ fun PlayerScreen(
 
                 if (isPlaybackReady) {
                     PlayingQueueComposable(
-                        viewModel = viewModel,
+                        viewModel = playerViewModel,
                         modifier = Modifier,
                     )
                 } else {
