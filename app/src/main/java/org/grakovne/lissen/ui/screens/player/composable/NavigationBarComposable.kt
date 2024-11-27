@@ -181,9 +181,9 @@ fun NavigationBarComposable(
 
             if (downloadsExpanded) {
                 DownloadsComposable(
-                    hasCachedEpisodes = true,
-                    onRequestedDownload = { },
-                    onRequestedDrop = { },
+                    hasCachedEpisodes = viewModel.isPlayingBookCached(),
+                    onRequestedDownload = { viewModel.requestCache(it) },
+                    onRequestedDrop = { viewModel.dropCache() },
                     onDismissRequest = { downloadsExpanded = false },
                 )
             }

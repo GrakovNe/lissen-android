@@ -8,6 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.domain.BookChapter
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.widget.MediaRepository
 import javax.inject.Inject
@@ -97,8 +98,17 @@ class PlayerViewModel @Inject constructor(
 
     fun togglePlayPause() = mediaRepository.togglePlayPause()
 
-    companion object {
+    fun requestCache(option: DownloadOption) {
 
+    }
+
+    fun dropCache() {
+
+    }
+
+    fun isPlayingBookCached() : Boolean = true
+
+    companion object {
         private const val EMPTY_SEARCH = ""
     }
 }
