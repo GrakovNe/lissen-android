@@ -19,8 +19,7 @@ import javax.inject.Singleton
 @Singleton
 class LocalCacheRepository @Inject constructor(
     private val cachedBookRepository: CachedBookRepository,
-    private val cachedLibraryRepository: CachedLibraryRepository,
-    private val properties: CacheBookStorageProperties,
+    private val cachedLibraryRepository: CachedLibraryRepository
 ) {
 
     fun provideFileUri(libraryItemId: String, fileId: String): Uri? =
@@ -54,7 +53,6 @@ class LocalCacheRepository @Inject constructor(
         query: String,
     ): ApiResult<List<Book>> = cachedBookRepository
         .searchBooks(query = query)
-        .filter { checkBookIntegrity(it.id) }
         .let { ApiResult.Success(it) }
 
     suspend fun fetchBooks(
@@ -63,7 +61,6 @@ class LocalCacheRepository @Inject constructor(
     ): ApiResult<PagedItems<Book>> {
         val books = cachedBookRepository
             .fetchBooks(pageNumber = pageNumber, pageSize = pageSize)
-            .filter { checkBookIntegrity(it.id) }
 
         return ApiResult
             .Success(
@@ -100,19 +97,11 @@ class LocalCacheRepository @Inject constructor(
     suspend fun fetchRecentListenedBooks(): ApiResult<List<RecentBook>> =
         cachedBookRepository
             .fetchRecentBooks()
-            .filter { checkBookIntegrity(it.id) }
             .let { ApiResult.Success(it) }
 
     suspend fun fetchBook(bookId: String) = cachedBookRepository
         .fetchBook(bookId)
-        ?.takeIf { checkBookIntegrity(bookId) }
 
     suspend fun fetchCachedBookIds() = cachedBookRepository
         .fetchCachedBooksIds()
-        .filter { checkBookIntegrity(it) }
-
-    private suspend fun checkBookIntegrity(bookId: String): Boolean {
-        // change me!
-        return true
-    }
 }
