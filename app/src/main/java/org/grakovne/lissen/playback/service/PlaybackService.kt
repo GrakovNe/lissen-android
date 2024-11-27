@@ -161,7 +161,7 @@ class PlaybackService : MediaSessionService() {
 
                 val playingQueue = book
                     .files
-                    .mapNotNull { file ->
+                    .map { file ->
                         mediaChannel
                             .provideFileUri(book.id, file.id)
                             .fold(
