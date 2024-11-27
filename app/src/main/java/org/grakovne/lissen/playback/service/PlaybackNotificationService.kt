@@ -5,6 +5,8 @@ import androidx.media3.exoplayer.ExoPlayer
 import org.grakovne.lissen.common.RunningComponent
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.max
+import kotlin.math.min
 
 @Singleton
 class PlaybackNotificationService @Inject constructor(
@@ -24,19 +26,15 @@ class PlaybackNotificationService @Inject constructor(
                 }
 
                 if (currentIndex != previousIndex) {
-                    val forward = if (currentIndex > previousIndex || (currentIndex == 0 && previousIndex == exoPlayer.mediaItemCount - 1)) {
-                        true
-                    } else {
-                        false
-                    }
+                    val forward = currentIndex > previousIndex || (currentIndex == 0 && previousIndex == exoPlayer.mediaItemCount - 1)
                     previousIndex = currentIndex
 
-
-                    if (forward) {
-                        exoPlayer.seekTo(exoPlayer.currentMediaItemIndex + 1, 0)
-                    } else {
-                        exoPlayer.seekTo(exoPlayer.currentMediaItemIndex - 1, 0)
+                    val targetIndex = when (forward) {
+                        true -> min(exoPlayer.currentMediaItemIndex + 1, exoPlayer.mediaItemCount)
+                        false -> max(0, exoPlayer.currentMediaItemIndex - 1)
                     }
+
+                    exoPlayer.seekTo(targetIndex, 0)
                 }
             }
         })
