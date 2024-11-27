@@ -2,6 +2,7 @@ package org.grakovne.lissen.content.cache
 
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.flow
 import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.content.cache.api.CachedBookRepository
@@ -12,6 +13,7 @@ import org.grakovne.lissen.domain.CurrentItemDownloadOption
 import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.domain.NumberItemDownloadOption
 import org.grakovne.lissen.playback.service.calculateChapterIndex
+import org.grakovne.lissen.viewmodel.CacheProgress
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -55,7 +57,22 @@ class NewBookCachingService @Inject constructor(
         option: DownloadOption,
         channel: MediaChannel,
         currentTotalPosition: Double
-    ) {
+    ) = flow {
+
+        emit(CacheProgress.Caching)
+
+        val requestedChapters =
+            calculateRequestedChapters(
+                bookId = bookId,
+                option = option,
+                currentTotalPosition = currentTotalPosition,
+                channel = channel
+            ) ?: run {
+                emit(CacheProgress.Error)
+                return@flow
+            }
+
+        requestedChapters
     }
 
 }
