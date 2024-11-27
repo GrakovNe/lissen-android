@@ -8,7 +8,9 @@ import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.content.cache.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.api.CachedLibraryRepository
 import org.grakovne.lissen.domain.AllItemsDownloadOption
+import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.BookChapter
+import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.CurrentItemDownloadOption
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DownloadOption
@@ -54,7 +56,11 @@ class NewBookCachingService @Inject constructor(
                 currentTotalPosition = currentTotalPosition
             )
 
-        requestedChapters
+        val files = requestedChapters
+            .flatMap { findRelatedFiles(it, book.files) }
+            .distinctBy { it.id }
+
+        println(files)
     }
 
     private fun calculateRequestedChapters(
@@ -73,6 +79,24 @@ class NewBookCachingService @Inject constructor(
                 toIndex = (chapterIndex + option.itemsNumber).coerceAtMost(book.chapters.size)
             )
         }
+    }
+
+    private fun findRelatedFiles(
+        chapter: BookChapter,
+        files: List<BookFile>
+    ): List<BookFile> {
+        val startTimes = files
+            .runningFold(0.0) { acc, file -> acc + file.duration }
+            .dropLast(1)
+
+        val fileStartTimes = files.zip(startTimes)
+
+        return fileStartTimes
+            .filter { (file, fileStartTime) ->
+                val fileEndTime = fileStartTime + file.duration
+                fileStartTime < chapter.end && chapter.start < fileEndTime
+            }
+            .map { it.first }
     }
 
 }
