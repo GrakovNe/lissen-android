@@ -165,7 +165,6 @@ fun NavigationBarComposable(
                 ),
             )
 
-
             if (playbackSpeedExpanded) {
                 PlaybackSpeedComposable(
                     currentSpeed = playbackSpeed,
@@ -190,7 +189,7 @@ fun NavigationBarComposable(
                             cachingModelView.requestCache(
                                 bookId = it.id,
                                 currentPosition = playerViewModel.totalPosition.value ?: 0.0,
-                                option = option
+                                option = option,
                             )
                         }
                     },

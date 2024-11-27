@@ -11,7 +11,6 @@ import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import javax.inject.Inject
 
-
 @HiltViewModel
 class NewCachingModelView @Inject constructor(
     private val cachingService: NewBookCachingService,
@@ -24,27 +23,22 @@ class NewCachingModelView @Inject constructor(
     fun requestCache(
         bookId: String,
         currentPosition: Double,
-        option: DownloadOption
+        option: DownloadOption,
     ) {
-
         viewModelScope.launch {
             cachingService
                 .cacheBook(
                     bookId = bookId,
                     option = option,
                     channel = mediaProvider.providePreferredChannel(),
-                    currentTotalPosition = currentPosition
+                    currentTotalPosition = currentPosition,
                 )
                 .collect { _bookCachingProgress[bookId]?.value = it }
         }
-
     }
 
     fun dropCache(bookId: String) {
-
     }
 
     fun isPlayingBookCached(): Boolean = true
-
-
 }

@@ -1,14 +1,25 @@
 package org.grakovne.lissen.content.cache
 
+import android.app.DownloadManager
+import android.app.DownloadManager.COLUMN_STATUS
+import android.app.DownloadManager.Query
+import android.app.DownloadManager.Request
+import android.app.DownloadManager.Request.VISIBILITY_VISIBLE
+import android.app.DownloadManager.STATUS_FAILED
+import android.app.DownloadManager.STATUS_SUCCESSFUL
 import android.content.Context
+import android.content.Context.DOWNLOAD_SERVICE
+import androidx.core.net.toUri
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.withContext
 import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.content.cache.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.api.CachedLibraryRepository
 import org.grakovne.lissen.domain.AllItemsDownloadOption
-import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.BookChapter
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.CurrentItemDownloadOption
@@ -33,37 +44,156 @@ class NewBookCachingService @Inject constructor(
         bookId: String,
         option: DownloadOption,
         channel: MediaChannel,
-        currentTotalPosition: Double
+        currentTotalPosition: Double,
     ) = flow {
-
         emit(CacheProgress.Caching)
 
         val book = channel
             .fetchBook(bookId)
             .fold(
                 onSuccess = { it },
-                onFailure = { null }
+                onFailure = { null },
             )
             ?: run {
                 emit(CacheProgress.Error)
                 return@flow
             }
 
-        val files = findRequestedFiles(book, option, currentTotalPosition)
+        val requestedFiles = findRequestedFiles(book, option, currentTotalPosition)
 
-        println(files)
+        val mediaCachingResult = cacheBookMedia(bookId, requestedFiles, channel)
+        val coverCachingResult = cacheBookCover(book, channel)
+        val librariesCachingResult = cacheLibraries(channel)
+
+        when {
+            listOf(
+                mediaCachingResult,
+                coverCachingResult,
+                librariesCachingResult,
+            )
+                .all { it == CacheProgress.Completed } -> {
+                cacheBookInfo(book)
+                emit(CacheProgress.Completed)
+            }
+
+            else -> {
+                emit(CacheProgress.Error)
+            }
+        }
+    }
+
+    private suspend fun cacheLibraries(channel: MediaChannel) = channel
+        .fetchLibraries()
+        .foldAsync(
+            onSuccess = {
+                libraryRepository.cacheLibraries(it)
+                CacheProgress.Completed
+            },
+            onFailure = {
+                CacheProgress.Error
+            },
+        )
+
+    private suspend fun cacheBookInfo(book: DetailedItem) = bookRepository
+        .cacheBook(book)
+        .let { CacheProgress.Completed }
+
+    private suspend fun cacheBookCover(book: DetailedItem, channel: MediaChannel): CacheProgress {
+        val file = properties.provideBookCoverPath(book.id)
+
+        return withContext(Dispatchers.IO) {
+            channel
+                .fetchBookCover(book.id)
+                .fold(
+                    onSuccess = { inputStream ->
+                        if (!file.exists()) {
+                            file.parentFile?.mkdirs()
+                            file.createNewFile()
+                        }
+
+                        file.outputStream().use { outputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                    },
+                    onFailure = {
+                    },
+                )
+
+            CacheProgress.Completed
+        }
+    }
+
+    private suspend fun cacheBookMedia(
+        bookId: String,
+        files: List<BookFile>,
+        channel: MediaChannel,
+    ): CacheProgress {
+        val downloadManager = context.getSystemService(DOWNLOAD_SERVICE) as DownloadManager
+        val downloads = files
+            .map { file ->
+                val uri = channel.provideFileUri(bookId, file.id)
+
+                val downloadRequest = Request(uri)
+                    .setTitle(file.name)
+                    .setNotificationVisibility(VISIBILITY_VISIBLE)
+                    .setDestinationUri(properties.provideMediaCachePatch(bookId, file.id).toUri())
+                    .setAllowedOverMetered(true)
+                    .setAllowedOverRoaming(true)
+
+                requestHeadersProvider
+                    .fetchRequestHeaders()
+                    .forEach { downloadRequest.addRequestHeader(it.name, it.value) }
+
+                downloadRequest.let { downloadManager.enqueue(it) }
+            }
+
+        return awaitDownloadProgress(downloads, downloadManager)
+    }
+
+    private suspend fun awaitDownloadProgress(
+        jobs: List<Long>,
+        downloadManager: DownloadManager,
+    ): CacheProgress {
+        val result = checkDownloads(jobs, downloadManager)
+
+        return when {
+            result.all { it == STATUS_SUCCESSFUL } -> CacheProgress.Completed
+            result.any { it == STATUS_FAILED } -> CacheProgress.Error
+            else -> {
+                delay(1000)
+                awaitDownloadProgress(jobs, downloadManager)
+            }
+        }
+    }
+
+    private fun checkDownloads(jobs: List<Long>, downloadManager: DownloadManager): List<Int> {
+        return jobs.map { id ->
+            val query = Query().setFilterById(id)
+            downloadManager.query(query)
+                ?.use { cursor ->
+                    if (!cursor.moveToFirst()) {
+                        return@map STATUS_FAILED
+                    }
+
+                    val statusIndex = cursor.getColumnIndex(COLUMN_STATUS)
+                    when (statusIndex >= 0) {
+                        true -> cursor.getInt(statusIndex)
+                        else -> STATUS_FAILED
+                    }
+                } ?: STATUS_FAILED
+        }
     }
 
     private fun findRequestedFiles(
         book: DetailedItem,
         option: DownloadOption,
-        currentTotalPosition: Double
+        currentTotalPosition: Double,
     ): List<BookFile> {
         val requestedChapters =
             calculateRequestedChapters(
                 book = book,
                 option = option,
-                currentTotalPosition = currentTotalPosition
+                currentTotalPosition = currentTotalPosition,
             )
 
         val files = requestedChapters
@@ -75,9 +205,8 @@ class NewBookCachingService @Inject constructor(
     private fun calculateRequestedChapters(
         book: DetailedItem,
         option: DownloadOption,
-        currentTotalPosition: Double
+        currentTotalPosition: Double,
     ): List<BookChapter> {
-
         val chapterIndex = calculateChapterIndex(book, currentTotalPosition)
 
         return when (option) {
@@ -85,14 +214,14 @@ class NewBookCachingService @Inject constructor(
             CurrentItemDownloadOption -> listOf(book.chapters[chapterIndex])
             is NumberItemDownloadOption -> book.chapters.subList(
                 fromIndex = chapterIndex,
-                toIndex = (chapterIndex + option.itemsNumber).coerceAtMost(book.chapters.size)
+                toIndex = (chapterIndex + option.itemsNumber).coerceAtMost(book.chapters.size),
             )
         }
     }
 
     private fun findRelatedFiles(
         chapter: BookChapter,
-        files: List<BookFile>
+        files: List<BookFile>,
     ): List<BookFile> {
         val startTimes = files
             .runningFold(0.0) { acc, file -> acc + file.duration }
@@ -107,5 +236,4 @@ class NewBookCachingService @Inject constructor(
             }
             .map { it.first }
     }
-
 }
