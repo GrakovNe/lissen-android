@@ -30,6 +30,7 @@ import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.viewmodel.CacheProgress
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.round
 
 @Singleton
 class ContentCachingService @Inject constructor(
@@ -212,12 +213,9 @@ class ContentCachingService @Inject constructor(
     private fun findRequestedFiles(
         book: DetailedItem,
         requestedChapters: List<BookChapter>,
-    ): List<BookFile> {
-        val files = requestedChapters
-            .flatMap { findRelatedFiles(it, book.files) }
-            .distinctBy { it.id }
-        return files
-    }
+    ): List<BookFile> = requestedChapters
+        .flatMap { findRelatedFiles(it, book.files) }
+        .distinctBy { it.id }
 
     private fun calculateRequestedChapters(
         book: DetailedItem,
@@ -240,6 +238,9 @@ class ContentCachingService @Inject constructor(
         chapter: BookChapter,
         files: List<BookFile>,
     ): List<BookFile> {
+        val chapterStartRounded = chapter.start.round()
+        val chapterEndRounded = chapter.end.round()
+
         val startTimes = files
             .runningFold(0.0) { acc, file -> acc + file.duration }
             .dropLast(1)
@@ -248,9 +249,18 @@ class ContentCachingService @Inject constructor(
 
         return fileStartTimes
             .filter { (file, fileStartTime) ->
-                val fileEndTime = fileStartTime + file.duration
-                fileStartTime < chapter.end && chapter.start < fileEndTime
+                val fileStartTimeRounded = fileStartTime.round()
+                val fileEndTimeRounded = (fileStartTime + file.duration).round()
+
+                fileStartTimeRounded < chapterEndRounded && chapterStartRounded < fileEndTimeRounded
             }
             .map { it.first }
+    }
+
+    private fun Double.round(): Double = round(this / PRECISION) * PRECISION
+
+    companion object {
+
+        private const val PRECISION = 0.01
     }
 }
