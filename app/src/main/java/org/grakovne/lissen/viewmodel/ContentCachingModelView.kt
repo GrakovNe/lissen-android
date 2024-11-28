@@ -1,13 +1,11 @@
 package org.grakovne.lissen.viewmodel
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.cache.ContentCachingService
 import org.grakovne.lissen.domain.DownloadOption
@@ -39,7 +37,6 @@ class ContentCachingModelView @Inject constructor(
                 .collect { _bookCachingProgress[mediaItemId]?.value = it }
         }
     }
-
 
     fun getCacheProgress(bookId: String) = _bookCachingProgress
         .getOrPut(bookId) {

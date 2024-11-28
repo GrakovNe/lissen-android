@@ -35,23 +35,18 @@ class BookResponseConverter @Inject constructor() {
         val filesAsChapters: () -> List<BookChapter> = {
             item
                 .media
-                .audioFiles
+                .tracks
                 ?.sortedBy { it.index }
-                ?.fold(0.0 to mutableListOf<BookChapter>()) { (accDuration, chapters), file ->
-                    chapters.add(
-                        BookChapter(
-                            available = true,
-                            start = accDuration,
-                            end = accDuration + file.duration,
-                            title = file.metaTags?.tagTitle
-                                ?: file.metadata.filename.removeSuffix(file.metadata.ext),
-                            duration = file.duration,
-                            id = file.ino,
-                        ),
+                ?.map { file ->
+                    BookChapter(
+                        available = true,
+                        start = file.startOffset,
+                        end = file.startOffset + file.duration,
+                        title = file.title.substringBeforeLast("."),
+                        id = file.contentUrl.substringAfterLast("/"),
+                        duration = file.duration,
                     )
-                    accDuration + file.duration to chapters
                 }
-                ?.second
                 ?: emptyList()
         }
 
@@ -61,16 +56,14 @@ class BookResponseConverter @Inject constructor() {
             author = item.media.metadata.authors?.joinToString(", ", transform = LibraryAuthorResponse::name),
             files = item
                 .media
-                .audioFiles
+                .tracks
                 ?.sortedBy { it.index }
                 ?.map {
                     BookFile(
-                        id = it.ino,
-                        name = it.metaTags
-                            ?.tagTitle
-                            ?: (it.metadata.filename.removeSuffix(it.metadata.ext)),
+                        id = it.contentUrl.substringAfterLast("/"),
+                        name = it.title.substringBeforeLast("."),
                         duration = it.duration,
-                        mimeType = it.mimeType,
+                        mimeType = it.codec,
                     )
                 }
                 ?: emptyList(),

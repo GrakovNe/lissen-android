@@ -23,12 +23,14 @@ data class PodcastEpisodeResponse(
     val episode: String?,
     val pubDate: String?,
     val title: String,
-    val audioFile: PodcastAudioFileResponse,
+    val audioTrack: PodcastAudioTrackResponse,
 )
 
-data class PodcastAudioFileResponse(
+data class PodcastAudioTrackResponse(
     val index: Int,
-    val ino: String,
+    val startOffset: Double,
     val duration: Double,
-    val mimeType: String,
+    val title: String,
+    val codec: String,
+    val contentUrl: String,
 )
