@@ -21,7 +21,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import org.grakovne.lissen.R
+import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.domain.AllItemsDownloadOption
 import org.grakovne.lissen.domain.CurrentItemDownloadOption
 import org.grakovne.lissen.domain.DownloadOption
@@ -30,6 +33,7 @@ import org.grakovne.lissen.domain.NumberItemDownloadOption
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DownloadsComposable(
+    libraryType: LibraryType,
     hasCachedEpisodes: Boolean,
     onRequestedDownload: (DownloadOption) -> Unit,
     onRequestedDrop: () -> Unit,
@@ -49,7 +53,11 @@ fun DownloadsComposable(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "Save to cache",
+                    text = when (libraryType) {
+                        LibraryType.LIBRARY -> stringResource(R.string.downloads_menu_download_book)
+                        LibraryType.PODCAST -> stringResource(R.string.downloads_menu_download_podcast)
+                        LibraryType.UNKNOWN -> stringResource(R.string.downloads_menu_download_unknown)
+                    },
                     style = typography.bodyLarge,
                 )
 
@@ -61,7 +69,7 @@ fun DownloadsComposable(
                             headlineContent = {
                                 Row {
                                     Text(
-                                        text = item.makeText(context),
+                                        text = item.makeText(context, libraryType),
                                         style = typography.bodyMedium,
                                     )
                                 }
@@ -86,7 +94,11 @@ fun DownloadsComposable(
                                 headlineContent = {
                                     Row {
                                         Text(
-                                            text = "Remove cached chapters",
+                                            text = when (libraryType) {
+                                                LibraryType.LIBRARY -> stringResource(R.string.downloads_menu_download_option_clear_chapters)
+                                                LibraryType.PODCAST -> stringResource(R.string.downloads_menu_download_option_clear_episodes)
+                                                LibraryType.UNKNOWN -> stringResource(R.string.downloads_menu_download_option_clear_items)
+                                            },
                                             color = colorScheme.error,
                                             style = typography.bodyMedium,
                                         )
@@ -115,8 +127,31 @@ private val DownloadOptions = listOf(
     AllItemsDownloadOption,
 )
 
-fun DownloadOption.makeText(context: Context): String = when (this) {
-    CurrentItemDownloadOption -> "Current chapter only"
-    AllItemsDownloadOption -> "All chapters"
-    is NumberItemDownloadOption -> "$itemsNumber forward chapters"
+fun DownloadOption.makeText(
+    context: Context,
+    libraryType: LibraryType,
+): String = when (this) {
+    CurrentItemDownloadOption -> {
+        when (libraryType) {
+            LibraryType.LIBRARY -> context.getString(R.string.downloads_menu_download_option_current_chapter)
+            LibraryType.PODCAST -> context.getString(R.string.downloads_menu_download_option_current_episode)
+            LibraryType.UNKNOWN -> context.getString(R.string.downloads_menu_download_option_current_item)
+        }
+    }
+
+    AllItemsDownloadOption -> {
+        when (libraryType) {
+            LibraryType.LIBRARY -> context.getString(R.string.downloads_menu_download_option_entire_book)
+            LibraryType.PODCAST -> context.getString(R.string.downloads_menu_download_option_entire_podcast)
+            LibraryType.UNKNOWN -> context.getString(R.string.downloads_menu_download_option_entire_item)
+        }
+    }
+
+    is NumberItemDownloadOption -> {
+        when (libraryType) {
+            LibraryType.LIBRARY -> context.getString(R.string.downloads_menu_download_option_next_chapters, itemsNumber)
+            LibraryType.PODCAST -> context.getString(R.string.downloads_menu_download_option_next_episodes, itemsNumber)
+            LibraryType.UNKNOWN -> context.getString(R.string.downloads_menu_download_option_next_items, itemsNumber)
+        }
+    }
 }

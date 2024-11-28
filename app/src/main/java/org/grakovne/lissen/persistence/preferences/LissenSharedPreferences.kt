@@ -84,8 +84,7 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
         val id = getPreferredLibraryId() ?: return null
         val name = getPreferredLibraryName() ?: return null
 
-        // We shall set the library type AUDIOBOOKSHELF_LIBRARY for backward compatibility
-        val type = getPreferredLibraryType() ?: LibraryType.LIBRARY
+        val type = getPreferredLibraryType()
 
         return Library(
             id = id,
@@ -134,10 +133,11 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
     private fun saveActiveLibraryName(host: String) =
         sharedPreferences.edit().putString(KEY_PREFERRED_LIBRARY_NAME, host).apply()
 
-    private fun getPreferredLibraryType(): LibraryType? =
+    private fun getPreferredLibraryType(): LibraryType =
         sharedPreferences
             .getString(KEY_PREFERRED_LIBRARY_TYPE, null)
             ?.let { LibraryType.valueOf(it) }
+            ?: LibraryType.LIBRARY // We have to set the library type AUDIOBOOKSHELF_LIBRARY for backward compatibility
 
     private fun saveActiveLibraryType(type: LibraryType) =
         sharedPreferences.edit().putString(KEY_PREFERRED_LIBRARY_TYPE, type.name).apply()

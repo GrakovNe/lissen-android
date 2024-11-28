@@ -61,5 +61,21 @@
     <string name="player_screen_timer_navigation">Timer</string>
     <string name="chapter_search_hint">Search by chapter title</string>
     <string name="widget_placeholder_text">Click to open the app</string>
-    <string name="the_offline_podcasts_is_empty">Saving podcasts is not available</string>
+    <string name="the_offline_podcasts_is_empty">No saved podcasts yet</string>
+    <string name="player_screen_downloads_navigation">Downloads</string>
+    <string name="downloads_menu_download_book">Download book</string>
+    <string name="downloads_menu_download_podcast">Download podcast</string>
+    <string name="downloads_menu_download_unknown">Download</string>
+    <string name="downloads_menu_download_option_current_chapter">Current chapter</string>
+    <string name="downloads_menu_download_option_current_episode">Current episode</string>
+    <string name="downloads_menu_download_option_current_item">Current item</string>
+    <string name="downloads_menu_download_option_entire_book">Entire book</string>
+    <string name="downloads_menu_download_option_entire_podcast">Entire podcast</string>
+    <string name="downloads_menu_download_option_entire_item">Entire item</string>
+    <string name="downloads_menu_download_option_next_chapters">Next %1$d chapters</string>
+    <string name="downloads_menu_download_option_next_episodes">Next %1$d episodes</string>
+    <string name="downloads_menu_download_option_next_items">Next %1$d items</string>
+    <string name="downloads_menu_download_option_clear_chapters">Clear downloaded chapters</string>
+    <string name="downloads_menu_download_option_clear_episodes">Clear downloaded episodes</string>
+    <string name="downloads_menu_download_option_clear_items">Clear downloaded items</string>
 </resources>

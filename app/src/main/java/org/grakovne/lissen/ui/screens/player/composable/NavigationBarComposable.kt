@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.grakovne.lissen.R
+import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.ui.icons.TimerPlay
 import org.grakovne.lissen.ui.navigation.AppNavigationService
@@ -46,6 +47,7 @@ fun NavigationBarComposable(
     contentCachingModelView: ContentCachingModelView,
     navController: AppNavigationService,
     modifier: Modifier = Modifier,
+    libraryType: LibraryType,
 ) {
     val cacheProgress by contentCachingModelView.getCacheProgress(book.id).collectAsState()
     val timerOption by playerViewModel.timerOption.observeAsState(null)
@@ -101,13 +103,13 @@ fun NavigationBarComposable(
                             cacheProgress = cacheProgress,
                             hasCached = isMetadataCached,
                         ),
-                        contentDescription = "Downloads",
+                        contentDescription = stringResource(R.string.player_screen_downloads_navigation),
                         modifier = Modifier.size(iconSize),
                     )
                 },
                 label = {
                     Text(
-                        text = "Downloads",
+                        text = stringResource(R.string.player_screen_downloads_navigation),
                         style = labelStyle,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -191,6 +193,7 @@ fun NavigationBarComposable(
 
             if (downloadsExpanded) {
                 DownloadsComposable(
+                    libraryType = libraryType,
                     hasCachedEpisodes = isMetadataCached,
                     onRequestedDownload = { option ->
                         playerViewModel.book.value?.let {
