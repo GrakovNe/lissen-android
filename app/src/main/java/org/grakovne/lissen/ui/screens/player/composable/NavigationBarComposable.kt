@@ -6,15 +6,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.Cloud
-import androidx.compose.material.icons.outlined.CloudDone
 import androidx.compose.material.icons.outlined.CloudDownload
-import androidx.compose.material.icons.outlined.Download
-import androidx.compose.material.icons.outlined.DownloadForOffline
-import androidx.compose.material.icons.outlined.Downloading
 import androidx.compose.material.icons.outlined.SlowMotionVideo
 import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material.icons.outlined.Timer
-import androidx.compose.material.icons.outlined.WbCloudy
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
@@ -214,10 +209,8 @@ fun NavigationBarComposable(
                             ?.let {
                                 contentCachingModelView.dropCache(it.id)
 
-                                if (contentCachingModelView.localCacheUsing()) {
-                                    playerViewModel.clearPlayingBook()
-                                    navController.showLibrary(true)
-                                }
+                                playerViewModel.clearPlayingBook()
+                                navController.showLibrary(true)
                             }
                     },
                     onDismissRequest = { downloadsExpanded = false },
