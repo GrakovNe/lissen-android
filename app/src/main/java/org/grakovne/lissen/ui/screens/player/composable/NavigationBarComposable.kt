@@ -47,7 +47,8 @@ fun NavigationBarComposable(
     val timerOption by playerViewModel.timerOption.observeAsState(null)
     val playbackSpeed by playerViewModel.playbackSpeed.observeAsState(1f)
     val playingQueueExpanded by playerViewModel.playingQueueExpanded.observeAsState(false)
-    val isBookCached by contentCachingModelView.provideCacheState(book.id).observeAsState(false)
+
+    val isMetadataCached by contentCachingModelView.provideCacheState(book.id).observeAsState(false)
 
     var playbackSpeedExpanded by remember { mutableStateOf(false) }
     var timerExpanded by remember { mutableStateOf(false) }
@@ -183,14 +184,15 @@ fun NavigationBarComposable(
 
             if (downloadsExpanded) {
                 DownloadsComposable(
-                    hasCachedEpisodes = isBookCached,
+                    hasCachedEpisodes = isMetadataCached,
                     onRequestedDownload = { option ->
                         playerViewModel.book.value?.let {
-                            contentCachingModelView.requestCache(
-                                mediaItemId = it.id,
-                                currentPosition = playerViewModel.totalPosition.value ?: 0.0,
-                                option = option,
-                            )
+                            contentCachingModelView
+                                .requestCache(
+                                    mediaItemId = it.id,
+                                    currentPosition = playerViewModel.totalPosition.value ?: 0.0,
+                                    option = option,
+                                )
                         }
                     },
                     onRequestedDrop = {

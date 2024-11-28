@@ -40,6 +40,12 @@ class ContentCachingModelView @Inject constructor(
         }
     }
 
+
+    fun getCacheProgress(bookId: String) = _bookCachingProgress
+        .getOrPut(bookId) {
+            MutableStateFlow(CacheProgress.Idle)
+        }
+
     fun dropCache(bookId: String) {
         viewModelScope.launch {
             contentCachingService
