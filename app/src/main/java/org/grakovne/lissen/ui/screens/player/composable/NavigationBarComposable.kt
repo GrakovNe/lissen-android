@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.Cloud
-import androidx.compose.material.icons.outlined.CloudDownload
 import androidx.compose.material.icons.outlined.SlowMotionVideo
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.Icon
@@ -89,10 +88,7 @@ fun NavigationBarComposable(
             NavigationBarItem(
                 icon = {
                     Icon(
-                        imageVector = when (contentCachingModelView.isPlayingBookCached()) {
-                            true -> Icons.Outlined.CloudDownload
-                            false -> Icons.Outlined.Cloud
-                        },
+                        imageVector = Icons.Outlined.Cloud,
                         contentDescription = "Downloads",
                         modifier = Modifier.size(iconSize),
                     )
