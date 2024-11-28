@@ -7,11 +7,14 @@ import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.content.cache.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.api.CachedLibraryRepository
 import org.grakovne.lissen.domain.Book
+import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
+import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.RecentBook
+import org.grakovne.lissen.playback.service.calculateChapterIndex
 import java.io.InputStream
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -99,6 +102,44 @@ class LocalCacheRepository @Inject constructor(
             .fetchRecentBooks()
             .let { ApiResult.Success(it) }
 
-    suspend fun fetchBook(bookId: String) = cachedBookRepository
-        .fetchBook(bookId)
+    /**
+     * Fetches a detailed book item by its ID from the cached repository.
+     * If the book is not found in the cache, returns `null`.
+     *
+     * The method ensures that the book's playback position points to an available chapter:
+     * - If the current chapter is available, the cached book is returned as is.
+     * - If the current chapter is unavailable, the playback progress is adjusted to the first available chapter.
+     *
+     * @param bookId the unique identifier of the book to fetch.
+     * @return the detailed book item with updated playback progress if necessary,
+     *         or `null` if the book is not found in the cache.
+     */
+    suspend fun fetchBook(bookId: String): DetailedItem? {
+        val cachedBook = cachedBookRepository
+            .fetchBook(bookId)
+            ?: return null
+
+        val cachedPosition = cachedBook
+            .progress
+            ?.currentTime
+            ?: 0.0
+
+        val currentChapter = calculateChapterIndex(cachedBook, cachedPosition)
+
+        return when (cachedBook.chapters[currentChapter].available) {
+            true -> cachedBook
+            false ->
+                cachedBook
+                    .copy(
+                        progress = MediaProgress(
+                            currentTime = cachedBook.chapters
+                                .firstOrNull { it.available }
+                                ?.start
+                                ?: return null,
+                            isFinished = false,
+                            lastUpdate = 946728000000, // 2000-01-01T12:00
+                        ),
+                    )
+        }
+    }
 }
