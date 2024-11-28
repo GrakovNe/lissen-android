@@ -17,6 +17,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -29,6 +30,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.grakovne.lissen.R
+import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.ui.icons.TimerPlay
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.ContentCachingModelView
@@ -36,6 +38,7 @@ import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
 fun NavigationBarComposable(
+    book: DetailedItem,
     playerViewModel: PlayerViewModel,
     contentCachingModelView: ContentCachingModelView,
     navController: AppNavigationService,
@@ -44,6 +47,7 @@ fun NavigationBarComposable(
     val timerOption by playerViewModel.timerOption.observeAsState(null)
     val playbackSpeed by playerViewModel.playbackSpeed.observeAsState(1f)
     val playingQueueExpanded by playerViewModel.playingQueueExpanded.observeAsState(false)
+    val isBookCached by contentCachingModelView.provideCacheState(book.id).observeAsState(false)
 
     var playbackSpeedExpanded by remember { mutableStateOf(false) }
     var timerExpanded by remember { mutableStateOf(false) }
@@ -179,7 +183,7 @@ fun NavigationBarComposable(
 
             if (downloadsExpanded) {
                 DownloadsComposable(
-                    hasCachedEpisodes = contentCachingModelView.isPlayingBookCached(),
+                    hasCachedEpisodes = isBookCached,
                     onRequestedDownload = { option ->
                         playerViewModel.book.value?.let {
                             contentCachingModelView.requestCache(

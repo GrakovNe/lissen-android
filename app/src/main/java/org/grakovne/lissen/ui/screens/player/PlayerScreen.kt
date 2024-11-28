@@ -151,11 +151,15 @@ fun PlayerScreen(
             )
         },
         bottomBar = {
-            NavigationBarComposable(
-                playerViewModel = playerViewModel,
-                contentCachingModelView = contentCachingModelView,
-                navController = navController,
-            )
+            playingBook
+                ?.let {
+                    NavigationBarComposable(
+                        book = it,
+                        playerViewModel = playerViewModel,
+                        contentCachingModelView = contentCachingModelView,
+                        navController = navController,
+                    )
+                }
         },
         modifier = Modifier.systemBarsPadding(),
         content = { innerPadding ->

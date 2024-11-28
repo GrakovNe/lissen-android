@@ -101,7 +101,4 @@ class LocalCacheRepository @Inject constructor(
 
     suspend fun fetchBook(bookId: String) = cachedBookRepository
         .fetchBook(bookId)
-
-    suspend fun fetchCachedBookIds() = cachedBookRepository
-        .fetchCachedBooksIds()
 }

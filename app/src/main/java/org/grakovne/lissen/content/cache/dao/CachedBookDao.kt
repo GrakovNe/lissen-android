@@ -1,5 +1,6 @@
 package org.grakovne.lissen.content.cache.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -123,6 +124,9 @@ interface CachedBookDao {
     @Transaction
     @Query("SELECT * FROM detailed_books WHERE id = :bookId")
     suspend fun fetchCachedBook(bookId: String): CachedBookEntity?
+
+    @Query("SELECT COUNT(*) > 0 FROM detailed_books WHERE id = :bookId")
+    fun isBookCached(bookId: String): LiveData<Boolean>
 
     @Transaction
     @Query("SELECT * FROM detailed_books WHERE id = :bookId")

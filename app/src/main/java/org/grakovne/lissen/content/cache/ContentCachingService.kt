@@ -40,6 +40,9 @@ class ContentCachingService @Inject constructor(
     private val requestHeadersProvider: RequestHeadersProvider,
 ) {
 
+    fun hasMetadataCached(mediaItemId: String) =
+        bookRepository.provideCacheState(mediaItemId)
+
     suspend fun cacheMediaItem(
         mediaItemId: String,
         option: DownloadOption,
