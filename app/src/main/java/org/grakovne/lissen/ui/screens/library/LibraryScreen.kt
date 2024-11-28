@@ -213,6 +213,7 @@ fun LibraryScreen(
                                 navController = navController,
                                 contentCachingModelView = contentCachingModelView,
                                 libraryViewModel = libraryViewModel,
+                                playerViewModel = playerViewModel,
                                 onContentRefreshing = { refreshContent(showRefreshing = false) },
                                 onSearchRequested = { libraryViewModel.requestSearch() },
                             )

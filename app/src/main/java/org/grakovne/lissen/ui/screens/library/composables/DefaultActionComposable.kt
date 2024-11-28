@@ -35,12 +35,14 @@ import org.grakovne.lissen.ui.icons.Search
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.ContentCachingModelView
 import org.grakovne.lissen.viewmodel.LibraryViewModel
+import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
 fun DefaultActionComposable(
     navController: AppNavigationService,
     contentCachingModelView: ContentCachingModelView,
     libraryViewModel: LibraryViewModel,
+    playerViewModel: PlayerViewModel,
     onContentRefreshing: (Boolean) -> Unit,
     onSearchRequested: () -> Unit,
 ) {
@@ -102,8 +104,9 @@ fun DefaultActionComposable(
 
                     CoroutineScope(Dispatchers.IO).launch {
                         contentCachingModelView.toggleCacheForce()
-                        libraryViewModel.dropHiddenBooks()
+                        playerViewModel.book.value?.let { playerViewModel.preparePlayback(it.id) }
 
+                        libraryViewModel.dropHiddenBooks()
                         onContentRefreshing(false)
                     }
                 }

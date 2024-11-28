@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.ImageLoader
 import org.grakovne.lissen.R
+import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.ui.icons.Search
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.player.composable.NavigationBarComposable
@@ -59,7 +60,7 @@ fun PlayerScreen(
     bookId: String,
     bookTitle: String,
 ) {
-    val contentCachingModelView: ContentCachingModelView = hiltViewModel()
+    val cachingModelView: ContentCachingModelView = hiltViewModel()
     val playerViewModel: PlayerViewModel = hiltViewModel()
     val titleTextStyle = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
 
@@ -87,7 +88,7 @@ fun PlayerScreen(
 
     LaunchedEffect(Unit) {
         bookId
-            .takeIf { it != playingBook?.id }
+            .takeIf { playingItemChanged(it, playingBook) || cachePolicyChanged(cachingModelView, playingBook) }
             ?.let { playerViewModel.preparePlayback(it) }
     }
 
@@ -156,7 +157,7 @@ fun PlayerScreen(
                     NavigationBarComposable(
                         book = it,
                         playerViewModel = playerViewModel,
-                        contentCachingModelView = contentCachingModelView,
+                        contentCachingModelView = cachingModelView,
                         navController = navController,
                     )
                 }
@@ -209,3 +210,13 @@ fun PlayerScreen(
         },
     )
 }
+
+private fun playingItemChanged(
+    item: String,
+    playingBook: DetailedItem?,
+) = item != playingBook?.id
+
+private fun cachePolicyChanged(
+    contentCachingModelView: ContentCachingModelView,
+    playingBook: DetailedItem?,
+) = contentCachingModelView.localCacheUsing() != playingBook?.localStored

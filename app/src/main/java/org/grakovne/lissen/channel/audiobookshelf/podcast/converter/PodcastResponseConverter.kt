@@ -54,6 +54,7 @@ class PodcastResponseConverter @Inject constructor() {
                 }
                 ?: emptyList(),
             chapters = filesAsChapters,
+            localStored = false,
             progress = progressResponse
                 ?.let {
                     MediaProgress(
