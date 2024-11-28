@@ -17,7 +17,7 @@ class PlayerViewModel @Inject constructor(
     private val mediaRepository: MediaRepository,
 ) : ViewModel() {
 
-    val book: LiveData<DetailedItem> = mediaRepository.playingBook
+    val book: LiveData<DetailedItem?> = mediaRepository.playingBook
 
     val currentChapterIndex: LiveData<Int> = mediaRepository.currentChapterIndex
     val currentChapterPosition: LiveData<Double> = mediaRepository.currentChapterPosition

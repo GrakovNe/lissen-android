@@ -70,8 +70,8 @@ class MediaRepository @Inject constructor(
     private val _totalPosition = MutableLiveData<Double>()
     val totalPosition: LiveData<Double> = _totalPosition
 
-    private val _playingBook = MutableLiveData<DetailedItem>()
-    val playingBook: LiveData<DetailedItem> = _playingBook
+    private val _playingBook = MutableLiveData<DetailedItem?>()
+    val playingBook: LiveData<DetailedItem?> = _playingBook
 
     private val _playbackSpeed = MutableLiveData(preferences.getPlaybackSpeed())
     val playbackSpeed: LiveData<Float> = _playbackSpeed

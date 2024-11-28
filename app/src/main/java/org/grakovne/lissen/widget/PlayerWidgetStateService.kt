@@ -59,8 +59,6 @@ class PlayerWidgetStateService @Inject constructor(
                     }
                 }
 
-
-
                 PlayingItemState(
                     id = book?.id ?: "",
                     title = book?.title ?: "",
