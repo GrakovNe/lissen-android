@@ -66,10 +66,12 @@ class PlayerWidget : GlanceAppWidget() {
                 val maybeCover = prefs[encodedCover]?.takeIf { it.isNotBlank() }?.fromBase64()
                 val bookId = prefs[bookId] ?: ""
                 val bookTitle = prefs[title] ?: ""
-                val chapterTitle = prefs[chapterTitle] ?: when (bookId) {
-                    "" -> context.getString(org.grakovne.lissen.R.string.widget_placeholder_text)
-                    else -> ""
-                }
+                val chapterTitle = prefs[chapterTitle]
+                    ?.takeIf { it.isNotBlank() }
+                    ?: when (bookId) {
+                        "" -> context.getString(org.grakovne.lissen.R.string.widget_placeholder_text)
+                        else -> ""
+                    }
 
                 val isPlaying = prefs[isPlaying] ?: false
 

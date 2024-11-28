@@ -219,6 +219,10 @@ class MediaRepository @Inject constructor(
         }
     }
 
+    fun clearPlayingBook() {
+        _playingBook.postValue(null)
+    }
+
     fun setChapterPosition(chapterPosition: Double) {
         val book = playingBook.value ?: return
         val overallPosition = totalPosition.value ?: return

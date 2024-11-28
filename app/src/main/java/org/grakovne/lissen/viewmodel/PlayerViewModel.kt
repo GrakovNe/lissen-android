@@ -93,6 +93,8 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
+    fun clearPlayingBook() = mediaRepository.clearPlayingBook()
+
     fun setPlaybackSpeed(factor: Float) = mediaRepository.setPlaybackSpeed(factor)
 
     fun nextTrack() = mediaRepository.nextTrack()

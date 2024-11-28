@@ -9,6 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.common.toBase64
@@ -33,31 +34,36 @@ class PlayerWidgetStateService @Inject constructor(
         scope.launch {
             combine(
                 mediaRepository.playingBook.asFlow().distinctUntilChanged(),
-                mediaRepository.isPlaying.asFlow().distinctUntilChanged(),
+                mediaRepository.isPlaying.asFlow().filterNotNull().distinctUntilChanged(),
                 mediaRepository.currentChapterIndex.asFlow().distinctUntilChanged(),
-            ) { book, isPlaying, chapterIndex ->
+            ) { book: DetailedItem?, isPlaying, chapterIndex: Int? ->
                 val chapterTitle = provideChapterTitle(book, chapterIndex)
 
-                val maybeCover = when (playingBookId != book.id || cachedCover == null) {
-                    true ->
-                        book
-                            .let { mediaProvider.fetchBookCover(it.id) }
-                            .fold(
-                                onSuccess = {
-                                    it
-                                        .readBytes()
-                                        .also { cover -> cachedCover = cover }
-                                        .also { playingBookId = book.id }
-                                },
-                                onFailure = { null },
-                            )
+                val maybeCover = when (book == null) {
+                    true -> null
+                    false -> when (playingBookId != book.id || cachedCover == null) {
+                        true ->
+                            book
+                                .let { mediaProvider.fetchBookCover(it.id) }
+                                .fold(
+                                    onSuccess = {
+                                        it
+                                            .readBytes()
+                                            .also { cover -> cachedCover = cover }
+                                            .also { playingBookId = book.id }
+                                    },
+                                    onFailure = { null },
+                                )
 
-                    false -> cachedCover
+                        false -> cachedCover
+                    }
                 }
 
+
+
                 PlayingItemState(
-                    id = book.id,
-                    title = book.title,
+                    id = book?.id ?: "",
+                    title = book?.title ?: "",
                     chapterTitle = chapterTitle,
                     isPlaying = isPlaying,
                     imageCover = maybeCover,
@@ -68,7 +74,11 @@ class PlayerWidgetStateService @Inject constructor(
         }
     }
 
-    private fun provideChapterTitle(book: DetailedItem, chapterIndex: Int): String {
+    private fun provideChapterTitle(book: DetailedItem?, chapterIndex: Int?): String? {
+        if (null == book || null == chapterIndex) {
+            return null
+        }
+
         return when (book.chapters.size >= chapterIndex && chapterIndex >= 0) {
             true -> book.chapters[chapterIndex].title
             false -> book.title // as a fallback for items without chapters

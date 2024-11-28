@@ -200,7 +200,9 @@ fun NavigationBarComposable(
                             .value
                             ?.let {
                                 contentCachingModelView.dropCache(it.id)
+                                
                                 if (contentCachingModelView.localCacheUsing()) {
+                                    playerViewModel.clearPlayingBook()
                                     navController.showLibrary(true)
                                 }
                             }
