@@ -199,7 +199,9 @@ fun NavigationBarComposable(
                             .value
                             ?.let {
                                 contentCachingModelView.dropCache(it.id)
-                                navController.showLibrary(true)
+                                if (contentCachingModelView.localCacheUsing()) {
+                                    navController.showLibrary(true)
+                                }
                             }
                     },
                     onDismissRequest = { downloadsExpanded = false },
