@@ -105,8 +105,6 @@ fun DefaultActionComposable(
                     CoroutineScope(Dispatchers.IO).launch {
                         contentCachingModelView.toggleCacheForce()
                         playerViewModel.book.value?.let { playerViewModel.preparePlayback(it.id) }
-
-                        libraryViewModel.dropHiddenBooks()
                         onContentRefreshing(false)
                     }
                 }

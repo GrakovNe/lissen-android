@@ -15,7 +15,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
@@ -46,9 +45,6 @@ class LibraryViewModel @Inject constructor(
     val searchRequested: LiveData<Boolean> = _searchRequested
 
     private val _searchToken = MutableStateFlow(EMPTY_SEARCH)
-
-    private val _hiddenBooks = MutableStateFlow<List<String>>(emptyList())
-    val hiddenBooks: StateFlow<List<String>> = _hiddenBooks
 
     private var defaultPagingSource: PagingSource<Int, Book>? = null
     private var searchPagingSource: PagingSource<Int, Book>? = null
@@ -91,13 +87,6 @@ class LibraryViewModel @Inject constructor(
                 source
             },
         ).flow.cachedIn(viewModelScope)
-    }
-
-    fun isVisible(bookId: String): Boolean {
-        return when (preferences.isForceCache()) {
-            true -> !hiddenBooks.value.contains(bookId)
-            false -> true
-        }
     }
 
     fun requestSearch() {
@@ -158,14 +147,6 @@ class LibraryViewModel @Inject constructor(
                     },
                 )
         }
-    }
-
-    fun hideBook(bookId: String) {
-        _hiddenBooks.value += bookId
-    }
-
-    fun dropHiddenBooks() {
-        _hiddenBooks.value = emptyList()
     }
 
     companion object {

@@ -92,7 +92,7 @@ fun NavigationBarComposable(
             NavigationBarItem(
                 icon = {
                     Icon(
-                        imageVector = Icons.Outlined.Cloud,
+                        imageVector = provideDownloadsIcon(),
                         contentDescription = "Downloads",
                         modifier = Modifier.size(iconSize),
                     )
@@ -213,3 +213,6 @@ fun NavigationBarComposable(
         }
     }
 }
+
+@Composable
+private fun provideDownloadsIcon() = Icons.Outlined.Cloud

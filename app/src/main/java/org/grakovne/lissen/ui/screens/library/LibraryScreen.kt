@@ -87,7 +87,6 @@ fun LibraryScreen(
     val recentBooks: List<RecentBook> by libraryViewModel.recentBooks.observeAsState(emptyList())
 
     val networkStatus by networkQualityService.networkStatus.collectAsState()
-    val hiddenBooks by libraryViewModel.hiddenBooks.collectAsState()
     var pullRefreshing by remember { mutableStateOf(false) }
     val recentBookRefreshing by libraryViewModel.recentBookUpdating.observeAsState(false)
     val searchRequested by libraryViewModel.searchRequested.observeAsState(false)
@@ -95,10 +94,6 @@ fun LibraryScreen(
     val library = when (searchRequested) {
         true -> libraryViewModel.searchPager.collectAsLazyPagingItems()
         false -> libraryViewModel.libraryPager.collectAsLazyPagingItems()
-    }
-
-    val showingRecentBooks by remember(recentBooks, hiddenBooks) {
-        derivedStateOf { filterRecentBooks(recentBooks, libraryViewModel) }
     }
 
     BackHandler(enabled = searchRequested) {
@@ -113,7 +108,6 @@ fun LibraryScreen(
 
             withMinimumTime(500) {
                 listOf(
-                    async { libraryViewModel.dropHiddenBooks() },
                     async { libraryViewModel.refreshLibrary() },
                     async { libraryViewModel.fetchRecentListening() },
                 ).awaitAll()
@@ -154,7 +148,7 @@ fun LibraryScreen(
 
     fun showRecent(): Boolean {
         val fetchAvailable = networkStatus || contentCachingModelView.localCacheUsing()
-        val hasContent = showingRecentBooks.isEmpty().not()
+        val hasContent = recentBooks.isEmpty().not()
         return !searchRequested && hasContent && fetchAvailable
     }
 
@@ -271,7 +265,7 @@ fun LibraryScreen(
                             showRecent -> {
                                 RecentBooksComposable(
                                     navController = navController,
-                                    recentBooks = showingRecentBooks,
+                                    recentBooks = recentBooks,
                                     imageLoader = imageLoader,
                                     libraryViewModel = libraryViewModel,
                                 )
@@ -332,17 +326,12 @@ fun LibraryScreen(
 
                         else -> items(count = library.itemCount, key = { "library_item_$it" }) {
                             val book = library[it] ?: return@items
-                            val isVisible = remember(hiddenBooks, book.id) {
-                                derivedStateOf { libraryViewModel.isVisible(book.id) }
-                            }
 
-                            if (isVisible.value) {
-                                BookComposable(
-                                    book = book,
-                                    imageLoader = imageLoader,
-                                    navController = navController,
-                                )
-                            }
+                            BookComposable(
+                                book = book,
+                                imageLoader = imageLoader,
+                                navController = navController,
+                            )
                         }
                     }
                 }
@@ -359,8 +348,3 @@ fun LibraryScreen(
         },
     )
 }
-
-private fun filterRecentBooks(
-    books: List<RecentBook>,
-    libraryViewModel: LibraryViewModel,
-) = books.filter { libraryViewModel.isVisible(it.id) }
