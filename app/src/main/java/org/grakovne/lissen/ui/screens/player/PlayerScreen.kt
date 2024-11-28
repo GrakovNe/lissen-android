@@ -85,7 +85,7 @@ fun PlayerScreen(
         stepBack()
     }
 
-    LaunchedEffect(bookId) {
+    LaunchedEffect(Unit) {
         bookId
             .takeIf { it != playingBook?.id }
             ?.let { playerViewModel.preparePlayback(it) }
