@@ -69,10 +69,10 @@ fun PlaylistItemComposable(
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier.padding(start = 8.dp),
             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-            color =  when (track.available) {
+            color = when (track.available) {
                 true -> colorScheme.onBackground.copy(alpha = 0.6f)
                 false -> colorScheme.onBackground.copy(alpha = 0.4f)
-            }
+            },
         )
     }
 }

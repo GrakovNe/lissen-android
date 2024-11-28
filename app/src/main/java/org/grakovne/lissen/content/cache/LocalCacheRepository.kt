@@ -19,7 +19,7 @@ import javax.inject.Singleton
 @Singleton
 class LocalCacheRepository @Inject constructor(
     private val cachedBookRepository: CachedBookRepository,
-    private val cachedLibraryRepository: CachedLibraryRepository
+    private val cachedLibraryRepository: CachedLibraryRepository,
 ) {
 
     fun provideFileUri(libraryItemId: String, fileId: String): Uri? =

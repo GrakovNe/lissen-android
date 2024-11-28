@@ -2,7 +2,6 @@ package org.grakovne.lissen.channel.audiobookshelf.common.converter
 
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsResponse
 import org.grakovne.lissen.domain.Book
-import org.grakovne.lissen.domain.BookCachedState
 import org.grakovne.lissen.domain.PagedItems
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -19,7 +18,6 @@ class LibraryPageResponseConverter @Inject constructor() {
                 id = it.id,
                 title = title,
                 author = it.media.metadata.authorName,
-                cachedState = BookCachedState.ABLE_TO_CACHE,
                 duration = it.media.duration.toInt(),
             )
         }

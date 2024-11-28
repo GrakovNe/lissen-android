@@ -32,13 +32,13 @@ import androidx.compose.ui.unit.sp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.icons.TimerPlay
 import org.grakovne.lissen.ui.navigation.AppNavigationService
-import org.grakovne.lissen.viewmodel.NewCachingModelView
+import org.grakovne.lissen.viewmodel.ContentCachingModelView
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
 fun NavigationBarComposable(
     playerViewModel: PlayerViewModel,
-    cachingModelView: NewCachingModelView,
+    contentCachingModelView: ContentCachingModelView,
     navController: AppNavigationService,
     modifier: Modifier = Modifier,
 ) {
@@ -89,7 +89,7 @@ fun NavigationBarComposable(
             NavigationBarItem(
                 icon = {
                     Icon(
-                        imageVector = when (cachingModelView.isPlayingBookCached()) {
+                        imageVector = when (contentCachingModelView.isPlayingBookCached()) {
                             true -> Icons.Outlined.CloudDownload
                             false -> Icons.Outlined.Cloud
                         },
@@ -183,11 +183,11 @@ fun NavigationBarComposable(
 
             if (downloadsExpanded) {
                 DownloadsComposable(
-                    hasCachedEpisodes = cachingModelView.isPlayingBookCached(),
+                    hasCachedEpisodes = contentCachingModelView.isPlayingBookCached(),
                     onRequestedDownload = { option ->
                         playerViewModel.book.value?.let {
-                            cachingModelView.requestCache(
-                                bookId = it.id,
+                            contentCachingModelView.requestCache(
+                                mediaItemId = it.id,
                                 currentPosition = playerViewModel.totalPosition.value ?: 0.0,
                                 option = option,
                             )
@@ -198,7 +198,7 @@ fun NavigationBarComposable(
                             .book
                             .value
                             ?.let {
-                                cachingModelView.dropCache(it.id)
+                                contentCachingModelView.dropCache(it.id)
                                 navController.showLibrary(true)
                             }
                     },

@@ -12,9 +12,8 @@ import javax.inject.Singleton
 @Singleton
 @OptIn(UnstableApi::class)
 class PlaybackNotificationService @Inject constructor(
-    private val exoPlayer: ExoPlayer
+    private val exoPlayer: ExoPlayer,
 ) : RunningComponent {
-
 
     override fun onCreate() {
         exoPlayer.addListener(object : Player.Listener {
@@ -22,7 +21,7 @@ class PlaybackNotificationService @Inject constructor(
             override fun onPositionDiscontinuity(
                 oldPosition: Player.PositionInfo,
                 newPosition: Player.PositionInfo,
-                reason: Int
+                reason: Int,
             ) {
                 val previousIndex = oldPosition.mediaItemIndex
                 val currentIndex = newPosition.mediaItemIndex
@@ -63,5 +62,5 @@ class PlaybackNotificationService @Inject constructor(
 
 private enum class Direction {
     FORWARD,
-    BACKWARD
+    BACKWARD,
 }

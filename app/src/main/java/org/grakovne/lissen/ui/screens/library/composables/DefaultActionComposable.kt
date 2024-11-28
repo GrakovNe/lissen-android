@@ -33,13 +33,13 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.icons.Search
 import org.grakovne.lissen.ui.navigation.AppNavigationService
-import org.grakovne.lissen.viewmodel.CachingModelView
+import org.grakovne.lissen.viewmodel.ContentCachingModelView
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 
 @Composable
 fun DefaultActionComposable(
     navController: AppNavigationService,
-    cachingModelView: CachingModelView,
+    contentCachingModelView: ContentCachingModelView,
     libraryViewModel: LibraryViewModel,
     onContentRefreshing: (Boolean) -> Unit,
     onSearchRequested: () -> Unit,
@@ -77,7 +77,7 @@ fun DefaultActionComposable(
         DropdownMenuItem(
             leadingIcon = {
                 Icon(
-                    imageVector = when (cachingModelView.localCacheUsing()) {
+                    imageVector = when (contentCachingModelView.localCacheUsing()) {
                         true -> Icons.Outlined.Cloud
                         else -> Icons.Outlined.CloudOff
                     },
@@ -86,7 +86,7 @@ fun DefaultActionComposable(
             },
             text = {
                 Text(
-                    text = when (cachingModelView.localCacheUsing()) {
+                    text = when (contentCachingModelView.localCacheUsing()) {
                         true -> stringResource(R.string.disable_offline)
                         else -> stringResource(R.string.enable_offline)
                     },
@@ -101,7 +101,7 @@ fun DefaultActionComposable(
                     withFrameNanos { }
 
                     CoroutineScope(Dispatchers.IO).launch {
-                        cachingModelView.toggleCacheForce()
+                        contentCachingModelView.toggleCacheForce()
                         libraryViewModel.dropHiddenBooks()
 
                         onContentRefreshing(false)

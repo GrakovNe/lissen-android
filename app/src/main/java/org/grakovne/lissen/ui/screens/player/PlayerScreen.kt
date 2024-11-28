@@ -48,7 +48,7 @@ import org.grakovne.lissen.ui.screens.player.composable.TrackControlComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackDetailsComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.PlayingQueuePlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackDetailsPlaceholderComposable
-import org.grakovne.lissen.viewmodel.NewCachingModelView
+import org.grakovne.lissen.viewmodel.ContentCachingModelView
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,7 +59,7 @@ fun PlayerScreen(
     bookId: String,
     bookTitle: String,
 ) {
-    val cachingModelView: NewCachingModelView = hiltViewModel()
+    val contentCachingModelView: ContentCachingModelView = hiltViewModel()
     val playerViewModel: PlayerViewModel = hiltViewModel()
     val titleTextStyle = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
 
@@ -153,7 +153,7 @@ fun PlayerScreen(
         bottomBar = {
             NavigationBarComposable(
                 playerViewModel = playerViewModel,
-                cachingModelView = cachingModelView,
+                contentCachingModelView = contentCachingModelView,
                 navController = navController,
             )
         },

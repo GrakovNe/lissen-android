@@ -26,13 +26,13 @@ import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.common.NetworkQualityService
-import org.grakovne.lissen.viewmodel.CachingModelView
+import org.grakovne.lissen.viewmodel.ContentCachingModelView
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 
 @Composable
 fun LibraryFallbackComposable(
     searchRequested: Boolean,
-    cachingModelView: CachingModelView,
+    contentCachingModelView: ContentCachingModelView,
     libraryViewModel: LibraryViewModel,
     networkQualityService: NetworkQualityService,
 ) {
@@ -49,7 +49,7 @@ fun LibraryFallbackComposable(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             val hasNetwork = networkQualityService.isNetworkAvailable()
-            val isLocalCache = cachingModelView.localCacheUsing()
+            val isLocalCache = contentCachingModelView.localCacheUsing()
 
             val text = when {
                 searchRequested -> null

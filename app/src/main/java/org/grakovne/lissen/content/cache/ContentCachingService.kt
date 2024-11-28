@@ -32,7 +32,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class NewBookCachingService @Inject constructor(
+class ContentCachingService @Inject constructor(
     @ApplicationContext private val context: Context,
     private val bookRepository: CachedBookRepository,
     private val libraryRepository: CachedLibraryRepository,
@@ -40,8 +40,8 @@ class NewBookCachingService @Inject constructor(
     private val requestHeadersProvider: RequestHeadersProvider,
 ) {
 
-    suspend fun cacheBook(
-        bookId: String,
+    suspend fun cacheMediaItem(
+        mediaItemId: String,
         option: DownloadOption,
         channel: MediaChannel,
         currentTotalPosition: Double,
@@ -49,7 +49,7 @@ class NewBookCachingService @Inject constructor(
         emit(CacheProgress.Caching)
 
         val book = channel
-            .fetchBook(bookId)
+            .fetchBook(mediaItemId)
             .fold(
                 onSuccess = { it },
                 onFailure = { null },
@@ -66,7 +66,7 @@ class NewBookCachingService @Inject constructor(
         )
 
         val requestedFiles = findRequestedFiles(book, requestedChapters)
-        val mediaCachingResult = cacheBookMedia(bookId, requestedFiles, channel)
+        val mediaCachingResult = cacheBookMedia(mediaItemId, requestedFiles, channel)
         val coverCachingResult = cacheBookCover(book, channel)
         val librariesCachingResult = cacheLibraries(channel)
 

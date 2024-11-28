@@ -6,14 +6,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.content.cache.NewBookCachingService
+import org.grakovne.lissen.content.cache.ContentCachingService
 import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import javax.inject.Inject
 
 @HiltViewModel
-class NewCachingModelView @Inject constructor(
-    private val cachingService: NewBookCachingService,
+class ContentCachingModelView @Inject constructor(
+    private val contentCachingService: ContentCachingService,
     private val preferences: LissenSharedPreferences,
     private val mediaProvider: LissenMediaProvider,
 ) : ViewModel() {
@@ -21,25 +21,25 @@ class NewCachingModelView @Inject constructor(
     private val _bookCachingProgress = mutableMapOf<String, MutableStateFlow<CacheProgress>>()
 
     fun requestCache(
-        bookId: String,
+        mediaItemId: String,
         currentPosition: Double,
         option: DownloadOption,
     ) {
         viewModelScope.launch {
-            cachingService
-                .cacheBook(
-                    bookId = bookId,
+            contentCachingService
+                .cacheMediaItem(
+                    mediaItemId = mediaItemId,
                     option = option,
                     channel = mediaProvider.providePreferredChannel(),
                     currentTotalPosition = currentPosition,
                 )
-                .collect { _bookCachingProgress[bookId]?.value = it }
+                .collect { _bookCachingProgress[mediaItemId]?.value = it }
         }
     }
 
     fun dropCache(bookId: String) {
         viewModelScope.launch {
-            cachingService
+            contentCachingService
                 .dropCache(bookId)
                 .collect { _bookCachingProgress[bookId]?.value = it }
         }

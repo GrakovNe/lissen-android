@@ -2,7 +2,6 @@ package org.grakovne.lissen.channel.audiobookshelf.podcast.converter
 
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastItem
 import org.grakovne.lissen.domain.Book
-import org.grakovne.lissen.domain.BookCachedState
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,7 +16,6 @@ class PodcastSearchItemsConverter @Inject constructor() {
                     id = it.id,
                     title = title,
                     author = it.media.metadata.author,
-                    cachedState = BookCachedState.UNABLE_TO_CACHE,
                     duration = it.media.duration.toInt(),
                 )
             }

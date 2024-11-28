@@ -27,7 +27,6 @@ class PlaybackSynchronizationService @Inject constructor(
     private var playbackSession: PlaybackSession? = null
     private val serviceScope = MainScope()
 
-
     init {
         exoPlayer.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {

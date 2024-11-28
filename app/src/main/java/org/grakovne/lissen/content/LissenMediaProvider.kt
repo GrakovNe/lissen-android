@@ -10,7 +10,6 @@ import org.grakovne.lissen.channel.common.ChannelProvider
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.content.cache.LocalCacheRepository
 import org.grakovne.lissen.domain.Book
-import org.grakovne.lissen.domain.BookCachedState.CACHED
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.PagedItems
@@ -106,11 +105,7 @@ class LissenMediaProvider @Inject constructor(
 
         return when (sharedPreferences.isForceCache()) {
             true -> localCacheRepository.fetchBooks(pageSize, pageNumber)
-            false -> {
-                providePreferredChannel()
-                    .fetchBooks(libraryId, pageSize, pageNumber)
-                    .map { flagCached(it) }
-            }
+            false -> providePreferredChannel().fetchBooks(libraryId, pageSize, pageNumber)
         }
     }
 
@@ -211,25 +206,6 @@ class LissenMediaProvider @Inject constructor(
     }
 
     suspend fun fetchConnectionInfo() = providePreferredChannel().fetchConnectionInfo()
-
-    private suspend fun flagCached(page: PagedItems<Book>): PagedItems<Book> {
-        val cachedBooks = localCacheRepository.fetchCachedBookIds()
-
-        val items = page
-            .items
-            .map { book ->
-                when (cachedBooks.contains(book.id)) {
-                    true ->
-                        book
-                            .copy(cachedState = CACHED)
-                            .also { Log.d(TAG, "${book.id} flagged as Cached") }
-
-                    false -> book
-                }
-            }
-
-        return page.copy(items = items)
-    }
 
     fun provideAuthService(): ChannelAuthService = channels[sharedPreferences.getChannel()]
         ?.provideChannelAuth()
