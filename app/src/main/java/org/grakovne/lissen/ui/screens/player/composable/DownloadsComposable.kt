@@ -33,6 +33,7 @@ import org.grakovne.lissen.domain.NumberItemDownloadOption
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DownloadsComposable(
+    isForceCache: Boolean,
     libraryType: LibraryType,
     hasCachedEpisodes: Boolean,
     onRequestedDownload: (DownloadOption) -> Unit,
@@ -71,14 +72,20 @@ fun DownloadsComposable(
                                     Text(
                                         text = item.makeText(context, libraryType),
                                         style = typography.bodyMedium,
+                                        color = when (isForceCache) {
+                                            true -> colorScheme.onBackground.copy(alpha = 0.4f)
+                                            false -> colorScheme.onBackground
+                                        },
                                     )
                                 }
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable {
-                                    onRequestedDownload(item)
-                                    onDismissRequest()
+                                    if (isForceCache.not()) {
+                                        onRequestedDownload(item)
+                                        onDismissRequest()
+                                    }
                                 },
                         )
                         if (index < DownloadOptions.size - 1) {

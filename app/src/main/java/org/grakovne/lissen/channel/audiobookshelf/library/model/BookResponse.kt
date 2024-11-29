@@ -9,8 +9,8 @@ data class BookResponse(
 
 data class BookMedia(
     val metadata: LibraryMetadataResponse,
+    val audioFiles: List<BookAudioFileResponse>?,
     val chapters: List<LibraryChapterResponse>?,
-    val tracks: List<LibraryTrack>?,
 )
 
 data class LibraryMetadataResponse(
@@ -23,18 +23,29 @@ data class LibraryAuthorResponse(
     val name: String,
 )
 
+data class BookAudioFileResponse(
+    val index: Int,
+    val ino: String,
+    val duration: Double,
+    val metadata: AudioFileMetadata,
+    val metaTags: AudioFileTag?,
+    val mimeType: String,
+)
+
+data class AudioFileMetadata(
+    val filename: String,
+    val ext: String,
+    val size: Long,
+)
+
+data class AudioFileTag(
+    val tagAlbum: String,
+    val tagTitle: String,
+)
+
 data class LibraryChapterResponse(
     val start: Double,
     val end: Double,
     val title: String,
     val id: String,
-)
-
-data class LibraryTrack(
-    val index: Int,
-    val startOffset: Double,
-    val duration: Double,
-    val title: String,
-    val codec: String,
-    val contentUrl: String,
 )

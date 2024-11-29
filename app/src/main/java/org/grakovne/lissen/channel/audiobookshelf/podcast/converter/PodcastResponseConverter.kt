@@ -26,16 +26,20 @@ class PodcastResponseConverter @Inject constructor() {
 
         val filesAsChapters: List<BookChapter> =
             orderedEpisodes
-                ?.map { file ->
-                    BookChapter(
-                        start = file.audioTrack.startOffset,
-                        end = file.audioTrack.startOffset + file.audioTrack.duration,
-                        title = file.title.substringBeforeLast("."),
-                        duration = file.audioTrack.duration,
-                        id = file.id,
-                        available = true,
+                ?.fold(0.0 to mutableListOf<BookChapter>()) { (accDuration, chapters), file ->
+                    chapters.add(
+                        BookChapter(
+                            start = accDuration,
+                            end = accDuration + file.audioFile.duration,
+                            title = file.title,
+                            duration = file.audioFile.duration,
+                            id = file.id,
+                            available = true,
+                        ),
                     )
+                    accDuration + file.audioFile.duration to chapters
                 }
+                ?.second
                 ?: emptyList()
 
         return DetailedItem(
@@ -43,18 +47,18 @@ class PodcastResponseConverter @Inject constructor() {
             title = item.media.metadata.title,
             libraryId = item.libraryId,
             author = item.media.metadata.author,
+            localStored = false,
             files = orderedEpisodes
                 ?.map {
                     BookFile(
-                        id = it.audioTrack.contentUrl.substringAfterLast("/"),
-                        name = it.title.substringBeforeLast("."),
-                        duration = it.audioTrack.duration,
-                        mimeType = it.audioTrack.codec,
+                        id = it.audioFile.ino,
+                        name = it.title,
+                        duration = it.audioFile.duration,
+                        mimeType = it.audioFile.mimeType,
                     )
                 }
                 ?: emptyList(),
             chapters = filesAsChapters,
-            localStored = false,
             progress = progressResponse
                 ?.let {
                     MediaProgress(

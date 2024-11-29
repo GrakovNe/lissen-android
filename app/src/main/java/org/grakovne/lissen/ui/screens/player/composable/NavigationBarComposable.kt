@@ -195,6 +195,7 @@ fun NavigationBarComposable(
                 DownloadsComposable(
                     libraryType = libraryType,
                     hasCachedEpisodes = isMetadataCached,
+                    isForceCache = contentCachingModelView.localCacheUsing(),
                     onRequestedDownload = { option ->
                         playerViewModel.book.value?.let {
                             contentCachingModelView
