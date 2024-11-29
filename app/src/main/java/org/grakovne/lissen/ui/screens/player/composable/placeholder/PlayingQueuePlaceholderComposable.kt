@@ -27,7 +27,7 @@ import org.grakovne.lissen.R
 fun PlayingQueuePlaceholderComposable(modifier: Modifier = Modifier) {
     Column(modifier = modifier.padding(horizontal = 16.dp)) {
         Text(
-            text = stringResource(R.string.player_screen_now_playing_title),
+            text = stringResource(R.string.player_screen_library_playing_title),
             fontSize = typography.titleMedium.fontSize * 1.25f,
             fontWeight = FontWeight.SemiBold,
             color = MaterialTheme.colorScheme.primary,

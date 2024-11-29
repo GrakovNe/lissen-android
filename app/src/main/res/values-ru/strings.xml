@@ -14,7 +14,7 @@
     <string name="player_screen_playback_speed_navigation">Скорость</string>
     <string name="player_screen_chapter_list_navigation">Эпизоды</string>
     <string name="player_screen_preferences_navigation">Настройки</string>
-    <string name="player_screen_now_playing_title">"Список эпизодов"</string>
+    <string name="player_screen_library_playing_title">"Список глав"</string>
     <string name="player_screen_now_playing_title_chapter_of">Эпизод %1$s из %2$s</string>
     <string name="settings_screen_title">Настройки</string>
     <string name="settings_screen_preferred_library_title">Выбранная библиотека</string>
@@ -78,4 +78,6 @@
     <string name="downloads_menu_download_option_clear_chapters">Удалить загруженные главы</string>
     <string name="downloads_menu_download_option_clear_episodes">Удалить загруженные выпуски</string>
     <string name="downloads_menu_download_option_clear_items">Удалить загруженные элементы</string>
+    <string name="player_screen_podcast_playing_title">Список выпусков</string>
+    <string name="player_screen_items_playing_title">Список элементов</string>
 </resources>

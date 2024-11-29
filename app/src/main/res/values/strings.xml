@@ -14,7 +14,9 @@
     <string name="player_screen_playback_speed_navigation">Speed</string>
     <string name="player_screen_chapter_list_navigation">Chapters</string>
     <string name="player_screen_preferences_navigation">Preferences</string>
-    <string name="player_screen_now_playing_title">Playing chapters</string>
+    <string name="player_screen_library_playing_title">Playing chapters</string>
+    <string name="player_screen_podcast_playing_title">Playing episodes</string>
+    <string name="player_screen_items_playing_title">Playing items</string>
     <string name="player_screen_now_playing_title_chapter_of">Chapter %1$s of %2$s</string>
     <string name="settings_screen_title">Preferences</string>
     <string name="settings_screen_preferred_library_title">Preferred library</string>

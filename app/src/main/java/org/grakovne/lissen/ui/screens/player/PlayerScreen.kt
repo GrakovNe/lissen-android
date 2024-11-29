@@ -1,5 +1,6 @@
 package org.grakovne.lissen.ui.screens.player
 
+import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -33,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -40,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.ImageLoader
 import org.grakovne.lissen.R
+import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.ui.icons.Search
 import org.grakovne.lissen.ui.navigation.AppNavigationService
@@ -49,6 +52,7 @@ import org.grakovne.lissen.ui.screens.player.composable.TrackControlComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackDetailsComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.PlayingQueuePlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackDetailsPlaceholderComposable
+import org.grakovne.lissen.ui.screens.player.composable.provideNowPlayingTitle
 import org.grakovne.lissen.viewmodel.ContentCachingModelView
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
@@ -61,6 +65,8 @@ fun PlayerScreen(
     bookId: String,
     bookTitle: String,
 ) {
+    val context = LocalContext.current
+
     val cachingModelView: ContentCachingModelView = hiltViewModel()
     val playerViewModel: PlayerViewModel = hiltViewModel()
     val libraryViewModel: LibraryViewModel = hiltViewModel()
@@ -73,7 +79,7 @@ fun PlayerScreen(
     val searchRequested by playerViewModel.searchRequested.observeAsState(false)
 
     val screenTitle = when (playingQueueExpanded) {
-        true -> stringResource(R.string.player_screen_now_playing_title)
+        true -> provideNowPlayingTitle(libraryViewModel.fetchPreferredLibraryType(), context)
         false -> stringResource(R.string.player_screen_title)
     }
 
@@ -202,6 +208,7 @@ fun PlayerScreen(
 
                 if (isPlaybackReady) {
                     PlayingQueueComposable(
+                        libraryViewModel = libraryViewModel,
                         viewModel = playerViewModel,
                         modifier = Modifier,
                     )

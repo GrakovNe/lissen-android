@@ -49,10 +49,12 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
+import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
 fun PlayingQueueComposable(
+    libraryViewModel: LibraryViewModel,
     viewModel: PlayerViewModel,
     modifier: Modifier = Modifier,
 ) {
@@ -122,7 +124,7 @@ fun PlayingQueueComposable(
     ) {
         if (playingQueueExpanded.not()) {
             Text(
-                text = stringResource(R.string.player_screen_now_playing_title),
+                text = provideNowPlayingTitle(libraryViewModel.fetchPreferredLibraryType(), context),
                 fontSize = fontSize.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.primary,

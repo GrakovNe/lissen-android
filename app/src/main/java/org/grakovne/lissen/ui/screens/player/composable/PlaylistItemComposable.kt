@@ -44,7 +44,7 @@ fun PlaylistItemComposable(
         if (isSelected) {
             Icon(
                 imageVector = Icons.Outlined.Audiotrack,
-                contentDescription = stringResource(R.string.player_screen_now_playing_title),
+                contentDescription = stringResource(R.string.player_screen_library_playing_title),
                 modifier = Modifier.size(16.dp),
             )
         } else {
