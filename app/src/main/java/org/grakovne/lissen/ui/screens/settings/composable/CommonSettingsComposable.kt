@@ -28,10 +28,14 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.ui.icons.Book
+import org.grakovne.lissen.viewmodel.PlayerViewModel
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
-fun CommonSettingsComposable(viewModel: SettingsViewModel) {
+fun CommonSettingsComposable(
+    viewModel: SettingsViewModel,
+    playerViewModel: PlayerViewModel,
+) {
     val libraries by viewModel.libraries.observeAsState(emptyList())
     val preferredLibrary by viewModel.preferredLibrary.observeAsState()
     val preferredColorScheme by viewModel.preferredColorScheme.observeAsState()
@@ -103,6 +107,7 @@ fun CommonSettingsComposable(viewModel: SettingsViewModel) {
                 libraries
                     .find { it.id == item.id }
                     ?.let { viewModel.preferLibrary(it) }
+                    ?.also { playerViewModel.clearPlayingBook() }
             },
         )
     }

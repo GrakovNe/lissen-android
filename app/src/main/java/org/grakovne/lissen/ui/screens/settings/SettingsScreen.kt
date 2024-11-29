@@ -34,6 +34,7 @@ import org.grakovne.lissen.ui.screens.settings.composable.AdditionalComposable
 import org.grakovne.lissen.ui.screens.settings.composable.AdvancedSettingsItemComposable
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.ServerSettingsComposable
+import org.grakovne.lissen.viewmodel.PlayerViewModel
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
@@ -43,6 +44,7 @@ fun SettingsScreen(
     navController: AppNavigationService,
 ) {
     val viewModel: SettingsViewModel = hiltViewModel()
+    val playerViewModel: PlayerViewModel = hiltViewModel()
     val host by viewModel.host.observeAsState("")
 
     LaunchedEffect(Unit) {
@@ -90,7 +92,10 @@ fun SettingsScreen(
                     if (host?.isNotEmpty() == true) {
                         ServerSettingsComposable(navController, viewModel)
                     }
-                    CommonSettingsComposable(viewModel)
+                    CommonSettingsComposable(
+                        viewModel = viewModel,
+                        playerViewModel = playerViewModel,
+                    )
                     AdvancedSettingsItemComposable(
                         title = stringResource(R.string.settings_screen_custom_headers_title),
                         description = stringResource(R.string.settings_screen_custom_header_hint),
