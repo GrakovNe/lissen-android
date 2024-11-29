@@ -223,4 +223,4 @@ private fun playingItemChanged(
 private fun cachePolicyChanged(
     contentCachingModelView: ContentCachingModelView,
     playingBook: DetailedItem?,
-) = contentCachingModelView.localCacheUsing() != playingBook?.localStored
+) = contentCachingModelView.localCacheUsing() != playingBook?.localProvided

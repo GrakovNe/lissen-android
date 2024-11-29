@@ -63,4 +63,19 @@
     <string name="widget_placeholder_text">Нажмите чтобы запустить</string>
     <string name="the_offline_podcasts_is_empty">Загруженных подкастов нет</string>
     <string name="player_screen_downloads_navigation">Загрузки</string>
+    <string name="downloads_menu_download_book">Скачать</string>
+    <string name="downloads_menu_download_podcast">Скачать</string>
+    <string name="downloads_menu_download_unknown">Загрузки</string>
+    <string name="downloads_menu_download_option_current_chapter">Текущую главу</string>
+    <string name="downloads_menu_download_option_current_episode">Текущий выпуск</string>
+    <string name="downloads_menu_download_option_current_item">Текущий элемент</string>
+    <string name="downloads_menu_download_option_entire_book">Всю книгу</string>
+    <string name="downloads_menu_download_option_entire_podcast">Все выпуски</string>
+    <string name="downloads_menu_download_option_entire_item">Все элементы</string>
+    <string name="downloads_menu_download_option_next_chapters">Следуюшие %1$d глав</string>
+    <string name="downloads_menu_download_option_next_episodes">Следуюшие %1$d выпусков</string>
+    <string name="downloads_menu_download_option_next_items">Следуюшие %1$d элементов</string>
+    <string name="downloads_menu_download_option_clear_chapters">Удалить загруженные главы</string>
+    <string name="downloads_menu_download_option_clear_episodes">Удалить загруженные выпуски</string>
+    <string name="downloads_menu_download_option_clear_items">Удалить загруженные элементы</string>
 </resources>

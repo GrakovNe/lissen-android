@@ -76,7 +76,7 @@ class BookResponseConverter @Inject constructor() {
                 ?: emptyList(),
             chapters = maybeChapters ?: filesAsChapters(),
             libraryId = item.libraryId,
-            localStored = false,
+            localProvided = false,
             progress = progressResponse
                 ?.let {
                     MediaProgress(

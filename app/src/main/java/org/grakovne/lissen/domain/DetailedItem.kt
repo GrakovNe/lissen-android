@@ -10,7 +10,7 @@ data class DetailedItem(
     val chapters: List<BookChapter>,
     val progress: MediaProgress?,
     val libraryId: String?,
-    val localStored: Boolean,
+    val localProvided: Boolean,
 ) : Serializable
 
 data class BookFile(
