@@ -73,12 +73,12 @@ interface AudiobookshelfApiClient {
         @Query("limit") limit: Int,
     ): Response<PodcastSearchResponse>
 
-    @GET("/api/items/{itemId}?expanded=1")
+    @GET("/api/items/{itemId}")
     suspend fun fetchLibraryItem(
         @Path("itemId") itemId: String,
     ): Response<BookResponse>
 
-    @GET("/api/items/{itemId}?expanded=1")
+    @GET("/api/items/{itemId}")
     suspend fun fetchPodcastEpisode(
         @Path("itemId") itemId: String,
     ): Response<PodcastResponse>
