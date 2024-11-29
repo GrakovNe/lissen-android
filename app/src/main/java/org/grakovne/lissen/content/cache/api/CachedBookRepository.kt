@@ -50,10 +50,6 @@ class CachedBookRepository @Inject constructor(
 
     fun provideCacheState(bookId: String) = bookDao.isBookCached(bookId)
 
-    suspend fun fetchCachedBooksIds() = bookDao.fetchBookIds(
-        libraryId = preferences.getPreferredLibrary()?.id,
-    )
-
     suspend fun fetchBooks(
         pageNumber: Int,
         pageSize: Int,
