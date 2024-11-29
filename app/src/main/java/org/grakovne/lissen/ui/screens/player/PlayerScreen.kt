@@ -1,6 +1,5 @@
 package org.grakovne.lissen.ui.screens.player
 
-import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -42,7 +41,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.ImageLoader
 import org.grakovne.lissen.R
-import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.ui.icons.Search
 import org.grakovne.lissen.ui.navigation.AppNavigationService
@@ -194,6 +192,7 @@ fun PlayerScreen(
                             TrackDetailsComposable(
                                 viewModel = playerViewModel,
                                 imageLoader = imageLoader,
+                                libraryViewModel = libraryViewModel,
                             )
                         }
 

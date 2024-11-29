@@ -1,5 +1,6 @@
 package org.grakovne.lissen.ui.screens.player.composable
 
+import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -22,7 +23,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -30,11 +30,15 @@ import androidx.compose.ui.unit.dp
 import coil.ImageLoader
 import coil.request.ImageRequest
 import org.grakovne.lissen.R
+import org.grakovne.lissen.channel.common.LibraryType
+import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
+import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
 fun TrackDetailsComposable(
+    libraryViewModel: LibraryViewModel,
     viewModel: PlayerViewModel,
     modifier: Modifier = Modifier,
     imageLoader: ImageLoader,
@@ -89,10 +93,11 @@ fun TrackDetailsComposable(
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = stringResource(
-                R.string.player_screen_now_playing_title_chapter_of,
-                currentTrackIndex + 1,
-                book?.chapters?.size ?: "?",
+            text = provideChapterNumberTitle(
+                currentTrackIndex = currentTrackIndex + 1,
+                book = book,
+                libraryType = libraryViewModel.fetchPreferredLibraryType(),
+                context = context,
             ),
             style = typography.bodySmall,
             color = colorScheme.onBackground.copy(alpha = 0.6f),
@@ -100,4 +105,29 @@ fun TrackDetailsComposable(
             modifier = Modifier.fillMaxWidth(),
         )
     }
+}
+
+private fun provideChapterNumberTitle(
+    currentTrackIndex: Int,
+    book: DetailedItem?,
+    libraryType: LibraryType,
+    context: Context,
+): String = when (libraryType) {
+    LibraryType.LIBRARY -> context.getString(
+        R.string.player_screen_now_playing_title_chapter_of,
+        currentTrackIndex + 1,
+        book?.chapters?.size ?: "?",
+    )
+
+    LibraryType.PODCAST -> context.getString(
+        R.string.player_screen_now_playing_title_podcast_of,
+        currentTrackIndex + 1,
+        book?.chapters?.size ?: "?",
+    )
+
+    LibraryType.UNKNOWN -> context.getString(
+        R.string.player_screen_now_playing_title_item_of,
+        currentTrackIndex + 1,
+        book?.chapters?.size ?: "?",
+    )
 }

@@ -6,7 +6,7 @@ import org.grakovne.lissen.channel.common.LibraryType
 
 fun provideNowPlayingTitle(
     libraryType: LibraryType,
-    context: Context
+    context: Context,
 ) = when (libraryType) {
     LibraryType.LIBRARY -> context.getString(R.string.player_screen_library_playing_title)
     LibraryType.PODCAST -> context.getString(R.string.player_screen_podcast_playing_title)
