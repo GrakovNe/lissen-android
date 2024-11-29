@@ -213,6 +213,7 @@ fun PlayerScreen(
                     )
                 } else {
                     PlayingQueuePlaceholderComposable(
+                        libraryViewModel = libraryViewModel,
                         modifier = Modifier,
                     )
                 }
