@@ -5,13 +5,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.PlaylistPlay
-import androidx.compose.material.icons.outlined.ArrowCircleDown
-import androidx.compose.material.icons.outlined.ArrowDownward
-import androidx.compose.material.icons.outlined.Book
-import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.CloudDownload
-import androidx.compose.material.icons.outlined.CloudOff
-import androidx.compose.material.icons.outlined.DownloadForOffline
 import androidx.compose.material.icons.outlined.PlaylistPlay
 import androidx.compose.material.icons.outlined.SlowMotionVideo
 import androidx.compose.material.icons.outlined.Sync
@@ -246,5 +240,5 @@ private fun provideCachingStateIcon(
 }
 
 private val cachingIcon = Icons.Outlined.Sync
-private val cachedIcon = Icons.Outlined.Cloud
-private val defaultIcon = Icons.Outlined.Cloud
+private val cachedIcon = Icons.Outlined.CloudDownload
+private val defaultIcon = Icons.Outlined.CloudDownload
