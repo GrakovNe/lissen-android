@@ -36,27 +36,28 @@ class PlaybackNotificationService @Inject constructor(
                         false -> Direction.BACKWARD
                     }
 
-                    findAvailableTrackIndex(exoPlayer.currentMediaItemIndex, direction, exoPlayer)
-                        ?.let { exoPlayer.seekTo(it, 0) }
-                        ?: exoPlayer.seekTo(oldPosition.mediaItemIndex, oldPosition.positionMs)
+                    val nextTrack = findAvailableTrackIndex(exoPlayer.currentMediaItemIndex, direction, exoPlayer)
+                    exoPlayer.seekTo(nextTrack, 0)
+
+                    if (nextTrack < currentIndex) {
+                        exoPlayer.pause()
+                    }
                 }
             }
         })
     }
 
-    private fun findAvailableTrackIndex(currentItem: Int, direction: Direction, exoPlayer: ExoPlayer): Int? {
+    private fun findAvailableTrackIndex(currentItem: Int, direction: Direction, exoPlayer: ExoPlayer): Int {
         if (exoPlayer.getMediaItemAt(currentItem).mediaId != SilenceMediaSource::class.simpleName) {
             return currentItem
         }
 
-        if (currentItem == 0 || currentItem == exoPlayer.mediaItemCount - 1) {
-            return null
+        val foundItem = when (direction) {
+            Direction.FORWARD -> (currentItem + 1) % exoPlayer.mediaItemCount
+            Direction.BACKWARD -> if (currentItem - 1 < 0) exoPlayer.mediaItemCount - 1 else currentItem - 1
         }
 
-        return when (direction) {
-            Direction.FORWARD -> findAvailableTrackIndex(currentItem + 1, direction, exoPlayer)
-            Direction.BACKWARD -> findAvailableTrackIndex(currentItem - 1, direction, exoPlayer)
-        }
+        return findAvailableTrackIndex(foundItem, direction, exoPlayer)
     }
 }
 
