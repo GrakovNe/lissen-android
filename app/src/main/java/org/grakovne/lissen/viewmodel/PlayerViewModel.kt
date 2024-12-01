@@ -32,6 +32,7 @@ class PlayerViewModel @Inject constructor(
 
     val isPlaybackReady: LiveData<Boolean> = mediaRepository.isPlaybackReady
     val playbackSpeed: LiveData<Float> = mediaRepository.playbackSpeed
+    val preparingError: LiveData<Boolean> = mediaRepository.mediaPreparingError
 
     private val _searchRequested = MutableLiveData(false)
     val searchRequested: LiveData<Boolean> = _searchRequested
@@ -104,6 +105,7 @@ class PlayerViewModel @Inject constructor(
     fun togglePlayPause() = mediaRepository.togglePlayPause()
 
     companion object {
+
         private const val EMPTY_SEARCH = ""
     }
 }

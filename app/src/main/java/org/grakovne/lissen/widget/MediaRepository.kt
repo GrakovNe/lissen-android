@@ -73,6 +73,9 @@ class MediaRepository @Inject constructor(
     private val _playingBook = MutableLiveData<DetailedItem?>()
     val playingBook: LiveData<DetailedItem?> = _playingBook
 
+    private val _mediaPreparingError = MutableLiveData<Boolean>()
+    val mediaPreparingError: LiveData<Boolean> = _mediaPreparingError
+
     private val _playbackSpeed = MutableLiveData(preferences.getPlaybackSpeed())
     val playbackSpeed: LiveData<Float> = _playbackSpeed
 
@@ -279,7 +282,7 @@ class MediaRepository @Inject constructor(
                     .fetchBook(bookId)
                     .foldAsync(
                         onSuccess = { startPreparingPlayback(it, fromBackground) },
-                        onFailure = {},
+                        onFailure = { _mediaPreparingError.postValue(true) },
                     )
             }
         }
@@ -349,6 +352,7 @@ class MediaRepository @Inject constructor(
             .value
             ?.let { updateTimer(timerOption = null) }
 
+        _mediaPreparingError.postValue(false)
         _isPlaybackReady.postValue(false)
     }
 

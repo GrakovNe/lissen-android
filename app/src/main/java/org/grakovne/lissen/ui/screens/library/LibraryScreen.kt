@@ -90,6 +90,7 @@ fun LibraryScreen(
     var pullRefreshing by remember { mutableStateOf(false) }
     val recentBookRefreshing by libraryViewModel.recentBookUpdating.observeAsState(false)
     val searchRequested by libraryViewModel.searchRequested.observeAsState(false)
+    val preparingError by playerViewModel.preparingError.observeAsState(false)
 
     val library = when (searchRequested) {
         true -> libraryViewModel.searchPager.collectAsLazyPagingItems()
@@ -129,6 +130,12 @@ fun LibraryScreen(
 
     LaunchedEffect(networkStatus) {
         refreshContent(false)
+    }
+
+    LaunchedEffect(preparingError) {
+        if (preparingError) {
+            playerViewModel.clearPlayingBook()
+        }
     }
 
     val pullRefreshState = rememberPullRefreshState(
