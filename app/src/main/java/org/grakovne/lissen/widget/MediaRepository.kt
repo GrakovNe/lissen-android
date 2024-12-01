@@ -220,6 +220,7 @@ class MediaRepository @Inject constructor(
     }
 
     fun clearPlayingBook() {
+        pause()
         _playingBook.postValue(null)
     }
 

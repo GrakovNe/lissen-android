@@ -41,7 +41,6 @@ import org.grakovne.lissen.viewmodel.PlayerViewModel
 fun DefaultActionComposable(
     navController: AppNavigationService,
     contentCachingModelView: ContentCachingModelView,
-    libraryViewModel: LibraryViewModel,
     playerViewModel: PlayerViewModel,
     onContentRefreshing: (Boolean) -> Unit,
     onSearchRequested: () -> Unit,
