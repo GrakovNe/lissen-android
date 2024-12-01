@@ -94,7 +94,7 @@ fun TrackDetailsComposable(
 
         Text(
             text = provideChapterNumberTitle(
-                currentTrackIndex = currentTrackIndex + 1,
+                currentTrackIndex = currentTrackIndex,
                 book = book,
                 libraryType = libraryViewModel.fetchPreferredLibraryType(),
                 context = context,
