@@ -4,9 +4,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowCircleDown
+import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.CloudDownload
+import androidx.compose.material.icons.outlined.CloudOff
+import androidx.compose.material.icons.outlined.DownloadForOffline
 import androidx.compose.material.icons.outlined.SlowMotionVideo
 import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material.icons.outlined.Timer
@@ -27,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -227,18 +232,17 @@ fun NavigationBarComposable(
 private fun provideCachingStateIcon(
     hasCached: Boolean,
     cacheProgress: CacheProgress,
-) = when (cacheProgress) {
-    CacheProgress.Completed -> cachedIcon
-    CacheProgress.Removed -> defaultIcon
-    CacheProgress.Error -> defaultIcon
-    CacheProgress.Idle -> when (hasCached) {
+): ImageVector {
+    if (cacheProgress is CacheProgress.Caching) {
+        return cachingIcon
+    }
+
+    return when (hasCached) {
         true -> cachedIcon
         else -> defaultIcon
     }
-
-    is CacheProgress.Caching -> cachingIcon
 }
 
-private val defaultIcon = Icons.Outlined.Cloud
 private val cachingIcon = Icons.Outlined.Sync
-private val cachedIcon = Icons.Outlined.CloudDownload
+private val cachedIcon = Icons.Outlined.Cloud
+private val defaultIcon = Icons.Outlined.Cloud
