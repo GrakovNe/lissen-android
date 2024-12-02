@@ -92,8 +92,8 @@ fun MiniPlayerComposable(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                CloseActionBackground() // Левая сторона
-                CloseActionBackground() // Правая сторона
+                CloseActionBackground() // left side
+                CloseActionBackground() // right side
             }
         },
     ) {
