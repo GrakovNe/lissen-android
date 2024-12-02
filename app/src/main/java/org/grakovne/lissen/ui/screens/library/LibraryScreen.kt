@@ -25,6 +25,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -235,12 +236,14 @@ fun LibraryScreen(
         },
         bottomBar = {
             playingBook?.let {
-                MiniPlayerComposable(
-                    navController = navController,
-                    book = it,
-                    imageLoader = imageLoader,
-                    playerViewModel = playerViewModel,
-                )
+                Surface(shadowElevation = 4.dp) {
+                    MiniPlayerComposable(
+                        navController = navController,
+                        book = it,
+                        imageLoader = imageLoader,
+                        playerViewModel = playerViewModel,
+                    )
+                }
             }
         },
         modifier = Modifier

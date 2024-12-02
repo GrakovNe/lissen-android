@@ -1,5 +1,10 @@
 package org.grakovne.lissen.ui.screens.library.composables
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,7 +19,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Pause
@@ -22,14 +26,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -52,21 +57,21 @@ import org.grakovne.lissen.viewmodel.PlayerViewModel
 @Composable
 fun MiniPlayerComposable(
     navController: AppNavigationService,
-    modifier: Modifier = Modifier,
     book: DetailedItem,
     imageLoader: ImageLoader,
     playerViewModel: PlayerViewModel,
 ) {
     val isPlaying: Boolean by playerViewModel.isPlaying.observeAsState(false)
+    var backgroundVisible by remember { mutableStateOf(true) }
 
     val dismissState = rememberSwipeToDismissBoxState(
-        positionalThreshold = { it * 0.5f },
+        positionalThreshold = { it * 0.2f },
         confirmValueChange = { newValue: SwipeToDismissBoxValue ->
             when (newValue) {
                 SwipeToDismissBoxValue.EndToStart,
                 SwipeToDismissBoxValue.StartToEnd,
                 -> {
-                    playerViewModel.clearPlayingBook()
+                    backgroundVisible = false
                     true
                 }
 
@@ -75,6 +80,14 @@ fun MiniPlayerComposable(
         },
     )
 
+    LaunchedEffect(dismissState.currentValue) {
+        if (dismissState.currentValue == SwipeToDismissBoxValue.StartToEnd ||
+            dismissState.currentValue == SwipeToDismissBoxValue.EndToStart
+        ) {
+            playerViewModel.clearPlayingBook()
+        }
+    }
+
     SwipeToDismissBox(
         state = dismissState,
         backgroundContent = {
@@ -82,21 +95,33 @@ fun MiniPlayerComposable(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 12.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = when (dismissState.targetValue) {
+                    SwipeToDismissBoxValue.StartToEnd -> Arrangement.Start
+                    SwipeToDismissBoxValue.EndToStart -> Arrangement.End
+                    SwipeToDismissBoxValue.Settled -> Arrangement.Center
+                },
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                CloseActionBackground() // left side
-                CloseActionBackground() // right side
+                AnimatedVisibility(
+                    visible = backgroundVisible,
+                    enter = fadeIn(animationSpec = tween(300)),
+                    exit = fadeOut(animationSpec = tween(300)),
+                ) {
+                    CloseActionBackground()
+                }
             }
         },
     ) {
-        Surface(
-            shadowElevation = 4.dp,
-            modifier = modifier.clickable { navController.showPlayer(book.id, book.title) },
+        AnimatedVisibility(
+            visible = backgroundVisible,
+            enter = fadeIn(animationSpec = tween(300)),
+            exit = fadeOut(animationSpec = tween(300)),
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .background(colorScheme.background)
+                    .clickable { navController.showPlayer(book.id, book.title) }
                     .padding(horizontal = 20.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
