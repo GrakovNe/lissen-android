@@ -81,9 +81,7 @@ fun MiniPlayerComposable(
     )
 
     LaunchedEffect(dismissState.currentValue) {
-        if (dismissState.currentValue == SwipeToDismissBoxValue.StartToEnd ||
-            dismissState.currentValue == SwipeToDismissBoxValue.EndToStart
-        ) {
+        if (dismissState.currentValue != SwipeToDismissBoxValue.Settled) {
             playerViewModel.clearPlayingBook()
         }
     }
@@ -104,7 +102,6 @@ fun MiniPlayerComposable(
             ) {
                 AnimatedVisibility(
                     visible = backgroundVisible,
-                    enter = fadeIn(animationSpec = tween(300)),
                     exit = fadeOut(animationSpec = tween(300)),
                 ) {
                     CloseActionBackground()
@@ -114,7 +111,6 @@ fun MiniPlayerComposable(
     ) {
         AnimatedVisibility(
             visible = backgroundVisible,
-            enter = fadeIn(animationSpec = tween(300)),
             exit = fadeOut(animationSpec = tween(300)),
         ) {
             Row(
