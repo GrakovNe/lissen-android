@@ -17,6 +17,7 @@ import androidx.compose.material.DismissValue.Default
 import androidx.compose.material.DismissValue.DismissedToEnd
 import androidx.compose.material.DismissValue.DismissedToStart
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.FractionalThreshold
 import androidx.compose.material.SwipeToDismiss
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -40,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -61,6 +63,7 @@ fun MiniPlayerComposable(
     imageLoader: ImageLoader,
     playerViewModel: PlayerViewModel,
 ) {
+    val density = LocalDensity.current
     val isPlaying: Boolean by playerViewModel.isPlaying.observeAsState(false)
 
     val dismissState = rememberDismissState(
@@ -75,8 +78,10 @@ fun MiniPlayerComposable(
             }
         },
     )
+
     SwipeToDismiss(
         state = dismissState,
+        dismissThresholds = { FractionalThreshold(0.5f) },
         background = {
             Row(
                 modifier = Modifier
