@@ -31,7 +31,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Surface
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -54,7 +57,6 @@ import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MiniPlayerComposable(
     navController: AppNavigationService,
@@ -63,26 +65,26 @@ fun MiniPlayerComposable(
     imageLoader: ImageLoader,
     playerViewModel: PlayerViewModel,
 ) {
-    val density = LocalDensity.current
     val isPlaying: Boolean by playerViewModel.isPlaying.observeAsState(false)
 
-    val dismissState = rememberDismissState(
-        confirmStateChange = { dismissValue ->
-            when (dismissValue) {
-                DismissedToEnd, DismissedToStart -> {
+    val dismissState = rememberSwipeToDismissBoxState(
+        positionalThreshold = { it * 0.5f },
+        confirmValueChange = { newValue: SwipeToDismissBoxValue ->
+            when (newValue) {
+                SwipeToDismissBoxValue.EndToStart,
+                SwipeToDismissBoxValue.StartToEnd -> {
                     playerViewModel.clearPlayingBook()
                     true
                 }
 
-                Default -> false
+                else -> false
             }
-        },
+        }
     )
 
-    SwipeToDismiss(
+    SwipeToDismissBox(
         state = dismissState,
-        dismissThresholds = { FractionalThreshold(0.5f) },
-        background = {
+        backgroundContent = {
             Row(
                 modifier = Modifier
                     .fillMaxSize()
@@ -90,8 +92,8 @@ fun MiniPlayerComposable(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                CloseActionBackground() // left Side
-                CloseActionBackground() // Right Side
+                CloseActionBackground() // Левая сторона
+                CloseActionBackground() // Правая сторона
             }
         },
     ) {
