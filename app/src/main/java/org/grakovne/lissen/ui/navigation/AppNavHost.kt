@@ -1,5 +1,6 @@
 package org.grakovne.lissen.ui.navigation
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -21,6 +22,7 @@ import org.grakovne.lissen.ui.screens.player.PlayerScreen
 import org.grakovne.lissen.ui.screens.settings.SettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.CustomHeadersSettingsScreen
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun AppNavHost(
     navController: NavHostController,
@@ -39,9 +41,7 @@ fun AppNavHost(
         else -> "login_screen"
     }
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        println(innerPadding)
-
+    Scaffold(modifier = Modifier.fillMaxSize()) { _ ->
         NavHost(
             navController = navController,
             startDestination = startDestination,

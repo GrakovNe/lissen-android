@@ -249,6 +249,11 @@ class MediaRepository @Inject constructor(
     }
 
     fun togglePlayPause() {
+        if (currentChapterIndex.value == -1) {
+            Log.w(TAG, "Tried to toggle play/pause in the empty book. Skipping")
+            return
+        }
+
         when (isPlaying.value) {
             true -> pause()
             else -> play()

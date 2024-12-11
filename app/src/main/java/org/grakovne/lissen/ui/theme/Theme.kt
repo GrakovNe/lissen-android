@@ -5,9 +5,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import org.grakovne.lissen.common.ColorScheme
 
 private val LightColorScheme = lightColorScheme(
@@ -35,18 +33,6 @@ fun LissenTheme(
     }
 
     val colors = if (isDarkTheme) DarkColorScheme else LightColorScheme
-    val systemUiController = rememberSystemUiController()
-
-    SideEffect {
-        systemUiController.setNavigationBarColor(
-            color = colors.background,
-            darkIcons = !isDarkTheme,
-        )
-        systemUiController.setStatusBarColor(
-            color = colors.background,
-            darkIcons = !isDarkTheme,
-        )
-    }
 
     MaterialTheme(
         colorScheme = colors,

@@ -3,6 +3,7 @@ package org.grakovne.lissen.widget
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory.decodeResource
+import android.util.Log
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
@@ -311,15 +312,21 @@ private suspend fun safelyRun(
     context: Context,
     action: (WidgetPlaybackController) -> Unit,
 ) {
-    val playbackController = EntryPointAccessors
-        .fromApplication(
-            context = context.applicationContext,
-            entryPoint = WidgetPlaybackControllerEntryPoint::class.java,
-        )
-        .widgetPlaybackController()
+    try {
+        val playbackController = EntryPointAccessors
+            .fromApplication(
+                context = context.applicationContext,
+                entryPoint = WidgetPlaybackControllerEntryPoint::class.java,
+            )
+            .widgetPlaybackController()
 
-    when (playbackController.providePlayingItem()) {
-        null -> playbackController.prepareAndRun(playingItemId) { action(playbackController) }
-        else -> action(playbackController)
+        when (playbackController.providePlayingItem()) {
+            null -> playbackController.prepareAndRun(playingItemId) { action(playbackController) }
+            else -> action(playbackController)
+        }
+    } catch (ex: Exception) {
+        Log.w(TAG, "Unable to run $action on $playingItemId due to $ex")
     }
 }
+
+private const val TAG = "PlayerWidget"
