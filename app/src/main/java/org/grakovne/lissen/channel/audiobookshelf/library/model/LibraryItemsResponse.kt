@@ -13,6 +13,7 @@ data class LibraryItem(
 data class Media(
     val duration: Double,
     val metadata: LibraryMetadata,
+    val numAudioFiles: Int?
 )
 
 data class LibraryMetadata(
