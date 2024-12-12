@@ -10,7 +10,7 @@ data class BookResponse(
 data class BookMedia(
     val metadata: LibraryMetadataResponse,
     val audioFiles: List<BookAudioFileResponse>?,
-    val chapters: List<LibraryChapterResponse>?
+    val chapters: List<LibraryChapterResponse>?,
 )
 
 data class LibraryMetadataResponse(

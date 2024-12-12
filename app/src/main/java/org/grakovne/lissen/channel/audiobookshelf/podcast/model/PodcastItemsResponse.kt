@@ -13,7 +13,7 @@ data class PodcastItem(
 data class PodcastItemMedia(
     val duration: Double,
     val metadata: PodcastMetadata,
-    val numAudioFiles: Int?
+    val numAudioFiles: Int?,
 )
 
 data class PodcastMetadata(
