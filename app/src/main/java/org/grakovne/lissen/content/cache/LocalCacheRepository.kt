@@ -126,8 +126,9 @@ class LocalCacheRepository @Inject constructor(
 
         val currentChapter = calculateChapterIndex(cachedBook, cachedPosition)
 
-        return when (cachedBook.chapters[currentChapter].available) {
+        return when (currentChapter in cachedBook.chapters.indices && cachedBook.chapters[currentChapter].available) {
             true -> cachedBook
+
             false ->
                 cachedBook
                     .copy(
