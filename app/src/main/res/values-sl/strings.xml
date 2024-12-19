@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="library_screen_library_title">Library</string>
+    <string name="library_screen_library_title">Knjižnica</string>
     <string name="library_screen_continue_listening_title">Nadaljuj s poslušanjem</string>
     <string name="library_screen_downloads_menu_item">Prenosi</string>
     <string name="library_screen_preferences_menu_item">Nastavitve</string>
