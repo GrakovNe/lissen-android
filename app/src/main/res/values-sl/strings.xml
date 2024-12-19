@@ -83,4 +83,5 @@
     <string name="downloads_menu_download_option_clear_episodes">Počisti prenesene epizode</string>
     <string name="downloads_menu_download_option_clear_items">Počisti prenesene elemente</string>
     <string name="mini_player_action_close">Zapri</string>
+    <string name="app_name" translatable="false"></string>
 </resources>
