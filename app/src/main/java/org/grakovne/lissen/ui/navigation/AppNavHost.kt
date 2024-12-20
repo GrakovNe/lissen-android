@@ -48,26 +48,25 @@ fun AppNavHost(
         else -> "login_screen"
     }
 
-    val duration = 300
     val enterTransition: EnterTransition = slideInHorizontally(
         initialOffsetX = { it },
-        animationSpec = tween(duration)
-    ) + fadeIn(animationSpec = tween(duration))
+        animationSpec = tween()
+    ) + fadeIn(animationSpec = tween())
 
     val exitTransition: ExitTransition = slideOutHorizontally(
         targetOffsetX = { -it },
-        animationSpec = tween(duration)
-    ) + fadeOut(animationSpec = tween(duration))
+        animationSpec = tween()
+    ) + fadeOut(animationSpec = tween())
 
     val popEnterTransition: EnterTransition = slideInHorizontally(
         initialOffsetX = { -it },
-        animationSpec = tween(duration)
-    ) + fadeIn(animationSpec = tween(duration))
+        animationSpec = tween()
+    ) + fadeIn(animationSpec = tween())
 
     val popExitTransition: ExitTransition = slideOutHorizontally(
         targetOffsetX = { it },
-        animationSpec = tween(duration)
-    ) + fadeOut(animationSpec = tween(duration))
+        animationSpec = tween()
+    ) + fadeOut(animationSpec = tween())
 
     Scaffold(modifier = Modifier.fillMaxSize()) { _ ->
         NavHost(
