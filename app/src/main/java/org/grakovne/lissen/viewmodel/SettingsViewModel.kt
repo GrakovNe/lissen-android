@@ -80,6 +80,10 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
+    fun fetchPreferredLibraryId(): String {
+        return preferences.getPreferredLibrary()?.id ?: ""
+    }
+
     fun preferLibrary(library: Library) {
         _preferredLibrary.value = library
         preferences.savePreferredLibrary(library)

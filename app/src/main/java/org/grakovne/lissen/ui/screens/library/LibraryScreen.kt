@@ -36,6 +36,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,6 +70,7 @@ import org.grakovne.lissen.ui.screens.library.composables.placeholder.RecentBook
 import org.grakovne.lissen.viewmodel.ContentCachingModelView
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
+import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
@@ -76,6 +78,7 @@ fun LibraryScreen(
     navController: AppNavigationService,
     libraryViewModel: LibraryViewModel = hiltViewModel(),
     playerViewModel: PlayerViewModel = hiltViewModel(),
+    settingsViewModel: SettingsViewModel = hiltViewModel(),
     contentCachingModelView: ContentCachingModelView = hiltViewModel(),
     imageLoader: ImageLoader,
     networkQualityService: NetworkQualityService,
@@ -86,6 +89,7 @@ fun LibraryScreen(
 
     val recentBooks: List<RecentBook> by libraryViewModel.recentBooks.observeAsState(emptyList())
 
+    var currentLibraryId by rememberSaveable { mutableStateOf("") }
     var pullRefreshing by remember { mutableStateOf(false) }
     val recentBookRefreshing by libraryViewModel.recentBookUpdating.observeAsState(false)
     val searchRequested by libraryViewModel.searchRequested.observeAsState(false)
@@ -155,9 +159,10 @@ fun LibraryScreen(
     }
 
     LaunchedEffect(Unit) {
-        if (library.itemCount == 0) {
+        if (library.itemCount == 0 || currentLibraryId != settingsViewModel.fetchPreferredLibraryId()) {
             libraryViewModel.refreshRecentListening()
             libraryViewModel.refreshLibrary()
+            currentLibraryId = settingsViewModel.fetchPreferredLibraryId()
         }
     }
 
