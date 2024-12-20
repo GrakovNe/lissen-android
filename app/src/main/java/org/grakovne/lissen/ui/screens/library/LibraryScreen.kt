@@ -148,7 +148,7 @@ fun LibraryScreen(
     val playingBook by playerViewModel.book.observeAsState()
     val context = LocalContext.current
 
-    fun showRecent(): Boolean {
+    fun isRecentVisible(): Boolean {
         val fetchAvailable = networkQualityService.isNetworkAvailable() || contentCachingModelView.localCacheUsing()
         val hasContent = recentBooks.isEmpty().not()
         return !searchRequested && hasContent && fetchAvailable
@@ -179,7 +179,7 @@ fun LibraryScreen(
 
     val navBarTitle by remember {
         derivedStateOf {
-            val showRecent = showRecent()
+            val showRecent = isRecentVisible()
             val recentBlockVisible = libraryListState.layoutInfo.visibleItemsInfo.firstOrNull()?.key == "recent_books"
 
             when {
@@ -259,7 +259,7 @@ fun LibraryScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp),
                 ) {
                     item(key = "recent_books") {
-                        val showRecent = showRecent()
+                        val showRecent = isRecentVisible()
 
                         when {
                             isPlaceholderRequired -> {
@@ -281,7 +281,7 @@ fun LibraryScreen(
                     }
 
                     item(key = "library_title") {
-                        if (!searchRequested && showRecent()) {
+                        if (!searchRequested && isRecentVisible()) {
                             AnimatedContent(
                                 targetState = navBarTitle,
                                 transitionSpec = {
