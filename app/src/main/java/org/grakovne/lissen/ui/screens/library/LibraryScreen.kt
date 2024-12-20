@@ -30,16 +30,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -53,7 +50,6 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import coil.ImageLoader
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.channel.common.LibraryType
@@ -90,7 +86,6 @@ fun LibraryScreen(
 
     val recentBooks: List<RecentBook> by libraryViewModel.recentBooks.observeAsState(emptyList())
 
-    val networkStatus by networkQualityService.networkStatus.collectAsState()
     var pullRefreshing by remember { mutableStateOf(false) }
     val recentBookRefreshing by libraryViewModel.recentBookUpdating.observeAsState(false)
     val searchRequested by libraryViewModel.searchRequested.observeAsState(false)
@@ -138,10 +133,6 @@ fun LibraryScreen(
         }
     }
 
-    LaunchedEffect(networkStatus) {
-        refreshContent(false)
-    }
-
     val pullRefreshState = rememberPullRefreshState(
         refreshing = pullRefreshing,
         onRefresh = {
@@ -158,7 +149,7 @@ fun LibraryScreen(
     val context = LocalContext.current
 
     fun showRecent(): Boolean {
-        val fetchAvailable = networkStatus || contentCachingModelView.localCacheUsing()
+        val fetchAvailable = networkQualityService.isNetworkAvailable() || contentCachingModelView.localCacheUsing()
         val hasContent = recentBooks.isEmpty().not()
         return !searchRequested && hasContent && fetchAvailable
     }
