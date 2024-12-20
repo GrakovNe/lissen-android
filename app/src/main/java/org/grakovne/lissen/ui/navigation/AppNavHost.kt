@@ -1,6 +1,13 @@
 package org.grakovne.lissen.ui.navigation
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -41,6 +48,27 @@ fun AppNavHost(
         else -> "login_screen"
     }
 
+    val duration = 300
+    val enterTransition: EnterTransition = slideInHorizontally(
+        initialOffsetX = { it },
+        animationSpec = tween(duration)
+    ) + fadeIn(animationSpec = tween(duration))
+
+    val exitTransition: ExitTransition = slideOutHorizontally(
+        targetOffsetX = { -it },
+        animationSpec = tween(duration)
+    ) + fadeOut(animationSpec = tween(duration))
+
+    val popEnterTransition: EnterTransition = slideInHorizontally(
+        initialOffsetX = { -it },
+        animationSpec = tween(duration)
+    ) + fadeIn(animationSpec = tween(duration))
+
+    val popExitTransition: ExitTransition = slideOutHorizontally(
+        targetOffsetX = { it },
+        animationSpec = tween(duration)
+    ) + fadeOut(animationSpec = tween(duration))
+
     Scaffold(modifier = Modifier.fillMaxSize()) { _ ->
         NavHost(
             navController = navController,
@@ -55,11 +83,15 @@ fun AppNavHost(
             }
 
             composable(
-                "player_screen/{bookId}?bookTitle={bookTitle}",
+                route = "player_screen/{bookId}?bookTitle={bookTitle}",
                 arguments = listOf(
                     navArgument("bookId") { type = NavType.StringType },
                     navArgument("bookTitle") { type = NavType.StringType; nullable = true },
                 ),
+                enterTransition = { enterTransition },
+                exitTransition = { exitTransition },
+                popEnterTransition = { popEnterTransition },
+                popExitTransition = { popExitTransition }
             ) { navigationStack ->
                 val bookId = navigationStack.arguments?.getString("bookId") ?: return@composable
                 val bookTitle = navigationStack.arguments?.getString("bookTitle") ?: ""
@@ -72,11 +104,22 @@ fun AppNavHost(
                 )
             }
 
-            composable("login_screen") {
+            composable(
+                route = "login_screen",
+                enterTransition = { enterTransition },
+                exitTransition = { exitTransition },
+                popEnterTransition = { popEnterTransition },
+                popExitTransition = { popExitTransition }) {
                 LoginScreen(navigationService)
             }
 
-            composable("settings_screen") {
+            composable(
+                route = "settings_screen",
+                enterTransition = { enterTransition },
+                exitTransition = { exitTransition },
+                popEnterTransition = { popEnterTransition },
+                popExitTransition = { popExitTransition }
+            ) {
                 SettingsScreen(
                     onBack = {
                         if (navController.previousBackStackEntry != null) {
@@ -87,7 +130,12 @@ fun AppNavHost(
                 )
             }
 
-            composable("settings_screen/custom_headers") {
+            composable(route = "settings_screen/custom_headers",
+                enterTransition = { enterTransition },
+                exitTransition = { exitTransition },
+                popEnterTransition = { popEnterTransition },
+                popExitTransition = { popExitTransition }
+            ) {
                 CustomHeadersSettingsScreen(
                     onBack = {
                         if (navController.previousBackStackEntry != null) {
