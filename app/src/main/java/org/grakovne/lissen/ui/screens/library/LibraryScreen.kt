@@ -37,6 +37,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -131,16 +132,14 @@ fun LibraryScreen(
         }
     }
 
-    LaunchedEffect(Unit) {
-        snapshotFlow { networkStatus }
-            .distinctUntilChanged()
-            .collect { _ -> refreshContent(false) }
-    }
-
     LaunchedEffect(preparingError) {
         if (preparingError) {
             playerViewModel.clearPlayingBook()
         }
+    }
+
+    LaunchedEffect(networkStatus) {
+        refreshContent(false)
     }
 
     val pullRefreshState = rememberPullRefreshState(
@@ -165,8 +164,10 @@ fun LibraryScreen(
     }
 
     LaunchedEffect(Unit) {
-        libraryViewModel.refreshRecentListening()
-        libraryViewModel.refreshLibrary()
+        if (library.itemCount == 0) {
+            libraryViewModel.refreshRecentListening()
+            libraryViewModel.refreshLibrary()
+        }
     }
 
     LaunchedEffect(searchRequested) {
