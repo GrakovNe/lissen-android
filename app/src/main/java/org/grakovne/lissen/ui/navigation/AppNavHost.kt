@@ -50,22 +50,22 @@ fun AppNavHost(
 
     val enterTransition: EnterTransition = slideInHorizontally(
         initialOffsetX = { it },
-        animationSpec = tween()
+        animationSpec = tween(),
     ) + fadeIn(animationSpec = tween())
 
     val exitTransition: ExitTransition = slideOutHorizontally(
         targetOffsetX = { -it },
-        animationSpec = tween()
+        animationSpec = tween(),
     ) + fadeOut(animationSpec = tween())
 
     val popEnterTransition: EnterTransition = slideInHorizontally(
         initialOffsetX = { -it },
-        animationSpec = tween()
+        animationSpec = tween(),
     ) + fadeIn(animationSpec = tween())
 
     val popExitTransition: ExitTransition = slideOutHorizontally(
         targetOffsetX = { it },
-        animationSpec = tween()
+        animationSpec = tween(),
     ) + fadeOut(animationSpec = tween())
 
     Scaffold(modifier = Modifier.fillMaxSize()) { _ ->
@@ -90,7 +90,7 @@ fun AppNavHost(
                 enterTransition = { enterTransition },
                 exitTransition = { exitTransition },
                 popEnterTransition = { popEnterTransition },
-                popExitTransition = { popExitTransition }
+                popExitTransition = { popExitTransition },
             ) { navigationStack ->
                 val bookId = navigationStack.arguments?.getString("bookId") ?: return@composable
                 val bookTitle = navigationStack.arguments?.getString("bookTitle") ?: ""
@@ -108,7 +108,8 @@ fun AppNavHost(
                 enterTransition = { enterTransition },
                 exitTransition = { exitTransition },
                 popEnterTransition = { popEnterTransition },
-                popExitTransition = { popExitTransition }) {
+                popExitTransition = { popExitTransition },
+            ) {
                 LoginScreen(navigationService)
             }
 
@@ -117,7 +118,7 @@ fun AppNavHost(
                 enterTransition = { enterTransition },
                 exitTransition = { exitTransition },
                 popEnterTransition = { popEnterTransition },
-                popExitTransition = { popExitTransition }
+                popExitTransition = { popExitTransition },
             ) {
                 SettingsScreen(
                     onBack = {
@@ -129,11 +130,12 @@ fun AppNavHost(
                 )
             }
 
-            composable(route = "settings_screen/custom_headers",
+            composable(
+                route = "settings_screen/custom_headers",
                 enterTransition = { enterTransition },
                 exitTransition = { exitTransition },
                 popEnterTransition = { popEnterTransition },
-                popExitTransition = { popExitTransition }
+                popExitTransition = { popExitTransition },
             ) {
                 CustomHeadersSettingsScreen(
                     onBack = {

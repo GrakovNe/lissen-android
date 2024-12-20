@@ -1,5 +1,4 @@
 package org.grakovne.lissen.ui.screens.player
-
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -49,6 +48,7 @@ import org.grakovne.lissen.ui.screens.player.composable.PlayingQueueComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackControlComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackDetailsComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.PlayingQueuePlaceholderComposable
+import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackControlPlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackDetailsPlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.provideNowPlayingTitle
 import org.grakovne.lissen.viewmodel.ContentCachingModelView
@@ -196,10 +196,16 @@ fun PlayerScreen(
                             )
                         }
 
-                        TrackControlComposable(
-                            viewModel = playerViewModel,
-                            modifier = Modifier,
-                        )
+                        if (!isPlaybackReady) {
+                            TrackControlPlaceholderComposable(
+                                modifier = Modifier,
+                            )
+                        } else {
+                            TrackControlComposable(
+                                viewModel = playerViewModel,
+                                modifier = Modifier,
+                            )
+                        }
                     }
                 }
 

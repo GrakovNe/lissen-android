@@ -1,4 +1,4 @@
-package org.grakovne.lissen.ui.screens.player.composable
+package org.grakovne.lissen.ui.screens.player.composable.placeholder
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -14,7 +14,6 @@ import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Forward30
-import androidx.compose.material.icons.rounded.PauseCircleFilled
 import androidx.compose.material.icons.rounded.PlayCircleFilled
 import androidx.compose.material.icons.rounded.Replay10
 import androidx.compose.material.icons.rounded.SkipNext
@@ -25,40 +24,15 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.ui.extensions.formatFully
-import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
-fun TrackControlComposable(
-    viewModel: PlayerViewModel,
+fun TrackControlPlaceholderComposable(
     modifier: Modifier = Modifier,
 ) {
-    val isPlaying by viewModel.isPlaying.observeAsState(false)
-    val currentTrackIndex by viewModel.currentChapterIndex.observeAsState(0)
-    val currentTrackPosition by viewModel.currentChapterPosition.observeAsState(0.0)
-    val currentTrackDuration by viewModel.currentChapterDuration.observeAsState(0.0)
-
-    val book by viewModel.book.observeAsState()
-    val chapters = book?.chapters ?: emptyList()
-
-    var sliderPosition by remember { mutableStateOf(0.0) }
-    var isDragging by remember { mutableStateOf(false) }
-
-    LaunchedEffect(currentTrackPosition, currentTrackIndex, currentTrackDuration) {
-        if (!isDragging) {
-            sliderPosition = currentTrackPosition
-        }
-    }
-
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -68,16 +42,12 @@ fun TrackControlComposable(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Slider(
-                value = sliderPosition.toFloat(),
+                value = 0f,
                 onValueChange = { newPosition ->
-                    isDragging = true
-                    sliderPosition = newPosition.toDouble()
                 },
                 onValueChangeFinished = {
-                    isDragging = false
-                    viewModel.seekTo(sliderPosition)
                 },
-                valueRange = 0f..currentTrackDuration.toFloat(),
+                valueRange = 0f..100f,
                 colors = SliderDefaults.colors(
                     thumbColor = colorScheme.primary,
                     activeTrackColor = colorScheme.primary,
@@ -97,14 +67,12 @@ fun TrackControlComposable(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(
-                        text = currentTrackPosition.toInt().formatFully(),
+                        text = 0.formatFully(),
                         style = typography.bodySmall,
                         color = colorScheme.onBackground.copy(alpha = 0.6f),
                     )
                     Text(
-                        text = maxOf(0.0, currentTrackDuration - currentTrackPosition)
-                            .toInt()
-                            .formatFully(),
+                        text = 0.formatFully(),
                         style = typography.bodySmall,
                         color = colorScheme.onBackground.copy(alpha = 0.6f),
                     )
@@ -122,7 +90,6 @@ fun TrackControlComposable(
             ) {
                 IconButton(
                     onClick = {
-                        viewModel.previousTrack()
                     },
                     enabled = true,
                 ) {
@@ -135,7 +102,7 @@ fun TrackControlComposable(
                 }
 
                 IconButton(
-                    onClick = { viewModel.rewind() },
+                    onClick = { },
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Replay10,
@@ -146,11 +113,11 @@ fun TrackControlComposable(
                 }
 
                 IconButton(
-                    onClick = { viewModel.togglePlayPause() },
+                    onClick = { },
                     modifier = Modifier.size(72.dp),
                 ) {
                     Icon(
-                        imageVector = if (isPlaying) Icons.Rounded.PauseCircleFilled else Icons.Rounded.PlayCircleFilled,
+                        imageVector = Icons.Rounded.PlayCircleFilled,
                         contentDescription = "Play / Pause",
                         tint = colorScheme.primary,
                         modifier = Modifier.fillMaxSize(),
@@ -158,7 +125,7 @@ fun TrackControlComposable(
                 }
 
                 IconButton(
-                    onClick = { viewModel.forward() },
+                    onClick = { },
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Forward30,
@@ -169,21 +136,11 @@ fun TrackControlComposable(
                 }
 
                 IconButton(
-                    onClick = {
-                        if (currentTrackIndex < chapters.size - 1) {
-                            viewModel.nextTrack()
-                        }
-                    },
-                    enabled = currentTrackIndex < chapters.size - 1,
+                    onClick = {},
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.SkipNext,
                         contentDescription = "Next Track",
-                        tint = if (currentTrackIndex < chapters.size - 1) {
-                            colorScheme.onBackground
-                        } else colorScheme.onBackground.copy(
-                            alpha = 0.3f,
-                        ),
                         modifier = Modifier.size(36.dp),
                     )
                 }
