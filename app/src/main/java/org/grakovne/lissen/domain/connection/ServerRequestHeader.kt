@@ -18,6 +18,14 @@ data class ServerRequestHeader(
             return this.copy(name = name, value = value)
         }
 
-        private fun String.clean(): String = this.replace(Regex("[^a-zA-Z0-9-]"), "").trim()
+        /**
+         * Cleans this string to contain only valid tchar characters for HTTP header names as per RFC 7230.
+         *
+         * @return A string containing only allowed tchar characters.
+         */
+        private fun String.clean(): String {
+            val allowed = Regex("[^!#\$%&'*+\\-.^_`|~0-9A-Za-z]")
+            return this.replace(allowed, "").trim()
+        }
     }
 }
