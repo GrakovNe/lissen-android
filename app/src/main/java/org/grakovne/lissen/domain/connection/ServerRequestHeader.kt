@@ -24,8 +24,8 @@ data class ServerRequestHeader(
          * @return A string containing only allowed tchar characters.
          */
         private fun String.clean(): String {
-            val allowed = Regex("[^!#\$%&'*+\\-.^_`|~0-9A-Za-z]")
-            return this.replace(allowed, "").trim()
+            val invalidCharacters = Regex("[^!#\$%&'*+\\-.^_`|~0-9A-Za-z]")
+            return this.replace(invalidCharacters, "").trim()
         }
     }
 }
