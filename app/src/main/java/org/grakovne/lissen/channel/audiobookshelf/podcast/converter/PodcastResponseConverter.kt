@@ -3,11 +3,11 @@ package org.grakovne.lissen.channel.audiobookshelf.podcast.converter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastEpisodeResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
-import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.BookChapterState
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.MediaProgress
+import org.grakovne.lissen.domain.PlayingChapter
 import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
@@ -31,7 +31,7 @@ class PodcastResponseConverter @Inject constructor() {
                 MediaProgress(
                     currentTime = it.currentTime,
                     isFinished = it.isFinished,
-                    lastUpdate = it.lastUpdate
+                    lastUpdate = it.lastUpdate,
                 )
             }
 
@@ -48,7 +48,7 @@ class PodcastResponseConverter @Inject constructor() {
                             available = true,
                             podcastEpisodeState = progressResponses
                                 .find { it.episodeId == episode.id }
-                                ?.let { hasFinished(it) }
+                                ?.let { hasFinished(it) },
                         ),
                     )
                     accDuration + episode.audioFile.duration to chapters
@@ -78,7 +78,7 @@ class PodcastResponseConverter @Inject constructor() {
     }
 
     private fun hasFinished(progress: MediaProgressResponse): BookChapterState? {
-        return when (progress.isFinished || progress.progress > 0.9) {
+        return when (progress.isFinished || progress.progress > FINISHED_PROGRESS_THRESHOLD) {
             true -> BookChapterState.FINISHED
             false -> null
         }
@@ -86,6 +86,7 @@ class PodcastResponseConverter @Inject constructor() {
 
     companion object {
 
+        private const val FINISHED_PROGRESS_THRESHOLD = 0.9
         private val dateFormat = SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH)
 
         private fun List<PodcastEpisodeResponse>.orderEpisode() =

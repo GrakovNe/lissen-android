@@ -20,12 +20,12 @@ import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.content.cache.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.api.CachedLibraryRepository
 import org.grakovne.lissen.domain.AllItemsDownloadOption
-import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.CurrentItemDownloadOption
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.domain.NumberItemDownloadOption
+import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.viewmodel.CacheProgress
 import javax.inject.Inject

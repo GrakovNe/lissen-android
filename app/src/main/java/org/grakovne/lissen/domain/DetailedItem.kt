@@ -37,5 +37,5 @@ data class PlayingChapter(
 ) : Serializable
 
 enum class BookChapterState {
-    FINISHED
+    FINISHED,
 }
