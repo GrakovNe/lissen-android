@@ -1,7 +1,7 @@
 package org.grakovne.lissen.content.cache.converter
 
 import org.grakovne.lissen.content.cache.entity.CachedBookEntity
-import org.grakovne.lissen.domain.BookChapter
+import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.BookChapterState
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
@@ -27,14 +27,14 @@ class CachedBookEntityDetailedConverter @Inject constructor() {
             )
         },
         chapters = entity.chapters.map { chapterEntity ->
-            BookChapter(
+            PlayingChapter(
                 duration = chapterEntity.duration,
                 start = chapterEntity.start,
                 end = chapterEntity.end,
                 title = chapterEntity.title,
                 available = chapterEntity.isCached,
                 id = chapterEntity.bookChapterId,
-                state = BookChapterState.FINISHED  // change me
+                podcastEpisodeState = BookChapterState.FINISHED  // change me
             )
         },
         progress = entity.progress?.let { progressEntity ->

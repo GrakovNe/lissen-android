@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import org.grakovne.lissen.domain.BookChapter
+import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.widget.MediaRepository
@@ -87,7 +87,7 @@ class PlayerViewModel @Inject constructor(
         mediaRepository.setChapterPosition(chapterPosition)
     }
 
-    fun setChapter(chapter: BookChapter) {
+    fun setChapter(chapter: PlayingChapter) {
         if (chapter.available) {
             val index = book.value?.chapters?.indexOf(chapter) ?: -1
             mediaRepository.setChapter(index)

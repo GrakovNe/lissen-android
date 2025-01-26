@@ -20,7 +20,7 @@ import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.content.cache.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.api.CachedLibraryRepository
 import org.grakovne.lissen.domain.AllItemsDownloadOption
-import org.grakovne.lissen.domain.BookChapter
+import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.CurrentItemDownloadOption
 import org.grakovne.lissen.domain.DetailedItem
@@ -119,7 +119,7 @@ class ContentCachingService @Inject constructor(
 
     private suspend fun cacheBookInfo(
         book: DetailedItem,
-        fetchedChapters: List<BookChapter>,
+        fetchedChapters: List<PlayingChapter>,
     ) = bookRepository
         .cacheBook(book, fetchedChapters)
         .let { CacheProgress.Completed }
@@ -212,7 +212,7 @@ class ContentCachingService @Inject constructor(
 
     private fun findRequestedFiles(
         book: DetailedItem,
-        requestedChapters: List<BookChapter>,
+        requestedChapters: List<PlayingChapter>,
     ): List<BookFile> = requestedChapters
         .flatMap { findRelatedFiles(it, book.files) }
         .distinctBy { it.id }
@@ -221,7 +221,7 @@ class ContentCachingService @Inject constructor(
         book: DetailedItem,
         option: DownloadOption,
         currentTotalPosition: Double,
-    ): List<BookChapter> {
+    ): List<PlayingChapter> {
         val chapterIndex = calculateChapterIndex(book, currentTotalPosition)
 
         return when (option) {
@@ -235,7 +235,7 @@ class ContentCachingService @Inject constructor(
     }
 
     private fun findRelatedFiles(
-        chapter: BookChapter,
+        chapter: PlayingChapter,
         files: List<BookFile>,
     ): List<BookFile> {
         val chapterStartRounded = chapter.start.round()

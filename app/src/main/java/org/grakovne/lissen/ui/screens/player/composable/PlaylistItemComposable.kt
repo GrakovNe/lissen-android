@@ -23,13 +23,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
-import org.grakovne.lissen.domain.BookChapter
+import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.BookChapterState
 import org.grakovne.lissen.ui.extensions.formatLeadingMinutes
 
 @Composable
 fun PlaylistItemComposable(
-    track: BookChapter,
+    track: PlayingChapter,
     isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier,
@@ -52,7 +52,7 @@ fun PlaylistItemComposable(
                     modifier = Modifier.size(16.dp),
                 )
 
-            track.state == BookChapterState.FINISHED -> Icon(
+            track.podcastEpisodeState == BookChapterState.FINISHED -> Icon(
                 imageVector = Icons.Outlined.Check,
                 contentDescription = stringResource(R.string.player_screen_library_playing_title),
                 modifier = Modifier.size(16.dp),

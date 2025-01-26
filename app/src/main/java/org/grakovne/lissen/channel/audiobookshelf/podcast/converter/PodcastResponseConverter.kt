@@ -3,7 +3,7 @@ package org.grakovne.lissen.channel.audiobookshelf.podcast.converter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastEpisodeResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
-import org.grakovne.lissen.domain.BookChapter
+import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.BookChapterState
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
@@ -35,18 +35,18 @@ class PodcastResponseConverter @Inject constructor() {
                 )
             }
 
-        val filesAsChapters: List<BookChapter> =
+        val filesAsChapters: List<PlayingChapter> =
             orderedEpisodes
-                ?.fold(0.0 to mutableListOf<BookChapter>()) { (accDuration, chapters), episode ->
+                ?.fold(0.0 to mutableListOf<PlayingChapter>()) { (accDuration, chapters), episode ->
                     chapters.add(
-                        BookChapter(
+                        PlayingChapter(
                             start = accDuration,
                             end = accDuration + episode.audioFile.duration,
                             title = episode.title,
                             duration = episode.audioFile.duration,
                             id = episode.id,
                             available = true,
-                            state = progressResponses
+                            podcastEpisodeState = progressResponses
                                 .find { it.episodeId == episode.id }
                                 ?.let { hasFinished(it) }
                         ),

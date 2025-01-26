@@ -7,7 +7,7 @@ data class DetailedItem(
     val title: String,
     val author: String?,
     val files: List<BookFile>,
-    val chapters: List<BookChapter>,
+    val chapters: List<PlayingChapter>,
     val progress: MediaProgress?,
     val libraryId: String?,
     val localProvided: Boolean,
@@ -26,9 +26,9 @@ data class MediaProgress(
     val lastUpdate: Long,
 ) : Serializable
 
-data class BookChapter(
+data class PlayingChapter(
     val available: Boolean,
-    val state: BookChapterState?,
+    val podcastEpisodeState: BookChapterState?,
     val duration: Double,
     val start: Double,
     val end: Double,
