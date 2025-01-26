@@ -37,6 +37,5 @@ data class BookChapter(
 ) : Serializable
 
 enum class BookChapterState {
-    IN_PROGRESS,
     FINISHED
 }
