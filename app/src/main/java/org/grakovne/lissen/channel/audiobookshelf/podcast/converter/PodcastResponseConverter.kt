@@ -4,6 +4,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResp
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastEpisodeResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
 import org.grakovne.lissen.domain.BookChapter
+import org.grakovne.lissen.domain.BookChapterState
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.MediaProgress
@@ -35,6 +36,7 @@ class PodcastResponseConverter @Inject constructor() {
                             duration = file.audioFile.duration,
                             id = file.id,
                             available = true,
+                            state = BookChapterState.FINISHED  // change me
                         ),
                     )
                     accDuration + file.audioFile.duration to chapters

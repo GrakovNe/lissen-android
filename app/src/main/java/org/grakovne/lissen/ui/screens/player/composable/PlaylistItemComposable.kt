@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Audiotrack
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -23,6 +24,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.BookChapter
+import org.grakovne.lissen.domain.BookChapterState
 import org.grakovne.lissen.ui.extensions.formatLeadingMinutes
 
 @Composable
@@ -41,14 +43,22 @@ fun PlaylistItemComposable(
                 interactionSource = remember { MutableInteractionSource() },
             ),
     ) {
-        if (isSelected) {
-            Icon(
-                imageVector = Icons.Outlined.Audiotrack,
+
+        when {
+            isSelected ->
+                Icon(
+                    imageVector = Icons.Outlined.Audiotrack,
+                    contentDescription = stringResource(R.string.player_screen_library_playing_title),
+                    modifier = Modifier.size(16.dp),
+                )
+
+            track.state == BookChapterState.FINISHED -> Icon(
+                imageVector = Icons.Outlined.Check,
                 contentDescription = stringResource(R.string.player_screen_library_playing_title),
                 modifier = Modifier.size(16.dp),
             )
-        } else {
-            Spacer(modifier = Modifier.size(16.dp))
+
+            else -> Spacer(modifier = Modifier.size(16.dp))
         }
 
         Spacer(modifier = Modifier.width(8.dp))

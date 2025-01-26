@@ -2,6 +2,7 @@ package org.grakovne.lissen.content.cache.converter
 
 import org.grakovne.lissen.content.cache.entity.CachedBookEntity
 import org.grakovne.lissen.domain.BookChapter
+import org.grakovne.lissen.domain.BookChapterState
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.MediaProgress
@@ -33,6 +34,7 @@ class CachedBookEntityDetailedConverter @Inject constructor() {
                 title = chapterEntity.title,
                 available = chapterEntity.isCached,
                 id = chapterEntity.bookChapterId,
+                state = BookChapterState.FINISHED  // change me
             )
         },
         progress = entity.progress?.let { progressEntity ->

@@ -28,9 +28,15 @@ data class MediaProgress(
 
 data class BookChapter(
     val available: Boolean,
+    val state: BookChapterState?,
     val duration: Double,
     val start: Double,
     val end: Double,
     val title: String,
     val id: String,
 ) : Serializable
+
+enum class BookChapterState {
+    IN_PROGRESS,
+    FINISHED
+}
