@@ -121,11 +121,13 @@ class PodcastAudiobookshelfChannel @Inject constructor(
 
             progress
                 .filter { it.libraryItemId == bookId }
-                .maxByOrNull { it.lastUpdate }
+                .filterNot { it.episodeId == null }
+                .sortedByDescending { it.lastUpdate }
+                .distinctBy { it.episodeId }
         }
 
         async { dataRepository.fetchPodcastItem(bookId) }
             .await()
-            .map { podcastResponseConverter.apply(it, mediaProgress.await()) }
+            .map { podcastResponseConverter.apply(it, mediaProgress.await() ?: emptyList()) }
     }
 }
