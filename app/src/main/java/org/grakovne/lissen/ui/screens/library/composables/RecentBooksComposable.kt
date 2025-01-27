@@ -37,7 +37,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import coil.ImageLoader
 import coil.request.ImageRequest
 import org.grakovne.lissen.R
@@ -130,7 +129,7 @@ fun RecentBookItemComposable(
                 )
             }
 
-            if (shouldShowProgress(libraryViewModel.fetchPreferredLibraryType())) {
+            if (libraryViewModel.fetchPreferredLibraryType() == LibraryType.LIBRARY) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -196,6 +195,3 @@ fun RecentBookItemComposable(
 private fun calculateProgress(book: RecentBook): Float {
     return book.listenedPercentage?.div(100.0f) ?: 0.0f
 }
-
-private fun shouldShowProgress(libraryType: LibraryType): Boolean =
-    libraryType == LibraryType.LIBRARY

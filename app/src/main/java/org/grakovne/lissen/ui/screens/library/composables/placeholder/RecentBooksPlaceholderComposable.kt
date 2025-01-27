@@ -24,10 +24,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.valentinilk.shimmer.shimmer
+import org.grakovne.lissen.channel.common.LibraryType
+import org.grakovne.lissen.viewmodel.LibraryViewModel
 
 @Composable
 fun RecentBooksPlaceholderComposable(
     itemCount: Int = 5,
+    libraryViewModel: LibraryViewModel,
 ) {
     val configuration = LocalConfiguration.current
     val screenWidth = remember { configuration.screenWidthDp.dp }
@@ -42,13 +45,19 @@ fun RecentBooksPlaceholderComposable(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         modifier = Modifier.fillMaxWidth(),
     ) {
-        items(itemCount) { RecentBookItemComposable(width = itemWidth) }
+        items(itemCount) {
+            RecentBookItemComposable(
+                width = itemWidth,
+                libraryViewModel = libraryViewModel
+            )
+        }
     }
 }
 
 @Composable
 fun RecentBookItemComposable(
     width: Dp,
+    libraryViewModel: LibraryViewModel,
 ) {
     Column(
         modifier = Modifier
@@ -63,7 +72,11 @@ fun RecentBookItemComposable(
                 .background(Color.Gray),
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        if (libraryViewModel.fetchPreferredLibraryType() == LibraryType.LIBRARY) {
+            Spacer(modifier = Modifier.height(14.dp))
+        } else {
+            Spacer(modifier = Modifier.height(8.dp))
+        }
 
         Column(modifier = Modifier.padding(horizontal = 4.dp)) {
             Text(
@@ -77,16 +90,11 @@ fun RecentBookItemComposable(
                     .background(Color.Gray),
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             Text(
                 color = Color.Transparent,
                 text = "Fyodor Dostoevsky",
-                style = MaterialTheme.typography.bodySmall.copy(
-                    color = MaterialTheme.colorScheme.onBackground.copy(
-                        alpha = 0.6f,
-                    ),
-                ),
                 maxLines = 1,
                 modifier = Modifier
                     .clip(RoundedCornerShape(4.dp))
