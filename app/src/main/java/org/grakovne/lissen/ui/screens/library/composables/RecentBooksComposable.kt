@@ -111,7 +111,6 @@ fun RecentBookItemComposable(
         Column(
             modifier = Modifier.fillMaxWidth()
         ) {
-            // Изображение книги
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -135,13 +134,13 @@ fun RecentBookItemComposable(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 4.dp, start = 2.dp, end = 2.dp),
+                        .padding(horizontal = 2.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(4.dp)
+                            .height(2.dp)
                     ) {
                         Box(
                             modifier = Modifier
@@ -162,7 +161,7 @@ fun RecentBookItemComposable(
                         text = "${(calculateProgress(book) * 100).toInt()}%",
                         fontSize = typography.bodySmall.fontSize,
                         fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(start = 10.dp)
+                        modifier = Modifier.padding(start = 12.dp)
                     )
                 }
             }
@@ -171,7 +170,7 @@ fun RecentBookItemComposable(
         Column(modifier = Modifier.padding(horizontal = 4.dp)) {
             Text(
                 text = book.title,
-                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                style = typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
