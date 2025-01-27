@@ -48,7 +48,7 @@ fun RecentBooksPlaceholderComposable(
         items(itemCount) {
             RecentBookItemComposable(
                 width = itemWidth,
-                libraryViewModel = libraryViewModel
+                libraryViewModel = libraryViewModel,
             )
         }
     }
@@ -89,18 +89,19 @@ fun RecentBookItemComposable(
                     .shimmer()
                     .background(Color.Gray),
             )
+            if (libraryViewModel.fetchPreferredLibraryType() == LibraryType.LIBRARY) {
+                Spacer(modifier = Modifier.height(6.dp))
 
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Text(
-                color = Color.Transparent,
-                text = "Fyodor Dostoevsky",
-                maxLines = 1,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(4.dp))
-                    .shimmer()
-                    .background(Color.Gray),
-            )
+                Text(
+                    color = Color.Transparent,
+                    text = "Fyodor Dostoevsky",
+                    maxLines = 1,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .shimmer()
+                        .background(Color.Gray),
+                )
+            }
         }
     }
 }

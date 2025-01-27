@@ -274,7 +274,7 @@ fun LibraryScreen(
                         when {
                             isPlaceholderRequired -> {
                                 RecentBooksPlaceholderComposable(
-                                    libraryViewModel = libraryViewModel
+                                    libraryViewModel = libraryViewModel,
                                 )
                                 Spacer(modifier = Modifier.height(20.dp))
                             }
