@@ -10,7 +10,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,20 +23,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Store
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.ModalBottomSheet
@@ -278,55 +271,71 @@ fun PlayerScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(vertical = 16.dp, horizontal = 4.dp),
             ) {
-
-
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
+                        .padding(horizontal = 16.dp),
                 ) {
                     Text(
-                        text = "Hyperion",
+                        text = bookTitle,
                         style = typography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
                         ),
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
-                        color = colorScheme.onSurface
+                        color = colorScheme.onSurface,
                     )
 
                     Spacer(Modifier.height(8.dp))
 
-                    InfoRow(
-                        icon = Icons.Default.Person,
-                        label = "Author",
-                        textValue = "Dan Simmons"
-                    )
-                    InfoRow(
-                        icon = Icons.Default.Business,
-                        label = "Publisher",
-                        textValue = "Litres"
-                    )
-                    InfoRow(
-                        icon = Icons.Default.CalendarMonth,
-                        label = "Year",
-                        textValue = "1990"
-                    )
+                    playingBook
+                        ?.author
+                        ?.let {
+                            InfoRow(
+                                icon = Icons.Default.Person,
+                                label = "Author",
+                                textValue = it,
+                            )
+                        }
+
+                    playingBook
+                        ?.publisher
+                        ?.let {
+                            InfoRow(
+                                icon = Icons.Default.Business,
+                                label = "Publisher",
+                                textValue = it,
+                            )
+                        }
+
+                    playingBook
+                        ?.year
+                        ?.let {
+                            InfoRow(
+                                icon = Icons.Default.CalendarMonth,
+                                label = "Year",
+                                textValue = it,
+                            )
+                        }
                 }
 
-                HorizontalDivider(
-                    modifier = Modifier
-                        .padding(vertical = 16.dp)
-                        .alpha(0.2f)
-                )
+                playingBook
+                    ?.abstract
+                    ?.let {
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .padding(vertical = 16.dp)
+                                .alpha(0.2f),
+                        )
 
-                Text(
-                    text = "The world of the great river Tethys – and the interstellar Hegemony, connecting hundreds of planets with null-portals. A world of space nomads and all-powerful AIs, mysterious Time Tombs and the ruthless \"Angel of Death\" Shrike. A world where the fates of the Soldier and the Priest, the Scholar and the Poet, the Detective and the Consul intertwine in intricate ways.",
-                    style = typography.bodyMedium.copy(lineHeight = 22.sp),
-                    color = colorScheme.onSurface,
-                    textAlign = TextAlign.Justify,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
+                        Text(
+                            text = it,
+                            style = typography.bodyMedium.copy(lineHeight = 22.sp),
+                            color = colorScheme.onSurface,
+                            textAlign = TextAlign.Justify,
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                        )
+                    }
 
                 Spacer(modifier = Modifier.height(8.dp))
             }
@@ -338,7 +347,7 @@ fun PlayerScreen(
 fun InfoRow(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
-    textValue: String
+    textValue: String,
 ) {
     Spacer(modifier = Modifier.height(8.dp))
 
@@ -346,20 +355,18 @@ fun InfoRow(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier
-                .size(20.dp)
-                .alpha(0.9f)
+            tint = colorScheme.primary,
+            modifier = Modifier.size(20.dp),
         )
         Spacer(Modifier.width(8.dp))
         Text(
             text = "$label: ",
-            style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray
+            style = typography.bodyMedium,
+            color = Color.Gray,
         )
         Text(
             text = textValue,
-            style = MaterialTheme.typography.bodyMedium
+            style = typography.bodyMedium,
         )
     }
 }

@@ -15,6 +15,8 @@ data class PodcastMedia(
 data class PodcastMediaMetadataResponse(
     val title: String,
     val author: String?,
+    val description: String?,
+    val publisher: String?,
 )
 
 data class PodcastEpisodeResponse(

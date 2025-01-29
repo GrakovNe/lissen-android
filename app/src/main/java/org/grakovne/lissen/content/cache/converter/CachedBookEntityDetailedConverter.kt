@@ -36,6 +36,9 @@ class CachedBookEntityDetailedConverter @Inject constructor() {
                 podcastEpisodeState = null, // currently state is not available for local mode
             )
         },
+        abstract = "CHANGE ME",
+        publisher = "CHANGE ME",
+        year = "CHANGE ME",
         progress = entity.progress?.let { progressEntity ->
             MediaProgress(
                 currentTime = progressEntity.currentTime,

@@ -16,6 +16,9 @@ data class BookMedia(
 data class LibraryMetadataResponse(
     val title: String,
     val authors: List<LibraryAuthorResponse>?,
+    val description: String?,
+    val publisher: String?,
+    val publishedYear: String?,
 )
 
 data class LibraryAuthorResponse(

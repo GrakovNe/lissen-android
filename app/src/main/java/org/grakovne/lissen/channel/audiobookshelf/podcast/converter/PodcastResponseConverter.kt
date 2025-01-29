@@ -74,6 +74,9 @@ class PodcastResponseConverter @Inject constructor() {
                 ?: emptyList(),
             chapters = filesAsChapters,
             progress = latestEpisodeMediaProgress,
+            year = null, // we have no "Year" for the ongoing media
+            abstract = item.media.metadata.description,
+            publisher = item.media.metadata.publisher,
         )
     }
 

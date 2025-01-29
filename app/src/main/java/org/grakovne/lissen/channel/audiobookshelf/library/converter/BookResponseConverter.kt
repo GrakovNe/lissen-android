@@ -79,6 +79,9 @@ class BookResponseConverter @Inject constructor() {
             chapters = maybeChapters ?: filesAsChapters(),
             libraryId = item.libraryId,
             localProvided = false,
+            year = item.media.metadata.publishedYear,
+            abstract = item.media.metadata.description,
+            publisher = item.media.metadata.publisher,
             progress = progressResponse
                 ?.let {
                     MediaProgress(
