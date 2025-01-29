@@ -59,6 +59,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -275,7 +276,7 @@ fun PlayerScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
-                    .padding(vertical = 16.dp),
+                    .padding(vertical = 16.dp, horizontal = 4.dp),
             ) {
 
 
@@ -323,6 +324,7 @@ fun PlayerScreen(
                     text = "The world of the great river Tethys – and the interstellar Hegemony, connecting hundreds of planets with null-portals. A world of space nomads and all-powerful AIs, mysterious Time Tombs and the ruthless \"Angel of Death\" Shrike. A world where the fates of the Soldier and the Priest, the Scholar and the Poet, the Detective and the Consul intertwine in intricate ways.",
                     style = typography.bodyMedium.copy(lineHeight = 22.sp),
                     color = colorScheme.onSurface,
+                    textAlign = TextAlign.Justify,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
 
