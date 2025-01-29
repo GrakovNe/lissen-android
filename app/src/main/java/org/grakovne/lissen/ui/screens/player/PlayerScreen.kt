@@ -32,7 +32,9 @@ import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Store
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -59,6 +61,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.ImageLoader
 import org.grakovne.lissen.R
@@ -265,62 +268,65 @@ fun PlayerScreen(
 
     if (itemDetailsSelected) {
         ModalBottomSheet(
-            containerColor = MaterialTheme.colorScheme.background,
-            onDismissRequest = { }
+            onDismissRequest = { itemDetailsSelected = false },
+            containerColor = colorScheme.surface,
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
+                    .padding(vertical = 16.dp),
             ) {
 
 
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                        .padding(horizontal = 16.dp)
                 ) {
                     Text(
                         text = "Hyperion",
-                        style = typography.titleLarge,
+                        style = typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
                         maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        color = colorScheme.onSurface
                     )
-                    Spacer(Modifier.height(4.dp))
 
+                    Spacer(Modifier.height(8.dp))
 
                     InfoRow(
                         icon = Icons.Default.Person,
                         label = "Author",
                         textValue = "Dan Simmons"
                     )
-
                     InfoRow(
                         icon = Icons.Default.Business,
                         label = "Publisher",
                         textValue = "Litres"
                     )
-
                     InfoRow(
                         icon = Icons.Default.CalendarMonth,
                         label = "Year",
                         textValue = "1990"
                     )
-
-                    Spacer(Modifier.height(16.dp))
-
-                    Text(
-                        text = """
-                        The world of the great river Tethys – and the interstellar Hegemony, 
-                        connecting hundreds of planets with null-portals. A world of space nomads 
-                        and all-powerful AIs, mysterious Time Tombs and the ruthless "Angel of 
-                        Death" Shrike. A world where the fates of the Soldier and the Priest, 
-                        the Scholar and the Poet, the Detective and the Consul intertwine in 
-                        intricate ways.
-                    """.trimIndent(),
-                        style = typography.bodyMedium
-                    )
                 }
+
+                HorizontalDivider(
+                    modifier = Modifier
+                        .padding(vertical = 16.dp)
+                        .alpha(0.2f)
+                )
+
+                Text(
+                    text = "The world of the great river Tethys – and the interstellar Hegemony, connecting hundreds of planets with null-portals. A world of space nomads and all-powerful AIs, mysterious Time Tombs and the ruthless \"Angel of Death\" Shrike. A world where the fates of the Soldier and the Priest, the Scholar and the Poet, the Detective and the Consul intertwine in intricate ways.",
+                    style = typography.bodyMedium.copy(lineHeight = 22.sp),
+                    color = colorScheme.onSurface,
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
             }
         }
     }
@@ -332,7 +338,6 @@ fun InfoRow(
     label: String,
     textValue: String
 ) {
-    // Небольший отступ сверху
     Spacer(modifier = Modifier.height(8.dp))
 
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -354,23 +359,6 @@ fun InfoRow(
             text = textValue,
             style = MaterialTheme.typography.bodyMedium
         )
-    }
-}
-
-@Composable
-fun InfoColumn(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, value: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            modifier = Modifier
-                .size(24.dp)
-                .alpha(0.8f),
-            tint = MaterialTheme.colorScheme.primary
-        )
-        Spacer(Modifier.height(4.dp))
-        Text(text = label, style = MaterialTheme.typography.bodySmall)
-        Text(text = value, style = MaterialTheme.typography.bodyMedium)
     }
 }
 
