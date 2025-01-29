@@ -1,4 +1,5 @@
 package org.grakovne.lissen.ui.screens.player
+
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -9,20 +10,35 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Business
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Store
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -30,12 +46,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.ImageLoader
@@ -75,6 +97,8 @@ fun PlayerScreen(
     val isPlaybackReady by playerViewModel.isPlaybackReady.observeAsState(false)
     val playingQueueExpanded by playerViewModel.playingQueueExpanded.observeAsState(false)
     val searchRequested by playerViewModel.searchRequested.observeAsState(false)
+
+    var itemDetailsSelected by remember { mutableStateOf(false) }
 
     val screenTitle = when (playingQueueExpanded) {
         true -> provideNowPlayingTitle(libraryViewModel.fetchPreferredLibraryType(), context)
@@ -134,6 +158,18 @@ fun PlayerScreen(
                                         )
                                     }
                                 }
+                            }
+                        }
+                    } else {
+                        Row {
+                            IconButton(
+                                onClick = { itemDetailsSelected = true },
+                                modifier = Modifier.padding(end = 4.dp),
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Info,
+                                    contentDescription = null,
+                                )
                             }
                         }
                     }
@@ -226,6 +262,116 @@ fun PlayerScreen(
             }
         },
     )
+
+    if (itemDetailsSelected) {
+        ModalBottomSheet(
+            containerColor = MaterialTheme.colorScheme.background,
+            onDismissRequest = { }
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+            ) {
+
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                ) {
+                    Text(
+                        text = "Hyperion",
+                        style = typography.titleLarge,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(Modifier.height(4.dp))
+
+
+                    InfoRow(
+                        icon = Icons.Default.Person,
+                        label = "Author",
+                        textValue = "Dan Simmons"
+                    )
+
+                    InfoRow(
+                        icon = Icons.Default.Business,
+                        label = "Publisher",
+                        textValue = "Litres"
+                    )
+
+                    InfoRow(
+                        icon = Icons.Default.CalendarMonth,
+                        label = "Year",
+                        textValue = "1990"
+                    )
+
+                    Spacer(Modifier.height(16.dp))
+
+                    Text(
+                        text = """
+                        The world of the great river Tethys – and the interstellar Hegemony, 
+                        connecting hundreds of planets with null-portals. A world of space nomads 
+                        and all-powerful AIs, mysterious Time Tombs and the ruthless "Angel of 
+                        Death" Shrike. A world where the fates of the Soldier and the Priest, 
+                        the Scholar and the Poet, the Detective and the Consul intertwine in 
+                        intricate ways.
+                    """.trimIndent(),
+                        style = typography.bodyMedium
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun InfoRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    textValue: String
+) {
+    // Небольший отступ сверху
+    Spacer(modifier = Modifier.height(8.dp))
+
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier
+                .size(20.dp)
+                .alpha(0.9f)
+        )
+        Spacer(Modifier.width(8.dp))
+        Text(
+            text = "$label: ",
+            style = MaterialTheme.typography.bodyMedium,
+            color = Color.Gray
+        )
+        Text(
+            text = textValue,
+            style = MaterialTheme.typography.bodyMedium
+        )
+    }
+}
+
+@Composable
+fun InfoColumn(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            modifier = Modifier
+                .size(24.dp)
+                .alpha(0.8f),
+            tint = MaterialTheme.colorScheme.primary
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(text = label, style = MaterialTheme.typography.bodySmall)
+        Text(text = value, style = MaterialTheme.typography.bodyMedium)
+    }
 }
 
 private fun playingItemChanged(
