@@ -83,4 +83,6 @@
     <string name="downloads_menu_download_option_clear_episodes">பதிவிறக்கம் செய்யப்பட்ட அத்தியாயங்களை அழிக்கவும்</string>
     <string name="downloads_menu_download_option_clear_items">பதிவிறக்கம் செய்யப்பட்ட உருப்படிகளை அழிக்கவும்</string>
     <string name="mini_player_action_close">மூடு</string>
+    <string name="playing_item_details_author">ஆசிரியர்</string>
+    <string name="playing_item_details_publisher">Taata nene\'i</string>
 </resources>

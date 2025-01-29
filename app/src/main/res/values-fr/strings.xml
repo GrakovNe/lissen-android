@@ -84,4 +84,6 @@
     <string name="downloads_menu_download_option_clear_episodes">Vider les épisodes téléchargés</string>
     <string name="downloads_menu_download_option_clear_items">Vider les objets téléchargés</string>
     <string name="mini_player_action_close">Fermer</string>
+    <string name="playing_item_details_author">Auteur</string>
+    <string name="playing_item_details_publisher">Éditeur</string>
 </resources>

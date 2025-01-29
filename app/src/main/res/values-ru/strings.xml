@@ -83,4 +83,6 @@
     <string name="player_screen_now_playing_title_podcast_of">Выпуск %1$d из %2$s</string>
     <string name="player_screen_now_playing_title_item_of">Элемент %1$d из %2$s</string>
     <string name="mini_player_action_close">Закрыть</string>
+    <string name="playing_item_details_author">Автор</string>
+    <string name="playing_item_details_publisher">Издатель</string>
 </resources>

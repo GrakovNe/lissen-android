@@ -83,4 +83,6 @@
     <string name="downloads_menu_download_option_current_item">Aktuell post</string>
     <string name="downloads_menu_download_option_entire_item">Hela objektet</string>
     <string name="downloads_menu_download_option_next_items">Nästa %1$d objekt</string>
+    <string name="playing_item_details_author">Författare</string>
+    <string name="playing_item_details_publisher">Utgivare</string>
 </resources>

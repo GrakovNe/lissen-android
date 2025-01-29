@@ -293,7 +293,7 @@ fun PlayerScreen(
                         ?.let {
                             InfoRow(
                                 icon = Icons.Default.Person,
-                                label = "Author",
+                                label = stringResource(R.string.playing_item_details_author),
                                 textValue = it,
                             )
                         }
@@ -303,7 +303,7 @@ fun PlayerScreen(
                         ?.let {
                             InfoRow(
                                 icon = Icons.Default.Business,
-                                label = "Publisher",
+                                label = stringResource(R.string.playing_item_details_publisher),
                                 textValue = it,
                             )
                         }
