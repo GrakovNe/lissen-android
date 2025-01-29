@@ -324,7 +324,7 @@ fun PlayerScreen(
                     ?.let {
                         HorizontalDivider(
                             modifier = Modifier
-                                .padding(vertical = 16.dp)
+                                .padding(vertical = 16.dp, horizontal = 16.dp)
                                 .alpha(0.2f),
                         )
 
