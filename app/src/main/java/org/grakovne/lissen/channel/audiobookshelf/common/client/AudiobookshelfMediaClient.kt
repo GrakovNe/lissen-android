@@ -8,7 +8,7 @@ import retrofit2.http.Streaming
 
 interface AudiobookshelfMediaClient {
 
-    @GET("/api/items/{itemId}/cover")
+    @GET("/api/items/{itemId}/cover?raw=1")
     @Streaming
     suspend fun getItemCover(
         @Path("itemId") itemId: String,
