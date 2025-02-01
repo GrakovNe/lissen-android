@@ -151,7 +151,9 @@ class LissenMediaProvider @Inject constructor(
 
         return when (sharedPreferences.isForceCache()) {
             true -> localCacheRepository.fetchRecentListenedBooks()
-            false -> providePreferredChannel().fetchRecentListenedBooks(libraryId)
+            false -> providePreferredChannel()
+                .fetchRecentListenedBooks(libraryId)
+                .map { items -> syncFromLocalProgress(items) }
         }
     }
 
@@ -180,6 +182,34 @@ class LissenMediaProvider @Inject constructor(
     ): ApiResult<UserAccount> {
         Log.d(TAG, "Authorizing for $username@$host")
         return provideAuthService().authorize(host, username, password)
+    }
+
+    private suspend fun syncFromLocalProgress(
+        detailedItems: List<RecentBook>,
+    ): List<RecentBook> {
+        val localRecentlyBooks = localCacheRepository
+            .fetchRecentListenedBooks()
+            .fold(
+                onSuccess = { it },
+                onFailure = { return@fold detailedItems },
+            )
+
+        val syncedRecentlyBooks = detailedItems
+            .mapNotNull { item -> localRecentlyBooks.find { it.id == item.id }?.let { item to it } }
+            .map { (remote, local) ->
+                when (remote.lastUpdate > local.lastUpdate) {
+                    true -> remote
+                    false -> local
+                }
+            }
+
+        return detailedItems
+            .map { item ->
+                syncedRecentlyBooks
+                    .find { item.id == it.id }
+                    ?.let { local -> item.copy(listenedPercentage = local.listenedPercentage) }
+                    ?: item
+            }
     }
 
     private suspend fun syncFromLocalProgress(detailedItem: DetailedItem): DetailedItem {

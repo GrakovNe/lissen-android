@@ -5,4 +5,5 @@ data class RecentBook(
     val title: String,
     val author: String?,
     val listenedPercentage: Int?,
+    val lastUpdate: Long,
 )

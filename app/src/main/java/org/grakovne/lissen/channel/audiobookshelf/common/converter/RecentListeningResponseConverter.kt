@@ -10,7 +10,7 @@ class RecentListeningResponseConverter @Inject constructor() {
 
     fun apply(
         response: List<PersonalizedFeedResponse>,
-        progress: Map<String, Double>,
+        progress: Map<String, Pair<Long, Double>>,
     ): List<RecentBook> = response
         .find { it.labelStringKey == LABEL_CONTINUE_LISTENING }
         ?.entities
@@ -20,7 +20,8 @@ class RecentListeningResponseConverter @Inject constructor() {
                 id = it.id,
                 title = it.media.metadata.title,
                 author = it.media.metadata.authorName,
-                listenedPercentage = progress[it.id]?.let { it * 100 }?.toInt(),
+                listenedPercentage = progress[it.id]?.second?.let { it * 100 }?.toInt(),
+                lastUpdate = progress[it.id]?.first ?: 0,
             )
         } ?: emptyList()
 

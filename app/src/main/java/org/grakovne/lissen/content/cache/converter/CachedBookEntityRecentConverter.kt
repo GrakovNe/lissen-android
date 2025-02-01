@@ -8,11 +8,13 @@ import javax.inject.Singleton
 @Singleton
 class CachedBookEntityRecentConverter @Inject constructor() {
 
-    fun apply(entity: BookEntity, currentTime: Double?): RecentBook = RecentBook(
+    fun apply(entity: BookEntity, currentTime: Pair<Long, Double>?): RecentBook = RecentBook(
         id = entity.id,
         title = entity.title,
         author = entity.author,
+        lastUpdate = currentTime?.first ?: 0,
         listenedPercentage = currentTime
+            ?.second
             ?.let { it / entity.duration }
             ?.let { it * 100 }
             ?.toInt(),

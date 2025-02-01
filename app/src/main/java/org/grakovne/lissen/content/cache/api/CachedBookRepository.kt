@@ -78,7 +78,7 @@ class CachedBookRepository @Inject constructor(
         val progress = recentBooks
             .map { it.id }
             .mapNotNull { bookDao.fetchMediaProgress(it) }
-            .associate { it.bookId to it.currentTime }
+            .associate { it.bookId to (it.lastUpdate to it.currentTime) }
 
         return recentBooks
             .map { cachedBookEntityRecentConverter.apply(it, progress[it.id]) }

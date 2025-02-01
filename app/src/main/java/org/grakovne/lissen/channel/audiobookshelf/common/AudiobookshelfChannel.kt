@@ -56,14 +56,16 @@ abstract class AudiobookshelfChannel(
         .map { libraryResponseConverter.apply(it) }
 
     override suspend fun fetchRecentListenedBooks(libraryId: String): ApiResult<List<RecentBook>> {
-        val progress: Map<String, Double> = dataRepository
+        val progress: Map<String, Pair<Long, Double>> = dataRepository
             .fetchUserInfoResponse()
             .fold(
                 onSuccess = {
                     it
                         .user
                         .mediaProgress
-                        ?.associate { item -> item.libraryItemId to item.progress }
+                        ?.groupBy { item -> item.libraryItemId }
+                        ?.map { (item, value) -> item to value.maxBy { progress -> progress.lastUpdate } }
+                        ?.associate { (item, progress) -> item to (progress.lastUpdate to progress.progress) }
                         ?: emptyMap()
                 },
                 onFailure = { emptyMap() },
