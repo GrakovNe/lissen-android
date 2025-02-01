@@ -12,7 +12,7 @@ class CachedBookEntityRecentConverter @Inject constructor() {
         id = entity.id,
         title = entity.title,
         author = entity.author,
-        lastUpdate = currentTime?.first ?: 0,
+        listenedLastUpdate = currentTime?.first ?: 0,
         listenedPercentage = currentTime
             ?.second
             ?.let { it / entity.duration }

@@ -21,7 +21,7 @@ class RecentListeningResponseConverter @Inject constructor() {
                 title = it.media.metadata.title,
                 author = it.media.metadata.authorName,
                 listenedPercentage = progress[it.id]?.second?.let { it * 100 }?.toInt(),
-                lastUpdate = progress[it.id]?.first ?: 0,
+                listenedLastUpdate = progress[it.id]?.first ,
             )
         } ?: emptyList()
 

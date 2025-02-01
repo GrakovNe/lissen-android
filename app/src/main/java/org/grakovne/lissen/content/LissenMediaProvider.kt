@@ -197,7 +197,10 @@ class LissenMediaProvider @Inject constructor(
         val syncedRecentlyBooks = detailedItems
             .mapNotNull { item -> localRecentlyBooks.find { it.id == item.id }?.let { item to it } }
             .map { (remote, local) ->
-                when (remote.lastUpdate > local.lastUpdate) {
+                val localTimestamp = local.listenedLastUpdate ?: return@map remote
+                val remoteTimestamp = remote.listenedLastUpdate ?: return@map remote
+
+                when (remoteTimestamp > localTimestamp) {
                     true -> remote
                     false -> local
                 }
