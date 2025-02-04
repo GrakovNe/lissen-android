@@ -60,6 +60,7 @@ class BookResponseConverter @Inject constructor() {
         return DetailedItem(
             id = item.id,
             title = item.media.metadata.title,
+            subtitle = item.media.metadata.subtitle,
             author = item.media.metadata.authors?.joinToString(", ", transform = LibraryAuthorResponse::name),
             files = item
                 .media

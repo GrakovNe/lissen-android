@@ -14,6 +14,7 @@ class CachedBookEntityDetailedConverter @Inject constructor() {
     fun apply(entity: CachedBookEntity): DetailedItem = DetailedItem(
         id = entity.detailedBook.id,
         title = entity.detailedBook.title,
+        subtitle = entity.detailedBook.subtitle,
         author = entity.detailedBook.author,
         libraryId = entity.detailedBook.libraryId,
         localProvided = true,

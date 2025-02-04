@@ -155,9 +155,8 @@ fun MiniPlayerComposable(
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    book
-                        .author
-                        ?.let {
+                    arrayOf(book.subtitle, book.author).forEach {
+                        it?.let {
                             Text(
                                 text = it,
                                 style = typography.bodyMedium.copy(
@@ -167,6 +166,7 @@ fun MiniPlayerComposable(
                                 overflow = TextOverflow.Ellipsis,
                             )
                         }
+                    }
                 }
 
                 Column(

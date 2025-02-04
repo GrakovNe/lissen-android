@@ -5,6 +5,7 @@ import java.io.Serializable
 data class DetailedItem(
     val id: String,
     val title: String,
+    val subtitle: String?,
     val author: String?,
     val publisher: String?,
     val year: String?,

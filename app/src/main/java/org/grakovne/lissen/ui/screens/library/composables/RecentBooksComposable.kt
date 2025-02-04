@@ -178,17 +178,17 @@ fun RecentBookItemComposable(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            book.author?.let {
-                Text(
-                    text = book.author,
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        color = MaterialTheme.colorScheme.onBackground.copy(
-                            alpha = 0.6f,
+            arrayOf(book.subtitle, book.author).forEach {
+                it?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                         ),
-                    ),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
     }

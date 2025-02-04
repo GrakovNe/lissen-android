@@ -17,6 +17,7 @@ class LibraryPageResponseConverter @Inject constructor() {
             Book(
                 id = it.id,
                 title = title,
+                subtitle = it.media.metadata.subtitle,
                 author = it.media.metadata.authorName,
                 duration = it.media.duration.toInt(),
             )
