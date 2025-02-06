@@ -52,7 +52,7 @@ fun BookComposable(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { navController.showPlayer(book.id, book.title) }
+            .clickable { navController.showPlayer(book.id, book.title, book.subtitle) }
             .testTag("bookItem_${book.id}")
             .padding(horizontal = 4.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -84,23 +84,30 @@ fun BookComposable(
                 overflow = TextOverflow.Ellipsis,
             )
 
-            val info = listOf(book.subtitle, book.author)
-
-            info.any { it != null }.let {
+            if (book.subtitle != null || book.author != null) {
                 Spacer(modifier = Modifier.height(4.dp))
             }
 
-            info.forEach {
-                it?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodySmall.copy(
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                        ),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
+            book.subtitle?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+
+            book.author?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
         }
 

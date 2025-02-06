@@ -65,7 +65,18 @@ fun LibraryItemPlaceholderComposable() {
             Box(
                 modifier = Modifier
                     .fillMaxWidth(0.6f)
-                    .height(12.dp)
+                    .height(8.dp)
+                    .clip(RoundedCornerShape(4.dp))
+                    .shimmer()
+                    .background(Color.Gray),
+            )
+
+            Spacer(modifier = Modifier.height(2.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.6f)
+                    .height(8.dp)
                     .clip(RoundedCornerShape(4.dp))
                     .shimmer()
                     .background(Color.Gray),

@@ -16,11 +16,12 @@ class AppNavigationService(
         }
     }
 
-    fun showPlayer(bookId: String, bookName: String) {
-        host.navigate("player_screen/$bookId?bookTitle=$bookName") {
+    fun showPlayer(bookId: String, bookTitle: String, bookSubtitle: String?) {
+        host.navigate("player_screen/$bookId?bookTitle=$bookTitle&bookSubtitle=$bookSubtitle") {
             launchSingleTop = true
 
-            host.currentBackStackEntry?.arguments?.putString("bookTitle", bookName)
+            host.currentBackStackEntry?.arguments?.putString("bookTitle", bookTitle)
+            host.currentBackStackEntry?.arguments?.putString("bookSubTitle", bookSubtitle)
         }
     }
 
