@@ -94,7 +94,7 @@ fun RecentBookItemComposable(
     Column(
         modifier = Modifier
             .width(width)
-            .clickable { navController.showPlayer(book.id, book.title) },
+            .clickable { navController.showPlayer(book.id, book.title, book.subtitle) },
     ) {
         val context = LocalContext.current
         var coverLoading by remember { mutableStateOf(true) }
@@ -178,13 +178,22 @@ fun RecentBookItemComposable(
 
             Spacer(modifier = Modifier.height(4.dp))
 
+            book.subtitle?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+
             book.author?.let {
                 Text(
-                    text = book.author,
+                    text = it,
                     style = MaterialTheme.typography.bodySmall.copy(
-                        color = MaterialTheme.colorScheme.onBackground.copy(
-                            alpha = 0.6f,
-                        ),
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                     ),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

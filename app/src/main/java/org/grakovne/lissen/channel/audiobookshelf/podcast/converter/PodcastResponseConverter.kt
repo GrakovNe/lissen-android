@@ -59,6 +59,7 @@ class PodcastResponseConverter @Inject constructor() {
         return DetailedItem(
             id = item.id,
             title = item.media.metadata.title,
+            subtitle = null,
             libraryId = item.libraryId,
             author = item.media.metadata.author,
             localProvided = false,

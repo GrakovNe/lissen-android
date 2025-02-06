@@ -15,6 +15,7 @@ class PodcastSearchItemsConverter @Inject constructor() {
                 Book(
                     id = it.id,
                     title = title,
+                    subtitle = null,
                     author = it.media.metadata.author,
                     duration = it.media.duration.toInt(),
                 )

@@ -81,6 +81,7 @@ fun PlayerScreen(
     imageLoader: ImageLoader,
     bookId: String,
     bookTitle: String,
+    bookSubtitle: String?,
 ) {
     val context = LocalContext.current
 
@@ -220,7 +221,7 @@ fun PlayerScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         if (!isPlaybackReady) {
-                            TrackDetailsPlaceholderComposable(bookTitle)
+                            TrackDetailsPlaceholderComposable(bookTitle, bookSubtitle)
                         } else {
                             TrackDetailsComposable(
                                 viewModel = playerViewModel,
@@ -285,6 +286,18 @@ fun PlayerScreen(
                         overflow = TextOverflow.Ellipsis,
                         color = colorScheme.onSurface,
                     )
+
+                    bookSubtitle?.let {
+                        Spacer(Modifier.height(4.dp))
+
+                        Text(
+                            text = it,
+                            style = typography.titleSmall,
+                            color = colorScheme.onBackground.copy(alpha = 0.6f),
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
 
                     Spacer(Modifier.height(8.dp))
 
