@@ -82,7 +82,7 @@ fun RecentBookItemComposable(
             Text(
                 color = Color.Transparent,
                 text = "Crime and Punishment",
-                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
                 maxLines = 1,
                 modifier = Modifier
                     .clip(RoundedCornerShape(4.dp))
@@ -90,14 +90,28 @@ fun RecentBookItemComposable(
                     .background(Color.Gray),
             )
             if (libraryViewModel.fetchPreferredLibraryType() == LibraryType.LIBRARY) {
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
                     color = Color.Transparent,
                     text = "Fyodor Dostoevsky",
+                    style = MaterialTheme.typography.bodySmall,
                     maxLines = 1,
                     modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
+                        .clip(RoundedCornerShape(2.dp))
+                        .shimmer()
+                        .background(Color.Gray),
+                )
+
+                Spacer(modifier = Modifier.height(2.dp))
+
+                Text(
+                    color = Color.Transparent,
+                    text = "Fyodor Dostoevsky",
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 1,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(2.dp))
                         .shimmer()
                         .background(Color.Gray),
                 )

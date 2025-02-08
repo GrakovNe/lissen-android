@@ -34,6 +34,7 @@ data class CachedBookEntity(
 data class BookEntity(
     @PrimaryKey val id: String,
     val title: String,
+    val subtitle: String?,
     val author: String?,
     val year: String?,
     val abstract: String?,

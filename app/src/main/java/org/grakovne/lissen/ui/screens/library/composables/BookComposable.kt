@@ -52,7 +52,7 @@ fun BookComposable(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { navController.showPlayer(book.id, book.title) }
+            .clickable { navController.showPlayer(book.id, book.title, book.subtitle) }
             .testTag("bookItem_${book.id}")
             .padding(horizontal = 4.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -83,19 +83,32 @@ fun BookComposable(
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
             )
-            book
-                .author
-                ?.let {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                        ),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
+
+            if (book.subtitle != null || book.author != null) {
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+
+            book.subtitle?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+
+            book.author?.let {
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall.copy(
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                    ),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
 
         Spacer(modifier = Modifier.width(16.dp))

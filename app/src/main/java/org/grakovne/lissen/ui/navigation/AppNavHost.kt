@@ -82,10 +82,11 @@ fun AppNavHost(
             }
 
             composable(
-                route = "player_screen/{bookId}?bookTitle={bookTitle}",
+                route = "player_screen/{bookId}?bookTitle={bookTitle}&bookSubtitle={bookSubtitle}",
                 arguments = listOf(
                     navArgument("bookId") { type = NavType.StringType },
                     navArgument("bookTitle") { type = NavType.StringType; nullable = true },
+                    navArgument("bookSubtitle") { type = NavType.StringType; nullable = true },
                 ),
                 enterTransition = { enterTransition },
                 exitTransition = { exitTransition },
@@ -94,12 +95,14 @@ fun AppNavHost(
             ) { navigationStack ->
                 val bookId = navigationStack.arguments?.getString("bookId") ?: return@composable
                 val bookTitle = navigationStack.arguments?.getString("bookTitle") ?: ""
+                val bookSubtitle = navigationStack.arguments?.getString("bookSubtitle")
 
                 PlayerScreen(
                     navController = navigationService,
                     imageLoader = imageLoader,
                     bookId = bookId,
                     bookTitle = bookTitle,
+                    bookSubtitle = bookSubtitle,
                 )
             }
 

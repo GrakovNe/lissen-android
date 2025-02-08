@@ -28,6 +28,7 @@ interface CachedBookDao {
         val bookEntity = BookEntity(
             id = book.id,
             title = book.title,
+            subtitle = book.subtitle,
             author = book.author,
             duration = book.chapters.sumOf { it.duration }.toInt(),
             libraryId = book.libraryId,
