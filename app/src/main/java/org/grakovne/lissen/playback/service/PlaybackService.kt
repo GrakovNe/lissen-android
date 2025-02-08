@@ -5,6 +5,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import androidx.annotation.OptIn
+import androidx.core.net.toUri
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -27,6 +28,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import org.grakovne.lissen.LissenApplication
 import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
 import org.grakovne.lissen.common.withTrustedCertificates
 import org.grakovne.lissen.content.LissenMediaProvider
@@ -34,6 +36,7 @@ import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import java.io.File
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -156,6 +159,12 @@ class PlaybackService : MediaSessionService() {
                         onFailure = { null },
                     )
 
+                val cachedCover = cover?.let {
+                    val f = File.createTempFile(book.id, null, LissenApplication.appContext.cacheDir)
+                    f.writeBytes(it)
+                    f
+                }
+
                 val sourceFactory = buildDataSourceFactory()
 
                 val playingQueue = book
@@ -168,8 +177,7 @@ class PlaybackService : MediaSessionService() {
                                     val mediaData = MediaMetadata.Builder()
                                         .setTitle(file.name)
                                         .setArtist(book.title)
-
-                                    cover?.let { mediaData.setArtworkData(it, PICTURE_TYPE_FRONT_COVER) }
+                                        .setArtworkUri(cachedCover?.toUri())
 
                                     val mediaItem = MediaItem.Builder()
                                         .setMediaId(file.id)
