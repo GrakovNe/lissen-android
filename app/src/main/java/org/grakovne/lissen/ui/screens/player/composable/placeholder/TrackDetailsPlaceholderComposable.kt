@@ -29,6 +29,7 @@ import org.grakovne.lissen.R
 @Composable
 fun TrackDetailsPlaceholderComposable(
     bookTitle: String,
+    bookSubtitle: String?,
     modifier: Modifier = Modifier,
 ) {
     val configuration = LocalConfiguration.current
@@ -60,7 +61,21 @@ fun TrackDetailsPlaceholderComposable(
             maxLines = 2,
             modifier = Modifier.padding(horizontal = 16.dp),
         )
+
         Spacer(modifier = Modifier.height(4.dp))
+
+        bookSubtitle?.let {
+            Text(
+                    text = it,
+                    style = typography.bodyMedium,
+                    color = colorScheme.onBackground.copy(alpha = 0.6f),
+                    textAlign = TextAlign.Center,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+        }
 
         Text(
             text = stringResource(R.string.player_screen_now_playing_title_chapter_of, 100, "1000"),

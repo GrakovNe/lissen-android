@@ -92,6 +92,20 @@ fun TrackDetailsComposable(
 
         Spacer(modifier = Modifier.height(4.dp))
 
+        book?.subtitle?.let {
+            Text(
+                text = it,
+                style = typography.bodyMedium,
+                color = colorScheme.onBackground.copy(alpha = 0.6f),
+                textAlign = TextAlign.Center,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+        }
+
         Text(
             text = provideChapterNumberTitle(
                 currentTrackIndex = currentTrackIndex,

@@ -117,7 +117,7 @@ fun MiniPlayerComposable(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(colorScheme.background)
-                    .clickable { navController.showPlayer(book.id, book.title) }
+                    .clickable { navController.showPlayer(book.id, book.title, book.subtitle) }
                     .padding(horizontal = 20.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -155,18 +155,28 @@ fun MiniPlayerComposable(
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    book
-                        .author
-                        ?.let {
-                            Text(
-                                text = it,
-                                style = typography.bodyMedium.copy(
-                                    color = colorScheme.onBackground.copy(alpha = 0.6f),
-                                ),
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
+
+                    book.subtitle?.let {
+                        Text(
+                            text = it,
+                            style = typography.bodySmall.copy(
+                                color = colorScheme.onBackground.copy(alpha = 0.6f),
+                            ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+
+                    book.author?.let {
+                        Text(
+                            text = it,
+                            style = typography.bodySmall.copy(
+                                color = colorScheme.onBackground.copy(alpha = 0.6f),
+                            ),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                 }
 
                 Column(
