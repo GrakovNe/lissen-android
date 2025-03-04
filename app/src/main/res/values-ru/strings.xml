@@ -86,4 +86,5 @@
     <string name="playing_item_details_author">Автор</string>
     <string name="playing_item_details_publisher">Издатель</string>
     <string name="playing_item_details_year">Год</string>
+    <string name="playing_item_details_series">Серия</string>
 </resources>
