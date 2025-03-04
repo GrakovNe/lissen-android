@@ -39,6 +39,7 @@ data class BookEntity(
     val year: String?,
     val abstract: String?,
     val publisher: String?,
+    val series: List<MediaSeriesEntity>,
     val duration: Int,
     val libraryId: String?,
 ) : Serializable
@@ -104,4 +105,23 @@ data class MediaProgressEntity(
     val currentTime: Double,
     val isFinished: Boolean,
     val lastUpdate: Long,
+) : Serializable
+
+@Entity(
+    tableName = "media_progress",
+    foreignKeys = [
+        ForeignKey(
+            entity = BookEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["bookId"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+    indices = [Index(value = ["bookId"])],
+)
+data class MediaSeriesEntity(
+    @PrimaryKey val id: String,
+    val bookId: String,
+    val serialNumber: Int,
+    val name: String,
 ) : Serializable

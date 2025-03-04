@@ -17,9 +17,16 @@ data class LibraryMetadataResponse(
     val title: String,
     val subtitle: String?,
     val authors: List<LibraryAuthorResponse>?,
+    val series: List<LibrarySeriesResponse>?,
     val description: String?,
     val publisher: String?,
     val publishedYear: String?,
+)
+
+data class LibrarySeriesResponse(
+    val id: String,
+    val name: String,
+    val sequence: Int
 )
 
 data class LibraryAuthorResponse(
