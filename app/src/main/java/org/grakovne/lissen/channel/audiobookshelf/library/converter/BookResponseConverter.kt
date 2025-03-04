@@ -4,6 +4,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResp
 import org.grakovne.lissen.channel.audiobookshelf.library.model.BookResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryAuthorResponse
 import org.grakovne.lissen.domain.BookFile
+import org.grakovne.lissen.domain.BookSeries
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PlayingChapter
@@ -83,6 +84,17 @@ class BookResponseConverter @Inject constructor() {
             year = item.media.metadata.publishedYear,
             abstract = item.media.metadata.description,
             publisher = item.media.metadata.publisher,
+            series = item
+                .media
+                .metadata
+                .series
+                ?.map {
+                    BookSeries(
+                        id = it.id,
+                        name = it.name,
+                        serialNumber = it.sequence
+                    )
+                } ?: emptyList(),
             progress = progressResponse
                 ?.let {
                     MediaProgress(

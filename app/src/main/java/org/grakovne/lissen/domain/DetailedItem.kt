@@ -45,7 +45,7 @@ data class BookSeries(
     val id: String,
     val serialNumber: Int,
     val name: String
-)
+) : Serializable
 
 enum class BookChapterState {
     FINISHED,

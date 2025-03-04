@@ -12,6 +12,7 @@ import androidx.room.Update
 import org.grakovne.lissen.content.cache.entity.BookChapterEntity
 import org.grakovne.lissen.content.cache.entity.BookEntity
 import org.grakovne.lissen.content.cache.entity.BookFileEntity
+import org.grakovne.lissen.content.cache.entity.BookSeriesEntity
 import org.grakovne.lissen.content.cache.entity.CachedBookEntity
 import org.grakovne.lissen.content.cache.entity.MediaProgressEntity
 import org.grakovne.lissen.domain.DetailedItem
@@ -67,6 +68,17 @@ interface CachedBookDao {
                 )
             }
 
+        val bookSeries = book
+            .series
+            .map { series ->
+                BookSeriesEntity(
+                    id = series.id,
+                    name = series.name,
+                    serialNumber = series.serialNumber,
+                    bookId = book.id
+                )
+            }
+
         val mediaProgress = book
             .progress
             ?.let { progress ->
@@ -81,6 +93,7 @@ interface CachedBookDao {
         upsertBook(bookEntity)
         upsertBookFiles(bookFiles)
         upsertBookChapters(bookChapters)
+        upsertBookSeries(bookSeries)
         mediaProgress?.let { upsertMediaProgress(it) }
     }
 
@@ -136,10 +149,6 @@ interface CachedBookDao {
     @Query("SELECT * FROM detailed_books WHERE id = :bookId")
     suspend fun fetchBook(bookId: String): BookEntity?
 
-    @Transaction
-    @Query("SELECT id FROM detailed_books WHERE (libraryId IS NULL OR libraryId = :libraryId) ")
-    suspend fun fetchBookIds(libraryId: String?): List<String>
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertBook(book: BookEntity)
 
@@ -148,6 +157,9 @@ interface CachedBookDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertBookChapters(chapters: List<BookChapterEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertBookSeries(series: List<BookSeriesEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertMediaProgress(progress: MediaProgressEntity)

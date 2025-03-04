@@ -102,3 +102,21 @@ val MIGRATION_6_7 = object : Migration(6, 7) {
         db.execSQL("ALTER TABLE detailed_books ADD COLUMN subtitle TEXT")
     }
 }
+
+val MIGRATION_7_8 = object : Migration(7, 8) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE book_series (
+                id TEXT NOT NULL PRIMARY KEY,
+                bookId TEXT NOT NULL,
+                serialNumber INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                FOREIGN KEY (bookId) REFERENCES detailed_books(id) ON DELETE CASCADE
+            )
+            """.trimIndent()
+        )
+
+        db.execSQL("CREATE INDEX index_book_series_bookId ON book_series(bookId)")
+    }
+}

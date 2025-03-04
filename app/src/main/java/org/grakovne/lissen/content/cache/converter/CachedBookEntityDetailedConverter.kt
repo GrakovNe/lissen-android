@@ -2,6 +2,7 @@ package org.grakovne.lissen.content.cache.converter
 
 import org.grakovne.lissen.content.cache.entity.CachedBookEntity
 import org.grakovne.lissen.domain.BookFile
+import org.grakovne.lissen.domain.BookSeries
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PlayingChapter
@@ -40,6 +41,15 @@ class CachedBookEntityDetailedConverter @Inject constructor() {
         abstract = entity.detailedBook.abstract,
         publisher = entity.detailedBook.publisher,
         year = entity.detailedBook.year,
+        series = entity
+            .series
+            ?.map {
+                BookSeries(
+                    id = it.id,
+                    name = it.name,
+                    serialNumber = it.serialNumber
+                )
+            } ?: emptyList(),
         progress = entity.progress?.let { progressEntity ->
             MediaProgress(
                 currentTime = progressEntity.currentTime,

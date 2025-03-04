@@ -7,6 +7,7 @@ import org.grakovne.lissen.content.cache.dao.CachedLibraryDao
 import org.grakovne.lissen.content.cache.entity.BookChapterEntity
 import org.grakovne.lissen.content.cache.entity.BookEntity
 import org.grakovne.lissen.content.cache.entity.BookFileEntity
+import org.grakovne.lissen.content.cache.entity.BookSeriesEntity
 import org.grakovne.lissen.content.cache.entity.CachedLibraryEntity
 import org.grakovne.lissen.content.cache.entity.MediaProgressEntity
 
@@ -17,8 +18,9 @@ import org.grakovne.lissen.content.cache.entity.MediaProgressEntity
         BookChapterEntity::class,
         MediaProgressEntity::class,
         CachedLibraryEntity::class,
+        BookSeriesEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = true,
 )
 abstract class LocalCacheStorage : RoomDatabase() {
