@@ -18,7 +18,7 @@ import org.grakovne.lissen.content.cache.entity.MediaProgressEntity
         BookChapterEntity::class,
         MediaProgressEntity::class,
         CachedLibraryEntity::class,
-        BookSeriesEntity::class
+        BookSeriesEntity::class,
     ],
     version = 8,
     exportSchema = true,

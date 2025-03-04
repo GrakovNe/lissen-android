@@ -78,7 +78,7 @@ class PodcastResponseConverter @Inject constructor() {
             year = null, // we have no "Year" for the ongoing media
             abstract = item.media.metadata.description,
             publisher = item.media.metadata.publisher,
-            series = emptyList() // there is no series for podcast
+            series = emptyList(), // there is no series for podcast
         )
     }
 

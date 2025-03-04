@@ -92,7 +92,7 @@ class BookResponseConverter @Inject constructor() {
                     BookSeries(
                         id = it.id,
                         name = it.name,
-                        serialNumber = it.sequence
+                        serialNumber = it.sequence,
                     )
                 } ?: emptyList(),
             progress = progressResponse

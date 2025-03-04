@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.CalendarMonth
@@ -308,6 +309,18 @@ fun PlayerScreen(
                                 icon = Icons.Default.Person,
                                 label = stringResource(R.string.playing_item_details_author),
                                 textValue = it,
+                            )
+                        }
+
+                    playingBook
+                        ?.series
+                        ?.takeIf { it.isNotEmpty() }
+                        ?.let {
+                            InfoRow(
+                                icon = Icons.AutoMirrored.Filled.LibraryBooks,
+                                label = stringResource(R.string.playing_item_details_series),
+                                textValue = it
+                                    .joinToString(", ") { series -> "${series.name} #${series.serialNumber}" },
                             )
                         }
 

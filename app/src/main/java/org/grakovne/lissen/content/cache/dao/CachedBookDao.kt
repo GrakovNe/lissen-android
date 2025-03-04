@@ -75,7 +75,7 @@ interface CachedBookDao {
                     id = series.id,
                     name = series.name,
                     serialNumber = series.serialNumber,
-                    bookId = book.id
+                    bookId = book.id,
                 )
             }
 

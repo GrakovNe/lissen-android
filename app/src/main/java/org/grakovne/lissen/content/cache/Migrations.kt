@@ -114,7 +114,7 @@ val MIGRATION_7_8 = object : Migration(7, 8) {
                 name TEXT NOT NULL,
                 FOREIGN KEY (bookId) REFERENCES detailed_books(id) ON DELETE CASCADE
             )
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         db.execSQL("CREATE INDEX index_book_series_bookId ON book_series(bookId)")

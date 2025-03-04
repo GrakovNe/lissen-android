@@ -44,7 +44,7 @@ data class PlayingChapter(
 data class BookSeries(
     val id: String,
     val serialNumber: Int,
-    val name: String
+    val name: String,
 ) : Serializable
 
 enum class BookChapterState {

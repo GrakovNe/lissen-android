@@ -47,7 +47,7 @@ class CachedBookEntityDetailedConverter @Inject constructor() {
                 BookSeries(
                     id = it.id,
                     name = it.name,
-                    serialNumber = it.serialNumber
+                    serialNumber = it.serialNumber,
                 )
             } ?: emptyList(),
         progress = entity.progress?.let { progressEntity ->
