@@ -1,6 +1,6 @@
 [versions]
 acraCore = "5.11.4"
-agp = "8.6.1"
+agp = "8.9.0"
 coilCompose = "2.7.0"
 composeShimmerAndroid = "1.3.1"
 converterGson = "2.11.0"
