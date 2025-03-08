@@ -19,18 +19,13 @@ import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvi
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.content.cache.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.api.CachedLibraryRepository
-import org.grakovne.lissen.domain.AllItemsDownloadOption
 import org.grakovne.lissen.domain.BookFile
-import org.grakovne.lissen.domain.CurrentItemDownloadOption
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DownloadOption
-import org.grakovne.lissen.domain.NumberItemDownloadOption
 import org.grakovne.lissen.domain.PlayingChapter
-import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.viewmodel.CacheProgress
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.math.round
 
 @Singleton
 class ContentCachingService @Inject constructor(
@@ -44,7 +39,7 @@ class ContentCachingService @Inject constructor(
     fun hasMetadataCached(mediaItemId: String) =
         bookRepository.provideCacheState(mediaItemId)
 
-    suspend fun cacheMediaItem(
+    fun cacheMediaItem(
         mediaItemId: String,
         option: DownloadOption,
         channel: MediaChannel,
@@ -216,51 +211,4 @@ class ContentCachingService @Inject constructor(
     ): List<BookFile> = requestedChapters
         .flatMap { findRelatedFiles(it, book.files) }
         .distinctBy { it.id }
-
-    private fun calculateRequestedChapters(
-        book: DetailedItem,
-        option: DownloadOption,
-        currentTotalPosition: Double,
-    ): List<PlayingChapter> {
-        val chapterIndex = calculateChapterIndex(book, currentTotalPosition)
-
-        return when (option) {
-            AllItemsDownloadOption -> book.chapters
-            CurrentItemDownloadOption -> listOfNotNull(book.chapters.getOrNull(chapterIndex))
-            is NumberItemDownloadOption -> book.chapters.subList(
-                chapterIndex.coerceAtLeast(0),
-                (chapterIndex + option.itemsNumber).coerceIn(chapterIndex..book.chapters.size),
-            )
-        }
-    }
-
-    private fun findRelatedFiles(
-        chapter: PlayingChapter,
-        files: List<BookFile>,
-    ): List<BookFile> {
-        val chapterStartRounded = chapter.start.round()
-        val chapterEndRounded = chapter.end.round()
-
-        val startTimes = files
-            .runningFold(0.0) { acc, file -> acc + file.duration }
-            .dropLast(1)
-
-        val fileStartTimes = files.zip(startTimes)
-
-        return fileStartTimes
-            .filter { (file, fileStartTime) ->
-                val fileStartTimeRounded = fileStartTime.round()
-                val fileEndTimeRounded = (fileStartTime + file.duration).round()
-
-                fileStartTimeRounded < chapterEndRounded && chapterStartRounded < fileEndTimeRounded
-            }
-            .map { it.first }
-    }
-
-    private fun Double.round(): Double = round(this / PRECISION) * PRECISION
-
-    companion object {
-
-        private const val PRECISION = 0.01
-    }
 }
