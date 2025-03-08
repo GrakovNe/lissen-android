@@ -9,19 +9,26 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowDropDown
+import androidx.compose.material.icons.outlined.Audiotrack
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Scaffold
@@ -57,6 +64,7 @@ import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.common.NetworkQualityService
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.ui.extensions.withMinimumTime
+import org.grakovne.lissen.ui.icons.Search
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.common.RequestNotificationPermissions
 import org.grakovne.lissen.ui.screens.library.composables.BookComposable
@@ -75,13 +83,13 @@ import org.grakovne.lissen.viewmodel.SettingsViewModel
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun LibraryScreen(
-    navController: AppNavigationService,
-    libraryViewModel: LibraryViewModel = hiltViewModel(),
-    playerViewModel: PlayerViewModel = hiltViewModel(),
-    settingsViewModel: SettingsViewModel = hiltViewModel(),
-    contentCachingModelView: ContentCachingModelView = hiltViewModel(),
-    imageLoader: ImageLoader,
-    networkQualityService: NetworkQualityService,
+        navController: AppNavigationService,
+        libraryViewModel: LibraryViewModel = hiltViewModel(),
+        playerViewModel: PlayerViewModel = hiltViewModel(),
+        settingsViewModel: SettingsViewModel = hiltViewModel(),
+        contentCachingModelView: ContentCachingModelView = hiltViewModel(),
+        imageLoader: ImageLoader,
+        networkQualityService: NetworkQualityService,
 ) {
     RequestNotificationPermissions()
 
@@ -117,8 +125,8 @@ fun LibraryScreen(
 
             withMinimumTime(minimumTime) {
                 listOf(
-                    async { libraryViewModel.refreshLibrary() },
-                    async { libraryViewModel.fetchRecentListening() },
+                        async { libraryViewModel.refreshLibrary() },
+                        async { libraryViewModel.fetchRecentListening() },
                 ).awaitAll()
             }
 
@@ -143,10 +151,10 @@ fun LibraryScreen(
     }
 
     val pullRefreshState = rememberPullRefreshState(
-        refreshing = pullRefreshing,
-        onRefresh = {
-            refreshContent(showPullRefreshing = true)
-        },
+            refreshing = pullRefreshing,
+            onRefresh = {
+                refreshContent(showPullRefreshing = true)
+            },
     )
 
     val titleTextStyle = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
@@ -181,8 +189,14 @@ fun LibraryScreen(
         val type = libraryViewModel.fetchPreferredLibraryType()
 
         return when (type) {
-            LibraryType.LIBRARY -> context.getString(R.string.library_screen_library_title)
-            LibraryType.PODCAST -> context.getString(R.string.library_screen_podcast_title)
+            LibraryType.LIBRARY -> libraryViewModel
+                    .fetchPreferredLibraryTitle()
+                    ?: context.getString(R.string.library_screen_library_title)
+
+            LibraryType.PODCAST -> libraryViewModel
+                    .fetchPreferredLibraryTitle()
+                    ?: context.getString(R.string.library_screen_podcast_title)
+
             LibraryType.UNKNOWN -> ""
         }
     }
@@ -200,168 +214,181 @@ fun LibraryScreen(
     }
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                actions = {
-                    AnimatedContent(
-                        targetState = searchRequested,
-                        label = "library_action_animation",
-                        transitionSpec = {
-                            fadeIn(animationSpec = keyframes { durationMillis = 150 }) togetherWith
-                                fadeOut(animationSpec = keyframes { durationMillis = 150 })
-                        },
-                    ) { isSearchRequested ->
-                        when (isSearchRequested) {
-                            true -> LibrarySearchActionComposable(
-                                onSearchDismissed = { libraryViewModel.dismissSearch() },
-                                onSearchRequested = { libraryViewModel.updateSearch(it) },
-                            )
-
-                            false -> DefaultActionComposable(
-                                navController = navController,
-                                contentCachingModelView = contentCachingModelView,
-                                playerViewModel = playerViewModel,
-                                onContentRefreshing = { refreshContent(showPullRefreshing = false) },
-                                onSearchRequested = { libraryViewModel.requestSearch() },
-                            )
-                        }
-                    }
-                },
-                title = {
-                    if (!searchRequested) {
-                        Text(
-                            text = navBarTitle,
-                            style = titleTextStyle,
-                            maxLines = 1,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    }
-                },
-                modifier = Modifier.systemBarsPadding(),
-            )
-        },
-        bottomBar = {
-            playingBook?.let {
-                Surface(shadowElevation = 4.dp) {
-                    MiniPlayerComposable(
-                        navController = navController,
-                        book = it,
-                        imageLoader = imageLoader,
-                        playerViewModel = playerViewModel,
-                    )
-                }
-            }
-        },
-        modifier = Modifier
-            .systemBarsPadding()
-            .fillMaxSize(),
-        content = { innerPadding ->
-            Box(
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .testTag("libraryScreen")
-                    .pullRefresh(pullRefreshState)
-                    .fillMaxSize(),
-            ) {
-                LazyColumn(
-                    state = libraryListState,
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 16.dp),
-                ) {
-                    item(key = "recent_books") {
-                        val showRecent = isRecentVisible()
-
-                        when {
-                            isPlaceholderRequired -> {
-                                RecentBooksPlaceholderComposable(
-                                    libraryViewModel = libraryViewModel,
-                                )
-                                Spacer(modifier = Modifier.height(20.dp))
-                            }
-
-                            showRecent -> {
-                                RecentBooksComposable(
-                                    navController = navController,
-                                    recentBooks = recentBooks,
-                                    imageLoader = imageLoader,
-                                    libraryViewModel = libraryViewModel,
-                                )
-
-                                Spacer(modifier = Modifier.height(20.dp))
-                            }
-                        }
-                    }
-
-                    item(key = "library_title") {
-                        if (!searchRequested && isRecentVisible()) {
+            topBar = {
+                TopAppBar(
+                        actions = {
                             AnimatedContent(
-                                targetState = navBarTitle,
-                                transitionSpec = {
-                                    fadeIn(
-                                        animationSpec =
-                                        tween(300),
-                                    ) togetherWith fadeOut(
-                                        animationSpec = tween(
-                                            300,
-                                        ),
+                                    targetState = searchRequested,
+                                    label = "library_action_animation",
+                                    transitionSpec = {
+                                        fadeIn(animationSpec = keyframes { durationMillis = 150 }) togetherWith
+                                                fadeOut(animationSpec = keyframes { durationMillis = 150 })
+                                    },
+                            ) { isSearchRequested ->
+                                when (isSearchRequested) {
+                                    true -> LibrarySearchActionComposable(
+                                            onSearchDismissed = { libraryViewModel.dismissSearch() },
+                                            onSearchRequested = { libraryViewModel.updateSearch(it) },
                                     )
-                                },
-                                label = "library_header_fade",
-                            ) {
-                                when {
-                                    it == provideLibraryTitle() ->
-                                        Spacer(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .height(titleHeightDp),
-                                        )
 
-                                    else -> Text(
-                                        style = titleTextStyle,
-                                        text = provideLibraryTitle(),
-                                        modifier = Modifier.fillMaxWidth(),
+                                    false -> DefaultActionComposable(
+                                            navController = navController,
+                                            contentCachingModelView = contentCachingModelView,
+                                            playerViewModel = playerViewModel,
+                                            onContentRefreshing = { refreshContent(showPullRefreshing = false) },
+                                            onSearchRequested = { libraryViewModel.requestSearch() },
                                     )
                                 }
                             }
-                        }
-                    }
-
-                    item(key = "library_spacer") { Spacer(modifier = Modifier.height(8.dp)) }
-
-                    when {
-                        isPlaceholderRequired -> item { LibraryPlaceholderComposable() }
-                        library.itemCount == 0 -> {
-                            item {
-                                LibraryFallbackComposable(
-                                    searchRequested = searchRequested,
-                                    contentCachingModelView = contentCachingModelView,
-                                    networkQualityService = networkQualityService,
-                                    libraryViewModel = libraryViewModel,
+                        },
+                        title = {
+                            if (!searchRequested) {
+                                Text(
+                                        text = navBarTitle,
+                                        style = titleTextStyle,
+                                        maxLines = 1,
+                                        modifier = Modifier.fillMaxWidth(),
                                 )
+                            }
+                        },
+                        modifier = Modifier.systemBarsPadding(),
+                )
+            },
+            bottomBar = {
+                playingBook?.let {
+                    Surface(shadowElevation = 4.dp) {
+                        MiniPlayerComposable(
+                                navController = navController,
+                                book = it,
+                                imageLoader = imageLoader,
+                                playerViewModel = playerViewModel,
+                        )
+                    }
+                }
+            },
+            modifier = Modifier
+                    .systemBarsPadding()
+                    .fillMaxSize(),
+            content = { innerPadding ->
+                Box(
+                        modifier = Modifier
+                                .padding(innerPadding)
+                                .testTag("libraryScreen")
+                                .pullRefresh(pullRefreshState)
+                                .fillMaxSize(),
+                ) {
+                    LazyColumn(
+                            state = libraryListState,
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(horizontal = 16.dp),
+                    ) {
+                        item(key = "recent_books") {
+                            val showRecent = isRecentVisible()
+
+                            when {
+                                isPlaceholderRequired -> {
+                                    RecentBooksPlaceholderComposable(
+                                            libraryViewModel = libraryViewModel,
+                                    )
+                                    Spacer(modifier = Modifier.height(20.dp))
+                                }
+
+                                showRecent -> {
+                                    RecentBooksComposable(
+                                            navController = navController,
+                                            recentBooks = recentBooks,
+                                            imageLoader = imageLoader,
+                                            libraryViewModel = libraryViewModel,
+                                    )
+
+                                    Spacer(modifier = Modifier.height(20.dp))
+                                }
                             }
                         }
 
-                        else -> items(count = library.itemCount, key = { "library_item_$it" }) {
-                            val book = library[it] ?: return@items
+                        item(key = "library_title") {
+                            if (!searchRequested && isRecentVisible()) {
+                                AnimatedContent(
+                                        targetState = navBarTitle,
+                                        transitionSpec = {
+                                            fadeIn(
+                                                    animationSpec =
+                                                            tween(300),
+                                            ) togetherWith fadeOut(
+                                                    animationSpec = tween(
+                                                            300,
+                                                    ),
+                                            )
+                                        },
+                                        label = "library_header_fade",
+                                ) {
+                                    when {
+                                        it == provideLibraryTitle() ->
+                                            Spacer(
+                                                    modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .height(titleHeightDp),
+                                            )
 
-                            BookComposable(
-                                book = book,
-                                imageLoader = imageLoader,
-                                navController = navController,
-                            )
+                                        else -> Row(
+                                                verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                    style = titleTextStyle,
+                                                    text = provideLibraryTitle(),
+                                                    modifier = Modifier
+                                            )
+                                            IconButton(
+                                                    onClick = { },
+                                                    modifier = Modifier
+                                            ) {
+                                                Icon(
+                                                        imageVector = Icons.Outlined.ArrowDropDown,
+                                                        contentDescription = null
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        item(key = "library_spacer") { Spacer(modifier = Modifier.height(8.dp)) }
+
+                        when {
+                            isPlaceholderRequired -> item { LibraryPlaceholderComposable() }
+                            library.itemCount == 0 -> {
+                                item {
+                                    LibraryFallbackComposable(
+                                            searchRequested = searchRequested,
+                                            contentCachingModelView = contentCachingModelView,
+                                            networkQualityService = networkQualityService,
+                                            libraryViewModel = libraryViewModel,
+                                    )
+                                }
+                            }
+
+                            else -> items(count = library.itemCount, key = { "library_item_$it" }) {
+                                val book = library[it] ?: return@items
+
+                                BookComposable(
+                                        book = book,
+                                        imageLoader = imageLoader,
+                                        navController = navController,
+                                )
+                            }
                         }
                     }
-                }
 
-                if (!searchRequested) {
-                    PullRefreshIndicator(
-                        refreshing = pullRefreshing,
-                        state = pullRefreshState,
-                        contentColor = colorScheme.primary,
-                        modifier = Modifier.align(Alignment.TopCenter),
-                    )
+                    if (!searchRequested) {
+                        PullRefreshIndicator(
+                                refreshing = pullRefreshing,
+                                state = pullRefreshState,
+                                contentColor = colorScheme.primary,
+                                modifier = Modifier.align(Alignment.TopCenter),
+                        )
+                    }
                 }
-            }
-        },
+            },
     )
 }
