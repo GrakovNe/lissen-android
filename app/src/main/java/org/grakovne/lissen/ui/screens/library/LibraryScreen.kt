@@ -215,6 +215,7 @@ fun LibraryScreen(
             val recentBlockVisible = libraryListState.layoutInfo.visibleItemsInfo.firstOrNull()?.key == "recent_books"
 
             when {
+                isPlaceholderRequired -> context.getString(R.string.library_screen_continue_listening_title)
                 showRecent && recentBlockVisible -> context.getString(R.string.library_screen_continue_listening_title)
                 else -> provideLibraryTitle()
             }
