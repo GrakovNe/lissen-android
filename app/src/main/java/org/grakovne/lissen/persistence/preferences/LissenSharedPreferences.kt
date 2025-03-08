@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
+import androidx.core.content.edit
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -45,7 +46,7 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
     }
 
     fun clearPreferences() {
-        sharedPreferences.edit().apply {
+        sharedPreferences.edit {
             remove(KEY_HOST)
             remove(KEY_USERNAME)
             remove(KEY_TOKEN)
@@ -58,10 +59,10 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
             remove(KEY_PREFERRED_LIBRARY_NAME)
 
             remove(KEY_PREFERRED_PLAYBACK_SPEED)
-        }.apply()
+        }
     }
 
-    fun saveHost(host: String) = sharedPreferences.edit().putString(KEY_HOST, host).apply()
+    fun saveHost(host: String) = sharedPreferences.edit { putString(KEY_HOST, host) }
     fun getHost(): String? = sharedPreferences.getString(KEY_HOST, null)
 
     fun getDeviceId(): String {
@@ -74,7 +75,7 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
         return UUID
             .randomUUID()
             .toString()
-            .also { sharedPreferences.edit().putString(KEY_DEVICE_ID, it).apply() }
+            .also { sharedPreferences.edit { putString(KEY_DEVICE_ID, it) } }
     }
 
     // Once the different channel will supported, this shall be extended
@@ -100,7 +101,7 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
     }
 
     fun saveColorScheme(colorScheme: ColorScheme) =
-        sharedPreferences.edit().putString(KEY_PREFERRED_COLOR_SCHEME, colorScheme.name).apply()
+        sharedPreferences.edit { putString(KEY_PREFERRED_COLOR_SCHEME, colorScheme.name) }
 
     fun getColorScheme(): ColorScheme =
         sharedPreferences.getString(KEY_PREFERRED_COLOR_SCHEME, ColorScheme.FOLLOW_SYSTEM.name)
@@ -108,7 +109,7 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
             ?: ColorScheme.FOLLOW_SYSTEM
 
     fun savePlaybackSpeed(factor: Float) =
-        sharedPreferences.edit().putFloat(KEY_PREFERRED_PLAYBACK_SPEED, factor).apply()
+        sharedPreferences.edit { putFloat(KEY_PREFERRED_PLAYBACK_SPEED, factor) }
 
     fun getPlaybackSpeed(): Float =
         sharedPreferences.getFloat(KEY_PREFERRED_PLAYBACK_SPEED, 1f)
@@ -125,13 +126,13 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
     }.distinctUntilChanged()
 
     private fun saveActiveLibraryId(host: String) =
-        sharedPreferences.edit().putString(KEY_PREFERRED_LIBRARY_ID, host).apply()
+        sharedPreferences.edit { putString(KEY_PREFERRED_LIBRARY_ID, host) }
 
     private fun getPreferredLibraryId(): String? =
         sharedPreferences.getString(KEY_PREFERRED_LIBRARY_ID, null)
 
     private fun saveActiveLibraryName(host: String) =
-        sharedPreferences.edit().putString(KEY_PREFERRED_LIBRARY_NAME, host).apply()
+        sharedPreferences.edit { putString(KEY_PREFERRED_LIBRARY_NAME, host) }
 
     private fun getPreferredLibraryType(): LibraryType =
         sharedPreferences
@@ -140,34 +141,34 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
             ?: LibraryType.LIBRARY // We have to set the library type AUDIOBOOKSHELF_LIBRARY for backward compatibility
 
     private fun saveActiveLibraryType(type: LibraryType) =
-        sharedPreferences.edit().putString(KEY_PREFERRED_LIBRARY_TYPE, type.name).apply()
+        sharedPreferences.edit { putString(KEY_PREFERRED_LIBRARY_TYPE, type.name) }
 
     private fun getPreferredLibraryName(): String? =
         sharedPreferences.getString(KEY_PREFERRED_LIBRARY_NAME, null)
 
     fun enableForceCache() =
-        sharedPreferences.edit().putBoolean(CACHE_FORCE_ENABLED, true).apply()
+        sharedPreferences.edit { putBoolean(CACHE_FORCE_ENABLED, true) }
 
     fun disableForceCache() =
-        sharedPreferences.edit().putBoolean(CACHE_FORCE_ENABLED, false).apply()
+        sharedPreferences.edit { putBoolean(CACHE_FORCE_ENABLED, false) }
 
     fun isForceCache(): Boolean {
         return sharedPreferences.getBoolean(CACHE_FORCE_ENABLED, false)
     }
 
     fun saveUsername(username: String) =
-        sharedPreferences.edit().putString(KEY_USERNAME, username).apply()
+        sharedPreferences.edit { putString(KEY_USERNAME, username) }
 
     fun getUsername(): String? = sharedPreferences.getString(KEY_USERNAME, null)
 
     fun saveServerVersion(version: String) =
-        sharedPreferences.edit().putString(KEY_SERVER_VERSION, version).apply()
+        sharedPreferences.edit { putString(KEY_SERVER_VERSION, version) }
 
     fun getServerVersion(): String? = sharedPreferences.getString(KEY_SERVER_VERSION, null)
 
     fun saveToken(password: String) {
         val encrypted = encrypt(password)
-        sharedPreferences.edit().putString(KEY_TOKEN, encrypted).apply()
+        sharedPreferences.edit { putString(KEY_TOKEN, encrypted) }
     }
 
     fun getToken(): String? {
@@ -176,11 +177,10 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
     }
 
     fun saveCustomHeaders(headers: List<ServerRequestHeader>) {
-        val editor = sharedPreferences.edit()
-
-        val json = gson.toJson(headers)
-        editor.putString(KEY_CUSTOM_HEADERS, json)
-        editor.apply()
+        sharedPreferences.edit {
+            val json = gson.toJson(headers)
+            putString(KEY_CUSTOM_HEADERS, json)
+        }
     }
 
     fun getCustomHeaders(): List<ServerRequestHeader> {

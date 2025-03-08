@@ -4,4 +4,5 @@ enum class ColorScheme {
     FOLLOW_SYSTEM,
     LIGHT,
     DARK,
+    BLACK,
 }

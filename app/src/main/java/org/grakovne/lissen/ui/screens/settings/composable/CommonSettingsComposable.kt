@@ -118,6 +118,7 @@ fun CommonSettingsComposable(
                 ColorScheme.LIGHT.toItem(context),
                 ColorScheme.FOLLOW_SYSTEM.toItem(context),
                 ColorScheme.DARK.toItem(context),
+                ColorScheme.BLACK.toItem(context),
             ),
             selectedItem = preferredColorScheme?.toItem(context),
             onDismissRequest = { colorSchemeExpanded = false },
@@ -137,6 +138,7 @@ private fun ColorScheme.toItem(context: Context): CommonSettingsItem {
         ColorScheme.FOLLOW_SYSTEM -> context.getString(R.string.color_scheme_follow_system)
         ColorScheme.LIGHT -> context.getString(R.string.color_scheme_light)
         ColorScheme.DARK -> context.getString(R.string.color_scheme_dark)
+        ColorScheme.BLACK -> context.getString(R.string.color_scheme_black)
     }
 
     return CommonSettingsItem(id, name, null)

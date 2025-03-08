@@ -21,6 +21,12 @@ private val DarkColorScheme = darkColorScheme(
     primary = FoxOrange,
 )
 
+private val BlackColorScheme = darkColorScheme(
+    primary = FoxOrange,
+    background = Black,
+    surface = Black,
+)
+
 @Composable
 fun LissenTheme(
     colorSchemePreference: ColorScheme,
@@ -30,9 +36,22 @@ fun LissenTheme(
         ColorScheme.FOLLOW_SYSTEM -> isSystemInDarkTheme()
         ColorScheme.LIGHT -> false
         ColorScheme.DARK -> true
+        ColorScheme.BLACK -> true
     }
 
-    val colors = if (isDarkTheme) DarkColorScheme else LightColorScheme
+    val colors = when (isDarkTheme) {
+        true -> {
+            if (colorSchemePreference == ColorScheme.BLACK) {
+                BlackColorScheme
+            } else {
+                DarkColorScheme
+            }
+        }
+
+        false -> {
+            LightColorScheme
+        }
+    }
 
     MaterialTheme(
         colorScheme = colors,
