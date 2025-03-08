@@ -339,7 +339,10 @@ fun LibraryScreen(
 
                                     else -> {
                                         if (isPlaceholderRequired.not()) {
-                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                            ) {
                                                 Text(
                                                     style = titleTextStyle,
                                                     text = provideLibraryTitle(),
