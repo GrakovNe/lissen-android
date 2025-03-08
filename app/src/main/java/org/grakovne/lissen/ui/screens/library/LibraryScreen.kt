@@ -7,6 +7,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -17,8 +18,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDropDown
@@ -37,6 +40,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -47,6 +51,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -75,6 +80,9 @@ import org.grakovne.lissen.ui.screens.library.composables.RecentBooksComposable
 import org.grakovne.lissen.ui.screens.library.composables.fallback.LibraryFallbackComposable
 import org.grakovne.lissen.ui.screens.library.composables.placeholder.LibraryPlaceholderComposable
 import org.grakovne.lissen.ui.screens.library.composables.placeholder.RecentBooksPlaceholderComposable
+import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItem
+import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItemComposable
+import org.grakovne.lissen.ui.screens.settings.composable.provideIcon
 import org.grakovne.lissen.viewmodel.ContentCachingModelView
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
@@ -103,6 +111,10 @@ fun LibraryScreen(
     val searchRequested by libraryViewModel.searchRequested.observeAsState(false)
     val preparingError by playerViewModel.preparingError.observeAsState(false)
 
+    val preferredLibrary by settingsViewModel.preferredLibrary.observeAsState()
+    val libraries by settingsViewModel.libraries.observeAsState(emptyList())
+    var preferredLibraryExpanded by remember { mutableStateOf(false) }
+
     val library = when (searchRequested) {
         true -> libraryViewModel.searchPager.collectAsLazyPagingItems()
         false -> libraryViewModel.libraryPager.collectAsLazyPagingItems()
@@ -125,6 +137,7 @@ fun LibraryScreen(
 
             withMinimumTime(minimumTime) {
                 listOf(
+                        async { settingsViewModel.fetchLibraries() },
                         async { libraryViewModel.refreshLibrary() },
                         async { libraryViewModel.fetchRecentListening() },
                 ).awaitAll()
@@ -176,6 +189,7 @@ fun LibraryScreen(
             libraryViewModel.refreshRecentListening()
             libraryViewModel.refreshLibrary()
             currentLibraryId = settingsViewModel.fetchPreferredLibraryId()
+            settingsViewModel.fetchLibraries()
         }
     }
 
@@ -290,7 +304,6 @@ fun LibraryScreen(
                                     RecentBooksPlaceholderComposable(
                                             libraryViewModel = libraryViewModel,
                                     )
-                                    Spacer(modifier = Modifier.height(20.dp))
                                 }
 
                                 showRecent -> {
@@ -300,10 +313,10 @@ fun LibraryScreen(
                                             imageLoader = imageLoader,
                                             libraryViewModel = libraryViewModel,
                                     )
-
-                                    Spacer(modifier = Modifier.height(20.dp))
                                 }
                             }
+
+                            Spacer(modifier = Modifier.height(20.dp))
                         }
 
                         item(key = "library_title") {
@@ -330,19 +343,20 @@ fun LibraryScreen(
                                                             .height(titleHeightDp),
                                             )
 
-                                        else -> Row(
-                                                verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Text(
-                                                    style = titleTextStyle,
-                                                    text = provideLibraryTitle(),
-                                                    modifier = Modifier
-                                            )
-                                            IconButton(
-                                                    onClick = { },
-                                                    modifier = Modifier
-                                            ) {
+                                        else -> {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Text(
+                                                        style = titleTextStyle,
+                                                        text = provideLibraryTitle(),
+                                                        modifier = Modifier
+                                                )
+
+                                                Spacer(modifier = Modifier.width(4.dp))
+
                                                 Icon(
+                                                        modifier = Modifier
+                                                                .clip(RoundedCornerShape(12.dp))
+                                                                .clickable { preferredLibraryExpanded = true },
                                                         imageVector = Icons.Outlined.ArrowDropDown,
                                                         contentDescription = null
                                                 )
@@ -391,4 +405,21 @@ fun LibraryScreen(
                 }
             },
     )
+
+    if (preferredLibraryExpanded) {
+        CommonSettingsItemComposable(
+                items = libraries.map { CommonSettingsItem(it.id, it.title, it.type.provideIcon()) },
+                selectedItem = preferredLibrary?.let { CommonSettingsItem(it.id, it.title, it.type.provideIcon()) },
+                onDismissRequest = { preferredLibraryExpanded = false },
+                onItemSelected = { item ->
+                    libraries
+                            .find { it.id == item.id }
+                            ?.let {
+                                settingsViewModel.preferLibrary(it)
+                                refreshContent(false)
+                            }
+                            ?.also { playerViewModel.clearPlayingBook() }
+                },
+        )
+    }
 }

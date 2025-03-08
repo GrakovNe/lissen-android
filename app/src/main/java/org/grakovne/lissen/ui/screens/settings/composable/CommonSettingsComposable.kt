@@ -144,7 +144,7 @@ private fun ColorScheme.toItem(context: Context): CommonSettingsItem {
     return CommonSettingsItem(id, name, null)
 }
 
-private fun LibraryType.provideIcon() = when (this) {
+fun LibraryType.provideIcon() = when (this) {
     LibraryType.LIBRARY -> Icons.Outlined.Book
     LibraryType.PODCAST -> Icons.Outlined.Podcasts
     LibraryType.UNKNOWN -> Icons.Outlined.NotInterested
