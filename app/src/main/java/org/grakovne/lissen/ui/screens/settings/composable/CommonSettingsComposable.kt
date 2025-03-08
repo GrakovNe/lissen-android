@@ -34,8 +34,8 @@ import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
 fun CommonSettingsComposable(
-        viewModel: SettingsViewModel,
-        playerViewModel: PlayerViewModel,
+    viewModel: SettingsViewModel,
+    playerViewModel: PlayerViewModel,
 ) {
     val libraries by viewModel.libraries.observeAsState(emptyList())
     val preferredLibrary by viewModel.preferredLibrary.observeAsState()
@@ -53,80 +53,80 @@ fun CommonSettingsComposable(
 
     if (host?.isNotEmpty() == true) {
         Row(
-                modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { preferredLibraryExpanded = true }
-                        .padding(horizontal = 24.dp, vertical = 12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { preferredLibraryExpanded = true }
+                .padding(horizontal = 24.dp, vertical = 12.dp),
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                        text = stringResource(R.string.settings_screen_preferred_library_title),
-                        style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                        modifier = Modifier.padding(bottom = 4.dp),
+                    text = stringResource(R.string.settings_screen_preferred_library_title),
+                    style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                    modifier = Modifier.padding(bottom = 4.dp),
                 )
                 Text(
-                        text = preferredLibrary?.title
-                                ?: stringResource(R.string.library_is_not_available),
-                        style = typography.bodyMedium,
-                        color = when (preferredLibrary?.title) {
-                            null -> colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                            else -> colorScheme.onSurfaceVariant
-                        },
+                    text = preferredLibrary?.title
+                        ?: stringResource(R.string.library_is_not_available),
+                    style = typography.bodyMedium,
+                    color = when (preferredLibrary?.title) {
+                        null -> colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        else -> colorScheme.onSurfaceVariant
+                    },
                 )
             }
         }
     }
 
     Row(
-            modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { colorSchemeExpanded = true }
-                    .padding(horizontal = 24.dp, vertical = 12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { colorSchemeExpanded = true }
+            .padding(horizontal = 24.dp, vertical = 12.dp),
     ) {
         Column(
-                modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f),
         ) {
             Text(
-                    text = stringResource(R.string.settings_screen_color_scheme_title),
-                    style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                    modifier = Modifier.padding(bottom = 4.dp),
+                text = stringResource(R.string.settings_screen_color_scheme_title),
+                style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                modifier = Modifier.padding(bottom = 4.dp),
             )
             Text(
-                    text = preferredColorScheme?.toItem(context)?.name ?: "",
-                    style = typography.bodyMedium,
-                    color = colorScheme.onSurfaceVariant,
+                text = preferredColorScheme?.toItem(context)?.name ?: "",
+                style = typography.bodyMedium,
+                color = colorScheme.onSurfaceVariant,
             )
         }
     }
 
     if (preferredLibraryExpanded && libraries != null && libraries.isNotEmpty()) {
         PreferredLibrarySettingComposable(
-                libraries = libraries,
-                preferredLibrary = preferredLibrary,
-                onDismissRequest = { preferredLibraryExpanded = false },
-                onItemSelected = {
-                    viewModel.preferLibrary(it)
-                    playerViewModel.clearPlayingBook()
-                }
+            libraries = libraries,
+            preferredLibrary = preferredLibrary,
+            onDismissRequest = { preferredLibraryExpanded = false },
+            onItemSelected = {
+                viewModel.preferLibrary(it)
+                playerViewModel.clearPlayingBook()
+            },
         )
     }
 
     if (colorSchemeExpanded) {
         CommonSettingsItemComposable(
-                items = listOf(
-                        ColorScheme.FOLLOW_SYSTEM.toItem(context),
-                        ColorScheme.LIGHT.toItem(context),
-                        ColorScheme.DARK.toItem(context),
-                        ColorScheme.BLACK.toItem(context),
-                ),
-                selectedItem = preferredColorScheme?.toItem(context),
-                onDismissRequest = { colorSchemeExpanded = false },
-                onItemSelected = { item ->
-                    ColorScheme
-                            .entries
-                            .find { it.name == item.id }
-                            ?.let { viewModel.preferColorScheme(it) }
-                },
+            items = listOf(
+                ColorScheme.FOLLOW_SYSTEM.toItem(context),
+                ColorScheme.LIGHT.toItem(context),
+                ColorScheme.DARK.toItem(context),
+                ColorScheme.BLACK.toItem(context),
+            ),
+            selectedItem = preferredColorScheme?.toItem(context),
+            onDismissRequest = { colorSchemeExpanded = false },
+            onItemSelected = { item ->
+                ColorScheme
+                    .entries
+                    .find { it.name == item.id }
+                    ?.let { viewModel.preferColorScheme(it) }
+            },
         )
     }
 }

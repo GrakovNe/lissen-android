@@ -409,9 +409,10 @@ fun LibraryScreen(
             onDismissRequest = { preferredLibraryExpanded = false },
             onItemSelected = {
                 settingsViewModel.preferLibrary(it)
+                currentLibraryId = settingsViewModel.fetchPreferredLibraryId()
                 refreshContent(false)
                 playerViewModel.clearPlayingBook()
-            }
+            },
         )
     }
 }
