@@ -75,9 +75,6 @@ import org.grakovne.lissen.ui.screens.library.composables.RecentBooksComposable
 import org.grakovne.lissen.ui.screens.library.composables.fallback.LibraryFallbackComposable
 import org.grakovne.lissen.ui.screens.library.composables.placeholder.LibraryPlaceholderComposable
 import org.grakovne.lissen.ui.screens.library.composables.placeholder.RecentBooksPlaceholderComposable
-import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItem
-import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItemComposable
-import org.grakovne.lissen.ui.screens.settings.composable.provideIcon
 import org.grakovne.lissen.viewmodel.ContentCachingModelView
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
@@ -406,19 +403,15 @@ fun LibraryScreen(
     )
 
     if (preferredLibraryExpanded) {
-        CommonSettingsItemComposable(
-            items = libraries.map { CommonSettingsItem(it.id, it.title, it.type.provideIcon()) },
-            selectedItem = preferredLibrary?.let { CommonSettingsItem(it.id, it.title, it.type.provideIcon()) },
+        PreferredLibrarySettingComposable(
+            libraries = libraries,
+            preferredLibrary = preferredLibrary,
             onDismissRequest = { preferredLibraryExpanded = false },
-            onItemSelected = { item ->
-                libraries
-                    .find { it.id == item.id }
-                    ?.let {
-                        settingsViewModel.preferLibrary(it)
-                        refreshContent(false)
-                    }
-                    ?.also { playerViewModel.clearPlayingBook() }
-            },
+            onItemSelected = {
+                settingsViewModel.preferLibrary(it)
+                refreshContent(false)
+                playerViewModel.clearPlayingBook()
+            }
         )
     }
 }
