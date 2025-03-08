@@ -44,7 +44,6 @@ import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.navigation.AppNavigationService
-import org.grakovne.lissen.ui.theme.FoxOrange
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 
 @Composable
@@ -152,7 +151,7 @@ fun RecentBookItemComposable(
                                 .fillMaxWidth(calculateProgress(book))
                                 .clip(RoundedCornerShape(8.dp))
                                 .fillMaxHeight()
-                                .background(FoxOrange),
+                                .background(MaterialTheme.colorScheme.primary),
                         )
                     }
 

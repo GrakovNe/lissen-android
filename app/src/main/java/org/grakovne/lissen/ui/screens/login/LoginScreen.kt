@@ -25,6 +25,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
@@ -64,7 +65,6 @@ import org.grakovne.lissen.domain.error.LoginError.NetworkError
 import org.grakovne.lissen.domain.error.LoginError.Unauthorized
 import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.ui.navigation.AppNavigationService
-import org.grakovne.lissen.ui.theme.FoxOrange
 import org.grakovne.lissen.viewmodel.LoginViewModel
 import org.grakovne.lissen.viewmodel.LoginViewModel.LoginState
 
@@ -230,7 +230,7 @@ fun LoginScreen(
                     }
 
                     CircularProgressIndicator(
-                        color = FoxOrange,
+                        color = MaterialTheme.colorScheme.primary,
                         strokeWidth = 4.dp,
                         modifier = Modifier
                             .padding(vertical = 32.dp)
