@@ -19,8 +19,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material.icons.filled.PlayCircleFilled
+import androidx.compose.material.icons.filled.PlayCircleOutline
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Pause
+import androidx.compose.material.icons.outlined.PauseCircle
+import androidx.compose.material.icons.outlined.PauseCircleFilled
+import androidx.compose.material.icons.outlined.PauseCircleOutline
+import androidx.compose.material.icons.rounded.PlayCircleFilled
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -177,7 +184,7 @@ fun MiniPlayerComposable(
                             onClick = { playerViewModel.togglePlayPause() },
                         ) {
                             Icon(
-                                imageVector = if (isPlaying) Icons.Outlined.Pause else Icons.Filled.PlayArrow,
+                                imageVector = if (isPlaying) Icons.Outlined.PauseCircleOutline else Icons.Filled.PlayCircleOutline,
                                 contentDescription = if (isPlaying) "Pause" else "Play",
                                 modifier = Modifier.size(36.dp),
                             )
