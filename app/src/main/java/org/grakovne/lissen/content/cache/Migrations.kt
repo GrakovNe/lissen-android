@@ -147,3 +147,10 @@ val MIGRATION_8_9 = object : Migration(8, 9) {
         db.execSQL("CREATE INDEX index_book_series_bookId ON book_series(bookId)")
     }
 }
+
+val MIGRATION_9_10 = object : Migration(9, 10) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("DROP TABLE IF EXISTS book_series")
+        db.execSQL("ALTER TABLE detailed_books ADD COLUMN seriesJson TEXT")
+    }
+}

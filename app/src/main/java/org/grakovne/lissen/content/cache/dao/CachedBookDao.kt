@@ -9,10 +9,11 @@ import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Transaction
 import androidx.room.Update
+import com.google.gson.Gson
 import org.grakovne.lissen.content.cache.entity.BookChapterEntity
 import org.grakovne.lissen.content.cache.entity.BookEntity
 import org.grakovne.lissen.content.cache.entity.BookFileEntity
-import org.grakovne.lissen.content.cache.entity.BookSeriesEntity
+import org.grakovne.lissen.content.cache.entity.BookSeriesDto
 import org.grakovne.lissen.content.cache.entity.CachedBookEntity
 import org.grakovne.lissen.content.cache.entity.MediaProgressEntity
 import org.grakovne.lissen.domain.DetailedItem
@@ -36,6 +37,10 @@ interface CachedBookDao {
             year = book.year,
             abstract = book.abstract,
             publisher = book.publisher,
+            seriesJson = book
+                .series
+                .map { BookSeriesDto(title = it.name, sequence = it.serialNumber) }
+                .let { gson.toJson(it) },
         )
 
         val bookFiles = book
@@ -68,17 +73,6 @@ interface CachedBookDao {
                 )
             }
 
-        val bookSeries = book
-            .series
-            .map { series ->
-                BookSeriesEntity(
-                    id = series.id,
-                    name = series.name,
-                    serialNumber = series.serialNumber,
-                    bookId = book.id,
-                )
-            }
-
         val mediaProgress = book
             .progress
             ?.let { progress ->
@@ -93,7 +87,6 @@ interface CachedBookDao {
         upsertBook(bookEntity)
         upsertBookFiles(bookFiles)
         upsertBookChapters(bookChapters)
-        upsertBookSeries(bookSeries)
         mediaProgress?.let { upsertMediaProgress(it) }
     }
 
@@ -159,9 +152,6 @@ interface CachedBookDao {
     suspend fun upsertBookChapters(chapters: List<BookChapterEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun upsertBookSeries(series: List<BookSeriesEntity>)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertMediaProgress(progress: MediaProgressEntity)
 
     @Transaction
@@ -173,4 +163,8 @@ interface CachedBookDao {
 
     @Delete
     suspend fun deleteBook(book: BookEntity)
+
+    companion object {
+        val gson = Gson()
+    }
 }

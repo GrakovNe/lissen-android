@@ -42,7 +42,6 @@ data class PlayingChapter(
 ) : Serializable
 
 data class BookSeries(
-    val id: String,
     val serialNumber: String?,
     val name: String,
 ) : Serializable

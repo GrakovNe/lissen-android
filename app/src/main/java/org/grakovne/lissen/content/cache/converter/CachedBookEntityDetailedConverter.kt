@@ -1,5 +1,8 @@
 package org.grakovne.lissen.content.cache.converter
 
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import org.grakovne.lissen.content.cache.entity.BookSeriesDto
 import org.grakovne.lissen.content.cache.entity.CachedBookEntity
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.BookSeries
@@ -42,12 +45,16 @@ class CachedBookEntityDetailedConverter @Inject constructor() {
         publisher = entity.detailedBook.publisher,
         year = entity.detailedBook.year,
         series = entity
-            .series
+            .detailedBook
+            .seriesJson
+            ?.let {
+                val type = object : TypeToken<List<BookSeriesDto>>() {}.type
+                gson.fromJson<List<BookSeriesDto>>(it, type)
+            }
             ?.map {
                 BookSeries(
-                    id = it.id,
-                    name = it.name,
-                    serialNumber = it.serialNumber,
+                    name = it.title,
+                    serialNumber = it.sequence,
                 )
             } ?: emptyList(),
         progress = entity.progress?.let { progressEntity ->
@@ -58,4 +65,9 @@ class CachedBookEntityDetailedConverter @Inject constructor() {
             )
         },
     )
+
+    companion object {
+
+        val gson = Gson()
+    }
 }

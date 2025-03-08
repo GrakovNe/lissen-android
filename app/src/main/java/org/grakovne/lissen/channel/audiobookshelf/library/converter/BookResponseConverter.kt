@@ -90,7 +90,6 @@ class BookResponseConverter @Inject constructor() {
                 .series
                 ?.map {
                     BookSeries(
-                        id = it.id,
                         name = it.name,
                         serialNumber = it.sequence,
                     )
