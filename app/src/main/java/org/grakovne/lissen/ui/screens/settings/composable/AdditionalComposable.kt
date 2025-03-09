@@ -37,7 +37,7 @@ fun AdditionalComposable() {
                 .padding(top = 16.dp)
                 .clickable { uriHandler.openUri("https://github.com/GrakovNe/lissen-android") }
                 .align(Alignment.CenterHorizontally),
-            text = "Lissen v ${BuildConfig.VERSION_NAME}",
+            text = "Lissen ${BuildConfig.VERSION_NAME}",
             style = TextStyle(
                 fontFamily = FontFamily.Monospace,
                 textAlign = TextAlign.Center,

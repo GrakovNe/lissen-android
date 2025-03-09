@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -15,6 +17,13 @@ kotlinter {
 
 tasks.lintKotlinMain {
     dependsOn(tasks.formatKotlinMain)
+}
+
+val localProperties = Properties().apply {
+    rootProject
+            .file("local.properties")
+            .takeIf { it.exists() }
+            ?.let { file -> file.inputStream().use { load(it) } }
 }
 
 android {
@@ -40,6 +49,12 @@ android {
         ksp {
             arg("room.schemaLocation", "$projectDir/schemas")
         }
+
+        val acraReportLogin = localProperties.getProperty("acra.report.login") ?: ""
+        val acraReportPassword = localProperties.getProperty("acra.report.password") ?: ""
+
+        buildConfigField("String", "ACRA_REPORT_LOGIN", "\"$acraReportLogin\"")
+        buildConfigField("String", "ACRA_REPORT_PASSWORD", "\"$acraReportPassword\"")
     }
 
     buildTypes {
@@ -86,7 +101,6 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.coil.svg)
 
-    implementation(libs.androidx.paging.runtime.ktx)
     implementation(libs.androidx.paging.compose)
 
     implementation(libs.androidx.compose.material.icons.extended)
@@ -101,18 +115,16 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.runtime.livedata)
 
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.exoplayer.dash)
     implementation(libs.androidx.media3.exoplayer.hls)
-    implementation(libs.androidx.media3.ui)
 
     implementation(libs.androidx.glance)
     implementation(libs.androidx.glance.appwidget)
-    implementation (libs.androidx.glance.material3)
+    implementation(libs.androidx.glance.material3)
 
     implementation(libs.acra.core)
     implementation(libs.acra.http)
