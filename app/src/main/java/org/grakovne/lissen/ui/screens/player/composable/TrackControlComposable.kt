@@ -1,6 +1,6 @@
 package org.grakovne.lissen.ui.screens.player.composable
 
-haimport android.view.View
+import android.view.View
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
