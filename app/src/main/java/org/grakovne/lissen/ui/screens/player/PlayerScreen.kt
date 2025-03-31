@@ -57,6 +57,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.text.HtmlCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.ImageLoader
 import org.grakovne.lissen.R
@@ -371,8 +372,11 @@ fun PlayerScreen(
                                 .alpha(0.2f),
                         )
 
+                        val html = (playingBook?.abstract ?: "").replace("\n", "<br>")
+                        val spanned = HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_LEGACY)
+
                         Text(
-                            text = it,
+                            text = spanned.toString(),
                             style = typography.bodyMedium.copy(lineHeight = 22.sp),
                             color = colorScheme.onSurface,
                             textAlign = TextAlign.Justify,
