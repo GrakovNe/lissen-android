@@ -252,12 +252,27 @@ fun LibraryScreen(
                 },
                 title = {
                     if (!searchRequested) {
-                        Text(
-                            text = navBarTitle,
-                            style = titleTextStyle,
-                            maxLines = 1,
+                        Row(
                             modifier = Modifier.fillMaxWidth(),
-                        )
+                        ) {
+                            Text(
+                                text = navBarTitle,
+                                style = titleTextStyle,
+                                maxLines = 1,
+                            )
+
+                            if (navBarTitle == provideLibraryTitle()) {
+                                Spacer(modifier = Modifier.width(4.dp))
+
+                                Icon(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .clickable { preferredLibraryExpanded = true },
+                                    imageVector = Icons.Outlined.ArrowDropDown,
+                                    contentDescription = null,
+                                )
+                            }
+                        }
                     }
                 },
                 modifier = Modifier.systemBarsPadding(),
