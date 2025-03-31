@@ -262,15 +262,7 @@ fun LibraryScreen(
                             )
 
                             if (navBarTitle == provideLibraryTitle()) {
-                                Spacer(modifier = Modifier.width(4.dp))
-
-                                Icon(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .clickable { preferredLibraryExpanded = true },
-                                    imageVector = Icons.Outlined.ArrowDropDown,
-                                    contentDescription = null,
-                                )
+                                LibrarySwitchComposable { preferredLibraryExpanded = true }
                             }
                         }
                     }
@@ -365,15 +357,7 @@ fun LibraryScreen(
                                                     modifier = Modifier,
                                                 )
 
-                                                Spacer(modifier = Modifier.width(4.dp))
-
-                                                Icon(
-                                                    modifier = Modifier
-                                                        .clip(RoundedCornerShape(12.dp))
-                                                        .clickable { preferredLibraryExpanded = true },
-                                                    imageVector = Icons.Outlined.ArrowDropDown,
-                                                    contentDescription = null,
-                                                )
+                                                LibrarySwitchComposable { preferredLibraryExpanded = true }
                                             }
                                         }
                                     }
@@ -434,4 +418,19 @@ fun LibraryScreen(
             },
         )
     }
+}
+
+@Composable
+fun LibrarySwitchComposable(
+    onclick: () -> Unit,
+) {
+    Spacer(modifier = Modifier.width(4.dp))
+
+    Icon(
+        modifier = Modifier
+            .clip(RoundedCornerShape(12.dp))
+            .clickable { onclick() },
+        imageVector = Icons.Outlined.ArrowDropDown,
+        contentDescription = null,
+    )
 }
