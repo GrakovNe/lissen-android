@@ -73,7 +73,7 @@ import org.grakovne.lissen.ui.screens.player.composable.placeholder.PlayingQueue
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackControlPlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackDetailsPlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.provideNowPlayingTitle
-import org.grakovne.lissen.viewmodel.ContentCachingModelView
+import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
@@ -88,7 +88,7 @@ fun PlayerScreen(
 ) {
     val context = LocalContext.current
 
-    val cachingModelView: ContentCachingModelView = hiltViewModel()
+    val cachingModelView: CachingModelView = hiltViewModel()
     val playerViewModel: PlayerViewModel = hiltViewModel()
     val libraryViewModel: LibraryViewModel = hiltViewModel()
 
@@ -424,6 +424,6 @@ private fun playingItemChanged(
 ) = item != playingBook?.id
 
 private fun cachePolicyChanged(
-    contentCachingModelView: ContentCachingModelView,
+    cachingModelView: CachingModelView,
     playingBook: DetailedItem?,
-) = contentCachingModelView.localCacheUsing() != playingBook?.localProvided
+) = cachingModelView.localCacheUsing() != playingBook?.localProvided

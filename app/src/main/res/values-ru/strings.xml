@@ -93,4 +93,6 @@
     <string name="chapters_list_empty">У книги нет глав</string>
     <string name="episodes_list_empty">У подкаста нет выпусков</string>
     <string name="items_list_empty">У элемента нет эпизодов</string>
+    <string name="notification_content_caching_channel">Кеширование контента</string>
+    <string name="notification_content_caching_title">Контент загружается</string>
 </resources>

@@ -33,13 +33,13 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.icons.Search
 import org.grakovne.lissen.ui.navigation.AppNavigationService
-import org.grakovne.lissen.viewmodel.ContentCachingModelView
+import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
 fun DefaultActionComposable(
     navController: AppNavigationService,
-    contentCachingModelView: ContentCachingModelView,
+    contentCachingModelView: CachingModelView,
     playerViewModel: PlayerViewModel,
     onContentRefreshing: (Boolean) -> Unit,
     onSearchRequested: () -> Unit,

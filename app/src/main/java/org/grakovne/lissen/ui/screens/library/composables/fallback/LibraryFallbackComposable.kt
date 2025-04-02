@@ -26,13 +26,13 @@ import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.common.NetworkQualityService
-import org.grakovne.lissen.viewmodel.ContentCachingModelView
+import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 
 @Composable
 fun LibraryFallbackComposable(
     searchRequested: Boolean,
-    contentCachingModelView: ContentCachingModelView,
+    contentCachingModelView: CachingModelView,
     libraryViewModel: LibraryViewModel,
     networkQualityService: NetworkQualityService,
 ) {

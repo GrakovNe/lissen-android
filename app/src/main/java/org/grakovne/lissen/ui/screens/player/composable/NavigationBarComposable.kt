@@ -5,8 +5,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.MenuOpen
+import androidx.compose.material.icons.outlined.CloudDone
 import androidx.compose.material.icons.outlined.CloudDownload
-import androidx.compose.material.icons.outlined.MenuOpen
 import androidx.compose.material.icons.outlined.SlowMotionVideo
 import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material.icons.outlined.Timer
@@ -38,19 +38,19 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.ui.icons.TimerPlay
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.CacheProgress
-import org.grakovne.lissen.viewmodel.ContentCachingModelView
+import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
 fun NavigationBarComposable(
     book: DetailedItem,
     playerViewModel: PlayerViewModel,
-    contentCachingModelView: ContentCachingModelView,
+    contentCachingModelView: CachingModelView,
     navController: AppNavigationService,
     modifier: Modifier = Modifier,
     libraryType: LibraryType,
 ) {
-    val cacheProgress by contentCachingModelView.getCacheProgress(book.id).collectAsState()
+    val cacheProgress by contentCachingModelView.getProgress(book.id).collectAsState()
     val timerOption by playerViewModel.timerOption.observeAsState(null)
     val playbackSpeed by playerViewModel.playbackSpeed.observeAsState(1f)
     val playingQueueExpanded by playerViewModel.playingQueueExpanded.observeAsState(false)
@@ -200,7 +200,7 @@ fun NavigationBarComposable(
                     onRequestedDownload = { option ->
                         playerViewModel.book.value?.let {
                             contentCachingModelView
-                                .requestCache(
+                                .cache(
                                     mediaItemId = it.id,
                                     currentPosition = playerViewModel.totalPosition.value ?: 0.0,
                                     option = option,
@@ -240,5 +240,6 @@ private fun provideCachingStateIcon(
 }
 
 private val cachingIcon = Icons.Outlined.Sync
-private val cachedIcon = Icons.Outlined.CloudDownload
+
+private val cachedIcon = Icons.Outlined.CloudDone
 private val defaultIcon = Icons.Outlined.CloudDownload

@@ -94,5 +94,5 @@
     <string name="episodes_list_empty">No podcast has no episodes</string>
     <string name="items_list_empty">No available items</string>
     <string name="notification_content_caching_channel">Content Caching</string>
-    <string name="notification_content_caching_title">Saving your content</string>
+    <string name="notification_content_caching_title">Content is caching</string>
 </resources>

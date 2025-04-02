@@ -75,7 +75,7 @@ import org.grakovne.lissen.ui.screens.library.composables.RecentBooksComposable
 import org.grakovne.lissen.ui.screens.library.composables.fallback.LibraryFallbackComposable
 import org.grakovne.lissen.ui.screens.library.composables.placeholder.LibraryPlaceholderComposable
 import org.grakovne.lissen.ui.screens.library.composables.placeholder.RecentBooksPlaceholderComposable
-import org.grakovne.lissen.viewmodel.ContentCachingModelView
+import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 import org.grakovne.lissen.viewmodel.SettingsViewModel
@@ -87,7 +87,7 @@ fun LibraryScreen(
     libraryViewModel: LibraryViewModel = hiltViewModel(),
     playerViewModel: PlayerViewModel = hiltViewModel(),
     settingsViewModel: SettingsViewModel = hiltViewModel(),
-    contentCachingModelView: ContentCachingModelView = hiltViewModel(),
+    cachingModelView: CachingModelView = hiltViewModel(),
     imageLoader: ImageLoader,
     networkQualityService: NetworkQualityService,
 ) {
@@ -171,7 +171,7 @@ fun LibraryScreen(
     val context = LocalContext.current
 
     fun isRecentVisible(): Boolean {
-        val fetchAvailable = networkQualityService.isNetworkAvailable() || contentCachingModelView.localCacheUsing()
+        val fetchAvailable = networkQualityService.isNetworkAvailable() || cachingModelView.localCacheUsing()
         val hasContent = recentBooks.isEmpty().not()
         return !searchRequested && hasContent && fetchAvailable
     }
@@ -242,7 +242,7 @@ fun LibraryScreen(
 
                             false -> DefaultActionComposable(
                                 navController = navController,
-                                contentCachingModelView = contentCachingModelView,
+                                contentCachingModelView = cachingModelView,
                                 playerViewModel = playerViewModel,
                                 onContentRefreshing = { refreshContent(showPullRefreshing = false) },
                                 onSearchRequested = { libraryViewModel.requestSearch() },
@@ -374,7 +374,7 @@ fun LibraryScreen(
                             item {
                                 LibraryFallbackComposable(
                                     searchRequested = searchRequested,
-                                    contentCachingModelView = contentCachingModelView,
+                                    contentCachingModelView = cachingModelView,
                                     networkQualityService = networkQualityService,
                                     libraryViewModel = libraryViewModel,
                                 )

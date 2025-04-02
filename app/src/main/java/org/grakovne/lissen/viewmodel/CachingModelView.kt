@@ -19,7 +19,7 @@ import java.io.Serializable
 import javax.inject.Inject
 
 @HiltViewModel
-class ContentCachingModelView @Inject constructor(
+class CachingModelView @Inject constructor(
     @ApplicationContext private val context: Context,
     private val contentCachingProgress: ContentCachingProgress,
     private val contentCachingManager: ContentCachingManager,
@@ -39,7 +39,7 @@ class ContentCachingModelView @Inject constructor(
         }
     }
 
-    fun requestCache(
+    fun cache(
         mediaItemId: String,
         currentPosition: Double,
         option: DownloadOption,
@@ -57,7 +57,7 @@ class ContentCachingModelView @Inject constructor(
         context.startForegroundService(intent)
     }
 
-    fun getCacheProgress(bookId: String) = _bookCachingProgress
+    fun getProgress(bookId: String) = _bookCachingProgress
         .getOrPut(bookId) { MutableStateFlow(CacheProgress.Idle) }
 
     fun dropCache(bookId: String) {
