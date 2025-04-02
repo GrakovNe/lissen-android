@@ -9,8 +9,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import org.grakovne.lissen.content.NewContentCachingService
+import org.grakovne.lissen.content.cache.CacheProgressBus
 import org.grakovne.lissen.content.cache.ContentCachingForegroundService
-import org.grakovne.lissen.content.cache.ContentCachingService
 import org.grakovne.lissen.domain.ContentCachingTask
 import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
@@ -20,11 +21,23 @@ import javax.inject.Inject
 @HiltViewModel
 class ContentCachingModelView @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val contentCachingService: ContentCachingService,
+    private val cacheProgressBus: CacheProgressBus,
+    private val contentCachingService: NewContentCachingService,
     private val preferences: LissenSharedPreferences,
 ) : ViewModel() {
 
     private val _bookCachingProgress = mutableMapOf<String, MutableStateFlow<CacheProgress>>()
+
+    init {
+        viewModelScope.launch {
+            cacheProgressBus.progressFlow.collect { (itemId, progress) ->
+                val flow = _bookCachingProgress.getOrPut(itemId) {
+                    MutableStateFlow(progress)
+                }
+                flow.value = progress
+            }
+        }
+    }
 
     fun requestCache(
         mediaItemId: String,
@@ -42,30 +55,17 @@ class ContentCachingModelView @Inject constructor(
         }
 
         context.startForegroundService(intent)
-
-//        viewModelScope.launch {
-//            contentCachingService
-//                .cacheMediaItem(
-//                    mediaItemId = mediaItemId,
-//                    option = option,
-//                    channel = mediaProvider.providePreferredChannel(),
-//                    currentTotalPosition = currentPosition,
-//                )
-//                .collect { _bookCachingProgress[mediaItemId]?.value = it }
-//        }
     }
 
     fun getCacheProgress(bookId: String) = _bookCachingProgress
-        .getOrPut(bookId) {
-            MutableStateFlow(CacheProgress.Idle)
-        }
+        .getOrPut(bookId) { MutableStateFlow(CacheProgress.Idle) }
 
     fun dropCache(bookId: String) {
-        viewModelScope.launch {
-            contentCachingService
-                .dropCache(bookId)
-                .collect { _bookCachingProgress[bookId]?.value = it }
-        }
+        viewModelScope
+            .launch {
+                contentCachingService.dropCache(bookId)
+                _bookCachingProgress.remove(bookId)
+            }
     }
 
     fun toggleCacheForce() {

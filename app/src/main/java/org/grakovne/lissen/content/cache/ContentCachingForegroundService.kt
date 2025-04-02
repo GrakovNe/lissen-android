@@ -26,6 +26,9 @@ class ContentCachingForegroundService : LifecycleService() {
     @Inject
     lateinit var mediaProvider: LissenMediaProvider
 
+    @Inject
+    lateinit var cacheProgressBus: CacheProgressBus
+
     private val executionStatuses = mutableMapOf<DetailedItem, CacheProgress>()
 
     @Suppress("DEPRECATION")
@@ -35,8 +38,8 @@ class ContentCachingForegroundService : LifecycleService() {
         startId: Int,
     ): Int {
         startForeground(
-            NOTIF_ID,
-            updateNotification(false),
+            NOTIFICATION_ID,
+            updateNotification(),
         )
 
         val task = intent
@@ -54,15 +57,19 @@ class ContentCachingForegroundService : LifecycleService() {
                 )
                 ?: return@launch
 
-            ContentCachingExecutor(
+            val executor = ContentCachingExecutor(
                 item = item,
                 options = task.options,
                 position = task.currentPosition,
                 contentCachingService = contentCachingService,
             )
+
+            executor
                 .run(mediaProvider.providePreferredChannel())
                 .collect { progress ->
                     executionStatuses[item] = progress
+                    cacheProgressBus.emit(item.id, progress)
+
                     Log.d(TAG, "Caching progress updated: ${executionStatuses.keys.map { it.id }}")
 
                     when (hasFinished()) {
@@ -75,7 +82,7 @@ class ContentCachingForegroundService : LifecycleService() {
         return super.onStartCommand(intent, flags, startId)
     }
 
-    private fun updateNotification(show: Boolean = true): Notification {
+    private fun updateNotification(): Notification {
         val service = getSystemService(NotificationManager::class.java)
 
         val channelId = "caching_channel"
@@ -95,10 +102,8 @@ class ContentCachingForegroundService : LifecycleService() {
             .setProgress(0, 0, true)
             .build()
 
-        if (show) {
-            service.createNotificationChannel(channel)
-            service.notify(NOTIF_ID, notification)
-        }
+        service.createNotificationChannel(channel)
+        service.notify(NOTIFICATION_ID, notification)
 
         return notification
     }
@@ -115,7 +120,7 @@ class ContentCachingForegroundService : LifecycleService() {
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
 
-        getSystemService(NotificationManager::class.java).cancel(NOTIF_ID)
+        getSystemService(NotificationManager::class.java).cancel(NOTIFICATION_ID)
         Log.d(TAG, "All tasks completed, stopping foreground service")
     }
 
@@ -123,6 +128,6 @@ class ContentCachingForegroundService : LifecycleService() {
         val CACHING_TASK_EXTRA = "CACHING_TASK_EXTRA"
 
         private const val TAG = "ContentCachingForegroundService"
-        private const val NOTIF_ID = 2042025
+        private const val NOTIFICATION_ID = 2042025
     }
 }

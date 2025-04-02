@@ -1,7 +1,5 @@
 package org.grakovne.lissen.content
 
-import android.content.Context
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -30,7 +28,6 @@ import javax.inject.Singleton
 
 @Singleton
 class NewContentCachingService @Inject constructor(
-    @ApplicationContext private val context: Context,
     private val bookRepository: CachedBookRepository,
     private val libraryRepository: CachedLibraryRepository,
     private val properties: CacheBookStorageProperties,
@@ -70,6 +67,20 @@ class NewContentCachingService @Inject constructor(
             else -> emit(CacheProgress.Error)
         }
     }
+
+    suspend fun dropCache(itemId: String) {
+        bookRepository.removeBook(itemId)
+
+        val cachedContent = properties
+            .provideBookCache(itemId)
+            ?: return
+
+        if (cachedContent.exists()) {
+            cachedContent.deleteRecursively()
+        }
+    }
+
+    fun hasMetadataCached(mediaItemId: String) = bookRepository.provideCacheState(mediaItemId)
 
     private suspend fun cacheBookMedia(
         bookId: String,
