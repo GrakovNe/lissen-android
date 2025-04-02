@@ -28,6 +28,7 @@ rules = "1.6.1"
 runtimeLivedata = "1.7.8"
 media3Session = "1.6.0"
 media3DatasourceOkhttp = "1.6.0"
+lifecycleService = "2.8.7"
 
 [libraries]
 acra-core = { module = "ch.acra:acra-core", version.ref = "acraCore" }
@@ -73,6 +74,7 @@ okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 androidx-media3-session = { group = "androidx.media3", name = "media3-session", version.ref = "media3Session" }
 androidx-media3-datasource-okhttp = { group = "androidx.media3", name = "media3-datasource-okhttp", version.ref = "media3DatasourceOkhttp" }
+androidx-lifecycle-service = { group = "androidx.lifecycle", name = "lifecycle-service", version.ref = "lifecycleService" }
 
 [plugins]
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

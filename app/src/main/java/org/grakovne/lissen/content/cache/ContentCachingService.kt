@@ -100,7 +100,7 @@ class ContentCachingService @Inject constructor(
         return@flow emit(CacheProgress.Removed)
     }
 
-    private suspend fun cacheLibraries(channel: MediaChannel) = channel
+    private suspend fun cacheLibraries(channel: MediaChannel): CacheProgress = channel
         .fetchLibraries()
         .foldAsync(
             onSuccess = {
@@ -115,7 +115,7 @@ class ContentCachingService @Inject constructor(
     private suspend fun cacheBookInfo(
         book: DetailedItem,
         fetchedChapters: List<PlayingChapter>,
-    ) = bookRepository
+    ): CacheProgress = bookRepository
         .cacheBook(book, fetchedChapters)
         .let { CacheProgress.Completed }
 

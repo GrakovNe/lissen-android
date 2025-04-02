@@ -108,6 +108,7 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.androidx.media3.session)
     implementation(libs.androidx.media3.datasource.okhttp)
+    implementation(libs.androidx.lifecycle.service)
     ksp(libs.hilt.android.compiler)
 
     implementation(libs.androidx.activity.compose)
