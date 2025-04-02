@@ -159,11 +159,12 @@ class PlaybackService : MediaSessionService() {
                         onFailure = { null },
                     )
 
-                val cachedCover = cover?.let {
-                    val f = File.createTempFile(book.id, null, LissenApplication.appContext.cacheDir)
-                    f.writeBytes(it)
-                    f
-                }
+                val cachedCover = cover
+                    ?.let { content ->
+                        File
+                            .createTempFile(book.id, null, LissenApplication.appContext.cacheDir)
+                            .also { it.writeBytes(content) }
+                    }
 
                 val sourceFactory = buildDataSourceFactory()
 
