@@ -2,7 +2,6 @@ package org.grakovne.lissen.viewmodel
 
 import android.content.Context
 import android.content.Intent
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,7 +9,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.cache.ContentCachingForegroundService
 import org.grakovne.lissen.content.cache.ContentCachingService
 import org.grakovne.lissen.domain.ContentCachingTask
@@ -33,13 +31,10 @@ class ContentCachingModelView @Inject constructor(
         currentPosition: Double,
         option: DownloadOption,
     ) {
-
-
-
         val task = ContentCachingTask(
             itemId = mediaItemId,
             options = option,
-            currentPosition = currentPosition
+            currentPosition = currentPosition,
         )
 
         val intent = Intent(context, ContentCachingForegroundService::class.java).apply {

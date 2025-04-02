@@ -5,12 +5,11 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
 import okhttp3.Request
-
 import okhttp3.logging.HttpLoggingInterceptor
 import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
 import org.grakovne.lissen.channel.common.MediaChannel
@@ -69,7 +68,6 @@ class NewContentCachingService @Inject constructor(
             }
 
             else -> emit(CacheProgress.Error)
-
         }
     }
 

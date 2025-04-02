@@ -6,4 +6,4 @@ data class ContentCachingTask(
     val itemId: String,
     val options: DownloadOption,
     val currentPosition: Double,
-): Serializable
+) : Serializable

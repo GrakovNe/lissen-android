@@ -32,11 +32,11 @@ class ContentCachingForegroundService : LifecycleService() {
     override fun onStartCommand(
         intent: Intent?,
         flags: Int,
-        startId: Int
+        startId: Int,
     ): Int {
         startForeground(
             NOTIF_ID,
-            updateNotification()
+            updateNotification(false),
         )
 
         val task = intent
@@ -50,7 +50,7 @@ class ContentCachingForegroundService : LifecycleService() {
                 .fetchBook(task.itemId)
                 .fold(
                     onSuccess = { it },
-                    onFailure = { null }
+                    onFailure = { null },
                 )
                 ?: return@launch
 
@@ -58,20 +58,16 @@ class ContentCachingForegroundService : LifecycleService() {
                 item = item,
                 options = task.options,
                 position = task.currentPosition,
-                contentCachingService = contentCachingService
+                contentCachingService = contentCachingService,
             )
                 .run(mediaProvider.providePreferredChannel())
                 .collect { progress ->
                     executionStatuses[item] = progress
                     Log.d(TAG, "Caching progress updated: ${executionStatuses.keys.map { it.id }}")
 
-                    when(hasFinished()) {
+                    when (hasFinished()) {
                         true -> finish()
-                        false -> getSystemService(NotificationManager::class.java)
-                            .notify(
-                                NOTIF_ID,
-                                updateNotification()
-                            )
+                        false -> updateNotification()
                     }
                 }
         }
@@ -79,26 +75,32 @@ class ContentCachingForegroundService : LifecycleService() {
         return super.onStartCommand(intent, flags, startId)
     }
 
+    private fun updateNotification(show: Boolean = true): Notification {
+        val service = getSystemService(NotificationManager::class.java)
 
-    private fun updateNotification(): Notification {
         val channelId = "caching_channel"
         val channel = NotificationChannel(
             channelId,
-            "Content Caching",
-            NotificationManager.IMPORTANCE_LOW
+            getString(R.string.notification_content_caching_channel),
+            NotificationManager.IMPORTANCE_LOW,
         )
 
-        getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
-
-        return Notification
+        val notification = Notification
             .Builder(this, channelId)
             .setContentText(provideCachingTitles())
-            .setSubText("Saving your content")
+            .setSubText(getString(R.string.notification_content_caching_title))
             .setSmallIcon(R.drawable.ic_downloading)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setProgress(0, 0, true)
             .build()
+
+        if (show) {
+            service.createNotificationChannel(channel)
+            service.notify(NOTIF_ID, notification)
+        }
+
+        return notification
     }
 
     private fun provideCachingTitles() = executionStatuses
@@ -117,9 +119,8 @@ class ContentCachingForegroundService : LifecycleService() {
         Log.d(TAG, "All tasks completed, stopping foreground service")
     }
 
-
     companion object {
-        val CACHING_TASK_EXTRA = "task"
+        val CACHING_TASK_EXTRA = "CACHING_TASK_EXTRA"
 
         private const val TAG = "ContentCachingForegroundService"
         private const val NOTIF_ID = 2042025
