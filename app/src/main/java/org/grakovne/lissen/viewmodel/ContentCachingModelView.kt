@@ -9,9 +9,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
-import org.grakovne.lissen.content.NewContentCachingService
-import org.grakovne.lissen.content.cache.CacheProgressBus
-import org.grakovne.lissen.content.cache.ContentCachingForegroundService
+import org.grakovne.lissen.content.cache.ContentCachingManager
+import org.grakovne.lissen.content.cache.ContentCachingProgress
+import org.grakovne.lissen.content.cache.ContentCachingService
 import org.grakovne.lissen.domain.ContentCachingTask
 import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
@@ -21,8 +21,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ContentCachingModelView @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val cacheProgressBus: CacheProgressBus,
-    private val contentCachingService: NewContentCachingService,
+    private val contentCachingProgress: ContentCachingProgress,
+    private val contentCachingManager: ContentCachingManager,
     private val preferences: LissenSharedPreferences,
 ) : ViewModel() {
 
@@ -30,7 +30,7 @@ class ContentCachingModelView @Inject constructor(
 
     init {
         viewModelScope.launch {
-            cacheProgressBus.progressFlow.collect { (itemId, progress) ->
+            contentCachingProgress.progressFlow.collect { (itemId, progress) ->
                 val flow = _bookCachingProgress.getOrPut(itemId) {
                     MutableStateFlow(progress)
                 }
@@ -50,8 +50,8 @@ class ContentCachingModelView @Inject constructor(
             currentPosition = currentPosition,
         )
 
-        val intent = Intent(context, ContentCachingForegroundService::class.java).apply {
-            putExtra(ContentCachingForegroundService.CACHING_TASK_EXTRA, task as Serializable)
+        val intent = Intent(context, ContentCachingService::class.java).apply {
+            putExtra(ContentCachingService.CACHING_TASK_EXTRA, task as Serializable)
         }
 
         context.startForegroundService(intent)
@@ -63,7 +63,7 @@ class ContentCachingModelView @Inject constructor(
     fun dropCache(bookId: String) {
         viewModelScope
             .launch {
-                contentCachingService.dropCache(bookId)
+                contentCachingManager.dropCache(bookId)
                 _bookCachingProgress.remove(bookId)
             }
     }
@@ -78,5 +78,5 @@ class ContentCachingModelView @Inject constructor(
     fun localCacheUsing() = preferences.isForceCache()
 
     fun provideCacheState(bookId: String): LiveData<Boolean> =
-        contentCachingService.hasMetadataCached(bookId)
+        contentCachingManager.hasMetadataCached(bookId)
 }

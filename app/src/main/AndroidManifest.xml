@@ -46,7 +46,7 @@
         </service>
 
         <service
-            android:name=".content.cache.ContentCachingForegroundService"
+            android:name=".content.cache.ContentCachingService"
             android:exported="false"
             android:foregroundServiceType="dataSync"
             android:enabled="true"

@@ -11,23 +11,22 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.content.NewContentCachingService
 import org.grakovne.lissen.domain.ContentCachingTask
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.viewmodel.CacheProgress
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ContentCachingForegroundService : LifecycleService() {
+class ContentCachingService : LifecycleService() {
 
     @Inject
-    lateinit var contentCachingService: NewContentCachingService
+    lateinit var contentCachingManager: ContentCachingManager
 
     @Inject
     lateinit var mediaProvider: LissenMediaProvider
 
     @Inject
-    lateinit var cacheProgressBus: CacheProgressBus
+    lateinit var cacheProgressBus: ContentCachingProgress
 
     private val executionStatuses = mutableMapOf<DetailedItem, CacheProgress>()
 
@@ -61,7 +60,7 @@ class ContentCachingForegroundService : LifecycleService() {
                 item = item,
                 options = task.options,
                 position = task.currentPosition,
-                contentCachingService = contentCachingService,
+                contentCachingManager = contentCachingManager,
             )
 
             executor
@@ -127,7 +126,7 @@ class ContentCachingForegroundService : LifecycleService() {
     companion object {
         val CACHING_TASK_EXTRA = "CACHING_TASK_EXTRA"
 
-        private const val TAG = "ContentCachingForegroundService"
+        private const val TAG = "ContentCachingService"
         private const val NOTIFICATION_ID = 2042025
     }
 }

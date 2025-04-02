@@ -1,4 +1,4 @@
-package org.grakovne.lissen.content
+package org.grakovne.lissen.content.cache
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -12,11 +12,8 @@ import okhttp3.logging.HttpLoggingInterceptor
 import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.common.withTrustedCertificates
-import org.grakovne.lissen.content.cache.CacheBookStorageProperties
 import org.grakovne.lissen.content.cache.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.api.CachedLibraryRepository
-import org.grakovne.lissen.content.cache.calculateRequestedChapters
-import org.grakovne.lissen.content.cache.findRelatedFiles
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DownloadOption
@@ -27,7 +24,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class NewContentCachingService @Inject constructor(
+class ContentCachingManager @Inject constructor(
     private val bookRepository: CachedBookRepository,
     private val libraryRepository: CachedLibraryRepository,
     private val properties: CacheBookStorageProperties,

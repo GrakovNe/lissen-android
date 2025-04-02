@@ -7,7 +7,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class CacheProgressBus @Inject constructor() {
+class ContentCachingProgress @Inject constructor() {
     private val _progressFlow = MutableSharedFlow<Pair<String, CacheProgress>>(replay = 1)
     val progressFlow = _progressFlow.asSharedFlow()
 
