@@ -34,8 +34,6 @@ class ContentCachingForegroundService : LifecycleService() {
         flags: Int,
         startId: Int
     ): Int {
-        super.onStartCommand(intent, flags, startId)
-
         startForeground(
             NOTIF_ID,
             updateNotification()
@@ -78,7 +76,7 @@ class ContentCachingForegroundService : LifecycleService() {
                 }
         }
 
-        return START_STICKY
+        return super.onStartCommand(intent, flags, startId)
     }
 
 
