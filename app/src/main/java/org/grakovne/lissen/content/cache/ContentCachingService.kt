@@ -69,7 +69,7 @@ class ContentCachingService : LifecycleService() {
                     executionStatuses[item] = progress
                     cacheProgressBus.emit(item.id, progress)
 
-                    Log.d(TAG, "Caching progress updated: ${executionStatuses.keys.map { it.id }}")
+                    Log.d(TAG, "Caching progress updated: ${executionStatuses.entries.map { (item, status) -> "${item.id}: $status" }}")
 
                     when (hasFinished()) {
                         true -> finish()

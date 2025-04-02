@@ -1,9 +1,7 @@
 package org.grakovne.lissen.content.cache
 
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -83,40 +81,35 @@ class ContentCachingManager @Inject constructor(
         bookId: String,
         files: List<BookFile>,
         channel: MediaChannel,
-    ): CacheProgress = coroutineScope {
+    ): CacheProgress = withContext(Dispatchers.IO) {
         val headers = requestHeadersProvider.fetchRequestHeaders()
         val client = createOkHttpClient()
 
-        val jobs = files.map { file ->
-            async(Dispatchers.IO) {
-                val uri = channel.provideFileUri(bookId, file.id)
-                val requestBuilder = Request.Builder().url(uri.toString())
-                headers.forEach { requestBuilder.addHeader(it.name, it.value) }
+        files.map { file ->
+            val uri = channel.provideFileUri(bookId, file.id)
+            val requestBuilder = Request.Builder().url(uri.toString())
+            headers.forEach { requestBuilder.addHeader(it.name, it.value) }
 
-                val request = requestBuilder.build()
-                val response = client.newCall(request).execute()
+            val request = requestBuilder.build()
+            val response = client.newCall(request).execute()
 
-                if (!response.isSuccessful) return@async false
+            if (!response.isSuccessful) {
+                Log.e(TAG, "Unable to cache media content: $response")
+                return@withContext CacheProgress.Error
+            }
 
-                val body = response.body ?: return@async false
-                val dest = properties.provideMediaCachePatch(bookId, file.id)
-                dest.parentFile?.mkdirs()
+            val body = response.body ?: return@withContext CacheProgress.Error
+            val dest = properties.provideMediaCachePatch(bookId, file.id)
+            dest.parentFile?.mkdirs()
 
-                dest
-                    .outputStream().use { output ->
-                        body.byteStream().use { input ->
-                            input.copyTo(output)
-                        }
-                    }
-
-                true
+            dest.outputStream().use { output ->
+                body.byteStream().use { input ->
+                    input.copyTo(output)
+                }
             }
         }
 
-        when (jobs.awaitAll().all { it }) {
-            true -> CacheProgress.Completed
-            false -> CacheProgress.Error
-        }
+        CacheProgress.Completed
     }
 
     private suspend fun cacheBookCover(book: DetailedItem, channel: MediaChannel): CacheProgress {
@@ -182,4 +175,8 @@ class ContentCachingManager @Inject constructor(
             },
         )
         .build()
+
+    companion object {
+        private const val TAG = "ContentCachingManager"
+    }
 }
