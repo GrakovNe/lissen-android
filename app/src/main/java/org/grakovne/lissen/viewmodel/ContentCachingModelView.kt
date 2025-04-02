@@ -33,6 +33,9 @@ class ContentCachingModelView @Inject constructor(
         currentPosition: Double,
         option: DownloadOption,
     ) {
+
+
+
         val task = ContentCachingTask(
             itemId = mediaItemId,
             options = option,

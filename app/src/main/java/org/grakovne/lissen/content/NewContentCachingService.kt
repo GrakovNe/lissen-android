@@ -39,33 +39,22 @@ class NewContentCachingService @Inject constructor(
 ) {
 
     fun cacheMediaItem(
-        mediaItemId: String,
+        mediaItem: DetailedItem,
         option: DownloadOption,
         channel: MediaChannel,
         currentTotalPosition: Double,
     ) = flow {
         emit(CacheProgress.Caching)
 
-        val book = channel
-            .fetchBook(mediaItemId)
-            .fold(
-                onSuccess = { it },
-                onFailure = { null },
-            )
-            ?: run {
-                emit(CacheProgress.Error)
-                return@flow
-            }
-
         val requestedChapters = calculateRequestedChapters(
-            book = book,
+            book = mediaItem,
             option = option,
             currentTotalPosition = currentTotalPosition,
         )
 
-        val requestedFiles = findRequestedFiles(book, requestedChapters)
-        val mediaCachingResult = cacheBookMedia(mediaItemId, requestedFiles, channel)
-        val coverCachingResult = cacheBookCover(book, channel)
+        val requestedFiles = findRequestedFiles(mediaItem, requestedChapters)
+        val mediaCachingResult = cacheBookMedia(mediaItem.id, requestedFiles, channel)
+        val coverCachingResult = cacheBookCover(mediaItem, channel)
         val librariesCachingResult = cacheLibraries(channel)
 
         when {
@@ -75,7 +64,7 @@ class NewContentCachingService @Inject constructor(
                 librariesCachingResult,
             )
                 .all { it == CacheProgress.Completed } -> {
-                cacheBookInfo(book, requestedChapters)
+                cacheBookInfo(mediaItem, requestedChapters)
                 emit(CacheProgress.Completed)
             }
 
