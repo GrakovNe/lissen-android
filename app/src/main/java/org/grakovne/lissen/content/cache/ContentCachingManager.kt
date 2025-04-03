@@ -60,7 +60,7 @@ class ContentCachingManager @Inject constructor(
                 coverCachingResult,
                 librariesCachingResult,
             )
-                .all { it == CacheStatus.Completed } -> {
+                .all { it.status == CacheStatus.Completed } -> {
                 cacheBookInfo(mediaItem, requestedChapters)
                 emit(CacheState(CacheStatus.Completed))
             }
@@ -121,7 +121,7 @@ class ContentCachingManager @Inject constructor(
         CacheState(CacheStatus.Completed)
     }
 
-    private suspend fun cacheBookCover(book: DetailedItem, channel: MediaChannel): CacheStatus {
+    private suspend fun cacheBookCover(book: DetailedItem, channel: MediaChannel): CacheState {
         val file = properties.provideBookCoverPath(book.id)
 
         return withContext(Dispatchers.IO) {
@@ -142,26 +142,26 @@ class ContentCachingManager @Inject constructor(
                     },
                 )
 
-            CacheStatus.Completed
+            CacheState(CacheStatus.Completed)
         }
     }
 
     private suspend fun cacheBookInfo(
         book: DetailedItem,
         fetchedChapters: List<PlayingChapter>,
-    ): CacheStatus = bookRepository
+    ): CacheState = bookRepository
         .cacheBook(book, fetchedChapters)
-        .let { CacheStatus.Completed }
+        .let { CacheState(CacheStatus.Completed) }
 
-    private suspend fun cacheLibraries(channel: MediaChannel): CacheStatus = channel
+    private suspend fun cacheLibraries(channel: MediaChannel): CacheState = channel
         .fetchLibraries()
         .foldAsync(
             onSuccess = {
                 libraryRepository.cacheLibraries(it)
-                CacheStatus.Completed
+                CacheState(CacheStatus.Completed)
             },
             onFailure = {
-                CacheStatus.Error
+                CacheState(CacheStatus.Error)
             },
         )
 
