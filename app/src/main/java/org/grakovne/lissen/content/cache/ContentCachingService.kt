@@ -67,7 +67,7 @@ class ContentCachingService : LifecycleService() {
                 .run(mediaProvider.providePreferredChannel())
                 .collect { progress ->
                     val executionStatuses = cacheProgressBus.statusFlow.replayCache.toMap()
-                    cacheProgressBus.emit(item, progress.status)
+                    cacheProgressBus.emit(item, progress)
 
                     Log.d(TAG, "Caching progress updated: $progress")
 
@@ -87,10 +87,10 @@ class ContentCachingService : LifecycleService() {
     }
 
     private fun inProgress(): Boolean =
-        cacheProgressBus.statusFlow.replayCache.toMap().values.any { it == CacheStatus.Caching }
+        cacheProgressBus.statusFlow.replayCache.toMap().values.any { it.status == CacheStatus.Caching }
 
     private fun hasErrors(): Boolean =
-        cacheProgressBus.statusFlow.replayCache.toMap().values.any { it == CacheStatus.Error }
+        cacheProgressBus.statusFlow.replayCache.toMap().values.any { it.status == CacheStatus.Error }
 
     private fun finish() {
         when (hasErrors()) {
