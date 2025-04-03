@@ -10,7 +10,7 @@ import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.cache.ContentCachingNotificationService.Companion.NOTIFICATION_ID
 import org.grakovne.lissen.domain.ContentCachingTask
 import org.grakovne.lissen.domain.DetailedItem
-import org.grakovne.lissen.viewmodel.CacheProgress
+import org.grakovne.lissen.viewmodel.CacheStatus
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -28,7 +28,7 @@ class ContentCachingService : LifecycleService() {
     @Inject
     lateinit var notificationService: ContentCachingNotificationService
 
-    private val executionStatuses = mutableMapOf<DetailedItem, CacheProgress>()
+    private val executionStatuses = mutableMapOf<DetailedItem, CacheStatus>()
 
     @Suppress("DEPRECATION")
     override fun onStartCommand(
@@ -90,10 +90,10 @@ class ContentCachingService : LifecycleService() {
     }
 
     private fun inProgress(): Boolean =
-        executionStatuses.values.any { it == CacheProgress.Caching }
+        executionStatuses.values.any { it == CacheStatus.Caching }
 
     private fun hasErrors(): Boolean =
-        executionStatuses.values.any { it == CacheProgress.Error }
+        executionStatuses.values.any { it == CacheStatus.Error }
 
     private fun finish() {
         when (hasErrors()) {

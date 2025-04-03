@@ -7,7 +7,7 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.DetailedItem
-import org.grakovne.lissen.viewmodel.CacheProgress
+import org.grakovne.lissen.viewmodel.CacheStatus
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,7 +22,7 @@ class ContentCachingNotificationService @Inject constructor(
         .cancel(NOTIFICATION_ID)
 
     fun updateCachingNotification(
-        items: List<Pair<DetailedItem, CacheProgress>>,
+        items: List<Pair<DetailedItem, CacheStatus>>,
     ): Notification = Notification
         .Builder(context, createNotificationChannel())
         .setContentText(items.provideCachingTitles())
@@ -57,8 +57,8 @@ class ContentCachingNotificationService @Inject constructor(
 
     companion object {
 
-        private fun List<Pair<DetailedItem, CacheProgress>>.provideCachingTitles() = this
-            .filter { (_, status) -> CacheProgress.Caching == status }
+        private fun List<Pair<DetailedItem, CacheStatus>>.provideCachingTitles() = this
+            .filter { (_, status) -> CacheStatus.Caching == status }
             .joinToString(", ") { (key, _) -> key.title }
 
         const val NOTIFICATION_ID = 2042025

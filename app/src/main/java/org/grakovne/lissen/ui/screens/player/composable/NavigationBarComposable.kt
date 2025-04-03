@@ -37,7 +37,7 @@ import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.ui.icons.TimerPlay
 import org.grakovne.lissen.ui.navigation.AppNavigationService
-import org.grakovne.lissen.viewmodel.CacheProgress
+import org.grakovne.lissen.viewmodel.CacheStatus
 import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
@@ -101,7 +101,7 @@ fun NavigationBarComposable(
                 icon = {
                     Icon(
                         imageVector = provideCachingStateIcon(
-                            cacheProgress = cacheProgress,
+                            cacheStatus = cacheProgress,
                             hasCached = isMetadataCached,
                         ),
                         contentDescription = stringResource(R.string.player_screen_downloads_navigation),
@@ -227,9 +227,9 @@ fun NavigationBarComposable(
 
 private fun provideCachingStateIcon(
     hasCached: Boolean,
-    cacheProgress: CacheProgress,
+    cacheStatus: CacheStatus,
 ): ImageVector {
-    if (cacheProgress is CacheProgress.Caching) {
+    if (cacheStatus is CacheStatus.Caching) {
         return cachingIcon
     }
 

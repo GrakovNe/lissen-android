@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DownloadOption
-import org.grakovne.lissen.viewmodel.CacheProgress
+import org.grakovne.lissen.viewmodel.CacheStatus
 
 class ContentCachingExecutor(
     private val item: DetailedItem,
@@ -15,7 +15,7 @@ class ContentCachingExecutor(
 
     fun run(
         channel: MediaChannel,
-    ): Flow<CacheProgress> {
+    ): Flow<CacheStatus> {
         return contentCachingManager
             .cacheMediaItem(
                 mediaItem = item,
