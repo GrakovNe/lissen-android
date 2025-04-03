@@ -2,7 +2,6 @@ package org.grakovne.lissen.content.cache
 
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import okhttp3.Request
@@ -19,6 +18,7 @@ import org.grakovne.lissen.viewmodel.CacheState
 import org.grakovne.lissen.viewmodel.CacheStatus
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.coroutineContext
 
 @Singleton
 class ContentCachingManager @Inject constructor(
@@ -34,6 +34,7 @@ class ContentCachingManager @Inject constructor(
         channel: MediaChannel,
         currentTotalPosition: Double,
     ) = flow {
+        val context = coroutineContext
         emit(CacheState(CacheStatus.Caching))
 
         val requestedChapters = calculateRequestedChapters(
@@ -43,7 +44,13 @@ class ContentCachingManager @Inject constructor(
         )
 
         val requestedFiles = findRequestedFiles(mediaItem, requestedChapters)
-        val mediaCachingResult = cacheBookMedia(mediaItem.id, requestedFiles, channel, this)
+
+        val mediaCachingResult = cacheBookMedia(
+            mediaItem.id,
+            requestedFiles,
+            channel
+        ) { withContext(context) { emit(CacheState(CacheStatus.Caching, it)) } }
+
         val coverCachingResult = cacheBookCover(mediaItem, channel)
         val librariesCachingResult = cacheLibraries(channel)
 
@@ -80,7 +87,7 @@ class ContentCachingManager @Inject constructor(
         bookId: String,
         files: List<BookFile>,
         channel: MediaChannel,
-        flow: FlowCollector<CacheState>,
+        onProgress: suspend (Double) -> Unit
     ): CacheState = withContext(Dispatchers.IO) {
         val headers = requestHeadersProvider.fetchRequestHeaders()
         val client = createOkHttpClient()
@@ -108,8 +115,7 @@ class ContentCachingManager @Inject constructor(
                 }
             }
 
-            val progress = files.size.takeIf { it != 0 }?.let { index / it.toDouble() } ?: 0.0
-            withContext(Dispatchers.Main.immediate) { flow.emit(CacheState(CacheStatus.Caching, progress)) }
+            onProgress(files.size.takeIf { it != 0 }?.let { index / it.toDouble() } ?: 0.0)
         }
 
         CacheState(CacheStatus.Completed)
