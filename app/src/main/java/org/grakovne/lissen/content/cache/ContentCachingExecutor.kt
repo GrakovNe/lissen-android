@@ -5,7 +5,6 @@ import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.viewmodel.CacheState
-import org.grakovne.lissen.viewmodel.CacheStatus
 
 class ContentCachingExecutor(
     private val item: DetailedItem,

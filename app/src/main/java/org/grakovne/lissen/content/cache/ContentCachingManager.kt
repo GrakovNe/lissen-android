@@ -48,7 +48,7 @@ class ContentCachingManager @Inject constructor(
         val mediaCachingResult = cacheBookMedia(
             mediaItem.id,
             requestedFiles,
-            channel
+            channel,
         ) { withContext(context) { emit(CacheState(CacheStatus.Caching, it)) } }
 
         val coverCachingResult = cacheBookCover(mediaItem, channel)
@@ -87,7 +87,7 @@ class ContentCachingManager @Inject constructor(
         bookId: String,
         files: List<BookFile>,
         channel: MediaChannel,
-        onProgress: suspend (Double) -> Unit
+        onProgress: suspend (Double) -> Unit,
     ): CacheState = withContext(Dispatchers.IO) {
         val headers = requestHeadersProvider.fetchRequestHeaders()
         val client = createOkHttpClient()

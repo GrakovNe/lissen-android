@@ -38,18 +38,17 @@ class ContentCachingNotificationService @Inject constructor(
             }
         }
 
-
         return Notification
             .Builder(context, createNotificationChannel())
             .setContentText(items.provideCachingTitles())
-            .setSubText(context.getString(R.string.notification_content_caching_title))
+            .setContentTitle(context.getString(R.string.notification_content_caching_title))
             .setSmallIcon(R.drawable.ic_downloading)
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setProgress(
                 cachingItems.size * 100,
                 (itemProgress * 100).roundToInt(),
-                cachingItems.isEmpty()
+                cachingItems.isEmpty(),
             )
             .build()
             .also { service.notify(NOTIFICATION_ID, it) }
