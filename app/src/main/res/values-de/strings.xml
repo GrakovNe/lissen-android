@@ -93,4 +93,6 @@
     <string name="chapters_list_empty">Dieses Buch hat keine Kapitel</string>
     <string name="episodes_list_empty">Dieser Podcast hat keine Episoden</string>
     <string name="items_list_empty">Keine Elemente verfügbar</string>
+    <string name="notification_content_caching_error_title">Zwischenspeicherung fehlgeschlagen</string>
+    <string name="notification_content_caching_error_description">Einige Dateien wurden nicht gespeichert</string>
 </resources>

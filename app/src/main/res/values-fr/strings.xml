@@ -90,4 +90,6 @@
     <string name="color_scheme_black">Noire</string>
     <string name="settings_screen_donate_title">Faire un don</string>
     <string name="settings_screen_donate_subtitle">Merci pour votre soutien</string>
+    <string name="notification_content_caching_error_title">La mise en cache a échoué</string>
+    <string name="notification_content_caching_error_description">Quelques fichiers n\'ont pas été enregistrés</string>
 </resources>

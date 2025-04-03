@@ -93,4 +93,6 @@
     <string name="chapters_list_empty">Denna bok har inga kapitel</string>
     <string name="episodes_list_empty">Ingen podcast har inga avsnitt</string>
     <string name="items_list_empty">Inga tillgängliga objekt</string>
+    <string name="notification_content_caching_error_title">Cachning misslyckades</string>
+    <string name="notification_content_caching_error_description">Några få filer sparades inte</string>
 </resources>

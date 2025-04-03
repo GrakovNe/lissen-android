@@ -93,4 +93,6 @@
     <string name="chapters_list_empty">Knjiga je brez poglavij</string>
     <string name="episodes_list_empty">Podcast nima epizod</string>
     <string name="items_list_empty">Element nima epizod</string>
+    <string name="notification_content_caching_error_title">Predpomnjenje ni uspelo</string>
+    <string name="notification_content_caching_error_description">Nekaj ​​datotek ni bilo shranjenih</string>
 </resources>

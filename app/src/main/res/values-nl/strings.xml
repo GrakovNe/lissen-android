@@ -93,4 +93,6 @@
     <string name="chapters_list_empty">Het boek heeft geen hoofdstukken</string>
     <string name="episodes_list_empty">Geen enkele podcast heeft geen afleveringen</string>
     <string name="items_list_empty">Geen beschikbare items</string>
+    <string name="notification_content_caching_error_title">Caching mislykkedes</string>
+    <string name="notification_content_caching_error_description">Nogle få filer blev ikke gemt</string>
 </resources>

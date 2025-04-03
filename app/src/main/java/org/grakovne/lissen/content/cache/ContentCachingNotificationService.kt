@@ -36,8 +36,8 @@ class ContentCachingNotificationService @Inject constructor(
 
     fun updateErrorNotification(): Notification = Notification
         .Builder(context, createNotificationChannel())
-        .setContentTitle("Download failed")
-        .setContentText("A few files weren’t cached")
+        .setContentTitle(context.getString(R.string.notification_content_caching_error_title))
+        .setContentText(context.getString(R.string.notification_content_caching_error_description))
         .setSmallIcon(R.drawable.ic_downloading)
         .build()
         .also { service.notify(NOTIFICATION_ID, it) }
