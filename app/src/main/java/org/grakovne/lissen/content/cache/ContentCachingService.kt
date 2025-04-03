@@ -67,9 +67,9 @@ class ContentCachingService : LifecycleService() {
                 .run(mediaProvider.providePreferredChannel())
                 .collect { progress ->
                     val executionStatuses = cacheProgressBus.statusFlow.replayCache.toMap()
-                    cacheProgressBus.emit(item, progress)
+                    cacheProgressBus.emit(item, progress.status)
 
-                    Log.d(TAG, "Caching progress updated: ${executionStatuses.entries.map { (item, status) -> "$item: $status" }}")
+                    Log.d(TAG, "Caching progress updated: $progress")
 
                     when (inProgress()) {
                         true ->
@@ -110,6 +110,7 @@ class ContentCachingService : LifecycleService() {
     }
 
     companion object {
+
         const val CACHING_TASK_EXTRA = "CACHING_TASK_EXTRA"
         private const val TAG = "ContentCachingService"
     }

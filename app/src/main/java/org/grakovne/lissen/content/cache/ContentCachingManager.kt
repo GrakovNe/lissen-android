@@ -2,6 +2,7 @@ package org.grakovne.lissen.content.cache
 
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import okhttp3.Request
@@ -14,6 +15,7 @@ import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.domain.PlayingChapter
+import org.grakovne.lissen.viewmodel.CacheState
 import org.grakovne.lissen.viewmodel.CacheStatus
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -32,7 +34,7 @@ class ContentCachingManager @Inject constructor(
         channel: MediaChannel,
         currentTotalPosition: Double,
     ) = flow {
-        emit(CacheStatus.Caching)
+        emit(CacheState(CacheStatus.Caching))
 
         val requestedChapters = calculateRequestedChapters(
             book = mediaItem,
@@ -41,7 +43,7 @@ class ContentCachingManager @Inject constructor(
         )
 
         val requestedFiles = findRequestedFiles(mediaItem, requestedChapters)
-        val mediaCachingResult = cacheBookMedia(mediaItem.id, requestedFiles, channel)
+        val mediaCachingResult = cacheBookMedia(mediaItem.id, requestedFiles, channel, this)
         val coverCachingResult = cacheBookCover(mediaItem, channel)
         val librariesCachingResult = cacheLibraries(channel)
 
@@ -53,10 +55,10 @@ class ContentCachingManager @Inject constructor(
             )
                 .all { it == CacheStatus.Completed } -> {
                 cacheBookInfo(mediaItem, requestedChapters)
-                emit(CacheStatus.Completed)
+                emit(CacheState(CacheStatus.Completed))
             }
 
-            else -> emit(CacheStatus.Error)
+            else -> emit(CacheState(CacheStatus.Error))
         }
     }
 
@@ -78,11 +80,12 @@ class ContentCachingManager @Inject constructor(
         bookId: String,
         files: List<BookFile>,
         channel: MediaChannel,
-    ): CacheStatus = withContext(Dispatchers.IO) {
+        flow: FlowCollector<CacheState>,
+    ): CacheState = withContext(Dispatchers.IO) {
         val headers = requestHeadersProvider.fetchRequestHeaders()
         val client = createOkHttpClient()
 
-        files.map { file ->
+        files.mapIndexed { index, file ->
             val uri = channel.provideFileUri(bookId, file.id)
             val requestBuilder = Request.Builder().url(uri.toString())
             headers.forEach { requestBuilder.addHeader(it.name, it.value) }
@@ -92,10 +95,10 @@ class ContentCachingManager @Inject constructor(
 
             if (!response.isSuccessful) {
                 Log.e(TAG, "Unable to cache media content: $response")
-                return@withContext CacheStatus.Error
+                return@withContext CacheState(CacheStatus.Error)
             }
 
-            val body = response.body ?: return@withContext CacheStatus.Error
+            val body = response.body ?: return@withContext CacheState(CacheStatus.Error)
             val dest = properties.provideMediaCachePatch(bookId, file.id)
             dest.parentFile?.mkdirs()
 
@@ -104,9 +107,12 @@ class ContentCachingManager @Inject constructor(
                     input.copyTo(output)
                 }
             }
+
+            val progress = files.size.takeIf { it != 0 }?.let { index / it.toDouble() } ?: 0.0
+            withContext(Dispatchers.Main.immediate) { flow.emit(CacheState(CacheStatus.Caching, progress)) }
         }
 
-        CacheStatus.Completed
+        CacheState(CacheStatus.Completed)
     }
 
     private suspend fun cacheBookCover(book: DetailedItem, channel: MediaChannel): CacheStatus {
