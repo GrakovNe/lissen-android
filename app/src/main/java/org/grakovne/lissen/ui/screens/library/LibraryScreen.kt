@@ -181,8 +181,9 @@ fun LibraryScreen(
             libraryViewModel.refreshRecentListening()
             libraryViewModel.refreshLibrary()
             currentLibraryId = settingsViewModel.fetchPreferredLibraryId()
-            settingsViewModel.fetchLibraries()
         }
+
+        settingsViewModel.fetchLibraries()
     }
 
     LaunchedEffect(searchRequested) {
