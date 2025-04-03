@@ -1,15 +1,12 @@
 package org.grakovne.lissen.content.cache
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.Intent
 import android.util.Log
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import org.grakovne.lissen.R
+import org.grakovne.lissen.content.cache.ContentCachingNotificationService.Companion.NOTIFICATION_ID
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.ContentCachingTask
 import org.grakovne.lissen.domain.DetailedItem
@@ -28,6 +25,9 @@ class ContentCachingService : LifecycleService() {
     @Inject
     lateinit var cacheProgressBus: ContentCachingProgress
 
+    @Inject
+    lateinit var notificationService: ContentCachingNotificationService
+
     private val executionStatuses = mutableMapOf<DetailedItem, CacheProgress>()
 
     @Suppress("DEPRECATION")
@@ -38,7 +38,7 @@ class ContentCachingService : LifecycleService() {
     ): Int {
         startForeground(
             NOTIFICATION_ID,
-            updateNotification(),
+            notificationService.updateCachingNotification(emptyList()),
         )
 
         val task = intent
@@ -52,7 +52,10 @@ class ContentCachingService : LifecycleService() {
                 .fetchBook(task.itemId)
                 .fold(
                     onSuccess = { it },
-                    onFailure = { null },
+                    onFailure = {
+                        notificationService.updateErrorNotification()
+                        null
+                    },
                 )
                 ?: return@launch
 
@@ -71,9 +74,14 @@ class ContentCachingService : LifecycleService() {
 
                     Log.d(TAG, "Caching progress updated: ${executionStatuses.entries.map { (item, status) -> "${item.id}: $status" }}")
 
-                    when (hasFinished()) {
-                        true -> finish()
-                        false -> updateNotification()
+                    when (inProgress()) {
+                        true ->
+                            executionStatuses
+                                .entries
+                                .map { (item, status) -> item to status }
+                                .let { notificationService.updateCachingNotification(it) }
+
+                        false -> finish()
                     }
                 }
         }
@@ -81,52 +89,31 @@ class ContentCachingService : LifecycleService() {
         return super.onStartCommand(intent, flags, startId)
     }
 
-    private fun updateNotification(): Notification {
-        val service = getSystemService(NotificationManager::class.java)
+    private fun inProgress(): Boolean =
+        executionStatuses.values.any { it == CacheProgress.Caching }
 
-        val channelId = "caching_channel"
-        val channel = NotificationChannel(
-            channelId,
-            getString(R.string.notification_content_caching_channel),
-            NotificationManager.IMPORTANCE_LOW,
-        )
-
-        val notification = Notification
-            .Builder(this, channelId)
-            .setContentText(provideCachingTitles())
-            .setSubText(getString(R.string.notification_content_caching_title))
-            .setSmallIcon(R.drawable.ic_downloading)
-            .setOngoing(true)
-            .setOnlyAlertOnce(true)
-            .setProgress(0, 0, true)
-            .build()
-
-        service.createNotificationChannel(channel)
-        service.notify(NOTIFICATION_ID, notification)
-
-        return notification
-    }
-
-    private fun provideCachingTitles() = executionStatuses
-        .entries
-        .filter { (_, status) -> CacheProgress.Caching == status }
-        .joinToString(", ") { (key, _) -> key.title }
-
-    private fun hasFinished(): Boolean =
-        executionStatuses.values.any { it == CacheProgress.Caching }.not()
+    private fun hasErrors(): Boolean =
+        executionStatuses.values.any { it == CacheProgress.Error }
 
     private fun finish() {
-        stopForeground(STOP_FOREGROUND_REMOVE)
-        stopSelf()
+        when (hasErrors()) {
+            true -> {
+                notificationService.updateErrorNotification()
+                stopForeground(STOP_FOREGROUND_DETACH)
+            }
 
-        getSystemService(NotificationManager::class.java).cancel(NOTIFICATION_ID)
-        Log.d(TAG, "All tasks completed, stopping foreground service")
+            false -> {
+                stopForeground(STOP_FOREGROUND_REMOVE)
+                notificationService.cancel()
+            }
+        }
+
+        stopSelf()
+        Log.d(TAG, "All tasks finished, stopping foreground service")
     }
 
     companion object {
         val CACHING_TASK_EXTRA = "CACHING_TASK_EXTRA"
-
         private const val TAG = "ContentCachingService"
-        private const val NOTIFICATION_ID = 2042025
     }
 }
