@@ -11,11 +11,13 @@ import org.grakovne.lissen.viewmodel.CacheState
 import org.grakovne.lissen.viewmodel.CacheStatus
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.roundToInt
 
 @Singleton
 class ContentCachingNotificationService @Inject constructor(
     @ApplicationContext private val context: Context,
 ) {
+
     private val service = context.getSystemService(NotificationManager::class.java)
 
     fun cancel() = context
@@ -24,16 +26,34 @@ class ContentCachingNotificationService @Inject constructor(
 
     fun updateCachingNotification(
         items: List<Pair<DetailedItem, CacheState>>,
-    ): Notification = Notification
-        .Builder(context, createNotificationChannel())
-        .setContentText(items.provideCachingTitles())
-        .setSubText(context.getString(R.string.notification_content_caching_title))
-        .setSmallIcon(R.drawable.ic_downloading)
-        .setOngoing(true)
-        .setOnlyAlertOnce(true)
-        .setProgress(0, 0, true)
-        .build()
-        .also { service.notify(NOTIFICATION_ID, it) }
+    ): Notification {
+        val cachingItems = items
+            .filter { (_, state) -> listOf(CacheStatus.Caching, CacheStatus.Completed).contains(state.status) }
+
+        val itemProgress = cachingItems.sumOf { (_, state) ->
+            when (state.status) {
+                CacheStatus.Caching -> state.progress
+                CacheStatus.Completed -> 1.0
+                else -> 0.0
+            }
+        }
+
+
+        return Notification
+            .Builder(context, createNotificationChannel())
+            .setContentText(items.provideCachingTitles())
+            .setSubText(context.getString(R.string.notification_content_caching_title))
+            .setSmallIcon(R.drawable.ic_downloading)
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .setProgress(
+                cachingItems.size * 100,
+                (itemProgress * 100).roundToInt(),
+                cachingItems.isEmpty()
+            )
+            .build()
+            .also { service.notify(NOTIFICATION_ID, it) }
+    }
 
     fun updateErrorNotification(): Notification = Notification
         .Builder(context, createNotificationChannel())
