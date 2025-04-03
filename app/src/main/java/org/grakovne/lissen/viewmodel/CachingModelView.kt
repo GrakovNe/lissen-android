@@ -30,8 +30,8 @@ class CachingModelView @Inject constructor(
 
     init {
         viewModelScope.launch {
-            contentCachingProgress.statusFlow.collect { (itemId, progress) ->
-                val flow = _bookCachingProgress.getOrPut(itemId) {
+            contentCachingProgress.statusFlow.collect { (item, progress) ->
+                val flow = _bookCachingProgress.getOrPut(item.id) {
                     MutableStateFlow(progress)
                 }
                 flow.value = progress

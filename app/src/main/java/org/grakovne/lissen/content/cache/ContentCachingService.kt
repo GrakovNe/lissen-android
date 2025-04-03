@@ -9,7 +9,6 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.cache.ContentCachingNotificationService.Companion.NOTIFICATION_ID
 import org.grakovne.lissen.domain.ContentCachingTask
-import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.viewmodel.CacheStatus
 import javax.inject.Inject
 
@@ -27,8 +26,6 @@ class ContentCachingService : LifecycleService() {
 
     @Inject
     lateinit var notificationService: ContentCachingNotificationService
-
-    private val executionStatuses = mutableMapOf<DetailedItem, CacheStatus>()
 
     @Suppress("DEPRECATION")
     override fun onStartCommand(
@@ -69,10 +66,10 @@ class ContentCachingService : LifecycleService() {
             executor
                 .run(mediaProvider.providePreferredChannel())
                 .collect { progress ->
-                    executionStatuses[item] = progress
-                    cacheProgressBus.emit(item.id, progress)
+                    val executionStatuses = cacheProgressBus.statusFlow.replayCache.toMap()
+                    cacheProgressBus.emit(item, progress)
 
-                    Log.d(TAG, "Caching progress updated: ${executionStatuses.entries.map { (item, status) -> "${item.id}: $status" }}")
+                    Log.d(TAG, "Caching progress updated: ${executionStatuses.entries.map { (item, status) -> "$item: $status" }}")
 
                     when (inProgress()) {
                         true ->
@@ -90,10 +87,10 @@ class ContentCachingService : LifecycleService() {
     }
 
     private fun inProgress(): Boolean =
-        executionStatuses.values.any { it == CacheStatus.Caching }
+        cacheProgressBus.statusFlow.replayCache.toMap().values.any { it == CacheStatus.Caching }
 
     private fun hasErrors(): Boolean =
-        executionStatuses.values.any { it == CacheStatus.Error }
+        cacheProgressBus.statusFlow.replayCache.toMap().values.any { it == CacheStatus.Error }
 
     private fun finish() {
         when (hasErrors()) {
