@@ -25,18 +25,15 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import org.grakovne.lissen.LissenApplication
 import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
-import org.grakovne.lissen.common.withTrustedCertificates
+import org.grakovne.lissen.common.createOkHttpClient
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import java.io.File
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -291,31 +288,14 @@ class PlaybackService : MediaSessionService() {
         progress: MediaProgress?,
     ) = seek(chapters, progress?.currentTime)
 
-    private fun createOkHttpClient(): OkHttpClient {
-        return OkHttpClient
-            .Builder()
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(90, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
-            .withTrustedCertificates()
-            .addInterceptor(
-                HttpLoggingInterceptor().apply {
-                    level = HttpLoggingInterceptor.Level.NONE
-                },
-            )
-            .build()
-    }
-
     @OptIn(UnstableApi::class)
     private fun buildDataSourceFactory(): DefaultDataSource.Factory {
         val requestHeaders = requestHeadersProvider
             .fetchRequestHeaders()
             .associate { it.name to it.value }
 
-        val okHttpClient = createOkHttpClient()
-
         val okHttpDataSourceFactory = OkHttpDataSource
-            .Factory(okHttpClient)
+            .Factory(createOkHttpClient())
             .setDefaultRequestProperties(requestHeaders)
 
         return DefaultDataSource.Factory(

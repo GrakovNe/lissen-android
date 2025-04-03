@@ -4,12 +4,10 @@ import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.logging.HttpLoggingInterceptor
 import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
 import org.grakovne.lissen.channel.common.MediaChannel
-import org.grakovne.lissen.common.withTrustedCertificates
+import org.grakovne.lissen.common.createOkHttpClient
 import org.grakovne.lissen.content.cache.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.api.CachedLibraryRepository
 import org.grakovne.lissen.domain.BookFile
@@ -17,7 +15,6 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.viewmodel.CacheProgress
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -162,19 +159,6 @@ class ContentCachingManager @Inject constructor(
     ): List<BookFile> = requestedChapters
         .flatMap { findRelatedFiles(it, book.files) }
         .distinctBy { it.id }
-
-    private fun createOkHttpClient(): OkHttpClient = OkHttpClient
-        .Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(90, TimeUnit.SECONDS)
-        .writeTimeout(30, TimeUnit.SECONDS)
-        .withTrustedCertificates()
-        .addInterceptor(
-            HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.NONE
-            },
-        )
-        .build()
 
     companion object {
         private const val TAG = "ContentCachingManager"
