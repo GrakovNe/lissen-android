@@ -9,6 +9,8 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.cache.ContentCachingNotificationService.Companion.NOTIFICATION_ID
 import org.grakovne.lissen.domain.ContentCachingTask
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.viewmodel.CacheState
 import org.grakovne.lissen.viewmodel.CacheStatus
 import javax.inject.Inject
 
@@ -26,6 +28,8 @@ class ContentCachingService : LifecycleService() {
 
     @Inject
     lateinit var notificationService: ContentCachingNotificationService
+
+    private val executionStatuses = mutableMapOf<DetailedItem, CacheState>()
 
     @Suppress("DEPRECATION")
     override fun onStartCommand(
@@ -66,7 +70,7 @@ class ContentCachingService : LifecycleService() {
             executor
                 .run(mediaProvider.providePreferredChannel())
                 .collect { progress ->
-                    val executionStatuses = cacheProgressBus.statusFlow.replayCache.toMap()
+                    executionStatuses[item] = progress
                     cacheProgressBus.emit(item, progress)
 
                     Log.d(TAG, "Caching progress updated: $progress")
@@ -87,10 +91,10 @@ class ContentCachingService : LifecycleService() {
     }
 
     private fun inProgress(): Boolean =
-        cacheProgressBus.statusFlow.replayCache.toMap().values.any { it.status == CacheStatus.Caching }
+        executionStatuses.values.any { it.status == CacheStatus.Caching }
 
     private fun hasErrors(): Boolean =
-        cacheProgressBus.statusFlow.replayCache.toMap().values.any { it.status == CacheStatus.Error }
+        executionStatuses.values.any { it.status == CacheStatus.Error }
 
     private fun finish() {
         when (hasErrors()) {
