@@ -110,7 +110,7 @@ class ContentCachingService : LifecycleService() {
     }
 
     companion object {
-        val CACHING_TASK_EXTRA = "CACHING_TASK_EXTRA"
+        const val CACHING_TASK_EXTRA = "CACHING_TASK_EXTRA"
         private const val TAG = "ContentCachingService"
     }
 }
