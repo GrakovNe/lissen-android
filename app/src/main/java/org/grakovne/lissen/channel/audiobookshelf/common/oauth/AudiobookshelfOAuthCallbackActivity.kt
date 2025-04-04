@@ -9,6 +9,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudiobookshelfAuthService
 import org.grakovne.lissen.channel.common.OAuthContextCache
+import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.UserAccount
 import javax.inject.Inject
 
@@ -20,6 +21,9 @@ class AudiobookshelfOAuthCallbackActivity : ComponentActivity() {
 
     @Inject
     lateinit var authService: AudiobookshelfAuthService
+
+    @Inject
+    lateinit var mediaProvider: LissenMediaProvider
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,13 +48,11 @@ class AudiobookshelfOAuthCallbackActivity : ComponentActivity() {
         }
     }
 
-    private fun onLogged(userAccount: UserAccount) {
-        authService
-            .persistCredentials(
-                host = "https://audiobook.grakovne.org",
-                username = userAccount.username,
-                token = userAccount.token,
-            )
+    private suspend fun onLogged(userAccount: UserAccount) {
+        mediaProvider.onPostLogin(
+            host = "https://audiobook.grakovne.org",
+            account = userAccount
+        )
     }
 
     companion object {

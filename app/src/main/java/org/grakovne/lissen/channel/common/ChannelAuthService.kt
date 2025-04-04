@@ -21,7 +21,7 @@ abstract class ChannelAuthService(
     abstract suspend fun exchangeToken(
         host: String,
         code: String,
-        onSuccess: (UserAccount) -> Unit,
+        onSuccess: suspend (UserAccount) -> Unit,
         onFailure: (String) -> Unit,
     )
 

@@ -6,6 +6,9 @@ import android.util.Log
 import androidx.core.net.toUri
 import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Request
@@ -130,7 +133,7 @@ class AudiobookshelfAuthService @Inject constructor(
     override suspend fun exchangeToken(
         host: String,
         code: String,
-        onSuccess: (UserAccount) -> Unit,
+        onSuccess: suspend (UserAccount) -> Unit,
         onFailure: (String) -> Unit,
     ) {
         val pkce = contextCache.readPkce()
@@ -176,7 +179,8 @@ class AudiobookshelfAuthService @Inject constructor(
                         return
                     }
 
-                    onSuccess(user)
+                    CoroutineScope(Dispatchers.IO)
+                        .launch { onSuccess(user) }
                 }
             })
     }

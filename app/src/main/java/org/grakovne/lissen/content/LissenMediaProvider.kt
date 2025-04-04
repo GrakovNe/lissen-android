@@ -192,7 +192,7 @@ class LissenMediaProvider @Inject constructor(
         return provideAuthService().startOAuth(host)
     }
 
-    private suspend fun onPostLogin(
+    suspend fun onPostLogin(
         host: String,
         account: UserAccount,
     ) {
