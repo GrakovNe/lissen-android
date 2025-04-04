@@ -33,6 +33,7 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
     var cookie: String = ""
     var challenge: String = ""
     var veririer: String = ""
+    var state: String = ""
 
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("secure_prefs", Context.MODE_PRIVATE)

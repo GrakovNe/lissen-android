@@ -54,7 +54,7 @@ class AppActivity : ComponentActivity() {
 
         // Собираем URL:
         val callbackUrl = Uri.parse("$host/auth/openid/callback").buildUpon()
-            .appendQueryParameter("state", "42")
+            .appendQueryParameter("state", preferences.state)
             .appendQueryParameter("code", code)
             .appendQueryParameter("code_verifier", preferences.veririer)
             .build()
@@ -116,10 +116,11 @@ class AppActivity : ComponentActivity() {
             //   чтобы не открывать браузер снова
             if (currentUri == null || currentUri.scheme != "audiobookshelf") {
 
-                //val (verifier, challenge, state) = generatePkce()
+                val (verifier, challenge, state) = generatePkce()
 
-                preferences.veririer = "cac4a0beb116d848c3d1cc2bf2e448b6a0bfa4516811fb83b17c3808"
-                preferences.challenge = "n-0HXHmY0zd-YNKGUkBthlToqCXM96A6XL_oxCewaHw"
+                preferences.veririer = verifier
+                preferences.challenge = challenge
+                preferences.state = state
 
                 val url = Uri.parse("https://audiobook.grakovne.org/auth/openid/").buildUpon()
                     .appendQueryParameter("code_challenge", preferences.challenge)
@@ -127,7 +128,7 @@ class AppActivity : ComponentActivity() {
                     .appendQueryParameter("redirect_uri", "audiobookshelf://oauth")
                     .appendQueryParameter("client_id", "Audiobookshelf-App")
                     .appendQueryParameter("response_type", "code")
-                    .appendQueryParameter("state", "42")
+                    .appendQueryParameter("state", state)
                     .build()
 
                 val client = OkHttpClient.Builder()
