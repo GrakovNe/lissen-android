@@ -34,7 +34,7 @@ class AudiobookshelfOAuthCallbackActivity : ComponentActivity() {
             finish()
         }
 
-        if (intent?.action == Intent.ACTION_VIEW && data != null && data.scheme == "audiobookshelf") {
+        if (intent?.action == Intent.ACTION_VIEW && data != null && data.scheme == AuthScheme) {
             val code = data.getQueryParameter("code") ?: ""
             Log.d(TAG, "Got Exchange code from ABS")
 
@@ -65,7 +65,6 @@ class AudiobookshelfOAuthCallbackActivity : ComponentActivity() {
     }
 
     companion object {
-
         private const val TAG = "AudiobookshelfOAuthCallbackActivity"
     }
 }

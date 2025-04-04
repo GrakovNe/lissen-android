@@ -49,7 +49,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:scheme="audiobookshelf"
+                    android:scheme="lissen"
                     android:host="oauth" />
             </intent-filter>
         </activity>

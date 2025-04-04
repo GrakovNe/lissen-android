@@ -17,6 +17,9 @@ import org.grakovne.lissen.channel.audiobookshelf.common.client.AudiobookshelfAp
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LoginResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.CredentialsLoginRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.LoggedUserResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.oauth.AuthClient
+import org.grakovne.lissen.channel.audiobookshelf.common.oauth.AuthHost
+import org.grakovne.lissen.channel.audiobookshelf.common.oauth.AuthScheme
 import org.grakovne.lissen.channel.common.ApiClient
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
@@ -94,8 +97,8 @@ class AudiobookshelfAuthService @Inject constructor(
             .appendEncodedPath("auth/openid/")
             .appendQueryParameter("code_challenge", pkce.challenge)
             .appendQueryParameter("code_challenge_method", "S256")
-            .appendQueryParameter("redirect_uri", "audiobookshelf://oauth")
-            .appendQueryParameter("client_id", "Audiobookshelf-App")
+            .appendQueryParameter("redirect_uri", "$AuthScheme://$AuthHost")
+            .appendQueryParameter("client_id", AuthClient)
             .appendQueryParameter("response_type", "code")
             .appendQueryParameter("state", pkce.state)
             .build()
