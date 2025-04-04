@@ -13,4 +13,9 @@ interface ChannelAuthService {
     suspend fun startOAuth(
         host: String
     )
+
+    suspend fun exchangeToken(
+        host: String,
+        code: String
+    )
 }

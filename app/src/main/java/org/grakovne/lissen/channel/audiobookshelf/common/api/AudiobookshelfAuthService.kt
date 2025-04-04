@@ -2,6 +2,7 @@ package org.grakovne.lissen.channel.audiobookshelf.common.api
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.util.Log
 import androidx.core.net.toUri
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -13,8 +14,8 @@ import org.grakovne.lissen.channel.audiobookshelf.common.client.AudiobookshelfAp
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LoginResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.CredentialsLoginRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.LoggedUserResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.oauth.OAuthContextCache
-import org.grakovne.lissen.channel.audiobookshelf.common.oauth.randomPkce
+import org.grakovne.lissen.channel.common.OAuthContextCache
+import org.grakovne.lissen.channel.common.randomPkce
 import org.grakovne.lissen.channel.common.ApiClient
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
@@ -120,6 +121,46 @@ class AudiobookshelfAuthService @Inject constructor(
                     }
                 }
             })
+    }
+
+    override suspend fun exchangeToken(
+        host: String,
+        code: String
+    ) {
+        val pkce = contextCache.readPkce()
+        val cookie = contextCache.readCookies()
+
+        contextCache.clearPkce()
+        contextCache.clearCookies()
+
+        val callbackUrl = host
+            .toUri()
+            .buildUpon()
+            .appendEncodedPath("auth/openid/callback")
+            .appendQueryParameter("state", pkce.state)
+            .appendQueryParameter("code", code)
+            .appendQueryParameter("code_verifier", pkce.verifier)
+            .build()
+
+        val client = createOkHttpClient()
+
+        val request = Request
+            .Builder()
+            .url(callbackUrl.toString())
+            .addHeader("Cookie", cookie)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                Log.e("OAuth", "Callback request failed: $e")
+            }
+
+            override fun onResponse(call: Call, response: Response) {
+                response.use { r ->
+                    Log.d("OAuth", r.body.toString())
+                }
+            }
+        })
     }
 
     private companion object {

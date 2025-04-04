@@ -1,6 +1,5 @@
 package org.grakovne.lissen.ui.activity
 
-import android.app.ComponentCaller
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -8,7 +7,6 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.navigation.compose.rememberNavController
@@ -26,14 +24,9 @@ import okhttp3.Callback
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
-import org.grakovne.lissen.channel.audiobookshelf.common.oauth.OAuthContextCache
-import org.grakovne.lissen.channel.audiobookshelf.common.oauth.randomPkce
-import org.json.JSONException
-import org.json.JSONObject
+import org.grakovne.lissen.channel.common.OAuthContextCache
+import org.grakovne.lissen.channel.common.randomPkce
 import java.io.IOException
-import java.nio.charset.StandardCharsets
-import java.security.MessageDigest
-import java.util.Base64
 
 @AndroidEntryPoint
 class AppActivity : ComponentActivity() {
@@ -72,7 +65,7 @@ class AppActivity : ComponentActivity() {
             .url(callbackUrl.toString())
             .get()
 
-        requestBuilder.addHeader("Cookie", preferences.cookie)
+        //requestBuilder.addHeader("Cookie", preferences.cookie)
         val request = requestBuilder.build()
 
         client.newCall(request).enqueue(object : Callback {
@@ -121,12 +114,8 @@ class AppActivity : ComponentActivity() {
 
                 val (verifier, challenge, state) = randomPkce()
 
-                preferences.veririer = verifier
-                preferences.challenge = challenge
-                preferences.state = state
-
                 val url = Uri.parse("https://audiobook.grakovne.org/auth/openid/").buildUpon()
-                    .appendQueryParameter("code_challenge", preferences.challenge)
+                    .appendQueryParameter("code_challenge", challenge)
                     .appendQueryParameter("code_challenge_method", "S256")
                     .appendQueryParameter("redirect_uri", "audiobookshelf://oauth")
                     .appendQueryParameter("client_id", "Audiobookshelf-App")
@@ -159,7 +148,7 @@ class AppActivity : ComponentActivity() {
                                 .map { it.substringBefore(";") } // оставляем только "ключ=значение"
                                 .joinToString("; ")
 
-                            preferences.cookie = cookie
+                            //cookie = cookie
                             Log.d("OAuth", "Set-Cookie: $cookie")
 
                             val intent = Intent(Intent.ACTION_VIEW, location!!.toUri())

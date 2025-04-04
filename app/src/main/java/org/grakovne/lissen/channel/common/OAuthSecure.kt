@@ -1,4 +1,4 @@
-package org.grakovne.lissen.channel.audiobookshelf.common.oauth
+package org.grakovne.lissen.channel.common
 
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
