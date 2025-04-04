@@ -55,7 +55,7 @@ class LoginViewModel @Inject constructor(
                     .fetchAuthMethods(host = value)
                     .fold(
                         onSuccess = { _authMethods.value = it },
-                        onFailure = { _authMethods.value = emptyList() }
+                        onFailure = { _authMethods.value = emptyList() },
                     )
             }
     }
@@ -117,16 +117,18 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun onLoginFailure(error: ApiError): LoginState.Error {
-        _loginError.value = when (error) {
-            InternalError -> LoginError.InternalError
-            MissingCredentialsHost -> LoginError.MissingCredentialsHost
-            MissingCredentialsPassword -> LoginError.MissingCredentialsPassword
-            MissingCredentialsUsername -> LoginError.MissingCredentialsUsername
-            Unauthorized -> LoginError.Unauthorized
-            InvalidCredentialsHost -> LoginError.InvalidCredentialsHost
-            ApiError.NetworkError -> LoginError.NetworkError
-            ApiError.UnsupportedError -> LoginError.InternalError
-        }
+        _loginError.postValue(
+            when (error) {
+                InternalError -> LoginError.InternalError
+                MissingCredentialsHost -> LoginError.MissingCredentialsHost
+                MissingCredentialsPassword -> LoginError.MissingCredentialsPassword
+                MissingCredentialsUsername -> LoginError.MissingCredentialsUsername
+                Unauthorized -> LoginError.Unauthorized
+                InvalidCredentialsHost -> LoginError.InvalidCredentialsHost
+                ApiError.NetworkError -> LoginError.NetworkError
+                ApiError.UnsupportedError -> LoginError.InternalError
+            },
+        )
 
         return LoginState.Error(error)
     }

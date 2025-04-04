@@ -238,29 +238,29 @@ fun LoginScreen(
                         }
                     }
 
-                    if (authMethods.contains(AuthMethod.O_AUTH)) {
-                        Button(
-                            onClick = { viewModel.startOAuth() },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 24.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = colorScheme.primary.copy(alpha = 0.1f),
-                                contentColor = colorScheme.primary,
+                    Button(
+                        onClick = { viewModel.startOAuth() },
+                        enabled = authMethods.contains(AuthMethod.O_AUTH),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 24.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colorScheme.primary.copy(alpha = 0.1f),
+                            contentColor = colorScheme.primary,
+                            disabledContainerColor = colorScheme.onSurface.copy(alpha = 0.12f),
+                            disabledContentColor = colorScheme.onSurface.copy(alpha = 0.38f),
+                        ),
+                        contentPadding = PaddingValues(vertical = 12.dp),
+                    ) {
+                        Text(
+                            text = "Connect with OpenID",
+                            textAlign = TextAlign.Center,
+                            style = typography.bodyMedium.copy(
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
                             ),
-                            contentPadding = PaddingValues(vertical = 12.dp),
-                        ) {
-                            Text(
-                                text = "Connect with OpenID",
-                                textAlign = TextAlign.Center,
-                                style = typography.bodyMedium.copy(
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = colorScheme.primary,
-                                ),
-                            )
-                        }
+                        )
                     }
 
                     CircularProgressIndicator(

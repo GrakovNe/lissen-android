@@ -8,7 +8,7 @@ abstract class ChannelAuthService(
 ) {
 
     abstract suspend fun fetchAuthMethods(
-        host: String
+        host: String,
     ): ApiResult<List<AuthMethod>>
 
     abstract suspend fun authorize(
