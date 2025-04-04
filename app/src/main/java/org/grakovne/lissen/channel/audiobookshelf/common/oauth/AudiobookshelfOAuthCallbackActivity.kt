@@ -8,7 +8,9 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudiobookshelfAuthService
+import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OAuthContextCache
+import org.grakovne.lissen.domain.UserAccount
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -20,9 +22,11 @@ class AudiobookshelfOAuthCallbackActivity : ComponentActivity() {
     @Inject
     lateinit var authService: AudiobookshelfAuthService
 
+    @Inject
+    lateinit var mediaChannel: MediaChannel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         val data = intent?.data
 
         if (null == data) {
@@ -34,9 +38,23 @@ class AudiobookshelfOAuthCallbackActivity : ComponentActivity() {
             Log.d(TAG, "Got Exchange code from ABS")
 
             lifecycleScope.launch {
-                authService.exchangeToken("https://audiobook.grakovne.org", code)
+                authService.exchangeToken(
+                    host = "https://audiobook.grakovne.org",
+                    code = code,
+                    onSuccess = { onLogged(it) },
+                    onFailure = {}
+                )
             }
         }
+    }
+
+    private fun onLogged(userAccount: UserAccount) {
+        authService
+            .persistCredentials(
+                host = "https://audiobook.grakovne.org",
+                username = userAccount.username,
+                token = userAccount.token
+            )
     }
 
     companion object {

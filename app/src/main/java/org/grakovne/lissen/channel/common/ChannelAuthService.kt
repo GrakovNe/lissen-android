@@ -1,6 +1,7 @@
 package org.grakovne.lissen.channel.common
 
 import android.content.SharedPreferences
+import org.grakovne.lissen.channel.audiobookshelf.common.model.user.User
 import org.grakovne.lissen.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 
@@ -20,7 +21,9 @@ abstract class ChannelAuthService(
 
     abstract suspend fun exchangeToken(
         host: String,
-        code: String
+        code: String,
+        onSuccess: (UserAccount) -> Unit,
+        onFailure: (String) -> Unit
     )
 
     fun persistCredentials(

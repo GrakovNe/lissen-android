@@ -14,6 +14,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.client.AudiobookshelfAp
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LoginResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.CredentialsLoginRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.LoggedUserResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.user.User
 import org.grakovne.lissen.channel.common.ApiClient
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
@@ -29,11 +30,11 @@ import javax.inject.Singleton
 
 @Singleton
 class AudiobookshelfAuthService @Inject constructor(
+    preferences: LissenSharedPreferences,
     @ApplicationContext private val context: Context,
     private val loginResponseConverter: LoginResponseConverter,
     private val requestHeadersProvider: RequestHeadersProvider,
-    private val preferences: LissenSharedPreferences,
-    private val contextCache: OAuthContextCache
+    private val contextCache: OAuthContextCache,
 ) : ChannelAuthService(preferences) {
 
     override suspend fun authorize(
@@ -127,7 +128,9 @@ class AudiobookshelfAuthService @Inject constructor(
 
     override suspend fun exchangeToken(
         host: String,
-        code: String
+        code: String,
+        onSuccess: (UserAccount) -> Unit,
+        onFailure: (String) -> Unit
     ) {
         val pkce = contextCache.readPkce()
         val cookie = contextCache.readCookies()
@@ -163,17 +166,16 @@ class AudiobookshelfAuthService @Inject constructor(
                     val raw = response.body?.string() ?: return
 
                     val user = try {
-                        Gson().fromJson(raw, LoggedUserResponse::class.java)
+                        Gson()
+                            .fromJson(raw, LoggedUserResponse::class.java)
+                            .let { loginResponseConverter.apply(it) }
                     } catch (ex: Exception) {
                         Log.e(TAG, "Unable to get User data from response: $ex")
+                        onFailure(ex.message ?: "")
                         return
                     }
 
-                    persistCredentials(
-                        host = host,
-                        username = user.user.username,
-                        token = user.user.token
-                    )
+                    onSuccess(user)
                 }
             })
     }
