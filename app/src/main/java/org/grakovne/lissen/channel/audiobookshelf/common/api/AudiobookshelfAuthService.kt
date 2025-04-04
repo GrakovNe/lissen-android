@@ -35,10 +35,10 @@ import javax.inject.Singleton
 
 @Singleton
 class AudiobookshelfAuthService @Inject constructor(
-    preferences: LissenSharedPreferences,
     @ApplicationContext private val context: Context,
     private val loginResponseConverter: LoginResponseConverter,
     private val requestHeadersProvider: RequestHeadersProvider,
+    private val preferences: LissenSharedPreferences,
     private val contextCache: OAuthContextCache,
 ) : ChannelAuthService(preferences) {
 
@@ -82,6 +82,7 @@ class AudiobookshelfAuthService @Inject constructor(
 
     override suspend fun startOAuth(host: String) {
         Log.d(TAG, "Starting OAuth flow for $host")
+        preferences.saveHost(host)
 
         val client = createOkHttpClient()
             .newBuilder()

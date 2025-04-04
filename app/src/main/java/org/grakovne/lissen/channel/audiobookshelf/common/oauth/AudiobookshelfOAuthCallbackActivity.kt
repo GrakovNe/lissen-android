@@ -11,6 +11,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.api.AudiobookshelfAuthS
 import org.grakovne.lissen.channel.common.OAuthContextCache
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.UserAccount
+import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.activity.AppActivity
 import javax.inject.Inject
 
@@ -26,6 +27,9 @@ class AudiobookshelfOAuthCallbackActivity : ComponentActivity() {
     @Inject
     lateinit var mediaProvider: LissenMediaProvider
 
+    @Inject
+    lateinit var preferences: LissenSharedPreferences
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val data = intent?.data
@@ -40,7 +44,7 @@ class AudiobookshelfOAuthCallbackActivity : ComponentActivity() {
 
             lifecycleScope.launch {
                 authService.exchangeToken(
-                    host = "https://audiobook.grakovne.org",
+                    host = preferences.getHost() ?: return@launch,
                     code = code,
                     onSuccess = { onLogged(it) },
                     onFailure = {},
@@ -51,8 +55,8 @@ class AudiobookshelfOAuthCallbackActivity : ComponentActivity() {
 
     private suspend fun onLogged(userAccount: UserAccount) {
         mediaProvider.onPostLogin(
-            host = "https://audiobook.grakovne.org",
-            account = userAccount
+            host = preferences.getHost() ?: return,
+            account = userAccount,
         )
 
         val intent = Intent(this, AppActivity::class.java).apply {
