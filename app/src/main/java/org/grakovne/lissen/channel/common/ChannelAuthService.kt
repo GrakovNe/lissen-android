@@ -9,6 +9,4 @@ interface ChannelAuthService {
         username: String,
         password: String,
     ): ApiResult<UserAccount>
-
-    fun getAuthType(): AuthType
 }

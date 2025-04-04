@@ -7,7 +7,6 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.user.LoggedUserRe
 import org.grakovne.lissen.channel.common.ApiClient
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
-import org.grakovne.lissen.channel.common.AuthType
 import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.domain.UserAccount
 import javax.inject.Inject
@@ -54,8 +53,6 @@ class AudiobookshelfAuthService @Inject constructor(
                 onFailure = { ApiResult.Error(it.code) },
             )
     }
-
-    override fun getAuthType(): AuthType = AuthType.CREDENTIALS
 
     private companion object {
 

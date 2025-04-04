@@ -110,10 +110,6 @@ class AppActivity : ComponentActivity() {
             }
 
             val currentUri = intent?.data
-            // Если не по deep link (то есть первый запуск и пользователь ещё не авторизован):
-            //   отправляем на OAuth
-            // Если уже с deep link (callback), значит ничего не делаем,
-            //   чтобы не открывать браузер снова
             if (currentUri == null || currentUri.scheme != "audiobookshelf") {
 
                 val (verifier, challenge, state) = generatePkce()
