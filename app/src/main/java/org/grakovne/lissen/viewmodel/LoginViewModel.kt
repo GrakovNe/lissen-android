@@ -96,7 +96,7 @@ class LoginViewModel @Inject constructor(
 
             val result = response
                 .foldAsync(
-                    onSuccess = { account -> onLoginSuccessful(host, username, account) },
+                    onSuccess = { account: UserAccount -> onLoginSuccessful(host, account) },
                     onFailure = { error -> onLoginFailure(error.code) },
                 )
 
@@ -116,12 +116,11 @@ class LoginViewModel @Inject constructor(
 
     private suspend fun onLoginSuccessful(
         host: String,
-        username: String,
         account: UserAccount,
     ): LoginState.Success {
         persistCredentials(
             host = host,
-            username = username,
+            username = account.username,
             token = account.token,
         )
 
