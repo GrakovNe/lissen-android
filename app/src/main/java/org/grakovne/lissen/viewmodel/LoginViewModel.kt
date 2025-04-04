@@ -15,10 +15,7 @@ import org.grakovne.lissen.channel.common.ApiError.MissingCredentialsHost
 import org.grakovne.lissen.channel.common.ApiError.MissingCredentialsPassword
 import org.grakovne.lissen.channel.common.ApiError.MissingCredentialsUsername
 import org.grakovne.lissen.channel.common.ApiError.Unauthorized
-import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.domain.Library
-import org.grakovne.lissen.domain.UserAccount
 import org.grakovne.lissen.domain.error.LoginError
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import javax.inject.Inject
@@ -96,60 +93,12 @@ class LoginViewModel @Inject constructor(
 
             val result = response
                 .foldAsync(
-                    onSuccess = { account: UserAccount -> onLoginSuccessful(host, account) },
+                    onSuccess = { _ -> LoginState.Success },
                     onFailure = { error -> onLoginFailure(error.code) },
                 )
 
             _loginState.value = result
         }
-    }
-
-    private suspend fun onLoginSuccessful(
-        host: String,
-        account: UserAccount,
-    ): LoginState.Success {
-        mediaChannel
-            .provideAuthService()
-            .persistCredentials(
-                host = host,
-                username = account.username,
-                token = account.token,
-            )
-
-        mediaChannel
-            .fetchLibraries()
-            .fold(
-                onSuccess = {
-                    val preferredLibrary = it
-                        .find { item -> item.id == account.preferredLibraryId }
-                        ?: it.firstOrNull()
-
-                    preferredLibrary
-                        ?.let { library ->
-                            preferences.savePreferredLibrary(
-                                Library(
-                                    id = library.id,
-                                    title = library.title,
-                                    type = library.type,
-                                ),
-                            )
-                        }
-                },
-                onFailure = {
-                    account
-                        .preferredLibraryId
-                        ?.let { library ->
-                            Library(
-                                id = library,
-                                title = "Default Library",
-                                type = LibraryType.LIBRARY,
-                            )
-                        }
-                        ?.let { preferences.savePreferredLibrary(it) }
-                },
-            )
-
-        return LoginState.Success
     }
 
     private fun onLoginFailure(error: ApiError): LoginState.Error {

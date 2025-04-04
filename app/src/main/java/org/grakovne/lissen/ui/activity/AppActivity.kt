@@ -50,5 +50,4 @@ class AppActivity : ComponentActivity() {
             }
         }
     }
-
 }

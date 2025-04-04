@@ -14,7 +14,6 @@ import org.grakovne.lissen.channel.audiobookshelf.common.client.AudiobookshelfAp
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LoginResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.CredentialsLoginRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.LoggedUserResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.user.User
 import org.grakovne.lissen.channel.common.ApiClient
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
@@ -41,6 +40,7 @@ class AudiobookshelfAuthService @Inject constructor(
         host: String,
         username: String,
         password: String,
+        onSuccess: suspend (UserAccount) -> Unit,
     ): ApiResult<UserAccount> {
         if (host.isBlank() || !urlPattern.matches(host)) {
             return ApiResult.Error(ApiError.InvalidCredentialsHost)
@@ -63,10 +63,11 @@ class AudiobookshelfAuthService @Inject constructor(
             safeApiCall { apiService.login(CredentialsLoginRequest(username, password)) }
 
         return response
-            .fold(
+            .foldAsync(
                 onSuccess = {
                     loginResponseConverter
                         .apply(it)
+                        .also { onSuccess(it) }
                         .let { ApiResult.Success(it) }
                 },
                 onFailure = { ApiResult.Error(it.code) },
@@ -130,7 +131,7 @@ class AudiobookshelfAuthService @Inject constructor(
         host: String,
         code: String,
         onSuccess: (UserAccount) -> Unit,
-        onFailure: (String) -> Unit
+        onFailure: (String) -> Unit,
     ) {
         val pkce = contextCache.readPkce()
         val cookie = contextCache.readCookies()

@@ -12,7 +12,7 @@ fun randomPkce(): Pkce {
     return Pkce(
         verifier = verifier,
         challenge = challenge,
-        state = state
+        state = state,
     )
 }
 
@@ -36,5 +36,5 @@ private fun base64UrlEncode(bytes: ByteArray) = Base64
 data class Pkce(
     val verifier: String,
     val challenge: String,
-    val state: String
+    val state: String,
 )
