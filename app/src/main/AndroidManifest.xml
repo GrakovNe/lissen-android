@@ -42,8 +42,8 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:scheme="myapp"
-                    android:host="oauthcallback" />
+                    android:scheme="audiobookshelf"
+                    android:host="oauth" />
             </intent-filter>
         </activity>
 

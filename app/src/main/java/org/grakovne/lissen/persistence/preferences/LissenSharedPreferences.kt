@@ -30,6 +30,10 @@ import javax.inject.Singleton
 @Singleton
 class LissenSharedPreferences @Inject constructor(@ApplicationContext context: Context) {
 
+    var cookie: String = ""
+    var challenge: String = ""
+    var veririer: String = ""
+
     private val sharedPreferences: SharedPreferences =
         context.getSharedPreferences("secure_prefs", Context.MODE_PRIVATE)
 
