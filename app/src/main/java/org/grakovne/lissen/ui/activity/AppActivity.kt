@@ -26,6 +26,8 @@ import okhttp3.Callback
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import org.grakovne.lissen.channel.audiobookshelf.common.oauth.OAuthContextCache
+import org.grakovne.lissen.channel.audiobookshelf.common.oauth.randomPkce
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
@@ -48,15 +50,20 @@ class AppActivity : ComponentActivity() {
     @Inject
     lateinit var sharedPreferences: LissenSharedPreferences
 
+    @Inject
+    lateinit var contextCache: OAuthContextCache
+
     private fun exchangeCodeForToken(code: String) {
         // Допустим, ваши параметры:
         val host = "https://audiobook.grakovne.org"
 
+        val pkce = contextCache.readPkce()
+
         // Собираем URL:
         val callbackUrl = Uri.parse("$host/auth/openid/callback").buildUpon()
-            .appendQueryParameter("state", preferences.state)
+            .appendQueryParameter("state", pkce.state)
             .appendQueryParameter("code", code)
-            .appendQueryParameter("code_verifier", preferences.veririer)
+            .appendQueryParameter("code_verifier", pkce.verifier)
             .build()
 
         // Используем OkHttp (простейший пример без CookieJar)
@@ -112,7 +119,7 @@ class AppActivity : ComponentActivity() {
             val currentUri = intent?.data
             if (currentUri == null || currentUri.scheme != "audiobookshelf") {
 
-                val (verifier, challenge, state) = generatePkce()
+                val (verifier, challenge, state) = randomPkce()
 
                 preferences.veririer = verifier
                 preferences.challenge = challenge
@@ -164,30 +171,6 @@ class AppActivity : ComponentActivity() {
 
             }
         }
-    }
-
-    fun generateRandomHexString(byteCount: Int = 32): String {
-        val array = ByteArray(byteCount)
-        java.security.SecureRandom().nextBytes(array)
-        return array.joinToString("") { "%02x".format(it) }
-    }
-
-    fun sha256(input: String): ByteArray {
-        val digest = MessageDigest.getInstance("SHA-256")
-        return digest.digest(input.toByteArray(StandardCharsets.US_ASCII))
-    }
-
-    fun base64UrlEncode(bytes: ByteArray): String {
-        return Base64.getUrlEncoder()
-            .withoutPadding()
-            .encodeToString(bytes)
-    }
-
-    fun generatePkce(): Triple<String, String, String> {
-        val verifier = generateRandomHexString(42) // 42 bytes → 84 hex chars
-        val challenge = base64UrlEncode(sha256(verifier))
-        val state = generateRandomHexString(42)
-        return Triple(verifier, challenge, state)
     }
 
 }

@@ -95,6 +95,8 @@ fun LoginScreen(
             return@LaunchedEffect
         }
 
+        viewModel.setHost("https://audiobook.grakovne.org")
+
         withMinimumTime(300) {
             Log.d(TAG, "Tried to log in with result $loginState and possible error is $loginError")
         }
