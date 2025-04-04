@@ -28,7 +28,6 @@ class AppActivity : ComponentActivity() {
     @Inject
     lateinit var networkQualityService: NetworkQualityService
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
