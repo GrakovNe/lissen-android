@@ -89,9 +89,8 @@ class LoginViewModel @Inject constructor(
                 return@launch
             }
 
-            val response = mediaChannel.authorize(host, username, password)
-
-            val result = response
+            val result = mediaChannel
+                .authorize(host, username, password)
                 .foldAsync(
                     onSuccess = { _ -> LoginState.Success },
                     onFailure = { error -> onLoginFailure(error.code) },
