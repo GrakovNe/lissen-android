@@ -15,6 +15,7 @@ import org.grakovne.lissen.channel.common.ApiError.MissingCredentialsHost
 import org.grakovne.lissen.channel.common.ApiError.MissingCredentialsPassword
 import org.grakovne.lissen.channel.common.ApiError.MissingCredentialsUsername
 import org.grakovne.lissen.channel.common.ApiError.Unauthorized
+import org.grakovne.lissen.channel.common.AuthMethod
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.error.LoginError
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
@@ -22,8 +23,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
+    preferences: LissenSharedPreferences,
     private val mediaChannel: LissenMediaProvider,
-    private val preferences: LissenSharedPreferences,
 ) : ViewModel() {
 
     private val _loginError: MutableLiveData<LoginError> = MutableLiveData()
@@ -40,6 +41,24 @@ class LoginViewModel @Inject constructor(
 
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
     val loginState: StateFlow<LoginState> = _loginState.asStateFlow()
+
+    private val _authMethods = MutableLiveData<List<AuthMethod>>(emptyList())
+    val authMethods = _authMethods
+
+    fun updateAuthMethods() {
+        viewModelScope
+            .launch {
+                val value = host.value ?: return@launch
+
+                mediaChannel
+                    .provideAuthService()
+                    .fetchAuthMethods(host = value)
+                    .fold(
+                        onSuccess = { _authMethods.value = it },
+                        onFailure = { _authMethods.value = emptyList() }
+                    )
+            }
+    }
 
     fun setHost(host: String) {
         _host.value = host
@@ -59,8 +78,6 @@ class LoginViewModel @Inject constructor(
 
     fun startOAuth() {
         viewModelScope.launch {
-            _loginState.value = LoginState.Loading
-
             val host = host.value ?: run {
                 _loginState.value = LoginState.Error(MissingCredentialsHost)
                 return@launch
@@ -95,7 +112,6 @@ class LoginViewModel @Inject constructor(
                     onSuccess = { _ -> LoginState.Success },
                     onFailure = { error -> onLoginFailure(error.code) },
                 )
-
             _loginState.value = result
         }
     }

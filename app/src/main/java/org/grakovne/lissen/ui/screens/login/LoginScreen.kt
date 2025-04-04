@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import org.grakovne.lissen.R
+import org.grakovne.lissen.channel.common.AuthMethod
 import org.grakovne.lissen.domain.error.LoginError
 import org.grakovne.lissen.domain.error.LoginError.InternalError
 import org.grakovne.lissen.domain.error.LoginError.InvalidCredentialsHost
@@ -80,6 +81,8 @@ fun LoginScreen(
     val username by viewModel.username.observeAsState("")
     val password by viewModel.password.observeAsState("")
 
+    val authMethods by viewModel.authMethods.observeAsState(emptyList())
+
     var showPassword by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
@@ -89,7 +92,7 @@ fun LoginScreen(
             return@LaunchedEffect
         }
 
-        viewModel.setHost("https://audiobook.grakovne.org")
+        viewModel.setHost("https://audiobook.grakovne.o")
 
         withMinimumTime(300) {
             Log.d(TAG, "Tried to log in with result $loginState and possible error is $loginError")
@@ -101,6 +104,10 @@ fun LoginScreen(
             else -> {}
         }
         viewModel.readyToLogin()
+    }
+
+    LaunchedEffect(host) {
+        viewModel.updateAuthMethods()
     }
 
     Scaffold(
@@ -231,27 +238,29 @@ fun LoginScreen(
                         }
                     }
 
-                    Button(
-                        onClick = { viewModel.startOAuth() },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 24.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = colorScheme.primary.copy(alpha = 0.1f),
-                            contentColor = colorScheme.primary,
-                        ),
-                        contentPadding = PaddingValues(vertical = 12.dp),
-                    ) {
-                        Text(
-                            text = "Connect with OpenID",
-                            textAlign = TextAlign.Center,
-                            style = typography.bodyMedium.copy(
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = colorScheme.primary,
+                    if (authMethods.contains(AuthMethod.O_AUTH)) {
+                        Button(
+                            onClick = { viewModel.startOAuth() },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 24.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colorScheme.primary.copy(alpha = 0.1f),
+                                contentColor = colorScheme.primary,
                             ),
-                        )
+                            contentPadding = PaddingValues(vertical = 12.dp),
+                        ) {
+                            Text(
+                                text = "Connect with OpenID",
+                                textAlign = TextAlign.Center,
+                                style = typography.bodyMedium.copy(
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = colorScheme.primary,
+                                ),
+                            )
+                        }
                     }
 
                     CircularProgressIndicator(
