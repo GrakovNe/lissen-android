@@ -1,21 +1,36 @@
 package org.grakovne.lissen.channel.common
 
+import android.content.SharedPreferences
 import org.grakovne.lissen.domain.UserAccount
+import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 
-interface ChannelAuthService {
+abstract class ChannelAuthService(
+    private val preferences: LissenSharedPreferences
+) {
 
-    suspend fun authorize(
+    abstract suspend fun authorize(
         host: String,
         username: String,
         password: String,
     ): ApiResult<UserAccount>
 
-    suspend fun startOAuth(
+    abstract suspend fun startOAuth(
         host: String
     )
 
-    suspend fun exchangeToken(
+    abstract suspend fun exchangeToken(
         host: String,
         code: String
     )
+
+    fun persistCredentials(
+        host: String,
+        username: String,
+        token: String,
+    ) {
+
+        preferences.saveHost(host)
+        preferences.saveUsername(username)
+        preferences.saveToken(token)
+    }
 }

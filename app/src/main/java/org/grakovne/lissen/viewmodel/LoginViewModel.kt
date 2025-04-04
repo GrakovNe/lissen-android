@@ -104,25 +104,17 @@ class LoginViewModel @Inject constructor(
         }
     }
 
-    private fun persistCredentials(
-        host: String,
-        username: String,
-        token: String,
-    ) {
-        preferences.saveHost(host)
-        preferences.saveUsername(username)
-        preferences.saveToken(token)
-    }
-
     private suspend fun onLoginSuccessful(
         host: String,
         account: UserAccount,
     ): LoginState.Success {
-        persistCredentials(
-            host = host,
-            username = account.username,
-            token = account.token,
-        )
+        mediaChannel
+            .provideAuthService()
+            .persistCredentials(
+                host = host,
+                username = account.username,
+                token = account.token,
+            )
 
         mediaChannel
             .fetchLibraries()

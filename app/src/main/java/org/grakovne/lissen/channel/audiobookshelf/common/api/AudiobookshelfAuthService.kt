@@ -22,6 +22,7 @@ import org.grakovne.lissen.channel.common.OAuthContextCache
 import org.grakovne.lissen.channel.common.randomPkce
 import org.grakovne.lissen.common.createOkHttpClient
 import org.grakovne.lissen.domain.UserAccount
+import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -31,8 +32,9 @@ class AudiobookshelfAuthService @Inject constructor(
     @ApplicationContext private val context: Context,
     private val loginResponseConverter: LoginResponseConverter,
     private val requestHeadersProvider: RequestHeadersProvider,
+    private val preferences: LissenSharedPreferences,
     private val contextCache: OAuthContextCache
-) : ChannelAuthService {
+) : ChannelAuthService(preferences) {
 
     override suspend fun authorize(
         host: String,
@@ -166,6 +168,12 @@ class AudiobookshelfAuthService @Inject constructor(
                         Log.e(TAG, "Unable to get User data from response: $ex")
                         return
                     }
+
+                    persistCredentials(
+                        host = host,
+                        username = user.user.username,
+                        token = user.user.token
+                    )
                 }
             })
     }
