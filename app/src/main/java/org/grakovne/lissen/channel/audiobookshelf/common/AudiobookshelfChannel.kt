@@ -1,17 +1,26 @@
 package org.grakovne.lissen.channel.audiobookshelf.common
 
 import android.net.Uri
+import androidx.core.net.toUri
+import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.Request
 import org.grakovne.lissen.BuildConfig
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfDataRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfMediaRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfSyncService
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.AuthMethodResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.model.auth.AuthMethodResponse
 import org.grakovne.lissen.channel.common.ApiResult
+import org.grakovne.lissen.channel.common.AuthMethod
 import org.grakovne.lissen.channel.common.ConnectionInfo
 import org.grakovne.lissen.channel.common.MediaChannel
+import org.grakovne.lissen.common.createOkHttpClient
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.RecentBook
@@ -27,6 +36,7 @@ abstract class AudiobookshelfChannel(
     private val mediaRepository: AudioBookshelfMediaRepository,
     private val recentBookResponseConverter: RecentListeningResponseConverter,
     private val connectionInfoResponseConverter: ConnectionInfoResponseConverter,
+    private val authMethodResponseConverter: AuthMethodResponseConverter,
 ) : MediaChannel {
 
     override fun provideFileUri(
@@ -41,6 +51,37 @@ abstract class AudiobookshelfChannel(
         .appendPath(fileId)
         .appendQueryParameter("token", preferences.getToken())
         .build()
+
+    override suspend fun fetchAuthMethods(host: String): ApiResult<List<AuthMethod>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val url = host
+                    .toUri()
+                    .buildUpon()
+                    .appendEncodedPath("audiobookshelf/status")
+                    .build()
+
+                val client = createOkHttpClient()
+                val request = Request.Builder().url(url.toString()).get().build()
+                val response = client.newCall(request).execute()
+
+                if (!response.isSuccessful) {
+                    return@withContext ApiResult.Success(emptyList())
+                }
+
+                val body = response.body?.string()
+                    ?: return@withContext ApiResult.Success(emptyList())
+
+                val gson = Gson()
+                val authMethod = gson.fromJson(body, AuthMethodResponse::class.java)
+
+                val converted = authMethodResponseConverter.apply(authMethod)
+                ApiResult.Success(converted)
+            } catch (e: Exception) {
+                ApiResult.Success(emptyList())
+            }
+        }
+    }
 
     override suspend fun syncProgress(
         sessionId: String,

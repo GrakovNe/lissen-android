@@ -51,7 +51,6 @@ class LoginViewModel @Inject constructor(
                 val value = host.value ?: return@launch
 
                 mediaChannel
-                    .provideAuthService()
                     .fetchAuthMethods(host = value)
                     .fold(
                         onSuccess = { _authMethods.value = it },

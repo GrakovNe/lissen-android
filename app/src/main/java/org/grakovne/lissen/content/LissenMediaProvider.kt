@@ -4,6 +4,7 @@ import android.net.Uri
 import android.util.Log
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
+import org.grakovne.lissen.channel.common.AuthMethod
 import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.ChannelCode
 import org.grakovne.lissen.channel.common.ChannelProvider
@@ -65,6 +66,13 @@ class LissenMediaProvider @Inject constructor(
             false -> providePreferredChannel()
                 .syncProgress(sessionId, progress)
                 .also { localCacheRepository.syncProgress(bookId, progress) }
+        }
+    }
+
+    suspend fun fetchAuthMethods(host: String): ApiResult<List<AuthMethod>> {
+        return when (preferences.isForceCache()) {
+            true -> ApiResult.Success(emptyList())
+            false -> providePreferredChannel().fetchAuthMethods(host)
         }
     }
 

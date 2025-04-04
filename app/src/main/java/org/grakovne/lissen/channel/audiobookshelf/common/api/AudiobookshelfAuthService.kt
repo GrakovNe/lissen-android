@@ -23,7 +23,6 @@ import org.grakovne.lissen.channel.audiobookshelf.common.oauth.AuthScheme
 import org.grakovne.lissen.channel.common.ApiClient
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
-import org.grakovne.lissen.channel.common.AuthMethod
 import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.OAuthContextCache
 import org.grakovne.lissen.channel.common.randomPkce
@@ -42,10 +41,6 @@ class AudiobookshelfAuthService @Inject constructor(
     private val preferences: LissenSharedPreferences,
     private val contextCache: OAuthContextCache,
 ) : ChannelAuthService(preferences) {
-
-    override suspend fun fetchAuthMethods(host: String): ApiResult<List<AuthMethod>> {
-        return ApiResult.Success(listOf(AuthMethod.CREDENTIALS, AuthMethod.CREDENTIALS))
-    }
 
     override suspend fun authorize(
         host: String,

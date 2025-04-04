@@ -7,10 +7,6 @@ abstract class ChannelAuthService(
     private val preferences: LissenSharedPreferences,
 ) {
 
-    abstract suspend fun fetchAuthMethods(
-        host: String,
-    ): ApiResult<List<AuthMethod>>
-
     abstract suspend fun authorize(
         host: String,
         username: String,
