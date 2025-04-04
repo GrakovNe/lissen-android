@@ -11,6 +11,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.api.AudiobookshelfAuthS
 import org.grakovne.lissen.channel.common.OAuthContextCache
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.UserAccount
+import org.grakovne.lissen.ui.activity.AppActivity
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -53,6 +54,14 @@ class AudiobookshelfOAuthCallbackActivity : ComponentActivity() {
             host = "https://audiobook.grakovne.org",
             account = userAccount
         )
+
+        val intent = Intent(this, AppActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+
+        startActivity(intent)
+        finish()
     }
 
     companion object {
