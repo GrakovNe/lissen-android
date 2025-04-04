@@ -59,24 +59,13 @@ class AppActivity : ComponentActivity() {
             .appendQueryParameter("code_verifier", preferences.veririer)
             .build()
 
-        // Добавим недостающие куки вручную
-        val requiredCookies = listOf(
-            "auth_cb=audiobookshelf://oauth",
-            "auth_method=openid"
-        )
-
-        val allCookies = (preferences.cookie.split(";") + requiredCookies)
-            .map { it.trim() }
-            .distinct() // на случай дубликатов
-            .joinToString("; ")
-
         // Используем OkHttp (простейший пример без CookieJar)
         val client = OkHttpClient()
         val requestBuilder = Request.Builder()
             .url(callbackUrl.toString())
             .get()
 
-        requestBuilder.addHeader("Cookie", allCookies)
+        requestBuilder.addHeader("Cookie", preferences.cookie)
         val request = requestBuilder.build()
 
         client.newCall(request).enqueue(object : Callback {
@@ -86,30 +75,7 @@ class AppActivity : ComponentActivity() {
 
             override fun onResponse(call: Call, response: Response) {
                 response.use { r ->
-
-                    val location = r.header("Location")
-                    val uri = Uri.parse(location)
-                    val token = uri.getQueryParameter("setToken")
-                    val state = uri.getQueryParameter("state")
-                    Log.d("OAuth", "Got token from redirect: $token, state: $state")
-
-
-                    val bodyString = r.body?.string().orEmpty()
-                    Log.d("OAuth", "Callback response: $bodyString")
-
-                    try {
-                        val json = JSONObject(bodyString)
-                        val user = json.getJSONObject("user")
-                        val token = user.getString("token")
-                        Log.d("OAuth", "Got token from callback: $token")
-
-                        // Здесь сохраните токен в SharedPreferences
-                        // или сразу во ViewModel:
-                        // preferences.saveToken(token)
-                        // И переходите на нужный экран.
-                    } catch (e: JSONException) {
-                        Log.e("OAuth", "JSON parse error: $e")
-                    }
+                    Log.d("OAuth", r.body.toString())
                 }
             }
         })
@@ -177,14 +143,20 @@ class AppActivity : ComponentActivity() {
                     override fun onFailure(call: Call, e: IOException) {
                         Log.e("OAuth", "Failed: $e")
                     }
+
                     override fun onResponse(call: Call, response: Response) {
                         response.use { r ->
                             val location = r.header("Location")
                             Log.d("OAuth", "Location: $location")
 
-                            val setCookie = r.header("Set-Cookie")
-                            preferences.cookie = setCookie!!
-                            Log.d("OAuth", "Set-Cookie: $setCookie")
+                            val setCookieHeaders: List<String> = response.headers("Set-Cookie")
+
+                            val cookie = setCookieHeaders
+                                .map { it.substringBefore(";") } // оставляем только "ключ=значение"
+                                .joinToString("; ")
+
+                            preferences.cookie = cookie
+                            Log.d("OAuth", "Set-Cookie: $cookie")
 
                             val intent = Intent(Intent.ACTION_VIEW, location!!.toUri())
                             startActivity(intent)
