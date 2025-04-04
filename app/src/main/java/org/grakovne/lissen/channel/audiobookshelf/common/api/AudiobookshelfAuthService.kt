@@ -54,6 +54,10 @@ class AudiobookshelfAuthService @Inject constructor(
             )
     }
 
+    override suspend fun startOAuth(host: String) {
+        //TODO("Not yet implemented")
+    }
+
     private companion object {
 
         val urlPattern = Regex("^(http|https)://.*\$")

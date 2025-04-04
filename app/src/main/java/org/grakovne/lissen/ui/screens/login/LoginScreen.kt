@@ -4,6 +4,8 @@ import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import android.widget.Toast.LENGTH_SHORT
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -22,7 +25,10 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -227,10 +233,35 @@ fun LoginScreen(
                                 modifier = Modifier.size(24.dp),
                             )
                         }
+
                     }
 
+                    Button(
+                        onClick = { viewModel.startOAuth() },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 24.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colorScheme.primary.copy(alpha = 0.1f),
+                            contentColor = colorScheme.primary
+                        ),
+                        contentPadding = PaddingValues(vertical = 12.dp)
+                    ) {
+                        Text(
+                            text = "Connect with OpenID",
+                            textAlign = TextAlign.Center,
+                            style = typography.bodyMedium.copy(
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = colorScheme.primary
+                            )
+                        )
+                    }
+
+
                     CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.primary,
+                        color = colorScheme.primary,
                         strokeWidth = 4.dp,
                         modifier = Modifier
                             .padding(vertical = 32.dp)

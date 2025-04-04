@@ -9,4 +9,8 @@ interface ChannelAuthService {
         username: String,
         password: String,
     ): ApiResult<UserAccount>
+
+    suspend fun startOAuth(
+        host: String
+    )
 }

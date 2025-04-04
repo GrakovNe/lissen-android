@@ -156,7 +156,7 @@ class AppActivity : ComponentActivity() {
                             Log.d("OAuth", "Set-Cookie: $cookie")
 
                             val intent = Intent(Intent.ACTION_VIEW, location!!.toUri())
-                            startActivity(intent)
+                            //startActivity(intent)
                         }
                     }
                 })

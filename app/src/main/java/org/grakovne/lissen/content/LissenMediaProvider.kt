@@ -184,6 +184,13 @@ class LissenMediaProvider @Inject constructor(
         return provideAuthService().authorize(host, username, password)
     }
 
+    suspend fun startOAuth(
+        host: String
+    ) {
+        Log.d(TAG, "Starting OAuth for $host")
+        return provideAuthService().startOAuth(host)
+    }
+
     private suspend fun syncFromLocalProgress(
         detailedItems: List<RecentBook>,
     ): List<RecentBook> {
