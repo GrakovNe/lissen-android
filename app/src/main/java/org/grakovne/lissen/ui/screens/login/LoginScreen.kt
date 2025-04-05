@@ -241,28 +241,24 @@ fun LoginScreen(
 
                     val isEnabled = authMethods.contains(AuthMethod.O_AUTH)
 
-                    Box(
+                    TextButton(
+                        onClick = { viewModel.startOAuth() },
+                        enabled = isEnabled,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 24.dp),
+                            .padding(top = 12.dp),
                     ) {
-                        TextButton(
-                            onClick = { viewModel.startOAuth() },
-                            enabled = isEnabled,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text(
-                                text = if (isEnabled) stringResource(R.string.login_screen_open_id_button) else "",
-                                style = typography.bodyMedium.copy(
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    letterSpacing = 0.6.sp,
-                                    color = if (isEnabled) colorScheme.primary else colorScheme.onSurface.copy(alpha = 0f),
-                                ),
-                                modifier = Modifier.fillMaxWidth(),
-                                textAlign = TextAlign.Center,
-                            )
-                        }
+                        Text(
+                            text = if (isEnabled) stringResource(R.string.login_screen_open_id_button) else "",
+                            style = typography.bodyMedium.copy(
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Medium,
+                                letterSpacing = 0.6.sp,
+                                color = if (isEnabled) colorScheme.primary else colorScheme.onSurface.copy(alpha = 0f),
+                            ),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
 
                     CircularProgressIndicator(
