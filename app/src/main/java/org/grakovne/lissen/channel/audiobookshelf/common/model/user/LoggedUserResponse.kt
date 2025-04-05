@@ -8,4 +8,5 @@ data class LoggedUserResponse(
 data class User(
     val id: String,
     val token: String,
+    val username: String = "username",
 )

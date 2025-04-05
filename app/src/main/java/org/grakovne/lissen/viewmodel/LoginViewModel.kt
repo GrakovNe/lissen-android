@@ -9,29 +9,19 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.channel.common.ApiError
-import org.grakovne.lissen.channel.common.ApiError.InternalError
-import org.grakovne.lissen.channel.common.ApiError.InvalidCredentialsHost
 import org.grakovne.lissen.channel.common.ApiError.MissingCredentialsHost
 import org.grakovne.lissen.channel.common.ApiError.MissingCredentialsPassword
 import org.grakovne.lissen.channel.common.ApiError.MissingCredentialsUsername
-import org.grakovne.lissen.channel.common.ApiError.Unauthorized
-import org.grakovne.lissen.channel.common.LibraryType
+import org.grakovne.lissen.channel.common.AuthMethod
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.domain.Library
-import org.grakovne.lissen.domain.UserAccount
-import org.grakovne.lissen.domain.error.LoginError
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
+    preferences: LissenSharedPreferences,
     private val mediaChannel: LissenMediaProvider,
-    private val preferences: LissenSharedPreferences,
 ) : ViewModel() {
-
-    private val _loginError: MutableLiveData<LoginError> = MutableLiveData()
-    val loginError = _loginError
-
     private val _host = MutableLiveData(preferences.getHost() ?: "")
     val host = _host
 
@@ -43,6 +33,23 @@ class LoginViewModel @Inject constructor(
 
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
     val loginState: StateFlow<LoginState> = _loginState.asStateFlow()
+
+    private val _authMethods = MutableLiveData<List<AuthMethod>>(emptyList())
+    val authMethods = _authMethods
+
+    fun updateAuthMethods() {
+        viewModelScope
+            .launch {
+                val value = host.value ?: return@launch
+
+                mediaChannel
+                    .fetchAuthMethods(host = value)
+                    .fold(
+                        onSuccess = { _authMethods.value = it },
+                        onFailure = { _authMethods.value = emptyList() },
+                    )
+            }
+    }
 
     fun setHost(host: String) {
         _host.value = host
@@ -58,6 +65,23 @@ class LoginViewModel @Inject constructor(
 
     fun readyToLogin() {
         _loginState.value = LoginState.Idle
+    }
+
+    fun startOAuth() {
+        viewModelScope.launch {
+            _loginState.value = LoginState.Loading
+
+            val host = host.value ?: run {
+                _loginState.value = LoginState.Error(MissingCredentialsHost)
+                return@launch
+            }
+
+            mediaChannel.startOAuth(
+                host = host,
+                onSuccess = { _loginState.value = LoginState.Idle },
+                onFailure = { onLoginFailure(it) },
+            )
+        }
     }
 
     fun login() {
@@ -79,87 +103,20 @@ class LoginViewModel @Inject constructor(
                 return@launch
             }
 
-            val response = mediaChannel.authorize(host, username, password)
-
-            val result = response
+            val result = mediaChannel
+                .authorize(host, username, password)
                 .foldAsync(
-                    onSuccess = { account -> onLoginSuccessful(host, username, account) },
+                    onSuccess = { _ -> LoginState.Success },
                     onFailure = { error -> onLoginFailure(error.code) },
                 )
-
             _loginState.value = result
         }
     }
 
-    private fun persistCredentials(
-        host: String,
-        username: String,
-        token: String,
-    ) {
-        preferences.saveHost(host)
-        preferences.saveUsername(username)
-        preferences.saveToken(token)
-    }
-
-    private suspend fun onLoginSuccessful(
-        host: String,
-        username: String,
-        account: UserAccount,
-    ): LoginState.Success {
-        persistCredentials(
-            host = host,
-            username = username,
-            token = account.token,
-        )
-
-        mediaChannel
-            .fetchLibraries()
-            .fold(
-                onSuccess = {
-                    val preferredLibrary = it
-                        .find { item -> item.id == account.preferredLibraryId }
-                        ?: it.firstOrNull()
-
-                    preferredLibrary
-                        ?.let { library ->
-                            preferences.savePreferredLibrary(
-                                Library(
-                                    id = library.id,
-                                    title = library.title,
-                                    type = library.type,
-                                ),
-                            )
-                        }
-                },
-                onFailure = {
-                    account
-                        .preferredLibraryId
-                        ?.let { library ->
-                            Library(
-                                id = library,
-                                title = "Default Library",
-                                type = LibraryType.LIBRARY,
-                            )
-                        }
-                        ?.let { preferences.savePreferredLibrary(it) }
-                },
-            )
-
-        return LoginState.Success
-    }
-
     private fun onLoginFailure(error: ApiError): LoginState.Error {
-        _loginError.value = when (error) {
-            InternalError -> LoginError.InternalError
-            MissingCredentialsHost -> LoginError.MissingCredentialsHost
-            MissingCredentialsPassword -> LoginError.MissingCredentialsPassword
-            MissingCredentialsUsername -> LoginError.MissingCredentialsUsername
-            Unauthorized -> LoginError.Unauthorized
-            InvalidCredentialsHost -> LoginError.InvalidCredentialsHost
-            ApiError.NetworkError -> LoginError.NetworkError
-            ApiError.UnsupportedError -> LoginError.InternalError
+        viewModelScope.launch {
+            _loginState.value = LoginState.Error(error)
         }
-
         return LoginState.Error(error)
     }
 

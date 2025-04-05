@@ -1,6 +1,5 @@
 package org.grakovne.lissen.ui.screens.login
 
-import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import android.widget.Toast.LENGTH_SHORT
@@ -11,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -22,15 +22,16 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -39,6 +40,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -54,31 +56,29 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
 import org.grakovne.lissen.R
-import org.grakovne.lissen.domain.error.LoginError
-import org.grakovne.lissen.domain.error.LoginError.InternalError
-import org.grakovne.lissen.domain.error.LoginError.InvalidCredentialsHost
-import org.grakovne.lissen.domain.error.LoginError.MissingCredentialsHost
-import org.grakovne.lissen.domain.error.LoginError.MissingCredentialsPassword
-import org.grakovne.lissen.domain.error.LoginError.MissingCredentialsUsername
-import org.grakovne.lissen.domain.error.LoginError.NetworkError
-import org.grakovne.lissen.domain.error.LoginError.Unauthorized
+import org.grakovne.lissen.channel.common.AuthMethod
+import org.grakovne.lissen.channel.common.makeText
 import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.LoginViewModel
 import org.grakovne.lissen.viewmodel.LoginViewModel.LoginState
 
+@OptIn(FlowPreview::class)
 @Composable
 fun LoginScreen(
     navController: AppNavigationService,
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
     val loginState by viewModel.loginState.collectAsState()
-    val loginError by viewModel.loginError.observeAsState()
 
     val host by viewModel.host.observeAsState("")
     val username by viewModel.username.observeAsState("")
     val password by viewModel.password.observeAsState("")
+
+    val authMethods by viewModel.authMethods.observeAsState(emptyList())
 
     var showPassword by remember { mutableStateOf(false) }
 
@@ -90,17 +90,27 @@ fun LoginScreen(
         }
 
         withMinimumTime(300) {
-            Log.d(TAG, "Tried to log in with result $loginState and possible error is $loginError")
+            Log.d(TAG, "Tried to log in with result $loginState and possible error is $loginState")
         }
 
         when (loginState) {
             is LoginState.Success -> navController.showLibrary(clearHistory = true)
-            is LoginState.Error -> loginError?.let { Toast.makeText(context, it.makeText(context), LENGTH_SHORT).show() }
+            is LoginState.Error -> {
+                val message = (loginState as LoginState.Error).message
+
+                message.let { Toast.makeText(context, it.makeText(context), LENGTH_SHORT).show() }
+            }
+
             else -> {}
         }
         viewModel.readyToLogin()
     }
 
+    LaunchedEffect(Unit) {
+        snapshotFlow { host }
+            .debounce(150)
+            .collect { viewModel.updateAuthMethods() }
+    }
     Scaffold(
         modifier = Modifier
             .systemBarsPadding()
@@ -114,7 +124,8 @@ fun LoginScreen(
                 Column(
                     modifier = Modifier
                         .align(Alignment.Center)
-                        .fillMaxWidth(0.8f),
+                        .fillMaxWidth(0.8f)
+                        .imePadding(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(
@@ -229,11 +240,34 @@ fun LoginScreen(
                         }
                     }
 
+                    val isEnabled = authMethods.contains(AuthMethod.O_AUTH)
+
+                    TextButton(
+                        onClick = { viewModel.startOAuth() },
+                        enabled = isEnabled,
+                        colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.onSurface),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 12.dp),
+                    ) {
+                        Text(
+                            text = if (isEnabled) stringResource(R.string.login_screen_open_id_button) else "",
+                            style = typography.bodyMedium.copy(
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                letterSpacing = 0.6.sp,
+                                color = if (isEnabled) colorScheme.primary else colorScheme.onSurface.copy(alpha = 0f),
+                            ),
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+
                     CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.primary,
+                        color = colorScheme.primary,
                         strokeWidth = 4.dp,
                         modifier = Modifier
-                            .padding(vertical = 32.dp)
+                            .padding(vertical = 20.dp)
                             .alpha(if (loginState !is LoginState.Idle) 1f else 0f),
                     )
                 }
@@ -259,13 +293,3 @@ fun LoginScreen(
 }
 
 private const val TAG: String = "LoginScreen"
-
-private fun LoginError.makeText(context: Context) = when (this) {
-    InternalError -> context.getString(R.string.login_error_host_is_down)
-    MissingCredentialsHost -> context.getString(R.string.login_error_host_url_is_missing)
-    MissingCredentialsPassword -> context.getString(R.string.login_error_username_is_missing)
-    MissingCredentialsUsername -> context.getString(R.string.login_error_password_is_missing)
-    Unauthorized -> context.getString(R.string.login_error_credentials_are_invalid)
-    InvalidCredentialsHost -> context.getString(R.string.login_error_host_url_shall_be_https_or_http)
-    NetworkError -> context.getString(R.string.login_error_connection_error)
-}

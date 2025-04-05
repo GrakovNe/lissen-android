@@ -3,6 +3,7 @@ package org.grakovne.lissen.channel.audiobookshelf.common
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfDataRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfMediaRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfSyncService
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.AuthMethodResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
@@ -28,6 +29,7 @@ class UnknownAudiobookshelfChannel @Inject constructor(
     sessionResponseConverter: PlaybackSessionResponseConverter,
     libraryResponseConverter: LibraryResponseConverter,
     connectionInfoResponseConverter: ConnectionInfoResponseConverter,
+    authMethodResponseConverter: AuthMethodResponseConverter,
 ) : AudiobookshelfChannel(
     dataRepository = dataRepository,
     mediaRepository = mediaRepository,
@@ -37,6 +39,7 @@ class UnknownAudiobookshelfChannel @Inject constructor(
     syncService = syncService,
     libraryResponseConverter = libraryResponseConverter,
     connectionInfoResponseConverter = connectionInfoResponseConverter,
+    authMethodResponseConverter = authMethodResponseConverter,
 ) {
 
     override fun getLibraryType(): LibraryType = LibraryType.UNKNOWN

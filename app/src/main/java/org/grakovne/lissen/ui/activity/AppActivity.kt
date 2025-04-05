@@ -28,17 +28,14 @@ class AppActivity : ComponentActivity() {
     @Inject
     lateinit var networkQualityService: NetworkQualityService
 
-    @Inject
-    lateinit var sharedPreferences: LissenSharedPreferences
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
         setContent {
-            val colorScheme by sharedPreferences
+            val colorScheme by preferences
                 .colorSchemeFlow
-                .collectAsState(initial = sharedPreferences.getColorScheme())
+                .collectAsState(initial = preferences.getColorScheme())
 
             LissenTheme(colorScheme) {
                 val navController = rememberNavController()

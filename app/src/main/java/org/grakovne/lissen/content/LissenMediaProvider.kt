@@ -4,9 +4,11 @@ import android.net.Uri
 import android.util.Log
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
+import org.grakovne.lissen.channel.common.AuthMethod
 import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.ChannelCode
 import org.grakovne.lissen.channel.common.ChannelProvider
+import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.content.cache.LocalCacheRepository
 import org.grakovne.lissen.domain.Book
@@ -24,7 +26,7 @@ import javax.inject.Singleton
 
 @Singleton
 class LissenMediaProvider @Inject constructor(
-    private val sharedPreferences: LissenSharedPreferences,
+    private val preferences: LissenSharedPreferences,
     private val channels: Map<ChannelCode, @JvmSuppressWildcards ChannelProvider>,
     private val localCacheRepository: LocalCacheRepository,
 ) {
@@ -35,7 +37,7 @@ class LissenMediaProvider @Inject constructor(
     ): ApiResult<Uri> {
         Log.d(TAG, "Fetching File $libraryItemId and $chapterId URI")
 
-        return when (sharedPreferences.isForceCache()) {
+        return when (preferences.isForceCache()) {
             true ->
                 localCacheRepository
                     .provideFileUri(libraryItemId, chapterId)
@@ -59,11 +61,18 @@ class LissenMediaProvider @Inject constructor(
     ): ApiResult<Unit> {
         Log.d(TAG, "Syncing Progress for $bookId. $progress")
 
-        return when (sharedPreferences.isForceCache()) {
+        return when (preferences.isForceCache()) {
             true -> localCacheRepository.syncProgress(bookId, progress)
             false -> providePreferredChannel()
                 .syncProgress(sessionId, progress)
                 .also { localCacheRepository.syncProgress(bookId, progress) }
+        }
+    }
+
+    suspend fun fetchAuthMethods(host: String): ApiResult<List<AuthMethod>> {
+        return when (preferences.isForceCache()) {
+            true -> ApiResult.Success(emptyList())
+            false -> providePreferredChannel().fetchAuthMethods(host)
         }
     }
 
@@ -72,7 +81,7 @@ class LissenMediaProvider @Inject constructor(
     ): ApiResult<InputStream> {
         Log.d(TAG, "Fetching Cover stream for $bookId")
 
-        return when (sharedPreferences.isForceCache()) {
+        return when (preferences.isForceCache()) {
             true -> localCacheRepository.fetchBookCover(bookId)
             false -> providePreferredChannel().fetchBookCover(bookId)
         }
@@ -85,7 +94,7 @@ class LissenMediaProvider @Inject constructor(
     ): ApiResult<List<Book>> {
         Log.d(TAG, "Searching books with query $query of library: $libraryId")
 
-        return when (sharedPreferences.isForceCache()) {
+        return when (preferences.isForceCache()) {
             true -> localCacheRepository.searchBooks(query)
             false -> providePreferredChannel()
                 .searchBooks(
@@ -103,7 +112,7 @@ class LissenMediaProvider @Inject constructor(
     ): ApiResult<PagedItems<Book>> {
         Log.d(TAG, "Fetching page $pageNumber of library: $libraryId")
 
-        return when (sharedPreferences.isForceCache()) {
+        return when (preferences.isForceCache()) {
             true -> localCacheRepository.fetchBooks(pageSize, pageNumber)
             false -> providePreferredChannel().fetchBooks(libraryId, pageSize, pageNumber)
         }
@@ -112,7 +121,7 @@ class LissenMediaProvider @Inject constructor(
     suspend fun fetchLibraries(): ApiResult<List<Library>> {
         Log.d(TAG, "Fetching List of libraries")
 
-        return when (sharedPreferences.isForceCache()) {
+        return when (preferences.isForceCache()) {
             true -> localCacheRepository.fetchLibraries()
             false -> providePreferredChannel()
                 .fetchLibraries()
@@ -133,7 +142,7 @@ class LissenMediaProvider @Inject constructor(
     ): ApiResult<PlaybackSession> {
         Log.d(TAG, "Starting Playback for $bookId. $supportedMimeTypes are supported")
 
-        return when (sharedPreferences.isForceCache()) {
+        return when (preferences.isForceCache()) {
             true -> localCacheRepository.startPlayback(bookId)
             false -> providePreferredChannel().startPlayback(
                 bookId = bookId,
@@ -149,7 +158,7 @@ class LissenMediaProvider @Inject constructor(
     ): ApiResult<List<RecentBook>> {
         Log.d(TAG, "Fetching Recent books of library $libraryId")
 
-        return when (sharedPreferences.isForceCache()) {
+        return when (preferences.isForceCache()) {
             true -> localCacheRepository.fetchRecentListenedBooks()
             false -> providePreferredChannel()
                 .fetchRecentListenedBooks(libraryId)
@@ -162,7 +171,7 @@ class LissenMediaProvider @Inject constructor(
     ): ApiResult<DetailedItem> {
         Log.d(TAG, "Fetching Detailed book info for $bookId")
 
-        return when (sharedPreferences.isForceCache()) {
+        return when (preferences.isForceCache()) {
             true ->
                 localCacheRepository
                     .fetchBook(bookId)
@@ -181,7 +190,66 @@ class LissenMediaProvider @Inject constructor(
         password: String,
     ): ApiResult<UserAccount> {
         Log.d(TAG, "Authorizing for $username@$host")
-        return provideAuthService().authorize(host, username, password)
+        return provideAuthService().authorize(host, username, password) { onPostLogin(host, it) }
+    }
+
+    suspend fun startOAuth(
+        host: String,
+        onSuccess: () -> Unit,
+        onFailure: (ApiError) -> Unit,
+    ) {
+        Log.d(TAG, "Starting OAuth for $host")
+
+        return provideAuthService()
+            .startOAuth(
+                host = host,
+                onSuccess = onSuccess,
+                onFailure = { onFailure(it) },
+            )
+    }
+
+    suspend fun onPostLogin(
+        host: String,
+        account: UserAccount,
+    ) {
+        provideAuthService()
+            .persistCredentials(
+                host = host,
+                username = account.username,
+                token = account.token,
+            )
+
+        fetchLibraries()
+            .fold(
+                onSuccess = {
+                    val preferredLibrary = it
+                        .find { item -> item.id == account.preferredLibraryId }
+                        ?: it.firstOrNull()
+
+                    preferredLibrary
+                        ?.let { library ->
+                            preferences.savePreferredLibrary(
+                                Library(
+                                    id = library.id,
+                                    title = library.title,
+                                    type = library.type,
+                                ),
+                            )
+                        }
+                },
+                onFailure = {
+                    account
+                        .preferredLibraryId
+                        ?.let { library ->
+                            Library(
+                                id = library,
+                                title = "Default Library",
+                                type = LibraryType.LIBRARY,
+                            )
+                        }
+                        ?.let { preferences.savePreferredLibrary(it) }
+                },
+            )
     }
 
     private suspend fun syncFromLocalProgress(
@@ -240,11 +308,11 @@ class LissenMediaProvider @Inject constructor(
 
     suspend fun fetchConnectionInfo() = providePreferredChannel().fetchConnectionInfo()
 
-    fun provideAuthService(): ChannelAuthService = channels[sharedPreferences.getChannel()]
+    fun provideAuthService(): ChannelAuthService = channels[preferences.getChannel()]
         ?.provideChannelAuth()
         ?: throw IllegalStateException("Selected auth service has been requested but not selected")
 
-    fun providePreferredChannel(): MediaChannel = channels[sharedPreferences.getChannel()]
+    fun providePreferredChannel(): MediaChannel = channels[preferences.getChannel()]
         ?.provideMediaChannel()
         ?: throw IllegalStateException("Selected auth service has been requested but not selected")
 

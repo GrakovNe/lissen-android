@@ -97,4 +97,7 @@
     <string name="notification_content_caching_title">Контент загружается</string>
     <string name="notification_content_caching_error_title">Кэширование не удалось</string>
     <string name="notification_content_caching_error_description">Некоторые файлы не были загружены</string>
+    <string name="login_error_lissen_auth_scheme_must_be_whitelisted">Схема %1$s://%2$s не разрешена в настройках URI перенаправления сервера</string>
+    <string name="login_error_lissen_auth_failed">Не удалось авторизоваться. Проверьте настройки сервера</string>
+    <string name="login_screen_open_id_button">Подключиться с OpenID</string>
 </resources>

@@ -36,6 +36,24 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:screenOrientation="portrait"
+            android:name=".channel.audiobookshelf.common.oauth.AudiobookshelfOAuthCallbackActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Transparent"
+            tools:ignore="LockedOrientationActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:scheme="lissen"
+                    android:host="oauth" />
+            </intent-filter>
+        </activity>
+
         <service
             android:name=".playback.service.PlaybackService"
             android:exported="false"

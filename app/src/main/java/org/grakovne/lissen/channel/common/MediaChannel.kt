@@ -12,6 +12,10 @@ import java.io.InputStream
 
 interface MediaChannel {
 
+    suspend fun fetchAuthMethods(
+        host: String,
+    ): ApiResult<List<AuthMethod>>
+
     fun getLibraryType(): LibraryType
 
     fun provideFileUri(
