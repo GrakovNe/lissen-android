@@ -3,6 +3,7 @@ package org.grakovne.lissen.channel.audiobookshelf.common.api
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.net.toUri
 import com.google.gson.Gson
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -140,17 +141,19 @@ class AudiobookshelfAuthService @Inject constructor(
                         val cookieHeaders: List<String> = response.headers("Set-Cookie")
                         contextCache.storeCookies(cookieHeaders)
 
-                        val intent = Intent(Intent.ACTION_VIEW, location.toUri()).apply {
-                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        }
-
                         onSuccess()
-                        context.startActivity(intent)
+                        openAuthInCustomTab(context, location)
                     } catch (ex: Exception) {
                         onFailure(examineError(ex.message ?: ""))
                     }
                 }
             })
+    }
+
+    fun openAuthInCustomTab(context: Context, url: String) {
+        val customTabsIntent = CustomTabsIntent.Builder().build()
+        customTabsIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY or Intent.FLAG_ACTIVITY_NEW_TASK)
+        customTabsIntent.launchUrl(context, url.toUri())
     }
 
     override suspend fun exchangeToken(

@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -244,6 +245,7 @@ fun LoginScreen(
                     TextButton(
                         onClick = { viewModel.startOAuth() },
                         enabled = isEnabled,
+                        colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.onSurface),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 12.dp),
@@ -251,13 +253,13 @@ fun LoginScreen(
                         Text(
                             text = if (isEnabled) stringResource(R.string.login_screen_open_id_button) else "",
                             style = typography.bodyMedium.copy(
-                                fontSize = 14.sp,
+                                fontSize = 16.sp,
                                 fontWeight = FontWeight.Medium,
                                 letterSpacing = 0.6.sp,
                                 color = if (isEnabled) colorScheme.primary else colorScheme.onSurface.copy(alpha = 0f),
                             ),
                             textAlign = TextAlign.Center,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
                         )
                     }
 
