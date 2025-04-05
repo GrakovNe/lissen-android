@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -38,6 +39,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -53,6 +55,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
 import org.grakovne.lissen.R
 import org.grakovne.lissen.channel.common.AuthMethod
 import org.grakovne.lissen.channel.common.makeText
@@ -61,6 +65,7 @@ import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.LoginViewModel
 import org.grakovne.lissen.viewmodel.LoginViewModel.LoginState
 
+@OptIn(FlowPreview::class)
 @Composable
 fun LoginScreen(
     navController: AppNavigationService,
@@ -100,10 +105,11 @@ fun LoginScreen(
         viewModel.readyToLogin()
     }
 
-    LaunchedEffect(host) {
-        viewModel.updateAuthMethods()
+    LaunchedEffect(Unit) {
+        snapshotFlow { host }
+            .debounce(150)
+            .collect { viewModel.updateAuthMethods() }
     }
-
     Scaffold(
         modifier = Modifier
             .systemBarsPadding()
@@ -117,7 +123,8 @@ fun LoginScreen(
                 Column(
                     modifier = Modifier
                         .align(Alignment.Center)
-                        .fillMaxWidth(0.8f),
+                        .fillMaxWidth(0.8f)
+                        .imePadding(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
                     Text(
@@ -248,7 +255,7 @@ fun LoginScreen(
                         contentPadding = PaddingValues(vertical = 12.dp),
                     ) {
                         Text(
-                            text = "Connect with OpenID",
+                            text = stringResource(R.string.login_screen_open_id_button),
                             textAlign = TextAlign.Center,
                             style = typography.bodyMedium.copy(
                                 fontSize = 16.sp,
@@ -261,7 +268,7 @@ fun LoginScreen(
                         color = colorScheme.primary,
                         strokeWidth = 4.dp,
                         modifier = Modifier
-                            .padding(vertical = 32.dp)
+                            .padding(vertical = 20.dp)
                             .alpha(if (loginState !is LoginState.Idle) 1f else 0f),
                     )
                 }
