@@ -7,7 +7,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.publishOn
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiError.MissingCredentialsHost
@@ -23,10 +22,6 @@ class LoginViewModel @Inject constructor(
     preferences: LissenSharedPreferences,
     private val mediaChannel: LissenMediaProvider,
 ) : ViewModel() {
-
-    private val _loginError: MutableLiveData<ApiError> = MutableLiveData()
-    val loginError = _loginError
-
     private val _host = MutableLiveData(preferences.getHost() ?: "")
     val host = _host
 
@@ -120,7 +115,6 @@ class LoginViewModel @Inject constructor(
 
     private fun onLoginFailure(error: ApiError): LoginState.Error {
         viewModelScope.launch {
-            _loginError.postValue(error)
             _loginState.value = LoginState.Error(error)
         }
         return LoginState.Error(error)

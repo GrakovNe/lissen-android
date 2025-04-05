@@ -67,7 +67,6 @@ fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
     val loginState by viewModel.loginState.collectAsState()
-    val loginError by viewModel.loginError.observeAsState()
 
     val host by viewModel.host.observeAsState("")
     val username by viewModel.username.observeAsState("")
@@ -85,12 +84,17 @@ fun LoginScreen(
         }
 
         withMinimumTime(300) {
-            Log.d(TAG, "Tried to log in with result $loginState and possible error is $loginError")
+            Log.d(TAG, "Tried to log in with result $loginState and possible error is $loginState")
         }
 
         when (loginState) {
             is LoginState.Success -> navController.showLibrary(clearHistory = true)
-            is LoginState.Error -> loginError?.let { Toast.makeText(context, it.makeText(context), LENGTH_SHORT).show() }
+            is LoginState.Error -> {
+                val message = (loginState as LoginState.Error).message
+
+                message.let { Toast.makeText(context, it.makeText(context), LENGTH_SHORT).show() }
+            }
+
             else -> {}
         }
         viewModel.readyToLogin()
