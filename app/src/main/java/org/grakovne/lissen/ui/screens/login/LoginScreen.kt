@@ -22,7 +22,6 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -31,6 +30,7 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -239,29 +239,30 @@ fun LoginScreen(
                         }
                     }
 
-                    Button(
-                        onClick = { viewModel.startOAuth() },
-                        enabled = authMethods.contains(AuthMethod.O_AUTH),
+                    val isEnabled = authMethods.contains(AuthMethod.O_AUTH)
+
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 24.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = colorScheme.primary.copy(alpha = 0.1f),
-                            contentColor = colorScheme.primary,
-                            disabledContainerColor = colorScheme.onSurface.copy(alpha = 0.12f),
-                            disabledContentColor = colorScheme.onSurface.copy(alpha = 0.38f),
-                        ),
-                        contentPadding = PaddingValues(vertical = 12.dp),
                     ) {
-                        Text(
-                            text = stringResource(R.string.login_screen_open_id_button),
-                            textAlign = TextAlign.Center,
-                            style = typography.bodyMedium.copy(
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Medium,
-                            ),
-                        )
+                        TextButton(
+                            onClick = { viewModel.startOAuth() },
+                            enabled = isEnabled,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(
+                                text = if (isEnabled) stringResource(R.string.login_screen_open_id_button) else "",
+                                style = typography.bodyMedium.copy(
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    letterSpacing = 0.6.sp,
+                                    color = if (isEnabled) colorScheme.primary else colorScheme.onSurface.copy(alpha = 0f),
+                                ),
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center,
+                            )
+                        }
                     }
 
                     CircularProgressIndicator(
