@@ -58,7 +58,7 @@ abstract class AudiobookshelfChannel(
                 val url = host
                     .toUri()
                     .buildUpon()
-                    .appendEncodedPath("audiobookshelf/status")
+                    .appendEncodedPath("status")
                     .build()
 
                 val client = createOkHttpClient()

@@ -40,6 +40,7 @@ abstract class ChannelAuthService(
     fun examineError(raw: String): ApiError {
         return when {
             raw.contains("Invalid redirect_uri") -> ApiError.InvalidRedirectUri
+            raw.contains("invalid_host") -> ApiError.MissingCredentialsHost
             else -> ApiError.OAuthFlowFailed
         }
     }

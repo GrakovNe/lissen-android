@@ -39,15 +39,19 @@ class AudiobookshelfOAuthCallbackActivity : ComponentActivity() {
 
         if (null == data) {
             finish()
+            return
         }
 
-        if (intent?.action == Intent.ACTION_VIEW && data != null && data.scheme == AuthScheme) {
+        if (intent?.action == Intent.ACTION_VIEW && data.scheme == AuthScheme) {
             val code = data.getQueryParameter("code") ?: ""
             Log.d(TAG, "Got Exchange code from ABS")
 
             lifecycleScope.launch {
                 authService.exchangeToken(
-                    host = preferences.getHost() ?: return@launch,
+                    host = preferences.getHost() ?: kotlin.run {
+                        onLoginFailed("invalid_host")
+                        return@launch
+                    },
                     code = code,
                     onSuccess = { onLogged(it) },
                     onFailure = { onLoginFailed(it) },

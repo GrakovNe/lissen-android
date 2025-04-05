@@ -21,9 +21,7 @@ class OAuthContextCache @Inject constructor() {
     }
 
     fun storeCookies(cookies: List<String>) {
-        this.cookies = cookies
-            .map { it.substringBefore(";") }
-            .joinToString("; ")
+        this.cookies = cookies.joinToString("; ") { it.substringBefore(";") }
     }
 
     fun readCookies() = cookies

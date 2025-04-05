@@ -34,8 +34,8 @@ class LissenApplication : Application() {
 
             httpSender {
                 uri = "https://acrarium.grakovne.org/report"
-                // basicAuthLogin = BuildConfig.ACRA_REPORT_LOGIN
-                // basicAuthPassword = BuildConfig.ACRA_REPORT_PASSWORD
+                basicAuthLogin = BuildConfig.ACRA_REPORT_LOGIN
+                basicAuthPassword = BuildConfig.ACRA_REPORT_PASSWORD
                 httpMethod = HttpSender.Method.POST
                 dropReportsOnTimeout = false
             }
