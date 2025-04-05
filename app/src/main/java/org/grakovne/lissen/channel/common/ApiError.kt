@@ -14,6 +14,7 @@ sealed class ApiError {
     data object MissingCredentialsPassword : ApiError()
     data object InternalError : ApiError()
     data object InvalidRedirectUri : ApiError()
+    data object OAuthFlowFailed : ApiError()
     data object UnsupportedError : ApiError()
 }
 
@@ -27,4 +28,5 @@ fun ApiError.makeText(context: Context) = when (this) {
     ApiError.NetworkError -> context.getString(R.string.login_error_connection_error)
     ApiError.InvalidRedirectUri -> context.getString(R.string.login_error_lissen_auth_scheme_must_be_whitelisted, AuthScheme, AuthHost)
     ApiError.UnsupportedError -> context.getString(R.string.login_error_connection_error)
+    ApiError.OAuthFlowFailed -> context.getString(R.string.login_error_lissen_auth_failed)
 }

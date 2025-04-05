@@ -3,6 +3,8 @@ package org.grakovne.lissen.channel.audiobookshelf.common.oauth
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
+import android.widget.Toast.LENGTH_SHORT
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -70,8 +72,14 @@ class AudiobookshelfOAuthCallbackActivity : ComponentActivity() {
     }
 
     private fun onLoginFailed(reason: String) {
-        authService.examineError(reason).makeText(this)
-        finish()
+        runOnUiThread {
+            authService
+                .examineError(reason)
+                .makeText(this)
+                .let { Toast.makeText(this, it, LENGTH_SHORT).show() }
+
+            finish()
+        }
     }
 
     companion object {
