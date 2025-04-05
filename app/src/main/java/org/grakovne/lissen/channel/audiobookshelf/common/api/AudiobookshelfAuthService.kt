@@ -28,7 +28,6 @@ import org.grakovne.lissen.channel.common.OAuthContextCache
 import org.grakovne.lissen.channel.common.randomPkce
 import org.grakovne.lissen.common.createOkHttpClient
 import org.grakovne.lissen.domain.UserAccount
-import org.grakovne.lissen.domain.error.LoginError
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import java.io.IOException
 import javax.inject.Inject
@@ -89,7 +88,7 @@ class AudiobookshelfAuthService @Inject constructor(
     override suspend fun startOAuth(
         host: String,
         onSuccess: () -> Unit,
-        onFailure: (LoginError) -> Unit,
+        onFailure: (ApiError) -> Unit,
     ) {
         Log.d(TAG, "Starting OAuth flow for $host")
         preferences.saveHost(host)

@@ -19,7 +19,6 @@ import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.domain.UserAccount
-import org.grakovne.lissen.domain.error.LoginError
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import java.io.InputStream
 import javax.inject.Inject
@@ -197,7 +196,7 @@ class LissenMediaProvider @Inject constructor(
     suspend fun startOAuth(
         host: String,
         onSuccess: () -> Unit,
-        onFailure: (LoginError) -> Unit
+        onFailure: (ApiError) -> Unit,
     ) {
         Log.d(TAG, "Starting OAuth for $host")
 
@@ -205,7 +204,7 @@ class LissenMediaProvider @Inject constructor(
             .startOAuth(
                 host = host,
                 onSuccess = onSuccess,
-                onFailure = { onFailure(it) }
+                onFailure = { onFailure(it) },
             )
     }
 

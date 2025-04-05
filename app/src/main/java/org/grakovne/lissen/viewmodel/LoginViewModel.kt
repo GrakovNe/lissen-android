@@ -7,17 +7,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.publishOn
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.channel.common.ApiError
-import org.grakovne.lissen.channel.common.ApiError.InternalError
-import org.grakovne.lissen.channel.common.ApiError.InvalidCredentialsHost
 import org.grakovne.lissen.channel.common.ApiError.MissingCredentialsHost
 import org.grakovne.lissen.channel.common.ApiError.MissingCredentialsPassword
 import org.grakovne.lissen.channel.common.ApiError.MissingCredentialsUsername
-import org.grakovne.lissen.channel.common.ApiError.Unauthorized
 import org.grakovne.lissen.channel.common.AuthMethod
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.domain.error.LoginError
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import javax.inject.Inject
 
@@ -27,7 +24,7 @@ class LoginViewModel @Inject constructor(
     private val mediaChannel: LissenMediaProvider,
 ) : ViewModel() {
 
-    private val _loginError: MutableLiveData<LoginError> = MutableLiveData()
+    private val _loginError: MutableLiveData<ApiError> = MutableLiveData()
     val loginError = _loginError
 
     private val _host = MutableLiveData(preferences.getHost() ?: "")
@@ -86,14 +83,8 @@ class LoginViewModel @Inject constructor(
 
             mediaChannel.startOAuth(
                 host = host,
-                onSuccess = {
-                    _loginState.value = LoginState.Idle
-                },
-                onFailure = {
-                    onLoginFailure(it)
-                    _loginError.value = it
-                    _loginState.value = LoginState.Error(it) // here
-                }
+                onSuccess = { _loginState.value = LoginState.Idle },
+                onFailure = { onLoginFailure(it) },
             )
         }
     }
@@ -128,19 +119,10 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun onLoginFailure(error: ApiError): LoginState.Error {
-        _loginError.postValue(
-            when (error) {
-                InternalError -> LoginError.InternalError
-                MissingCredentialsHost -> LoginError.MissingCredentialsHost
-                MissingCredentialsPassword -> LoginError.MissingCredentialsPassword
-                MissingCredentialsUsername -> LoginError.MissingCredentialsUsername
-                Unauthorized -> LoginError.Unauthorized
-                InvalidCredentialsHost -> LoginError.InvalidCredentialsHost
-                ApiError.NetworkError -> LoginError.NetworkError
-                ApiError.UnsupportedError -> LoginError.InternalError
-            },
-        )
-
+        viewModelScope.launch {
+            _loginError.postValue(error)
+            _loginState.value = LoginState.Error(error)
+        }
         return LoginState.Error(error)
     }
 

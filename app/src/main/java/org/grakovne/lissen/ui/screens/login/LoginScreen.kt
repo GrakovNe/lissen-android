@@ -55,7 +55,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.channel.common.AuthMethod
-import org.grakovne.lissen.domain.error.makeText
+import org.grakovne.lissen.channel.common.makeText
 import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.LoginViewModel

@@ -1,7 +1,6 @@
 package org.grakovne.lissen.channel.common
 
 import org.grakovne.lissen.domain.UserAccount
-import org.grakovne.lissen.domain.error.LoginError
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 
 abstract class ChannelAuthService(
@@ -18,7 +17,7 @@ abstract class ChannelAuthService(
     abstract suspend fun startOAuth(
         host: String,
         onSuccess: () -> Unit,
-        onFailure: (LoginError) -> Unit,
+        onFailure: (ApiError) -> Unit,
     )
 
     abstract suspend fun exchangeToken(
@@ -38,10 +37,10 @@ abstract class ChannelAuthService(
         preferences.saveToken(token)
     }
 
-    fun examineError(raw: String): LoginError {
+    fun examineError(raw: String): ApiError {
         return when {
-            raw.contains("invalid_uri") -> LoginError.InvalidRedirectUri
-            else -> LoginError.InternalError
+            raw.contains("invalid_uri") -> ApiError.InvalidRedirectUri
+            else -> ApiError.InternalError
         }
     }
 }
