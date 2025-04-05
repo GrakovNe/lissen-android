@@ -2,6 +2,8 @@ package org.grakovne.lissen.channel.common
 
 import android.content.Context
 import org.grakovne.lissen.R
+import org.grakovne.lissen.channel.audiobookshelf.common.oauth.AuthHost
+import org.grakovne.lissen.channel.audiobookshelf.common.oauth.AuthScheme
 
 sealed class ApiError {
     data object Unauthorized : ApiError()
@@ -23,6 +25,6 @@ fun ApiError.makeText(context: Context) = when (this) {
     ApiError.Unauthorized -> context.getString(R.string.login_error_credentials_are_invalid)
     ApiError.InvalidCredentialsHost -> context.getString(R.string.login_error_host_url_shall_be_https_or_http)
     ApiError.NetworkError -> context.getString(R.string.login_error_connection_error)
-    ApiError.InvalidRedirectUri -> "Invalid Redirect URI"
+    ApiError.InvalidRedirectUri -> context.getString(R.string.login_error_lissen_auth_scheme_must_be_whitelisted, AuthScheme, AuthHost)
     ApiError.UnsupportedError -> context.getString(R.string.login_error_connection_error)
 }

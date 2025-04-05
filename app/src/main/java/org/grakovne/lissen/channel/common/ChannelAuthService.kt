@@ -39,7 +39,7 @@ abstract class ChannelAuthService(
 
     fun examineError(raw: String): ApiError {
         return when {
-            raw.contains("invalid_uri") -> ApiError.InvalidRedirectUri
+            raw.contains("Invalid redirect_uri") -> ApiError.InvalidRedirectUri
             else -> ApiError.InternalError
         }
     }
