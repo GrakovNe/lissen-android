@@ -28,6 +28,7 @@ import org.grakovne.lissen.channel.common.OAuthContextCache
 import org.grakovne.lissen.channel.common.randomPkce
 import org.grakovne.lissen.common.createOkHttpClient
 import org.grakovne.lissen.domain.UserAccount
+import org.grakovne.lissen.domain.error.LoginError
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import java.io.IOException
 import javax.inject.Inject
@@ -41,6 +42,11 @@ class AudiobookshelfAuthService @Inject constructor(
     private val preferences: LissenSharedPreferences,
     private val contextCache: OAuthContextCache,
 ) : ChannelAuthService(preferences) {
+
+    private val client = createOkHttpClient()
+        .newBuilder()
+        .followRedirects(false)
+        .build()
 
     override suspend fun authorize(
         host: String,
@@ -80,14 +86,13 @@ class AudiobookshelfAuthService @Inject constructor(
             )
     }
 
-    override suspend fun startOAuth(host: String) {
+    override suspend fun startOAuth(
+        host: String,
+        onSuccess: () -> Unit,
+        onFailure: (LoginError) -> Unit,
+    ) {
         Log.d(TAG, "Starting OAuth flow for $host")
         preferences.saveHost(host)
-
-        val client = createOkHttpClient()
-            .newBuilder()
-            .followRedirects(false)
-            .build()
 
         val pkce = randomPkce()
         contextCache.storePkce(pkce)
@@ -114,21 +119,36 @@ class AudiobookshelfAuthService @Inject constructor(
             .newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     Log.e(TAG, "Failed OAuth flow due to: $e")
+                    onFailure(examineError(e.message ?: ""))
                 }
 
                 override fun onResponse(call: Call, response: Response) {
-                    response.use { redirect ->
-                        Log.d(TAG, "Got Redirect from ABS")
+                    Log.d(TAG, "Got Redirect from ABS")
 
-                        val location = redirect.header("Location")
-                        val cookieHeaders: List<String> = redirect.headers("Set-Cookie")
+                    if (response.code != 302) {
+                        onFailure(examineError(response.body?.string() ?: ""))
+                        return
+                    }
 
+                    val location = response
+                        .header("Location")
+                        ?: kotlin.run {
+                            onFailure(examineError("invalid_redirect"))
+                            return
+                        }
+
+                    try {
+                        val cookieHeaders: List<String> = response.headers("Set-Cookie")
                         contextCache.storeCookies(cookieHeaders)
 
-                        val intent = Intent(Intent.ACTION_VIEW, location!!.toUri()).apply {
+                        val intent = Intent(Intent.ACTION_VIEW, location.toUri()).apply {
                             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         }
+
+                        onSuccess()
                         context.startActivity(intent)
+                    } catch (ex: Exception) {
+                        onFailure(examineError(ex.message ?: ""))
                     }
                 }
             })
@@ -168,10 +188,17 @@ class AudiobookshelfAuthService @Inject constructor(
             .enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     Log.e(TAG, "Callback request failed: $e")
+                    onFailure(e.message ?: "")
                 }
 
                 override fun onResponse(call: Call, response: Response) {
-                    val raw = response.body?.string() ?: return
+                    val raw = response
+                        .body
+                        ?.string()
+                        ?: run {
+                            onFailure(response.body?.string() ?: "")
+                            return
+                        }
 
                     val user = try {
                         Gson()
@@ -183,8 +210,7 @@ class AudiobookshelfAuthService @Inject constructor(
                         return
                     }
 
-                    CoroutineScope(Dispatchers.IO)
-                        .launch { onSuccess(user) }
+                    CoroutineScope(Dispatchers.IO).launch { onSuccess(user) }
                 }
             })
     }

@@ -77,12 +77,24 @@ class LoginViewModel @Inject constructor(
 
     fun startOAuth() {
         viewModelScope.launch {
+            _loginState.value = LoginState.Loading
+
             val host = host.value ?: run {
                 _loginState.value = LoginState.Error(MissingCredentialsHost)
                 return@launch
             }
 
-            mediaChannel.startOAuth(host)
+            mediaChannel.startOAuth(
+                host = host,
+                onSuccess = {
+                    _loginState.value = LoginState.Idle
+                },
+                onFailure = {
+                    onLoginFailure(it)
+                    _loginError.value = it
+                    _loginState.value = LoginState.Error(it) // here
+                }
+            )
         }
     }
 

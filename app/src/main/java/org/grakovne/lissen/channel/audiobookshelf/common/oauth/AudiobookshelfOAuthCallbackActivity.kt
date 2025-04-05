@@ -11,6 +11,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.api.AudiobookshelfAuthS
 import org.grakovne.lissen.channel.common.OAuthContextCache
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.UserAccount
+import org.grakovne.lissen.domain.error.makeText
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.activity.AppActivity
 import javax.inject.Inject
@@ -47,7 +48,7 @@ class AudiobookshelfOAuthCallbackActivity : ComponentActivity() {
                     host = preferences.getHost() ?: return@launch,
                     code = code,
                     onSuccess = { onLogged(it) },
-                    onFailure = {},
+                    onFailure = { onLoginFailed(it) },
                 )
             }
         }
@@ -68,7 +69,13 @@ class AudiobookshelfOAuthCallbackActivity : ComponentActivity() {
         finish()
     }
 
+    private fun onLoginFailed(reason: String) {
+        authService.examineError(reason).makeText(this)
+        finish()
+    }
+
     companion object {
+
         private const val TAG = "AudiobookshelfOAuthCallbackActivity"
     }
 }
