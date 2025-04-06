@@ -35,9 +35,7 @@ fun WidgetControlButton(
             modifier = GlanceModifier
                 .size(size)
                 .cornerRadius(16.dp)
-                .clickable(
-                    onClick = onClick,
-                ),
+                .clickable(onClick = onClick),
         )
     }
 }

@@ -50,7 +50,6 @@ class LissenApplication : Application() {
                 ReportField.ANDROID_VERSION,
                 ReportField.PHONE_MODEL,
                 ReportField.STACK_TRACE,
-                ReportField.LOGCAT,
             )
         }
     }

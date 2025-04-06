@@ -13,13 +13,6 @@ fun Int.formatFully(): String {
     }
 }
 
-fun Int.formatShortly(): String {
-    val hours = this / 3600
-    val minutes = (this % 3600) / 60
-
-    return String.format(Locale.getDefault(), "%02dh %02dm", hours, minutes)
-}
-
 fun Int.formatLeadingMinutes(): String {
     val minutes = this / 60
     val seconds = this % 60

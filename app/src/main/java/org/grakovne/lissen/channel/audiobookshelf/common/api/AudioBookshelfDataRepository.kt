@@ -128,9 +128,6 @@ class AudioBookshelfDataRepository @Inject constructor(
     ): ApiResult<PlaybackSessionResponse> =
         safeApiCall { getClientInstance().startPodcastPlayback(itemId, episodeId, request) }
 
-    suspend fun stopPlayback(sessionId: String): ApiResult<Unit> =
-        safeApiCall { getClientInstance().stopPlayback(sessionId) }
-
     suspend fun publishLibraryItemProgress(
         itemId: String,
         progress: ProgressSyncRequest,

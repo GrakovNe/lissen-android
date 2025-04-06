@@ -107,11 +107,6 @@ interface AudiobookshelfApiClient {
         @Body syncProgressRequest: PlaybackStartRequest,
     ): Response<PlaybackSessionResponse>
 
-    @POST("/api/session/{sessionId}/close")
-    suspend fun stopPlayback(
-        @Path("sessionId") sessionId: String,
-    ): Response<Unit>
-
     @POST("login")
     suspend fun login(@Body request: CredentialsLoginRequest): Response<LoggedUserResponse>
 }

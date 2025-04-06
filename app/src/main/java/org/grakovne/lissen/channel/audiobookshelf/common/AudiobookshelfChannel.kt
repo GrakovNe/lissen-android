@@ -42,15 +42,19 @@ abstract class AudiobookshelfChannel(
     override fun provideFileUri(
         libraryItemId: String,
         fileId: String,
-    ): Uri = Uri.parse(preferences.getHost())
-        .buildUpon()
-        .appendPath("api")
-        .appendPath("items")
-        .appendPath(libraryItemId)
-        .appendPath("file")
-        .appendPath(fileId)
-        .appendQueryParameter("token", preferences.getToken())
-        .build()
+    ): Uri {
+        val host = preferences.getHost() ?: error("Host is null")
+
+        return host.toUri()
+            .buildUpon()
+            .appendPath("api")
+            .appendPath("items")
+            .appendPath(libraryItemId)
+            .appendPath("file")
+            .appendPath(fileId)
+            .appendQueryParameter("token", preferences.getToken())
+            .build()
+    }
 
     override suspend fun fetchAuthMethods(host: String): ApiResult<List<AuthMethod>> {
         return withContext(Dispatchers.IO) {

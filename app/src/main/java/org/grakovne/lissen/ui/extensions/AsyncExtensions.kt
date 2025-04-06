@@ -5,7 +5,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlin.system.measureTimeMillis
 
-suspend fun <T> CoroutineScope.withMinimumTime(
+suspend fun <T> withMinimumTime(
     minimumTimeMillis: Long,
     block: suspend CoroutineScope.() -> T,
 ): T {

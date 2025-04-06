@@ -41,7 +41,7 @@ class ApiClient(
             chain.proceed(request)
         }
         .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(90, TimeUnit.SECONDS)
         .build()
 
     val retrofit: Retrofit =

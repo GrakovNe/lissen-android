@@ -1,4 +1,4 @@
-package org.grakovne.lissen.viewmodel
+package org.grakovne.lissen.domain
 
 sealed class CacheStatus {
     data object Idle : CacheStatus()

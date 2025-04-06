@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.content.cache.ContentCachingManager
 import org.grakovne.lissen.content.cache.ContentCachingProgress
 import org.grakovne.lissen.content.cache.ContentCachingService
+import org.grakovne.lissen.domain.CacheStatus
 import org.grakovne.lissen.domain.ContentCachingTask
 import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
