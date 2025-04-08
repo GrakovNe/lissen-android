@@ -7,6 +7,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -248,7 +250,17 @@ fun LibraryScreen(
                 title = {
                     if (!searchRequested) {
                         Row(
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = when (navBarTitle) {
+                                provideLibraryTitle() ->
+                                    Modifier
+                                        .clickable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = null,
+                                        ) { preferredLibraryExpanded = true }
+                                        .fillMaxWidth()
+
+                                else -> Modifier.fillMaxWidth()
+                            },
                         ) {
                             Text(
                                 text = navBarTitle,
@@ -343,13 +355,17 @@ fun LibraryScreen(
                                     else -> {
                                         if (isPlaceholderRequired.not()) {
                                             Row(
-                                                modifier = Modifier.fillMaxWidth(),
                                                 verticalAlignment = Alignment.CenterVertically,
+                                                modifier = Modifier
+                                                    .clickable(
+                                                        interactionSource = remember { MutableInteractionSource() },
+                                                        indication = null,
+                                                    ) { preferredLibraryExpanded = true }
+                                                    .fillMaxWidth(),
                                             ) {
                                                 Text(
                                                     style = titleTextStyle,
                                                     text = provideLibraryTitle(),
-                                                    modifier = Modifier,
                                                 )
 
                                                 LibrarySwitchComposable { preferredLibraryExpanded = true }
