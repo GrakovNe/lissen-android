@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 
@@ -38,6 +39,9 @@ fun GitHubLinkComposable() {
                 text = stringResource(R.string.source_code_on_github_subtitle),
                 style = typography.bodyMedium,
                 color = colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                modifier = Modifier.padding(bottom = 4.dp),
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }
