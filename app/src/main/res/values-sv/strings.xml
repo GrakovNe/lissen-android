@@ -88,8 +88,6 @@
     <string name="playing_item_details_year">År</string>
     <string name="playing_item_details_series">Serie</string>
     <string name="color_scheme_black">Svart</string>
-    <string name="settings_screen_donate_title">Donera</string>
-    <string name="settings_screen_donate_subtitle">Tack för ditt stöd</string>
     <string name="chapters_list_empty">Denna bok har inga kapitel</string>
     <string name="episodes_list_empty">Ingen podcast har inga avsnitt</string>
     <string name="items_list_empty">Inga tillgängliga objekt</string>

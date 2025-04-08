@@ -88,8 +88,6 @@
     <string name="playing_item_details_year">Yıl</string>
     <string name="playing_item_details_series">Seri</string>
     <string name="color_scheme_black">Siyah</string>
-    <string name="settings_screen_donate_title">Bağış Yap</string>
-    <string name="settings_screen_donate_subtitle">Desteğiniz için teşekkürler</string>
     <string name="chapters_list_empty">Kitabın bölümleri yok</string>
     <string name="episodes_list_empty">Podcast\'in bölümleri yok</string>
     <string name="items_list_empty">Kullanılabilir öğe yok</string>

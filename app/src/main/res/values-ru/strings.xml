@@ -88,8 +88,6 @@
     <string name="playing_item_details_year">Год</string>
     <string name="playing_item_details_series">Серия</string>
     <string name="color_scheme_black">Черная</string>
-    <string name="settings_screen_donate_title">Поддержать</string>
-    <string name="settings_screen_donate_subtitle">Спасибо за Вашу помощь</string>
     <string name="chapters_list_empty">У книги нет глав</string>
     <string name="episodes_list_empty">У подкаста нет выпусков</string>
     <string name="items_list_empty">У элемента нет эпизодов</string>
@@ -100,4 +98,6 @@
     <string name="login_error_lissen_auth_scheme_must_be_whitelisted">Схема %1$s://%2$s не разрешена в настройках URI перенаправления сервера</string>
     <string name="login_error_lissen_auth_failed">Не удалось авторизоваться. Проверьте настройки сервера</string>
     <string name="login_screen_open_id_button">Подключиться с OpenID</string>
+    <string name="source_code_on_github_title">Исходный код на GitHub</string>
+    <string name="source_code_on_github_subtitle">Сообщить об ошибке или предложить улучшение</string>
 </resources>

@@ -88,8 +88,6 @@
     <string name="playing_item_details_year">ஆண்டு</string>
     <string name="playing_item_details_series">தொடர்</string>
     <string name="color_scheme_black">கருப்பு</string>
-    <string name="settings_screen_donate_title">நன்கொடை அளியுங்கள்</string>
-    <string name="settings_screen_donate_subtitle">உங்கள் ஆதரவுக்கு நன்றி</string>
     <string name="notification_content_caching_error_title">தற்காலிக சேமிப்பில் தோல்வி</string>
     <string name="notification_content_caching_error_description">சில கோப்புகள் தற்காலிகமாகச் சேமிக்கப்படவில்லை.</string>
 </resources>

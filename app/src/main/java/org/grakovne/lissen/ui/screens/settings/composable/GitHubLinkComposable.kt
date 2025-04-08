@@ -17,25 +17,25 @@ import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 
 @Composable
-fun DonateLinkComposable() {
+fun GitHubLinkComposable() {
     val uriHandler = LocalUriHandler.current
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { uriHandler.openUri("https://ko-fi.com/grakovne") }
+            .clickable { uriHandler.openUri("https://github.com/GrakovNe/lissen-android") }
             .padding(horizontal = 24.dp, vertical = 12.dp),
     ) {
         Column(
             modifier = Modifier.weight(1f),
         ) {
             Text(
-                text = stringResource(R.string.settings_screen_donate_title),
+                text = stringResource(R.string.source_code_on_github_title),
                 style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
                 modifier = Modifier.padding(bottom = 4.dp),
             )
             Text(
-                text = stringResource(R.string.settings_screen_donate_subtitle),
+                text = stringResource(R.string.source_code_on_github_subtitle),
                 style = typography.bodyMedium,
                 color = colorScheme.onSurfaceVariant,
             )

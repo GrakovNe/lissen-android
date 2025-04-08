@@ -88,8 +88,6 @@
     <string name="playing_item_details_year">Anno</string>
     <string name="playing_item_details_series">Serie</string>
     <string name="color_scheme_black">Nera</string>
-    <string name="settings_screen_donate_title">Donare</string>
-    <string name="settings_screen_donate_subtitle">Grazie per il tuo supporto</string>
     <string name="episodes_list_empty">Nessun podcast ha episodi</string>
     <string name="items_list_empty">Nessun elemento disponibile</string>
     <string name="chapters_list_empty">Il libro non ha capitoli</string>

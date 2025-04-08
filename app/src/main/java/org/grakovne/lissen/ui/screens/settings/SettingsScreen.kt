@@ -32,7 +32,7 @@ import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.settings.composable.AdditionalComposable
 import org.grakovne.lissen.ui.screens.settings.composable.AdvancedSettingsItemComposable
 import org.grakovne.lissen.ui.screens.settings.composable.ColorSchemeSettingsComposable
-import org.grakovne.lissen.ui.screens.settings.composable.DonateLinkComposable
+import org.grakovne.lissen.ui.screens.settings.composable.GitHubLinkComposable
 import org.grakovne.lissen.ui.screens.settings.composable.ServerSettingsComposable
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
@@ -95,7 +95,7 @@ fun SettingsScreen(
                         onclick = { navController.showCustomHeadersSettings() },
                     )
 
-                    DonateLinkComposable()
+                    GitHubLinkComposable()
                 }
                 AdditionalComposable()
             }

@@ -88,8 +88,6 @@
     <string name="downloads_menu_download_option_entire_podcast">Ganzer Podcast</string>
     <string name="downloads_menu_download_option_clear_chapters">Heruntergeladene Kapitel löschen</string>
     <string name="playing_item_details_publisher">Herausgeber</string>
-    <string name="settings_screen_donate_title">Spenden</string>
-    <string name="settings_screen_donate_subtitle">Vielen Dank für Ihre Unterstützung</string>
     <string name="chapters_list_empty">Dieses Buch hat keine Kapitel</string>
     <string name="episodes_list_empty">Dieser Podcast hat keine Episoden</string>
     <string name="items_list_empty">Keine Elemente verfügbar</string>

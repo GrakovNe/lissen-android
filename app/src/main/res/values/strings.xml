@@ -88,8 +88,6 @@
     <string name="playing_item_details_year">Year</string>
     <string name="playing_item_details_series">Series</string>
     <string name="color_scheme_black">Black</string>
-    <string name="settings_screen_donate_title">Donate</string>
-    <string name="settings_screen_donate_subtitle">Thanks for your support</string>
     <string name="chapters_list_empty">The book has no chapters</string>
     <string name="episodes_list_empty">No podcast has no episodes</string>
     <string name="items_list_empty">No available items</string>
@@ -100,4 +98,6 @@
     <string name="login_error_lissen_auth_scheme_must_be_whitelisted">The scheme %1$s://%2$s is not allowed in the server\'s redirect URI settings</string>
     <string name="login_error_lissen_auth_failed">Could not authorize. Please check your server settings</string>
     <string name="login_screen_open_id_button">Connect with OpenID</string>
+    <string name="source_code_on_github_title">Source code on GitHub</string>
+    <string name="source_code_on_github_subtitle">Report issues or suggest improvements</string>
 </resources>
