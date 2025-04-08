@@ -129,7 +129,7 @@ fun PlayingQueueComposable(
                 modifier = Modifier.padding(horizontal = 6.dp),
             )
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
         }
 
         LazyColumn(
