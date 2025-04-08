@@ -1,6 +1,8 @@
 package org.grakovne.lissen.content.cache
 
 import android.content.Intent
+import android.content.pm.ServiceInfo
+import android.os.Build
 import android.util.Log
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
@@ -36,10 +38,21 @@ class ContentCachingService : LifecycleService() {
         flags: Int,
         startId: Int,
     ): Int {
-        startForeground(
-            NOTIFICATION_ID,
-            notificationService.updateCachingNotification(emptyList()),
-        )
+        when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
+                startForeground(
+                    NOTIFICATION_ID,
+                    notificationService.updateCachingNotification(emptyList()),
+                    ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
+                )
+            }
+            else -> {
+                startForeground(
+                    NOTIFICATION_ID,
+                    notificationService.updateCachingNotification(emptyList()),
+                )
+            }
+        }
 
         val task = intent
             ?.getSerializableExtra(CACHING_TASK_EXTRA)
