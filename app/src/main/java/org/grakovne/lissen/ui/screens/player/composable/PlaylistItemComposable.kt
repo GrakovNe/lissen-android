@@ -64,7 +64,7 @@ fun PlaylistItemComposable(
 
         Text(
             text = track.title,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.titleSmall,
             color = when (track.available) {
                 true -> colorScheme.onBackground
                 false -> colorScheme.onBackground.copy(alpha = 0.4f)
