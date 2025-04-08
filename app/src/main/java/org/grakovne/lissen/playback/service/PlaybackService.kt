@@ -91,7 +91,6 @@ class PlaybackService : MediaSessionService() {
             ACTION_PLAY -> {
                 playerServiceScope
                     .launch {
-                        exoPlayer.prepare()
                         exoPlayer.setPlaybackSpeed(sharedPreferences.getPlaybackSpeed())
                         exoPlayer.playWhenReady = true
                     }
@@ -196,6 +195,8 @@ class PlaybackService : MediaSessionService() {
 
                 withContext(Dispatchers.Main) {
                     exoPlayer.setMediaSources(playingQueue)
+                    exoPlayer.prepare()
+
                     setPlaybackProgress(book.files, book.progress)
                 }
             }
