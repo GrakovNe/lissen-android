@@ -118,7 +118,7 @@ fun PlayingQueueComposable(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 8.dp)
+            .padding(horizontal = 16.dp)
     ) {
         if (playingQueueExpanded.not()) {
             Text(

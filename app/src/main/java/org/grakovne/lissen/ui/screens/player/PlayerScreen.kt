@@ -246,7 +246,7 @@ fun PlayerScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 when {
                     isPlaybackReady.not() -> {
