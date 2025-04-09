@@ -387,7 +387,7 @@ class MediaRepository @Inject constructor(
             val accumulated = detailedItem.files.take(currentIndex).sumOf { it.duration }
             val currentFilePosition = mediaController.currentPosition / 1000.0
 
-            _totalPosition.value = (accumulated + currentFilePosition)
+            _totalPosition.postValue(accumulated + currentFilePosition)
         }
     }
 
@@ -460,13 +460,15 @@ class MediaRepository @Inject constructor(
         val trackIndex = calculateChapterIndex(book, totalPosition)
         val trackPosition = calculateChapterPosition(book, totalPosition)
 
-        _currentChapterIndex.value = trackIndex
-        _currentChapterPosition.value = trackPosition
-        _currentChapterDuration.value = book
-            .chapters
-            .getOrNull(trackIndex)
-            ?.duration
-            ?: 0.0
+        _currentChapterIndex.postValue(trackIndex)
+        _currentChapterPosition.postValue(trackPosition)
+        _currentChapterDuration.postValue(
+            book
+                .chapters
+                .getOrNull(trackIndex)
+                ?.duration
+                ?: 0.0,
+        )
     }
 
     private companion object {

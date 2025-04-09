@@ -50,8 +50,8 @@ class SettingsViewModel @Inject constructor(
             when (val response = mediaChannel.fetchConnectionInfo()) {
                 is ApiResult.Error -> Unit
                 is ApiResult.Success -> {
-                    _username.value = response.data.username
-                    _serverVersion.value = response.data.serverVersion
+                    _username.postValue(response.data.username)
+                    _serverVersion.postValue(response.data.serverVersion)
 
                     updateServerInfo()
                 }
@@ -64,17 +64,20 @@ class SettingsViewModel @Inject constructor(
             when (val response = mediaChannel.fetchLibraries()) {
                 is ApiResult.Success -> {
                     val libraries = response.data
-                    _libraries.value = libraries
+                    _libraries.postValue(libraries)
 
                     val preferredLibrary = preferences.getPreferredLibrary()
-                    _preferredLibrary.value = when (preferredLibrary) {
-                        null -> libraries.firstOrNull()
-                        else -> libraries.find { it.id == preferredLibrary.id }
-                    }
+
+                    _preferredLibrary.postValue(
+                        when (preferredLibrary) {
+                            null -> libraries.firstOrNull()
+                            else -> libraries.find { it.id == preferredLibrary.id }
+                        },
+                    )
                 }
 
                 is ApiResult.Error -> {
-                    _libraries.value = preferences.getPreferredLibrary()?.let { listOf(it) }
+                    _libraries.postValue(preferences.getPreferredLibrary()?.let { listOf(it) })
                 }
             }
         }
@@ -85,17 +88,17 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun preferLibrary(library: Library) {
-        _preferredLibrary.value = library
+        _preferredLibrary.postValue(library)
         preferences.savePreferredLibrary(library)
     }
 
     fun preferColorScheme(colorScheme: ColorScheme) {
-        _preferredColorScheme.value = colorScheme
+        _preferredColorScheme.postValue(colorScheme)
         preferences.saveColorScheme(colorScheme)
     }
 
     fun updateCustomHeaders(headers: List<ServerRequestHeader>) {
-        _customHeaders.value = headers
+        _customHeaders.postValue(headers)
 
         val meaningfulHeaders = headers
             .map { it.clean() }

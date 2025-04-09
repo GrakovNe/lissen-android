@@ -43,7 +43,7 @@ class PlayerViewModel @Inject constructor(
     val isPlaying: LiveData<Boolean> = mediaRepository.isPlaying
 
     fun expandPlayingQueue() {
-        _playingQueueExpanded.value = true
+        _playingQueueExpanded.postValue(true)
     }
 
     fun setTimer(option: TimerOption?) {
@@ -51,24 +51,24 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun collapsePlayingQueue() {
-        _playingQueueExpanded.value = false
+        _playingQueueExpanded.postValue(false)
     }
 
     fun togglePlayingQueue() {
-        _playingQueueExpanded.value = !(_playingQueueExpanded.value ?: false)
+        _playingQueueExpanded.postValue(!(_playingQueueExpanded.value ?: false))
     }
 
     fun requestSearch() {
-        _searchRequested.value = true
+        _searchRequested.postValue(true)
     }
 
     fun dismissSearch() {
-        _searchRequested.value = false
-        _searchToken.value = EMPTY_SEARCH
+        _searchRequested.postValue(false)
+        _searchToken.postValue(EMPTY_SEARCH)
     }
 
     fun updateSearch(token: String) {
-        _searchToken.value = token
+        _searchToken.postValue(token)
     }
 
     fun preparePlayback(bookId: String) {

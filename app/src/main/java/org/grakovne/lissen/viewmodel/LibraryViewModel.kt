@@ -90,11 +90,11 @@ class LibraryViewModel @Inject constructor(
     }
 
     fun requestSearch() {
-        _searchRequested.value = true
+        _searchRequested.postValue(true)
     }
 
     fun dismissSearch() {
-        _searchRequested.value = false
+        _searchRequested.postValue(false)
         _searchToken.value = EMPTY_SEARCH
     }
 
