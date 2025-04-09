@@ -201,7 +201,7 @@ fun PlayingQueueComposable(
                     HorizontalDivider(
                         thickness = 1.dp,
                         modifier = Modifier
-                            .padding(start = 20.dp)
+                            .padding(start = 24.dp)
                             .padding(vertical = 8.dp),
                     )
                 }
