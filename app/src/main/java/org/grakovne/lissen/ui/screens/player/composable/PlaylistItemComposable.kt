@@ -37,6 +37,7 @@ fun PlaylistItemComposable(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
+            .padding(horizontal = 6.dp)
             .clickable(
                 onClick = onClick,
                 indication = null,

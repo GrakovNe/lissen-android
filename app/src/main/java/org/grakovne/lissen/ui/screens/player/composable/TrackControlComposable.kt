@@ -68,7 +68,7 @@ fun TrackControlComposable(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .padding(horizontal = 8.dp),
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -99,7 +99,7 @@ fun TrackControlComposable(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 4.dp),
+                        .padding(horizontal = 8.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(
