@@ -115,13 +115,12 @@ fun TrackControlComposable(
                         color = colorScheme.onBackground.copy(alpha = 0.6f),
                     )
                 }
-
-                Spacer(modifier = Modifier.height(64.dp))
             }
 
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .padding(top = 8.dp)
                     .align(Alignment.BottomCenter),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically,
