@@ -122,7 +122,7 @@ fun TrackControlComposable(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp)
+                    .padding(top = 6.dp)
                     .align(Alignment.BottomCenter),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically,
