@@ -100,4 +100,11 @@
     <string name="login_screen_open_id_button">Connect with OpenID</string>
     <string name="source_code_on_github_title">Source code on GitHub</string>
     <string name="source_code_on_github_subtitle">Report issues or suggest improvements</string>
+    <string name="settings_screen_library_ordering_title">Library sorting</string>
+    <string name="settings_screen_library_ordering_title_option">Title</string>
+    <string name="settings_screen_library_ordering_author_option">Author</string>
+    <string name="settings_screen_library_ordering_duration_option">Duration</string>
+    <string name="settings_screen_library_ordering_published_year_option">Published year</string>
+    <string name="settings_screen_library_ordering_creation_date_option">Date of creation</string>
+    <string name="settings_screen_library_ordering_modified_at_option">Date of latest modification</string>
 </resources>

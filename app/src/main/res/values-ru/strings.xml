@@ -100,4 +100,11 @@
     <string name="login_screen_open_id_button">Подключиться с OpenID</string>
     <string name="source_code_on_github_title">Исходный код на GitHub</string>
     <string name="source_code_on_github_subtitle">Сообщить об ошибке или предложить улучшение</string>
+    <string name="settings_screen_library_ordering_title">Сортировка библиотеки</string>
+    <string name="settings_screen_library_ordering_title_option">По названию</string>
+    <string name="settings_screen_library_ordering_author_option">По автору</string>
+    <string name="settings_screen_library_ordering_duration_option">По длительности</string>
+    <string name="settings_screen_library_ordering_published_year_option">По году публикации</string>
+    <string name="settings_screen_library_ordering_creation_date_option">По дате добавления</string>
+    <string name="settings_screen_library_ordering_modified_at_option">По дате последнего изменения</string>
 </resources>

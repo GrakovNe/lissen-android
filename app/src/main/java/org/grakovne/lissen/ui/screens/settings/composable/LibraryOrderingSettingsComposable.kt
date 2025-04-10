@@ -20,8 +20,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import org.grakovne.lissen.R
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.common.LibraryOrderingDirection.ASCENDING
@@ -50,7 +52,7 @@ fun LibraryOrderingSettingsComposable(
             modifier = Modifier.weight(1f),
         ) {
             Text(
-                text = "Library ordering",
+                text = stringResource(R.string.settings_screen_library_ordering_title),
                 style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
                 modifier = Modifier.padding(bottom = 4.dp),
             )
@@ -120,12 +122,12 @@ private fun LibraryOrderingOption.toItem(context: Context): CommonSettingsItem {
     val id = this.name
 
     val name = when (this) {
-        LibraryOrderingOption.TITLE -> "Title"
-        LibraryOrderingOption.AUTHOR -> "Author"
-        LibraryOrderingOption.DURATION -> "Duration"
-        LibraryOrderingOption.PUBLISHED_YEAR -> "Published year"
-        LibraryOrderingOption.CREATED_AT -> "Creation date"
-        LibraryOrderingOption.MODIFIED_AT -> "Latest modification"
+        LibraryOrderingOption.TITLE -> context.getString(R.string.settings_screen_library_ordering_title_option)
+        LibraryOrderingOption.AUTHOR -> context.getString(R.string.settings_screen_library_ordering_author_option)
+        LibraryOrderingOption.DURATION -> context.getString(R.string.settings_screen_library_ordering_duration_option)
+        LibraryOrderingOption.PUBLISHED_YEAR -> context.getString(R.string.settings_screen_library_ordering_published_year_option)
+        LibraryOrderingOption.CREATED_AT -> context.getString(R.string.settings_screen_library_ordering_creation_date_option)
+        LibraryOrderingOption.MODIFIED_AT -> context.getString(R.string.settings_screen_library_ordering_modified_at_option)
     }
 
     return CommonSettingsItem(id, name, null)
