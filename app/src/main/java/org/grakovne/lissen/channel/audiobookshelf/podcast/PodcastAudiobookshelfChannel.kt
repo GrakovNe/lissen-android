@@ -144,7 +144,7 @@ class PodcastAudiobookshelfChannel @Inject constructor(
     }
 
     override fun getFilteringConfiguration() = ChannelFilteringConfiguration(
-        defaultOrdering = LibraryOrderingConfiguration(LibraryOrderingOption.CREATED_AT, LibraryOrderingDirection.DESCENDING),
+        defaultOrdering = LibraryOrderingConfiguration(LibraryOrderingOption.MODIFIED_AT, LibraryOrderingDirection.DESCENDING),
         orderingOptions = listOf(
             LibraryOrderingOption.TITLE,
             LibraryOrderingOption.AUTHOR,
