@@ -17,7 +17,9 @@ import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastPageR
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastSearchItemsConverter
 import org.grakovne.lissen.channel.common.ApiResult
+import org.grakovne.lissen.channel.common.ChannelFilteringConfiguration
 import org.grakovne.lissen.channel.common.LibraryType
+import org.grakovne.lissen.common.LibraryOrderingOption
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PagedItems
@@ -138,4 +140,15 @@ class PodcastAudiobookshelfChannel @Inject constructor(
             .await()
             .map { podcastResponseConverter.apply(it, mediaProgress.await() ?: emptyList()) }
     }
+
+    override fun getFilteringConfiguration() = ChannelFilteringConfiguration(
+        orderingOptions = listOf(
+            LibraryOrderingOption.TITLE,
+            LibraryOrderingOption.AUTHOR,
+            LibraryOrderingOption.CHAPTERS_COUNT,
+            LibraryOrderingOption.PUBLISHED_YEAR,
+            LibraryOrderingOption.CREATED_AT,
+            LibraryOrderingOption.MODIFIED_AT,
+        ),
+    )
 }

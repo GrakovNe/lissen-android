@@ -23,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.map
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.LibraryOrderingDirection
@@ -39,7 +40,7 @@ fun LibraryOrderingSettingsComposable(
     var libraryOrderingExpanded by remember { mutableStateOf(false) }
 
     val configuration by viewModel
-        .preferredLibraryOrderingConfiguration
+        .preferredLibraryOrdering
         .observeAsState(LibraryOrderingConfiguration.default)
 
     Row(
@@ -66,15 +67,11 @@ fun LibraryOrderingSettingsComposable(
 
     if (libraryOrderingExpanded) {
         CommonSettingsItemComposable(
-            items = listOf(
-                LibraryOrderingOption.TITLE.toItem(context),
-                LibraryOrderingOption.AUTHOR.toItem(context),
-                LibraryOrderingOption.DURATION.toItem(context),
-                LibraryOrderingOption.CHAPTERS_COUNT.toItem(context),
-                LibraryOrderingOption.PUBLISHED_YEAR.toItem(context),
-                LibraryOrderingOption.CREATED_AT.toItem(context),
-                LibraryOrderingOption.MODIFIED_AT.toItem(context),
-            ),
+            items = viewModel
+                .availableLibraryOrdering
+                .value
+                ?.map { it.toItem(context) }
+                ?: emptyList(),
             selectedItem = configuration.option.toItem(context),
             onDismissRequest = { libraryOrderingExpanded = false },
             onItemSelected = { item ->

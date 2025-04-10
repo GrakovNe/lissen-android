@@ -19,7 +19,9 @@ import org.grakovne.lissen.channel.audiobookshelf.library.converter.BookResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibrarySearchItemsConverter
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.ApiResult.Success
+import org.grakovne.lissen.channel.common.ChannelFilteringConfiguration
 import org.grakovne.lissen.channel.common.LibraryType
+import org.grakovne.lissen.common.LibraryOrderingOption
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PagedItems
@@ -152,4 +154,15 @@ class LibraryAudiobookshelfChannel @Inject constructor(
             onFailure = { ApiResult.Error(it.code) },
         )
     }
+
+    override fun getFilteringConfiguration() = ChannelFilteringConfiguration(
+        orderingOptions = listOf(
+            LibraryOrderingOption.TITLE,
+            LibraryOrderingOption.AUTHOR,
+            LibraryOrderingOption.DURATION,
+            LibraryOrderingOption.PUBLISHED_YEAR,
+            LibraryOrderingOption.CREATED_AT,
+            LibraryOrderingOption.MODIFIED_AT,
+        ),
+    )
 }

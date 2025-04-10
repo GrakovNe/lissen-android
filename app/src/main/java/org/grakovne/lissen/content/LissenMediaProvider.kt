@@ -6,6 +6,7 @@ import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.ChannelCode
+import org.grakovne.lissen.channel.common.ChannelFilteringConfiguration
 import org.grakovne.lissen.channel.common.ChannelProvider
 import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.channel.common.MediaChannel
@@ -243,6 +244,9 @@ class LissenMediaProvider @Inject constructor(
                 },
             )
     }
+
+    fun getFilteringConfiguration(): ChannelFilteringConfiguration =
+        providePreferredChannel().getFilteringConfiguration()
 
     private suspend fun syncFromLocalProgress(
         detailedItems: List<RecentBook>,

@@ -40,8 +40,16 @@ class SettingsViewModel @Inject constructor(
     private val _preferredColorScheme = MutableLiveData(preferences.getColorScheme())
     val preferredColorScheme = _preferredColorScheme
 
-    private val _preferredLibraryOrderingConfiguration = MutableLiveData(preferences.getLibraryOrdering())
-    val preferredLibraryOrderingConfiguration: LiveData<LibraryOrderingConfiguration> = _preferredLibraryOrderingConfiguration
+    private val _preferredLibraryOrdering = MutableLiveData(preferences.getLibraryOrdering())
+    val preferredLibraryOrdering: LiveData<LibraryOrderingConfiguration> = _preferredLibraryOrdering
+
+    private val _availableLibraryOrdering = MutableLiveData(
+        mediaChannel
+            .getFilteringConfiguration()
+            .orderingOptions,
+    )
+
+    val availableLibraryOrdering = _availableLibraryOrdering
 
     private val _customHeaders = MutableLiveData(preferences.getCustomHeaders())
     val customHeaders = _customHeaders
@@ -102,7 +110,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun preferLibraryOrdering(configuration: LibraryOrderingConfiguration) {
-        _preferredLibraryOrderingConfiguration.postValue(configuration)
+        _preferredLibraryOrdering.postValue(configuration)
         preferences.saveLibraryOrdering(configuration)
     }
 

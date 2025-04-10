@@ -9,6 +9,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessi
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
+import org.grakovne.lissen.channel.common.ChannelFilteringConfiguration
 import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
@@ -63,4 +64,6 @@ class UnknownAudiobookshelfChannel @Inject constructor(
     override suspend fun fetchBook(
         bookId: String,
     ): ApiResult<DetailedItem> = ApiResult.Error(ApiError.UnsupportedError)
+
+    override fun getFilteringConfiguration() = ChannelFilteringConfiguration(emptyList())
 }
