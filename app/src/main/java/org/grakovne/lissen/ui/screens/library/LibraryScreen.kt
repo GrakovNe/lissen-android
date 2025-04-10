@@ -179,6 +179,7 @@ fun LibraryScreen(
             currentLibraryId = settingsViewModel.fetchPreferredLibraryId()
         }
 
+        playerViewModel.recoverMiniPlayer()
         settingsViewModel.fetchLibraries()
     }
 
