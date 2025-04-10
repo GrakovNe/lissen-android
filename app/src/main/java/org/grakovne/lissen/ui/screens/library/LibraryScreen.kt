@@ -57,6 +57,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.channel.common.LibraryType
+import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.NetworkQualityService
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.ui.extensions.withMinimumTime
@@ -94,6 +95,9 @@ fun LibraryScreen(
     val recentBooks: List<RecentBook> by libraryViewModel.recentBooks.observeAsState(emptyList())
 
     var currentLibraryId by rememberSaveable { mutableStateOf("") }
+    var currentOrdering by rememberSaveable(stateSaver = LibraryOrderingConfiguration.saver) {
+        mutableStateOf(LibraryOrderingConfiguration.default)
+    }
     var pullRefreshing by remember { mutableStateOf(false) }
     val recentBookRefreshing by libraryViewModel.recentBookUpdating.observeAsState(false)
     val searchRequested by libraryViewModel.searchRequested.observeAsState(false)
@@ -173,10 +177,16 @@ fun LibraryScreen(
     }
 
     LaunchedEffect(Unit) {
-        if (library.itemCount == 0 || currentLibraryId != settingsViewModel.fetchPreferredLibraryId()) {
+        val emptyContent = library.itemCount == 0
+        val libraryChanged = currentLibraryId != settingsViewModel.fetchPreferredLibraryId()
+        val orderingChanged = currentOrdering != settingsViewModel.fetchLibraryOrdering()
+
+        if (emptyContent || libraryChanged || orderingChanged) {
             libraryViewModel.refreshRecentListening()
             libraryViewModel.refreshLibrary()
+
             currentLibraryId = settingsViewModel.fetchPreferredLibraryId()
+            currentOrdering = settingsViewModel.fetchLibraryOrdering()
         }
 
         playerViewModel.recoverMiniPlayer()

@@ -92,6 +92,10 @@ class SettingsViewModel @Inject constructor(
         return preferences.getPreferredLibrary()?.id ?: ""
     }
 
+    fun fetchLibraryOrdering(): LibraryOrderingConfiguration {
+        return preferences.getLibraryOrdering()
+    }
+
     fun preferLibrary(library: Library) {
         _preferredLibrary.postValue(library)
         preferences.savePreferredLibrary(library)
