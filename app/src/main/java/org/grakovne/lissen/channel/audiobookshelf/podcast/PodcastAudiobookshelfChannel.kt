@@ -149,7 +149,6 @@ class PodcastAudiobookshelfChannel @Inject constructor(
             LibraryOrderingOption.TITLE,
             LibraryOrderingOption.AUTHOR,
             LibraryOrderingOption.CHAPTERS_COUNT,
-            LibraryOrderingOption.PUBLISHED_YEAR,
             LibraryOrderingOption.CREATED_AT,
             LibraryOrderingOption.MODIFIED_AT,
         ),
