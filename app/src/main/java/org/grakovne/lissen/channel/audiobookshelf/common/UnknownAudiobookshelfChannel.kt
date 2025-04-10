@@ -11,6 +11,7 @@ import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.ChannelFilteringConfiguration
 import org.grakovne.lissen.channel.common.LibraryType
+import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PagedItems
@@ -65,5 +66,9 @@ class UnknownAudiobookshelfChannel @Inject constructor(
         bookId: String,
     ): ApiResult<DetailedItem> = ApiResult.Error(ApiError.UnsupportedError)
 
-    override fun getFilteringConfiguration() = ChannelFilteringConfiguration(emptyList())
+    override fun getFilteringConfiguration() =
+        ChannelFilteringConfiguration(
+            orderingOptions = emptyList(),
+            defaultOrdering = LibraryOrderingConfiguration.default,
+        )
 }

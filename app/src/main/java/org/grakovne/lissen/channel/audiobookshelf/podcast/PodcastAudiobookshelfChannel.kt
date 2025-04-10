@@ -19,6 +19,8 @@ import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastSearc
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.ChannelFilteringConfiguration
 import org.grakovne.lissen.channel.common.LibraryType
+import org.grakovne.lissen.common.LibraryOrderingConfiguration
+import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.common.LibraryOrderingOption
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
@@ -142,6 +144,7 @@ class PodcastAudiobookshelfChannel @Inject constructor(
     }
 
     override fun getFilteringConfiguration() = ChannelFilteringConfiguration(
+        defaultOrdering = LibraryOrderingConfiguration(LibraryOrderingOption.CREATED_AT, LibraryOrderingDirection.DESCENDING),
         orderingOptions = listOf(
             LibraryOrderingOption.TITLE,
             LibraryOrderingOption.AUTHOR,

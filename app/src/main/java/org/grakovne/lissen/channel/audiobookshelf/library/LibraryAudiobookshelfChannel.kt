@@ -21,6 +21,8 @@ import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.ApiResult.Success
 import org.grakovne.lissen.channel.common.ChannelFilteringConfiguration
 import org.grakovne.lissen.channel.common.LibraryType
+import org.grakovne.lissen.common.LibraryOrderingConfiguration
+import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.common.LibraryOrderingOption
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
@@ -156,6 +158,7 @@ class LibraryAudiobookshelfChannel @Inject constructor(
     }
 
     override fun getFilteringConfiguration() = ChannelFilteringConfiguration(
+        defaultOrdering = LibraryOrderingConfiguration(LibraryOrderingOption.TITLE, LibraryOrderingDirection.ASCENDING),
         orderingOptions = listOf(
             LibraryOrderingOption.TITLE,
             LibraryOrderingOption.AUTHOR,

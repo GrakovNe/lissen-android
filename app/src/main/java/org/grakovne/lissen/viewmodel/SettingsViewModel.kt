@@ -107,6 +107,9 @@ class SettingsViewModel @Inject constructor(
     fun preferLibrary(library: Library) {
         _preferredLibrary.postValue(library)
         preferences.savePreferredLibrary(library)
+        preferences.saveLibraryOrdering(
+            configuration = mediaChannel.getFilteringConfiguration().defaultOrdering,
+        )
     }
 
     fun preferLibraryOrdering(configuration: LibraryOrderingConfiguration) {
