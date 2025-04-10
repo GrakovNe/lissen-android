@@ -1,5 +1,6 @@
 package org.grakovne.lissen.viewmodel
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -7,6 +8,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.common.ColorScheme
+import org.grakovne.lissen.common.LibraryOrderingConfiguration
+import org.grakovne.lissen.common.LibraryOrderingOption
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
@@ -37,6 +40,9 @@ class SettingsViewModel @Inject constructor(
 
     private val _preferredColorScheme = MutableLiveData(preferences.getColorScheme())
     val preferredColorScheme = _preferredColorScheme
+
+    private val _preferredLibraryOrderingOption = MutableLiveData(preferences.getLibraryOrdering())
+    val preferredLibraryOrderingOption: LiveData<LibraryOrderingConfiguration> = _preferredLibraryOrderingOption
 
     private val _customHeaders = MutableLiveData(preferences.getCustomHeaders())
     val customHeaders = _customHeaders
@@ -90,6 +96,11 @@ class SettingsViewModel @Inject constructor(
     fun preferLibrary(library: Library) {
         _preferredLibrary.postValue(library)
         preferences.savePreferredLibrary(library)
+    }
+
+    fun preferLibraryOrdering(configuration: LibraryOrderingConfiguration) {
+        _preferredLibraryOrderingOption.postValue(configuration)
+        preferences.saveLibraryOrdering(configuration)
     }
 
     fun preferColorScheme(colorScheme: ColorScheme) {
