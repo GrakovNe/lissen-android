@@ -25,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -34,6 +35,7 @@ fun CommonSettingsItemComposable(
     selectedItem: CommonSettingsItem?,
     onDismissRequest: () -> Unit,
     onItemSelected: (CommonSettingsItem) -> Unit,
+    selectedImage: ImageVector = Icons.Outlined.Check,
 ) {
     var activeItem by remember { mutableStateOf(selectedItem) }
 
@@ -66,7 +68,7 @@ fun CommonSettingsItemComposable(
                             trailingContent = {
                                 if (item.id == activeItem?.id) {
                                     Icon(
-                                        imageVector = Icons.Outlined.Check,
+                                        imageVector = selectedImage,
                                         contentDescription = null,
                                         modifier = Modifier.size(24.dp),
                                     )

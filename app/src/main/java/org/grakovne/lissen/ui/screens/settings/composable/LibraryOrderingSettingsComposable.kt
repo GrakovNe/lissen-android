@@ -6,6 +6,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
@@ -19,9 +22,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.LibraryOrderingDirection
+import org.grakovne.lissen.common.LibraryOrderingDirection.ASCENDING
+import org.grakovne.lissen.common.LibraryOrderingDirection.DESCENDING
 import org.grakovne.lissen.common.LibraryOrderingOption
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
@@ -32,8 +36,8 @@ fun LibraryOrderingSettingsComposable(
     val context = LocalContext.current
     var libraryOrderingExpanded by remember { mutableStateOf(false) }
 
-    val preferredLibraryOrderingOption by viewModel
-        .preferredLibraryOrderingOption
+    val configuration by viewModel
+        .preferredLibraryOrderingConfiguration
         .observeAsState(LibraryOrderingConfiguration.default)
 
     Row(
@@ -51,7 +55,7 @@ fun LibraryOrderingSettingsComposable(
                 modifier = Modifier.padding(bottom = 4.dp),
             )
             Text(
-                text = preferredLibraryOrderingOption.option.toItem(context).name ?: "",
+                text = configuration.option.toItem(context).name ?: "",
                 style = typography.bodyMedium,
                 color = colorScheme.onSurfaceVariant,
             )
@@ -68,7 +72,7 @@ fun LibraryOrderingSettingsComposable(
                 LibraryOrderingOption.CREATED_AT.toItem(context),
                 LibraryOrderingOption.MODIFIED_AT.toItem(context),
             ),
-            selectedItem = null,
+            selectedItem = configuration.option.toItem(context),
             onDismissRequest = { libraryOrderingExpanded = false },
             onItemSelected = { item ->
                 LibraryOrderingOption
@@ -76,16 +80,41 @@ fun LibraryOrderingSettingsComposable(
                     .find { it.name == item.id }
                     ?.let {
                         viewModel
-                            .preferLibraryOrdering(LibraryOrderingConfiguration(
-                                option = it,
-                                direction = LibraryOrderingDirection.ASCENDING
-                            )
+                            .preferLibraryOrdering(
+                                LibraryOrderingConfiguration(
+                                    option = it,
+                                    direction = provideOrderingDirection(
+                                        currentConfiguration = configuration,
+                                        selectedOption = it,
+                                    ),
+                                ),
                             )
                     }
             },
+            selectedImage = provideSelectedImage(configuration),
         )
     }
 }
+
+private fun provideOrderingDirection(
+    currentConfiguration: LibraryOrderingConfiguration,
+    selectedOption: LibraryOrderingOption,
+): LibraryOrderingDirection {
+    if (currentConfiguration.option != selectedOption) {
+        return ASCENDING
+    }
+
+    return when (currentConfiguration.direction) {
+        ASCENDING -> DESCENDING
+        DESCENDING -> ASCENDING
+    }
+}
+
+private fun provideSelectedImage(configuration: LibraryOrderingConfiguration) =
+    when (configuration.direction) {
+        ASCENDING -> Icons.Outlined.KeyboardArrowUp
+        DESCENDING -> Icons.Outlined.KeyboardArrowDown
+    }
 
 private fun LibraryOrderingOption.toItem(context: Context): CommonSettingsItem {
     val id = this.name

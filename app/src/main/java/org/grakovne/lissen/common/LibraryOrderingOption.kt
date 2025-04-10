@@ -6,5 +6,5 @@ enum class LibraryOrderingOption {
     DURATION,
     PUBLISHED_YEAR,
     CREATED_AT,
-    MODIFIED_AT
+    MODIFIED_AT,
 }
