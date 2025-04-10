@@ -72,7 +72,10 @@ class PlayerViewModel @Inject constructor(
     }
 
     fun preparePlayback(bookId: String) {
-        viewModelScope.launch { mediaRepository.preparePlayback(bookId) }
+        viewModelScope.launch {
+            mediaRepository.clearPreparedItem()
+            mediaRepository.preparePlayback(bookId)
+        }
     }
 
     fun rewind() {

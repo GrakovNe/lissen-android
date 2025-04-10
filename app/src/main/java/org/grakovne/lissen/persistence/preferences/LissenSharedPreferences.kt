@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import org.grakovne.lissen.channel.common.ChannelCode
 import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.common.ColorScheme
+import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import java.security.KeyStore
@@ -176,6 +177,30 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
         return decrypt(encrypted)
     }
 
+    fun savePlayingBook(book: DetailedItem?) {
+        if (null == book) {
+            sharedPreferences.edit {
+                remove(KEY_PLAYING_BOOK)
+            }
+            return
+        }
+
+        sharedPreferences.edit {
+            val json = gson.toJson(book)
+            putString(KEY_PLAYING_BOOK, json)
+        }
+    }
+
+    fun getPlayingBook(): DetailedItem? {
+        val json = sharedPreferences.getString(KEY_PLAYING_BOOK, null)
+        val type = object : TypeToken<DetailedItem>() {}.type
+
+        return when (json == null) {
+            true -> null
+            false -> gson.fromJson(json, type)
+        }
+    }
+
     fun saveCustomHeaders(headers: List<ServerRequestHeader>) {
         sharedPreferences.edit {
             val json = gson.toJson(headers)
@@ -214,6 +239,8 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
         private const val KEY_PREFERRED_COLOR_SCHEME = "preferred_color_scheme"
 
         private const val KEY_CUSTOM_HEADERS = "custom_headers"
+
+        private const val KEY_PLAYING_BOOK = "playing_book"
 
         private const val ANDROID_KEYSTORE = "AndroidKeyStore"
         private const val TRANSFORMATION = "AES/GCM/NoPadding"

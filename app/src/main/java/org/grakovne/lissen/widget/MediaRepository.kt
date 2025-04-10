@@ -153,6 +153,8 @@ class MediaRepository @Inject constructor(
                         startUpdatingProgress(book)
 
                         _playingBook.postValue(it)
+                        preferences.savePlayingBook(it)
+
                         _isPlaybackReady.postValue(true)
                     }
                 }
@@ -166,6 +168,10 @@ class MediaRepository @Inject constructor(
                 _timerOption.postValue(null)
             }
         }
+    }
+
+    fun recoverPlayingBook(detailedItem: DetailedItem) {
+        _playingBook.postValue(detailedItem)
     }
 
     fun updateTimer(
@@ -225,6 +231,7 @@ class MediaRepository @Inject constructor(
     fun clearPlayingBook() {
         pause()
         _playingBook.postValue(null)
+        preferences.savePlayingBook(null)
     }
 
     fun setChapterPosition(chapterPosition: Double) {
@@ -279,8 +286,6 @@ class MediaRepository @Inject constructor(
         bookId: String,
         fromBackground: Boolean = false,
     ) {
-        mediaPreparing()
-
         coroutineScope {
             withContext(Dispatchers.IO) {
                 mediaChannel
@@ -352,7 +357,7 @@ class MediaRepository @Inject constructor(
         )
     }
 
-    private fun mediaPreparing() {
+    fun clearPreparedItem() {
         timerOption
             .value
             ?.let { updateTimer(timerOption = null) }
