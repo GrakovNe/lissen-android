@@ -11,8 +11,10 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryRespon
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
 import org.grakovne.lissen.channel.common.ApiResult
+import org.grakovne.lissen.channel.common.ChannelFilteringConfiguration
 import org.grakovne.lissen.channel.common.ConnectionInfo
 import org.grakovne.lissen.channel.common.MediaChannel
+import org.grakovne.lissen.common.LibraryOrderingOption
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.RecentBook
@@ -86,4 +88,15 @@ abstract class AudiobookshelfChannel(
         .map { connectionInfoResponseConverter.apply(it) }
 
     protected fun getClientName() = "Lissen App ${BuildConfig.VERSION_NAME}"
+
+    override fun getFilteringConfiguration() = ChannelFilteringConfiguration(
+        orderingOptions = listOf(
+            LibraryOrderingOption.TITLE,
+            LibraryOrderingOption.AUTHOR,
+            LibraryOrderingOption.DURATION,
+            LibraryOrderingOption.PUBLISHED_YEAR,
+            LibraryOrderingOption.CREATED_AT,
+            LibraryOrderingOption.MODIFIED_AT,
+        ),
+    )
 }

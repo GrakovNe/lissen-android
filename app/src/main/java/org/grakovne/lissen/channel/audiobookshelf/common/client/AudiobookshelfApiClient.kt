@@ -45,18 +45,22 @@ interface AudiobookshelfApiClient {
     @POST("/api/authorize")
     suspend fun fetchUserInfo(): Response<UserInfoResponse>
 
-    @GET("api/libraries/{libraryId}/items?sort=media.metadata.title&minified=1")
+    @GET("api/libraries/{libraryId}/items")
     suspend fun fetchLibraryItems(
         @Path("libraryId") libraryId: String,
         @Query("limit") pageSize: Int,
         @Query("page") pageNumber: Int,
+        @Query("sort") sort: String,
+        @Query("minified") minified: String = "1",
     ): Response<LibraryItemsResponse>
 
-    @GET("api/libraries/{libraryId}/items?sort=mtimeMs&desc=1")
+    @GET("api/libraries/{libraryId}/items")
     suspend fun fetchPodcastItems(
         @Path("libraryId") libraryId: String,
         @Query("limit") pageSize: Int,
         @Query("page") pageNumber: Int,
+        @Query("sort") sort: String,
+        @Query("minified") minified: String = "1",
     ): Response<PodcastItemsResponse>
 
     @GET("api/libraries/{libraryId}/search")

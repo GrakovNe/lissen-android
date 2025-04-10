@@ -107,4 +107,5 @@
     <string name="settings_screen_library_ordering_published_year_option">Published year</string>
     <string name="settings_screen_library_ordering_creation_date_option">Date of creation</string>
     <string name="settings_screen_library_ordering_modified_at_option">Date of latest modification</string>
+    <string name="settings_screen_library_ordering_chapter_count_option">Chapters count</string>
 </resources>

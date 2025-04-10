@@ -7,6 +7,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfDataR
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfMediaRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfSyncService
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryOrderingRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
@@ -35,6 +36,7 @@ class PodcastAudiobookshelfChannel @Inject constructor(
     sessionResponseConverter: PlaybackSessionResponseConverter,
     libraryResponseConverter: LibraryResponseConverter,
     connectionInfoResponseConverter: ConnectionInfoResponseConverter,
+    private val libraryOrderingRequestConverter: LibraryOrderingRequestConverter,
     private val podcastPageResponseConverter: PodcastPageResponseConverter,
     private val podcastResponseConverter: PodcastResponseConverter,
     private val podcastSearchItemsConverter: PodcastSearchItemsConverter,
@@ -60,6 +62,7 @@ class PodcastAudiobookshelfChannel @Inject constructor(
             libraryId = libraryId,
             pageSize = pageSize,
             pageNumber = pageNumber,
+            sort = libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering()),
         )
         .map { podcastPageResponseConverter.apply(it) }
 

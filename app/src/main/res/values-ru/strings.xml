@@ -107,4 +107,5 @@
     <string name="settings_screen_library_ordering_published_year_option">По году публикации</string>
     <string name="settings_screen_library_ordering_creation_date_option">По дате добавления</string>
     <string name="settings_screen_library_ordering_modified_at_option">По дате последнего изменения</string>
+    <string name="settings_screen_library_ordering_chapter_count_option">По количеству выпусков</string>
 </resources>
