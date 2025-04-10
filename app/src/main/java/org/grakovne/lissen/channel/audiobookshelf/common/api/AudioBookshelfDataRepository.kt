@@ -74,6 +74,7 @@ class AudioBookshelfDataRepository @Inject constructor(
         pageSize: Int,
         pageNumber: Int,
         sort: String,
+        direction: String,
     ): ApiResult<LibraryItemsResponse> =
         safeApiCall {
             getClientInstance()
@@ -82,6 +83,7 @@ class AudioBookshelfDataRepository @Inject constructor(
                     pageSize = pageSize,
                     pageNumber = pageNumber,
                     sort = sort,
+                    desc = direction,
                 )
         }
 
@@ -90,6 +92,7 @@ class AudioBookshelfDataRepository @Inject constructor(
         pageSize: Int,
         pageNumber: Int,
         sort: String,
+        direction: String,
     ): ApiResult<PodcastItemsResponse> =
         safeApiCall {
             getClientInstance()
@@ -98,6 +101,7 @@ class AudioBookshelfDataRepository @Inject constructor(
                     pageSize = pageSize,
                     pageNumber = pageNumber,
                     sort = sort,
+                    desc = direction,
                 )
         }
 

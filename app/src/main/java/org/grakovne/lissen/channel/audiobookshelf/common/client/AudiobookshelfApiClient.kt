@@ -51,6 +51,7 @@ interface AudiobookshelfApiClient {
         @Query("limit") pageSize: Int,
         @Query("page") pageNumber: Int,
         @Query("sort") sort: String,
+        @Query("desc") desc: String,
         @Query("minified") minified: String = "1",
     ): Response<LibraryItemsResponse>
 
@@ -60,6 +61,7 @@ interface AudiobookshelfApiClient {
         @Query("limit") pageSize: Int,
         @Query("page") pageNumber: Int,
         @Query("sort") sort: String,
+        @Query("desc") desc: String,
         @Query("minified") minified: String = "1",
     ): Response<PodcastItemsResponse>
 

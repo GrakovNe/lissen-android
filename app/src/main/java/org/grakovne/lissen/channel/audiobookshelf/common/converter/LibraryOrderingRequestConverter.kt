@@ -1,6 +1,7 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.converter
 
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
+import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.common.LibraryOrderingOption
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -8,13 +9,22 @@ import javax.inject.Singleton
 @Singleton
 class LibraryOrderingRequestConverter @Inject constructor() {
 
-    fun apply(configuration: LibraryOrderingConfiguration): String = when (configuration.option) {
-        LibraryOrderingOption.TITLE -> "media.metadata.title"
-        LibraryOrderingOption.AUTHOR -> "media.metadata.authorName"
-        LibraryOrderingOption.PUBLISHED_YEAR -> "media.metadata.publishedYear"
-        LibraryOrderingOption.CREATED_AT -> "addedAt"
-        LibraryOrderingOption.DURATION -> "media.duration"
-        LibraryOrderingOption.MODIFIED_AT -> "mtimeMs"
-        LibraryOrderingOption.CHAPTERS_COUNT -> "media.numTracks"
+    fun apply(configuration: LibraryOrderingConfiguration): Pair<String, String> {
+        val option = when (configuration.option) {
+            LibraryOrderingOption.TITLE -> "media.metadata.title"
+            LibraryOrderingOption.AUTHOR -> "media.metadata.authorName"
+            LibraryOrderingOption.PUBLISHED_YEAR -> "media.metadata.publishedYear"
+            LibraryOrderingOption.CREATED_AT -> "addedAt"
+            LibraryOrderingOption.DURATION -> "media.duration"
+            LibraryOrderingOption.MODIFIED_AT -> "mtimeMs"
+            LibraryOrderingOption.CHAPTERS_COUNT -> "media.numTracks"
+        }
+
+        val direction = when (configuration.direction) {
+            LibraryOrderingDirection.ASCENDING -> "0"
+            LibraryOrderingDirection.DESCENDING -> "1"
+        }
+
+        return option to direction
     }
 }

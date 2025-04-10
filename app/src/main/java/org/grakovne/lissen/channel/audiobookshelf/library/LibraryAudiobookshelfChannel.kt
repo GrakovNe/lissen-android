@@ -59,14 +59,19 @@ class LibraryAudiobookshelfChannel @Inject constructor(
         libraryId: String,
         pageSize: Int,
         pageNumber: Int,
-    ): ApiResult<PagedItems<Book>> = dataRepository
-        .fetchLibraryItems(
-            libraryId = libraryId,
-            pageSize = pageSize,
-            pageNumber = pageNumber,
-            sort = libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering()),
-        )
-        .map { libraryPageResponseConverter.apply(it) }
+    ): ApiResult<PagedItems<Book>> {
+        val (option, direction) = libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering())
+
+        return dataRepository
+            .fetchLibraryItems(
+                libraryId = libraryId,
+                pageSize = pageSize,
+                pageNumber = pageNumber,
+                sort = option,
+                direction = direction,
+            )
+            .map { libraryPageResponseConverter.apply(it) }
+    }
 
     override suspend fun searchBooks(
         libraryId: String,
