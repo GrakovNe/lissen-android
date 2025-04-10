@@ -70,6 +70,7 @@ fun LibraryOrderingSettingsComposable(
                 LibraryOrderingOption.TITLE.toItem(context),
                 LibraryOrderingOption.AUTHOR.toItem(context),
                 LibraryOrderingOption.DURATION.toItem(context),
+                LibraryOrderingOption.CHAPTERS_COUNT.toItem(context),
                 LibraryOrderingOption.PUBLISHED_YEAR.toItem(context),
                 LibraryOrderingOption.CREATED_AT.toItem(context),
                 LibraryOrderingOption.MODIFIED_AT.toItem(context),
