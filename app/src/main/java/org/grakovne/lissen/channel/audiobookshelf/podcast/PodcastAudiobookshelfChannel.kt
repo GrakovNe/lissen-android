@@ -147,10 +147,8 @@ class PodcastAudiobookshelfChannel @Inject constructor(
         defaultOrdering = LibraryOrderingConfiguration(LibraryOrderingOption.MODIFIED_AT, LibraryOrderingDirection.DESCENDING),
         orderingOptions = listOf(
             LibraryOrderingOption.TITLE,
-            LibraryOrderingOption.AUTHOR,
             LibraryOrderingOption.CHAPTERS_COUNT,
             LibraryOrderingOption.CREATED_AT,
-            LibraryOrderingOption.MODIFIED_AT,
         ),
     )
 }

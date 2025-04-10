@@ -165,7 +165,6 @@ class LibraryAudiobookshelfChannel @Inject constructor(
             LibraryOrderingOption.DURATION,
             LibraryOrderingOption.PUBLISHED_YEAR,
             LibraryOrderingOption.CREATED_AT,
-            LibraryOrderingOption.MODIFIED_AT,
         ),
     )
 }
