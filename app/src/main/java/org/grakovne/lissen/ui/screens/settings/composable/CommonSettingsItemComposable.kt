@@ -80,7 +80,7 @@ fun CommonSettingsItemComposable(
                                 .fillMaxWidth()
                                 .clickable(
                                     indication = null,
-                                    interactionSource = remember { MutableInteractionSource() }
+                                    interactionSource = remember { MutableInteractionSource() },
                                 ) {
                                     activeItem = item
                                     onItemSelected(item)

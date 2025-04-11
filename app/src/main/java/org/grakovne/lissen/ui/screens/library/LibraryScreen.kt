@@ -189,7 +189,6 @@ fun LibraryScreen(
             currentOrdering = settingsViewModel.fetchLibraryOrdering()
         }
 
-        playerViewModel.recoverMiniPlayer()
         settingsViewModel.fetchLibraries()
     }
 

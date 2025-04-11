@@ -9,14 +9,12 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.TimerOption
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.widget.MediaRepository
 import javax.inject.Inject
 
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     private val mediaRepository: MediaRepository,
-    private val preferences: LissenSharedPreferences,
 ) : ViewModel() {
 
     val book: LiveData<DetailedItem?> = mediaRepository.playingBook
@@ -43,16 +41,6 @@ class PlayerViewModel @Inject constructor(
     val searchToken: LiveData<String> = _searchToken
 
     val isPlaying: LiveData<Boolean> = mediaRepository.isPlaying
-
-    fun recoverMiniPlayer() {
-        val playingBook = preferences.getPlayingBook()
-
-        if (playingBook?.id != null) {
-            viewModelScope.launch {
-                mediaRepository.preparePlayback(playingBook.id)
-            }
-        }
-    }
 
     fun expandPlayingQueue() {
         _playingQueueExpanded.postValue(true)
