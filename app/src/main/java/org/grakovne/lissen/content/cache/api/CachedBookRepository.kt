@@ -60,7 +60,7 @@ class CachedBookRepository @Inject constructor(
     ): List<Book> {
         val (option, direction) = buildOrdering()
 
-        val request = buildQuery(
+        val request = buildFetchRequest(
             libraryId = preferences.getPreferredLibrary()?.id,
             pageNumber = pageNumber,
             pageSize = pageSize,
@@ -78,7 +78,7 @@ class CachedBookRepository @Inject constructor(
     ): List<Book> {
         val (option, direction) = buildOrdering()
 
-        val request = buildSearchQuery(
+        val request = buildSearchRequest(
             searchQuery = query,
             libraryId = preferences.getPreferredLibrary()?.id,
             orderField = option,
@@ -138,88 +138,91 @@ class CachedBookRepository @Inject constructor(
         return option to direction
     }
 
-    fun buildQuery(
-        libraryId: String?,
-        pageNumber: Int,
-        pageSize: Int,
-        orderField: String,
-        orderDirection: String,
-    ): SupportSQLiteQuery {
-        val args = mutableListOf<Any>()
-        val whereClause = if (libraryId == null) {
-            "libraryId IS NULL"
-        } else {
-            args.add(libraryId)
-            "(libraryId = ? OR libraryId IS NULL)"
-        }
+    companion object {
 
-        val field = when (orderField) {
-            "title" -> "title"
-            "author" -> "author"
-            "duration" -> "duration"
-            else -> "title" // fallback
-        }
+        private fun buildFetchRequest(
+            libraryId: String?,
+            pageNumber: Int,
+            pageSize: Int,
+            orderField: String,
+            orderDirection: String,
+        ): SupportSQLiteQuery {
+            val args = mutableListOf<Any>()
+            val whereClause = if (libraryId == null) {
+                "libraryId IS NULL"
+            } else {
+                args.add(libraryId)
+                "(libraryId = ? OR libraryId IS NULL)"
+            }
 
-        val direction = when (orderDirection.uppercase()) {
-            "ASC" -> "ASC"
-            "DESC" -> "DESC"
-            else -> "ASC" // fallback
-        }
+            val field = when (orderField) {
+                "title" -> "title"
+                "author" -> "author"
+                "duration" -> "duration"
+                else -> "title"
+            }
 
-        args.add(pageSize)
-        args.add(pageNumber * pageSize)
+            val direction = when (orderDirection.uppercase()) {
+                "ASC" -> "ASC"
+                "DESC" -> "DESC"
+                else -> "ASC"
+            }
 
-        val sql = """
+            args.add(pageSize)
+            args.add(pageNumber * pageSize)
+
+            val sql = """
         SELECT * FROM detailed_books
         WHERE $whereClause
         ORDER BY $field $direction
         LIMIT ? OFFSET ?
-        """.trimIndent()
+            """.trimIndent()
 
-        return SimpleSQLiteQuery(sql, args.toTypedArray())
-    }
+            return SimpleSQLiteQuery(sql, args.toTypedArray())
+        }
 
-    fun buildSearchQuery(
-        libraryId: String?,
-        searchQuery: String,
-        orderField: String,
-        orderDirection: String,
-    ): SupportSQLiteQuery {
-        val args = mutableListOf<Any>()
-        val whereClause = buildString {
-            append("(")
-            if (libraryId == null) {
-                append("libraryId IS NULL")
-            } else {
-                append("(libraryId = ? OR libraryId IS NULL)")
-                args.add(libraryId)
+        private fun buildSearchRequest(
+            libraryId: String?,
+            searchQuery: String,
+            orderField: String,
+            orderDirection: String,
+        ): SupportSQLiteQuery {
+            val args = mutableListOf<Any>()
+            val whereClause = buildString {
+                append("(")
+                if (libraryId == null) {
+                    append("libraryId IS NULL")
+                } else {
+                    append("(libraryId = ? OR libraryId IS NULL)")
+                    args.add(libraryId)
+                }
+                append(")")
+                append(" AND (title LIKE ? OR author LIKE ?)")
+                val queryPattern = "%$searchQuery%"
+                args.add(queryPattern)
+                args.add(queryPattern)
             }
-            append(")")
-            append(" AND (title LIKE ? OR author LIKE ?)")
-            val queryPattern = "%$searchQuery%"
-            args.add(queryPattern)
-            args.add(queryPattern)
-        }
 
-        val field = when (orderField) {
-            "title" -> "title"
-            "author" -> "author"
-            "duration" -> "duration"
-            else -> "title"
-        }
+            val field = when (orderField) {
+                "title" -> "title"
+                "author" -> "author"
+                "duration" -> "duration"
+                else -> "title"
+            }
 
-        val direction = when (orderDirection.uppercase()) {
-            "ASC" -> "ASC"
-            "DESC" -> "DESC"
-            else -> "ASC"
-        }
+            val direction = when (orderDirection.uppercase()) {
+                "ASC" -> "ASC"
+                "DESC" -> "DESC"
+                else -> "ASC"
+            }
 
-        val sql = """
+            val sql = """
         SELECT * FROM detailed_books
         WHERE $whereClause
         ORDER BY $field $direction
-        """.trimIndent()
+            """.trimIndent()
 
-        return SimpleSQLiteQuery(sql, args.toTypedArray())
+            return SimpleSQLiteQuery(sql, args.toTypedArray())
+        }
     }
 }
