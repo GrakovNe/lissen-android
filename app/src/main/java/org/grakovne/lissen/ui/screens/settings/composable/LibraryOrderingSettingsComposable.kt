@@ -23,7 +23,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.map
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.LibraryOrderingDirection
@@ -67,11 +66,11 @@ fun LibraryOrderingSettingsComposable(
 
     if (libraryOrderingExpanded) {
         CommonSettingsItemComposable(
-            items = viewModel
-                .availableLibraryOrdering
-                .value
-                ?.map { it.toItem(context) }
-                ?: emptyList(),
+            items = listOf(
+                LibraryOrderingOption.TITLE.toItem(context),
+                LibraryOrderingOption.AUTHOR.toItem(context),
+                LibraryOrderingOption.CREATED_AT.toItem(context),
+            ),
             selectedItem = configuration.option.toItem(context),
             onDismissRequest = { libraryOrderingExpanded = false },
             onItemSelected = { item ->
@@ -122,11 +121,7 @@ private fun LibraryOrderingOption.toItem(context: Context): CommonSettingsItem {
     val name = when (this) {
         LibraryOrderingOption.TITLE -> context.getString(R.string.settings_screen_library_ordering_title_option)
         LibraryOrderingOption.AUTHOR -> context.getString(R.string.settings_screen_library_ordering_author_option)
-        LibraryOrderingOption.DURATION -> context.getString(R.string.settings_screen_library_ordering_duration_option)
-        LibraryOrderingOption.CHAPTERS_COUNT -> context.getString(R.string.settings_screen_library_ordering_chapter_count_option)
-        LibraryOrderingOption.PUBLISHED_YEAR -> context.getString(R.string.settings_screen_library_ordering_published_year_option)
         LibraryOrderingOption.CREATED_AT -> context.getString(R.string.settings_screen_library_ordering_creation_date_option)
-        LibraryOrderingOption.MODIFIED_AT -> context.getString(R.string.settings_screen_library_ordering_modified_at_option)
     }
 
     return CommonSettingsItem(id, name, null)

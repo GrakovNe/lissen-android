@@ -43,14 +43,6 @@ class SettingsViewModel @Inject constructor(
     private val _preferredLibraryOrdering = MutableLiveData(preferences.getLibraryOrdering())
     val preferredLibraryOrdering: LiveData<LibraryOrderingConfiguration> = _preferredLibraryOrdering
 
-    private val _availableLibraryOrdering = MutableLiveData(
-        mediaChannel
-            .getFilteringConfiguration()
-            .orderingOptions,
-    )
-
-    val availableLibraryOrdering = _availableLibraryOrdering
-
     private val _customHeaders = MutableLiveData(preferences.getCustomHeaders())
     val customHeaders = _customHeaders
 
@@ -107,9 +99,6 @@ class SettingsViewModel @Inject constructor(
     fun preferLibrary(library: Library) {
         _preferredLibrary.postValue(library)
         preferences.savePreferredLibrary(library)
-        preferences.saveLibraryOrdering(
-            configuration = mediaChannel.getFilteringConfiguration().defaultOrdering,
-        )
     }
 
     fun preferLibraryOrdering(configuration: LibraryOrderingConfiguration) {

@@ -54,6 +54,4 @@ interface MediaChannel {
     suspend fun fetchRecentListenedBooks(libraryId: String): ApiResult<List<RecentBook>>
 
     suspend fun fetchBook(bookId: String): ApiResult<DetailedItem>
-
-    fun getFilteringConfiguration(): ChannelFilteringConfiguration
 }

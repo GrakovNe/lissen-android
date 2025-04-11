@@ -7,21 +7,17 @@ import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfDataR
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfMediaRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfSyncService
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
-import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryOrderingRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.DeviceInfo
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
+import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastOrderingRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastPageResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastSearchItemsConverter
 import org.grakovne.lissen.channel.common.ApiResult
-import org.grakovne.lissen.channel.common.ChannelFilteringConfiguration
 import org.grakovne.lissen.channel.common.LibraryType
-import org.grakovne.lissen.common.LibraryOrderingConfiguration
-import org.grakovne.lissen.common.LibraryOrderingDirection
-import org.grakovne.lissen.common.LibraryOrderingOption
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PagedItems
@@ -40,7 +36,7 @@ class PodcastAudiobookshelfChannel @Inject constructor(
     sessionResponseConverter: PlaybackSessionResponseConverter,
     libraryResponseConverter: LibraryResponseConverter,
     connectionInfoResponseConverter: ConnectionInfoResponseConverter,
-    private val libraryOrderingRequestConverter: LibraryOrderingRequestConverter,
+    private val podcastOrderingRequestConverter: PodcastOrderingRequestConverter,
     private val podcastPageResponseConverter: PodcastPageResponseConverter,
     private val podcastResponseConverter: PodcastResponseConverter,
     private val podcastSearchItemsConverter: PodcastSearchItemsConverter,
@@ -62,7 +58,7 @@ class PodcastAudiobookshelfChannel @Inject constructor(
         pageSize: Int,
         pageNumber: Int,
     ): ApiResult<PagedItems<Book>> {
-        val (option, direction) = libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering())
+        val (option, direction) = podcastOrderingRequestConverter.apply(preferences.getLibraryOrdering())
 
         return dataRepository
             .fetchPodcastItems(
@@ -142,13 +138,4 @@ class PodcastAudiobookshelfChannel @Inject constructor(
             .await()
             .map { podcastResponseConverter.apply(it, mediaProgress.await() ?: emptyList()) }
     }
-
-    override fun getFilteringConfiguration() = ChannelFilteringConfiguration(
-        defaultOrdering = LibraryOrderingConfiguration(LibraryOrderingOption.MODIFIED_AT, LibraryOrderingDirection.DESCENDING),
-        orderingOptions = listOf(
-            LibraryOrderingOption.TITLE,
-            LibraryOrderingOption.CHAPTERS_COUNT,
-            LibraryOrderingOption.CREATED_AT,
-        ),
-    )
 }

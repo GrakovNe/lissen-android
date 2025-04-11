@@ -1,4 +1,4 @@
-package org.grakovne.lissen.channel.audiobookshelf.common.converter
+package org.grakovne.lissen.channel.audiobookshelf.library.converter
 
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.LibraryOrderingDirection
@@ -13,11 +13,7 @@ class LibraryOrderingRequestConverter @Inject constructor() {
         val option = when (configuration.option) {
             LibraryOrderingOption.TITLE -> "media.metadata.title"
             LibraryOrderingOption.AUTHOR -> "media.metadata.authorName"
-            LibraryOrderingOption.PUBLISHED_YEAR -> "media.metadata.publishedYear"
             LibraryOrderingOption.CREATED_AT -> "addedAt"
-            LibraryOrderingOption.DURATION -> "media.duration"
-            LibraryOrderingOption.MODIFIED_AT -> "mtimeMs"
-            LibraryOrderingOption.CHAPTERS_COUNT -> "media.numTracks"
         }
 
         val direction = when (configuration.direction) {

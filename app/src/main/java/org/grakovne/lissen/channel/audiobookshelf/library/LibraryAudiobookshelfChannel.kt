@@ -8,7 +8,6 @@ import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfDataR
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfMediaRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfSyncService
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
-import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryOrderingRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryPageResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
@@ -16,14 +15,11 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeni
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.DeviceInfo
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.BookResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibraryOrderingRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibrarySearchItemsConverter
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.ApiResult.Success
-import org.grakovne.lissen.channel.common.ChannelFilteringConfiguration
 import org.grakovne.lissen.channel.common.LibraryType
-import org.grakovne.lissen.common.LibraryOrderingConfiguration
-import org.grakovne.lissen.common.LibraryOrderingDirection
-import org.grakovne.lissen.common.LibraryOrderingOption
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PagedItems
@@ -156,15 +152,4 @@ class LibraryAudiobookshelfChannel @Inject constructor(
             onFailure = { ApiResult.Error(it.code) },
         )
     }
-
-    override fun getFilteringConfiguration() = ChannelFilteringConfiguration(
-        defaultOrdering = LibraryOrderingConfiguration(LibraryOrderingOption.TITLE, LibraryOrderingDirection.ASCENDING),
-        orderingOptions = listOf(
-            LibraryOrderingOption.TITLE,
-            LibraryOrderingOption.AUTHOR,
-            LibraryOrderingOption.DURATION,
-            LibraryOrderingOption.PUBLISHED_YEAR,
-            LibraryOrderingOption.CREATED_AT,
-        ),
-    )
 }
