@@ -172,7 +172,7 @@ val MIGRATION_10_11 = object : Migration(10, 11) {
                 libraryId TEXT,
                 publisher TEXT,
                 seriesJson TEXT,
-                createdAt LONG NOT NULL
+                createdAt INTEGER NOT NULL
             )
             """.trimIndent(),
         )
