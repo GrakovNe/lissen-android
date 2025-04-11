@@ -156,6 +156,6 @@ class LibraryViewModel @Inject constructor(
     companion object {
 
         private const val EMPTY_SEARCH = ""
-        private const val PAGE_SIZE = 1
+        private const val PAGE_SIZE = 20
     }
 }
