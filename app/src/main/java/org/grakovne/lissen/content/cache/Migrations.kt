@@ -154,3 +154,41 @@ val MIGRATION_9_10 = object : Migration(9, 10) {
         db.execSQL("ALTER TABLE detailed_books ADD COLUMN seriesJson TEXT")
     }
 }
+
+val MIGRATION_10_11 = object : Migration(10, 11) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        val now = System.currentTimeMillis() / 1000
+
+        database.execSQL(
+            """
+            CREATE TABLE detailed_books_new (
+                id TEXT NOT NULL PRIMARY KEY,
+                title TEXT NOT NULL,
+                author TEXT,
+                duration INTEGER NOT NULL,
+                abstract TEXT,
+                subtitle TEXT,
+                year TEXT,
+                libraryId TEXT,
+                publisher TEXT,
+                seriesJson TEXT,
+                createdAt LONG NOT NULL
+            )
+            """.trimIndent(),
+        )
+
+        database.execSQL(
+            """
+            INSERT INTO detailed_books_new (
+                id, title, author, duration, abstract, subtitle, year, libraryId, publisher, seriesJson, createdAt
+            )
+            SELECT 
+                id, title, author, duration, abstract, subtitle, year, libraryId, publisher, seriesJson, $now
+            FROM detailed_books
+            """.trimIndent(),
+        )
+
+        database.execSQL("DROP TABLE detailed_books")
+        database.execSQL("ALTER TABLE detailed_books_new RENAME TO detailed_books")
+    }
+}

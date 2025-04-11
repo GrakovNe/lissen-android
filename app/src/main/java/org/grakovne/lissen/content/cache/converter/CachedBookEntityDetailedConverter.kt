@@ -44,6 +44,7 @@ class CachedBookEntityDetailedConverter @Inject constructor() {
         abstract = entity.detailedBook.abstract,
         publisher = entity.detailedBook.publisher,
         year = entity.detailedBook.year,
+        createdAt = entity.detailedBook.createdAt,
         series = entity
             .detailedBook
             .seriesJson

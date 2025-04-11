@@ -79,6 +79,7 @@ class PodcastResponseConverter @Inject constructor() {
             abstract = item.media.metadata.description,
             publisher = item.media.metadata.publisher,
             series = emptyList(), // there is no series for podcast
+            createdAt = item.addedAt,
         )
     }
 

@@ -6,9 +6,11 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.RawQuery
 import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Transaction
 import androidx.room.Update
+import androidx.sqlite.db.SupportSQLiteQuery
 import com.google.gson.Gson
 import org.grakovne.lissen.content.cache.entity.BookChapterEntity
 import org.grakovne.lissen.content.cache.entity.BookEntity
@@ -37,6 +39,7 @@ interface CachedBookDao {
             year = book.year,
             abstract = book.abstract,
             publisher = book.publisher,
+            createdAt = book.createdAt,
             seriesJson = book
                 .series
                 .map { BookSeriesDto(title = it.name, sequence = it.serialNumber) }
@@ -91,33 +94,14 @@ interface CachedBookDao {
     }
 
     @Transaction
-    @Query(
-        """
-        SELECT * FROM detailed_books
-        WHERE (libraryId IS NULL OR libraryId = :libraryId)
-        ORDER BY title
-        LIMIT :pageSize OFFSET :pageNumber * :pageSize
-    """,
-    )
+    @RawQuery
     suspend fun fetchCachedBooks(
-        libraryId: String?,
-        pageNumber: Int,
-        pageSize: Int,
+        query: SupportSQLiteQuery,
     ): List<BookEntity>
 
     @Transaction
-    @Query(
-        """
-        SELECT * FROM detailed_books
-        WHERE (libraryId IS NULL OR libraryId = :libraryId)
-        AND (title LIKE '%' || :searchQuery || '%' OR author LIKE '%' || :searchQuery || '%')
-        ORDER BY title
-    """,
-    )
-    suspend fun searchCachedBooks(
-        libraryId: String?,
-        searchQuery: String,
-    ): List<BookEntity>
+    @RawQuery
+    suspend fun searchBooks(query: SupportSQLiteQuery): List<BookEntity>
 
     @Transaction
     @RewriteQueriesToDropUnusedColumns

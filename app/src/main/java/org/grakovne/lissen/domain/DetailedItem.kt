@@ -16,6 +16,7 @@ data class DetailedItem(
     val progress: MediaProgress?,
     val libraryId: String?,
     val localProvided: Boolean,
+    val createdAt: Long,
 ) : Serializable
 
 data class BookFile(

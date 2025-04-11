@@ -94,6 +94,7 @@ class BookResponseConverter @Inject constructor() {
                         serialNumber = it.sequence,
                     )
                 } ?: emptyList(),
+            createdAt = item.addedAt,
             progress = progressResponse
                 ?.let {
                     MediaProgress(
