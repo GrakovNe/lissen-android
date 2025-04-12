@@ -14,6 +14,7 @@ import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Forward30
+import androidx.compose.material.icons.rounded.ChangeCircle
 import androidx.compose.material.icons.rounded.PauseCircleFilled
 import androidx.compose.material.icons.rounded.PlayCircleFilled
 import androidx.compose.material.icons.rounded.Replay10
@@ -31,6 +32,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +40,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.common.hapticAction
 import org.grakovne.lissen.ui.extensions.formatFully
+import org.grakovne.lissen.ui.extensions.setupWaitingIcon
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
@@ -46,6 +49,9 @@ fun TrackControlComposable(
     modifier: Modifier = Modifier,
 ) {
     val isPlaying by viewModel.isPlaying.observeAsState(false)
+
+    var isWaiting by remember { mutableStateOf(false) }
+
     val currentTrackIndex by viewModel.currentChapterIndex.observeAsState(0)
     val currentTrackPosition by viewModel.currentChapterPosition.observeAsState(0.0)
     val currentTrackDuration by viewModel.currentChapterDuration.observeAsState(0.0)
@@ -58,9 +64,17 @@ fun TrackControlComposable(
     var sliderPosition by remember { mutableDoubleStateOf(0.0) }
     var isDragging by remember { mutableStateOf(false) }
 
+    val scope = rememberCoroutineScope()
+
     LaunchedEffect(currentTrackPosition, currentTrackIndex, currentTrackDuration) {
         if (!isDragging) {
             sliderPosition = currentTrackPosition
+        }
+    }
+
+    LaunchedEffect(isPlaying) {
+        if (isPlaying) {
+            isWaiting = false
         }
     }
 
@@ -151,11 +165,22 @@ fun TrackControlComposable(
                 }
 
                 IconButton(
-                    onClick = { hapticAction(view) { viewModel.togglePlayPause() } },
+                    onClick = {
+                        viewModel.togglePlayPause()
+                        scope.setupWaitingIcon(
+                            checkCondition = { isPlaying },
+                            onWaitingFinished = { isWaiting = false },
+                            onLongWaiting = { isWaiting = true },
+                        )
+                    },
                     modifier = Modifier.size(72.dp),
                 ) {
                     Icon(
-                        imageVector = if (isPlaying) Icons.Rounded.PauseCircleFilled else Icons.Rounded.PlayCircleFilled,
+                        imageVector = when {
+                            isWaiting -> Icons.Rounded.ChangeCircle
+                            isPlaying -> Icons.Rounded.PauseCircleFilled
+                            else -> Icons.Rounded.PlayCircleFilled
+                        },
                         contentDescription = "Play / Pause",
                         tint = colorScheme.primary,
                         modifier = Modifier.fillMaxSize(),
