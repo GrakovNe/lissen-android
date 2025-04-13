@@ -70,6 +70,7 @@ fun LibraryOrderingSettingsComposable(
                 LibraryOrderingOption.TITLE.toItem(context),
                 LibraryOrderingOption.AUTHOR.toItem(context),
                 LibraryOrderingOption.CREATED_AT.toItem(context),
+                LibraryOrderingOption.UPDATED_AT.toItem(context),
             ),
             selectedItem = configuration.option.toItem(context),
             onDismissRequest = { libraryOrderingExpanded = false },
@@ -122,6 +123,7 @@ private fun LibraryOrderingOption.toItem(context: Context): CommonSettingsItem {
         LibraryOrderingOption.TITLE -> context.getString(R.string.settings_screen_library_ordering_title_option)
         LibraryOrderingOption.AUTHOR -> context.getString(R.string.settings_screen_library_ordering_author_option)
         LibraryOrderingOption.CREATED_AT -> context.getString(R.string.settings_screen_library_ordering_creation_date_option)
+        LibraryOrderingOption.UPDATED_AT -> context.getString(R.string.settings_screen_library_ordering_modification_date_option)
     }
 
     return CommonSettingsItem(id, name, null)

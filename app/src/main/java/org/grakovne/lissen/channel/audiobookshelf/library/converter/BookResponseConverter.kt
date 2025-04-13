@@ -95,6 +95,7 @@ class BookResponseConverter @Inject constructor() {
                     )
                 } ?: emptyList(),
             createdAt = item.addedAt,
+            updatedAt = item.ctimeMs,
             progress = progressResponse
                 ?.let {
                     MediaProgress(

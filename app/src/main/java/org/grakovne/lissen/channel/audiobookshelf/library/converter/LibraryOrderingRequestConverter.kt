@@ -14,6 +14,7 @@ class LibraryOrderingRequestConverter @Inject constructor() {
             LibraryOrderingOption.TITLE -> "media.metadata.title"
             LibraryOrderingOption.AUTHOR -> "media.metadata.authorName"
             LibraryOrderingOption.CREATED_AT -> "addedAt"
+            LibraryOrderingOption.UPDATED_AT -> "mtimeMs"
         }
 
         val direction = when (configuration.direction) {

@@ -43,6 +43,7 @@ data class BookEntity(
     val libraryId: String?,
     val seriesJson: String?, // List<BookSeriesDto> Json
     val createdAt: Long,
+    val updatedAt: Long,
 ) : Serializable
 
 @Entity(

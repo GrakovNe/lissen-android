@@ -17,6 +17,7 @@ data class DetailedItem(
     val libraryId: String?,
     val localProvided: Boolean,
     val createdAt: Long,
+    val updatedAt: Long,
 ) : Serializable
 
 data class BookFile(

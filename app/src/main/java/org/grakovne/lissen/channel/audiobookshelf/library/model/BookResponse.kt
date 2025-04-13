@@ -6,6 +6,7 @@ data class BookResponse(
     val libraryId: String,
     val media: BookMedia,
     val addedAt: Long,
+    val ctimeMs: Long,
 )
 
 data class BookMedia(

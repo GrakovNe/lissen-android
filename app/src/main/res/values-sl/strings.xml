@@ -94,4 +94,5 @@
     <string name="settings_screen_library_ordering_title_option">Naslov</string>
     <string name="settings_screen_library_ordering_author_option">Avtor</string>
     <string name="settings_screen_library_ordering_creation_date_option">Datum nastanka</string>
+    <string name="settings_screen_library_ordering_modification_date_option">Datum ažuriranja</string>
 </resources>

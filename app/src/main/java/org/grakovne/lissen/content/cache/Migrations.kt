@@ -192,3 +192,42 @@ val MIGRATION_10_11 = object : Migration(10, 11) {
         database.execSQL("ALTER TABLE detailed_books_new RENAME TO detailed_books")
     }
 }
+
+val MIGRATION_11_12 = object : Migration(11, 12) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        val now = System.currentTimeMillis() / 1000
+
+        database.execSQL(
+            """
+            CREATE TABLE detailed_books_new (
+                id TEXT NOT NULL PRIMARY KEY,
+                title TEXT NOT NULL,
+                author TEXT,
+                duration INTEGER NOT NULL,
+                abstract TEXT,
+                subtitle TEXT,
+                year TEXT,
+                libraryId TEXT,
+                publisher TEXT,
+                seriesJson TEXT,
+                createdAt INTEGER NOT NULL,
+                updatedAt INTEGER NOT NULL
+            )
+            """.trimIndent(),
+        )
+
+        database.execSQL(
+            """
+            INSERT INTO detailed_books_new (
+                id, title, author, duration, abstract, subtitle, year, libraryId, publisher, seriesJson, createdAt, updatedAt
+            )
+            SELECT 
+                id, title, author, duration, abstract, subtitle, year, libraryId, publisher, seriesJson, createdAt, $now
+            FROM detailed_books
+            """.trimIndent(),
+        )
+
+        database.execSQL("DROP TABLE detailed_books")
+        database.execSQL("ALTER TABLE detailed_books_new RENAME TO detailed_books")
+    }
+}

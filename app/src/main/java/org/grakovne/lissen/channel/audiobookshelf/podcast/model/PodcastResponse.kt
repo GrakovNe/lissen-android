@@ -6,6 +6,7 @@ data class PodcastResponse(
     val libraryId: String,
     val media: PodcastMedia,
     val addedAt: Long,
+    val ctimeMs: Long,
 )
 
 data class PodcastMedia(

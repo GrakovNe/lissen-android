@@ -37,8 +37,8 @@ android {
         applicationId = "org.grakovne.lissen"
         minSdk = 28
         targetSdk = 35
-        versionCode = 96
-        versionName = "1.3.18"
+        versionCode = 97
+        versionName = "1.3.19"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

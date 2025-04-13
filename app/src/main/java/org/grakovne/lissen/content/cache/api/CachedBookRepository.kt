@@ -126,6 +126,7 @@ class CachedBookRepository @Inject constructor(
             LibraryOrderingOption.TITLE -> "title"
             LibraryOrderingOption.AUTHOR -> "author"
             LibraryOrderingOption.CREATED_AT -> "createdAt"
+            LibraryOrderingOption.UPDATED_AT -> "updatedAt"
         }
 
         val direction = when (preferences.getLibraryOrdering().direction) {
