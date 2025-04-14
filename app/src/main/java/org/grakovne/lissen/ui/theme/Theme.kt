@@ -19,12 +19,12 @@ private val LightColorScheme = lightColorScheme(
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = FoxOrange,
+    primary = FoxOrangeDimmed,
     tertiaryContainer = Color(0xFF1A1A1A),
 )
 
 private val BlackColorScheme = darkColorScheme(
-    primary = FoxOrange,
+    primary = FoxOrangeDimmed,
     background = Black,
     surface = Black,
     tertiaryContainer = Black,
