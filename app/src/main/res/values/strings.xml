@@ -95,4 +95,6 @@
     <string name="settings_screen_library_ordering_author_option">Author</string>
     <string name="settings_screen_library_ordering_creation_date_option">Date of creation</string>
     <string name="settings_screen_library_ordering_modification_date_option">Date of update</string>
+    <string name="shortcut_play_last_short">Continue</string>
+    <string name="shortcut_play_last_long">Continue listening</string>
 </resources>

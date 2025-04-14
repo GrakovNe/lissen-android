@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="play_last"
+        android:enabled="true"
+        android:icon="@drawable/ic_play"
+        android:shortcutShortLabel="@string/shortcut_play_last_short"
+        android:shortcutLongLabel="@string/shortcut_play_last_long">
+        <intent
+            android:action="org.grakovne.lissen.action.PLAY_LAST"
+            android:targetClass="org.grakovne.lissen.ui.activity.PlayLastShortcutReceiver" />
+    </shortcut>
+
+
+</shortcuts>
