@@ -12,9 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Forward30
 import androidx.compose.material.icons.rounded.PlayCircleFilled
-import androidx.compose.material.icons.rounded.Replay10
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material3.Icon
@@ -23,15 +21,24 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.ui.extensions.formatFully
+import org.grakovne.lissen.ui.screens.player.composable.common.provideForwardIcon
+import org.grakovne.lissen.ui.screens.player.composable.common.provideReplayIcon
+import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
 fun TrackControlPlaceholderComposable(
+    settingsViewModel: SettingsViewModel,
     modifier: Modifier = Modifier,
 ) {
+    val seekTime by settingsViewModel.seekTime.observeAsState(SeekTime.Default)
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -99,7 +106,7 @@ fun TrackControlPlaceholderComposable(
 
                 IconButton(onClick = {}) {
                     Icon(
-                        imageVector = Icons.Rounded.Replay10,
+                        imageVector = provideReplayIcon(seekTime),
                         contentDescription = "Rewind",
                         tint = colorScheme.onBackground,
                         modifier = Modifier.size(48.dp),
@@ -120,7 +127,7 @@ fun TrackControlPlaceholderComposable(
 
                 IconButton(onClick = {}) {
                     Icon(
-                        imageVector = Icons.Outlined.Forward30,
+                        imageVector = provideForwardIcon(seekTime),
                         contentDescription = "Forward",
                         tint = colorScheme.onBackground,
                         modifier = Modifier.size(48.dp),

@@ -19,6 +19,7 @@ import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
+import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import java.security.KeyStore
 import java.util.UUID
@@ -219,6 +220,23 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
         }
     }
 
+    fun saveSeekTime(seekTime: SeekTime) {
+        sharedPreferences.edit {
+            val json = gson.toJson(seekTime)
+            putString(KEY_PREFERRED_SEEK_TIME, json)
+        }
+    }
+
+    fun getSeekTime(): SeekTime {
+        val json = sharedPreferences.getString(KEY_PREFERRED_SEEK_TIME, null)
+        val type = object : TypeToken<SeekTime>() {}.type
+
+        return when (json == null) {
+            true -> SeekTime.Default
+            false -> gson.fromJson(json, type)
+        }
+    }
+
     fun saveCustomHeaders(headers: List<ServerRequestHeader>) {
         sharedPreferences.edit {
             val json = gson.toJson(headers)
@@ -253,6 +271,7 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
         private const val KEY_PREFERRED_LIBRARY_TYPE = "preferred_library_type"
 
         private const val KEY_PREFERRED_PLAYBACK_SPEED = "preferred_playback_speed"
+        private const val KEY_PREFERRED_SEEK_TIME = "preferred_seek_time"
 
         private const val KEY_PREFERRED_COLOR_SCHEME = "preferred_color_scheme"
         private const val KEY_PREFERRED_LIBRARY_ORDERING = "preferred_library_ordering"

@@ -37,18 +37,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.common.hapticAction
+import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.ui.extensions.formatFully
+import org.grakovne.lissen.ui.screens.player.composable.common.provideForwardIcon
+import org.grakovne.lissen.ui.screens.player.composable.common.provideReplayIcon
 import org.grakovne.lissen.viewmodel.PlayerViewModel
+import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
 fun TrackControlComposable(
     viewModel: PlayerViewModel,
+    settingsViewModel: SettingsViewModel,
     modifier: Modifier = Modifier,
 ) {
     val isPlaying by viewModel.isPlaying.observeAsState(false)
     val currentTrackIndex by viewModel.currentChapterIndex.observeAsState(0)
     val currentTrackPosition by viewModel.currentChapterPosition.observeAsState(0.0)
     val currentTrackDuration by viewModel.currentChapterDuration.observeAsState(0.0)
+
+    val seekTime by settingsViewModel.seekTime.observeAsState(SeekTime.Default)
 
     val book by viewModel.book.observeAsState()
     val chapters = book?.chapters ?: emptyList()
@@ -143,7 +150,7 @@ fun TrackControlComposable(
                     onClick = { hapticAction(view) { viewModel.rewind() } },
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.Replay10,
+                        imageVector = provideReplayIcon(seekTime),
                         contentDescription = "Rewind",
                         tint = colorScheme.onBackground,
                         modifier = Modifier.size(48.dp),
@@ -166,7 +173,7 @@ fun TrackControlComposable(
                     onClick = { hapticAction(view) { viewModel.forward() } },
                 ) {
                     Icon(
-                        imageVector = Icons.Outlined.Forward30,
+                        imageVector = provideForwardIcon(seekTime),
                         contentDescription = "Forward",
                         tint = colorScheme.onBackground,
                         modifier = Modifier.size(48.dp),

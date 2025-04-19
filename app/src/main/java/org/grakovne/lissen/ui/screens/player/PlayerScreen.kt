@@ -76,6 +76,7 @@ import org.grakovne.lissen.ui.screens.player.composable.provideNowPlayingTitle
 import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
+import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -91,6 +92,7 @@ fun PlayerScreen(
     val cachingModelView: CachingModelView = hiltViewModel()
     val playerViewModel: PlayerViewModel = hiltViewModel()
     val libraryViewModel: LibraryViewModel = hiltViewModel()
+    val settingsViewModel: SettingsViewModel = hiltViewModel()
 
     val titleTextStyle = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
 
@@ -236,11 +238,13 @@ fun PlayerScreen(
                         if (!isPlaybackReady) {
                             TrackControlPlaceholderComposable(
                                 modifier = Modifier,
+                                settingsViewModel = settingsViewModel
                             )
                         } else {
                             TrackControlComposable(
                                 viewModel = playerViewModel,
                                 modifier = Modifier,
+                                settingsViewModel = settingsViewModel
                             )
                         }
                     }

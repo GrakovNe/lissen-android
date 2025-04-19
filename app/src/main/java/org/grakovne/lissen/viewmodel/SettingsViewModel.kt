@@ -46,6 +46,9 @@ class SettingsViewModel @Inject constructor(
     private val _customHeaders = MutableLiveData(preferences.getCustomHeaders())
     val customHeaders = _customHeaders
 
+    private val _seekTime = MutableLiveData(preferences.getSeekTime())
+    val seekTime = _seekTime
+
     fun logout() {
         preferences.clearPreferences()
     }
