@@ -1,7 +1,10 @@
-package org.grakovne.lissen.ui.screens.settings
+package org.grakovne.lissen.ui.screens.settings.advanced
 
+import android.content.Context
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,36 +25,40 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import org.grakovne.lissen.R
-import org.grakovne.lissen.ui.navigation.AppNavigationService
-import org.grakovne.lissen.ui.screens.settings.composable.AdditionalComposable
-import org.grakovne.lissen.ui.screens.settings.composable.AdvancedSettingsItemComposable
-import org.grakovne.lissen.ui.screens.settings.composable.ColorSchemeSettingsComposable
-import org.grakovne.lissen.ui.screens.settings.composable.GitHubLinkComposable
-import org.grakovne.lissen.ui.screens.settings.composable.LibraryOrderingSettingsComposable
-import org.grakovne.lissen.ui.screens.settings.composable.ServerSettingsComposable
+import org.grakovne.lissen.domain.SeekTime
+import org.grakovne.lissen.domain.SeekTimeOption
+import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun SettingsScreen(
+fun SeekSettingsScreen(
     onBack: () -> Unit,
-    navController: AppNavigationService,
 ) {
     val viewModel: SettingsViewModel = hiltViewModel()
-    val host by viewModel.host.observeAsState("")
+
+    val preferredSeekTime by viewModel.seekTime.observeAsState()
+    var safePauseEnabled by remember { mutableStateOf(false) }
+    var rewindTimeExpanded by remember { mutableStateOf(false) }
+    var forwardTimeExpanded by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        text = stringResource(R.string.settings_screen_title),
+                        text = stringResource(R.string.settings_screen_seek_time_title),
                         style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
                         color = colorScheme.onSurface,
                     )
@@ -84,30 +91,62 @@ fun SettingsScreen(
                         .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    if (host?.isNotEmpty() == true) {
-                        ServerSettingsComposable(navController, viewModel)
-                    }
+                    SettingsToggleItem(
+                        title = stringResource(R.string.rewind_on_pause_title),
+                        description = stringResource(R.string.rewind_on_pause_hint),
+                        checked = safePauseEnabled,
+                    ) { safePauseEnabled = it }
 
-                    ColorSchemeSettingsComposable(viewModel)
+                    SeekTimeOptionComposable(
+                        title = stringResource(R.string.rewind_interval),
+                        currentOption = preferredSeekTime?.rewind ?: SeekTime.Default.rewind,
+                    ) { rewindTimeExpanded = true }
 
-                    LibraryOrderingSettingsComposable(viewModel)
-
-                    AdvancedSettingsItemComposable(
-                        title = stringResource(R.string.settings_screen_seek_time_title),
-                        description = stringResource(R.string.settings_screen_seek_time_hint),
-                        onclick = { navController.showSeekSettings() },
-                    )
-
-                    AdvancedSettingsItemComposable(
-                        title = stringResource(R.string.settings_screen_custom_headers_title),
-                        description = stringResource(R.string.settings_screen_custom_header_hint),
-                        onclick = { navController.showCustomHeadersSettings() },
-                    )
-
-                    GitHubLinkComposable()
+                    SeekTimeOptionComposable(
+                        title = stringResource(R.string.forward_interval),
+                        currentOption = preferredSeekTime?.forward ?: SeekTime.Default.forward,
+                    ) { forwardTimeExpanded = true }
                 }
-                AdditionalComposable()
             }
         },
     )
+}
+
+@Composable
+fun SeekTimeOptionComposable(
+    title: String,
+    currentOption: SeekTimeOption,
+    onClicked: () -> Unit,
+) {
+    val context = LocalContext.current
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClicked() }
+            .padding(horizontal = 24.dp, vertical = 12.dp),
+    ) {
+        Column(
+            modifier = Modifier.weight(1f),
+        ) {
+            Text(
+                text = title,
+                style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                modifier = Modifier.padding(bottom = 4.dp),
+            )
+            Text(
+                text = currentOption.toItem(context),
+                style = typography.bodyMedium,
+                color = colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+private fun SeekTimeOption.toItem(context: Context): String {
+    return when (this) {
+        SeekTimeOption.SEEK_5 -> context.getString(R.string.seek_interval_5_seconds)
+        SeekTimeOption.SEEK_10 -> context.getString(R.string.seek_interval_10_seconds)
+        SeekTimeOption.SEEK_30 -> context.getString(R.string.seek_interval_30_seconds)
+    }
 }

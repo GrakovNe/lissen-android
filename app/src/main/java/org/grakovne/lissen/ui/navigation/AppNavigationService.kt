@@ -33,6 +33,10 @@ class AppNavigationService(
         host.navigate("settings_screen/custom_headers")
     }
 
+    fun showSeekSettings() {
+        host.navigate("settings_screen/seek_settings")
+    }
+
     fun showLogin() {
         host.navigate("login_screen") {
             popUpTo(0) {

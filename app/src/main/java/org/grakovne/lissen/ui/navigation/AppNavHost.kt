@@ -28,6 +28,7 @@ import org.grakovne.lissen.ui.screens.login.LoginScreen
 import org.grakovne.lissen.ui.screens.player.PlayerScreen
 import org.grakovne.lissen.ui.screens.settings.SettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.CustomHeadersSettingsScreen
+import org.grakovne.lissen.ui.screens.settings.advanced.SeekSettingsScreen
 
 @Composable
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -141,6 +142,22 @@ fun AppNavHost(
                 popExitTransition = { popExitTransition },
             ) {
                 CustomHeadersSettingsScreen(
+                    onBack = {
+                        if (navController.previousBackStackEntry != null) {
+                            navController.popBackStack()
+                        }
+                    },
+                )
+            }
+
+            composable(
+                route = "settings_screen/seek_settings",
+                enterTransition = { enterTransition },
+                exitTransition = { exitTransition },
+                popEnterTransition = { popEnterTransition },
+                popExitTransition = { popExitTransition },
+            ) {
+                SeekSettingsScreen(
                     onBack = {
                         if (navController.previousBackStackEntry != null) {
                             navController.popBackStack()

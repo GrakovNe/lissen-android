@@ -95,4 +95,13 @@
     <string name="settings_screen_library_ordering_author_option">Author</string>
     <string name="settings_screen_library_ordering_creation_date_option">Date of creation</string>
     <string name="settings_screen_library_ordering_modification_date_option">Date of update</string>
+    <string name="settings_screen_seek_time_title">Seek settings</string>
+    <string name="settings_screen_seek_time_hint">Define seek controls</string>
+    <string name="rewind_interval">Rewind interval</string>
+    <string name="forward_interval">Forward interval</string>
+    <string name="seek_interval_5_seconds">5 seconds</string>
+    <string name="seek_interval_10_seconds">10 seconds</string>
+    <string name="seek_interval_30_seconds">30 seconds</string>
+    <string name="rewind_on_pause_title">Rewind on pause</string>
+    <string name="rewind_on_pause_hint">Jump back slightly when pausing</string>
 </resources>

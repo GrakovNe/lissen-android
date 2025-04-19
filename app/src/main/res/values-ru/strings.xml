@@ -95,4 +95,14 @@
     <string name="settings_screen_library_ordering_author_option">По автору</string>
     <string name="settings_screen_library_ordering_creation_date_option">По дате добавления</string>
     <string name="settings_screen_library_ordering_modification_date_option">По дате обновления</string>
+    <string name="settings_screen_seek_time_title">Настройки перемотки</string>
+    <string name="settings_screen_seek_time_hint">Настройте управление перемоткой</string>
+    <string name="rewind_interval">Интервал перемотки назад</string>
+    <string name="forward_interval">Интервал перемотки вперёд</string>
+    <string name="seek_interval_5_seconds">5 секунд</string>
+    <string name="seek_interval_10_seconds">10 секунд</string>
+    <string name="seek_interval_30_seconds">30 секунд</string>
+    <string name="rewind_on_pause_title">Перемотка при остановке</string>
+    <string name="rewind_on_pause_hint">Автоматический откат во время паузы</string>
+
 </resources>
