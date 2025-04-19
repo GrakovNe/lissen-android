@@ -238,13 +238,13 @@ fun PlayerScreen(
                         if (!isPlaybackReady) {
                             TrackControlPlaceholderComposable(
                                 modifier = Modifier,
-                                settingsViewModel = settingsViewModel
+                                settingsViewModel = settingsViewModel,
                             )
                         } else {
                             TrackControlComposable(
                                 viewModel = playerViewModel,
                                 modifier = Modifier,
-                                settingsViewModel = settingsViewModel
+                                settingsViewModel = settingsViewModel,
                             )
                         }
                     }

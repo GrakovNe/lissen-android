@@ -30,6 +30,7 @@ import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DurationTimerOption
+import org.grakovne.lissen.domain.SeekTimeOption
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.service.PlaybackService
@@ -206,13 +207,13 @@ class MediaRepository @Inject constructor(
     fun rewind() {
         totalPosition
             .value
-            ?.let { seekTo(it - 10L) }
+            ?.let { seekTo(it - getSeekTime(preferences.getSeekTime().rewind)) }
     }
 
     fun forward() {
         totalPosition
             .value
-            ?.let { seekTo(it + 30L) }
+            ?.let { seekTo(it + getSeekTime(preferences.getSeekTime().forward)) }
     }
 
     fun setChapter(index: Int) {
@@ -485,6 +486,12 @@ class MediaRepository @Inject constructor(
 
         private const val CURRENT_TRACK_REPLAY_THRESHOLD = 5
         private const val TAG = "MediaRepository"
+
+        private fun getSeekTime(option: SeekTimeOption): Long = when (option) {
+            SeekTimeOption.SEEK_5 -> 5L
+            SeekTimeOption.SEEK_10 -> 10L
+            SeekTimeOption.SEEK_30 -> 30L
+        }
     }
 }
 
