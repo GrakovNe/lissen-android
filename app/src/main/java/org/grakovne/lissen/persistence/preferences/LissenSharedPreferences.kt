@@ -181,11 +181,6 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
 
     fun getUsername(): String? = sharedPreferences.getString(KEY_USERNAME, null)
 
-    fun saveSmartPause(value: Boolean) =
-        sharedPreferences.edit { putBoolean(KEY_PREFERRED_SMART_PAUSE, value) }
-
-    fun getSmartPause(): Boolean = sharedPreferences.getBoolean(KEY_PREFERRED_SMART_PAUSE, false)
-
     fun saveServerVersion(version: String) =
         sharedPreferences.edit { putString(KEY_SERVER_VERSION, version) }
 
@@ -277,7 +272,6 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
 
         private const val KEY_PREFERRED_PLAYBACK_SPEED = "preferred_playback_speed"
         private const val KEY_PREFERRED_SEEK_TIME = "preferred_seek_time"
-        private const val KEY_PREFERRED_SMART_PAUSE = "preferred_smart_pause"
 
         private const val KEY_PREFERRED_COLOR_SCHEME = "preferred_color_scheme"
         private const val KEY_PREFERRED_LIBRARY_ORDERING = "preferred_library_ordering"

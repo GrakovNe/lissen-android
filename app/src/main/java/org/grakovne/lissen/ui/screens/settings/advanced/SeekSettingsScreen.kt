@@ -40,7 +40,6 @@ import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.domain.SeekTimeOption
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItem
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItemComposable
-import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
@@ -52,7 +51,6 @@ fun SeekSettingsScreen(
     val viewModel: SettingsViewModel = hiltViewModel()
 
     val preferredSeekTime by viewModel.seekTime.observeAsState()
-    val smartPause by viewModel.smartPause.observeAsState(false)
 
     var rewindTimeExpanded by remember { mutableStateOf(false) }
     var forwardTimeExpanded by remember { mutableStateOf(false) }
@@ -96,12 +94,6 @@ fun SeekSettingsScreen(
                         .verticalScroll(rememberScrollState()),
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    SettingsToggleItem(
-                        title = stringResource(R.string.rewind_on_pause_title),
-                        description = stringResource(R.string.rewind_on_pause_hint),
-                        checked = smartPause,
-                    ) { viewModel.preferSmartPause(it) }
-
                     SeekTimeOptionComposable(
                         title = stringResource(R.string.rewind_interval),
                         currentOption = preferredSeekTime?.rewind ?: SeekTime.Default.rewind,

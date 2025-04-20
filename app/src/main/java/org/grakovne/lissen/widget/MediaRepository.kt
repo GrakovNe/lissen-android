@@ -401,10 +401,6 @@ class MediaRepository @Inject constructor(
     }
 
     private fun pause() {
-        if (preferences.getSmartPause()) {
-            rewind()
-        }
-
         val intent = Intent(context, PlaybackService::class.java).apply {
             action = PlaybackService.ACTION_PAUSE
         }

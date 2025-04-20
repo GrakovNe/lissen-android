@@ -50,9 +50,6 @@ class SettingsViewModel @Inject constructor(
     private val _seekTime = MutableLiveData(preferences.getSeekTime())
     val seekTime = _seekTime
 
-    private val _smartPause = MutableLiveData(preferences.getSmartPause())
-    val smartPause = _smartPause
-
     fun logout() {
         preferences.clearPreferences()
     }
@@ -126,11 +123,6 @@ class SettingsViewModel @Inject constructor(
     fun preferRewindRewind(option: SeekTimeOption) {
         _seekTime.value = _seekTime.value?.copy(rewind = option)
         _seekTime.value?.let { preferences.saveSeekTime(it) }
-    }
-
-    fun preferSmartPause(value: Boolean) {
-        _smartPause.value = value
-        preferences.saveSmartPause(value)
     }
 
     fun updateCustomHeaders(headers: List<ServerRequestHeader>) {
