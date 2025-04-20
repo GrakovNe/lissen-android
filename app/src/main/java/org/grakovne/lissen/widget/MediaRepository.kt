@@ -171,10 +171,6 @@ class MediaRepository @Inject constructor(
         }
     }
 
-    fun recoverPlayingBook(detailedItem: DetailedItem) {
-        _playingBook.postValue(detailedItem)
-    }
-
     fun updateTimer(
         timerOption: TimerOption?,
         position: Double? = null,
@@ -405,6 +401,10 @@ class MediaRepository @Inject constructor(
     }
 
     private fun pause() {
+        if (preferences.getSmartPause()) {
+            rewind()
+        }
+
         val intent = Intent(context, PlaybackService::class.java).apply {
             action = PlaybackService.ACTION_PAUSE
         }

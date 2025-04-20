@@ -38,6 +38,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.domain.SeekTimeOption
+import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItem
+import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItemComposable
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
@@ -46,10 +48,12 @@ import org.grakovne.lissen.viewmodel.SettingsViewModel
 fun SeekSettingsScreen(
     onBack: () -> Unit,
 ) {
+    val context = LocalContext.current
     val viewModel: SettingsViewModel = hiltViewModel()
 
     val preferredSeekTime by viewModel.seekTime.observeAsState()
-    var safePauseEnabled by remember { mutableStateOf(false) }
+    val smartPause by viewModel.smartPause.observeAsState(false)
+
     var rewindTimeExpanded by remember { mutableStateOf(false) }
     var forwardTimeExpanded by remember { mutableStateOf(false) }
 
@@ -77,6 +81,7 @@ fun SeekSettingsScreen(
         modifier = Modifier
             .systemBarsPadding()
             .fillMaxHeight(),
+
         content = { innerPadding ->
             Column(
                 modifier = Modifier
@@ -94,8 +99,8 @@ fun SeekSettingsScreen(
                     SettingsToggleItem(
                         title = stringResource(R.string.rewind_on_pause_title),
                         description = stringResource(R.string.rewind_on_pause_hint),
-                        checked = safePauseEnabled,
-                    ) { safePauseEnabled = it }
+                        checked = smartPause,
+                    ) { viewModel.preferSmartPause(it) }
 
                     SeekTimeOptionComposable(
                         title = stringResource(R.string.rewind_interval),
@@ -110,6 +115,42 @@ fun SeekSettingsScreen(
             }
         },
     )
+
+    if (rewindTimeExpanded) {
+        CommonSettingsItemComposable(
+            items = listOf(
+                SeekTimeOption.SEEK_5.toSettingsItem(context),
+                SeekTimeOption.SEEK_10.toSettingsItem(context),
+                SeekTimeOption.SEEK_30.toSettingsItem(context),
+            ),
+            selectedItem = preferredSeekTime?.rewind?.toSettingsItem(context),
+            onDismissRequest = { rewindTimeExpanded = false },
+            onItemSelected = { item ->
+                SeekTimeOption
+                    .entries
+                    .find { it.name == item.id }
+                    ?.let { viewModel.preferRewindRewind(it) }
+            },
+        )
+    }
+
+    if (forwardTimeExpanded) {
+        CommonSettingsItemComposable(
+            items = listOf(
+                SeekTimeOption.SEEK_5.toSettingsItem(context),
+                SeekTimeOption.SEEK_10.toSettingsItem(context),
+                SeekTimeOption.SEEK_30.toSettingsItem(context),
+            ),
+            selectedItem = preferredSeekTime?.forward?.toSettingsItem(context),
+            onDismissRequest = { forwardTimeExpanded = false },
+            onItemSelected = { item ->
+                SeekTimeOption
+                    .entries
+                    .find { it.name == item.id }
+                    ?.let { viewModel.preferForwardRewind(it) }
+            },
+        )
+    }
 }
 
 @Composable
@@ -142,6 +183,9 @@ fun SeekTimeOptionComposable(
         }
     }
 }
+
+private fun SeekTimeOption.toSettingsItem(context: Context): CommonSettingsItem =
+    CommonSettingsItem(this.name, this.toItem(context), null)
 
 private fun SeekTimeOption.toItem(context: Context): String {
     return when (this) {
