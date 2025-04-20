@@ -47,6 +47,7 @@ import androidx.media3.session.R
 import dagger.hilt.android.EntryPointAccessors
 import org.grakovne.lissen.R.drawable
 import org.grakovne.lissen.common.fromBase64
+import org.grakovne.lissen.domain.SeekTimeOption
 import org.grakovne.lissen.ui.theme.LightBackground
 import org.grakovne.lissen.widget.PlayerWidget.Companion.bookIdKey
 
@@ -64,18 +65,22 @@ class PlayerWidget : GlanceAppWidget() {
                     dark = darkColorScheme(),
                 ),
             ) {
-                val prefs = currentState<Preferences>()
-                val maybeCover = prefs[encodedCover]?.takeIf { it.isNotBlank() }?.fromBase64()
-                val bookId = prefs[bookId] ?: ""
-                val bookTitle = prefs[title] ?: ""
-                val chapterTitle = prefs[chapterTitle]
+                val preferences = EntryPointAccessors
+                    .fromApplication(context, WidgetPreferencesEntryPoint::class.java)
+                    .lissenSharedPreferences()
+
+                val state = currentState<Preferences>()
+                val maybeCover = state[encodedCover]?.takeIf { it.isNotBlank() }?.fromBase64()
+                val bookId = state[bookId] ?: ""
+                val bookTitle = state[title] ?: ""
+                val chapterTitle = state[chapterTitle]
                     ?.takeIf { it.isNotBlank() }
                     ?: when (bookId) {
                         "" -> context.getString(org.grakovne.lissen.R.string.widget_placeholder_text)
                         else -> ""
                     }
 
-                val isPlaying = prefs[isPlaying] ?: false
+                val isPlaying = state[isPlaying] ?: false
 
                 Column(
                     modifier = GlanceModifier
@@ -148,7 +153,7 @@ class PlayerWidget : GlanceAppWidget() {
                     ) {
                         WidgetControlButton(
                             size = 36.dp,
-                            icon = ImageProvider(R.drawable.media3_icon_skip_back_10),
+                            icon = ImageProvider(provideRewindIcon(preferences.getSeekTime().rewind)),
                             contentColor = GlanceTheme.colors.onBackground,
                             onClick = actionRunCallback<RewindActionCallback>(
                                 actionParametersOf(bookIdKey to bookId),
@@ -191,7 +196,7 @@ class PlayerWidget : GlanceAppWidget() {
                         )
 
                         WidgetControlButton(
-                            icon = ImageProvider(R.drawable.media3_icon_skip_forward_30),
+                            icon = ImageProvider(provideForwardIcon(preferences.getSeekTime().forward)),
                             size = 36.dp,
                             contentColor = GlanceTheme.colors.onBackground,
                             onClick = actionRunCallback<ForwardActionCallback>(
@@ -212,6 +217,22 @@ class PlayerWidget : GlanceAppWidget() {
         ?: this
 
     companion object {
+
+        fun provideRewindIcon(option: SeekTimeOption): Int {
+            return when (option) {
+                SeekTimeOption.SEEK_5 -> R.drawable.media3_icon_skip_back_5
+                SeekTimeOption.SEEK_10 -> R.drawable.media3_icon_skip_back_10
+                SeekTimeOption.SEEK_30 -> R.drawable.media3_icon_skip_back_30
+            }
+        }
+
+        fun provideForwardIcon(option: SeekTimeOption): Int {
+            return when (option) {
+                SeekTimeOption.SEEK_5 -> R.drawable.media3_icon_skip_forward_5
+                SeekTimeOption.SEEK_10 -> R.drawable.media3_icon_skip_forward_10
+                SeekTimeOption.SEEK_30 -> R.drawable.media3_icon_skip_forward_30
+            }
+        }
 
         val bookIdKey = ActionParameters.Key<String>("book_id")
 

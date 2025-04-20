@@ -20,6 +20,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import org.grakovne.lissen.domain.SeekTimeOption
+import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.activity.AppActivity
 import org.grakovne.lissen.widget.MediaRepository
 import javax.inject.Singleton
@@ -49,6 +51,7 @@ object MediaModule {
     @Singleton
     fun provideMediaSession(
         @ApplicationContext context: Context,
+        preferences: LissenSharedPreferences,
         mediaRepository: MediaRepository,
         exoPlayer: ExoPlayer,
     ): MediaSession {
@@ -69,6 +72,7 @@ object MediaModule {
                 ): MediaSession.ConnectionResult {
                     val rewindCommand = SessionCommand(REWIND_COMMAND, Bundle.EMPTY)
                     val forwardCommand = SessionCommand(FORWARD_COMMAND, Bundle.EMPTY)
+                    val seekTime = preferences.getSeekTime()
 
                     val sessionCommands = MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS.buildUpon()
                         .add(rewindCommand)
@@ -76,14 +80,14 @@ object MediaModule {
                         .build()
 
                     val rewindButton = CommandButton
-                        .Builder(CommandButton.ICON_SKIP_BACK_10)
+                        .Builder(provideRewindCommand(seekTime.rewind))
                         .setSessionCommand(rewindCommand)
                         .setDisplayName("Rewind")
                         .setEnabled(true)
                         .build()
 
                     val forwardButton = CommandButton
-                        .Builder(CommandButton.ICON_SKIP_FORWARD_30)
+                        .Builder(provideForwardCommand(seekTime.forward))
                         .setSessionCommand(forwardCommand)
                         .setDisplayName("Forward")
                         .setEnabled(true)
@@ -115,6 +119,18 @@ object MediaModule {
             })
             .setSessionActivity(sessionActivityPendingIntent)
             .build()
+    }
+
+    private fun provideRewindCommand(seekTime: SeekTimeOption) = when (seekTime) {
+        SeekTimeOption.SEEK_5 -> CommandButton.ICON_SKIP_BACK_5
+        SeekTimeOption.SEEK_10 -> CommandButton.ICON_SKIP_BACK_10
+        SeekTimeOption.SEEK_30 -> CommandButton.ICON_SKIP_BACK_30
+    }
+
+    private fun provideForwardCommand(seekTime: SeekTimeOption) = when (seekTime) {
+        SeekTimeOption.SEEK_5 -> CommandButton.ICON_SKIP_FORWARD_5
+        SeekTimeOption.SEEK_10 -> CommandButton.ICON_SKIP_FORWARD_10
+        SeekTimeOption.SEEK_30 -> CommandButton.ICON_SKIP_FORWARD_30
     }
 
     private const val REWIND_COMMAND = "notification_rewind"
