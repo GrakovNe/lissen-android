@@ -102,7 +102,5 @@
     <string name="seek_interval_5_seconds">5 секунд</string>
     <string name="seek_interval_10_seconds">10 секунд</string>
     <string name="seek_interval_30_seconds">30 секунд</string>
-    <string name="rewind_on_pause_title">Перемотка при остановке</string>
-    <string name="rewind_on_pause_hint">Автоматический откат во время паузы</string>
 
 </resources>

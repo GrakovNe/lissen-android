@@ -102,6 +102,4 @@
     <string name="seek_interval_5_seconds">5 seconds</string>
     <string name="seek_interval_10_seconds">10 seconds</string>
     <string name="seek_interval_30_seconds">30 seconds</string>
-    <string name="rewind_on_pause_title">Rewind on pause</string>
-    <string name="rewind_on_pause_hint">Jump back slightly when pausing</string>
 </resources>
