@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package org.grakovne.lissen.playback
 
 import android.app.PendingIntent
@@ -5,6 +7,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
+import android.view.KeyEvent.KEYCODE_MEDIA_NEXT
+import android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
@@ -29,6 +34,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object MediaModule {
+
     @OptIn(UnstableApi::class)
     @Provides
     @Singleton
@@ -47,6 +53,7 @@ object MediaModule {
             .build()
     }
 
+    @OptIn(UnstableApi::class)
     @Provides
     @Singleton
     fun provideMediaSession(
@@ -64,6 +71,37 @@ object MediaModule {
 
         return MediaSession.Builder(context, exoPlayer)
             .setCallback(object : MediaSession.Callback {
+                override fun onMediaButtonEvent(
+                    session: MediaSession,
+                    controllerInfo: MediaSession.ControllerInfo,
+                    intent: Intent,
+                ): Boolean {
+                    Log.d(TAG, "Executing media button event from: $controllerInfo")
+
+                    val keyEvent = intent
+                        .getParcelableExtra<KeyEvent>(Intent.EXTRA_KEY_EVENT)
+                        ?: return super.onMediaButtonEvent(session, controllerInfo, intent)
+
+                    Log.d(TAG, "Got media key event: $keyEvent")
+
+                    if (keyEvent.action != KeyEvent.ACTION_DOWN) {
+                        return super.onMediaButtonEvent(session, controllerInfo, intent)
+                    }
+
+                    when (keyEvent.keyCode) {
+                        KEYCODE_MEDIA_NEXT -> {
+                            mediaRepository.forward()
+                            return true
+                        }
+
+                        KEYCODE_MEDIA_PREVIOUS -> {
+                            mediaRepository.rewind()
+                            return true
+                        }
+
+                        else -> return super.onMediaButtonEvent(session, controllerInfo, intent)
+                    }
+                }
 
                 @OptIn(UnstableApi::class)
                 override fun onConnect(
