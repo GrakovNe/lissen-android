@@ -12,7 +12,6 @@ import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
-import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import java.io.InputStream
@@ -81,21 +80,6 @@ class LocalCacheRepository @Inject constructor(
     suspend fun updateLibraries(libraries: List<Library>) {
         cachedLibraryRepository.cacheLibraries(libraries)
     }
-
-    /**
-     * For the local cache we avoiding to create intermediary entity like Session and using BookId
-     * as a Playback Session Key
-     */
-    fun startPlayback(
-        bookId: String,
-    ): ApiResult<PlaybackSession> =
-        ApiResult
-            .Success(
-                PlaybackSession(
-                    bookId = bookId,
-                    sessionId = bookId,
-                ),
-            )
 
     suspend fun fetchRecentListenedBooks(): ApiResult<List<RecentBook>> =
         cachedBookRepository

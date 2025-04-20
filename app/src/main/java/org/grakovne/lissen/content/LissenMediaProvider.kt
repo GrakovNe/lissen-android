@@ -60,12 +60,10 @@ class LissenMediaProvider @Inject constructor(
     ): ApiResult<Unit> {
         Log.d(TAG, "Syncing Progress for $bookId. $progress")
 
-        return when (preferences.isForceCache()) {
-            true -> localCacheRepository.syncProgress(bookId, progress)
-            false -> providePreferredChannel()
-                .syncProgress(sessionId, progress)
-                .also { localCacheRepository.syncProgress(bookId, progress) }
-        }
+        providePreferredChannel().syncProgress(sessionId, progress)
+        localCacheRepository.syncProgress(bookId, progress)
+
+        return ApiResult.Success(Unit)
     }
 
     suspend fun fetchBookCover(
@@ -134,15 +132,12 @@ class LissenMediaProvider @Inject constructor(
     ): ApiResult<PlaybackSession> {
         Log.d(TAG, "Starting Playback for $bookId. $supportedMimeTypes are supported")
 
-        return when (preferences.isForceCache()) {
-            true -> localCacheRepository.startPlayback(bookId)
-            false -> providePreferredChannel().startPlayback(
-                bookId = bookId,
-                episodeId = chapterId,
-                supportedMimeTypes = supportedMimeTypes,
-                deviceId = deviceId,
-            )
-        }
+        return providePreferredChannel().startPlayback(
+            bookId = bookId,
+            episodeId = chapterId,
+            supportedMimeTypes = supportedMimeTypes,
+            deviceId = deviceId,
+        )
     }
 
     suspend fun fetchRecentListenedBooks(
