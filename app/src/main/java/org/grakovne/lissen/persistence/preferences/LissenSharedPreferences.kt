@@ -134,6 +134,17 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
     fun getPlaybackSpeed(): Float =
         sharedPreferences.getFloat(KEY_PREFERRED_PLAYBACK_SPEED, 1f)
 
+    val playingBookFlow: Flow<DetailedItem?> = callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == KEY_PLAYING_BOOK) {
+                trySend(getPlayingBook())
+            }
+        }
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+        trySend(getPlayingBook())
+        awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
+    }.distinctUntilChanged()
+
     val colorSchemeFlow: Flow<ColorScheme> = callbackFlow {
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
             if (key == KEY_PREFERRED_COLOR_SCHEME) {

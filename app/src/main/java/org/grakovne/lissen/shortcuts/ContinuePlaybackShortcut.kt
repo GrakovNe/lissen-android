@@ -7,8 +7,13 @@ import android.content.pm.ShortcutManager
 import android.graphics.drawable.Icon
 import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.RunningComponent
+import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.activity.AppActivity
 import javax.inject.Inject
@@ -20,13 +25,24 @@ class ContinuePlaybackShortcut @Inject constructor(
     private val sharedPreferences: LissenSharedPreferences,
 ) : RunningComponent {
 
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
     override fun onCreate() {
         Log.d(TAG, "ContinuePlaybackShortcut registered")
 
-        val playingBook = sharedPreferences.getPlayingBook()
-        val shortcutManager = context.getSystemService(ShortcutManager::class.java)
+        scope.launch {
+            sharedPreferences
+                .playingBookFlow
+                .collect { updateShortcut(it) }
+        }
+    }
 
-        shortcutManager.removeAllDynamicShortcuts()
+    private fun updateShortcut(
+        playingBook: DetailedItem?,
+    ) {
+        Log.d(TAG, "ContinuePlaybackShortcut is updating")
+
+        val shortcutManager = context.getSystemService(ShortcutManager::class.java)
 
         if (playingBook == null) {
             shortcutManager.removeDynamicShortcuts(listOf(SHORTCUT_TAG))
