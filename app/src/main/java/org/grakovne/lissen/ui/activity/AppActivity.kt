@@ -1,5 +1,6 @@
 package org.grakovne.lissen.ui.activity
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -29,17 +30,15 @@ class AppActivity : ComponentActivity() {
     @Inject
     lateinit var networkQualityService: NetworkQualityService
 
-    lateinit var appNavigationService: AppNavigationService
+    private lateinit var appNavigationService: AppNavigationService
+
+    private var launchAction: AppLaunchAction = AppLaunchAction.DEFAULT
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val action = intent?.action
-        val launchAction = when (action) {
-            "continue_playback" -> AppLaunchAction.CONTINUE_PLAYBACK
-            else -> AppLaunchAction.DEFAULT
-        }
+        handleIntent(intent)
 
         setContent {
             val colorScheme by preferences
@@ -59,6 +58,18 @@ class AppActivity : ComponentActivity() {
                     appLaunchAction = launchAction,
                 )
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        launchAction = when (intent?.action) {
+            "continue_playback" -> AppLaunchAction.CONTINUE_PLAYBACK
+            else -> AppLaunchAction.DEFAULT
         }
     }
 }
