@@ -65,8 +65,7 @@ class MediaRepository @Inject constructor(
     private val _timerOption = MutableLiveData<TimerOption?>()
     val timerOption = _timerOption
 
-    private val _isPlaybackDeferred = MutableLiveData(false)
-
+    private val _playAfterPrepare = MutableLiveData(false)
     private val _isPlaybackReady = MutableLiveData(false)
     val isPlaybackReady: LiveData<Boolean> = _isPlaybackReady
 
@@ -116,7 +115,7 @@ class MediaRepository @Inject constructor(
 
                     LocalBroadcastManager
                         .getInstance(context)
-                        .registerReceiver(bookDetailsReadyReceiver, IntentFilter(PLAYBACK_READY))
+                        .registerReceiver(playbackReadyReceiver, IntentFilter(PLAYBACK_READY))
 
                     LocalBroadcastManager
                         .getInstance(context)
@@ -144,7 +143,7 @@ class MediaRepository @Inject constructor(
         )
     }
 
-    private val bookDetailsReadyReceiver = object : BroadcastReceiver() {
+    private val playbackReadyReceiver = object : BroadcastReceiver() {
         @Suppress("DEPRECATION")
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == PLAYBACK_READY) {
@@ -160,9 +159,9 @@ class MediaRepository @Inject constructor(
 
                         _isPlaybackReady.postValue(true)
 
-                        if (_isPlaybackDeferred.value == true) {
+                        if (_playAfterPrepare.value == true) {
+                            _playAfterPrepare.postValue(false)
                             play()
-                            _isPlaybackDeferred.postValue(false)
                         }
                     }
                 }
@@ -266,7 +265,7 @@ class MediaRepository @Inject constructor(
         when (isPlaybackReady.value) {
             true -> play()
             else -> {
-                _isPlaybackDeferred.postValue(true)
+                _playAfterPrepare.postValue(true)
                 startPreparingPlayback(book, fromBackground)
             }
         }

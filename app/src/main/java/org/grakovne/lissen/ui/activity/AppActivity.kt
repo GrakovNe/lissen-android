@@ -11,6 +11,7 @@ import coil.ImageLoader
 import dagger.hilt.android.AndroidEntryPoint
 import org.grakovne.lissen.common.NetworkQualityService
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.ui.navigation.AppLaunchAction
 import org.grakovne.lissen.ui.navigation.AppNavHost
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.theme.LissenTheme
@@ -35,10 +36,9 @@ class AppActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         val action = intent?.action
-
-        val restorePlayback = when (action) {
-            "continue_playback" -> true
-            else -> false
+        val launchAction = when (action) {
+            "continue_playback" -> AppLaunchAction.CONTINUE_PLAYBACK
+            else -> AppLaunchAction.DEFAULT
         }
 
         setContent {
@@ -56,7 +56,7 @@ class AppActivity : ComponentActivity() {
                     preferences = preferences,
                     imageLoader = imageLoader,
                     networkQualityService = networkQualityService,
-                    restorePlayback = restorePlayback,
+                    appLaunchAction = launchAction,
                 )
             }
         }

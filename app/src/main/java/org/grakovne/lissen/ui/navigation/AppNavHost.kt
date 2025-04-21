@@ -38,7 +38,7 @@ fun AppNavHost(
     networkQualityService: NetworkQualityService,
     navigationService: AppNavigationService,
     imageLoader: ImageLoader,
-    restorePlayback: Boolean,
+    appLaunchAction: AppLaunchAction,
 ) {
     val hasCredentials by remember {
         mutableStateOf(
@@ -49,9 +49,9 @@ fun AppNavHost(
     val book = preferences.getPlayingBook()
 
     val startDestination = when {
-        restorePlayback && book != null -> "player_screen/${book.id}?bookTitle=${book.title}&bookSubtitle=${book.subtitle}&startPlaying=true"
-        hasCredentials -> "library_screen"
-        else -> "login_screen"
+        hasCredentials.not() -> "login_screen"
+        appLaunchAction == AppLaunchAction.CONTINUE_PLAYBACK && book != null -> "player_screen/${book.id}?bookTitle=${book.title}&bookSubtitle=${book.subtitle}&startInstantly=true"
+        else -> "library_screen"
     }
 
     val enterTransition: EnterTransition = slideInHorizontally(
@@ -88,12 +88,12 @@ fun AppNavHost(
             }
 
             composable(
-                route = "player_screen/{bookId}?bookTitle={bookTitle}&bookSubtitle={bookSubtitle}&startPlaying={startPlaying}",
+                route = "player_screen/{bookId}?bookTitle={bookTitle}&bookSubtitle={bookSubtitle}&startInstantly={startInstantly}",
                 arguments = listOf(
                     navArgument("bookId") { type = NavType.StringType },
                     navArgument("bookTitle") { type = NavType.StringType; nullable = true },
                     navArgument("bookSubtitle") { type = NavType.StringType; nullable = true },
-                    navArgument("startPlaying") { type = NavType.BoolType; nullable = false },
+                    navArgument("startInstantly") { type = NavType.BoolType; nullable = false },
                 ),
                 enterTransition = { enterTransition },
                 exitTransition = { exitTransition },
@@ -103,7 +103,7 @@ fun AppNavHost(
                 val bookId = navigationStack.arguments?.getString("bookId") ?: return@composable
                 val bookTitle = navigationStack.arguments?.getString("bookTitle") ?: ""
                 val bookSubtitle = navigationStack.arguments?.getString("bookSubtitle")
-                val startPlaying = navigationStack.arguments?.getBoolean("startPlaying")
+                val startInstantly = navigationStack.arguments?.getBoolean("startInstantly")
 
                 PlayerScreen(
                     navController = navigationService,
@@ -111,7 +111,7 @@ fun AppNavHost(
                     bookId = bookId,
                     bookTitle = bookTitle,
                     bookSubtitle = bookSubtitle,
-                    startPlaying = startPlaying ?: false,
+                    playInstantly = startInstantly ?: false,
                 )
             }
 

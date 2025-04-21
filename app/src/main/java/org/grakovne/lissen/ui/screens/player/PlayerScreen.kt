@@ -86,7 +86,7 @@ fun PlayerScreen(
     bookId: String,
     bookTitle: String,
     bookSubtitle: String?,
-    startPlaying: Boolean,
+    playInstantly: Boolean,
 ) {
     val context = LocalContext.current
 
@@ -126,7 +126,7 @@ fun PlayerScreen(
             .takeIf { playingItemChanged(it, playingBook) || cachePolicyChanged(cachingModelView, playingBook) }
             ?.let { playerViewModel.preparePlayback(it) }
 
-        if (startPlaying) {
+        if (playInstantly) {
             playerViewModel.prepareAndPlay()
         }
     }
