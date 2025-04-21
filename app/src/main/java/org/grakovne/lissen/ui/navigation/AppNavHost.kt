@@ -38,13 +38,18 @@ fun AppNavHost(
     networkQualityService: NetworkQualityService,
     navigationService: AppNavigationService,
     imageLoader: ImageLoader,
+    restorePlayback: Boolean,
 ) {
     val hasCredentials by remember {
         mutableStateOf(
             preferences.hasCredentials(),
         )
     }
+
+    val book = preferences.getPlayingBook()
+
     val startDestination = when {
+        restorePlayback && book != null -> "player_screen/${book.id}?bookTitle=${book.title}&bookSubtitle=${book.subtitle}&startPlaying=true"
         hasCredentials -> "library_screen"
         else -> "login_screen"
     }
@@ -83,11 +88,12 @@ fun AppNavHost(
             }
 
             composable(
-                route = "player_screen/{bookId}?bookTitle={bookTitle}&bookSubtitle={bookSubtitle}",
+                route = "player_screen/{bookId}?bookTitle={bookTitle}&bookSubtitle={bookSubtitle}&startPlaying={startPlaying}",
                 arguments = listOf(
                     navArgument("bookId") { type = NavType.StringType },
                     navArgument("bookTitle") { type = NavType.StringType; nullable = true },
                     navArgument("bookSubtitle") { type = NavType.StringType; nullable = true },
+                    navArgument("startPlaying") { type = NavType.BoolType; nullable = false },
                 ),
                 enterTransition = { enterTransition },
                 exitTransition = { exitTransition },
@@ -97,6 +103,7 @@ fun AppNavHost(
                 val bookId = navigationStack.arguments?.getString("bookId") ?: return@composable
                 val bookTitle = navigationStack.arguments?.getString("bookTitle") ?: ""
                 val bookSubtitle = navigationStack.arguments?.getString("bookSubtitle")
+                val startPlaying = navigationStack.arguments?.getBoolean("startPlaying")
 
                 PlayerScreen(
                     navController = navigationService,
@@ -104,6 +111,7 @@ fun AppNavHost(
                     bookId = bookId,
                     bookTitle = bookTitle,
                     bookSubtitle = bookSubtitle,
+                    startPlaying = startPlaying ?: false,
                 )
             }
 

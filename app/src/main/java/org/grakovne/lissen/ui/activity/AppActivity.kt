@@ -28,9 +28,18 @@ class AppActivity : ComponentActivity() {
     @Inject
     lateinit var networkQualityService: NetworkQualityService
 
+    lateinit var appNavigationService: AppNavigationService
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        val action = intent?.action
+
+        val restorePlayback = when (action) {
+            "continue_playback" -> true
+            else -> false
+        }
 
         setContent {
             val colorScheme by preferences
@@ -39,13 +48,15 @@ class AppActivity : ComponentActivity() {
 
             LissenTheme(colorScheme) {
                 val navController = rememberNavController()
+                appNavigationService = AppNavigationService(navController)
 
                 AppNavHost(
                     navController = navController,
-                    navigationService = AppNavigationService(navController),
+                    navigationService = appNavigationService,
                     preferences = preferences,
                     imageLoader = imageLoader,
                     networkQualityService = networkQualityService,
+                    restorePlayback = restorePlayback,
                 )
             }
         }

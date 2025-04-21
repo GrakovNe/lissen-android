@@ -1,4 +1,4 @@
-package org.grakovne.lissen.widget
+package org.grakovne.lissen.playback
 
 import android.content.BroadcastReceiver
 import android.content.ComponentName
@@ -64,6 +64,8 @@ class MediaRepository @Inject constructor(
 
     private val _timerOption = MutableLiveData<TimerOption?>()
     val timerOption = _timerOption
+
+    private val _isPlaybackDeferred = MutableLiveData(false)
 
     private val _isPlaybackReady = MutableLiveData(false)
     val isPlaybackReady: LiveData<Boolean> = _isPlaybackReady
@@ -157,6 +159,11 @@ class MediaRepository @Inject constructor(
                         preferences.savePlayingBook(it)
 
                         _isPlaybackReady.postValue(true)
+
+                        if (_isPlaybackDeferred.value == true) {
+                            play()
+                            _isPlaybackDeferred.postValue(false)
+                        }
                     }
                 }
             }
@@ -249,6 +256,19 @@ class MediaRepository @Inject constructor(
             seekTo(absolutePosition)
         } catch (ex: Exception) {
             return
+        }
+    }
+
+    fun prepareAndPlay(
+        book: DetailedItem,
+        fromBackground: Boolean,
+    ) {
+        when (isPlaybackReady.value) {
+            true -> play()
+            else -> {
+                _isPlaybackDeferred.postValue(true)
+                startPreparingPlayback(book, fromBackground)
+            }
         }
     }
 
