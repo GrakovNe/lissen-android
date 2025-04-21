@@ -117,7 +117,7 @@ fun PlayerScreen(
         }
     }
 
-    BackHandler(enabled = searchRequested || playingQueueExpanded) {
+    BackHandler(enabled = searchRequested || playingQueueExpanded || playInstantly) {
         stepBack()
     }
 
