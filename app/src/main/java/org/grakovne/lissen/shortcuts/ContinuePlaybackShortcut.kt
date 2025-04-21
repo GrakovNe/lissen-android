@@ -51,8 +51,8 @@ class ContinuePlaybackShortcut @Inject constructor(
 
         val shortcut = ShortcutInfo
             .Builder(context, SHORTCUT_TAG)
-            .setShortLabel("Continue")
-            .setLongLabel("Continue listening")
+            .setShortLabel(context.getString(R.string.continue_playback_shortcut_title))
+            .setLongLabel(context.getString(R.string.continue_playback_shortcut_description))
             .setIcon(Icon.createWithResource(context, R.drawable.ic_play))
             .setIntent(
                 Intent(context, AppActivity::class.java).apply {
