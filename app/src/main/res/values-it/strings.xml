@@ -102,4 +102,6 @@
     <string name="rewind_interval">Intervallo di riavvolgimento</string>
     <string name="seek_interval_5_seconds">5 secondi</string>
     <string name="seek_interval_10_seconds">10 secondi</string>
+    <string name="seek_interval_15_seconds">15 secondi</string>
+    <string name="seek_interval_60_seconds">60 secondi</string>
 </resources>

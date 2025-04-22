@@ -36,7 +36,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.common.hapticAction
 import org.grakovne.lissen.domain.SeekTime
-import org.grakovne.lissen.ui.extensions.formatFully
+import org.grakovne.lissen.ui.extensions.formatLeadingMinutes
 import org.grakovne.lissen.ui.screens.player.composable.common.provideForwardIcon
 import org.grakovne.lissen.ui.screens.player.composable.common.provideReplayIcon
 import org.grakovne.lissen.viewmodel.PlayerViewModel
@@ -108,14 +108,14 @@ fun TrackControlComposable(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(
-                        text = currentTrackPosition.toInt().formatFully(),
+                        text = sliderPosition.toInt().formatLeadingMinutes(),
                         style = typography.bodySmall,
                         color = colorScheme.onBackground.copy(alpha = 0.6f),
                     )
                     Text(
-                        text = maxOf(0.0, currentTrackDuration - currentTrackPosition)
+                        text = maxOf(0.0, currentTrackDuration - sliderPosition)
                             .toInt()
-                            .formatFully(),
+                            .formatLeadingMinutes(),
                         style = typography.bodySmall,
                         color = colorScheme.onBackground.copy(alpha = 0.6f),
                     )

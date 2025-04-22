@@ -1,4 +1,4 @@
-package org.grakovne.lissen.widget
+package org.grakovne.lissen.playback
 
 import android.content.BroadcastReceiver
 import android.content.ComponentName
@@ -65,6 +65,7 @@ class MediaRepository @Inject constructor(
     private val _timerOption = MutableLiveData<TimerOption?>()
     val timerOption = _timerOption
 
+    private val _playAfterPrepare = MutableLiveData(false)
     private val _isPlaybackReady = MutableLiveData(false)
     val isPlaybackReady: LiveData<Boolean> = _isPlaybackReady
 
@@ -114,7 +115,7 @@ class MediaRepository @Inject constructor(
 
                     LocalBroadcastManager
                         .getInstance(context)
-                        .registerReceiver(bookDetailsReadyReceiver, IntentFilter(PLAYBACK_READY))
+                        .registerReceiver(playbackReadyReceiver, IntentFilter(PLAYBACK_READY))
 
                     LocalBroadcastManager
                         .getInstance(context)
@@ -142,7 +143,7 @@ class MediaRepository @Inject constructor(
         )
     }
 
-    private val bookDetailsReadyReceiver = object : BroadcastReceiver() {
+    private val playbackReadyReceiver = object : BroadcastReceiver() {
         @Suppress("DEPRECATION")
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == PLAYBACK_READY) {
@@ -157,6 +158,11 @@ class MediaRepository @Inject constructor(
                         preferences.savePlayingBook(it)
 
                         _isPlaybackReady.postValue(true)
+
+                        if (_playAfterPrepare.value == true) {
+                            _playAfterPrepare.postValue(false)
+                            play()
+                        }
                     }
                 }
             }
@@ -249,6 +255,19 @@ class MediaRepository @Inject constructor(
             seekTo(absolutePosition)
         } catch (ex: Exception) {
             return
+        }
+    }
+
+    fun prepareAndPlay(
+        book: DetailedItem,
+        fromBackground: Boolean,
+    ) {
+        when (isPlaybackReady.value) {
+            true -> play()
+            else -> {
+                _playAfterPrepare.postValue(true)
+                startPreparingPlayback(book, fromBackground)
+            }
         }
     }
 

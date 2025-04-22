@@ -28,7 +28,6 @@ import dagger.hilt.components.SingletonComponent
 import org.grakovne.lissen.domain.SeekTimeOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.activity.AppActivity
-import org.grakovne.lissen.widget.MediaRepository
 import javax.inject.Singleton
 
 @Module

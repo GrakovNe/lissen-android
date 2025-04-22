@@ -27,7 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.domain.SeekTime
-import org.grakovne.lissen.ui.extensions.formatFully
+import org.grakovne.lissen.ui.extensions.formatLeadingMinutes
 import org.grakovne.lissen.ui.screens.player.composable.common.provideForwardIcon
 import org.grakovne.lissen.ui.screens.player.composable.common.provideReplayIcon
 import org.grakovne.lissen.viewmodel.SettingsViewModel
@@ -72,12 +72,12 @@ fun TrackControlPlaceholderComposable(
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(
-                        text = 0.formatFully(),
+                        text = 0.formatLeadingMinutes(),
                         style = typography.bodySmall,
                         color = colorScheme.onBackground.copy(alpha = 0.6f),
                     )
                     Text(
-                        text = 0.formatFully(),
+                        text = 0.formatLeadingMinutes(),
                         style = typography.bodySmall,
                         color = colorScheme.onBackground.copy(alpha = 0.6f),
                     )

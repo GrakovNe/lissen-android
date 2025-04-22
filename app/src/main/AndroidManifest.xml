@@ -29,6 +29,7 @@
             android:screenOrientation="portrait"
             android:name=".ui.activity.AppActivity"
             android:exported="true"
+            android:launchMode="singleTop"
             android:theme="@style/Theme.Lissen"
             tools:ignore="LockedOrientationActivity">
             <intent-filter>

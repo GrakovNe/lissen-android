@@ -1,6 +1,7 @@
 package org.grakovne.lissen.ui.screens.library
 
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.tween
@@ -92,6 +93,7 @@ fun LibraryScreen(
 
     val coroutineScope = rememberCoroutineScope()
 
+    val activity = LocalActivity.current
     val recentBooks: List<RecentBook> by libraryViewModel.recentBooks.observeAsState(emptyList())
 
     var currentLibraryId by rememberSaveable { mutableStateOf("") }
@@ -112,8 +114,11 @@ fun LibraryScreen(
         false -> libraryViewModel.libraryPager.collectAsLazyPagingItems()
     }
 
-    BackHandler(enabled = searchRequested) {
-        libraryViewModel.dismissSearch()
+    BackHandler {
+        when (searchRequested) {
+            true -> libraryViewModel.dismissSearch()
+            false -> activity?.moveTaskToBack(true)
+        }
     }
 
     fun refreshContent(showPullRefreshing: Boolean) {

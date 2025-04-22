@@ -1,5 +1,6 @@
 package org.grakovne.lissen.ui.activity
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,6 +12,7 @@ import coil.ImageLoader
 import dagger.hilt.android.AndroidEntryPoint
 import org.grakovne.lissen.common.NetworkQualityService
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.ui.navigation.AppLaunchAction
 import org.grakovne.lissen.ui.navigation.AppNavHost
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.theme.LissenTheme
@@ -28,9 +30,15 @@ class AppActivity : ComponentActivity() {
     @Inject
     lateinit var networkQualityService: NetworkQualityService
 
+    private lateinit var appNavigationService: AppNavigationService
+
+    private var launchAction: AppLaunchAction = AppLaunchAction.DEFAULT
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        handleIntent(intent)
 
         setContent {
             val colorScheme by preferences
@@ -39,15 +47,29 @@ class AppActivity : ComponentActivity() {
 
             LissenTheme(colorScheme) {
                 val navController = rememberNavController()
+                appNavigationService = AppNavigationService(navController)
 
                 AppNavHost(
                     navController = navController,
-                    navigationService = AppNavigationService(navController),
+                    navigationService = appNavigationService,
                     preferences = preferences,
                     imageLoader = imageLoader,
                     networkQualityService = networkQualityService,
+                    appLaunchAction = launchAction,
                 )
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        launchAction = when (intent?.action) {
+            "continue_playback" -> AppLaunchAction.CONTINUE_PLAYBACK
+            else -> AppLaunchAction.DEFAULT
         }
     }
 }

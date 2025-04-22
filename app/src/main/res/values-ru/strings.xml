@@ -104,5 +104,6 @@
     <string name="seek_interval_15_seconds">15 секунд</string>
     <string name="seek_interval_30_seconds">30 секунд</string>
     <string name="seek_interval_60_seconds">60 секунд</string>
-
+    <string name="continue_playback_shortcut_title">Продолжить</string>
+    <string name="continue_playback_shortcut_description">Продолжить слушать</string>
 </resources>

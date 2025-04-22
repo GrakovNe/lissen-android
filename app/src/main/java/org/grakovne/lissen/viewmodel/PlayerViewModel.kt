@@ -10,7 +10,7 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
-import org.grakovne.lissen.widget.MediaRepository
+import org.grakovne.lissen.playback.MediaRepository
 import javax.inject.Inject
 
 @HiltViewModel
@@ -118,6 +118,11 @@ class PlayerViewModel @Inject constructor(
     fun previousTrack() = mediaRepository.previousTrack()
 
     fun togglePlayPause() = mediaRepository.togglePlayPause()
+
+    fun prepareAndPlay() {
+        val playingBook = preferences.getPlayingBook() ?: return
+        mediaRepository.prepareAndPlay(playingBook, false)
+    }
 
     companion object {
 
