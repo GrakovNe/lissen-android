@@ -1,5 +1,8 @@
 package org.grakovne.lissen.channel.audiobookshelf.library.model
 
+import androidx.annotation.Keep
+
+@Keep
 data class BookResponse(
     val id: String,
     val ino: String,
@@ -9,12 +12,14 @@ data class BookResponse(
     val ctimeMs: Long,
 )
 
+@Keep
 data class BookMedia(
     val metadata: LibraryMetadataResponse,
     val audioFiles: List<BookAudioFileResponse>?,
     val chapters: List<LibraryChapterResponse>?,
 )
 
+@Keep
 data class LibraryMetadataResponse(
     val title: String,
     val subtitle: String?,
@@ -25,17 +30,20 @@ data class LibraryMetadataResponse(
     val publishedYear: String?,
 )
 
+@Keep
 data class LibrarySeriesResponse(
     val id: String,
     val name: String,
     val sequence: String?,
 )
 
+@Keep
 data class LibraryAuthorResponse(
     val id: String,
     val name: String,
 )
 
+@Keep
 data class BookAudioFileResponse(
     val index: Int,
     val ino: String,
@@ -45,17 +53,20 @@ data class BookAudioFileResponse(
     val mimeType: String,
 )
 
+@Keep
 data class AudioFileMetadata(
     val filename: String,
     val ext: String,
     val size: Long,
 )
 
+@Keep
 data class AudioFileTag(
     val tagAlbum: String,
     val tagTitle: String,
 )
 
+@Keep
 data class LibraryChapterResponse(
     val start: Double,
     val end: Double,

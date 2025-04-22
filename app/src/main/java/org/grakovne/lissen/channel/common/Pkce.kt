@@ -1,5 +1,6 @@
 package org.grakovne.lissen.channel.common
 
+import androidx.annotation.Keep
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.util.Base64
@@ -33,6 +34,7 @@ private fun base64UrlEncode(bytes: ByteArray) = Base64
     .withoutPadding()
     .encodeToString(bytes)
 
+@Keep
 data class Pkce(
     val verifier: String,
     val challenge: String,

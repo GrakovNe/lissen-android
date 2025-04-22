@@ -1,7 +1,9 @@
 package org.grakovne.lissen.common
 
+import androidx.annotation.Keep
 import androidx.compose.runtime.saveable.Saver
 
+@Keep
 data class LibraryOrderingConfiguration(
     val option: LibraryOrderingOption,
     val direction: LibraryOrderingDirection,

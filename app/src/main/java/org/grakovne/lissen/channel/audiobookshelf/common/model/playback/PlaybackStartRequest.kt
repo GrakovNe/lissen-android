@@ -1,5 +1,8 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.model.playback
 
+import androidx.annotation.Keep
+
+@Keep
 data class PlaybackStartRequest(
     val deviceInfo: DeviceInfo,
     val supportedMimeTypes: List<String>,
@@ -8,6 +11,7 @@ data class PlaybackStartRequest(
     val forceDirectPlay: Boolean,
 )
 
+@Keep
 data class DeviceInfo(
     val clientName: String,
     val deviceId: String,

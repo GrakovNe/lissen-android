@@ -1,7 +1,9 @@
 package org.grakovne.lissen.domain.connection
 
+import androidx.annotation.Keep
 import java.util.UUID
 
+@Keep
 data class ServerRequestHeader(
     val name: String,
     val value: String,

@@ -1,5 +1,8 @@
 package org.grakovne.lissen.channel.audiobookshelf.podcast.model
 
+import androidx.annotation.Keep
+
+@Keep
 data class PodcastResponse(
     val id: String,
     val ino: String,
@@ -9,11 +12,13 @@ data class PodcastResponse(
     val ctimeMs: Long,
 )
 
+@Keep
 data class PodcastMedia(
     val metadata: PodcastMediaMetadataResponse,
     val episodes: List<PodcastEpisodeResponse>?,
 )
 
+@Keep
 data class PodcastMediaMetadataResponse(
     val title: String,
     val author: String?,
@@ -21,6 +26,7 @@ data class PodcastMediaMetadataResponse(
     val publisher: String?,
 )
 
+@Keep
 data class PodcastEpisodeResponse(
     val id: String,
     val season: String?,
@@ -30,6 +36,7 @@ data class PodcastEpisodeResponse(
     val audioFile: PodcastAudioFileResponse,
 )
 
+@Keep
 data class PodcastAudioFileResponse(
     val index: Int,
     val ino: String,

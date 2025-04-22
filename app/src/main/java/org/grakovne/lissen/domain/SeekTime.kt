@@ -1,5 +1,8 @@
 package org.grakovne.lissen.domain
 
+import androidx.annotation.Keep
+
+@Keep
 data class SeekTime(
     val rewind: SeekTimeOption,
     val forward: SeekTimeOption,

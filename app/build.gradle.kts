@@ -54,11 +54,43 @@ android {
 
         buildConfigField("String", "ACRA_REPORT_LOGIN", "\"$acraReportLogin\"")
         buildConfigField("String", "ACRA_REPORT_PASSWORD", "\"$acraReportPassword\"")
+
+        if (project.hasProperty("RELEASE_STORE_FILE")) {
+            signingConfigs {
+                create("release") {
+                    storeFile = file(project.property("RELEASE_STORE_FILE")!!)
+                    storePassword = project.property("RELEASE_STORE_PASSWORD") as String?
+                    keyAlias = project.property("RELEASE_KEY_ALIAS") as String?
+                    keyPassword = project.property("RELEASE_KEY_PASSWORD") as String?
+
+                    // Optional, specify signing versions used
+                    enableV1Signing = true
+                    enableV2Signing = true
+                }
+            }
+        }
     }
 
     buildTypes {
-        release {}
+        release {
+            if (project.hasProperty("RELEASE_STORE_FILE")) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                    // Includes the default ProGuard rules files that are packaged with
+                    // the Android Gradle plugin. To learn more, go to the section about
+                    // R8 configuration files.
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+
+                    // Includes a local, custom Proguard rules file
+                    "proguard-rules.pro"
+            )
+        }
         debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = " (DEBUG)"
             matchingFallbacks.add("release")
             isDebuggable = true
         }

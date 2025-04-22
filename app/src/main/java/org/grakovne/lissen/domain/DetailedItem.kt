@@ -1,7 +1,9 @@
 package org.grakovne.lissen.domain
 
+import androidx.annotation.Keep
 import java.io.Serializable
 
+@Keep
 data class DetailedItem(
     val id: String,
     val title: String,
@@ -20,6 +22,7 @@ data class DetailedItem(
     val updatedAt: Long,
 ) : Serializable
 
+@Keep
 data class BookFile(
     val id: String,
     val name: String,
@@ -27,12 +30,14 @@ data class BookFile(
     val mimeType: String,
 ) : Serializable
 
+@Keep
 data class MediaProgress(
     val currentTime: Double,
     val isFinished: Boolean,
     val lastUpdate: Long,
 ) : Serializable
 
+@Keep
 data class PlayingChapter(
     val available: Boolean,
     val podcastEpisodeState: BookChapterState?,
@@ -43,11 +48,13 @@ data class PlayingChapter(
     val id: String,
 ) : Serializable
 
+@Keep
 data class BookSeries(
     val serialNumber: String?,
     val name: String,
 ) : Serializable
 
+@Keep
 enum class BookChapterState {
     FINISHED,
 }

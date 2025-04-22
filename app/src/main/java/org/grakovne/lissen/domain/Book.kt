@@ -1,5 +1,8 @@
 package org.grakovne.lissen.domain
 
+import androidx.annotation.Keep
+
+@Keep
 data class Book(
     val id: String,
     val subtitle: String?,
