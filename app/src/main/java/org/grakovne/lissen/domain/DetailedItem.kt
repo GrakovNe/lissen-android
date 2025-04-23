@@ -9,6 +9,7 @@ data class DetailedItem(
     val title: String,
     val subtitle: String?,
     val author: String?,
+    val narrator: String?,
     val publisher: String?,
     val series: List<BookSeries>,
     val year: String?,

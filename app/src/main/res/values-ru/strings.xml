@@ -106,4 +106,6 @@
     <string name="seek_interval_60_seconds">60 секунд</string>
     <string name="continue_playback_shortcut_title">Продолжить</string>
     <string name="continue_playback_shortcut_description">Продолжить слушать</string>
+    <string name="playing_item_details_narrator">Чтец</string>
+    <string name="playing_item_details_duration">Длительность</string>
 </resources>

@@ -62,6 +62,7 @@ class PodcastResponseConverter @Inject constructor() {
             subtitle = null,
             libraryId = item.libraryId,
             author = item.media.metadata.author,
+            narrator = null,
             localProvided = false,
             files = orderedEpisodes
                 ?.map {

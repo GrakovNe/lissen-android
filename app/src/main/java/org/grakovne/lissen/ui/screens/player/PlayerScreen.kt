@@ -19,22 +19,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.filled.Business
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -47,23 +39,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.core.text.HtmlCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.ImageLoader
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.ui.icons.Search
 import org.grakovne.lissen.ui.navigation.AppNavigationService
+import org.grakovne.lissen.ui.screens.player.composable.MediaDetailComposable
 import org.grakovne.lissen.ui.screens.player.composable.NavigationBarComposable
 import org.grakovne.lissen.ui.screens.player.composable.PlayingQueueComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackControlComposable
@@ -264,6 +253,7 @@ fun PlayerScreen(
                             modifier = Modifier,
                         )
                     }
+
                     playingBook?.chapters.isNullOrEmpty() -> {
                         PlayingQueueFallbackComposable(
                             libraryViewModel = libraryViewModel,
@@ -284,120 +274,10 @@ fun PlayerScreen(
     )
 
     if (itemDetailsSelected) {
-        ModalBottomSheet(
+        MediaDetailComposable(
+            playingBook = playingBook,
             onDismissRequest = { itemDetailsSelected = false },
-            containerColor = colorScheme.surface,
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
-                    .padding(vertical = 16.dp, horizontal = 4.dp),
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                ) {
-                    Text(
-                        text = bookTitle,
-                        style = typography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                        ),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        color = colorScheme.onSurface,
-                    )
-
-                    bookSubtitle?.let {
-                        Spacer(Modifier.height(4.dp))
-
-                        Text(
-                            text = it,
-                            style = typography.titleSmall,
-                            color = colorScheme.onBackground.copy(alpha = 0.6f),
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-
-                    Spacer(Modifier.height(8.dp))
-
-                    playingBook
-                        ?.author
-                        ?.takeIf { it.isNotEmpty() }
-                        ?.let {
-                            InfoRow(
-                                icon = Icons.Default.Person,
-                                label = stringResource(R.string.playing_item_details_author),
-                                textValue = it,
-                            )
-                        }
-
-                    playingBook
-                        ?.series
-                        ?.takeIf { it.isNotEmpty() }
-                        ?.let {
-                            InfoRow(
-                                icon = Icons.AutoMirrored.Filled.LibraryBooks,
-                                label = stringResource(R.string.playing_item_details_series),
-                                textValue = it.joinToString(", ") { series ->
-                                    buildString {
-                                        append(series.name)
-                                        series.serialNumber
-                                            ?.takeIf { it.isNotBlank() }
-                                            ?.let { serial -> append(" #$serial") }
-                                    }
-                                },
-                            )
-                        }
-
-                    playingBook
-                        ?.publisher
-                        ?.takeIf { it.isNotEmpty() }
-                        ?.let {
-                            InfoRow(
-                                icon = Icons.Default.Business,
-                                label = stringResource(R.string.playing_item_details_publisher),
-                                textValue = it,
-                            )
-                        }
-
-                    playingBook
-                        ?.year
-                        ?.takeIf { it.isNotEmpty() }
-                        ?.let {
-                            InfoRow(
-                                icon = Icons.Default.CalendarMonth,
-                                label = stringResource(R.string.playing_item_details_year),
-                                textValue = it,
-                            )
-                        }
-                }
-
-                playingBook
-                    ?.abstract
-                    ?.takeIf { it.isNotEmpty() }
-                    ?.let {
-                        HorizontalDivider(
-                            modifier = Modifier
-                                .padding(vertical = 16.dp, horizontal = 16.dp)
-                                .alpha(0.2f),
-                        )
-
-                        val html = (playingBook?.abstract ?: "").replace("\n", "<br>")
-                        val spanned = HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_LEGACY)
-
-                        Text(
-                            text = spanned.toString(),
-                            style = typography.bodyMedium.copy(lineHeight = 22.sp),
-                            color = colorScheme.onSurface,
-                            textAlign = TextAlign.Justify,
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                        )
-                    }
-            }
-        }
+        )
     }
 }
 
@@ -421,10 +301,14 @@ fun InfoRow(
             text = "$label: ",
             style = typography.bodyMedium,
             color = Color.Gray,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
         Text(
             text = textValue,
             style = typography.bodyMedium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }

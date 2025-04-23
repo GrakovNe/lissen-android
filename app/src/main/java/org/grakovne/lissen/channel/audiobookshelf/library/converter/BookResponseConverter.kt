@@ -63,6 +63,7 @@ class BookResponseConverter @Inject constructor() {
             title = item.media.metadata.title,
             subtitle = item.media.metadata.subtitle,
             author = item.media.metadata.authors?.joinToString(", ", transform = LibraryAuthorResponse::name),
+            narrator = item.media.metadata.narrators?.joinToString(separator = ", "),
             files = item
                 .media
                 .audioFiles

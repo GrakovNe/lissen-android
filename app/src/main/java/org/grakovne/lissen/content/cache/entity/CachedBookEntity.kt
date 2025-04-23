@@ -39,6 +39,7 @@ data class BookEntity(
     val title: String,
     val subtitle: String?,
     val author: String?,
+    val narrator: String?,
     val year: String?,
     val abstract: String?,
     val publisher: String?,

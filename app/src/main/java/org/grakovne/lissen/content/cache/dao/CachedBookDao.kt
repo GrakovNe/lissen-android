@@ -34,6 +34,7 @@ interface CachedBookDao {
             title = book.title,
             subtitle = book.subtitle,
             author = book.author,
+            narrator = book.narrator,
             duration = book.chapters.sumOf { it.duration }.toInt(),
             libraryId = book.libraryId,
             year = book.year,

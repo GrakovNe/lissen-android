@@ -75,6 +75,8 @@
     <string name="mini_player_action_close">Close</string>
     <string name="playing_item_details_author">Author</string>
     <string name="playing_item_details_publisher">Publisher</string>
+    <string name="playing_item_details_narrator">Narrator</string>
+    <string name="playing_item_details_duration">Duration</string>
     <string name="playing_item_details_year">Year</string>
     <string name="playing_item_details_series">Series</string>
     <string name="color_scheme_black">Black</string>
