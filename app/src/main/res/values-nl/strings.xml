@@ -83,4 +83,6 @@
     <string name="items_list_empty">Geen beschikbare items</string>
     <string name="notification_content_caching_error_title">Caching mislykkedes</string>
     <string name="notification_content_caching_error_description">Nogle få filer blev ikke gemt</string>
+    <string name="playing_item_details_narrator">Verteller</string>
+    <string name="playing_item_details_duration">Duur</string>
 </resources>

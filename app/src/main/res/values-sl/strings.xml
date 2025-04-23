@@ -106,4 +106,6 @@
     <string name="seek_interval_15_seconds">15 sekund</string>
     <string name="seek_interval_60_seconds">60 sekund</string>
     <string name="continue_playback_shortcut_title">Nadaljuj</string>
+    <string name="playing_item_details_narrator">Pripovedovalec</string>
+    <string name="playing_item_details_duration">Trajanje</string>
 </resources>

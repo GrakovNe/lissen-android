@@ -106,4 +106,6 @@
     <string name="downloads_menu_download_unknown">Letöltések</string>
     <string name="downloads_menu_download_option_entire_podcast">Teljes podcast</string>
     <string name="downloads_menu_download_option_entire_item">Teljes elem</string>
+    <string name="playing_item_details_narrator">Előadó</string>
+    <string name="playing_item_details_duration">Időtartam</string>
 </resources>

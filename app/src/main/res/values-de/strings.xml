@@ -95,4 +95,6 @@
     <string name="settings_screen_library_ordering_author_option">Autor</string>
     <string name="settings_screen_library_ordering_creation_date_option">Zeitpunkt der Erstellung</string>
     <string name="login_error_lissen_auth_scheme_must_be_whitelisted">Das Schema %1$s://%2$s ist in den Weiterleitungs-URI-Einstellungen des Servers nicht erlaubt</string>
+    <string name="playing_item_details_narrator">Erzähler</string>
+    <string name="playing_item_details_duration">Dauer</string>
 </resources>

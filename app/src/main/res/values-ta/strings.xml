@@ -80,4 +80,6 @@
     <string name="color_scheme_black">கருப்பு</string>
     <string name="notification_content_caching_error_title">தற்காலிக சேமிப்பில் தோல்வி</string>
     <string name="notification_content_caching_error_description">சில கோப்புகள் தற்காலிகமாகச் சேமிக்கப்படவில்லை.</string>
+    <string name="playing_item_details_narrator">வாசிப்பவர்</string>
+    <string name="playing_item_details_duration">நேரம்</string>
 </resources>

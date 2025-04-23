@@ -89,4 +89,6 @@
     <string name="login_error_lissen_auth_scheme_must_be_whitelisted">Şema %1$s://%2$s sunucunun yönlendirme URI ayarlarında izin verilmiyor</string>
     <string name="login_error_lissen_auth_failed">Yetkilendirme yapılamadı. Lütfen sunucu ayarlarınızı kontrol edin</string>
     <string name="login_screen_open_id_button">OpenID ile Bağlan</string>
+    <string name="playing_item_details_narrator">Anlatıcı</string>
+    <string name="playing_item_details_duration">Süre</string>
 </resources>

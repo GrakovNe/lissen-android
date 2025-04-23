@@ -83,4 +83,6 @@
     <string name="items_list_empty">Inga tillgängliga objekt</string>
     <string name="notification_content_caching_error_title">Cachning misslyckades</string>
     <string name="notification_content_caching_error_description">Några få filer sparades inte</string>
+    <string name="playing_item_details_narrator">Berättare</string>
+    <string name="playing_item_details_duration">Längd</string>
 </resources>

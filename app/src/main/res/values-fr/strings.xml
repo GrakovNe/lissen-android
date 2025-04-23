@@ -80,4 +80,6 @@
     <string name="color_scheme_black">Noire</string>
     <string name="notification_content_caching_error_title">La mise en cache a échoué</string>
     <string name="notification_content_caching_error_description">Quelques fichiers n\'ont pas été enregistrés</string>
+    <string name="playing_item_details_narrator">Narrateur</string>
+    <string name="playing_item_details_duration">Durée</string>
 </resources>

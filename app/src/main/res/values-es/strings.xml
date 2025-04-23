@@ -90,4 +90,6 @@
     <string name="source_code_on_github_subtitle">Informar problemas o sugerir mejoras</string>
     <string name="disable_offline">Apagar \"sin conexión\"</string>
     <string name="enable_offline">Activar \"sin conexión\"</string>
+    <string name="playing_item_details_narrator">Narrador</string>
+    <string name="playing_item_details_duration">Duración</string>
 </resources>
