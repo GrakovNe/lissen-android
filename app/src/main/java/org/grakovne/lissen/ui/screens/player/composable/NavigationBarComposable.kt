@@ -8,7 +8,6 @@ import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.outlined.CloudDone
 import androidx.compose.material.icons.outlined.CloudDownload
 import androidx.compose.material.icons.outlined.SlowMotionVideo
-import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -28,15 +27,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.channel.common.LibraryType
+import org.grakovne.lissen.content.cache.CacheState
 import org.grakovne.lissen.domain.CacheStatus
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.ui.icons.TimerPlay
+import org.grakovne.lissen.ui.icons.loader.Loader10
+import org.grakovne.lissen.ui.icons.loader.Loader20
+import org.grakovne.lissen.ui.icons.loader.Loader40
+import org.grakovne.lissen.ui.icons.loader.Loader60
+import org.grakovne.lissen.ui.icons.loader.Loader80
+import org.grakovne.lissen.ui.icons.loader.Loader90
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.PlayerViewModel
@@ -50,7 +57,9 @@ fun NavigationBarComposable(
     modifier: Modifier = Modifier,
     libraryType: LibraryType,
 ) {
-    val cacheProgress by contentCachingModelView.getProgress(book.id).collectAsState()
+    val context = LocalContext.current
+
+    val cacheProgress: CacheState by contentCachingModelView.getProgress(book.id).collectAsState()
     val timerOption by playerViewModel.timerOption.observeAsState(null)
     val playbackSpeed by playerViewModel.playbackSpeed.observeAsState(1f)
     val playingQueueExpanded by playerViewModel.playingQueueExpanded.observeAsState(false)
@@ -101,7 +110,7 @@ fun NavigationBarComposable(
                 icon = {
                     Icon(
                         imageVector = provideCachingStateIcon(
-                            cacheStatus = cacheProgress,
+                            cacheState = cacheProgress,
                             hasCached = isMetadataCached,
                         ),
                         contentDescription = stringResource(R.string.player_screen_downloads_navigation),
@@ -227,10 +236,17 @@ fun NavigationBarComposable(
 
 private fun provideCachingStateIcon(
     hasCached: Boolean,
-    cacheStatus: CacheStatus,
+    cacheState: CacheState,
 ): ImageVector {
-    if (cacheStatus is CacheStatus.Caching) {
-        return cachingIcon
+    if (cacheState.status is CacheStatus.Caching) {
+        return when {
+            cacheState.progress < 1.0 / 6 -> Loader10
+            cacheState.progress < 2.0 / 6 -> Loader20
+            cacheState.progress < 3.0 / 6 -> Loader40
+            cacheState.progress < 4.0 / 6 -> Loader60
+            cacheState.progress < 5.0 / 6 -> Loader80
+            else -> Loader90
+        }
     }
 
     return when (hasCached) {
@@ -238,8 +254,6 @@ private fun provideCachingStateIcon(
         else -> defaultIcon
     }
 }
-
-private val cachingIcon = Icons.Outlined.Sync
 
 private val cachedIcon = Icons.Outlined.CloudDone
 private val defaultIcon = Icons.Outlined.CloudDownload

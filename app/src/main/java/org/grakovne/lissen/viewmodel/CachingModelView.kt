@@ -9,6 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import org.grakovne.lissen.content.cache.CacheState
 import org.grakovne.lissen.content.cache.ContentCachingManager
 import org.grakovne.lissen.content.cache.ContentCachingProgress
 import org.grakovne.lissen.content.cache.ContentCachingService
@@ -27,15 +28,15 @@ class CachingModelView @Inject constructor(
     private val preferences: LissenSharedPreferences,
 ) : ViewModel() {
 
-    private val _bookCachingProgress = mutableMapOf<String, MutableStateFlow<CacheStatus>>()
+    private val _bookCachingProgress = mutableMapOf<String, MutableStateFlow<CacheState>>()
 
     init {
         viewModelScope.launch {
             contentCachingProgress.statusFlow.collect { (item, progress) ->
                 val flow = _bookCachingProgress.getOrPut(item.id) {
-                    MutableStateFlow(progress.status)
+                    MutableStateFlow(progress)
                 }
-                flow.value = progress.status
+                flow.value = progress
             }
         }
     }
@@ -59,7 +60,7 @@ class CachingModelView @Inject constructor(
     }
 
     fun getProgress(bookId: String) = _bookCachingProgress
-        .getOrPut(bookId) { MutableStateFlow(CacheStatus.Idle) }
+        .getOrPut(bookId) { MutableStateFlow(CacheState(CacheStatus.Idle)) }
 
     fun dropCache(bookId: String) {
         viewModelScope
