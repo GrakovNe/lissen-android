@@ -1,4 +1,4 @@
-package org.grakovne.lissen.ui.screens.player.composable
+package org.grakovne.lissen.ui.screens.player.composable.common
 
 import android.content.Context
 import org.grakovne.lissen.R

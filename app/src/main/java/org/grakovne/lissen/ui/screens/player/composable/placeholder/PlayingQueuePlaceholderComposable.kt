@@ -21,7 +21,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.valentinilk.shimmer.shimmer
-import org.grakovne.lissen.ui.screens.player.composable.provideNowPlayingTitle
+import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 
 @Composable

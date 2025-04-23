@@ -68,11 +68,11 @@ import org.grakovne.lissen.ui.screens.player.composable.NavigationBarComposable
 import org.grakovne.lissen.ui.screens.player.composable.PlayingQueueComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackControlComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackDetailsComposable
+import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
 import org.grakovne.lissen.ui.screens.player.composable.fallback.PlayingQueueFallbackComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.PlayingQueuePlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackControlPlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackDetailsPlaceholderComposable
-import org.grakovne.lissen.ui.screens.player.composable.provideNowPlayingTitle
 import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
