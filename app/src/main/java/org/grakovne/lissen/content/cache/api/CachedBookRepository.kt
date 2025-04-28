@@ -113,8 +113,8 @@ class CachedBookRepository @Inject constructor(
 
         val entity = MediaProgressEntity(
             bookId = bookId,
-            currentTime = progress.currentOverallTime,
-            isFinished = progress.currentOverallTime == book.chapters.sumOf { it.duration },
+            currentTime = progress.currentTotalTime,
+            isFinished = progress.currentTotalTime == book.chapters.sumOf { it.duration },
             lastUpdate = Instant.now().toEpochMilli(),
         )
 
