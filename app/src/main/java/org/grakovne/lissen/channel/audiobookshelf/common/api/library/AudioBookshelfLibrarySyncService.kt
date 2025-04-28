@@ -22,19 +22,19 @@ class AudioBookshelfLibrarySyncService @Inject constructor(
     ): ApiResult<Unit> {
         val trackedTime = previousTrackedTime
             .takeIf { itemId == previousItemId }
-            ?.let { progress.currentTime - previousTrackedTime }
+            ?.let { progress.currentOverallTime - previousTrackedTime }
             ?.toInt()
             ?: 0
 
         val request = ProgressSyncRequest(
-            currentTime = progress.currentTime,
+            currentTime = progress.currentOverallTime,
             timeListened = trackedTime,
         )
 
         return dataRepository
             .publishLibraryItemProgress(itemId, request)
             .also {
-                previousTrackedTime = progress.currentTime
+                previousTrackedTime = progress.currentOverallTime
                 previousItemId = itemId
             }
     }

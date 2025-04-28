@@ -73,7 +73,7 @@ class PlaybackSynchronizationService @Inject constructor(
         overallProgress: PlaybackProgress,
     ): Unit? {
         val currentIndex = currentBook
-            ?.let { calculateChapterIndex(it, overallProgress.currentTime) }
+            ?.let { calculateChapterIndex(it, overallProgress.currentOverallTime) }
             ?: 0
 
         if (currentIndex != currentChapterIndex) {
@@ -95,7 +95,7 @@ class PlaybackSynchronizationService @Inject constructor(
 
     private suspend fun openPlaybackSession(overallProgress: PlaybackProgress) = currentBook
         ?.let { book ->
-            val chapterIndex = calculateChapterIndex(book, overallProgress.currentTime)
+            val chapterIndex = calculateChapterIndex(book, overallProgress.currentOverallTime)
             mediaChannel
                 .startPlayback(
                     bookId = book.id,
@@ -127,9 +127,9 @@ class PlaybackSynchronizationService @Inject constructor(
         val totalElapsedMs = previousDuration + currentElapsedMs
 
         return PlaybackProgress(
-            currentTime = totalElapsedMs / 1000.0,
+            currentOverallTime = totalElapsedMs / 1000.0,
             totalTime = totalDuration / 1000.0,
-            chapterTime = currentElapsedMs / 1000.0
+            currentChapterTime = currentElapsedMs / 1000.0
         )
     }
 
