@@ -103,7 +103,7 @@ class BookResponseConverter @Inject constructor() {
                         currentTime = it.currentTime,
                         isFinished = it.isFinished,
                         lastUpdate = it.lastUpdate,
-                        episodeId = it.episodeId
+                        episodeId = it.episodeId,
                     )
                 },
         )

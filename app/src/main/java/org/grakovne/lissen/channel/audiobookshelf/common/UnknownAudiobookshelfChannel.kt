@@ -1,8 +1,8 @@
 package org.grakovne.lissen.channel.audiobookshelf.common
 
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfDataRepository
-import org.grakovne.lissen.channel.audiobookshelf.common.api.library.AudioBookshelfLibrarySyncService
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfMediaRepository
+import org.grakovne.lissen.channel.audiobookshelf.common.api.library.AudioBookshelfLibrarySyncService
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter

@@ -11,7 +11,7 @@ import javax.inject.Singleton
 @Singleton
 class AudioBookshelfPodcastSyncService @Inject constructor(
     private val dataRepository: AudioBookshelfDataRepository,
-): AudioBookshelfSyncService {
+) : AudioBookshelfSyncService {
 
     private var previousItemId: String? = null
     private var previousTrackedTime: Double = 0.0
@@ -22,7 +22,7 @@ class AudioBookshelfPodcastSyncService @Inject constructor(
     ): ApiResult<Unit> {
         val trackedTime = previousTrackedTime
             .takeIf { itemId == previousItemId }
-            ?.let { progress.currentOverallTime - previousTrackedTime }
+            ?.let { progress.currentChapterTime - previousTrackedTime }
             ?.toInt()
             ?: 0
 
@@ -34,7 +34,7 @@ class AudioBookshelfPodcastSyncService @Inject constructor(
         return dataRepository
             .publishLibraryItemProgress(itemId, request)
             .also {
-                previousTrackedTime = progress.currentOverallTime
+                previousTrackedTime = progress.currentChapterTime
                 previousItemId = itemId
             }
     }

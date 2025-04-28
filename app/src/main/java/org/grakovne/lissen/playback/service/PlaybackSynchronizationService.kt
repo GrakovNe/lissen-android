@@ -110,11 +110,16 @@ class PlaybackSynchronizationService @Inject constructor(
         }
 
     private fun getProgress(currentElapsedMs: Long): PlaybackProgress {
-        val currentBook = exoPlayer
-            .currentMediaItem
-            ?.localConfiguration
-            ?.tag as? DetailedItem
-            ?: return PlaybackProgress(0.0, 0.0, 0.0)
+        val currentBook = (
+            exoPlayer
+                .currentMediaItem
+                ?.localConfiguration
+                ?.tag as? DetailedItem
+            )
+            ?: return PlaybackProgress(
+                currentChapterTime = 0.0,
+                currentOverallTime = 0.0,
+            )
 
         val currentIndex = exoPlayer.currentMediaItemIndex
 
@@ -122,14 +127,11 @@ class PlaybackSynchronizationService @Inject constructor(
             .take(currentIndex)
             .sumOf { it.duration * 1000 }
 
-        val totalDuration = currentBook.files.sumOf { it.duration * 1000 }
-
         val totalElapsedMs = previousDuration + currentElapsedMs
 
         return PlaybackProgress(
             currentOverallTime = totalElapsedMs / 1000.0,
-            totalTime = totalDuration / 1000.0,
-            currentChapterTime = currentElapsedMs / 1000.0
+            currentChapterTime = currentElapsedMs / 1000.0,
         )
     }
 

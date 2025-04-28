@@ -11,7 +11,7 @@ import javax.inject.Singleton
 @Singleton
 class AudioBookshelfLibrarySyncService @Inject constructor(
     private val dataRepository: AudioBookshelfDataRepository,
-): AudioBookshelfSyncService {
+) : AudioBookshelfSyncService {
 
     private var previousItemId: String? = null
     private var previousTrackedTime: Double = 0.0
