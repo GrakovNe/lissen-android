@@ -65,6 +65,7 @@ class CachedBookEntityDetailedConverter @Inject constructor() {
                 currentTime = progressEntity.currentTime,
                 isFinished = progressEntity.isFinished,
                 lastUpdate = progressEntity.lastUpdate,
+                episodeId = "CHANGE ME"
             )
         },
     )

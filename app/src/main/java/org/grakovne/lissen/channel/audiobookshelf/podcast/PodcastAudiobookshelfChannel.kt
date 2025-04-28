@@ -5,7 +5,7 @@ import kotlinx.coroutines.coroutineScope
 import org.grakovne.lissen.channel.audiobookshelf.common.AudiobookshelfChannel
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfDataRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfMediaRepository
-import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfSyncService
+import org.grakovne.lissen.channel.audiobookshelf.common.api.podcast.AudioBookshelfPodcastSyncService
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
@@ -32,7 +32,7 @@ class PodcastAudiobookshelfChannel @Inject constructor(
     mediaRepository: AudioBookshelfMediaRepository,
     recentListeningResponseConverter: RecentListeningResponseConverter,
     preferences: LissenSharedPreferences,
-    syncService: AudioBookshelfSyncService,
+    syncService: AudioBookshelfPodcastSyncService,
     sessionResponseConverter: PlaybackSessionResponseConverter,
     libraryResponseConverter: LibraryResponseConverter,
     connectionInfoResponseConverter: ConnectionInfoResponseConverter,

@@ -6,4 +6,5 @@ import androidx.annotation.Keep
 data class PlaybackProgress(
     val currentTime: Double,
     val totalTime: Double,
+    val chapterTime: Double
 )

@@ -114,7 +114,7 @@ class PlaybackSynchronizationService @Inject constructor(
             .currentMediaItem
             ?.localConfiguration
             ?.tag as? DetailedItem
-            ?: return PlaybackProgress(0.0, 0.0)
+            ?: return PlaybackProgress(0.0, 0.0, 0.0)
 
         val currentIndex = exoPlayer.currentMediaItemIndex
 
@@ -129,6 +129,7 @@ class PlaybackSynchronizationService @Inject constructor(
         return PlaybackProgress(
             currentTime = totalElapsedMs / 1000.0,
             totalTime = totalDuration / 1000.0,
+            chapterTime = currentElapsedMs / 1000.0
         )
     }
 

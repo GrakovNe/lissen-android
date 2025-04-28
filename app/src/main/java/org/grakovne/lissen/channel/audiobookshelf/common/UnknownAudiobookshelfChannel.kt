@@ -1,8 +1,8 @@
 package org.grakovne.lissen.channel.audiobookshelf.common
 
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfDataRepository
+import org.grakovne.lissen.channel.audiobookshelf.common.api.library.AudioBookshelfLibrarySyncService
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfMediaRepository
-import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfSyncService
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
@@ -24,7 +24,7 @@ class UnknownAudiobookshelfChannel @Inject constructor(
     mediaRepository: AudioBookshelfMediaRepository,
     recentListeningResponseConverter: RecentListeningResponseConverter,
     preferences: LissenSharedPreferences,
-    syncService: AudioBookshelfSyncService,
+    syncService: AudioBookshelfLibrarySyncService,
     sessionResponseConverter: PlaybackSessionResponseConverter,
     libraryResponseConverter: LibraryResponseConverter,
     connectionInfoResponseConverter: ConnectionInfoResponseConverter,

@@ -25,11 +25,21 @@ class PodcastResponseConverter @Inject constructor() {
             .episodes
             ?.orderEpisode()
 
+        val totalCurrentTime = progressResponses
+            .maxByOrNull { it.lastUpdate }
+            ?.let { progress ->
+                orderedEpisodes
+                    ?.takeWhile { it.id != progress.episodeId }
+                    ?.sumOf { it.audioFile.duration }
+                    ?.plus(progress.currentTime)
+            }
+
         val latestEpisodeMediaProgress = progressResponses
             .maxByOrNull { it.lastUpdate }
             ?.let {
                 MediaProgress(
-                    currentTime = it.currentTime,
+                    episodeId = it.episodeId,
+                    currentTime = totalCurrentTime ?: 0.0,
                     isFinished = it.isFinished,
                     lastUpdate = it.lastUpdate,
                 )

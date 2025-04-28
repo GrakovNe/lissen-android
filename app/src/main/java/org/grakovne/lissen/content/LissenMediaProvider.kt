@@ -273,10 +273,10 @@ class LissenMediaProvider @Inject constructor(
     private suspend fun syncFromLocalProgress(detailedItem: DetailedItem): DetailedItem {
         val cachedBook = localCacheRepository.fetchBook(detailedItem.id) ?: return detailedItem
 
-        val cachedProgress = cachedBook.progress ?: return detailedItem
+        //val cachedProgress = cachedBook.progress ?: return detailedItem
         val channelProgress = detailedItem.progress
 
-        val updatedProgress = listOfNotNull(cachedProgress, channelProgress)
+        val updatedProgress = listOfNotNull(channelProgress)
             .maxByOrNull { it.lastUpdate }
             ?: return detailedItem
 
@@ -285,7 +285,6 @@ class LissenMediaProvider @Inject constructor(
             """
             Merging local playback progress into channel-fetched:
                 Channel Progress: $channelProgress
-                Local Progress: $cachedProgress
                 Final Progress: $updatedProgress
             """.trimIndent(),
         )
