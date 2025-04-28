@@ -122,7 +122,6 @@ class LocalCacheRepository @Inject constructor(
                                 ?.start
                                 ?: return null,
                             isFinished = false,
-                            episodeId = "",
                             lastUpdate = 946728000000, // 2000-01-01T12:00
                         ),
                     )

@@ -33,7 +33,6 @@ data class BookFile(
 
 @Keep
 data class MediaProgress(
-    val episodeId: String?,
     val currentTime: Double,
     val isFinished: Boolean,
     val lastUpdate: Long,

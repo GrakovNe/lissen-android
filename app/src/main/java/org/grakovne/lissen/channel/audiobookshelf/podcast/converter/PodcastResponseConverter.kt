@@ -38,7 +38,6 @@ class PodcastResponseConverter @Inject constructor() {
             .maxByOrNull { it.lastUpdate }
             ?.let {
                 MediaProgress(
-                    episodeId = it.episodeId,
                     currentTime = totalCurrentTime ?: 0.0,
                     isFinished = it.isFinished,
                     lastUpdate = it.lastUpdate,
