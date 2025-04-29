@@ -108,4 +108,6 @@
     <string name="seek_interval_60_seconds">60 seconds</string>
     <string name="continue_playback_shortcut_title">Continue</string>
     <string name="continue_playback_shortcut_description">Continue listening</string>
+    <string name="rewind_on_pause_title">Rewind on pause</string>
+    <string name="rewind_on_pause_hint">Skips back a few seconds</string>
 </resources>

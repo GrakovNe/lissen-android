@@ -122,7 +122,14 @@ class MediaRepository @Inject constructor(
                         .registerReceiver(timerExpiredReceiver, IntentFilter(TIMER_EXPIRED))
 
                     mediaController.addListener(object : Player.Listener {
+
                         override fun onIsPlayingChanged(isPlaying: Boolean) {
+                            val playbackPaused = _isPlaying.value == true && isPlaying.not()
+
+                            if (playbackPaused && preferences.getRewindOnPause()) {
+                                rewind()
+                            }
+
                             _isPlaying.value = isPlaying
                         }
 
@@ -204,6 +211,12 @@ class MediaRepository @Inject constructor(
 
             null -> cancelServiceTimer()
         }
+    }
+
+    fun rewindOnPause() {
+        totalPosition
+            .value
+            ?.let { seekTo(it - 5L) }
     }
 
     fun rewind() {
