@@ -19,6 +19,7 @@ import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
+import org.grakovne.lissen.domain.RewindOnPauseTime
 import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import java.security.KeyStore
@@ -197,11 +198,6 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
 
     fun getServerVersion(): String? = sharedPreferences.getString(KEY_SERVER_VERSION, null)
 
-    fun saveRewindOnPause(value: Boolean) =
-        sharedPreferences.edit { putBoolean(KEY_REWIND_ON_PAUSE, value) }
-
-    fun getRewindOnPause(): Boolean = sharedPreferences.getBoolean(KEY_REWIND_ON_PAUSE, false)
-
     fun saveToken(password: String) {
         val encrypted = encrypt(password)
         sharedPreferences.edit { putString(KEY_TOKEN, encrypted) }
@@ -253,6 +249,23 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
         }
     }
 
+    fun saveRewindOnPause(rewindOnPauseTime: RewindOnPauseTime) {
+        sharedPreferences.edit {
+            val json = gson.toJson(rewindOnPauseTime)
+            putString(KEY_REWIND_ON_PAUSE, json)
+        }
+    }
+
+    fun getRewindOnPause(): RewindOnPauseTime {
+        val json = sharedPreferences.getString(KEY_REWIND_ON_PAUSE, null)
+        val type = object : TypeToken<RewindOnPauseTime>() {}.type
+
+        return when (json == null) {
+            true -> RewindOnPauseTime.Default
+            false -> gson.fromJson(json, type)
+        }
+    }
+
     fun saveCustomHeaders(headers: List<ServerRequestHeader>) {
         sharedPreferences.edit {
             val json = gson.toJson(headers)
@@ -288,6 +301,7 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
 
         private const val KEY_PREFERRED_PLAYBACK_SPEED = "preferred_playback_speed"
         private const val KEY_PREFERRED_SEEK_TIME = "preferred_seek_time"
+
         private const val KEY_REWIND_ON_PAUSE = "rewind_on_pause"
 
         private const val KEY_PREFERRED_COLOR_SCHEME = "preferred_color_scheme"

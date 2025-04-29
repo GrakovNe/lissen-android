@@ -129,8 +129,13 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun preferRewindOnPause(value: Boolean) {
-        _rewindOnPause.postValue(value)
-        preferences.saveRewindOnPause(value)
+        _rewindOnPause.postValue(_rewindOnPause.value?.copy(enabled = value))
+        _rewindOnPause.value?.let { preferences.saveRewindOnPause(it) }
+    }
+
+    fun preferRewindTimeOnPause(option: SeekTimeOption) {
+        _rewindOnPause.postValue(_rewindOnPause.value?.copy(time = option))
+        _rewindOnPause.value?.let { preferences.saveRewindOnPause(it) }
     }
 
     fun updateCustomHeaders(headers: List<ServerRequestHeader>) {

@@ -126,8 +126,8 @@ class MediaRepository @Inject constructor(
                         override fun onIsPlayingChanged(isPlaying: Boolean) {
                             val playbackPaused = _isPlaying.value == true && isPlaying.not()
 
-                            if (playbackPaused && preferences.getRewindOnPause()) {
-                                rewind()
+                            if (playbackPaused && preferences.getRewindOnPause().enabled) {
+                                rewindOnPause()
                             }
 
                             _isPlaying.value = isPlaying
@@ -216,7 +216,7 @@ class MediaRepository @Inject constructor(
     fun rewindOnPause() {
         totalPosition
             .value
-            ?.let { seekTo(it - 5L) }
+            ?.let { seekTo(it - getSeekTime(preferences.getRewindOnPause().time)) }
     }
 
     fun rewind() {

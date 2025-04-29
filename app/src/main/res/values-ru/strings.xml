@@ -108,4 +108,7 @@
     <string name="continue_playback_shortcut_description">Продолжить слушать</string>
     <string name="playing_item_details_narrator">Чтец</string>
     <string name="playing_item_details_duration">Длительность</string>
+    <string name="rewind_on_pause_title">Отступ при паузе</string>
+    <string name="rewind_on_pause_hint">Небольшой шаг назад при паузе</string>
+    <string name="rewind_on_pause_time">Размер отступа при паузе</string>
 </resources>
