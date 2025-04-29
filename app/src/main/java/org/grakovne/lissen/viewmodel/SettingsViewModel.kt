@@ -119,23 +119,35 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun preferForwardRewind(option: SeekTimeOption) {
-        _seekTime.postValue(_seekTime.value?.copy(forward = option))
-        _seekTime.value?.let { preferences.saveSeekTime(it) }
+        val current = _seekTime.value ?: return
+        val updated = current.copy(forward = option)
+
+        preferences.saveSeekTime(updated)
+        _seekTime.postValue(updated)
     }
 
     fun preferRewindRewind(option: SeekTimeOption) {
-        _seekTime.postValue(_seekTime.value?.copy(rewind = option))
-        _seekTime.value?.let { preferences.saveSeekTime(it) }
+        val current = _seekTime.value ?: return
+        val updated = current.copy(rewind = option)
+
+        preferences.saveSeekTime(updated)
+        _seekTime.postValue(updated)
     }
 
     fun preferRewindOnPause(value: Boolean) {
-        _rewindOnPause.postValue(_rewindOnPause.value?.copy(enabled = value))
-        _rewindOnPause.value?.let { preferences.saveRewindOnPause(it) }
+        val current = _rewindOnPause.value ?: return
+        val updated = current.copy(enabled = value)
+
+        preferences.saveRewindOnPause(updated)
+        _rewindOnPause.value = updated
     }
 
     fun preferRewindTimeOnPause(option: SeekTimeOption) {
-        _rewindOnPause.postValue(_rewindOnPause.value?.copy(time = option))
-        _rewindOnPause.value?.let { preferences.saveRewindOnPause(it) }
+        val current = _rewindOnPause.value ?: return
+        val updated = current.copy(time = option)
+
+        preferences.saveRewindOnPause(updated)
+        _rewindOnPause.value = updated
     }
 
     fun updateCustomHeaders(headers: List<ServerRequestHeader>) {

@@ -233,10 +233,8 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
     }
 
     fun saveSeekTime(seekTime: SeekTime) {
-        sharedPreferences.edit {
-            val json = gson.toJson(seekTime)
-            putString(KEY_PREFERRED_SEEK_TIME, json)
-        }
+        val json = gson.toJson(seekTime)
+        sharedPreferences.edit(commit = true) { putString(KEY_PREFERRED_SEEK_TIME, json) }
     }
 
     fun getSeekTime(): SeekTime {
@@ -250,10 +248,8 @@ class LissenSharedPreferences @Inject constructor(@ApplicationContext context: C
     }
 
     fun saveRewindOnPause(rewindOnPauseTime: RewindOnPauseTime) {
-        sharedPreferences.edit {
-            val json = gson.toJson(rewindOnPauseTime)
-            putString(KEY_REWIND_ON_PAUSE, json)
-        }
+        val json = gson.toJson(rewindOnPauseTime)
+        sharedPreferences.edit(commit = true) { putString(KEY_REWIND_ON_PAUSE, json) }
     }
 
     fun getRewindOnPause(): RewindOnPauseTime {
