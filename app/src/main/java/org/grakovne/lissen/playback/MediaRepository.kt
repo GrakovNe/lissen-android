@@ -124,10 +124,14 @@ class MediaRepository @Inject constructor(
                     mediaController.addListener(object : Player.Listener {
 
                         override fun onIsPlayingChanged(isPlaying: Boolean) {
-                            val playbackPaused = _isPlaying.value == true && isPlaying.not()
+                            try {
+                                val playbackPaused = _isPlaying.value == true && isPlaying.not()
 
-                            if (playbackPaused && preferences.getRewindOnPause().enabled) {
-                                rewindOnPause()
+                                if (playbackPaused && preferences.getRewindOnPause().enabled) {
+                                    rewindOnPause()
+                                }
+                            } catch (ex: Exception) {
+                                Log.d(TAG, "Smart pause is broken due to: $ex")
                             }
 
                             _isPlaying.value = isPlaying
