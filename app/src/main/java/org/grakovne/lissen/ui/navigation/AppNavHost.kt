@@ -28,6 +28,7 @@ import org.grakovne.lissen.ui.screens.login.LoginScreen
 import org.grakovne.lissen.ui.screens.player.PlayerScreen
 import org.grakovne.lissen.ui.screens.settings.SettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.CustomHeadersSettingsScreen
+import org.grakovne.lissen.ui.screens.settings.advanced.DownloadManagementScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.SeekSettingsScreen
 
 @Composable
@@ -47,12 +48,14 @@ fun AppNavHost(
     }
 
     val book = preferences.getPlayingBook()
+//
+//    val startDestination = when {
+//        hasCredentials.not() -> "login_screen"
+//        appLaunchAction == AppLaunchAction.CONTINUE_PLAYBACK && book != null -> "player_screen/${book.id}?bookTitle=${book.title}&bookSubtitle=${book.subtitle}&startInstantly=true"
+//        else -> "library_screen"
+//    }
 
-    val startDestination = when {
-        hasCredentials.not() -> "login_screen"
-        appLaunchAction == AppLaunchAction.CONTINUE_PLAYBACK && book != null -> "player_screen/${book.id}?bookTitle=${book.title}&bookSubtitle=${book.subtitle}&startInstantly=true"
-        else -> "library_screen"
-    }
+    val startDestination = "settings_screen/downloads_management"
 
     val enterTransition: EnterTransition = slideInHorizontally(
         initialOffsetX = { it },
@@ -166,6 +169,23 @@ fun AppNavHost(
                 popExitTransition = { popExitTransition },
             ) {
                 SeekSettingsScreen(
+                    onBack = {
+                        if (navController.previousBackStackEntry != null) {
+                            navController.popBackStack()
+                        }
+                    },
+                )
+            }
+
+            composable(
+                route = "settings_screen/downloads_management",
+                enterTransition = { enterTransition },
+                exitTransition = { exitTransition },
+                popEnterTransition = { popEnterTransition },
+                popExitTransition = { popExitTransition },
+            ) {
+                DownloadManagementScreen(
+                    imageLoader = imageLoader,
                     onBack = {
                         if (navController.previousBackStackEntry != null) {
                             navController.popBackStack()
