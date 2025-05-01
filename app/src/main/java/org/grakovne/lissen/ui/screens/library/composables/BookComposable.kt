@@ -85,19 +85,8 @@ fun BookComposable(
                     overflow = TextOverflow.Ellipsis,
                 )
 
-                if (null != book.subtitle || null != book.author) {
+                if (null != book.series?.takeIf { it.isNotBlank() } || null != book.author) {
                     Spacer(modifier = Modifier.height(2.dp))
-                }
-
-                book.subtitle?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                        ),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
                 }
             }
 
@@ -111,6 +100,20 @@ fun BookComposable(
                     overflow = TextOverflow.Ellipsis,
                 )
             }
+
+            book
+                .series
+                ?.takeIf { it.isNotBlank() }
+                ?.let {
+                    Text(
+                        text = it,
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                        ),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
         }
 
         Spacer(modifier = Modifier.width(16.dp))

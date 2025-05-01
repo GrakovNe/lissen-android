@@ -24,5 +24,6 @@ data class Media(
 data class LibraryMetadata(
     val title: String?,
     val subtitle: String?,
+    val seriesName: String?,
     val authorName: String?,
 )

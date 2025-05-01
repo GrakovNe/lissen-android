@@ -14,6 +14,7 @@ class LibrarySearchItemsConverter @Inject constructor() {
             Book(
                 id = it.id,
                 title = title,
+                series = it.media.metadata.seriesName,
                 subtitle = it.media.metadata.subtitle,
                 author = it.media.metadata.authorName,
                 duration = it.media.duration.toInt(),

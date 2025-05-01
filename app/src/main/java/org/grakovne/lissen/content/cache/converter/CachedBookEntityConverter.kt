@@ -13,6 +13,7 @@ class CachedBookEntityConverter @Inject constructor() {
         title = entity.title,
         subtitle = entity.subtitle,
         author = entity.author,
+        series = null, // CHANGE ME
         duration = entity.duration,
     )
 }
