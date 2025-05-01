@@ -63,7 +63,7 @@ fun TrackDetailsPlaceholderComposable(
             modifier = Modifier.padding(horizontal = 16.dp),
         )
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(2.dp))
 
         bookSubtitle?.let {
             Text(

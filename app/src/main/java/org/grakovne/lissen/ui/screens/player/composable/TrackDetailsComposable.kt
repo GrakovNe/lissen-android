@@ -90,7 +90,7 @@ fun TrackDetailsComposable(
                 .padding(horizontal = 16.dp),
         )
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(2.dp))
 
         book?.subtitle?.let {
             Text(
