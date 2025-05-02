@@ -27,7 +27,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -57,8 +56,6 @@ fun NavigationBarComposable(
     modifier: Modifier = Modifier,
     libraryType: LibraryType,
 ) {
-    val context = LocalContext.current
-
     val cacheProgress: CacheState by contentCachingModelView.getProgress(book.id).collectAsState()
     val timerOption by playerViewModel.timerOption.observeAsState(null)
     val playbackSpeed by playerViewModel.playbackSpeed.observeAsState(1f)

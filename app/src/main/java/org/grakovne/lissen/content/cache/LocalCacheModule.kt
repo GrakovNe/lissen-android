@@ -39,6 +39,7 @@ object LocalCacheModule {
             .addMigrations(MIGRATION_10_11)
             .addMigrations(MIGRATION_11_12)
             .addMigrations(MIGRATION_12_13)
+            .addMigrations(MIGRATION_13_14)
             .build()
     }
 

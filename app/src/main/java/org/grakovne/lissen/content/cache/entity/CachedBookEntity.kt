@@ -46,6 +46,7 @@ data class BookEntity(
     val duration: Int,
     val libraryId: String?,
     val seriesJson: String?, // List<BookSeriesDto> Json
+    val seriesNames: String?,
     val createdAt: Long,
     val updatedAt: Long,
 ) : Serializable

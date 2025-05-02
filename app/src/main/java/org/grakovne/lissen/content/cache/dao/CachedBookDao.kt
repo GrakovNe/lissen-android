@@ -42,6 +42,9 @@ interface CachedBookDao {
             publisher = book.publisher,
             createdAt = book.createdAt,
             updatedAt = book.updatedAt,
+            seriesNames = book
+                .series
+                .joinToString(" ") { it.name },
             seriesJson = book
                 .series
                 .map { BookSeriesDto(title = it.name, sequence = it.serialNumber) }

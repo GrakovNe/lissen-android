@@ -7,9 +7,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AvTimer
-import androidx.compose.material.icons.filled.Business
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Business
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.MicNone
@@ -56,18 +53,6 @@ fun MediaDetailComposable(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
             ) {
-                val seriesValue = playingBook
-                    ?.series
-                    ?.takeIf { it.isNotEmpty() }
-                    ?.joinToString(", ") { series ->
-                        buildString {
-                            append(series.name)
-                            series.serialNumber
-                                ?.takeIf(String::isNotBlank)
-                                ?.let { append(" #$it") }
-                        }
-                    }
-
                 playingBook
                     ?.title
                     ?.takeIf { it.isNotEmpty() }
@@ -80,14 +65,15 @@ fun MediaDetailComposable(
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
                             color = colorScheme.onSurface,
-                            modifier = when (seriesValue?.isNotBlank()) {
+                            modifier = when (playingBook.subtitle?.isNotBlank()) {
                                 true -> Modifier
                                 else -> Modifier.padding(bottom = 8.dp)
                             },
                         )
                     }
 
-                seriesValue
+                playingBook
+                    ?.subtitle
                     ?.let {
                         Text(
                             text = it,

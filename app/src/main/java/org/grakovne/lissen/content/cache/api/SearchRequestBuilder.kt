@@ -25,8 +25,9 @@ class SearchRequestBuilder {
                     args.add(libraryId)
                 }
             }
-            append(" AND (title LIKE ? OR author LIKE ?)")
+            append(" AND (title LIKE ? OR author LIKE ? OR seriesNames LIKE ?)")
             val pattern = "%$searchQuery%"
+            args.add(pattern)
             args.add(pattern)
             args.add(pattern)
         }
