@@ -1,5 +1,6 @@
 package org.grakovne.lissen.channel.audiobookshelf.library
 
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -106,7 +107,7 @@ class LibraryAudiobookshelfChannel @Inject constructor(
                 .map { librarySearchItemsConverter.apply(it) }
         }
 
-        val bySeries = async {
+        val bySeries: Deferred<ApiResult<List<Book>>> = async {
             searchResult
                 .map { result -> result.series }
                 .map { result -> result.flatMap { it.books } }
@@ -125,12 +126,30 @@ class LibraryAudiobookshelfChannel @Inject constructor(
                 .map { result -> result.let { librarySearchItemsConverter.apply(it) } }
         }
 
-        byTitle.await().flatMap { title ->
-            byAuthor.await().flatMap { author ->
-                bySeries.await().map { series ->
-                    (title + author + series).distinctBy { it.id }
+        mergeBooks(byTitle, byAuthor, bySeries)
+    }
+
+    private suspend fun mergeBooks(
+        vararg queries: Deferred<ApiResult<List<Book>>>,
+    ): ApiResult<List<Book>> = coroutineScope {
+        val results: List<ApiResult<List<Book>>> = awaitAll(*queries)
+
+        val merged: ApiResult<List<Book>> = results
+            .fold<ApiResult<List<Book>>, ApiResult<List<Book>>>(Success(emptyList())) { acc, res ->
+                when {
+                    acc is ApiResult.Error -> acc
+                    res is ApiResult.Error -> res
+                    else -> {
+                        val combined = (acc as Success).data + (res as Success).data
+                        Success(combined)
+                    }
                 }
             }
+
+        merged.map { list ->
+            list
+                .distinctBy { it.id }
+                .sortedWith(compareBy({ it.series }, { it.author }, { it.title }))
         }
     }
 
