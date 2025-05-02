@@ -108,27 +108,21 @@ class LibraryAudiobookshelfChannel @Inject constructor(
 
         val bySeries = async {
             searchResult
-                .map {
-                    it.series.map { it.books.map { it.media.metadata.title } }
-                        .map { titles ->
-                            titles
-                                .mapNotNull { it }
-                                .map { async { dataRepository.searchBooks(libraryId, it, limit) } }
-                        }
-                        .map { it.awaitAll() }
-                        .flatMap { result ->
-                            result
-                                .flatMap { titleResponse ->
-                                    titleResponse.fold(
-                                        onSuccess = {
-                                            it.book.map { it.libraryItem }
-                                                .let { librarySearchItemsConverter.apply(it) }
-                                        },
-                                        onFailure = { emptyList() },
-                                    )
-                                }
-                        }
+                .map { result -> result.series }
+                .map { result -> result.flatMap { it.books } }
+                .map { result -> result.mapNotNull { it.media.metadata.title } }
+                .map { result -> result.map { async { dataRepository.searchBooks(libraryId, it, limit) } } }
+                .map { result -> result.awaitAll() }
+                .map { result ->
+                    result.flatMap {
+                        it.fold(
+                            onSuccess = { items -> items.book },
+                            onFailure = { emptyList() },
+                        )
+                    }
                 }
+                .map { result -> result.map { it.libraryItem } }
+                .map { result -> result.let { librarySearchItemsConverter.apply(it) } }
         }
 
         byTitle.await().flatMap { title ->
