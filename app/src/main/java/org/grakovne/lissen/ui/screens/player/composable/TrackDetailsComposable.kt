@@ -92,21 +92,24 @@ fun TrackDetailsComposable(
 
         Spacer(modifier = Modifier.height(2.dp))
 
-        book?.subtitle?.let {
-            Text(
-                text = it,
-                style = typography.bodyMedium,
-                color = colorScheme.onBackground.copy(alpha = 0.6f),
-                textAlign = TextAlign.Center,
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 1,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-            )
+        book
+            ?.subtitle
+            ?.takeIf { it.isNotBlank() }
+            ?.let {
+                Text(
+                    text = it,
+                    style = typography.bodyMedium,
+                    color = colorScheme.onBackground.copy(alpha = 0.6f),
+                    textAlign = TextAlign.Center,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                )
 
-            Spacer(modifier = Modifier.height(2.dp))
-        }
+                Spacer(modifier = Modifier.height(2.dp))
+            }
 
         Text(
             text = provideChapterNumberTitle(

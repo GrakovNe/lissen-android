@@ -65,21 +65,23 @@ fun TrackDetailsPlaceholderComposable(
 
         Spacer(modifier = Modifier.height(2.dp))
 
-        bookSubtitle?.let {
-            Text(
-                text = it,
-                style = typography.bodyMedium,
-                color = colorScheme.onBackground.copy(alpha = 0.6f),
-                textAlign = TextAlign.Center,
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 1,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-            )
+        bookSubtitle
+            ?.takeIf { it.isNotBlank() }
+            ?.let {
+                Text(
+                    text = it,
+                    style = typography.bodyMedium,
+                    color = colorScheme.onBackground.copy(alpha = 0.6f),
+                    textAlign = TextAlign.Center,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                )
 
-            Spacer(modifier = Modifier.height(2.dp))
-        }
+                Spacer(modifier = Modifier.height(2.dp))
+            }
 
         Text(
             text = stringResource(R.string.player_screen_now_playing_title_chapter_of, 100, "1000"),
