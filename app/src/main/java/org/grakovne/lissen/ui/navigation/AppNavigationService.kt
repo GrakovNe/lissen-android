@@ -1,18 +1,15 @@
 package org.grakovne.lissen.ui.navigation
 
+import android.net.Uri
 import androidx.navigation.NavHostController
 
 class AppNavigationService(
     private val host: NavHostController,
 ) {
-
     fun showLibrary(clearHistory: Boolean = false) {
-        host.navigate("library_screen") {
+        host.navigate(ROUTE_LIBRARY) {
             launchSingleTop = true
-
-            popUpTo(host.graph.startDestinationId) {
-                inclusive = clearHistory
-            }
+            popUpTo(host.graph.startDestinationId) { inclusive = clearHistory }
         }
     }
 
@@ -20,33 +17,32 @@ class AppNavigationService(
         bookId: String,
         bookTitle: String,
         bookSubtitle: String?,
+        startInstantly: Boolean = false,
     ) {
-        host.navigate("player_screen/$bookId?bookTitle=$bookTitle&bookSubtitle=$bookSubtitle&startInstantly=false") {
-            launchSingleTop = true
-
-            host.currentBackStackEntry?.arguments?.putString("bookTitle", bookTitle)
-            host.currentBackStackEntry?.arguments?.putString("bookSubTitle", bookSubtitle)
+        val route = buildString {
+            append("$ROUTE_PLAYER/$bookId")
+            append("?bookTitle=${Uri.encode(bookTitle)}")
+            append("&bookSubtitle=${Uri.encode(bookSubtitle ?: "")}")
+            append("&startInstantly=$startInstantly")
         }
+        host.navigate(route) { launchSingleTop = true }
     }
 
-    fun showSettings() {
-        host.navigate("settings_screen")
-    }
-
-    fun showCustomHeadersSettings() {
-        host.navigate("settings_screen/custom_headers")
-    }
-
-    fun showSeekSettings() {
-        host.navigate("settings_screen/seek_settings")
-    }
+    fun showSettings() = host.navigate(ROUTE_SETTINGS)
+    fun showCustomHeadersSettings() = host.navigate("$ROUTE_SETTINGS/custom_headers")
+    fun showSeekSettings() = host.navigate("$ROUTE_SETTINGS/seek_settings")
 
     fun showLogin() {
-        host.navigate("login_screen") {
-            popUpTo(0) {
-                inclusive = true
-            }
+        host.navigate(ROUTE_LOGIN) {
+            popUpTo(0) { inclusive = true }
             launchSingleTop = true
         }
+    }
+
+    private companion object {
+        const val ROUTE_LIBRARY = "library_screen"
+        const val ROUTE_PLAYER = "player_screen"
+        const val ROUTE_SETTINGS = "settings_screen"
+        const val ROUTE_LOGIN = "login_screen"
     }
 }
