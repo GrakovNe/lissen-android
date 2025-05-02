@@ -40,7 +40,7 @@
     <string name="color_scheme_light">Açık</string>
     <string name="color_scheme_dark">Koyu</string>
     <string name="settings_screen_color_scheme_title">Renk düzeni</string>
-    <string name="library_search_hint">Başlık veya yazara göre ara</string>
+    <string name="library_search_hint">Başlık, yazar veya seriye göre ara</string>
     <string name="player_screen_title">Şimdi dinleniyor</string>
     <string name="settings_screen_custom_headers_title">Özel Başlıklar</string>
     <string name="settings_screen_custom_header_hint">Sunucu bağlantıları için başlıkları belirt</string>

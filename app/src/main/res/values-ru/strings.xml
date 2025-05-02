@@ -35,7 +35,7 @@
     <string name="color_scheme_light">Светлая</string>
     <string name="color_scheme_dark">Темная</string>
     <string name="settings_screen_color_scheme_title">Цветовая схема</string>
-    <string name="library_search_hint">Поиск по автору или названию</string>
+    <string name="library_search_hint">Поиск по названию, автору или серии</string>
     <string name="player_screen_title">Сейчас играет</string>
     <string name="settings_screen_custom_headers_title">Прокси-заголовки</string>
     <string name="settings_screen_custom_header_hint">Заголовки для подключения к серверу</string>

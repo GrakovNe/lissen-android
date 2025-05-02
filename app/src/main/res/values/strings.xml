@@ -39,7 +39,7 @@
     <string name="color_scheme_light">Light</string>
     <string name="color_scheme_dark">Dark</string>
     <string name="settings_screen_color_scheme_title">Color scheme</string>
-    <string name="library_search_hint">Search by title or author</string>
+    <string name="library_search_hint">Search by title, author, or series</string>
     <string name="player_screen_title">Listening now</string>
     <string name="settings_screen_custom_headers_title">Custom Headers</string>
     <string name="settings_screen_custom_header_hint">Specify headers for server connections</string>

@@ -39,7 +39,7 @@
     <string name="color_scheme_light">Svetlo</string>
     <string name="color_scheme_dark">Temno</string>
     <string name="settings_screen_color_scheme_title">Barvna shema</string>
-    <string name="library_search_hint">Iskanje po naslovu ali avtorju</string>
+    <string name="library_search_hint">Iskanje po naslovu, avtorju ali seriji</string>
     <string name="player_screen_title">Trenutno poslušam</string>
     <string name="settings_screen_custom_headers_title">Glave po meri</string>
     <string name="settings_screen_custom_header_hint">Določi glave za povezave do strežnika</string>

@@ -38,7 +38,7 @@
     <string name="color_scheme_light">Világos</string>
     <string name="color_scheme_dark">Sötét</string>
     <string name="settings_screen_color_scheme_title">Színösszeállítás</string>
-    <string name="library_search_hint">Cím vagy szerző szerinti keresés</string>
+    <string name="library_search_hint">Cím, szerző vagy sorozat szerint keresés</string>
     <string name="player_screen_title">Most hallgatott</string>
     <string name="settings_screen_custom_headers_title">Egyedi fejlécek</string>
     <string name="settings_screen_custom_header_hint">Fejlécek megadása a kiszolgálói kapcsolathoz</string>

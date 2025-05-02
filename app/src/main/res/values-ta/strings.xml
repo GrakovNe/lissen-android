@@ -40,7 +40,7 @@
     <string name="color_scheme_light">ஒளி</string>
     <string name="color_scheme_dark">இருண்ட</string>
     <string name="settings_screen_color_scheme_title">வண்ணத் திட்டம்</string>
-    <string name="library_search_hint">தலைப்பு அல்லது எழுத்தாளர் மூலம் தேடுங்கள்</string>
+    <string name="library_search_hint">தலைப்பு, எழுத்தாளர் அல்லது தொடர் மூலம் தேடுங்கள்</string>
     <string name="player_screen_title">இப்போது கேட்கிறது</string>
     <string name="settings_screen_custom_headers_title">தனிப்பயன் தலைப்புகள்</string>
     <string name="settings_screen_custom_header_hint">சேவையக இணைப்புகளுக்கான தலைப்புகளைக் குறிப்பிடவும்</string>

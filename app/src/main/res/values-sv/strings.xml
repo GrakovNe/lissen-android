@@ -32,7 +32,7 @@
     <string name="color_scheme_light">Ljus</string>
     <string name="color_scheme_dark">Mörk</string>
     <string name="settings_screen_color_scheme_title">Färgschema</string>
-    <string name="library_search_hint">Sök efter titel eller författare</string>
+    <string name="library_search_hint">Sök efter titel, författare eller serie</string>
     <string name="player_screen_title">Lyssnar just nu</string>
     <string name="settings_screen_custom_headers_title">Anpassade rubriker</string>
     <string name="custom_header_hint_name">Nyckel</string>

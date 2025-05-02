@@ -36,7 +36,7 @@
     <string name="color_scheme_light">Chiaro</string>
     <string name="color_scheme_dark">Scuro</string>
     <string name="settings_screen_color_scheme_title">Schema colore</string>
-    <string name="library_search_hint">Cerca in base al titolo o all\'autore</string>
+    <string name="library_search_hint">Cerca in base al titolo, all\'autore o alla serie</string>
     <string name="player_screen_title">In riproduzione</string>
     <string name="settings_screen_custom_headers_title">Testate personalizzate</string>
     <string name="settings_screen_custom_header_hint">Specificare le intestazioni per le connessioni al server</string>

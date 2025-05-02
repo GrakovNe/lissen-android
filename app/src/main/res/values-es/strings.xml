@@ -35,7 +35,7 @@
     <string name="color_scheme_dark">Oscuro</string>
     <string name="playback_speed_title">Velocidad de reproducción</string>
     <string name="settings_screen_color_scheme_title">Esquema de color</string>
-    <string name="library_search_hint">Búsqueda por título o autor</string>
+    <string name="library_search_hint">Búsqueda por título, autor o serie</string>
     <string name="player_screen_title">Escuchando ahora</string>
     <string name="settings_screen_custom_headers_title">Encabezados Personalizados</string>
     <string name="settings_screen_custom_header_hint">Especificar encabezados para conexiones de servidor</string>
