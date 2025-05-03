@@ -72,6 +72,9 @@ class MediaRepository @Inject constructor(
     private val _totalPosition = MutableLiveData<Double>()
     val totalPosition: LiveData<Double> = _totalPosition
 
+    private val _totalBufferPosition = MutableLiveData<Double>()
+    val totalBufferPosition: LiveData<Double> = _totalBufferPosition
+
     private val _playingBook = MutableLiveData<DetailedItem?>()
     val playingBook: LiveData<DetailedItem?> = _playingBook
 
@@ -90,11 +93,20 @@ class MediaRepository @Inject constructor(
 
     private val _currentChapterPosition = MediatorLiveData<Double>().apply {
         addSource(totalPosition) { updateCurrentTrackData() }
+        addSource(totalBufferPosition) { updateCurrentTrackData() }
         addSource(playingBook) { updateCurrentTrackData() }
     }
     val currentChapterPosition: LiveData<Double> = _currentChapterPosition
 
+    private val _currentChapterBufferPosition = MediatorLiveData<Double>().apply {
+        addSource(totalPosition) { updateCurrentTrackData() }
+        addSource(totalBufferPosition) { updateCurrentTrackData() }
+        addSource(playingBook) { updateCurrentTrackData() }
+    }
+    val currentChapterBufferPosition: LiveData<Double> = _currentChapterPosition
+
     private val _currentChapterDuration = MediatorLiveData<Double>().apply {
+        addSource(totalBufferPosition) { updateCurrentTrackData() }
         addSource(totalPosition) { updateCurrentTrackData() }
         addSource(playingBook) { updateCurrentTrackData() }
     }
@@ -414,8 +426,10 @@ class MediaRepository @Inject constructor(
             val currentIndex = mediaController.currentMediaItemIndex
             val accumulated = detailedItem.files.take(currentIndex).sumOf { it.duration }
             val currentFilePosition = mediaController.currentPosition / 1000.0
+            val currentFileBufferPosition = mediaController.bufferedPosition / 1000.0
 
             _totalPosition.postValue(accumulated + currentFilePosition)
+            _totalBufferPosition.postValue(accumulated + currentFileBufferPosition)
         }
     }
 
@@ -489,12 +503,15 @@ class MediaRepository @Inject constructor(
     private fun updateCurrentTrackData() {
         val book = playingBook.value ?: return
         val totalPosition = totalPosition.value ?: return
+        val totalBufferPosition = totalBufferPosition.value ?: return
 
         val trackIndex = calculateChapterIndex(book, totalPosition)
         val trackPosition = calculateChapterPosition(book, totalPosition)
+        val trackBufferPosition = calculateChapterPosition(book, totalBufferPosition)
 
         _currentChapterIndex.postValue(trackIndex)
         _currentChapterPosition.postValue(trackPosition)
+        _currentChapterBufferPosition.postValue(trackBufferPosition)
         _currentChapterDuration.postValue(
             book
                 .chapters

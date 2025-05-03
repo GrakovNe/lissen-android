@@ -14,6 +14,7 @@ import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.CommandButton
 import androidx.media3.session.MediaSession
@@ -38,7 +39,17 @@ object MediaModule {
     @Provides
     @Singleton
     fun provideExoPlayer(@ApplicationContext context: Context): ExoPlayer {
+        val loadControl = DefaultLoadControl.Builder()
+            .setBufferDurationsMs(
+                600_000, // minBufferMs
+                1200_000, // maxBufferMs
+                1_500,   // bufferForPlaybackMs
+                5_000    // bufferForPlaybackAfterRebufferMs
+            )
+            .build()
+
         return ExoPlayer.Builder(context)
+            .setLoadControl(loadControl)
             .setSeekBackIncrementMs(10_000)
             .setSeekForwardIncrementMs(30_000)
             .setHandleAudioBecomingNoisy(true)

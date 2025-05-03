@@ -186,7 +186,9 @@ class PlaybackService : MediaSessionService() {
 
                                     ProgressiveMediaSource
                                         .Factory(sourceFactory)
+                                        .setContinueLoadingCheckIntervalBytes(Int.MAX_VALUE)
                                         .createMediaSource(mediaItem)
+
                                 },
                                 onFailure = {
                                     SilenceMediaSource((file.duration * 1000).toLong())

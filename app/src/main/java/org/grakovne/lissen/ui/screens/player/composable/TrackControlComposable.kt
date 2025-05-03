@@ -52,6 +52,7 @@ fun TrackControlComposable(
     val isPlaying by viewModel.isPlaying.observeAsState(false)
     val currentTrackIndex by viewModel.currentChapterIndex.observeAsState(0)
     val currentTrackPosition by viewModel.currentChapterPosition.observeAsState(0.0)
+    val currentTrackBufferPosition by viewModel.currentChapterBufferedPosition.observeAsState(0.0)
     val currentTrackDuration by viewModel.currentChapterDuration.observeAsState(0.0)
 
     val seekTime by settingsViewModel.seekTime.observeAsState(SeekTime.Default)
@@ -70,6 +71,10 @@ fun TrackControlComposable(
         }
     }
 
+    LaunchedEffect(currentTrackBufferPosition) {
+        println("HEHE:" + currentTrackBufferPosition)
+    }
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -84,6 +89,7 @@ fun TrackControlComposable(
                 state = rememberSeekerState(),
                 value = sliderPosition.toFloat(),
                 thumbValue = sliderPosition.toFloat(),
+                readAheadValue = currentTrackBufferPosition.toFloat(),
                 range = 0f..currentTrackDuration.toFloat(),
                 onValueChange = { newPosition ->
                     isDragging = true
