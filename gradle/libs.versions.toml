@@ -26,6 +26,7 @@ runtimeLivedata = "1.8.0"
 media3Session = "1.6.1"
 media3DatasourceOkhttp = "1.6.1"
 lifecycleService = "2.8.7"
+seeker = "1.2.2"
 
 [libraries]
 acra-core = { module = "ch.acra:acra-core", version.ref = "acraCore" }
@@ -68,6 +69,7 @@ retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit
 androidx-media3-session = { group = "androidx.media3", name = "media3-session", version.ref = "media3Session" }
 androidx-media3-datasource-okhttp = { group = "androidx.media3", name = "media3-datasource-okhttp", version.ref = "media3DatasourceOkhttp" }
 androidx-lifecycle-service = { group = "androidx.lifecycle", name = "lifecycle-service", version.ref = "lifecycleService" }
+seeker = { module = "io.github.2307vivek:seeker", version.ref = "seeker" }
 
 [plugins]
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Slider
-import androidx.compose.material.SliderDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.PauseCircleFilled
 import androidx.compose.material.icons.rounded.PlayCircleFilled
@@ -34,6 +32,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
+import dev.vivvvek.seeker.Seeker
+import dev.vivvvek.seeker.SeekerDefaults
+import dev.vivvvek.seeker.rememberSeekerState
 import org.grakovne.lissen.common.hapticAction
 import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.ui.extensions.formatLeadingMinutes
@@ -77,8 +78,13 @@ fun TrackControlComposable(
         Column(
             modifier = Modifier.fillMaxWidth(),
         ) {
-            Slider(
+
+            Seeker(
+                modifier = Modifier.fillMaxWidth(),
+                state = rememberSeekerState(),
                 value = sliderPosition.toFloat(),
+                thumbValue = sliderPosition.toFloat(),
+                range = 0f..currentTrackDuration.toFloat(),
                 onValueChange = { newPosition ->
                     isDragging = true
                     sliderPosition = newPosition.toDouble()
@@ -87,13 +93,13 @@ fun TrackControlComposable(
                     isDragging = false
                     viewModel.seekTo(sliderPosition)
                 },
-                valueRange = 0f..currentTrackDuration.toFloat(),
-                colors = SliderDefaults.colors(
+                colors = SeekerDefaults.seekerColors(
+                    progressColor = colorScheme.primary,
                     thumbColor = colorScheme.primary,
-                    activeTrackColor = colorScheme.primary,
-                ),
-                modifier = Modifier.fillMaxWidth(),
+                    trackColor = colorScheme.onSurface.copy(alpha = 0.1f)
+                )
             )
+
         }
 
         Box(
