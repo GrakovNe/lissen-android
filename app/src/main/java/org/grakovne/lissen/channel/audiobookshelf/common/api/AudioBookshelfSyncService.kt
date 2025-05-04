@@ -4,9 +4,8 @@ import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.domain.PlaybackProgress
 
 interface AudioBookshelfSyncService {
-
-    suspend fun syncProgress(
-        itemId: String,
-        progress: PlaybackProgress,
-    ): ApiResult<Unit>
+  suspend fun syncProgress(
+    itemId: String,
+    progress: PlaybackProgress,
+  ): ApiResult<Unit>
 }

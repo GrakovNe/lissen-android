@@ -23,168 +23,174 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AudioBookshelfDataRepository @Inject constructor(
+class AudioBookshelfDataRepository
+  @Inject
+  constructor(
     private val preferences: LissenSharedPreferences,
     private val requestHeadersProvider: RequestHeadersProvider,
-) {
-
+  ) {
     private var configCache: ApiClientConfig? = null
     private var clientCache: AudiobookshelfApiClient? = null
 
-    suspend fun fetchLibraries(): ApiResult<LibraryResponse> =
-        safeApiCall { getClientInstance().fetchLibraries() }
+    suspend fun fetchLibraries(): ApiResult<LibraryResponse> = safeApiCall { getClientInstance().fetchLibraries() }
 
-    suspend fun fetchAuthorItems(
-        authorId: String,
-    ): ApiResult<AuthorItemsResponse> = safeApiCall {
+    suspend fun fetchAuthorItems(authorId: String): ApiResult<AuthorItemsResponse> =
+      safeApiCall {
         getClientInstance()
-            .fetchAuthorLibraryItems(
-                authorId = authorId,
-            )
-    }
+          .fetchAuthorLibraryItems(
+            authorId = authorId,
+          )
+      }
 
     suspend fun searchPodcasts(
-        libraryId: String,
-        query: String,
-        limit: Int,
-    ): ApiResult<PodcastSearchResponse> = safeApiCall {
+      libraryId: String,
+      query: String,
+      limit: Int,
+    ): ApiResult<PodcastSearchResponse> =
+      safeApiCall {
         getClientInstance()
-            .searchPodcasts(
-                libraryId = libraryId,
-                request = query,
-                limit = limit,
-            )
-    }
+          .searchPodcasts(
+            libraryId = libraryId,
+            request = query,
+            limit = limit,
+          )
+      }
 
     suspend fun searchBooks(
-        libraryId: String,
-        query: String,
-        limit: Int,
-    ): ApiResult<LibrarySearchResponse> = safeApiCall {
+      libraryId: String,
+      query: String,
+      limit: Int,
+    ): ApiResult<LibrarySearchResponse> =
+      safeApiCall {
         getClientInstance()
-            .searchLibraryItems(
-                libraryId = libraryId,
-                request = query,
-                limit = limit,
-            )
-    }
+          .searchLibraryItems(
+            libraryId = libraryId,
+            request = query,
+            limit = limit,
+          )
+      }
 
     suspend fun fetchLibraryItems(
-        libraryId: String,
-        pageSize: Int,
-        pageNumber: Int,
-        sort: String,
-        direction: String,
+      libraryId: String,
+      pageSize: Int,
+      pageNumber: Int,
+      sort: String,
+      direction: String,
     ): ApiResult<LibraryItemsResponse> =
-        safeApiCall {
-            getClientInstance()
-                .fetchLibraryItems(
-                    libraryId = libraryId,
-                    pageSize = pageSize,
-                    pageNumber = pageNumber,
-                    sort = sort,
-                    desc = direction,
-                )
-        }
+      safeApiCall {
+        getClientInstance()
+          .fetchLibraryItems(
+            libraryId = libraryId,
+            pageSize = pageSize,
+            pageNumber = pageNumber,
+            sort = sort,
+            desc = direction,
+          )
+      }
 
     suspend fun fetchPodcastItems(
-        libraryId: String,
-        pageSize: Int,
-        pageNumber: Int,
-        sort: String,
-        direction: String,
+      libraryId: String,
+      pageSize: Int,
+      pageNumber: Int,
+      sort: String,
+      direction: String,
     ): ApiResult<PodcastItemsResponse> =
-        safeApiCall {
-            getClientInstance()
-                .fetchPodcastItems(
-                    libraryId = libraryId,
-                    pageSize = pageSize,
-                    pageNumber = pageNumber,
-                    sort = sort,
-                    desc = direction,
-                )
-        }
+      safeApiCall {
+        getClientInstance()
+          .fetchPodcastItems(
+            libraryId = libraryId,
+            pageSize = pageSize,
+            pageNumber = pageNumber,
+            sort = sort,
+            desc = direction,
+          )
+      }
 
     suspend fun fetchBook(itemId: String): ApiResult<BookResponse> =
-        safeApiCall { getClientInstance().fetchLibraryItem(itemId) }
+      safeApiCall {
+        getClientInstance().fetchLibraryItem(itemId)
+      }
 
     suspend fun fetchPodcastItem(itemId: String): ApiResult<PodcastResponse> =
-        safeApiCall { getClientInstance().fetchPodcastEpisode(itemId) }
+      safeApiCall { getClientInstance().fetchPodcastEpisode(itemId) }
 
     suspend fun fetchConnectionInfo(): ApiResult<ConnectionInfoResponse> =
-        safeApiCall { getClientInstance().fetchConnectionInfo() }
+      safeApiCall {
+        getClientInstance().fetchConnectionInfo()
+      }
 
     suspend fun fetchPersonalizedFeed(libraryId: String): ApiResult<List<PersonalizedFeedResponse>> =
-        safeApiCall { getClientInstance().fetchPersonalizedFeed(libraryId) }
+      safeApiCall { getClientInstance().fetchPersonalizedFeed(libraryId) }
 
     suspend fun fetchLibraryItemProgress(itemId: String): ApiResult<MediaProgressResponse> =
-        safeApiCall { getClientInstance().fetchLibraryItemProgress(itemId) }
+      safeApiCall { getClientInstance().fetchLibraryItemProgress(itemId) }
 
-    suspend fun fetchUserInfoResponse(): ApiResult<UserInfoResponse> =
-        safeApiCall { getClientInstance().fetchUserInfo() }
+    suspend fun fetchUserInfoResponse(): ApiResult<UserInfoResponse> = safeApiCall { getClientInstance().fetchUserInfo() }
 
     suspend fun startPlayback(
-        itemId: String,
-        request: PlaybackStartRequest,
-    ): ApiResult<PlaybackSessionResponse> =
-        safeApiCall { getClientInstance().startLibraryPlayback(itemId, request) }
+      itemId: String,
+      request: PlaybackStartRequest,
+    ): ApiResult<PlaybackSessionResponse> = safeApiCall { getClientInstance().startLibraryPlayback(itemId, request) }
 
     suspend fun startPodcastPlayback(
-        itemId: String,
-        episodeId: String,
-        request: PlaybackStartRequest,
+      itemId: String,
+      episodeId: String,
+      request: PlaybackStartRequest,
     ): ApiResult<PlaybackSessionResponse> =
-        safeApiCall { getClientInstance().startPodcastPlayback(itemId, episodeId, request) }
+      safeApiCall {
+        getClientInstance().startPodcastPlayback(itemId, episodeId, request)
+      }
 
     suspend fun publishLibraryItemProgress(
-        itemId: String,
-        progress: ProgressSyncRequest,
-    ): ApiResult<Unit> =
-        safeApiCall { getClientInstance().publishLibraryItemProgress(itemId, progress) }
+      itemId: String,
+      progress: ProgressSyncRequest,
+    ): ApiResult<Unit> = safeApiCall { getClientInstance().publishLibraryItemProgress(itemId, progress) }
 
     private fun getClientInstance(): AudiobookshelfApiClient {
-        val host = preferences.getHost()
-        val token = preferences.getToken()
+      val host = preferences.getHost()
+      val token = preferences.getToken()
 
-        val cache = ApiClientConfig(
-            host = host,
-            token = token,
-            customHeaders = requestHeadersProvider.fetchRequestHeaders(),
+      val cache =
+        ApiClientConfig(
+          host = host,
+          token = token,
+          customHeaders = requestHeadersProvider.fetchRequestHeaders(),
         )
 
-        val currentClientCache = clientCache
+      val currentClientCache = clientCache
 
-        return when (currentClientCache == null || cache != configCache) {
-            true -> {
-                val instance = createClientInstance()
-                configCache = cache
-                clientCache = instance
-                instance
-            }
-
-            else -> currentClientCache
+      return when (currentClientCache == null || cache != configCache) {
+        true -> {
+          val instance = createClientInstance()
+          configCache = cache
+          clientCache = instance
+          instance
         }
+
+        else -> currentClientCache
+      }
     }
 
     private fun createClientInstance(): AudiobookshelfApiClient {
-        val host = preferences.getHost()
-        val token = preferences.getToken()
+      val host = preferences.getHost()
+      val token = preferences.getToken()
 
-        if (host.isNullOrBlank() || token.isNullOrBlank()) {
-            throw IllegalStateException("Host or token is missing")
-        }
+      if (host.isNullOrBlank() || token.isNullOrBlank()) {
+        throw IllegalStateException("Host or token is missing")
+      }
 
-        return apiClient(host, token)
-            .retrofit
-            .create(AudiobookshelfApiClient::class.java)
+      return apiClient(host, token)
+        .retrofit
+        .create(AudiobookshelfApiClient::class.java)
     }
 
     private fun apiClient(
-        host: String,
-        token: String?,
-    ): ApiClient = ApiClient(
+      host: String,
+      token: String?,
+    ): ApiClient =
+      ApiClient(
         host = host,
         token = token,
         requestHeaders = requestHeadersProvider.fetchRequestHeaders(),
-    )
-}
+      )
+  }

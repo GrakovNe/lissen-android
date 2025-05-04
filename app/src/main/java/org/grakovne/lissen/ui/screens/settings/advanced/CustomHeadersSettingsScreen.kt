@@ -41,110 +41,112 @@ import kotlin.math.max
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CustomHeadersSettingsScreen(
-    onBack: () -> Unit,
-) {
-    val settingsViewModel: SettingsViewModel = hiltViewModel()
-    val headers = settingsViewModel.customHeaders.observeAsState(emptyList())
+fun CustomHeadersSettingsScreen(onBack: () -> Unit) {
+  val settingsViewModel: SettingsViewModel = hiltViewModel()
+  val headers = settingsViewModel.customHeaders.observeAsState(emptyList())
 
-    val fabHeight = 56.dp
-    val additionalPadding = 16.dp
+  val fabHeight = 56.dp
+  val additionalPadding = 16.dp
 
-    val state = rememberLazyListState()
-    val coroutineScope = rememberCoroutineScope()
+  val state = rememberLazyListState()
+  val coroutineScope = rememberCoroutineScope()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.custom_headers_title),
-                        style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-                        color = colorScheme.onSurface,
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        onBack()
-                    }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = "Back",
-                            tint = colorScheme.onSurface,
-                        )
-                    }
-                },
+  Scaffold(
+    topBar = {
+      TopAppBar(
+        title = {
+          Text(
+            text = stringResource(R.string.custom_headers_title),
+            style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
+            color = colorScheme.onSurface,
+          )
+        },
+        navigationIcon = {
+          IconButton(onClick = {
+            onBack()
+          }) {
+            Icon(
+              imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+              contentDescription = "Back",
+              tint = colorScheme.onSurface,
             )
+          }
         },
-        modifier = Modifier
-            .systemBarsPadding()
-            .fillMaxHeight(),
-        content = { innerPadding ->
-            LazyColumn(
-                state = state,
-                contentPadding = PaddingValues(
-                    top = innerPadding.calculateTopPadding(),
-                    bottom = innerPadding.calculateBottomPadding() + fabHeight + additionalPadding,
-                ),
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                val customHeaders = when (headers.value.isEmpty()) {
-                    true -> listOf(ServerRequestHeader.empty())
-                    false -> headers.value
-                }
+      )
+    },
+    modifier =
+      Modifier
+        .systemBarsPadding()
+        .fillMaxHeight(),
+    content = { innerPadding ->
+      LazyColumn(
+        state = state,
+        contentPadding =
+          PaddingValues(
+            top = innerPadding.calculateTopPadding(),
+            bottom = innerPadding.calculateBottomPadding() + fabHeight + additionalPadding,
+          ),
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+      ) {
+        val customHeaders =
+          when (headers.value.isEmpty()) {
+            true -> listOf(ServerRequestHeader.empty())
+            false -> headers.value
+          }
 
-                itemsIndexed(customHeaders) { index, header ->
-                    CustomHeaderComposable(
-                        header = header,
-                        onChanged = { newPair ->
-                            val updatedList = customHeaders.toMutableList()
-                            updatedList[index] = newPair
+        itemsIndexed(customHeaders) { index, header ->
+          CustomHeaderComposable(
+            header = header,
+            onChanged = { newPair ->
+              val updatedList = customHeaders.toMutableList()
+              updatedList[index] = newPair
 
-                            settingsViewModel.updateCustomHeaders(updatedList)
-                        },
-                        onDelete = { pair ->
-                            val updatedList = customHeaders.toMutableList()
-                            updatedList.remove(pair)
+              settingsViewModel.updateCustomHeaders(updatedList)
+            },
+            onDelete = { pair ->
+              val updatedList = customHeaders.toMutableList()
+              updatedList.remove(pair)
 
-                            if (updatedList.isEmpty()) {
-                                updatedList.add(ServerRequestHeader.empty())
-                            }
+              if (updatedList.isEmpty()) {
+                updatedList.add(ServerRequestHeader.empty())
+              }
 
-                            settingsViewModel.updateCustomHeaders(updatedList)
-                        },
-                    )
+              settingsViewModel.updateCustomHeaders(updatedList)
+            },
+          )
 
-                    if (index < customHeaders.size - 1) {
-                        HorizontalDivider(
-                            modifier = Modifier
-                                .height(1.dp)
-                                .padding(horizontal = 24.dp),
-                        )
-                    }
-                }
-            }
+          if (index < customHeaders.size - 1) {
+            HorizontalDivider(
+              modifier =
+                Modifier
+                  .height(1.dp)
+                  .padding(horizontal = 24.dp),
+            )
+          }
+        }
+      }
+    },
+    floatingActionButtonPosition = FabPosition.Center,
+    floatingActionButton = {
+      FloatingActionButton(
+        containerColor = colorScheme.primary,
+        shape = CircleShape,
+        onClick = {
+          val updatedList = headers.value.toMutableList()
+          updatedList.add(ServerRequestHeader.empty())
+          settingsViewModel.updateCustomHeaders(updatedList)
+
+          coroutineScope.launch {
+            state.scrollToItem(max(0, updatedList.size - 1))
+          }
         },
-        floatingActionButtonPosition = FabPosition.Center,
-        floatingActionButton = {
-            FloatingActionButton(
-                containerColor = colorScheme.primary,
-                shape = CircleShape,
-                onClick = {
-                    val updatedList = headers.value.toMutableList()
-                    updatedList.add(ServerRequestHeader.empty())
-                    settingsViewModel.updateCustomHeaders(updatedList)
-
-                    coroutineScope.launch {
-                        state.scrollToItem(max(0, updatedList.size - 1))
-                    }
-                },
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = "Add",
-                )
-            }
-        },
-    )
+      ) {
+        Icon(
+          imageVector = Icons.Filled.Add,
+          contentDescription = "Add",
+        )
+      }
+    },
+  )
 }

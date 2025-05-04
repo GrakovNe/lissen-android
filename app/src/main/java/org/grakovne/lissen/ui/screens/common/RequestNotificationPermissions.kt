@@ -12,23 +12,25 @@ import androidx.core.content.ContextCompat
 
 @Composable
 fun RequestNotificationPermissions() {
-    val context = LocalContext.current
+  val context = LocalContext.current
 
-    val permissionRequestLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-        onResult = { },
+  val permissionRequestLauncher =
+    rememberLauncherForActivityResult(
+      contract = ActivityResultContracts.RequestPermission(),
+      onResult = { },
     )
-    LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val permissionStatus = ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.POST_NOTIFICATIONS,
-            )
+  LaunchedEffect(Unit) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      val permissionStatus =
+        ContextCompat.checkSelfPermission(
+          context,
+          Manifest.permission.POST_NOTIFICATIONS,
+        )
 
-            when (permissionStatus == PackageManager.PERMISSION_GRANTED) {
-                true -> {}
-                false -> permissionRequestLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            }
-        }
+      when (permissionStatus == PackageManager.PERMISSION_GRANTED) {
+        true -> {}
+        false -> permissionRequestLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+      }
     }
+  }
 }

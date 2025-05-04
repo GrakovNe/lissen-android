@@ -20,74 +20,74 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class AudiobookshelfOAuthCallbackActivity : ComponentActivity() {
+  @Inject
+  lateinit var contextCache: OAuthContextCache
 
-    @Inject
-    lateinit var contextCache: OAuthContextCache
+  @Inject
+  lateinit var authService: AudiobookshelfAuthService
 
-    @Inject
-    lateinit var authService: AudiobookshelfAuthService
+  @Inject
+  lateinit var mediaProvider: LissenMediaProvider
 
-    @Inject
-    lateinit var mediaProvider: LissenMediaProvider
+  @Inject
+  lateinit var preferences: LissenSharedPreferences
 
-    @Inject
-    lateinit var preferences: LissenSharedPreferences
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    val data = intent?.data
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        val data = intent?.data
-
-        if (null == data) {
-            finish()
-            return
-        }
-
-        if (intent?.action == Intent.ACTION_VIEW && data.scheme == AuthScheme) {
-            val code = data.getQueryParameter("code") ?: ""
-            Log.d(TAG, "Got Exchange code from ABS")
-
-            lifecycleScope.launch {
-                authService.exchangeToken(
-                    host = preferences.getHost() ?: kotlin.run {
-                        onLoginFailed("invalid_host")
-                        return@launch
-                    },
-                    code = code,
-                    onSuccess = { onLogged(it) },
-                    onFailure = { onLoginFailed(it) },
-                )
-            }
-        }
+    if (null == data) {
+      finish()
+      return
     }
 
-    private suspend fun onLogged(userAccount: UserAccount) {
-        mediaProvider.onPostLogin(
-            host = preferences.getHost() ?: return,
-            account = userAccount,
+    if (intent?.action == Intent.ACTION_VIEW && data.scheme == AuthScheme) {
+      val code = data.getQueryParameter("code") ?: ""
+      Log.d(TAG, "Got Exchange code from ABS")
+
+      lifecycleScope.launch {
+        authService.exchangeToken(
+          host =
+            preferences.getHost() ?: kotlin.run {
+              onLoginFailed("invalid_host")
+              return@launch
+            },
+          code = code,
+          onSuccess = { onLogged(it) },
+          onFailure = { onLoginFailed(it) },
         )
-
-        val intent = Intent(this, AppActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or
-                Intent.FLAG_ACTIVITY_CLEAR_TASK
-        }
-
-        startActivity(intent)
-        finish()
+      }
     }
+  }
 
-    private fun onLoginFailed(reason: String) {
-        runOnUiThread {
-            authService
-                .examineError(reason)
-                .makeText(this)
-                .let { Toast.makeText(this, it, LENGTH_SHORT).show() }
+  private suspend fun onLogged(userAccount: UserAccount) {
+    mediaProvider.onPostLogin(
+      host = preferences.getHost() ?: return,
+      account = userAccount,
+    )
 
-            finish()
-        }
+    val intent =
+      Intent(this, AppActivity::class.java).apply {
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+          Intent.FLAG_ACTIVITY_CLEAR_TASK
+      }
+
+    startActivity(intent)
+    finish()
+  }
+
+  private fun onLoginFailed(reason: String) {
+    runOnUiThread {
+      authService
+        .examineError(reason)
+        .makeText(this)
+        .let { Toast.makeText(this, it, LENGTH_SHORT).show() }
+
+      finish()
     }
+  }
 
-    companion object {
-
-        private const val TAG = "AudiobookshelfOAuthCallbackActivity"
-    }
+  companion object {
+    private const val TAG = "AudiobookshelfOAuthCallbackActivity"
+  }
 }

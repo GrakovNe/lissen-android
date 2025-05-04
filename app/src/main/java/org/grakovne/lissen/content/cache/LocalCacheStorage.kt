@@ -11,19 +11,18 @@ import org.grakovne.lissen.content.cache.entity.CachedLibraryEntity
 import org.grakovne.lissen.content.cache.entity.MediaProgressEntity
 
 @Database(
-    entities = [
-        BookEntity::class,
-        BookFileEntity::class,
-        BookChapterEntity::class,
-        MediaProgressEntity::class,
-        CachedLibraryEntity::class,
-    ],
-    version = 14,
-    exportSchema = true,
+  entities = [
+    BookEntity::class,
+    BookFileEntity::class,
+    BookChapterEntity::class,
+    MediaProgressEntity::class,
+    CachedLibraryEntity::class,
+  ],
+  version = 14,
+  exportSchema = true,
 )
 abstract class LocalCacheStorage : RoomDatabase() {
+  abstract fun cachedBookDao(): CachedBookDao
 
-    abstract fun cachedBookDao(): CachedBookDao
-
-    abstract fun cachedLibraryDao(): CachedLibraryDao
+  abstract fun cachedLibraryDao(): CachedLibraryDao
 }

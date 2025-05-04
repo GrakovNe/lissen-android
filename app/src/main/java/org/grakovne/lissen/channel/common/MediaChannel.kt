@@ -11,47 +11,44 @@ import org.grakovne.lissen.domain.RecentBook
 import java.io.InputStream
 
 interface MediaChannel {
+  fun getLibraryType(): LibraryType
 
-    fun getLibraryType(): LibraryType
+  fun provideFileUri(
+    libraryItemId: String,
+    fileId: String,
+  ): Uri
 
-    fun provideFileUri(
-        libraryItemId: String,
-        fileId: String,
-    ): Uri
+  suspend fun syncProgress(
+    sessionId: String,
+    progress: PlaybackProgress,
+  ): ApiResult<Unit>
 
-    suspend fun syncProgress(
-        sessionId: String,
-        progress: PlaybackProgress,
-    ): ApiResult<Unit>
+  suspend fun fetchBookCover(bookId: String): ApiResult<InputStream>
 
-    suspend fun fetchBookCover(
-        bookId: String,
-    ): ApiResult<InputStream>
+  suspend fun fetchBooks(
+    libraryId: String,
+    pageSize: Int,
+    pageNumber: Int,
+  ): ApiResult<PagedItems<Book>>
 
-    suspend fun fetchBooks(
-        libraryId: String,
-        pageSize: Int,
-        pageNumber: Int,
-    ): ApiResult<PagedItems<Book>>
+  suspend fun searchBooks(
+    libraryId: String,
+    query: String,
+    limit: Int,
+  ): ApiResult<List<Book>>
 
-    suspend fun searchBooks(
-        libraryId: String,
-        query: String,
-        limit: Int,
-    ): ApiResult<List<Book>>
+  suspend fun fetchLibraries(): ApiResult<List<Library>>
 
-    suspend fun fetchLibraries(): ApiResult<List<Library>>
+  suspend fun startPlayback(
+    bookId: String,
+    episodeId: String,
+    supportedMimeTypes: List<String>,
+    deviceId: String,
+  ): ApiResult<PlaybackSession>
 
-    suspend fun startPlayback(
-        bookId: String,
-        episodeId: String,
-        supportedMimeTypes: List<String>,
-        deviceId: String,
-    ): ApiResult<PlaybackSession>
+  suspend fun fetchConnectionInfo(): ApiResult<ConnectionInfo>
 
-    suspend fun fetchConnectionInfo(): ApiResult<ConnectionInfo>
+  suspend fun fetchRecentListenedBooks(libraryId: String): ApiResult<List<RecentBook>>
 
-    suspend fun fetchRecentListenedBooks(libraryId: String): ApiResult<List<RecentBook>>
-
-    suspend fun fetchBook(bookId: String): ApiResult<DetailedItem>
+  suspend fun fetchBook(bookId: String): ApiResult<DetailedItem>
 }

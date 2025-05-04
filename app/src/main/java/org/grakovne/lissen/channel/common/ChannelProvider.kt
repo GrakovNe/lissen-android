@@ -1,10 +1,9 @@
 package org.grakovne.lissen.channel.common
 
 interface ChannelProvider {
+  fun provideMediaChannel(): MediaChannel
 
-    fun provideMediaChannel(): MediaChannel
+  fun provideChannelAuth(): ChannelAuthService
 
-    fun provideChannelAuth(): ChannelAuthService
-
-    fun getChannelCode(): ChannelCode
+  fun getChannelCode(): ChannelCode
 }

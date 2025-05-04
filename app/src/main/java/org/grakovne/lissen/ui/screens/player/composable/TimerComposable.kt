@@ -35,100 +35,105 @@ import org.grakovne.lissen.domain.TimerOption
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimerComposable(
-    currentOption: TimerOption?,
-    onOptionSelected: (TimerOption?) -> Unit,
-    onDismissRequest: () -> Unit,
+  currentOption: TimerOption?,
+  onOptionSelected: (TimerOption?) -> Unit,
+  onDismissRequest: () -> Unit,
 ) {
-    val context = LocalContext.current
+  val context = LocalContext.current
 
-    ModalBottomSheet(
-        containerColor = colorScheme.background,
-        onDismissRequest = onDismissRequest,
-        content = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
-                    .padding(horizontal = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = stringResource(R.string.timer_title),
-                    style = typography.bodyLarge,
-                )
+  ModalBottomSheet(
+    containerColor = colorScheme.background,
+    onDismissRequest = onDismissRequest,
+    content = {
+      Column(
+        modifier =
+          Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp)
+            .padding(horizontal = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+      ) {
+        Text(
+          text = stringResource(R.string.timer_title),
+          style = typography.bodyLarge,
+        )
 
-                Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-                LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                    itemsIndexed(TimerOptions) { index, item ->
-                        ListItem(
-                            headlineContent = {
-                                Row {
-                                    Text(
-                                        text = item.makeText(context),
-                                        style = typography.bodyMedium,
-                                    )
-                                }
-                            },
-                            trailingContent = {
-                                if (item == currentOption) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Check,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(24.dp),
-                                    )
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    onOptionSelected(item)
-                                    onDismissRequest()
-                                },
-                        )
-                        if (index < TimerOptions.size - 1) {
-                            HorizontalDivider()
-                        }
-                    }
-
-                    if (currentOption != null) {
-                        item {
-                            HorizontalDivider()
-
-                            ListItem(
-                                headlineContent = {
-                                    Row {
-                                        Text(
-                                            text = stringResource(R.string.timer_option_disable_timer),
-                                            color = colorScheme.error,
-                                            style = typography.bodyMedium,
-                                        )
-                                    }
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        onOptionSelected(null)
-                                        onDismissRequest()
-                                    },
-                            )
-                        }
-                    }
+        LazyColumn(modifier = Modifier.fillMaxWidth()) {
+          itemsIndexed(TimerOptions) { index, item ->
+            ListItem(
+              headlineContent = {
+                Row {
+                  Text(
+                    text = item.makeText(context),
+                    style = typography.bodyMedium,
+                  )
                 }
+              },
+              trailingContent = {
+                if (item == currentOption) {
+                  Icon(
+                    imageVector = Icons.Outlined.Check,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
+                  )
+                }
+              },
+              modifier =
+                Modifier
+                  .fillMaxWidth()
+                  .clickable {
+                    onOptionSelected(item)
+                    onDismissRequest()
+                  },
+            )
+            if (index < TimerOptions.size - 1) {
+              HorizontalDivider()
             }
-        },
-    )
+          }
+
+          if (currentOption != null) {
+            item {
+              HorizontalDivider()
+
+              ListItem(
+                headlineContent = {
+                  Row {
+                    Text(
+                      text = stringResource(R.string.timer_option_disable_timer),
+                      color = colorScheme.error,
+                      style = typography.bodyMedium,
+                    )
+                  }
+                },
+                modifier =
+                  Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                      onOptionSelected(null)
+                      onDismissRequest()
+                    },
+              )
+            }
+          }
+        }
+      }
+    },
+  )
 }
 
-private val TimerOptions = listOf(
+private val TimerOptions =
+  listOf(
     DurationTimerOption(10),
     DurationTimerOption(15),
     DurationTimerOption(30),
     DurationTimerOption(60),
     CurrentEpisodeTimerOption,
-)
+  )
 
-fun TimerOption.makeText(context: Context): String = when (this) {
+fun TimerOption.makeText(context: Context): String =
+  when (this) {
     CurrentEpisodeTimerOption -> context.getString(R.string.timer_option_after_current_episode)
     is DurationTimerOption -> context.getString(R.string.timer_option_after_minutes, this.duration)
-}
+  }

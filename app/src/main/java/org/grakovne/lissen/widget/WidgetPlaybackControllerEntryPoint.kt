@@ -7,5 +7,5 @@ import dagger.hilt.components.SingletonComponent
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface WidgetPlaybackControllerEntryPoint {
-    fun widgetPlaybackController(): WidgetPlaybackController
+  fun widgetPlaybackController(): WidgetPlaybackController
 }

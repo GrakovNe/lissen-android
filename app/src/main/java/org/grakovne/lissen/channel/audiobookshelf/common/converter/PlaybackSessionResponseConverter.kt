@@ -6,11 +6,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class PlaybackSessionResponseConverter @Inject constructor() {
-
+class PlaybackSessionResponseConverter
+  @Inject
+  constructor() {
     fun apply(response: PlaybackSessionResponse): PlaybackSession =
-        PlaybackSession(
-            sessionId = response.id,
-            bookId = response.libraryItemId,
-        )
-}
+      PlaybackSession(
+        sessionId = response.id,
+        bookId = response.libraryItemId,
+      )
+  }

@@ -17,25 +17,26 @@ import androidx.glance.unit.ColorProvider
 
 @Composable
 fun WidgetControlButton(
-    icon: ImageProvider,
-    contentColor: ColorProvider,
-    onClick: Action,
-    modifier: GlanceModifier,
-    size: Dp,
+  icon: ImageProvider,
+  contentColor: ColorProvider,
+  onClick: Action,
+  modifier: GlanceModifier,
+  size: Dp,
 ) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.Vertical.CenterVertically,
-        horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
-    ) {
-        Image(
-            provider = icon,
-            contentDescription = null,
-            colorFilter = ColorFilter.tint(contentColor),
-            modifier = GlanceModifier
-                .size(size)
-                .cornerRadius(16.dp)
-                .clickable(onClick = onClick),
-        )
-    }
+  Row(
+    modifier = modifier,
+    verticalAlignment = Alignment.Vertical.CenterVertically,
+    horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
+  ) {
+    Image(
+      provider = icon,
+      contentDescription = null,
+      colorFilter = ColorFilter.tint(contentColor),
+      modifier =
+        GlanceModifier
+          .size(size)
+          .cornerRadius(16.dp)
+          .clickable(onClick = onClick),
+    )
+  }
 }

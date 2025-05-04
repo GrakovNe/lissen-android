@@ -36,75 +36,95 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlaybackSpeedComposable(
-    currentSpeed: Float,
-    onSpeedChange: (Float) -> Unit,
-    onDismissRequest: () -> Unit,
+  currentSpeed: Float,
+  onSpeedChange: (Float) -> Unit,
+  onDismissRequest: () -> Unit,
 ) {
-    val view: View = LocalView.current
-    var selectedPlaybackSpeed by remember { mutableFloatStateOf(currentSpeed) }
+  val view: View = LocalView.current
+  var selectedPlaybackSpeed by remember { mutableFloatStateOf(currentSpeed) }
 
-    ModalBottomSheet(
-        containerColor = colorScheme.background,
-        onDismissRequest = onDismissRequest,
-        content = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
-                    .padding(horizontal = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = stringResource(R.string.playback_speed_title),
-                    style = typography.bodyLarge,
-                )
+  ModalBottomSheet(
+    containerColor = colorScheme.background,
+    onDismissRequest = onDismissRequest,
+    content = {
+      Column(
+        modifier =
+          Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp)
+            .padding(horizontal = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+      ) {
+        Text(
+          text = stringResource(R.string.playback_speed_title),
+          style = typography.bodyLarge,
+        )
 
-                PlaybackSpeedSlider(
-                    speed = selectedPlaybackSpeed,
-                    speedRange = (0.5f..3f),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 16.dp),
-                    onSpeedUpdate = {
-                        selectedPlaybackSpeed = it
-                        onSpeedChange(it)
-                    },
-                )
+        PlaybackSpeedSlider(
+          speed = selectedPlaybackSpeed,
+          speedRange = (0.5f..3f),
+          modifier =
+            Modifier
+              .fillMaxWidth()
+              .padding(vertical = 16.dp),
+          onSpeedUpdate = {
+            selectedPlaybackSpeed = it
+            onSpeedChange(it)
+          },
+        )
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                ) {
-                    playbackSpeedPresets.forEach { value ->
-                        FilledTonalButton(
-                            onClick = {
-                                hapticAction(view) {
-                                    selectedPlaybackSpeed = value
-                                    onSpeedChange(value)
-                                }
-                            },
-                            modifier = Modifier.size(56.dp),
-                            shape = CircleShape,
-                            colors = ButtonDefaults.filledTonalButtonColors(
-                                containerColor = if (selectedPlaybackSpeed == value) colorScheme.primary else colorScheme.surfaceContainer,
-                                contentColor = if (selectedPlaybackSpeed == value) colorScheme.onPrimary else colorScheme.onSurfaceVariant,
-                            ),
-                            contentPadding = PaddingValues(0.dp),
-                        ) {
-                            Text(
-                                text = String.format(Locale.US, "%.1f", value),
-                                style = if (selectedPlaybackSpeed == value) {
-                                    typography.labelMedium.copy(fontWeight = FontWeight.Bold)
-                                } else typography.labelMedium,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
-                    }
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceEvenly,
+        ) {
+          playbackSpeedPresets.forEach { value ->
+            FilledTonalButton(
+              onClick = {
+                hapticAction(view) {
+                  selectedPlaybackSpeed = value
+                  onSpeedChange(value)
                 }
+              },
+              modifier = Modifier.size(56.dp),
+              shape = CircleShape,
+              colors =
+                ButtonDefaults.filledTonalButtonColors(
+                  containerColor =
+                    if (selectedPlaybackSpeed ==
+                      value
+                    ) {
+                      colorScheme.primary
+                    } else {
+                      colorScheme.surfaceContainer
+                    },
+                  contentColor =
+                    if (selectedPlaybackSpeed ==
+                      value
+                    ) {
+                      colorScheme.onPrimary
+                    } else {
+                      colorScheme.onSurfaceVariant
+                    },
+                ),
+              contentPadding = PaddingValues(0.dp),
+            ) {
+              Text(
+                text = String.format(Locale.US, "%.1f", value),
+                style =
+                  if (selectedPlaybackSpeed == value) {
+                    typography.labelMedium.copy(fontWeight = FontWeight.Bold)
+                  } else {
+                    typography.labelMedium
+                  },
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+              )
             }
-        },
-    )
+          }
+        }
+      }
+    },
+  )
 }
 
 private val playbackSpeedPresets = listOf(1f, 1.2f, 1.5f, 2f, 3f)

@@ -38,144 +38,150 @@ import org.grakovne.lissen.ui.screens.player.InfoRow
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MediaDetailComposable(
-    playingBook: DetailedItem?,
-    onDismissRequest: () -> Unit,
+  playingBook: DetailedItem?,
+  onDismissRequest: () -> Unit,
 ) {
-    ModalBottomSheet(
-        onDismissRequest = onDismissRequest,
-        containerColor = colorScheme.surface,
+  ModalBottomSheet(
+    onDismissRequest = onDismissRequest,
+    containerColor = colorScheme.surface,
+  ) {
+    Column(
+      modifier =
+        Modifier
+          .fillMaxWidth()
+          .verticalScroll(rememberScrollState())
+          .padding(vertical = 16.dp, horizontal = 4.dp),
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .padding(vertical = 16.dp, horizontal = 4.dp),
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-            ) {
-                val seriesValue = playingBook
-                    ?.series
-                    ?.takeIf { it.isNotEmpty() }
-                    ?.joinToString(", ") { series ->
-                        buildString {
-                            append(series.name)
-                            series.serialNumber
-                                ?.takeIf(String::isNotBlank)
-                                ?.let { append(" #$it") }
-                        }
-                    }
-
-                playingBook
-                    ?.title
-                    ?.takeIf { it.isNotEmpty() }
-                    ?.let {
-                        Text(
-                            text = it,
-                            style = typography.titleLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                            ),
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                            color = colorScheme.onSurface,
-                            modifier = when (seriesValue?.isNotBlank()) {
-                                true -> Modifier
-                                else -> Modifier.padding(bottom = 8.dp)
-                            },
-                        )
-                    }
-
-                seriesValue
-                    ?.let {
-                        Text(
-                            text = it,
-                            style = typography.titleSmall,
-                            color = colorScheme.onBackground.copy(alpha = 0.6f),
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.padding(vertical = 4.dp),
-                        )
-                    }
-
-                playingBook
-                    ?.author
-                    ?.takeIf { it.isNotEmpty() }
-                    ?.let {
-                        InfoRow(
-                            icon = Icons.Outlined.Person,
-                            label = stringResource(R.string.playing_item_details_author),
-                            textValue = it,
-                        )
-                    }
-
-                playingBook
-                    ?.narrator
-                    ?.takeIf { it.isNotEmpty() }
-                    ?.let {
-                        InfoRow(
-                            icon = Icons.Outlined.MicNone,
-                            label = stringResource(R.string.playing_item_details_narrator),
-                            textValue = it,
-                        )
-                    }
-
-                playingBook
-                    ?.chapters
-                    ?.sumOf { it.duration }
-                    ?.let {
-                        InfoRow(
-                            icon = Icons.Filled.AvTimer,
-                            label = stringResource(R.string.playing_item_details_duration),
-                            textValue = it.toInt().formatFully(),
-                        )
-                    }
-
-                playingBook
-                    ?.publisher
-                    ?.takeIf { it.isNotEmpty() }
-                    ?.let {
-                        InfoRow(
-                            icon = Icons.Outlined.Business,
-                            label = stringResource(R.string.playing_item_details_publisher),
-                            textValue = it,
-                        )
-                    }
-
-                playingBook
-                    ?.year
-                    ?.takeIf { it.isNotEmpty() }
-                    ?.let {
-                        InfoRow(
-                            icon = Icons.Outlined.CalendarMonth,
-                            label = stringResource(R.string.playing_item_details_year),
-                            textValue = it,
-                        )
-                    }
+      Column(
+        modifier =
+          Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+      ) {
+        val seriesValue =
+          playingBook
+            ?.series
+            ?.takeIf { it.isNotEmpty() }
+            ?.joinToString(", ") { series ->
+              buildString {
+                append(series.name)
+                series.serialNumber
+                  ?.takeIf(String::isNotBlank)
+                  ?.let { append(" #$it") }
+              }
             }
 
-            playingBook
-                ?.abstract
-                ?.takeIf { it.isNotEmpty() }
-                ?.let {
-                    HorizontalDivider(
-                        modifier = Modifier
-                            .padding(vertical = 16.dp, horizontal = 16.dp)
-                            .alpha(0.2f),
-                    )
+        playingBook
+          ?.title
+          ?.takeIf { it.isNotEmpty() }
+          ?.let {
+            Text(
+              text = it,
+              style =
+                typography.titleLarge.copy(
+                  fontWeight = FontWeight.Bold,
+                ),
+              maxLines = 2,
+              overflow = TextOverflow.Ellipsis,
+              color = colorScheme.onSurface,
+              modifier =
+                when (seriesValue?.isNotBlank()) {
+                  true -> Modifier
+                  else -> Modifier.padding(bottom = 8.dp)
+                },
+            )
+          }
 
-                    val html = (playingBook.abstract).replace("\n", "<br>")
-                    val spanned = HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_LEGACY)
+        seriesValue
+          ?.let {
+            Text(
+              text = it,
+              style = typography.titleSmall,
+              color = colorScheme.onBackground.copy(alpha = 0.6f),
+              maxLines = 2,
+              overflow = TextOverflow.Ellipsis,
+              modifier = Modifier.padding(vertical = 4.dp),
+            )
+          }
 
-                    Text(
-                        text = spanned.toString(),
-                        style = typography.bodyMedium.copy(lineHeight = 22.sp),
-                        color = colorScheme.onSurface,
-                        textAlign = TextAlign.Justify,
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                    )
-                }
+        playingBook
+          ?.author
+          ?.takeIf { it.isNotEmpty() }
+          ?.let {
+            InfoRow(
+              icon = Icons.Outlined.Person,
+              label = stringResource(R.string.playing_item_details_author),
+              textValue = it,
+            )
+          }
+
+        playingBook
+          ?.narrator
+          ?.takeIf { it.isNotEmpty() }
+          ?.let {
+            InfoRow(
+              icon = Icons.Outlined.MicNone,
+              label = stringResource(R.string.playing_item_details_narrator),
+              textValue = it,
+            )
+          }
+
+        playingBook
+          ?.chapters
+          ?.sumOf { it.duration }
+          ?.let {
+            InfoRow(
+              icon = Icons.Filled.AvTimer,
+              label = stringResource(R.string.playing_item_details_duration),
+              textValue = it.toInt().formatFully(),
+            )
+          }
+
+        playingBook
+          ?.publisher
+          ?.takeIf { it.isNotEmpty() }
+          ?.let {
+            InfoRow(
+              icon = Icons.Outlined.Business,
+              label = stringResource(R.string.playing_item_details_publisher),
+              textValue = it,
+            )
+          }
+
+        playingBook
+          ?.year
+          ?.takeIf { it.isNotEmpty() }
+          ?.let {
+            InfoRow(
+              icon = Icons.Outlined.CalendarMonth,
+              label = stringResource(R.string.playing_item_details_year),
+              textValue = it,
+            )
+          }
+      }
+
+      playingBook
+        ?.abstract
+        ?.takeIf { it.isNotEmpty() }
+        ?.let {
+          HorizontalDivider(
+            modifier =
+              Modifier
+                .padding(vertical = 16.dp, horizontal = 16.dp)
+                .alpha(0.2f),
+          )
+
+          val html = (playingBook.abstract).replace("\n", "<br>")
+          val spanned = HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_LEGACY)
+
+          Text(
+            text = spanned.toString(),
+            style = typography.bodyMedium.copy(lineHeight = 22.sp),
+            color = colorScheme.onSurface,
+            textAlign = TextAlign.Justify,
+            modifier = Modifier.padding(horizontal = 16.dp),
+          )
         }
     }
+  }
 }

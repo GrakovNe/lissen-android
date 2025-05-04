@@ -7,21 +7,24 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class PodcastOrderingRequestConverter @Inject constructor() {
-
+class PodcastOrderingRequestConverter
+  @Inject
+  constructor() {
     fun apply(configuration: LibraryOrderingConfiguration): Pair<String, String> {
-        val option = when (configuration.option) {
-            LibraryOrderingOption.TITLE -> "media.metadata.title"
-            LibraryOrderingOption.AUTHOR -> "media.metadata.author"
-            LibraryOrderingOption.CREATED_AT -> "addedAt"
-            LibraryOrderingOption.UPDATED_AT -> "mtimeMs"
+      val option =
+        when (configuration.option) {
+          LibraryOrderingOption.TITLE -> "media.metadata.title"
+          LibraryOrderingOption.AUTHOR -> "media.metadata.author"
+          LibraryOrderingOption.CREATED_AT -> "addedAt"
+          LibraryOrderingOption.UPDATED_AT -> "mtimeMs"
         }
 
-        val direction = when (configuration.direction) {
-            LibraryOrderingDirection.ASCENDING -> "0"
-            LibraryOrderingDirection.DESCENDING -> "1"
+      val direction =
+        when (configuration.direction) {
+          LibraryOrderingDirection.ASCENDING -> "0"
+          LibraryOrderingDirection.DESCENDING -> "1"
         }
 
-        return option to direction
+      return option to direction
     }
-}
+  }

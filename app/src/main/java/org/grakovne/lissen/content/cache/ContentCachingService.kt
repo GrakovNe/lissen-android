@@ -17,117 +17,116 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class ContentCachingService : LifecycleService() {
+  @Inject
+  lateinit var contentCachingManager: ContentCachingManager
 
-    @Inject
-    lateinit var contentCachingManager: ContentCachingManager
+  @Inject
+  lateinit var mediaProvider: LissenMediaProvider
 
-    @Inject
-    lateinit var mediaProvider: LissenMediaProvider
+  @Inject
+  lateinit var cacheProgressBus: ContentCachingProgress
 
-    @Inject
-    lateinit var cacheProgressBus: ContentCachingProgress
+  @Inject
+  lateinit var notificationService: ContentCachingNotificationService
 
-    @Inject
-    lateinit var notificationService: ContentCachingNotificationService
+  private val executionStatuses = mutableMapOf<DetailedItem, CacheState>()
 
-    private val executionStatuses = mutableMapOf<DetailedItem, CacheState>()
-
-    @Suppress("DEPRECATION")
-    override fun onStartCommand(
-        intent: Intent?,
-        flags: Int,
-        startId: Int,
-    ): Int {
-        when {
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
-                startForeground(
-                    NOTIFICATION_ID,
-                    notificationService.updateCachingNotification(emptyList()),
-                    ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
-                )
-            }
-            else -> {
-                startForeground(
-                    NOTIFICATION_ID,
-                    notificationService.updateCachingNotification(emptyList()),
-                )
-            }
-        }
-
-        val task = intent
-            ?.getSerializableExtra(CACHING_TASK_EXTRA)
-            as? ContentCachingTask
-            ?: return START_STICKY
-
-        lifecycleScope.launch {
-            val item = mediaProvider
-                .providePreferredChannel()
-                .fetchBook(task.itemId)
-                .fold(
-                    onSuccess = { it },
-                    onFailure = {
-                        notificationService.updateErrorNotification()
-                        null
-                    },
-                )
-                ?: return@launch
-
-            val executor = ContentCachingExecutor(
-                item = item,
-                options = task.options,
-                position = task.currentPosition,
-                contentCachingManager = contentCachingManager,
-            )
-
-            executor
-                .run(mediaProvider.providePreferredChannel())
-                .collect { progress ->
-                    executionStatuses[item] = progress
-                    cacheProgressBus.emit(item, progress)
-
-                    Log.d(TAG, "Caching progress updated: $progress")
-
-                    when (inProgress()) {
-                        true ->
-                            executionStatuses
-                                .entries
-                                .map { (item, status) -> item to status }
-                                .let { notificationService.updateCachingNotification(it) }
-
-                        false -> finish()
-                    }
-                }
-        }
-
-        return super.onStartCommand(intent, flags, startId)
+  @Suppress("DEPRECATION")
+  override fun onStartCommand(
+    intent: Intent?,
+    flags: Int,
+    startId: Int,
+  ): Int {
+    when {
+      Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
+        startForeground(
+          NOTIFICATION_ID,
+          notificationService.updateCachingNotification(emptyList()),
+          ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
+        )
+      }
+      else -> {
+        startForeground(
+          NOTIFICATION_ID,
+          notificationService.updateCachingNotification(emptyList()),
+        )
+      }
     }
 
-    private fun inProgress(): Boolean =
-        executionStatuses.values.any { it.status == CacheStatus.Caching }
+    val task =
+      intent
+        ?.getSerializableExtra(CACHING_TASK_EXTRA)
+        as? ContentCachingTask
+        ?: return START_STICKY
 
-    private fun hasErrors(): Boolean =
-        executionStatuses.values.any { it.status == CacheStatus.Error }
+    lifecycleScope.launch {
+      val item =
+        mediaProvider
+          .providePreferredChannel()
+          .fetchBook(task.itemId)
+          .fold(
+            onSuccess = { it },
+            onFailure = {
+              notificationService.updateErrorNotification()
+              null
+            },
+          )
+          ?: return@launch
 
-    private fun finish() {
-        when (hasErrors()) {
-            true -> {
-                notificationService.updateErrorNotification()
-                stopForeground(STOP_FOREGROUND_DETACH)
-            }
+      val executor =
+        ContentCachingExecutor(
+          item = item,
+          options = task.options,
+          position = task.currentPosition,
+          contentCachingManager = contentCachingManager,
+        )
 
-            false -> {
-                stopForeground(STOP_FOREGROUND_REMOVE)
-                notificationService.cancel()
-            }
+      executor
+        .run(mediaProvider.providePreferredChannel())
+        .collect { progress ->
+          executionStatuses[item] = progress
+          cacheProgressBus.emit(item, progress)
+
+          Log.d(TAG, "Caching progress updated: $progress")
+
+          when (inProgress()) {
+            true ->
+              executionStatuses
+                .entries
+                .map { (item, status) -> item to status }
+                .let { notificationService.updateCachingNotification(it) }
+
+            false -> finish()
+          }
         }
-
-        stopSelf()
-        Log.d(TAG, "All tasks finished, stopping foreground service")
     }
 
-    companion object {
+    return super.onStartCommand(intent, flags, startId)
+  }
 
-        const val CACHING_TASK_EXTRA = "CACHING_TASK_EXTRA"
-        private const val TAG = "ContentCachingService"
+  private fun inProgress(): Boolean = executionStatuses.values.any { it.status == CacheStatus.Caching }
+
+  private fun hasErrors(): Boolean = executionStatuses.values.any { it.status == CacheStatus.Error }
+
+  private fun finish() {
+    when (hasErrors()) {
+      true -> {
+        notificationService.updateErrorNotification()
+        stopForeground(STOP_FOREGROUND_DETACH)
+      }
+
+      false -> {
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        notificationService.cancel()
+      }
     }
+
+    stopSelf()
+    Log.d(TAG, "All tasks finished, stopping foreground service")
+  }
+
+  companion object {
+    const val CACHING_TASK_EXTRA = "CACHING_TASK_EXTRA"
+    private const val TAG = "ContentCachingService"
+  }
 }

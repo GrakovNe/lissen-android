@@ -1,9 +1,9 @@
 package org.grakovne.lissen.common
 
 enum class ColorScheme {
-    FOLLOW_SYSTEM,
+  FOLLOW_SYSTEM,
 
-    LIGHT,
-    DARK,
-    BLACK,
+  LIGHT,
+  DARK,
+  BLACK,
 }

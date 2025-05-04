@@ -33,132 +33,161 @@ import org.grakovne.lissen.domain.NumberItemDownloadOption
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DownloadsComposable(
-    isForceCache: Boolean,
-    libraryType: LibraryType,
-    hasCachedEpisodes: Boolean,
-    onRequestedDownload: (DownloadOption) -> Unit,
-    onRequestedDrop: () -> Unit,
-    onDismissRequest: () -> Unit,
+  isForceCache: Boolean,
+  libraryType: LibraryType,
+  hasCachedEpisodes: Boolean,
+  onRequestedDownload: (DownloadOption) -> Unit,
+  onRequestedDrop: () -> Unit,
+  onDismissRequest: () -> Unit,
 ) {
-    val context = LocalContext.current
+  val context = LocalContext.current
 
-    ModalBottomSheet(
-        containerColor = colorScheme.background,
-        onDismissRequest = onDismissRequest,
-        content = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
-                    .padding(horizontal = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = when (libraryType) {
-                        LibraryType.LIBRARY -> stringResource(R.string.downloads_menu_download_book)
-                        LibraryType.PODCAST -> stringResource(R.string.downloads_menu_download_podcast)
-                        LibraryType.UNKNOWN -> stringResource(R.string.downloads_menu_download_unknown)
-                    },
-                    style = typography.bodyLarge,
-                )
+  ModalBottomSheet(
+    containerColor = colorScheme.background,
+    onDismissRequest = onDismissRequest,
+    content = {
+      Column(
+        modifier =
+          Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp)
+            .padding(horizontal = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+      ) {
+        Text(
+          text =
+            when (libraryType) {
+              LibraryType.LIBRARY -> stringResource(R.string.downloads_menu_download_book)
+              LibraryType.PODCAST -> stringResource(R.string.downloads_menu_download_podcast)
+              LibraryType.UNKNOWN -> stringResource(R.string.downloads_menu_download_unknown)
+            },
+          style = typography.bodyLarge,
+        )
 
-                Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-                LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                    itemsIndexed(DownloadOptions) { index, item ->
-                        ListItem(
-                            headlineContent = {
-                                Row {
-                                    Text(
-                                        text = item.makeText(context, libraryType),
-                                        style = typography.bodyMedium,
-                                        color = when (isForceCache) {
-                                            true -> colorScheme.onBackground.copy(alpha = 0.4f)
-                                            false -> colorScheme.onBackground
-                                        },
-                                    )
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    if (isForceCache.not()) {
-                                        onRequestedDownload(item)
-                                        onDismissRequest()
-                                    }
-                                },
-                        )
-                        if (index < DownloadOptions.size - 1) {
-                            HorizontalDivider()
-                        }
-                    }
-
-                    if (hasCachedEpisodes) {
-                        item {
-                            HorizontalDivider()
-
-                            ListItem(
-                                headlineContent = {
-                                    Row {
-                                        Text(
-                                            text = when (libraryType) {
-                                                LibraryType.LIBRARY -> stringResource(R.string.downloads_menu_download_option_clear_chapters)
-                                                LibraryType.PODCAST -> stringResource(R.string.downloads_menu_download_option_clear_episodes)
-                                                LibraryType.UNKNOWN -> stringResource(R.string.downloads_menu_download_option_clear_items)
-                                            },
-                                            color = colorScheme.error,
-                                            style = typography.bodyMedium,
-                                        )
-                                    }
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        onRequestedDrop()
-                                        onDismissRequest()
-                                    },
-                            )
-                        }
-                    }
+        LazyColumn(modifier = Modifier.fillMaxWidth()) {
+          itemsIndexed(DownloadOptions) { index, item ->
+            ListItem(
+              headlineContent = {
+                Row {
+                  Text(
+                    text = item.makeText(context, libraryType),
+                    style = typography.bodyMedium,
+                    color =
+                      when (isForceCache) {
+                        true -> colorScheme.onBackground.copy(alpha = 0.4f)
+                        false -> colorScheme.onBackground
+                      },
+                  )
                 }
+              },
+              modifier =
+                Modifier
+                  .fillMaxWidth()
+                  .clickable {
+                    if (isForceCache.not()) {
+                      onRequestedDownload(item)
+                      onDismissRequest()
+                    }
+                  },
+            )
+            if (index < DownloadOptions.size - 1) {
+              HorizontalDivider()
             }
-        },
-    )
+          }
+
+          if (hasCachedEpisodes) {
+            item {
+              HorizontalDivider()
+
+              ListItem(
+                headlineContent = {
+                  Row {
+                    Text(
+                      text =
+                        when (libraryType) {
+                          LibraryType.LIBRARY ->
+                            stringResource(
+                              R.string.downloads_menu_download_option_clear_chapters,
+                            )
+                          LibraryType.PODCAST ->
+                            stringResource(
+                              R.string.downloads_menu_download_option_clear_episodes,
+                            )
+                          LibraryType.UNKNOWN ->
+                            stringResource(
+                              R.string.downloads_menu_download_option_clear_items,
+                            )
+                        },
+                      color = colorScheme.error,
+                      style = typography.bodyMedium,
+                    )
+                  }
+                },
+                modifier =
+                  Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                      onRequestedDrop()
+                      onDismissRequest()
+                    },
+              )
+            }
+          }
+        }
+      }
+    },
+  )
 }
 
-private val DownloadOptions = listOf(
+private val DownloadOptions =
+  listOf(
     CurrentItemDownloadOption,
     NumberItemDownloadOption(5),
     NumberItemDownloadOption(10),
     NumberItemDownloadOption(20),
     AllItemsDownloadOption,
-)
+  )
 
 fun DownloadOption.makeText(
-    context: Context,
-    libraryType: LibraryType,
-): String = when (this) {
+  context: Context,
+  libraryType: LibraryType,
+): String =
+  when (this) {
     CurrentItemDownloadOption -> {
-        when (libraryType) {
-            LibraryType.LIBRARY -> context.getString(R.string.downloads_menu_download_option_current_chapter)
-            LibraryType.PODCAST -> context.getString(R.string.downloads_menu_download_option_current_episode)
-            LibraryType.UNKNOWN -> context.getString(R.string.downloads_menu_download_option_current_item)
-        }
+      when (libraryType) {
+        LibraryType.LIBRARY -> context.getString(R.string.downloads_menu_download_option_current_chapter)
+        LibraryType.PODCAST -> context.getString(R.string.downloads_menu_download_option_current_episode)
+        LibraryType.UNKNOWN -> context.getString(R.string.downloads_menu_download_option_current_item)
+      }
     }
 
     AllItemsDownloadOption -> {
-        when (libraryType) {
-            LibraryType.LIBRARY -> context.getString(R.string.downloads_menu_download_option_entire_book)
-            LibraryType.PODCAST -> context.getString(R.string.downloads_menu_download_option_entire_podcast)
-            LibraryType.UNKNOWN -> context.getString(R.string.downloads_menu_download_option_entire_item)
-        }
+      when (libraryType) {
+        LibraryType.LIBRARY -> context.getString(R.string.downloads_menu_download_option_entire_book)
+        LibraryType.PODCAST -> context.getString(R.string.downloads_menu_download_option_entire_podcast)
+        LibraryType.UNKNOWN -> context.getString(R.string.downloads_menu_download_option_entire_item)
+      }
     }
 
     is NumberItemDownloadOption -> {
-        when (libraryType) {
-            LibraryType.LIBRARY -> context.getString(R.string.downloads_menu_download_option_next_chapters, itemsNumber)
-            LibraryType.PODCAST -> context.getString(R.string.downloads_menu_download_option_next_episodes, itemsNumber)
-            LibraryType.UNKNOWN -> context.getString(R.string.downloads_menu_download_option_next_items, itemsNumber)
-        }
+      when (libraryType) {
+        LibraryType.LIBRARY ->
+          context.getString(
+            R.string.downloads_menu_download_option_next_chapters,
+            itemsNumber,
+          )
+        LibraryType.PODCAST ->
+          context.getString(
+            R.string.downloads_menu_download_option_next_episodes,
+            itemsNumber,
+          )
+        LibraryType.UNKNOWN ->
+          context.getString(
+            R.string.downloads_menu_download_option_next_items,
+            itemsNumber,
+          )
+      }
     }
-}
+  }

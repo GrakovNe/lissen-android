@@ -6,28 +6,29 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class RecentListeningResponseConverter @Inject constructor() {
-
+class RecentListeningResponseConverter
+  @Inject
+  constructor() {
     fun apply(
-        response: List<PersonalizedFeedResponse>,
-        progress: Map<String, Pair<Long, Double>>,
-    ): List<RecentBook> = response
+      response: List<PersonalizedFeedResponse>,
+      progress: Map<String, Pair<Long, Double>>,
+    ): List<RecentBook> =
+      response
         .find { it.labelStringKey == LABEL_CONTINUE_LISTENING }
         ?.entities
         ?.distinctBy { it.id }
         ?.map {
-            RecentBook(
-                id = it.id,
-                title = it.media.metadata.title,
-                subtitle = it.media.metadata.subtitle,
-                author = it.media.metadata.authorName,
-                listenedPercentage = progress[it.id]?.second?.let { it * 100 }?.toInt(),
-                listenedLastUpdate = progress[it.id]?.first,
-            )
+          RecentBook(
+            id = it.id,
+            title = it.media.metadata.title,
+            subtitle = it.media.metadata.subtitle,
+            author = it.media.metadata.authorName,
+            listenedPercentage = progress[it.id]?.second?.let { it * 100 }?.toInt(),
+            listenedLastUpdate = progress[it.id]?.first,
+          )
         } ?: emptyList()
 
     companion object {
-
-        private const val LABEL_CONTINUE_LISTENING = "LabelContinueListening"
+      private const val LABEL_CONTINUE_LISTENING = "LabelContinueListening"
     }
-}
+  }

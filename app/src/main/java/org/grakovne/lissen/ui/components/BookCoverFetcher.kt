@@ -20,57 +20,56 @@ import org.grakovne.lissen.content.LissenMediaProvider
 import javax.inject.Singleton
 
 class BookCoverFetcher(
-    private val mediaChannel: LissenMediaProvider,
-    private val uri: Uri,
-    private val context: Context,
+  private val mediaChannel: LissenMediaProvider,
+  private val uri: Uri,
+  private val context: Context,
 ) : Fetcher {
+  override suspend fun fetch(): FetchResult? =
+    when (val response = mediaChannel.fetchBookCover(uri.toString())) {
+      is ApiResult.Error -> null
+      is ApiResult.Success -> {
+        val stream = response.data
+        val source = stream.source().buffer()
+        val imageSource = ImageSource(source, context)
 
-    override suspend fun fetch(): FetchResult? =
-        when (val response = mediaChannel.fetchBookCover(uri.toString())) {
-            is ApiResult.Error -> null
-            is ApiResult.Success -> {
-                val stream = response.data
-                val source = stream.source().buffer()
-                val imageSource = ImageSource(source, context)
-
-                SourceResult(
-                    source = imageSource,
-                    mimeType = null,
-                    dataSource = coil.decode.DataSource.NETWORK,
-                )
-            }
-        }
+        SourceResult(
+          source = imageSource,
+          mimeType = null,
+          dataSource = coil.decode.DataSource.NETWORK,
+        )
+      }
+    }
 }
 
 class BookCoverFetcherFactory(
-    private val dataProvider: LissenMediaProvider,
-    private val context: Context,
+  private val dataProvider: LissenMediaProvider,
+  private val context: Context,
 ) : Fetcher.Factory<Uri> {
-
-    override fun create(data: Uri, options: Options, imageLoader: ImageLoader) =
-        BookCoverFetcher(dataProvider, data, context)
+  override fun create(
+    data: Uri,
+    options: Options,
+    imageLoader: ImageLoader,
+  ) = BookCoverFetcher(dataProvider, data, context)
 }
 
 @Module
 @InstallIn(SingletonComponent::class)
 object ImageLoaderModule {
+  @Singleton
+  @Provides
+  fun provideBookCoverFetcherFactory(
+    mediaChannel: LissenMediaProvider,
+    @ApplicationContext context: Context,
+  ): BookCoverFetcherFactory = BookCoverFetcherFactory(mediaChannel, context)
 
-    @Singleton
-    @Provides
-    fun provideBookCoverFetcherFactory(
-        mediaChannel: LissenMediaProvider,
-        @ApplicationContext context: Context,
-    ): BookCoverFetcherFactory = BookCoverFetcherFactory(mediaChannel, context)
-
-    @Singleton
-    @Provides
-    fun provideCustomImageLoader(
-        @ApplicationContext context: Context,
-        bookCoverFetcherFactory: BookCoverFetcherFactory,
-    ): ImageLoader {
-        return ImageLoader
-            .Builder(context)
-            .components { add(bookCoverFetcherFactory) }
-            .build()
-    }
+  @Singleton
+  @Provides
+  fun provideCustomImageLoader(
+    @ApplicationContext context: Context,
+    bookCoverFetcherFactory: BookCoverFetcherFactory,
+  ): ImageLoader =
+    ImageLoader
+      .Builder(context)
+      .components { add(bookCoverFetcherFactory) }
+      .build()
 }

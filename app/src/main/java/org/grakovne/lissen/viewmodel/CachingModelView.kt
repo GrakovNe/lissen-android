@@ -21,64 +21,68 @@ import java.io.Serializable
 import javax.inject.Inject
 
 @HiltViewModel
-class CachingModelView @Inject constructor(
+class CachingModelView
+  @Inject
+  constructor(
     @ApplicationContext private val context: Context,
     private val contentCachingProgress: ContentCachingProgress,
     private val contentCachingManager: ContentCachingManager,
     private val preferences: LissenSharedPreferences,
-) : ViewModel() {
-
+  ) : ViewModel() {
     private val _bookCachingProgress = mutableMapOf<String, MutableStateFlow<CacheState>>()
 
     init {
-        viewModelScope.launch {
-            contentCachingProgress.statusFlow.collect { (item, progress) ->
-                val flow = _bookCachingProgress.getOrPut(item.id) {
-                    MutableStateFlow(progress)
-                }
-                flow.value = progress
+      viewModelScope.launch {
+        contentCachingProgress.statusFlow.collect { (item, progress) ->
+          val flow =
+            _bookCachingProgress.getOrPut(item.id) {
+              MutableStateFlow(progress)
             }
+          flow.value = progress
         }
+      }
     }
 
     fun cache(
-        mediaItemId: String,
-        currentPosition: Double,
-        option: DownloadOption,
+      mediaItemId: String,
+      currentPosition: Double,
+      option: DownloadOption,
     ) {
-        val task = ContentCachingTask(
-            itemId = mediaItemId,
-            options = option,
-            currentPosition = currentPosition,
+      val task =
+        ContentCachingTask(
+          itemId = mediaItemId,
+          options = option,
+          currentPosition = currentPosition,
         )
 
-        val intent = Intent(context, ContentCachingService::class.java).apply {
-            putExtra(ContentCachingService.CACHING_TASK_EXTRA, task as Serializable)
+      val intent =
+        Intent(context, ContentCachingService::class.java).apply {
+          putExtra(ContentCachingService.CACHING_TASK_EXTRA, task as Serializable)
         }
 
-        context.startForegroundService(intent)
+      context.startForegroundService(intent)
     }
 
-    fun getProgress(bookId: String) = _bookCachingProgress
+    fun getProgress(bookId: String) =
+      _bookCachingProgress
         .getOrPut(bookId) { MutableStateFlow(CacheState(CacheStatus.Idle)) }
 
     fun dropCache(bookId: String) {
-        viewModelScope
-            .launch {
-                contentCachingManager.dropCache(bookId)
-                _bookCachingProgress.remove(bookId)
-            }
+      viewModelScope
+        .launch {
+          contentCachingManager.dropCache(bookId)
+          _bookCachingProgress.remove(bookId)
+        }
     }
 
     fun toggleCacheForce() {
-        when (localCacheUsing()) {
-            true -> preferences.disableForceCache()
-            false -> preferences.enableForceCache()
-        }
+      when (localCacheUsing()) {
+        true -> preferences.disableForceCache()
+        false -> preferences.enableForceCache()
+      }
     }
 
     fun localCacheUsing() = preferences.isForceCache()
 
-    fun provideCacheState(bookId: String): LiveData<Boolean> =
-        contentCachingManager.hasMetadataCached(bookId)
-}
+    fun provideCacheState(bookId: String): LiveData<Boolean> = contentCachingManager.hasMetadataCached(bookId)
+  }

@@ -7,20 +7,23 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class LibraryResponseConverter @Inject constructor() {
-
-    fun apply(response: LibraryResponse): List<Library> = response
+class LibraryResponseConverter
+  @Inject
+  constructor() {
+    fun apply(response: LibraryResponse): List<Library> =
+      response
         .libraries
         .map {
-            it
-                .mediaType
-                .toLibraryType()
-                .let { type -> Library(it.id, it.name, type) }
+          it
+            .mediaType
+            .toLibraryType()
+            .let { type -> Library(it.id, it.name, type) }
         }
 
-    private fun String.toLibraryType() = when (this) {
+    private fun String.toLibraryType() =
+      when (this) {
         "podcast" -> LibraryType.PODCAST
         "book" -> LibraryType.LIBRARY
         else -> LibraryType.UNKNOWN
-    }
-}
+      }
+  }

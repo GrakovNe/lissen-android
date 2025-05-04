@@ -7,14 +7,15 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class RequestHeadersProvider @Inject constructor(
+class RequestHeadersProvider
+  @Inject
+  constructor(
     private val preferences: LissenSharedPreferences,
-) {
-
+  ) {
     fun fetchRequestHeaders(): List<ServerRequestHeader> {
-        val usersHeaders = preferences.getCustomHeaders()
+      val usersHeaders = preferences.getCustomHeaders()
 
-        val userAgent = ServerRequestHeader("User-Agent", USER_AGENT)
-        return usersHeaders + userAgent
+      val userAgent = ServerRequestHeader("User-Agent", USER_AGENT)
+      return usersHeaders + userAgent
     }
-}
+  }

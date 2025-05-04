@@ -38,115 +38,125 @@ import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
 fun TrackDetailsComposable(
-    libraryViewModel: LibraryViewModel,
-    viewModel: PlayerViewModel,
-    modifier: Modifier = Modifier,
-    imageLoader: ImageLoader,
+  libraryViewModel: LibraryViewModel,
+  viewModel: PlayerViewModel,
+  modifier: Modifier = Modifier,
+  imageLoader: ImageLoader,
 ) {
-    val currentTrackIndex by viewModel.currentChapterIndex.observeAsState(0)
-    val book by viewModel.book.observeAsState()
+  val currentTrackIndex by viewModel.currentChapterIndex.observeAsState(0)
+  val book by viewModel.book.observeAsState()
 
-    val context = LocalContext.current
+  val context = LocalContext.current
 
-    val imageRequest = remember(book?.id) {
-        ImageRequest.Builder(context)
-            .data(book?.id)
-            .size(coil.size.Size.ORIGINAL)
-            .build()
+  val imageRequest =
+    remember(book?.id) {
+      ImageRequest
+        .Builder(context)
+        .data(book?.id)
+        .size(coil.size.Size.ORIGINAL)
+        .build()
     }
 
-    val configuration = LocalConfiguration.current
-    val screenHeight = configuration.screenHeightDp.dp
-    val maxImageHeight = screenHeight * 0.33f
+  val configuration = LocalConfiguration.current
+  val screenHeight = configuration.screenHeightDp.dp
+  val maxImageHeight = screenHeight * 0.33f
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier,
-    ) {
-        AsyncShimmeringImage(
-            imageRequest = imageRequest,
-            imageLoader = imageLoader,
-            contentDescription = "${book?.title} cover",
-            contentScale = ContentScale.FillBounds,
-            modifier = Modifier
-                .heightIn(max = maxImageHeight)
-                .aspectRatio(1f)
-                .clip(RoundedCornerShape(8.dp)),
-            error = painterResource(R.drawable.cover_fallback),
-        )
+  Column(
+    horizontalAlignment = Alignment.CenterHorizontally,
+    modifier = modifier,
+  ) {
+    AsyncShimmeringImage(
+      imageRequest = imageRequest,
+      imageLoader = imageLoader,
+      contentDescription = "${book?.title} cover",
+      contentScale = ContentScale.FillBounds,
+      modifier =
+        Modifier
+          .heightIn(max = maxImageHeight)
+          .aspectRatio(1f)
+          .clip(RoundedCornerShape(8.dp)),
+      error = painterResource(R.drawable.cover_fallback),
+    )
 
-        Spacer(modifier = Modifier.height(12.dp))
+    Spacer(modifier = Modifier.height(12.dp))
 
+    Text(
+      text = book?.title.orEmpty(),
+      style = typography.headlineSmall,
+      fontWeight = FontWeight.SemiBold,
+      color = colorScheme.onBackground,
+      textAlign = TextAlign.Center,
+      overflow = TextOverflow.Ellipsis,
+      maxLines = 2,
+      modifier =
+        Modifier
+          .fillMaxWidth()
+          .padding(horizontal = 16.dp),
+    )
+
+    Spacer(modifier = Modifier.height(2.dp))
+
+    book
+      ?.subtitle
+      ?.takeIf { it.isNotBlank() }
+      ?.let {
         Text(
-            text = book?.title.orEmpty(),
-            style = typography.headlineSmall,
-            fontWeight = FontWeight.SemiBold,
-            color = colorScheme.onBackground,
-            textAlign = TextAlign.Center,
-            overflow = TextOverflow.Ellipsis,
-            maxLines = 2,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+          text = it,
+          style = typography.bodyMedium,
+          color = colorScheme.onBackground.copy(alpha = 0.6f),
+          textAlign = TextAlign.Center,
+          overflow = TextOverflow.Ellipsis,
+          maxLines = 1,
+          modifier =
+            Modifier
+              .fillMaxWidth()
+              .padding(horizontal = 16.dp),
         )
 
         Spacer(modifier = Modifier.height(2.dp))
+      }
 
-        book
-            ?.subtitle
-            ?.takeIf { it.isNotBlank() }
-            ?.let {
-                Text(
-                    text = it,
-                    style = typography.bodyMedium,
-                    color = colorScheme.onBackground.copy(alpha = 0.6f),
-                    textAlign = TextAlign.Center,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                )
-
-                Spacer(modifier = Modifier.height(2.dp))
-            }
-
-        Text(
-            text = provideChapterNumberTitle(
-                currentTrackIndex = currentTrackIndex,
-                book = book,
-                libraryType = libraryViewModel.fetchPreferredLibraryType(),
-                context = context,
-            ),
-            style = typography.bodyMedium,
-            color = colorScheme.onBackground.copy(alpha = 0.6f),
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
-        )
-    }
+    Text(
+      text =
+        provideChapterNumberTitle(
+          currentTrackIndex = currentTrackIndex,
+          book = book,
+          libraryType = libraryViewModel.fetchPreferredLibraryType(),
+          context = context,
+        ),
+      style = typography.bodyMedium,
+      color = colorScheme.onBackground.copy(alpha = 0.6f),
+      textAlign = TextAlign.Center,
+      modifier = Modifier.fillMaxWidth(),
+    )
+  }
 }
 
 private fun provideChapterNumberTitle(
-    currentTrackIndex: Int,
-    book: DetailedItem?,
-    libraryType: LibraryType,
-    context: Context,
-): String = when (libraryType) {
-    LibraryType.LIBRARY -> context.getString(
+  currentTrackIndex: Int,
+  book: DetailedItem?,
+  libraryType: LibraryType,
+  context: Context,
+): String =
+  when (libraryType) {
+    LibraryType.LIBRARY ->
+      context.getString(
         R.string.player_screen_now_playing_title_chapter_of,
         currentTrackIndex + 1,
         book?.chapters?.size ?: "?",
-    )
+      )
 
-    LibraryType.PODCAST -> context.getString(
+    LibraryType.PODCAST ->
+      context.getString(
         R.string.player_screen_now_playing_title_podcast_of,
         currentTrackIndex + 1,
         book?.chapters?.size ?: "?",
-    )
+      )
 
-    LibraryType.UNKNOWN -> context.getString(
+    LibraryType.UNKNOWN ->
+      context.getString(
         R.string.player_screen_now_playing_title_item_of,
         currentTrackIndex + 1,
         book?.chapters?.size ?: "?",
-    )
-}
+      )
+  }

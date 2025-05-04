@@ -17,34 +17,39 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class WidgetPlaybackController @Inject constructor(
+class WidgetPlaybackController
+  @Inject
+  constructor(
     @ApplicationContext private val context: Context,
     private val mediaRepository: MediaRepository,
-) {
-
+  ) {
     private var playbackReadyAction: () -> Unit = {}
 
-    private val bookDetailsReadyReceiver = object : BroadcastReceiver() {
+    private val bookDetailsReadyReceiver =
+      object : BroadcastReceiver() {
         @Suppress("DEPRECATION")
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (intent?.action == PLAYBACK_READY) {
-                val book = intent.getSerializableExtra(BOOK_EXTRA) as? DetailedItem
+        override fun onReceive(
+          context: Context?,
+          intent: Intent?,
+        ) {
+          if (intent?.action == PLAYBACK_READY) {
+            val book = intent.getSerializableExtra(BOOK_EXTRA) as? DetailedItem
 
-                book?.let {
-                    CoroutineScope(Dispatchers.Main).launch {
-                        playbackReadyAction
-                            .invoke()
-                            .also { playbackReadyAction = { } }
-                    }
-                }
+            book?.let {
+              CoroutineScope(Dispatchers.Main).launch {
+                playbackReadyAction
+                  .invoke()
+                  .also { playbackReadyAction = { } }
+              }
             }
+          }
         }
-    }
+      }
 
     init {
-        LocalBroadcastManager
-            .getInstance(context)
-            .registerReceiver(bookDetailsReadyReceiver, IntentFilter(PLAYBACK_READY))
+      LocalBroadcastManager
+        .getInstance(context)
+        .registerReceiver(bookDetailsReadyReceiver, IntentFilter(PLAYBACK_READY))
     }
 
     fun providePlayingItem() = mediaRepository.playingBook.value
@@ -60,10 +65,10 @@ class WidgetPlaybackController @Inject constructor(
     fun forward() = mediaRepository.forward()
 
     suspend fun prepareAndRun(
-        itemId: String,
-        onPlaybackReady: () -> Unit,
+      itemId: String,
+      onPlaybackReady: () -> Unit,
     ) {
-        playbackReadyAction = onPlaybackReady
-        mediaRepository.preparePlayback(bookId = itemId, fromBackground = true)
+      playbackReadyAction = onPlaybackReady
+      mediaRepository.preparePlayback(bookId = itemId, fromBackground = true)
     }
-}
+  }

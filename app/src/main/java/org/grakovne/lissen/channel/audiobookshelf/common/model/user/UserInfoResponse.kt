@@ -5,10 +5,10 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResp
 
 @Keep
 data class UserInfoResponse(
-    val user: UserResponse,
+  val user: UserResponse,
 )
 
 @Keep
 data class UserResponse(
-    val mediaProgress: List<MediaProgressResponse>?,
+  val mediaProgress: List<MediaProgressResponse>?,
 )

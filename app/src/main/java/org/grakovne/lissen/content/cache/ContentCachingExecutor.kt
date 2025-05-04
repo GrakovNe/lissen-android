@@ -6,21 +6,17 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DownloadOption
 
 class ContentCachingExecutor(
-    private val item: DetailedItem,
-    private val options: DownloadOption,
-    private val position: Double,
-    private val contentCachingManager: ContentCachingManager,
+  private val item: DetailedItem,
+  private val options: DownloadOption,
+  private val position: Double,
+  private val contentCachingManager: ContentCachingManager,
 ) {
-
-    fun run(
-        channel: MediaChannel,
-    ): Flow<CacheState> {
-        return contentCachingManager
-            .cacheMediaItem(
-                mediaItem = item,
-                option = options,
-                channel = channel,
-                currentTotalPosition = position,
-            )
-    }
+  fun run(channel: MediaChannel): Flow<CacheState> =
+    contentCachingManager
+      .cacheMediaItem(
+        mediaItem = item,
+        option = options,
+        channel = channel,
+        currentTotalPosition = position,
+      )
 }

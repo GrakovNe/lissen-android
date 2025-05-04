@@ -6,13 +6,16 @@ plugins {
     alias(libs.plugins.compose.compiler)
 
     id("com.google.dagger.hilt.android")
-    id("org.jmailen.kotlinter") version "3.15.0"
+    id("org.jmailen.kotlinter") version "5.0.2"
     id("com.google.devtools.ksp")
 }
 
 kotlinter {
     reporters = arrayOf("checkstyle", "plain")
+    ignoreFormatFailures = false
+    ignoreLintFailures = false
 }
+
 
 tasks.lintKotlinMain {
     dependsOn(tasks.formatKotlinMain)

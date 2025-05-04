@@ -20,45 +20,46 @@ import com.valentinilk.shimmer.shimmer
 
 @Composable
 fun AsyncShimmeringImage(
-    imageRequest: ImageRequest,
-    imageLoader: ImageLoader,
-    contentDescription: String,
-    contentScale: ContentScale,
-    modifier: Modifier = Modifier,
-    error: Painter,
-    onLoadingStateChanged: (Boolean) -> Unit = {},
+  imageRequest: ImageRequest,
+  imageLoader: ImageLoader,
+  contentDescription: String,
+  contentScale: ContentScale,
+  modifier: Modifier = Modifier,
+  error: Painter,
+  onLoadingStateChanged: (Boolean) -> Unit = {},
 ) {
-    var isLoading by remember { mutableStateOf(true) }
-    onLoadingStateChanged(isLoading)
+  var isLoading by remember { mutableStateOf(true) }
+  onLoadingStateChanged(isLoading)
 
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center,
-    ) {
-        if (isLoading) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Gray)
-                    .shimmer(),
-            )
-        }
-
-        AsyncImage(
-            model = imageRequest,
-            imageLoader = imageLoader,
-            contentDescription = contentDescription,
-            contentScale = contentScale,
-            modifier = Modifier.fillMaxSize(),
-            onSuccess = {
-                isLoading = false
-                onLoadingStateChanged(false)
-            },
-            onError = {
-                isLoading = false
-                onLoadingStateChanged(false)
-            },
-            error = error,
-        )
+  Box(
+    modifier = modifier,
+    contentAlignment = Alignment.Center,
+  ) {
+    if (isLoading) {
+      Box(
+        modifier =
+          Modifier
+            .fillMaxSize()
+            .background(Color.Gray)
+            .shimmer(),
+      )
     }
+
+    AsyncImage(
+      model = imageRequest,
+      imageLoader = imageLoader,
+      contentDescription = contentDescription,
+      contentScale = contentScale,
+      modifier = Modifier.fillMaxSize(),
+      onSuccess = {
+        isLoading = false
+        onLoadingStateChanged(false)
+      },
+      onError = {
+        isLoading = false
+        onLoadingStateChanged(false)
+      },
+      error = error,
+    )
+  }
 }

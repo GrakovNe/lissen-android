@@ -38,101 +38,106 @@ import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
 fun DefaultActionComposable(
-    navController: AppNavigationService,
-    contentCachingModelView: CachingModelView,
-    playerViewModel: PlayerViewModel,
-    onContentRefreshing: (Boolean) -> Unit,
-    onSearchRequested: () -> Unit,
+  navController: AppNavigationService,
+  contentCachingModelView: CachingModelView,
+  playerViewModel: PlayerViewModel,
+  onContentRefreshing: (Boolean) -> Unit,
+  onSearchRequested: () -> Unit,
 ) {
-    var navigationItemSelected by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
+  var navigationItemSelected by remember { mutableStateOf(false) }
+  val coroutineScope = rememberCoroutineScope()
 
-    Row {
-        IconButton(
-            onClick = { onSearchRequested() },
-            modifier = Modifier.offset(x = 4.dp),
-        ) {
-            Icon(
-                imageVector = Search,
-                contentDescription = null,
-            )
-        }
-        IconButton(onClick = {
-            navigationItemSelected = true
-        }) {
-            Icon(
-                imageVector = Icons.Outlined.MoreVert,
-                contentDescription = "Menu",
-            )
-        }
-    }
-
-    DropdownMenu(
-        expanded = navigationItemSelected,
-        onDismissRequest = { navigationItemSelected = false },
-        modifier = Modifier
-            .background(colorScheme.background)
-            .padding(4.dp),
+  Row {
+    IconButton(
+      onClick = { onSearchRequested() },
+      modifier = Modifier.offset(x = 4.dp),
     ) {
-        DropdownMenuItem(
-            leadingIcon = {
-                Icon(
-                    imageVector = when (contentCachingModelView.localCacheUsing()) {
-                        true -> Icons.Outlined.Cloud
-                        else -> Icons.Outlined.CloudOff
-                    },
-                    contentDescription = null,
-                )
-            },
-            text = {
-                Text(
-                    text = when (contentCachingModelView.localCacheUsing()) {
-                        true -> stringResource(R.string.disable_offline)
-                        else -> stringResource(R.string.enable_offline)
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(start = 8.dp),
-                )
-            },
-            onClick = {
-                navigationItemSelected = false
-
-                coroutineScope.launch {
-                    withFrameNanos { }
-
-                    CoroutineScope(Dispatchers.IO).launch {
-                        contentCachingModelView.toggleCacheForce()
-                        playerViewModel.book.value?.let { playerViewModel.preparePlayback(it.id) }
-                        onContentRefreshing(false)
-                    }
-                }
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp),
-        )
-
-        DropdownMenuItem(
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Outlined.Settings,
-                    contentDescription = null,
-                )
-            },
-            text = {
-                Text(
-                    stringResource(R.string.library_screen_preferences_menu_item),
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(start = 8.dp),
-                )
-            },
-            onClick = {
-                navigationItemSelected = false
-                navController.showSettings()
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp),
-        )
+      Icon(
+        imageVector = Search,
+        contentDescription = null,
+      )
     }
+    IconButton(onClick = {
+      navigationItemSelected = true
+    }) {
+      Icon(
+        imageVector = Icons.Outlined.MoreVert,
+        contentDescription = "Menu",
+      )
+    }
+  }
+
+  DropdownMenu(
+    expanded = navigationItemSelected,
+    onDismissRequest = { navigationItemSelected = false },
+    modifier =
+      Modifier
+        .background(colorScheme.background)
+        .padding(4.dp),
+  ) {
+    DropdownMenuItem(
+      leadingIcon = {
+        Icon(
+          imageVector =
+            when (contentCachingModelView.localCacheUsing()) {
+              true -> Icons.Outlined.Cloud
+              else -> Icons.Outlined.CloudOff
+            },
+          contentDescription = null,
+        )
+      },
+      text = {
+        Text(
+          text =
+            when (contentCachingModelView.localCacheUsing()) {
+              true -> stringResource(R.string.disable_offline)
+              else -> stringResource(R.string.enable_offline)
+            },
+          style = MaterialTheme.typography.bodyMedium,
+          modifier = Modifier.padding(start = 8.dp),
+        )
+      },
+      onClick = {
+        navigationItemSelected = false
+
+        coroutineScope.launch {
+          withFrameNanos { }
+
+          CoroutineScope(Dispatchers.IO).launch {
+            contentCachingModelView.toggleCacheForce()
+            playerViewModel.book.value?.let { playerViewModel.preparePlayback(it.id) }
+            onContentRefreshing(false)
+          }
+        }
+      },
+      modifier =
+        Modifier
+          .fillMaxWidth()
+          .padding(vertical = 4.dp),
+    )
+
+    DropdownMenuItem(
+      leadingIcon = {
+        Icon(
+          imageVector = Icons.Outlined.Settings,
+          contentDescription = null,
+        )
+      },
+      text = {
+        Text(
+          stringResource(R.string.library_screen_preferences_menu_item),
+          style = MaterialTheme.typography.bodyMedium,
+          modifier = Modifier.padding(start = 8.dp),
+        )
+      },
+      onClick = {
+        navigationItemSelected = false
+        navController.showSettings()
+      },
+      modifier =
+        Modifier
+          .fillMaxWidth()
+          .padding(vertical = 4.dp),
+    )
+  }
 }

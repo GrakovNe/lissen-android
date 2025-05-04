@@ -20,45 +20,45 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class AppActivity : ComponentActivity() {
+  @Inject
+  lateinit var preferences: LissenSharedPreferences
 
-    @Inject
-    lateinit var preferences: LissenSharedPreferences
+  @Inject
+  lateinit var imageLoader: ImageLoader
 
-    @Inject
-    lateinit var imageLoader: ImageLoader
+  @Inject
+  lateinit var networkQualityService: NetworkQualityService
 
-    @Inject
-    lateinit var networkQualityService: NetworkQualityService
+  private lateinit var appNavigationService: AppNavigationService
 
-    private lateinit var appNavigationService: AppNavigationService
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    enableEdgeToEdge()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+    setContent {
+      val colorScheme by preferences
+        .colorSchemeFlow
+        .collectAsState(initial = preferences.getColorScheme())
 
-        setContent {
-            val colorScheme by preferences
-                .colorSchemeFlow
-                .collectAsState(initial = preferences.getColorScheme())
+      LissenTheme(colorScheme) {
+        val navController = rememberNavController()
+        appNavigationService = AppNavigationService(navController)
 
-            LissenTheme(colorScheme) {
-                val navController = rememberNavController()
-                appNavigationService = AppNavigationService(navController)
-
-                AppNavHost(
-                    navController = navController,
-                    navigationService = appNavigationService,
-                    preferences = preferences,
-                    imageLoader = imageLoader,
-                    networkQualityService = networkQualityService,
-                    appLaunchAction = getLaunchAction(intent),
-                )
-            }
-        }
+        AppNavHost(
+          navController = navController,
+          navigationService = appNavigationService,
+          preferences = preferences,
+          imageLoader = imageLoader,
+          networkQualityService = networkQualityService,
+          appLaunchAction = getLaunchAction(intent),
+        )
+      }
     }
+  }
 
-    private fun getLaunchAction(intent: Intent?) = when (intent?.action) {
-        "continue_playback" -> AppLaunchAction.CONTINUE_PLAYBACK
-        else -> AppLaunchAction.DEFAULT
+  private fun getLaunchAction(intent: Intent?) =
+    when (intent?.action) {
+      "continue_playback" -> AppLaunchAction.CONTINUE_PLAYBACK
+      else -> AppLaunchAction.DEFAULT
     }
 }

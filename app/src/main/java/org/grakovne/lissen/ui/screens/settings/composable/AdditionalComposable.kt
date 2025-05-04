@@ -17,37 +17,42 @@ import org.grakovne.lissen.BuildConfig
 
 @Composable
 fun AdditionalComposable() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-    ) {
-        HorizontalDivider(
-            modifier = Modifier.padding(horizontal = 12.dp),
-            color = colorScheme.onSurface.copy(alpha = 0.2f),
-        )
+  Column(
+    modifier =
+      Modifier
+        .fillMaxWidth()
+        .padding(16.dp),
+  ) {
+    HorizontalDivider(
+      modifier = Modifier.padding(horizontal = 12.dp),
+      color = colorScheme.onSurface.copy(alpha = 0.2f),
+    )
 
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp)
-                .align(Alignment.CenterHorizontally),
-            text = "Lissen ${BuildConfig.VERSION_NAME}",
-            style = TextStyle(
-                fontFamily = FontFamily.Monospace,
-                textAlign = TextAlign.Center,
-            ),
-        )
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp)
-                .align(Alignment.CenterHorizontally),
-            text = "© 2024-2025 Max Grakov. MIT License",
-            style = TextStyle(
-                fontFamily = FontFamily.Monospace,
-                textAlign = TextAlign.Center,
-            ),
-        )
-    }
+    Text(
+      modifier =
+        Modifier
+          .fillMaxWidth()
+          .padding(top = 16.dp)
+          .align(Alignment.CenterHorizontally),
+      text = "Lissen ${BuildConfig.VERSION_NAME}",
+      style =
+        TextStyle(
+          fontFamily = FontFamily.Monospace,
+          textAlign = TextAlign.Center,
+        ),
+    )
+    Text(
+      modifier =
+        Modifier
+          .fillMaxWidth()
+          .padding(top = 8.dp)
+          .align(Alignment.CenterHorizontally),
+      text = "© 2024-2025 Max Grakov. MIT License",
+      style =
+        TextStyle(
+          fontFamily = FontFamily.Monospace,
+          textAlign = TextAlign.Center,
+        ),
+    )
+  }
 }

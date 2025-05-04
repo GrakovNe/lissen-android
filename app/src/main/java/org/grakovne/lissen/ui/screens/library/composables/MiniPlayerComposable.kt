@@ -59,161 +59,172 @@ import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
 fun MiniPlayerComposable(
-    navController: AppNavigationService,
-    book: DetailedItem,
-    imageLoader: ImageLoader,
-    playerViewModel: PlayerViewModel,
+  navController: AppNavigationService,
+  book: DetailedItem,
+  imageLoader: ImageLoader,
+  playerViewModel: PlayerViewModel,
 ) {
-    val view: View = LocalView.current
+  val view: View = LocalView.current
 
-    val isPlaying: Boolean by playerViewModel.isPlaying.observeAsState(false)
-    var backgroundVisible by remember { mutableStateOf(true) }
+  val isPlaying: Boolean by playerViewModel.isPlaying.observeAsState(false)
+  var backgroundVisible by remember { mutableStateOf(true) }
 
-    val dismissState = rememberSwipeToDismissBoxState(
-        positionalThreshold = { it * 0.2f },
-        confirmValueChange = { newValue: SwipeToDismissBoxValue ->
-            val dismissing = when (newValue) {
-                SwipeToDismissBoxValue.EndToStart,
-                SwipeToDismissBoxValue.StartToEnd,
-                -> true
-                else -> false
-            }
+  val dismissState =
+    rememberSwipeToDismissBoxState(
+      positionalThreshold = { it * 0.2f },
+      confirmValueChange = { newValue: SwipeToDismissBoxValue ->
+        val dismissing =
+          when (newValue) {
+            SwipeToDismissBoxValue.EndToStart,
+            SwipeToDismissBoxValue.StartToEnd,
+            -> true
+            else -> false
+          }
 
-            if (dismissing) {
-                hapticAction(view) {
-                    backgroundVisible = false
-                    playerViewModel.clearPlayingBook()
-                }
-            }
+        if (dismissing) {
+          hapticAction(view) {
+            backgroundVisible = false
+            playerViewModel.clearPlayingBook()
+          }
+        }
 
-            dismissing
-        },
+        dismissing
+      },
     )
 
-    SwipeToDismissBox(
-        state = dismissState,
-        backgroundContent = {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 12.dp),
-                horizontalArrangement = when (dismissState.targetValue) {
-                    SwipeToDismissBoxValue.StartToEnd -> Arrangement.Start
-                    SwipeToDismissBoxValue.EndToStart -> Arrangement.End
-                    SwipeToDismissBoxValue.Settled -> Arrangement.Center
-                },
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                AnimatedVisibility(
-                    visible = backgroundVisible,
-                    exit = fadeOut(animationSpec = tween(300)),
-                ) {
-                    CloseActionBackground()
-                }
-            }
-        },
-    ) {
+  SwipeToDismissBox(
+    state = dismissState,
+    backgroundContent = {
+      Row(
+        modifier =
+          Modifier
+            .fillMaxSize()
+            .padding(horizontal = 12.dp),
+        horizontalArrangement =
+          when (dismissState.targetValue) {
+            SwipeToDismissBoxValue.StartToEnd -> Arrangement.Start
+            SwipeToDismissBoxValue.EndToStart -> Arrangement.End
+            SwipeToDismissBoxValue.Settled -> Arrangement.Center
+          },
+        verticalAlignment = Alignment.CenterVertically,
+      ) {
         AnimatedVisibility(
-            visible = backgroundVisible,
-            exit = fadeOut(animationSpec = tween(300)),
+          visible = backgroundVisible,
+          exit = fadeOut(animationSpec = tween(300)),
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(colorScheme.tertiaryContainer)
-                    .clickable { navController.showPlayer(book.id, book.title, book.subtitle) }
-                    .padding(horizontal = 20.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                val context = LocalContext.current
-                val imageRequest = remember(book.id) {
-                    ImageRequest.Builder(context)
-                        .data(book.id)
-                        .size(coil.size.Size.ORIGINAL)
-                        .build()
-                }
-
-                AsyncShimmeringImage(
-                    imageRequest = imageRequest,
-                    imageLoader = imageLoader,
-                    contentDescription = "${book.title} cover",
-                    contentScale = ContentScale.FillBounds,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .aspectRatio(1f)
-                        .clip(RoundedCornerShape(4.dp)),
-                    error = painterResource(R.drawable.cover_fallback),
-                )
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column(
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Text(
-                        text = book.title,
-                        style = typography.bodyMedium.copy(
-                            fontWeight = FontWeight.SemiBold,
-                            color = colorScheme.onBackground,
-                        ),
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-
-                    book.author?.let {
-                        Text(
-                            text = it,
-                            style = typography.bodyMedium.copy(
-                                color = colorScheme.onBackground.copy(alpha = 0.6f),
-                            ),
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                }
-
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    Row {
-                        IconButton(
-                            onClick = { hapticAction(view) { playerViewModel.togglePlayPause() } },
-                        ) {
-                            Icon(
-                                imageVector = if (isPlaying) Icons.Outlined.PauseCircleOutline else Icons.Outlined.PlayCircle,
-                                contentDescription = if (isPlaying) "Pause" else "Play",
-                                modifier = Modifier.size(34.dp),
-                            )
-                        }
-                    }
-                }
-            }
+          CloseActionBackground()
         }
+      }
+    },
+  ) {
+    AnimatedVisibility(
+      visible = backgroundVisible,
+      exit = fadeOut(animationSpec = tween(300)),
+    ) {
+      Row(
+        modifier =
+          Modifier
+            .fillMaxWidth()
+            .background(colorScheme.tertiaryContainer)
+            .clickable { navController.showPlayer(book.id, book.title, book.subtitle) }
+            .padding(horizontal = 20.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+      ) {
+        val context = LocalContext.current
+        val imageRequest =
+          remember(book.id) {
+            ImageRequest
+              .Builder(context)
+              .data(book.id)
+              .size(coil.size.Size.ORIGINAL)
+              .build()
+          }
+
+        AsyncShimmeringImage(
+          imageRequest = imageRequest,
+          imageLoader = imageLoader,
+          contentDescription = "${book.title} cover",
+          contentScale = ContentScale.FillBounds,
+          modifier =
+            Modifier
+              .size(48.dp)
+              .aspectRatio(1f)
+              .clip(RoundedCornerShape(4.dp)),
+          error = painterResource(R.drawable.cover_fallback),
+        )
+
+        Spacer(modifier = Modifier.width(16.dp))
+
+        Column(
+          modifier = Modifier.weight(1f),
+        ) {
+          Text(
+            text = book.title,
+            style =
+              typography.bodyMedium.copy(
+                fontWeight = FontWeight.SemiBold,
+                color = colorScheme.onBackground,
+              ),
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+          )
+
+          book.author?.let {
+            Text(
+              text = it,
+              style =
+                typography.bodyMedium.copy(
+                  color = colorScheme.onBackground.copy(alpha = 0.6f),
+                ),
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis,
+            )
+          }
+        }
+
+        Column(
+          horizontalAlignment = Alignment.CenterHorizontally,
+          verticalArrangement = Arrangement.Center,
+        ) {
+          Row {
+            IconButton(
+              onClick = { hapticAction(view) { playerViewModel.togglePlayPause() } },
+            ) {
+              Icon(
+                imageVector = if (isPlaying) Icons.Outlined.PauseCircleOutline else Icons.Outlined.PlayCircle,
+                contentDescription = if (isPlaying) "Pause" else "Play",
+                modifier = Modifier.size(34.dp),
+              )
+            }
+          }
+        }
+      }
     }
+  }
 }
 
 @Composable
 fun CloseActionBackground() {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = Modifier
-            .width(80.dp)
-            .padding(vertical = 8.dp),
-    ) {
-        Icon(
-            imageVector = Icons.Outlined.Close,
-            contentDescription = stringResource(R.string.mini_player_action_close),
-            tint = colorScheme.onSurface,
-            modifier = Modifier.size(24.dp),
-        )
+  Column(
+    horizontalAlignment = Alignment.CenterHorizontally,
+    modifier =
+      Modifier
+        .width(80.dp)
+        .padding(vertical = 8.dp),
+  ) {
+    Icon(
+      imageVector = Icons.Outlined.Close,
+      contentDescription = stringResource(R.string.mini_player_action_close),
+      tint = colorScheme.onSurface,
+      modifier = Modifier.size(24.dp),
+    )
 
-        Spacer(modifier = Modifier.height(4.dp))
+    Spacer(modifier = Modifier.height(4.dp))
 
-        Text(
-            text = stringResource(R.string.mini_player_action_close),
-            style = typography.labelSmall,
-            color = colorScheme.onSurface,
-        )
-    }
+    Text(
+      text = stringResource(R.string.mini_player_action_close),
+      style = typography.labelSmall,
+      color = colorScheme.onSurface,
+    )
+  }
 }

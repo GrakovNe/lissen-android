@@ -14,11 +14,12 @@ import org.grakovne.lissen.playback.MediaRepository
 import javax.inject.Inject
 
 @HiltViewModel
-class PlayerViewModel @Inject constructor(
+class PlayerViewModel
+  @Inject
+  constructor(
     private val mediaRepository: MediaRepository,
     private val preferences: LissenSharedPreferences,
-) : ViewModel() {
-
+  ) : ViewModel() {
     val book: LiveData<DetailedItem?> = mediaRepository.playingBook
 
     val currentChapterIndex: LiveData<Int> = mediaRepository.currentChapterIndex
@@ -45,68 +46,68 @@ class PlayerViewModel @Inject constructor(
     val isPlaying: LiveData<Boolean> = mediaRepository.isPlaying
 
     fun recoverMiniPlayer() {
-        val playingBook = preferences.getPlayingBook()
+      val playingBook = preferences.getPlayingBook()
 
-        if (playingBook?.id != null && book.value == null) {
-            viewModelScope.launch {
-                mediaRepository.preparePlayback(playingBook.id)
-            }
+      if (playingBook?.id != null && book.value == null) {
+        viewModelScope.launch {
+          mediaRepository.preparePlayback(playingBook.id)
         }
+      }
     }
 
     fun expandPlayingQueue() {
-        _playingQueueExpanded.postValue(true)
+      _playingQueueExpanded.postValue(true)
     }
 
     fun setTimer(option: TimerOption?) {
-        mediaRepository.updateTimer(option)
+      mediaRepository.updateTimer(option)
     }
 
     fun collapsePlayingQueue() {
-        _playingQueueExpanded.postValue(false)
+      _playingQueueExpanded.postValue(false)
     }
 
     fun togglePlayingQueue() {
-        _playingQueueExpanded.postValue(!(_playingQueueExpanded.value ?: false))
+      _playingQueueExpanded.postValue(!(_playingQueueExpanded.value ?: false))
     }
 
     fun requestSearch() {
-        _searchRequested.postValue(true)
+      _searchRequested.postValue(true)
     }
 
     fun dismissSearch() {
-        _searchRequested.postValue(false)
-        _searchToken.postValue(EMPTY_SEARCH)
+      _searchRequested.postValue(false)
+      _searchToken.postValue(EMPTY_SEARCH)
     }
 
     fun updateSearch(token: String) {
-        _searchToken.postValue(token)
+      _searchToken.postValue(token)
     }
 
     fun preparePlayback(bookId: String) {
-        viewModelScope.launch {
-            mediaRepository.clearPreparedItem()
-            mediaRepository.preparePlayback(bookId)
-        }
+      viewModelScope.launch {
+        mediaRepository.clearPreparedItem()
+        mediaRepository.preparePlayback(bookId)
+      }
     }
 
     fun rewind() {
-        mediaRepository.rewind()
+      mediaRepository.rewind()
     }
 
     fun forward() {
-        mediaRepository.forward()
+      mediaRepository.forward()
     }
 
     fun seekTo(chapterPosition: Double) {
-        mediaRepository.setChapterPosition(chapterPosition)
+      mediaRepository.setChapterPosition(chapterPosition)
     }
 
     fun setChapter(chapter: PlayingChapter) {
-        if (chapter.available) {
-            val index = book.value?.chapters?.indexOf(chapter) ?: -1
-            mediaRepository.setChapter(index)
-        }
+      if (chapter.available) {
+        val index = book.value?.chapters?.indexOf(chapter) ?: -1
+        mediaRepository.setChapter(index)
+      }
     }
 
     fun clearPlayingBook() = mediaRepository.clearPlayingBook()
@@ -120,12 +121,11 @@ class PlayerViewModel @Inject constructor(
     fun togglePlayPause() = mediaRepository.togglePlayPause()
 
     fun prepareAndPlay() {
-        val playingBook = preferences.getPlayingBook() ?: return
-        mediaRepository.prepareAndPlay(playingBook, false)
+      val playingBook = preferences.getPlayingBook() ?: return
+      mediaRepository.prepareAndPlay(playingBook, false)
     }
 
     companion object {
-
-        private const val EMPTY_SEARCH = ""
+      private const val EMPTY_SEARCH = ""
     }
-}
+  }

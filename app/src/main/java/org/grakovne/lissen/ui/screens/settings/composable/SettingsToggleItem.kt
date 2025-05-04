@@ -18,42 +18,44 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun SettingsToggleItem(
-    title: String,
-    description: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
+  title: String,
+  description: String,
+  checked: Boolean,
+  onCheckedChange: (Boolean) -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onCheckedChange(!checked) }
-            .padding(horizontal = 24.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
+  Row(
+    modifier =
+      Modifier
+        .fillMaxWidth()
+        .clickable { onCheckedChange(!checked) }
+        .padding(horizontal = 24.dp, vertical = 12.dp),
+    verticalAlignment = Alignment.CenterVertically,
+  ) {
+    Column(
+      modifier = Modifier.weight(1f),
     ) {
-        Column(
-            modifier = Modifier.weight(1f),
-        ) {
-            Text(
-                text = title,
-                style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                modifier = Modifier.padding(bottom = 2.dp),
-            )
-            Text(
-                text = description,
-                style = typography.bodyMedium,
-                color = colorScheme.onSurfaceVariant,
-            )
-        }
-
-        Switch(
-            checked = checked,
-            onCheckedChange = null,
-            colors = SwitchDefaults.colors(
-                uncheckedTrackColor = colorScheme.background,
-                checkedBorderColor = colorScheme.onSurface,
-                checkedThumbColor = colorScheme.onSurface,
-                checkedTrackColor = colorScheme.background,
-            ),
-        )
+      Text(
+        text = title,
+        style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+        modifier = Modifier.padding(bottom = 2.dp),
+      )
+      Text(
+        text = description,
+        style = typography.bodyMedium,
+        color = colorScheme.onSurfaceVariant,
+      )
     }
+
+    Switch(
+      checked = checked,
+      onCheckedChange = null,
+      colors =
+        SwitchDefaults.colors(
+          uncheckedTrackColor = colorScheme.background,
+          checkedBorderColor = colorScheme.onSurface,
+          checkedThumbColor = colorScheme.onSurface,
+          checkedTrackColor = colorScheme.background,
+        ),
+    )
+  }
 }

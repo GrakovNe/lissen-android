@@ -12,15 +12,13 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object ChannelModule {
-
-    @OptIn(UnstableApi::class)
-    @Provides
-    @Singleton
-    fun getChannelProviders(
-        audiobookshelfChannelProvider: AudiobookshelfChannelProvider,
-    ): Map<ChannelCode, @JvmSuppressWildcards ChannelProvider> {
-        return mapOf(
-            audiobookshelfChannelProvider.getChannelCode() to audiobookshelfChannelProvider,
-        )
-    }
+  @OptIn(UnstableApi::class)
+  @Provides
+  @Singleton
+  fun getChannelProviders(
+    audiobookshelfChannelProvider: AudiobookshelfChannelProvider,
+  ): Map<ChannelCode, @JvmSuppressWildcards ChannelProvider> =
+    mapOf(
+      audiobookshelfChannelProvider.getChannelCode() to audiobookshelfChannelProvider,
+    )
 }

@@ -36,91 +36,96 @@ import org.grakovne.lissen.viewmodel.SettingsViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ServerSettingsComposable(
-    navController: AppNavigationService,
-    viewModel: SettingsViewModel,
+  navController: AppNavigationService,
+  viewModel: SettingsViewModel,
 ) {
-    var connectionInfoExpanded by remember { mutableStateOf(false) }
+  var connectionInfoExpanded by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        viewModel.refreshConnectionInfo()
+  LaunchedEffect(Unit) {
+    viewModel.refreshConnectionInfo()
+  }
+
+  Row(
+    modifier =
+      Modifier
+        .fillMaxWidth()
+        .clickable { connectionInfoExpanded = true }
+        .padding(start = 24.dp, end = 12.dp, top = 12.dp, bottom = 12.dp),
+    verticalAlignment = Alignment.CenterVertically,
+  ) {
+    Column(modifier = Modifier.weight(1f)) {
+      Text(
+        text = stringResource(R.string.settings_screen_server_connection),
+        style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+        modifier = Modifier.padding(bottom = 4.dp),
+      )
+
+      Text(
+        text = "${viewModel.host.value}",
+        style = typography.bodyMedium,
+        maxLines = 1,
+        modifier = Modifier.padding(bottom = 4.dp),
+        overflow = TextOverflow.Ellipsis,
+      )
     }
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { connectionInfoExpanded = true }
-            .padding(start = 24.dp, end = 12.dp, top = 12.dp, bottom = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
+    IconButton(
+      onClick = {
+        navController.showLogin()
+        viewModel.logout()
+      },
     ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = stringResource(R.string.settings_screen_server_connection),
-                style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                modifier = Modifier.padding(bottom = 4.dp),
-            )
+      Icon(
+        imageVector = Icons.Outlined.Delete,
+        contentDescription = "Logout",
+      )
+    }
+  }
 
-            Text(
-                text = "${viewModel.host.value}",
-                style = typography.bodyMedium,
-                maxLines = 1,
-                modifier = Modifier.padding(bottom = 4.dp),
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-        IconButton(
-            onClick = {
-                navController.showLogin()
-                viewModel.logout()
-            },
+  if (connectionInfoExpanded) {
+    ModalBottomSheet(
+      containerColor = MaterialTheme.colorScheme.background,
+      onDismissRequest = { connectionInfoExpanded = false },
+      content = {
+        Column(
+          modifier =
+            Modifier
+              .fillMaxWidth()
+              .padding(bottom = 16.dp)
+              .padding(horizontal = 16.dp),
         ) {
-            Icon(
-                imageVector = Icons.Outlined.Delete,
-                contentDescription = "Logout",
+          viewModel.username.value?.let {
+            InfoRow(
+              label = stringResource(R.string.settings_screen_connected_as_title),
+              value = it,
             )
+            HorizontalDivider()
+          }
+          viewModel.serverVersion.value?.let {
+            InfoRow(
+              label = stringResource(R.string.settings_screen_server_version),
+              value = it,
+            )
+          }
         }
-    }
-
-    if (connectionInfoExpanded) {
-        ModalBottomSheet(
-            containerColor = MaterialTheme.colorScheme.background,
-            onDismissRequest = { connectionInfoExpanded = false },
-            content = {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp)
-                        .padding(horizontal = 16.dp),
-                ) {
-                    viewModel.username.value?.let {
-                        InfoRow(
-                            label = stringResource(R.string.settings_screen_connected_as_title),
-                            value = it,
-                        )
-                        HorizontalDivider()
-                    }
-                    viewModel.serverVersion.value?.let {
-                        InfoRow(
-                            label = stringResource(R.string.settings_screen_server_version),
-                            value = it,
-                        )
-                    }
-                }
-            },
-        )
-    }
+      },
+    )
+  }
 }
 
 @Composable
-fun InfoRow(label: String, value: String) {
-    ListItem(
-        headlineContent = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Text(text = label)
-                Text(text = value)
-            }
-        },
-    )
+fun InfoRow(
+  label: String,
+  value: String,
+) {
+  ListItem(
+    headlineContent = {
+      Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+      ) {
+        Text(text = label)
+        Text(text = value)
+      }
+    },
+  )
 }

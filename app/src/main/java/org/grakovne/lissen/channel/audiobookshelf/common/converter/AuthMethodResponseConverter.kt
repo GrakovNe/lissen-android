@@ -6,15 +6,17 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AuthMethodResponseConverter @Inject constructor() {
-
-    fun apply(response: AuthMethodResponse): List<AuthMethod> = response
+class AuthMethodResponseConverter
+  @Inject
+  constructor() {
+    fun apply(response: AuthMethodResponse): List<AuthMethod> =
+      response
         .authMethods
         .mapNotNull {
-            when (it) {
-                "local" -> AuthMethod.CREDENTIALS
-                "openid" -> AuthMethod.O_AUTH
-                else -> null
-            }
+          when (it) {
+            "local" -> AuthMethod.CREDENTIALS
+            "openid" -> AuthMethod.O_AUTH
+            else -> null
+          }
         }
-}
+  }

@@ -48,160 +48,169 @@ import org.grakovne.lissen.viewmodel.LibraryViewModel
 
 @Composable
 fun RecentBooksComposable(
-    navController: AppNavigationService,
-    recentBooks: List<RecentBook>,
-    imageLoader: ImageLoader,
-    modifier: Modifier = Modifier,
-    libraryViewModel: LibraryViewModel,
+  navController: AppNavigationService,
+  recentBooks: List<RecentBook>,
+  imageLoader: ImageLoader,
+  modifier: Modifier = Modifier,
+  libraryViewModel: LibraryViewModel,
 ) {
-    val configuration = LocalConfiguration.current
-    val screenWidth = remember { configuration.screenWidthDp.dp }
+  val configuration = LocalConfiguration.current
+  val screenWidth = remember { configuration.screenWidthDp.dp }
 
-    val itemsVisible = 2.3f
-    val spacing = 16.dp
-    val totalSpacing = spacing * (itemsVisible + 1)
-    val itemWidth = (screenWidth - totalSpacing) / itemsVisible
+  val itemsVisible = 2.3f
+  val spacing = 16.dp
+  val totalSpacing = spacing * (itemsVisible + 1)
+  val itemWidth = (screenWidth - totalSpacing) / itemsVisible
 
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
-            .padding(horizontal = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        recentBooks
-            .forEach { book ->
-                RecentBookItemComposable(
-                    book = book,
-                    width = itemWidth,
-                    imageLoader = imageLoader,
-                    navController = navController,
-                    libraryViewModel = libraryViewModel,
-                )
-            }
-    }
+  Row(
+    modifier =
+      modifier
+        .fillMaxWidth()
+        .horizontalScroll(rememberScrollState())
+        .padding(horizontal = 4.dp),
+    horizontalArrangement = Arrangement.spacedBy(16.dp),
+  ) {
+    recentBooks
+      .forEach { book ->
+        RecentBookItemComposable(
+          book = book,
+          width = itemWidth,
+          imageLoader = imageLoader,
+          navController = navController,
+          libraryViewModel = libraryViewModel,
+        )
+      }
+  }
 }
 
 @Composable
 fun RecentBookItemComposable(
-    navController: AppNavigationService,
-    book: RecentBook,
-    width: Dp,
-    imageLoader: ImageLoader,
-    libraryViewModel: LibraryViewModel,
+  navController: AppNavigationService,
+  book: RecentBook,
+  width: Dp,
+  imageLoader: ImageLoader,
+  libraryViewModel: LibraryViewModel,
 ) {
+  Column(
+    modifier =
+      Modifier
+        .width(width)
+        .clickable { navController.showPlayer(book.id, book.title, book.subtitle) },
+  ) {
+    val context = LocalContext.current
+    var coverLoading by remember { mutableStateOf(true) }
+
+    val imageRequest =
+      remember(book.id) {
+        ImageRequest
+          .Builder(context)
+          .data(book.id)
+          .crossfade(300)
+          .build()
+      }
+
     Column(
-        modifier = Modifier
-            .width(width)
-            .clickable { navController.showPlayer(book.id, book.title, book.subtitle) },
+      modifier = Modifier.fillMaxWidth(),
     ) {
-        val context = LocalContext.current
-        var coverLoading by remember { mutableStateOf(true) }
+      Box(
+        modifier =
+          Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .aspectRatio(1f),
+      ) {
+        AsyncShimmeringImage(
+          imageRequest = imageRequest,
+          imageLoader = imageLoader,
+          contentDescription = "${book.title} cover",
+          contentScale = ContentScale.FillBounds,
+          modifier =
+            Modifier
+              .fillMaxWidth()
+              .clip(RoundedCornerShape(8.dp)),
+          error = painterResource(R.drawable.cover_fallback),
+          onLoadingStateChanged = { coverLoading = it },
+        )
+      }
 
-        val imageRequest = remember(book.id) {
-            ImageRequest
-                .Builder(context)
-                .data(book.id)
-                .crossfade(300)
-                .build()
-        }
-
-        Column(
-            modifier = Modifier.fillMaxWidth(),
+      if (libraryViewModel.fetchPreferredLibraryType() == LibraryType.LIBRARY) {
+        Row(
+          modifier =
+            Modifier
+              .fillMaxWidth()
+              .padding(horizontal = 2.dp),
+          verticalAlignment = Alignment.CenterVertically,
         ) {
+          Box(
+            modifier =
+              Modifier
+                .weight(1f)
+                .height(2.dp),
+          ) {
             Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(8.dp))
-                    .aspectRatio(1f),
-            ) {
-                AsyncShimmeringImage(
-                    imageRequest = imageRequest,
-                    imageLoader = imageLoader,
-                    contentDescription = "${book.title} cover",
-                    contentScale = ContentScale.FillBounds,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(8.dp)),
-                    error = painterResource(R.drawable.cover_fallback),
-                    onLoadingStateChanged = { coverLoading = it },
-                )
-            }
-
-            if (libraryViewModel.fetchPreferredLibraryType() == LibraryType.LIBRARY) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 2.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(2.dp),
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(Color.Gray.copy(alpha = 0.4f)),
-                        )
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(calculateProgress(book))
-                                .clip(RoundedCornerShape(8.dp))
-                                .fillMaxHeight()
-                                .background(MaterialTheme.colorScheme.primary),
-                        )
-                    }
-
-                    Text(
-                        text = "${(calculateProgress(book) * 100).toInt()}%",
-                        fontSize = typography.bodySmall.fontSize,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(start = 12.dp),
-                    )
-                }
-            } else {
-                Spacer(modifier = Modifier.height(8.dp))
-            }
-        }
-
-        Column(modifier = Modifier.padding(horizontal = 4.dp)) {
-            Text(
-                text = book.title,
-                style = typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+              modifier =
+                Modifier
+                  .fillMaxSize()
+                  .clip(RoundedCornerShape(8.dp))
+                  .background(Color.Gray.copy(alpha = 0.4f)),
             )
+            Box(
+              modifier =
+                Modifier
+                  .fillMaxWidth(calculateProgress(book))
+                  .clip(RoundedCornerShape(8.dp))
+                  .fillMaxHeight()
+                  .background(MaterialTheme.colorScheme.primary),
+            )
+          }
 
-            Spacer(modifier = Modifier.height(2.dp))
-
-            book.subtitle?.let {
-                Text(
-                    text = it,
-                    style = typography.bodySmall.copy(
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                    ),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-
-            book.author?.let {
-                Text(
-                    text = it,
-                    style = typography.bodySmall.copy(
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                    ),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
+          Text(
+            text = "${(calculateProgress(book) * 100).toInt()}%",
+            fontSize = typography.bodySmall.fontSize,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(start = 12.dp),
+          )
         }
+      } else {
+        Spacer(modifier = Modifier.height(8.dp))
+      }
     }
+
+    Column(modifier = Modifier.padding(horizontal = 4.dp)) {
+      Text(
+        text = book.title,
+        style = typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+      )
+
+      Spacer(modifier = Modifier.height(2.dp))
+
+      book.subtitle?.let {
+        Text(
+          text = it,
+          style =
+            typography.bodySmall.copy(
+              color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+            ),
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis,
+        )
+      }
+
+      book.author?.let {
+        Text(
+          text = it,
+          style =
+            typography.bodySmall.copy(
+              color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+            ),
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis,
+        )
+      }
+    }
+  }
 }
 
-private fun calculateProgress(book: RecentBook): Float {
-    return book.listenedPercentage?.div(100.0f) ?: 0.0f
-}
+private fun calculateProgress(book: RecentBook): Float = book.listenedPercentage?.div(100.0f) ?: 0.0f

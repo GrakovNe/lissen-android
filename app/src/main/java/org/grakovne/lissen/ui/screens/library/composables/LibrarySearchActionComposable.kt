@@ -31,80 +31,84 @@ import org.grakovne.lissen.R
 
 @Composable
 fun LibrarySearchActionComposable(
-    onSearchDismissed: () -> Unit,
-    onSearchRequested: (String) -> Unit,
+  onSearchDismissed: () -> Unit,
+  onSearchRequested: (String) -> Unit,
 ) {
-    val focusRequester = remember { FocusRequester() }
-    val searchText = remember { mutableStateOf("") }
+  val focusRequester = remember { FocusRequester() }
+  val searchText = remember { mutableStateOf("") }
 
-    fun updateSearchText(text: String) {
-        searchText.value = text
-        onSearchRequested(searchText.value)
-    }
+  fun updateSearchText(text: String) {
+    searchText.value = text
+    onSearchRequested(searchText.value)
+  }
 
-    LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
+  LaunchedEffect(Unit) {
+    focusRequester.requestFocus()
+  }
+
+  Row(
+    verticalAlignment = Alignment.CenterVertically,
+    modifier =
+      Modifier
+        .fillMaxWidth()
+        .padding(start = 4.dp, end = 8.dp)
+        .height(40.dp),
+  ) {
+    IconButton(
+      modifier = Modifier.height(36.dp),
+      onClick = { onSearchDismissed() },
+    ) {
+      Icon(
+        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+        contentDescription = "Back",
+      )
     }
 
     Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 4.dp, end = 8.dp)
-            .height(40.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      modifier =
+        Modifier
+          .weight(1f)
+          .height(36.dp)
+          .background(colorScheme.surfaceContainer, RoundedCornerShape(36.dp))
+          .padding(start = 16.dp, end = 4.dp),
     ) {
+      BasicTextField(
+        value = searchText.value,
+        onValueChange = { updateSearchText(it) },
+        modifier =
+          Modifier
+            .weight(1f)
+            .focusRequester(focusRequester),
+        textStyle = typography.bodyLarge.copy(color = colorScheme.onBackground),
+        singleLine = true,
+        keyboardOptions =
+          KeyboardOptions.Default.copy(
+            imeAction = ImeAction.Search,
+          ),
+        decorationBox = { innerTextField ->
+          if (searchText.value.isEmpty()) {
+            Text(
+              text = stringResource(R.string.library_search_hint),
+              color = colorScheme.onSurfaceVariant,
+              style = typography.bodyLarge,
+            )
+          }
+          innerTextField()
+        },
+      )
+
+      if (searchText.value.isNotEmpty()) {
         IconButton(
-            modifier = Modifier.height(36.dp),
-            onClick = { onSearchDismissed() },
+          modifier = Modifier.height(36.dp),
+          onClick = { updateSearchText("") },
         ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                contentDescription = "Back",
-            )
+          Icon(
+            imageVector = Icons.Outlined.Clear,
+            contentDescription = "Clear",
+          )
         }
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .weight(1f)
-                .height(36.dp)
-                .background(colorScheme.surfaceContainer, RoundedCornerShape(36.dp))
-                .padding(start = 16.dp, end = 4.dp),
-        ) {
-            BasicTextField(
-                value = searchText.value,
-                onValueChange = { updateSearchText(it) },
-                modifier = Modifier
-                    .weight(1f)
-                    .focusRequester(focusRequester),
-                textStyle = typography.bodyLarge.copy(color = colorScheme.onBackground),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    imeAction = ImeAction.Search,
-                ),
-                decorationBox = { innerTextField ->
-                    if (searchText.value.isEmpty()) {
-                        Text(
-                            text = stringResource(R.string.library_search_hint),
-                            color = colorScheme.onSurfaceVariant,
-                            style = typography.bodyLarge,
-                        )
-                    }
-                    innerTextField()
-                },
-            )
-
-            if (searchText.value.isNotEmpty()) {
-                IconButton(
-                    modifier = Modifier.height(36.dp),
-                    onClick = { updateSearchText("") },
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Clear,
-                        contentDescription = "Clear",
-                    )
-                }
-            }
-        }
+      }
     }
+  }
 }

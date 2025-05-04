@@ -28,75 +28,79 @@ import org.grakovne.lissen.viewmodel.LibraryViewModel
 
 @Composable
 fun RecentBooksPlaceholderComposable(
-    itemCount: Int = 5,
-    libraryViewModel: LibraryViewModel,
+  itemCount: Int = 5,
+  libraryViewModel: LibraryViewModel,
 ) {
-    val configuration = LocalConfiguration.current
-    val screenWidth = remember { configuration.screenWidthDp.dp }
+  val configuration = LocalConfiguration.current
+  val screenWidth = remember { configuration.screenWidthDp.dp }
 
-    val itemsVisible = 2.3f
-    val spacing = 16.dp
-    val totalSpacing = spacing * (itemsVisible + 1)
-    val itemWidth = (screenWidth - totalSpacing) / itemsVisible
+  val itemsVisible = 2.3f
+  val spacing = 16.dp
+  val totalSpacing = spacing * (itemsVisible + 1)
+  val itemWidth = (screenWidth - totalSpacing) / itemsVisible
 
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        items(itemCount) {
-            RecentBookItemComposable(
-                width = itemWidth,
-                libraryViewModel = libraryViewModel,
-            )
-        }
+  LazyRow(
+    contentPadding = PaddingValues(horizontal = 4.dp),
+    horizontalArrangement = Arrangement.spacedBy(16.dp),
+    modifier = Modifier.fillMaxWidth(),
+  ) {
+    items(itemCount) {
+      RecentBookItemComposable(
+        width = itemWidth,
+        libraryViewModel = libraryViewModel,
+      )
     }
+  }
 }
 
 @Composable
 fun RecentBookItemComposable(
-    width: Dp,
-    libraryViewModel: LibraryViewModel,
+  width: Dp,
+  libraryViewModel: LibraryViewModel,
 ) {
-    Column(
-        modifier = Modifier
-            .width(width),
-    ) {
-        Spacer(
-            modifier = Modifier
-                .fillMaxWidth()
-                .aspectRatio(1f)
-                .clip(RoundedCornerShape(8.dp))
-                .shimmer()
-                .background(Color.Gray),
-        )
+  Column(
+    modifier =
+      Modifier
+        .width(width),
+  ) {
+    Spacer(
+      modifier =
+        Modifier
+          .fillMaxWidth()
+          .aspectRatio(1f)
+          .clip(RoundedCornerShape(8.dp))
+          .shimmer()
+          .background(Color.Gray),
+    )
 
-        Spacer(modifier = Modifier.height(14.dp))
+    Spacer(modifier = Modifier.height(14.dp))
 
-        Column(modifier = Modifier.padding(horizontal = 4.dp)) {
-            Text(
-                color = Color.Transparent,
-                text = "Crime and Punishment. Novel",
-                style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
-                maxLines = 1,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(4.dp))
-                    .shimmer()
-                    .background(Color.Gray),
-            )
+    Column(modifier = Modifier.padding(horizontal = 4.dp)) {
+      Text(
+        color = Color.Transparent,
+        text = "Crime and Punishment. Novel",
+        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold),
+        maxLines = 1,
+        modifier =
+          Modifier
+            .clip(RoundedCornerShape(4.dp))
+            .shimmer()
+            .background(Color.Gray),
+      )
 
-            Spacer(modifier = Modifier.height(8.dp))
+      Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                color = Color.Transparent,
-                text = "Fyodor Dostoevsky",
-                style = MaterialTheme.typography.bodySmall,
-                maxLines = 1,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(4.dp))
-                    .shimmer()
-                    .background(Color.Gray),
-            )
-        }
+      Text(
+        color = Color.Transparent,
+        text = "Fyodor Dostoevsky",
+        style = MaterialTheme.typography.bodySmall,
+        maxLines = 1,
+        modifier =
+          Modifier
+            .clip(RoundedCornerShape(4.dp))
+            .shimmer()
+            .background(Color.Gray),
+      )
     }
+  }
 }

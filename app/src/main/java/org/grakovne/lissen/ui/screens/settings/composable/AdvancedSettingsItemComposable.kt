@@ -22,40 +22,41 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun AdvancedSettingsItemComposable(
-    title: String,
-    description: String,
-    onclick: () -> Unit,
+  title: String,
+  description: String,
+  onclick: () -> Unit,
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onclick() }
-            .padding(start = 24.dp, end = 12.dp, top = 12.dp, bottom = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                modifier = Modifier.padding(bottom = 4.dp),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                text = description,
-                style = typography.bodyMedium,
-                color = colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
-        IconButton(
-            onClick = { onclick() },
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Outlined.ArrowForwardIos,
-                contentDescription = "Logout",
-            )
-        }
+  Row(
+    modifier =
+      Modifier
+        .fillMaxWidth()
+        .clickable { onclick() }
+        .padding(start = 24.dp, end = 12.dp, top = 12.dp, bottom = 12.dp),
+    verticalAlignment = Alignment.CenterVertically,
+  ) {
+    Column(modifier = Modifier.weight(1f)) {
+      Text(
+        text = title,
+        style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+        modifier = Modifier.padding(bottom = 4.dp),
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+      )
+      Text(
+        text = description,
+        style = typography.bodyMedium,
+        color = colorScheme.onSurfaceVariant,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+      )
     }
+    IconButton(
+      onClick = { onclick() },
+    ) {
+      Icon(
+        imageVector = Icons.AutoMirrored.Outlined.ArrowForwardIos,
+        contentDescription = "Logout",
+      )
+    }
+  }
 }

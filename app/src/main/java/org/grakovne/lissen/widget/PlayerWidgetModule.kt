@@ -10,8 +10,7 @@ import org.grakovne.lissen.common.RunningComponent
 @Module
 @InstallIn(SingletonComponent::class)
 interface PlayerWidgetModule {
-
-    @Binds
-    @IntoSet
-    fun bindPlayerWidgetStateService(service: PlayerWidgetStateService): RunningComponent
+  @Binds
+  @IntoSet
+  fun bindPlayerWidgetStateService(service: PlayerWidgetStateService): RunningComponent
 }

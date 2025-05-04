@@ -18,11 +18,12 @@ import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import javax.inject.Inject
 
 @HiltViewModel
-class SettingsViewModel @Inject constructor(
+class SettingsViewModel
+  @Inject
+  constructor(
     private val mediaChannel: LissenMediaProvider,
     private val preferences: LissenSharedPreferences,
-) : ViewModel() {
-
+  ) : ViewModel() {
     private val _host = MutableLiveData(preferences.getHost())
     val host = _host
 
@@ -54,116 +55,113 @@ class SettingsViewModel @Inject constructor(
     val rewindOnPause = _rewindOnPause
 
     fun logout() {
-        preferences.clearPreferences()
+      preferences.clearPreferences()
     }
 
     fun refreshConnectionInfo() {
-        viewModelScope.launch {
-            when (val response = mediaChannel.fetchConnectionInfo()) {
-                is ApiResult.Error -> Unit
-                is ApiResult.Success -> {
-                    _username.postValue(response.data.username)
-                    _serverVersion.postValue(response.data.serverVersion)
+      viewModelScope.launch {
+        when (val response = mediaChannel.fetchConnectionInfo()) {
+          is ApiResult.Error -> Unit
+          is ApiResult.Success -> {
+            _username.postValue(response.data.username)
+            _serverVersion.postValue(response.data.serverVersion)
 
-                    updateServerInfo()
-                }
-            }
+            updateServerInfo()
+          }
         }
+      }
     }
 
     fun fetchLibraries() {
-        viewModelScope.launch {
-            when (val response = mediaChannel.fetchLibraries()) {
-                is ApiResult.Success -> {
-                    val libraries = response.data
-                    _libraries.postValue(libraries)
+      viewModelScope.launch {
+        when (val response = mediaChannel.fetchLibraries()) {
+          is ApiResult.Success -> {
+            val libraries = response.data
+            _libraries.postValue(libraries)
 
-                    val preferredLibrary = preferences.getPreferredLibrary()
+            val preferredLibrary = preferences.getPreferredLibrary()
 
-                    _preferredLibrary.postValue(
-                        when (preferredLibrary) {
-                            null -> libraries.firstOrNull()
-                            else -> libraries.find { it.id == preferredLibrary.id }
-                        },
-                    )
-                }
+            _preferredLibrary.postValue(
+              when (preferredLibrary) {
+                null -> libraries.firstOrNull()
+                else -> libraries.find { it.id == preferredLibrary.id }
+              },
+            )
+          }
 
-                is ApiResult.Error -> {
-                    _libraries.postValue(preferences.getPreferredLibrary()?.let { listOf(it) })
-                }
-            }
+          is ApiResult.Error -> {
+            _libraries.postValue(preferences.getPreferredLibrary()?.let { listOf(it) })
+          }
         }
+      }
     }
 
-    fun fetchPreferredLibraryId(): String {
-        return preferences.getPreferredLibrary()?.id ?: ""
-    }
+    fun fetchPreferredLibraryId(): String = preferences.getPreferredLibrary()?.id ?: ""
 
-    fun fetchLibraryOrdering(): LibraryOrderingConfiguration {
-        return preferences.getLibraryOrdering()
-    }
+    fun fetchLibraryOrdering(): LibraryOrderingConfiguration = preferences.getLibraryOrdering()
 
     fun preferLibrary(library: Library) {
-        _preferredLibrary.postValue(library)
-        preferences.savePreferredLibrary(library)
+      _preferredLibrary.postValue(library)
+      preferences.savePreferredLibrary(library)
     }
 
     fun preferLibraryOrdering(configuration: LibraryOrderingConfiguration) {
-        _preferredLibraryOrdering.postValue(configuration)
-        preferences.saveLibraryOrdering(configuration)
+      _preferredLibraryOrdering.postValue(configuration)
+      preferences.saveLibraryOrdering(configuration)
     }
 
     fun preferColorScheme(colorScheme: ColorScheme) {
-        _preferredColorScheme.postValue(colorScheme)
-        preferences.saveColorScheme(colorScheme)
+      _preferredColorScheme.postValue(colorScheme)
+      preferences.saveColorScheme(colorScheme)
     }
 
     fun preferForwardRewind(option: SeekTimeOption) {
-        val current = _seekTime.value ?: return
-        val updated = current.copy(forward = option)
+      val current = _seekTime.value ?: return
+      val updated = current.copy(forward = option)
 
-        preferences.saveSeekTime(updated)
-        _seekTime.postValue(updated)
+      preferences.saveSeekTime(updated)
+      _seekTime.postValue(updated)
     }
 
     fun preferRewindRewind(option: SeekTimeOption) {
-        val current = _seekTime.value ?: return
-        val updated = current.copy(rewind = option)
+      val current = _seekTime.value ?: return
+      val updated = current.copy(rewind = option)
 
-        preferences.saveSeekTime(updated)
-        _seekTime.postValue(updated)
+      preferences.saveSeekTime(updated)
+      _seekTime.postValue(updated)
     }
 
     fun preferRewindOnPause(value: Boolean) {
-        val current = _rewindOnPause.value ?: return
-        val updated = current.copy(enabled = value)
+      val current = _rewindOnPause.value ?: return
+      val updated = current.copy(enabled = value)
 
-        preferences.saveRewindOnPause(updated)
-        _rewindOnPause.value = updated
+      preferences.saveRewindOnPause(updated)
+      _rewindOnPause.value = updated
     }
 
     fun preferRewindTimeOnPause(option: SeekTimeOption) {
-        val current = _rewindOnPause.value ?: return
-        val updated = current.copy(time = option)
+      val current = _rewindOnPause.value ?: return
+      val updated = current.copy(time = option)
 
-        preferences.saveRewindOnPause(updated)
-        _rewindOnPause.value = updated
+      preferences.saveRewindOnPause(updated)
+      _rewindOnPause.value = updated
     }
 
     fun updateCustomHeaders(headers: List<ServerRequestHeader>) {
-        _customHeaders.postValue(headers)
+      _customHeaders.postValue(headers)
 
-        val meaningfulHeaders = headers
-            .map { it.clean() }
-            .distinctBy { it.name }
-            .filterNot { it.name.isEmpty() }
-            .filterNot { it.value.isEmpty() }
+      val meaningfulHeaders =
+        headers
+          .map { it.clean() }
+          .distinctBy { it.name }
+          .filterNot { it.name.isEmpty() }
+          .filterNot { it.value.isEmpty() }
 
-        preferences.saveCustomHeaders(meaningfulHeaders)
+      preferences.saveCustomHeaders(meaningfulHeaders)
     }
 
     private fun updateServerInfo() {
-        serverVersion.value?.let { preferences.saveServerVersion(it) }
-        username.value?.let { preferences.saveUsername(it) }
+      serverVersion.value?.let { preferences.saveServerVersion(it) }
+      username.value?.let { preferences.saveUsername(it) }
     }
-}
+  }

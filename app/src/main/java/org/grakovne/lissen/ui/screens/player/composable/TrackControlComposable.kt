@@ -44,160 +44,168 @@ import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
 fun TrackControlComposable(
-    viewModel: PlayerViewModel,
-    settingsViewModel: SettingsViewModel,
-    modifier: Modifier = Modifier,
+  viewModel: PlayerViewModel,
+  settingsViewModel: SettingsViewModel,
+  modifier: Modifier = Modifier,
 ) {
-    val isPlaying by viewModel.isPlaying.observeAsState(false)
-    val currentTrackIndex by viewModel.currentChapterIndex.observeAsState(0)
-    val currentTrackPosition by viewModel.currentChapterPosition.observeAsState(0.0)
-    val currentTrackDuration by viewModel.currentChapterDuration.observeAsState(0.0)
+  val isPlaying by viewModel.isPlaying.observeAsState(false)
+  val currentTrackIndex by viewModel.currentChapterIndex.observeAsState(0)
+  val currentTrackPosition by viewModel.currentChapterPosition.observeAsState(0.0)
+  val currentTrackDuration by viewModel.currentChapterDuration.observeAsState(0.0)
 
-    val seekTime by settingsViewModel.seekTime.observeAsState(SeekTime.Default)
+  val seekTime by settingsViewModel.seekTime.observeAsState(SeekTime.Default)
 
-    val book by viewModel.book.observeAsState()
-    val chapters = book?.chapters ?: emptyList()
+  val book by viewModel.book.observeAsState()
+  val chapters = book?.chapters ?: emptyList()
 
-    val view: View = LocalView.current
+  val view: View = LocalView.current
 
-    var sliderPosition by remember { mutableDoubleStateOf(0.0) }
-    var isDragging by remember { mutableStateOf(false) }
+  var sliderPosition by remember { mutableDoubleStateOf(0.0) }
+  var isDragging by remember { mutableStateOf(false) }
 
-    LaunchedEffect(currentTrackPosition, currentTrackIndex, currentTrackDuration) {
-        if (!isDragging) {
-            sliderPosition = currentTrackPosition
-        }
+  LaunchedEffect(currentTrackPosition, currentTrackIndex, currentTrackDuration) {
+    if (!isDragging) {
+      sliderPosition = currentTrackPosition
     }
+  }
 
+  Column(
+    modifier =
+      modifier
+        .fillMaxWidth()
+        .padding(horizontal = 12.dp),
+  ) {
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp),
+      modifier = Modifier.fillMaxWidth(),
     ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Slider(
-                value = sliderPosition.toFloat(),
-                onValueChange = { newPosition ->
-                    isDragging = true
-                    sliderPosition = newPosition.toDouble()
-                },
-                onValueChangeFinished = {
-                    isDragging = false
-                    viewModel.seekTo(sliderPosition)
-                },
-                valueRange = 0f..currentTrackDuration.toFloat(),
-                colors = SliderDefaults.colors(
-                    thumbColor = colorScheme.primary,
-                    activeTrackColor = colorScheme.primary,
-                ),
-                modifier = Modifier.fillMaxWidth(),
-            )
-        }
-
-        Box(
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Column {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .offset(y = (-4).dp)
-                        .padding(horizontal = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                ) {
-                    Text(
-                        text = sliderPosition.toInt().formatLeadingMinutes(),
-                        style = typography.bodySmall,
-                        color = colorScheme.onBackground.copy(alpha = 0.6f),
-                    )
-                    Text(
-                        text = maxOf(0.0, currentTrackDuration - sliderPosition)
-                            .toInt()
-                            .formatLeadingMinutes(),
-                        style = typography.bodySmall,
-                        color = colorScheme.onBackground.copy(alpha = 0.6f),
-                    )
-                }
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 6.dp)
-                    .align(Alignment.BottomCenter),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                IconButton(
-                    onClick = {
-                        hapticAction(view) { viewModel.previousTrack() }
-                    },
-                    enabled = true,
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.SkipPrevious,
-                        contentDescription = "Previous Track",
-                        tint = colorScheme.onBackground,
-                        modifier = Modifier.size(36.dp),
-                    )
-                }
-
-                IconButton(
-                    onClick = { hapticAction(view) { viewModel.rewind() } },
-                ) {
-                    Icon(
-                        imageVector = provideReplayIcon(seekTime),
-                        contentDescription = "Rewind",
-                        tint = colorScheme.onBackground,
-                        modifier = Modifier.size(48.dp),
-                    )
-                }
-
-                IconButton(
-                    onClick = { hapticAction(view) { viewModel.togglePlayPause() } },
-                    modifier = Modifier.size(72.dp),
-                ) {
-                    Icon(
-                        imageVector = if (isPlaying) Icons.Rounded.PauseCircleFilled else Icons.Rounded.PlayCircleFilled,
-                        contentDescription = "Play / Pause",
-                        tint = colorScheme.primary,
-                        modifier = Modifier.fillMaxSize(),
-                    )
-                }
-
-                IconButton(
-                    onClick = { hapticAction(view) { viewModel.forward() } },
-                ) {
-                    Icon(
-                        imageVector = provideForwardIcon(seekTime),
-                        contentDescription = "Forward",
-                        tint = colorScheme.onBackground,
-                        modifier = Modifier.size(48.dp),
-                    )
-                }
-
-                IconButton(
-                    onClick = {
-                        if (currentTrackIndex < chapters.size - 1) {
-                            hapticAction(view) { viewModel.nextTrack() }
-                        }
-                    },
-                    enabled = currentTrackIndex < chapters.size - 1,
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.SkipNext,
-                        contentDescription = "Next Track",
-                        tint = if (currentTrackIndex < chapters.size - 1) {
-                            colorScheme.onBackground
-                        } else colorScheme.onBackground.copy(
-                            alpha = 0.3f,
-                        ),
-                        modifier = Modifier.size(36.dp),
-                    )
-                }
-            }
-        }
+      Slider(
+        value = sliderPosition.toFloat(),
+        onValueChange = { newPosition ->
+          isDragging = true
+          sliderPosition = newPosition.toDouble()
+        },
+        onValueChangeFinished = {
+          isDragging = false
+          viewModel.seekTo(sliderPosition)
+        },
+        valueRange = 0f..currentTrackDuration.toFloat(),
+        colors =
+          SliderDefaults.colors(
+            thumbColor = colorScheme.primary,
+            activeTrackColor = colorScheme.primary,
+          ),
+        modifier = Modifier.fillMaxWidth(),
+      )
     }
+
+    Box(
+      modifier = Modifier.fillMaxWidth(),
+    ) {
+      Column {
+        Row(
+          modifier =
+            Modifier
+              .fillMaxWidth()
+              .offset(y = (-4).dp)
+              .padding(horizontal = 8.dp),
+          horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+          Text(
+            text = sliderPosition.toInt().formatLeadingMinutes(),
+            style = typography.bodySmall,
+            color = colorScheme.onBackground.copy(alpha = 0.6f),
+          )
+          Text(
+            text =
+              maxOf(0.0, currentTrackDuration - sliderPosition)
+                .toInt()
+                .formatLeadingMinutes(),
+            style = typography.bodySmall,
+            color = colorScheme.onBackground.copy(alpha = 0.6f),
+          )
+        }
+      }
+
+      Row(
+        modifier =
+          Modifier
+            .fillMaxWidth()
+            .padding(top = 6.dp)
+            .align(Alignment.BottomCenter),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically,
+      ) {
+        IconButton(
+          onClick = {
+            hapticAction(view) { viewModel.previousTrack() }
+          },
+          enabled = true,
+        ) {
+          Icon(
+            imageVector = Icons.Rounded.SkipPrevious,
+            contentDescription = "Previous Track",
+            tint = colorScheme.onBackground,
+            modifier = Modifier.size(36.dp),
+          )
+        }
+
+        IconButton(
+          onClick = { hapticAction(view) { viewModel.rewind() } },
+        ) {
+          Icon(
+            imageVector = provideReplayIcon(seekTime),
+            contentDescription = "Rewind",
+            tint = colorScheme.onBackground,
+            modifier = Modifier.size(48.dp),
+          )
+        }
+
+        IconButton(
+          onClick = { hapticAction(view) { viewModel.togglePlayPause() } },
+          modifier = Modifier.size(72.dp),
+        ) {
+          Icon(
+            imageVector = if (isPlaying) Icons.Rounded.PauseCircleFilled else Icons.Rounded.PlayCircleFilled,
+            contentDescription = "Play / Pause",
+            tint = colorScheme.primary,
+            modifier = Modifier.fillMaxSize(),
+          )
+        }
+
+        IconButton(
+          onClick = { hapticAction(view) { viewModel.forward() } },
+        ) {
+          Icon(
+            imageVector = provideForwardIcon(seekTime),
+            contentDescription = "Forward",
+            tint = colorScheme.onBackground,
+            modifier = Modifier.size(48.dp),
+          )
+        }
+
+        IconButton(
+          onClick = {
+            if (currentTrackIndex < chapters.size - 1) {
+              hapticAction(view) { viewModel.nextTrack() }
+            }
+          },
+          enabled = currentTrackIndex < chapters.size - 1,
+        ) {
+          Icon(
+            imageVector = Icons.Rounded.SkipNext,
+            contentDescription = "Next Track",
+            tint =
+              if (currentTrackIndex < chapters.size - 1) {
+                colorScheme.onBackground
+              } else {
+                colorScheme.onBackground.copy(
+                  alpha = 0.3f,
+                )
+              },
+            modifier = Modifier.size(36.dp),
+          )
+        }
+      }
+    }
+  }
 }

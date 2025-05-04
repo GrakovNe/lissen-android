@@ -70,255 +70,259 @@ import org.grakovne.lissen.viewmodel.SettingsViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerScreen(
-    navController: AppNavigationService,
-    imageLoader: ImageLoader,
-    bookId: String,
-    bookTitle: String,
-    bookSubtitle: String?,
-    playInstantly: Boolean,
+  navController: AppNavigationService,
+  imageLoader: ImageLoader,
+  bookId: String,
+  bookTitle: String,
+  bookSubtitle: String?,
+  playInstantly: Boolean,
 ) {
-    val context = LocalContext.current
+  val context = LocalContext.current
 
-    val cachingModelView: CachingModelView = hiltViewModel()
-    val playerViewModel: PlayerViewModel = hiltViewModel()
-    val libraryViewModel: LibraryViewModel = hiltViewModel()
-    val settingsViewModel: SettingsViewModel = hiltViewModel()
+  val cachingModelView: CachingModelView = hiltViewModel()
+  val playerViewModel: PlayerViewModel = hiltViewModel()
+  val libraryViewModel: LibraryViewModel = hiltViewModel()
+  val settingsViewModel: SettingsViewModel = hiltViewModel()
 
-    val titleTextStyle = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
+  val titleTextStyle = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
 
-    val playingBook by playerViewModel.book.observeAsState()
-    val isPlaybackReady by playerViewModel.isPlaybackReady.observeAsState(false)
-    val playingQueueExpanded by playerViewModel.playingQueueExpanded.observeAsState(false)
-    val searchRequested by playerViewModel.searchRequested.observeAsState(false)
+  val playingBook by playerViewModel.book.observeAsState()
+  val isPlaybackReady by playerViewModel.isPlaybackReady.observeAsState(false)
+  val playingQueueExpanded by playerViewModel.playingQueueExpanded.observeAsState(false)
+  val searchRequested by playerViewModel.searchRequested.observeAsState(false)
 
-    var itemDetailsSelected by remember { mutableStateOf(false) }
+  var itemDetailsSelected by remember { mutableStateOf(false) }
 
-    val screenTitle = when (playingQueueExpanded) {
-        true -> provideNowPlayingTitle(libraryViewModel.fetchPreferredLibraryType(), context)
-        false -> stringResource(R.string.player_screen_title)
+  val screenTitle =
+    when (playingQueueExpanded) {
+      true -> provideNowPlayingTitle(libraryViewModel.fetchPreferredLibraryType(), context)
+      false -> stringResource(R.string.player_screen_title)
     }
 
-    fun stepBack() {
-        when {
-            searchRequested -> playerViewModel.dismissSearch()
-            playingQueueExpanded -> playerViewModel.collapsePlayingQueue()
-            else -> navController.showLibrary(clearHistory = true)
-        }
+  fun stepBack() {
+    when {
+      searchRequested -> playerViewModel.dismissSearch()
+      playingQueueExpanded -> playerViewModel.collapsePlayingQueue()
+      else -> navController.showLibrary(clearHistory = true)
     }
+  }
 
-    BackHandler(enabled = searchRequested || playingQueueExpanded || playInstantly) {
-        stepBack()
+  BackHandler(enabled = searchRequested || playingQueueExpanded || playInstantly) {
+    stepBack()
+  }
+
+  LaunchedEffect(Unit) {
+    bookId
+      .takeIf { playingItemChanged(it, playingBook) || cachePolicyChanged(cachingModelView, playingBook) }
+      ?.let { playerViewModel.preparePlayback(it) }
+
+    if (playInstantly) {
+      playerViewModel.prepareAndPlay()
     }
+  }
 
-    LaunchedEffect(Unit) {
-        bookId
-            .takeIf { playingItemChanged(it, playingBook) || cachePolicyChanged(cachingModelView, playingBook) }
-            ?.let { playerViewModel.preparePlayback(it) }
-
-        if (playInstantly) {
-            playerViewModel.prepareAndPlay()
-        }
+  LaunchedEffect(playingQueueExpanded) {
+    if (playingQueueExpanded.not()) {
+      playerViewModel.dismissSearch()
     }
+  }
 
-    LaunchedEffect(playingQueueExpanded) {
-        if (playingQueueExpanded.not()) {
-            playerViewModel.dismissSearch()
-        }
-    }
+  Scaffold(
+    topBar = {
+      TopAppBar(
+        actions = {
+          if (playingQueueExpanded) {
+            AnimatedContent(
+              targetState = searchRequested,
+              label = "library_action_animation",
+              transitionSpec = {
+                fadeIn(animationSpec = keyframes { durationMillis = 150 }) togetherWith
+                  fadeOut(animationSpec = keyframes { durationMillis = 150 })
+              },
+            ) { isSearchRequested ->
+              when (isSearchRequested) {
+                true ->
+                  ChapterSearchActionComposable(
+                    onSearchRequested = { playerViewModel.updateSearch(it) },
+                  )
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                actions = {
-                    if (playingQueueExpanded) {
-                        AnimatedContent(
-                            targetState = searchRequested,
-                            label = "library_action_animation",
-                            transitionSpec = {
-                                fadeIn(animationSpec = keyframes { durationMillis = 150 }) togetherWith
-                                    fadeOut(animationSpec = keyframes { durationMillis = 150 })
-                            },
-                        ) { isSearchRequested ->
-                            when (isSearchRequested) {
-                                true -> ChapterSearchActionComposable(
-                                    onSearchRequested = { playerViewModel.updateSearch(it) },
-                                )
-
-                                false -> Row {
-                                    IconButton(
-                                        onClick = { playerViewModel.requestSearch() },
-                                        modifier = Modifier.padding(end = 4.dp),
-                                    ) {
-                                        Icon(
-                                            imageVector = Search,
-                                            contentDescription = null,
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        Row {
-                            IconButton(
-                                onClick = { itemDetailsSelected = true },
-                                modifier = Modifier.padding(end = 4.dp),
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.Info,
-                                    contentDescription = null,
-                                )
-                            }
-                        }
-                    }
-                },
-                title = {
-                    Text(
-                        text = screenTitle,
-                        style = titleTextStyle,
-                        color = colorScheme.onSurface,
-                        maxLines = 1,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { stepBack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = "Back",
-                            tint = colorScheme.onSurface,
-                        )
-                    }
-                },
-            )
-        },
-        bottomBar = {
-            playingBook
-                ?.let {
-                    NavigationBarComposable(
-                        book = it,
-                        playerViewModel = playerViewModel,
-                        contentCachingModelView = cachingModelView,
-                        navController = navController,
-                        libraryType = libraryViewModel.fetchPreferredLibraryType(),
-                    )
-                }
-        },
-        modifier = Modifier.systemBarsPadding(),
-        content = { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .testTag("playerScreen")
-                    .padding(innerPadding),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                AnimatedVisibility(
-                    visible = playingQueueExpanded.not(),
-                    enter = expandVertically(animationSpec = tween(400)),
-                    exit = shrinkVertically(animationSpec = tween(400)),
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
+                false ->
+                  Row {
+                    IconButton(
+                      onClick = { playerViewModel.requestSearch() },
+                      modifier = Modifier.padding(end = 4.dp),
                     ) {
-                        if (!isPlaybackReady) {
-                            TrackDetailsPlaceholderComposable(bookTitle, bookSubtitle)
-                        } else {
-                            TrackDetailsComposable(
-                                viewModel = playerViewModel,
-                                imageLoader = imageLoader,
-                                libraryViewModel = libraryViewModel,
-                            )
-                        }
-
-                        if (!isPlaybackReady) {
-                            TrackControlPlaceholderComposable(
-                                modifier = Modifier,
-                                settingsViewModel = settingsViewModel,
-                            )
-                        } else {
-                            TrackControlComposable(
-                                viewModel = playerViewModel,
-                                modifier = Modifier,
-                                settingsViewModel = settingsViewModel,
-                            )
-                        }
+                      Icon(
+                        imageVector = Search,
+                        contentDescription = null,
+                      )
                     }
-                }
-
-                Spacer(modifier = Modifier.height(6.dp))
-
-                when {
-                    isPlaybackReady.not() -> {
-                        PlayingQueuePlaceholderComposable(
-                            libraryViewModel = libraryViewModel,
-                            modifier = Modifier,
-                        )
-                    }
-
-                    playingBook?.chapters.isNullOrEmpty() -> {
-                        PlayingQueueFallbackComposable(
-                            libraryViewModel = libraryViewModel,
-                            modifier = Modifier,
-                        )
-                    }
-
-                    else -> {
-                        PlayingQueueComposable(
-                            libraryViewModel = libraryViewModel,
-                            viewModel = playerViewModel,
-                            modifier = Modifier,
-                        )
-                    }
-                }
+                  }
+              }
             }
+          } else {
+            Row {
+              IconButton(
+                onClick = { itemDetailsSelected = true },
+                modifier = Modifier.padding(end = 4.dp),
+              ) {
+                Icon(
+                  imageVector = Icons.Outlined.Info,
+                  contentDescription = null,
+                )
+              }
+            }
+          }
         },
-    )
+        title = {
+          Text(
+            text = screenTitle,
+            style = titleTextStyle,
+            color = colorScheme.onSurface,
+            maxLines = 1,
+            modifier = Modifier.fillMaxWidth(),
+          )
+        },
+        navigationIcon = {
+          IconButton(onClick = { stepBack() }) {
+            Icon(
+              imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+              contentDescription = "Back",
+              tint = colorScheme.onSurface,
+            )
+          }
+        },
+      )
+    },
+    bottomBar = {
+      playingBook
+        ?.let {
+          NavigationBarComposable(
+            book = it,
+            playerViewModel = playerViewModel,
+            contentCachingModelView = cachingModelView,
+            navController = navController,
+            libraryType = libraryViewModel.fetchPreferredLibraryType(),
+          )
+        }
+    },
+    modifier = Modifier.systemBarsPadding(),
+    content = { innerPadding ->
+      Column(
+        modifier =
+          Modifier
+            .testTag("playerScreen")
+            .padding(innerPadding),
+        horizontalAlignment = Alignment.CenterHorizontally,
+      ) {
+        AnimatedVisibility(
+          visible = playingQueueExpanded.not(),
+          enter = expandVertically(animationSpec = tween(400)),
+          exit = shrinkVertically(animationSpec = tween(400)),
+        ) {
+          Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+          ) {
+            if (!isPlaybackReady) {
+              TrackDetailsPlaceholderComposable(bookTitle, bookSubtitle)
+            } else {
+              TrackDetailsComposable(
+                viewModel = playerViewModel,
+                imageLoader = imageLoader,
+                libraryViewModel = libraryViewModel,
+              )
+            }
 
-    if (itemDetailsSelected) {
-        MediaDetailComposable(
-            playingBook = playingBook,
-            onDismissRequest = { itemDetailsSelected = false },
-        )
-    }
+            if (!isPlaybackReady) {
+              TrackControlPlaceholderComposable(
+                modifier = Modifier,
+                settingsViewModel = settingsViewModel,
+              )
+            } else {
+              TrackControlComposable(
+                viewModel = playerViewModel,
+                modifier = Modifier,
+                settingsViewModel = settingsViewModel,
+              )
+            }
+          }
+        }
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        when {
+          isPlaybackReady.not() -> {
+            PlayingQueuePlaceholderComposable(
+              libraryViewModel = libraryViewModel,
+              modifier = Modifier,
+            )
+          }
+
+          playingBook?.chapters.isNullOrEmpty() -> {
+            PlayingQueueFallbackComposable(
+              libraryViewModel = libraryViewModel,
+              modifier = Modifier,
+            )
+          }
+
+          else -> {
+            PlayingQueueComposable(
+              libraryViewModel = libraryViewModel,
+              viewModel = playerViewModel,
+              modifier = Modifier,
+            )
+          }
+        }
+      }
+    },
+  )
+
+  if (itemDetailsSelected) {
+    MediaDetailComposable(
+      playingBook = playingBook,
+      onDismissRequest = { itemDetailsSelected = false },
+    )
+  }
 }
 
 @Composable
 fun InfoRow(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    label: String,
-    textValue: String,
+  icon: androidx.compose.ui.graphics.vector.ImageVector,
+  label: String,
+  textValue: String,
 ) {
-    Spacer(modifier = Modifier.height(8.dp))
+  Spacer(modifier = Modifier.height(8.dp))
 
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = colorScheme.primary,
-            modifier = Modifier.size(20.dp),
-        )
-        Spacer(Modifier.width(8.dp))
-        Text(
-            text = "$label: ",
-            style = typography.bodyMedium,
-            color = Color.Gray,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-        Text(
-            text = textValue,
-            style = typography.bodyMedium,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-    }
+  Row(verticalAlignment = Alignment.CenterVertically) {
+    Icon(
+      imageVector = icon,
+      contentDescription = null,
+      tint = colorScheme.primary,
+      modifier = Modifier.size(20.dp),
+    )
+    Spacer(Modifier.width(8.dp))
+    Text(
+      text = "$label: ",
+      style = typography.bodyMedium,
+      color = Color.Gray,
+      maxLines = 1,
+      overflow = TextOverflow.Ellipsis,
+    )
+    Text(
+      text = textValue,
+      style = typography.bodyMedium,
+      maxLines = 1,
+      overflow = TextOverflow.Ellipsis,
+    )
+  }
 }
 
 private fun playingItemChanged(
-    item: String,
-    playingBook: DetailedItem?,
+  item: String,
+  playingBook: DetailedItem?,
 ) = item != playingBook?.id
 
 private fun cachePolicyChanged(
-    cachingModelView: CachingModelView,
-    playingBook: DetailedItem?,
+  cachingModelView: CachingModelView,
+  playingBook: DetailedItem?,
 ) = cachingModelView.localCacheUsing() != playingBook?.localProvided

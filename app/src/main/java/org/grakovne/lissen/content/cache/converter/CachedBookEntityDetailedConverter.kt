@@ -13,9 +13,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class CachedBookEntityDetailedConverter @Inject constructor() {
-
-    fun apply(entity: CachedBookEntity): DetailedItem = DetailedItem(
+class CachedBookEntityDetailedConverter
+  @Inject
+  constructor() {
+    fun apply(entity: CachedBookEntity): DetailedItem =
+      DetailedItem(
         id = entity.detailedBook.id,
         title = entity.detailedBook.title,
         subtitle = entity.detailedBook.subtitle,
@@ -23,54 +25,56 @@ class CachedBookEntityDetailedConverter @Inject constructor() {
         narrator = entity.detailedBook.narrator,
         libraryId = entity.detailedBook.libraryId,
         localProvided = true,
-        files = entity.files.map { fileEntity ->
+        files =
+          entity.files.map { fileEntity ->
             BookFile(
-                id = fileEntity.bookFileId,
-                name = fileEntity.name,
-                duration = fileEntity.duration,
-                mimeType = fileEntity.mimeType,
+              id = fileEntity.bookFileId,
+              name = fileEntity.name,
+              duration = fileEntity.duration,
+              mimeType = fileEntity.mimeType,
             )
-        },
-        chapters = entity.chapters.map { chapterEntity ->
+          },
+        chapters =
+          entity.chapters.map { chapterEntity ->
             PlayingChapter(
-                duration = chapterEntity.duration,
-                start = chapterEntity.start,
-                end = chapterEntity.end,
-                title = chapterEntity.title,
-                available = chapterEntity.isCached,
-                id = chapterEntity.bookChapterId,
-                podcastEpisodeState = null, // currently state is not available for local mode
+              duration = chapterEntity.duration,
+              start = chapterEntity.start,
+              end = chapterEntity.end,
+              title = chapterEntity.title,
+              available = chapterEntity.isCached,
+              id = chapterEntity.bookChapterId,
+              podcastEpisodeState = null, // currently state is not available for local mode
             )
-        },
+          },
         abstract = entity.detailedBook.abstract,
         publisher = entity.detailedBook.publisher,
         year = entity.detailedBook.year,
         createdAt = entity.detailedBook.createdAt,
         updatedAt = entity.detailedBook.updatedAt,
-        series = entity
+        series =
+          entity
             .detailedBook
             .seriesJson
             ?.let {
-                val type = object : TypeToken<List<BookSeriesDto>>() {}.type
-                gson.fromJson<List<BookSeriesDto>>(it, type)
-            }
-            ?.map {
-                BookSeries(
-                    name = it.title,
-                    serialNumber = it.sequence,
-                )
+              val type = object : TypeToken<List<BookSeriesDto>>() {}.type
+              gson.fromJson<List<BookSeriesDto>>(it, type)
+            }?.map {
+              BookSeries(
+                name = it.title,
+                serialNumber = it.sequence,
+              )
             } ?: emptyList(),
-        progress = entity.progress?.let { progressEntity ->
+        progress =
+          entity.progress?.let { progressEntity ->
             MediaProgress(
-                currentTime = progressEntity.currentTime,
-                isFinished = progressEntity.isFinished,
-                lastUpdate = progressEntity.lastUpdate,
+              currentTime = progressEntity.currentTime,
+              isFinished = progressEntity.isFinished,
+              lastUpdate = progressEntity.lastUpdate,
             )
-        },
-    )
+          },
+      )
 
     companion object {
-
-        val gson = Gson()
+      val gson = Gson()
     }
-}
+  }

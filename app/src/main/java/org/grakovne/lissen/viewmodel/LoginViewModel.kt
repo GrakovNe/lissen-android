@@ -18,10 +18,12 @@ import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewModel @Inject constructor(
+class LoginViewModel
+  @Inject
+  constructor(
     preferences: LissenSharedPreferences,
     private val mediaChannel: LissenMediaProvider,
-) : ViewModel() {
+  ) : ViewModel() {
     private val _host = MutableLiveData(preferences.getHost() ?: "")
     val host = _host
 
@@ -38,93 +40,103 @@ class LoginViewModel @Inject constructor(
     val authMethods = _authMethods
 
     fun updateAuthMethods() {
-        viewModelScope
-            .launch {
-                val value = host.value ?: return@launch
+      viewModelScope
+        .launch {
+          val value = host.value ?: return@launch
 
-                mediaChannel
-                    .provideAuthService()
-                    .fetchAuthMethods(host = value)
-                    .fold(
-                        onSuccess = { _authMethods.value = it },
-                        onFailure = { _authMethods.value = emptyList() },
-                    )
-            }
-    }
-
-    fun setHost(host: String) {
-        _host.value = host
-    }
-
-    fun setUsername(username: String) {
-        _username.value = username
-    }
-
-    fun setPassword(password: String) {
-        _password.value = password
-    }
-
-    fun readyToLogin() {
-        _loginState.value = LoginState.Idle
-    }
-
-    fun startOAuth() {
-        viewModelScope.launch {
-            _loginState.value = LoginState.Loading
-
-            val host = host.value ?: run {
-                _loginState.value = LoginState.Error(MissingCredentialsHost)
-                return@launch
-            }
-
-            mediaChannel.startOAuth(
-                host = host,
-                onSuccess = { _loginState.value = LoginState.Idle },
-                onFailure = { onLoginFailure(it) },
+          mediaChannel
+            .provideAuthService()
+            .fetchAuthMethods(host = value)
+            .fold(
+              onSuccess = { _authMethods.value = it },
+              onFailure = { _authMethods.value = emptyList() },
             )
         }
     }
 
+    fun setHost(host: String) {
+      _host.value = host
+    }
+
+    fun setUsername(username: String) {
+      _username.value = username
+    }
+
+    fun setPassword(password: String) {
+      _password.value = password
+    }
+
+    fun readyToLogin() {
+      _loginState.value = LoginState.Idle
+    }
+
+    fun startOAuth() {
+      viewModelScope.launch {
+        _loginState.value = LoginState.Loading
+
+        val host =
+          host.value ?: run {
+            _loginState.value = LoginState.Error(MissingCredentialsHost)
+            return@launch
+          }
+
+        mediaChannel.startOAuth(
+          host = host,
+          onSuccess = { _loginState.value = LoginState.Idle },
+          onFailure = { onLoginFailure(it) },
+        )
+      }
+    }
+
     fun login() {
-        viewModelScope.launch {
-            _loginState.value = LoginState.Loading
+      viewModelScope.launch {
+        _loginState.value = LoginState.Loading
 
-            val host = host.value ?: run {
-                _loginState.value = LoginState.Error(MissingCredentialsHost)
-                return@launch
-            }
+        val host =
+          host.value ?: run {
+            _loginState.value = LoginState.Error(MissingCredentialsHost)
+            return@launch
+          }
 
-            val username = username.value ?: run {
-                _loginState.value = LoginState.Error(MissingCredentialsUsername)
-                return@launch
-            }
+        val username =
+          username.value ?: run {
+            _loginState.value = LoginState.Error(MissingCredentialsUsername)
+            return@launch
+          }
 
-            val password = password.value ?: run {
-                _loginState.value = LoginState.Error(MissingCredentialsPassword)
-                return@launch
-            }
+        val password =
+          password.value ?: run {
+            _loginState.value = LoginState.Error(MissingCredentialsPassword)
+            return@launch
+          }
 
-            val result = mediaChannel
-                .authorize(host, username, password)
-                .foldAsync(
-                    onSuccess = { _ -> LoginState.Success },
-                    onFailure = { error -> onLoginFailure(error.code) },
-                )
-            _loginState.value = result
-        }
+        val result =
+          mediaChannel
+            .authorize(host, username, password)
+            .foldAsync(
+              onSuccess = { _ -> LoginState.Success },
+              onFailure = { error -> onLoginFailure(error.code) },
+            )
+        _loginState.value = result
+      }
     }
 
     private fun onLoginFailure(error: ApiError): LoginState.Error {
-        viewModelScope.launch {
-            _loginState.value = LoginState.Error(error)
-        }
-        return LoginState.Error(error)
+      viewModelScope.launch {
+        _loginState.value = LoginState.Error(error)
+      }
+      return LoginState.Error(error)
     }
 
     sealed class LoginState {
-        data object Idle : LoginState()
-        data object Loading : LoginState()
-        data object Success : LoginState()
-        data class Error(val message: ApiError) : LoginState()
+      data object Idle : LoginState()
+
+      data object Loading : LoginState()
+
+      data object Success : LoginState()
+
+      data class Error(
+        val message: ApiError,
+      ) : LoginState()
     }
-}
+  }

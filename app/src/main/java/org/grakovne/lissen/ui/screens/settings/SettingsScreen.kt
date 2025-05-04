@@ -40,74 +40,77 @@ import org.grakovne.lissen.viewmodel.SettingsViewModel
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun SettingsScreen(
-    onBack: () -> Unit,
-    navController: AppNavigationService,
+  onBack: () -> Unit,
+  navController: AppNavigationService,
 ) {
-    val viewModel: SettingsViewModel = hiltViewModel()
-    val host by viewModel.host.observeAsState("")
+  val viewModel: SettingsViewModel = hiltViewModel()
+  val host by viewModel.host.observeAsState("")
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.settings_screen_title),
-                        style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-                        color = colorScheme.onSurface,
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { onBack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                            contentDescription = "Back",
-                            tint = colorScheme.onSurface,
-                        )
-                    }
-                },
+  Scaffold(
+    topBar = {
+      TopAppBar(
+        title = {
+          Text(
+            text = stringResource(R.string.settings_screen_title),
+            style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
+            color = colorScheme.onSurface,
+          )
+        },
+        navigationIcon = {
+          IconButton(onClick = { onBack() }) {
+            Icon(
+              imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+              contentDescription = "Back",
+              tint = colorScheme.onSurface,
             )
+          }
         },
-        modifier = Modifier
-            .systemBarsPadding()
-            .fillMaxHeight(),
-        content = { innerPadding ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding),
-                verticalArrangement = Arrangement.SpaceBetween,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState()),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    if (host?.isNotEmpty() == true) {
-                        ServerSettingsComposable(navController, viewModel)
-                    }
+      )
+    },
+    modifier =
+      Modifier
+        .systemBarsPadding()
+        .fillMaxHeight(),
+    content = { innerPadding ->
+      Column(
+        modifier =
+          Modifier
+            .fillMaxSize()
+            .padding(innerPadding),
+        verticalArrangement = Arrangement.SpaceBetween,
+        horizontalAlignment = Alignment.CenterHorizontally,
+      ) {
+        Column(
+          modifier =
+            Modifier
+              .fillMaxWidth()
+              .verticalScroll(rememberScrollState()),
+          horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+          if (host?.isNotEmpty() == true) {
+            ServerSettingsComposable(navController, viewModel)
+          }
 
-                    ColorSchemeSettingsComposable(viewModel)
+          ColorSchemeSettingsComposable(viewModel)
 
-                    LibraryOrderingSettingsComposable(viewModel)
+          LibraryOrderingSettingsComposable(viewModel)
 
-                    AdvancedSettingsItemComposable(
-                        title = stringResource(R.string.settings_screen_seek_time_title),
-                        description = stringResource(R.string.settings_screen_seek_time_hint),
-                        onclick = { navController.showSeekSettings() },
-                    )
+          AdvancedSettingsItemComposable(
+            title = stringResource(R.string.settings_screen_seek_time_title),
+            description = stringResource(R.string.settings_screen_seek_time_hint),
+            onclick = { navController.showSeekSettings() },
+          )
 
-                    AdvancedSettingsItemComposable(
-                        title = stringResource(R.string.settings_screen_custom_headers_title),
-                        description = stringResource(R.string.settings_screen_custom_header_hint),
-                        onclick = { navController.showCustomHeadersSettings() },
-                    )
+          AdvancedSettingsItemComposable(
+            title = stringResource(R.string.settings_screen_custom_headers_title),
+            description = stringResource(R.string.settings_screen_custom_header_hint),
+            onclick = { navController.showCustomHeadersSettings() },
+          )
 
-                    GitHubLinkComposable()
-                }
-                AdditionalComposable()
-            }
-        },
-    )
+          GitHubLinkComposable()
+        }
+        AdditionalComposable()
+      }
+    },
+  )
 }

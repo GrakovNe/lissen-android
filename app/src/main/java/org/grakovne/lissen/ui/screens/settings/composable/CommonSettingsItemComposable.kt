@@ -32,66 +32,68 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CommonSettingsItemComposable(
-    items: List<CommonSettingsItem>,
-    selectedItem: CommonSettingsItem?,
-    onDismissRequest: () -> Unit,
-    onItemSelected: (CommonSettingsItem) -> Unit,
-    selectedImage: ImageVector = Icons.Outlined.Check,
+  items: List<CommonSettingsItem>,
+  selectedItem: CommonSettingsItem?,
+  onDismissRequest: () -> Unit,
+  onItemSelected: (CommonSettingsItem) -> Unit,
+  selectedImage: ImageVector = Icons.Outlined.Check,
 ) {
-    var activeItem by remember { mutableStateOf(selectedItem) }
+  var activeItem by remember { mutableStateOf(selectedItem) }
 
-    ModalBottomSheet(
-        containerColor = MaterialTheme.colorScheme.background,
-        onDismissRequest = onDismissRequest,
-        content = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
-                    .padding(horizontal = 16.dp),
-            ) {
-                Spacer(modifier = Modifier.height(8.dp))
+  ModalBottomSheet(
+    containerColor = MaterialTheme.colorScheme.background,
+    onDismissRequest = onDismissRequest,
+    content = {
+      Column(
+        modifier =
+          Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp)
+            .padding(horizontal = 16.dp),
+      ) {
+        Spacer(modifier = Modifier.height(8.dp))
 
-                LazyColumn(modifier = Modifier.fillMaxWidth()) {
-                    itemsIndexed(items) { index, item ->
-                        ListItem(
-                            leadingContent = {
-                                item.icon?.let {
-                                    Icon(
-                                        imageVector = it,
-                                        contentDescription = "Settings Item Icon",
-                                        modifier = Modifier.size(24.dp),
-                                    )
-                                }
-                            },
-                            headlineContent = {
-                                Row { Text(item.name) }
-                            },
-                            trailingContent = {
-                                if (item.id == activeItem?.id) {
-                                    Icon(
-                                        imageVector = selectedImage,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(24.dp),
-                                    )
-                                }
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable(
-                                    indication = null,
-                                    interactionSource = remember { MutableInteractionSource() },
-                                ) {
-                                    activeItem = item
-                                    onItemSelected(item)
-                                },
-                        )
-                        if (index < items.lastIndex) {
-                            HorizontalDivider()
-                        }
-                    }
+        LazyColumn(modifier = Modifier.fillMaxWidth()) {
+          itemsIndexed(items) { index, item ->
+            ListItem(
+              leadingContent = {
+                item.icon?.let {
+                  Icon(
+                    imageVector = it,
+                    contentDescription = "Settings Item Icon",
+                    modifier = Modifier.size(24.dp),
+                  )
                 }
+              },
+              headlineContent = {
+                Row { Text(item.name) }
+              },
+              trailingContent = {
+                if (item.id == activeItem?.id) {
+                  Icon(
+                    imageVector = selectedImage,
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp),
+                  )
+                }
+              },
+              modifier =
+                Modifier
+                  .fillMaxWidth()
+                  .clickable(
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() },
+                  ) {
+                    activeItem = item
+                    onItemSelected(item)
+                  },
+            )
+            if (index < items.lastIndex) {
+              HorizontalDivider()
             }
-        },
-    )
+          }
+        }
+      }
+    },
+  )
 }

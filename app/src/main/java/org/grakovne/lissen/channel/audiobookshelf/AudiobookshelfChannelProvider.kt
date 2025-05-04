@@ -14,28 +14,30 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AudiobookshelfChannelProvider @Inject constructor(
+class AudiobookshelfChannelProvider
+  @Inject
+  constructor(
     private val podcastAudiobookshelfChannel: PodcastAudiobookshelfChannel,
     private val libraryAudiobookshelfChannel: LibraryAudiobookshelfChannel,
     private val unknownAudiobookshelfChannel: UnknownAudiobookshelfChannel,
     private val audiobookshelfAuthService: AudiobookshelfAuthService,
     private val sharedPreferences: LissenSharedPreferences,
-) : ChannelProvider {
-
+  ) : ChannelProvider {
     override fun provideMediaChannel(): MediaChannel {
-        val libraryType = sharedPreferences
-            .getPreferredLibrary()
-            ?.type
-            ?: LibraryType.UNKNOWN
+      val libraryType =
+        sharedPreferences
+          .getPreferredLibrary()
+          ?.type
+          ?: LibraryType.UNKNOWN
 
-        return when (libraryType) {
-            LibraryType.LIBRARY -> libraryAudiobookshelfChannel
-            LibraryType.PODCAST -> podcastAudiobookshelfChannel
-            LibraryType.UNKNOWN -> unknownAudiobookshelfChannel
-        }
+      return when (libraryType) {
+        LibraryType.LIBRARY -> libraryAudiobookshelfChannel
+        LibraryType.PODCAST -> podcastAudiobookshelfChannel
+        LibraryType.UNKNOWN -> unknownAudiobookshelfChannel
+      }
     }
 
     override fun provideChannelAuth(): ChannelAuthService = audiobookshelfAuthService
 
     override fun getChannelCode(): ChannelCode = ChannelCode.AUDIOBOOKSHELF
-}
+  }

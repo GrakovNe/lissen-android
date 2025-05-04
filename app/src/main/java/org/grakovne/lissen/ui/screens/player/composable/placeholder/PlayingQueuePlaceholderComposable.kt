@@ -26,45 +26,47 @@ import org.grakovne.lissen.viewmodel.LibraryViewModel
 
 @Composable
 fun PlayingQueuePlaceholderComposable(
-    libraryViewModel: LibraryViewModel,
-    modifier: Modifier = Modifier,
+  libraryViewModel: LibraryViewModel,
+  modifier: Modifier = Modifier,
 ) {
-    val context = LocalContext.current
+  val context = LocalContext.current
 
-    Column(modifier = modifier.padding(horizontal = 16.dp)) {
-        Text(
-            text = provideNowPlayingTitle(libraryViewModel.fetchPreferredLibraryType(), context),
-            fontSize = typography.titleMedium.fontSize * 1.25f,
-            fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(horizontal = 6.dp),
+  Column(modifier = modifier.padding(horizontal = 16.dp)) {
+    Text(
+      text = provideNowPlayingTitle(libraryViewModel.fetchPreferredLibraryType(), context),
+      fontSize = typography.titleMedium.fontSize * 1.25f,
+      fontWeight = FontWeight.SemiBold,
+      color = MaterialTheme.colorScheme.primary,
+      modifier = Modifier.padding(horizontal = 6.dp),
+    )
+
+    Spacer(modifier = Modifier.height(12.dp))
+
+    LazyColumn(
+      modifier =
+        Modifier
+          .fillMaxWidth(),
+    ) {
+      items(10) {
+        Box(
+          modifier =
+            Modifier
+              .fillMaxWidth()
+              .height(36.dp)
+              .clip(RoundedCornerShape(8.dp))
+              .shimmer()
+              .background(Color.Gray),
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(Modifier.height(8.dp))
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth(),
-        ) {
-            items(10) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(36.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .shimmer()
-                        .background(Color.Gray),
-                )
+        HorizontalDivider(
+          thickness = 1.dp,
+          modifier = Modifier.padding(horizontal = 4.dp),
+        )
 
-                Spacer(Modifier.height(8.dp))
-
-                HorizontalDivider(
-                    thickness = 1.dp,
-                    modifier = Modifier.padding(horizontal = 4.dp),
-                )
-
-                Spacer(Modifier.height(8.dp))
-            }
-        }
+        Spacer(Modifier.height(8.dp))
+      }
     }
+  }
 }

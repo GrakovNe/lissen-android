@@ -19,30 +19,31 @@ import org.grakovne.lissen.R
 
 @Composable
 fun GitHubLinkComposable() {
-    val uriHandler = LocalUriHandler.current
+  val uriHandler = LocalUriHandler.current
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { uriHandler.openUri("https://github.com/GrakovNe/lissen-android") }
-            .padding(horizontal = 24.dp, vertical = 12.dp),
+  Row(
+    modifier =
+      Modifier
+        .fillMaxWidth()
+        .clickable { uriHandler.openUri("https://github.com/GrakovNe/lissen-android") }
+        .padding(horizontal = 24.dp, vertical = 12.dp),
+  ) {
+    Column(
+      modifier = Modifier.weight(1f),
     ) {
-        Column(
-            modifier = Modifier.weight(1f),
-        ) {
-            Text(
-                text = stringResource(R.string.source_code_on_github_title),
-                style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                modifier = Modifier.padding(bottom = 4.dp),
-            )
-            Text(
-                text = stringResource(R.string.source_code_on_github_subtitle),
-                style = typography.bodyMedium,
-                color = colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                modifier = Modifier.padding(bottom = 4.dp),
-                overflow = TextOverflow.Ellipsis,
-            )
-        }
+      Text(
+        text = stringResource(R.string.source_code_on_github_title),
+        style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+        modifier = Modifier.padding(bottom = 4.dp),
+      )
+      Text(
+        text = stringResource(R.string.source_code_on_github_subtitle),
+        style = typography.bodyMedium,
+        color = colorScheme.onSurfaceVariant,
+        maxLines = 1,
+        modifier = Modifier.padding(bottom = 4.dp),
+        overflow = TextOverflow.Ellipsis,
+      )
     }
+  }
 }

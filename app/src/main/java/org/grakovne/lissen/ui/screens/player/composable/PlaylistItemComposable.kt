@@ -29,61 +29,65 @@ import org.grakovne.lissen.ui.extensions.formatLeadingMinutes
 
 @Composable
 fun PlaylistItemComposable(
-    track: PlayingChapter,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier,
+  track: PlayingChapter,
+  isSelected: Boolean,
+  onClick: () -> Unit,
+  modifier: Modifier,
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .padding(start = 6.dp)
-            .padding(end = 4.dp)
-            .clickable(
-                onClick = onClick,
-                indication = null,
-                interactionSource = remember { MutableInteractionSource() },
-            ),
-    ) {
-        when {
-            isSelected ->
-                Icon(
-                    imageVector = Icons.Outlined.Audiotrack,
-                    contentDescription = stringResource(R.string.player_screen_library_playing_title),
-                    modifier = Modifier.size(16.dp),
-                )
-
-            track.podcastEpisodeState == BookChapterState.FINISHED -> Icon(
-                imageVector = Icons.Outlined.Check,
-                contentDescription = stringResource(R.string.player_screen_library_playing_title),
-                modifier = Modifier.size(16.dp),
-            )
-
-            else -> Spacer(modifier = Modifier.size(16.dp))
-        }
-
-        Spacer(modifier = Modifier.width(8.dp))
-
-        Text(
-            text = track.title,
-            style = MaterialTheme.typography.titleSmall,
-            color = when (track.available) {
-                true -> colorScheme.onBackground
-                false -> colorScheme.onBackground.copy(alpha = 0.4f)
-            },
-            overflow = TextOverflow.Ellipsis,
-            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-            modifier = Modifier.weight(1f),
+  Row(
+    verticalAlignment = Alignment.CenterVertically,
+    modifier =
+      modifier
+        .padding(start = 6.dp)
+        .padding(end = 4.dp)
+        .clickable(
+          onClick = onClick,
+          indication = null,
+          interactionSource = remember { MutableInteractionSource() },
+        ),
+  ) {
+    when {
+      isSelected ->
+        Icon(
+          imageVector = Icons.Outlined.Audiotrack,
+          contentDescription = stringResource(R.string.player_screen_library_playing_title),
+          modifier = Modifier.size(16.dp),
         )
-        Text(
-            text = track.duration.toInt().formatLeadingMinutes(),
-            style = MaterialTheme.typography.bodySmall,
-            modifier = Modifier.padding(start = 8.dp),
-            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-            color = when (track.available) {
-                true -> colorScheme.onBackground.copy(alpha = 0.6f)
-                false -> colorScheme.onBackground.copy(alpha = 0.4f)
-            },
+
+      track.podcastEpisodeState == BookChapterState.FINISHED ->
+        Icon(
+          imageVector = Icons.Outlined.Check,
+          contentDescription = stringResource(R.string.player_screen_library_playing_title),
+          modifier = Modifier.size(16.dp),
         )
+
+      else -> Spacer(modifier = Modifier.size(16.dp))
     }
+
+    Spacer(modifier = Modifier.width(8.dp))
+
+    Text(
+      text = track.title,
+      style = MaterialTheme.typography.titleSmall,
+      color =
+        when (track.available) {
+          true -> colorScheme.onBackground
+          false -> colorScheme.onBackground.copy(alpha = 0.4f)
+        },
+      overflow = TextOverflow.Ellipsis,
+      fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+      modifier = Modifier.weight(1f),
+    )
+    Text(
+      text = track.duration.toInt().formatLeadingMinutes(),
+      style = MaterialTheme.typography.bodySmall,
+      modifier = Modifier.padding(start = 8.dp),
+      fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+      color =
+        when (track.available) {
+          true -> colorScheme.onBackground.copy(alpha = 0.6f)
+          false -> colorScheme.onBackground.copy(alpha = 0.4f)
+        },
+    )
+  }
 }

@@ -52,282 +52,297 @@ import org.grakovne.lissen.ui.theme.LightBackground
 import org.grakovne.lissen.widget.PlayerWidget.Companion.bookIdKey
 
 class PlayerWidget : GlanceAppWidget() {
+  override val stateDefinition: GlanceStateDefinition<*> = PreferencesGlanceStateDefinition
 
-    override val stateDefinition: GlanceStateDefinition<*> = PreferencesGlanceStateDefinition
+  override suspend fun provideGlance(
+    context: Context,
+    id: GlanceId,
+  ) {
+    provideContent {
+      GlanceTheme(
+        colors =
+          ColorProviders(
+            light =
+              lightColorScheme(
+                background = LightBackground,
+              ),
+            dark = darkColorScheme(),
+          ),
+      ) {
+        val preferences =
+          EntryPointAccessors
+            .fromApplication(context, WidgetPreferencesEntryPoint::class.java)
+            .lissenSharedPreferences()
 
-    override suspend fun provideGlance(context: Context, id: GlanceId) {
-        provideContent {
-            GlanceTheme(
-                colors = ColorProviders(
-                    light = lightColorScheme(
-                        background = LightBackground,
-                    ),
-                    dark = darkColorScheme(),
-                ),
-            ) {
-                val preferences = EntryPointAccessors
-                    .fromApplication(context, WidgetPreferencesEntryPoint::class.java)
-                    .lissenSharedPreferences()
-
-                val state = currentState<Preferences>()
-                val maybeCover = state[encodedCover]?.takeIf { it.isNotBlank() }?.fromBase64()
-                val bookId = state[bookId] ?: ""
-                val bookTitle = state[title] ?: ""
-                val chapterTitle = state[chapterTitle]
-                    ?.takeIf { it.isNotBlank() }
-                    ?: when (bookId) {
-                        "" -> context.getString(org.grakovne.lissen.R.string.widget_placeholder_text)
-                        else -> ""
-                    }
-
-                val isPlaying = state[isPlaying] ?: false
-
-                Column(
-                    modifier = GlanceModifier
-                        .fillMaxWidth()
-                        .background(GlanceTheme.colors.background)
-                        .padding(16.dp)
-                        .safelyRunOnClick(context),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = GlanceModifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp),
-                    ) {
-                        val cover = maybeCover
-                            ?: decodeResource(context.resources, drawable.cover_fallback_png)
-
-                        val coverImageProvider = ImageProvider(cover)
-
-                        Image(
-                            contentScale = ContentScale.FillBounds,
-                            provider = coverImageProvider,
-                            contentDescription = null,
-                            modifier = GlanceModifier
-                                .size(80.dp)
-                                .cornerRadius(8.dp),
-                        )
-
-                        Column(
-                            modifier = GlanceModifier
-                                .fillMaxWidth()
-                                .padding(start = 20.dp),
-                        ) {
-                            Text(
-                                text = chapterTitle,
-                                style = TextStyle(
-                                    fontFamily = SansSerif,
-                                    fontSize = 20.sp,
-                                    color = GlanceTheme.colors.onBackground,
-                                ),
-                                maxLines = 2,
-                                modifier = GlanceModifier.padding(bottom = 8.dp),
-                            )
-
-                            Text(
-                                text = bookTitle,
-                                style = TextStyle(
-                                    fontFamily = SansSerif,
-                                    fontSize = 14.sp,
-                                    color = GlanceTheme.colors.onBackground,
-                                ),
-                                maxLines = 1,
-                            )
-                        }
-                    }
-
-                    Spacer(
-                        modifier = GlanceModifier
-                            .fillMaxWidth()
-                            .height(1.dp)
-                            .background(Color(0xFFDADADA)),
-                    )
-
-                    Row(
-                        modifier = GlanceModifier
-                            .padding(top = 16.dp)
-                            .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        WidgetControlButton(
-                            size = 36.dp,
-                            icon = ImageProvider(R.drawable.media3_icon_previous),
-                            contentColor = GlanceTheme.colors.onBackground,
-                            onClick = actionRunCallback<PreviousChapterActionCallback>(
-                                actionParametersOf(bookIdKey to bookId),
-                            ),
-                            modifier = GlanceModifier.defaultWeight(),
-                        )
-
-                        WidgetControlButton(
-                            size = 36.dp,
-                            icon = ImageProvider(provideRewindIcon(preferences.getSeekTime().rewind)),
-                            contentColor = GlanceTheme.colors.onBackground,
-                            onClick = actionRunCallback<RewindActionCallback>(
-                                actionParametersOf(bookIdKey to bookId),
-                            ),
-                            modifier = GlanceModifier.defaultWeight(),
-                        )
-
-                        WidgetControlButton(
-                            icon = if (isPlaying) {
-                                ImageProvider(R.drawable.media3_icon_pause)
-                            } else {
-                                ImageProvider(R.drawable.media3_icon_play)
-                            },
-                            size = 48.dp,
-                            contentColor = GlanceTheme.colors.onBackground,
-                            onClick = actionRunCallback<PlayToggleActionCallback>(
-                                actionParametersOf(bookIdKey to bookId),
-                            ),
-                            modifier = GlanceModifier.defaultWeight(),
-                        )
-
-                        WidgetControlButton(
-                            icon = ImageProvider(provideForwardIcon(preferences.getSeekTime().forward)),
-                            size = 36.dp,
-                            contentColor = GlanceTheme.colors.onBackground,
-                            onClick = actionRunCallback<ForwardActionCallback>(
-                                actionParametersOf(bookIdKey to bookId),
-                            ),
-                            modifier = GlanceModifier.defaultWeight(),
-                        )
-
-                        WidgetControlButton(
-                            icon = ImageProvider(R.drawable.media3_icon_next),
-                            size = 36.dp,
-                            contentColor = GlanceTheme.colors.onBackground,
-                            onClick = actionRunCallback<NextChapterActionCallback>(
-                                actionParametersOf(bookIdKey to bookId),
-                            ),
-                            modifier = GlanceModifier.defaultWeight(),
-                        )
-                    }
-                }
+        val state = currentState<Preferences>()
+        val maybeCover = state[encodedCover]?.takeIf { it.isNotBlank() }?.fromBase64()
+        val bookId = state[bookId] ?: ""
+        val bookTitle = state[title] ?: ""
+        val chapterTitle =
+          state[chapterTitle]
+            ?.takeIf { it.isNotBlank() }
+            ?: when (bookId) {
+              "" -> context.getString(org.grakovne.lissen.R.string.widget_placeholder_text)
+              else -> ""
             }
+
+        val isPlaying = state[isPlaying] ?: false
+
+        Column(
+          modifier =
+            GlanceModifier
+              .fillMaxWidth()
+              .background(GlanceTheme.colors.background)
+              .padding(16.dp)
+              .safelyRunOnClick(context),
+          horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+          Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier =
+              GlanceModifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+          ) {
+            val cover =
+              maybeCover
+                ?: decodeResource(context.resources, drawable.cover_fallback_png)
+
+            val coverImageProvider = ImageProvider(cover)
+
+            Image(
+              contentScale = ContentScale.FillBounds,
+              provider = coverImageProvider,
+              contentDescription = null,
+              modifier =
+                GlanceModifier
+                  .size(80.dp)
+                  .cornerRadius(8.dp),
+            )
+
+            Column(
+              modifier =
+                GlanceModifier
+                  .fillMaxWidth()
+                  .padding(start = 20.dp),
+            ) {
+              Text(
+                text = chapterTitle,
+                style =
+                  TextStyle(
+                    fontFamily = SansSerif,
+                    fontSize = 20.sp,
+                    color = GlanceTheme.colors.onBackground,
+                  ),
+                maxLines = 2,
+                modifier = GlanceModifier.padding(bottom = 8.dp),
+              )
+
+              Text(
+                text = bookTitle,
+                style =
+                  TextStyle(
+                    fontFamily = SansSerif,
+                    fontSize = 14.sp,
+                    color = GlanceTheme.colors.onBackground,
+                  ),
+                maxLines = 1,
+              )
+            }
+          }
+
+          Spacer(
+            modifier =
+              GlanceModifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(Color(0xFFDADADA)),
+          )
+
+          Row(
+            modifier =
+              GlanceModifier
+                .padding(top = 16.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+          ) {
+            WidgetControlButton(
+              size = 36.dp,
+              icon = ImageProvider(R.drawable.media3_icon_previous),
+              contentColor = GlanceTheme.colors.onBackground,
+              onClick =
+                actionRunCallback<PreviousChapterActionCallback>(
+                  actionParametersOf(bookIdKey to bookId),
+                ),
+              modifier = GlanceModifier.defaultWeight(),
+            )
+
+            WidgetControlButton(
+              size = 36.dp,
+              icon = ImageProvider(provideRewindIcon(preferences.getSeekTime().rewind)),
+              contentColor = GlanceTheme.colors.onBackground,
+              onClick =
+                actionRunCallback<RewindActionCallback>(
+                  actionParametersOf(bookIdKey to bookId),
+                ),
+              modifier = GlanceModifier.defaultWeight(),
+            )
+
+            WidgetControlButton(
+              icon =
+                if (isPlaying) {
+                  ImageProvider(R.drawable.media3_icon_pause)
+                } else {
+                  ImageProvider(R.drawable.media3_icon_play)
+                },
+              size = 48.dp,
+              contentColor = GlanceTheme.colors.onBackground,
+              onClick =
+                actionRunCallback<PlayToggleActionCallback>(
+                  actionParametersOf(bookIdKey to bookId),
+                ),
+              modifier = GlanceModifier.defaultWeight(),
+            )
+
+            WidgetControlButton(
+              icon = ImageProvider(provideForwardIcon(preferences.getSeekTime().forward)),
+              size = 36.dp,
+              contentColor = GlanceTheme.colors.onBackground,
+              onClick =
+                actionRunCallback<ForwardActionCallback>(
+                  actionParametersOf(bookIdKey to bookId),
+                ),
+              modifier = GlanceModifier.defaultWeight(),
+            )
+
+            WidgetControlButton(
+              icon = ImageProvider(R.drawable.media3_icon_next),
+              size = 36.dp,
+              contentColor = GlanceTheme.colors.onBackground,
+              onClick =
+                actionRunCallback<NextChapterActionCallback>(
+                  actionParametersOf(bookIdKey to bookId),
+                ),
+              modifier = GlanceModifier.defaultWeight(),
+            )
+          }
         }
+      }
     }
+  }
 
-    private fun GlanceModifier.safelyRunOnClick(
-        context: Context,
-    ) = provideAppLaunchIntent(context)
-        ?.let { intent -> this.clickable(onClick = actionStartActivity(intent)) }
-        ?: this
+  private fun GlanceModifier.safelyRunOnClick(context: Context) =
+    provideAppLaunchIntent(context)
+      ?.let { intent -> this.clickable(onClick = actionStartActivity(intent)) }
+      ?: this
 
-    companion object {
+  companion object {
+    fun provideRewindIcon(option: SeekTimeOption): Int = R.drawable.media3_icon_rewind
 
-        fun provideRewindIcon(option: SeekTimeOption): Int = R.drawable.media3_icon_rewind
+    fun provideForwardIcon(option: SeekTimeOption): Int = R.drawable.media3_icon_fast_forward
 
-        fun provideForwardIcon(option: SeekTimeOption): Int = R.drawable.media3_icon_fast_forward
+    val bookIdKey = ActionParameters.Key<String>("book_id")
 
-        val bookIdKey = ActionParameters.Key<String>("book_id")
+    val encodedCover = stringPreferencesKey("player_widget_key_cover")
+    val bookId = stringPreferencesKey("player_widget_key_id")
+    val title = stringPreferencesKey("player_widget_key_title")
+    val chapterTitle = stringPreferencesKey("player_widget_key_chapter_title")
 
-        val encodedCover = stringPreferencesKey("player_widget_key_cover")
-        val bookId = stringPreferencesKey("player_widget_key_id")
-        val title = stringPreferencesKey("player_widget_key_title")
-        val chapterTitle = stringPreferencesKey("player_widget_key_chapter_title")
-
-        val isPlaying = booleanPreferencesKey("player_widget_key_is_playing")
-    }
+    val isPlaying = booleanPreferencesKey("player_widget_key_is_playing")
+  }
 }
 
 class PlayToggleActionCallback : ActionCallback {
-
-    override suspend fun onAction(
-        context: Context,
-        glanceId: GlanceId,
-        parameters: ActionParameters,
-    ) {
-        safelyRun(
-            playingItemId = parameters[bookIdKey] ?: return,
-            context = context,
-        ) { it.togglePlayPause() }
-    }
+  override suspend fun onAction(
+    context: Context,
+    glanceId: GlanceId,
+    parameters: ActionParameters,
+  ) {
+    safelyRun(
+      playingItemId = parameters[bookIdKey] ?: return,
+      context = context,
+    ) { it.togglePlayPause() }
+  }
 }
 
 class ForwardActionCallback : ActionCallback {
-
-    override suspend fun onAction(
-        context: Context,
-        glanceId: GlanceId,
-        parameters: ActionParameters,
-    ) {
-        safelyRun(
-            playingItemId = parameters[bookIdKey] ?: return,
-            context = context,
-        ) { it.forward() }
-    }
+  override suspend fun onAction(
+    context: Context,
+    glanceId: GlanceId,
+    parameters: ActionParameters,
+  ) {
+    safelyRun(
+      playingItemId = parameters[bookIdKey] ?: return,
+      context = context,
+    ) { it.forward() }
+  }
 }
 
 class RewindActionCallback : ActionCallback {
-
-    override suspend fun onAction(
-        context: Context,
-        glanceId: GlanceId,
-        parameters: ActionParameters,
-    ) {
-        safelyRun(
-            playingItemId = parameters[bookIdKey] ?: return,
-            context = context,
-        ) { it.rewind() }
-    }
+  override suspend fun onAction(
+    context: Context,
+    glanceId: GlanceId,
+    parameters: ActionParameters,
+  ) {
+    safelyRun(
+      playingItemId = parameters[bookIdKey] ?: return,
+      context = context,
+    ) { it.rewind() }
+  }
 }
 
 class NextChapterActionCallback : ActionCallback {
-
-    override suspend fun onAction(
-        context: Context,
-        glanceId: GlanceId,
-        parameters: ActionParameters,
-    ) {
-        safelyRun(
-            playingItemId = parameters[bookIdKey] ?: return,
-            context = context,
-        ) { it.nextTrack() }
-    }
+  override suspend fun onAction(
+    context: Context,
+    glanceId: GlanceId,
+    parameters: ActionParameters,
+  ) {
+    safelyRun(
+      playingItemId = parameters[bookIdKey] ?: return,
+      context = context,
+    ) { it.nextTrack() }
+  }
 }
 
 class PreviousChapterActionCallback : ActionCallback {
-
-    override suspend fun onAction(
-        context: Context,
-        glanceId: GlanceId,
-        parameters: ActionParameters,
-    ) {
-        safelyRun(
-            playingItemId = parameters[bookIdKey] ?: return,
-            context = context,
-        ) { it.previousTrack() }
-    }
+  override suspend fun onAction(
+    context: Context,
+    glanceId: GlanceId,
+    parameters: ActionParameters,
+  ) {
+    safelyRun(
+      playingItemId = parameters[bookIdKey] ?: return,
+      context = context,
+    ) { it.previousTrack() }
+  }
 }
 
-private fun provideAppLaunchIntent(context: Context): Intent? = context
+private fun provideAppLaunchIntent(context: Context): Intent? =
+  context
     .packageManager
     .getLaunchIntentForPackage(context.packageName)
     ?.apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP }
 
 private suspend fun safelyRun(
-    playingItemId: String,
-    context: Context,
-    action: (WidgetPlaybackController) -> Unit,
+  playingItemId: String,
+  context: Context,
+  action: (WidgetPlaybackController) -> Unit,
 ) {
-    try {
-        val playbackController = EntryPointAccessors
-            .fromApplication(
-                context = context.applicationContext,
-                entryPoint = WidgetPlaybackControllerEntryPoint::class.java,
-            )
-            .widgetPlaybackController()
+  try {
+    val playbackController =
+      EntryPointAccessors
+        .fromApplication(
+          context = context.applicationContext,
+          entryPoint = WidgetPlaybackControllerEntryPoint::class.java,
+        ).widgetPlaybackController()
 
-        when (playbackController.providePlayingItem()) {
-            null -> playbackController.prepareAndRun(playingItemId) { action(playbackController) }
-            else -> action(playbackController)
-        }
-    } catch (ex: Exception) {
-        Log.w(TAG, "Unable to run $action on $playingItemId due to $ex")
+    when (playbackController.providePlayingItem()) {
+      null -> playbackController.prepareAndRun(playingItemId) { action(playbackController) }
+      else -> action(playbackController)
     }
+  } catch (ex: Exception) {
+    Log.w(TAG, "Unable to run $action on $playingItemId due to $ex")
+  }
 }
 
 private const val TAG = "PlayerWidget"

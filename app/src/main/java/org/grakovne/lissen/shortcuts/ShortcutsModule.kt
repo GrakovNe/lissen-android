@@ -10,8 +10,7 @@ import org.grakovne.lissen.common.RunningComponent
 @Module
 @InstallIn(SingletonComponent::class)
 interface ShortcutsModule {
-
-    @Binds
-    @IntoSet
-    fun bindPlaybackNotificationService(service: ContinuePlaybackShortcut): RunningComponent
+  @Binds
+  @IntoSet
+  fun bindPlaybackNotificationService(service: ContinuePlaybackShortcut): RunningComponent
 }

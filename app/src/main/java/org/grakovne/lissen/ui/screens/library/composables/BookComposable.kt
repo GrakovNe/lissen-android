@@ -34,86 +34,93 @@ import org.grakovne.lissen.ui.navigation.AppNavigationService
 
 @Composable
 fun BookComposable(
-    book: Book,
-    imageLoader: ImageLoader,
-    navController: AppNavigationService,
+  book: Book,
+  imageLoader: ImageLoader,
+  navController: AppNavigationService,
 ) {
-    val context = LocalContext.current
+  val context = LocalContext.current
 
-    val imageRequest = remember(book.id) {
-        ImageRequest.Builder(context)
-            .data(book.id)
-            .size(coil.size.Size.ORIGINAL)
-            .build()
+  val imageRequest =
+    remember(book.id) {
+      ImageRequest
+        .Builder(context)
+        .data(book.id)
+        .size(coil.size.Size.ORIGINAL)
+        .build()
     }
 
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { navController.showPlayer(book.id, book.title, book.subtitle) }
-            .testTag("bookItem_${book.id}")
-            .padding(horizontal = 4.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
+  Row(
+    modifier =
+      Modifier
+        .fillMaxWidth()
+        .clickable { navController.showPlayer(book.id, book.title, book.subtitle) }
+        .testTag("bookItem_${book.id}")
+        .padding(horizontal = 4.dp, vertical = 8.dp),
+    verticalAlignment = Alignment.CenterVertically,
+  ) {
+    AsyncShimmeringImage(
+      imageRequest = imageRequest,
+      imageLoader = imageLoader,
+      contentDescription = "${book.title} cover",
+      contentScale = ContentScale.FillBounds,
+      modifier =
+        Modifier
+          .size(64.dp)
+          .aspectRatio(1f)
+          .clip(RoundedCornerShape(4.dp)),
+      error = painterResource(R.drawable.cover_fallback),
+    )
+
+    Spacer(modifier = Modifier.width(16.dp))
+
+    Column(
+      modifier = Modifier.weight(1f),
     ) {
-        AsyncShimmeringImage(
-            imageRequest = imageRequest,
-            imageLoader = imageLoader,
-            contentDescription = "${book.title} cover",
-            contentScale = ContentScale.FillBounds,
-            modifier = Modifier
-                .size(64.dp)
-                .aspectRatio(1f)
-                .clip(RoundedCornerShape(4.dp)),
-            error = painterResource(R.drawable.cover_fallback),
+      Column {
+        Text(
+          text = book.title,
+          style =
+            MaterialTheme.typography.bodyMedium.copy(
+              fontWeight = FontWeight.SemiBold,
+              color = MaterialTheme.colorScheme.onBackground,
+            ),
+          maxLines = 2,
+          overflow = TextOverflow.Ellipsis,
         )
 
-        Spacer(modifier = Modifier.width(16.dp))
-
-        Column(
-            modifier = Modifier.weight(1f),
-        ) {
-            Column {
-                Text(
-                    text = book.title,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onBackground,
-                    ),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                )
-
-                if (null != book.series?.takeIf { it.isNotBlank() } || null != book.author) {
-                    Spacer(modifier = Modifier.height(2.dp))
-                }
-            }
-
-            book.author?.let {
-                Text(
-                    text = it,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                    ),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-
-            book
-                .series
-                ?.takeIf { it.isNotBlank() }
-                ?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodyMedium.copy(
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                        ),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
+        if (null != book.series?.takeIf { it.isNotBlank() } || null != book.author) {
+          Spacer(modifier = Modifier.height(2.dp))
         }
+      }
 
-        Spacer(modifier = Modifier.width(16.dp))
+      book.author?.let {
+        Text(
+          text = it,
+          style =
+            MaterialTheme.typography.bodyMedium.copy(
+              color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+            ),
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis,
+        )
+      }
+
+      book
+        .series
+        ?.takeIf { it.isNotBlank() }
+        ?.let {
+          Text(
+            text = it,
+            style =
+              MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+              ),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+          )
+        }
     }
+
+    Spacer(modifier = Modifier.width(16.dp))
+  }
 }

@@ -29,69 +29,72 @@ import org.grakovne.lissen.R
 
 @Composable
 fun TrackDetailsPlaceholderComposable(
-    bookTitle: String,
-    bookSubtitle: String?,
-    modifier: Modifier = Modifier,
+  bookTitle: String,
+  bookSubtitle: String?,
+  modifier: Modifier = Modifier,
 ) {
-    val configuration = LocalConfiguration.current
-    val screenHeight = configuration.screenHeightDp.dp
-    val maxImageHeight = screenHeight * 0.33f
+  val configuration = LocalConfiguration.current
+  val screenHeight = configuration.screenHeightDp.dp
+  val maxImageHeight = screenHeight * 0.33f
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier,
-    ) {
-        Box(
-            modifier = Modifier
-                .heightIn(max = maxImageHeight)
-                .aspectRatio(1f)
-                .clip(RoundedCornerShape(8.dp))
-                .shimmer()
-                .background(Color.Gray),
-        )
+  Column(
+    horizontalAlignment = Alignment.CenterHorizontally,
+    modifier = modifier,
+  ) {
+    Box(
+      modifier =
+        Modifier
+          .heightIn(max = maxImageHeight)
+          .aspectRatio(1f)
+          .clip(RoundedCornerShape(8.dp))
+          .shimmer()
+          .background(Color.Gray),
+    )
 
-        Spacer(modifier = Modifier.height(12.dp))
+    Spacer(modifier = Modifier.height(12.dp))
 
+    Text(
+      text = bookTitle,
+      style = typography.headlineSmall,
+      fontWeight = FontWeight.SemiBold,
+      color = colorScheme.onBackground,
+      textAlign = TextAlign.Center,
+      overflow = TextOverflow.Ellipsis,
+      maxLines = 2,
+      modifier = Modifier.padding(horizontal = 16.dp),
+    )
+
+    Spacer(modifier = Modifier.height(2.dp))
+
+    bookSubtitle
+      ?.takeIf { it.isNotBlank() }
+      ?.let {
         Text(
-            text = bookTitle,
-            style = typography.headlineSmall,
-            fontWeight = FontWeight.SemiBold,
-            color = colorScheme.onBackground,
-            textAlign = TextAlign.Center,
-            overflow = TextOverflow.Ellipsis,
-            maxLines = 2,
-            modifier = Modifier.padding(horizontal = 16.dp),
+          text = it,
+          style = typography.bodyMedium,
+          color = colorScheme.onBackground.copy(alpha = 0.6f),
+          textAlign = TextAlign.Center,
+          overflow = TextOverflow.Ellipsis,
+          maxLines = 1,
+          modifier =
+            Modifier
+              .fillMaxWidth()
+              .padding(horizontal = 16.dp),
         )
 
         Spacer(modifier = Modifier.height(2.dp))
+      }
 
-        bookSubtitle
-            ?.takeIf { it.isNotBlank() }
-            ?.let {
-                Text(
-                    text = it,
-                    style = typography.bodyMedium,
-                    color = colorScheme.onBackground.copy(alpha = 0.6f),
-                    textAlign = TextAlign.Center,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                )
-
-                Spacer(modifier = Modifier.height(2.dp))
-            }
-
-        Text(
-            text = stringResource(R.string.player_screen_now_playing_title_chapter_of, 100, "1000"),
-            style = typography.bodyMedium,
-            color = Color.Transparent,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .clip(RoundedCornerShape(8.dp))
-                .shimmer()
-                .background(Color.Gray),
-        )
-    }
+    Text(
+      text = stringResource(R.string.player_screen_now_playing_title_chapter_of, 100, "1000"),
+      style = typography.bodyMedium,
+      color = Color.Transparent,
+      textAlign = TextAlign.Center,
+      modifier =
+        Modifier
+          .clip(RoundedCornerShape(8.dp))
+          .shimmer()
+          .background(Color.Gray),
+    )
+  }
 }

@@ -4,27 +4,28 @@ import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.PlayingChapter
 
 fun findRelatedFiles(
-    chapter: PlayingChapter,
-    files: List<BookFile>,
+  chapter: PlayingChapter,
+  files: List<BookFile>,
 ): List<BookFile> {
-    val chapterStartRounded = chapter.start.round()
-    val chapterEndRounded = chapter.end.round()
+  val chapterStartRounded = chapter.start.round()
+  val chapterEndRounded = chapter.end.round()
 
-    val startTimes = files
-        .runningFold(0.0) { acc, file -> acc + file.duration }
-        .dropLast(1)
+  val startTimes =
+    files
+      .runningFold(0.0) { acc, file -> acc + file.duration }
+      .dropLast(1)
 
-    val fileStartTimes = files.zip(startTimes)
+  val fileStartTimes = files.zip(startTimes)
 
-    return fileStartTimes
-        .filter { (file, fileStartTime) ->
-            val fileStartTimeRounded = fileStartTime.round()
-            val fileEndTimeRounded = (fileStartTime + file.duration).round()
+  return fileStartTimes
+    .filter { (file, fileStartTime) ->
+      val fileStartTimeRounded = fileStartTime.round()
+      val fileEndTimeRounded = (fileStartTime + file.duration).round()
 
-            fileStartTimeRounded < chapterEndRounded && chapterStartRounded < fileEndTimeRounded
-        }
-        .map { it.first }
+      fileStartTimeRounded < chapterEndRounded && chapterStartRounded < fileEndTimeRounded
+    }.map { it.first }
 }
 
 private const val PRECISION = 0.01
+
 private fun Double.round(): Double = kotlin.math.round(this / PRECISION) * PRECISION

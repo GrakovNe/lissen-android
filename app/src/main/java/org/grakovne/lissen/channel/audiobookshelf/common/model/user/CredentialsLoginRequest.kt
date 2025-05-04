@@ -4,6 +4,6 @@ import androidx.annotation.Keep
 
 @Keep
 data class CredentialsLoginRequest(
-    val username: String,
-    val password: String,
+  val username: String,
+  val password: String,
 )

@@ -13,16 +13,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun LibrarySwitchComposable(
-    onclick: () -> Unit,
-) {
-    Spacer(modifier = Modifier.width(4.dp))
+fun LibrarySwitchComposable(onclick: () -> Unit) {
+  Spacer(modifier = Modifier.width(4.dp))
 
-    Icon(
-        modifier = Modifier
-            .clip(RoundedCornerShape(12.dp))
-            .clickable { onclick() },
-        imageVector = Icons.Outlined.ArrowDropDown,
-        contentDescription = null,
-    )
+  Icon(
+    modifier =
+      Modifier
+        .clip(RoundedCornerShape(12.dp))
+        .clickable { onclick() },
+    imageVector = Icons.Outlined.ArrowDropDown,
+    contentDescription = null,
+  )
 }

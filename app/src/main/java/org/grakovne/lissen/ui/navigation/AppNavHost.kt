@@ -33,146 +33,164 @@ import org.grakovne.lissen.ui.screens.settings.advanced.SeekSettingsScreen
 @Composable
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 fun AppNavHost(
-    navController: NavHostController,
-    preferences: LissenSharedPreferences,
-    networkQualityService: NetworkQualityService,
-    navigationService: AppNavigationService,
-    imageLoader: ImageLoader,
-    appLaunchAction: AppLaunchAction,
+  navController: NavHostController,
+  preferences: LissenSharedPreferences,
+  networkQualityService: NetworkQualityService,
+  navigationService: AppNavigationService,
+  imageLoader: ImageLoader,
+  appLaunchAction: AppLaunchAction,
 ) {
-    val hasCredentials by remember {
-        mutableStateOf(
-            preferences.hasCredentials(),
+  val hasCredentials by remember {
+    mutableStateOf(
+      preferences.hasCredentials(),
+    )
+  }
+
+  val book = preferences.getPlayingBook()
+
+  val startDestination =
+    when {
+      hasCredentials.not() ->
+        "login_screen"
+      appLaunchAction == AppLaunchAction.CONTINUE_PLAYBACK && book != null ->
+        "player_screen/${book.id}?bookTitle=${book.title}&bookSubtitle=${book.subtitle}&startInstantly=true"
+      else ->
+        "library_screen"
+    }
+
+  val enterTransition: EnterTransition =
+    slideInHorizontally(
+      initialOffsetX = { it },
+      animationSpec = tween(),
+    ) + fadeIn(animationSpec = tween())
+
+  val exitTransition: ExitTransition =
+    slideOutHorizontally(
+      targetOffsetX = { -it },
+      animationSpec = tween(),
+    ) + fadeOut(animationSpec = tween())
+
+  val popEnterTransition: EnterTransition =
+    slideInHorizontally(
+      initialOffsetX = { -it },
+      animationSpec = tween(),
+    ) + fadeIn(animationSpec = tween())
+
+  val popExitTransition: ExitTransition =
+    slideOutHorizontally(
+      targetOffsetX = { it },
+      animationSpec = tween(),
+    ) + fadeOut(animationSpec = tween())
+
+  Scaffold(modifier = Modifier.fillMaxSize()) { _ ->
+    NavHost(
+      navController = navController,
+      startDestination = startDestination,
+    ) {
+      composable("library_screen") {
+        LibraryScreen(
+          navController = navigationService,
+          imageLoader = imageLoader,
+          networkQualityService = networkQualityService,
         )
+      }
+
+      composable(
+        route = "player_screen/{bookId}?bookTitle={bookTitle}&bookSubtitle={bookSubtitle}&startInstantly={startInstantly}",
+        arguments =
+          listOf(
+            navArgument("bookId") { type = NavType.StringType },
+            navArgument("bookTitle") {
+              type = NavType.StringType
+              nullable = true
+            },
+            navArgument("bookSubtitle") {
+              type = NavType.StringType
+              nullable = true
+            },
+            navArgument("startInstantly") {
+              type = NavType.BoolType
+              nullable = false
+            },
+          ),
+        enterTransition = { enterTransition },
+        exitTransition = { exitTransition },
+        popEnterTransition = { popEnterTransition },
+        popExitTransition = { popExitTransition },
+      ) { navigationStack ->
+        val bookId = navigationStack.arguments?.getString("bookId") ?: return@composable
+        val bookTitle = navigationStack.arguments?.getString("bookTitle") ?: ""
+        val bookSubtitle = navigationStack.arguments?.getString("bookSubtitle")
+        val startInstantly = navigationStack.arguments?.getBoolean("startInstantly")
+
+        PlayerScreen(
+          navController = navigationService,
+          imageLoader = imageLoader,
+          bookId = bookId,
+          bookTitle = bookTitle,
+          bookSubtitle = bookSubtitle,
+          playInstantly = startInstantly ?: false,
+        )
+      }
+
+      composable(
+        route = "login_screen",
+        enterTransition = { enterTransition },
+        exitTransition = { exitTransition },
+        popEnterTransition = { popEnterTransition },
+        popExitTransition = { popExitTransition },
+      ) {
+        LoginScreen(navigationService)
+      }
+
+      composable(
+        route = "settings_screen",
+        enterTransition = { enterTransition },
+        exitTransition = { exitTransition },
+        popEnterTransition = { popEnterTransition },
+        popExitTransition = { popExitTransition },
+      ) {
+        SettingsScreen(
+          onBack = {
+            if (navController.previousBackStackEntry != null) {
+              navController.popBackStack()
+            }
+          },
+          navController = navigationService,
+        )
+      }
+
+      composable(
+        route = "settings_screen/custom_headers",
+        enterTransition = { enterTransition },
+        exitTransition = { exitTransition },
+        popEnterTransition = { popEnterTransition },
+        popExitTransition = { popExitTransition },
+      ) {
+        CustomHeadersSettingsScreen(
+          onBack = {
+            if (navController.previousBackStackEntry != null) {
+              navController.popBackStack()
+            }
+          },
+        )
+      }
+
+      composable(
+        route = "settings_screen/seek_settings",
+        enterTransition = { enterTransition },
+        exitTransition = { exitTransition },
+        popEnterTransition = { popEnterTransition },
+        popExitTransition = { popExitTransition },
+      ) {
+        SeekSettingsScreen(
+          onBack = {
+            if (navController.previousBackStackEntry != null) {
+              navController.popBackStack()
+            }
+          },
+        )
+      }
     }
-
-    val book = preferences.getPlayingBook()
-
-    val startDestination = when {
-        hasCredentials.not() -> "login_screen"
-        appLaunchAction == AppLaunchAction.CONTINUE_PLAYBACK && book != null -> "player_screen/${book.id}?bookTitle=${book.title}&bookSubtitle=${book.subtitle}&startInstantly=true"
-        else -> "library_screen"
-    }
-
-    val enterTransition: EnterTransition = slideInHorizontally(
-        initialOffsetX = { it },
-        animationSpec = tween(),
-    ) + fadeIn(animationSpec = tween())
-
-    val exitTransition: ExitTransition = slideOutHorizontally(
-        targetOffsetX = { -it },
-        animationSpec = tween(),
-    ) + fadeOut(animationSpec = tween())
-
-    val popEnterTransition: EnterTransition = slideInHorizontally(
-        initialOffsetX = { -it },
-        animationSpec = tween(),
-    ) + fadeIn(animationSpec = tween())
-
-    val popExitTransition: ExitTransition = slideOutHorizontally(
-        targetOffsetX = { it },
-        animationSpec = tween(),
-    ) + fadeOut(animationSpec = tween())
-
-    Scaffold(modifier = Modifier.fillMaxSize()) { _ ->
-        NavHost(
-            navController = navController,
-            startDestination = startDestination,
-        ) {
-            composable("library_screen") {
-                LibraryScreen(
-                    navController = navigationService,
-                    imageLoader = imageLoader,
-                    networkQualityService = networkQualityService,
-                )
-            }
-
-            composable(
-                route = "player_screen/{bookId}?bookTitle={bookTitle}&bookSubtitle={bookSubtitle}&startInstantly={startInstantly}",
-                arguments = listOf(
-                    navArgument("bookId") { type = NavType.StringType },
-                    navArgument("bookTitle") { type = NavType.StringType; nullable = true },
-                    navArgument("bookSubtitle") { type = NavType.StringType; nullable = true },
-                    navArgument("startInstantly") { type = NavType.BoolType; nullable = false },
-                ),
-                enterTransition = { enterTransition },
-                exitTransition = { exitTransition },
-                popEnterTransition = { popEnterTransition },
-                popExitTransition = { popExitTransition },
-            ) { navigationStack ->
-                val bookId = navigationStack.arguments?.getString("bookId") ?: return@composable
-                val bookTitle = navigationStack.arguments?.getString("bookTitle") ?: ""
-                val bookSubtitle = navigationStack.arguments?.getString("bookSubtitle")
-                val startInstantly = navigationStack.arguments?.getBoolean("startInstantly")
-
-                PlayerScreen(
-                    navController = navigationService,
-                    imageLoader = imageLoader,
-                    bookId = bookId,
-                    bookTitle = bookTitle,
-                    bookSubtitle = bookSubtitle,
-                    playInstantly = startInstantly ?: false,
-                )
-            }
-
-            composable(
-                route = "login_screen",
-                enterTransition = { enterTransition },
-                exitTransition = { exitTransition },
-                popEnterTransition = { popEnterTransition },
-                popExitTransition = { popExitTransition },
-            ) {
-                LoginScreen(navigationService)
-            }
-
-            composable(
-                route = "settings_screen",
-                enterTransition = { enterTransition },
-                exitTransition = { exitTransition },
-                popEnterTransition = { popEnterTransition },
-                popExitTransition = { popExitTransition },
-            ) {
-                SettingsScreen(
-                    onBack = {
-                        if (navController.previousBackStackEntry != null) {
-                            navController.popBackStack()
-                        }
-                    },
-                    navController = navigationService,
-                )
-            }
-
-            composable(
-                route = "settings_screen/custom_headers",
-                enterTransition = { enterTransition },
-                exitTransition = { exitTransition },
-                popEnterTransition = { popEnterTransition },
-                popExitTransition = { popExitTransition },
-            ) {
-                CustomHeadersSettingsScreen(
-                    onBack = {
-                        if (navController.previousBackStackEntry != null) {
-                            navController.popBackStack()
-                        }
-                    },
-                )
-            }
-
-            composable(
-                route = "settings_screen/seek_settings",
-                enterTransition = { enterTransition },
-                exitTransition = { exitTransition },
-                popEnterTransition = { popEnterTransition },
-                popExitTransition = { popExitTransition },
-            ) {
-                SeekSettingsScreen(
-                    onBack = {
-                        if (navController.previousBackStackEntry != null) {
-                            navController.popBackStack()
-                        }
-                    },
-                )
-            }
-        }
-    }
+  }
 }

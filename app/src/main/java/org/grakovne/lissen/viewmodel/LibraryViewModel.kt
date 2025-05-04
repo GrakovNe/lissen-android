@@ -30,11 +30,12 @@ import javax.inject.Inject
 
 @HiltViewModel
 @OptIn(ExperimentalCoroutinesApi::class)
-class LibraryViewModel @Inject constructor(
+class LibraryViewModel
+  @Inject
+  constructor(
     private val mediaChannel: LissenMediaProvider,
     private val preferences: LissenSharedPreferences,
-) : ViewModel() {
-
+  ) : ViewModel() {
     private val _recentBooks = MutableLiveData<List<RecentBook>>(emptyList())
     val recentBooks: LiveData<List<RecentBook>> = _recentBooks
 
@@ -49,113 +50,118 @@ class LibraryViewModel @Inject constructor(
     private var defaultPagingSource: PagingSource<Int, Book>? = null
     private var searchPagingSource: PagingSource<Int, Book>? = null
 
-    private val pageConfig = PagingConfig(
+    private val pageConfig =
+      PagingConfig(
         pageSize = PAGE_SIZE,
         initialLoadSize = PAGE_SIZE,
         prefetchDistance = PAGE_SIZE,
-    )
+      )
 
-    val searchPager: Flow<PagingData<Book>> = combine(
+    val searchPager: Flow<PagingData<Book>> =
+      combine(
         _searchToken,
         searchRequested.asFlow(),
-    ) { token, requested ->
+      ) { token, requested ->
         Pair(token, requested)
-    }.flatMapLatest { (token, _) ->
+      }.flatMapLatest { (token, _) ->
         Pager(
-            config = pageConfig,
-            pagingSourceFactory = {
-                val source = LibrarySearchPagingSource(
-                    preferences = preferences,
-                    mediaChannel = mediaChannel,
-                    searchToken = token,
-                    limit = PAGE_SIZE,
-                )
+          config = pageConfig,
+          pagingSourceFactory = {
+            val source =
+              LibrarySearchPagingSource(
+                preferences = preferences,
+                mediaChannel = mediaChannel,
+                searchToken = token,
+                limit = PAGE_SIZE,
+              )
 
-                searchPagingSource = source
-                source
-            },
+            searchPagingSource = source
+            source
+          },
         ).flow
-    }.cachedIn(viewModelScope)
+      }.cachedIn(viewModelScope)
 
     val libraryPager: Flow<PagingData<Book>> by lazy {
-        Pager(
-            config = pageConfig,
-            pagingSourceFactory = {
-                val source = LibraryDefaultPagingSource(preferences, mediaChannel)
-                defaultPagingSource = source
+      Pager(
+        config = pageConfig,
+        pagingSourceFactory = {
+          val source = LibraryDefaultPagingSource(preferences, mediaChannel)
+          defaultPagingSource = source
 
-                source
-            },
-        ).flow.cachedIn(viewModelScope)
+          source
+        },
+      ).flow.cachedIn(viewModelScope)
     }
 
     fun requestSearch() {
-        _searchRequested.postValue(true)
+      _searchRequested.postValue(true)
     }
 
     fun dismissSearch() {
-        _searchRequested.postValue(false)
-        _searchToken.value = EMPTY_SEARCH
+      _searchRequested.postValue(false)
+      _searchToken.value = EMPTY_SEARCH
     }
 
     fun updateSearch(token: String) {
-        viewModelScope.launch { _searchToken.emit(token) }
+      viewModelScope.launch { _searchToken.emit(token) }
     }
 
-    fun fetchPreferredLibraryTitle(): String? = preferences
+    fun fetchPreferredLibraryTitle(): String? =
+      preferences
         .getPreferredLibrary()
         ?.title
 
-    fun fetchPreferredLibraryType() = preferences
+    fun fetchPreferredLibraryType() =
+      preferences
         .getPreferredLibrary()
         ?.type
         ?: LibraryType.UNKNOWN
 
     fun refreshRecentListening() {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                fetchRecentListening()
-            }
+      viewModelScope.launch {
+        withContext(Dispatchers.IO) {
+          fetchRecentListening()
         }
+      }
     }
 
     fun refreshLibrary() {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                when (searchRequested.value) {
-                    true -> searchPagingSource?.invalidate()
-                    else -> defaultPagingSource?.invalidate()
-                }
-            }
+      viewModelScope.launch {
+        withContext(Dispatchers.IO) {
+          when (searchRequested.value) {
+            true -> searchPagingSource?.invalidate()
+            else -> defaultPagingSource?.invalidate()
+          }
         }
+      }
     }
 
     fun fetchRecentListening() {
-        _recentBookUpdating.postValue(true)
+      _recentBookUpdating.postValue(true)
 
-        val preferredLibrary = preferences.getPreferredLibrary()?.id ?: run {
-            _recentBookUpdating.postValue(false)
-            return
+      val preferredLibrary =
+        preferences.getPreferredLibrary()?.id ?: run {
+          _recentBookUpdating.postValue(false)
+          return
         }
 
-        viewModelScope.launch {
-            mediaChannel
-                .fetchRecentListenedBooks(preferredLibrary)
-                .fold(
-                    onSuccess = {
-                        _recentBooks.postValue(it)
-                        _recentBookUpdating.postValue(false)
-                    },
-                    onFailure = {
-                        _recentBookUpdating.postValue(false)
-                    },
-                )
-        }
+      viewModelScope.launch {
+        mediaChannel
+          .fetchRecentListenedBooks(preferredLibrary)
+          .fold(
+            onSuccess = {
+              _recentBooks.postValue(it)
+              _recentBookUpdating.postValue(false)
+            },
+            onFailure = {
+              _recentBookUpdating.postValue(false)
+            },
+          )
+      }
     }
 
     companion object {
-
-        private const val EMPTY_SEARCH = ""
-        private const val PAGE_SIZE = 20
+      private const val EMPTY_SEARCH = ""
+      private const val PAGE_SIZE = 20
     }
-}
+  }

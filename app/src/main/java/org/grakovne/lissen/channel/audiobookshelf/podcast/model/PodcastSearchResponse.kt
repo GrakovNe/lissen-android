@@ -4,10 +4,10 @@ import androidx.annotation.Keep
 
 @Keep
 data class PodcastSearchResponse(
-    val podcast: List<PodcastSearchItemResponse>,
+  val podcast: List<PodcastSearchItemResponse>,
 )
 
 @Keep
 data class PodcastSearchItemResponse(
-    val libraryItem: PodcastItem,
+  val libraryItem: PodcastItem,
 )
