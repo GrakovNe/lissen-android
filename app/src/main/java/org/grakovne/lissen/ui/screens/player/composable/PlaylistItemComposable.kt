@@ -26,7 +26,6 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.BookChapterState
 import org.grakovne.lissen.domain.PlayingChapter
@@ -107,13 +106,11 @@ fun PlaylistItemComposable(
     )
 
     if (isCached) {
-      val scaledPadding = 4.dp * fontScale
-
       Icon(
         imageVector = availableOffline,
         contentDescription = "Available offline",
         modifier = Modifier
-          .padding(scaledPadding)
+          .padding(4.dp * fontScale)
           .size(16.dp),
         tint =
           colorScheme.onBackground.copy(
