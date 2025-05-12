@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Audiotrack
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -18,8 +19,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
@@ -34,7 +39,24 @@ fun PlaylistItemComposable(
   isSelected: Boolean,
   onClick: () -> Unit,
   modifier: Modifier,
+  maxDuration: Double
 ) {
+  val textMeasurer = rememberTextMeasurer()
+  val density = LocalDensity.current
+
+  val maxDurationText = remember(maxDuration) { maxDuration.toInt().formatLeadingMinutes() }
+  val bodySmallStyle = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold)   // ← вынесено из remember
+
+  val durationColumnWidth = remember(maxDurationText, density, bodySmallStyle) {
+    with(density) {
+      textMeasurer
+        .measure(AnnotatedString(maxDurationText), style = bodySmallStyle)
+        .size
+        .width
+        .toDp()
+    }
+  }
+
   Row(
     verticalAlignment = Alignment.CenterVertically,
     modifier =
@@ -80,20 +102,6 @@ fun PlaylistItemComposable(
       modifier = Modifier.weight(1f),
     )
 
-    Text(
-      text = track.duration.toInt().formatLeadingMinutes(),
-      style = MaterialTheme.typography.bodySmall,
-      modifier = Modifier.padding(start = 8.dp),
-      fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-      color =
-        when (track.available) {
-          true -> colorScheme.onBackground.copy(alpha = 0.6f)
-          false -> colorScheme.onBackground.copy(alpha = 0.4f)
-        },
-    )
-
-    Spacer(modifier = Modifier.width(6.dp))
-
     Icon(
       imageVector = availableOffline,
       contentDescription = "Available offline",
@@ -103,5 +111,19 @@ fun PlaylistItemComposable(
       ),
     )
 
+    Spacer(modifier = Modifier.width(4.dp))
+
+    Text(
+      text = track.duration.toInt().formatLeadingMinutes(),
+      style = MaterialTheme.typography.bodySmall,
+      modifier = Modifier.width(durationColumnWidth),
+      textAlign = TextAlign.End,
+      fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+      color =
+        when (track.available) {
+          true -> colorScheme.onBackground.copy(alpha = 0.6f)
+          false -> colorScheme.onBackground.copy(alpha = 0.4f)
+        },
+    )
   }
 }

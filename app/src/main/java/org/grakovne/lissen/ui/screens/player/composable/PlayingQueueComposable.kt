@@ -194,12 +194,16 @@ fun PlayingQueueComposable(
           ),
       state = listState,
     ) {
+
+      val maxDuration = showingChapters.map { it.duration }.max()
+
       itemsIndexed(showingChapters) { index, chapter ->
         PlaylistItemComposable(
           track = chapter,
           onClick = { viewModel.setChapter(chapter) },
           isSelected = chapter.id == currentTrackId?.id,
           modifier = Modifier.wrapContentWidth(),
+          maxDuration = maxDuration
         )
 
         if (index < showingChapters.size - 1) {
