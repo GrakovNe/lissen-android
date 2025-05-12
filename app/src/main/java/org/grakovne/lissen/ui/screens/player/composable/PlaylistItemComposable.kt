@@ -100,14 +100,14 @@ fun PlaylistItemComposable(
         },
       overflow = TextOverflow.Ellipsis,
       fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-      modifier = Modifier.weight(1f),
+      modifier = Modifier.weight(1f).padding(end = 12.dp),
     )
 
     if (isCached) {
       Icon(
         imageVector = availableOffline,
         contentDescription = "Available offline",
-        modifier = Modifier.size(14.dp),
+        modifier = Modifier.size(16.dp),
         tint =
           colorScheme.onBackground.copy(
             alpha = if (isSelected) 0.6f else 0.4f,
