@@ -8,8 +8,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.Audiotrack
+import androidx.compose.material.icons.outlined.Cached
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.CloudDone
+import androidx.compose.material.icons.outlined.DoneOutline
+import androidx.compose.material.icons.outlined.OutlinedFlag
+import androidx.compose.material.icons.outlined.Save
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -18,6 +24,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -78,6 +85,7 @@ fun PlaylistItemComposable(
       fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
       modifier = Modifier.weight(1f),
     )
+
     Text(
       text = track.duration.toInt().formatLeadingMinutes(),
       style = MaterialTheme.typography.bodySmall,
@@ -89,5 +97,14 @@ fun PlaylistItemComposable(
           false -> colorScheme.onBackground.copy(alpha = 0.4f)
         },
     )
+
+    Spacer(modifier = Modifier.width(6.dp))
+
+    Icon(
+      imageVector = undefined,
+      contentDescription = "Available offline",
+      modifier = Modifier.size(16.dp).alpha(0.5f),
+    )
+
   }
 }
