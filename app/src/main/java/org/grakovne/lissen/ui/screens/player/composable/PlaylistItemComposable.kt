@@ -45,7 +45,7 @@ fun PlaylistItemComposable(
   val density = LocalDensity.current
 
   val maxDurationText = remember(maxDuration) { maxDuration.toInt().formatLeadingMinutes() }
-  val bodySmallStyle = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold)   // ← вынесено из remember
+  val bodySmallStyle = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold)
 
   val durationColumnWidth = remember(maxDurationText, density, bodySmallStyle) {
     with(density) {
