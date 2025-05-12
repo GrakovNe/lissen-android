@@ -41,7 +41,6 @@ data class MediaProgress(
 @Keep
 data class PlayingChapter(
   val available: Boolean,
-  val cached: Boolean,
   val podcastEpisodeState: BookChapterState?,
   val duration: Double,
   val start: Double,

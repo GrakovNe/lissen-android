@@ -85,6 +85,11 @@ class ContentCachingManager
 
     fun hasMetadataCached(mediaItemId: String) = bookRepository.provideCacheState(mediaItemId)
 
+    fun hasMetadataCached(
+      mediaItemId: String,
+      chapterId: String,
+    ) = bookRepository.provideCacheState(mediaItemId, chapterId)
+
     private suspend fun cacheBookMedia(
       bookId: String,
       files: List<BookFile>,

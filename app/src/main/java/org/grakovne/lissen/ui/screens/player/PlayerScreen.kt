@@ -268,6 +268,7 @@ fun PlayerScreen(
           else -> {
             PlayingQueueComposable(
               libraryViewModel = libraryViewModel,
+              cachingModelView = cachingModelView,
               viewModel = playerViewModel,
               modifier = Modifier,
             )

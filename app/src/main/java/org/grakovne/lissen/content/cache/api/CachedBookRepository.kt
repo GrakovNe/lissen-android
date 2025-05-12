@@ -57,6 +57,11 @@ class CachedBookRepository
 
     fun provideCacheState(bookId: String) = bookDao.isBookCached(bookId)
 
+    fun provideCacheState(
+      bookId: String,
+      chapterId: String,
+    ) = bookDao.isBookChapterCached(bookId, chapterId)
+
     suspend fun fetchBooks(
       pageNumber: Int,
       pageSize: Int,

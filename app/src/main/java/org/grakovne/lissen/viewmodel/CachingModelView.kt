@@ -85,4 +85,9 @@ class CachingModelView
     fun localCacheUsing() = preferences.isForceCache()
 
     fun provideCacheState(bookId: String): LiveData<Boolean> = contentCachingManager.hasMetadataCached(bookId)
+
+    fun provideCacheState(
+      bookId: String,
+      chapterId: String,
+    ): LiveData<Boolean> = contentCachingManager.hasMetadataCached(bookId, chapterId)
   }

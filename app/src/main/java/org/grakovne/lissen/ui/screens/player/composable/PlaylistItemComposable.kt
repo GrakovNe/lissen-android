@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Audiotrack
 import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -39,7 +38,8 @@ fun PlaylistItemComposable(
   isSelected: Boolean,
   onClick: () -> Unit,
   modifier: Modifier,
-  maxDuration: Double
+  maxDuration: Double,
+  isCached: Boolean,
 ) {
   val textMeasurer = rememberTextMeasurer()
   val density = LocalDensity.current
@@ -47,15 +47,16 @@ fun PlaylistItemComposable(
   val maxDurationText = remember(maxDuration) { maxDuration.toInt().formatLeadingMinutes() }
   val bodySmallStyle = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold)
 
-  val durationColumnWidth = remember(maxDurationText, density, bodySmallStyle) {
-    with(density) {
-      textMeasurer
-        .measure(AnnotatedString(maxDurationText), style = bodySmallStyle)
-        .size
-        .width
-        .toDp()
+  val durationColumnWidth =
+    remember(maxDurationText, density, bodySmallStyle) {
+      with(density) {
+        textMeasurer
+          .measure(AnnotatedString(maxDurationText), style = bodySmallStyle)
+          .size
+          .width
+          .toDp()
+      }
     }
-  }
 
   Row(
     verticalAlignment = Alignment.CenterVertically,
@@ -102,14 +103,15 @@ fun PlaylistItemComposable(
       modifier = Modifier.weight(1f),
     )
 
-    if (track.cached) {
+    if (isCached) {
       Icon(
         imageVector = availableOffline,
         contentDescription = "Available offline",
         modifier = Modifier.size(14.dp),
-        tint = colorScheme.onBackground.copy(
-          alpha = if (isSelected) 0.6f else 0.4f
-        ),
+        tint =
+          colorScheme.onBackground.copy(
+            alpha = if (isSelected) 0.6f else 0.4f,
+          ),
       )
       Spacer(modifier = Modifier.width(4.dp))
     }

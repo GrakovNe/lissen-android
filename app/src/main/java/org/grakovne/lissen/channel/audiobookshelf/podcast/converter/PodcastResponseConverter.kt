@@ -59,7 +59,6 @@ class PodcastResponseConverter
                 duration = episode.audioFile.duration,
                 id = episode.id,
                 available = true,
-                cached = episode.id.length % 2 ==0,
                 podcastEpisodeState =
                   progressResponses
                     .find { it.episodeId == episode.id }

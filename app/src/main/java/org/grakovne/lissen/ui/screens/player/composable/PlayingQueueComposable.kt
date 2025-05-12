@@ -48,12 +48,14 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
+import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
 fun PlayingQueueComposable(
   libraryViewModel: LibraryViewModel,
+  cachingModelView: CachingModelView,
   viewModel: PlayerViewModel,
   modifier: Modifier = Modifier,
 ) {
@@ -194,16 +196,22 @@ fun PlayingQueueComposable(
           ),
       state = listState,
     ) {
-
-      val maxDuration = showingChapters.map { it.duration }.max()
+      val maxDuration = showingChapters.maxOfOrNull { it.duration } ?: 0.0
 
       itemsIndexed(showingChapters) { index, chapter ->
+        val isCached by cachingModelView
+          .provideCacheState(
+            bookId = book?.id ?: "",
+            chapterId = chapter.id,
+          ).observeAsState(false)
+
         PlaylistItemComposable(
           track = chapter,
           onClick = { viewModel.setChapter(chapter) },
           isSelected = chapter.id == currentTrackId?.id,
           modifier = Modifier.wrapContentWidth(),
-          maxDuration = maxDuration
+          maxDuration = maxDuration,
+          isCached = isCached,
         )
 
         if (index < showingChapters.size - 1) {

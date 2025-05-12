@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
-import androidx.compose.material.icons.outlined.CloudDone
 import androidx.compose.material.icons.outlined.CloudDownload
 import androidx.compose.material.icons.outlined.SlowMotionVideo
 import androidx.compose.material.icons.outlined.Timer
@@ -110,7 +109,6 @@ fun NavigationBarComposable(
             imageVector =
               provideCachingStateIcon(
                 cacheState = cacheProgress,
-                hasCached = isMetadataCached,
               ),
             contentDescription = stringResource(R.string.player_screen_downloads_navigation),
             modifier = Modifier.size(iconSize),
@@ -237,10 +235,7 @@ fun NavigationBarComposable(
   }
 }
 
-private fun provideCachingStateIcon(
-  hasCached: Boolean,
-  cacheState: CacheState,
-): ImageVector {
+private fun provideCachingStateIcon(cacheState: CacheState): ImageVector {
   if (cacheState.status is CacheStatus.Caching) {
     return when {
       cacheState.progress < 1.0 / 6 -> Loader10
@@ -252,11 +247,5 @@ private fun provideCachingStateIcon(
     }
   }
 
-  return when (hasCached) {
-    true -> cachedIcon
-    else -> defaultIcon
-  }
+  return Icons.Outlined.CloudDownload
 }
-
-private val cachedIcon = Icons.Outlined.CloudDone
-private val defaultIcon = Icons.Outlined.CloudDownload
