@@ -102,16 +102,17 @@ fun PlaylistItemComposable(
       modifier = Modifier.weight(1f),
     )
 
-    Icon(
-      imageVector = availableOffline,
-      contentDescription = "Available offline",
-      modifier = Modifier.size(16.dp),
-      tint = colorScheme.onBackground.copy(
-        alpha = if (isSelected) 0.6f else 0.4f
-      ),
-    )
-
-    Spacer(modifier = Modifier.width(4.dp))
+    if (track.cached) {
+      Icon(
+        imageVector = availableOffline,
+        contentDescription = "Available offline",
+        modifier = Modifier.size(14.dp),
+        tint = colorScheme.onBackground.copy(
+          alpha = if (isSelected) 0.6f else 0.4f
+        ),
+      )
+      Spacer(modifier = Modifier.width(4.dp))
+    }
 
     Text(
       text = track.duration.toInt().formatLeadingMinutes(),
