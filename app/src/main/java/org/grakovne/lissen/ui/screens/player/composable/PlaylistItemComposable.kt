@@ -42,7 +42,6 @@ fun PlaylistItemComposable(
   maxDuration: Double,
   isCached: Boolean,
 ) {
-
   val fontScale = LocalDensity.current.fontScale
   val textMeasurer = rememberTextMeasurer()
   val density = LocalDensity.current
@@ -93,7 +92,6 @@ fun PlaylistItemComposable(
 
     Spacer(modifier = Modifier.width(8.dp))
 
-
     Text(
       text = track.title,
       style = MaterialTheme.typography.titleSmall,
@@ -104,18 +102,20 @@ fun PlaylistItemComposable(
         },
       overflow = TextOverflow.Ellipsis,
       fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-      modifier = Modifier
-        .weight(1f)
-        .padding(end = 12.dp),
+      modifier =
+        Modifier
+          .weight(1f)
+          .padding(end = 12.dp),
     )
 
     if (isCached) {
       Icon(
         imageVector = ImageVector.vectorResource(id = R.drawable.available_offline_filled),
         contentDescription = "Available offline",
-        modifier = Modifier
-          .padding(4.dp * fontScale)
-          .size(12.dp),
+        modifier =
+          Modifier
+            .padding(4.dp * fontScale)
+            .size(12.dp),
         tint =
           colorScheme.onBackground.copy(
             alpha = if (isSelected) 0.6f else 0.4f,
