@@ -2,7 +2,6 @@ package org.grakovne.lissen.ui.screens.player.composable
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -112,7 +111,7 @@ fun PlaylistItemComposable(
 
     if (isCached) {
       Icon(
-        imageVector = ImageVector.vectorResource(id = R.drawable.file_down),
+        imageVector = ImageVector.vectorResource(id = R.drawable.available_offline_filled),
         contentDescription = "Available offline",
         modifier = Modifier
           .padding(4.dp * fontScale)

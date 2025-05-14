@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Cloud
-import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.DropdownMenu
@@ -83,7 +82,7 @@ fun DefaultActionComposable(
           imageVector =
             when (contentCachingModelView.localCacheUsing()) {
               true -> Icons.Outlined.Cloud
-              else -> ImageVector.vectorResource(id = R.drawable.file_down)
+              else -> ImageVector.vectorResource(id = R.drawable.available_offline_outline)
             },
           contentDescription = null,
         )
