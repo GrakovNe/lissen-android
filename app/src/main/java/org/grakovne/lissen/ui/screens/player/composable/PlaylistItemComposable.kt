@@ -2,6 +2,7 @@ package org.grakovne.lissen.ui.screens.player.composable
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -93,6 +94,7 @@ fun PlaylistItemComposable(
 
     Spacer(modifier = Modifier.width(8.dp))
 
+
     Text(
       text = track.title,
       style = MaterialTheme.typography.titleSmall,
@@ -114,13 +116,12 @@ fun PlaylistItemComposable(
         contentDescription = "Available offline",
         modifier = Modifier
           .padding(4.dp * fontScale)
-          .size(16.dp),
+          .size(12.dp),
         tint =
           colorScheme.onBackground.copy(
             alpha = if (isSelected) 0.6f else 0.4f,
           ),
       )
-
     }
 
     Text(
