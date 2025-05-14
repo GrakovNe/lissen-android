@@ -1,5 +1,6 @@
 package org.grakovne.lissen.playback.service
 
+import android.util.Log
 import androidx.media3.common.Player
 import androidx.media3.common.Tracks
 import androidx.media3.exoplayer.ExoPlayer
@@ -32,11 +33,7 @@ class PlaybackSynchronizationService
     init {
       exoPlayer.addListener(
         object : Player.Listener {
-          override fun onTracksChanged(tracks: Tracks) {
-            executeOnetimeSync()
-          }
-
-          override fun onIsPlayingChanged(isPlaying: Boolean) {
+          override fun onEvents(player: Player, events: Player.Events) {
             executeRepeatableSync()
           }
         },
@@ -52,7 +49,7 @@ class PlaybackSynchronizationService
       serviceScope
         .launch {
           executeOnetimeSync()
-          
+
           if (exoPlayer.isPlaying) {
             delay(SYNC_INTERVAL)
             executeRepeatableSync()
@@ -63,6 +60,8 @@ class PlaybackSynchronizationService
     private fun executeOnetimeSync() {
       val elapsedMs = exoPlayer.currentPosition
       val overallProgress = getProgress(elapsedMs)
+
+      Log.d(TAG, "Trying to sync $overallProgress for ${currentBook?.id}")
 
       serviceScope
         .launch(Dispatchers.IO) {
@@ -144,6 +143,7 @@ class PlaybackSynchronizationService
     }
 
     companion object {
+      private val TAG = "PlaybackSynchronizationService"
       private const val SYNC_INTERVAL = 30_000L
     }
   }
