@@ -25,7 +25,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -81,7 +83,7 @@ fun DefaultActionComposable(
           imageVector =
             when (contentCachingModelView.localCacheUsing()) {
               true -> Icons.Outlined.Cloud
-              else -> Icons.Outlined.CloudOff
+              else -> ImageVector.vectorResource(id = R.drawable.file_down)
             },
           contentDescription = null,
         )
@@ -94,7 +96,7 @@ fun DefaultActionComposable(
               else -> stringResource(R.string.enable_offline)
             },
           style = MaterialTheme.typography.bodyMedium,
-          modifier = Modifier.padding(start = 8.dp),
+          modifier = Modifier.padding(start = 2.dp),
         )
       },
       onClick = {
@@ -127,7 +129,7 @@ fun DefaultActionComposable(
         Text(
           stringResource(R.string.library_screen_preferences_menu_item),
           style = MaterialTheme.typography.bodyMedium,
-          modifier = Modifier.padding(start = 8.dp),
+          modifier = Modifier.padding(start = 2.dp),
         )
       },
       onClick = {
