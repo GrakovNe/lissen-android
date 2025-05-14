@@ -15,6 +15,8 @@
     <string name="player_screen_library_playing_title">Çalınan bölümler</string>
     <string name="player_screen_podcast_playing_title">Çalınan bölümler</string>
     <string name="player_screen_items_playing_title">Çalınan öğeler</string>
+    <string name="disable_offline">Tüm içerik</string>
+    <string name="enable_offline">Yalnızca indirilenler</string>
     <string name="player_screen_now_playing_title_chapter_of">%2$s\'nin %1$d. bölümü</string>
     <string name="player_screen_now_playing_title_podcast_of">%2$s\'nin %1$d. bölümü</string>
     <string name="player_screen_now_playing_title_item_of">%2$s\'nin %1$d. öğesi</string>
@@ -28,8 +30,6 @@
     <string name="login_error_credentials_are_invalid">Kimlik bilgileri geçersiz</string>
     <string name="login_error_host_url_shall_be_https_or_http">Ana bilgisayar URL\'si https:// veya http:// olmalı</string>
     <string name="login_error_connection_error">Bağlantı hatası</string>
-    <string name="disable_offline">Çevrimdışını kapat</string>
-    <string name="enable_offline">Çevrimdışını aç</string>
     <string name="the_library_is_empty">Kütüphane boş</string>
     <string name="the_offline_library_is_empty">Henüz kaydedilmiş kitap yok</string>
     <string name="audiobookshelf_server_is_required">Audiobookshelf sunucusu gerekli</string>

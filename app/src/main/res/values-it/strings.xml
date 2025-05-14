@@ -25,8 +25,8 @@
     <string name="login_error_password_is_missing">La password non è presente</string>
     <string name="login_error_credentials_are_invalid">Le credenziali non sono valide</string>
     <string name="login_error_connection_error">Errore di connessione</string>
-    <string name="disable_offline">Disattiva modalità offline</string>
-    <string name="enable_offline">Attiva modalità offline</string>
+    <string name="disable_offline">Tutti i contenuti</string>
+    <string name="enable_offline">Solo scaricati</string>
     <string name="the_library_is_empty">La libreria è vuota</string>
     <string name="the_offline_library_is_empty">Nessun libro ancora salvato</string>
     <string name="audiobookshelf_server_is_required">È necessario il server Audiobookshelf</string>

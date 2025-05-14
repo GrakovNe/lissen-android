@@ -31,8 +31,8 @@
     <string name="app_crach_toast">Excuses voor de crash van de applicatie\nLogboeken zijn verzonden voor analyse</string>
     <string name="downloads_menu_download_option_entire_book">Hele boek</string>
     <string name="player_screen_timer_navigation">Timer</string>
-    <string name="disable_offline">Offline uitschakelen</string>
-    <string name="enable_offline">Offline inschakelen</string>
+    <string name="disable_offline">Alle inhoud</string>
+    <string name="enable_offline">Alleen gedownload</string>
     <string name="the_offline_library_is_empty">Nog geen opgeslagen boeken</string>
     <string name="playback_speed_title">Afspeelsnelheid</string>
     <string name="color_scheme_follow_system">Systeem</string>

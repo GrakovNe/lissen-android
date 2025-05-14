@@ -2,6 +2,8 @@
 <resources>
     <string name="downloads_menu_download_option_clear_chapters">பதிவிறக்கம் செய்யப்பட்ட அத்தியாயங்களை அழிக்கவும்</string>
     <string name="library_screen_library_title">நூலகம்</string>
+    <string name="disable_offline">அனைத்து உள்ளடக்கம்</string>
+    <string name="enable_offline">பதிவிறக்கப்பட்டவை மட்டும்</string>
     <string name="library_screen_continue_listening_title">தொடர்ந்து கேட்பது</string>
     <string name="library_screen_preferences_menu_item">விருப்பத்தேர்வுகள்</string>
     <string name="login_screen_title">சேவையகத்துடன் இணைக்கவும்</string>
@@ -28,8 +30,6 @@
     <string name="login_error_credentials_are_invalid">நற்சான்றிதழ்கள் தவறானவை</string>
     <string name="login_error_host_url_shall_be_https_or_http">புரவலன் முகவரி https: // அல்லது http: // ஆக இருக்கும்</string>
     <string name="login_error_connection_error">இணைப்பு பிழை</string>
-    <string name="disable_offline">ஆஃப்லைனில் திரும்பவும்</string>
-    <string name="enable_offline">ஆஃப்லைனில் இயக்கவும்</string>
     <string name="the_library_is_empty">நூலகம் காலியாக உள்ளது</string>
     <string name="the_offline_library_is_empty">சேமித்த புத்தகங்கள் இதுவரை இல்லை</string>
     <string name="audiobookshelf_server_is_required">ஆடியோபுக்செல்ஃப் சேவையகம் தேவை</string>

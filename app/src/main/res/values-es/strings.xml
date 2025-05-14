@@ -89,8 +89,8 @@
     <string name="playing_item_details_author">Autor</string>
     <string name="episodes_list_empty">Ningún pódcast tiene episodios</string>
     <string name="source_code_on_github_subtitle">Informar de problemas o sugerir mejoras</string>
-    <string name="disable_offline">Apagar \"sin conexión\"</string>
-    <string name="enable_offline">Activar \"sin conexión\"</string>
+    <string name="disable_offline">Todo el contenido</string>
+    <string name="enable_offline">Solo descargados</string>
     <string name="playing_item_details_narrator">Narrador</string>
     <string name="playing_item_details_duration">Duración</string>
     <string name="settings_screen_library_ordering_author_option">Autor</string>

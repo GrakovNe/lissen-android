@@ -3,10 +3,10 @@
     <string name="login_screen_login_input">Logga in</string>
     <string name="login_error_username_is_missing">Användarnamn saknas</string>
     <string name="login_error_connection_error">Anslutningsfel</string>
-    <string name="disable_offline">Stäng av offline-läge</string>
+    <string name="disable_offline">Allt innehåll</string>
+    <string name="enable_offline">Endast nedladdade</string>
     <string name="login_screen_title">Anslut till server</string>
     <string name="player_screen_podcast_playing_title">Spelar upp avsnitt</string>
-    <string name="enable_offline">Slå på offline-läge</string>
     <string name="library_screen_library_title">Bibliotek</string>
     <string name="the_offline_library_is_empty">Inga sparade böcker ännu</string>
     <string name="library_screen_continue_listening_title">Fortsätt där du slutade</string>

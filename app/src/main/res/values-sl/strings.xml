@@ -27,8 +27,8 @@
     <string name="login_error_credentials_are_invalid">Neveljavni prijavni podatki</string>
     <string name="login_error_host_url_shall_be_https_or_http">URL gostitelja mora biti https:// ali http://</string>
     <string name="login_error_connection_error">Napaka pri povezavi</string>
-    <string name="disable_offline">Izklop brez povezave</string>
-    <string name="enable_offline">Vklopi brez povezave</string>
+    <string name="disable_offline">Vsa vsebina</string>
+    <string name="enable_offline">Samo preneseno</string>
     <string name="the_library_is_empty">Knjižnica je prazna</string>
     <string name="the_offline_library_is_empty">Ni še shranjenih knjig</string>
     <string name="audiobookshelf_server_is_required">Potreben je strežnik Audiobookshelf</string>

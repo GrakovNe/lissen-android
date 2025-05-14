@@ -25,8 +25,8 @@
     <string name="login_error_password_is_missing">Salasana puuttuu</string>
     <string name="login_error_credentials_are_invalid">Käyttäjätiedot ovat virheelliset</string>
     <string name="login_error_connection_error">Yhteysvirhe</string>
-    <string name="disable_offline">Poista Offline-tila käytöstä</string>
-    <string name="enable_offline">Ota Offline-tila käyttöön</string>
+    <string name="disable_offline">Kaikki kohteet</string>
+    <string name="enable_offline">Vain ladatut</string>
     <string name="the_library_is_empty">Kirjasto on tyhjä</string>
     <string name="the_offline_library_is_empty">Ei Offline-tilaan tallennettuja kirjoja</string>
     <string name="audiobookshelf_server_is_required">Audiobookshelf-palvelin vaaditaan</string>

@@ -27,8 +27,8 @@
     <string name="login_error_credentials_are_invalid">Les identifiants ne sont pas valides</string>
     <string name="login_error_host_url_shall_be_https_or_http">L\'adresse URL de l\'hôte doit être https:// ou http://</string>
     <string name="login_error_connection_error">Erreur de connexion</string>
-    <string name="disable_offline">Désactiver la mise hors ligne</string>
-    <string name="enable_offline">Activer la mise hors ligne</string>
+    <string name="disable_offline">Tout le contenu</string>
+    <string name="enable_offline">Uniquement téléchargés</string>
     <string name="the_library_is_empty">La bibliothèque est vide</string>
     <string name="the_offline_library_is_empty">Aucun livre enregistré pour l\'instant</string>
     <string name="audiobookshelf_server_is_required">Un serveur Audiobookshelf est requis</string>

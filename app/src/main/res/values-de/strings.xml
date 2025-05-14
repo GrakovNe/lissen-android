@@ -21,7 +21,6 @@
     <string name="login_error_credentials_are_invalid">Zugangsdaten falsch</string>
     <string name="login_error_host_url_shall_be_https_or_http">Serveradresse muss mit https:// oder http:// beginnen</string>
     <string name="login_error_connection_error">Verbindungsfehler</string>
-    <string name="disable_offline">Offline Modus</string>
     <string name="the_library_is_empty">Die Bibliothek ist leer</string>
     <string name="audiobookshelf_server_is_required">Audiobookshelf Server ist notwendig</string>
     <string name="no_internet_connection">Keine Internetverbindung</string>
@@ -58,7 +57,8 @@
     <string name="color_scheme_follow_system">System</string>
     <string name="color_scheme_light">Hell</string>
     <string name="login_error_host_url_is_missing">Server Adresse fehlt</string>
-    <string name="enable_offline">Online Modus</string>
+    <string name="disable_offline">Alle Inhalte</string>
+    <string name="enable_offline">Nur heruntergeladene</string>
     <string name="the_offline_library_is_empty">Keine Bücher vorhanden</string>
     <string name="color_scheme_dark">Dunkel</string>
     <string name="player_screen_chapter_list_navigation">Kapitel</string>

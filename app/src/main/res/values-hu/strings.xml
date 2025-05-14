@@ -27,8 +27,8 @@
     <string name="login_error_credentials_are_invalid">Az azonosítók érvénytelenek</string>
     <string name="login_error_host_url_shall_be_https_or_http">A gazdagép címe vagy https://-sel vagy http://-vel kezdődjön</string>
     <string name="login_error_connection_error">Kapcsolódási hiba</string>
-    <string name="disable_offline">Az offline mód kikapcsolása</string>
-    <string name="enable_offline">Az offline mód bekapcsolása</string>
+    <string name="disable_offline">Összes tartalom</string>
+    <string name="enable_offline">Csak letöltöttek</string>
     <string name="the_library_is_empty">A könyvtár üres</string>
     <string name="the_offline_library_is_empty">Nincsenek még mentett könyvek</string>
     <string name="audiobookshelf_server_is_required">Audiobook kiszolgáló szükséges</string>
