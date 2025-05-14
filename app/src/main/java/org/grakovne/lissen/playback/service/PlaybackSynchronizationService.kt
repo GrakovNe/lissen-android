@@ -1,6 +1,7 @@
 package org.grakovne.lissen.playback.service
 
 import androidx.media3.common.Player
+import androidx.media3.common.Tracks
 import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -31,12 +32,12 @@ class PlaybackSynchronizationService
     init {
       exoPlayer.addListener(
         object : Player.Listener {
+          override fun onTracksChanged(tracks: Tracks) {
+            executeOnetimeSync()
+          }
+
           override fun onIsPlayingChanged(isPlaying: Boolean) {
-            if (isPlaying) {
-              scheduleSynchronization()
-            } else {
-              executeSynchronization()
-            }
+            executeRepeatableSync()
           }
         },
       )
@@ -47,18 +48,19 @@ class PlaybackSynchronizationService
       currentBook = book
     }
 
-    private fun scheduleSynchronization() {
+    private fun executeRepeatableSync() {
       serviceScope
         .launch {
+          executeOnetimeSync()
+          
           if (exoPlayer.isPlaying) {
-            executeSynchronization()
             delay(SYNC_INTERVAL)
-            scheduleSynchronization()
+            executeRepeatableSync()
           }
         }
     }
 
-    private fun executeSynchronization() {
+    private fun executeOnetimeSync() {
       val elapsedMs = exoPlayer.currentPosition
       val overallProgress = getProgress(elapsedMs)
 
