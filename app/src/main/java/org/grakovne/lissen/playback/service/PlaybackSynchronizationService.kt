@@ -32,8 +32,17 @@ class PlaybackSynchronizationService
     init {
       exoPlayer.addListener(
         object : Player.Listener {
-          override fun onEvents(player: Player, events: Player.Events) {
-            runRepeatableSync()
+          override fun onEvents(
+            player: Player,
+            events: Player.Events,
+          ) {
+            if (
+              events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION) ||
+              events.contains(Player.EVENT_PLAYBACK_STATE_CHANGED) ||
+              events.contains(Player.EVENT_IS_PLAYING_CHANGED)
+            ) {
+              runRepeatableSync()
+            }
           }
         },
       )
@@ -50,7 +59,11 @@ class PlaybackSynchronizationService
           runSync()
 
           if (exoPlayer.isPlaying) {
-            delay(SYNC_INTERVAL)
+            when (exoPlayer.duration - exoPlayer.currentPosition < SHORT_SYNC_WINDOW || exoPlayer.currentPosition < SHORT_SYNC_WINDOW) {
+              true -> delay(SYNC_INTERVAL_SHORT)
+              false -> delay(SYNC_INTERVAL_LONG)
+            }
+
             runRepeatableSync()
           }
         }
@@ -58,7 +71,7 @@ class PlaybackSynchronizationService
 
     private fun runSync() {
       val elapsedMs = exoPlayer.currentPosition
-      val overallProgress = getProgress(elapsedMs)
+      val overallProgress = getProgress(elapsedMs) ?: return
 
       Log.d(TAG, "Trying to sync $overallProgress for ${currentBook?.id}")
 
@@ -78,7 +91,7 @@ class PlaybackSynchronizationService
       val currentIndex =
         currentBook
           ?.let { calculateChapterIndex(it, overallProgress.currentTotalTime) }
-          ?: 0
+          ?: return null
 
       if (currentIndex != currentChapterIndex) {
         openPlaybackSession(overallProgress)
@@ -112,18 +125,13 @@ class PlaybackSynchronizationService
             )
         }
 
-    private fun getProgress(currentElapsedMs: Long): PlaybackProgress {
+    private fun getProgress(currentElapsedMs: Long): PlaybackProgress? {
       val currentBook =
-        (
-          exoPlayer
-            .currentMediaItem
-            ?.localConfiguration
-            ?.tag as? DetailedItem
-        )
-          ?: return PlaybackProgress(
-            currentChapterTime = 0.0,
-            currentTotalTime = 0.0,
-          )
+        exoPlayer
+          .currentMediaItem
+          ?.localConfiguration
+          ?.tag as? DetailedItem
+          ?: return null
 
       val currentIndex = exoPlayer.currentMediaItemIndex
 
@@ -142,7 +150,9 @@ class PlaybackSynchronizationService
     }
 
     companion object {
-      private val TAG = "PlaybackSynchronizationService"
-      private const val SYNC_INTERVAL = 30_000L
+      private const val TAG = "PlaybackSynchronizationService"
+      private const val SHORT_SYNC_WINDOW = 30_000L * 2 // SYNC_INTERVAL_LONG * 2
+      private const val SYNC_INTERVAL_LONG = 30_000L
+      private const val SYNC_INTERVAL_SHORT = 1_000L
     }
   }
