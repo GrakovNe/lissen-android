@@ -43,6 +43,7 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
+import org.grakovne.lissen.ui.components.BackdropMode
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 
@@ -123,7 +124,8 @@ fun RecentBookItemComposable(
           imageRequest = imageRequest,
           imageLoader = imageLoader,
           contentDescription = "${book.title} cover",
-          contentScale = ContentScale.FillBounds,
+          contentScale = ContentScale.Fit,
+          backdropMode = BackdropMode.BLUR,
           modifier =
             Modifier
               .fillMaxWidth()

@@ -10,9 +10,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.dp
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
@@ -22,10 +24,11 @@ import com.valentinilk.shimmer.shimmer
 fun AsyncShimmeringImage(
   imageRequest: ImageRequest,
   imageLoader: ImageLoader,
-  contentDescription: String,
-  contentScale: ContentScale,
+  contentDescription: String?,
   modifier: Modifier = Modifier,
+  contentScale: ContentScale,
   error: Painter,
+  backdropMode: BackdropMode = BackdropMode.PLAIN,
   onLoadingStateChanged: (Boolean) -> Unit = {},
 ) {
   var isLoading by remember { mutableStateOf(true) }
@@ -35,6 +38,20 @@ fun AsyncShimmeringImage(
     modifier = modifier,
     contentAlignment = Alignment.Center,
   ) {
+    if (backdropMode == BackdropMode.BLUR && isLoading.not()) {
+      AsyncImage(
+        model = imageRequest,
+        imageLoader = imageLoader,
+        contentDescription = null,
+        contentScale = ContentScale.Crop,
+        modifier =
+          Modifier
+            .matchParentSize()
+            .blur(32.dp),
+        error = error,
+      )
+    }
+
     if (isLoading) {
       Box(
         modifier =
@@ -63,3 +80,5 @@ fun AsyncShimmeringImage(
     )
   }
 }
+
+enum class BackdropMode { PLAIN, BLUR }
