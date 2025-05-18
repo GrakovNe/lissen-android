@@ -18,8 +18,7 @@ class LibrarySearchPagingSource(
     val libraryId =
       preferences
         .getPreferredLibrary()
-        ?.id
-        ?: return LoadResult.Page(emptyList(), null, null)
+        .id
 
     if (searchToken.isBlank()) {
       return LoadResult.Page(emptyList(), null, null)

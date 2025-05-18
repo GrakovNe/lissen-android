@@ -89,9 +89,9 @@ class LissenSharedPreferences
     // Once the different channel will supported, this shall be extended
     fun getChannel() = ChannelCode.AUDIOBOOKSHELF
 
-    fun getPreferredLibrary(): Library? {
-      val id = getPreferredLibraryId() ?: return null
-      val name = getPreferredLibraryName() ?: return null
+    fun getPreferredLibrary(): Library {
+      val id = getPreferredLibraryId() ?: error("Preferred library must be initialized")
+      val name = getPreferredLibraryName() ?: error("Preferred library must be initialized")
 
       val type = getPreferredLibraryType()
 

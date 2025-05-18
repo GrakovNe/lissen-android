@@ -36,7 +36,7 @@ class SettingsViewModel
     private val _libraries = MutableLiveData<List<Library>>()
     val libraries = _libraries
 
-    private val _preferredLibrary = MutableLiveData<Library>(preferences.getPreferredLibrary())
+    private val _preferredLibrary = MutableLiveData(preferences.getPreferredLibrary())
     val preferredLibrary = _preferredLibrary
 
     private val _preferredColorScheme = MutableLiveData(preferences.getColorScheme())
@@ -81,22 +81,17 @@ class SettingsViewModel
 
             val preferredLibrary = preferences.getPreferredLibrary()
 
-            _preferredLibrary.postValue(
-              when (preferredLibrary) {
-                null -> libraries.firstOrNull()
-                else -> libraries.find { it.id == preferredLibrary.id }
-              },
-            )
+            _preferredLibrary.postValue(libraries.find { it.id == preferredLibrary.id })
           }
 
           is ApiResult.Error -> {
-            _libraries.postValue(preferences.getPreferredLibrary()?.let { listOf(it) })
+            _libraries.postValue(listOf(preferences.getPreferredLibrary()))
           }
         }
       }
     }
 
-    fun fetchPreferredLibraryId(): String = preferences.getPreferredLibrary()?.id ?: ""
+    fun fetchPreferredLibraryId(): String = preferences.getPreferredLibrary().id
 
     fun fetchLibraryOrdering(): LibraryOrderingConfiguration = preferences.getLibraryOrdering()
 

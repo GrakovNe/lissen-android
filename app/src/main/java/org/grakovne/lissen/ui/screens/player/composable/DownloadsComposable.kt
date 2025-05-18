@@ -59,7 +59,6 @@ fun DownloadsComposable(
             when (libraryType) {
               LibraryType.LIBRARY -> stringResource(R.string.downloads_menu_download_book)
               LibraryType.PODCAST -> stringResource(R.string.downloads_menu_download_podcast)
-              LibraryType.UNKNOWN -> stringResource(R.string.downloads_menu_download_unknown)
             },
           style = typography.bodyLarge,
         )
@@ -115,10 +114,6 @@ fun DownloadsComposable(
                             stringResource(
                               R.string.downloads_menu_download_option_clear_episodes,
                             )
-                          LibraryType.UNKNOWN ->
-                            stringResource(
-                              R.string.downloads_menu_download_option_clear_items,
-                            )
                         },
                       color = colorScheme.error,
                       style = typography.bodyMedium,
@@ -159,7 +154,6 @@ fun DownloadOption.makeText(
       when (libraryType) {
         LibraryType.LIBRARY -> context.getString(R.string.downloads_menu_download_option_current_chapter)
         LibraryType.PODCAST -> context.getString(R.string.downloads_menu_download_option_current_episode)
-        LibraryType.UNKNOWN -> context.getString(R.string.downloads_menu_download_option_current_item)
       }
     }
 
@@ -167,7 +161,6 @@ fun DownloadOption.makeText(
       when (libraryType) {
         LibraryType.LIBRARY -> context.getString(R.string.downloads_menu_download_option_entire_book)
         LibraryType.PODCAST -> context.getString(R.string.downloads_menu_download_option_entire_podcast)
-        LibraryType.UNKNOWN -> context.getString(R.string.downloads_menu_download_option_entire_item)
       }
     }
 
@@ -181,11 +174,6 @@ fun DownloadOption.makeText(
         LibraryType.PODCAST ->
           context.getString(
             R.string.downloads_menu_download_option_next_episodes,
-            itemsNumber,
-          )
-        LibraryType.UNKNOWN ->
-          context.getString(
-            R.string.downloads_menu_download_option_next_items,
             itemsNumber,
           )
       }

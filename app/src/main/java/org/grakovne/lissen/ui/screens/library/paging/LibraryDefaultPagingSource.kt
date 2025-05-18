@@ -25,8 +25,7 @@ class LibraryDefaultPagingSource(
     val libraryId =
       preferences
         .getPreferredLibrary()
-        ?.id
-        ?: return LoadResult.Page(emptyList(), null, null)
+        .id
 
     return mediaChannel
       .fetchBooks(

@@ -19,7 +19,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.RecentBook
@@ -106,16 +105,15 @@ class LibraryViewModel
       viewModelScope.launch { _searchToken.emit(token) }
     }
 
-    fun fetchPreferredLibraryTitle(): String? =
+    fun fetchPreferredLibraryTitle(): String =
       preferences
         .getPreferredLibrary()
-        ?.title
+        .title
 
     fun fetchPreferredLibraryType() =
       preferences
         .getPreferredLibrary()
-        ?.type
-        ?: LibraryType.UNKNOWN
+        .type
 
     fun refreshRecentListening() {
       viewModelScope.launch {
@@ -139,11 +137,7 @@ class LibraryViewModel
     fun fetchRecentListening() {
       _recentBookUpdating.postValue(true)
 
-      val preferredLibrary =
-        preferences.getPreferredLibrary()?.id ?: run {
-          _recentBookUpdating.postValue(false)
-          return
-        }
+      val preferredLibrary = preferences.getPreferredLibrary().id
 
       viewModelScope.launch {
         mediaChannel

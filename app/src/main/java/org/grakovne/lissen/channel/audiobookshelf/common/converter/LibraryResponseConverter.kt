@@ -24,6 +24,6 @@ class LibraryResponseConverter
       when (this) {
         "podcast" -> LibraryType.PODCAST
         "book" -> LibraryType.LIBRARY
-        else -> LibraryType.UNKNOWN
+        else -> LibraryType.LIBRARY
       }
   }

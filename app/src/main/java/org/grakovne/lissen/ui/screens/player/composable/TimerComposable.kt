@@ -147,7 +147,6 @@ fun TimerOption.makeText(
       when (libraryType) {
         LibraryType.LIBRARY -> context.getString(R.string.timer_option_after_current_chapter)
         LibraryType.PODCAST -> context.getString(R.string.timer_option_after_current_episode)
-        LibraryType.UNKNOWN -> context.getString(R.string.timer_option_after_current_episode)
       }
 
     is DurationTimerOption -> context.getString(R.string.timer_option_after_minutes, this.duration)
