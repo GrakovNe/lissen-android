@@ -69,6 +69,6 @@ class WidgetPlaybackController
       onPlaybackReady: () -> Unit,
     ) {
       playbackReadyAction = onPlaybackReady
-      mediaRepository.preparePlayback(bookId = itemId, fromBackground = true)
+      mediaRepository.preparePlayback(bookId = itemId)
     }
   }

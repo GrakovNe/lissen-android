@@ -278,14 +278,13 @@ class MediaRepository
     }
 
     fun prepareAndPlay(
-      book: DetailedItem,
-      fromBackground: Boolean,
+      book: DetailedItem
     ) {
       when (isPlaybackReady.value) {
         true -> play()
         else -> {
           _playAfterPrepare.postValue(true)
-          startPreparingPlayback(book, fromBackground)
+          startPreparingPlayback(book)
         }
       }
     }
@@ -319,15 +318,14 @@ class MediaRepository
     }
 
     suspend fun preparePlayback(
-      bookId: String,
-      fromBackground: Boolean = false,
+      bookId: String
     ) {
       coroutineScope {
         withContext(Dispatchers.IO) {
           mediaChannel
             .fetchBook(bookId)
             .foldAsync(
-              onSuccess = { startPreparingPlayback(it, fromBackground) },
+              onSuccess = { startPreparingPlayback(it) },
               onFailure = { _mediaPreparingError.postValue(true) },
             )
         }
@@ -370,7 +368,7 @@ class MediaRepository
           putExtra(TIMER_VALUE_EXTRA, delay)
         }
 
-      context.startService(intent)
+      context.startForegroundService(intent)
     }
 
     private fun cancelServiceTimer() {
@@ -379,7 +377,7 @@ class MediaRepository
           action = PlaybackService.ACTION_CANCEL_TIMER
         }
 
-      context.startService(intent)
+      context.startForegroundService(intent)
     }
 
     private fun startUpdatingProgress(detailedItem: DetailedItem) {
@@ -406,8 +404,7 @@ class MediaRepository
     }
 
     private fun startPreparingPlayback(
-      book: DetailedItem,
-      fromBackground: Boolean,
+      book: DetailedItem
     ) {
       if (_playingBook.value != book) {
         _totalPosition.postValue(0.0)
@@ -419,10 +416,7 @@ class MediaRepository
             putExtra(BOOK_EXTRA, book)
           }
 
-        when (fromBackground) {
-          true -> context.startForegroundService(intent)
-          false -> context.startService(intent)
-        }
+        context.startForegroundService(intent)
       }
     }
 
@@ -448,7 +442,7 @@ class MediaRepository
         Intent(context, PlaybackService::class.java).apply {
           action = PlaybackService.ACTION_PAUSE
         }
-      context.startService(intent)
+      context.startForegroundService(intent)
     }
 
     private fun seekTo(position: Double) {
@@ -496,7 +490,7 @@ class MediaRepository
           putExtra(POSITION, safePosition)
         }
 
-      context.startService(intent)
+      context.startForegroundService(intent)
 
       when (_timerOption.value) {
         is CurrentEpisodeTimerOption ->
