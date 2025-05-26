@@ -61,8 +61,8 @@ class LissenMediaProvider
     ): ApiResult<Unit> {
       Log.d(TAG, "Syncing Progress for $bookId. $progress")
 
-      providePreferredChannel().syncProgress(sessionId, progress)
       localCacheRepository.syncProgress(bookId, progress)
+      providePreferredChannel().syncProgress(sessionId, progress)
 
       return ApiResult.Success(Unit)
     }
