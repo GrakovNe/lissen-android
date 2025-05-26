@@ -70,7 +70,7 @@ class ContentCachingNotificationService
         NotificationChannel(
           channelId,
           context.getString(R.string.notification_content_caching_channel),
-          NotificationManager.IMPORTANCE_DEFAULT,
+          NotificationManager.IMPORTANCE_LOW,
         )
 
       service.createNotificationChannel(channel)
