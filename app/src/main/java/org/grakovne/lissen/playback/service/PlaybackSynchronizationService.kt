@@ -177,11 +177,11 @@ class PlaybackSynchronizationService
 
       private const val SYNC_INTERVAL_SHORT = 1_000L
 
-
-      private val syncEvents = listOf(
-        Player.EVENT_MEDIA_ITEM_TRANSITION,
-        Player.EVENT_PLAYBACK_STATE_CHANGED,
-        Player.EVENT_IS_PLAYING_CHANGED
-      )
+      private val syncEvents =
+        listOf(
+          Player.EVENT_MEDIA_ITEM_TRANSITION,
+          Player.EVENT_PLAYBACK_STATE_CHANGED,
+          Player.EVENT_IS_PLAYING_CHANGED,
+        )
     }
   }
