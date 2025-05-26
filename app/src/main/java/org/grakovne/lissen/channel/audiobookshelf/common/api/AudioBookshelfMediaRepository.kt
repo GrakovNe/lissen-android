@@ -6,6 +6,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.client.AudiobookshelfMe
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.BinaryApiClient
+import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import retrofit2.Response
 import java.io.IOException
@@ -20,7 +21,9 @@ class AudioBookshelfMediaRepository
     private val preferences: LissenSharedPreferences,
     private val requestHeadersProvider: RequestHeadersProvider,
   ) {
-    private var configCache: ApiClientConfig? = null
+    private var cachedHost: String? = null
+    private var cachedToken: String? = null
+    private var cachedHeaders: List<ServerRequestHeader> = emptyList()
     private var clientCache: AudiobookshelfMediaClient? = null
 
     suspend fun fetchBookCover(itemId: String): ApiResult<InputStream> =
@@ -58,25 +61,22 @@ class AudioBookshelfMediaRepository
     private fun getClientInstance(): AudiobookshelfMediaClient {
       val host = preferences.getHost()
       val token = preferences.getToken()
+      val headers = requestHeadersProvider.fetchRequestHeaders()
 
-      val cache =
-        ApiClientConfig(
-          host = host,
-          token = token,
-          customHeaders = requestHeadersProvider.fetchRequestHeaders(),
-        )
+      val clientChanged = host != cachedHost || token != cachedToken || headers != cachedHeaders
 
-      val currentClientCache = clientCache
+      val current = clientCache
 
-      return when (currentClientCache == null || cache != configCache) {
-        true -> {
-          val instance = createClientInstance()
-          configCache = cache
-          clientCache = instance
-          instance
+      return when {
+        current == null || clientChanged -> {
+          cachedHost = host
+          cachedToken = token
+          cachedHeaders = headers
+
+          createClientInstance().also { clientCache = it }
         }
 
-        else -> currentClientCache
+        else -> current
       }
     }
 
