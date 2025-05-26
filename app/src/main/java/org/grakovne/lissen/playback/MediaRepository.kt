@@ -8,9 +8,11 @@ import android.content.IntentFilter
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
@@ -277,15 +279,12 @@ class MediaRepository
       }
     }
 
-    fun prepareAndPlay(
-      book: DetailedItem,
-      fromBackground: Boolean,
-    ) {
+    fun prepareAndPlay(book: DetailedItem) {
       when (isPlaybackReady.value) {
         true -> play()
         else -> {
           _playAfterPrepare.postValue(true)
-          startPreparingPlayback(book, fromBackground)
+          startPreparingPlayback(book)
         }
       }
     }
@@ -318,16 +317,13 @@ class MediaRepository
       preferences.savePlaybackSpeed(speed)
     }
 
-    suspend fun preparePlayback(
-      bookId: String,
-      fromBackground: Boolean = false,
-    ) {
+    suspend fun preparePlayback(bookId: String) {
       coroutineScope {
         withContext(Dispatchers.IO) {
           mediaChannel
             .fetchBook(bookId)
             .foldAsync(
-              onSuccess = { startPreparingPlayback(it, fromBackground) },
+              onSuccess = { startPreparingPlayback(it) },
               onFailure = { _mediaPreparingError.postValue(true) },
             )
         }
@@ -405,10 +401,7 @@ class MediaRepository
       _isPlaybackReady.postValue(false)
     }
 
-    private fun startPreparingPlayback(
-      book: DetailedItem,
-      fromBackground: Boolean,
-    ) {
+    private fun startPreparingPlayback(book: DetailedItem) {
       if (_playingBook.value != book) {
         _totalPosition.postValue(0.0)
         _isPlaying.postValue(false)
@@ -419,7 +412,7 @@ class MediaRepository
             putExtra(BOOK_EXTRA, book)
           }
 
-        when (fromBackground) {
+        when (inBackground()) {
           true -> context.startForegroundService(intent)
           false -> context.startService(intent)
         }
@@ -541,6 +534,15 @@ class MediaRepository
           SeekTimeOption.SEEK_60 -> 60L
           else -> 30L
         }
+
+      private fun inBackground(): Boolean =
+        ProcessLifecycleOwner
+          .get()
+          .lifecycle
+          .currentState
+          .isAtMost(Lifecycle.State.STARTED)
+
+      private fun Lifecycle.State.isAtMost(state: Lifecycle.State) = this <= state
     }
   }
 

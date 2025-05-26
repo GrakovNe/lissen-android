@@ -122,7 +122,7 @@ class PlayerViewModel
 
     fun prepareAndPlay() {
       val playingBook = preferences.getPlayingBook() ?: return
-      mediaRepository.prepareAndPlay(playingBook, false)
+      mediaRepository.prepareAndPlay(playingBook)
     }
 
     companion object {
