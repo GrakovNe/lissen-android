@@ -55,6 +55,10 @@ class PlaybackSynchronizationService
       currentBook = book
     }
 
+    fun cancelSynchronization() {
+      syncJob?.cancel()
+    }
+
     private fun handleSyncEvent() {
       runSync()
 

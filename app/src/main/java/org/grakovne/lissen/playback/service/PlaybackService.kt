@@ -127,6 +127,7 @@ class PlaybackService : MediaSessionService() {
   override fun onGetSession(controllerInfo: MediaSession.ControllerInfo) = mediaSession
 
   override fun onDestroy() {
+    playbackSynchronizationService.cancelSynchronization()
     playerServiceScope.cancel()
 
     mediaSession.release()
