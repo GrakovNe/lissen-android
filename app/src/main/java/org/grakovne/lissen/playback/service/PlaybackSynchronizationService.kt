@@ -38,11 +38,7 @@ class PlaybackSynchronizationService
             player: Player,
             events: Player.Events,
           ) {
-            if (
-              events.contains(Player.EVENT_MEDIA_ITEM_TRANSITION) ||
-              events.contains(Player.EVENT_PLAYBACK_STATE_CHANGED) ||
-              events.contains(Player.EVENT_IS_PLAYING_CHANGED)
-            ) {
+            if (syncEvents.any(events::contains)) {
               handleSyncEvent()
             }
           }
@@ -180,5 +176,12 @@ class PlaybackSynchronizationService
         SYNC_INTERVAL_LONG * 2 - 1 // Nyquist-Shannon sampling theorem describes why -1 is important
 
       private const val SYNC_INTERVAL_SHORT = 1_000L
+
+
+      private val syncEvents = listOf(
+        Player.EVENT_MEDIA_ITEM_TRANSITION,
+        Player.EVENT_PLAYBACK_STATE_CHANGED,
+        Player.EVENT_IS_PLAYING_CHANGED
+      )
     }
   }
