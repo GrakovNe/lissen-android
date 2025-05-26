@@ -18,6 +18,7 @@ import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastSearchResponse
 import org.grakovne.lissen.channel.common.ApiClient
 import org.grakovne.lissen.channel.common.ApiResult
+import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -29,7 +30,9 @@ class AudioBookshelfDataRepository
     private val preferences: LissenSharedPreferences,
     private val requestHeadersProvider: RequestHeadersProvider,
   ) {
-    private var configCache: ApiClientConfig? = null
+    private var cachedHost: String? = null
+    private var cachedToken: String? = null
+    private var cachedHeaders: List<ServerRequestHeader> = emptyList()
     private var clientCache: AudiobookshelfApiClient? = null
 
     suspend fun fetchLibraries(): ApiResult<LibraryResponse> = safeApiCall { getClientInstance().fetchLibraries() }
@@ -149,37 +152,34 @@ class AudioBookshelfDataRepository
     private fun getClientInstance(): AudiobookshelfApiClient {
       val host = preferences.getHost()
       val token = preferences.getToken()
+      val headers = requestHeadersProvider.fetchRequestHeaders()
 
-      val cache =
-        ApiClientConfig(
-          host = host,
-          token = token,
-          customHeaders = requestHeadersProvider.fetchRequestHeaders(),
-        )
+      val clientChanged = host != cachedHost || token != cachedToken || headers != cachedHeaders
+      val current = clientCache
 
-      val currentClientCache = clientCache
+      return when {
+        current == null || clientChanged -> {
+          cachedHost = host
+          cachedToken = token
+          cachedHeaders = headers
 
-      return when (currentClientCache == null || cache != configCache) {
-        true -> {
-          val instance = createClientInstance()
-          configCache = cache
-          clientCache = instance
-          instance
+          createClientInstance().also { clientCache = it }
         }
 
-        else -> currentClientCache
+        else -> current
       }
     }
 
     private fun createClientInstance(): AudiobookshelfApiClient {
       val host = preferences.getHost()
       val token = preferences.getToken()
+      val headers = requestHeadersProvider.fetchRequestHeaders()
 
-      if (host.isNullOrBlank() || token.isNullOrBlank()) {
+      if (host.isNullOrBlank()) {
         throw IllegalStateException("Host or token is missing")
       }
 
-      return apiClient(host, token)
+      return apiClient(host, token, headers)
         .retrofit
         .create(AudiobookshelfApiClient::class.java)
     }
@@ -187,10 +187,11 @@ class AudioBookshelfDataRepository
     private fun apiClient(
       host: String,
       token: String?,
+      headers: List<ServerRequestHeader>,
     ): ApiClient =
       ApiClient(
         host = host,
         token = token,
-        requestHeaders = requestHeadersProvider.fetchRequestHeaders(),
+        requestHeaders = headers,
       )
   }
