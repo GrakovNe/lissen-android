@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ErrorOutline
+import androidx.compose.material.icons.outlined.DoNotDisturbAlt
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -118,18 +118,17 @@ fun BookComposable(
 
 @Composable
 fun BookUnavailableComposable(viewModel: LibraryViewModel) {
-  val context = LocalContext.current
-
-  Spacer(Modifier.height(4.dp))
-
-  Row(verticalAlignment = Alignment.CenterVertically) {
+  Row(
+    modifier = Modifier.padding(top = 4.dp),
+    verticalAlignment = Alignment.CenterVertically,
+  ) {
     Icon(
-      imageVector = Icons.Outlined.ErrorOutline,
+      imageVector = Icons.Outlined.DoNotDisturbAlt,
       contentDescription = null,
       tint = MaterialTheme.colorScheme.error,
       modifier = Modifier.size(16.dp),
     )
-    Spacer(Modifier.width(4.dp))
+
     Text(
       text =
         when (viewModel.fetchPreferredLibraryType()) {
@@ -137,9 +136,11 @@ fun BookUnavailableComposable(viewModel: LibraryViewModel) {
           LibraryType.PODCAST -> stringResource(R.string.episodes_list_empty)
           LibraryType.UNKNOWN -> stringResource(R.string.items_list_empty)
         },
+      modifier = Modifier.padding(start = 4.dp),
       style =
         MaterialTheme.typography.bodyMedium.copy(
           color = MaterialTheme.colorScheme.error,
+          lineHeight = MaterialTheme.typography.bodyMedium.fontSize,
         ),
       maxLines = 1,
       overflow = TextOverflow.Ellipsis,
