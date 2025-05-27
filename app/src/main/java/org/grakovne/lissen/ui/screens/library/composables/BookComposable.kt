@@ -139,7 +139,7 @@ fun BookUnavailableComposable(viewModel: LibraryViewModel) {
       modifier = Modifier.padding(start = 4.dp),
       style =
         MaterialTheme.typography.bodyMedium.copy(
-          color = MaterialTheme.colorScheme.error
+          color = MaterialTheme.colorScheme.error,
         ),
       maxLines = 1,
       overflow = TextOverflow.Ellipsis,
