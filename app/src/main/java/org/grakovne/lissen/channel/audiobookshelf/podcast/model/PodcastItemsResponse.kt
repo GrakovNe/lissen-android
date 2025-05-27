@@ -17,6 +17,7 @@ data class PodcastItem(
 @Keep
 data class PodcastItemMedia(
   val duration: Double,
+  val numEpisodes: Int?,
   val metadata: PodcastMetadata,
 )
 

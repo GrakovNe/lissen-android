@@ -16,6 +16,7 @@ data class LibraryItem(
 
 @Keep
 data class Media(
+  val numChapters: Int?,
   val duration: Double,
   val metadata: LibraryMetadata,
 )

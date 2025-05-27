@@ -23,6 +23,7 @@ class PodcastPageResponseConverter
             series = null,
             author = it.media.metadata.author,
             duration = it.media.duration.toInt(),
+            hasContent = it.media.numEpisodes?.let { count -> count > 0 } ?: true,
           )
         }.let {
           PagedItems(
