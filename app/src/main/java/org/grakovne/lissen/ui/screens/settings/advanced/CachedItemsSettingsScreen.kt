@@ -135,9 +135,13 @@ class BooksViewModel : ViewModel() {
   }
 }
 
+private val thumbnailSize = 64.dp
+private val spacing = 16.dp
+private val chapterIndent = thumbnailSize + spacing
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LissenBookListScreen(viewModel: BooksViewModel = viewModel()) {
+fun CachedItemsSettingsScreen(viewModel: BooksViewModel = viewModel()) {
   val books by viewModel.books.collectAsState()
 
   Scaffold(
@@ -171,108 +175,122 @@ fun LissenBookListScreen(viewModel: BooksViewModel = viewModel()) {
       modifier = Modifier.fillMaxSize(),
     ) {
       items(items = books) { book ->
-        var expanded by remember { mutableStateOf(false) }
+        CachedItemComposable(book)
+      }
+    }
+  }
+}
 
-        Column(
+@Composable
+private fun CachedItemComposable(
+  book: Book,
+  viewModel: BooksViewModel = viewModel(),
+) {
+  var expanded by remember { mutableStateOf(false) }
+
+  Column(
+    modifier =
+      Modifier
+        .fillMaxWidth()
+        .clickable { expanded = !expanded }
+        .padding(horizontal = 16.dp, vertical = 8.dp),
+  ) {
+    Column {
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
           modifier =
             Modifier
-              .fillMaxWidth()
-              .clickable { expanded = !expanded }
-              .padding(horizontal = 16.dp, vertical = 8.dp),
-        ) {
-          val thumbnailSize = 64.dp
-          val spacing = 16.dp
-          val chapterIndent = thumbnailSize + spacing
+              .size(thumbnailSize)
+              .clip(RoundedCornerShape(4.dp))
+              .background(MaterialTheme.colorScheme.surfaceVariant),
+        )
 
-          Column {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-              Box(
-                modifier =
-                  Modifier
-                    .size(thumbnailSize)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(MaterialTheme.colorScheme.surfaceVariant),
-              )
+        Spacer(Modifier.width(spacing))
 
-              Spacer(Modifier.width(spacing))
+        Column(modifier = Modifier.weight(1f)) {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+              text = book.title,
+              style =
+                MaterialTheme.typography.bodyMedium.copy(
+                  fontWeight = FontWeight.SemiBold,
+                  color = MaterialTheme.colorScheme.onBackground,
+                ),
+              maxLines = 2,
+              overflow = TextOverflow.Ellipsis,
+            )
 
-              Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                  Text(
-                    text = book.title,
-                    style =
-                      MaterialTheme.typography.bodyMedium.copy(
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onBackground,
-                      ),
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                  )
-                  Spacer(Modifier.width(4.dp))
-                  Icon(
-                    imageVector = if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp),
-                    tint = MaterialTheme.colorScheme.onBackground,
-                  )
-                }
-                book.author?.takeIf { it.isNotBlank() }?.let {
-                  Spacer(modifier = Modifier.height(2.dp))
-                  Text(
-                    text = it,
-                    style =
-                      MaterialTheme.typography.bodyMedium.copy(
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                      ),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                  )
-                }
-              }
+            Spacer(Modifier.width(4.dp))
 
-              Spacer(Modifier.width(spacing))
-
-              IconButton(onClick = { viewModel.deleteBook(book.id) }) {
-                Icon(
-                  imageVector = Icons.Outlined.Delete,
-                  contentDescription = null,
-                  tint = MaterialTheme.colorScheme.onSurface,
-                )
-              }
-            }
-
-            if (expanded) {
-              Spacer(modifier = Modifier.height(spacing))
-              book.chapters.forEach { chapter ->
-                Row(
-                  modifier =
-                    Modifier
-                      .fillMaxWidth()
-                      .padding(start = chapterIndent, end = spacing, top = spacing, bottom = spacing),
-                  verticalAlignment = Alignment.CenterVertically,
-                ) {
-                  Column(modifier = Modifier.weight(1f)) {
-                    Text(text = chapter.title, style = MaterialTheme.typography.bodyMedium)
-                    Text(
-                      text = "${chapter.duration} • ${chapter.sizeMb}",
-                      style = MaterialTheme.typography.bodySmall,
-                      color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-                    )
-                  }
-                  IconButton(onClick = {
-                    viewModel.deleteChapter(book.id, chapter.id)
-                  }) {
-                    Icon(
-                      imageVector = Icons.Outlined.Delete,
-                      contentDescription = null,
-                      tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                  }
-                }
-              }
-            }
+            Icon(
+              imageVector = if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+              contentDescription = null,
+              modifier = Modifier.size(18.dp),
+              tint = MaterialTheme.colorScheme.onBackground,
+            )
+          }
+          book.author?.takeIf { it.isNotBlank() }?.let {
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+              text = it,
+              style =
+                MaterialTheme.typography.bodyMedium.copy(
+                  color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                ),
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis,
+            )
           }
         }
+
+        Spacer(Modifier.width(spacing))
+
+        IconButton(onClick = { viewModel.deleteBook(book.id) }) {
+          Icon(
+            imageVector = Icons.Outlined.Delete,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurface,
+          )
+        }
+      }
+
+      if (expanded) {
+        CachedItemChapterComposable(book)
+      }
+    }
+  }
+}
+
+@Composable
+private fun CachedItemChapterComposable(
+  book: Book,
+  viewModel: BooksViewModel = viewModel(),
+) {
+  Spacer(modifier = Modifier.height(spacing))
+  book.chapters.forEach { chapter ->
+    Row(
+      modifier =
+        Modifier
+          .fillMaxWidth()
+          .padding(start = chapterIndent, end = spacing, top = spacing, bottom = spacing),
+      verticalAlignment = Alignment.CenterVertically,
+    ) {
+      Column(modifier = Modifier.weight(1f)) {
+        Text(text = chapter.title, style = MaterialTheme.typography.bodyMedium)
+        Text(
+          text = "${chapter.duration} • ${chapter.sizeMb}",
+          style = MaterialTheme.typography.bodySmall,
+          color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+        )
+      }
+      IconButton(onClick = {
+        viewModel.deleteChapter(book.id, chapter.id)
+      }) {
+        Icon(
+          imageVector = Icons.Outlined.Delete,
+          contentDescription = null,
+          tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
       }
     }
   }

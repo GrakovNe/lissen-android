@@ -27,8 +27,8 @@ import org.grakovne.lissen.ui.screens.library.LibraryScreen
 import org.grakovne.lissen.ui.screens.login.LoginScreen
 import org.grakovne.lissen.ui.screens.player.PlayerScreen
 import org.grakovne.lissen.ui.screens.settings.SettingsScreen
+import org.grakovne.lissen.ui.screens.settings.advanced.CachedItemsSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.CustomHeadersSettingsScreen
-import org.grakovne.lissen.ui.screens.settings.advanced.LissenBookListScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.SeekSettingsScreen
 
 @Composable
@@ -90,7 +90,7 @@ fun AppNavHost(
       startDestination = startDestination,
     ) {
       composable("test") {
-        LissenBookListScreen()
+        CachedItemsSettingsScreen()
       }
       composable("library_screen") {
         LibraryScreen(
