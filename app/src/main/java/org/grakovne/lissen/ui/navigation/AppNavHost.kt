@@ -28,6 +28,7 @@ import org.grakovne.lissen.ui.screens.login.LoginScreen
 import org.grakovne.lissen.ui.screens.player.PlayerScreen
 import org.grakovne.lissen.ui.screens.settings.SettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.CustomHeadersSettingsScreen
+import org.grakovne.lissen.ui.screens.settings.advanced.LissenBookListScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.SeekSettingsScreen
 
 @Composable
@@ -47,16 +48,17 @@ fun AppNavHost(
   }
 
   val book = preferences.getPlayingBook()
+  val startDestination = "test"
 
-  val startDestination =
-    when {
-      hasCredentials.not() ->
-        "login_screen"
-      appLaunchAction == AppLaunchAction.CONTINUE_PLAYBACK && book != null ->
-        "player_screen/${book.id}?bookTitle=${book.title}&bookSubtitle=${book.subtitle}&startInstantly=true"
-      else ->
-        "library_screen"
-    }
+//  val startDestination =
+//    when {
+//      hasCredentials.not() ->
+//        "login_screen"
+//      appLaunchAction == AppLaunchAction.CONTINUE_PLAYBACK && book != null ->
+//        "player_screen/${book.id}?bookTitle=${book.title}&bookSubtitle=${book.subtitle}&startInstantly=true"
+//      else ->
+//        "library_screen"
+//    }
 
   val enterTransition: EnterTransition =
     slideInHorizontally(
@@ -87,6 +89,11 @@ fun AppNavHost(
       navController = navController,
       startDestination = startDestination,
     ) {
+
+      composable("test") {
+        LissenBookListScreen()
+
+      }
       composable("library_screen") {
         LibraryScreen(
           navController = navigationService,
