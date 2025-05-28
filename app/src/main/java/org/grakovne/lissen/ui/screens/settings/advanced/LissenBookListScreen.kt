@@ -24,12 +24,29 @@ import kotlinx.coroutines.flow.asStateFlow
 
 // Data models
 data class Book(val id: String, val title: String, val author: String?, val chapters: List<Chapter>)
-data class Chapter(val id: String, val title: String)
+data class Chapter(val id: String, val title: String, val duration: String = "12:00", val sizeMb: String = "5.3 МБ")
 
 // Sample data
 private val sampleBooks = listOf(
-  Book("1", "Океан в конце дороги", "Нил Гейман", listOf(
-    Chapter("1", "Глава 1"), Chapter("2", "Глава 2")
+  Book("1", "The Ocean at the End of the Lane", "Neil Gaiman", listOf(
+    Chapter("1", "Chapter One", "10:35", "6.1 МБ"),
+    Chapter("2", "Chapter Two", "12:45", "7.2 МБ")
+  )),
+  Book("2", "Dune", "Frank Herbert", listOf(
+    Chapter("1", "Arrakis", "15:20", "8.4 МБ"),
+    Chapter("2", "Muad'Dib", "13:10", "7.9 МБ")
+  )),
+  Book("3", "1984", "George Orwell", listOf(
+    Chapter("1", "The Principles of Newspeak", "09:40", "5.2 МБ"),
+    Chapter("2", "Big Brother Is Watching You", "11:05", "6.5 МБ")
+  )),
+  Book("4", "Brave New World", "Aldous Huxley", listOf(
+    Chapter("1", "The World State", "14:00", "8.1 МБ"),
+    Chapter("2", "Conditioning", "13:45", "7.6 МБ")
+  )),
+  Book("5", "The Martian", "Andy Weir", listOf(
+    Chapter("1", "I'm Pretty Much Fucked", "12:20", "6.8 МБ"),
+    Chapter("2", "Problem Solving", "13:15", "7.1 МБ")
   ))
 )
 
@@ -45,14 +62,8 @@ class BooksViewModel : ViewModel() {
     _books.value = _books.value.mapNotNull { book ->
       if (book.id == bookId) {
         val updatedChapters = book.chapters.filterNot { it.id == chapterId }
-        if (updatedChapters.isNotEmpty()) {
-          book.copy(chapters = updatedChapters)
-        } else {
-          null
-        }
-      } else {
-        book
-      }
+        if (updatedChapters.isNotEmpty()) book.copy(chapters = updatedChapters) else null
+      } else book
     }
   }
 }
@@ -126,11 +137,17 @@ fun BooksScreen(
                 .padding(start = 68.dp, end = 8.dp, top = 4.dp, bottom = 4.dp),
               verticalAlignment = Alignment.CenterVertically
             ) {
-              Text(
-                text = chapter.title,
-                modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.bodyMedium
-              )
+              Column(modifier = Modifier.weight(1f)) {
+                Text(
+                  text = chapter.title,
+                  style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                  text = "${chapter.duration} • ${chapter.sizeMb}",
+                  style = MaterialTheme.typography.bodySmall,
+                  color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+                )
+              }
               IconButton(onClick = { onDeleteChapter(book, chapter) }) {
                 Icon(
                   imageVector = Icons.Outlined.Delete,
@@ -149,9 +166,46 @@ fun BooksScreen(
 @Composable
 fun LissenBookListScreen(viewModel: BooksViewModel = viewModel()) {
   val books by viewModel.books.collectAsState()
+
   Scaffold(
     topBar = {
       CenterAlignedTopAppBar(title = { Text("Аудиокниги") })
+    },
+    bottomBar = {
+      Surface(
+        tonalElevation = 3.dp,
+        shadowElevation = 4.dp
+      ) {
+        val totalSize = books.sumOf { book ->
+          book.chapters.sumOf {
+            it.sizeMb.replace(" МБ", "").replace(",", ".").toDoubleOrNull() ?: 0.0
+          }
+        }
+        val totalDurationMin = books.flatMap { it.chapters }
+          .mapNotNull { ch ->
+            ch.duration.split(":").mapNotNull { it.toIntOrNull() }.let {
+              if (it.size == 2) it[0] * 60 + it[1] else null
+            }
+          }.sum() / 60
+
+        Column(
+          modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+        ) {
+          Text(
+            text = "Хранилище: %.1f ГБ".format(totalSize / 1024),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface
+          )
+          Spacer(modifier = Modifier.height(4.dp))
+          Text(
+            text = "Общая длительность: $totalDurationMin мин",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+          )
+        }
+      }
     }
   ) { innerPadding ->
     Box(modifier = Modifier.padding(innerPadding)) {
