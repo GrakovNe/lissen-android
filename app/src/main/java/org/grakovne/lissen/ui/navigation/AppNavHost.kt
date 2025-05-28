@@ -89,10 +89,8 @@ fun AppNavHost(
       navController = navController,
       startDestination = startDestination,
     ) {
-
       composable("test") {
         LissenBookListScreen()
-
       }
       composable("library_screen") {
         LibraryScreen(

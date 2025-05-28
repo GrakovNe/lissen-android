@@ -18,6 +18,7 @@
     <string name="player_screen_now_playing_title_podcast_of">Episode %1$d of %2$s</string>
     <string name="player_screen_now_playing_title_item_of">Item %1$d of %2$s</string>
     <string name="settings_screen_title">Preferences</string>
+    <string name="content_downloads_list_settings_screen_title">Downloads</string>
     <string name="settings_screen_connected_as_title">Connected as</string>
     <string name="settings_screen_server_connection">Server connection</string>
     <string name="login_error_host_is_down">Host is down</string>
