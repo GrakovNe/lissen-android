@@ -49,17 +49,17 @@ fun AppNavHost(
 
     val book = preferences.getPlayingBook()
 
-    val startDestination = "settings_screen/cached_items"
+//    val startDestination = "settings_screen/cached_items"
 
-//    val startDestination =
-//        when {
-//            hasCredentials.not() ->
-//                "login_screen"
-//            appLaunchAction == AppLaunchAction.CONTINUE_PLAYBACK && book != null ->
-//                "player_screen/${book.id}?bookTitle=${book.title}&bookSubtitle=${book.subtitle}&startInstantly=true"
-//            else ->
-//                "library_screen"
-//        }
+    val startDestination =
+        when {
+            hasCredentials.not() ->
+                "login_screen"
+            appLaunchAction == AppLaunchAction.CONTINUE_PLAYBACK && book != null ->
+                "player_screen/${book.id}?bookTitle=${book.title}&bookSubtitle=${book.subtitle}&startInstantly=true"
+            else ->
+                "library_screen"
+        }
 
     val enterTransition: EnterTransition =
         slideInHorizontally(

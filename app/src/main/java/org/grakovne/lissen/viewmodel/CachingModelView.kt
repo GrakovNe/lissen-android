@@ -107,6 +107,16 @@ class CachingModelView
                 }
         }
 
+        fun dropCache(
+            itemId: String,
+            chapterId: String,
+        ) {
+            viewModelScope
+                .launch {
+                    contentCachingManager.dropCache(itemId, chapterId)
+                }
+        }
+
         fun toggleCacheForce() {
             when (localCacheUsing()) {
                 true -> preferences.disableForceCache()

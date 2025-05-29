@@ -70,6 +70,12 @@ class ContentCachingManager
             }
         }
 
+        suspend fun dropCache(
+            itemId: String,
+            chapterId: String,
+        ) {
+        }
+
         suspend fun dropCache(itemId: String) {
             bookRepository.removeBook(itemId)
 

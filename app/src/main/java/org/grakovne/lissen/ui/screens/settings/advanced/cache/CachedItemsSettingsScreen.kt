@@ -41,7 +41,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -75,32 +74,32 @@ fun CachedItemsSettingsScreen(
 ) {
     val view: View = LocalView.current
     val coroutineScope = rememberCoroutineScope()
-    
+
     var pullRefreshing by remember { mutableStateOf(false) }
     val cachedItems = viewModel.libraryPager.collectAsLazyPagingItems()
-    
+
     fun refreshContent(showPullRefreshing: Boolean) {
         coroutineScope.launch {
             if (showPullRefreshing) {
                 pullRefreshing = true
             }
-            
+
             val minimumTime =
                 when (showPullRefreshing) {
                     true -> 500L
                     false -> 0L
                 }
-            
+
             withMinimumTime(minimumTime) {
                 listOf(
                     async { viewModel.fetchCachedItems() },
                 ).awaitAll()
             }
-            
+
             pullRefreshing = false
         }
     }
-    
+
     val pullRefreshState =
         rememberPullRefreshState(
             refreshing = pullRefreshing,
@@ -108,7 +107,7 @@ fun CachedItemsSettingsScreen(
                 hapticAction(view) { refreshContent(showPullRefreshing = true) }
             },
         )
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -150,11 +149,11 @@ fun CachedItemsSettingsScreen(
                         book = item,
                         imageLoader = imageLoader,
                         viewModel = viewModel,
-                        onItemRemoved = { refreshContent(showPullRefreshing = false) }
+                        onItemRemoved = { refreshContent(showPullRefreshing = false) },
                     )
                 }
             }
-            
+
             PullRefreshIndicator(
                 refreshing = pullRefreshing,
                 state = pullRefreshState,
@@ -174,7 +173,7 @@ private fun CachedItemComposable(
 ) {
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
-    
+
     val imageRequest =
         remember(book.id) {
             ImageRequest
@@ -183,7 +182,7 @@ private fun CachedItemComposable(
                 .size(coil.size.Size.ORIGINAL)
                 .build()
         }
-    
+
     Column(
         modifier =
             Modifier
@@ -205,9 +204,9 @@ private fun CachedItemComposable(
                             .clip(RoundedCornerShape(4.dp)),
                     error = painterResource(R.drawable.cover_fallback),
                 )
-                
+
                 Spacer(Modifier.width(spacing))
-                
+
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
@@ -220,9 +219,9 @@ private fun CachedItemComposable(
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
                         )
-                        
+
                         Spacer(Modifier.width(4.dp))
-                        
+
                         Icon(
                             imageVector = if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
                             contentDescription = null,
@@ -243,9 +242,9 @@ private fun CachedItemComposable(
                         )
                     }
                 }
-                
+
                 Spacer(Modifier.width(spacing))
-                
+
                 IconButton(onClick = {
                     viewModel.dropCache(book.id)
                     onItemRemoved()
@@ -257,9 +256,9 @@ private fun CachedItemComposable(
                     )
                 }
             }
-            
+
             if (expanded) {
-                CachedItemChapterComposable(book)
+                CachedItemChapterComposable(book, onItemRemoved)
             }
         }
     }
@@ -268,6 +267,7 @@ private fun CachedItemComposable(
 @Composable
 private fun CachedItemChapterComposable(
     item: DetailedItem,
+    onItemRemoved: () -> Unit,
     viewModel: CachingModelView = viewModel(),
 ) {
     Spacer(modifier = Modifier.height(spacing))
@@ -292,7 +292,8 @@ private fun CachedItemChapterComposable(
                     )
                 }
                 IconButton(onClick = {
-                    // CHANGE ME
+                    viewModel.dropCache(itemId = item.id, chapterId = chapter.id)
+                    onItemRemoved()
                 }) {
                     Icon(
                         imageVector = Icons.Outlined.Delete,
