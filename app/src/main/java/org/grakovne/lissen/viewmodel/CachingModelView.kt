@@ -104,7 +104,6 @@ class CachingModelView
             viewModelScope
                 .launch {
                     contentCachingManager.dropCache(bookId)
-                    _bookCachingProgress.remove(bookId)
                 }
         }
 

@@ -61,16 +61,19 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.hapticAction
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.extensions.formatLeadingMinutes
 import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.viewmodel.CachingModelView
+import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun CachedItemsSettingsScreen(
     imageLoader: ImageLoader,
     viewModel: CachingModelView = hiltViewModel(),
+    playerViewModel: PlayerViewModel = hiltViewModel(),
 ) {
     val view: View = LocalView.current
     val coroutineScope = rememberCoroutineScope()
@@ -149,6 +152,7 @@ fun CachedItemsSettingsScreen(
                         book = item,
                         imageLoader = imageLoader,
                         viewModel = viewModel,
+                        playerViewModel = playerViewModel,
                         onItemRemoved = { refreshContent(showPullRefreshing = false) },
                     )
                 }
@@ -169,6 +173,7 @@ private fun CachedItemComposable(
     book: DetailedItem,
     imageLoader: ImageLoader,
     viewModel: CachingModelView,
+    playerViewModel: PlayerViewModel,
     onItemRemoved: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -246,7 +251,11 @@ private fun CachedItemComposable(
                 Spacer(Modifier.width(spacing))
 
                 IconButton(onClick = {
-                    viewModel.dropCache(book.id)
+                    dropCache(
+                        item = book,
+                        cachingModelView = viewModel,
+                        playerViewModel = playerViewModel,
+                    )
                     onItemRemoved()
                 }) {
                     Icon(
@@ -258,7 +267,7 @@ private fun CachedItemComposable(
             }
 
             if (expanded) {
-                CachedItemChapterComposable(book, onItemRemoved)
+                CachedItemChapterComposable(book, onItemRemoved, viewModel, playerViewModel)
             }
         }
     }
@@ -268,7 +277,8 @@ private fun CachedItemComposable(
 private fun CachedItemChapterComposable(
     item: DetailedItem,
     onItemRemoved: () -> Unit,
-    viewModel: CachingModelView = viewModel(),
+    viewModel: CachingModelView,
+    playerViewModel: PlayerViewModel,
 ) {
     Spacer(modifier = Modifier.height(spacing))
     item
@@ -292,7 +302,12 @@ private fun CachedItemChapterComposable(
                     )
                 }
                 IconButton(onClick = {
-                    viewModel.dropCache(item = item, chapter = chapter)
+                    dropCache(
+                        item = item,
+                        chapter = chapter,
+                        cachingModelView = viewModel,
+                        playerViewModel = playerViewModel,
+                    )
                     onItemRemoved()
                 }) {
                     Icon(
@@ -303,6 +318,38 @@ private fun CachedItemChapterComposable(
                 }
             }
         }
+}
+
+private fun dropCache(
+    item: DetailedItem,
+    chapter: PlayingChapter,
+    cachingModelView: CachingModelView,
+    playerViewModel: PlayerViewModel,
+) {
+    playerViewModel.book.value?.let { playingBook ->
+        if (playingBook.id == item.id) {
+            playerViewModel.clearPlayingBook()
+        }
+    }
+
+    when (item.chapters.all { it.id == chapter.id }) {
+        true -> dropCache(item, cachingModelView, playerViewModel)
+        false -> cachingModelView.dropCache(item, chapter)
+    }
+}
+
+private fun dropCache(
+    item: DetailedItem,
+    cachingModelView: CachingModelView,
+    playerViewModel: PlayerViewModel,
+) {
+    playerViewModel.book.value?.let { playingBook ->
+        if (playingBook.id == item.id) {
+            playerViewModel.clearPlayingBook()
+        }
+    }
+
+    cachingModelView.dropCache(item.id)
 }
 
 private val thumbnailSize = 64.dp
