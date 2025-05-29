@@ -113,11 +113,7 @@ fun LibraryScreen(
     val libraries by settingsViewModel.libraries.observeAsState(emptyList())
     var preferredLibraryExpanded by remember { mutableStateOf(false) }
 
-    val library =
-        when (searchRequested) {
-            true -> libraryViewModel.searchPager.collectAsLazyPagingItems()
-            false -> libraryViewModel.libraryPager.collectAsLazyPagingItems()
-        }
+    val library = libraryViewModel.getPager(searchRequested).collectAsLazyPagingItems()
 
     BackHandler {
         when (searchRequested) {
@@ -185,7 +181,8 @@ fun LibraryScreen(
     fun isRecentVisible(): Boolean {
         val fetchAvailable = networkQualityService.isNetworkAvailable() || cachingModelView.localCacheUsing()
         val hasContent = recentBooks.isEmpty().not()
-        return !searchRequested && hasContent && fetchAvailable
+
+        return searchRequested.not() && hasContent && fetchAvailable
     }
 
     LaunchedEffect(Unit) {

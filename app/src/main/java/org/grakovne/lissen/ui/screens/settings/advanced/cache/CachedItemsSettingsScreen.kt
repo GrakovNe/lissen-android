@@ -66,6 +66,7 @@ import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.extensions.formatLeadingMinutes
 import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.viewmodel.CachingModelView
+import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
@@ -74,6 +75,7 @@ fun CachedItemsSettingsScreen(
     imageLoader: ImageLoader,
     viewModel: CachingModelView = hiltViewModel(),
     playerViewModel: PlayerViewModel = hiltViewModel(),
+    libraryViewModel: LibraryViewModel = hiltViewModel(),
 ) {
     val view: View = LocalView.current
     val coroutineScope = rememberCoroutineScope()
@@ -153,7 +155,9 @@ fun CachedItemsSettingsScreen(
                         imageLoader = imageLoader,
                         viewModel = viewModel,
                         playerViewModel = playerViewModel,
-                        onItemRemoved = { refreshContent(showPullRefreshing = false) },
+                        onItemRemoved = {
+                            refreshContent(showPullRefreshing = false)
+                        },
                     )
                 }
             }

@@ -57,6 +57,12 @@ class LibraryViewModel
                 prefetchDistance = PAGE_SIZE,
             )
 
+        fun getPager(isSearchRequested: Boolean) =
+            when (isSearchRequested) {
+                true -> searchPager
+                false -> libraryPager
+            }
+
         val searchPager: Flow<PagingData<Book>> =
             combine(
                 _searchToken,
