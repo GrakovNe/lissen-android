@@ -27,8 +27,8 @@ import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -117,8 +117,8 @@ fun CachedItemsSettingsScreen(
                 title = {
                     Text(
                         text = stringResource(R.string.content_downloads_list_settings_screen_title),
-                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-                        color = MaterialTheme.colorScheme.onSurface,
+                        style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
+                        color = colorScheme.onSurface,
                     )
                 },
                 navigationIcon = {
@@ -126,7 +126,7 @@ fun CachedItemsSettingsScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "Back",
-                            tint = MaterialTheme.colorScheme.onSurface,
+                            tint = colorScheme.onSurface,
                         )
                     }
                 },
@@ -219,9 +219,9 @@ private fun CachedItemComposable(
                         Text(
                             text = book.title,
                             style =
-                                MaterialTheme.typography.bodyMedium.copy(
+                                typography.bodyMedium.copy(
                                     fontWeight = FontWeight.SemiBold,
-                                    color = MaterialTheme.colorScheme.onBackground,
+                                    color = colorScheme.onBackground,
                                 ),
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
@@ -233,7 +233,7 @@ private fun CachedItemComposable(
                             imageVector = if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp),
-                            tint = MaterialTheme.colorScheme.onBackground,
+                            tint = colorScheme.onBackground,
                         )
                     }
                     book.author?.takeIf { it.isNotBlank() }?.let {
@@ -241,8 +241,8 @@ private fun CachedItemComposable(
                         Text(
                             text = it,
                             style =
-                                MaterialTheme.typography.bodyMedium.copy(
-                                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                                typography.bodyMedium.copy(
+                                    color = colorScheme.onBackground.copy(alpha = 0.6f),
                                 ),
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
@@ -263,7 +263,7 @@ private fun CachedItemComposable(
                     Icon(
                         imageVector = Icons.Outlined.Delete,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurface,
+                        tint = colorScheme.onSurface,
                     )
                 }
             }
@@ -295,11 +295,11 @@ private fun CachedItemChapterComposable(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(text = chapter.title, style = MaterialTheme.typography.bodyMedium)
+                    Text(text = chapter.title, style = typography.bodyMedium)
                     Text(
                         text = chapter.duration.toInt().formatLeadingMinutes(),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
+                        style = typography.bodySmall,
+                        color = colorScheme.onBackground.copy(alpha = 0.7f),
                         modifier = Modifier.padding(top = 2.dp),
                     )
                 }
@@ -315,7 +315,7 @@ private fun CachedItemChapterComposable(
                     Icon(
                         imageVector = Icons.Outlined.Delete,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        tint = colorScheme.onSurfaceVariant,
                     )
                 }
             }
