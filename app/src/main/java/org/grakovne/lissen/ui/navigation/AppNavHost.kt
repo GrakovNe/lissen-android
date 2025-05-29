@@ -48,7 +48,7 @@ fun AppNavHost(
     }
 
     val book = preferences.getPlayingBook()
-    
+
     val startDestination = "settings_screen/cached_items"
 
 //    val startDestination =

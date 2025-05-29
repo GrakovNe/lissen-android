@@ -63,10 +63,10 @@ class CachedBookRepository
             chapterId: String,
         ) = bookDao.isBookChapterCached(bookId, chapterId)
 
-        fun fetchCachedItems() =
+        suspend fun fetchCachedItems() =
             bookDao
                 .fetchCachedItems()
-                .map { items -> items.map { cachedBookEntityDetailedConverter.apply(it) } }
+                .map { cachedBookEntityDetailedConverter.apply(it) }
 
         suspend fun fetchBooks(
             pageNumber: Int,

@@ -1,8 +1,6 @@
 package org.grakovne.lissen.ui.screens.settings.advanced.cache
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -30,6 +28,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -78,10 +77,14 @@ private val chapterIndent = thumbnailSize + spacing
 @Composable
 fun CachedItemsSettingsScreen(
     imageLoader: ImageLoader,
-    viewModel: CachingModelView = hiltViewModel()
+    viewModel: CachingModelView = hiltViewModel(),
 ) {
     val items by viewModel.cachedItems.observeAsState(emptyList())
-    
+
+    LaunchedEffect(Unit) {
+        viewModel.updateCachedItems()
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -127,7 +130,7 @@ private fun CachedItemComposable(
 ) {
     val context = LocalContext.current
     var expanded by remember { mutableStateOf(false) }
-    
+
     val imageRequest =
         remember(book.id) {
             ImageRequest
@@ -136,7 +139,7 @@ private fun CachedItemComposable(
                 .size(coil.size.Size.ORIGINAL)
                 .build()
         }
-    
+
     Column(
         modifier =
             Modifier
@@ -158,9 +161,9 @@ private fun CachedItemComposable(
                             .clip(RoundedCornerShape(4.dp)),
                     error = painterResource(R.drawable.cover_fallback),
                 )
-                
+
                 Spacer(Modifier.width(spacing))
-                
+
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
@@ -173,9 +176,9 @@ private fun CachedItemComposable(
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis,
                         )
-                        
+
                         Spacer(Modifier.width(4.dp))
-                        
+
                         Icon(
                             imageVector = if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
                             contentDescription = null,
@@ -196,9 +199,9 @@ private fun CachedItemComposable(
                         )
                     }
                 }
-                
+
                 Spacer(Modifier.width(spacing))
-                
+
                 IconButton(onClick = { /* CHANGE ME*/ }) {
                     Icon(
                         imageVector = Icons.Outlined.Delete,
@@ -207,7 +210,7 @@ private fun CachedItemComposable(
                     )
                 }
             }
-            
+
             if (expanded) {
                 CachedItemChapterComposable(book)
             }
@@ -238,7 +241,7 @@ private fun CachedItemChapterComposable(
                         text = chapter.duration.toInt().formatLeadingMinutes(),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
-                        modifier = Modifier.padding(top = 2.dp)
+                        modifier = Modifier.padding(top = 2.dp),
                     )
                 }
                 IconButton(onClick = {

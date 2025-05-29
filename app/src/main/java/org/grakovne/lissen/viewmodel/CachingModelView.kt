@@ -3,7 +3,7 @@ package org.grakovne.lissen.viewmodel
 import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -33,10 +33,7 @@ class CachingModelView
     ) : ViewModel() {
         private val _bookCachingProgress = mutableMapOf<String, MutableStateFlow<CacheState>>()
 
-        private val _cachedItems =
-            MediatorLiveData<List<DetailedItem>>().apply {
-                addSource(fetchCachingItems()) { value = it }
-            }
+        private val _cachedItems = MutableLiveData<List<DetailedItem>>()
         val cachedItems: LiveData<List<DetailedItem>> = _cachedItems
 
         init {
@@ -99,5 +96,10 @@ class CachingModelView
             chapterId: String,
         ): LiveData<Boolean> = contentCachingManager.hasMetadataCached(bookId, chapterId)
 
-        fun fetchCachingItems() = contentCachingManager.fetchCachedItems()
+        fun updateCachedItems() {
+            viewModelScope.launch {
+                val items = contentCachingManager.fetchCachedItems()
+                _cachedItems.postValue(items)
+            }
+        }
     }
