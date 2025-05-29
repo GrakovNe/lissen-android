@@ -19,7 +19,10 @@ class LissenApplication : Application() {
 
   override fun attachBaseContext(base: Context) {
     super.attachBaseContext(base)
-    // initCrashReporting()
+    
+    if (BuildConfig.DEBUG.not()) {
+      initCrashReporting()
+    }
   }
 
   override fun onCreate() {
