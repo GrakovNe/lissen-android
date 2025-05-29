@@ -8,27 +8,27 @@ import javax.inject.Singleton
 
 @Singleton
 class LibraryPageResponseConverter
-    @Inject
-    constructor() {
-        fun apply(response: LibraryItemsResponse): PagedItems<Book> =
-            response
-                .results
-                .mapNotNull {
-                    val title = it.media.metadata.title ?: return@mapNotNull null
+  @Inject
+  constructor() {
+    fun apply(response: LibraryItemsResponse): PagedItems<Book> =
+      response
+        .results
+        .mapNotNull {
+          val title = it.media.metadata.title ?: return@mapNotNull null
 
-                    Book(
-                        id = it.id,
-                        title = title,
-                        series = it.media.metadata.seriesName,
-                        subtitle = it.media.metadata.subtitle,
-                        author = it.media.metadata.authorName,
-                        duration = it.media.duration.toInt(),
-                        hasContent = it.media.numChapters?.let { count -> count > 0 } ?: true,
-                    )
-                }.let {
-                    PagedItems(
-                        items = it,
-                        currentPage = response.page,
-                    )
-                }
-    }
+          Book(
+            id = it.id,
+            title = title,
+            series = it.media.metadata.seriesName,
+            subtitle = it.media.metadata.subtitle,
+            author = it.media.metadata.authorName,
+            duration = it.media.duration.toInt(),
+            hasContent = it.media.numChapters?.let { count -> count > 0 } ?: true,
+          )
+        }.let {
+          PagedItems(
+            items = it,
+            currentPage = response.page,
+          )
+        }
+  }

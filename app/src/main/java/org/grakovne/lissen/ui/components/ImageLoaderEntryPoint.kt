@@ -8,5 +8,5 @@ import dagger.hilt.components.SingletonComponent
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface ImageLoaderEntryPoint {
-    fun getImageLoader(): ImageLoader
+  fun getImageLoader(): ImageLoader
 }

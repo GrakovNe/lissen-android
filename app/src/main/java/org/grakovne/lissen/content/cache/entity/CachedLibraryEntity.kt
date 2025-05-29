@@ -8,11 +8,11 @@ import java.io.Serializable
 
 @Keep
 @Entity(
-    tableName = "libraries",
+  tableName = "libraries",
 )
 data class CachedLibraryEntity(
-    @PrimaryKey
-    val id: String,
-    val title: String,
-    val type: LibraryType,
+  @PrimaryKey
+  val id: String,
+  val title: String,
+  val type: LibraryType,
 ) : Serializable

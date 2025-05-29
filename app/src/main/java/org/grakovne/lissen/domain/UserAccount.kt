@@ -4,7 +4,7 @@ import androidx.annotation.Keep
 
 @Keep
 data class UserAccount(
-    val token: String,
-    val username: String,
-    val preferredLibraryId: String?,
+  val token: String,
+  val username: String,
+  val preferredLibraryId: String?,
 )

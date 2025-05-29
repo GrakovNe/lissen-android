@@ -4,23 +4,23 @@ import androidx.annotation.Keep
 
 @Keep
 data class LibrarySearchResponse(
-    val book: List<LibrarySearchItemResponse>,
-    val authors: List<LibrarySearchAuthorResponse>,
-    val series: List<LibrarySearchSeriesResponse>,
+  val book: List<LibrarySearchItemResponse>,
+  val authors: List<LibrarySearchAuthorResponse>,
+  val series: List<LibrarySearchSeriesResponse>,
 )
 
 @Keep
 data class LibrarySearchItemResponse(
-    val libraryItem: LibraryItem,
+  val libraryItem: LibraryItem,
 )
 
 @Keep
 data class LibrarySearchAuthorResponse(
-    val id: String,
-    val name: String,
+  val id: String,
+  val name: String,
 )
 
 @Keep
 data class LibrarySearchSeriesResponse(
-    val books: List<LibraryItem>,
+  val books: List<LibraryItem>,
 )

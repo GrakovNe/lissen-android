@@ -4,5 +4,5 @@ import androidx.annotation.Keep
 
 @Keep
 data class AuthMethodResponse(
-    val authMethods: List<String> = emptyList(),
+  val authMethods: List<String> = emptyList(),
 )

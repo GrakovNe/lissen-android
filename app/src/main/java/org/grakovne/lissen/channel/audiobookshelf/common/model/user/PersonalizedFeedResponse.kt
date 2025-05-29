@@ -4,28 +4,28 @@ import androidx.annotation.Keep
 
 @Keep
 data class PersonalizedFeedResponse(
-    val id: String,
-    val labelStringKey: String,
-    val entities: List<PersonalizedFeedItemResponse>,
+  val id: String,
+  val labelStringKey: String,
+  val entities: List<PersonalizedFeedItemResponse>,
 )
 
 @Keep
 data class PersonalizedFeedItemResponse(
-    val id: String,
-    val libraryId: String,
-    val media: PersonalizedFeedItemMediaResponse,
-    val updateAt: Long,
+  val id: String,
+  val libraryId: String,
+  val media: PersonalizedFeedItemMediaResponse,
+  val updateAt: Long,
 )
 
 @Keep
 data class PersonalizedFeedItemMediaResponse(
-    val id: String,
-    val metadata: PersonalizedFeedItemMetadataResponse,
+  val id: String,
+  val metadata: PersonalizedFeedItemMetadataResponse,
 )
 
 @Keep
 data class PersonalizedFeedItemMetadataResponse(
-    val title: String,
-    val subtitle: String?,
-    val authorName: String,
+  val title: String,
+  val subtitle: String?,
+  val authorName: String,
 )

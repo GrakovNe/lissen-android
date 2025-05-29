@@ -4,6 +4,6 @@ import androidx.annotation.Keep
 
 @Keep
 data class ProgressSyncRequest(
-    val timeListened: Int,
-    val currentTime: Double,
+  val timeListened: Int,
+  val currentTime: Double,
 )

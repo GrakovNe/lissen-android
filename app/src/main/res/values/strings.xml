@@ -18,7 +18,6 @@
     <string name="player_screen_now_playing_title_podcast_of">Episode %1$d of %2$s</string>
     <string name="player_screen_now_playing_title_item_of">Item %1$d of %2$s</string>
     <string name="settings_screen_title">Preferences</string>
-    <string name="content_downloads_list_settings_screen_title">Downloads</string>
     <string name="settings_screen_connected_as_title">Connected as</string>
     <string name="settings_screen_server_connection">Server connection</string>
     <string name="login_error_host_is_down">Host is down</string>
@@ -113,4 +112,7 @@
     <string name="rewind_on_pause_title">Rewind on pause</string>
     <string name="rewind_on_pause_hint">Automatically skips back when paused</string>
     <string name="rewind_on_pause_time">Rewind time on pause</string>
+    <string name="offline_cache_is_empty">No saved content yet</string>
+    <string name="settings_screen_cached_items_title">Downloads</string>
+    <string name="settings_screen_cached_items_hint">Manage saved content</string>
 </resources>

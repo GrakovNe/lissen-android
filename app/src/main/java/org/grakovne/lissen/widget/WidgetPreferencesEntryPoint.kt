@@ -8,5 +8,5 @@ import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface WidgetPreferencesEntryPoint {
-    fun lissenSharedPreferences(): LissenSharedPreferences
+  fun lissenSharedPreferences(): LissenSharedPreferences
 }

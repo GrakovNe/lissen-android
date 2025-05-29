@@ -10,20 +10,20 @@ import javax.inject.Singleton
 
 @Singleton
 class NetworkQualityService
-    @Inject
-    constructor(
-        @ApplicationContext private val context: Context,
-    ) {
-        private val connectivityManager = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+  @Inject
+  constructor(
+    @ApplicationContext private val context: Context,
+  ) {
+    private val connectivityManager = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
 
-        fun isNetworkAvailable(): Boolean {
-            val network = connectivityManager.activeNetwork ?: return false
+    fun isNetworkAvailable(): Boolean {
+      val network = connectivityManager.activeNetwork ?: return false
 
-            val networkCapabilities =
-                connectivityManager
-                    .getNetworkCapabilities(network)
-                    ?: return false
+      val networkCapabilities =
+        connectivityManager
+          .getNetworkCapabilities(network)
+          ?: return false
 
-            return networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
-        }
+      return networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
     }
+  }

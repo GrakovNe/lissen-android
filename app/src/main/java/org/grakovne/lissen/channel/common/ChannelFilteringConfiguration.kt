@@ -6,6 +6,6 @@ import org.grakovne.lissen.common.LibraryOrderingOption
 
 @Keep
 data class ChannelFilteringConfiguration(
-    val orderingOptions: List<LibraryOrderingOption>,
-    val defaultOrdering: LibraryOrderingConfiguration,
+  val orderingOptions: List<LibraryOrderingOption>,
+  val defaultOrdering: LibraryOrderingConfiguration,
 )

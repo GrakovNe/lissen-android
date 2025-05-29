@@ -7,12 +7,12 @@ import javax.inject.Singleton
 
 @Singleton
 class LoginResponseConverter
-    @Inject
-    constructor() {
-        fun apply(response: LoggedUserResponse): UserAccount =
-            UserAccount(
-                token = response.user.token,
-                username = response.user.username,
-                preferredLibraryId = response.userDefaultLibraryId,
-            )
-    }
+  @Inject
+  constructor() {
+    fun apply(response: LoggedUserResponse): UserAccount =
+      UserAccount(
+        token = response.user.token,
+        username = response.user.username,
+        preferredLibraryId = response.userDefaultLibraryId,
+      )
+  }

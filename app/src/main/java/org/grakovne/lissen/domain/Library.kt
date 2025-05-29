@@ -5,7 +5,7 @@ import org.grakovne.lissen.channel.common.LibraryType
 
 @Keep
 data class Library(
-    val id: String,
-    val title: String,
-    val type: LibraryType,
+  val id: String,
+  val title: String,
+  val type: LibraryType,
 )

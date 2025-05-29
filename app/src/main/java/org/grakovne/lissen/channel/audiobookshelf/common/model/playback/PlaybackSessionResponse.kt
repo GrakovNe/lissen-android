@@ -4,6 +4,6 @@ import androidx.annotation.Keep
 
 @Keep
 data class PlaybackSessionResponse(
-    val id: String,
-    val libraryItemId: String,
+  val id: String,
+  val libraryItemId: String,
 )

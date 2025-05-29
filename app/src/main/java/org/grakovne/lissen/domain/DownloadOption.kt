@@ -7,7 +7,7 @@ import java.io.Serializable
 sealed interface DownloadOption : Serializable
 
 class NumberItemDownloadOption(
-    val itemsNumber: Int,
+  val itemsNumber: Int,
 ) : DownloadOption
 
 data object CurrentItemDownloadOption : DownloadOption

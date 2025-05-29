@@ -4,12 +4,12 @@ import androidx.annotation.Keep
 
 @Keep
 data class LibraryResponse(
-    val libraries: List<LibraryItemResponse>,
+  val libraries: List<LibraryItemResponse>,
 )
 
 @Keep
 data class LibraryItemResponse(
-    val id: String,
-    val name: String,
-    val mediaType: String,
+  val id: String,
+  val name: String,
+  val mediaType: String,
 )
