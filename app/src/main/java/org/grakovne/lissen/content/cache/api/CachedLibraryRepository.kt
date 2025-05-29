@@ -8,15 +8,15 @@ import javax.inject.Singleton
 
 @Singleton
 class CachedLibraryRepository
-  @Inject
-  constructor(
-    private val dao: CachedLibraryDao,
-    private val converter: CachedLibraryEntityConverter,
-  ) {
-    suspend fun cacheLibraries(libraries: List<Library>) = dao.updateLibraries(libraries)
+    @Inject
+    constructor(
+        private val dao: CachedLibraryDao,
+        private val converter: CachedLibraryEntityConverter,
+    ) {
+        suspend fun cacheLibraries(libraries: List<Library>) = dao.updateLibraries(libraries)
 
-    suspend fun fetchLibraries() =
-      dao
-        .fetchLibraries()
-        .map { converter.apply(it) }
-  }
+        suspend fun fetchLibraries() =
+            dao
+                .fetchLibraries()
+                .map { converter.apply(it) }
+    }

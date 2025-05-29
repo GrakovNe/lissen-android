@@ -10,35 +10,35 @@ import javax.inject.Singleton
 
 @Singleton
 class AudioBookshelfPodcastSyncService
-  @Inject
-  constructor(
-    private val dataRepository: AudioBookshelfDataRepository,
-  ) : AudioBookshelfSyncService {
-    private var previousItemId: String? = null
-    private var previousTrackedTime: Double = 0.0
+    @Inject
+    constructor(
+        private val dataRepository: AudioBookshelfDataRepository,
+    ) : AudioBookshelfSyncService {
+        private var previousItemId: String? = null
+        private var previousTrackedTime: Double = 0.0
 
-    override suspend fun syncProgress(
-      itemId: String,
-      progress: PlaybackProgress,
-    ): ApiResult<Unit> {
-      val trackedTime =
-        previousTrackedTime
-          .takeIf { itemId == previousItemId }
-          ?.let { progress.currentChapterTime - previousTrackedTime }
-          ?.toInt()
-          ?: 0
+        override suspend fun syncProgress(
+            itemId: String,
+            progress: PlaybackProgress,
+        ): ApiResult<Unit> {
+            val trackedTime =
+                previousTrackedTime
+                    .takeIf { itemId == previousItemId }
+                    ?.let { progress.currentChapterTime - previousTrackedTime }
+                    ?.toInt()
+                    ?: 0
 
-      val request =
-        ProgressSyncRequest(
-          currentTime = progress.currentChapterTime,
-          timeListened = trackedTime,
-        )
+            val request =
+                ProgressSyncRequest(
+                    currentTime = progress.currentChapterTime,
+                    timeListened = trackedTime,
+                )
 
-      return dataRepository
-        .publishLibraryItemProgress(itemId, request)
-        .also {
-          previousTrackedTime = progress.currentChapterTime
-          previousItemId = itemId
+            return dataRepository
+                .publishLibraryItemProgress(itemId, request)
+                .also {
+                    previousTrackedTime = progress.currentChapterTime
+                    previousItemId = itemId
+                }
         }
     }
-  }

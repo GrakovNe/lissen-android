@@ -16,94 +16,94 @@ import javax.inject.Singleton
 
 @Singleton
 class AudioBookshelfMediaRepository
-  @Inject
-  constructor(
-    private val preferences: LissenSharedPreferences,
-    private val requestHeadersProvider: RequestHeadersProvider,
-  ) {
-    private var cachedHost: String? = null
-    private var cachedToken: String? = null
-    private var cachedHeaders: List<ServerRequestHeader> = emptyList()
-    private var clientCache: AudiobookshelfMediaClient? = null
+    @Inject
+    constructor(
+        private val preferences: LissenSharedPreferences,
+        private val requestHeadersProvider: RequestHeadersProvider,
+    ) {
+        private var cachedHost: String? = null
+        private var cachedToken: String? = null
+        private var cachedHeaders: List<ServerRequestHeader> = emptyList()
+        private var clientCache: AudiobookshelfMediaClient? = null
 
-    suspend fun fetchBookCover(itemId: String): ApiResult<InputStream> =
-      safeCall {
-        getClientInstance().getItemCover(itemId)
-      }
-
-    private suspend fun safeCall(apiCall: suspend () -> Response<ResponseBody>): ApiResult<InputStream> {
-      return try {
-        val response = apiCall.invoke()
-
-        return when (response.code()) {
-          200 ->
-            when (val body = response.body()) {
-              null -> ApiResult.Error(ApiError.InternalError)
-              else -> ApiResult.Success(body.byteStream())
+        suspend fun fetchBookCover(itemId: String): ApiResult<InputStream> =
+            safeCall {
+                getClientInstance().getItemCover(itemId)
             }
 
-          400 -> ApiResult.Error(ApiError.InternalError)
-          401 -> ApiResult.Error(ApiError.Unauthorized)
-          403 -> ApiResult.Error(ApiError.Unauthorized)
-          404 -> ApiResult.Error(ApiError.InternalError)
-          500 -> ApiResult.Error(ApiError.InternalError)
-          else -> ApiResult.Error(ApiError.InternalError)
-        }
-      } catch (e: IOException) {
-        Log.e(TAG, "Unable to make network api call $apiCall due to: $e")
-        ApiResult.Error(ApiError.NetworkError)
-      } catch (e: Exception) {
-        Log.e(TAG, "Unable to make network api call $apiCall due to: $e")
-        ApiResult.Error(ApiError.InternalError)
-      }
-    }
+        private suspend fun safeCall(apiCall: suspend () -> Response<ResponseBody>): ApiResult<InputStream> {
+            return try {
+                val response = apiCall.invoke()
 
-    private fun getClientInstance(): AudiobookshelfMediaClient {
-      val host = preferences.getHost()
-      val token = preferences.getToken()
-      val headers = requestHeadersProvider.fetchRequestHeaders()
+                return when (response.code()) {
+                    200 ->
+                        when (val body = response.body()) {
+                            null -> ApiResult.Error(ApiError.InternalError)
+                            else -> ApiResult.Success(body.byteStream())
+                        }
 
-      val clientChanged = host != cachedHost || token != cachedToken || headers != cachedHeaders
-
-      val current = clientCache
-
-      return when {
-        current == null || clientChanged -> {
-          cachedHost = host
-          cachedToken = token
-          cachedHeaders = headers
-
-          createClientInstance().also { clientCache = it }
+                    400 -> ApiResult.Error(ApiError.InternalError)
+                    401 -> ApiResult.Error(ApiError.Unauthorized)
+                    403 -> ApiResult.Error(ApiError.Unauthorized)
+                    404 -> ApiResult.Error(ApiError.InternalError)
+                    500 -> ApiResult.Error(ApiError.InternalError)
+                    else -> ApiResult.Error(ApiError.InternalError)
+                }
+            } catch (e: IOException) {
+                Log.e(TAG, "Unable to make network api call $apiCall due to: $e")
+                ApiResult.Error(ApiError.NetworkError)
+            } catch (e: Exception) {
+                Log.e(TAG, "Unable to make network api call $apiCall due to: $e")
+                ApiResult.Error(ApiError.InternalError)
+            }
         }
 
-        else -> current
-      }
+        private fun getClientInstance(): AudiobookshelfMediaClient {
+            val host = preferences.getHost()
+            val token = preferences.getToken()
+            val headers = requestHeadersProvider.fetchRequestHeaders()
+
+            val clientChanged = host != cachedHost || token != cachedToken || headers != cachedHeaders
+
+            val current = clientCache
+
+            return when {
+                current == null || clientChanged -> {
+                    cachedHost = host
+                    cachedToken = token
+                    cachedHeaders = headers
+
+                    createClientInstance().also { clientCache = it }
+                }
+
+                else -> current
+            }
+        }
+
+        private fun createClientInstance(): AudiobookshelfMediaClient {
+            val host = preferences.getHost()
+            val token = preferences.getToken()
+
+            if (host.isNullOrBlank() || token.isNullOrBlank()) {
+                throw IllegalStateException("Host or token is missing")
+            }
+
+            return apiClient(host, token)
+                .retrofit
+                .create(AudiobookshelfMediaClient::class.java)
+        }
+
+        private fun apiClient(
+            host: String,
+            token: String,
+        ): BinaryApiClient =
+            BinaryApiClient(
+                host = host,
+                token = token,
+                requestHeaders = requestHeadersProvider.fetchRequestHeaders(),
+            )
+
+        companion object {
+            private const val TAG: String = "AudioBookshelfMediaRepository"
+        }
     }
-
-    private fun createClientInstance(): AudiobookshelfMediaClient {
-      val host = preferences.getHost()
-      val token = preferences.getToken()
-
-      if (host.isNullOrBlank() || token.isNullOrBlank()) {
-        throw IllegalStateException("Host or token is missing")
-      }
-
-      return apiClient(host, token)
-        .retrofit
-        .create(AudiobookshelfMediaClient::class.java)
-    }
-
-    private fun apiClient(
-      host: String,
-      token: String,
-    ): BinaryApiClient =
-      BinaryApiClient(
-        host = host,
-        token = token,
-        requestHeaders = requestHeadersProvider.fetchRequestHeaders(),
-      )
-
-    companion object {
-      private const val TAG: String = "AudioBookshelfMediaRepository"
-    }
-  }

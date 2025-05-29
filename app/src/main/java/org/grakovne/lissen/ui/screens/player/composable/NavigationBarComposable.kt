@@ -45,210 +45,210 @@ import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
 fun NavigationBarComposable(
-  book: DetailedItem,
-  playerViewModel: PlayerViewModel,
-  contentCachingModelView: CachingModelView,
-  navController: AppNavigationService,
-  modifier: Modifier = Modifier,
-  libraryType: LibraryType,
+    book: DetailedItem,
+    playerViewModel: PlayerViewModel,
+    contentCachingModelView: CachingModelView,
+    navController: AppNavigationService,
+    modifier: Modifier = Modifier,
+    libraryType: LibraryType,
 ) {
-  val cacheProgress: CacheState by contentCachingModelView.getProgress(book.id).collectAsState()
-  val timerOption by playerViewModel.timerOption.observeAsState(null)
-  val playbackSpeed by playerViewModel.playbackSpeed.observeAsState(1f)
-  val playingQueueExpanded by playerViewModel.playingQueueExpanded.observeAsState(false)
+    val cacheProgress: CacheState by contentCachingModelView.getProgress(book.id).collectAsState()
+    val timerOption by playerViewModel.timerOption.observeAsState(null)
+    val playbackSpeed by playerViewModel.playbackSpeed.observeAsState(1f)
+    val playingQueueExpanded by playerViewModel.playingQueueExpanded.observeAsState(false)
 
-  val isMetadataCached by contentCachingModelView.provideCacheState(book.id).observeAsState(false)
+    val isMetadataCached by contentCachingModelView.provideCacheState(book.id).observeAsState(false)
 
-  var playbackSpeedExpanded by remember { mutableStateOf(false) }
-  var timerExpanded by remember { mutableStateOf(false) }
-  var downloadsExpanded by remember { mutableStateOf(false) }
+    var playbackSpeedExpanded by remember { mutableStateOf(false) }
+    var timerExpanded by remember { mutableStateOf(false) }
+    var downloadsExpanded by remember { mutableStateOf(false) }
 
-  Surface(
-    shadowElevation = 4.dp,
-    modifier = modifier.height(64.dp),
-  ) {
-    NavigationBar(
-      containerColor = Color.Transparent,
-      contentColor = colorScheme.onBackground,
-      modifier = Modifier.fillMaxWidth(),
+    Surface(
+        shadowElevation = 4.dp,
+        modifier = modifier.height(64.dp),
     ) {
-      val iconSize = 24.dp
-      val labelStyle = typography.labelSmall.copy(fontSize = 10.sp)
+        NavigationBar(
+            containerColor = Color.Transparent,
+            contentColor = colorScheme.onBackground,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            val iconSize = 24.dp
+            val labelStyle = typography.labelSmall.copy(fontSize = 10.sp)
 
-      NavigationBarItem(
-        icon = {
-          Icon(
-            Icons.AutoMirrored.Rounded.QueueMusic,
-            contentDescription = stringResource(R.string.player_screen_chapter_list_navigation),
-            modifier = Modifier.size(iconSize),
-          )
-        },
-        label = {
-          Text(
-            text = stringResource(R.string.player_screen_chapter_list_navigation),
-            style = labelStyle,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-          )
-        },
-        selected = playingQueueExpanded,
-        onClick = { playerViewModel.togglePlayingQueue() },
-        colors =
-          NavigationBarItemDefaults.colors(
-            selectedIconColor = colorScheme.primary,
-            indicatorColor = colorScheme.surfaceContainer,
-          ),
-      )
+            NavigationBarItem(
+                icon = {
+                    Icon(
+                        Icons.AutoMirrored.Rounded.QueueMusic,
+                        contentDescription = stringResource(R.string.player_screen_chapter_list_navigation),
+                        modifier = Modifier.size(iconSize),
+                    )
+                },
+                label = {
+                    Text(
+                        text = stringResource(R.string.player_screen_chapter_list_navigation),
+                        style = labelStyle,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
+                selected = playingQueueExpanded,
+                onClick = { playerViewModel.togglePlayingQueue() },
+                colors =
+                    NavigationBarItemDefaults.colors(
+                        selectedIconColor = colorScheme.primary,
+                        indicatorColor = colorScheme.surfaceContainer,
+                    ),
+            )
 
-      NavigationBarItem(
-        icon = {
-          DownloadProgressIcon(
-            cacheState = cacheProgress,
-            size = iconSize,
-          )
-        },
-        label = {
-          Text(
-            text = stringResource(R.string.player_screen_downloads_navigation),
-            style = labelStyle,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-          )
-        },
-        selected = false,
-        onClick = { downloadsExpanded = true },
-        colors =
-          NavigationBarItemDefaults.colors(
-            selectedIconColor = colorScheme.primary,
-            indicatorColor = colorScheme.surfaceContainer,
-          ),
-      )
+            NavigationBarItem(
+                icon = {
+                    DownloadProgressIcon(
+                        cacheState = cacheProgress,
+                        size = iconSize,
+                    )
+                },
+                label = {
+                    Text(
+                        text = stringResource(R.string.player_screen_downloads_navigation),
+                        style = labelStyle,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
+                selected = false,
+                onClick = { downloadsExpanded = true },
+                colors =
+                    NavigationBarItemDefaults.colors(
+                        selectedIconColor = colorScheme.primary,
+                        indicatorColor = colorScheme.surfaceContainer,
+                    ),
+            )
 
-      NavigationBarItem(
-        icon = {
-          Icon(
-            Icons.Outlined.SlowMotionVideo,
-            contentDescription = stringResource(R.string.player_screen_playback_speed_navigation),
-            modifier = Modifier.size(iconSize),
-          )
-        },
-        label = {
-          Text(
-            text = stringResource(R.string.player_screen_playback_speed_navigation),
-            style = labelStyle,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-          )
-        },
-        selected = false,
-        onClick = { playbackSpeedExpanded = true },
-        enabled = true,
-        colors =
-          NavigationBarItemDefaults.colors(
-            selectedIconColor = colorScheme.primary,
-            indicatorColor = colorScheme.surfaceContainer,
-          ),
-      )
+            NavigationBarItem(
+                icon = {
+                    Icon(
+                        Icons.Outlined.SlowMotionVideo,
+                        contentDescription = stringResource(R.string.player_screen_playback_speed_navigation),
+                        modifier = Modifier.size(iconSize),
+                    )
+                },
+                label = {
+                    Text(
+                        text = stringResource(R.string.player_screen_playback_speed_navigation),
+                        style = labelStyle,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
+                selected = false,
+                onClick = { playbackSpeedExpanded = true },
+                enabled = true,
+                colors =
+                    NavigationBarItemDefaults.colors(
+                        selectedIconColor = colorScheme.primary,
+                        indicatorColor = colorScheme.surfaceContainer,
+                    ),
+            )
 
-      NavigationBarItem(
-        icon = {
-          Icon(
-            when (timerOption) {
-              null -> Icons.Outlined.Timer
-              else -> TimerPlay
-            },
-            contentDescription = stringResource(R.string.player_screen_timer_navigation),
-            modifier = Modifier.size(iconSize),
-          )
-        },
-        label = {
-          Text(
-            text = stringResource(R.string.player_screen_timer_navigation),
-            style = labelStyle,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-          )
-        },
-        selected = false,
-        onClick = { timerExpanded = true },
-        colors =
-          NavigationBarItemDefaults.colors(
-            selectedIconColor = colorScheme.primary,
-            indicatorColor = colorScheme.surfaceContainer,
-          ),
-      )
+            NavigationBarItem(
+                icon = {
+                    Icon(
+                        when (timerOption) {
+                            null -> Icons.Outlined.Timer
+                            else -> TimerPlay
+                        },
+                        contentDescription = stringResource(R.string.player_screen_timer_navigation),
+                        modifier = Modifier.size(iconSize),
+                    )
+                },
+                label = {
+                    Text(
+                        text = stringResource(R.string.player_screen_timer_navigation),
+                        style = labelStyle,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                },
+                selected = false,
+                onClick = { timerExpanded = true },
+                colors =
+                    NavigationBarItemDefaults.colors(
+                        selectedIconColor = colorScheme.primary,
+                        indicatorColor = colorScheme.surfaceContainer,
+                    ),
+            )
 
-      if (playbackSpeedExpanded) {
-        PlaybackSpeedComposable(
-          currentSpeed = playbackSpeed,
-          onSpeedChange = { playerViewModel.setPlaybackSpeed(it) },
-          onDismissRequest = { playbackSpeedExpanded = false },
-        )
-      }
-
-      if (timerExpanded) {
-        TimerComposable(
-          libraryType = libraryType,
-          currentOption = timerOption,
-          onOptionSelected = { playerViewModel.setTimer(it) },
-          onDismissRequest = { timerExpanded = false },
-        )
-      }
-
-      if (downloadsExpanded) {
-        DownloadsComposable(
-          libraryType = libraryType,
-          hasCachedEpisodes = isMetadataCached,
-          isForceCache = contentCachingModelView.localCacheUsing(),
-          onRequestedDownload = { option ->
-            playerViewModel.book.value?.let {
-              contentCachingModelView
-                .cache(
-                  mediaItemId = it.id,
-                  currentPosition = playerViewModel.totalPosition.value ?: 0.0,
-                  option = option,
+            if (playbackSpeedExpanded) {
+                PlaybackSpeedComposable(
+                    currentSpeed = playbackSpeed,
+                    onSpeedChange = { playerViewModel.setPlaybackSpeed(it) },
+                    onDismissRequest = { playbackSpeedExpanded = false },
                 )
             }
-          },
-          onRequestedDrop = {
-            playerViewModel
-              .book
-              .value
-              ?.let {
-                contentCachingModelView.dropCache(it.id)
 
-                playerViewModel.clearPlayingBook()
-                navController.showLibrary(true)
-              }
-          },
-          onDismissRequest = { downloadsExpanded = false },
-        )
-      }
+            if (timerExpanded) {
+                TimerComposable(
+                    libraryType = libraryType,
+                    currentOption = timerOption,
+                    onOptionSelected = { playerViewModel.setTimer(it) },
+                    onDismissRequest = { timerExpanded = false },
+                )
+            }
+
+            if (downloadsExpanded) {
+                DownloadsComposable(
+                    libraryType = libraryType,
+                    hasCachedEpisodes = isMetadataCached,
+                    isForceCache = contentCachingModelView.localCacheUsing(),
+                    onRequestedDownload = { option ->
+                        playerViewModel.book.value?.let {
+                            contentCachingModelView
+                                .cache(
+                                    mediaItemId = it.id,
+                                    currentPosition = playerViewModel.totalPosition.value ?: 0.0,
+                                    option = option,
+                                )
+                        }
+                    },
+                    onRequestedDrop = {
+                        playerViewModel
+                            .book
+                            .value
+                            ?.let {
+                                contentCachingModelView.dropCache(it.id)
+
+                                playerViewModel.clearPlayingBook()
+                                navController.showLibrary(true)
+                            }
+                    },
+                    onDismissRequest = { downloadsExpanded = false },
+                )
+            }
+        }
     }
-  }
 }
 
 @Composable
 private fun DownloadProgressIcon(
-  cacheState: CacheState,
-  size: Dp,
+    cacheState: CacheState,
+    size: Dp,
 ) {
-  if (cacheState.status is CacheStatus.Caching) {
-    val iconSize = size - 2.dp
-    CircularProgressIndicator(
-      progress = { cacheState.progress.coerceIn(0.0, 1.0).toFloat() },
-      modifier = Modifier.size(iconSize),
-      strokeWidth = iconSize * 0.1f,
-      color = colorScheme.primary,
-      trackColor = LocalContentColor.current,
-      strokeCap = StrokeCap.Butt,
-      gapSize = 2.dp,
-    )
-  } else {
-    Icon(
-      imageVector = Icons.Outlined.CloudDownload,
-      contentDescription = stringResource(R.string.player_screen_downloads_navigation),
-      modifier = Modifier.size(size),
-    )
-  }
+    if (cacheState.status is CacheStatus.Caching) {
+        val iconSize = size - 2.dp
+        CircularProgressIndicator(
+            progress = { cacheState.progress.coerceIn(0.0, 1.0).toFloat() },
+            modifier = Modifier.size(iconSize),
+            strokeWidth = iconSize * 0.1f,
+            color = colorScheme.primary,
+            trackColor = LocalContentColor.current,
+            strokeCap = StrokeCap.Butt,
+            gapSize = 2.dp,
+        )
+    } else {
+        Icon(
+            imageVector = Icons.Outlined.CloudDownload,
+            contentDescription = stringResource(R.string.player_screen_downloads_navigation),
+            modifier = Modifier.size(size),
+        )
+    }
 }

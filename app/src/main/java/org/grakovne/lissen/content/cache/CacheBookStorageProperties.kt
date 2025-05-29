@@ -8,32 +8,32 @@ import javax.inject.Singleton
 
 @Singleton
 class CacheBookStorageProperties
-  @Inject
-  constructor(
-    @ApplicationContext private val context: Context,
-  ) {
-    fun provideBookCache(bookId: String) =
-      context
-        .getExternalFilesDir(MEDIA_CACHE_FOLDER)
-        ?.resolve(bookId)
+    @Inject
+    constructor(
+        @ApplicationContext private val context: Context,
+    ) {
+        fun provideBookCache(bookId: String) =
+            context
+                .getExternalFilesDir(MEDIA_CACHE_FOLDER)
+                ?.resolve(bookId)
 
-    fun provideMediaCachePatch(
-      bookId: String,
-      fileId: String,
-    ) = context
-      .getExternalFilesDir(MEDIA_CACHE_FOLDER)
-      ?.resolve(bookId)
-      ?.resolve(fileId)
-      ?: throw IllegalStateException("")
+        fun provideMediaCachePatch(
+            bookId: String,
+            fileId: String,
+        ) = context
+            .getExternalFilesDir(MEDIA_CACHE_FOLDER)
+            ?.resolve(bookId)
+            ?.resolve(fileId)
+            ?: throw IllegalStateException("")
 
-    fun provideBookCoverPath(bookId: String): File =
-      context
-        .getExternalFilesDir(MEDIA_CACHE_FOLDER)
-        ?.resolve(bookId)
-        ?.resolve("cover.img")
-        ?: throw IllegalStateException("")
+        fun provideBookCoverPath(bookId: String): File =
+            context
+                .getExternalFilesDir(MEDIA_CACHE_FOLDER)
+                ?.resolve(bookId)
+                ?.resolve("cover.img")
+                ?: throw IllegalStateException("")
 
-    companion object {
-      const val MEDIA_CACHE_FOLDER = "media_cache"
+        companion object {
+            const val MEDIA_CACHE_FOLDER = "media_cache"
+        }
     }
-  }

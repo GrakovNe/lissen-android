@@ -7,22 +7,22 @@ import javax.inject.Singleton
 
 @Singleton
 class PodcastSearchItemsConverter
-  @Inject
-  constructor() {
-    fun apply(response: List<PodcastItem>): List<Book> {
-      return response
-        .mapNotNull {
-          val title = it.media.metadata.title ?: return@mapNotNull null
+    @Inject
+    constructor() {
+        fun apply(response: List<PodcastItem>): List<Book> {
+            return response
+                .mapNotNull {
+                    val title = it.media.metadata.title ?: return@mapNotNull null
 
-          Book(
-            id = it.id,
-            title = title,
-            subtitle = null,
-            series = null,
-            author = it.media.metadata.author,
-            duration = it.media.duration.toInt(),
-            hasContent = it.media.numEpisodes?.let { count -> count > 0 } ?: true,
-          )
+                    Book(
+                        id = it.id,
+                        title = title,
+                        subtitle = null,
+                        series = null,
+                        author = it.media.metadata.author,
+                        duration = it.media.duration.toInt(),
+                        hasContent = it.media.numEpisodes?.let { count -> count > 0 } ?: true,
+                    )
+                }
         }
     }
-  }

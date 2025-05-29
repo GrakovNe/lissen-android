@@ -20,46 +20,46 @@ import javax.inject.Singleton
 
 @Singleton
 class UnknownAudiobookshelfChannel
-  @Inject
-  constructor(
-    dataRepository: AudioBookshelfDataRepository,
-    mediaRepository: AudioBookshelfMediaRepository,
-    recentListeningResponseConverter: RecentListeningResponseConverter,
-    preferences: LissenSharedPreferences,
-    syncService: AudioBookshelfLibrarySyncService,
-    sessionResponseConverter: PlaybackSessionResponseConverter,
-    libraryResponseConverter: LibraryResponseConverter,
-    connectionInfoResponseConverter: ConnectionInfoResponseConverter,
-  ) : AudiobookshelfChannel(
-      dataRepository = dataRepository,
-      mediaRepository = mediaRepository,
-      recentBookResponseConverter = recentListeningResponseConverter,
-      sessionResponseConverter = sessionResponseConverter,
-      preferences = preferences,
-      syncService = syncService,
-      libraryResponseConverter = libraryResponseConverter,
-      connectionInfoResponseConverter = connectionInfoResponseConverter,
-    ) {
-    override fun getLibraryType(): LibraryType = LibraryType.UNKNOWN
+    @Inject
+    constructor(
+        dataRepository: AudioBookshelfDataRepository,
+        mediaRepository: AudioBookshelfMediaRepository,
+        recentListeningResponseConverter: RecentListeningResponseConverter,
+        preferences: LissenSharedPreferences,
+        syncService: AudioBookshelfLibrarySyncService,
+        sessionResponseConverter: PlaybackSessionResponseConverter,
+        libraryResponseConverter: LibraryResponseConverter,
+        connectionInfoResponseConverter: ConnectionInfoResponseConverter,
+    ) : AudiobookshelfChannel(
+            dataRepository = dataRepository,
+            mediaRepository = mediaRepository,
+            recentBookResponseConverter = recentListeningResponseConverter,
+            sessionResponseConverter = sessionResponseConverter,
+            preferences = preferences,
+            syncService = syncService,
+            libraryResponseConverter = libraryResponseConverter,
+            connectionInfoResponseConverter = connectionInfoResponseConverter,
+        ) {
+        override fun getLibraryType(): LibraryType = LibraryType.UNKNOWN
 
-    override suspend fun fetchBooks(
-      libraryId: String,
-      pageSize: Int,
-      pageNumber: Int,
-    ): ApiResult<PagedItems<Book>> = ApiResult.Error(ApiError.UnsupportedError)
+        override suspend fun fetchBooks(
+            libraryId: String,
+            pageSize: Int,
+            pageNumber: Int,
+        ): ApiResult<PagedItems<Book>> = ApiResult.Error(ApiError.UnsupportedError)
 
-    override suspend fun searchBooks(
-      libraryId: String,
-      query: String,
-      limit: Int,
-    ): ApiResult<List<Book>> = ApiResult.Error(ApiError.UnsupportedError)
+        override suspend fun searchBooks(
+            libraryId: String,
+            query: String,
+            limit: Int,
+        ): ApiResult<List<Book>> = ApiResult.Error(ApiError.UnsupportedError)
 
-    override suspend fun startPlayback(
-      bookId: String,
-      episodeId: String,
-      supportedMimeTypes: List<String>,
-      deviceId: String,
-    ): ApiResult<PlaybackSession> = ApiResult.Error(ApiError.UnsupportedError)
+        override suspend fun startPlayback(
+            bookId: String,
+            episodeId: String,
+            supportedMimeTypes: List<String>,
+            deviceId: String,
+        ): ApiResult<PlaybackSession> = ApiResult.Error(ApiError.UnsupportedError)
 
-    override suspend fun fetchBook(bookId: String): ApiResult<DetailedItem> = ApiResult.Error(ApiError.UnsupportedError)
-  }
+        override suspend fun fetchBook(bookId: String): ApiResult<DetailedItem> = ApiResult.Error(ApiError.UnsupportedError)
+    }

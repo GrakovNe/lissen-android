@@ -28,120 +28,120 @@ import javax.inject.Singleton
 
 @Singleton
 class PodcastAudiobookshelfChannel
-  @Inject
-  constructor(
-    dataRepository: AudioBookshelfDataRepository,
-    mediaRepository: AudioBookshelfMediaRepository,
-    recentListeningResponseConverter: RecentListeningResponseConverter,
-    preferences: LissenSharedPreferences,
-    syncService: AudioBookshelfPodcastSyncService,
-    sessionResponseConverter: PlaybackSessionResponseConverter,
-    libraryResponseConverter: LibraryResponseConverter,
-    connectionInfoResponseConverter: ConnectionInfoResponseConverter,
-    private val podcastOrderingRequestConverter: PodcastOrderingRequestConverter,
-    private val podcastPageResponseConverter: PodcastPageResponseConverter,
-    private val podcastResponseConverter: PodcastResponseConverter,
-    private val podcastSearchItemsConverter: PodcastSearchItemsConverter,
-  ) : AudiobookshelfChannel(
-      dataRepository = dataRepository,
-      mediaRepository = mediaRepository,
-      recentBookResponseConverter = recentListeningResponseConverter,
-      sessionResponseConverter = sessionResponseConverter,
-      preferences = preferences,
-      syncService = syncService,
-      libraryResponseConverter = libraryResponseConverter,
-      connectionInfoResponseConverter = connectionInfoResponseConverter,
-    ) {
-    override fun getLibraryType() = LibraryType.PODCAST
+    @Inject
+    constructor(
+        dataRepository: AudioBookshelfDataRepository,
+        mediaRepository: AudioBookshelfMediaRepository,
+        recentListeningResponseConverter: RecentListeningResponseConverter,
+        preferences: LissenSharedPreferences,
+        syncService: AudioBookshelfPodcastSyncService,
+        sessionResponseConverter: PlaybackSessionResponseConverter,
+        libraryResponseConverter: LibraryResponseConverter,
+        connectionInfoResponseConverter: ConnectionInfoResponseConverter,
+        private val podcastOrderingRequestConverter: PodcastOrderingRequestConverter,
+        private val podcastPageResponseConverter: PodcastPageResponseConverter,
+        private val podcastResponseConverter: PodcastResponseConverter,
+        private val podcastSearchItemsConverter: PodcastSearchItemsConverter,
+    ) : AudiobookshelfChannel(
+            dataRepository = dataRepository,
+            mediaRepository = mediaRepository,
+            recentBookResponseConverter = recentListeningResponseConverter,
+            sessionResponseConverter = sessionResponseConverter,
+            preferences = preferences,
+            syncService = syncService,
+            libraryResponseConverter = libraryResponseConverter,
+            connectionInfoResponseConverter = connectionInfoResponseConverter,
+        ) {
+        override fun getLibraryType() = LibraryType.PODCAST
 
-    override suspend fun fetchBooks(
-      libraryId: String,
-      pageSize: Int,
-      pageNumber: Int,
-    ): ApiResult<PagedItems<Book>> {
-      val (option, direction) = podcastOrderingRequestConverter.apply(preferences.getLibraryOrdering())
+        override suspend fun fetchBooks(
+            libraryId: String,
+            pageSize: Int,
+            pageNumber: Int,
+        ): ApiResult<PagedItems<Book>> {
+            val (option, direction) = podcastOrderingRequestConverter.apply(preferences.getLibraryOrdering())
 
-      return dataRepository
-        .fetchPodcastItems(
-          libraryId = libraryId,
-          pageSize = pageSize,
-          pageNumber = pageNumber,
-          sort = option,
-          direction = direction,
-        ).map { podcastPageResponseConverter.apply(it) }
-    }
+            return dataRepository
+                .fetchPodcastItems(
+                    libraryId = libraryId,
+                    pageSize = pageSize,
+                    pageNumber = pageNumber,
+                    sort = option,
+                    direction = direction,
+                ).map { podcastPageResponseConverter.apply(it) }
+        }
 
-    override suspend fun searchBooks(
-      libraryId: String,
-      query: String,
-      limit: Int,
-    ): ApiResult<List<Book>> =
-      coroutineScope {
-        val byTitle =
-          async {
-            dataRepository
-              .searchPodcasts(libraryId, query, limit)
-              .map { it.podcast }
-              .map { it.map { response -> response.libraryItem } }
-              .map { podcastSearchItemsConverter.apply(it) }
-          }
+        override suspend fun searchBooks(
+            libraryId: String,
+            query: String,
+            limit: Int,
+        ): ApiResult<List<Book>> =
+            coroutineScope {
+                val byTitle =
+                    async {
+                        dataRepository
+                            .searchPodcasts(libraryId, query, limit)
+                            .map { it.podcast }
+                            .map { it.map { response -> response.libraryItem } }
+                            .map { podcastSearchItemsConverter.apply(it) }
+                    }
 
-        byTitle.await()
-      }
-
-    override suspend fun startPlayback(
-      bookId: String,
-      episodeId: String,
-      supportedMimeTypes: List<String>,
-      deviceId: String,
-    ): ApiResult<PlaybackSession> {
-      val request =
-        PlaybackStartRequest(
-          supportedMimeTypes = supportedMimeTypes,
-          deviceInfo =
-            DeviceInfo(
-              clientName = getClientName(),
-              deviceId = deviceId,
-              deviceName = getClientName(),
-            ),
-          forceTranscode = false,
-          forceDirectPlay = false,
-          mediaPlayer = getClientName(),
-        )
-
-      return dataRepository
-        .startPodcastPlayback(
-          itemId = bookId,
-          episodeId = episodeId,
-          request = request,
-        ).map { sessionResponseConverter.apply(it) }
-    }
-
-    override suspend fun fetchBook(bookId: String): ApiResult<DetailedItem> =
-      coroutineScope {
-        val mediaProgress =
-          async {
-            val progress =
-              dataRepository
-                .fetchUserInfoResponse()
-                .fold(
-                  onSuccess = { it.user.mediaProgress ?: emptyList() },
-                  onFailure = { emptyList() },
-                )
-
-            if (progress.isEmpty()) {
-              return@async null
+                byTitle.await()
             }
 
-            progress
-              .filter { it.libraryItemId == bookId }
-              .filterNot { it.episodeId == null }
-              .sortedByDescending { it.lastUpdate }
-              .distinctBy { it.episodeId }
-          }
+        override suspend fun startPlayback(
+            bookId: String,
+            episodeId: String,
+            supportedMimeTypes: List<String>,
+            deviceId: String,
+        ): ApiResult<PlaybackSession> {
+            val request =
+                PlaybackStartRequest(
+                    supportedMimeTypes = supportedMimeTypes,
+                    deviceInfo =
+                        DeviceInfo(
+                            clientName = getClientName(),
+                            deviceId = deviceId,
+                            deviceName = getClientName(),
+                        ),
+                    forceTranscode = false,
+                    forceDirectPlay = false,
+                    mediaPlayer = getClientName(),
+                )
 
-        async { dataRepository.fetchPodcastItem(bookId) }
-          .await()
-          .map { podcastResponseConverter.apply(it, mediaProgress.await() ?: emptyList()) }
-      }
-  }
+            return dataRepository
+                .startPodcastPlayback(
+                    itemId = bookId,
+                    episodeId = episodeId,
+                    request = request,
+                ).map { sessionResponseConverter.apply(it) }
+        }
+
+        override suspend fun fetchBook(bookId: String): ApiResult<DetailedItem> =
+            coroutineScope {
+                val mediaProgress =
+                    async {
+                        val progress =
+                            dataRepository
+                                .fetchUserInfoResponse()
+                                .fold(
+                                    onSuccess = { it.user.mediaProgress ?: emptyList() },
+                                    onFailure = { emptyList() },
+                                )
+
+                        if (progress.isEmpty()) {
+                            return@async null
+                        }
+
+                        progress
+                            .filter { it.libraryItemId == bookId }
+                            .filterNot { it.episodeId == null }
+                            .sortedByDescending { it.lastUpdate }
+                            .distinctBy { it.episodeId }
+                    }
+
+                async { dataRepository.fetchPodcastItem(bookId) }
+                    .await()
+                    .map { podcastResponseConverter.apply(it, mediaProgress.await() ?: emptyList()) }
+            }
+    }

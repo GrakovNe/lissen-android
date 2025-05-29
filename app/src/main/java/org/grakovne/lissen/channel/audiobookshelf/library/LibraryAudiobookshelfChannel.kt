@@ -31,172 +31,172 @@ import javax.inject.Singleton
 
 @Singleton
 class LibraryAudiobookshelfChannel
-  @Inject
-  constructor(
-    dataRepository: AudioBookshelfDataRepository,
-    mediaRepository: AudioBookshelfMediaRepository,
-    recentListeningResponseConverter: RecentListeningResponseConverter,
-    preferences: LissenSharedPreferences,
-    syncService: AudioBookshelfLibrarySyncService,
-    sessionResponseConverter: PlaybackSessionResponseConverter,
-    libraryResponseConverter: LibraryResponseConverter,
-    connectionInfoResponseConverter: ConnectionInfoResponseConverter,
-    private val libraryOrderingRequestConverter: LibraryOrderingRequestConverter,
-    private val libraryPageResponseConverter: LibraryPageResponseConverter,
-    private val bookResponseConverter: BookResponseConverter,
-    private val librarySearchItemsConverter: LibrarySearchItemsConverter,
-  ) : AudiobookshelfChannel(
-      dataRepository = dataRepository,
-      mediaRepository = mediaRepository,
-      recentBookResponseConverter = recentListeningResponseConverter,
-      sessionResponseConverter = sessionResponseConverter,
-      preferences = preferences,
-      syncService = syncService,
-      libraryResponseConverter = libraryResponseConverter,
-      connectionInfoResponseConverter = connectionInfoResponseConverter,
-    ) {
-    override fun getLibraryType() = LibraryType.LIBRARY
+    @Inject
+    constructor(
+        dataRepository: AudioBookshelfDataRepository,
+        mediaRepository: AudioBookshelfMediaRepository,
+        recentListeningResponseConverter: RecentListeningResponseConverter,
+        preferences: LissenSharedPreferences,
+        syncService: AudioBookshelfLibrarySyncService,
+        sessionResponseConverter: PlaybackSessionResponseConverter,
+        libraryResponseConverter: LibraryResponseConverter,
+        connectionInfoResponseConverter: ConnectionInfoResponseConverter,
+        private val libraryOrderingRequestConverter: LibraryOrderingRequestConverter,
+        private val libraryPageResponseConverter: LibraryPageResponseConverter,
+        private val bookResponseConverter: BookResponseConverter,
+        private val librarySearchItemsConverter: LibrarySearchItemsConverter,
+    ) : AudiobookshelfChannel(
+            dataRepository = dataRepository,
+            mediaRepository = mediaRepository,
+            recentBookResponseConverter = recentListeningResponseConverter,
+            sessionResponseConverter = sessionResponseConverter,
+            preferences = preferences,
+            syncService = syncService,
+            libraryResponseConverter = libraryResponseConverter,
+            connectionInfoResponseConverter = connectionInfoResponseConverter,
+        ) {
+        override fun getLibraryType() = LibraryType.LIBRARY
 
-    override suspend fun fetchBooks(
-      libraryId: String,
-      pageSize: Int,
-      pageNumber: Int,
-    ): ApiResult<PagedItems<Book>> {
-      val (option, direction) = libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering())
+        override suspend fun fetchBooks(
+            libraryId: String,
+            pageSize: Int,
+            pageNumber: Int,
+        ): ApiResult<PagedItems<Book>> {
+            val (option, direction) = libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering())
 
-      return dataRepository
-        .fetchLibraryItems(
-          libraryId = libraryId,
-          pageSize = pageSize,
-          pageNumber = pageNumber,
-          sort = option,
-          direction = direction,
-        ).map { libraryPageResponseConverter.apply(it) }
-    }
+            return dataRepository
+                .fetchLibraryItems(
+                    libraryId = libraryId,
+                    pageSize = pageSize,
+                    pageNumber = pageNumber,
+                    sort = option,
+                    direction = direction,
+                ).map { libraryPageResponseConverter.apply(it) }
+        }
 
-    override suspend fun searchBooks(
-      libraryId: String,
-      query: String,
-      limit: Int,
-    ): ApiResult<List<Book>> =
-      coroutineScope {
-        val searchResult = dataRepository.searchBooks(libraryId, query, limit)
+        override suspend fun searchBooks(
+            libraryId: String,
+            query: String,
+            limit: Int,
+        ): ApiResult<List<Book>> =
+            coroutineScope {
+                val searchResult = dataRepository.searchBooks(libraryId, query, limit)
 
-        val byTitle =
-          async {
-            searchResult
-              .map { it.book }
-              .map { it.map { response -> response.libraryItem } }
-              .map { librarySearchItemsConverter.apply(it) }
-          }
+                val byTitle =
+                    async {
+                        searchResult
+                            .map { it.book }
+                            .map { it.map { response -> response.libraryItem } }
+                            .map { librarySearchItemsConverter.apply(it) }
+                    }
 
-        val byAuthor =
-          async {
-            searchResult
-              .map { it.authors }
-              .map { authors -> authors.map { it.id } }
-              .map { ids -> ids.map { id -> async { dataRepository.fetchAuthorItems(id) } } }
-              .map { it.awaitAll() }
-              .map { result ->
-                result
-                  .flatMap { authorResponse ->
-                    authorResponse
-                      .fold(
-                        onSuccess = { it.libraryItems },
-                        onFailure = { emptyList() },
-                      )
-                  }
-              }.map { librarySearchItemsConverter.apply(it) }
-          }
+                val byAuthor =
+                    async {
+                        searchResult
+                            .map { it.authors }
+                            .map { authors -> authors.map { it.id } }
+                            .map { ids -> ids.map { id -> async { dataRepository.fetchAuthorItems(id) } } }
+                            .map { it.awaitAll() }
+                            .map { result ->
+                                result
+                                    .flatMap { authorResponse ->
+                                        authorResponse
+                                            .fold(
+                                                onSuccess = { it.libraryItems },
+                                                onFailure = { emptyList() },
+                                            )
+                                    }
+                            }.map { librarySearchItemsConverter.apply(it) }
+                    }
 
-        val bySeries: Deferred<ApiResult<List<Book>>> =
-          async {
-            searchResult
-              .map { result -> result.series }
-              .map { result -> result.flatMap { it.books } }
-              .map { result -> result.mapNotNull { it.media.metadata.title } }
-              .map { result -> result.map { async { dataRepository.searchBooks(libraryId, it, limit) } } }
-              .map { result -> result.awaitAll() }
-              .map { result ->
-                result.flatMap {
-                  it.fold(
-                    onSuccess = { items -> items.book },
-                    onFailure = { emptyList() },
-                  )
-                }
-              }.map { result -> result.map { it.libraryItem } }
-              .map { result -> result.let { librarySearchItemsConverter.apply(it) } }
-          }
+                val bySeries: Deferred<ApiResult<List<Book>>> =
+                    async {
+                        searchResult
+                            .map { result -> result.series }
+                            .map { result -> result.flatMap { it.books } }
+                            .map { result -> result.mapNotNull { it.media.metadata.title } }
+                            .map { result -> result.map { async { dataRepository.searchBooks(libraryId, it, limit) } } }
+                            .map { result -> result.awaitAll() }
+                            .map { result ->
+                                result.flatMap {
+                                    it.fold(
+                                        onSuccess = { items -> items.book },
+                                        onFailure = { emptyList() },
+                                    )
+                                }
+                            }.map { result -> result.map { it.libraryItem } }
+                            .map { result -> result.let { librarySearchItemsConverter.apply(it) } }
+                    }
 
-        mergeBooks(byTitle, byAuthor, bySeries)
-      }
-
-    private suspend fun mergeBooks(vararg queries: Deferred<ApiResult<List<Book>>>): ApiResult<List<Book>> =
-      coroutineScope {
-        val results: List<ApiResult<List<Book>>> = awaitAll(*queries)
-
-        val merged: ApiResult<List<Book>> =
-          results
-            .fold<ApiResult<List<Book>>, ApiResult<List<Book>>>(Success(emptyList())) { acc, res ->
-              when {
-                acc is ApiResult.Error -> acc
-                res is ApiResult.Error -> res
-                else -> {
-                  val combined = (acc as Success).data + (res as Success).data
-                  Success(combined)
-                }
-              }
+                mergeBooks(byTitle, byAuthor, bySeries)
             }
 
-        merged.map { list ->
-          list
-            .distinctBy { it.id }
-            .sortedWith(compareBy({ it.series }, { it.author }, { it.title }))
+        private suspend fun mergeBooks(vararg queries: Deferred<ApiResult<List<Book>>>): ApiResult<List<Book>> =
+            coroutineScope {
+                val results: List<ApiResult<List<Book>>> = awaitAll(*queries)
+
+                val merged: ApiResult<List<Book>> =
+                    results
+                        .fold<ApiResult<List<Book>>, ApiResult<List<Book>>>(Success(emptyList())) { acc, res ->
+                            when {
+                                acc is ApiResult.Error -> acc
+                                res is ApiResult.Error -> res
+                                else -> {
+                                    val combined = (acc as Success).data + (res as Success).data
+                                    Success(combined)
+                                }
+                            }
+                        }
+
+                merged.map { list ->
+                    list
+                        .distinctBy { it.id }
+                        .sortedWith(compareBy({ it.series }, { it.author }, { it.title }))
+                }
+            }
+
+        override suspend fun startPlayback(
+            bookId: String,
+            episodeId: String,
+            supportedMimeTypes: List<String>,
+            deviceId: String,
+        ): ApiResult<PlaybackSession> {
+            val request =
+                PlaybackStartRequest(
+                    supportedMimeTypes = supportedMimeTypes,
+                    deviceInfo =
+                        DeviceInfo(
+                            clientName = getClientName(),
+                            deviceId = deviceId,
+                            deviceName = getClientName(),
+                        ),
+                    forceTranscode = false,
+                    forceDirectPlay = false,
+                    mediaPlayer = getClientName(),
+                )
+
+            return dataRepository
+                .startPlayback(
+                    itemId = bookId,
+                    request = request,
+                ).map { sessionResponseConverter.apply(it) }
         }
-      }
 
-    override suspend fun startPlayback(
-      bookId: String,
-      episodeId: String,
-      supportedMimeTypes: List<String>,
-      deviceId: String,
-    ): ApiResult<PlaybackSession> {
-      val request =
-        PlaybackStartRequest(
-          supportedMimeTypes = supportedMimeTypes,
-          deviceInfo =
-            DeviceInfo(
-              clientName = getClientName(),
-              deviceId = deviceId,
-              deviceName = getClientName(),
-            ),
-          forceTranscode = false,
-          forceDirectPlay = false,
-          mediaPlayer = getClientName(),
-        )
+        override suspend fun fetchBook(bookId: String): ApiResult<DetailedItem> =
+            coroutineScope {
+                val book = async { dataRepository.fetchBook(bookId) }
+                val bookProgress = async { dataRepository.fetchLibraryItemProgress(bookId) }
 
-      return dataRepository
-        .startPlayback(
-          itemId = bookId,
-          request = request,
-        ).map { sessionResponseConverter.apply(it) }
+                book.await().foldAsync(
+                    onSuccess = { item ->
+                        bookProgress
+                            .await()
+                            .fold(
+                                onSuccess = { Success(bookResponseConverter.apply(item, it)) },
+                                onFailure = { Success(bookResponseConverter.apply(item, null)) },
+                            )
+                    },
+                    onFailure = { ApiResult.Error(it.code) },
+                )
+            }
     }
-
-    override suspend fun fetchBook(bookId: String): ApiResult<DetailedItem> =
-      coroutineScope {
-        val book = async { dataRepository.fetchBook(bookId) }
-        val bookProgress = async { dataRepository.fetchLibraryItemProgress(bookId) }
-
-        book.await().foldAsync(
-          onSuccess = { item ->
-            bookProgress
-              .await()
-              .fold(
-                onSuccess = { Success(bookResponseConverter.apply(item, it)) },
-                onFailure = { Success(bookResponseConverter.apply(item, null)) },
-              )
-          },
-          onFailure = { ApiResult.Error(it.code) },
-        )
-      }
-  }

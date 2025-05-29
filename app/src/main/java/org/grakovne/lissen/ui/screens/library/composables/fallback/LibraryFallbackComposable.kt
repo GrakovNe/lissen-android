@@ -31,74 +31,74 @@ import org.grakovne.lissen.viewmodel.LibraryViewModel
 
 @Composable
 fun LibraryFallbackComposable(
-  searchRequested: Boolean,
-  contentCachingModelView: CachingModelView,
-  libraryViewModel: LibraryViewModel,
-  networkQualityService: NetworkQualityService,
+    searchRequested: Boolean,
+    contentCachingModelView: CachingModelView,
+    libraryViewModel: LibraryViewModel,
+    networkQualityService: NetworkQualityService,
 ) {
-  val configuration = LocalConfiguration.current
-  val screenHeight = configuration.screenHeightDp.dp
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
 
-  Box(
-    modifier =
-      Modifier
-        .fillMaxWidth()
-        .height(screenHeight / 2),
-    contentAlignment = Alignment.Center,
-  ) {
-    Column(
-      horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-      val hasNetwork = networkQualityService.isNetworkAvailable()
-      val isLocalCache = contentCachingModelView.localCacheUsing()
-
-      val text =
-        when {
-          searchRequested -> null
-          isLocalCache ->
-            when (libraryViewModel.fetchPreferredLibraryType()) {
-              LibraryType.PODCAST -> stringResource(R.string.the_offline_podcasts_is_empty)
-              LibraryType.LIBRARY -> stringResource(R.string.the_offline_library_is_empty)
-              else -> null
-            }
-          hasNetwork.not() -> stringResource(R.string.no_internet_connection)
-          else -> stringResource(R.string.the_library_is_empty)
-        }
-
-      val icon =
-        when {
-          searchRequested -> null
-          isLocalCache -> Icons.AutoMirrored.Filled.LibraryBooks
-          hasNetwork.not() -> Icons.Filled.WifiOff
-          else -> Icons.AutoMirrored.Filled.LibraryBooks
-        }
-
-      icon?.let {
-        Box(
-          modifier =
+    Box(
+        modifier =
             Modifier
-              .size(120.dp)
-              .clip(CircleShape)
-              .background(MaterialTheme.colorScheme.surfaceContainer),
-          contentAlignment = Alignment.Center,
+                .fillMaxWidth()
+                .height(screenHeight / 2),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-          Icon(
-            imageVector = it,
-            contentDescription = "Library placeholder",
-            tint = Color.White,
-            modifier = Modifier.size(64.dp),
-          )
-        }
-      }
+            val hasNetwork = networkQualityService.isNetworkAvailable()
+            val isLocalCache = contentCachingModelView.localCacheUsing()
 
-      text?.let {
-        Text(
-          textAlign = TextAlign.Center,
-          text = it,
-          style = MaterialTheme.typography.headlineSmall,
-          modifier = Modifier.padding(top = 36.dp),
-        )
-      }
+            val text =
+                when {
+                    searchRequested -> null
+                    isLocalCache ->
+                        when (libraryViewModel.fetchPreferredLibraryType()) {
+                            LibraryType.PODCAST -> stringResource(R.string.the_offline_podcasts_is_empty)
+                            LibraryType.LIBRARY -> stringResource(R.string.the_offline_library_is_empty)
+                            else -> null
+                        }
+                    hasNetwork.not() -> stringResource(R.string.no_internet_connection)
+                    else -> stringResource(R.string.the_library_is_empty)
+                }
+
+            val icon =
+                when {
+                    searchRequested -> null
+                    isLocalCache -> Icons.AutoMirrored.Filled.LibraryBooks
+                    hasNetwork.not() -> Icons.Filled.WifiOff
+                    else -> Icons.AutoMirrored.Filled.LibraryBooks
+                }
+
+            icon?.let {
+                Box(
+                    modifier =
+                        Modifier
+                            .size(120.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.surfaceContainer),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        imageVector = it,
+                        contentDescription = "Library placeholder",
+                        tint = Color.White,
+                        modifier = Modifier.size(64.dp),
+                    )
+                }
+            }
+
+            text?.let {
+                Text(
+                    textAlign = TextAlign.Center,
+                    text = it,
+                    style = MaterialTheme.typography.headlineSmall,
+                    modifier = Modifier.padding(top = 36.dp),
+                )
+            }
+        }
     }
-  }
 }

@@ -22,58 +22,58 @@ import com.valentinilk.shimmer.shimmer
 
 @Composable
 fun LibraryPlaceholderComposable(itemCount: Int = 15) {
-  Column(
-    modifier = Modifier.fillMaxWidth(),
-  ) {
-    repeat(itemCount) { LibraryItemPlaceholderComposable() }
-  }
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        repeat(itemCount) { LibraryItemPlaceholderComposable() }
+    }
 }
 
 @Composable
 fun LibraryItemPlaceholderComposable() {
-  Row(
-    modifier =
-      Modifier
-        .fillMaxWidth()
-        .padding(horizontal = 4.dp, vertical = 8.dp),
-    verticalAlignment = Alignment.CenterVertically,
-  ) {
-    Box(
-      modifier =
-        Modifier
-          .size(64.dp)
-          .aspectRatio(1f)
-          .clip(RoundedCornerShape(4.dp))
-          .shimmer()
-          .background(Color.Gray),
-    )
-
-    Spacer(modifier = Modifier.width(16.dp))
-
-    Column(modifier = Modifier.weight(1f)) {
-      Box(
+    Row(
         modifier =
-          Modifier
-            .fillMaxWidth()
-            .height(16.dp)
-            .clip(RoundedCornerShape(4.dp))
-            .shimmer()
-            .background(Color.Gray),
-      )
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier =
+                Modifier
+                    .size(64.dp)
+                    .aspectRatio(1f)
+                    .clip(RoundedCornerShape(4.dp))
+                    .shimmer()
+                    .background(Color.Gray),
+        )
 
-      Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.width(16.dp))
 
-      Box(
-        modifier =
-          Modifier
-            .fillMaxWidth(0.6f)
-            .height(12.dp)
-            .clip(RoundedCornerShape(4.dp))
-            .shimmer()
-            .background(Color.Gray),
-      )
+        Column(modifier = Modifier.weight(1f)) {
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(16.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .shimmer()
+                        .background(Color.Gray),
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth(0.6f)
+                        .height(12.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .shimmer()
+                        .background(Color.Gray),
+            )
+        }
+
+        Spacer(modifier = Modifier.width(16.dp))
     }
-
-    Spacer(modifier = Modifier.width(16.dp))
-  }
 }
