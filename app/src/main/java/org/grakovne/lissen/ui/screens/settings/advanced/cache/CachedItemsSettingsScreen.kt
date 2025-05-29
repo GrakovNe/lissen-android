@@ -1,8 +1,9 @@
 package org.grakovne.lissen.ui.screens.settings.advanced.cache
 
+import android.view.View
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -13,32 +14,37 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -49,41 +55,58 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil.ImageLoader
 import coil.request.ImageRequest
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
+import org.grakovne.lissen.common.hapticAction
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.extensions.formatLeadingMinutes
+import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.viewmodel.CachingModelView
 
-data class Book(
-    val id: String,
-    val title: String,
-    val author: String?,
-    val chapters: List<Chapter>,
-)
-
-data class Chapter(
-    val id: String,
-    val title: String,
-    val duration: String = "12:00",
-    val sizeMb: String = "5.3 МБ",
-)
-
-private val thumbnailSize = 64.dp
-private val spacing = 16.dp
-private val chapterIndent = thumbnailSize + spacing
-
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun CachedItemsSettingsScreen(
     imageLoader: ImageLoader,
     viewModel: CachingModelView = hiltViewModel(),
 ) {
+    val view: View = LocalView.current
+    val coroutineScope = rememberCoroutineScope()
+
+    var pullRefreshing by remember { mutableStateOf(false) }
     val cachedItems = viewModel.libraryPager.collectAsLazyPagingItems()
 
-    LaunchedEffect(Unit) {
-        viewModel.updateCachedItems()
+    fun refreshContent(showPullRefreshing: Boolean) {
+        coroutineScope.launch {
+            if (showPullRefreshing) {
+                pullRefreshing = true
+            }
+
+            val minimumTime =
+                when (showPullRefreshing) {
+                    true -> 500L
+                    false -> 0L
+                }
+
+            withMinimumTime(minimumTime) {
+                listOf(
+                    async { viewModel.fetchCachedItems() },
+                ).awaitAll()
+            }
+
+            pullRefreshing = false
+        }
     }
+
+    val pullRefreshState =
+        rememberPullRefreshState(
+            refreshing = pullRefreshing,
+            onRefresh = {
+                hapticAction(view) { refreshContent(showPullRefreshing = true) }
+            },
+        )
 
     Scaffold(
         topBar = {
@@ -107,18 +130,31 @@ fun CachedItemsSettingsScreen(
             )
         },
     ) { innerPadding ->
-        LazyColumn(
-            contentPadding =
-                PaddingValues(
-                    top = innerPadding.calculateTopPadding(),
-                    bottom = innerPadding.calculateBottomPadding(),
-                ),
-            modifier = Modifier.fillMaxSize(),
+        Box(
+            modifier =
+                Modifier
+                    .padding(innerPadding)
+                    .testTag("libraryScreen")
+                    .pullRefresh(pullRefreshState)
+                    .fillMaxSize(),
         ) {
-            items(count = cachedItems.itemCount, key = { "library_item_$it" }) {
-                val item = cachedItems[it] ?: return@items
-                CachedItemComposable(item, imageLoader, viewModel)
+            LazyColumn(
+                modifier =
+                    Modifier
+                        .fillMaxSize(),
+            ) {
+                items(count = cachedItems.itemCount, key = { "cached_library_item_$it" }) {
+                    val item = cachedItems[it] ?: return@items
+                    CachedItemComposable(item, imageLoader, viewModel)
+                }
             }
+
+            PullRefreshIndicator(
+                refreshing = pullRefreshing,
+                state = pullRefreshState,
+                contentColor = colorScheme.primary,
+                modifier = Modifier.align(Alignment.TopCenter),
+            )
         }
     }
 }
@@ -257,3 +293,7 @@ private fun CachedItemChapterComposable(
             }
         }
 }
+
+private val thumbnailSize = 64.dp
+private val spacing = 16.dp
+private val chapterIndent = thumbnailSize + spacing

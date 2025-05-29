@@ -8,12 +8,15 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.PagingSource
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.cache.CacheState
 import org.grakovne.lissen.content.cache.ContentCachingManager
 import org.grakovne.lissen.content.cache.ContentCachingProgress
@@ -47,10 +50,16 @@ class CachingModelView
                 prefetchDistance = PAGE_SIZE,
             )
 
+        private var pageSource: PagingSource<Int, DetailedItem>? = null
         val libraryPager: Flow<PagingData<DetailedItem>> by lazy {
             Pager(
                 config = pageConfig,
-                pagingSourceFactory = { CachedItemsPageSource(localCacheRepository) },
+                pagingSourceFactory = {
+                    val source = CachedItemsPageSource(localCacheRepository)
+
+                    pageSource = source
+                    source
+                },
             ).flow.cachedIn(viewModelScope)
         }
 
@@ -114,10 +123,11 @@ class CachingModelView
             chapterId: String,
         ): LiveData<Boolean> = contentCachingManager.hasMetadataCached(bookId, chapterId)
 
-        fun updateCachedItems() {
+        fun fetchCachedItems() {
             viewModelScope.launch {
-                // val items = contentCachingManager.fetchCachedItems()
-                // _cachedItems.postValue(items)
+                withContext(Dispatchers.IO) {
+                    pageSource?.invalidate()
+                }
             }
         }
 
