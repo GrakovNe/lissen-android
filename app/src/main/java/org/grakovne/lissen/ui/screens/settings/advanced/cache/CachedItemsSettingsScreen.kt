@@ -74,8 +74,7 @@ import org.grakovne.lissen.viewmodel.PlayerViewModel
 fun CachedItemsSettingsScreen(
     imageLoader: ImageLoader,
     viewModel: CachingModelView = hiltViewModel(),
-    playerViewModel: PlayerViewModel = hiltViewModel(),
-    libraryViewModel: LibraryViewModel = hiltViewModel(),
+    playerViewModel: PlayerViewModel = hiltViewModel()
 ) {
     val view: View = LocalView.current
     val coroutineScope = rememberCoroutineScope()
