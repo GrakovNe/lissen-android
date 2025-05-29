@@ -30,7 +30,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -47,6 +46,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.paging.compose.collectAsLazyPagingItems
 import coil.ImageLoader
 import coil.request.ImageRequest
 import org.grakovne.lissen.R
@@ -79,7 +79,7 @@ fun CachedItemsSettingsScreen(
     imageLoader: ImageLoader,
     viewModel: CachingModelView = hiltViewModel(),
 ) {
-    val items by viewModel.cachedItems.observeAsState(emptyList())
+    val cachedItems = viewModel.libraryPager.collectAsLazyPagingItems()
 
     LaunchedEffect(Unit) {
         viewModel.updateCachedItems()
@@ -115,7 +115,8 @@ fun CachedItemsSettingsScreen(
                 ),
             modifier = Modifier.fillMaxSize(),
         ) {
-            items(items = items) { item ->
+            items(count = cachedItems.itemCount, key = { "library_item_$it" }) {
+                val item = cachedItems[it] ?: return@items
                 CachedItemComposable(item, imageLoader, viewModel)
             }
         }
@@ -144,7 +145,7 @@ private fun CachedItemComposable(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .clickable { expanded = !expanded }
+                .clickable { expanded = expanded.not() }
                 .padding(horizontal = 16.dp, vertical = 8.dp),
     ) {
         Column {

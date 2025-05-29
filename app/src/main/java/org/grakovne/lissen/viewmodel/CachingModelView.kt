@@ -3,22 +3,28 @@ package org.grakovne.lissen.viewmodel
 import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.content.cache.CacheState
 import org.grakovne.lissen.content.cache.ContentCachingManager
 import org.grakovne.lissen.content.cache.ContentCachingProgress
 import org.grakovne.lissen.content.cache.ContentCachingService
+import org.grakovne.lissen.content.cache.LocalCacheRepository
 import org.grakovne.lissen.domain.CacheStatus
 import org.grakovne.lissen.domain.ContentCachingTask
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.ui.screens.settings.advanced.cache.CachedItemsPageSource
 import java.io.Serializable
 import javax.inject.Inject
 
@@ -27,14 +33,26 @@ class CachingModelView
     @Inject
     constructor(
         @ApplicationContext private val context: Context,
+        private val localCacheRepository: LocalCacheRepository,
         private val contentCachingProgress: ContentCachingProgress,
         private val contentCachingManager: ContentCachingManager,
         private val preferences: LissenSharedPreferences,
     ) : ViewModel() {
         private val _bookCachingProgress = mutableMapOf<String, MutableStateFlow<CacheState>>()
 
-        private val _cachedItems = MutableLiveData<List<DetailedItem>>()
-        val cachedItems: LiveData<List<DetailedItem>> = _cachedItems
+        private val pageConfig =
+            PagingConfig(
+                pageSize = PAGE_SIZE,
+                initialLoadSize = PAGE_SIZE,
+                prefetchDistance = PAGE_SIZE,
+            )
+
+        val libraryPager: Flow<PagingData<DetailedItem>> by lazy {
+            Pager(
+                config = pageConfig,
+                pagingSourceFactory = { CachedItemsPageSource(localCacheRepository) },
+            ).flow.cachedIn(viewModelScope)
+        }
 
         init {
             viewModelScope.launch {
@@ -98,8 +116,12 @@ class CachingModelView
 
         fun updateCachedItems() {
             viewModelScope.launch {
-                val items = contentCachingManager.fetchCachedItems()
-                _cachedItems.postValue(items)
+                // val items = contentCachingManager.fetchCachedItems()
+                // _cachedItems.postValue(items)
             }
+        }
+
+        companion object {
+            private const val PAGE_SIZE = 20
         }
     }

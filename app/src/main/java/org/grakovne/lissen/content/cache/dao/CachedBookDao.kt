@@ -133,8 +133,17 @@ interface CachedBookDao {
     @Query("SELECT COUNT(*) > 0 FROM detailed_books WHERE id = :bookId")
     fun isBookCached(bookId: String): LiveData<Boolean>
 
-    @Query("SELECT * FROM detailed_books")
-    suspend fun fetchCachedItems(): List<CachedBookEntity>
+    @Query(
+        """
+    SELECT * FROM detailed_books
+    LIMIT :pageSize
+    OFFSET (:pageNumber * :pageSize)
+    """,
+    )
+    suspend fun fetchCachedItems(
+        pageSize: Int,
+        pageNumber: Int,
+    ): List<CachedBookEntity>
 
     @Query(
         """

@@ -83,8 +83,6 @@ class ContentCachingManager
             }
         }
 
-        suspend fun fetchCachedItems() = bookRepository.fetchCachedItems()
-
         fun hasMetadataCached(mediaItemId: String) = bookRepository.provideCacheState(mediaItemId)
 
         fun hasMetadataCached(
