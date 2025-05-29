@@ -334,7 +334,14 @@ private fun dropCache(
         }
     }
 
-    when (item.chapters.all { it.id == chapter.id }) {
+    val isLatestChapter =
+        item
+            .chapters
+            .filter { it.available }
+            .let { it - chapter }
+            .isEmpty()
+
+    when (isLatestChapter) {
         true -> dropCache(item, cachingModelView, playerViewModel)
         false -> cachingModelView.dropCache(item, chapter)
     }
