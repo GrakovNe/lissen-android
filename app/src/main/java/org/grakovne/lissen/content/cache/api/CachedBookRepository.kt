@@ -52,8 +52,9 @@ class CachedBookRepository
         suspend fun cacheBook(
             book: DetailedItem,
             fetchedChapters: List<PlayingChapter>,
+            droppedChapters: List<PlayingChapter>,
         ) {
-            bookDao.upsertCachedBook(book, fetchedChapters)
+            bookDao.upsertCachedBook(book, fetchedChapters, droppedChapters)
         }
 
         fun provideCacheState(bookId: String) = bookDao.isBookCached(bookId)

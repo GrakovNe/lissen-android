@@ -292,7 +292,7 @@ private fun CachedItemChapterComposable(
                     )
                 }
                 IconButton(onClick = {
-                    viewModel.dropCache(itemId = item.id, chapterId = chapter.id)
+                    viewModel.dropCache(item = item, chapter = chapter)
                     onItemRemoved()
                 }) {
                     Icon(

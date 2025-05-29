@@ -27,6 +27,7 @@ interface CachedBookDao {
     suspend fun upsertCachedBook(
         book: DetailedItem,
         fetchedChapters: List<PlayingChapter>,
+        droppedChapters: List<PlayingChapter>,
     ) {
         val bookEntity =
             BookEntity(
@@ -75,6 +76,16 @@ interface CachedBookDao {
             book
                 .chapters
                 .map { chapter ->
+                    val fetched = fetchedChapters.any { it.id == chapter.id }
+                    val exists = cachedBookChapters.any { it.bookChapterId == chapter.id && it.isCached }
+                    val dropped = droppedChapters.any { it.id == chapter.id }
+
+                    val cached =
+                        when (dropped) {
+                            true -> false
+                            false -> fetched || exists
+                        }
+
                     BookChapterEntity(
                         bookChapterId = chapter.id,
                         duration = chapter.duration,
@@ -82,9 +93,7 @@ interface CachedBookDao {
                         end = chapter.end,
                         title = chapter.title,
                         bookId = book.id,
-                        isCached =
-                            fetchedChapters.any { it.id == chapter.id } ||
-                                cachedBookChapters.any { it.bookChapterId == chapter.id && it.isCached },
+                        isCached = cached,
                     )
                 }
 

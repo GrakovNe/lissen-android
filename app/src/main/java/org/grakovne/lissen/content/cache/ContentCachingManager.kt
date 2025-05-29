@@ -71,9 +71,17 @@ class ContentCachingManager
         }
 
         suspend fun dropCache(
-            itemId: String,
-            chapterId: String,
+            item: DetailedItem,
+            chapter: PlayingChapter,
         ) {
+            val affectedFiles = findRequestedFiles(item, listOf(chapter))
+
+            bookRepository
+                .cacheBook(
+                    book = item,
+                    fetchedChapters = emptyList(),
+                    droppedChapters = listOf(chapter),
+                )
         }
 
         suspend fun dropCache(itemId: String) {
@@ -176,7 +184,7 @@ class ContentCachingManager
             fetchedChapters: List<PlayingChapter>,
         ): CacheState =
             bookRepository
-                .cacheBook(book, fetchedChapters)
+                .cacheBook(book, fetchedChapters, emptyList())
                 .let { CacheState(CacheStatus.Completed) }
 
         private suspend fun cacheLibraries(channel: MediaChannel): CacheState =
