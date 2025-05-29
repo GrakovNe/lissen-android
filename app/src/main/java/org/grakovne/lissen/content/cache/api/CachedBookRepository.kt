@@ -2,7 +2,6 @@ package org.grakovne.lissen.content.cache.api
 
 import android.net.Uri
 import androidx.core.net.toUri
-import androidx.lifecycle.map
 import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.common.LibraryOrderingOption
 import org.grakovne.lissen.content.cache.CacheBookStorageProperties
@@ -70,6 +69,8 @@ class CachedBookRepository
         ) = bookDao
             .fetchCachedItems(pageSize = pageSize, pageNumber = pageNumber)
             .map { cachedBookEntityDetailedConverter.apply(it) }
+
+        suspend fun fetchLatestUpdate(libraryId: String) = bookDao.fetchLatestUpdate(libraryId)
 
         suspend fun fetchBooks(
             pageNumber: Int,

@@ -101,6 +101,7 @@ fun LibraryScreen(
     val recentBooks: List<RecentBook> by libraryViewModel.recentBooks.observeAsState(emptyList())
 
     var currentLibraryId by rememberSaveable { mutableStateOf("") }
+    var localCacheUpdatedAt by rememberSaveable { mutableStateOf(0L) }
     var currentOrdering by rememberSaveable(stateSaver = LibraryOrderingConfiguration.saver) {
         mutableStateOf(LibraryOrderingConfiguration.default)
     }
@@ -190,12 +191,16 @@ fun LibraryScreen(
         val libraryChanged = currentLibraryId != settingsViewModel.fetchPreferredLibraryId()
         val orderingChanged = currentOrdering != settingsViewModel.fetchLibraryOrdering()
 
-        if (emptyContent || libraryChanged || orderingChanged) {
+        val localCacheUsing = cachingModelView.localCacheUsing()
+        val localCacheUpdated = cachingModelView.fetchLatestUpdate(currentLibraryId)?.let { it > localCacheUpdatedAt } ?: true
+
+        if (emptyContent || libraryChanged || orderingChanged || (localCacheUsing && localCacheUpdated)) {
             libraryViewModel.refreshRecentListening()
             libraryViewModel.refreshLibrary()
 
             currentLibraryId = settingsViewModel.fetchPreferredLibraryId()
             currentOrdering = settingsViewModel.fetchLibraryOrdering()
+            localCacheUpdatedAt = cachingModelView.fetchLatestUpdate(currentLibraryId) ?: 0L
         }
 
         playerViewModel.recoverMiniPlayer()

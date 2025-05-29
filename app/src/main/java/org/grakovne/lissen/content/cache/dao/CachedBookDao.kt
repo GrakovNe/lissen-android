@@ -168,6 +168,16 @@ interface CachedBookDao {
         chapterId: String,
     ): LiveData<Boolean>
 
+    @Query(
+        """
+        SELECT MAX(mp.lastUpdate)
+        FROM detailed_books AS d
+        INNER JOIN media_progress AS mp ON d.id = mp.bookId
+        WHERE (d.libraryId IS NULL OR d.libraryId = :libraryId)
+        """,
+    )
+    suspend fun fetchLatestUpdate(libraryId: String): Long?
+
     @Transaction
     @Query("SELECT * FROM detailed_books WHERE id = :bookId")
     suspend fun fetchBook(bookId: String): BookEntity?

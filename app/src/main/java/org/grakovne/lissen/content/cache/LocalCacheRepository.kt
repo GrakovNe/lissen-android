@@ -109,6 +109,8 @@ class LocalCacheRepository
                 .fetchRecentBooks()
                 .let { ApiResult.Success(it) }
 
+        suspend fun fetchLatestUpdate(libraryId: String) = cachedBookRepository.fetchLatestUpdate(libraryId)
+
         /**
          * Fetches a detailed book item by its ID from the cached repository.
          * If the book is not found in the cache, returns `null`.
