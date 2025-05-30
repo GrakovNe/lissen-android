@@ -2,6 +2,7 @@ package org.grakovne.lissen.ui.screens.settings.advanced.cache
 
 import android.view.View
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -35,6 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -313,8 +315,8 @@ private fun CachedItemChapterComposable(
       .chapters
       .filter { it.available }
 
-  availableChapters
-    .mapIndexed { index, chapter ->
+  availableChapters.forEachIndexed { index, chapter ->
+    key(chapter.id) {
       Row(
         modifier =
           Modifier
@@ -326,40 +328,49 @@ private fun CachedItemChapterComposable(
         Column(modifier = Modifier.weight(1f)) {
           Text(text = chapter.title, style = typography.bodyMedium)
         }
-        IconButton(
-          onClick = {
-            scope.launch {
-              dropCache(
-                item = item,
-                chapter = chapter,
-                cachingModelView = viewModel,
-                playerViewModel = playerViewModel,
-              )
 
-              onItemRemoved()
-            }
-          },
+        Box(
+          modifier =
+            Modifier
+              .size(48.dp)
+              .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = {
+                  scope.launch {
+                    dropCache(
+                      item = item,
+                      chapter = chapter,
+                      cachingModelView = viewModel,
+                      playerViewModel = playerViewModel,
+                    )
+                    onItemRemoved()
+                  }
+                },
+              ),
+          contentAlignment = Alignment.Center,
         ) {
           Icon(
             imageVector = Icons.Outlined.Delete,
             contentDescription = null,
             tint = colorScheme.onSurface,
+            modifier = Modifier.size(24.dp),
           )
         }
       }
 
-      if (index < availableChapters.count() - 1) {
+      if (index < availableChapters.lastIndex) {
         HorizontalDivider(
           thickness = 1.dp,
           modifier =
-            Modifier
-              .padding(
-                start = chapterIndent,
-                end = spacing,
-              ),
+            Modifier.padding(
+              start = chapterIndent,
+              end = spacing,
+            ),
         )
       }
     }
+  }
 }
 
 private suspend fun dropCache(
