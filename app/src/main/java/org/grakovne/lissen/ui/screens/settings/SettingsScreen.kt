@@ -96,15 +96,15 @@ fun SettingsScreen(
           LibraryOrderingSettingsComposable(viewModel)
 
           AdvancedSettingsItemComposable(
-            title = stringResource(R.string.settings_screen_seek_time_title),
-            description = stringResource(R.string.settings_screen_seek_time_hint),
-            onclick = { navController.showSeekSettings() },
-          )
-
-          AdvancedSettingsItemComposable(
             title = stringResource(R.string.settings_screen_cached_items_title),
             description = stringResource(R.string.settings_screen_cached_items_hint),
             onclick = { navController.showCachedItemsSettings() },
+          )
+          
+          AdvancedSettingsItemComposable(
+            title = stringResource(R.string.settings_screen_seek_time_title),
+            description = stringResource(R.string.settings_screen_seek_time_hint),
+            onclick = { navController.showSeekSettings() },
           )
 
           AdvancedSettingsItemComposable(
