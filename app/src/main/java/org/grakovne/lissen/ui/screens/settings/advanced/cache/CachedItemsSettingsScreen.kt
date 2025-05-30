@@ -257,18 +257,21 @@ private fun CachedItemComposable(
               tint = colorScheme.onBackground,
             )
           }
-          book.author?.takeIf { it.isNotBlank() }?.let {
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-              text = it,
-              style =
-                typography.bodyMedium.copy(
-                  color = colorScheme.onBackground.copy(alpha = 0.6f),
-                ),
-              maxLines = 1,
-              overflow = TextOverflow.Ellipsis,
-            )
-          }
+          book
+            .author
+            ?.takeIf { it.isNotBlank() }
+            ?.let {
+              Text(
+                modifier = Modifier.padding(vertical = 2.dp),
+                text = it,
+                style =
+                  typography.bodyMedium.copy(
+                    color = colorScheme.onBackground.copy(alpha = 0.6f),
+                  ),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+              )
+            }
         }
 
         Spacer(Modifier.width(spacing))
@@ -310,6 +313,7 @@ private fun CachedItemChapterComposable(
   val scope = rememberCoroutineScope()
 
   Spacer(modifier = Modifier.height(spacing))
+
   val availableChapters =
     item
       .chapters
