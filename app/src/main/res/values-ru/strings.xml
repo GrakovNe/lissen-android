@@ -90,7 +90,7 @@
     <string name="login_error_lissen_auth_failed">Не удалось авторизоваться. Проверьте настройки сервера</string>
     <string name="login_screen_open_id_button">Подключиться с OpenID</string>
     <string name="source_code_on_github_title">Исходный код на GitHub</string>
-    <string name="source_code_on_github_subtitle">Сообщить об ошибке или предложить улучшение</string>
+    <string name="source_code_on_github_subtitle">Сообщите об ошибке или предложите улучшение</string>
     <string name="settings_screen_library_ordering_title">Сортировка библиотеки</string>
     <string name="settings_screen_library_ordering_title_option">По названию</string>
     <string name="settings_screen_library_ordering_author_option">По автору</string>
@@ -114,5 +114,5 @@
     <string name="rewind_on_pause_time">Размер отступа при паузе</string>
     <string name="offline_cache_is_empty">Загруженного контента нет</string>
     <string name="settings_screen_cached_items_title">Загрузки</string>
-    <string name="settings_screen_cached_items_hint">Управлять загруженным контентом</string>
+    <string name="settings_screen_cached_items_hint">Управляйте загруженным контентом</string>
 </resources>
