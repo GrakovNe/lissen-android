@@ -25,6 +25,7 @@ import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -40,6 +41,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -63,7 +65,6 @@ import org.grakovne.lissen.common.hapticAction
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
-import org.grakovne.lissen.ui.extensions.formatLeadingMinutes
 import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.PlayerViewModel
@@ -301,41 +302,53 @@ private fun CachedItemChapterComposable(
   playerViewModel: PlayerViewModel,
 ) {
   Spacer(modifier = Modifier.height(spacing))
-  item
-    .chapters
-    .filter { it.available }
-    .map { chapter ->
+  val availableChapters =
+    item
+      .chapters
+      .filter { it.available }
+
+  availableChapters
+    .mapIndexed { index, chapter ->
       Row(
         modifier =
           Modifier
             .fillMaxWidth()
-            .padding(start = chapterIndent, end = spacing, top = spacing, bottom = spacing),
+            .padding(vertical = spacing / 2)
+            .padding(start = chapterIndent),
         verticalAlignment = Alignment.CenterVertically,
       ) {
         Column(modifier = Modifier.weight(1f)) {
           Text(text = chapter.title, style = typography.bodyMedium)
-          Text(
-            text = chapter.duration.toInt().formatLeadingMinutes(),
-            style = typography.bodySmall,
-            color = colorScheme.onBackground.copy(alpha = 0.7f),
-            modifier = Modifier.padding(top = 2.dp),
-          )
         }
-        IconButton(onClick = {
-          dropCache(
-            item = item,
-            chapter = chapter,
-            cachingModelView = viewModel,
-            playerViewModel = playerViewModel,
-          )
-          onItemRemoved()
-        }) {
+        IconButton(
+          onClick = {
+            dropCache(
+              item = item,
+              chapter = chapter,
+              cachingModelView = viewModel,
+              playerViewModel = playerViewModel,
+            )
+            onItemRemoved()
+          },
+        ) {
           Icon(
             imageVector = Icons.Outlined.Delete,
             contentDescription = null,
-            tint = colorScheme.onSurfaceVariant,
+            tint = colorScheme.onSurface,
           )
         }
+      }
+
+      if (index < availableChapters.count() - 1) {
+        HorizontalDivider(
+          thickness = 1.dp,
+          modifier =
+            Modifier
+              .padding(
+                start = chapterIndent,
+                end = spacing,
+              ),
+        )
       }
     }
 }
