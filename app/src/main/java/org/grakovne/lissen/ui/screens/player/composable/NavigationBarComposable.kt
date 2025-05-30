@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,6 +34,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.content.cache.CacheState
@@ -62,6 +64,8 @@ fun NavigationBarComposable(
   var playbackSpeedExpanded by remember { mutableStateOf(false) }
   var timerExpanded by remember { mutableStateOf(false) }
   var downloadsExpanded by remember { mutableStateOf(false) }
+
+  val scope = rememberCoroutineScope()
 
   Surface(
     shadowElevation = 4.dp,
@@ -215,10 +219,12 @@ fun NavigationBarComposable(
               .book
               .value
               ?.let {
-                contentCachingModelView.dropCache(it.id)
+                scope.launch {
+                  contentCachingModelView.dropCache(it.id)
 
-                playerViewModel.clearPlayingBook()
-                navController.showLibrary(true)
+                  playerViewModel.clearPlayingBook()
+                  navController.showLibrary(true)
+                }
               }
           },
           onDismissRequest = { downloadsExpanded = false },

@@ -41,7 +41,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -78,13 +77,13 @@ fun CachedItemsSettingsScreen(
   playerViewModel: PlayerViewModel = hiltViewModel(),
 ) {
   val view: View = LocalView.current
-  val coroutineScope = rememberCoroutineScope()
+  val scope = rememberCoroutineScope()
 
   var pullRefreshing by remember { mutableStateOf(false) }
   val cachedItems = viewModel.libraryPager.collectAsLazyPagingItems()
 
   fun refreshContent(showPullRefreshing: Boolean) {
-    coroutineScope.launch {
+    scope.launch {
       if (showPullRefreshing) {
         pullRefreshing = true
       }
@@ -176,7 +175,7 @@ private fun CachedItemsComposable(
   LazyColumn(
     modifier = Modifier.fillMaxSize(),
   ) {
-    items(count = cachedItems.itemCount, key = { "cached_library_item_$it" }) {
+    items(count = cachedItems.itemCount, key = { index -> cachedItems[index]?.id ?: "cached_library_item_$index" }) {
       val item = cachedItems[it] ?: return@items
       CachedItemComposable(
         book = item,
@@ -197,6 +196,7 @@ private fun CachedItemComposable(
   playerViewModel: PlayerViewModel,
   onItemRemoved: () -> Unit,
 ) {
+  val scope = rememberCoroutineScope()
   val context = LocalContext.current
   var expanded by remember { mutableStateOf(false) }
 
@@ -272,12 +272,16 @@ private fun CachedItemComposable(
         Spacer(Modifier.width(spacing))
 
         IconButton(onClick = {
-          dropCache(
-            item = book,
-            cachingModelView = viewModel,
-            playerViewModel = playerViewModel,
-          )
-          onItemRemoved()
+          scope
+            .launch {
+              dropCache(
+                item = book,
+                cachingModelView = viewModel,
+                playerViewModel = playerViewModel,
+              )
+
+              onItemRemoved()
+            }
         }) {
           Icon(
             imageVector = Icons.Outlined.Delete,
@@ -301,6 +305,8 @@ private fun CachedItemChapterComposable(
   viewModel: CachingModelView,
   playerViewModel: PlayerViewModel,
 ) {
+  val scope = rememberCoroutineScope()
+
   Spacer(modifier = Modifier.height(spacing))
   val availableChapters =
     item
@@ -322,13 +328,16 @@ private fun CachedItemChapterComposable(
         }
         IconButton(
           onClick = {
-            dropCache(
-              item = item,
-              chapter = chapter,
-              cachingModelView = viewModel,
-              playerViewModel = playerViewModel,
-            )
-            onItemRemoved()
+            scope.launch {
+              dropCache(
+                item = item,
+                chapter = chapter,
+                cachingModelView = viewModel,
+                playerViewModel = playerViewModel,
+              )
+
+              onItemRemoved()
+            }
           },
         ) {
           Icon(
@@ -353,7 +362,7 @@ private fun CachedItemChapterComposable(
     }
 }
 
-private fun dropCache(
+private suspend fun dropCache(
   item: DetailedItem,
   chapter: PlayingChapter,
   cachingModelView: CachingModelView,
@@ -378,7 +387,7 @@ private fun dropCache(
   }
 }
 
-private fun dropCache(
+private suspend fun dropCache(
   item: DetailedItem,
   cachingModelView: CachingModelView,
   playerViewModel: PlayerViewModel,

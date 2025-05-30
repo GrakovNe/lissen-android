@@ -100,21 +100,15 @@ class CachingModelView
       _bookCachingProgress
         .getOrPut(bookId) { MutableStateFlow(CacheState(CacheStatus.Idle)) }
 
-    fun dropCache(bookId: String) {
-      viewModelScope
-        .launch {
-          contentCachingManager.dropCache(bookId)
-        }
+    suspend fun dropCache(bookId: String) {
+      contentCachingManager.dropCache(bookId)
     }
 
-    fun dropCache(
+    suspend fun dropCache(
       item: DetailedItem,
       chapter: PlayingChapter,
     ) {
-      viewModelScope
-        .launch {
-          contentCachingManager.dropCache(item, chapter)
-        }
+      contentCachingManager.dropCache(item, chapter)
     }
 
     fun toggleCacheForce() {
