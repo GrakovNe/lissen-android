@@ -145,6 +145,7 @@ interface CachedBookDao {
   @Query(
     """
     SELECT * FROM detailed_books
+    ORDER BY title ASC, libraryId ASC
     LIMIT :pageSize
     OFFSET (:pageNumber * :pageSize)
     """,
