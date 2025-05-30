@@ -1,12 +1,15 @@
 package org.grakovne.lissen.ui.screens.settings.advanced.cache
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
@@ -26,41 +29,45 @@ import org.grakovne.lissen.R
 
 @Composable
 fun CachedItemsFallbackComposable() {
-  val configuration = LocalConfiguration.current
-  val screenHeight = configuration.screenHeightDp.dp
-
-  Box(
-    modifier =
-      Modifier
-        .fillMaxWidth()
-        .height(screenHeight / 2),
-    contentAlignment = Alignment.Center,
+  LazyColumn(
+    modifier = Modifier.fillMaxSize(),
+    horizontalAlignment = Alignment.CenterHorizontally,
+    verticalArrangement = Arrangement.Center,
   ) {
-    Column(
-      horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-      Box(
+    item {
+      val configuration = LocalConfiguration.current
+      val screenHeight = configuration.screenHeightDp.dp
+
+      Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier =
           Modifier
-            .size(120.dp)
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.surfaceContainer),
-        contentAlignment = Alignment.Center,
+            .fillMaxWidth()
+            .height(screenHeight / 2),
       ) {
-        Icon(
-          imageVector = Icons.AutoMirrored.Filled.LibraryBooks,
-          contentDescription = "Library placeholder",
-          tint = Color.White,
-          modifier = Modifier.size(64.dp),
+        Box(
+          modifier =
+            Modifier
+              .size(120.dp)
+              .clip(CircleShape)
+              .background(MaterialTheme.colorScheme.surfaceContainer),
+          contentAlignment = Alignment.Center,
+        ) {
+          Icon(
+            imageVector = Icons.AutoMirrored.Filled.LibraryBooks,
+            contentDescription = "Library placeholder",
+            tint = Color.White,
+            modifier = Modifier.size(64.dp),
+          )
+        }
+
+        Text(
+          text = stringResource(R.string.offline_cache_is_empty),
+          style = MaterialTheme.typography.headlineSmall,
+          textAlign = TextAlign.Center,
+          modifier = Modifier.padding(top = 36.dp),
         )
       }
-
-      Text(
-        textAlign = TextAlign.Center,
-        text = stringResource(R.string.offline_cache_is_empty),
-        style = MaterialTheme.typography.headlineSmall,
-        modifier = Modifier.padding(top = 36.dp),
-      )
     }
   }
 }
