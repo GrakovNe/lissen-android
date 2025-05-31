@@ -54,8 +54,8 @@ class BookCoverFetcher(
 
         return SourceResult(
           source = ImageSource(resultSource, context),
-          mimeType = "image/png",
-          dataSource = coil.decode.DataSource.NETWORK,
+          mimeType = null,
+          dataSource = coil.decode.DataSource.MEMORY,
         )
       }
     }
@@ -63,7 +63,7 @@ class BookCoverFetcher(
 
   private fun source(original: Bitmap): BufferedSource {
     val outputStream = ByteArrayOutputStream()
-    original.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+    original.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
     val byteArray = outputStream.toByteArray()
 
     return byteArray.inputStream().source().buffer()
