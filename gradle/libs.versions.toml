@@ -3,6 +3,7 @@ acraCore = "5.12.0"
 agp = "8.9.3"
 browser = "1.8.0"
 coilCompose = "2.7.0"
+cloudy = "0.2.7"
 composeShimmerAndroid = "1.3.3"
 converterGson = "2.11.0"
 glance = "1.2.0-alpha01"
@@ -70,6 +71,7 @@ androidx-media3-session = { group = "androidx.media3", name = "media3-session", 
 androidx-media3-datasource-okhttp = { group = "androidx.media3", name = "media3-datasource-okhttp", version.ref = "media3DatasourceOkhttp" }
 androidx-lifecycle-service = { group = "androidx.lifecycle", name = "lifecycle-service", version.ref = "lifecycleService" }
 androidx-lifecycle-process = { group = "androidx.lifecycle", name = "lifecycle-process", version.ref = "lifecycleProcess" }
+compose-cloudy = { module = "com.github.skydoves:cloudy", version.ref = "cloudy" }
 
 [plugins]
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

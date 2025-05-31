@@ -144,7 +144,7 @@ fun MiniPlayerComposable(
           imageRequest = imageRequest,
           imageLoader = imageLoader,
           contentDescription = "${book.title} cover",
-          contentScale = ContentScale.FillBounds,
+          contentScale = ContentScale.Fit,
           modifier =
             Modifier
               .size(48.dp)

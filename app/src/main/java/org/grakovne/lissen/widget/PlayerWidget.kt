@@ -111,7 +111,7 @@ class PlayerWidget : GlanceAppWidget() {
             val coverImageProvider = ImageProvider(cover)
 
             Image(
-              contentScale = ContentScale.FillBounds,
+              contentScale = ContentScale.Fit,
               provider = coverImageProvider,
               contentDescription = null,
               modifier =
