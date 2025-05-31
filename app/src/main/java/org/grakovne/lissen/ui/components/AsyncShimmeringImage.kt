@@ -16,6 +16,7 @@ import androidx.compose.ui.layout.ContentScale
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.skydoves.cloudy.cloudy
 import com.valentinilk.shimmer.shimmer
 
 @Composable
@@ -27,6 +28,7 @@ fun AsyncShimmeringImage(
   modifier: Modifier = Modifier,
   error: Painter,
   onLoadingStateChanged: (Boolean) -> Unit = {},
+  blurRadiusDp: Int = 16,
 ) {
   var isLoading by remember { mutableStateOf(true) }
   onLoadingStateChanged(isLoading)
@@ -49,8 +51,11 @@ fun AsyncShimmeringImage(
       model = imageRequest,
       imageLoader = imageLoader,
       contentDescription = contentDescription,
-      contentScale = contentScale,
-      modifier = Modifier.fillMaxSize(),
+      contentScale = ContentScale.Crop,
+      modifier =
+        Modifier
+          .fillMaxSize()
+          .cloudy(radius = blurRadiusDp),
       onSuccess = {
         isLoading = false
         onLoadingStateChanged(false)
@@ -59,6 +64,17 @@ fun AsyncShimmeringImage(
         isLoading = false
         onLoadingStateChanged(false)
       },
+      error = error,
+    )
+
+    AsyncImage(
+      model = imageRequest,
+      imageLoader = imageLoader,
+      contentDescription = contentDescription,
+      contentScale = contentScale,
+      modifier = Modifier.fillMaxSize(),
+      onSuccess = {},
+      onError = {},
       error = error,
     )
   }
