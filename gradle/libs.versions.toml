@@ -8,6 +8,7 @@ converterGson = "2.11.0"
 glance = "1.2.0-alpha01"
 hiltAndroid = "2.56.2"
 hiltNavigationCompose = "1.2.0"
+hokoBlur = "1.5.3"
 kotlin = "2.1.21"
 activityCompose = "1.10.1"
 composeBom = "2025.05.01"
@@ -61,6 +62,7 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-compose-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "compose" }
 androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
+hoko-blur = { module = "io.github.hokofly:hoko-blur", version.ref = "hokoBlur" }
 logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "loggingInterceptor" }
 material = { module = "com.google.android.material:material", version.ref = "materialVersion" }
 material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
