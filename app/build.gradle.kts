@@ -128,7 +128,7 @@ dependencies {
     implementation(libs.converter.gson)
     implementation(libs.logging.interceptor)
     implementation(libs.okhttp)
-
+    implementation ("io.github.hokofly:hoko-blur:1.5.3")
     implementation(libs.androidx.browser)
 
     implementation(libs.coil.compose)
