@@ -53,11 +53,13 @@ class PlayerWidgetStateService
                     mediaProvider
                       .fetchBookCover(book.id)
                       .fold(
-                        onSuccess = { inputStream ->
-                          cachedCover = inputStream
+                        onSuccess = { buffer ->
+                          val image = buffer.readByteArray()
+
+                          cachedCover = image
                           playingBookId = book.id
 
-                          inputStream
+                          image
                         },
                         onFailure = { null },
                       )

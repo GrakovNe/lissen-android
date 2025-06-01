@@ -2,6 +2,7 @@ package org.grakovne.lissen.channel.audiobookshelf.common
 
 import android.net.Uri
 import androidx.core.net.toUri
+import okio.Buffer
 import org.grakovne.lissen.BuildConfig
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfDataRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfMediaRepository
@@ -51,7 +52,7 @@ abstract class AudiobookshelfChannel(
     progress: PlaybackProgress,
   ): ApiResult<Unit> = syncService.syncProgress(sessionId, progress)
 
-  override suspend fun fetchBookCover(bookId: String): ApiResult<ByteArray> = mediaRepository.fetchBookCover(bookId)
+  override suspend fun fetchBookCover(bookId: String): ApiResult<Buffer> = mediaRepository.fetchBookCover(bookId)
 
   override suspend fun fetchLibraries(): ApiResult<List<Library>> =
     dataRepository

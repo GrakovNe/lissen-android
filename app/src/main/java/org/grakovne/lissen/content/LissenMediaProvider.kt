@@ -2,6 +2,7 @@ package org.grakovne.lissen.content
 
 import android.net.Uri
 import android.util.Log
+import okio.Buffer
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.ChannelAuthService
@@ -66,7 +67,7 @@ class LissenMediaProvider
       return ApiResult.Success(Unit)
     }
 
-    suspend fun fetchBookCover(bookId: String): ApiResult<ByteArray> {
+    suspend fun fetchBookCover(bookId: String): ApiResult<Buffer> {
       Log.d(TAG, "Fetching Cover stream for $bookId")
 
       return when (preferences.isForceCache()) {

@@ -39,13 +39,16 @@ class BookCoverFetcher(
     return when (val response = mediaChannel.fetchBookCover(uri.toString())) {
       is ApiResult.Error -> null
       is ApiResult.Success -> {
-        val image: ByteArray = response.data
-        val byteSource = Buffer().write(image)
-        val dimensions = getImageDimensions(image)
+        val buffer: Buffer = response.data
+
+        val byteSource: BufferedSource = buffer
+
+        val dimensions: Pair<Int, Int>? = getImageDimensions(buffer)
+
         val resultSource =
           when (dimensions?.first == dimensions?.second) {
             true -> byteSource.buffer
-            false -> runCatching { sourceWithBackdropBlur(image) }.getOrElse { byteSource.buffer }
+            false -> runCatching { sourceWithBackdropBlur(buffer) }.getOrElse { byteSource.buffer }
           }
 
         return SourceResult(
@@ -57,22 +60,25 @@ class BookCoverFetcher(
     }
   }
 
-  private fun getImageDimensions(image: ByteArray): Pair<Int, Int>? =
+  private fun getImageDimensions(buffer: Buffer): Pair<Int, Int>? =
     try {
       val boundsOptions =
         BitmapFactory.Options().apply {
           inJustDecodeBounds = true
         }
 
-      BitmapFactory.decodeByteArray(image, 0, image.size, boundsOptions)
+      val peekedSource = buffer.peek()
+      BitmapFactory.decodeStream(peekedSource.inputStream(), null, boundsOptions)
       boundsOptions.outWidth to boundsOptions.outHeight
     } catch (ex: Exception) {
       null
     }
 
-  private suspend fun sourceWithBackdropBlur(image: ByteArray): BufferedSource =
+  private suspend fun sourceWithBackdropBlur(source: BufferedSource): BufferedSource =
     withContext(Dispatchers.IO) {
-      val original = BitmapFactory.decodeByteArray(image, 0, image.size)
+      val peeked = source.peek()
+
+      val original = BitmapFactory.decodeStream(peeked.inputStream())
       val width = original.width
       val height = original.height
 

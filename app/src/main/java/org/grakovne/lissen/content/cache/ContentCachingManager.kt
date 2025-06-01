@@ -170,7 +170,7 @@ class ContentCachingManager
                 }
 
                 file.outputStream().use { outputStream ->
-                  outputStream.write(cover)
+                  cover.writeTo(outputStream)
                 }
               } catch (ex: Exception) {
                 return@fold CacheState(CacheStatus.Error)
