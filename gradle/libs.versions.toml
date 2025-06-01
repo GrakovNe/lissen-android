@@ -27,6 +27,7 @@ media3Session = "1.7.1"
 media3DatasourceOkhttp = "1.7.1"
 lifecycleService = "2.9.0"
 lifecycleProcess = "2.9.0"
+hokoBlur = "1.5.3"
 
 [libraries]
 acra-core = { module = "ch.acra:acra-core", version.ref = "acraCore" }
@@ -70,6 +71,7 @@ androidx-media3-session = { group = "androidx.media3", name = "media3-session", 
 androidx-media3-datasource-okhttp = { group = "androidx.media3", name = "media3-datasource-okhttp", version.ref = "media3DatasourceOkhttp" }
 androidx-lifecycle-service = { group = "androidx.lifecycle", name = "lifecycle-service", version.ref = "lifecycleService" }
 androidx-lifecycle-process = { group = "androidx.lifecycle", name = "lifecycle-process", version.ref = "lifecycleProcess" }
+hoko-blur = { module = "io.github.hokofly:hoko-blur", version.ref = "hokoBlur" }
 
 [plugins]
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

@@ -13,10 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.valentinilk.shimmer.shimmer
+import org.grakovne.lissen.common.HokoBlurTransformation
 
 @Composable
 fun AsyncShimmeringImage(
@@ -28,7 +30,10 @@ fun AsyncShimmeringImage(
   error: Painter,
   onLoadingStateChanged: (Boolean) -> Unit = {},
 ) {
-  var isLoading by remember { mutableStateOf(true) }
+  var isLoadingBlur by remember { mutableStateOf(true) }
+  var isLoadingOriginal by remember { mutableStateOf(true) }
+
+  val isLoading = isLoadingBlur || isLoadingOriginal
   onLoadingStateChanged(isLoading)
 
   Box(
@@ -46,19 +51,28 @@ fun AsyncShimmeringImage(
     }
 
     AsyncImage(
+      model =
+        imageRequest
+          .newBuilder()
+          .transformations(HokoBlurTransformation(LocalContext.current))
+          .build(),
+      imageLoader = imageLoader,
+      contentDescription = null,
+      contentScale = ContentScale.Crop,
+      modifier = Modifier.fillMaxSize(),
+      onSuccess = { isLoadingBlur = false },
+      onError = { isLoadingBlur = false },
+      error = error,
+    )
+
+    AsyncImage(
       model = imageRequest,
       imageLoader = imageLoader,
       contentDescription = contentDescription,
       contentScale = contentScale,
       modifier = Modifier.fillMaxSize(),
-      onSuccess = {
-        isLoading = false
-        onLoadingStateChanged(false)
-      },
-      onError = {
-        isLoading = false
-        onLoadingStateChanged(false)
-      },
+      onSuccess = { isLoadingOriginal = false },
+      onError = { isLoadingOriginal = false },
       error = error,
     )
   }

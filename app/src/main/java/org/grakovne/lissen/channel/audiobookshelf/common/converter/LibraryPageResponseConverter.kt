@@ -23,7 +23,8 @@ class LibraryPageResponseConverter
             subtitle = it.media.metadata.subtitle,
             author = it.media.metadata.authorName,
             duration = it.media.duration.toInt(),
-            hasContent = it.media.numChapters?.let { count -> count > 0 } ?: true,
+            hasContent = true,
+            // hasContent = it.media.numChapters?.let { count -> count > 0 } ?: true,
           )
         }.let {
           PagedItems(
