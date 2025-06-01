@@ -40,8 +40,8 @@ fun AsyncShimmeringImage(
         modifier =
           Modifier
             .fillMaxSize()
+            .shimmer()
             .background(Color.Gray)
-            .shimmer(),
       )
     }
 
