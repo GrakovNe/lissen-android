@@ -8,7 +8,7 @@ import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
 import com.hoko.blur.HokoBlur
 import com.hoko.blur.HokoBlur.MODE_STACK
-import com.hoko.blur.HokoBlur.SCHEME_OPENGL
+import com.hoko.blur.HokoBlur.SCHEME_NATIVE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okio.Buffer
@@ -30,7 +30,7 @@ suspend fun sourceWithBackdropBlur(
     val blurred =
       HokoBlur
         .with(context)
-        .scheme(SCHEME_OPENGL)
+        .scheme(SCHEME_NATIVE)
         .mode(MODE_STACK)
         .radius(24)
         .forceCopy(true)
