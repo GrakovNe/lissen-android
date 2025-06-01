@@ -148,13 +148,7 @@ class PlaybackService : MediaSessionService() {
             channelProvider
               .fetchBookCover(bookId = book.id)
               .fold(
-                onSuccess = {
-                  try {
-                    it
-                  } catch (ex: Exception) {
-                    null
-                  }
-                },
+                onSuccess = { it },
                 onFailure = { null },
               )
 

@@ -39,20 +39,13 @@ class BookCoverFetcher(
     return when (val response = mediaChannel.fetchBookCover(uri.toString())) {
       is ApiResult.Error -> null
       is ApiResult.Success -> {
-        val bytes: ByteArray = response.data
-        val byteSource = Buffer().write(bytes)
-        val boundsOptions =
-          BitmapFactory.Options().apply {
-            inJustDecodeBounds = true
-          }
-        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, boundsOptions)
-        val width = boundsOptions.outWidth
-        val height = boundsOptions.outHeight
-
+        val image: ByteArray = response.data
+        val byteSource = Buffer().write(image)
+        val dimensions = getImageDimensions(image)
         val resultSource =
-          when (width == height) {
+          when (dimensions?.first == dimensions?.second) {
             true -> byteSource.buffer
-            false -> runCatching { sourceWithBackdropBlur(bytes) }.getOrElse { byteSource.buffer }
+            false -> runCatching { sourceWithBackdropBlur(image) }.getOrElse { byteSource.buffer }
           }
 
         return SourceResult(
@@ -63,6 +56,19 @@ class BookCoverFetcher(
       }
     }
   }
+
+  private fun getImageDimensions(image: ByteArray): Pair<Int, Int>? =
+    try {
+      val boundsOptions =
+        BitmapFactory.Options().apply {
+          inJustDecodeBounds = true
+        }
+
+      BitmapFactory.decodeByteArray(image, 0, image.size, boundsOptions)
+      boundsOptions.outWidth to boundsOptions.outHeight
+    } catch (ex: Exception) {
+      null
+    }
 
   private suspend fun sourceWithBackdropBlur(image: ByteArray): BufferedSource =
     withContext(Dispatchers.IO) {
