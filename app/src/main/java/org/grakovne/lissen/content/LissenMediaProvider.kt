@@ -1,8 +1,11 @@
 package org.grakovne.lissen.content
 
+import android.content.Context
 import android.net.Uri
 import android.util.Log
+import dagger.hilt.android.qualifiers.ApplicationContext
 import okio.Buffer
+import okio.BufferedSource
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.ChannelAuthService
@@ -11,6 +14,8 @@ import org.grakovne.lissen.channel.common.ChannelProvider
 import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.content.cache.LocalCacheRepository
+import org.grakovne.lissen.content.cache.getImageDimensions
+import org.grakovne.lissen.content.cache.sourceWithBackdropBlur
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
@@ -27,6 +32,7 @@ import javax.inject.Singleton
 class LissenMediaProvider
   @Inject
   constructor(
+    @ApplicationContext private val context: Context,
     private val preferences: LissenSharedPreferences,
     private val channels: Map<ChannelCode, @JvmSuppressWildcards ChannelProvider>,
     private val localCacheRepository: LocalCacheRepository,
@@ -70,9 +76,28 @@ class LissenMediaProvider
     suspend fun fetchBookCover(bookId: String): ApiResult<Buffer> {
       Log.d(TAG, "Fetching Cover stream for $bookId")
 
-      return when (preferences.isForceCache()) {
-        true -> localCacheRepository.fetchBookCover(bookId)
-        false -> providePreferredChannel().fetchBookCover(bookId)
+      val result =
+        when (preferences.isForceCache()) {
+          true -> localCacheRepository.fetchBookCover(bookId)
+          false -> providePreferredChannel().fetchBookCover(bookId)
+        }
+
+      return when (result) {
+        is ApiResult.Error -> ApiResult.Error(ApiError.NetworkError)
+        is ApiResult.Success -> {
+          val buffer: Buffer = result.data
+          val byteSource: BufferedSource = buffer
+
+          val dimensions: Pair<Int, Int>? = getImageDimensions(buffer)
+
+          val resultSource =
+            when (dimensions?.first == dimensions?.second) {
+              true -> byteSource.buffer
+              false -> runCatching { sourceWithBackdropBlur(buffer, context) }.getOrElse { byteSource.buffer }
+            }
+
+          ApiResult.Success(resultSource)
+        }
       }
     }
 
