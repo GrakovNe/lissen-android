@@ -2,6 +2,7 @@ package org.grakovne.lissen.channel.audiobookshelf.common.api
 
 import android.util.Log
 import okhttp3.ResponseBody
+import okio.Buffer
 import org.grakovne.lissen.channel.audiobookshelf.common.client.AudiobookshelfMediaClient
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
@@ -10,7 +11,6 @@ import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import retrofit2.Response
 import java.io.IOException
-import java.io.InputStream
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -26,12 +26,12 @@ class AudioBookshelfMediaRepository
     private var cachedHeaders: List<ServerRequestHeader> = emptyList()
     private var clientCache: AudiobookshelfMediaClient? = null
 
-    suspend fun fetchBookCover(itemId: String): ApiResult<InputStream> =
+    suspend fun fetchBookCover(itemId: String): ApiResult<Buffer> =
       safeCall {
         getClientInstance().getItemCover(itemId)
       }
 
-    private suspend fun safeCall(apiCall: suspend () -> Response<ResponseBody>): ApiResult<InputStream> {
+    private suspend fun safeCall(apiCall: suspend () -> Response<ResponseBody>): ApiResult<Buffer> {
       return try {
         val response = apiCall.invoke()
 
@@ -39,7 +39,13 @@ class AudioBookshelfMediaRepository
           200 ->
             when (val body = response.body()) {
               null -> ApiResult.Error(ApiError.InternalError)
-              else -> ApiResult.Success(body.byteStream())
+              else -> {
+                val buffer =
+                  Buffer().apply {
+                    writeAll(body.source())
+                  }
+                ApiResult.Success(buffer)
+              }
             }
 
           400 -> ApiResult.Error(ApiError.InternalError)

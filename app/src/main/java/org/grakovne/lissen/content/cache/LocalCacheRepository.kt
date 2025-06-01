@@ -2,6 +2,8 @@ package org.grakovne.lissen.content.cache
 
 import android.net.Uri
 import androidx.core.net.toFile
+import okio.Buffer
+import okio.source
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.content.cache.api.CachedBookRepository
@@ -14,7 +16,6 @@ import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.playback.service.calculateChapterIndex
-import java.io.InputStream
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -45,14 +46,19 @@ class LocalCacheRepository
       return ApiResult.Success(Unit)
     }
 
-    fun fetchBookCover(bookId: String): ApiResult<InputStream> {
-      val cover =
-        cachedBookRepository
-          .provideBookCover(bookId)
+    fun fetchBookCover(bookId: String): ApiResult<Buffer> {
+      val coverFile = cachedBookRepository.provideBookCover(bookId)
 
-      return when (cover.exists()) {
-        true -> ApiResult.Success(cover.inputStream())
-        false -> ApiResult.Error(ApiError.InternalError)
+      return if (coverFile.exists()) {
+        val buffer =
+          Buffer().apply {
+            coverFile.source().use { fileSource ->
+              writeAll(fileSource)
+            }
+          }
+        ApiResult.Success(buffer)
+      } else {
+        ApiResult.Error(ApiError.InternalError)
       }
     }
 

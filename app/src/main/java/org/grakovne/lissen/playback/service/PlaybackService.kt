@@ -144,26 +144,24 @@ class PlaybackService : MediaSessionService() {
     withContext(Dispatchers.IO) {
       val prepareQueue =
         async {
-          val cover: ByteArray? =
+          val coverBuffer =
             channelProvider
               .fetchBookCover(bookId = book.id)
               .fold(
-                onSuccess = {
-                  try {
-                    it.readBytes()
-                  } catch (ex: Exception) {
-                    null
-                  }
-                },
+                onSuccess = { it },
                 onFailure = { null },
               )
 
           val cachedCover =
-            cover
-              ?.let { content ->
+            coverBuffer
+              ?.let { buffer ->
                 File
                   .createTempFile(book.id, null, LissenApplication.appContext.cacheDir)
-                  .also { it.writeBytes(content) }
+                  .also { file ->
+                    file.outputStream().use { outputStream ->
+                      buffer.writeTo(outputStream)
+                    }
+                  }
               }
 
           val sourceFactory = buildDataSourceFactory()
