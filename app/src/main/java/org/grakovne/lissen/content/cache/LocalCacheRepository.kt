@@ -14,7 +14,6 @@ import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.playback.service.calculateChapterIndex
-import java.io.InputStream
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -45,13 +44,13 @@ class LocalCacheRepository
       return ApiResult.Success(Unit)
     }
 
-    fun fetchBookCover(bookId: String): ApiResult<InputStream> {
+    fun fetchBookCover(bookId: String): ApiResult<ByteArray> {
       val cover =
         cachedBookRepository
           .provideBookCover(bookId)
 
       return when (cover.exists()) {
-        true -> ApiResult.Success(cover.inputStream())
+        true -> ApiResult.Success(cover.readBytes())
         false -> ApiResult.Error(ApiError.InternalError)
       }
     }

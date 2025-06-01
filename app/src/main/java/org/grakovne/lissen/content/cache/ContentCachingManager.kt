@@ -162,7 +162,7 @@ class ContentCachingManager
         channel
           .fetchBookCover(book.id)
           .fold(
-            onSuccess = { inputStream ->
+            onSuccess = { cover: ByteArray ->
               try {
                 if (!file.exists()) {
                   file.parentFile?.mkdirs()
@@ -170,7 +170,7 @@ class ContentCachingManager
                 }
 
                 file.outputStream().use { outputStream ->
-                  inputStream.copyTo(outputStream)
+                  outputStream.write(cover)
                 }
               } catch (ex: Exception) {
                 return@fold CacheState(CacheStatus.Error)

@@ -5,9 +5,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.net.Uri
-import android.os.Build
-import android.os.Build.VERSION.SDK_INT
-import android.os.Build.VERSION_CODES.R
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
 import coil.ImageLoader
@@ -19,7 +16,6 @@ import coil.request.Options
 import com.hoko.blur.HokoBlur
 import com.hoko.blur.HokoBlur.MODE_STACK
 import com.hoko.blur.HokoBlur.SCHEME_NATIVE
-import com.hoko.blur.HokoBlur.SCHEME_OPENGL
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -43,18 +39,22 @@ class BookCoverFetcher(
     return when (val response = mediaChannel.fetchBookCover(uri.toString())) {
       is ApiResult.Error -> null
       is ApiResult.Success -> {
-        val inputStream = response.data
-        val original = BitmapFactory.decodeStream(inputStream)
-        withContext(Dispatchers.IO) {
-          inputStream.close()
-        }
-        
-        val resultSource =
-          when (original.width == original.height) {
-            true -> source(original)
-            false -> runCatching { sourceWithBackdropBlur(original) }.getOrElse { source(original) }
+        val bytes: ByteArray = response.data
+        val byteSource = Buffer().write(bytes)
+        val boundsOptions =
+          BitmapFactory.Options().apply {
+            inJustDecodeBounds = true
           }
-        
+        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, boundsOptions)
+        val width = boundsOptions.outWidth
+        val height = boundsOptions.outHeight
+
+        val resultSource =
+          when (width == height) {
+            true -> byteSource.buffer
+            false -> runCatching { sourceWithBackdropBlur(bytes) }.getOrElse { byteSource.buffer }
+          }
+
         return SourceResult(
           source = ImageSource(resultSource, context),
           mimeType = null,
@@ -63,22 +63,15 @@ class BookCoverFetcher(
       }
     }
   }
-  
-  private suspend fun source(original: Bitmap): BufferedSource {
-    return withContext(Dispatchers.IO) {
-      val buffer = Buffer()
-      original.compress(buffer.outputStream())
-      buffer
-    }
-  }
-  
-  private suspend fun sourceWithBackdropBlur(original: Bitmap): BufferedSource {
-    return withContext(Dispatchers.IO) {
+
+  private suspend fun sourceWithBackdropBlur(image: ByteArray): BufferedSource =
+    withContext(Dispatchers.IO) {
+      val original = BitmapFactory.decodeByteArray(image, 0, image.size)
       val width = original.width
       val height = original.height
-      
+
       val size = maxOf(width, height)
-      
+
       val blurred =
         HokoBlur
           .with(context)
@@ -87,22 +80,21 @@ class BookCoverFetcher(
           .radius(24)
           .forceCopy(true)
           .blur(original.scale(size, size))
-      
+
       val result = createBitmap(size, size)
       val canvas = Canvas(result)
       canvas.drawBitmap(blurred, 0f, 0f, null)
-      
+
       val left = ((size - width) / 2f)
       val top = ((size - height) / 2f)
       canvas.drawBitmap(original, left, top, null)
-      
+
       val buffer = Buffer()
       result.compress(buffer.outputStream())
-      
+
       buffer
     }
-  }
-  
+
   private fun Bitmap.compress(outputStream: OutputStream) = this.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
 }
 
@@ -126,7 +118,7 @@ object ImageLoaderModule {
     mediaChannel: LissenMediaProvider,
     @ApplicationContext context: Context,
   ): BookCoverFetcherFactory = BookCoverFetcherFactory(mediaChannel, context)
-  
+
   @Singleton
   @Provides
   fun provideCustomImageLoader(

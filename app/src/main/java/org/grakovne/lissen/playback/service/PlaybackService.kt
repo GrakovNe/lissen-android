@@ -150,7 +150,7 @@ class PlaybackService : MediaSessionService() {
               .fold(
                 onSuccess = {
                   try {
-                    it.readBytes()
+                    it
                   } catch (ex: Exception) {
                     null
                   }

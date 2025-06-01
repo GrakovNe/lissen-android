@@ -16,7 +16,6 @@ import org.grakovne.lissen.common.toBase64
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.playback.MediaRepository
-import java.io.ByteArrayOutputStream
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -55,19 +54,10 @@ class PlayerWidgetStateService
                       .fetchBookCover(book.id)
                       .fold(
                         onSuccess = { inputStream ->
+                          cachedCover = inputStream
+                          playingBookId = book.id
+
                           inputStream
-                            .use { stream ->
-                              val buffer = ByteArray(8192)
-                              val output = ByteArrayOutputStream()
-                              var bytesRead: Int
-                              while (stream.read(buffer).also { bytesRead = it } != -1) {
-                                output.write(buffer, 0, bytesRead)
-                              }
-                              output.toByteArray()
-                            }.also { cover ->
-                              cachedCover = cover
-                              playingBookId = book.id
-                            }
                         },
                         onFailure = { null },
                       )

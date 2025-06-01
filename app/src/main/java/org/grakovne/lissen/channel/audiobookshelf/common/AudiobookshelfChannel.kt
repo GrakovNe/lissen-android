@@ -17,7 +17,6 @@ import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
-import java.io.InputStream
 
 abstract class AudiobookshelfChannel(
   protected val dataRepository: AudioBookshelfDataRepository,
@@ -52,7 +51,7 @@ abstract class AudiobookshelfChannel(
     progress: PlaybackProgress,
   ): ApiResult<Unit> = syncService.syncProgress(sessionId, progress)
 
-  override suspend fun fetchBookCover(bookId: String): ApiResult<InputStream> = mediaRepository.fetchBookCover(bookId)
+  override suspend fun fetchBookCover(bookId: String): ApiResult<ByteArray> = mediaRepository.fetchBookCover(bookId)
 
   override suspend fun fetchLibraries(): ApiResult<List<Library>> =
     dataRepository
