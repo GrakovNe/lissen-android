@@ -1,9 +1,11 @@
 package org.grakovne.lissen.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -16,6 +18,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import coil.ImageLoader
 import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter
+import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.valentinilk.shimmer.shimmer
 import org.grakovne.lissen.common.HokoBlurTransformation
@@ -32,48 +36,43 @@ fun AsyncShimmeringImage(
 ) {
   var isLoadingBlur by remember { mutableStateOf(true) }
   var isLoadingOriginal by remember { mutableStateOf(true) }
-
+  
   val isLoading = isLoadingBlur || isLoadingOriginal
   onLoadingStateChanged(isLoading)
-
+  
   Box(
     modifier = modifier,
     contentAlignment = Alignment.Center,
   ) {
     if (isLoading) {
       Box(
-        modifier =
-          Modifier
-            .fillMaxSize()
-            .background(Color.Gray)
-            .shimmer(),
+        modifier = Modifier
+          .fillMaxSize()
+          .shimmer()
+          .background(Color.Gray),
       )
-    }
-
-    AsyncImage(
-      model =
-        imageRequest
-          .newBuilder()
+    } else {
+      // Отрисовка блюреного фона
+      AsyncImage(
+        model = imageRequest.newBuilder()
           .transformations(HokoBlurTransformation(LocalContext.current))
           .build(),
-      imageLoader = imageLoader,
-      contentDescription = null,
-      contentScale = ContentScale.Crop,
-      modifier = Modifier.fillMaxSize(),
-      onSuccess = { isLoadingBlur = false },
-      onError = { isLoadingBlur = false },
-      error = error,
-    )
-
-    AsyncImage(
-      model = imageRequest,
-      imageLoader = imageLoader,
-      contentDescription = contentDescription,
-      contentScale = contentScale,
-      modifier = Modifier.fillMaxSize(),
-      onSuccess = { isLoadingOriginal = false },
-      onError = { isLoadingOriginal = false },
-      error = error,
-    )
+        imageLoader = imageLoader,
+        contentDescription = null,
+        contentScale = ContentScale.Crop,
+        modifier = Modifier.fillMaxSize(),
+        error = error,
+      )
+      
+      // Отрисовка оригинала поверх
+      AsyncImage(
+        model = imageRequest,
+        imageLoader = imageLoader,
+        contentDescription = contentDescription,
+        contentScale = contentScale,
+        modifier = Modifier.fillMaxSize(),
+        error = error,
+      )
+    }
   }
 }
