@@ -103,7 +103,7 @@ class BookCoverFetcher(
     }
   }
   
-  private fun Bitmap.compress(outputStream: OutputStream) = this.compress(Bitmap.CompressFormat.JPEG, 85, outputStream)
+  private fun Bitmap.compress(outputStream: OutputStream) = this.compress(Bitmap.CompressFormat.JPEG, 90, outputStream)
 }
 
 class BookCoverFetcherFactory(
