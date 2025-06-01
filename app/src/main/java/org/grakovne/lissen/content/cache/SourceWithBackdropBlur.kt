@@ -45,7 +45,7 @@ suspend fun sourceWithBackdropBlur(
     canvas.drawBitmap(original, left, top, null)
 
     val buffer = Buffer()
-    result.compress(Bitmap.CompressFormat.PNG, 100, buffer.outputStream())
+    result.compress(Bitmap.CompressFormat.JPEG, 90, buffer.outputStream())
 
     buffer
   }

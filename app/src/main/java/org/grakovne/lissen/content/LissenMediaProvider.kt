@@ -5,7 +5,6 @@ import android.net.Uri
 import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import okio.Buffer
-import okio.BufferedSource
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.ChannelAuthService
@@ -76,29 +75,21 @@ class LissenMediaProvider
     suspend fun fetchBookCover(bookId: String): ApiResult<Buffer> {
       Log.d(TAG, "Fetching Cover stream for $bookId")
 
-      val result =
+      val cover =
         when (preferences.isForceCache()) {
           true -> localCacheRepository.fetchBookCover(bookId)
           false -> providePreferredChannel().fetchBookCover(bookId)
         }
 
-      return when (result) {
-        is ApiResult.Error -> ApiResult.Error(ApiError.NetworkError)
-        is ApiResult.Success -> {
-          val buffer: Buffer = result.data
-          val byteSource: BufferedSource = buffer
+      return cover
+        .map { source ->
+          val dimensions: Pair<Int, Int>? = getImageDimensions(source)
 
-          val dimensions: Pair<Int, Int>? = getImageDimensions(buffer)
-
-          val resultSource =
-            when (dimensions?.first == dimensions?.second) {
-              true -> byteSource.buffer
-              false -> runCatching { sourceWithBackdropBlur(buffer, context) }.getOrElse { byteSource.buffer }
-            }
-
-          ApiResult.Success(resultSource)
+          when (dimensions?.first == dimensions?.second) {
+            true -> source.buffer
+            false -> runCatching { sourceWithBackdropBlur(source, context) }.getOrElse { source.buffer }
+          }
         }
-      }
     }
 
     suspend fun searchBooks(
