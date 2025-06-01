@@ -162,7 +162,7 @@ class ContentCachingManager
         channel
           .fetchBookCover(book.id)
           .fold(
-            onSuccess = { cover: ByteArray ->
+            onSuccess = { cover ->
               try {
                 if (!file.exists()) {
                   file.parentFile?.mkdirs()
