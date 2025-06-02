@@ -6,6 +6,7 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.domain.NumberItemDownloadOption
 import org.grakovne.lissen.domain.PlayingChapter
+import org.grakovne.lissen.domain.RemainingItemsDownloadOption
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 
 fun calculateRequestedChapters(
@@ -22,6 +23,11 @@ fun calculateRequestedChapters(
       book.chapters.subList(
         chapterIndex.coerceAtLeast(0),
         (chapterIndex + option.itemsNumber).coerceIn(chapterIndex..book.chapters.size),
+      )
+    RemainingItemsDownloadOption ->
+      book.chapters.subList(
+        chapterIndex.coerceIn(0, book.chapters.size),
+        book.chapters.size,
       )
   }
 }

@@ -29,6 +29,7 @@ import org.grakovne.lissen.domain.AllItemsDownloadOption
 import org.grakovne.lissen.domain.CurrentItemDownloadOption
 import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.domain.NumberItemDownloadOption
+import org.grakovne.lissen.domain.RemainingItemsDownloadOption
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -111,10 +112,12 @@ fun DownloadsComposable(
                             stringResource(
                               R.string.downloads_menu_download_option_clear_chapters,
                             )
+
                           LibraryType.PODCAST ->
                             stringResource(
                               R.string.downloads_menu_download_option_clear_episodes,
                             )
+
                           LibraryType.UNKNOWN ->
                             stringResource(
                               R.string.downloads_menu_download_option_clear_items,
@@ -146,7 +149,7 @@ private val DownloadOptions =
     CurrentItemDownloadOption,
     NumberItemDownloadOption(5),
     NumberItemDownloadOption(10),
-    NumberItemDownloadOption(20),
+    RemainingItemsDownloadOption,
     AllItemsDownloadOption,
   )
 
@@ -171,6 +174,14 @@ fun DownloadOption.makeText(
       }
     }
 
+    RemainingItemsDownloadOption -> {
+      when (libraryType) {
+        LibraryType.LIBRARY -> context.getString(R.string.downloads_menu_download_option_remaining_chapters)
+        LibraryType.PODCAST -> context.getString(R.string.downloads_menu_download_option_remaining_episodes)
+        LibraryType.UNKNOWN -> context.getString(R.string.downloads_menu_download_option_remaining_items)
+      }
+    }
+
     is NumberItemDownloadOption -> {
       when (libraryType) {
         LibraryType.LIBRARY ->
@@ -178,11 +189,13 @@ fun DownloadOption.makeText(
             R.string.downloads_menu_download_option_next_chapters,
             itemsNumber,
           )
+
         LibraryType.PODCAST ->
           context.getString(
             R.string.downloads_menu_download_option_next_episodes,
             itemsNumber,
           )
+
         LibraryType.UNKNOWN ->
           context.getString(
             R.string.downloads_menu_download_option_next_items,

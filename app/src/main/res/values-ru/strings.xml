@@ -63,6 +63,9 @@
     <string name="downloads_menu_download_option_entire_book">Всю книгу</string>
     <string name="downloads_menu_download_option_entire_podcast">Все выпуски</string>
     <string name="downloads_menu_download_option_entire_item">Все элементы</string>
+    <string name="downloads_menu_download_option_remaining_chapters">Оставшиеся главы</string>
+    <string name="downloads_menu_download_option_remaining_episodes">Оставшиеся выпуски</string>
+    <string name="downloads_menu_download_option_remaining_items">Оставшиеся элементы</string>
     <string name="downloads_menu_download_option_next_chapters">Следуюшие %1$d глав</string>
     <string name="downloads_menu_download_option_next_episodes">Следуюшие %1$d выпусков</string>
     <string name="downloads_menu_download_option_next_items">Следуюшие %1$d элементов</string>

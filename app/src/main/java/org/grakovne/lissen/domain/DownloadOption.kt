@@ -12,4 +12,6 @@ class NumberItemDownloadOption(
 
 data object CurrentItemDownloadOption : DownloadOption
 
+data object RemainingItemsDownloadOption : DownloadOption
+
 data object AllItemsDownloadOption : DownloadOption

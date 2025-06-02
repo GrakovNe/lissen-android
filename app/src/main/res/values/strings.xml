@@ -67,6 +67,9 @@
     <string name="downloads_menu_download_option_entire_book">Entire book</string>
     <string name="downloads_menu_download_option_entire_podcast">Entire podcast</string>
     <string name="downloads_menu_download_option_entire_item">Entire item</string>
+    <string name="downloads_menu_download_option_remaining_chapters">Remaining chapters</string>
+    <string name="downloads_menu_download_option_remaining_episodes">Remaining episodes</string>
+    <string name="downloads_menu_download_option_remaining_items">Remaining items</string>
     <string name="downloads_menu_download_option_next_chapters">Next %1$d chapters</string>
     <string name="downloads_menu_download_option_next_episodes">Next %1$d episodes</string>
     <string name="downloads_menu_download_option_next_items">Next %1$d items</string>
