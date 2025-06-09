@@ -59,6 +59,7 @@ import org.grakovne.lissen.ui.screens.player.composable.TrackControlComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackDetailsComposable
 import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
 import org.grakovne.lissen.ui.screens.player.composable.fallback.PlayingQueueFallbackComposable
+import org.grakovne.lissen.ui.screens.player.composable.placeholder.NavigationBarPlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.PlayingQueuePlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackControlPlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackDetailsPlaceholderComposable
@@ -195,16 +196,20 @@ fun PlayerScreen(
       )
     },
     bottomBar = {
-      playingBook
-        ?.let {
-          NavigationBarComposable(
-            book = it,
-            playerViewModel = playerViewModel,
-            contentCachingModelView = cachingModelView,
-            navController = navController,
-            libraryType = libraryViewModel.fetchPreferredLibraryType(),
-          )
-        }
+      if (playingBook == null || isPlaybackReady.not()) {
+        NavigationBarPlaceholderComposable()
+      } else {
+        playingBook
+          ?.let {
+            NavigationBarComposable(
+              book = it,
+              playerViewModel = playerViewModel,
+              contentCachingModelView = cachingModelView,
+              navController = navController,
+              libraryType = libraryViewModel.fetchPreferredLibraryType(),
+            )
+          }
+      }
     },
     modifier = Modifier.systemBarsPadding(),
     content = { innerPadding ->
