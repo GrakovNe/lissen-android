@@ -12,7 +12,9 @@ class MimeTypeProvider {
         "audio/webm",
         "audio/ac3",
         "audio/opus",
+        "audio/ogg",
         "audio/vorbis",
+        "audio/x-matroska",
       )
   }
 }
