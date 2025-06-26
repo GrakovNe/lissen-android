@@ -111,5 +111,11 @@
     <string name="playing_item_details_duration">Időtartam</string>
     <string name="rewind_on_pause_title">Visszatekerés szüneteltetés közben</string>
     <string name="rewind_on_pause_hint">Szüneteltetéskor automatikusan visszaugrik</string>
-    <string name="rewind_on_pause_time">Visszatekerés szüneteltetés közben</string>
+    <string name="rewind_on_pause_time">Visszatekerés ideje szüneteltetés közben</string>
+    <string name="offline_cache_is_empty">Még nincs mentett tartalom</string>
+    <string name="downloads_menu_download_option_remaining_items">Hátralévő elemek</string>
+    <string name="downloads_menu_download_option_remaining_episodes">Hátralévő epizódok</string>
+    <string name="settings_screen_cached_items_title">Letöltések</string>
+    <string name="settings_screen_cached_items_hint">Mentett tartalom kezelése</string>
+    <string name="downloads_menu_download_option_remaining_chapters">Hátralévő fejezetek</string>
 </resources>
