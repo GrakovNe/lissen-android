@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="downloads_menu_download_option_clear_chapters">பதிவிறக்கம் செய்யப்பட்ட அத்தியாயங்களை அழிக்கவும்</string>
+    <string name="downloads_menu_download_option_clear_chapters">பதிவிறக்கம் செய்யப்பட்ட அத்தியாயங்களை அழி</string>
     <string name="library_screen_library_title">நூலகம்</string>
     <string name="disable_offline">அனைத்து உள்ளடக்கம்</string>
     <string name="enable_offline">பதிவிறக்கப்பட்டவை மட்டும்</string>
@@ -49,8 +49,8 @@
     <string name="custom_headers_title">தனிப்பயன் தலைப்புகள்</string>
     <string name="library_screen_podcast_title">பாட்காச்ட்கள்</string>
     <string name="settings_screen_server_version">சேவையக பதிப்பு</string>
-    <string name="timer_option_after_current_episode">அத்தியாயம் முடிவடையும் போது</string>
-    <string name="timer_option_after_current_chapter">அத்தியாயம் முடிவடையும் போது</string>
+    <string name="timer_option_after_current_episode">அத்தியாயம் முடிவடையும்போது</string>
+    <string name="timer_option_after_current_chapter">அத்தியாயம் முடிவடையும்போது</string>
     <string name="timer_option_after_minutes">%1$d நிமிடங்கள்</string>
     <string name="timer_option_disable_timer">டைமரை முடக்கு</string>
     <string name="timer_title">தூக்க நேரங்குறிகருவி</string>
@@ -62,7 +62,7 @@
     <string name="downloads_menu_download_book">புத்தகத்தைப் பதிவிறக்கவும்</string>
     <string name="downloads_menu_download_podcast">போட்காச்டைப் பதிவிறக்கவும்</string>
     <string name="downloads_menu_download_unknown">பதிவிறக்கங்கள்</string>
-    <string name="downloads_menu_download_option_current_chapter">தற்போதைய அத்தியாயம்</string>
+    <string name="downloads_menu_download_option_current_chapter">தற்போதைய பாடம்</string>
     <string name="downloads_menu_download_option_current_episode">தற்போதைய அத்தியாயம்</string>
     <string name="downloads_menu_download_option_current_item">தற்போதைய உருப்படி</string>
     <string name="downloads_menu_download_option_entire_book">முழு நூல்</string>
@@ -71,7 +71,7 @@
     <string name="downloads_menu_download_option_next_chapters">அடுத்த %1$d அத்தியாயங்கள்</string>
     <string name="downloads_menu_download_option_next_episodes">அடுத்த %1$d அத்தியாயங்கள்</string>
     <string name="downloads_menu_download_option_next_items">அடுத்த %1$d உருப்படிகள்</string>
-    <string name="downloads_menu_download_option_clear_episodes">பதிவிறக்கம் செய்யப்பட்ட அத்தியாயங்களை அழிக்கவும்</string>
+    <string name="downloads_menu_download_option_clear_episodes">பதிவிறக்கம் செய்யப்பட்ட அத்தியாயங்களை அழி</string>
     <string name="downloads_menu_download_option_clear_items">பதிவிறக்கம் செய்யப்பட்ட உருப்படிகளை அழிக்கவும்</string>
     <string name="mini_player_action_close">மூடு</string>
     <string name="playing_item_details_author">ஆசிரியர்</string>
@@ -80,7 +80,42 @@
     <string name="playing_item_details_series">தொடர்</string>
     <string name="color_scheme_black">கருப்பு</string>
     <string name="notification_content_caching_error_title">தற்காலிக சேமிப்பில் தோல்வி</string>
-    <string name="notification_content_caching_error_description">சில கோப்புகள் தற்காலிகமாகச் சேமிக்கப்படவில்லை.</string>
+    <string name="notification_content_caching_error_description">சில கோப்புகள் தற்காலிகமாகச் சேமிக்கப்படவில்லை</string>
     <string name="playing_item_details_narrator">வாசிப்பவர்</string>
     <string name="playing_item_details_duration">நேரம்</string>
+    <string name="notification_content_caching_title">உள்ளடக்கம் தற்காலிக சேமிப்பு</string>
+    <string name="login_error_lissen_auth_failed">ஏற்பு வழங்க முடியவில்லை. உங்கள் சேவையக அமைப்புகளை சரிபார்க்கவும்</string>
+    <string name="settings_screen_seek_time_hint">தேடல் கட்டுப்பாடுகளை வரையறுக்கவும்</string>
+    <string name="rewind_interval">இடைவெளி</string>
+    <string name="settings_screen_cached_items_title">பதிவிறக்கங்கள்</string>
+    <string name="offline_cache_is_empty">சேமித்த உள்ளடக்கம் இதுவரை இல்லை</string>
+    <string name="continue_playback_shortcut_title">தொடரவும்</string>
+    <string name="continue_playback_shortcut_description">தொடர்ந்து கேட்பது</string>
+    <string name="downloads_menu_download_option_remaining_episodes">மீதமுள்ள அத்தியாயங்கள்</string>
+    <string name="downloads_menu_download_option_remaining_items">மீதமுள்ள உருப்படிகள்</string>
+    <string name="settings_screen_library_ordering_title">நூலக வரிசையாக்கம்</string>
+    <string name="settings_screen_library_ordering_modification_date_option">புதுப்பித்த தேதி</string>
+    <string name="login_screen_open_id_button">OpenID உடன் இணைக்கவும்</string>
+    <string name="episodes_list_empty">எந்த போட்காச்டுக்கும் அத்தியாயங்கள் இல்லை</string>
+    <string name="notification_content_caching_channel">உள்ளடக்க கேச்சிங்</string>
+    <string name="forward_interval">முன்னோக்கி இடைவெளி</string>
+    <string name="seek_interval_5_seconds">5 விநாடிகள்</string>
+    <string name="seek_interval_10_seconds">10 வினாடிகள்</string>
+    <string name="downloads_menu_download_option_remaining_chapters">மீதமுள்ள பாடங்கள்</string>
+    <string name="chapters_list_empty">புத்தகத்தில் அத்தியாயங்கள் இல்லை</string>
+    <string name="items_list_empty">கிடைக்கக்கூடிய உருப்படிகள் இல்லை</string>
+    <string name="login_error_lissen_auth_scheme_must_be_whitelisted">திட்டம் %1$s: // %2$s சேவையகத்தின் வழிமாற்றி யூரி அமைப்புகளில் அனுமதிக்கப்படாது</string>
+    <string name="source_code_on_github_title">கிதுபில் மூலக் குறியீடு</string>
+    <string name="source_code_on_github_subtitle">சிக்கல்களைப் புகாரளிக்கவும் அல்லது மேம்பாடுகளை பரிந்துரைக்கவும்</string>
+    <string name="settings_screen_library_ordering_title_option">தலைப்பு</string>
+    <string name="settings_screen_library_ordering_author_option">நூலாசிரியர்</string>
+    <string name="settings_screen_library_ordering_creation_date_option">உருவாக்கிய தேதி</string>
+    <string name="settings_screen_seek_time_title">அமைப்புகளைத் தேடுங்கள்</string>
+    <string name="seek_interval_15_seconds">15 வினாடிகள்</string>
+    <string name="seek_interval_30_seconds">30 வினாடிகள்</string>
+    <string name="seek_interval_60_seconds">60 வினாடிகள்</string>
+    <string name="rewind_on_pause_title">இடைநிறுத்தத்தில் முன்னாடி</string>
+    <string name="rewind_on_pause_hint">இடைநிறுத்தப்படும்போது தானாகவே பின்வாங்குகிறது</string>
+    <string name="rewind_on_pause_time">இடைநிறுத்தத்தில் நேரத்தை முன்னாடி</string>
+    <string name="settings_screen_cached_items_hint">சேமித்த உள்ளடக்கத்தை நிர்வகிக்கவும்</string>
 </resources>
