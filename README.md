@@ -8,11 +8,6 @@
   --><a href="https://www.rustore.ru/catalog/app/org.grakovne.lissen"><img src="https://www.rustore.ru/help/icons/logo-color-dark.svg" alt="Get it on RuStore" height="60"></a>
 </p>
 
-### Project Update 29.06.25
-Since the release of v1.5.0, a lot of feature requests have piled up — but many of them can’t be added as-is. They require rethinking the app’s structure, screens, and overall UX.
-
-In the middle of July, after my annual vacation, I will release an update with some minor bug fixes and then begin implementing the key features
-
 ### Features
 
   * Beautiful Interface: Intuitive design that makes browsing and listening to your audiobooks easy and enjoyable.
