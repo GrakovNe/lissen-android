@@ -106,6 +106,16 @@
     <string name="seek_interval_15_seconds">15 seconden</string>
     <string name="seek_interval_30_seconds">30 seconden</string>
     <string name="seek_interval_60_seconds">60 seconden</string>
-    <string name="continue_playback_shortcut_title">Verder gaan</string>
+    <string name="continue_playback_shortcut_title">Ga verder</string>
     <string name="continue_playback_shortcut_description">Verder luisteren</string>
+    <string name="rewind_on_pause_title">Terugspoelen op pauze</string>
+    <string name="rewind_on_pause_time">Terugspoeltijd op pauze</string>
+    <string name="offline_cache_is_empty">Nog geen inhoud opgeslagen</string>
+    <string name="settings_screen_cached_items_title">Downloads</string>
+    <string name="settings_screen_cached_items_hint">Opgeslagen inhoud beheren</string>
+    <string name="notification_content_caching_channel">Caching van inhoud</string>
+    <string name="settings_screen_library_ordering_title">Bibliotheek sorteren</string>
+    <string name="settings_screen_seek_time_hint">Zoekbediening instellen</string>
+    <string name="forward_interval">Vooruitspoelinterval</string>
+    <string name="rewind_on_pause_hint">Springt automatisch terug bij pauzeren</string>
 </resources>
