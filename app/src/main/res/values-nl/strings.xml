@@ -106,6 +106,6 @@
     <string name="seek_interval_15_seconds">15 seconden</string>
     <string name="seek_interval_30_seconds">30 seconden</string>
     <string name="seek_interval_60_seconds">60 seconden</string>
-    <string name="continue_playback_shortcut_title">Doorgaan</string>
-    <string name="continue_playback_shortcut_description">Verder met luisteren</string>
+    <string name="continue_playback_shortcut_title">Verder gaan</string>
+    <string name="continue_playback_shortcut_description">Verder luisteren</string>
 </resources>
