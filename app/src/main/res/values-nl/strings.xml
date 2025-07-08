@@ -83,9 +83,25 @@
     <string name="episodes_list_empty">Geen enkele podcast heeft geen afleveringen</string>
     <string name="items_list_empty">Geen beschikbare items</string>
     <string name="notification_content_caching_error_title">Caching mislykkedes</string>
-    <string name="notification_content_caching_error_description">Nogle få filer blev ikke gemt</string>
+    <string name="notification_content_caching_error_description">Een paar bestanden zijn niet opgeslagen</string>
     <string name="playing_item_details_narrator">Verteller</string>
     <string name="playing_item_details_duration">Duur</string>
     <string name="downloads_menu_download_option_remaining_chapters">Resterende hoofdstukken</string>
-    <string name="downloads_menu_download_option_remaining_episodes">Resterende hoofdstukken</string>
+    <string name="downloads_menu_download_option_remaining_episodes">Resterende afleveringen</string>
+    <string name="downloads_menu_download_option_remaining_items">Resterende items</string>
+    <string name="notification_content_caching_title">Inhoud wordt gecached</string>
+    <string name="login_error_lissen_auth_scheme_must_be_whitelisted">Het schema %1$s://%2$s is niet toegestaan in de omleidings-URL-instellingen van de server</string>
+    <string name="login_error_lissen_auth_failed">Kan niet autoriseren. Controleer uw serverinstellingen</string>
+    <string name="login_screen_open_id_button">Verbind met OpenID</string>
+    <string name="source_code_on_github_title">Broncode op GitHub</string>
+    <string name="source_code_on_github_subtitle">Meld problemen of stel verbeteringen voor</string>
+    <string name="settings_screen_library_ordering_title_option">Titel</string>
+    <string name="settings_screen_library_ordering_author_option">Auteur</string>
+    <string name="settings_screen_library_ordering_creation_date_option">Aanmaak datum</string>
+    <string name="settings_screen_library_ordering_modification_date_option">Update datum</string>
+    <string name="settings_screen_seek_time_title">Zoek-instellingen</string>
+    <string name="rewind_interval">Terugspoelinterval</string>
+    <string name="seek_interval_5_seconds">5 seconden</string>
+    <string name="seek_interval_10_seconds">10 seconden</string>
+    <string name="seek_interval_15_seconds">"15  seconden"</string>
 </resources>
