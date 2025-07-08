@@ -37,7 +37,7 @@
     <string name="playback_speed_title">Afspeelsnelheid</string>
     <string name="color_scheme_follow_system">Systeem</string>
     <string name="color_scheme_dark">Donker</string>
-    <string name="library_search_hint">Zoek op titel of auteur</string>
+    <string name="library_search_hint">Zoek op titel, auteur of serie</string>
     <string name="player_screen_title">Aan het luisteren</string>
     <string name="settings_screen_custom_header_hint">Specificeer headers voor serververbindingen</string>
     <string name="custom_header_hint_name">Sleutel</string>
@@ -86,4 +86,6 @@
     <string name="notification_content_caching_error_description">Nogle få filer blev ikke gemt</string>
     <string name="playing_item_details_narrator">Verteller</string>
     <string name="playing_item_details_duration">Duur</string>
+    <string name="downloads_menu_download_option_remaining_chapters">Resterende hoofdstukken</string>
+    <string name="downloads_menu_download_option_remaining_episodes">Resterende hoofdstukken</string>
 </resources>
