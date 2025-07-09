@@ -68,7 +68,7 @@
     <string name="downloads_menu_download_option_clear_episodes">다운로드 에피소드 지우기</string>
     <string name="mini_player_action_close">닫기</string>
     <string name="playing_item_details_author">저자</string>
-    <string name="episodes_list_empty">선택하신 팟캐스트에 에피소드가 없습니다</string>
+    <string name="episodes_list_empty">에피소드가 없습니다</string>
     <string name="login_error_lissen_auth_scheme_must_be_whitelisted">서버의 리다이렉트 URI 설정에서 %1$s://%2$s 는 허용되지 않습니다</string>
     <string name="login_error_lissen_auth_failed">인증에 실패했습니다. 서버 설정을 확인해 주세요</string>
     <string name="login_screen_open_id_button">OpenID로 연결</string>
@@ -80,13 +80,15 @@
     <string name="enable_offline">다운로드만 보기</string>
     <string name="settings_screen_server_version">서버 버전</string>
     <string name="downloads_menu_download_option_current_item">현재 아이템</string>
-    <string name="downloads_menu_download_option_entire_item">전체 아이템</string>
+    <string name="downloads_menu_download_option_entire_item">아이템 전체</string>
     <string name="downloads_menu_download_option_remaining_items">남아있는 아이템</string>
     <string name="downloads_menu_download_option_next_items">다음 %1$d 아이템</string>
     <string name="downloads_menu_download_option_clear_items">다운로드 아이템 지우기</string>
     <string name="playing_item_details_publisher">출판사</string>
-    <string name="playing_item_details_narrator">내레이터</string>
+    <string name="playing_item_details_narrator">낭독</string>
     <string name="playing_item_details_duration">재생시간</string>
     <string name="playing_item_details_year">발행 연도</string>
     <string name="playing_item_details_series">시리즈</string>
+    <string name="color_scheme_black">블랙</string>
+    <string name="chapters_list_empty">이 책에는 챕터가 없습니다</string>
 </resources>
