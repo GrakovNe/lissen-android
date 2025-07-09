@@ -28,5 +28,17 @@
     <string name="login_error_connection_error">연결 에러</string>
     <string name="the_library_is_empty">라이브러리가 비어있습니다</string>
     <string name="the_offline_library_is_empty">저장된 책이 없습니다</string>
-    <string name="audiobookshelf_server_is_required">"Audiobookshelf  서버가 필요합니다"</string>
+    <string name="audiobookshelf_server_is_required">Audiobookshelf 서버가 필요합니다</string>
+    <string name="no_internet_connection">인터넷 연결이 없습니다</string>
+    <string name="app_crach_toast">애플리케이션 오류가 발생했습니다\n관련 로그가 전달되었습니다</string>
+    <string name="playback_speed_title">재생 속도</string>
+    <string name="color_scheme_follow_system">시스템</string>
+    <string name="color_scheme_light">라이트</string>
+    <string name="color_scheme_dark">다크</string>
+    <string name="settings_screen_color_scheme_title">컬러 테마</string>
+    <string name="library_search_hint">제목, 저자 또는 시리즈로 검색</string>
+    <string name="player_screen_title">현재 재생중</string>
+    <string name="settings_screen_custom_headers_title">커스텀 헤더</string>
+    <string name="settings_screen_custom_header_hint">서버 연결을 위한 헤더 지정</string>
+    <string name="custom_header_hint_name">키</string>
 </resources>
