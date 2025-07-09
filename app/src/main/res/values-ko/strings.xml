@@ -40,7 +40,7 @@
     <string name="player_screen_title">현재 재생중</string>
     <string name="settings_screen_custom_headers_title">커스텀 헤더</string>
     <string name="settings_screen_custom_header_hint">서버 연결을 위한 헤더 지정</string>
-    <string name="custom_header_hint_name">Key</string>
+    <string name="custom_header_hint_name">키</string>
     <string name="custom_headers_title">커스텀 헤더</string>
     <string name="library_screen_podcast_title">팟캐스트</string>
     <string name="timer_option_after_current_chapter">챕터 종료 시</string>
@@ -72,7 +72,7 @@
     <string name="login_error_lissen_auth_scheme_must_be_whitelisted">서버의 리다이렉트 URI 설정에서 %1$s://%2$s 는 허용되지 않습니다</string>
     <string name="login_error_lissen_auth_failed">인증에 실패했습니다. 서버 설정을 확인해 주세요</string>
     <string name="login_screen_open_id_button">OpenID로 연결</string>
-    <string name="custom_header_hint_value">Value</string>
+    <string name="custom_header_hint_value">밸류</string>
     <string name="source_code_on_github_title">GitHub 페이지</string>
     <string name="source_code_on_github_subtitle">오류 보고 또는 기능 개선 제안</string>
     <string name="player_screen_now_playing_title_item_of">아이템 %1$d/%2$s</string>
@@ -110,5 +110,12 @@
     <string name="seek_interval_15_seconds">15 초</string>
     <string name="seek_interval_30_seconds">30 초</string>
     <string name="seek_interval_60_seconds">60 초</string>
-    <string name="continue_playback_shortcut_title">계속 재생</string>
+    <string name="continue_playback_shortcut_title">계속</string>
+    <string name="continue_playback_shortcut_description">이어서 듣기</string>
+    <string name="rewind_on_pause_title">정지 시 되감기</string>
+    <string name="rewind_on_pause_hint">일시 정지시 자동으로 되감기</string>
+    <string name="rewind_on_pause_time">되감기 시간</string>
+    <string name="offline_cache_is_empty">저장된 콘텐츠가 없습니다</string>
+    <string name="settings_screen_cached_items_title">다운로드</string>
+    <string name="settings_screen_cached_items_hint">저장된 콘텐츠 관리</string>
 </resources>
