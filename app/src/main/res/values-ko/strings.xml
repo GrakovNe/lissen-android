@@ -13,8 +13,11 @@
     <string name="player_screen_chapter_list_navigation">챕터</string>
     <string name="player_screen_library_playing_title">재생중인 챕터</string>
     <string name="player_screen_podcast_playing_title">재생중인 에피소드</string>
-    <string name="player_screen_items_playing_title">재생중인 책</string>
+    <string name="player_screen_items_playing_title"></string>
     <string name="player_screen_now_playing_title_chapter_of">챕터 %1$d / %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">에피소드 %1$d/%2$s</string>
     <string name="settings_screen_title">설정</string>
+    <string name="settings_screen_connected_as_title">사용자</string>
+    <string name="settings_screen_server_connection">연결된 서버</string>
+    <string name="login_error_host_is_down">호스트가 응답하지 않습니다.</string>
 </resources>
