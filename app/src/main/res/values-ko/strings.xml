@@ -90,5 +90,17 @@
     <string name="playing_item_details_year">발행 연도</string>
     <string name="playing_item_details_series">시리즈</string>
     <string name="color_scheme_black">블랙</string>
-    <string name="chapters_list_empty">이 책에는 챕터가 없습니다</string>
+    <string name="chapters_list_empty">챕터가 없습니다</string>
+    <string name="items_list_empty">아이템이 없습니다</string>
+    <string name="notification_content_caching_channel">콘텐츠 캐싱</string>
+    <string name="notification_content_caching_title">콘텐츠 캐싱 중</string>
+    <string name="notification_content_caching_error_title">캐싱 실패</string>
+    <string name="notification_content_caching_error_description">일부 파일이 저장되지 않았습니다</string>
+    <string name="settings_screen_library_ordering_title">라이브러리 정렬</string>
+    <string name="settings_screen_library_ordering_title_option">제목</string>
+    <string name="settings_screen_library_ordering_author_option">저자</string>
+    <string name="settings_screen_library_ordering_creation_date_option">생성일</string>
+    <string name="settings_screen_library_ordering_modification_date_option">수정일</string>
+    <string name="settings_screen_seek_time_title">탐색 시간 설정</string>
+    <string name="settings_screen_seek_time_hint">빨리 감기/되감기 시간 설정</string>
 </resources>
