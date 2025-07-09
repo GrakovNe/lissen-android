@@ -1,5 +1,6 @@
 package org.grakovne.lissen.ui.screens.settings.composable
 
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,7 +26,13 @@ fun GitHubLinkComposable() {
     modifier =
       Modifier
         .fillMaxWidth()
-        .clickable { uriHandler.openUri("https://github.com/GrakovNe/lissen-android") }
+        .clickable {
+          try {
+            uriHandler.openUri("https://github.com/GrakovNe/lissen-android")
+          } catch (ex: Exception) {
+            Log.d("GitHubLinkComposable", "Unable to open Github Link due to ${ex.message}")
+          }
+        }
         .padding(horizontal = 24.dp, vertical = 12.dp),
   ) {
     Column(
