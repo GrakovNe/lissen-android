@@ -101,6 +101,14 @@
     <string name="settings_screen_library_ordering_author_option">저자</string>
     <string name="settings_screen_library_ordering_creation_date_option">생성일</string>
     <string name="settings_screen_library_ordering_modification_date_option">수정일</string>
-    <string name="settings_screen_seek_time_title">탐색 시간 설정</string>
+    <string name="settings_screen_seek_time_title">탐색 설정</string>
     <string name="settings_screen_seek_time_hint">빨리 감기/되감기 시간 설정</string>
+    <string name="rewind_interval">되감기 시간</string>
+    <string name="forward_interval">빨리 감기 시간</string>
+    <string name="seek_interval_5_seconds">5 초</string>
+    <string name="seek_interval_10_seconds">10 초</string>
+    <string name="seek_interval_15_seconds">15 초</string>
+    <string name="seek_interval_30_seconds">30 초</string>
+    <string name="seek_interval_60_seconds">60 초</string>
+    <string name="continue_playback_shortcut_title">계속 재생</string>
 </resources>
