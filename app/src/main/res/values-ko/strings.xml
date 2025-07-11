@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="library_screen_library_title">라이브러리</string>
-    <string name="library_screen_continue_listening_title">계속 듣기</string>
+    <string name="library_screen_continue_listening_title">이어 듣기</string>
     <string name="library_screen_preferences_menu_item">설정</string>
     <string name="login_screen_title">서버에 연결</string>
     <string name="login_screen_server_url_input">서버 주소</string>
