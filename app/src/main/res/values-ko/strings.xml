@@ -111,7 +111,7 @@
     <string name="seek_interval_30_seconds">30 초</string>
     <string name="seek_interval_60_seconds">60 초</string>
     <string name="continue_playback_shortcut_title">이어듣기</string>
-    <string name="continue_playback_shortcut_description">이어서 재생</string>
+    <string name="continue_playback_shortcut_description">이전에 듣던 부분을 이어서 재생합니다</string>
     <string name="rewind_on_pause_title">정지 시 되감기</string>
     <string name="rewind_on_pause_hint">일시 정지시 자동으로 되감기</string>
     <string name="rewind_on_pause_time">되감기 시간</string>
