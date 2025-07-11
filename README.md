@@ -4,8 +4,6 @@
 <p align="center"> 
   <a href="https://play.google.com/store/apps/details?id=org.grakovne.lissen"><img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" height="60"></a>&nbsp;&nbsp;&nbsp;<!--
   --><a href="https://f-droid.org/packages/org.grakovne.lissen"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a3/Get_it_on_F-Droid_%28material_design%29.svg" alt="Get it on F-Droid" height="60"></a>
-  &nbsp;&nbsp;&nbsp;<!--
-  --><a href="https://www.rustore.ru/catalog/app/org.grakovne.lissen"><img src="https://www.rustore.ru/help/icons/logo-color-dark.svg" alt="Get it on RuStore" height="60"></a>
 </p>
 
 ### Features
