@@ -43,6 +43,10 @@
     <string name="color_scheme_black">黑色的</string>
     <string name="playing_item_details_narrator">旁白</string>
     <string name="playing_item_details_duration">时长</string>
-    <string name="player_screen_now_playing_title_chapter_of">章节 %1$d / %2$s</string>
+    <string name="player_screen_now_playing_title_chapter_of">第 %1$d / %2$s 章</string>
     <string name="player_screen_now_playing_title_podcast_of">第 %1$d / %2$s 集</string>
+    <string name="player_screen_now_playing_title_item_of">第 %1$d / %2$s 项</string>
+    <string name="login_error_host_is_down">服务器不可用</string>
+    <string name="login_error_host_url_is_missing">服务器URL缺失</string>
+    <string name="login_error_username_is_missing">用户名不能为空</string>
 </resources>
