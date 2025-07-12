@@ -43,4 +43,6 @@
     <string name="color_scheme_black">黑色的</string>
     <string name="playing_item_details_narrator">旁白</string>
     <string name="playing_item_details_duration">时长</string>
+    <string name="player_screen_now_playing_title_chapter_of">章节 %1$d / %2$s</string>
+    <string name="player_screen_now_playing_title_podcast_of">第 %1$d / %2$s 集</string>
 </resources>
