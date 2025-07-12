@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="library_screen_library_title">书库</string>
+    <string name="library_screen_library_title">媒体库</string>
     <string name="library_screen_continue_listening_title">继续播放</string>
     <string name="login_screen_login_input">登录</string>
     <string name="login_screen_title">连接服务器</string>
@@ -12,12 +12,12 @@
     <string name="player_screen_playback_speed_navigation">播放速度</string>
     <string name="player_screen_chapter_list_navigation">章节</string>
     <string name="player_screen_library_playing_title">播放章节</string>
-    <string name="settings_screen_title">设置</string>
+    <string name="settings_screen_title">偏好设置</string>
     <string name="login_error_connection_error">连接错误</string>
     <string name="no_internet_connection">没有互联网连接</string>
     <string name="playback_speed_title">播放速度</string>
     <string name="library_screen_podcast_title">播客</string>
-    <string name="player_screen_podcast_playing_title">播放单集</string>
+    <string name="player_screen_podcast_playing_title">播放剧集</string>
     <string name="player_screen_items_playing_title">播放项目</string>
     <string name="the_offline_library_is_empty">无保存书籍</string>
     <string name="color_scheme_follow_system">系统</string>
@@ -40,7 +40,7 @@
     <string name="mini_player_action_close">关闭</string>
     <string name="playing_item_details_publisher">出版社</string>
     <string name="playing_item_details_series">系列</string>
-    <string name="color_scheme_black">黑色的</string>
+    <string name="color_scheme_black">黑色</string>
     <string name="playing_item_details_narrator">旁白</string>
     <string name="playing_item_details_duration">时长</string>
     <string name="player_screen_now_playing_title_chapter_of">第 %1$d / %2$s 章</string>
@@ -101,5 +101,21 @@
     <string name="forward_interval">快进间隔</string>
     <string name="seek_interval_5_seconds">5 秒</string>
     <string name="seek_interval_10_seconds">10 秒</string>
-    <string name="seek_interval_15_seconds">"15  秒"</string>
+    <string name="seek_interval_15_seconds">15 秒</string>
+    <string name="seek_interval_30_seconds">30 秒</string>
+    <string name="seek_interval_60_seconds">60 秒</string>
+    <string name="rewind_on_pause_title">暂停时回退</string>
+    <string name="rewind_on_pause_hint">在暂停时自动回退</string>
+    <string name="rewind_on_pause_time">暂停时自动回退时间</string>
+    <string name="offline_cache_is_empty">未保存内容</string>
+    <string name="settings_screen_cached_items_title">下载</string>
+    <string name="settings_screen_cached_items_hint">管理保存的内容</string>
+    <string name="notification_content_caching_channel">内容缓存</string>
+    <string name="notification_content_caching_title">正在缓存内容</string>
+    <string name="notification_content_caching_error_title">缓存失败</string>
+    <string name="notification_content_caching_error_description">一些文件没有保存</string>
+    <string name="login_error_lissen_auth_scheme_must_be_whitelisted">服务器的重定向 URI 设置中不允许使用协议方案 %1$s://%2$s</string>
+    <string name="continue_playback_shortcut_description">继续播放上次收听的内容</string>
+    <string name="settings_screen_connected_as_title">当前用户</string>
+    <string name="continue_playback_shortcut_title">继续播放</string>
 </resources>
