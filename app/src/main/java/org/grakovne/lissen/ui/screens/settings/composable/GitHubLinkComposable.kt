@@ -32,8 +32,7 @@ fun GitHubLinkComposable() {
           } catch (ex: Exception) {
             Log.d("GitHubLinkComposable", "Unable to open Github Link due to ${ex.message}")
           }
-        }
-        .padding(horizontal = 24.dp, vertical = 12.dp),
+        }.padding(horizontal = 24.dp, vertical = 12.dp),
   ) {
     Column(
       modifier = Modifier.weight(1f),
