@@ -115,4 +115,7 @@
     <string name="settings_screen_cached_items_hint">Verwalte heruntergeladene Inhalte</string>
     <string name="offline_cache_is_empty">Keine heruntergeladenen Inhalte vorhanden</string>
     <string name="settings_screen_cached_items_title">Downloads</string>
+    <string name="downloads_menu_download_option_remaining_chapters">Verbleibende Kapitel</string>
+    <string name="downloads_menu_download_option_remaining_episodes">Verbleibende Episoden</string>
+    <string name="downloads_menu_download_option_remaining_items">Verbleibende Artikel</string>
 </resources>
