@@ -2,13 +2,16 @@ package org.grakovne.lissen.widget
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory.decodeResource
+import android.graphics.Canvas
 import android.util.Log
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.createBitmap
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -104,11 +107,17 @@ class PlayerWidget : GlanceAppWidget() {
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
           ) {
-            val cover =
-              maybeCover
-                ?: decodeResource(context.resources, drawable.cover_fallback_png)
+            val original = maybeCover ?: decodeResource(context.resources, drawable.cover_fallback_png)
 
-            val coverImageProvider = ImageProvider(cover)
+            val coverImageProvider =
+              try {
+                val safeBitmap = createBitmap(original.width, original.height, Bitmap.Config.RGB_565)
+                val canvas = Canvas(safeBitmap)
+                canvas.drawBitmap(original, 0f, 0f, null)
+                ImageProvider(safeBitmap)
+              } catch (e: Exception) {
+                ImageProvider(drawable.cover_fallback_png)
+              }
 
             Image(
               contentScale = ContentScale.FillBounds,
