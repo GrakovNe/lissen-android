@@ -219,6 +219,8 @@ class LissenMediaProvider
           host = host,
           username = account.username,
           token = account.token,
+          accessToken = account.accessToken,
+          refreshToken = account.refreshToken
         )
 
       fetchLibraries()

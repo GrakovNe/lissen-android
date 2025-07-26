@@ -32,10 +32,14 @@ abstract class ChannelAuthService(
     host: String,
     username: String,
     token: String,
+    accessToken: String?,
+    refreshToken: String?,
   ) {
     preferences.saveHost(host)
     preferences.saveUsername(username)
     preferences.saveToken(token)
+    accessToken?.let { preferences.saveAccessToken(it) }
+    refreshToken?.let { preferences.saveRefreshToken(it) }
   }
 
   fun examineError(raw: String): ApiError =

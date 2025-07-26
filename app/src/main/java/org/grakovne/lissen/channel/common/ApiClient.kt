@@ -14,6 +14,7 @@ class ApiClient(
   host: String,
   requestHeaders: List<ServerRequestHeader>?,
   token: String? = null,
+  accessToken: String? = null
 ) {
   private val httpClient =
     OkHttpClient
@@ -26,22 +27,23 @@ class ApiClient(
       ).addInterceptor { chain: Interceptor.Chain ->
         val original: Request = chain.request()
         val requestBuilder: Request.Builder = original.newBuilder()
-
-        if (token != null) {
-          requestBuilder.header("Authorization", "Bearer $token")
+        
+        val bearer = accessToken ?: token
+        bearer?.let {
+          requestBuilder.header("Authorization", "Bearer $it")
         }
-
+        
         requestHeaders
           ?.filter { it.name.isNotEmpty() }
           ?.filter { it.value.isNotEmpty() }
           ?.forEach { requestBuilder.header(it.name, it.value) }
-
+        
         val request: Request = requestBuilder.build()
         chain.proceed(request)
       }.connectTimeout(30, TimeUnit.SECONDS)
       .readTimeout(90, TimeUnit.SECONDS)
       .build()
-
+  
   val retrofit: Retrofit =
     Retrofit
       .Builder()
