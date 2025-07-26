@@ -12,5 +12,7 @@ data class LoggedUserResponse(
 data class User(
   val id: String,
   val token: String,
+  val refreshToken: String?,
+  val accessToken: String?,
   val username: String = "username",
 )
