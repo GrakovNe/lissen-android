@@ -1,6 +1,6 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.api.podcast
 
-import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfDataRepository
+import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfSyncService
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.ProgressSyncRequest
 import org.grakovne.lissen.channel.common.ApiResult
@@ -12,7 +12,7 @@ import javax.inject.Singleton
 class AudioBookshelfPodcastSyncService
   @Inject
   constructor(
-    private val dataRepository: AudioBookshelfDataRepository,
+    private val dataRepository: AudioBookshelfRepository,
   ) : AudioBookshelfSyncService {
     private var previousItemId: String? = null
     private var previousTrackedTime: Double = 0.0

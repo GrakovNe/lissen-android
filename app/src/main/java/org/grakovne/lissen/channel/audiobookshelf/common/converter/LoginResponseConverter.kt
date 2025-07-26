@@ -12,6 +12,8 @@ class LoginResponseConverter
     fun apply(response: LoggedUserResponse): UserAccount =
       UserAccount(
         token = response.user.token,
+        accessToken = response.user.accessToken,
+        refreshToken = response.user.refreshToken,
         username = response.user.username,
         preferredLibraryId = response.userDefaultLibraryId,
       )
