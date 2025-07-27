@@ -120,7 +120,7 @@ fun PlayerScreen(
           navController.showLogin()
           return@LaunchedEffect
         }
-        
+
         playerViewModel.preparePlayback(it)
       }
 

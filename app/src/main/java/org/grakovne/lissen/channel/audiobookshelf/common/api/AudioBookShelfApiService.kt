@@ -44,7 +44,7 @@ class AudioBookShelfApiService
           when (callResult.code) {
             ApiError.Unauthorized -> {
               refreshToken()
-              
+
               safeApiCall {
                 apiCall.invoke(getClientInstance())
               }

@@ -210,6 +210,10 @@ fun LibraryScreen(
 
     playerViewModel.recoverMiniPlayer()
     settingsViewModel.fetchLibraries()
+
+    if (settingsViewModel.hasCredentials().not()) {
+      navController.showLogin()
+    }
   }
 
   LaunchedEffect(searchRequested) {
