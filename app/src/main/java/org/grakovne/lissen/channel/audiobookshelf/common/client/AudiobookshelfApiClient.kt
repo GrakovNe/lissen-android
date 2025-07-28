@@ -119,10 +119,9 @@ interface AudiobookshelfApiClient {
   suspend fun login(
     @Body request: CredentialsLoginRequest,
   ): Response<LoggedUserResponse>
-  
+
   @POST("auth/refresh")
   suspend fun refreshToken(
-    @Header("Cookie") refreshCookie: String
+    @Header("Cookie") refreshCookie: String,
   ): Response<LoggedUserResponse>
-  
 }
