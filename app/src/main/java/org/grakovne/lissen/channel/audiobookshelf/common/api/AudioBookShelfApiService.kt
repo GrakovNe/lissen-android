@@ -10,7 +10,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AudioBookShelfApiCallService
+class AudioBookShelfApiService
 @Inject
 constructor(
   private val preferences: LissenSharedPreferences,
@@ -19,19 +19,27 @@ constructor(
   private var cachedHost: String? = null
   private var cachedToken: String? = null
   private var cachedAccessToken: String? = null
+  private var cachedRefreshToken: String? = null
   private var cachedHeaders: List<ServerRequestHeader> = emptyList()
   
   private var clientCache: AudiobookshelfApiClient? = null
   
-  suspend fun <T> makeRequest(apiCall: suspend (client: AudiobookshelfApiClient) -> Response<T>): ApiResult<T> =
-    safeApiCall {
+  suspend fun <T> makeRequest(apiCall: suspend (client: AudiobookshelfApiClient) -> Response<T>): ApiResult<T> {
+    val f = cachedRefreshToken
+      ?.let { getClientInstance().refreshToken("refresh_token=$it") }
+    
+    println(f)
+    
+    return safeApiCall {
       apiCall.invoke(getClientInstance())
     }
+  }
   
   private fun getClientInstance(): AudiobookshelfApiClient {
     val host = preferences.getHost()
     val token = preferences.getToken()
     val accessToken = preferences.getAccessToken()
+    val refreshToken = preferences.getRefreshToken()
     val headers = requestHeadersProvider.fetchRequestHeaders()
     
     val clientChanged = isClientChanged(host, token, headers, accessToken)
@@ -42,6 +50,7 @@ constructor(
         cachedHost = host
         cachedToken = token
         cachedAccessToken = accessToken
+        cachedRefreshToken = refreshToken
         cachedHeaders = headers
         
         createClientInstance().also { clientCache = it }
