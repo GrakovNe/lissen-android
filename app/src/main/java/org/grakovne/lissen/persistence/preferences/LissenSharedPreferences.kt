@@ -43,12 +43,20 @@ class LissenSharedPreferences
     fun hasCredentials(): Boolean {
       val host = getHost()
       val username = getUsername()
-      val token = getToken()
+      val hasToken = getToken() != null || getAccessToken() != null
 
       return try {
-        host != null && username != null && token != null
+        host != null && username != null && hasToken
       } catch (ex: Exception) {
         false
+      }
+    }
+
+    fun clearCredentials() {
+      sharedPreferences.edit {
+        remove(KEY_TOKEN)
+        remove(KEY_ACCESS_TOKEN)
+        remove(KEY_REFRESH_TOKEN)
       }
     }
 
@@ -57,6 +65,8 @@ class LissenSharedPreferences
         remove(KEY_HOST)
         remove(KEY_USERNAME)
         remove(KEY_TOKEN)
+        remove(KEY_ACCESS_TOKEN)
+        remove(KEY_REFRESH_TOKEN)
 
         remove(KEY_SERVER_VERSION)
 
@@ -199,9 +209,29 @@ class LissenSharedPreferences
 
     fun getServerVersion(): String? = sharedPreferences.getString(KEY_SERVER_VERSION, null)
 
-    fun saveToken(password: String) {
-      val encrypted = encrypt(password)
+    fun saveToken(token: String) {
+      val encrypted = encrypt(token)
       sharedPreferences.edit { putString(KEY_TOKEN, encrypted) }
+    }
+
+    fun saveAccessToken(accessToken: String) {
+      val encrypted = encrypt(accessToken)
+      sharedPreferences.edit { putString(KEY_ACCESS_TOKEN, encrypted) }
+    }
+
+    fun saveRefreshToken(refreshToken: String) {
+      val encrypted = encrypt(refreshToken)
+      sharedPreferences.edit { putString(KEY_REFRESH_TOKEN, encrypted) }
+    }
+
+    fun getAccessToken(): String? {
+      val encrypted = sharedPreferences.getString(KEY_ACCESS_TOKEN, null) ?: return null
+      return decrypt(encrypted)
+    }
+
+    fun getRefreshToken(): String? {
+      val encrypted = sharedPreferences.getString(KEY_REFRESH_TOKEN, null) ?: return null
+      return decrypt(encrypted)
     }
 
     fun getToken(): String? {
@@ -284,6 +314,8 @@ class LissenSharedPreferences
       private const val KEY_ALIAS = "secure_key_alias"
       private const val KEY_HOST = "host"
       private const val KEY_USERNAME = "username"
+      private const val KEY_ACCESS_TOKEN = "access_token"
+      private const val KEY_REFRESH_TOKEN = "refresh_token"
       private const val KEY_TOKEN = "token"
       private const val CACHE_FORCE_ENABLED = "cache_force_enabled"
 

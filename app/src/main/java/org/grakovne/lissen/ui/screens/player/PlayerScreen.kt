@@ -115,7 +115,14 @@ fun PlayerScreen(
   LaunchedEffect(Unit) {
     bookId
       .takeIf { playingItemChanged(it, playingBook) || cachePolicyChanged(cachingModelView, playingBook) }
-      ?.let { playerViewModel.preparePlayback(it) }
+      ?.let {
+        if (settingsViewModel.hasCredentials().not()) {
+          navController.showLogin()
+          return@LaunchedEffect
+        }
+
+        playerViewModel.preparePlayback(it)
+      }
 
     if (playInstantly) {
       playerViewModel.prepareAndPlay()

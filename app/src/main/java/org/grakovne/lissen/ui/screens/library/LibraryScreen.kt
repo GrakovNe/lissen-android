@@ -125,6 +125,11 @@ fun LibraryScreen(
 
   fun refreshContent(showPullRefreshing: Boolean) {
     coroutineScope.launch {
+      if (settingsViewModel.hasCredentials().not()) {
+        navController.showLogin()
+        return@launch
+      }
+
       if (showPullRefreshing) {
         pullRefreshing = true
       }
@@ -205,6 +210,10 @@ fun LibraryScreen(
 
     playerViewModel.recoverMiniPlayer()
     settingsViewModel.fetchLibraries()
+
+    if (settingsViewModel.hasCredentials().not()) {
+      navController.showLogin()
+    }
   }
 
   LaunchedEffect(searchRequested) {

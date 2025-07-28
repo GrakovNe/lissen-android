@@ -160,6 +160,8 @@ class SettingsViewModel
       preferences.saveCustomHeaders(meaningfulHeaders)
     }
 
+    fun hasCredentials() = preferences.hasCredentials()
+
     private fun updateServerInfo() {
       serverVersion.value?.let { preferences.saveServerVersion(it) }
       username.value?.let { preferences.saveUsername(it) }

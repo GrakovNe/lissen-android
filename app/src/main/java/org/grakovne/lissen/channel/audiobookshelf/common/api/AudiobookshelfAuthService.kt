@@ -30,8 +30,8 @@ import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.AuthMethod
 import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.OAuthContextCache
+import org.grakovne.lissen.channel.common.createOkHttpClient
 import org.grakovne.lissen.channel.common.randomPkce
-import org.grakovne.lissen.common.createOkHttpClient
 import org.grakovne.lissen.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import java.io.IOException
@@ -50,7 +50,7 @@ class AudiobookshelfAuthService
     private val authMethodResponseConverter: AuthMethodResponseConverter,
   ) : ChannelAuthService(preferences) {
     private val client =
-      createOkHttpClient()
+      createOkHttpClient(preferences.getCustomHeaders())
         .newBuilder()
         .followRedirects(false)
         .build()
@@ -104,7 +104,7 @@ class AudiobookshelfAuthService
               .appendEncodedPath("status")
               .build()
 
-          val client = createOkHttpClient()
+          val client = createOkHttpClient(preferences.getCustomHeaders())
           val request =
             Request
               .Builder()
@@ -240,7 +240,7 @@ class AudiobookshelfAuthService
           .appendQueryParameter("code_verifier", pkce.verifier)
           .build()
 
-      val client = createOkHttpClient()
+      val client = createOkHttpClient(preferences.getCustomHeaders())
 
       val request =
         Request

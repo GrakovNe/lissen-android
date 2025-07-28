@@ -5,8 +5,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import org.grakovne.lissen.channel.audiobookshelf.common.AudiobookshelfChannel
-import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfDataRepository
-import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfMediaRepository
+import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.library.AudioBookshelfLibrarySyncService
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryPageResponseConverter
@@ -33,8 +32,7 @@ import javax.inject.Singleton
 class LibraryAudiobookshelfChannel
   @Inject
   constructor(
-    dataRepository: AudioBookshelfDataRepository,
-    mediaRepository: AudioBookshelfMediaRepository,
+    repository: AudioBookshelfRepository,
     recentListeningResponseConverter: RecentListeningResponseConverter,
     preferences: LissenSharedPreferences,
     syncService: AudioBookshelfLibrarySyncService,
@@ -46,8 +44,7 @@ class LibraryAudiobookshelfChannel
     private val bookResponseConverter: BookResponseConverter,
     private val librarySearchItemsConverter: LibrarySearchItemsConverter,
   ) : AudiobookshelfChannel(
-      dataRepository = dataRepository,
-      mediaRepository = mediaRepository,
+      dataRepository = repository,
       recentBookResponseConverter = recentListeningResponseConverter,
       sessionResponseConverter = sessionResponseConverter,
       preferences = preferences,
