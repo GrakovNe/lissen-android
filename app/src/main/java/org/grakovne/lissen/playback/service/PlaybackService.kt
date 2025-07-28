@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.LissenApplication
 import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
-import org.grakovne.lissen.common.createOkHttpClient
+import org.grakovne.lissen.channel.common.createOkHttpClient
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
@@ -307,7 +307,7 @@ class PlaybackService : MediaSessionService() {
 
     val okHttpDataSourceFactory =
       OkHttpDataSource
-        .Factory(createOkHttpClient())
+        .Factory(createOkHttpClient(requestHeadersProvider.fetchRequestHeaders()))
         .setDefaultRequestProperties(requestHeaders)
 
     return DefaultDataSource.Factory(

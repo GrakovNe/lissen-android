@@ -7,7 +7,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.Request
 import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
 import org.grakovne.lissen.channel.common.MediaChannel
-import org.grakovne.lissen.common.createOkHttpClient
+import org.grakovne.lissen.channel.common.createOkHttpClient
 import org.grakovne.lissen.content.cache.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.api.CachedLibraryRepository
 import org.grakovne.lissen.domain.BookFile
@@ -117,7 +117,7 @@ class ContentCachingManager
     ): CacheState =
       withContext(Dispatchers.IO) {
         val headers = requestHeadersProvider.fetchRequestHeaders()
-        val client = createOkHttpClient()
+        val client = createOkHttpClient(headers)
 
         files.mapIndexed { index, file ->
           val uri = channel.provideFileUri(bookId, file.id)
