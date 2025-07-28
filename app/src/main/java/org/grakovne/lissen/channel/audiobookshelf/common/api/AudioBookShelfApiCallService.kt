@@ -31,11 +31,6 @@ constructor(
       apiCall.invoke(getClientInstance())
     }
   
-  suspend fun makeMediaRequest(apiCall: suspend (client: AudiobookshelfApiClient) -> Response<ResponseBody>): ApiResult<Buffer> =
-    safeMediaCall {
-      apiCall.invoke(getClientInstance())
-    }
-  
   private fun getClientInstance(): AudiobookshelfApiClient {
     val host = preferences.getHost()
     val token = preferences.getToken()
