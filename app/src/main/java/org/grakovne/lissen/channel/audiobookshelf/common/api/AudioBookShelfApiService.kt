@@ -52,7 +52,7 @@ class AudioBookShelfApiService
     }
 
     private suspend fun refreshToken() {
-      val currentToken = cachedRefreshToken ?: return
+      val currentToken = preferences.getRefreshToken() ?: return
 
       val refreshResult =
         currentToken
