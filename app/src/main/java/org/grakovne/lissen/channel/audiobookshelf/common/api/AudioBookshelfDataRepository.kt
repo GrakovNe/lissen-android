@@ -1,5 +1,6 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.api
 
+import okio.Buffer
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.connection.ConnectionInfoResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.AuthorItemsResponse
@@ -173,4 +174,9 @@ class AudioBookshelfDataRepository
           syncProgressRequest = progress,
         )
       }
+
+    suspend fun fetchBookCover(itemId: String): ApiResult<Buffer> =
+      audioBookShelfApiCallService
+        .makeRequest { it.getItemCover(itemId = itemId) }
+        .map { Buffer().apply { writeAll(it.source()) } }
   }

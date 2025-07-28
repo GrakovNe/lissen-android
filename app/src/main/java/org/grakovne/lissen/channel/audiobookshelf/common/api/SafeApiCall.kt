@@ -8,19 +8,17 @@ import java.io.IOException
 
 private const val TAG: String = "safeApiCall"
 
-suspend fun <T> safeApiCall(
-  apiCall: suspend () -> Response<T>,
-): ApiResult<T> {
+suspend fun <T> safeApiCall(apiCall: suspend () -> Response<T>): ApiResult<T> {
   return try {
     val response = apiCall.invoke()
-    
+
     return when (response.code()) {
       200 ->
         when (val body = response.body()) {
           null -> ApiResult.Error(ApiError.InternalError)
           else -> ApiResult.Success(body)
         }
-      
+
       400 -> ApiResult.Error(ApiError.InternalError)
       401 -> ApiResult.Error(ApiError.Unauthorized)
       403 -> ApiResult.Error(ApiError.Unauthorized)

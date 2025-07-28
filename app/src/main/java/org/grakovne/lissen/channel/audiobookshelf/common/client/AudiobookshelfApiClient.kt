@@ -126,7 +126,7 @@ interface AudiobookshelfApiClient {
   suspend fun refreshToken(
     @Header("Cookie") refreshCookie: String,
   ): Response<LoggedUserResponse>
-  
+
   @GET("/api/items/{itemId}/cover")
   @Streaming
   suspend fun getItemCover(

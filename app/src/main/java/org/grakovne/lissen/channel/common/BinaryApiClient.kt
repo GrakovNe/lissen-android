@@ -10,7 +10,7 @@ class BinaryApiClient(
   accessToken: String? = null,
 ) {
   private val httpClient = createOkHttpClient(requestHeaders, token, accessToken)
-  
+
   val retrofit: Retrofit =
     Retrofit
       .Builder()
