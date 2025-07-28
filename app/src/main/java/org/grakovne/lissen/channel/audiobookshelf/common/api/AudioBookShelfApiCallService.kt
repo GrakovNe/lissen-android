@@ -3,7 +3,6 @@ package org.grakovne.lissen.channel.audiobookshelf.common.api
 import org.grakovne.lissen.channel.audiobookshelf.common.client.AudiobookshelfApiClient
 import org.grakovne.lissen.channel.common.ApiClient
 import org.grakovne.lissen.channel.common.ApiResult
-import org.grakovne.lissen.channel.common.BinaryApiClient
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import retrofit2.Response
@@ -78,19 +77,6 @@ class AudioBookShelfApiCallService
       headers: List<ServerRequestHeader>,
     ): ApiClient =
       ApiClient(
-        host = host,
-        token = token,
-        accessToken = accessToken,
-        requestHeaders = headers,
-      )
-
-    private fun mediaApiClient(
-      host: String,
-      token: String,
-      accessToken: String?,
-      headers: List<ServerRequestHeader>,
-    ): BinaryApiClient =
-      BinaryApiClient(
         host = host,
         token = token,
         accessToken = accessToken,

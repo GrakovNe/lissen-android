@@ -73,7 +73,6 @@ class AudioBookshelfDataRepository
       sort: String,
       direction: String,
     ): ApiResult<LibraryItemsResponse> =
-
       audioBookShelfApiCallService.makeRequest {
         it.fetchLibraryItems(
           libraryId = libraryId,
