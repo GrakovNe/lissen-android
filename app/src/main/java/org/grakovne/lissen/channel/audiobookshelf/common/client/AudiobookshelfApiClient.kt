@@ -1,5 +1,6 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.client
 
+import okhttp3.ResponseBody
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.connection.ConnectionInfoResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.AuthorItemsResponse
@@ -25,6 +26,7 @@ import retrofit2.http.Headers
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
+import retrofit2.http.Streaming
 
 interface AudiobookshelfApiClient {
   @GET("/api/libraries")
@@ -124,4 +126,11 @@ interface AudiobookshelfApiClient {
   suspend fun refreshToken(
     @Header("Cookie") refreshCookie: String,
   ): Response<LoggedUserResponse>
+  
+  @GET("/api/items/{itemId}/cover")
+  @Streaming
+  suspend fun getItemCover(
+    @Path("itemId") itemId: String,
+    @Query("raw") raw: Int = 1,
+  ): Response<ResponseBody>
 }
