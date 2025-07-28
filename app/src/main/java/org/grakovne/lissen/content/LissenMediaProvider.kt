@@ -12,7 +12,6 @@ import org.grakovne.lissen.channel.common.ChannelCode
 import org.grakovne.lissen.channel.common.ChannelProvider
 import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.channel.common.MediaChannel
-import org.grakovne.lissen.content.cache.ContentCachingManager
 import org.grakovne.lissen.content.cache.LocalCacheRepository
 import org.grakovne.lissen.content.cache.dao.CachedBookCoverDao
 import org.grakovne.lissen.content.cache.getImageDimensions
@@ -75,34 +74,44 @@ constructor(
     return ApiResult.Success(Unit)
   }
   
-  suspend fun fetchBookCover(bookId: String): ApiResult<Buffer> {
-    Log.d(TAG, "Fetching Cover stream for $bookId")
+  suspend fun fetchBookCover(
+    bookId: String,
+    forceLoad: Boolean = false
+  ): ApiResult<Buffer> {
+    Log.d(TAG, "Fetching Cover stream for $bookId, forceLoad=$forceLoad")
     
-    val cover = when (val cachedCover = localCacheRepository.fetchBookCover(bookId)) {
-      is ApiResult.Error<*> -> {
-        when (preferences.isForceCache()) {
-          true -> cachedCover
-          false -> providePreferredChannel()
-            .fetchBookCover(bookId)
-            .map { fetchedCover ->
-              cachedBookCoverDao.cacheBookCover(bookId, fetchedCover.clone())
-              fetchedCover
-            }
+    val skipCacheRead = forceLoad && preferences.isForceCache().not()
+    
+    suspend fun fromChannel(): ApiResult<Buffer> =
+      providePreferredChannel()
+        .fetchBookCover(bookId)
+        .map { fetchedCover ->
+          cachedBookCoverDao.cacheBookCover(bookId, fetchedCover.clone())
+          fetchedCover
         }
-      }
+    
+    val rawResult: ApiResult<Buffer> =
       
-      is ApiResult.Success<Buffer> -> return cachedCover
-    }
-    
-    return cover
-      .map { source ->
-        val dimensions: Pair<Int, Int>? = getImageDimensions(source)
-
-        when (dimensions?.first == dimensions?.second) {
-          true -> source.buffer
-          false -> runCatching { sourceWithBackdropBlur(source, context) }.getOrElse { source.buffer }
+      when (skipCacheRead) {
+        true -> when (val result = fromChannel()) {
+          is ApiResult.Success -> result
+          is ApiResult.Error<*> -> localCacheRepository.fetchBookCover(bookId)
+        }
+        
+        false -> when (val cached = localCacheRepository.fetchBookCover(bookId)) {
+          is ApiResult.Success -> cached
+          is ApiResult.Error<*> -> if (preferences.isForceCache()) cached else fromChannel()
         }
       }
+    
+    return rawResult.map { source ->
+      val dimensions = getImageDimensions(source)
+      if (dimensions?.first == dimensions?.second) {
+        source.buffer
+      } else {
+        runCatching { sourceWithBackdropBlur(source, context) }.getOrElse { source.buffer }
+      }
+    }
   }
   
   suspend fun searchBooks(
