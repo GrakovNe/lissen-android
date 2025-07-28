@@ -31,13 +31,14 @@ abstract class ChannelAuthService(
   fun persistCredentials(
     host: String,
     username: String,
-    token: String,
+    token: String?,
     accessToken: String?,
     refreshToken: String?,
   ) {
     preferences.saveHost(host)
     preferences.saveUsername(username)
-    preferences.saveToken(token)
+
+    token?.let { preferences.saveToken(it) }
     accessToken?.let { preferences.saveAccessToken(it) }
     refreshToken?.let { preferences.saveRefreshToken(it) }
   }
