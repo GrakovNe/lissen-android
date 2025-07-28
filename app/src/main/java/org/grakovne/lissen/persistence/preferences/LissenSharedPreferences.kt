@@ -52,6 +52,14 @@ class LissenSharedPreferences
       }
     }
 
+    fun clearCredentials() {
+      sharedPreferences.edit {
+        remove(KEY_TOKEN)
+        remove(KEY_ACCESS_TOKEN)
+        remove(KEY_REFRESH_TOKEN)
+      }
+    }
+
     fun clearPreferences() {
       sharedPreferences.edit {
         remove(KEY_HOST)

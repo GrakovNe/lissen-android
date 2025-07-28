@@ -5,6 +5,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.LoginResponse
 import org.grakovne.lissen.channel.common.ApiClient
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
+import org.grakovne.lissen.domain.UserAccount
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import retrofit2.Response
@@ -51,20 +52,32 @@ class AudioBookShelfApiService
     }
 
     private suspend fun refreshToken() {
-      cachedRefreshToken
-        ?.let { safeApiCall { getClientInstance().refreshToken(it) } }
-        ?.map { response -> loginResponseConverter.apply(response) }
-        ?.map {
-          it.refreshToken?.let { token ->
+      val currentToken = cachedRefreshToken ?: return
+
+      val refreshResult =
+        currentToken
+          .let { safeApiCall { getClientInstance().refreshToken(it) } }
+          .map { response -> loginResponseConverter.apply(response) }
+
+      when (refreshResult) {
+        is ApiResult.Error<*> -> {
+          if (refreshResult.code == ApiError.Unauthorized) {
+            preferences.clearCredentials()
+          }
+        }
+
+        is ApiResult.Success<UserAccount> -> {
+          refreshResult.data.refreshToken?.let { token ->
             cachedRefreshToken = token
             preferences.saveRefreshToken(token)
           }
 
-          it.accessToken?.let { token ->
+          refreshResult.data.accessToken?.let { token ->
             cachedAccessToken = token
             preferences.saveAccessToken(token)
           }
         }
+      }
     }
 
     private fun getClientInstance(): AudiobookshelfApiClient {
