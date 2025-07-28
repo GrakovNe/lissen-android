@@ -32,6 +32,7 @@ constructor(
 ) {
   private var cachedHost: String? = null
   private var cachedToken: String? = null
+  private var cachedAccessToken: String? = null
   private var cachedHeaders: List<ServerRequestHeader> = emptyList()
   private var clientCache: AudiobookshelfApiClient? = null
   
@@ -152,15 +153,17 @@ constructor(
   private fun getClientInstance(): AudiobookshelfApiClient {
     val host = preferences.getHost()
     val token = preferences.getToken()
+    val accessToken = preferences.getAccessToken()
     val headers = requestHeadersProvider.fetchRequestHeaders()
     
-    val clientChanged = host != cachedHost || token != cachedToken || headers != cachedHeaders
+    val clientChanged = host != cachedHost || token != cachedToken || headers != cachedHeaders || accessToken != cachedAccessToken
     val current = clientCache
     
     return when {
       current == null || clientChanged -> {
         cachedHost = host
         cachedToken = token
+        cachedAccessToken = accessToken
         cachedHeaders = headers
         
         createClientInstance().also { clientCache = it }
