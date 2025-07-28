@@ -40,7 +40,6 @@ fun BookComposable(
   navController: AppNavigationService,
 ) {
   val context = LocalContext.current
-  val disabledAlpha = 0.38f
 
   val imageRequest =
     remember(book.id) {
