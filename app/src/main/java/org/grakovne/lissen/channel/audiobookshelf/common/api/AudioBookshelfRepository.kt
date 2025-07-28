@@ -21,7 +21,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AudioBookshelfDataRepository
+class AudioBookshelfRepository
   @Inject
   constructor(
     private val audioBookShelfApiCallService: AudioBookShelfApiCallService,

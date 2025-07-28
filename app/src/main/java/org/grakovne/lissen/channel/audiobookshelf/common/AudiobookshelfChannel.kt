@@ -4,7 +4,7 @@ import android.net.Uri
 import androidx.core.net.toUri
 import okio.Buffer
 import org.grakovne.lissen.BuildConfig
-import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfDataRepository
+import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfSyncService
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
@@ -19,7 +19,7 @@ import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 
 abstract class AudiobookshelfChannel(
-  protected val dataRepository: AudioBookshelfDataRepository,
+  protected val dataRepository: AudioBookshelfRepository,
   protected val sessionResponseConverter: PlaybackSessionResponseConverter,
   protected val preferences: LissenSharedPreferences,
   private val syncService: AudioBookshelfSyncService,
