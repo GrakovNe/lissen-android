@@ -130,7 +130,6 @@ class PlaybackService : MediaSessionService() {
     playbackSynchronizationService.cancelSynchronization()
     playerServiceScope.cancel()
 
-    mediaSession.release()
     exoPlayer.release()
     exoPlayer.clearMediaItems()
 
