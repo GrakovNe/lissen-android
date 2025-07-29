@@ -78,7 +78,7 @@ class LibraryViewModel
                 preferences = preferences,
                 mediaChannel = mediaChannel,
                 searchToken = token,
-                limit = PAGE_SIZE,
+                limit = PAGE_SEARCH_SIZE,
               )
 
             searchPagingSource = source
@@ -169,5 +169,6 @@ class LibraryViewModel
     companion object {
       private const val EMPTY_SEARCH = ""
       private const val PAGE_SIZE = 30
+      private const val PAGE_SEARCH_SIZE = 50
     }
   }
