@@ -129,10 +129,6 @@ class PlaybackService : MediaSessionService() {
   override fun onDestroy() {
     playbackSynchronizationService.cancelSynchronization()
     playerServiceScope.cancel()
-
-    exoPlayer.release()
-    exoPlayer.clearMediaItems()
-
     super.onDestroy()
   }
 
