@@ -138,6 +138,6 @@ class CachingModelView
     suspend fun fetchLatestUpdate(libraryId: String) = localCacheRepository.fetchLatestUpdate(libraryId)
 
     companion object {
-      private const val PAGE_SIZE = 30
+      private const val PAGE_SIZE = 20
     }
   }

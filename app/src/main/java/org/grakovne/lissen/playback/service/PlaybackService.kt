@@ -302,8 +302,13 @@ class PlaybackService : MediaSessionService() {
 
     val okHttpDataSourceFactory =
       OkHttpDataSource
-        .Factory(createOkHttpClient(requestHeadersProvider.fetchRequestHeaders()))
-        .setDefaultRequestProperties(requestHeaders)
+        .Factory(
+          createOkHttpClient(
+            requestHeaders = requestHeadersProvider.fetchRequestHeaders(),
+            token = sharedPreferences.getToken(),
+            accessToken = sharedPreferences.getAccessToken(),
+          ),
+        ).setDefaultRequestProperties(requestHeaders)
 
     return DefaultDataSource.Factory(
       baseContext,

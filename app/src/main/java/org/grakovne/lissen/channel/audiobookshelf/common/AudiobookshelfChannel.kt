@@ -41,7 +41,6 @@ abstract class AudiobookshelfChannel(
       .appendPath(libraryItemId)
       .appendPath("file")
       .appendPath(fileId)
-      .appendQueryParameter("token", preferences.getToken())
       .build()
   }
 

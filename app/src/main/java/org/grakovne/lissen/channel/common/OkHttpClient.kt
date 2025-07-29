@@ -11,8 +11,8 @@ import java.util.concurrent.TimeUnit
 
 fun createOkHttpClient(
   requestHeaders: List<ServerRequestHeader>?,
-  token: String? = null,
-  accessToken: String? = null,
+  token: String?,
+  accessToken: String?,
 ): OkHttpClient =
   OkHttpClient
     .Builder()
