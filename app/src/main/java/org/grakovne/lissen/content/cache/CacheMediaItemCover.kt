@@ -1,4 +1,3 @@
 package org.grakovne.lissen.content.cache
 
-class CacheMediaItemCover {
-}
+class CacheMediaItemCover
