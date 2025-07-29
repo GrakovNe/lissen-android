@@ -148,7 +148,14 @@ class LibraryAudiobookshelfChannel
         merged.map { list ->
           list
             .distinctBy { it.id }
-            .sortedWith(compareBy({ it.series }, { it.author }, { it.title }))
+            .sortedWith(
+              compareBy(
+                { it.series?.substringBefore("#") },
+                { it.series?.substringAfterLast("#")?.toIntOrNull() },
+                { it.author },
+                { it.title },
+              ),
+            )
         }
       }
 
