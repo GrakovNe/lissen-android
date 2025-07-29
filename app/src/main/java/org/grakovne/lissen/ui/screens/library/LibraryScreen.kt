@@ -93,13 +93,13 @@ fun LibraryScreen(
   networkQualityService: NetworkQualityService,
 ) {
   RequestNotificationPermissions()
-  
+
   val view: View = LocalView.current
   val coroutineScope = rememberCoroutineScope()
-  
+
   val activity = LocalActivity.current
   val recentBooks: List<RecentBook> by libraryViewModel.recentBooks.observeAsState(emptyList())
-  
+
   var currentLibraryId by rememberSaveable { mutableStateOf("") }
   var localCacheUpdatedAt by rememberSaveable { mutableStateOf(0L) }
   var currentOrdering by rememberSaveable(stateSaver = LibraryOrderingConfiguration.saver) {
@@ -109,37 +109,37 @@ fun LibraryScreen(
   val recentBookRefreshing by libraryViewModel.recentBookUpdating.observeAsState(false)
   val searchRequested by libraryViewModel.searchRequested.observeAsState(false)
   val preparingError by playerViewModel.preparingError.observeAsState(false)
-  
+
   val preferredLibrary by settingsViewModel.preferredLibrary.observeAsState()
   val libraries by settingsViewModel.libraries.observeAsState(emptyList())
   var preferredLibraryExpanded by remember { mutableStateOf(false) }
-  
+
   val library = libraryViewModel.getPager(searchRequested).collectAsLazyPagingItems()
-  
+
   BackHandler {
     when (searchRequested) {
       true -> libraryViewModel.dismissSearch()
       false -> activity?.moveTaskToBack(true)
     }
   }
-  
+
   fun refreshContent(showPullRefreshing: Boolean) {
     coroutineScope.launch {
       if (settingsViewModel.hasCredentials().not()) {
         navController.showLogin()
         return@launch
       }
-      
+
       if (showPullRefreshing) {
         pullRefreshing = true
       }
-      
+
       val minimumTime =
         when (showPullRefreshing) {
           true -> 500L
           false -> 0L
         }
-      
+
       withMinimumTime(minimumTime) {
         listOf(
           async { settingsViewModel.fetchLibraries() },
@@ -147,27 +147,27 @@ fun LibraryScreen(
           async { libraryViewModel.fetchRecentListening() },
         ).awaitAll()
       }
-      
+
       pullRefreshing = false
     }
   }
-  
+
   val isPlaceholderRequired by remember {
     derivedStateOf {
       if (searchRequested) {
         return@derivedStateOf false
       }
-      
+
       pullRefreshing || recentBookRefreshing || library.loadState.refresh is LoadState.Loading
     }
   }
-  
+
   LaunchedEffect(preparingError) {
     if (preparingError) {
       playerViewModel.clearPlayingBook()
     }
   }
-  
+
   val pullRefreshState =
     rememberPullRefreshState(
       refreshing = pullRefreshing,
@@ -175,67 +175,67 @@ fun LibraryScreen(
         hapticAction(view) { refreshContent(showPullRefreshing = true) }
       },
     )
-  
+
   val titleTextStyle = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
   val titleHeightDp = with(LocalDensity.current) { titleTextStyle.lineHeight.toPx().toDp() }
-  
+
   val libraryListState = rememberLazyListState()
-  
+
   val playingBook by playerViewModel.book.observeAsState()
   val context = LocalContext.current
-  
+
   fun isRecentVisible(): Boolean {
     val fetchAvailable = networkQualityService.isNetworkAvailable() || cachingModelView.localCacheUsing()
     val hasContent = recentBooks.isEmpty().not()
-    
+
     return searchRequested.not() && hasContent && fetchAvailable
   }
-  
+
   LaunchedEffect(Unit) {
     val emptyContent = library.itemCount == 0
     val libraryChanged = currentLibraryId != settingsViewModel.fetchPreferredLibraryId()
     val orderingChanged = currentOrdering != settingsViewModel.fetchLibraryOrdering()
-    
+
     val localCacheUsing = cachingModelView.localCacheUsing()
     val localCacheUpdated = cachingModelView.fetchLatestUpdate(currentLibraryId)?.let { it > localCacheUpdatedAt } ?: true
-    
+
     if (emptyContent || libraryChanged || orderingChanged || (localCacheUsing && localCacheUpdated)) {
       libraryViewModel.refreshRecentListening()
       libraryViewModel.refreshLibrary()
-      
+
       currentLibraryId = settingsViewModel.fetchPreferredLibraryId()
       currentOrdering = settingsViewModel.fetchLibraryOrdering()
       localCacheUpdatedAt = cachingModelView.fetchLatestUpdate(currentLibraryId) ?: 0L
     }
-    
+
     playerViewModel.recoverMiniPlayer()
     settingsViewModel.fetchLibraries()
   }
-  
+
   LaunchedEffect(searchRequested) {
     if (!searchRequested) {
       libraryListState.scrollToItem(0)
     }
   }
-  
+
   fun provideLibraryTitle(): String {
     val type = libraryViewModel.fetchPreferredLibraryType()
-    
+
     return when (type) {
       LibraryType.LIBRARY ->
         libraryViewModel
           .fetchPreferredLibraryTitle()
           ?: context.getString(R.string.library_screen_library_title)
-      
+
       LibraryType.PODCAST ->
         libraryViewModel
           .fetchPreferredLibraryTitle()
           ?: context.getString(R.string.library_screen_podcast_title)
-      
+
       LibraryType.UNKNOWN -> ""
     }
   }
-  
+
   val navBarTitle by remember {
     derivedStateOf {
       val showRecent = isRecentVisible()
@@ -243,7 +243,7 @@ fun LibraryScreen(
         libraryListState.layoutInfo.visibleItemsInfo
           .firstOrNull()
           ?.key == "recent_books"
-      
+
       when {
         isPlaceholderRequired -> context.getString(R.string.library_screen_continue_listening_title)
         showRecent && recentBlockVisible -> context.getString(R.string.library_screen_continue_listening_title)
@@ -251,7 +251,7 @@ fun LibraryScreen(
       }
     }
   }
-  
+
   Scaffold(
     topBar = {
       TopAppBar(
@@ -270,7 +270,7 @@ fun LibraryScreen(
                   onSearchDismissed = { libraryViewModel.dismissSearch() },
                   onSearchRequested = { libraryViewModel.updateSearch(it) },
                 )
-              
+
               false ->
                 DefaultActionComposable(
                   navController = navController,
@@ -294,7 +294,7 @@ fun LibraryScreen(
                         indication = null,
                       ) { preferredLibraryExpanded = true }
                       .fillMaxWidth()
-                  
+
                   else -> Modifier.fillMaxWidth()
                 },
             ) {
@@ -303,7 +303,7 @@ fun LibraryScreen(
                 style = titleTextStyle,
                 maxLines = 1,
               )
-              
+
               if (navBarTitle == provideLibraryTitle()) {
                 LibrarySwitchComposable { preferredLibraryExpanded = true }
               }
@@ -345,14 +345,14 @@ fun LibraryScreen(
         ) {
           item(key = "recent_books") {
             val showRecent = isRecentVisible()
-            
+
             when {
               isPlaceholderRequired -> {
                 RecentBooksPlaceholderComposable(
                   libraryViewModel = libraryViewModel,
                 )
               }
-              
+
               showRecent -> {
                 RecentBooksComposable(
                   navController = navController,
@@ -362,10 +362,10 @@ fun LibraryScreen(
                 )
               }
             }
-            
+
             Spacer(modifier = Modifier.height(20.dp))
           }
-          
+
           item(key = "library_title") {
             if (!searchRequested && isRecentVisible()) {
               AnimatedContent(
@@ -392,7 +392,7 @@ fun LibraryScreen(
                           .fillMaxWidth()
                           .height(titleHeightDp),
                     )
-                  
+
                   else -> {
                     if (isPlaceholderRequired.not()) {
                       Row(
@@ -409,7 +409,7 @@ fun LibraryScreen(
                           style = titleTextStyle,
                           text = provideLibraryTitle(),
                         )
-                        
+
                         LibrarySwitchComposable { preferredLibraryExpanded = true }
                       }
                     }
@@ -418,9 +418,9 @@ fun LibraryScreen(
               }
             }
           }
-          
+
           item(key = "library_spacer") { Spacer(modifier = Modifier.height(8.dp)) }
-          
+
           when {
             isPlaceholderRequired -> item { LibraryPlaceholderComposable() }
             library.itemCount == 0 -> {
@@ -433,11 +433,11 @@ fun LibraryScreen(
                 )
               }
             }
-            
+
             else ->
               items(count = library.itemCount, key = { "library_item_$it" }) {
                 val book = library[it] ?: return@items
-                
+
                 BookComposable(
                   book = book,
                   imageLoader = imageLoader,
@@ -446,7 +446,7 @@ fun LibraryScreen(
               }
           }
         }
-        
+
         if (!searchRequested) {
           PullRefreshIndicator(
             refreshing = pullRefreshing,
@@ -458,7 +458,7 @@ fun LibraryScreen(
       }
     },
   )
-  
+
   if (preferredLibraryExpanded) {
     PreferredLibrarySettingComposable(
       libraries = libraries,
@@ -469,7 +469,7 @@ fun LibraryScreen(
         currentLibraryId = settingsViewModel.fetchPreferredLibraryId()
         refreshContent(false)
         playerViewModel.clearPlayingBook()
-        
+
         preferredLibraryExpanded = false
       },
     )
