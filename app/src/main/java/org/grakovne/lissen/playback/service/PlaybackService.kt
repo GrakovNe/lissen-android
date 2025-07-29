@@ -305,8 +305,7 @@ class PlaybackService : MediaSessionService() {
         .Factory(
           createOkHttpClient(
             requestHeaders = requestHeadersProvider.fetchRequestHeaders(),
-            token = sharedPreferences.getToken(),
-            accessToken = sharedPreferences.getAccessToken(),
+            preferences = sharedPreferences,
           ),
         ).setDefaultRequestProperties(requestHeaders)
 

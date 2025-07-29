@@ -1,16 +1,16 @@
 package org.grakovne.lissen.channel.common
 
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
+import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class ApiClient(
   host: String,
   requestHeaders: List<ServerRequestHeader>?,
-  token: String? = null,
-  accessToken: String? = null,
+  preferences: LissenSharedPreferences,
 ) {
-  private val httpClient = createOkHttpClient(requestHeaders, token, accessToken)
+  private val httpClient = createOkHttpClient(requestHeaders, preferences = preferences)
 
   val retrofit: Retrofit =
     Retrofit

@@ -7,18 +7,18 @@ import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
 import org.grakovne.lissen.common.withTrustedCertificates
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
+import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import java.util.concurrent.TimeUnit
 
 fun createOkHttpClient(
   requestHeaders: List<ServerRequestHeader>?,
-  token: String?,
-  accessToken: String?,
+  preferences: LissenSharedPreferences,
 ): OkHttpClient =
   OkHttpClient
     .Builder()
     .withTrustedCertificates()
     .addInterceptor(loggingInterceptor())
-    .addInterceptor { chain -> authInterceptor(chain, token, accessToken, requestHeaders) }
+    .addInterceptor { chain -> authInterceptor(chain, preferences, requestHeaders) }
     .connectTimeout(30, TimeUnit.SECONDS)
     .readTimeout(90, TimeUnit.SECONDS)
     .build()
@@ -30,14 +30,13 @@ private fun loggingInterceptor() =
 
 private fun authInterceptor(
   chain: Interceptor.Chain,
-  token: String? = null,
-  accessToken: String? = null,
+  preferences: LissenSharedPreferences,
   requestHeaders: List<ServerRequestHeader>?,
 ): Response {
   val original: Request = chain.request()
   val requestBuilder: Request.Builder = original.newBuilder()
 
-  val bearer = accessToken ?: token
+  val bearer = preferences.getAccessToken() ?: preferences.getRefreshToken()
   bearer?.let { requestBuilder.header("Authorization", "Bearer $it") }
 
   requestHeaders

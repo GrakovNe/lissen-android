@@ -122,8 +122,7 @@ class ContentCachingManager
         val client =
           createOkHttpClient(
             requestHeaders = headers,
-            token = preferences.getToken(),
-            accessToken = preferences.getAccessToken(),
+            preferences = preferences,
           )
 
         files.mapIndexed { index, file ->
