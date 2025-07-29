@@ -168,6 +168,6 @@ class LibraryViewModel
 
     companion object {
       private const val EMPTY_SEARCH = ""
-      private const val PAGE_SIZE = 20
+      private const val PAGE_SIZE = 30
     }
   }
