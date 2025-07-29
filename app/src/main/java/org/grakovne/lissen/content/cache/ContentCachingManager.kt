@@ -16,6 +16,7 @@ import org.grakovne.lissen.domain.CacheStatus
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.domain.PlayingChapter
+import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -30,7 +31,7 @@ constructor(
   private val libraryRepository: CachedLibraryRepository,
   private val properties: CacheBookStorageProperties,
   private val requestHeadersProvider: RequestHeadersProvider,
-) {
+private val preferences: LissenSharedPreferences,) {
   fun cacheMediaItem(
     mediaItem: DetailedItem,
     option: DownloadOption,
@@ -119,7 +120,8 @@ constructor(
   ): CacheState =
     withContext(Dispatchers.IO) {
       val headers = requestHeadersProvider.fetchRequestHeaders()
-      val client = createOkHttpClient(headers)
+      val client = createOkHttpClient(requestHeaders = headers,
+            preferences = preferences,)
       
       files.mapIndexed { index, file ->
         val uri = channel.provideFileUri(bookId, file.id)

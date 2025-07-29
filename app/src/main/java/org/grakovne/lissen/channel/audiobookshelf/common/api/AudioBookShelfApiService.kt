@@ -127,8 +127,7 @@ class AudioBookShelfApiService
       val client =
         ApiClient(
           host = host,
-          token = token,
-          accessToken = accessToken,
+          preferences = preferences,
           requestHeaders = headers,
         )
 

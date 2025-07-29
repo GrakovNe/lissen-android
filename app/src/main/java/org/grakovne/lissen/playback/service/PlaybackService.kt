@@ -129,11 +129,6 @@ class PlaybackService : MediaSessionService() {
   override fun onDestroy() {
     playbackSynchronizationService.cancelSynchronization()
     playerServiceScope.cancel()
-
-    mediaSession.release()
-    exoPlayer.release()
-    exoPlayer.clearMediaItems()
-
     super.onDestroy()
   }
 
@@ -307,8 +302,12 @@ class PlaybackService : MediaSessionService() {
 
     val okHttpDataSourceFactory =
       OkHttpDataSource
-        .Factory(createOkHttpClient(requestHeadersProvider.fetchRequestHeaders()))
-        .setDefaultRequestProperties(requestHeaders)
+        .Factory(
+          createOkHttpClient(
+            requestHeaders = requestHeadersProvider.fetchRequestHeaders(),
+            preferences = sharedPreferences,
+          ),
+        ).setDefaultRequestProperties(requestHeaders)
 
     return DefaultDataSource.Factory(
       baseContext,
