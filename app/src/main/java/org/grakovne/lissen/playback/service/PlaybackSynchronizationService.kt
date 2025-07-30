@@ -175,7 +175,7 @@ class PlaybackSynchronizationService
       private const val SHORT_SYNC_WINDOW =
         SYNC_INTERVAL_LONG * 2 - 1 // Nyquist-Shannon sampling theorem describes why -1 is important
 
-      private const val SYNC_INTERVAL_SHORT = 1_000L
+      private const val SYNC_INTERVAL_SHORT = 5_000L
 
       private val syncEvents =
         listOf(
