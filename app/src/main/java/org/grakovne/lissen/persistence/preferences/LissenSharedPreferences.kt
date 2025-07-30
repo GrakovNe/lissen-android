@@ -19,7 +19,6 @@ import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
-import org.grakovne.lissen.domain.RewindOnPauseTime
 import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import java.security.KeyStore
@@ -186,7 +185,7 @@ class LissenSharedPreferences
       sharedPreferences
         .getString(KEY_PREFERRED_LIBRARY_TYPE, null)
         ?.let { LibraryType.valueOf(it) }
-        ?: LibraryType.LIBRARY // We have to set the library type AUDIOBOOKSHELF_LIBRARY for backward compatibility
+        ?: LibraryType.LIBRARY
 
     private fun saveActiveLibraryType(type: LibraryType) =
       sharedPreferences.edit {
@@ -278,21 +277,6 @@ class LissenSharedPreferences
       }
     }
 
-    fun saveRewindOnPause(rewindOnPauseTime: RewindOnPauseTime) {
-      val json = gson.toJson(rewindOnPauseTime)
-      sharedPreferences.edit(commit = true) { putString(KEY_REWIND_ON_PAUSE, json) }
-    }
-
-    fun getRewindOnPause(): RewindOnPauseTime {
-      val json = sharedPreferences.getString(KEY_REWIND_ON_PAUSE, null)
-      val type = object : TypeToken<RewindOnPauseTime>() {}.type
-
-      return when (json == null) {
-        true -> RewindOnPauseTime.Default
-        false -> gson.fromJson(json, type)
-      }
-    }
-
     fun saveCustomHeaders(headers: List<ServerRequestHeader>) {
       sharedPreferences.edit {
         val json = gson.toJson(headers)
@@ -329,8 +313,6 @@ class LissenSharedPreferences
 
       private const val KEY_PREFERRED_PLAYBACK_SPEED = "preferred_playback_speed"
       private const val KEY_PREFERRED_SEEK_TIME = "preferred_seek_time"
-
-      private const val KEY_REWIND_ON_PAUSE = "rewind_on_pause"
 
       private const val KEY_PREFERRED_COLOR_SCHEME = "preferred_color_scheme"
       private const val KEY_PREFERRED_LIBRARY_ORDERING = "preferred_library_ordering"

@@ -36,7 +36,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import org.grakovne.lissen.R
-import org.grakovne.lissen.domain.RewindOnPauseTime
 import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.domain.SeekTimeOption
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItem
@@ -50,11 +49,9 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
   val viewModel: SettingsViewModel = hiltViewModel()
 
   val preferredSeekTime by viewModel.seekTime.observeAsState()
-  val rewindOnPause by viewModel.rewindOnPause.observeAsState(RewindOnPauseTime.Default)
 
   var rewindTimeExpanded by remember { mutableStateOf(false) }
   var forwardTimeExpanded by remember { mutableStateOf(false) }
-  var rewindOnPauseTimeExpanded by remember { mutableStateOf(false) }
 
   Scaffold(
     topBar = {
@@ -137,20 +134,6 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
           .entries
           .find { it.name == item.id }
           ?.let { viewModel.preferForwardRewind(it) }
-      },
-    )
-  }
-
-  if (rewindOnPauseTimeExpanded) {
-    CommonSettingsItemComposable(
-      items = SeekTimeOption.entries.map { it.toSettingsItem(context) },
-      selectedItem = rewindOnPause?.time?.toSettingsItem(context),
-      onDismissRequest = { rewindOnPauseTimeExpanded = false },
-      onItemSelected = { item ->
-        SeekTimeOption
-          .entries
-          .find { it.name == item.id }
-          ?.let { viewModel.preferRewindTimeOnPause(it) }
       },
     )
   }
