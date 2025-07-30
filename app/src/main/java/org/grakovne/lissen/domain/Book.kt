@@ -10,5 +10,4 @@ data class Book(
   val title: String,
   val author: String?,
   val duration: Int,
-  val hasContent: Boolean,
 )

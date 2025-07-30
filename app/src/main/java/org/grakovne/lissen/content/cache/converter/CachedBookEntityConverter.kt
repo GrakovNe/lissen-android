@@ -33,6 +33,5 @@ class CachedBookEntityConverter
               }
             },
         duration = entity.duration,
-        hasContent = true,
       )
   }
