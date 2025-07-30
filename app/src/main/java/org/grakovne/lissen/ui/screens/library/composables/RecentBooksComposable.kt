@@ -168,7 +168,7 @@ fun RecentBookItemComposable(
             text = "${(calculateProgress(book) * 100).toInt()}%",
             fontSize = typography.bodySmall.fontSize,
             fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(start = 8.dp),
+            modifier = Modifier.padding(start = 12.dp),
           )
         }
       } else {
