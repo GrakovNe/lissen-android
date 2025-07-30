@@ -1,6 +1,6 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.converter
 
-import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryItemResponse
 import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.domain.Library
 import javax.inject.Inject
@@ -10,9 +10,8 @@ import javax.inject.Singleton
 class LibraryResponseConverter
   @Inject
   constructor() {
-    fun apply(response: LibraryResponse): List<Library> =
+    fun apply(response: List<LibraryItemResponse>): List<Library> =
       response
-        .libraries
         .map {
           it
             .mediaType

@@ -12,4 +12,5 @@ data class LibraryItemResponse(
   val id: String,
   val name: String,
   val mediaType: String,
+  val displayOrder: Int?,
 )

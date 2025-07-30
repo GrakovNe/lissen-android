@@ -54,6 +54,7 @@ abstract class AudiobookshelfChannel(
   override suspend fun fetchLibraries(): ApiResult<List<Library>> =
     dataRepository
       .fetchLibraries()
+      .map { it.libraries.sortedBy { library -> library.displayOrder } }
       .map { libraryResponseConverter.apply(it) }
 
   override suspend fun fetchRecentListenedBooks(libraryId: String): ApiResult<List<RecentBook>> {
