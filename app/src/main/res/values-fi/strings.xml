@@ -104,7 +104,6 @@
     <string name="login_error_lissen_auth_failed">Tunnistautuminen ei onnistunut. Ole hyvä, ja tarkista palvelimen asetukset</string>
     <string name="settings_screen_library_ordering_author_option">Kirjailija</string>
     <string name="seek_interval_60_seconds">60 sekuntia</string>
-    <string name="rewind_on_pause_title">Kelaa taaksepäin tauottaessa</string>
     <string name="settings_screen_library_ordering_modification_date_option">Muokkauspäivä</string>
     <string name="seek_interval_15_seconds">15 sekuntia</string>
     <string name="settings_screen_seek_time_hint">Määrittele kelauksen valinnat</string>
