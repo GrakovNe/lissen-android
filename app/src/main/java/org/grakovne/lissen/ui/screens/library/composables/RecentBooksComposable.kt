@@ -138,7 +138,7 @@ fun RecentBookItemComposable(
           modifier =
             Modifier
               .fillMaxWidth()
-              .padding(horizontal = 2.dp),
+              .padding(start = 2.dp, end = 2.dp, top = 2.dp),
           verticalAlignment = Alignment.CenterVertically,
         ) {
           Box(
@@ -167,8 +167,8 @@ fun RecentBookItemComposable(
           Text(
             text = "${(calculateProgress(book) * 100).toInt()}%",
             fontSize = typography.bodySmall.fontSize,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(start = 12.dp),
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(start = 8.dp),
           )
         }
       } else {
