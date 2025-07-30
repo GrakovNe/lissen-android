@@ -112,9 +112,6 @@
     <string name="seek_interval_60_seconds">60 seconds</string>
     <string name="continue_playback_shortcut_title">Continue</string>
     <string name="continue_playback_shortcut_description">Continue listening</string>
-    <string name="rewind_on_pause_title">Rewind on pause</string>
-    <string name="rewind_on_pause_hint">Automatically skips back when paused</string>
-    <string name="rewind_on_pause_time">Rewind time on pause</string>
     <string name="offline_cache_is_empty">No saved content yet</string>
     <string name="settings_screen_cached_items_title">Downloads</string>
     <string name="settings_screen_cached_items_hint">Manage saved content</string>

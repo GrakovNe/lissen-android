@@ -104,9 +104,6 @@
     <string name="seek_interval_15_seconds">15 秒</string>
     <string name="seek_interval_30_seconds">30 秒</string>
     <string name="seek_interval_60_seconds">60 秒</string>
-    <string name="rewind_on_pause_title">暂停时回退</string>
-    <string name="rewind_on_pause_hint">在暂停时自动回退</string>
-    <string name="rewind_on_pause_time">暂停时自动回退时间</string>
     <string name="offline_cache_is_empty">未保存内容</string>
     <string name="settings_screen_cached_items_title">下载</string>
     <string name="settings_screen_cached_items_hint">管理保存的内容</string>

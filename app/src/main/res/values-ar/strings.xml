@@ -51,9 +51,6 @@
     <string name="downloads_menu_download_podcast">تنزيل البودكاست</string>
     <string name="continue_playback_shortcut_title">متابعة</string>
     <string name="continue_playback_shortcut_description">متابعة الاستماع</string>
-    <string name="rewind_on_pause_time">وقت الترجيع عند الإيقاف المؤقت</string>
-    <string name="rewind_on_pause_title">الترجيع عند الإيقاف المؤقت</string>
-    <string name="rewind_on_pause_hint">القفز تلقائياً إلى الخلف عند الإيقاف المؤقت</string>
     <string name="login_error_lissen_auth_scheme_must_be_whitelisted">النسق %1$s://%2$s غير مسموح به في إعدادات عنوان URI لإعادة التوجيه بالخادم</string>
     <string name="login_error_lissen_auth_failed">تعذر التفويض. يرجى التحقق من إعدادات الخادم</string>
     <string name="settings_screen_library_ordering_title">ترتيب المكتبة</string>

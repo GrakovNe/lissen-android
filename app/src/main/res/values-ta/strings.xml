@@ -114,8 +114,5 @@
     <string name="seek_interval_15_seconds">15 வினாடிகள்</string>
     <string name="seek_interval_30_seconds">30 வினாடிகள்</string>
     <string name="seek_interval_60_seconds">60 வினாடிகள்</string>
-    <string name="rewind_on_pause_title">இடைநிறுத்தத்தில் முன்னாடி</string>
-    <string name="rewind_on_pause_hint">இடைநிறுத்தப்படும்போது தானாகவே பின்வாங்குகிறது</string>
-    <string name="rewind_on_pause_time">இடைநிறுத்தத்தில் நேரத்தை முன்னாடி</string>
     <string name="settings_screen_cached_items_hint">சேமித்த உள்ளடக்கத்தை நிர்வகிக்கவும்</string>
 </resources>

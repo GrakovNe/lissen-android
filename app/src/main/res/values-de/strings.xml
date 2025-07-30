@@ -102,9 +102,6 @@
     <string name="settings_screen_seek_time_hint">Suchsteuerungen definieren</string>
     <string name="rewind_interval">Rückspulintervall</string>
     <string name="continue_playback_shortcut_title">Weiter</string>
-    <string name="rewind_on_pause_title">Zurückspulen bei Pause</string>
-    <string name="rewind_on_pause_hint">Springt automatisch zurück, wenn pausiert wird</string>
-    <string name="rewind_on_pause_time">Zeit bei Pause zurückspulen</string>
     <string name="forward_interval">Vorwärtsintervall</string>
     <string name="seek_interval_5_seconds">5 Sekunden</string>
     <string name="seek_interval_10_seconds">10 Sekunden</string>

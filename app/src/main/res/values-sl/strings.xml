@@ -109,9 +109,6 @@
     <string name="continue_playback_shortcut_title">Nadaljuj</string>
     <string name="playing_item_details_narrator">Pripovedovalec</string>
     <string name="playing_item_details_duration">Trajanje</string>
-    <string name="rewind_on_pause_title">Previjanje nazaj med pavzo</string>
-    <string name="rewind_on_pause_hint">Preskoči nazaj med začasno ustavitvijo</string>
-    <string name="rewind_on_pause_time">Previjanje časa nazaj med pavzo</string>
     <string name="offline_cache_is_empty">Še ni shranjene vsebine</string>
     <string name="settings_screen_cached_items_title">Prenosi</string>
     <string name="settings_screen_cached_items_hint">Upravljanje shranjene vsebine</string>

@@ -90,9 +90,6 @@
     <string name="seek_interval_10_seconds">10 secondes</string>
     <string name="chapters_list_empty">Ce livre n\'a pas de chapitres</string>
     <string name="continue_playback_shortcut_description">Continuer à écouter</string>
-    <string name="rewind_on_pause_title">Rembobiner en pause</string>
-    <string name="rewind_on_pause_hint">Revient automatiquement en arrière en cas de pause</string>
-    <string name="rewind_on_pause_time">Rembobiner le temps en pause</string>
     <string name="episodes_list_empty">Aucun podcast n\'a d\'épisodes</string>
     <string name="login_error_lissen_auth_failed">Autorisation impossible. Veuillez vérifier les paramètres de votre serveur</string>
     <string name="login_screen_open_id_button">Connectez-vous avec OpenID</string>
