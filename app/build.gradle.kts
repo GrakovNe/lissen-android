@@ -29,17 +29,17 @@ val localProperties = Properties().apply {
 }
 
 android {
-    namespace = "org.grakovne.lissen"
-    compileSdk = 35
-
-    lint {
+  namespace = "org.grakovne.lissen"
+  compileSdk = 36
+  
+  lint {
         disable.add("MissingTranslation")
     }
 
     defaultConfig {
         applicationId = "org.grakovne.lissen"
         minSdk = 28
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 10601
         versionName = "1.6.1"
 
@@ -112,7 +112,8 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1,MIT}"
         }
     }
-
+  buildToolsVersion = "35.0.0"
+  
 }
 
 dependencies {
