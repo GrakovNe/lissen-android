@@ -14,6 +14,10 @@ import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.database.StandaloneDatabaseProvider
+import androidx.media3.datasource.cache.Cache
+import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
+import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.CommandButton
 import androidx.media3.session.MediaSession
@@ -28,11 +32,26 @@ import dagger.hilt.components.SingletonComponent
 import org.grakovne.lissen.domain.SeekTimeOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.activity.AppActivity
+import java.io.File
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
 object MediaModule {
+  private const val CACHE_SIZE = 50L * 1024 * 1024
+
+  @OptIn(UnstableApi::class)
+  @Provides
+  @Singleton
+  fun provideMediaCache(
+    @ApplicationContext context: Context,
+  ): Cache =
+    SimpleCache(
+      File(context.cacheDir, "exo_cache"),
+      LeastRecentlyUsedCacheEvictor(CACHE_SIZE),
+      StandaloneDatabaseProvider(context),
+    )
+
   @OptIn(UnstableApi::class)
   @Provides
   @Singleton
