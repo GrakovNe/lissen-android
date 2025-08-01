@@ -36,7 +36,7 @@ private fun authInterceptor(
   val original: Request = chain.request()
   val requestBuilder: Request.Builder = original.newBuilder()
 
-  val bearer = preferences.getAccessToken() ?: preferences.getRefreshToken()
+  val bearer = preferences.getAccessToken() ?: preferences.getToken()
   bearer?.let { requestBuilder.header("Authorization", "Bearer $it") }
 
   requestHeaders
