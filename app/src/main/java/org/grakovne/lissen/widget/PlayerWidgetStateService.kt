@@ -1,9 +1,11 @@
 package org.grakovne.lissen.widget
 
 import android.content.Context
+import androidx.annotation.OptIn
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.lifecycle.asFlow
+import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -20,6 +22,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+@OptIn(UnstableApi::class)
 class PlayerWidgetStateService
   @Inject
   constructor(

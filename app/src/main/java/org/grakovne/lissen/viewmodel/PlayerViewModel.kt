@@ -1,9 +1,11 @@
 package org.grakovne.lissen.viewmodel
 
+import androidx.annotation.OptIn
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.domain.DetailedItem
@@ -14,6 +16,7 @@ import org.grakovne.lissen.playback.MediaRepository
 import javax.inject.Inject
 
 @HiltViewModel
+@OptIn(UnstableApi::class)
 class PlayerViewModel
   @Inject
   constructor(
