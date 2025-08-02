@@ -10,7 +10,10 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.datasource.cache.Cache
+import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
@@ -36,6 +39,7 @@ import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import java.io.File
 import javax.inject.Inject
 
+@UnstableApi
 @AndroidEntryPoint
 class PlaybackService : MediaSessionService() {
   @Inject
@@ -58,6 +62,9 @@ class PlaybackService : MediaSessionService() {
 
   @Inject
   lateinit var requestHeadersProvider: RequestHeadersProvider
+
+  @Inject
+  lateinit var mediaCache: Cache
 
   private val playerServiceScope = MainScope()
 
@@ -294,13 +301,13 @@ class PlaybackService : MediaSessionService() {
   ) = seek(chapters, progress?.currentTime)
 
   @OptIn(UnstableApi::class)
-  private fun buildDataSourceFactory(): DefaultDataSource.Factory {
+  private fun buildDataSourceFactory(): DataSource.Factory {
     val requestHeaders =
       requestHeadersProvider
         .fetchRequestHeaders()
         .associate { it.name to it.value }
 
-    val okHttpDataSourceFactory =
+    val upstreamFactory =
       OkHttpDataSource
         .Factory(
           createOkHttpClient(
@@ -309,10 +316,18 @@ class PlaybackService : MediaSessionService() {
           ),
         ).setDefaultRequestProperties(requestHeaders)
 
-    return DefaultDataSource.Factory(
-      baseContext,
-      okHttpDataSourceFactory,
-    )
+    return CacheDataSource
+      .Factory()
+      .setCache(mediaCache)
+      .setUpstreamDataSourceFactory(
+        DefaultDataSource.Factory(
+          baseContext,
+          upstreamFactory,
+        ),
+      ).setFlags(
+        CacheDataSource.FLAG_BLOCK_ON_CACHE or
+          CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR,
+      )
   }
 
   companion object {
