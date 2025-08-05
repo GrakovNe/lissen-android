@@ -49,7 +49,11 @@ abstract class AudiobookshelfChannel(
     progress: PlaybackProgress,
   ): ApiResult<Unit> = syncService.syncProgress(sessionId, progress)
 
-  override suspend fun fetchBookCover(bookId: String): ApiResult<Buffer> = dataRepository.fetchBookCover(bookId)
+  override suspend fun fetchBookCover(
+    bookId: String,
+    width: Int?,
+    height: Int?,
+  ): ApiResult<Buffer> = dataRepository.fetchBookCover(bookId, width)
 
   override suspend fun fetchLibraries(): ApiResult<List<Library>> =
     dataRepository

@@ -67,7 +67,7 @@ class LissenMediaProvider
       Log.d(TAG, "Syncing Progress for $bookId. $progress")
 
       localCacheRepository.syncProgress(bookId, progress)
-      
+
       val channelSyncResult =
         providePreferredChannel()
           .syncProgress(sessionId, progress)
@@ -78,13 +78,16 @@ class LissenMediaProvider
       }
     }
 
-    suspend fun fetchBookCover(bookId: String): ApiResult<Buffer> {
+    suspend fun fetchBookCover(
+      bookId: String,
+      width: Int? = null,
+    ): ApiResult<Buffer> {
       Log.d(TAG, "Fetching Cover stream for $bookId")
 
       val cover =
         when (preferences.isForceCache()) {
           true -> localCacheRepository.fetchBookCover(bookId)
-          false -> providePreferredChannel().fetchBookCover(bookId)
+          false -> providePreferredChannel().fetchBookCover(bookId, width)
         }
 
       return cover
