@@ -52,7 +52,6 @@ abstract class AudiobookshelfChannel(
   override suspend fun fetchBookCover(
     bookId: String,
     width: Int?,
-    height: Int?,
   ): ApiResult<Buffer> = dataRepository.fetchBookCover(bookId, width)
 
   override suspend fun fetchLibraries(): ApiResult<List<Library>> =

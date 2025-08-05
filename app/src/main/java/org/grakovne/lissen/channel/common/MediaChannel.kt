@@ -26,7 +26,6 @@ interface MediaChannel {
   suspend fun fetchBookCover(
     bookId: String,
     width: Int? = null,
-    height: Int? = null,
   ): ApiResult<Buffer>
 
   suspend fun fetchBooks(
