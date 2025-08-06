@@ -207,7 +207,6 @@ private fun CachedItemComposable(
       ImageRequest
         .Builder(context)
         .data(book.id)
-        .size(coil.size.Size.ORIGINAL)
         .build()
     }
 

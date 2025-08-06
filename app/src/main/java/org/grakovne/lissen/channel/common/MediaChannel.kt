@@ -23,7 +23,10 @@ interface MediaChannel {
     progress: PlaybackProgress,
   ): ApiResult<Unit>
 
-  suspend fun fetchBookCover(bookId: String): ApiResult<Buffer>
+  suspend fun fetchBookCover(
+    bookId: String,
+    width: Int? = null,
+  ): ApiResult<Buffer>
 
   suspend fun fetchBooks(
     libraryId: String,

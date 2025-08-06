@@ -7,7 +7,9 @@ import coil.decode.ImageSource
 import coil.fetch.FetchResult
 import coil.fetch.Fetcher
 import coil.fetch.SourceResult
+import coil.key.Keyer
 import coil.request.Options
+import coil.size.Dimension
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,9 +23,16 @@ class BookCoverFetcher(
   private val mediaChannel: LissenMediaProvider,
   private val uri: Uri,
   private val context: Context,
+  private val options: Options,
 ) : Fetcher {
   override suspend fun fetch(): FetchResult? =
-    when (val response = mediaChannel.fetchBookCover(uri.toString())) {
+    when (
+      val response =
+        mediaChannel.fetchBookCover(
+          bookId = uri.toString(),
+          width = options.size.width.pxOrNull(),
+        )
+    ) {
       is ApiResult.Error -> null
       is ApiResult.Success -> {
         val stream = response.data
@@ -46,7 +55,7 @@ class BookCoverFetcherFactory(
     data: Uri,
     options: Options,
     imageLoader: ImageLoader,
-  ) = BookCoverFetcher(dataProvider, data, context)
+  ) = BookCoverFetcher(dataProvider, data, context, options)
 }
 
 @Module
@@ -67,6 +76,21 @@ object ImageLoaderModule {
   ): ImageLoader =
     ImageLoader
       .Builder(context)
-      .components { add(bookCoverFetcherFactory) }
-      .build()
+      .components {
+        add(CoverCacheKeyHolder())
+        add(bookCoverFetcherFactory)
+      }.build()
+}
+
+fun Dimension.pxOrNull(): Int? = (this as? Dimension.Pixels)?.px
+
+class CoverCacheKeyHolder : Keyer<Uri> {
+  override fun key(
+    data: Uri,
+    options: Options,
+  ): String {
+    val width = options.size.width.pxOrNull()
+
+    return "cover:$data:w=${width ?: "auto"}"
+  }
 }

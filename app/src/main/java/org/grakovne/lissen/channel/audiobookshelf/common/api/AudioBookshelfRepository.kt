@@ -174,8 +174,15 @@ class AudioBookshelfRepository
         )
       }
 
-    suspend fun fetchBookCover(itemId: String): ApiResult<Buffer> =
+    suspend fun fetchBookCover(
+      itemId: String,
+      width: Int?,
+    ): ApiResult<Buffer> =
       audioBookShelfApiService
-        .makeRequest { it.getItemCover(itemId = itemId) }
-        .map { Buffer().apply { writeAll(it.source()) } }
+        .makeRequest {
+          when (width == null) {
+            true -> it.getItemCover(itemId = itemId)
+            false -> it.getItemCover(itemId = itemId, width)
+          }
+        }.map { Buffer().apply { writeAll(it.source()) } }
   }

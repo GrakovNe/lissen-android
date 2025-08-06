@@ -46,7 +46,6 @@ fun BookComposable(
       ImageRequest
         .Builder(context)
         .data(book.id)
-        .size(coil.size.Size.ORIGINAL)
         .build()
     }
 
