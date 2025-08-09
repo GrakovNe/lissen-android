@@ -37,6 +37,7 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import java.io.File
+import java.io.FileOutputStream
 import javax.inject.Inject
 
 @UnstableApi
@@ -146,26 +147,7 @@ class PlaybackService : MediaSessionService() {
     withContext(Dispatchers.IO) {
       val prepareQueue =
         async {
-          val coverBuffer =
-            channelProvider
-              .fetchBookCover(bookId = book.id)
-              .fold(
-                onSuccess = { it },
-                onFailure = { null },
-              )
-
-          val cachedCover =
-            coverBuffer
-              ?.let { buffer ->
-                File
-                  .createTempFile(book.id, null, LissenApplication.appContext.cacheDir)
-                  .also { file ->
-                    file.outputStream().use { outputStream ->
-                      buffer.writeTo(outputStream)
-                    }
-                  }
-              }
-
+          val cachedCover = fetchAndCacheCover(book)
           val sourceFactory = buildDataSourceFactory()
 
           val playingQueue =
@@ -227,6 +209,22 @@ class PlaybackService : MediaSessionService() {
         .sendBroadcast(intent)
     }
   }
+
+  private suspend fun fetchAndCacheCover(book: DetailedItem) =
+    channelProvider
+      .fetchBookCover(bookId = book.id)
+      .fold(
+        onSuccess = { it },
+        onFailure = { null },
+      )?.let { buffer ->
+        File
+          .createTempFile(book.id, null, LissenApplication.appContext.cacheDir)
+          .also { file ->
+            file.outputStream().use<FileOutputStream, Unit> { outputStream ->
+              buffer.writeTo(outputStream)
+            }
+          }
+      }
 
   private fun setTimer(delay: Double) {
     val delayMs = delay * 1000
