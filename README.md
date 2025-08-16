@@ -68,9 +68,8 @@ To contribute:
 
 You can connect to a demo [Audiobookshelf](https://github.com/advplyr/audiobookshelf) instance through the Lissen app:
 
-```
 URL: [https://audiobooks.dev](https://audiobooks.dev/) (thanks for hosting @Vito0912)
-
+```
 Username: demo
 Password: demo
 ```
