@@ -65,7 +65,7 @@ object MediaModule {
         AudioAttributes
           .Builder()
           .setUsage(C.USAGE_MEDIA)
-          .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+          .setContentType(C.AUDIO_CONTENT_TYPE_SPEECH)
           .build(),
         true,
       ).build()
