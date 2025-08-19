@@ -5,7 +5,6 @@ package org.grakovne.lissen.playback
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.media.audiofx.LoudnessEnhancer
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
@@ -14,7 +13,6 @@ import android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
-import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.cache.Cache
@@ -40,7 +38,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object MediaModule {
-  private var enhancer: LoudnessEnhancer? = null
   
   @OptIn(UnstableApi::class)
   @Provides
@@ -72,21 +69,9 @@ object MediaModule {
         true,
       ).build()
     
-    player.addListener(object : Player.Listener {
-      override fun onAudioSessionIdChanged(id: Int) {
-        enhancer?.release()
-        if (id != C.AUDIO_SESSION_ID_UNSET) {
-          enhancer = LoudnessEnhancer(id).apply {
-            enabled = true
-            setTargetGain((1200))
-          }
-        }
-      }
-    })
-    
     return player
   }
-
+  
   @OptIn(UnstableApi::class)
   @Provides
   @Singleton
@@ -103,7 +88,7 @@ object MediaModule {
         Intent(context, AppActivity::class.java),
         PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
       )
-
+    
     return MediaSession
       .Builder(context, exoPlayer)
       .setCallback(
@@ -114,33 +99,33 @@ object MediaModule {
             intent: Intent,
           ): Boolean {
             Log.d(TAG, "Executing media button event from: $controllerInfo")
-
+            
             val keyEvent =
               intent
                 .getParcelableExtra<KeyEvent>(Intent.EXTRA_KEY_EVENT)
                 ?: return super.onMediaButtonEvent(session, controllerInfo, intent)
-
+            
             Log.d(TAG, "Got media key event: $keyEvent")
-
+            
             if (keyEvent.action != KeyEvent.ACTION_DOWN) {
               return super.onMediaButtonEvent(session, controllerInfo, intent)
             }
-
+            
             when (keyEvent.keyCode) {
               KEYCODE_MEDIA_NEXT -> {
                 mediaRepository.forward()
                 return true
               }
-
+              
               KEYCODE_MEDIA_PREVIOUS -> {
                 mediaRepository.rewind()
                 return true
               }
-
+              
               else -> return super.onMediaButtonEvent(session, controllerInfo, intent)
             }
           }
-
+          
           @OptIn(UnstableApi::class)
           override fun onConnect(
             session: MediaSession,
@@ -149,14 +134,14 @@ object MediaModule {
             val rewindCommand = SessionCommand(REWIND_COMMAND, Bundle.EMPTY)
             val forwardCommand = SessionCommand(FORWARD_COMMAND, Bundle.EMPTY)
             val seekTime = preferences.getSeekTime()
-
+            
             val sessionCommands =
               MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS
                 .buildUpon()
                 .add(rewindCommand)
                 .add(forwardCommand)
                 .build()
-
+            
             val rewindButton =
               CommandButton
                 .Builder(provideRewindCommand(seekTime.rewind))
@@ -164,7 +149,7 @@ object MediaModule {
                 .setDisplayName("Rewind")
                 .setEnabled(true)
                 .build()
-
+            
             val forwardButton =
               CommandButton
                 .Builder(provideForwardCommand(seekTime.forward))
@@ -172,7 +157,7 @@ object MediaModule {
                 .setDisplayName("Forward")
                 .setEnabled(true)
                 .build()
-
+            
             return MediaSession
               .ConnectionResult
               .AcceptedResultBuilder(session)
@@ -180,7 +165,7 @@ object MediaModule {
               .setCustomLayout(listOf(rewindButton, forwardButton))
               .build()
           }
-
+          
           override fun onCustomCommand(
             session: MediaSession,
             controller: MediaSession.ControllerInfo,
@@ -188,36 +173,36 @@ object MediaModule {
             args: Bundle,
           ): ListenableFuture<SessionResult> {
             Log.d(TAG, "Executing: ${customCommand.customAction}")
-
+            
             when (customCommand.customAction) {
               FORWARD_COMMAND -> mediaRepository.forward()
               REWIND_COMMAND -> mediaRepository.rewind()
             }
-
+            
             return super.onCustomCommand(session, controller, customCommand, args)
           }
         },
       ).setSessionActivity(sessionActivityPendingIntent)
       .build()
   }
-
+  
   private fun buildPlaybackCacheLimit(ctx: Context): Long {
     val stat = android.os.StatFs(ctx.cacheDir.path)
     val available = stat.availableBytes
     val dynamicCap = (available - KEEP_FREE_BYTES).coerceAtLeast(MIN_CACHE_BYTES)
-
+    
     return minOf(MAX_CACHE_BYTES, dynamicCap)
   }
-
+  
   private fun provideRewindCommand(seekTime: SeekTimeOption) = CommandButton.ICON_SKIP_BACK
-
+  
   private fun provideForwardCommand(seekTime: SeekTimeOption) = CommandButton.ICON_SKIP_FORWARD
-
+  
   private const val REWIND_COMMAND = "notification_rewind"
   private const val FORWARD_COMMAND = "notification_forward"
-
+  
   private const val TAG = "MediaModule"
-
+  
   private const val MAX_CACHE_BYTES = 512L * 1024 * 1024
   private const val KEEP_FREE_BYTES = 20L * 1024 * 1024
   private const val MIN_CACHE_BYTES = 10L * 1024 * 1024
