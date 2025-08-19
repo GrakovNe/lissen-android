@@ -5,6 +5,7 @@ package org.grakovne.lissen.playback
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.media.audiofx.LoudnessEnhancer
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
@@ -13,6 +14,7 @@ import android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.cache.Cache
@@ -38,6 +40,8 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object MediaModule {
+  private var enhancer: LoudnessEnhancer? = null
+  
   @OptIn(UnstableApi::class)
   @Provides
   @Singleton
@@ -49,26 +53,39 @@ object MediaModule {
       LeastRecentlyUsedCacheEvictor(buildPlaybackCacheLimit(context)),
       StandaloneDatabaseProvider(context),
     )
-
+  
   @OptIn(UnstableApi::class)
   @Provides
   @Singleton
   fun provideExoPlayer(
     @ApplicationContext context: Context,
-  ): ExoPlayer =
-    ExoPlayer
-      .Builder(context)
+  ): ExoPlayer {
+    val player = ExoPlayer.Builder(context)
       .setSeekBackIncrementMs(10_000)
       .setSeekForwardIncrementMs(30_000)
       .setHandleAudioBecomingNoisy(true)
       .setAudioAttributes(
-        AudioAttributes
-          .Builder()
+        AudioAttributes.Builder()
           .setUsage(C.USAGE_MEDIA)
           .setContentType(C.AUDIO_CONTENT_TYPE_SPEECH)
           .build(),
         true,
       ).build()
+    
+    player.addListener(object : Player.Listener {
+      override fun onAudioSessionIdChanged(id: Int) {
+        enhancer?.release()
+        if (id != C.AUDIO_SESSION_ID_UNSET) {
+          enhancer = LoudnessEnhancer(id).apply {
+            enabled = true
+            setTargetGain((1200))
+          }
+        }
+      }
+    })
+    
+    return player
+  }
 
   @OptIn(UnstableApi::class)
   @Provides
