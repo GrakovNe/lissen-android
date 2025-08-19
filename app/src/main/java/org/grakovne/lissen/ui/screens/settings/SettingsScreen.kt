@@ -93,10 +93,10 @@ fun SettingsScreen(
           }
 
           ColorSchemeSettingsComposable(viewModel)
-
-          LibraryOrderingSettingsComposable(viewModel)
-
+          
           PlaybackVolumeBoostSettingsComposable(viewModel)
+          
+          LibraryOrderingSettingsComposable(viewModel)
 
           AdvancedSettingsItemComposable(
             title = stringResource(R.string.settings_screen_cached_items_title),
