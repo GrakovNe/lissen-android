@@ -174,6 +174,19 @@ class LissenSharedPreferences
         awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
       }.distinctUntilChanged()
 
+    val playbackVolumeBoostFlow: Flow<PlaybackVolumeBoost> =
+      callbackFlow {
+        val listener =
+          SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == KEY_VOLUME_BOOST) {
+              trySend(getPlaybackVolumeBoost())
+            }
+          }
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+        trySend(getPlaybackVolumeBoost())
+        awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
+      }.distinctUntilChanged()
+
     val colorSchemeFlow: Flow<ColorScheme> =
       callbackFlow {
         val listener =
