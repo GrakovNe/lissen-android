@@ -11,36 +11,39 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class PlaybackEnhancerService @OptIn(UnstableApi::class)
-@Inject constructor(
-  private val player: ExoPlayer
-): RunningComponent {
-  private var enhancer: LoudnessEnhancer? = null
-  
+class PlaybackEnhancerService
   @OptIn(UnstableApi::class)
-  override fun onCreate() {
-    player.addListener(
-      object : Player.Listener {
-        override fun onAudioSessionIdChanged(id: Int) {
-          enhancer?.release()
-          if (id != C.AUDIO_SESSION_ID_UNSET) {
-            enhancer = LoudnessEnhancer(id).apply {
-              enabled = true
-              setTargetGain((1200))
+  @Inject
+  constructor(
+    private val player: ExoPlayer,
+  ) : RunningComponent {
+    private var enhancer: LoudnessEnhancer? = null
+
+    @OptIn(UnstableApi::class)
+    override fun onCreate() {
+      player.addListener(
+        object : Player.Listener {
+          override fun onAudioSessionIdChanged(id: Int) {
+            enhancer?.release()
+            if (id != C.AUDIO_SESSION_ID_UNSET) {
+              enhancer =
+                LoudnessEnhancer(id).apply {
+                  enabled = true
+                  setTargetGain((1200))
+                }
             }
           }
-        }
-      }
-    )
-    
-    enableEnhance()
+        },
+      )
+
+      enableEnhance()
+    }
+
+    fun disableEnhance() {
+      enhancer?.setTargetGain(0)
+    }
+
+    fun enableEnhance() {
+      enhancer?.setTargetGain(1200)
+    }
   }
-  
-  fun disableEnhance() {
-    enhancer?.setTargetGain(0)
-  }
-  
-  fun enableEnhance() {
-    enhancer?.setTargetGain(1200)
-  }
-}

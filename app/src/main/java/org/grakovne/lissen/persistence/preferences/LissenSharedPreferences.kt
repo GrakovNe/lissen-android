@@ -17,6 +17,7 @@ import org.grakovne.lissen.channel.common.ChannelCode
 import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
+import org.grakovne.lissen.common.PlaybackVolumeBoost
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.SeekTime
@@ -133,6 +134,17 @@ class LissenSharedPreferences
         false -> gson.fromJson(json, type)
       }
     }
+
+    fun savePlaybackVolumeBoost(playbackVolumeBoost: PlaybackVolumeBoost) =
+      sharedPreferences.edit {
+        putString(KEY_VOLUME_BOOST, playbackVolumeBoost.name)
+      }
+
+    fun getPlaybackVolumeBoost(): PlaybackVolumeBoost =
+      sharedPreferences
+        .getString(KEY_VOLUME_BOOST, PlaybackVolumeBoost.DISABLED.name)
+        ?.let { PlaybackVolumeBoost.valueOf(it) }
+        ?: PlaybackVolumeBoost.DISABLED
 
     fun saveColorScheme(colorScheme: ColorScheme) =
       sharedPreferences.edit {
@@ -320,6 +332,7 @@ class LissenSharedPreferences
       private const val KEY_CUSTOM_HEADERS = "custom_headers"
 
       private const val KEY_PLAYING_BOOK = "playing_book"
+      private const val KEY_VOLUME_BOOST = "volume_boost"
 
       private const val ANDROID_KEYSTORE = "AndroidKeyStore"
       private const val TRANSFORMATION = "AES/GCM/NoPadding"

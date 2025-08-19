@@ -46,32 +46,32 @@ import javax.inject.Inject
 class PlaybackService : MediaSessionService() {
   @Inject
   lateinit var exoPlayer: ExoPlayer
-  
+
   @Inject
   lateinit var mediaSession: MediaSession
-  
+
   @Inject
   lateinit var mediaChannel: LissenMediaProvider
-  
+
   @Inject
   lateinit var playbackSynchronizationService: PlaybackSynchronizationService
-  
+
   @Inject
   lateinit var sharedPreferences: LissenSharedPreferences
-  
+
   @Inject
   lateinit var channelProvider: LissenMediaProvider
-  
+
   @Inject
   lateinit var requestHeadersProvider: RequestHeadersProvider
-  
+
   @Inject
   lateinit var mediaCache: Cache
-  
+
   private val playerServiceScope = MainScope()
-  
+
   private val handler = Handler(Looper.getMainLooper())
-  
+
   @Suppress("DEPRECATION")
   override fun onStartCommand(
     intent: Intent?,
@@ -79,23 +79,23 @@ class PlaybackService : MediaSessionService() {
     startId: Int,
   ): Int {
     super.onStartCommand(intent, flags, startId)
-    
+
     when (intent?.action) {
       ACTION_SET_TIMER -> {
         val delay = intent.getDoubleExtra(TIMER_VALUE_EXTRA, 0.0)
-        
+
         if (delay > 0) {
           setTimer(delay)
         }
-        
+
         return START_NOT_STICKY
       }
-      
+
       ACTION_CANCEL_TIMER -> {
         cancelTimer()
         return START_NOT_STICKY
       }
-      
+
       ACTION_PLAY -> {
         playerServiceScope
           .launch {
@@ -105,12 +105,12 @@ class PlaybackService : MediaSessionService() {
           }
         return START_STICKY
       }
-      
+
       ACTION_PAUSE -> {
         pause()
         return START_NOT_STICKY
       }
-      
+
       ACTION_SET_PLAYBACK -> {
         val book = intent.getSerializableExtra(BOOK_EXTRA) as? DetailedItem
         book?.let {
@@ -119,38 +119,38 @@ class PlaybackService : MediaSessionService() {
         }
         return START_NOT_STICKY
       }
-      
+
       ACTION_SEEK_TO -> {
         val book = intent.getSerializableExtra(BOOK_EXTRA) as? DetailedItem
         val position = intent.getDoubleExtra(POSITION, 0.0)
         book?.let { seek(it.files, position) }
         return START_NOT_STICKY
       }
-      
+
       else -> {
         return START_NOT_STICKY
       }
     }
   }
-  
+
   override fun onGetSession(controllerInfo: MediaSession.ControllerInfo) = mediaSession
-  
+
   override fun onDestroy() {
     playbackSynchronizationService.cancelSynchronization()
     playerServiceScope.cancel()
     super.onDestroy()
   }
-  
+
   @OptIn(UnstableApi::class)
   private suspend fun preparePlayback(book: DetailedItem) {
     exoPlayer.playWhenReady = false
-    
+
     withContext(Dispatchers.IO) {
       val prepareQueue =
         async {
           val cachedCover = fetchAndCacheCover(book)
           val sourceFactory = buildDataSourceFactory()
-          
+
           val playingQueue =
             book
               .files
@@ -165,7 +165,7 @@ class PlaybackService : MediaSessionService() {
                           .setTitle(file.name)
                           .setArtist(book.title)
                           .setArtworkUri(cachedCover?.toUri())
-                      
+
                       val mediaItem =
                         MediaItem
                           .Builder()
@@ -174,7 +174,7 @@ class PlaybackService : MediaSessionService() {
                           .setTag(book)
                           .setMediaMetadata(mediaData.build())
                           .build()
-                      
+
                       ProgressiveMediaSource
                         .Factory(sourceFactory)
                         .createMediaSource(mediaItem)
@@ -184,33 +184,33 @@ class PlaybackService : MediaSessionService() {
                     },
                   )
               }
-          
+
           withContext(Dispatchers.Main) {
             exoPlayer.setMediaSources(playingQueue)
             exoPlayer.prepare()
-            
+
             setPlaybackProgress(book.files, book.progress)
           }
         }
-      
+
       val prepareSession =
         async {
           playbackSynchronizationService.startPlaybackSynchronization(book)
         }
-      
+
       awaitAll(prepareSession, prepareQueue)
-      
+
       val intent =
         Intent(PLAYBACK_READY).apply {
           putExtra(BOOK_EXTRA, book)
         }
-      
+
       LocalBroadcastManager
         .getInstance(baseContext)
         .sendBroadcast(intent)
     }
   }
-  
+
   private suspend fun fetchAndCacheCover(book: DetailedItem) =
     channelProvider
       .fetchBookCover(bookId = book.id)
@@ -226,12 +226,12 @@ class PlaybackService : MediaSessionService() {
             }
           }
       }
-  
+
   private fun setTimer(delay: Double) {
     val delayMs = delay * 1000
-    
+
     cancelTimer()
-    
+
     handler.postDelayed(
       {
         pause()
@@ -243,12 +243,12 @@ class PlaybackService : MediaSessionService() {
     )
     Log.d(TAG, "Timer started for $delayMs ms.")
   }
-  
+
   private fun cancelTimer() {
     handler.removeCallbacksAndMessages(null)
     Log.d(TAG, "Timer canceled.")
   }
-  
+
   private fun pause() {
     playerServiceScope
       .launch {
@@ -257,7 +257,7 @@ class PlaybackService : MediaSessionService() {
         stopSelf()
       }
   }
-  
+
   private fun seek(
     items: List<BookFile>,
     position: Double?,
@@ -266,24 +266,24 @@ class PlaybackService : MediaSessionService() {
       Log.w(TAG, "Tried to seek position $position in the empty book. Skipping")
       return
     }
-    
+
     when (position) {
       null -> exoPlayer.seekTo(0, 0)
       else -> {
         val positionMs = (position * 1000).toLong()
-        
+
         val durationsMs = items.map { (it.duration * 1000).toLong() }
         val cumulativeDurationsMs = durationsMs.runningFold(0L) { acc, duration -> acc + duration }
-        
+
         val targetChapterIndex = cumulativeDurationsMs.indexOfFirst { it > positionMs }
-        
+
         when (targetChapterIndex - 1 >= 0) {
           true -> {
             val chapterStartTimeMs = cumulativeDurationsMs[targetChapterIndex - 1]
             val chapterProgressMs = positionMs - chapterStartTimeMs
             exoPlayer.seekTo(targetChapterIndex - 1, chapterProgressMs)
           }
-          
+
           false -> {
             val lastChapterIndex = items.size - 1
             val lastChapterDurationMs = durationsMs.last()
@@ -293,19 +293,19 @@ class PlaybackService : MediaSessionService() {
       }
     }
   }
-  
+
   private fun setPlaybackProgress(
     chapters: List<BookFile>,
     progress: MediaProgress?,
   ) = seek(chapters, progress?.currentTime)
-  
+
   @OptIn(UnstableApi::class)
   private fun buildDataSourceFactory(): DataSource.Factory {
     val requestHeaders =
       requestHeadersProvider
         .fetchRequestHeaders()
         .associate { it.name to it.value }
-    
+
     val upstreamFactory =
       OkHttpDataSource
         .Factory(
@@ -314,7 +314,7 @@ class PlaybackService : MediaSessionService() {
             preferences = sharedPreferences,
           ),
         ).setDefaultRequestProperties(requestHeaders)
-    
+
     return CacheDataSource
       .Factory()
       .setCache(mediaCache)
@@ -323,14 +323,13 @@ class PlaybackService : MediaSessionService() {
         CacheDataSink
           .Factory()
           .setCache(mediaCache)
-          .setFragmentSize(CacheDataSink.DEFAULT_FRAGMENT_SIZE)
-      )
-      .setFlags(
+          .setFragmentSize(CacheDataSink.DEFAULT_FRAGMENT_SIZE),
+      ).setFlags(
         CacheDataSource.FLAG_BLOCK_ON_CACHE or
-          CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR
+          CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR,
       )
   }
-  
+
   companion object {
     const val ACTION_PLAY = "org.grakovne.lissen.player.service.PLAY"
     const val ACTION_PAUSE = "org.grakovne.lissen.player.service.PAUSE"
@@ -338,14 +337,14 @@ class PlaybackService : MediaSessionService() {
     const val ACTION_SEEK_TO = "org.grakovne.lissen.player.service.ACTION_SEEK_TO"
     const val ACTION_SET_TIMER = "org.grakovne.lissen.player.service.ACTION_SET_TIMER"
     const val ACTION_CANCEL_TIMER = "org.grakovne.lissen.player.service.CANCEL_TIMER"
-    
+
     const val BOOK_EXTRA = "org.grakovne.lissen.player.service.BOOK"
     const val TIMER_VALUE_EXTRA = "org.grakovne.lissen.player.service.TIMER_VALUE"
     const val TIMER_EXPIRED = "org.grakovne.lissen.player.service.TIMER_EXPIRED"
-    
+
     const val PLAYBACK_READY = "org.grakovne.lissen.player.service.PLAYBACK_READY"
     const val POSITION = "org.grakovne.lissen.player.service.POSITION"
-    
+
     private const val TAG: String = "PlaybackService"
   }
 }

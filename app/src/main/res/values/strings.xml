@@ -115,4 +115,9 @@
     <string name="offline_cache_is_empty">No saved content yet</string>
     <string name="settings_screen_cached_items_title">Downloads</string>
     <string name="settings_screen_cached_items_hint">Manage saved content</string>
+    <string name="volume_boost_disabled">Disabled</string>
+    <string name="volume_boost_low">Low boost</string>
+    <string name="volume_boost_medium">Medium boost</string>
+    <string name="volume_boost_high">High Boost</string>
+    <string name="volume_boost_title">Boost Volume</string>
 </resources>
