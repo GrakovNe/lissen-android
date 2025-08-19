@@ -116,8 +116,8 @@
     <string name="settings_screen_cached_items_title">Загрузки</string>
     <string name="settings_screen_cached_items_hint">Управляйте загруженным контентом</string>
     <string name="volume_boost_disabled">Отключено</string>
-    <string name="volume_boost_low">Низко</string>
-    <string name="volume_boost_medium">Средне</string>
-    <string name="volume_boost_high">Максимально</string>
+    <string name="volume_boost_low">Небольшое увеличение</string>
+    <string name="volume_boost_medium">Среднее увеличение</string>
+    <string name="volume_boost_high">Максимальное увеличение</string>
     <string name="volume_boost_title">Повышенный уровень громкости</string>
 </resources>
