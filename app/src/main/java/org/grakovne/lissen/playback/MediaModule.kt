@@ -55,20 +55,24 @@ object MediaModule {
   @Singleton
   fun provideExoPlayer(
     @ApplicationContext context: Context,
-  ): ExoPlayer =
-    ExoPlayer
-      .Builder(context)
-      .setSeekBackIncrementMs(10_000)
-      .setSeekForwardIncrementMs(30_000)
-      .setHandleAudioBecomingNoisy(true)
-      .setAudioAttributes(
-        AudioAttributes
-          .Builder()
-          .setUsage(C.USAGE_MEDIA)
-          .setContentType(C.AUDIO_CONTENT_TYPE_SPEECH)
-          .build(),
-        true,
-      ).build()
+  ): ExoPlayer {
+    val player =
+      ExoPlayer
+        .Builder(context)
+        .setSeekBackIncrementMs(10_000)
+        .setSeekForwardIncrementMs(30_000)
+        .setHandleAudioBecomingNoisy(true)
+        .setAudioAttributes(
+          AudioAttributes
+            .Builder()
+            .setUsage(C.USAGE_MEDIA)
+            .setContentType(C.AUDIO_CONTENT_TYPE_SPEECH)
+            .build(),
+          true,
+        ).build()
+
+    return player
+  }
 
   @OptIn(UnstableApi::class)
   @Provides

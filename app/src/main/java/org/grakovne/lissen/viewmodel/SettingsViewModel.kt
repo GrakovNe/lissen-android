@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
+import org.grakovne.lissen.common.PlaybackVolumeBoost
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.SeekTimeOption
@@ -41,6 +42,9 @@ class SettingsViewModel
 
     private val _preferredColorScheme = MutableLiveData(preferences.getColorScheme())
     val preferredColorScheme = _preferredColorScheme
+
+    private val _preferredPlaybackVolumeBoost = MutableLiveData(preferences.getPlaybackVolumeBoost())
+    val preferredPlaybackVolumeBoost = _preferredPlaybackVolumeBoost
 
     private val _preferredLibraryOrdering = MutableLiveData(preferences.getLibraryOrdering())
     val preferredLibraryOrdering: LiveData<LibraryOrderingConfiguration> = _preferredLibraryOrdering
@@ -105,6 +109,11 @@ class SettingsViewModel
     fun preferLibraryOrdering(configuration: LibraryOrderingConfiguration) {
       _preferredLibraryOrdering.postValue(configuration)
       preferences.saveLibraryOrdering(configuration)
+    }
+
+    fun preferPlaybackVolumeBoost(playbackVolumeBoost: PlaybackVolumeBoost) {
+      _preferredPlaybackVolumeBoost.postValue(playbackVolumeBoost)
+      preferences.savePlaybackVolumeBoost(playbackVolumeBoost)
     }
 
     fun preferColorScheme(colorScheme: ColorScheme) {

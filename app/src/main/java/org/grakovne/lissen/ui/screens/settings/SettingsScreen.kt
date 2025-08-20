@@ -34,6 +34,7 @@ import org.grakovne.lissen.ui.screens.settings.composable.AdvancedSettingsItemCo
 import org.grakovne.lissen.ui.screens.settings.composable.ColorSchemeSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.GitHubLinkComposable
 import org.grakovne.lissen.ui.screens.settings.composable.LibraryOrderingSettingsComposable
+import org.grakovne.lissen.ui.screens.settings.composable.PlaybackVolumeBoostSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.ServerSettingsComposable
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
@@ -94,6 +95,8 @@ fun SettingsScreen(
           ColorSchemeSettingsComposable(viewModel)
 
           LibraryOrderingSettingsComposable(viewModel)
+
+          PlaybackVolumeBoostSettingsComposable(viewModel)
 
           AdvancedSettingsItemComposable(
             title = stringResource(R.string.settings_screen_cached_items_title),
