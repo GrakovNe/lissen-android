@@ -68,13 +68,13 @@ To contribute:
 
 You can connect to a demo [Audiobookshelf](https://github.com/advplyr/audiobookshelf) instance through the Lissen app:
 
-URL: [https://audiobooks.dev](https://audiobooks.dev/)
+URL: [https://demo.lissenapp.org/](https://demo.lissenapp.org/)
 ```
 Username: demo
 Password: demo
 ```
 
-This instance is hosted by [@Vito0912](https://github.com/Vito0912) and contains only Public Domain audiobooks from [LibriVox](https://librivox.org/)
+This instance is contains only Public Domain audiobooks from [LibriVox](https://librivox.org/)
 
 ## License
 Lissen is open-source and licensed under the MIT License. See the LICENSE file for more details.
