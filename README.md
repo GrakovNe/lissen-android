@@ -72,7 +72,6 @@ To contribute:
 
 ### Android Auto Support
 
-**Reason (August 2025):**  
 Google Play rejected publication of the app because partial Android Auto integration did not meet the official quality checklist.  
 
 **Current state:**  
