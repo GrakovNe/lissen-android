@@ -24,12 +24,6 @@
         android:theme="@style/Theme.Lissen"
         tools:ignore="DiscouragedApi,UnusedAttribute"
         tools:targetApi="35">
-
-        <!-- Add Android Auto support -->
-        <meta-data
-            android:name="com.google.android.gms.car.application"
-            android:resource="@xml/automotive_app_desc" />
-
         <activity
             android:screenOrientation="portrait"
             android:name=".ui.activity.AppActivity"
@@ -63,13 +57,10 @@
 
         <service
             android:name=".playback.service.PlaybackService"
-            android:exported="true"
+            android:exported="false"
             android:foregroundServiceType="mediaPlayback">
             <intent-filter>
                 <action android:name="androidx.media3.session.MediaSessionService" />
-                <action android:name="androidx.media3.session.MediaLibraryService" />
-                <action android:name="android.media.browse.MediaBrowserService"/>
-                <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH"/>
             </intent-filter>
         </service>
 
