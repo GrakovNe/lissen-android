@@ -72,6 +72,7 @@ To contribute:
 
 ### Android Auto Support
 
+**Reason (August 2025):**  
 Google Play rejected publication of the app because partial Android Auto integration did not meet the official quality checklist.  
 
 **Current state:**  
@@ -83,6 +84,8 @@ Google Play rejected publication of the app because partial Android Auto integra
 
 **Temporary status:**  
 This dual-release setup is a temporary solution until full compliance with Google’s Android Auto quality checklist can be achieved.  
+At this moment, fully removing Android Auto is not an option since some users rely on it,  
+but dedicating the required time to implement full compliance is also not possible.  
 
 ### Demo Environment
 
