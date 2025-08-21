@@ -115,4 +115,9 @@
     <string name="downloads_menu_download_option_remaining_chapters">Preostala poglavja</string>
     <string name="downloads_menu_download_option_remaining_episodes">Preostale epizode</string>
     <string name="downloads_menu_download_option_remaining_items">Preostali elementi</string>
+    <string name="volume_boost_disabled">Onemogočeno</string>
+    <string name="volume_boost_low">Nizko</string>
+    <string name="volume_boost_medium">Srednje</string>
+    <string name="volume_boost_high">Visoko</string>
+    <string name="volume_boost_title">Povečanje glasnosti</string>
 </resources>
