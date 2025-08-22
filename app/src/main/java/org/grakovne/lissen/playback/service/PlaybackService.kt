@@ -1,8 +1,6 @@
 package org.grakovne.lissen.playback.service
 
 import android.content.Intent
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.core.net.toUri
@@ -64,14 +62,15 @@ class PlaybackService : MediaSessionService() {
 
   @Inject
   lateinit var requestHeadersProvider: RequestHeadersProvider
+  
+  @Inject
+  lateinit var playbackTimer: PlaybackTimer
 
   @Inject
   lateinit var mediaCache: Cache
 
   private val playerServiceScope = MainScope()
-
-  private val handler = Handler(Looper.getMainLooper())
-
+  
   @Suppress("DEPRECATION")
   override fun onStartCommand(
     intent: Intent?,
@@ -226,26 +225,14 @@ class PlaybackService : MediaSessionService() {
             }
           }
       }
-
+  
   private fun setTimer(delay: Double) {
-    val delayMs = delay * 1000
-
-    cancelTimer()
-
-    handler.postDelayed(
-      {
-        pause()
-        LocalBroadcastManager
-          .getInstance(baseContext)
-          .sendBroadcast(Intent(TIMER_EXPIRED))
-      },
-      delayMs.toLong(),
-    )
-    Log.d(TAG, "Timer started for $delayMs ms.")
+    playbackTimer.startTimer(delay)
+    Log.d(TAG, "Timer started for ${delay * 1000} ms.")
   }
-
+  
   private fun cancelTimer() {
-    handler.removeCallbacksAndMessages(null)
+    playbackTimer.stopTimer()
     Log.d(TAG, "Timer canceled.")
   }
 
@@ -341,7 +328,9 @@ class PlaybackService : MediaSessionService() {
     const val BOOK_EXTRA = "org.grakovne.lissen.player.service.BOOK"
     const val TIMER_VALUE_EXTRA = "org.grakovne.lissen.player.service.TIMER_VALUE"
     const val TIMER_EXPIRED = "org.grakovne.lissen.player.service.TIMER_EXPIRED"
+    const val TIMER_TICK = "org.grakovne.lissen.player.service.TIMER_TICK"
 
+    const val TIMER_REMAINING = "org.grakovne.lissen.player.service.TIMER_REMAINING"
     const val PLAYBACK_READY = "org.grakovne.lissen.player.service.PLAYBACK_READY"
     const val POSITION = "org.grakovne.lissen.player.service.POSITION"
 
