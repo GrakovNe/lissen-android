@@ -228,7 +228,10 @@ class PlaybackService : MediaSessionService() {
           }
       }
 
-  private fun setTimer(delay: Double, option: TimerOption) {
+  private fun setTimer(
+    delay: Double,
+    option: TimerOption,
+  ) {
     playbackTimer.startTimer(delay, option)
     Log.d(TAG, "Timer started for ${delay * 1000} ms.")
   }

@@ -202,6 +202,7 @@ class MediaRepository
         ) {
           if (intent?.action == TIMER_EXPIRED) {
             _timerOption.postValue(null)
+            pause()
           }
         }
       }
@@ -384,7 +385,10 @@ class MediaRepository
       }
     }
 
-    private fun scheduleServiceTimer(delay: Double, option: TimerOption) {
+    private fun scheduleServiceTimer(
+      delay: Double,
+      option: TimerOption,
+    ) {
       val intent =
         Intent(context, PlaybackService::class.java).apply {
           action = PlaybackService.ACTION_SET_TIMER
