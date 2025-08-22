@@ -42,6 +42,7 @@ import org.grakovne.lissen.playback.service.PlaybackService.Companion.BOOK_EXTRA
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.PLAYBACK_READY
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.POSITION
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_EXPIRED
+import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_OPTION_EXTRA
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_REMAINING
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_TICK
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_VALUE_EXTRA
@@ -225,7 +226,7 @@ class MediaRepository
       _timerOption.postValue(timerOption)
 
       when (timerOption) {
-        is DurationTimerOption -> scheduleServiceTimer(timerOption.duration * 60.0)
+        is DurationTimerOption -> scheduleServiceTimer(timerOption.duration * 60.0, timerOption)
 
         is CurrentEpisodeTimerOption -> {
           val playingBook = playingBook.value ?: return
@@ -242,7 +243,7 @@ class MediaRepository
               overallPosition = currentPosition,
             )
 
-          scheduleServiceTimer(chapterDuration - chapterPosition)
+          scheduleServiceTimer(chapterDuration - chapterPosition, timerOption)
         }
 
         null -> cancelServiceTimer()
@@ -383,11 +384,12 @@ class MediaRepository
       }
     }
 
-    private fun scheduleServiceTimer(delay: Double) {
+    private fun scheduleServiceTimer(delay: Double, option: TimerOption) {
       val intent =
         Intent(context, PlaybackService::class.java).apply {
           action = PlaybackService.ACTION_SET_TIMER
           putExtra(TIMER_VALUE_EXTRA, delay)
+          putExtra(TIMER_OPTION_EXTRA, option)
         }
 
       context.startService(intent)

@@ -34,6 +34,7 @@ import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.MediaProgress
+import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import java.io.File
 import java.io.FileOutputStream
@@ -82,9 +83,10 @@ class PlaybackService : MediaSessionService() {
     when (intent?.action) {
       ACTION_SET_TIMER -> {
         val delay = intent.getDoubleExtra(TIMER_VALUE_EXTRA, 0.0)
+        val option = intent.getSerializableExtra(TIMER_OPTION_EXTRA) as? TimerOption
 
-        if (delay > 0) {
-          setTimer(delay)
+        if (delay > 0 && option != null) {
+          setTimer(delay, option)
         }
 
         return START_NOT_STICKY
@@ -226,8 +228,8 @@ class PlaybackService : MediaSessionService() {
           }
       }
 
-  private fun setTimer(delay: Double) {
-    playbackTimer.startTimer(delay)
+  private fun setTimer(delay: Double, option: TimerOption) {
+    playbackTimer.startTimer(delay, option)
     Log.d(TAG, "Timer started for ${delay * 1000} ms.")
   }
 
@@ -327,6 +329,7 @@ class PlaybackService : MediaSessionService() {
 
     const val BOOK_EXTRA = "org.grakovne.lissen.player.service.BOOK"
     const val TIMER_VALUE_EXTRA = "org.grakovne.lissen.player.service.TIMER_VALUE"
+    const val TIMER_OPTION_EXTRA = "org.grakovne.lissen.player.service.TIMER_OPTION"
     const val TIMER_EXPIRED = "org.grakovne.lissen.player.service.TIMER_EXPIRED"
     const val TIMER_TICK = "org.grakovne.lissen.player.service.TIMER_TICK"
 
