@@ -224,7 +224,7 @@ class MediaRepository
       timerOption: TimerOption?,
       position: Double? = null,
     ) {
-      _timerOption.value = timerOption
+      _timerOption.postValue(timerOption)
 
       when (timerOption) {
         is DurationTimerOption -> scheduleServiceTimer(timerOption.duration * 60.0, timerOption)
@@ -468,7 +468,6 @@ class MediaRepository
         }
 
       context.startForegroundService(intent)
-      totalPosition.value?.let { adjustTimer(it) }
     }
 
     private fun pause() {
