@@ -22,7 +22,7 @@ class PlaybackTimer @Inject constructor(
     if (delayInMillis <= 0L) return
     stopTimer()
     
-    countDownTimer = object : CountDownTimer(delayInMillis, 500L) {
+    countDownTimer = object : CountDownTimer(delayInMillis, 500L - 1L) {
       
       @OptIn(UnstableApi::class)
       override fun onTick(millisUntilFinished: Long) {
