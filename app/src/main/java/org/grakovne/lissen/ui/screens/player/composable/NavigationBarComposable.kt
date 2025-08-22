@@ -62,15 +62,15 @@ fun NavigationBarComposable(
   val timerRemaining by playerViewModel.timerRemaining.observeAsState(0)
   val playbackSpeed by playerViewModel.playbackSpeed.observeAsState(1f)
   val playingQueueExpanded by playerViewModel.playingQueueExpanded.observeAsState(false)
-  
+
   val isMetadataCached by contentCachingModelView.provideCacheState(book.id).observeAsState(false)
-  
+
   var playbackSpeedExpanded by remember { mutableStateOf(false) }
   var timerExpanded by remember { mutableStateOf(false) }
   var downloadsExpanded by remember { mutableStateOf(false) }
-  
+
   val scope = rememberCoroutineScope()
-  
+
   Surface(
     shadowElevation = 4.dp,
     modifier = modifier.height(64.dp),
@@ -82,7 +82,7 @@ fun NavigationBarComposable(
     ) {
       val iconSize = 24.dp
       val labelStyle = typography.labelSmall.copy(fontSize = 10.sp)
-      
+
       NavigationBarItem(
         icon = {
           Icon(
@@ -107,7 +107,7 @@ fun NavigationBarComposable(
             indicatorColor = colorScheme.surfaceContainer,
           ),
       )
-      
+
       NavigationBarItem(
         icon = {
           DownloadProgressIcon(
@@ -131,7 +131,7 @@ fun NavigationBarComposable(
             indicatorColor = colorScheme.surfaceContainer,
           ),
       )
-      
+
       NavigationBarItem(
         icon = {
           Icon(
@@ -157,7 +157,7 @@ fun NavigationBarComposable(
             indicatorColor = colorScheme.surfaceContainer,
           ),
       )
-      
+
       NavigationBarItem(
         icon = {
           Icon(
@@ -179,13 +179,14 @@ fun NavigationBarComposable(
                 overflow = TextOverflow.Ellipsis,
               )
             }
-            
-            null -> Text(
-              text = stringResource(R.string.player_screen_timer_navigation),
-              style = labelStyle,
-              maxLines = 1,
-              overflow = TextOverflow.Ellipsis,
-            )
+
+            null ->
+              Text(
+                text = stringResource(R.string.player_screen_timer_navigation),
+                style = labelStyle,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+              )
           }
         },
         selected = false,
@@ -196,8 +197,7 @@ fun NavigationBarComposable(
             indicatorColor = colorScheme.surfaceContainer,
           ),
       )
-      
-      
+
       if (playbackSpeedExpanded) {
         PlaybackSpeedComposable(
           currentSpeed = playbackSpeed,
@@ -205,7 +205,7 @@ fun NavigationBarComposable(
           onDismissRequest = { playbackSpeedExpanded = false },
         )
       }
-      
+
       if (timerExpanded) {
         TimerComposable(
           libraryType = libraryType,
@@ -214,7 +214,7 @@ fun NavigationBarComposable(
           onDismissRequest = { timerExpanded = false },
         )
       }
-      
+
       if (downloadsExpanded) {
         DownloadsComposable(
           libraryType = libraryType,
@@ -237,7 +237,7 @@ fun NavigationBarComposable(
               ?.let {
                 scope.launch {
                   contentCachingModelView.dropCache(it.id)
-                  
+
                   playerViewModel.clearPlayingBook()
                   navController.showLibrary(true)
                 }

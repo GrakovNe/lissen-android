@@ -62,7 +62,7 @@ class PlaybackService : MediaSessionService() {
 
   @Inject
   lateinit var requestHeadersProvider: RequestHeadersProvider
-  
+
   @Inject
   lateinit var playbackTimer: PlaybackTimer
 
@@ -70,7 +70,7 @@ class PlaybackService : MediaSessionService() {
   lateinit var mediaCache: Cache
 
   private val playerServiceScope = MainScope()
-  
+
   @Suppress("DEPRECATION")
   override fun onStartCommand(
     intent: Intent?,
@@ -225,12 +225,12 @@ class PlaybackService : MediaSessionService() {
             }
           }
       }
-  
+
   private fun setTimer(delay: Double) {
     playbackTimer.startTimer(delay)
     Log.d(TAG, "Timer started for ${delay * 1000} ms.")
   }
-  
+
   private fun cancelTimer() {
     playbackTimer.stopTimer()
     Log.d(TAG, "Timer canceled.")
