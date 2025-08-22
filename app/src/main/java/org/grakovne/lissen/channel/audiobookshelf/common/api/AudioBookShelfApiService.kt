@@ -116,8 +116,6 @@ class AudioBookShelfApiService
 
     private fun createClientInstance(): AudiobookshelfApiClient {
       val host = preferences.getHost()
-      val token = preferences.getToken()
-      val accessToken = preferences.getAccessToken()
       val headers = requestHeadersProvider.fetchRequestHeaders()
 
       if (host.isNullOrBlank()) {

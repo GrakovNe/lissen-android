@@ -115,4 +115,9 @@
     <string name="continue_playback_shortcut_description">继续播放上次收听的内容</string>
     <string name="settings_screen_connected_as_title">当前用户</string>
     <string name="continue_playback_shortcut_title">继续播放</string>
+    <string name="volume_boost_disabled">禁用</string>
+    <string name="volume_boost_low">低</string>
+    <string name="volume_boost_medium">中</string>
+    <string name="volume_boost_high">高</string>
+    <string name="volume_boost_title">音量增强</string>
 </resources>

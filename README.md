@@ -6,6 +6,12 @@
   --><a href="https://f-droid.org/packages/org.grakovne.lissen"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a3/Get_it_on_F-Droid_%28material_design%29.svg" alt="Get it on F-Droid" height="60"></a>
 </p>
 
+> 📢 **20.08.2025 Project update**
+>
+> Starting from [release 1.6.10](https://github.com/GrakovNe/lissen-android/releases/tag/1.6.10),  
+> Lissen provides **two APK variants** (Common + Android Auto).  
+> See [Android Auto Support](#android-auto-support) for details.
+
 ### Features
 
   * Beautiful Interface: Intuitive design that makes browsing and listening to your audiobooks easy and enjoyable.
@@ -63,6 +69,22 @@ To contribute:
 1. Visit the [Lissen translation project](https://hosted.weblate.org/engage/lissen/).
 2. Sign up or log in to Weblate.
 3. Start translating or reviewing existing translations for your preferred language.
+
+### Android Auto Support
+
+Google Play rejected publication of the app because partial Android Auto integration did not meet the official quality checklist.  
+
+**Current state:**  
+- The **main branch** is Play Store–compliant and contains no Android Auto support.  
+- The dedicated [`android-auto-beta`](https://github.com/GrakovNe/lissen-android/tree/android-auto-beta) branch preserves Android Auto functionality.  
+- **Starting from [release 1.6.10](https://github.com/GrakovNe/lissen-android/releases/tag/1.6.10):**  
+  - **Common APK** – identical to the Play Store version, without Android Auto.  
+  - **Android Auto APK** – fully supported and feature-equivalent, with Android Auto enabled.  
+
+**Temporary status:**  
+This dual-release setup is a temporary solution until full compliance with Google’s Android Auto quality checklist can be achieved.  
+At this moment, fully removing Android Auto is not an option since some users rely on it,  
+but dedicating the required time to implement full compliance is also not possible.  
 
 ### Demo Environment
 
