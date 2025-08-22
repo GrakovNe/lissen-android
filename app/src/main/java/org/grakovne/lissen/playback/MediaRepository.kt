@@ -28,6 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
@@ -224,7 +225,9 @@ class MediaRepository
       timerOption: TimerOption?,
       position: Double? = null,
     ) {
-      _timerOption.value = timerOption
+      runBlocking {
+        withContext(Dispatchers.Main.immediate) { _timerOption.value = timerOption }
+      }
 
       when (timerOption) {
         is DurationTimerOption -> scheduleServiceTimer(timerOption.duration * 60.0, timerOption)
