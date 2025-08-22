@@ -224,7 +224,7 @@ class MediaRepository
       timerOption: TimerOption?,
       position: Double? = null,
     ) {
-      _timerOption.postValue(timerOption)
+      _timerOption.value = timerOption
 
       when (timerOption) {
         is DurationTimerOption -> scheduleServiceTimer(timerOption.duration * 60.0, timerOption)
@@ -270,6 +270,10 @@ class MediaRepository
           book
             .chapters[index]
             .start
+
+        if (currentChapterIndex.value != index && timerOption.value == CurrentEpisodeTimerOption) {
+          updateTimer(null)
+        }
 
         seekTo(chapterStartsAt)
       } catch (ex: Exception) {
@@ -359,7 +363,6 @@ class MediaRepository
     fun nextTrack() {
       val book = playingBook.value ?: return
       val overallPosition = totalPosition.value ?: return
-
       val currentIndex = calculateChapterIndex(book, overallPosition)
 
       val nextChapterIndex = currentIndex + 1
