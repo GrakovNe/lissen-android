@@ -101,7 +101,7 @@ class LissenSharedPreferences
 
     fun getPreferredLibrary(): Library? {
       val id = getPreferredLibraryId() ?: return null
-      val name = getPreferredLibraryName() ?: return null
+      val name = getPreferredLibraryTitle() ?: return null
 
       val type = getPreferredLibraryType()
 
@@ -202,11 +202,11 @@ class LissenSharedPreferences
 
     private fun saveActiveLibraryId(host: String) = sharedPreferences.edit { putString(KEY_PREFERRED_LIBRARY_ID, host) }
 
-    private fun getPreferredLibraryId(): String? = sharedPreferences.getString(KEY_PREFERRED_LIBRARY_ID, null)
+    fun getPreferredLibraryId(): String? = sharedPreferences.getString(KEY_PREFERRED_LIBRARY_ID, null)
 
     private fun saveActiveLibraryName(host: String) = sharedPreferences.edit { putString(KEY_PREFERRED_LIBRARY_NAME, host) }
 
-    private fun getPreferredLibraryType(): LibraryType =
+    fun getPreferredLibraryType(): LibraryType =
       sharedPreferences
         .getString(KEY_PREFERRED_LIBRARY_TYPE, null)
         ?.let { LibraryType.valueOf(it) }
@@ -217,7 +217,7 @@ class LissenSharedPreferences
         putString(KEY_PREFERRED_LIBRARY_TYPE, type.name)
       }
 
-    private fun getPreferredLibraryName(): String? = sharedPreferences.getString(KEY_PREFERRED_LIBRARY_NAME, null)
+    fun getPreferredLibraryTitle(): String? = sharedPreferences.getString(KEY_PREFERRED_LIBRARY_NAME, null)
 
     fun enableForceCache() = sharedPreferences.edit { putBoolean(CACHE_FORCE_ENABLED, true) }
 

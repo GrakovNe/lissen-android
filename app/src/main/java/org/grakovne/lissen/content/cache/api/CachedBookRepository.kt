@@ -80,7 +80,7 @@ class CachedBookRepository
 
       val request =
         FetchRequestBuilder()
-          .libraryId(preferences.getPreferredLibrary()?.id)
+          .libraryId(preferences.getPreferredLibraryId())
           .pageNumber(pageNumber)
           .pageSize(pageSize)
           .orderField(option)
@@ -98,7 +98,7 @@ class CachedBookRepository
       val request =
         SearchRequestBuilder()
           .searchQuery(query)
-          .libraryId(preferences.getPreferredLibrary()?.id)
+          .libraryId(preferences.getPreferredLibraryId())
           .orderField(option)
           .orderDirection(direction)
           .build()
@@ -111,7 +111,7 @@ class CachedBookRepository
     suspend fun fetchRecentBooks(): List<RecentBook> {
       val recentBooks =
         bookDao.fetchRecentlyListenedCachedBooks(
-          libraryId = preferences.getPreferredLibrary()?.id,
+          libraryId = preferences.getPreferredLibraryId(),
         )
 
       val progress =

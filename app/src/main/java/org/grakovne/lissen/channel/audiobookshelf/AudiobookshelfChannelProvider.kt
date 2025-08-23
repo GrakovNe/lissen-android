@@ -22,11 +22,7 @@ class AudiobookshelfChannelProvider
     private val sharedPreferences: LissenSharedPreferences,
   ) : ChannelProvider {
     override fun provideMediaChannel(): MediaChannel {
-      val libraryType =
-        sharedPreferences
-          .getPreferredLibrary()
-          ?.type
-          ?: LibraryType.LIBRARY
+      val libraryType = sharedPreferences.getPreferredLibraryType()
 
       return when (libraryType) {
         LibraryType.LIBRARY -> libraryAudiobookshelfChannel
