@@ -1,7 +1,6 @@
 package org.grakovne.lissen.ui.screens.library
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.NotInterested
 import androidx.compose.material.icons.outlined.Podcasts
 import androidx.compose.runtime.Composable
 import org.grakovne.lissen.channel.common.LibraryType
@@ -37,5 +36,4 @@ fun LibraryType.provideIcon() =
   when (this) {
     LibraryType.LIBRARY -> BookHeadphones
     LibraryType.PODCAST -> Icons.Outlined.Podcasts
-    LibraryType.UNKNOWN -> Icons.Outlined.NotInterested
   }

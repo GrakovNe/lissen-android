@@ -12,17 +12,17 @@ class LibraryResponseConverter
   constructor() {
     fun apply(response: List<LibraryItemResponse>): List<Library> =
       response
-        .map {
+        .mapNotNull {
           it
             .mediaType
             .toLibraryType()
-            .let { type -> Library(it.id, it.name, type) }
+            ?.let { type -> Library(it.id, it.name, type) }
         }
 
     private fun String.toLibraryType() =
       when (this) {
         "podcast" -> LibraryType.PODCAST
         "book" -> LibraryType.LIBRARY
-        else -> LibraryType.UNKNOWN
+        else -> null
       }
   }

@@ -121,7 +121,7 @@ class LibraryViewModel
       preferences
         .getPreferredLibrary()
         ?.type
-        ?: LibraryType.UNKNOWN
+        ?: LibraryType.LIBRARY
 
     fun refreshRecentListening() {
       viewModelScope.launch {
