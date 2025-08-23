@@ -32,6 +32,7 @@ class PlayerViewModel
     val totalPosition: LiveData<Double> = mediaRepository.totalPosition
 
     val timerOption: LiveData<TimerOption?> = mediaRepository.timerOption
+    val timerRemaining: LiveData<Long?> = mediaRepository.timerRemaining
 
     private val _playingQueueExpanded = MutableLiveData(false)
     val playingQueueExpanded: LiveData<Boolean> = _playingQueueExpanded
