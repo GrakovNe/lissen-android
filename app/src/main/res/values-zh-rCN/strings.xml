@@ -33,10 +33,8 @@
     <string name="the_offline_podcasts_is_empty">无保存播客</string>
     <string name="player_screen_downloads_navigation">下载</string>
     <string name="downloads_menu_download_book">下载书籍</string>
-    <string name="downloads_menu_download_unknown">下载</string>
     <string name="downloads_menu_download_option_clear_episodes">清除下载单集</string>
     <string name="downloads_menu_download_option_clear_chapters">清除下载章节</string>
-    <string name="downloads_menu_download_option_clear_items">清除下载项目</string>
     <string name="mini_player_action_close">关闭</string>
     <string name="playing_item_details_publisher">出版社</string>
     <string name="playing_item_details_series">系列</string>
@@ -82,10 +80,8 @@
     <string name="downloads_menu_download_option_remaining_items">剩余项目</string>
     <string name="downloads_menu_download_option_next_chapters">后 %1$d 章</string>
     <string name="downloads_menu_download_option_next_episodes">后 %1$d 集</string>
-    <string name="downloads_menu_download_option_next_items">后 %1$d 项</string>
     <string name="chapters_list_empty">本书无章节</string>
     <string name="episodes_list_empty">本播客无剧集</string>
-    <string name="items_list_empty">无可用项目</string>
     <string name="login_error_lissen_auth_failed">认证失败，请检查你的服务器设置</string>
     <string name="login_screen_open_id_button">使用 OpenID 连接</string>
     <string name="source_code_on_github_title">访问 GitHub 查看源代码</string>

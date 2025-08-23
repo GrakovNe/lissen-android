@@ -4,10 +4,8 @@
     <string name="library_screen_continue_listening_title">متابعة الاستماع</string>
     <string name="notification_content_caching_channel">تخزين المحتوى مؤقتاً</string>
     <string name="playing_item_details_series">السلسلة</string>
-    <string name="downloads_menu_download_unknown">التنزيلات</string>
     <string name="downloads_menu_download_option_clear_chapters">مسح الفصول التي تم تنزيلها</string>
     <string name="downloads_menu_download_option_clear_episodes">مسح الحلقات التي تم تنزيلها</string>
-    <string name="downloads_menu_download_option_clear_items">مسح العناصر التي تم تنزيلها</string>
     <string name="mini_player_action_close">إغلاق</string>
     <string name="playing_item_details_author">المؤلف</string>
     <string name="source_code_on_github_title">الكود المصدري على GitHub</string>
@@ -81,13 +79,11 @@
     <string name="downloads_menu_download_option_entire_podcast">البودكاست بأكمله</string>
     <string name="downloads_menu_download_option_entire_item">العنصر بأكمله</string>
     <string name="downloads_menu_download_option_next_episodes">الحلقات %1$d التالية</string>
-    <string name="downloads_menu_download_option_next_items">العناصر %1$d التالية</string>
     <string name="playing_item_details_publisher">الناشر</string>
     <string name="playing_item_details_narrator">الراوي</string>
     <string name="playing_item_details_duration">المدة</string>
     <string name="chapters_list_empty">الكتاب لا يحتوي على فصول</string>
     <string name="episodes_list_empty">لا يحتوي البودكاست على حلقات</string>
-    <string name="items_list_empty">لا توجد عناصر متاحة</string>
     <string name="notification_content_caching_title">يتم تخزين المحتوى مؤقتاً</string>
     <string name="notification_content_caching_error_title">فشل التخزين المؤقت</string>
     <string name="notification_content_caching_error_description">لم يتم حفظ بعض الملفات</string>

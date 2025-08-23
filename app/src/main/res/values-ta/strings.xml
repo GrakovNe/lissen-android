@@ -61,7 +61,6 @@
     <string name="player_screen_downloads_navigation">பதிவிறக்கங்கள்</string>
     <string name="downloads_menu_download_book">புத்தகத்தைப் பதிவிறக்கவும்</string>
     <string name="downloads_menu_download_podcast">போட்காச்டைப் பதிவிறக்கவும்</string>
-    <string name="downloads_menu_download_unknown">பதிவிறக்கங்கள்</string>
     <string name="downloads_menu_download_option_current_chapter">தற்போதைய பாடம்</string>
     <string name="downloads_menu_download_option_current_episode">தற்போதைய அத்தியாயம்</string>
     <string name="downloads_menu_download_option_current_item">தற்போதைய உருப்படி</string>
@@ -70,9 +69,7 @@
     <string name="downloads_menu_download_option_entire_item">முழு உருப்படியும்</string>
     <string name="downloads_menu_download_option_next_chapters">அடுத்த %1$d அத்தியாயங்கள்</string>
     <string name="downloads_menu_download_option_next_episodes">அடுத்த %1$d அத்தியாயங்கள்</string>
-    <string name="downloads_menu_download_option_next_items">அடுத்த %1$d உருப்படிகள்</string>
     <string name="downloads_menu_download_option_clear_episodes">பதிவிறக்கம் செய்யப்பட்ட அத்தியாயங்களை அழி</string>
-    <string name="downloads_menu_download_option_clear_items">பதிவிறக்கம் செய்யப்பட்ட உருப்படிகளை அழிக்கவும்</string>
     <string name="mini_player_action_close">மூடு</string>
     <string name="playing_item_details_author">ஆசிரியர்</string>
     <string name="playing_item_details_publisher">பதிப்பாளர்</string>
@@ -103,7 +100,6 @@
     <string name="seek_interval_10_seconds">10 வினாடிகள்</string>
     <string name="downloads_menu_download_option_remaining_chapters">மீதமுள்ள பாடங்கள்</string>
     <string name="chapters_list_empty">புத்தகத்தில் அத்தியாயங்கள் இல்லை</string>
-    <string name="items_list_empty">கிடைக்கக்கூடிய உருப்படிகள் இல்லை</string>
     <string name="login_error_lissen_auth_scheme_must_be_whitelisted">திட்டம் %1$s: // %2$s சேவையகத்தின் வழிமாற்றி யூரி அமைப்புகளில் அனுமதிக்கப்படாது</string>
     <string name="source_code_on_github_title">கிதுபில் மூலக் குறியீடு</string>
     <string name="source_code_on_github_subtitle">சிக்கல்களைப் புகாரளிக்கவும் அல்லது மேம்பாடுகளை பரிந்துரைக்கவும்</string>

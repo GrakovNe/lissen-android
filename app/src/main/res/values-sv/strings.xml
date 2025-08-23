@@ -49,7 +49,6 @@
     <string name="player_screen_downloads_navigation">Nedladdningar</string>
     <string name="downloads_menu_download_book">Ladda ner boken</string>
     <string name="downloads_menu_download_podcast">Ladda ner podcast</string>
-    <string name="downloads_menu_download_unknown">Nedladdningar</string>
     <string name="downloads_menu_download_option_current_chapter">Nuvarande kapitel</string>
     <string name="downloads_menu_download_option_current_episode">Nuvarande avsnitt</string>
     <string name="downloads_menu_download_option_entire_book">Hela boken</string>
@@ -58,7 +57,6 @@
     <string name="downloads_menu_download_option_next_episodes">Nästa %1$d avsnitt</string>
     <string name="downloads_menu_download_option_clear_chapters">Rensa nedladdade kapitel</string>
     <string name="downloads_menu_download_option_clear_episodes">Rensa nedladdade avsnitt</string>
-    <string name="downloads_menu_download_option_clear_items">Rensa nedladdade filer</string>
     <string name="mini_player_action_close">Stäng</string>
     <string name="custom_headers_title">Egna rubriker</string>
     <string name="login_error_host_is_down">Servern är nere</string>
@@ -73,7 +71,6 @@
     <string name="settings_screen_custom_header_hint">Specificera rubriker för serveranslutningar</string>
     <string name="downloads_menu_download_option_current_item">Aktuell post</string>
     <string name="downloads_menu_download_option_entire_item">Hela objektet</string>
-    <string name="downloads_menu_download_option_next_items">Nästa %1$d objekt</string>
     <string name="playing_item_details_author">Författare</string>
     <string name="playing_item_details_publisher">Utgivare</string>
     <string name="playing_item_details_year">År</string>
@@ -81,7 +78,6 @@
     <string name="color_scheme_black">Svart</string>
     <string name="chapters_list_empty">Denna bok har inga kapitel</string>
     <string name="episodes_list_empty">Ingen podcast har inga avsnitt</string>
-    <string name="items_list_empty">Inga tillgängliga objekt</string>
     <string name="notification_content_caching_error_title">Cachning misslyckades</string>
     <string name="notification_content_caching_error_description">Några få filer sparades inte</string>
     <string name="playing_item_details_narrator">Berättare</string>

@@ -63,10 +63,8 @@
     <string name="downloads_menu_download_option_entire_item">Artículo completo</string>
     <string name="downloads_menu_download_option_next_chapters">Siguientes %1$d capitulos</string>
     <string name="downloads_menu_download_option_next_episodes">Siguientes %1$d episodios</string>
-    <string name="downloads_menu_download_option_next_items">Siguientes %1$d artículos</string>
     <string name="downloads_menu_download_option_clear_chapters">Borrar capítulos descargados</string>
     <string name="downloads_menu_download_option_clear_episodes">Borrar episodios descargados</string>
-    <string name="downloads_menu_download_option_clear_items">Borrar artículos descargados</string>
     <string name="playing_item_details_year">Año</string>
     <string name="playing_item_details_series">Serie</string>
     <string name="color_scheme_black">Negro</string>
@@ -79,12 +77,10 @@
     <string name="login_screen_open_id_button">Conectar con OpenID</string>
     <string name="source_code_on_github_title">Código fuente en GitHub</string>
     <string name="playing_item_details_publisher">Editorial</string>
-    <string name="items_list_empty">No hay artículos disponibles</string>
     <string name="notification_content_caching_error_description">Algunos archivos no se guardaron</string>
     <string name="mini_player_action_close">Cerrar</string>
     <string name="color_scheme_follow_system">Sistema</string>
     <string name="color_scheme_light">Claro</string>
-    <string name="downloads_menu_download_unknown">Descargas</string>
     <string name="downloads_menu_download_book">Descargar libro</string>
     <string name="playing_item_details_author">Autor</string>
     <string name="episodes_list_empty">Ningún pódcast tiene episodios</string>

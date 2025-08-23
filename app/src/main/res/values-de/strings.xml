@@ -45,9 +45,7 @@
     <string name="downloads_menu_download_option_entire_book">Ganzes Buch</string>
     <string name="downloads_menu_download_option_next_chapters">Nächste %1$d Kapitel</string>
     <string name="downloads_menu_download_option_next_episodes">Nächste %1$d Episoden</string>
-    <string name="downloads_menu_download_option_next_items">Nächste %1$d Elemente</string>
     <string name="downloads_menu_download_option_clear_episodes">Heruntergeladene Episoden löschen</string>
-    <string name="downloads_menu_download_option_clear_items">Heruntergeladene Elemente löschen</string>
     <string name="mini_player_action_close">Schließen</string>
     <string name="playing_item_details_author">Autor</string>
     <string name="color_scheme_black">Schwarz</string>
@@ -74,14 +72,12 @@
     <string name="playing_item_details_year">Jahr</string>
     <string name="timer_option_after_minutes">%1$d Minuten</string>
     <string name="playing_item_details_series">Serie</string>
-    <string name="downloads_menu_download_unknown">Downloads</string>
     <string name="downloads_menu_download_option_current_item">Aktuelles Element</string>
     <string name="downloads_menu_download_option_entire_podcast">Ganzer Podcast</string>
     <string name="downloads_menu_download_option_clear_chapters">Heruntergeladene Kapitel löschen</string>
     <string name="playing_item_details_publisher">Herausgeber</string>
     <string name="chapters_list_empty">Dieses Buch hat keine Kapitel</string>
     <string name="episodes_list_empty">Dieser Podcast hat keine Episoden</string>
-    <string name="items_list_empty">Keine Elemente verfügbar</string>
     <string name="notification_content_caching_error_title">Zwischenspeicherung fehlgeschlagen</string>
     <string name="notification_content_caching_error_description">Einige Dateien wurden nicht gespeichert</string>
     <string name="notification_content_caching_channel">Zwischenspeicherung von Inhalten</string>

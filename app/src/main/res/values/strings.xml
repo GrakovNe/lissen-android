@@ -60,7 +60,6 @@
     <string name="player_screen_downloads_navigation">Downloads</string>
     <string name="downloads_menu_download_book">Download book</string>
     <string name="downloads_menu_download_podcast">Download podcast</string>
-    <string name="downloads_menu_download_unknown">Downloads</string>
     <string name="downloads_menu_download_option_current_chapter">Current chapter</string>
     <string name="downloads_menu_download_option_current_episode">Current episode</string>
     <string name="downloads_menu_download_option_current_item">Current item</string>
@@ -72,10 +71,8 @@
     <string name="downloads_menu_download_option_remaining_items">Remaining items</string>
     <string name="downloads_menu_download_option_next_chapters">Next %1$d chapters</string>
     <string name="downloads_menu_download_option_next_episodes">Next %1$d episodes</string>
-    <string name="downloads_menu_download_option_next_items">Next %1$d items</string>
     <string name="downloads_menu_download_option_clear_chapters">Clear downloaded chapters</string>
     <string name="downloads_menu_download_option_clear_episodes">Clear downloaded episodes</string>
-    <string name="downloads_menu_download_option_clear_items">Clear downloaded items</string>
     <string name="mini_player_action_close">Close</string>
     <string name="playing_item_details_author">Author</string>
     <string name="playing_item_details_publisher">Publisher</string>
@@ -86,7 +83,6 @@
     <string name="color_scheme_black">Black</string>
     <string name="chapters_list_empty">The book has no chapters</string>
     <string name="episodes_list_empty">No podcast has no episodes</string>
-    <string name="items_list_empty">No available items</string>
     <string name="notification_content_caching_channel">Content Caching</string>
     <string name="notification_content_caching_title">Content is caching</string>
     <string name="notification_content_caching_error_title">Caching failed</string>

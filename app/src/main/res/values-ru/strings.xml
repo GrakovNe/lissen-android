@@ -56,7 +56,6 @@
     <string name="player_screen_downloads_navigation">Загрузки</string>
     <string name="downloads_menu_download_book">Скачать</string>
     <string name="downloads_menu_download_podcast">Скачать</string>
-    <string name="downloads_menu_download_unknown">Загрузки</string>
     <string name="downloads_menu_download_option_current_chapter">Текущую главу</string>
     <string name="downloads_menu_download_option_current_episode">Текущий выпуск</string>
     <string name="downloads_menu_download_option_current_item">Текущий элемент</string>
@@ -68,10 +67,8 @@
     <string name="downloads_menu_download_option_remaining_items">Оставшиеся элементы</string>
     <string name="downloads_menu_download_option_next_chapters">Следуюшие %1$d глав</string>
     <string name="downloads_menu_download_option_next_episodes">Следуюшие %1$d выпусков</string>
-    <string name="downloads_menu_download_option_next_items">Следуюшие %1$d элементов</string>
     <string name="downloads_menu_download_option_clear_chapters">Удалить загруженные главы</string>
     <string name="downloads_menu_download_option_clear_episodes">Удалить загруженные выпуски</string>
-    <string name="downloads_menu_download_option_clear_items">Удалить загруженные элементы</string>
     <string name="player_screen_podcast_playing_title">Список выпусков</string>
     <string name="player_screen_items_playing_title">Список элементов</string>
     <string name="player_screen_now_playing_title_podcast_of">Выпуск %1$d из %2$s</string>
@@ -84,7 +81,6 @@
     <string name="color_scheme_black">Черная</string>
     <string name="chapters_list_empty">У книги нет глав</string>
     <string name="episodes_list_empty">У подкаста нет выпусков</string>
-    <string name="items_list_empty">У элемента нет эпизодов</string>
     <string name="notification_content_caching_channel">Кеширование контента</string>
     <string name="notification_content_caching_title">Контент загружается</string>
     <string name="notification_content_caching_error_title">Кэширование не удалось</string>
