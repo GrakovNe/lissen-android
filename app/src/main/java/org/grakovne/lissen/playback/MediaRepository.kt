@@ -42,6 +42,9 @@ import org.grakovne.lissen.playback.service.PlaybackService.Companion.BOOK_EXTRA
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.PLAYBACK_READY
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.POSITION
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_EXPIRED
+import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_OPTION_EXTRA
+import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_REMAINING
+import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_TICK
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_VALUE_EXTRA
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.playback.service.calculateChapterPosition
@@ -70,6 +73,9 @@ class MediaRepository
 
     private val _timerOption = MutableLiveData<TimerOption?>()
     val timerOption = _timerOption
+
+    private val _timerRemaining = MutableLiveData<Long>()
+    val timerRemaining = _timerRemaining
 
     private val _playAfterPrepare = MutableLiveData(false)
     private val _isPlaybackReady = MutableLiveData(false)
@@ -129,6 +135,10 @@ class MediaRepository
             LocalBroadcastManager
               .getInstance(context)
               .registerReceiver(timerExpiredReceiver, IntentFilter(TIMER_EXPIRED))
+
+            LocalBroadcastManager
+              .getInstance(context)
+              .registerReceiver(timerTickReceiver, IntentFilter(TIMER_TICK))
 
             mediaController.addListener(
               object : Player.Listener {
@@ -192,6 +202,20 @@ class MediaRepository
         ) {
           if (intent?.action == TIMER_EXPIRED) {
             _timerOption.postValue(null)
+            pause()
+          }
+        }
+      }
+
+    private val timerTickReceiver =
+      object : BroadcastReceiver() {
+        override fun onReceive(
+          context: Context?,
+          intent: Intent?,
+        ) {
+          if (intent?.action == TIMER_TICK) {
+            val remaining = intent.getLongExtra(TIMER_REMAINING, 0L)
+            _timerRemaining.postValue(remaining)
           }
         }
       }
@@ -203,7 +227,7 @@ class MediaRepository
       _timerOption.postValue(timerOption)
 
       when (timerOption) {
-        is DurationTimerOption -> scheduleServiceTimer(timerOption.duration * 60.0)
+        is DurationTimerOption -> scheduleServiceTimer(timerOption.duration * 60.0, timerOption)
 
         is CurrentEpisodeTimerOption -> {
           val playingBook = playingBook.value ?: return
@@ -220,7 +244,7 @@ class MediaRepository
               overallPosition = currentPosition,
             )
 
-          scheduleServiceTimer(chapterDuration - chapterPosition)
+          scheduleServiceTimer(chapterDuration - chapterPosition, timerOption)
         }
 
         null -> cancelServiceTimer()
@@ -246,6 +270,10 @@ class MediaRepository
           book
             .chapters[index]
             .start
+
+        if (currentChapterIndex.value != index && timerOption.value == CurrentEpisodeTimerOption) {
+          updateTimer(null)
+        }
 
         seekTo(chapterStartsAt)
       } catch (ex: Exception) {
@@ -335,7 +363,6 @@ class MediaRepository
     fun nextTrack() {
       val book = playingBook.value ?: return
       val overallPosition = totalPosition.value ?: return
-
       val currentIndex = calculateChapterIndex(book, overallPosition)
 
       val nextChapterIndex = currentIndex + 1
@@ -361,11 +388,15 @@ class MediaRepository
       }
     }
 
-    private fun scheduleServiceTimer(delay: Double) {
+    private fun scheduleServiceTimer(
+      delay: Double,
+      option: TimerOption,
+    ) {
       val intent =
         Intent(context, PlaybackService::class.java).apply {
           action = PlaybackService.ACTION_SET_TIMER
           putExtra(TIMER_VALUE_EXTRA, delay)
+          putExtra(TIMER_OPTION_EXTRA, option)
         }
 
       context.startService(intent)
@@ -435,6 +466,7 @@ class MediaRepository
         Intent(context, PlaybackService::class.java).apply {
           action = PlaybackService.ACTION_PLAY
         }
+
       context.startForegroundService(intent)
     }
 
@@ -492,12 +524,15 @@ class MediaRepository
         }
 
       context.startService(intent)
+      adjustTimer(safePosition)
+    }
 
+    private fun adjustTimer(position: Double) {
       when (_timerOption.value) {
         is CurrentEpisodeTimerOption ->
           updateTimer(
             timerOption = _timerOption.value,
-            position = safePosition,
+            position = position,
           )
 
         is DurationTimerOption -> Unit

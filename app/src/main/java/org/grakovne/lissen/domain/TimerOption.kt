@@ -1,6 +1,8 @@
 package org.grakovne.lissen.domain
 
-sealed interface TimerOption
+import java.io.Serializable
+
+sealed interface TimerOption : Serializable
 
 class DurationTimerOption(
   val duration: Int,

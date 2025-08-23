@@ -1,8 +1,6 @@
 package org.grakovne.lissen.playback.service
 
 import android.content.Intent
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.core.net.toUri
@@ -36,6 +34,7 @@ import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.MediaProgress
+import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import java.io.File
 import java.io.FileOutputStream
@@ -66,11 +65,12 @@ class PlaybackService : MediaSessionService() {
   lateinit var requestHeadersProvider: RequestHeadersProvider
 
   @Inject
+  lateinit var playbackTimer: PlaybackTimer
+
+  @Inject
   lateinit var mediaCache: Cache
 
   private val playerServiceScope = MainScope()
-
-  private val handler = Handler(Looper.getMainLooper())
 
   @Suppress("DEPRECATION")
   override fun onStartCommand(
@@ -83,9 +83,10 @@ class PlaybackService : MediaSessionService() {
     when (intent?.action) {
       ACTION_SET_TIMER -> {
         val delay = intent.getDoubleExtra(TIMER_VALUE_EXTRA, 0.0)
+        val option = intent.getSerializableExtra(TIMER_OPTION_EXTRA) as? TimerOption
 
-        if (delay > 0) {
-          setTimer(delay)
+        if (delay > 0 && option != null) {
+          setTimer(delay, option)
         }
 
         return START_NOT_STICKY
@@ -227,25 +228,16 @@ class PlaybackService : MediaSessionService() {
           }
       }
 
-  private fun setTimer(delay: Double) {
-    val delayMs = delay * 1000
-
-    cancelTimer()
-
-    handler.postDelayed(
-      {
-        pause()
-        LocalBroadcastManager
-          .getInstance(baseContext)
-          .sendBroadcast(Intent(TIMER_EXPIRED))
-      },
-      delayMs.toLong(),
-    )
-    Log.d(TAG, "Timer started for $delayMs ms.")
+  private fun setTimer(
+    delay: Double,
+    option: TimerOption,
+  ) {
+    playbackTimer.startTimer(delay, option)
+    Log.d(TAG, "Timer started for ${delay * 1000} ms.")
   }
 
   private fun cancelTimer() {
-    handler.removeCallbacksAndMessages(null)
+    playbackTimer.stopTimer()
     Log.d(TAG, "Timer canceled.")
   }
 
@@ -340,8 +332,11 @@ class PlaybackService : MediaSessionService() {
 
     const val BOOK_EXTRA = "org.grakovne.lissen.player.service.BOOK"
     const val TIMER_VALUE_EXTRA = "org.grakovne.lissen.player.service.TIMER_VALUE"
+    const val TIMER_OPTION_EXTRA = "org.grakovne.lissen.player.service.TIMER_OPTION"
     const val TIMER_EXPIRED = "org.grakovne.lissen.player.service.TIMER_EXPIRED"
+    const val TIMER_TICK = "org.grakovne.lissen.player.service.TIMER_TICK"
 
+    const val TIMER_REMAINING = "org.grakovne.lissen.player.service.TIMER_REMAINING"
     const val PLAYBACK_READY = "org.grakovne.lissen.player.service.PLAYBACK_READY"
     const val POSITION = "org.grakovne.lissen.player.service.POSITION"
 

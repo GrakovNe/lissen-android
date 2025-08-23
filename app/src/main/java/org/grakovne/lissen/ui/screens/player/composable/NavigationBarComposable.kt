@@ -39,7 +39,10 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.content.cache.CacheState
 import org.grakovne.lissen.domain.CacheStatus
+import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.DurationTimerOption
+import org.grakovne.lissen.ui.extensions.formatLeadingMinutes
 import org.grakovne.lissen.ui.icons.TimerPlay
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.CachingModelView
@@ -56,6 +59,7 @@ fun NavigationBarComposable(
 ) {
   val cacheProgress: CacheState by contentCachingModelView.getProgress(book.id).collectAsState()
   val timerOption by playerViewModel.timerOption.observeAsState(null)
+  val timerRemaining by playerViewModel.timerRemaining.observeAsState(0)
   val playbackSpeed by playerViewModel.playbackSpeed.observeAsState(1f)
   val playingQueueExpanded by playerViewModel.playingQueueExpanded.observeAsState(false)
 
@@ -166,12 +170,24 @@ fun NavigationBarComposable(
           )
         },
         label = {
-          Text(
-            text = stringResource(R.string.player_screen_timer_navigation),
-            style = labelStyle,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-          )
+          when (timerOption) {
+            is DurationTimerOption, CurrentEpisodeTimerOption -> {
+              Text(
+                text = timerRemaining?.toInt()?.formatLeadingMinutes() ?: stringResource(R.string.player_screen_timer_navigation),
+                style = labelStyle,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+              )
+            }
+
+            null ->
+              Text(
+                text = stringResource(R.string.player_screen_timer_navigation),
+                style = labelStyle,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+              )
+          }
         },
         selected = false,
         onClick = { timerExpanded = true },
