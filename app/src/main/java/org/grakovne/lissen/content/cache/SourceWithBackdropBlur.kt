@@ -27,25 +27,31 @@ suspend fun sourceWithBackdropBlur(
 
     val size = maxOf(width, height)
 
-    val blurred =
+    val radius = 24
+    val padding = radius * 2
+
+    val scaled = original.scale(size + padding, size + padding)
+
+    val blurredPadded =
       HokoBlur
         .with(context)
         .scheme(SCHEME_NATIVE)
         .mode(MODE_STACK)
-        .radius(24)
+        .radius(radius)
         .forceCopy(true)
-        .blur(original.scale(size, size))
+        .blur(scaled)
 
-    val result = createBitmap(size, size)
+    val backdrop = Bitmap.createBitmap(blurredPadded, padding / 2, padding / 2, size, size)
+
+    val result = createBitmap(size, size, Bitmap.Config.RGB_565)
+
     val canvas = Canvas(result)
-    canvas.drawBitmap(blurred, 0f, 0f, null)
+    canvas.drawBitmap(backdrop, 0f, 0f, null)
 
     val left = ((size - width) / 2f)
     val top = ((size - height) / 2f)
+
     canvas.drawBitmap(original, left, top, null)
 
-    val buffer = Buffer()
-    result.compress(Bitmap.CompressFormat.JPEG, 90, buffer.outputStream())
-
-    buffer
+    Buffer().apply { result.compress(Bitmap.CompressFormat.JPEG, 90, this.outputStream()) }
   }
