@@ -1,5 +1,7 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.api
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okio.Buffer
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.connection.ConnectionInfoResponse
@@ -184,5 +186,11 @@ class AudioBookshelfRepository
             true -> it.getItemCover(itemId = itemId)
             false -> it.getItemCover(itemId = itemId, width)
           }
-        }.map { Buffer().apply { writeAll(it.source()) } }
+        }.map { response ->
+          withContext(Dispatchers.IO) {
+            response.use {
+              Buffer().apply { writeAll(it.source()) }
+            }
+          }
+        }
   }
