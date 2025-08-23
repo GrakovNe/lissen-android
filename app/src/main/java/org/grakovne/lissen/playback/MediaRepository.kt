@@ -270,11 +270,7 @@ class MediaRepository
           book
             .chapters[index]
             .start
-
-        if (currentChapterIndex.value != index && timerOption.value == CurrentEpisodeTimerOption) {
-          updateTimer(null)
-        }
-
+        
         seekTo(chapterStartsAt)
       } catch (ex: Exception) {
         return
