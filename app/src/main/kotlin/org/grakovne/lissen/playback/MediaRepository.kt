@@ -244,7 +244,10 @@ class MediaRepository
               overallPosition = currentPosition,
             )
 
-          scheduleServiceTimer(chapterDuration - chapterPosition, timerOption)
+          scheduleServiceTimer(
+            delay = (chapterDuration - chapterPosition) / preferences.getPlaybackSpeed(),
+            option = timerOption,
+          )
         }
 
         null -> cancelServiceTimer()
@@ -270,7 +273,7 @@ class MediaRepository
           book
             .chapters[index]
             .start
-        
+
         seekTo(chapterStartsAt)
       } catch (ex: Exception) {
         return
@@ -341,6 +344,8 @@ class MediaRepository
 
       _playbackSpeed.postValue(speed)
       preferences.savePlaybackSpeed(speed)
+
+      _totalPosition.value?.let { adjustTimer(it) }
     }
 
     suspend fun preparePlayback(bookId: String) {
