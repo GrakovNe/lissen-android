@@ -55,7 +55,6 @@
     <string name="player_screen_downloads_navigation">다운로드</string>
     <string name="downloads_menu_download_book">다운로드</string>
     <string name="downloads_menu_download_podcast">다운로드</string>
-    <string name="downloads_menu_download_unknown">다운로드</string>
     <string name="downloads_menu_download_option_current_chapter">현재 챕터</string>
     <string name="downloads_menu_download_option_current_episode">현재 에피소드</string>
     <string name="downloads_menu_download_option_entire_book">책 전체</string>
@@ -82,8 +81,6 @@
     <string name="downloads_menu_download_option_current_item">현재 아이템</string>
     <string name="downloads_menu_download_option_entire_item">아이템 전체</string>
     <string name="downloads_menu_download_option_remaining_items">남아있는 아이템</string>
-    <string name="downloads_menu_download_option_next_items">다음 %1$d 아이템</string>
-    <string name="downloads_menu_download_option_clear_items">다운로드 아이템 지우기</string>
     <string name="playing_item_details_publisher">출판사</string>
     <string name="playing_item_details_narrator">낭독</string>
     <string name="playing_item_details_duration">재생시간</string>
@@ -91,7 +88,6 @@
     <string name="playing_item_details_series">시리즈</string>
     <string name="color_scheme_black">블랙</string>
     <string name="chapters_list_empty">챕터가 없습니다</string>
-    <string name="items_list_empty">아이템이 없습니다</string>
     <string name="notification_content_caching_channel">콘텐츠 캐싱</string>
     <string name="notification_content_caching_title">콘텐츠 캐싱 중</string>
     <string name="notification_content_caching_error_title">캐싱 실패</string>

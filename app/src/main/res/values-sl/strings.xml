@@ -60,7 +60,6 @@
     <string name="player_screen_downloads_navigation">Prenosi</string>
     <string name="downloads_menu_download_book">Prenesi knjigo</string>
     <string name="downloads_menu_download_podcast">Prenesi podcast</string>
-    <string name="downloads_menu_download_unknown">Prenosi</string>
     <string name="downloads_menu_download_option_current_chapter">Trenutno poglavje</string>
     <string name="downloads_menu_download_option_current_episode">Trenutna epizoda</string>
     <string name="downloads_menu_download_option_current_item">Trenutni element</string>
@@ -69,10 +68,8 @@
     <string name="downloads_menu_download_option_entire_item">Celoten element</string>
     <string name="downloads_menu_download_option_next_chapters">Naslednjih %1$d poglavij</string>
     <string name="downloads_menu_download_option_next_episodes">Naslednjih %1$d epizod</string>
-    <string name="downloads_menu_download_option_next_items">Naslednjih %1$d elementov</string>
     <string name="downloads_menu_download_option_clear_chapters">Počisti prenesena poglavja</string>
     <string name="downloads_menu_download_option_clear_episodes">Počisti prenesene epizode</string>
-    <string name="downloads_menu_download_option_clear_items">Počisti prenesene elemente</string>
     <string name="mini_player_action_close">Zapri</string>
     <string name="playing_item_details_author">Avtor</string>
     <string name="playing_item_details_publisher">Založnik</string>
@@ -81,7 +78,6 @@
     <string name="color_scheme_black">Črna</string>
     <string name="chapters_list_empty">Knjiga je brez poglavij</string>
     <string name="episodes_list_empty">Podcast nima epizod</string>
-    <string name="items_list_empty">Element nima epizod</string>
     <string name="notification_content_caching_error_title">Predpomnjenje ni uspelo</string>
     <string name="notification_content_caching_error_description">Nekaj datotek ni bilo shranjenih</string>
     <string name="login_error_lissen_auth_scheme_must_be_whitelisted">Shema %1$s://%2$s ni dovoljena v nastavitvah URI preusmeritve strežnika</string>

@@ -66,10 +66,8 @@
     <string name="downloads_menu_download_option_entire_book">Teljes könyv</string>
     <string name="downloads_menu_download_option_next_chapters">Következő %1$d fejezet</string>
     <string name="downloads_menu_download_option_next_episodes">Következő %1$d rész</string>
-    <string name="downloads_menu_download_option_next_items">Következő %1$d elem</string>
     <string name="downloads_menu_download_option_clear_chapters">Letöltött fejezetek törlése</string>
     <string name="downloads_menu_download_option_clear_episodes">Letöltött részek törlése</string>
-    <string name="downloads_menu_download_option_clear_items">Letöltött elemek törlése</string>
     <string name="mini_player_action_close">Bezárás</string>
     <string name="playing_item_details_author">Szerző</string>
     <string name="playing_item_details_publisher">Kiadó</string>
@@ -78,7 +76,6 @@
     <string name="color_scheme_black">Fekete</string>
     <string name="chapters_list_empty">Ennek a könyvnek nincsenek fejezetei</string>
     <string name="episodes_list_empty">Ennek a podcastnek nincsenek részei</string>
-    <string name="items_list_empty">Nincsenek elérhető elemek</string>
     <string name="notification_content_caching_channel">Tartalom gyorsítótárazása</string>
     <string name="notification_content_caching_title">A tartalom gyorsítótárazása folyamatban</string>
     <string name="notification_content_caching_error_title">A gyorsítótárazás sikertelen</string>
@@ -104,7 +101,6 @@
     <string name="seek_interval_60_seconds">60 másodperc</string>
     <string name="continue_playback_shortcut_title">Folytatás</string>
     <string name="continue_playback_shortcut_description">Hallgatás folytatása</string>
-    <string name="downloads_menu_download_unknown">Letöltések</string>
     <string name="downloads_menu_download_option_entire_podcast">Teljes podcast</string>
     <string name="downloads_menu_download_option_entire_item">Teljes elem</string>
     <string name="playing_item_details_narrator">Előadó</string>

@@ -270,7 +270,7 @@ class MediaRepository
           book
             .chapters[index]
             .start
-        
+
         seekTo(chapterStartsAt)
       } catch (ex: Exception) {
         return

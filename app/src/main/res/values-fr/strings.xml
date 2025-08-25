@@ -60,7 +60,6 @@
     <string name="player_screen_downloads_navigation">Téléchargements</string>
     <string name="downloads_menu_download_book">Télécharger le livre</string>
     <string name="downloads_menu_download_podcast">Télécharger le podcast</string>
-    <string name="downloads_menu_download_unknown">Téléchargements</string>
     <string name="downloads_menu_download_option_current_chapter">Chapitre en cours</string>
     <string name="downloads_menu_download_option_current_episode">Episode en cours</string>
     <string name="downloads_menu_download_option_current_item">Élément en cours</string>
@@ -69,10 +68,8 @@
     <string name="downloads_menu_download_option_entire_item">Objet entier</string>
     <string name="downloads_menu_download_option_next_chapters">Prochains %1$d chapitres</string>
     <string name="downloads_menu_download_option_next_episodes">Prochains %1$d épisodes</string>
-    <string name="downloads_menu_download_option_next_items">Prochains %1$d objets</string>
     <string name="downloads_menu_download_option_clear_chapters">Vider les chapitres téléchargés</string>
     <string name="downloads_menu_download_option_clear_episodes">Vider les épisodes téléchargés</string>
-    <string name="downloads_menu_download_option_clear_items">Vider les objets téléchargés</string>
     <string name="mini_player_action_close">Fermer</string>
     <string name="playing_item_details_author">Auteur</string>
     <string name="playing_item_details_publisher">Éditeur</string>
@@ -104,7 +101,6 @@
     <string name="settings_screen_library_ordering_creation_date_option">Date de création</string>
     <string name="settings_screen_library_ordering_title">Tri de la bibliothèque</string>
     <string name="settings_screen_library_ordering_title_option">Titre</string>
-    <string name="items_list_empty">Aucun article disponible</string>
     <string name="notification_content_caching_channel">Mise en cache du contenu</string>
     <string name="notification_content_caching_title">Le contenu est mis en cache</string>
     <string name="login_error_lissen_auth_scheme_must_be_whitelisted">Le schéma %1$s://%2$s n\'est pas autorisé dans les paramètres d\'URI de redirection du serveur</string>

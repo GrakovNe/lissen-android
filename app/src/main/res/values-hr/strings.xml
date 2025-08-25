@@ -61,7 +61,6 @@
     <string name="player_screen_downloads_navigation">Preuzimanja</string>
     <string name="downloads_menu_download_book">Preuzmi knjigu</string>
     <string name="downloads_menu_download_podcast">Preuzmi podcast</string>
-    <string name="downloads_menu_download_unknown">Preuzimanja</string>
     <string name="downloads_menu_download_option_current_chapter">Trenutno poglavlje</string>
     <string name="downloads_menu_download_option_current_episode">Trenutna epizoda</string>
     <string name="downloads_menu_download_option_current_item">Trenutna stavka</string>
@@ -73,10 +72,8 @@
     <string name="downloads_menu_download_option_remaining_items">Preostali elementi</string>
     <string name="downloads_menu_download_option_next_chapters">Sljedećih %1$d poglavlja</string>
     <string name="downloads_menu_download_option_next_episodes">Sljedećih %1$d epizoda</string>
-    <string name="downloads_menu_download_option_next_items">Sljedećih %1$d stavki</string>
     <string name="downloads_menu_download_option_clear_chapters">Obriši preuzeta poglavlja</string>
     <string name="downloads_menu_download_option_clear_episodes">Obriši preuzete epizode</string>
-    <string name="downloads_menu_download_option_clear_items">Obriši preuzete stavke</string>
     <string name="mini_player_action_close">Zatvori</string>
     <string name="playing_item_details_author">Autor</string>
     <string name="playing_item_details_publisher">Izdavač</string>
@@ -87,7 +84,6 @@
     <string name="color_scheme_black">Crna</string>
     <string name="chapters_list_empty">Knjiga nema poglavlja</string>
     <string name="episodes_list_empty">Podcast nema epizoda</string>
-    <string name="items_list_empty">Nema dostupnih stavki</string>
     <string name="notification_content_caching_channel">Predmemoriranje sadržaja</string>
     <string name="notification_content_caching_title">Sadržaj se sprema</string>
     <string name="notification_content_caching_error_title">Neuspješno predmemoriranje</string>

@@ -60,7 +60,6 @@
     <string name="player_screen_now_playing_title_chapter_of">Capitolo %1$d di %2$s</string>
     <string name="login_error_host_url_shall_be_https_or_http">L\'URL host deve iniziare con https:// o http://</string>
     <string name="widget_placeholder_text">Clicca per aprire l\'app</string>
-    <string name="downloads_menu_download_unknown">Download</string>
     <string name="downloads_menu_download_option_current_chapter">Capitolo attuale</string>
     <string name="downloads_menu_download_option_current_episode">Episodio attuale</string>
     <string name="downloads_menu_download_option_current_item">Elemento attuale</string>
@@ -69,10 +68,8 @@
     <string name="downloads_menu_download_option_entire_item">Elemento intero</string>
     <string name="downloads_menu_download_option_next_chapters">Prossimi %1$d capitoli</string>
     <string name="downloads_menu_download_option_next_episodes">Prossimi %1$d episodi</string>
-    <string name="downloads_menu_download_option_next_items">Prossimi %1$d elementi</string>
     <string name="downloads_menu_download_option_clear_chapters">Cancella i capitoli scaricati</string>
     <string name="downloads_menu_download_option_clear_episodes">Cancella gli episodi scaricati</string>
-    <string name="downloads_menu_download_option_clear_items">Cancella gli elementi scaricati</string>
     <string name="mini_player_action_close">Chiudi</string>
     <string name="playing_item_details_author">Autore</string>
     <string name="playing_item_details_publisher">Editore</string>
@@ -80,7 +77,6 @@
     <string name="playing_item_details_series">Serie</string>
     <string name="color_scheme_black">Nero</string>
     <string name="episodes_list_empty">Nessun podcast ha episodi</string>
-    <string name="items_list_empty">Nessun elemento disponibile</string>
     <string name="chapters_list_empty">Il libro non ha capitoli</string>
     <string name="notification_content_caching_error_title">Memorizzazione nella cache non riuscita</string>
     <string name="notification_content_caching_error_description">Alcuni file non sono stati salvati</string>

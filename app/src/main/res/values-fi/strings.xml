@@ -47,15 +47,12 @@
     <string name="chapter_search_hint">Etsi luvun otsikolla</string>
     <string name="the_offline_podcasts_is_empty">Ei Offline-tilaan tallennettuja podcasteja</string>
     <string name="player_screen_downloads_navigation">Lataukset</string>
-    <string name="downloads_menu_download_unknown">Lataukset</string>
     <string name="downloads_menu_download_option_current_chapter">Nykyinen luku</string>
     <string name="downloads_menu_download_option_current_episode">Nykyinen jakso</string>
     <string name="downloads_menu_download_option_entire_item">Koko kohde</string>
     <string name="downloads_menu_download_option_next_chapters">Seuraavat %1$d lukua</string>
     <string name="downloads_menu_download_option_next_episodes">Seuraavat %1$d jaksoa</string>
-    <string name="downloads_menu_download_option_next_items">Seuraavat %1$d kohdetta</string>
     <string name="downloads_menu_download_option_clear_episodes">Tyhjennä ladatut jaksot</string>
-    <string name="downloads_menu_download_option_clear_items">Tyhjennä ladatut kohteet</string>
     <string name="playing_item_details_author">Kirjailija</string>
     <string name="playing_item_details_publisher">Julkaisija</string>
     <string name="playing_item_details_duration">Kesto</string>
@@ -63,7 +60,6 @@
     <string name="playing_item_details_year">Vuosi</string>
     <string name="chapters_list_empty">Kirja ei sisällä lukuja</string>
     <string name="episodes_list_empty">Mikään podcast ei sisällä jaksoja</string>
-    <string name="items_list_empty">Ei saatavilla olevia kohteita</string>
     <string name="notification_content_caching_channel">Sisältövälimuisti</string>
     <string name="notification_content_caching_error_title">Välimuistiin tallennus epäonnistui</string>
     <string name="notification_content_caching_error_description">Jotkin tiedostot eivät tallentuneet</string>

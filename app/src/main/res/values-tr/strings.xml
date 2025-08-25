@@ -61,7 +61,6 @@
     <string name="player_screen_downloads_navigation">İndirilenler</string>
     <string name="downloads_menu_download_book">Kitabı indir</string>
     <string name="downloads_menu_download_podcast">Podcast\'i indir</string>
-    <string name="downloads_menu_download_unknown">İndirilenler</string>
     <string name="downloads_menu_download_option_current_chapter">Geçerli bölüm</string>
     <string name="downloads_menu_download_option_current_episode">Geçerli bölüm</string>
     <string name="downloads_menu_download_option_current_item">Geçerli öğe</string>
@@ -70,10 +69,8 @@
     <string name="downloads_menu_download_option_entire_item">Tüm öğe</string>
     <string name="downloads_menu_download_option_next_chapters">Sonraki %1$d bölüm</string>
     <string name="downloads_menu_download_option_next_episodes">Sonraki %1$d bölüm</string>
-    <string name="downloads_menu_download_option_next_items">Sonraki %1$d öğe</string>
     <string name="downloads_menu_download_option_clear_chapters">İndirilen bölümleri temizle</string>
     <string name="downloads_menu_download_option_clear_episodes">İndirilen bölümleri temizle</string>
-    <string name="downloads_menu_download_option_clear_items">İndirilen öğeleri temizle</string>
     <string name="mini_player_action_close">Kapat</string>
     <string name="playing_item_details_author">Yazar</string>
     <string name="playing_item_details_publisher">Yayıncı</string>
@@ -82,7 +79,6 @@
     <string name="color_scheme_black">Siyah</string>
     <string name="chapters_list_empty">Kitabın bölümleri yok</string>
     <string name="episodes_list_empty">Podcast\'in bölümleri yok</string>
-    <string name="items_list_empty">Kullanılabilir öğe yok</string>
     <string name="notification_content_caching_channel">İçerik Önbelleğe Alma</string>
     <string name="notification_content_caching_title">İçerik önbelleğe alınıyor</string>
     <string name="notification_content_caching_error_title">Önbelleğe alma başarısız</string>

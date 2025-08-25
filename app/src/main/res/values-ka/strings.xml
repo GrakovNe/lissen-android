@@ -60,7 +60,6 @@
     <string name="player_screen_downloads_navigation">ჩამოტვირთვები</string>
     <string name="downloads_menu_download_book">წიგნის ჩამოტვირთვა</string>
     <string name="downloads_menu_download_podcast">პოდკასტის ჩამოტვირთვა</string>
-    <string name="downloads_menu_download_unknown">ჩამოტვირთვები</string>
     <string name="downloads_menu_download_option_current_chapter">მიმდინარე თავი</string>
     <string name="downloads_menu_download_option_current_episode">მიმდინარე ეპიზოდი</string>
     <string name="downloads_menu_download_option_current_item">მიმდინარე ელემენტი</string>
@@ -72,10 +71,8 @@
     <string name="downloads_menu_download_option_remaining_items">დარჩენილი ელემენტები</string>
     <string name="downloads_menu_download_option_next_chapters">შემდეგი %1$d თავი</string>
     <string name="downloads_menu_download_option_next_episodes">შემდეგი %1$d ეპიზოდი</string>
-    <string name="downloads_menu_download_option_next_items">შემდეგი %1$d ელემენტი</string>
     <string name="downloads_menu_download_option_clear_chapters">ჩამოტვირთული თავების გასუფთავება</string>
     <string name="downloads_menu_download_option_clear_episodes">ჩამოტვირთული ეპიზოდების გასუფთავება</string>
-    <string name="downloads_menu_download_option_clear_items">ჩამოტვირთული ელემენტების გასუფთავება</string>
     <string name="mini_player_action_close">დახურვა</string>
     <string name="playing_item_details_author">ავტორი</string>
     <string name="playing_item_details_publisher">გამომცემელი</string>
@@ -86,7 +83,6 @@
     <string name="color_scheme_black">შავი</string>
     <string name="chapters_list_empty">წიგნს არ აქვს თავი</string>
     <string name="episodes_list_empty">პოდკასტებს არ აქვს ეპიზოდი</string>
-    <string name="items_list_empty">ხელმისაწვდომი ელემენტები არ არის</string>
     <string name="notification_content_caching_channel">კონტენტის ქეშირება</string>
     <string name="notification_content_caching_title">მიმდინარეობს კონტენტის ქეშირება</string>
     <string name="notification_content_caching_error_title">ქეშირება ვერ მოხერხდა</string>
