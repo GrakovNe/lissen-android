@@ -120,4 +120,5 @@
     <string name="volume_boost_medium">Medium</string>
     <string name="volume_boost_high">High</string>
     <string name="volume_boost_title">Boosted volume</string>
+    <string name="playing_item_details_time_remaining">Time remaining</string>
 </resources>

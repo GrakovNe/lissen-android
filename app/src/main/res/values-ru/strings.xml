@@ -120,4 +120,5 @@
     <string name="volume_boost_medium">Среднее увеличение</string>
     <string name="volume_boost_high">Максимальное увеличение</string>
     <string name="volume_boost_title">Усиление громкости</string>
+    <string name="playing_item_details_time_remaining">Оставшееся время</string>
 </resources>
