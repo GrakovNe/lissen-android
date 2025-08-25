@@ -115,4 +115,9 @@
     <string name="settings_screen_cached_items_title">Letöltések</string>
     <string name="settings_screen_cached_items_hint">Mentett tartalom kezelése</string>
     <string name="downloads_menu_download_option_remaining_chapters">Hátralévő fejezetek</string>
+    <string name="volume_boost_disabled">Letiltva</string>
+    <string name="volume_boost_low">Alacsony</string>
+    <string name="volume_boost_medium">Közepes</string>
+    <string name="volume_boost_high">Magas</string>
+    <string name="volume_boost_title">Megnövelt hangerő</string>
 </resources>
