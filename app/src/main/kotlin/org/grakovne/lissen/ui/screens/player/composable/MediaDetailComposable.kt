@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AvTimer
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.HourglassEmpty
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Business
 import androidx.compose.material.icons.outlined.CalendarMonth
@@ -21,6 +22,8 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
@@ -31,16 +34,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.text.HtmlCompat
 import org.grakovne.lissen.R
+import org.grakovne.lissen.channel.common.LibraryType
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.ui.extensions.formatFully
 import org.grakovne.lissen.ui.screens.player.InfoRow
+import org.grakovne.lissen.viewmodel.PlayerViewModel
+import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MediaDetailComposable(
   playingBook: DetailedItem?,
   onDismissRequest: () -> Unit,
+  playingViewModel: PlayerViewModel,
+  settingsViewModel: SettingsViewModel,
 ) {
+  val totalPosition by playingViewModel.totalPosition.observeAsState(0.0)
+  val preferredLibrary by settingsViewModel.preferredLibrary.observeAsState()
+
   ModalBottomSheet(
     onDismissRequest = onDismissRequest,
     containerColor = colorScheme.surface,
@@ -126,16 +137,24 @@ fun MediaDetailComposable(
             )
           }
 
-        playingBook
-          ?.chapters
-          ?.sumOf { it.duration }
-          ?.let {
-            InfoRow(
-              icon = Icons.Filled.AvTimer,
-              label = stringResource(R.string.playing_item_details_duration),
-              textValue = it.toInt().formatFully(),
-            )
-          }
+        if (preferredLibrary?.type == LibraryType.LIBRARY) {
+          playingBook
+            ?.chapters
+            ?.sumOf { it.duration }
+            ?.let {
+              InfoRow(
+                icon = Icons.Filled.AvTimer,
+                label = stringResource(R.string.playing_item_details_duration),
+                textValue = it.toInt().formatFully(),
+              )
+
+              InfoRow(
+                icon = Icons.Filled.HourglassEmpty,
+                label = stringResource(R.string.playing_item_details_time_remaining),
+                textValue = (it - totalPosition).toInt().formatFully(),
+              )
+            }
+        }
 
         playingBook
           ?.publisher

@@ -293,6 +293,8 @@ fun PlayerScreen(
   if (itemDetailsSelected) {
     MediaDetailComposable(
       playingBook = playingBook,
+      playingViewModel = playerViewModel,
+      settingsViewModel = settingsViewModel,
       onDismissRequest = { itemDetailsSelected = false },
     )
   }
