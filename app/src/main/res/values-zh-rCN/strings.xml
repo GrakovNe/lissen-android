@@ -120,4 +120,5 @@
     <string name="volume_boost_medium">中</string>
     <string name="volume_boost_high">高</string>
     <string name="volume_boost_title">音量增强</string>
+    <string name="playing_item_details_time_remaining">剩余时间</string>
 </resources>
