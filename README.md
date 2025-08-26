@@ -75,9 +75,10 @@ To contribute:
 Google Play rejected publication of the app because partial Android Auto integration did not meet the official quality checklist.  
 
 **Current state:**  
-- The **main branch** is the latest stable build every moment.
-- The dedicated [`release/stable`](https://github.com/GrakovNe/lissen-android/tree/release/stable) contains the lastest Play Store–compliant release.  
-- The dedicated [`release/android-auto`](https://github.com/GrakovNe/lissen-android/tree/release/android-auto) branch preserves Android Auto functionality.  
+- The **main branch** is the latest stable build at every moment with every feature available at that time.  
+- The dedicated [`release/stable`](https://github.com/GrakovNe/lissen-android/tree/release/stable) contains the latest full-feature release including Android Auto.  
+- The dedicated [`release/google-play-store`](https://github.com/GrakovNe/lissen-android/tree/release/google-play-store) branch contains the Google Play Store–compliant release based on the `release/stable` branch with Android Auto features disabled.  
+
 - **Starting from [release 1.6.10](https://github.com/GrakovNe/lissen-android/releases/tag/1.6.10) every release contains:**  
   - **Common APK** – identical to the Play Store version, without Android Auto.  
   - **Android Auto APK** – fully supported and feature-equivalent, with Android Auto enabled.  
