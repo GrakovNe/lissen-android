@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.BuildConfig
 
 @Composable
-fun AdditionalComposable() {
+fun LicenseFooterComposable() {
   Column(
     modifier =
       Modifier

@@ -121,4 +121,9 @@
     <string name="volume_boost_high">Максимальное увеличение</string>
     <string name="volume_boost_title">Усиление громкости</string>
     <string name="playing_item_details_time_remaining">Оставшееся время</string>
+    <string name="settings_screen_advanced_preferences_title">Расширенные настройки</string>
+    <string name="settings_screen_advanced_preferences_description">Настройте перемотку, прокси-заголовки и звук</string>
+    <string name="settings_screen_crash_report_title">Отчёты о сбоях</string>
+    <string name="settings_screen_crash_report_description">Отправлять отчёт при сбое приложения</string>
+
 </resources>

@@ -54,7 +54,7 @@ fun AdvancedSettingsItemComposable(
     ) {
       Icon(
         imageVector = Icons.AutoMirrored.Outlined.ArrowForwardIos,
-        contentDescription = "Logout",
+        contentDescription = "Forward",
       )
     }
   }

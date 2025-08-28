@@ -37,6 +37,8 @@ class AppNavigationService(
 
   fun showCachedItemsSettings() = host.navigate("$ROUTE_SETTINGS/cached_items")
 
+  fun showAdvancedSettings() = host.navigate("$ROUTE_SETTINGS/advanced_settings")
+
   fun showLogin() {
     host.navigate(ROUTE_LOGIN) {
       popUpTo(0) { inclusive = true }

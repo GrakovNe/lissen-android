@@ -121,4 +121,8 @@
     <string name="volume_boost_high">High</string>
     <string name="volume_boost_title">Boosted volume</string>
     <string name="playing_item_details_time_remaining">Time remaining</string>
+    <string name="settings_screen_advanced_preferences_title">Advanced preferences</string>
+    <string name="settings_screen_advanced_preferences_description">Control seeking, proxy headers, or sound</string>
+    <string name="settings_screen_crash_report_title">Crash reporting</string>
+    <string name="settings_screen_crash_report_description">Send reports if the app crashes</string>
 </resources>

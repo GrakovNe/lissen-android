@@ -55,6 +55,14 @@ class SettingsViewModel
     private val _seekTime = MutableLiveData(preferences.getSeekTime())
     val seekTime = _seekTime
 
+    private val _crashReporting = MutableLiveData(preferences.getAcraEnabled())
+    val crashReporting = _crashReporting
+
+    fun preferCrashReporting(value: Boolean) {
+      _crashReporting.postValue(value)
+      preferences.saveAcraEnabled(value)
+    }
+
     fun logout() {
       preferences.clearPreferences()
     }

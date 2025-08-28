@@ -1,4 +1,4 @@
-package org.grakovne.lissen.ui.screens.settings
+package org.grakovne.lissen.ui.screens.settings.composable
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,22 +30,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.navigation.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.navigation.AppNavigationService
-import org.grakovne.lissen.ui.screens.settings.composable.AdvancedSettingsItemComposable
-import org.grakovne.lissen.ui.screens.settings.composable.ColorSchemeSettingsComposable
-import org.grakovne.lissen.ui.screens.settings.composable.GitHubLinkComposable
-import org.grakovne.lissen.ui.screens.settings.composable.LibraryOrderingSettingsComposable
-import org.grakovne.lissen.ui.screens.settings.composable.LicenseFooterComposable
-import org.grakovne.lissen.ui.screens.settings.composable.ServerSettingsComposable
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
-@Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun SettingsScreen(
+@Composable
+fun AdvancedSettingsComposable(
   onBack: () -> Unit,
   navController: AppNavigationService,
 ) {
   val viewModel: SettingsViewModel = hiltViewModel()
-  val host by viewModel.host.observeAsState("")
+  val crashReporting by viewModel.crashReporting.observeAsState(true)
 
   Scaffold(
     topBar = {
@@ -88,30 +82,26 @@ fun SettingsScreen(
               .verticalScroll(rememberScrollState()),
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-          if (host?.isNotEmpty() == true) {
-            ServerSettingsComposable(navController, viewModel)
-          }
-
-          ColorSchemeSettingsComposable(viewModel)
-
-          LibraryOrderingSettingsComposable(viewModel)
+          PlaybackVolumeBoostSettingsComposable(viewModel)
 
           AdvancedSettingsItemComposable(
-            title = stringResource(R.string.settings_screen_cached_items_title),
-            description = stringResource(R.string.settings_screen_cached_items_hint),
-            onclick = { navController.showCachedItemsSettings() },
+            title = stringResource(R.string.settings_screen_seek_time_title),
+            description = stringResource(R.string.settings_screen_seek_time_hint),
+            onclick = { navController.showSeekSettings() },
           )
 
           AdvancedSettingsItemComposable(
-            title = stringResource(R.string.settings_screen_advanced_preferences_title),
-            description = stringResource(R.string.settings_screen_advanced_preferences_description),
-            onclick = { navController.showAdvancedSettings() },
+            title = stringResource(R.string.settings_screen_custom_headers_title),
+            description = stringResource(R.string.settings_screen_custom_header_hint),
+            onclick = { navController.showCustomHeadersSettings() },
           )
 
-          GitHubLinkComposable()
+          SettingsToggleItem(
+            title = stringResource(R.string.settings_screen_crash_report_title),
+            description = stringResource(R.string.settings_screen_crash_report_description),
+            initialState = crashReporting,
+          ) { viewModel.preferCrashReporting(it) }
         }
-
-        LicenseFooterComposable()
       }
     },
   )

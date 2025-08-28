@@ -20,14 +20,14 @@ import androidx.compose.ui.unit.dp
 fun SettingsToggleItem(
   title: String,
   description: String,
-  checked: Boolean,
+  initialState: Boolean,
   onCheckedChange: (Boolean) -> Unit,
 ) {
   Row(
     modifier =
       Modifier
         .fillMaxWidth()
-        .clickable { onCheckedChange(!checked) }
+        .clickable { onCheckedChange(initialState.not()) }
         .padding(horizontal = 24.dp, vertical = 12.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {
@@ -47,7 +47,7 @@ fun SettingsToggleItem(
     }
 
     Switch(
-      checked = checked,
+      checked = initialState,
       onCheckedChange = null,
       colors =
         SwitchDefaults.colors(

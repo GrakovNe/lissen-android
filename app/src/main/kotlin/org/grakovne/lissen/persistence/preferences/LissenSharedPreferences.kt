@@ -79,6 +79,14 @@ class LissenSharedPreferences
       }
     }
 
+    fun getAcraEnabled() = sharedPreferences.getBoolean(org.acra.ACRA.PREF_ENABLE_ACRA, true)
+
+    fun saveAcraEnabled(enabled: Boolean) {
+      sharedPreferences.edit {
+        putBoolean(org.acra.ACRA.PREF_ENABLE_ACRA, enabled)
+      }
+    }
+
     fun saveHost(host: String) = sharedPreferences.edit { putString(KEY_HOST, host) }
 
     fun getHost(): String? = sharedPreferences.getString(KEY_HOST, null)
