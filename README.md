@@ -80,8 +80,8 @@ Google Play rejected publication of the app because partial Android Auto integra
 - The dedicated [`release/google-play-store`](https://github.com/GrakovNe/lissen-android/tree/release/google-play-store) branch contains the Google Play Store–compliant release based on the `release/stable` branch with Android Auto features disabled.  
 
 - **Starting from [release 1.6.10](https://github.com/GrakovNe/lissen-android/releases/tag/1.6.10) every release contains:**  
-  - **Common APK** – identical to the Play Store version, without Android Auto.  
-  - **Android Auto APK** – fully supported and feature-equivalent, with Android Auto enabled.  
+  - **Play Store APK** – identical to the Play Store version, without Android Auto.  
+  - **Stable APK** – fully supported and feature-equivalent, with Android Auto enabled.  
 
 **Temporary status:**  
 This dual-release setup is a temporary solution until full compliance with Google’s Android Auto quality checklist can be achieved.  
