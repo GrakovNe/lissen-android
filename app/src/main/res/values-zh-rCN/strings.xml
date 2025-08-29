@@ -121,4 +121,8 @@
     <string name="volume_boost_high">高</string>
     <string name="volume_boost_title">音量增强</string>
     <string name="playing_item_details_time_remaining">剩余时间</string>
+    <string name="settings_screen_advanced_preferences_title">高级选项</string>
+    <string name="settings_screen_crash_report_title">崩溃上报</string>
+    <string name="settings_screen_crash_report_description">应用崩溃时发送报告</string>
+    <string name="settings_screen_advanced_preferences_description">控制播放进度、网络代理或声音</string>
 </resources>
