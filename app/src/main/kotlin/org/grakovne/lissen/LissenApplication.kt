@@ -8,6 +8,7 @@ import org.acra.config.httpSender
 import org.acra.config.toast
 import org.acra.data.StringFormat
 import org.acra.ktx.initAcra
+import org.acra.security.TLS
 import org.acra.sender.HttpSender
 import org.grakovne.lissen.common.RunningComponent
 import javax.inject.Inject
@@ -31,7 +32,7 @@ class LissenApplication : Application() {
   private fun initCrashReporting() {
     initAcra {
       sharedPreferencesName = "secure_prefs"
-
+      
       buildConfigClass = BuildConfig::class.java
       reportFormat = StringFormat.JSON
 
@@ -41,6 +42,7 @@ class LissenApplication : Application() {
         basicAuthPassword = BuildConfig.ACRA_REPORT_PASSWORD
         httpMethod = HttpSender.Method.POST
         dropReportsOnTimeout = false
+        tlsProtocols = listOf(TLS.V1_3, TLS.V1_2)
       }
 
       toast {
