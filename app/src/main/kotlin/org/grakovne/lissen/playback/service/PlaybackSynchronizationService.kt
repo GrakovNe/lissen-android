@@ -27,7 +27,7 @@ class PlaybackSynchronizationService
     private val mediaChannel: LissenMediaProvider,
     private val sharedPreferences: LissenSharedPreferences,
   ) {
-    private var currentBook: DetailedItem? = null
+    private var currentItem: DetailedItem? = null
     private var currentChapterIndex: Int? = null
     private var playbackSession: PlaybackSession? = null
     private val serviceScope = MainScope()
@@ -49,9 +49,9 @@ class PlaybackSynchronizationService
       )
     }
 
-    fun startPlaybackSynchronization(book: DetailedItem) {
+    fun startPlaybackSynchronization(item: DetailedItem) {
       serviceScope.coroutineContext.cancelChildren()
-      currentBook = book
+      currentItem = item
     }
 
     fun cancelSynchronization() {
@@ -92,7 +92,7 @@ class PlaybackSynchronizationService
       val elapsedMs = exoPlayer.currentPosition
       val overallProgress = getProgress(elapsedMs) ?: return
 
-      Log.d(TAG, "Trying to sync $overallProgress for ${currentBook?.id}")
+      Log.d(TAG, "Trying to sync $overallProgress for ${currentItem?.id}")
 
       serviceScope.launch(Dispatchers.IO) {
         if (syncMutex.tryLock().not()) {
@@ -102,11 +102,11 @@ class PlaybackSynchronizationService
 
         try {
           val currentIndex =
-            currentBook
+            currentItem
               ?.let { calculateChapterIndex(it, overallProgress.currentTotalTime) }
               ?: return@launch
 
-          if (playbackSession == null || playbackSession?.bookId != currentBook?.id || currentIndex != currentChapterIndex) {
+          if (playbackSession == null || playbackSession?.itemId != currentItem?.id || currentIndex != currentChapterIndex) {
             openPlaybackSession(overallProgress)
             currentChapterIndex = currentIndex
           }
@@ -127,7 +127,7 @@ class PlaybackSynchronizationService
       mediaChannel
         .syncProgress(
           sessionId = it.sessionId,
-          bookId = it.bookId,
+          itemId = it.itemId,
           progress = overallProgress,
         ).foldAsync(
           onSuccess = {},
@@ -140,15 +140,15 @@ class PlaybackSynchronizationService
         )
 
     private suspend fun openPlaybackSession(overallProgress: PlaybackProgress) =
-      currentBook
-        ?.let { book ->
-          val chapterIndex = calculateChapterIndex(book, overallProgress.currentTotalTime)
+      currentItem
+        ?.let { item ->
+          val chapterIndex = calculateChapterIndex(item, overallProgress.currentTotalTime)
           mediaChannel
             .startPlayback(
-              bookId = book.id,
+              itemId = item.id,
               deviceId = sharedPreferences.getDeviceId(),
               supportedMimeTypes = MimeTypeProvider.getSupportedMimeTypes(),
-              chapterId = book.chapters[chapterIndex].id,
+              chapterId = item.chapters[chapterIndex].id,
             ).fold(
               onSuccess = { playbackSession = it },
               onFailure = {},
@@ -156,7 +156,7 @@ class PlaybackSynchronizationService
         }
 
     private fun getProgress(currentElapsedMs: Long): PlaybackProgress? {
-      val currentBook =
+      val currentItem =
         exoPlayer
           .currentMediaItem
           ?.localConfiguration
@@ -166,12 +166,12 @@ class PlaybackSynchronizationService
       val currentIndex = exoPlayer.currentMediaItemIndex
 
       val previousDuration =
-        currentBook.files
+        currentItem.files
           .take(currentIndex)
           .sumOf { it.duration * 1000 }
 
       val currentTotalTime = (previousDuration + currentElapsedMs) / 1000.0
-      val currentChapterTime = calculateChapterPosition(currentBook, currentTotalTime)
+      val currentChapterTime = calculateChapterPosition(currentItem, currentTotalTime)
 
       return PlaybackProgress(
         currentTotalTime = currentTotalTime,
@@ -182,8 +182,7 @@ class PlaybackSynchronizationService
     companion object {
       private const val TAG = "PlaybackSynchronizationService"
       private const val SYNC_INTERVAL_LONG = 30_000L
-      private const val SHORT_SYNC_WINDOW =
-        SYNC_INTERVAL_LONG * 2 - 1 // Nyquist-Shannon sampling theorem describes why -1 is important
+      private const val SHORT_SYNC_WINDOW = SYNC_INTERVAL_LONG * 2 - 1
 
       private const val SYNC_INTERVAL_SHORT = 5_000L
 

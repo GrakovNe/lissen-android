@@ -12,6 +12,6 @@ class PlaybackSessionResponseConverter
     fun apply(response: PlaybackSessionResponse): PlaybackSession =
       PlaybackSession(
         sessionId = response.id,
-        bookId = response.libraryItemId,
+        itemId = response.libraryItemId,
       )
   }
