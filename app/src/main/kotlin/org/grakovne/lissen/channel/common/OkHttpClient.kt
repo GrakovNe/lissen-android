@@ -25,7 +25,7 @@ fun createOkHttpClient(
 
 private fun loggingInterceptor() =
   HttpLoggingInterceptor().apply {
-    level = HttpLoggingInterceptor.Level.BODY
+    level = HttpLoggingInterceptor.Level.NONE
   }
 
 private fun authInterceptor(
