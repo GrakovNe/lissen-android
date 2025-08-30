@@ -22,7 +22,7 @@ suspend fun <T> safeApiCall(apiCall: suspend () -> Response<T>): ApiResult<T> {
       400 -> ApiResult.Error(ApiError.InternalError)
       401 -> ApiResult.Error(ApiError.Unauthorized)
       403 -> ApiResult.Error(ApiError.Unauthorized)
-      404 -> ApiResult.Error(ApiError.InternalError)
+      404 -> ApiResult.Error(ApiError.NotFoundError)
       500 -> ApiResult.Error(ApiError.InternalError)
       else -> ApiResult.Error(ApiError.InternalError)
     }
