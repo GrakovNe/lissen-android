@@ -19,7 +19,7 @@ sealed class ApiError {
   data object MissingCredentialsPassword : ApiError()
 
   data object InternalError : ApiError()
-  
+
   data object NotFoundError : ApiError()
 
   data object InvalidRedirectUri : ApiError()

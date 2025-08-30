@@ -32,7 +32,7 @@ class LissenApplication : Application() {
   private fun initCrashReporting() {
     initAcra {
       sharedPreferencesName = "secure_prefs"
-      
+
       buildConfigClass = BuildConfig::class.java
       reportFormat = StringFormat.JSON
 
