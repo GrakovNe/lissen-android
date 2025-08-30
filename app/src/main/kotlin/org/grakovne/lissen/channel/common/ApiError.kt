@@ -20,6 +20,8 @@ sealed class ApiError {
 
   data object InternalError : ApiError()
 
+  data object NotFoundError : ApiError()
+
   data object InvalidRedirectUri : ApiError()
 
   data object OAuthFlowFailed : ApiError()
@@ -44,4 +46,5 @@ fun ApiError.makeText(context: Context) =
       )
     ApiError.UnsupportedError -> context.getString(R.string.login_error_connection_error)
     ApiError.OAuthFlowFailed -> context.getString(R.string.login_error_lissen_auth_failed)
+    ApiError.NotFoundError -> context.getString(R.string.login_error_lissen_not_found)
   }

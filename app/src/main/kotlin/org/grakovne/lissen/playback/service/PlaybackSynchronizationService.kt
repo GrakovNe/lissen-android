@@ -9,6 +9,8 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PlaybackProgress
@@ -30,6 +32,7 @@ class PlaybackSynchronizationService
     private var playbackSession: PlaybackSession? = null
     private val serviceScope = MainScope()
     private var syncJob: Job? = null
+    private val syncMutex = Mutex()
 
     init {
       exoPlayer.addListener(
@@ -92,14 +95,27 @@ class PlaybackSynchronizationService
       Log.d(TAG, "Trying to sync $overallProgress for ${currentBook?.id}")
 
       serviceScope.launch(Dispatchers.IO) {
+        if (syncMutex.tryLock().not()) {
+          Log.d(TAG, "Sync is already running")
+          return@launch
+        }
+
         try {
-          if (playbackSession == null || playbackSession?.bookId != currentBook?.id) {
+          val currentIndex =
+            currentBook
+              ?.let { calculateChapterIndex(it, overallProgress.currentTotalTime) }
+              ?: return@launch
+
+          if (playbackSession == null || playbackSession?.bookId != currentBook?.id || currentIndex != currentChapterIndex) {
             openPlaybackSession(overallProgress)
+            currentChapterIndex = currentIndex
           }
 
           playbackSession?.let { requestSync(it, overallProgress) }
         } catch (e: Exception) {
           Log.e(TAG, "Error during sync", e)
+        } finally {
+          syncMutex.unlock()
         }
       }
     }
@@ -107,27 +123,21 @@ class PlaybackSynchronizationService
     private suspend fun requestSync(
       it: PlaybackSession,
       overallProgress: PlaybackProgress,
-    ): Unit? {
-      val currentIndex =
-        currentBook
-          ?.let { calculateChapterIndex(it, overallProgress.currentTotalTime) }
-          ?: return null
-
-      if (currentIndex != currentChapterIndex) {
-        openPlaybackSession(overallProgress)
-        currentChapterIndex = currentIndex
-      }
-
-      return mediaChannel
+    ): Unit? =
+      mediaChannel
         .syncProgress(
           sessionId = it.sessionId,
           bookId = it.bookId,
           progress = overallProgress,
         ).foldAsync(
           onSuccess = {},
-          onFailure = { openPlaybackSession(overallProgress) },
+          onFailure = {
+            when (it.code) {
+              ApiError.NotFoundError -> openPlaybackSession(overallProgress)
+              else -> Unit
+            }
+          },
         )
-    }
 
     private suspend fun openPlaybackSession(overallProgress: PlaybackProgress) =
       currentBook
