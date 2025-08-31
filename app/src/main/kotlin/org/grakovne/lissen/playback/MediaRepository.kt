@@ -476,7 +476,11 @@ class MediaRepository
         Intent(context, PlaybackService::class.java).apply {
           action = PlaybackService.ACTION_PAUSE
         }
-      context.startService(intent)
+      
+      when (inBackground()) {
+        true -> context.startForegroundService(intent)
+        false -> context.startService(intent)
+      }
     }
 
     private fun seekTo(position: Double) {
