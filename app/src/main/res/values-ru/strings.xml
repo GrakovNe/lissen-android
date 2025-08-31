@@ -21,6 +21,7 @@
     <string name="login_error_username_is_missing">Имя пользователя не может быть пустым</string>
     <string name="login_error_password_is_missing">Пароль не может быть пустым</string>
     <string name="login_error_credentials_are_invalid">Данные для входа неверные</string>
+    <string name="login_error_lissen_not_found">URL не найден. Проверьте настройки сервера</string>
     <string name="login_error_host_url_shall_be_https_or_http">URL должен начинаться с http:// или https://</string>
     <string name="login_error_connection_error">Ошибка подключения</string>
     <string name="disable_offline">Весь контент</string>

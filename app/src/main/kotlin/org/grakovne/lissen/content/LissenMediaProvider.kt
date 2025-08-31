@@ -61,12 +61,12 @@ class LissenMediaProvider
 
     suspend fun syncProgress(
       sessionId: String,
-      bookId: String,
+      itemId: String,
       progress: PlaybackProgress,
     ): ApiResult<Unit> {
-      Log.d(TAG, "Syncing Progress for $bookId. $progress")
+      Log.d(TAG, "Syncing Progress for $itemId. $progress")
 
-      localCacheRepository.syncProgress(bookId, progress)
+      localCacheRepository.syncProgress(itemId, progress)
 
       val channelSyncResult =
         providePreferredChannel()
@@ -151,15 +151,15 @@ class LissenMediaProvider
     }
 
     suspend fun startPlayback(
-      bookId: String,
+      itemId: String,
       chapterId: String,
       supportedMimeTypes: List<String>,
       deviceId: String,
     ): ApiResult<PlaybackSession> {
-      Log.d(TAG, "Starting Playback for $bookId. $supportedMimeTypes are supported")
+      Log.d(TAG, "Starting Playback for $itemId. $supportedMimeTypes are supported")
 
       return providePreferredChannel().startPlayback(
-        bookId = bookId,
+        bookId = itemId,
         episodeId = chapterId,
         supportedMimeTypes = supportedMimeTypes,
         deviceId = deviceId,

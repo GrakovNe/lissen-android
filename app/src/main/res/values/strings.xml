@@ -93,6 +93,7 @@
     <string name="notification_content_caching_error_description">A few files weren’t saved</string>
     <string name="login_error_lissen_auth_scheme_must_be_whitelisted">The scheme %1$s://%2$s is not allowed in the server\'s redirect URI settings</string>
     <string name="login_error_lissen_auth_failed">Could not authorize. Please check your server settings</string>
+    <string name="login_error_lissen_not_found">URL is not found. Check your Server settings</string>
     <string name="login_screen_open_id_button">Connect with OpenID</string>
     <string name="source_code_on_github_title">Source code on GitHub</string>
     <string name="source_code_on_github_subtitle">Report issues or suggest improvements</string>
