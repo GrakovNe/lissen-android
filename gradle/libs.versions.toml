@@ -26,8 +26,8 @@ roomRuntime = "2.7.2"
 runtimeLivedata = "1.9.0"
 media3Session = "1.8.0"
 media3DatasourceOkhttp = "1.8.0"
-lifecycleService = "2.9.2"
-lifecycleProcess = "2.9.2"
+lifecycleService = "2.9.3"
+lifecycleProcess = "2.9.3"
 
 [libraries]
 acra-core = { module = "ch.acra:acra-core", version.ref = "acraCore" }
