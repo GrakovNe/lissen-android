@@ -476,7 +476,7 @@ class MediaRepository
         Intent(context, PlaybackService::class.java).apply {
           action = PlaybackService.ACTION_PAUSE
         }
-      
+
       when (inBackground()) {
         true -> context.startForegroundService(intent)
         false -> context.startService(intent)

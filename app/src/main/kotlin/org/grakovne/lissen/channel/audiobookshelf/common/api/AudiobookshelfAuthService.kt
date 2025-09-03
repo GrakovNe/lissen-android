@@ -118,11 +118,7 @@ class AudiobookshelfAuthService
             return@withContext ApiResult.Success(emptyList())
           }
 
-          val body =
-            response.body?.string()
-              ?: return@withContext ApiResult.Success(emptyList())
-
-          val gson = Gson()
+          val body = response.body.string()
           val authMethod = gson.fromJson(body, AuthMethodResponse::class.java)
 
           val converted = authMethodResponseConverter.apply(authMethod)
@@ -184,7 +180,7 @@ class AudiobookshelfAuthService
               Log.d(TAG, "Got Redirect from ABS")
 
               if (response.code != 302) {
-                onFailure(examineError(response.body?.string() ?: ""))
+                onFailure(examineError(response.body.string()))
                 return
               }
 
@@ -295,5 +291,6 @@ class AudiobookshelfAuthService
     private companion object {
       private val TAG = "AudiobookshelfAuthService"
       val urlPattern = Regex("^(http|https)://.*\$")
+      private val gson = Gson()
     }
   }

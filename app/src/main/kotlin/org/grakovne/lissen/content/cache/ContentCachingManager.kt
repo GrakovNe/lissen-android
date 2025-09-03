@@ -138,7 +138,7 @@ class ContentCachingManager
             return@withContext CacheState(CacheStatus.Error)
           }
 
-          val body = response.body ?: return@withContext CacheState(CacheStatus.Error)
+          val body = response.body
           val dest = properties.provideMediaCachePatch(bookId, file.id)
           dest.parentFile?.mkdirs()
 
