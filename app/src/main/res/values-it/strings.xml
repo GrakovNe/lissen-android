@@ -115,4 +115,11 @@
     <string name="downloads_menu_download_option_remaining_episodes">Episodi rimanenti</string>
     <string name="downloads_menu_download_option_remaining_chapters">Capitoli rimanenti</string>
     <string name="downloads_menu_download_option_remaining_items">Elementi rimanenti</string>
+    <string name="login_error_lissen_not_found">URL non trovato. Controlla le impostazioni del server</string>
+    <string name="volume_boost_disabled">Disabilitato</string>
+    <string name="volume_boost_low">Basso</string>
+    <string name="volume_boost_medium">Medio</string>
+    <string name="volume_boost_high">Alto</string>
+    <string name="volume_boost_title">Volume aumentato</string>
+    <string name="playing_item_details_time_remaining">Tempo rimanente</string>
 </resources>
