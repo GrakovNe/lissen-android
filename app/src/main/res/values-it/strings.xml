@@ -122,4 +122,8 @@
     <string name="volume_boost_high">Alto</string>
     <string name="volume_boost_title">Volume aumentato</string>
     <string name="playing_item_details_time_remaining">Tempo rimanente</string>
+    <string name="settings_screen_advanced_preferences_title">Preferenze avanzate</string>
+    <string name="settings_screen_advanced_preferences_description">Controlla la ricerca, le intestazioni proxy o l’audio</string>
+    <string name="settings_screen_crash_report_title">Segnalazione arresti anomali</string>
+    <string name="settings_screen_crash_report_description">Invia segnalazioni se l\'app si arresta in modo anomalo</string>
 </resources>
