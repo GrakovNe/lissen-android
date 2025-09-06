@@ -11,10 +11,10 @@ import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.PlaybackVolumeBoost
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.domain.Library
-import org.grakovne.lissen.domain.SeekTimeOption
-import org.grakovne.lissen.domain.connection.ServerRequestHeader
-import org.grakovne.lissen.domain.connection.ServerRequestHeader.Companion.clean
+import org.grakovne.lissen.lib.domain.Library
+import org.grakovne.lissen.lib.domain.SeekTimeOption
+import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
+import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader.Companion.clean
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import javax.inject.Inject
 

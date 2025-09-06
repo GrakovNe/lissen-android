@@ -4,7 +4,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfRepos
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfSyncService
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.ProgressSyncRequest
 import org.grakovne.lissen.channel.common.ApiResult
-import org.grakovne.lissen.domain.PlaybackProgress
+import org.grakovne.lissen.lib.domain.PlaybackProgress
 import javax.inject.Inject
 import javax.inject.Singleton
 

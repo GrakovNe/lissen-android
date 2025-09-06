@@ -1,4 +1,4 @@
-package org.grakovne.lissen.domain.connection
+package org.grakovne.lissen.lib.domain.connection
 
 import androidx.annotation.Keep
 import java.util.UUID

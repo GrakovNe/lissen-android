@@ -6,7 +6,7 @@ import okhttp3.Request
 import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
 import org.grakovne.lissen.common.withTrustedCertificates
-import org.grakovne.lissen.domain.connection.ServerRequestHeader
+import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import java.util.concurrent.TimeUnit
 

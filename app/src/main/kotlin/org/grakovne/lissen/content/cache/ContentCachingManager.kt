@@ -10,11 +10,11 @@ import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.createOkHttpClient
 import org.grakovne.lissen.content.cache.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.api.CachedLibraryRepository
-import org.grakovne.lissen.domain.BookFile
-import org.grakovne.lissen.domain.CacheStatus
-import org.grakovne.lissen.domain.DetailedItem
-import org.grakovne.lissen.domain.DownloadOption
-import org.grakovne.lissen.domain.PlayingChapter
+import org.grakovne.lissen.lib.domain.BookFile
+import org.grakovne.lissen.lib.domain.CacheStatus
+import org.grakovne.lissen.lib.domain.DetailedItem
+import org.grakovne.lissen.lib.domain.DownloadOption
+import org.grakovne.lissen.lib.domain.PlayingChapter
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import java.io.File
 import javax.inject.Inject

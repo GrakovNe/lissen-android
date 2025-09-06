@@ -1,4 +1,4 @@
-package org.grakovne.lissen.domain
+package org.grakovne.lissen.lib.domain
 
 enum class SeekTimeOption {
   SEEK_5,

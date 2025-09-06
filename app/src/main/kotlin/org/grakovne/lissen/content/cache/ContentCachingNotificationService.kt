@@ -6,8 +6,8 @@ import android.app.NotificationManager
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.grakovne.lissen.R
-import org.grakovne.lissen.domain.CacheStatus
-import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.lib.domain.CacheStatus
+import org.grakovne.lissen.lib.domain.DetailedItem
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.roundToInt

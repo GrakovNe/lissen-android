@@ -59,11 +59,11 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
-import org.grakovne.lissen.channel.common.LibraryType
+import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.NetworkQualityService
 import org.grakovne.lissen.common.hapticAction
-import org.grakovne.lissen.domain.RecentBook
+import org.grakovne.lissen.lib.domain.RecentBook
 import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.common.RequestNotificationPermissions

@@ -32,7 +32,7 @@ import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.OAuthContextCache
 import org.grakovne.lissen.channel.common.createOkHttpClient
 import org.grakovne.lissen.channel.common.randomPkce
-import org.grakovne.lissen.domain.UserAccount
+import org.grakovne.lissen.lib.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import java.io.IOException
 import javax.inject.Inject
@@ -265,11 +265,7 @@ class AudiobookshelfAuthService
               val raw =
                 response
                   .body
-                  ?.string()
-                  ?: run {
-                    onFailure(response.body?.string() ?: "")
-                    return
-                  }
+                  .string()
 
               val user =
                 try {

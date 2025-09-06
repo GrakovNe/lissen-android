@@ -1,4 +1,4 @@
-package org.grakovne.lissen.domain
+package org.grakovne.lissen.lib.domain
 
 import java.io.Serializable
 

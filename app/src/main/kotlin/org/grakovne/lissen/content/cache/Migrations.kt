@@ -2,7 +2,7 @@ package org.grakovne.lissen.content.cache
 
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import org.grakovne.lissen.channel.common.LibraryType
+import org.grakovne.lissen.lib.domain.LibraryType
 
 val MIGRATION_1_2 =
   object : Migration(1, 2) {

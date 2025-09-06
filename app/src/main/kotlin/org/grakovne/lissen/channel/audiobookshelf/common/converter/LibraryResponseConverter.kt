@@ -1,8 +1,8 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.converter
 
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryItemResponse
-import org.grakovne.lissen.channel.common.LibraryType
-import org.grakovne.lissen.domain.Library
+import org.grakovne.lissen.lib.domain.LibraryType
+import org.grakovne.lissen.lib.domain.Library
 import javax.inject.Inject
 import javax.inject.Singleton
 

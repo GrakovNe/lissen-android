@@ -13,9 +13,9 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeni
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.ConnectionInfo
 import org.grakovne.lissen.channel.common.MediaChannel
-import org.grakovne.lissen.domain.Library
-import org.grakovne.lissen.domain.PlaybackProgress
-import org.grakovne.lissen.domain.RecentBook
+import org.grakovne.lissen.lib.domain.Library
+import org.grakovne.lissen.lib.domain.PlaybackProgress
+import org.grakovne.lissen.lib.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 
 abstract class AudiobookshelfChannel(

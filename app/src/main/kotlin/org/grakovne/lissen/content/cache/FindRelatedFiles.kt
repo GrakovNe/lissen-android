@@ -1,7 +1,7 @@
 package org.grakovne.lissen.content.cache
 
-import org.grakovne.lissen.domain.BookFile
-import org.grakovne.lissen.domain.PlayingChapter
+import org.grakovne.lissen.lib.domain.BookFile
+import org.grakovne.lissen.lib.domain.PlayingChapter
 
 fun findRelatedFiles(
   chapter: PlayingChapter,

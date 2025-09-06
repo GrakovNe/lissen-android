@@ -4,11 +4,11 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.grakovne.lissen.content.cache.entity.BookSeriesDto
 import org.grakovne.lissen.content.cache.entity.CachedBookEntity
-import org.grakovne.lissen.domain.BookFile
-import org.grakovne.lissen.domain.BookSeries
-import org.grakovne.lissen.domain.DetailedItem
-import org.grakovne.lissen.domain.MediaProgress
-import org.grakovne.lissen.domain.PlayingChapter
+import org.grakovne.lissen.lib.domain.BookFile
+import org.grakovne.lissen.lib.domain.BookSeries
+import org.grakovne.lissen.lib.domain.DetailedItem
+import org.grakovne.lissen.lib.domain.MediaProgress
+import org.grakovne.lissen.lib.domain.PlayingChapter
 import javax.inject.Inject
 import javax.inject.Singleton
 

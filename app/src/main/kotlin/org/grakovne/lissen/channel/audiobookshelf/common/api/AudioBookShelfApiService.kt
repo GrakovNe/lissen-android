@@ -8,8 +8,8 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.LoginResponse
 import org.grakovne.lissen.channel.common.ApiClient
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
-import org.grakovne.lissen.domain.UserAccount
-import org.grakovne.lissen.domain.connection.ServerRequestHeader
+import org.grakovne.lissen.lib.domain.UserAccount
+import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import retrofit2.Response
 import javax.inject.Inject

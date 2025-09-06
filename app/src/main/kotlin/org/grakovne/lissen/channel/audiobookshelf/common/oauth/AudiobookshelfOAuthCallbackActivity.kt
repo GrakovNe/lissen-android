@@ -13,7 +13,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.api.AudiobookshelfAuthS
 import org.grakovne.lissen.channel.common.OAuthContextCache
 import org.grakovne.lissen.channel.common.makeText
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.domain.UserAccount
+import org.grakovne.lissen.lib.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.activity.AppActivity
 import javax.inject.Inject

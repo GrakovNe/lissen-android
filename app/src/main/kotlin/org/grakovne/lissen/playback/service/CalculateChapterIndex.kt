@@ -1,6 +1,6 @@
 package org.grakovne.lissen.playback.service
 
-import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.lib.domain.DetailedItem
 
 fun calculateChapterIndex(
   item: DetailedItem,

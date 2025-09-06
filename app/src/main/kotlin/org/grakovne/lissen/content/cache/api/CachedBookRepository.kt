@@ -10,11 +10,11 @@ import org.grakovne.lissen.content.cache.converter.CachedBookEntityDetailedConve
 import org.grakovne.lissen.content.cache.converter.CachedBookEntityRecentConverter
 import org.grakovne.lissen.content.cache.dao.CachedBookDao
 import org.grakovne.lissen.content.cache.entity.MediaProgressEntity
-import org.grakovne.lissen.domain.Book
-import org.grakovne.lissen.domain.DetailedItem
-import org.grakovne.lissen.domain.PlaybackProgress
-import org.grakovne.lissen.domain.PlayingChapter
-import org.grakovne.lissen.domain.RecentBook
+import org.grakovne.lissen.lib.domain.Book
+import org.grakovne.lissen.lib.domain.DetailedItem
+import org.grakovne.lissen.lib.domain.PlaybackProgress
+import org.grakovne.lissen.lib.domain.PlayingChapter
+import org.grakovne.lissen.lib.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import java.io.File
 import java.time.Instant

@@ -1,12 +1,12 @@
 package org.grakovne.lissen.content.cache
 
-import org.grakovne.lissen.domain.AllItemsDownloadOption
-import org.grakovne.lissen.domain.CurrentItemDownloadOption
-import org.grakovne.lissen.domain.DetailedItem
-import org.grakovne.lissen.domain.DownloadOption
-import org.grakovne.lissen.domain.NumberItemDownloadOption
-import org.grakovne.lissen.domain.PlayingChapter
-import org.grakovne.lissen.domain.RemainingItemsDownloadOption
+import org.grakovne.lissen.lib.domain.AllItemsDownloadOption
+import org.grakovne.lissen.lib.domain.CurrentItemDownloadOption
+import org.grakovne.lissen.lib.domain.DetailedItem
+import org.grakovne.lissen.lib.domain.DownloadOption
+import org.grakovne.lissen.lib.domain.NumberItemDownloadOption
+import org.grakovne.lissen.lib.domain.PlayingChapter
+import org.grakovne.lissen.lib.domain.RemainingItemsDownloadOption
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 
 fun calculateRequestedChapters(

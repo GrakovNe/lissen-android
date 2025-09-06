@@ -22,11 +22,11 @@ import org.grakovne.lissen.content.cache.ContentCachingManager
 import org.grakovne.lissen.content.cache.ContentCachingProgress
 import org.grakovne.lissen.content.cache.ContentCachingService
 import org.grakovne.lissen.content.cache.LocalCacheRepository
-import org.grakovne.lissen.domain.CacheStatus
-import org.grakovne.lissen.domain.ContentCachingTask
-import org.grakovne.lissen.domain.DetailedItem
-import org.grakovne.lissen.domain.DownloadOption
-import org.grakovne.lissen.domain.PlayingChapter
+import org.grakovne.lissen.lib.domain.CacheStatus
+import org.grakovne.lissen.lib.domain.ContentCachingTask
+import org.grakovne.lissen.lib.domain.DetailedItem
+import org.grakovne.lissen.lib.domain.DownloadOption
+import org.grakovne.lissen.lib.domain.PlayingChapter
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.screens.settings.advanced.cache.CachedItemsPageSource
 import java.io.Serializable

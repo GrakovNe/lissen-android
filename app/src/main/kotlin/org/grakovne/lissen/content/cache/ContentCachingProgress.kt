@@ -2,7 +2,7 @@ package org.grakovne.lissen.content.cache
 
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.lib.domain.DetailedItem
 import javax.inject.Inject
 import javax.inject.Singleton
 

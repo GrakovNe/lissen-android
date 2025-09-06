@@ -3,11 +3,11 @@ package org.grakovne.lissen.channel.audiobookshelf.library.converter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.BookResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryAuthorResponse
-import org.grakovne.lissen.domain.BookFile
-import org.grakovne.lissen.domain.BookSeries
-import org.grakovne.lissen.domain.DetailedItem
-import org.grakovne.lissen.domain.MediaProgress
-import org.grakovne.lissen.domain.PlayingChapter
+import org.grakovne.lissen.lib.domain.BookFile
+import org.grakovne.lissen.lib.domain.BookSeries
+import org.grakovne.lissen.lib.domain.DetailedItem
+import org.grakovne.lissen.lib.domain.MediaProgress
+import org.grakovne.lissen.lib.domain.PlayingChapter
 import javax.inject.Inject
 import javax.inject.Singleton
 
