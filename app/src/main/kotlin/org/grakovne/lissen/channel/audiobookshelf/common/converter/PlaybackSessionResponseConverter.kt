@@ -1,7 +1,7 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.converter
 
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackSessionResponse
-import org.grakovne.lissen.domain.PlaybackSession
+import org.grakovne.lissen.lib.domain.PlaybackSession
 import javax.inject.Inject
 import javax.inject.Singleton
 

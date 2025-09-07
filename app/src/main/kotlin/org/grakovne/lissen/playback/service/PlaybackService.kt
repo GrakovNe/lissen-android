@@ -31,10 +31,10 @@ import org.grakovne.lissen.LissenApplication
 import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
 import org.grakovne.lissen.channel.common.createOkHttpClient
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.domain.BookFile
-import org.grakovne.lissen.domain.DetailedItem
-import org.grakovne.lissen.domain.MediaProgress
-import org.grakovne.lissen.domain.TimerOption
+import org.grakovne.lissen.lib.domain.BookFile
+import org.grakovne.lissen.lib.domain.DetailedItem
+import org.grakovne.lissen.lib.domain.MediaProgress
+import org.grakovne.lissen.lib.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import java.io.File
 import java.io.FileOutputStream

@@ -1,7 +1,7 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.api
 
 import org.grakovne.lissen.channel.common.USER_AGENT
-import org.grakovne.lissen.domain.connection.ServerRequestHeader
+import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import javax.inject.Inject
 import javax.inject.Singleton

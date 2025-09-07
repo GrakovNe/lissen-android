@@ -19,10 +19,10 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.grakovne.lissen.channel.common.LibraryType
+import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.domain.Book
-import org.grakovne.lissen.domain.RecentBook
+import org.grakovne.lissen.lib.domain.Book
+import org.grakovne.lissen.lib.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.screens.library.paging.LibraryDefaultPagingSource
 import org.grakovne.lissen.ui.screens.library.paging.LibrarySearchPagingSource

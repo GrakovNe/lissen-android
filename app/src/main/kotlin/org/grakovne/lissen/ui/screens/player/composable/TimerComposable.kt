@@ -28,10 +28,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
-import org.grakovne.lissen.channel.common.LibraryType
-import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
-import org.grakovne.lissen.domain.DurationTimerOption
-import org.grakovne.lissen.domain.TimerOption
+import org.grakovne.lissen.lib.domain.LibraryType
+import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
+import org.grakovne.lissen.lib.domain.DurationTimerOption
+import org.grakovne.lissen.lib.domain.TimerOption
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

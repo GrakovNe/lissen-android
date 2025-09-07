@@ -36,8 +36,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import org.grakovne.lissen.R
-import org.grakovne.lissen.domain.SeekTime
-import org.grakovne.lissen.domain.SeekTimeOption
+import org.grakovne.lissen.lib.domain.SeekTime
+import org.grakovne.lissen.lib.domain.SeekTimeOption
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItem
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItemComposable
 import org.grakovne.lissen.viewmodel.SettingsViewModel

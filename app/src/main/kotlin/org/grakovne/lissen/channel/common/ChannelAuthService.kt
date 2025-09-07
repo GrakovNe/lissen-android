@@ -1,6 +1,6 @@
 package org.grakovne.lissen.channel.common
 
-import org.grakovne.lissen.domain.UserAccount
+import org.grakovne.lissen.lib.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 
 abstract class ChannelAuthService(

@@ -2,7 +2,7 @@ package org.grakovne.lissen.content.cache.api
 
 import org.grakovne.lissen.content.cache.converter.CachedLibraryEntityConverter
 import org.grakovne.lissen.content.cache.dao.CachedLibraryDao
-import org.grakovne.lissen.domain.Library
+import org.grakovne.lissen.lib.domain.Library
 import javax.inject.Inject
 import javax.inject.Singleton
 

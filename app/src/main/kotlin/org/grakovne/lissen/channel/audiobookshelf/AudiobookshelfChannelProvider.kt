@@ -7,7 +7,7 @@ import org.grakovne.lissen.channel.audiobookshelf.podcast.PodcastAudiobookshelfC
 import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.ChannelCode
 import org.grakovne.lissen.channel.common.ChannelProvider
-import org.grakovne.lissen.channel.common.LibraryType
+import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import javax.inject.Inject

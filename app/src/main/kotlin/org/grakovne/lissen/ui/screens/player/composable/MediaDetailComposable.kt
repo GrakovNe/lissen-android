@@ -7,10 +7,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AvTimer
-import androidx.compose.material.icons.filled.Business
-import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.HourglassEmpty
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Business
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.MicNone
@@ -34,8 +31,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.text.HtmlCompat
 import org.grakovne.lissen.R
-import org.grakovne.lissen.channel.common.LibraryType
-import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.lib.domain.LibraryType
+import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.ui.extensions.formatFully
 import org.grakovne.lissen.ui.screens.player.InfoRow
 import org.grakovne.lissen.viewmodel.PlayerViewModel
@@ -190,7 +187,7 @@ fun MediaDetailComposable(
                 .alpha(0.2f),
           )
 
-          val html = (playingBook.abstract).replace("\n", "<br>")
+          val html: String = playingBook.abstract?.replace("\n", "<br>").orEmpty()
           val spanned = HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_LEGACY)
 
           Text(

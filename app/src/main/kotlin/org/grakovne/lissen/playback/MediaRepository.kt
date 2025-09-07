@@ -30,11 +30,11 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
-import org.grakovne.lissen.domain.DetailedItem
-import org.grakovne.lissen.domain.DurationTimerOption
-import org.grakovne.lissen.domain.SeekTimeOption
-import org.grakovne.lissen.domain.TimerOption
+import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
+import org.grakovne.lissen.lib.domain.DetailedItem
+import org.grakovne.lissen.lib.domain.DurationTimerOption
+import org.grakovne.lissen.lib.domain.SeekTimeOption
+import org.grakovne.lissen.lib.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.ACTION_SEEK_TO

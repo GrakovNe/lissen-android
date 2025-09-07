@@ -3,7 +3,7 @@ package org.grakovne.lissen.ui.screens.library.paging
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.domain.Book
+import org.grakovne.lissen.lib.domain.Book
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 
 class LibraryDefaultPagingSource(

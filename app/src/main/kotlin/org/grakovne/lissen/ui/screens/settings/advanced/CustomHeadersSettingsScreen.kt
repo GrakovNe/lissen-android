@@ -35,7 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
-import org.grakovne.lissen.domain.connection.ServerRequestHeader
+import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 import kotlin.math.max
 

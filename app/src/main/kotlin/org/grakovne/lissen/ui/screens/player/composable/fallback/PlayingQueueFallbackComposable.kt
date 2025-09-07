@@ -14,7 +14,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.grakovne.lissen.R
-import org.grakovne.lissen.channel.common.LibraryType
+import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 
 @Composable

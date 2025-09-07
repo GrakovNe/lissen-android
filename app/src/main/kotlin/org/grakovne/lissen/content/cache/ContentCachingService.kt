@@ -10,9 +10,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.cache.ContentCachingNotificationService.Companion.NOTIFICATION_ID
-import org.grakovne.lissen.domain.CacheStatus
-import org.grakovne.lissen.domain.ContentCachingTask
-import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.lib.domain.CacheStatus
+import org.grakovne.lissen.lib.domain.ContentCachingTask
+import org.grakovne.lissen.lib.domain.DetailedItem
 import javax.inject.Inject
 
 @AndroidEntryPoint

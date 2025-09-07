@@ -1,7 +1,7 @@
 package org.grakovne.lissen.content.cache.converter
 
 import org.grakovne.lissen.content.cache.entity.BookEntity
-import org.grakovne.lissen.domain.RecentBook
+import org.grakovne.lissen.lib.domain.RecentBook
 import javax.inject.Inject
 import javax.inject.Singleton
 

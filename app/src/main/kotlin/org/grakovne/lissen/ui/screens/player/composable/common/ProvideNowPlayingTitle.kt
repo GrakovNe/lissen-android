@@ -2,7 +2,7 @@ package org.grakovne.lissen.ui.screens.player.composable.common
 
 import android.content.Context
 import org.grakovne.lissen.R
-import org.grakovne.lissen.channel.common.LibraryType
+import org.grakovne.lissen.lib.domain.LibraryType
 
 fun provideNowPlayingTitle(
   libraryType: LibraryType,

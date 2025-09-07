@@ -11,7 +11,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.playback.MediaRepository
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.BOOK_EXTRA
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.PLAYBACK_READY

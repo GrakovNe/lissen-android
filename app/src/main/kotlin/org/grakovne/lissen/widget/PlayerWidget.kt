@@ -50,7 +50,7 @@ import androidx.media3.session.R
 import dagger.hilt.android.EntryPointAccessors
 import org.grakovne.lissen.R.drawable
 import org.grakovne.lissen.common.fromBase64
-import org.grakovne.lissen.domain.SeekTimeOption
+import org.grakovne.lissen.lib.domain.SeekTimeOption
 import org.grakovne.lissen.ui.theme.LightBackground
 import org.grakovne.lissen.widget.PlayerWidget.Companion.bookIdKey
 

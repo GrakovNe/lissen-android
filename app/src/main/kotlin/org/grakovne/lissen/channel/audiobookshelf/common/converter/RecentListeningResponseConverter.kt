@@ -1,7 +1,7 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.converter
 
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.PersonalizedFeedResponse
-import org.grakovne.lissen.domain.RecentBook
+import org.grakovne.lissen.lib.domain.RecentBook
 import javax.inject.Inject
 import javax.inject.Singleton
 

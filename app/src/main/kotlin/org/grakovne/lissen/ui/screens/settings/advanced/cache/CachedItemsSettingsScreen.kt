@@ -63,8 +63,8 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.hapticAction
-import org.grakovne.lissen.domain.DetailedItem
-import org.grakovne.lissen.domain.PlayingChapter
+import org.grakovne.lissen.lib.domain.DetailedItem
+import org.grakovne.lissen.lib.domain.PlayingChapter
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.viewmodel.CachingModelView

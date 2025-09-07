@@ -1,8 +1,8 @@
 package org.grakovne.lissen.channel.audiobookshelf.podcast.converter
 
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastItemsResponse
-import org.grakovne.lissen.domain.Book
-import org.grakovne.lissen.domain.PagedItems
+import org.grakovne.lissen.lib.domain.Book
+import org.grakovne.lissen.lib.domain.PagedItems
 import javax.inject.Inject
 import javax.inject.Singleton
 

@@ -8,8 +8,8 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import dagger.hilt.android.qualifiers.ApplicationContext
-import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
-import org.grakovne.lissen.domain.TimerOption
+import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
+import org.grakovne.lissen.lib.domain.TimerOption
 import javax.inject.Inject
 import javax.inject.Singleton
 

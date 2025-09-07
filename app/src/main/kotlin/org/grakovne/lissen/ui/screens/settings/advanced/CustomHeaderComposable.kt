@@ -21,8 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
-import org.grakovne.lissen.domain.connection.ServerRequestHeader
-import org.grakovne.lissen.domain.connection.ServerRequestHeader.Companion.clean
+import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
+import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader.Companion.clean
 
 @Composable
 fun CustomHeaderComposable(

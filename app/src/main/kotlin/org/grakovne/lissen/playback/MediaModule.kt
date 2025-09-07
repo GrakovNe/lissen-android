@@ -29,7 +29,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import org.grakovne.lissen.domain.SeekTimeOption
+import org.grakovne.lissen.lib.domain.SeekTimeOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.activity.AppActivity
 import java.io.File

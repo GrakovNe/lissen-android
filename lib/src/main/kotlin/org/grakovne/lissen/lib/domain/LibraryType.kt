@@ -1,4 +1,4 @@
-package org.grakovne.lissen.channel.common
+package org.grakovne.lissen.lib.domain
 
 enum class LibraryType {
   LIBRARY,

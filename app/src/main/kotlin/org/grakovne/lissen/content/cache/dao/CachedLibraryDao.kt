@@ -6,7 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import org.grakovne.lissen.content.cache.entity.CachedLibraryEntity
-import org.grakovne.lissen.domain.Library
+import org.grakovne.lissen.lib.domain.Library
 
 @Dao
 interface CachedLibraryDao {

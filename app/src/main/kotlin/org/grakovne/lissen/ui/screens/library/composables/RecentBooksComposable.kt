@@ -40,8 +40,8 @@ import androidx.compose.ui.unit.dp
 import coil.ImageLoader
 import coil.request.ImageRequest
 import org.grakovne.lissen.R
-import org.grakovne.lissen.channel.common.LibraryType
-import org.grakovne.lissen.domain.RecentBook
+import org.grakovne.lissen.lib.domain.LibraryType
+import org.grakovne.lissen.lib.domain.RecentBook
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.LibraryViewModel
