@@ -120,4 +120,10 @@
     <string name="volume_boost_medium">Közepes</string>
     <string name="volume_boost_high">Magas</string>
     <string name="volume_boost_title">Megnövelt hangerő</string>
+    <string name="login_error_lissen_not_found">A hivatkozás nem található. Kérlek ellenőrizd a kiszolgáló beállításait</string>
+    <string name="playing_item_details_time_remaining">Hátralevő idő</string>
+    <string name="settings_screen_advanced_preferences_title">Speciális beállítások</string>
+    <string name="settings_screen_advanced_preferences_description">Keresés, proxy fejlécek vagy hang vezérlése</string>
+    <string name="settings_screen_crash_report_title">Összeomlási jelentések</string>
+    <string name="settings_screen_crash_report_description">Jelentések küldése, ha az alkalmazás összeomlik</string>
 </resources>
