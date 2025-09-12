@@ -36,21 +36,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
-import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.content.cache.CacheState
 import org.grakovne.lissen.lib.domain.CacheStatus
 import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.DurationTimerOption
-import org.grakovne.lissen.ui.extensions.formatLeadingMinutes
+import org.grakovne.lissen.lib.domain.LibraryType
+import org.grakovne.lissen.ui.extensions.formatTime
 import org.grakovne.lissen.ui.icons.TimerPlay
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.PlayerViewModel
+import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
 fun NavigationBarComposable(
   book: DetailedItem,
+  settingsViewModel: SettingsViewModel,
   playerViewModel: PlayerViewModel,
   contentCachingModelView: CachingModelView,
   navController: AppNavigationService,
@@ -173,7 +175,9 @@ fun NavigationBarComposable(
           when (timerOption) {
             is DurationTimerOption, CurrentEpisodeTimerOption -> {
               Text(
-                text = timerRemaining?.toInt()?.formatLeadingMinutes() ?: stringResource(R.string.player_screen_timer_navigation),
+                text =
+                  timerRemaining?.toInt()?.formatTime(settingsViewModel.getTimeFormat(), false)
+                    ?: stringResource(R.string.player_screen_timer_navigation),
                 style = labelStyle,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,

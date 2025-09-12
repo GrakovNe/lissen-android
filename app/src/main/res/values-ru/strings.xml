@@ -126,5 +126,7 @@
     <string name="settings_screen_advanced_preferences_description">Настройте перемотку, прокси-заголовки и звук</string>
     <string name="settings_screen_crash_report_title">Отчёты о сбоях</string>
     <string name="settings_screen_crash_report_description">Отправлять отчёт при сбое приложения</string>
-
+    <string name="time_format_title">Показывать время как</string>
+    <string name="time_format_mm_ss">ММ:СС</string>
+    <string name="time_format_hh_mm_ss">ЧЧ:ММ:СС</string>
 </resources>
