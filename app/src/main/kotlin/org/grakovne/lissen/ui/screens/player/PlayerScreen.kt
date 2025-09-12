@@ -214,6 +214,7 @@ fun PlayerScreen(
               contentCachingModelView = cachingModelView,
               navController = navController,
               libraryType = libraryViewModel.fetchPreferredLibraryType(),
+              settingsViewModel = settingsViewModel,
             )
           }
       }
@@ -279,6 +280,7 @@ fun PlayerScreen(
 
           else -> {
             PlayingQueueComposable(
+              settingsViewModel = settingsViewModel,
               libraryViewModel = libraryViewModel,
               cachingModelView = cachingModelView,
               viewModel = playerViewModel,

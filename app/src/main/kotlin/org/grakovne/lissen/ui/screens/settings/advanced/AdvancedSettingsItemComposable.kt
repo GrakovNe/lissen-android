@@ -1,4 +1,4 @@
-package org.grakovne.lissen.ui.screens.settings.composable
+package org.grakovne.lissen.ui.screens.settings.advanced
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column

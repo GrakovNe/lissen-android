@@ -476,7 +476,7 @@ class MediaRepository
         Intent(context, PlaybackService::class.java).apply {
           action = PlaybackService.ACTION_PAUSE
         }
-      
+
       context.startService(intent)
     }
 

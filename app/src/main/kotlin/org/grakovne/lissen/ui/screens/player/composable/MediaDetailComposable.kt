@@ -31,8 +31,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.text.HtmlCompat
 import org.grakovne.lissen.R
-import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.DetailedItem
+import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.ui.extensions.formatFully
 import org.grakovne.lissen.ui.screens.player.InfoRow
 import org.grakovne.lissen.viewmodel.PlayerViewModel

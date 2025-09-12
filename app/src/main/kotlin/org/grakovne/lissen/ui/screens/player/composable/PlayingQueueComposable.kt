@@ -51,9 +51,11 @@ import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlaying
 import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
+import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
 fun PlayingQueueComposable(
+  settingsViewModel: SettingsViewModel,
   libraryViewModel: LibraryViewModel,
   cachingModelView: CachingModelView,
   viewModel: PlayerViewModel,
@@ -212,6 +214,7 @@ fun PlayingQueueComposable(
           modifier = Modifier.wrapContentWidth(),
           maxDuration = maxDuration,
           isCached = isCached,
+          timeFormat = settingsViewModel.getTimeFormat(),
         )
 
         if (index < showingChapters.size - 1) {
