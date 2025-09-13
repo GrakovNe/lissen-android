@@ -46,7 +46,6 @@ class MediaSessionProvider
 
       return MediaSession
         .Builder(context, exoPlayer)
-        .setId(UUID.randomUUID().toString())
         .setCallback(
           object : MediaSession.Callback {
             override fun onMediaButtonEvent(
