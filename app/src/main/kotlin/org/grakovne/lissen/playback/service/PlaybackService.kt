@@ -36,6 +36,7 @@ import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.MediaProgress
 import org.grakovne.lissen.lib.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.playback.MediaSessionProvider
 import java.io.File
 import java.io.FileOutputStream
 import javax.inject.Inject
@@ -47,7 +48,7 @@ class PlaybackService : MediaSessionService() {
   lateinit var exoPlayer: ExoPlayer
 
   @Inject
-  lateinit var mediaSession: MediaSession
+  lateinit var mediaSessionProvider: MediaSessionProvider
 
   @Inject
   lateinit var mediaChannel: LissenMediaProvider
@@ -70,7 +71,15 @@ class PlaybackService : MediaSessionService() {
   @Inject
   lateinit var mediaCache: Cache
 
+  private var session: MediaSession? = null
+
   private val playerServiceScope = MainScope()
+
+  override fun onCreate() {
+    super.onCreate()
+
+    session = getSession()
+  }
 
   @Suppress("DEPRECATION")
   override fun onStartCommand(
@@ -134,15 +143,24 @@ class PlaybackService : MediaSessionService() {
     }
   }
 
-  override fun onGetSession(controllerInfo: MediaSession.ControllerInfo) = mediaSession
-  
+  override fun onGetSession(controllerInfo: MediaSession.ControllerInfo) = getSession()
+
+  private fun getSession(): MediaSession =
+    when (val currentSession = session) {
+      null -> mediaSessionProvider.provideMediaSession().also { session = it }
+      else -> currentSession
+    }
+
   override fun onDestroy() {
     playbackSynchronizationService.cancelSynchronization()
     playerServiceScope.cancel()
-    
+
     exoPlayer.clearMediaItems()
     exoPlayer.release()
-    
+
+    session?.release()
+    session = null
+
     super.onDestroy()
   }
 
