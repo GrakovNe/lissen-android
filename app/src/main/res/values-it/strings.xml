@@ -126,4 +126,7 @@
     <string name="settings_screen_advanced_preferences_description">Controlla la ricerca, le intestazioni proxy o l’audio</string>
     <string name="settings_screen_crash_report_title">Segnalazione arresti anomali</string>
     <string name="settings_screen_crash_report_description">Invia segnalazioni se l\'app si arresta in modo anomalo</string>
+    <string name="time_format_mm_ss">MM:SS</string>
+    <string name="time_format_hh_mm_ss">HH:MM:SS</string>
+    <string name="time_format_title">Formato ora</string>
 </resources>
