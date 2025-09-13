@@ -160,6 +160,8 @@ dependencies {
     implementation(libs.androidx.media3.exoplayer.hls)
     implementation(libs.androidx.media3.datasource)
     implementation(libs.androidx.media3.database)
+  
+    implementation(libs.androidx.localbroadcastmanager)
 
     implementation(libs.androidx.glance)
     implementation(libs.androidx.glance.appwidget)

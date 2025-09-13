@@ -13,6 +13,7 @@ kotlin = "2.1.21"
 activityCompose = "1.11.0"
 composeBom = "2025.09.00"
 compose = "1.7.8"
+localbroadcastmanager = "1.1.0"
 loggingInterceptor = "5.1.0"
 material = "1.9.1"
 material3 = "1.3.2"
@@ -39,6 +40,7 @@ androidx-glance = { module = "androidx.glance:glance", version.ref = "glance" }
 androidx-glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = "glance" }
 androidx-glance-material3 = { module = "androidx.glance:glance-material3", version.ref = "glance" }
 androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+androidx-localbroadcastmanager = { module = "androidx.localbroadcastmanager:localbroadcastmanager", version.ref = "localbroadcastmanager" }
 androidx-material = { module = "androidx.compose.material:material", version.ref = "material" }
 androidx-media3-database = { module = "androidx.media3:media3-database", version.ref = "media3Exoplayer" }
 androidx-media3-datasource = { module = "androidx.media3:media3-datasource", version.ref = "media3Exoplayer" }
