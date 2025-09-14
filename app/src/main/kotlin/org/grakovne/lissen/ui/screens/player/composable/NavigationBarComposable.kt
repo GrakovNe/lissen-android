@@ -43,7 +43,7 @@ import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.DurationTimerOption
 import org.grakovne.lissen.lib.domain.LibraryType
-import org.grakovne.lissen.ui.extensions.formatTime
+import org.grakovne.lissen.lib.ui.extensions.formatTime
 import org.grakovne.lissen.ui.icons.TimerPlay
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.CachingModelView

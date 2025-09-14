@@ -1,4 +1,4 @@
-package org.grakovne.lissen.ui.extensions
+package org.grakovne.lissen.lib.ui.extensions
 
 import java.util.Locale
 
@@ -24,5 +24,23 @@ fun Int.formatTime(): String {
     String.format(Locale.getDefault(), "%02d:%02d:%02d", hours, minutes, seconds)
   } else {
     String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
+  }
+}
+
+fun Int.formatDuration(): String {
+  val hours = this / 3600
+  val minutes = (this % 3600) / 60
+  val seconds = this % 60
+
+  return buildString {
+    if (hours > 0) {
+      append(String.format(Locale.getDefault(), "%dh ", hours))
+    }
+    if (minutes > 0) {
+      append(String.format(Locale.getDefault(), "%dm", minutes))
+    }
+    if (hours == 0) {
+      append(String.format(Locale.getDefault(), " %ds", seconds))
+    }
   }
 }

@@ -38,7 +38,7 @@ import androidx.core.text.HtmlCompat
 import org.grakovne.lissen.R
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.LibraryType
-import org.grakovne.lissen.ui.extensions.formatTime
+import org.grakovne.lissen.lib.ui.extensions.formatTime
 import org.grakovne.lissen.ui.screens.player.InfoRow
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 import org.grakovne.lissen.viewmodel.SettingsViewModel

@@ -21,7 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
-import org.grakovne.lissen.common.NetworkTypeAutoCache
+import org.grakovne.lissen.lib.common.NetworkTypeAutoCache
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItem
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItemComposable
 import org.grakovne.lissen.viewmodel.SettingsViewModel
@@ -92,6 +92,7 @@ private fun NetworkTypeAutoCache.toItem(context: Context): CommonSettingsItem {
     when (this) {
       NetworkTypeAutoCache.WIFI_ONLY -> context.getString(R.string.wifi_only_settings_option)
       NetworkTypeAutoCache.WIFI_OR_CELLULAR -> context.getString(R.string.wifi_or_cellular_settings_option)
+      TimeFormat.DurationDynamic -> context.getString(R.string.time_format_duration_dynamic)
     }
 
   return CommonSettingsItem(id, name, null)
