@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Lissen Wear</string>
+    <!--
+    This string is used for square devices and overridden by hello_world in
+    values-round/strings.xml for round devices.
+    -->
+    <string name="no_book_selected">No Book Selected.</string>
+</resources>
