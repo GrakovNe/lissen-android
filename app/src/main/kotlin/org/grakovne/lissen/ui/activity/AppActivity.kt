@@ -59,6 +59,7 @@ class AppActivity : ComponentActivity() {
   private fun getLaunchAction(intent: Intent?) =
     when (intent?.action) {
       "continue_playback" -> AppLaunchAction.CONTINUE_PLAYBACK
+      "show_downloads" -> AppLaunchAction.MANAGE_DOWNLOADS
       else -> AppLaunchAction.DEFAULT
     }
 }
