@@ -24,6 +24,7 @@
         android:largeHeap="true"
         android:theme="@style/Theme.Lissen"
         tools:ignore="DiscouragedApi,UnusedAttribute"
+        android:manageSpaceActivity="org.grakovne.lissen.content.LissenDataManagementActivity"
         tools:targetApi="35">
 
         <!-- Add Android Auto support -->
@@ -43,6 +44,12 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name="org.grakovne.lissen.content.LissenDataManagementActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Transparent"
+            tools:ignore="LockedOrientationActivity" />
 
         <activity
             android:screenOrientation="portrait"
