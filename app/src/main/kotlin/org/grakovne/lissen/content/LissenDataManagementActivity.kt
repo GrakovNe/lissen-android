@@ -5,9 +5,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import dagger.hilt.android.AndroidEntryPoint
 import org.grakovne.lissen.ui.activity.AppActivity
+import org.grakovne.lissen.ui.navigation.SHOW_DOWNLOADS
 
 @AndroidEntryPoint
-class LissenDataManagementMediatorActivity : ComponentActivity() {
+class LissenDataManagementActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
 
@@ -15,7 +16,7 @@ class LissenDataManagementMediatorActivity : ComponentActivity() {
       Intent(this, AppActivity::class.java).apply {
         flags = Intent.FLAG_ACTIVITY_NEW_TASK or
           Intent.FLAG_ACTIVITY_CLEAR_TASK
-        action = "show_downloads"
+        action = SHOW_DOWNLOADS
       }
 
     startActivity(intent)

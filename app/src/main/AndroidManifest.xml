@@ -24,7 +24,7 @@
         android:largeHeap="true"
         android:theme="@style/Theme.Lissen"
         tools:ignore="DiscouragedApi,UnusedAttribute"
-        android:manageSpaceActivity="org.grakovne.lissen.content.LissenDataManagementMediatorActivity"
+        android:manageSpaceActivity="org.grakovne.lissen.content.LissenDataManagementActivity"
         tools:targetApi="35">
 
         <!-- Add Android Auto support -->
@@ -46,7 +46,7 @@
         </activity>
 
         <activity
-            android:name="org.grakovne.lissen.content.LissenDataManagementMediatorActivity"
+            android:name="org.grakovne.lissen.content.LissenDataManagementActivity"
             android:exported="true"
             android:theme="@style/Theme.Transparent"
             tools:ignore="LockedOrientationActivity" />

@@ -16,6 +16,7 @@ import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.activity.AppActivity
+import org.grakovne.lissen.ui.navigation.CONTINUE_PLAYBACK
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -56,7 +57,7 @@ class ContinuePlaybackShortcut
           .setIcon(Icon.createWithResource(context, R.drawable.ic_play))
           .setIntent(
             Intent(context, AppActivity::class.java).apply {
-              action = "continue_playback"
+              action = CONTINUE_PLAYBACK
               addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             },
           ).build()
