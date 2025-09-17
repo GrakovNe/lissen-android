@@ -6,12 +6,6 @@
   --><a href="https://f-droid.org/packages/org.grakovne.lissen"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a3/Get_it_on_F-Droid_%28material_design%29.svg" alt="Get it on F-Droid" height="60"></a>
 </p>
 
-> 📢 **20.08.2025 Project update**
->
-> Starting from [release 1.6.10](https://github.com/GrakovNe/lissen-android/releases/tag/1.6.10),  
-> Lissen provides **two APK variants** (Common + Android Auto).  
-> See [Android Auto Support](#android-auto-support) for details.
-
 ### Features
 
   * Beautiful Interface: Intuitive design that makes browsing and listening to your audiobooks easy and enjoyable.
@@ -70,23 +64,16 @@ To contribute:
 2. Sign up or log in to Weblate.
 3. Start translating or reviewing existing translations for your preferred language.
 
-### Android Auto Support
+### Release policy
 
-Google Play rejected publication of the app because partial Android Auto integration did not meet the official quality checklist.  
+- **Current state:**  
+  - The **main branch** is the latest stable build at every moment with every feature available at that time.  
+  - The dedicated [`release/stable`](https://github.com/GrakovNe/lissen-android/tree/release/stable) contains the latest full-feature release including Android Auto.  
+  - The dedicated [`release/google-play-store`](https://github.com/GrakovNe/lissen-android/tree/release/google-play-store) branch contains the Google Play Store–compliant release based on the `release/stable` branch with Android Auto features disabled.  
 
-**Current state:**  
-- The **main branch** is the latest stable build at every moment with every feature available at that time.  
-- The dedicated [`release/stable`](https://github.com/GrakovNe/lissen-android/tree/release/stable) contains the latest full-feature release including Android Auto.  
-- The dedicated [`release/google-play-store`](https://github.com/GrakovNe/lissen-android/tree/release/google-play-store) branch contains the Google Play Store–compliant release based on the `release/stable` branch with Android Auto features disabled.  
-
-- **Starting from [release 1.6.10](https://github.com/GrakovNe/lissen-android/releases/tag/1.6.10) every release contains:**  
-  - **Play Store APK** – identical to the Play Store version, without Android Auto.  
-  - **Stable APK** – fully supported and feature-equivalent, with Android Auto enabled.  
-
-**Temporary status:**  
-This dual-release setup is a temporary solution until full compliance with Google’s Android Auto quality checklist can be achieved.  
-At this moment, fully removing Android Auto is not an option since some users rely on it,  
-but dedicating the required time to implement full compliance is also not possible.  
+- **Every release contains:**  
+  - **Play Store APK** – identical to the Play Store version. It disables some non-production-ready features, such as Android Auto support.
+  - **Stable APK** – fully supported and feature-equivalent.
 
 ### Demo Environment
 
