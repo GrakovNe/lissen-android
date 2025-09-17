@@ -8,13 +8,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.DataSource
-import androidx.media3.datasource.DataSpec
-import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.cache.Cache
-import androidx.media3.datasource.cache.CacheDataSink
-import androidx.media3.datasource.cache.CacheDataSource
-import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.session.MediaSession
@@ -29,7 +23,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.LissenApplication
 import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
-import org.grakovne.lissen.channel.common.createOkHttpClient
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.lib.domain.BookFile
 import org.grakovne.lissen.lib.domain.DetailedItem
@@ -51,7 +44,7 @@ class PlaybackService : MediaSessionService() {
   lateinit var mediaSessionProvider: MediaSessionProvider
 
   @Inject
-  lateinit var mediaChannel: LissenMediaProvider
+  lateinit var mediaProvider: LissenMediaProvider
 
   @Inject
   lateinit var playbackSynchronizationService: PlaybackSynchronizationService
@@ -172,7 +165,15 @@ class PlaybackService : MediaSessionService() {
       val prepareQueue =
         async {
           val cachedCover = fetchAndCacheCover(book)
-          val sourceFactory = buildDataSourceFactory()
+
+          val sourceFactory =
+            LissenDataSourceFactory(
+              baseContext = baseContext,
+              mediaCache = mediaCache,
+              requestHeadersProvider = requestHeadersProvider,
+              sharedPreferences = sharedPreferences,
+              mediaProvider = mediaProvider,
+            )
 
           val playingQueue =
             book
@@ -303,71 +304,6 @@ class PlaybackService : MediaSessionService() {
     chapters: List<BookFile>,
     progress: MediaProgress?,
   ) = seek(chapters, progress?.currentTime)
-
-  @OptIn(UnstableApi::class)
-  private fun buildDataSourceFactory(): DataSource.Factory {
-    val requestHeaders =
-      requestHeadersProvider
-        .fetchRequestHeaders()
-        .associate { it.name to it.value }
-
-    val upstreamFactory =
-      OkHttpDataSource
-        .Factory(
-          createOkHttpClient(
-            requestHeaders = requestHeadersProvider.fetchRequestHeaders(),
-            preferences = sharedPreferences,
-          ),
-        ).setDefaultRequestProperties(requestHeaders)
-
-    val defaultFactory =
-      CacheDataSource
-        .Factory()
-        .setCache(mediaCache)
-        .setUpstreamDataSourceFactory(DefaultDataSource.Factory(baseContext, upstreamFactory))
-        .setCacheWriteDataSinkFactory(
-          CacheDataSink
-            .Factory()
-            .setCache(mediaCache)
-            .setFragmentSize(CacheDataSink.DEFAULT_FRAGMENT_SIZE),
-        ).setFlags(
-          CacheDataSource.FLAG_BLOCK_ON_CACHE or
-            CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR,
-        )
-
-    return object : DataSource.Factory {
-      override fun createDataSource(): DataSource {
-        val actualDataSource = defaultFactory.createDataSource()
-
-        return object : DataSource by actualDataSource {
-          override fun open(dataSpec: DataSpec): Long {
-            val resolvedUri =
-              if (dataSpec.uri.scheme == "lissen") {
-                val parts =
-                  dataSpec.uri
-                    .toString()
-                    .removePrefix("lissen://")
-                    .split("/")
-                val bookId = parts[0]
-                val fileId = parts[1]
-
-                mediaChannel
-                  .provideFileUri(bookId, fileId)
-                  .fold(
-                    onSuccess = { it },
-                    onFailure = { dataSpec.uri },
-                  )
-              } else {
-                dataSpec.uri
-              }
-
-            val newDataSpec = dataSpec.buildUpon().setUri(resolvedUri).build()
-            return actualDataSource.open(newDataSpec)
-          }
-        }
-      }
-    }
-  }
 
   companion object {
     const val ACTION_PLAY = "org.grakovne.lissen.player.service.PLAY"
