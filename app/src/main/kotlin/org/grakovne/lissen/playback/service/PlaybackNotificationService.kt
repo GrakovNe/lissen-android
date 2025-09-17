@@ -5,7 +5,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import org.grakovne.lissen.common.RunningComponent
-import org.grakovne.lissen.content.cache.LocalCacheRepository
+import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import javax.inject.Inject
@@ -16,9 +16,9 @@ import javax.inject.Singleton
 class PlaybackNotificationService
 @Inject
 constructor(
-  private val localCacheRepository: LocalCacheRepository,
   private val exoPlayer: ExoPlayer,
   private val sharedPreferences: LissenSharedPreferences,
+  private val mediaProvider: LissenMediaProvider
 ) : RunningComponent {
   override fun onCreate() {
     exoPlayer.addListener(
@@ -110,9 +110,12 @@ constructor(
         ?.tag as? DetailedItem
         ?: return false
     
-    val uri = localCacheRepository.provideFileUri(mediaItemId.id, fileId)
-    
-    return uri != null
+    return mediaProvider
+      .provideFileUri(mediaItemId.id, fileId)
+      .fold(
+        onSuccess = { true },
+        onFailure = { false }
+      )
   }
 }
 
