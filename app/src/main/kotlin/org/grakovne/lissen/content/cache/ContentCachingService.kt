@@ -88,7 +88,7 @@ class ContentCachingService : LifecycleService() {
 
           Log.d(TAG, "Caching progress updated: $progress")
 
-          when (inProgress()) {
+          when (inProgress() && hasErrors().not()) {
             true ->
               executionStatuses
                 .entries
