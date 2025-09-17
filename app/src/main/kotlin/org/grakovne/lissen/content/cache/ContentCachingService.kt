@@ -62,7 +62,6 @@ class ContentCachingService : LifecycleService() {
     lifecycleScope.launch {
       val item =
         mediaProvider
-          .providePreferredChannel()
           .fetchBook(task.itemId)
           .fold(
             onSuccess = { it },

@@ -69,7 +69,7 @@ class LissenDataSourceFactory(
               onSuccess = { it },
               onFailure = { dataSpec.uri },
             )
-        
+
         Log.d(TAG, "Resolved Uri: $resolvedUri for itemId = $itemId and fileId = $fileId")
 				
         return dataSpec
@@ -80,7 +80,7 @@ class LissenDataSourceFactory(
       }
     }
   }
-  
+
   companion object {
     private const val TAG = "LissenDataSourceFactory"
   }
