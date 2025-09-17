@@ -197,16 +197,9 @@ class PlaybackService : MediaSessionService() {
                     .setMediaMetadata(mediaData.build())
                     .build()
                 
-                try {
-                  val f = ProgressiveMediaSource
-                    .Factory(sourceFactory)
-                    .createMediaSource(mediaItem)
-                  
-                  f
-                } catch (e: Exception) {
-                  SilenceMediaSource((file.duration * 1000).toLong())
-                }
-                
+                ProgressiveMediaSource
+                  .Factory(sourceFactory)
+                  .createMediaSource(mediaItem)
               }
           
           withContext(Dispatchers.Main) {
