@@ -41,7 +41,7 @@ class AppNavigationService(
 
   fun showLogin() {
     host.navigate(ROUTE_LOGIN) {
-      popUpTo(0) { inclusive = true }
+      popUpTo(host.graph.id) { inclusive = true }
       launchSingleTop = true
     }
   }
