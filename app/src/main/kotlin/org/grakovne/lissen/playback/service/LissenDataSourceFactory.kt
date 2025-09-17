@@ -59,28 +59,21 @@ class LissenDataSourceFactory(
 		
     return object : DataSource by actualDataSource {
       override fun open(dataSpec: DataSpec): Long {
-        val resolvedUri =
-          if (dataSpec.uri.scheme == "lissen") {
-            val parts =
-              dataSpec.uri
-                .toString()
-                .removePrefix("lissen://")
-                .split("/")
-            val bookId = parts[0]
-            val fileId = parts[1]
-					
-            mediaProvider
-              .provideFileUri(bookId, fileId)
-              .fold(
-                onSuccess = { it },
-                onFailure = { dataSpec.uri },
-              )
-          } else {
-            dataSpec.uri
-          }
+        val (bookId, fileId) = unapply(dataSpec.uri) ?: return 0
 				
-        val newDataSpec = dataSpec.buildUpon().setUri(resolvedUri).build()
-        return actualDataSource.open(newDataSpec)
+        val resolvedUri =
+          mediaProvider
+            .provideFileUri(bookId, fileId)
+            .fold(
+              onSuccess = { it },
+              onFailure = { dataSpec.uri },
+            )
+				
+        return dataSpec
+          .buildUpon()
+          .setUri(resolvedUri)
+          .build()
+          .let { actualDataSource.open(it) }
       }
     }
   }

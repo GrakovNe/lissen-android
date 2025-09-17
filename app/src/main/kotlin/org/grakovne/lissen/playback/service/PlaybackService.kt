@@ -190,7 +190,7 @@ class PlaybackService : MediaSessionService() {
                   MediaItem
                     .Builder()
                     .setMediaId(file.id)
-                    .setUri("lissen://${book.id}/${file.id}")
+                    .setUri(apply(book.id, file.id))
                     .setTag(book)
                     .setMediaMetadata(mediaData.build())
                     .build()
