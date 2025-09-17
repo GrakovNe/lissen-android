@@ -1,6 +1,7 @@
 package org.grakovne.lissen.playback.service
 
 import android.content.Context
+import android.util.Log
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
@@ -59,15 +60,17 @@ class LissenDataSourceFactory(
 		
     return object : DataSource by actualDataSource {
       override fun open(dataSpec: DataSpec): Long {
-        val (bookId, fileId) = unapply(dataSpec.uri) ?: return 0
+        val (itemId, fileId) = unapply(dataSpec.uri) ?: return 0
 				
         val resolvedUri =
           mediaProvider
-            .provideFileUri(bookId, fileId)
+            .provideFileUri(itemId, fileId)
             .fold(
               onSuccess = { it },
               onFailure = { dataSpec.uri },
             )
+        
+        Log.d(TAG, "Resolved Uri: $resolvedUri for itemId = $itemId and fileId = $fileId")
 				
         return dataSpec
           .buildUpon()
@@ -76,5 +79,9 @@ class LissenDataSourceFactory(
           .let { actualDataSource.open(it) }
       }
     }
+  }
+  
+  companion object {
+    private const val TAG = "LissenDataSourceFactory"
   }
 }
