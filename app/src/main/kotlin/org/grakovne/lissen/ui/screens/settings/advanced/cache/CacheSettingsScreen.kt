@@ -34,7 +34,6 @@ fun CacheSettingsScreen(
   onBack: () -> Unit,
   navController: AppNavigationService,
 ) {
-  
   Scaffold(
     topBar = {
       TopAppBar(
@@ -58,22 +57,22 @@ fun CacheSettingsScreen(
     },
     modifier =
       Modifier
-		  .systemBarsPadding()
-		  .fillMaxHeight(),
+        .systemBarsPadding()
+        .fillMaxHeight(),
     content = { innerPadding ->
       Column(
         modifier =
           Modifier
-			  .fillMaxSize()
-			  .padding(innerPadding),
+            .fillMaxSize()
+            .padding(innerPadding),
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally,
       ) {
         Column(
           modifier =
             Modifier
-				.fillMaxWidth()
-				.verticalScroll(rememberScrollState()),
+              .fillMaxWidth()
+              .verticalScroll(rememberScrollState()),
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
           AdvancedSettingsItemComposable(
