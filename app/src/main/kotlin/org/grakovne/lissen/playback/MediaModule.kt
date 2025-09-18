@@ -53,11 +53,9 @@ object MediaModule {
               DefaultLoadControl.DEFAULT_MIN_BUFFER_MS,
               DefaultLoadControl.DEFAULT_MAX_BUFFER_MS * 5,
               DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS,
-              DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS
-            )
-            .build()
-        )
-        .setAudioAttributes(
+              DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS,
+            ).build(),
+        ).setAudioAttributes(
           AudioAttributes
             .Builder()
             .setUsage(C.USAGE_MEDIA)

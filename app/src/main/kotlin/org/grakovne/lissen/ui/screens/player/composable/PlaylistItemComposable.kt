@@ -48,7 +48,8 @@ fun PlaylistItemComposable(
   val textMeasurer = rememberTextMeasurer()
   val density = LocalDensity.current
 
-  val maxDurationText = remember(maxDuration) { maxDuration.toInt().formatTime(timeFormat, false) }
+  val forceLeadingHours = maxDuration >= 60 * 60
+  val maxDurationText = remember(maxDuration) { maxDuration.toInt().formatTime(timeFormat, forceLeadingHours) }
   val bodySmallStyle = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold)
 
   val durationColumnWidth =
@@ -127,7 +128,7 @@ fun PlaylistItemComposable(
     }
 
     Text(
-      text = track.duration.toInt().formatTime(timeFormat, false),
+      text = track.duration.toInt().formatTime(timeFormat, forceLeadingHours),
       style = MaterialTheme.typography.bodySmall,
       modifier = Modifier.width(durationColumnWidth),
       textAlign = TextAlign.End,
