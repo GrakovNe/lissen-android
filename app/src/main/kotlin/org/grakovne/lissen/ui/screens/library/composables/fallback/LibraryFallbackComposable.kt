@@ -19,7 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -36,8 +36,7 @@ fun LibraryFallbackComposable(
   libraryViewModel: LibraryViewModel,
   networkQualityService: NetworkQualityService,
 ) {
-  val configuration = LocalConfiguration.current
-  val screenHeight = configuration.screenHeightDp.dp
+  val screenHeight = LocalWindowInfo.current.containerSize.height.dp
 
   Box(
     modifier =
