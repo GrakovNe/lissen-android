@@ -30,6 +30,7 @@ import org.grakovne.lissen.ui.screens.settings.SettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.AdvancedSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.advanced.CustomHeadersSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.SeekSettingsScreen
+import org.grakovne.lissen.ui.screens.settings.advanced.cache.CacheSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.cache.CachedItemsSettingsScreen
 
 @Composable
@@ -47,42 +48,43 @@ fun AppNavHost(
       preferences.hasCredentials(),
     )
   }
-
+  
   val book = preferences.getPlayingBook()
-
+  
   val startDestination =
     when {
       appLaunchAction == AppLaunchAction.MANAGE_DOWNLOADS -> "$ROUTE_SETTINGS/cached_items"
       hasCredentials.not() -> ROUTE_LOGIN
       appLaunchAction == AppLaunchAction.CONTINUE_PLAYBACK && book != null ->
         "$ROUTE_PLAYER/${book.id}?bookTitle=${book.title}&bookSubtitle=${book.subtitle}&startInstantly=true"
+      
       else -> ROUTE_LIBRARY
     }
-
+  
   val enterTransition: EnterTransition =
     slideInHorizontally(
       initialOffsetX = { it },
       animationSpec = tween(),
     ) + fadeIn(animationSpec = tween())
-
+  
   val exitTransition: ExitTransition =
     slideOutHorizontally(
       targetOffsetX = { -it },
       animationSpec = tween(),
     ) + fadeOut(animationSpec = tween())
-
+  
   val popEnterTransition: EnterTransition =
     slideInHorizontally(
       initialOffsetX = { -it },
       animationSpec = tween(),
     ) + fadeIn(animationSpec = tween())
-
+  
   val popExitTransition: ExitTransition =
     slideOutHorizontally(
       targetOffsetX = { it },
       animationSpec = tween(),
     ) + fadeOut(animationSpec = tween())
-
+  
   Scaffold(modifier = Modifier.fillMaxSize()) { _ ->
     NavHost(
       navController = navController,
@@ -98,14 +100,36 @@ fun AppNavHost(
           imageLoader = imageLoader,
         )
       }
-      composable("library_screen") {
+      composable(
+        route = "settings_screen/cache_settings",
+        enterTransition = { enterTransition },
+        exitTransition = { exitTransition },
+        popEnterTransition = { popEnterTransition },
+        popExitTransition = { popExitTransition }
+      ) {
+        CacheSettingsScreen(
+          navController = navigationService,
+          onBack = {
+            if (navController.previousBackStackEntry != null) {
+              navController.popBackStack()
+            }
+          },
+        )
+      }
+      composable(
+        route = "library_screen",
+        enterTransition = { enterTransition },
+        exitTransition = { exitTransition },
+        popEnterTransition = { popEnterTransition },
+        popExitTransition = { popExitTransition }
+      ) {
         LibraryScreen(
           navController = navigationService,
           imageLoader = imageLoader,
           networkQualityService = networkQualityService,
         )
       }
-
+      
       composable(
         route = "player_screen/{bookId}?bookTitle={bookTitle}&bookSubtitle={bookSubtitle}&startInstantly={startInstantly}",
         arguments =
@@ -133,7 +157,7 @@ fun AppNavHost(
         val bookTitle = navigationStack.arguments?.getString("bookTitle") ?: ""
         val bookSubtitle = navigationStack.arguments?.getString("bookSubtitle")
         val startInstantly = navigationStack.arguments?.getBoolean("startInstantly")
-
+        
         PlayerScreen(
           navController = navigationService,
           imageLoader = imageLoader,
@@ -143,7 +167,7 @@ fun AppNavHost(
           playInstantly = startInstantly ?: false,
         )
       }
-
+      
       composable(
         route = "login_screen",
         enterTransition = { enterTransition },
@@ -153,7 +177,7 @@ fun AppNavHost(
       ) {
         LoginScreen(navigationService)
       }
-
+      
       composable(
         route = "settings_screen",
         enterTransition = { enterTransition },
@@ -170,7 +194,7 @@ fun AppNavHost(
           navController = navigationService,
         )
       }
-
+      
       composable(
         route = "settings_screen/custom_headers",
         enterTransition = { enterTransition },
@@ -186,7 +210,7 @@ fun AppNavHost(
           },
         )
       }
-
+      
       composable(
         route = "settings_screen/advanced_settings",
         enterTransition = { enterTransition },
@@ -203,7 +227,7 @@ fun AppNavHost(
           },
         )
       }
-
+      
       composable(
         route = "settings_screen/seek_settings",
         enterTransition = { enterTransition },
