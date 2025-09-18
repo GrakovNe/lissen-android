@@ -11,7 +11,7 @@
     <string name="login_screen_password_input">Şifre</string>
     <string name="login_screen_connect_button_text">Bağlan</string>
     <string name="player_screen_playback_speed_navigation">Hız</string>
-    <string name="player_screen_chapter_list_navigation">Bölümler</string>
+    <string name="player_screen_chapter_list_navigation_library">Bölümler</string>
     <string name="player_screen_library_playing_title">Çalınan bölümler</string>
     <string name="player_screen_podcast_playing_title">Çalınan bölümler</string>
     <string name="player_screen_items_playing_title">Çalınan öğeler</string>

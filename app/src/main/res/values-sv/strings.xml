@@ -23,7 +23,7 @@
     <string name="login_screen_show_password_hint">Visa lösenord</string>
     <string name="login_screen_connect_button_text">Anslut</string>
     <string name="login_screen_password_input">Lösenord</string>
-    <string name="player_screen_chapter_list_navigation">Kapitel</string>
+    <string name="player_screen_chapter_list_navigation_library">Kapitel</string>
     <string name="player_screen_library_playing_title">Spelar upp kapitel</string>
     <string name="player_screen_now_playing_title_item_of">Innehåll %1$d av %2$s</string>
     <string name="login_error_password_is_missing">Lösenord saknas</string>

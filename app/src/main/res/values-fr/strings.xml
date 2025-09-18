@@ -10,7 +10,7 @@
     <string name="login_screen_password_input">Mot de passe</string>
     <string name="login_screen_connect_button_text">Se Connecter</string>
     <string name="player_screen_playback_speed_navigation">Vitesse</string>
-    <string name="player_screen_chapter_list_navigation">Chapitres</string>
+    <string name="player_screen_chapter_list_navigation_library">Chapitres</string>
     <string name="player_screen_library_playing_title">Lecture des chapitres</string>
     <string name="player_screen_podcast_playing_title">Lecture des épisodes</string>
     <string name="player_screen_items_playing_title">Lecture des éléments</string>

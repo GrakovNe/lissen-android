@@ -13,7 +13,7 @@
     <string name="login_screen_server_url_input">Palvelimen URL-osoite</string>
     <string name="login_screen_login_input">Käyttäjätunnus</string>
     <string name="login_screen_password_input">Salasana</string>
-    <string name="player_screen_chapter_list_navigation">Luvut</string>
+    <string name="player_screen_chapter_list_navigation_library">Luvut</string>
     <string name="player_screen_library_playing_title">Toistettavat luvut</string>
     <string name="player_screen_items_playing_title">Toistettavat kohteet</string>
     <string name="player_screen_now_playing_title_podcast_of">Jakso %1$d / %2$s</string>

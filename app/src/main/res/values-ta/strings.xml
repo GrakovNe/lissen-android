@@ -13,7 +13,7 @@
     <string name="login_screen_password_input">கடவுச்சொல்</string>
     <string name="login_screen_connect_button_text">இணை</string>
     <string name="player_screen_playback_speed_navigation">வேகம்</string>
-    <string name="player_screen_chapter_list_navigation">பாடங்கள்</string>
+    <string name="player_screen_chapter_list_navigation_library">பாடங்கள்</string>
     <string name="player_screen_library_playing_title">அத்தியாயங்கள் விளையாடுகின்றன</string>
     <string name="player_screen_podcast_playing_title">எபிசோடுகளை வாசித்தல்</string>
     <string name="player_screen_items_playing_title">உருப்படிகளை விளையாடுவது</string>

@@ -204,7 +204,7 @@ fun PlayerScreen(
     },
     bottomBar = {
       if (playingBook == null || isPlaybackReady.not()) {
-        NavigationBarPlaceholderComposable()
+        NavigationBarPlaceholderComposable(libraryType = libraryViewModel.fetchPreferredLibraryType())
       } else {
         playingBook
           ?.let {
