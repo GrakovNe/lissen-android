@@ -4,8 +4,9 @@ import androidx.annotation.OptIn
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.source.SilenceMediaSource
 import org.grakovne.lissen.common.RunningComponent
+import org.grakovne.lissen.content.LissenMediaProvider
+import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -17,6 +18,7 @@ class PlaybackNotificationService
   constructor(
     private val exoPlayer: ExoPlayer,
     private val sharedPreferences: LissenSharedPreferences,
+    private val mediaProvider: LissenMediaProvider,
   ) : RunningComponent {
     override fun onCreate() {
       exoPlayer.addListener(
@@ -39,8 +41,17 @@ class PlaybackNotificationService
           ) {
             val previousIndex = oldPosition.mediaItemIndex
             val currentIndex = newPosition.mediaItemIndex
+            val currentItem =
+              exoPlayer
+                .currentMediaItem
+                ?.localConfiguration
+                ?.tag as? DetailedItem
 
-            if (exoPlayer.currentMediaItem?.mediaId != SilenceMediaSource::class.simpleName) {
+            if (null == currentItem) {
+              return
+            }
+
+            if (exoPlayer.currentMediaItem?.mediaId?.let { isTrackAvailable(it) } != false) {
               return
             }
 
@@ -73,7 +84,7 @@ class PlaybackNotificationService
       exoPlayer: ExoPlayer,
       iteration: Int,
     ): Int? {
-      if (exoPlayer.getMediaItemAt(currentItem).mediaId != SilenceMediaSource::class.simpleName) {
+      if (isTrackAvailable(exoPlayer.getMediaItemAt(currentItem).mediaId)) {
         return currentItem
       }
 
@@ -88,6 +99,22 @@ class PlaybackNotificationService
         }
 
       return findAvailableTrackIndex(foundItem, direction, exoPlayer, iteration + 1)
+    }
+
+    private fun isTrackAvailable(fileId: String): Boolean {
+      val mediaItemId =
+        exoPlayer
+          .currentMediaItem
+          ?.localConfiguration
+          ?.tag as? DetailedItem
+          ?: return false
+
+      return mediaProvider
+        .provideFileUri(mediaItemId.id, fileId)
+        .fold(
+          onSuccess = { true },
+          onFailure = { false },
+        )
     }
   }
 

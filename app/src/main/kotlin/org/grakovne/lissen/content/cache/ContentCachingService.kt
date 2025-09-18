@@ -62,7 +62,6 @@ class ContentCachingService : LifecycleService() {
     lifecycleScope.launch {
       val item =
         mediaProvider
-          .providePreferredChannel()
           .fetchBook(task.itemId)
           .fold(
             onSuccess = { it },
@@ -89,7 +88,7 @@ class ContentCachingService : LifecycleService() {
 
           Log.d(TAG, "Caching progress updated: $progress")
 
-          when (inProgress()) {
+          when (inProgress() && hasErrors().not()) {
             true ->
               executionStatuses
                 .entries

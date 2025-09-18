@@ -8,15 +8,9 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.DataSource
-import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.cache.Cache
-import androidx.media3.datasource.cache.CacheDataSink
-import androidx.media3.datasource.cache.CacheDataSource
-import androidx.media3.datasource.okhttp.OkHttpDataSource
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
-import androidx.media3.exoplayer.source.SilenceMediaSource
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import dagger.hilt.android.AndroidEntryPoint
@@ -29,7 +23,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.LissenApplication
 import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
-import org.grakovne.lissen.channel.common.createOkHttpClient
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.lib.domain.BookFile
 import org.grakovne.lissen.lib.domain.DetailedItem
@@ -51,7 +44,7 @@ class PlaybackService : MediaSessionService() {
   lateinit var mediaSessionProvider: MediaSessionProvider
 
   @Inject
-  lateinit var mediaChannel: LissenMediaProvider
+  lateinit var mediaProvider: LissenMediaProvider
 
   @Inject
   lateinit var playbackSynchronizationService: PlaybackSynchronizationService
@@ -172,40 +165,39 @@ class PlaybackService : MediaSessionService() {
       val prepareQueue =
         async {
           val cachedCover = fetchAndCacheCover(book)
-          val sourceFactory = buildDataSourceFactory()
+
+          val sourceFactory =
+            LissenDataSourceFactory(
+              baseContext = baseContext,
+              mediaCache = mediaCache,
+              requestHeadersProvider = requestHeadersProvider,
+              sharedPreferences = sharedPreferences,
+              mediaProvider = mediaProvider,
+            )
 
           val playingQueue =
             book
               .files
               .map { file ->
-                mediaChannel
-                  .provideFileUri(book.id, file.id)
-                  .fold(
-                    onSuccess = { request ->
-                      val mediaData =
-                        MediaMetadata
-                          .Builder()
-                          .setTitle(file.name)
-                          .setArtist(book.title)
-                          .setArtworkUri(cachedCover?.toUri())
+                val mediaData =
+                  MediaMetadata
+                    .Builder()
+                    .setTitle(file.name)
+                    .setArtist(book.title)
+                    .setArtworkUri(cachedCover?.toUri())
 
-                      val mediaItem =
-                        MediaItem
-                          .Builder()
-                          .setMediaId(file.id)
-                          .setUri(request)
-                          .setTag(book)
-                          .setMediaMetadata(mediaData.build())
-                          .build()
+                val mediaItem =
+                  MediaItem
+                    .Builder()
+                    .setMediaId(file.id)
+                    .setUri(apply(book.id, file.id))
+                    .setTag(book)
+                    .setMediaMetadata(mediaData.build())
+                    .build()
 
-                      ProgressiveMediaSource
-                        .Factory(sourceFactory)
-                        .createMediaSource(mediaItem)
-                    },
-                    onFailure = {
-                      SilenceMediaSource((file.duration * 1000).toLong())
-                    },
-                  )
+                ProgressiveMediaSource
+                  .Factory(sourceFactory)
+                  .createMediaSource(mediaItem)
               }
 
           withContext(Dispatchers.Main) {
@@ -312,37 +304,6 @@ class PlaybackService : MediaSessionService() {
     chapters: List<BookFile>,
     progress: MediaProgress?,
   ) = seek(chapters, progress?.currentTime)
-
-  @OptIn(UnstableApi::class)
-  private fun buildDataSourceFactory(): DataSource.Factory {
-    val requestHeaders =
-      requestHeadersProvider
-        .fetchRequestHeaders()
-        .associate { it.name to it.value }
-
-    val upstreamFactory =
-      OkHttpDataSource
-        .Factory(
-          createOkHttpClient(
-            requestHeaders = requestHeadersProvider.fetchRequestHeaders(),
-            preferences = sharedPreferences,
-          ),
-        ).setDefaultRequestProperties(requestHeaders)
-
-    return CacheDataSource
-      .Factory()
-      .setCache(mediaCache)
-      .setUpstreamDataSourceFactory(DefaultDataSource.Factory(baseContext, upstreamFactory))
-      .setCacheWriteDataSinkFactory(
-        CacheDataSink
-          .Factory()
-          .setCache(mediaCache)
-          .setFragmentSize(CacheDataSink.DEFAULT_FRAGMENT_SIZE),
-      ).setFlags(
-        CacheDataSource.FLAG_BLOCK_ON_CACHE or
-          CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR,
-      )
-  }
 
   companion object {
     const val ACTION_PLAY = "org.grakovne.lissen.player.service.PLAY"

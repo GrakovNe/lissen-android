@@ -11,6 +11,7 @@ import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
+import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import dagger.Module
 import dagger.Provides
@@ -44,9 +45,18 @@ object MediaModule {
     val player =
       ExoPlayer
         .Builder(context)
-        .setSeekBackIncrementMs(10_000)
-        .setSeekForwardIncrementMs(30_000)
         .setHandleAudioBecomingNoisy(true)
+        .setLoadControl(
+          DefaultLoadControl
+            .Builder()
+            .setBufferDurationsMs(
+              DefaultLoadControl.DEFAULT_MIN_BUFFER_MS,
+              DefaultLoadControl.DEFAULT_MAX_BUFFER_MS * 5,
+              DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_MS,
+              DefaultLoadControl.DEFAULT_BUFFER_FOR_PLAYBACK_AFTER_REBUFFER_MS
+            )
+            .build()
+        )
         .setAudioAttributes(
           AudioAttributes
             .Builder()

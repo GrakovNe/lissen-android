@@ -1,6 +1,7 @@
 package org.grakovne.lissen.ui.navigation
 
 import android.net.Uri
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 
 class AppNavigationService(
@@ -8,8 +9,10 @@ class AppNavigationService(
 ) {
   fun showLibrary(clearHistory: Boolean = false) {
     host.navigate(ROUTE_LIBRARY) {
+      val startId = host.graph.findStartDestination().id
+      popUpTo(startId) { inclusive = clearHistory }
+
       launchSingleTop = true
-      popUpTo(host.graph.startDestinationId) { inclusive = clearHistory }
     }
   }
 
@@ -41,7 +44,9 @@ class AppNavigationService(
 
   fun showLogin() {
     host.navigate(ROUTE_LOGIN) {
-      popUpTo(0) { inclusive = true }
+      val startId = host.graph.findStartDestination().id
+      popUpTo(startId) { inclusive = true }
+
       launchSingleTop = true
     }
   }
