@@ -56,8 +56,10 @@ fun PlaylistItemComposable(
     remember(maxDurationText, density, bodySmallStyle) {
       with(density) {
         textMeasurer
-          .measure(AnnotatedString(maxDurationText), style = bodySmallStyle)
-          .size
+          .measure(
+            text = AnnotatedString(maxDurationText),
+            style = bodySmallStyle,
+          ).size
           .width
           .toDp()
       }
