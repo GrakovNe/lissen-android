@@ -17,7 +17,6 @@ import org.grakovne.lissen.channel.common.ChannelCode
 import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.PlaybackVolumeBoost
-import org.grakovne.lissen.common.TimeFormat
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.Library
 import org.grakovne.lissen.lib.domain.LibraryType
@@ -143,17 +142,6 @@ class LissenSharedPreferences
         false -> gson.fromJson(json, type)
       }
     }
-
-    fun saveTimeFormat(timeFormat: TimeFormat) =
-      sharedPreferences.edit {
-        putString(TIME_FORMAT, timeFormat.name)
-      }
-
-    fun getTimeFormat(): TimeFormat =
-      sharedPreferences
-        .getString(TIME_FORMAT, TimeFormat.MM_SS.name)
-        ?.let { TimeFormat.valueOf(it) }
-        ?: TimeFormat.MM_SS
 
     fun savePlaybackVolumeBoost(playbackVolumeBoost: PlaybackVolumeBoost) =
       sharedPreferences.edit {
@@ -366,7 +354,6 @@ class LissenSharedPreferences
 
       private const val KEY_PLAYING_BOOK = "playing_book"
       private const val KEY_VOLUME_BOOST = "volume_boost"
-      private const val TIME_FORMAT = "time_format"
 
       private const val ANDROID_KEYSTORE = "AndroidKeyStore"
       private const val TRANSFORMATION = "AES/GCM/NoPadding"

@@ -176,7 +176,9 @@ fun NavigationBarComposable(
             is DurationTimerOption, CurrentEpisodeTimerOption -> {
               Text(
                 text =
-                  timerRemaining?.toInt()?.formatTime(settingsViewModel.getTimeFormat(), false)
+                  timerRemaining
+                    ?.toInt()
+                    ?.formatTime(false)
                     ?: stringResource(R.string.player_screen_timer_navigation),
                 style = labelStyle,
                 maxLines = 1,
