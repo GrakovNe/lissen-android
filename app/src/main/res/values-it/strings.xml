@@ -9,7 +9,7 @@
     <string name="login_screen_login_input">Accedi</string>
     <string name="login_screen_show_password_hint">Mostra password</string>
     <string name="login_screen_password_input">Password</string>
-    <string name="player_screen_chapter_list_navigation">Capitoli</string>
+    <string name="player_screen_chapter_list_navigation_library">Capitoli</string>
     <string name="player_screen_library_playing_title">Riproduzione capitoli</string>
     <string name="player_screen_podcast_playing_title">Riproduzione episodi</string>
     <string name="player_screen_items_playing_title">Riproduzioni elementi</string>

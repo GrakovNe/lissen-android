@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="library_screen_library_title">Bibliotheek</string>
-    <string name="player_screen_chapter_list_navigation">Hoofdstukken</string>
+    <string name="player_screen_chapter_list_navigation_library">Hoofdstukken</string>
     <string name="settings_screen_connected_as_title">Verbonden als</string>
     <string name="player_screen_now_playing_title_item_of">Item %1$d van %2$s</string>
     <string name="login_screen_title">Verbinden naar server</string>

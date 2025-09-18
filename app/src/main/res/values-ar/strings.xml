@@ -59,7 +59,7 @@
     <string name="settings_screen_library_ordering_creation_date_option">تاريخ الإنشاء</string>
     <string name="login_screen_connect_button_text">اتصال</string>
     <string name="player_screen_playback_speed_navigation">السرعة</string>
-    <string name="player_screen_chapter_list_navigation">الفصول</string>
+    <string name="player_screen_chapter_list_navigation_library">الفصول</string>
     <string name="player_screen_library_playing_title">تشغيل الفصول</string>
     <string name="settings_screen_title">التفضيلات</string>
     <string name="settings_screen_connected_as_title">متصل باسم</string>

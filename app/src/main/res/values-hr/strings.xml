@@ -11,7 +11,7 @@
     <string name="login_screen_password_input">Lozinka</string>
     <string name="login_screen_connect_button_text">Poveži</string>
     <string name="player_screen_playback_speed_navigation">Brzina</string>
-    <string name="player_screen_chapter_list_navigation">Poglavlja</string>
+    <string name="player_screen_chapter_list_navigation_library">Poglavlja</string>
     <string name="player_screen_library_playing_title">Trenutna poglavlja</string>
     <string name="player_screen_podcast_playing_title">Sljedeće epizode</string>
     <string name="player_screen_items_playing_title">Sljedeći elementi</string>

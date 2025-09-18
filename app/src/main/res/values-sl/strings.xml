@@ -10,7 +10,7 @@
     <string name="login_screen_password_input">Geslo</string>
     <string name="login_screen_connect_button_text">Poveži se</string>
     <string name="player_screen_playback_speed_navigation">Hitrost</string>
-    <string name="player_screen_chapter_list_navigation">Poglavja</string>
+    <string name="player_screen_chapter_list_navigation_library">Poglavja</string>
     <string name="player_screen_library_playing_title">Predvajanje poglavij</string>
     <string name="player_screen_podcast_playing_title">Predvajanje epizod</string>
     <string name="player_screen_items_playing_title">Predvajanje elementov</string>

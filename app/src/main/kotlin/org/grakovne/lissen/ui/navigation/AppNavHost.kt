@@ -98,7 +98,13 @@ fun AppNavHost(
           imageLoader = imageLoader,
         )
       }
-      composable("library_screen") {
+      composable(
+        route = "library_screen",
+        enterTransition = { enterTransition },
+        exitTransition = { exitTransition },
+        popEnterTransition = { popEnterTransition },
+        popExitTransition = { popExitTransition },
+      ) {
         LibraryScreen(
           navController = navigationService,
           imageLoader = imageLoader,

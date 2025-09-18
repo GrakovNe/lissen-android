@@ -31,7 +31,6 @@ import org.grakovne.lissen.lib.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.MediaSessionProvider
 import java.io.File
-import java.io.FileOutputStream
 import javax.inject.Inject
 
 @UnstableApi
@@ -230,17 +229,14 @@ class PlaybackService : MediaSessionService() {
     channelProvider
       .fetchBookCover(bookId = book.id)
       .fold(
-        onSuccess = { it },
+        onSuccess = { buffer ->
+          val cache = File.createTempFile(book.id, null, LissenApplication.appContext.cacheDir)
+          cache.outputStream().use { outputStream -> buffer.writeTo(outputStream) }
+
+          cache
+        },
         onFailure = { null },
-      )?.let { buffer ->
-        File
-          .createTempFile(book.id, null, LissenApplication.appContext.cacheDir)
-          .also { file ->
-            file.outputStream().use<FileOutputStream, Unit> { outputStream ->
-              buffer.writeTo(outputStream)
-            }
-          }
-      }
+      )
 
   private fun setTimer(
     delay: Double,

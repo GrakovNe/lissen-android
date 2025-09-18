@@ -12,7 +12,7 @@
     <string name="login_screen_show_password_hint">Mostrar contraseña</string>
     <string name="login_screen_password_input">Contraseña</string>
     <string name="login_screen_connect_button_text">Conectar</string>
-    <string name="player_screen_chapter_list_navigation">Capítulos</string>
+    <string name="player_screen_chapter_list_navigation_library">Capítulos</string>
     <string name="player_screen_library_playing_title">Reproduciendo capítulos</string>
     <string name="player_screen_podcast_playing_title">Reproduciendo episodios</string>
     <string name="settings_screen_connected_as_title">Conectado como</string>
