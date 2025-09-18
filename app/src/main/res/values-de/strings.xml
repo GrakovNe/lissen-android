@@ -61,7 +61,7 @@
     <string name="enable_offline">Nur heruntergeladene</string>
     <string name="the_offline_library_is_empty">Keine Bücher vorhanden</string>
     <string name="color_scheme_dark">Dunkel</string>
-    <string name="player_screen_chapter_list_navigation">Kapitel</string>
+    <string name="player_screen_chapter_list_navigation_library">Kapitel</string>
     <string name="settings_screen_server_connection">Server Verbindung</string>
     <string name="login_error_host_is_down">Server ist nicht erreichbar</string>
     <string name="login_error_username_is_missing">Benutzername fehlt</string>

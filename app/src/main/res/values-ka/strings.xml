@@ -10,7 +10,7 @@
     <string name="login_screen_password_input">პაროლი</string>
     <string name="login_screen_connect_button_text">დაკავშირება</string>
     <string name="player_screen_playback_speed_navigation">სიჩქარე</string>
-    <string name="player_screen_chapter_list_navigation">თავები</string>
+    <string name="player_screen_chapter_list_navigation_library">თავები</string>
     <string name="player_screen_library_playing_title">თავების დაკვრა</string>
     <string name="player_screen_podcast_playing_title">ეპიზოდების დაკვრა</string>
     <string name="player_screen_items_playing_title">ელემენტების დაკვრა</string>

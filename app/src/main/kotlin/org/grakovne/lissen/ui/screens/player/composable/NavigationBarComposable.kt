@@ -89,13 +89,23 @@ fun NavigationBarComposable(
         icon = {
           Icon(
             Icons.AutoMirrored.Rounded.QueueMusic,
-            contentDescription = stringResource(R.string.player_screen_chapter_list_navigation),
+            contentDescription =
+              when (libraryType) {
+                LibraryType.LIBRARY -> stringResource(R.string.player_screen_chapter_list_navigation_library)
+                LibraryType.PODCAST -> stringResource(R.string.player_screen_chapter_list_navigation_podcast)
+                LibraryType.UNKNOWN -> stringResource(R.string.player_screen_chapter_list_navigation_items)
+              },
             modifier = Modifier.size(iconSize),
           )
         },
         label = {
           Text(
-            text = stringResource(R.string.player_screen_chapter_list_navigation),
+            text =
+              when (libraryType) {
+                LibraryType.LIBRARY -> stringResource(R.string.player_screen_chapter_list_navigation_library)
+                LibraryType.PODCAST -> stringResource(R.string.player_screen_chapter_list_navigation_podcast)
+                LibraryType.UNKNOWN -> stringResource(R.string.player_screen_chapter_list_navigation_items)
+              },
             style = labelStyle,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -176,7 +186,9 @@ fun NavigationBarComposable(
             is DurationTimerOption, CurrentEpisodeTimerOption -> {
               Text(
                 text =
-                  timerRemaining?.toInt()?.formatTime(settingsViewModel.getTimeFormat(), false)
+                  timerRemaining
+                    ?.toInt()
+                    ?.formatTime(false)
                     ?: stringResource(R.string.player_screen_timer_navigation),
                 style = labelStyle,
                 maxLines = 1,

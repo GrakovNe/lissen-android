@@ -75,12 +75,12 @@ fun TrackControlPlaceholderComposable(
           horizontalArrangement = Arrangement.SpaceBetween,
         ) {
           Text(
-            text = 0.formatTime(settingsViewModel.getTimeFormat(), true),
+            text = 0.formatTime(true),
             style = typography.bodySmall,
             color = colorScheme.onBackground.copy(alpha = 0.6f),
           )
           Text(
-            text = 0.formatTime(settingsViewModel.getTimeFormat(), true),
+            text = 0.formatTime(true),
             style = typography.bodySmall,
             color = colorScheme.onBackground.copy(alpha = 0.6f),
           )

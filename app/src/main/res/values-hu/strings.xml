@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="player_screen_chapter_list_navigation">Fejezetek</string>
+    <string name="player_screen_chapter_list_navigation_library">Fejezetek</string>
     <string name="library_screen_library_title">Könyvtár</string>
     <string name="login_screen_server_url_input">Kiszolgáló URL</string>
     <string name="library_screen_continue_listening_title">Hallgatás folytatása</string>

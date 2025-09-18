@@ -23,7 +23,7 @@ import javax.inject.Singleton
 class WidgetPlaybackController
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
+    @ApplicationContext context: Context,
     private val mediaRepository: MediaRepository,
   ) {
     private var playbackReadyAction: () -> Unit = {}

@@ -26,12 +26,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.settings.composable.PlaybackVolumeBoostSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
-import org.grakovne.lissen.ui.screens.settings.composable.TimeFormatSettingsComposable
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -85,8 +84,6 @@ fun AdvancedSettingsComposable(
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
           PlaybackVolumeBoostSettingsComposable(viewModel)
-
-          TimeFormatSettingsComposable(viewModel)
 
           AdvancedSettingsItemComposable(
             title = stringResource(R.string.settings_screen_seek_time_title),

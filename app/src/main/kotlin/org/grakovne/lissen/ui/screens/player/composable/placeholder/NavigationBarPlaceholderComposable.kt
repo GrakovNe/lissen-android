@@ -23,10 +23,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.grakovne.lissen.R
+import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.ui.icons.TimerPlay
 
 @Composable
-fun NavigationBarPlaceholderComposable(modifier: Modifier = Modifier) {
+fun NavigationBarPlaceholderComposable(
+  modifier: Modifier = Modifier,
+  libraryType: LibraryType,
+) {
   Surface(
     shadowElevation = 4.dp,
     modifier = modifier.height(64.dp),
@@ -43,13 +47,23 @@ fun NavigationBarPlaceholderComposable(modifier: Modifier = Modifier) {
         icon = {
           Icon(
             Icons.AutoMirrored.Rounded.QueueMusic,
-            contentDescription = stringResource(R.string.player_screen_chapter_list_navigation),
+            contentDescription =
+              when (libraryType) {
+                LibraryType.LIBRARY -> stringResource(R.string.player_screen_chapter_list_navigation_library)
+                LibraryType.PODCAST -> stringResource(R.string.player_screen_chapter_list_navigation_podcast)
+                LibraryType.UNKNOWN -> stringResource(R.string.player_screen_chapter_list_navigation_items)
+              },
             modifier = Modifier.size(iconSize),
           )
         },
         label = {
           Text(
-            text = stringResource(R.string.player_screen_chapter_list_navigation),
+            text =
+              when (libraryType) {
+                LibraryType.LIBRARY -> stringResource(R.string.player_screen_chapter_list_navigation_library)
+                LibraryType.PODCAST -> stringResource(R.string.player_screen_chapter_list_navigation_podcast)
+                LibraryType.UNKNOWN -> stringResource(R.string.player_screen_chapter_list_navigation_items)
+              },
             style = labelStyle,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,

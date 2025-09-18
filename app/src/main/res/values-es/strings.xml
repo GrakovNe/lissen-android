@@ -12,7 +12,7 @@
     <string name="login_screen_show_password_hint">Mostrar contraseña</string>
     <string name="login_screen_password_input">Contraseña</string>
     <string name="login_screen_connect_button_text">Conectar</string>
-    <string name="player_screen_chapter_list_navigation">Capítulos</string>
+    <string name="player_screen_chapter_list_navigation_library">Capítulos</string>
     <string name="player_screen_library_playing_title">Reproduciendo capítulos</string>
     <string name="player_screen_podcast_playing_title">Reproduciendo episodios</string>
     <string name="settings_screen_connected_as_title">Conectado como</string>
@@ -109,4 +109,9 @@
     <string name="settings_screen_library_ordering_creation_date_option">Fecha de creación</string>
     <string name="settings_screen_library_ordering_modification_date_option">Fecha de actualización</string>
     <string name="settings_screen_library_ordering_title">Ordenar biblioteca</string>
+    <string name="settings_screen_cached_items_title">Descargas</string>
+    <string name="volume_boost_low">Bajo</string>
+    <string name="volume_boost_medium">Medio</string>
+    <string name="volume_boost_high">Alto</string>
+    <string name="settings_screen_advanced_preferences_title">Preferencias avanzadas</string>
 </resources>

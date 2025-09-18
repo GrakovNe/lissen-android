@@ -101,6 +101,13 @@ fun AppNavHost(
         )
       }
       composable(
+        route = "library_screen",
+        enterTransition = { enterTransition },
+        exitTransition = { exitTransition },
+        popEnterTransition = { popEnterTransition },
+        popExitTransition = { popExitTransition },
+      ) {
+      composable(
         route = "settings_screen/cache_settings",
         enterTransition = { enterTransition },
         exitTransition = { exitTransition },

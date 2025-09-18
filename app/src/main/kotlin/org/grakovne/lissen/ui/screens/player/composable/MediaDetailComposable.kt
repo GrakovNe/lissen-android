@@ -33,7 +33,7 @@ import androidx.core.text.HtmlCompat
 import org.grakovne.lissen.R
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.LibraryType
-import org.grakovne.lissen.ui.extensions.formatFully
+import org.grakovne.lissen.ui.extensions.formatTime
 import org.grakovne.lissen.ui.screens.player.InfoRow
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 import org.grakovne.lissen.viewmodel.SettingsViewModel
@@ -142,13 +142,13 @@ fun MediaDetailComposable(
               InfoRow(
                 icon = Icons.Filled.AvTimer,
                 label = stringResource(R.string.playing_item_details_duration),
-                textValue = it.toInt().formatFully(),
+                textValue = it.toInt().formatTime(),
               )
 
               InfoRow(
                 icon = Icons.Filled.HourglassEmpty,
                 label = stringResource(R.string.playing_item_details_time_remaining),
-                textValue = (it - totalPosition).toInt().formatFully(),
+                textValue = (it - totalPosition).toInt().formatTime(),
               )
             }
         }

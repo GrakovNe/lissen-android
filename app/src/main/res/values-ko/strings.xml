@@ -10,7 +10,7 @@
     <string name="login_screen_password_input">암호</string>
     <string name="login_screen_connect_button_text">연결</string>
     <string name="player_screen_playback_speed_navigation">속도</string>
-    <string name="player_screen_chapter_list_navigation">챕터</string>
+    <string name="player_screen_chapter_list_navigation_library">챕터</string>
     <string name="player_screen_library_playing_title">재생중인 챕터</string>
     <string name="player_screen_podcast_playing_title">재생중인 에피소드</string>
     <string name="player_screen_items_playing_title">재생중인 아이템</string>

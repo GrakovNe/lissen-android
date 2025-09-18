@@ -29,7 +29,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
-import org.grakovne.lissen.common.TimeFormat
 import org.grakovne.lissen.lib.domain.BookChapterState
 import org.grakovne.lissen.lib.domain.PlayingChapter
 import org.grakovne.lissen.ui.extensions.formatTime
@@ -42,21 +41,23 @@ fun PlaylistItemComposable(
   modifier: Modifier,
   maxDuration: Double,
   isCached: Boolean,
-  timeFormat: TimeFormat,
 ) {
   val fontScale = LocalDensity.current.fontScale
   val textMeasurer = rememberTextMeasurer()
   val density = LocalDensity.current
 
-  val maxDurationText = remember(maxDuration) { maxDuration.toInt().formatTime(timeFormat, false) }
+  val forceLeadingHours = maxDuration >= 60 * 60
+  val maxDurationText = remember(maxDuration) { maxDuration.toInt().formatTime(forceLeadingHours) }
   val bodySmallStyle = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.SemiBold)
 
   val durationColumnWidth =
     remember(maxDurationText, density, bodySmallStyle) {
       with(density) {
         textMeasurer
-          .measure(AnnotatedString(maxDurationText), style = bodySmallStyle)
-          .size
+          .measure(
+            text = AnnotatedString(maxDurationText),
+            style = bodySmallStyle,
+          ).size
           .width
           .toDp()
       }
@@ -127,7 +128,7 @@ fun PlaylistItemComposable(
     }
 
     Text(
-      text = track.duration.toInt().formatTime(timeFormat, false),
+      text = track.duration.toInt().formatTime(forceLeadingHours),
       style = MaterialTheme.typography.bodySmall,
       modifier = Modifier.width(durationColumnWidth),
       textAlign = TextAlign.End,
