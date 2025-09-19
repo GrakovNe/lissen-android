@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.map
 import org.grakovne.lissen.R
+import org.grakovne.lissen.lib.domain.CurrentItemDownloadOption
 import org.grakovne.lissen.lib.domain.DownloadOption
 import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.NumberItemDownloadOption
@@ -91,6 +92,7 @@ private fun DownloadOption?.toSettingsItem(
 private val DownloadOptions =
   listOf(
     null,
+    CurrentItemDownloadOption,
     NumberItemDownloadOption(5),
     NumberItemDownloadOption(10),
     RemainingItemsDownloadOption,

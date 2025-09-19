@@ -162,8 +162,7 @@ fun SeekTimeOptionComposable(
       )
       Text(
         text = currentOption.toItem(context),
-        style =
-          typography.bodyMedium.copy(),
+        style = typography.bodyMedium,
       )
     }
   }
