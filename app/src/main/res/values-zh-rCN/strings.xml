@@ -126,4 +126,6 @@
     <string name="settings_screen_crash_report_description">应用崩溃时发送报告</string>
     <string name="settings_screen_advanced_preferences_description">控制播放进度、网络代理或声音</string>
     <string name="login_error_lissen_not_found">未找到该 URL，请检查你的服务器设置</string>
+    <string name="player_screen_chapter_list_navigation_podcast">剧集</string>
+    <string name="player_screen_chapter_list_navigation_items">项目</string>
 </resources>
