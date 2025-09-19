@@ -21,7 +21,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
-import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItem
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItemComposable
@@ -33,6 +32,8 @@ fun NetworkTypeAutoCacheSettingsComposable(viewModel: SettingsViewModel) {
   var networkTypeExpanded by remember { mutableStateOf(false) }
   val preferredDownloadOption by viewModel.preferredAutoDownloadOption.observeAsState()
   val preferredNetworkType by viewModel.preferredAutoDownloadNetworkType.observeAsState()
+
+  val enabled = preferredDownloadOption != null
 
   Row(
     modifier =
@@ -48,11 +49,20 @@ fun NetworkTypeAutoCacheSettingsComposable(viewModel: SettingsViewModel) {
         text = stringResource(R.string.download_settings_network_type_title),
         style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
         modifier = Modifier.padding(bottom = 4.dp),
+        color =
+          when (enabled) {
+            true -> colorScheme.onBackground
+            false -> colorScheme.onBackground.copy(alpha = 0.4f)
+          },
       )
       Text(
         text = preferredNetworkType?.toItem(context)?.name ?: "",
         style = typography.bodyMedium,
-        color = colorScheme.onSurfaceVariant,
+        color =
+          when (enabled) {
+            true -> colorScheme.onSurfaceVariant
+            false -> colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+          },
       )
     }
   }

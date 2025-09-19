@@ -79,7 +79,7 @@ fun CacheSettingsScreen(
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
           AutoCacheSettingsComposable(viewModel)
-          
+
           NetworkTypeAutoCacheSettingsComposable(viewModel)
 
           AdvancedSettingsItemComposable(

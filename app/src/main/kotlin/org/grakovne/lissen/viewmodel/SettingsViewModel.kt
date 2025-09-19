@@ -44,7 +44,7 @@ class SettingsViewModel
 
     private val _preferredColorScheme = MutableLiveData(preferences.getColorScheme())
     val preferredColorScheme = _preferredColorScheme
-  
+
     private val _preferredAutoDownloadNetworkType = MutableLiveData(preferences.getAutoDownloadNetworkType())
     val preferredAutoDownloadNetworkType = _preferredAutoDownloadNetworkType
 
@@ -121,14 +121,13 @@ class SettingsViewModel
       _preferredLibrary.postValue(library)
       preferences.savePreferredLibrary(library)
     }
-  
-  fun preferAutoDownloadNetworkType(type: NetworkTypeAutoCache) {
-    _preferredAutoDownloadNetworkType.postValue(type)
-    preferences.saveAutoDownloadNetworkType(type)
-  }
-  
-  
-  fun preferLibraryOrdering(configuration: LibraryOrderingConfiguration) {
+
+    fun preferAutoDownloadNetworkType(type: NetworkTypeAutoCache) {
+      _preferredAutoDownloadNetworkType.postValue(type)
+      preferences.saveAutoDownloadNetworkType(type)
+    }
+
+    fun preferLibraryOrdering(configuration: LibraryOrderingConfiguration) {
       _preferredLibraryOrdering.postValue(configuration)
       preferences.saveLibraryOrdering(configuration)
     }

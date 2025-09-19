@@ -157,20 +157,19 @@ class LissenSharedPreferences
         .getString(KEY_VOLUME_BOOST, PlaybackVolumeBoost.DISABLED.name)
         ?.let { PlaybackVolumeBoost.valueOf(it) }
         ?: PlaybackVolumeBoost.DISABLED
-  
-  fun saveAutoDownloadNetworkType(networkTypeAutoCache: NetworkTypeAutoCache) =
-    sharedPreferences.edit {
-      putString(KEY_PREFERRED_AUTO_DOWNLOAD_NETWORK_TYPE, networkTypeAutoCache.name)
-    }
-  
-  fun getAutoDownloadNetworkType(): NetworkTypeAutoCache =
-    sharedPreferences
-      .getString(KEY_PREFERRED_AUTO_DOWNLOAD_NETWORK_TYPE, NetworkTypeAutoCache.WIFI_ONLY.name)
-      ?.let { NetworkTypeAutoCache.valueOf(it) }
-      ?: NetworkTypeAutoCache.WIFI_ONLY
-  
-  
-  fun saveColorScheme(colorScheme: ColorScheme) =
+
+    fun saveAutoDownloadNetworkType(networkTypeAutoCache: NetworkTypeAutoCache) =
+      sharedPreferences.edit {
+        putString(KEY_PREFERRED_AUTO_DOWNLOAD_NETWORK_TYPE, networkTypeAutoCache.name)
+      }
+
+    fun getAutoDownloadNetworkType(): NetworkTypeAutoCache =
+      sharedPreferences
+        .getString(KEY_PREFERRED_AUTO_DOWNLOAD_NETWORK_TYPE, NetworkTypeAutoCache.WIFI_ONLY.name)
+        ?.let { NetworkTypeAutoCache.valueOf(it) }
+        ?: NetworkTypeAutoCache.WIFI_ONLY
+
+    fun saveColorScheme(colorScheme: ColorScheme) =
       sharedPreferences.edit {
         putString(KEY_PREFERRED_COLOR_SCHEME, colorScheme.name)
       }
