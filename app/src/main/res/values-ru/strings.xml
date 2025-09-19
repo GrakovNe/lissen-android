@@ -134,5 +134,4 @@
     <string name="settings_download_automatically_title">Скачивать автоматически</string>
     <string name="download_settings_title">Загрузки</string>
     <string name="download_settings_description">Управляйте скачиванием и загруженным контентом</string>
-
 </resources>
