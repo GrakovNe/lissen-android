@@ -42,7 +42,7 @@ fun CacheSettingsScreen(
       TopAppBar(
         title = {
           Text(
-            text = "Cache preferences",
+            text = stringResource(R.string.download_settings_title),
             style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
             color = colorScheme.onSurface,
           )
