@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import org.grakovne.lissen.channel.common.ChannelCode
 import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
+import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.common.PlaybackVolumeBoost
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.DownloadOption
@@ -156,8 +157,20 @@ class LissenSharedPreferences
         .getString(KEY_VOLUME_BOOST, PlaybackVolumeBoost.DISABLED.name)
         ?.let { PlaybackVolumeBoost.valueOf(it) }
         ?: PlaybackVolumeBoost.DISABLED
-
-    fun saveColorScheme(colorScheme: ColorScheme) =
+  
+  fun saveAutoDownloadNetworkType(networkTypeAutoCache: NetworkTypeAutoCache) =
+    sharedPreferences.edit {
+      putString(KEY_PREFERRED_AUTO_DOWNLOAD_NETWORK_TYPE, networkTypeAutoCache.name)
+    }
+  
+  fun getAutoDownloadNetworkType(): NetworkTypeAutoCache =
+    sharedPreferences
+      .getString(KEY_PREFERRED_AUTO_DOWNLOAD_NETWORK_TYPE, NetworkTypeAutoCache.WIFI_ONLY.name)
+      ?.let { NetworkTypeAutoCache.valueOf(it) }
+      ?: NetworkTypeAutoCache.WIFI_ONLY
+  
+  
+  fun saveColorScheme(colorScheme: ColorScheme) =
       sharedPreferences.edit {
         putString(KEY_PREFERRED_COLOR_SCHEME, colorScheme.name)
       }
@@ -362,6 +375,7 @@ class LissenSharedPreferences
 
       private const val KEY_PREFERRED_COLOR_SCHEME = "preferred_color_scheme"
       private const val KEY_PREFERRED_AUTO_DOWNLOAD = "preferred_auto_download"
+      private const val KEY_PREFERRED_AUTO_DOWNLOAD_NETWORK_TYPE = "preferred_auto_download_network_type"
       private const val KEY_PREFERRED_LIBRARY_ORDERING = "preferred_library_ordering"
 
       private const val KEY_CUSTOM_HEADERS = "custom_headers"

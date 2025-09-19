@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
+import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.common.PlaybackVolumeBoost
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.lib.domain.DownloadOption
@@ -43,6 +44,9 @@ class SettingsViewModel
 
     private val _preferredColorScheme = MutableLiveData(preferences.getColorScheme())
     val preferredColorScheme = _preferredColorScheme
+  
+    private val _preferredAutoDownloadNetworkType = MutableLiveData(preferences.getAutoDownloadNetworkType())
+    val preferredAutoDownloadNetworkType = _preferredAutoDownloadNetworkType
 
     private val _preferredAutoDownloadOption = MutableLiveData(preferences.getAutoDownloadOption())
     val preferredAutoDownloadOption = _preferredAutoDownloadOption
@@ -117,8 +121,14 @@ class SettingsViewModel
       _preferredLibrary.postValue(library)
       preferences.savePreferredLibrary(library)
     }
-
-    fun preferLibraryOrdering(configuration: LibraryOrderingConfiguration) {
+  
+  fun preferAutoDownloadNetworkType(type: NetworkTypeAutoCache) {
+    _preferredAutoDownloadNetworkType.postValue(type)
+    preferences.saveAutoDownloadNetworkType(type)
+  }
+  
+  
+  fun preferLibraryOrdering(configuration: LibraryOrderingConfiguration) {
       _preferredLibraryOrdering.postValue(configuration)
       preferences.saveLibraryOrdering(configuration)
     }

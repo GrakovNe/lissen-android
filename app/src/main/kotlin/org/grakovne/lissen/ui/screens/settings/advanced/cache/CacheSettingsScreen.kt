@@ -79,6 +79,8 @@ fun CacheSettingsScreen(
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
           AutoCacheSettingsComposable(viewModel)
+          
+          NetworkTypeAutoCacheSettingsComposable(viewModel)
 
           AdvancedSettingsItemComposable(
             title = stringResource(R.string.settings_screen_cached_items_title),
