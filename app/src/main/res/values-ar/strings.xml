@@ -115,4 +115,16 @@
     <string name="offline_cache_is_empty">لم يتم حفظ أي محتوى</string>
     <string name="downloads_menu_download_option_remaining_items">العناصر المتبقية</string>
     <string name="settings_screen_cached_items_title">التنزيلات</string>
+    <string name="player_screen_chapter_list_navigation_podcast">الحلقات</string>
+    <string name="player_screen_chapter_list_navigation_items">العناصر</string>
+    <string name="volume_boost_disabled">معطل</string>
+    <string name="volume_boost_low">منخفض</string>
+    <string name="volume_boost_medium">متوسط</string>
+    <string name="volume_boost_high">مرتفع</string>
+    <string name="playing_item_details_time_remaining">الوقت المتبقي</string>
+    <string name="settings_screen_advanced_preferences_title">الإعدادات المتقدمة</string>
+    <string name="settings_screen_crash_report_description">ارسال تقارير الاعطال</string>
+    <string name="login_error_lissen_not_found">رابط URL غير موجود. تأكد من إعدادات الخادم</string>
+    <string name="settings_screen_crash_report_title">إبلاغ التعطل</string>
+    <string name="volume_boost_title">الصوت المُعزَّز</string>
 </resources>
