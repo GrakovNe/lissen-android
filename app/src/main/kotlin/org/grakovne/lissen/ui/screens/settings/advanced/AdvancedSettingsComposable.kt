@@ -47,7 +47,7 @@ fun AdvancedSettingsComposable(
       TopAppBar(
         title = {
           Text(
-            text = stringResource(R.string.settings_screen_title),
+            text = stringResource(R.string.settings_screen_advanced_preferences_title),
             style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
             color = colorScheme.onSurface,
           )

@@ -119,8 +119,8 @@
     <string name="playing_item_details_narrator">Чтец</string>
     <string name="playing_item_details_duration">Длительность</string>
     <string name="offline_cache_is_empty">Загруженного контента нет</string>
-    <string name="settings_screen_cached_items_title">Загрузки</string>
-    <string name="settings_screen_cached_items_hint">Управляйте загруженным контентом</string>
+    <string name="settings_screen_cached_items_title">Загруженный контент</string>
+    <string name="settings_screen_cached_items_hint">Управляйте скачанными книгами и подкастами</string>
     <string name="volume_boost_disabled">Отключено</string>
     <string name="volume_boost_low">Небольшое увеличение</string>
     <string name="volume_boost_medium">Среднее увеличение</string>
@@ -132,7 +132,7 @@
     <string name="settings_screen_crash_report_title">Отчёты о сбоях</string>
     <string name="settings_screen_crash_report_description">Отправлять отчёт при сбое приложения</string>
     <string name="settings_download_automatically_title">Автоматическое скачивание</string>
-    <string name="download_settings_title">Настройки загрузки</string>
+    <string name="download_settings_title">Загрузки</string>
     <string name="download_settings_description">Управляйте скачиванием и загруженным контентом</string>
 
 </resources>
