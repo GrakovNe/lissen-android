@@ -131,7 +131,7 @@
     <string name="settings_screen_advanced_preferences_description">Настройте перемотку, прокси-заголовки и звук</string>
     <string name="settings_screen_crash_report_title">Отчёты о сбоях</string>
     <string name="settings_screen_crash_report_description">Отправлять отчёт при сбое приложения</string>
-    <string name="settings_download_automatically_title">Автоматическое скачивание</string>
+    <string name="settings_download_automatically_title">Скачивать автоматически</string>
     <string name="download_settings_title">Загрузки</string>
     <string name="download_settings_description">Управляйте скачиванием и загруженным контентом</string>
 
