@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.annotation.OptIn
 import androidx.lifecycle.asFlow
-import androidx.lifecycle.distinctUntilChanged
 import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -12,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.NetworkQualityService
 import org.grakovne.lissen.common.NetworkTypeAutoCache
@@ -41,23 +41,33 @@ class ContentAutoCachingService
       scope.launch {
         combine(
           mediaRepository.playingBook.asFlow().distinctUntilChanged(),
+          mediaRepository.isPlaying
+            .asFlow()
+            .filterNotNull()
+            .distinctUntilChanged(),
           mediaRepository.currentChapterIndex.asFlow().distinctUntilChanged(),
-        ) { playingItem: DetailedItem?, _: Int? -> playingItem }
-          .collectLatest { updatePlaybackCache(it) }
+        ) { playingItem: DetailedItem?, isPlaying: Boolean, _: Int? -> playingItem to isPlaying }
+          .collectLatest { (playingItem, isPlaying) -> updatePlaybackCache(playingItem, isPlaying) }
       }
     }
 
-    private fun updatePlaybackCache(playingItem: DetailedItem?) {
+    private fun updatePlaybackCache(
+      playingItem: DetailedItem?,
+      isPlaying: Boolean,
+    ) {
       val playbackCacheOption = sharedPreferences.getAutoDownloadOption() ?: return
-      val currentNetworkType = networkQualityService.getCurrentNetworkType() ?: return
+      val isNetworkAvailable = networkQualityService.isNetworkAvailable()
+      val currentNetwork = networkQualityService.getCurrentNetworkType() ?: return
 
       val playingMediaItem = playingItem ?: return
-      val playbackCacheNetworkType = sharedPreferences.getAutoDownloadNetworkType()
+      val preferredNetwork = sharedPreferences.getAutoDownloadNetworkType()
       val currentTotalPosition = mediaRepository.totalPosition.value ?: return
 
       val isForceCache = sharedPreferences.isForceCache()
 
-      if (isForceCache || validNetworkType(currentNetworkType, playbackCacheNetworkType).not()) {
+      val cacheAvailable = isNetworkAvailable && isPlaying && isForceCache.not() && validNetworkType(currentNetwork, preferredNetwork)
+
+      if (cacheAvailable.not()) {
         return
       }
 
