@@ -240,7 +240,7 @@ fun NavigationBarComposable(
             playerViewModel.book.value?.let {
               contentCachingModelView
                 .cache(
-                  mediaItemId = it.id,
+                  mediaItem = it,
                   currentPosition = playerViewModel.totalPosition.value ?: 0.0,
                   option = option,
                 )
