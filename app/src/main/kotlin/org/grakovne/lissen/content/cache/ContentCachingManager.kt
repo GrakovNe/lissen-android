@@ -1,6 +1,7 @@
 package org.grakovne.lissen.content.cache
 
 import android.util.Log
+import androidx.core.net.toFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
@@ -38,7 +39,6 @@ class ContentCachingManager
       currentTotalPosition: Double,
     ) = flow {
       val context = coroutineContext
-      emit(CacheState(CacheStatus.Caching))
 
       val requestedChapters =
         calculateRequestedChapters(
@@ -47,7 +47,15 @@ class ContentCachingManager
           currentTotalPosition = currentTotalPosition,
         )
 
-      val requestedFiles = findRequestedFiles(mediaItem, requestedChapters)
+      val requestedFiles =
+        findRequestedFiles(mediaItem, requestedChapters)
+          .filterNot { bookRepository.provideFileUri(mediaItem.id, it.id).toFile().exists() }
+
+      if (requestedFiles.isEmpty()) {
+        return@flow
+      }
+
+      emit(CacheState(CacheStatus.Caching))
 
       val mediaCachingResult =
         cacheBookMedia(
