@@ -67,9 +67,6 @@
     <string name="downloads_menu_download_option_current_chapter">Current chapter</string>
     <string name="downloads_menu_download_option_current_episode">Current episode</string>
     <string name="downloads_menu_download_option_current_item">Current item</string>
-    <string name="downloads_menu_download_option_next_chapter">Following chapter</string>
-    <string name="downloads_menu_download_option_next_episode">Following episode</string>
-    <string name="downloads_menu_download_option_next_item">Following item</string>
     <string name="downloads_menu_download_option_entire_book">Entire book</string>
     <string name="downloads_menu_download_option_entire_podcast">Entire podcast</string>
     <string name="downloads_menu_download_option_entire_item">Entire item</string>

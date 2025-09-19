@@ -63,9 +63,6 @@
     <string name="downloads_menu_download_option_current_chapter">Текущую главу</string>
     <string name="downloads_menu_download_option_current_episode">Текущий выпуск</string>
     <string name="downloads_menu_download_option_current_item">Текущий элемент</string>
-    <string name="downloads_menu_download_option_next_chapter">Следующую главу</string>
-    <string name="downloads_menu_download_option_next_episode">Следующий выпуск</string>
-    <string name="downloads_menu_download_option_next_item">Следующий элемент</string>
     <string name="downloads_menu_download_option_entire_book">Всю книгу</string>
     <string name="downloads_menu_download_option_entire_podcast">Все выпуски</string>
     <string name="downloads_menu_download_option_entire_item">Все элементы</string>

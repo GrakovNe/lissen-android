@@ -24,7 +24,6 @@ import androidx.lifecycle.map
 import org.grakovne.lissen.R
 import org.grakovne.lissen.lib.domain.DownloadOption
 import org.grakovne.lissen.lib.domain.LibraryType
-import org.grakovne.lissen.lib.domain.NextItemDownloadOption
 import org.grakovne.lissen.lib.domain.NumberItemDownloadOption
 import org.grakovne.lissen.lib.domain.RemainingItemsDownloadOption
 import org.grakovne.lissen.lib.domain.makeDownloadOption
@@ -92,7 +91,6 @@ private fun DownloadOption?.toSettingsItem(
 private val DownloadOptions =
   listOf(
     null,
-    NextItemDownloadOption,
     NumberItemDownloadOption(5),
     NumberItemDownloadOption(10),
     RemainingItemsDownloadOption,

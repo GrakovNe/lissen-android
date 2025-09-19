@@ -6,7 +6,6 @@ import org.grakovne.lissen.lib.domain.AllItemsDownloadOption
 import org.grakovne.lissen.lib.domain.CurrentItemDownloadOption
 import org.grakovne.lissen.lib.domain.DownloadOption
 import org.grakovne.lissen.lib.domain.LibraryType
-import org.grakovne.lissen.lib.domain.NextItemDownloadOption
 import org.grakovne.lissen.lib.domain.NumberItemDownloadOption
 import org.grakovne.lissen.lib.domain.RemainingItemsDownloadOption
 
@@ -24,13 +23,6 @@ fun DownloadOption?.makeText(
         LibraryType.UNKNOWN -> context.getString(R.string.downloads_menu_download_option_current_item)
       }
     }
-
-    NextItemDownloadOption ->
-      when (libraryType) {
-        LibraryType.LIBRARY -> context.getString(R.string.downloads_menu_download_option_next_chapter)
-        LibraryType.PODCAST -> context.getString(R.string.downloads_menu_download_option_next_episode)
-        LibraryType.UNKNOWN -> context.getString(R.string.downloads_menu_download_option_next_item)
-      }
 
     AllItemsDownloadOption -> {
       when (libraryType) {
