@@ -3,14 +3,21 @@ package org.grakovne.lissen.content.cache
 import android.content.Context
 import android.content.Intent
 import androidx.annotation.OptIn
-import androidx.media3.common.Player
+import androidx.lifecycle.asFlow
+import androidx.lifecycle.distinctUntilChanged
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.NetworkQualityService
 import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.lib.domain.ContentCachingTask
+import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.NetworkType
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.MediaRepository
@@ -25,30 +32,26 @@ class ContentAutoCachingService
   constructor(
     @ApplicationContext private val context: Context,
     private val mediaRepository: MediaRepository,
-    private val exoPlayer: ExoPlayer,
     private val sharedPreferences: LissenSharedPreferences,
     private val networkQualityService: NetworkQualityService,
   ) : RunningComponent {
+    private val scope = CoroutineScope(Dispatchers.IO)
+
     override fun onCreate() {
-      exoPlayer.addListener(
-        object : Player.Listener {
-          override fun onEvents(
-            player: Player,
-            events: Player.Events,
-          ) {
-            if (cacheEvents.any(events::contains)) {
-              updatePlaybackCache()
-            }
-          }
-        },
-      )
+      scope.launch {
+        combine(
+          mediaRepository.playingBook.asFlow().distinctUntilChanged(),
+          mediaRepository.currentChapterIndex.asFlow().distinctUntilChanged(),
+        ) { playingItem: DetailedItem?, _: Int? -> playingItem }
+          .collectLatest { updatePlaybackCache(it) }
+      }
     }
 
-    private fun updatePlaybackCache() {
+    private fun updatePlaybackCache(playingItem: DetailedItem?) {
       val playbackCacheOption = sharedPreferences.getAutoDownloadOption() ?: return
       val currentNetworkType = networkQualityService.getCurrentNetworkType() ?: return
 
-      val playingMediaItem = mediaRepository.playingBook.value ?: return
+      val playingMediaItem = playingItem ?: return
       val playbackCacheNetworkType = sharedPreferences.getAutoDownloadNetworkType()
       val currentTotalPosition = mediaRepository.totalPosition.value ?: return
 
@@ -88,12 +91,5 @@ class ContentAutoCachingService
 
     companion object {
       private const val TAG = "ContentAutoCachingService"
-
-      private val cacheEvents =
-        listOf(
-          Player.EVENT_MEDIA_ITEM_TRANSITION,
-          Player.EVENT_PLAYBACK_STATE_CHANGED,
-          Player.EVENT_IS_PLAYING_CHANGED,
-        )
     }
   }
