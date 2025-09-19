@@ -4,6 +4,7 @@ import org.grakovne.lissen.lib.domain.AllItemsDownloadOption
 import org.grakovne.lissen.lib.domain.CurrentItemDownloadOption
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.DownloadOption
+import org.grakovne.lissen.lib.domain.NextItemDownloadOption
 import org.grakovne.lissen.lib.domain.NumberItemDownloadOption
 import org.grakovne.lissen.lib.domain.PlayingChapter
 import org.grakovne.lissen.lib.domain.RemainingItemsDownloadOption
@@ -29,5 +30,7 @@ fun calculateRequestedChapters(
         chapterIndex.coerceIn(0, book.chapters.size),
         book.chapters.size,
       )
+
+    NextItemDownloadOption -> listOfNotNull(book.chapters.getOrNull(chapterIndex + 1))
   }
 }

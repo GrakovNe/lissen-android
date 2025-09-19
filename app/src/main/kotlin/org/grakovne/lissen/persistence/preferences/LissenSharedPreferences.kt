@@ -18,10 +18,13 @@ import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.PlaybackVolumeBoost
 import org.grakovne.lissen.lib.domain.DetailedItem
+import org.grakovne.lissen.lib.domain.DownloadOption
 import org.grakovne.lissen.lib.domain.Library
 import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.SeekTime
 import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
+import org.grakovne.lissen.lib.domain.makeDownloadOption
+import org.grakovne.lissen.lib.domain.makeId
 import java.security.KeyStore
 import java.util.UUID
 import javax.crypto.Cipher
@@ -164,6 +167,16 @@ class LissenSharedPreferences
         .getString(KEY_PREFERRED_COLOR_SCHEME, ColorScheme.FOLLOW_SYSTEM.name)
         ?.let { ColorScheme.valueOf(it) }
         ?: ColorScheme.FOLLOW_SYSTEM
+
+    fun saveAutoDownloadOption(option: DownloadOption?) =
+      sharedPreferences.edit {
+        putString(KEY_PREFERRED_AUTO_DOWNLOAD, option?.makeId())
+      }
+
+    fun getAutoDownloadOption(): DownloadOption? =
+      sharedPreferences
+        .getString(KEY_PREFERRED_AUTO_DOWNLOAD, null)
+        ?.makeDownloadOption()
 
     fun savePlaybackSpeed(factor: Float) = sharedPreferences.edit { putFloat(KEY_PREFERRED_PLAYBACK_SPEED, factor) }
 
@@ -348,6 +361,7 @@ class LissenSharedPreferences
       private const val KEY_PREFERRED_SEEK_TIME = "preferred_seek_time"
 
       private const val KEY_PREFERRED_COLOR_SCHEME = "preferred_color_scheme"
+      private const val KEY_PREFERRED_AUTO_DOWNLOAD = "preferred_auto_download"
       private const val KEY_PREFERRED_LIBRARY_ORDERING = "preferred_library_ordering"
 
       private const val KEY_CUSTOM_HEADERS = "custom_headers"

@@ -59,9 +59,13 @@
     <string name="downloads_menu_download_book">Скачать</string>
     <string name="downloads_menu_download_podcast">Скачать</string>
     <string name="downloads_menu_download_unknown">Загрузки</string>
+    <string name="downloads_menu_download_option_disable">Выключено</string>
     <string name="downloads_menu_download_option_current_chapter">Текущую главу</string>
     <string name="downloads_menu_download_option_current_episode">Текущий выпуск</string>
     <string name="downloads_menu_download_option_current_item">Текущий элемент</string>
+    <string name="downloads_menu_download_option_next_chapter">Следующую главу</string>
+    <string name="downloads_menu_download_option_next_episode">Следующий выпуск</string>
+    <string name="downloads_menu_download_option_next_item">Следующий элемент</string>
     <string name="downloads_menu_download_option_entire_book">Всю книгу</string>
     <string name="downloads_menu_download_option_entire_podcast">Все выпуски</string>
     <string name="downloads_menu_download_option_entire_item">Все элементы</string>
@@ -127,4 +131,8 @@
     <string name="settings_screen_advanced_preferences_description">Настройте перемотку, прокси-заголовки и звук</string>
     <string name="settings_screen_crash_report_title">Отчёты о сбоях</string>
     <string name="settings_screen_crash_report_description">Отправлять отчёт при сбое приложения</string>
+    <string name="settings_download_automatically_title">Автоматическое скачивание</string>
+    <string name="download_settings_title">Настройки загрузки</string>
+    <string name="download_settings_description">Управляйте скачиванием и загруженным контентом</string>
+
 </resources>
