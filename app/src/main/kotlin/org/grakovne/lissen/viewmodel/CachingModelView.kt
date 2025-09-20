@@ -22,6 +22,7 @@ import org.grakovne.lissen.content.cache.persistent.ContentCachingManager
 import org.grakovne.lissen.content.cache.persistent.ContentCachingProgress
 import org.grakovne.lissen.content.cache.persistent.ContentCachingService
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
+import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
 import org.grakovne.lissen.lib.domain.CacheStatus
 import org.grakovne.lissen.lib.domain.ContentCachingTask
 import org.grakovne.lissen.lib.domain.DetailedItem
@@ -41,6 +42,7 @@ class CachingModelView
     private val contentCachingProgress: ContentCachingProgress,
     private val contentCachingManager: ContentCachingManager,
     private val preferences: LissenSharedPreferences,
+    private val cachedCoverProvider: CachedCoverProvider,
   ) : ViewModel() {
     private val _bookCachingProgress = mutableMapOf<String, MutableStateFlow<CacheState>>()
 
@@ -73,6 +75,12 @@ class CachingModelView
             }
           flow.value = progress
         }
+      }
+    }
+
+    suspend fun clearShortTermCache() {
+      withContext(Dispatchers.IO) {
+        cachedCoverProvider.clearCache()
       }
     }
 

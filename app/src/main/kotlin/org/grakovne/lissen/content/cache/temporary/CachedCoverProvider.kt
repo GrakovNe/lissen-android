@@ -32,7 +32,11 @@ class CachedCoverProvider
         else -> cover.let { ApiResult.Success(it) }.also { Log.d(TAG, "Fetched cached $itemId with width: $width") }
       }
 
-    fun clearCache() = properties.provideCoverCacheFolder().deleteRecursively()
+    fun clearCache() =
+      properties
+        .provideCoverCacheFolder()
+        .deleteRecursively()
+        .also { Log.d(TAG, "Clear cover short-term cache") }
 
     private fun fetchCachedCover(
       itemId: String,

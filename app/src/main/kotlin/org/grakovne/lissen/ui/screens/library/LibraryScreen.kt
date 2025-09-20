@@ -141,6 +141,8 @@ fun LibraryScreen(
         }
 
       withMinimumTime(minimumTime) {
+        cachingModelView.clearShortTermCache()
+
         listOf(
           async { settingsViewModel.fetchLibraries() },
           async { libraryViewModel.refreshLibrary() },
