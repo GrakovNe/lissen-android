@@ -30,7 +30,7 @@ class PlayerWidgetStateService
     private val mediaRepository: MediaRepository,
     private val mediaProvider: LissenMediaProvider,
   ) : RunningComponent {
-    private var playingBookId: String? = null
+    private var playingItemId: String? = null
     private var cachedCover: ByteArray? = null
 
     private val scope = CoroutineScope(Dispatchers.IO)
@@ -44,23 +44,23 @@ class PlayerWidgetStateService
             .filterNotNull()
             .distinctUntilChanged(),
           mediaRepository.currentChapterIndex.asFlow().distinctUntilChanged(),
-        ) { book: DetailedItem?, isPlaying, chapterIndex: Int? ->
-          val chapterTitle = provideChapterTitle(book, chapterIndex)
+        ) { playingItem: DetailedItem?, isPlaying, chapterIndex: Int? ->
+          val chapterTitle = provideChapterTitle(playingItem, chapterIndex)
 
           val maybeCover =
-            when (book) {
+            when (playingItem) {
               null -> null
               else ->
                 when {
-                  playingBookId != book.id || cachedCover == null -> {
+                  playingItemId != playingItem.id || cachedCover == null -> {
                     mediaProvider
-                      .fetchBookCover(book.id)
+                      .fetchBookCover(playingItem.id)
                       .fold(
                         onSuccess = { buffer ->
                           val image = buffer.readByteArray()
 
                           cachedCover = image
-                          playingBookId = book.id
+                          playingItemId = playingItem.id
 
                           image
                         },
@@ -73,8 +73,8 @@ class PlayerWidgetStateService
             }
 
           PlayingItemState(
-            id = book?.id ?: "",
-            title = book?.title ?: "",
+            id = playingItem?.id ?: "",
+            title = playingItem?.title ?: "",
             chapterTitle = chapterTitle,
             isPlaying = isPlaying,
             imageCover = maybeCover,
@@ -86,16 +86,16 @@ class PlayerWidgetStateService
     }
 
     private fun provideChapterTitle(
-      book: DetailedItem?,
+      item: DetailedItem?,
       chapterIndex: Int?,
     ): String? {
-      if (null == book || null == chapterIndex) {
+      if (null == item || null == chapterIndex) {
         return null
       }
 
-      return when (chapterIndex in book.chapters.indices) {
-        true -> book.chapters[chapterIndex].title
-        false -> book.title
+      return when (chapterIndex in item.chapters.indices) {
+        true -> item.chapters[chapterIndex].title
+        false -> item.title
       }
     }
 
