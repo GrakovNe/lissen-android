@@ -12,7 +12,16 @@ import com.hoko.blur.HokoBlur.SCHEME_NATIVE
 import okio.Buffer
 import okio.BufferedSource
 
-fun sourceWithBackdropBlur(
+fun Buffer.withBlur(context: Context): Buffer {
+  val dimensions: Pair<Int, Int>? = getImageDimensions(this)
+
+  return when (dimensions?.first == dimensions?.second) {
+    true -> this
+    false -> runCatching { sourceWithBackdropBlur(this, context) }.getOrElse { this }
+  }
+}
+
+private fun sourceWithBackdropBlur(
   source: BufferedSource,
   context: Context,
 ): Buffer {

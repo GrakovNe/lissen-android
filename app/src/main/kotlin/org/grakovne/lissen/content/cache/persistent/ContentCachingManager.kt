@@ -1,7 +1,9 @@
 package org.grakovne.lissen.content.cache.persistent
 
+import android.content.Context
 import android.util.Log
 import androidx.core.net.toFile
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
@@ -10,6 +12,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvi
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.createOkHttpClient
 import org.grakovne.lissen.content.cache.common.findRelatedFiles
+import org.grakovne.lissen.content.cache.common.withBlur
 import org.grakovne.lissen.content.cache.common.writeToFile
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedLibraryRepository
@@ -28,6 +31,7 @@ import kotlin.coroutines.coroutineContext
 class ContentCachingManager
   @Inject
   constructor(
+    @ApplicationContext private val context: Context,
     private val bookRepository: CachedBookRepository,
     private val libraryRepository: CachedLibraryRepository,
     private val properties: OfflineBookStorageProperties,
@@ -181,7 +185,9 @@ class ContentCachingManager
           .fold(
             onSuccess = { cover ->
               try {
-                cover.writeToFile(file)
+                cover
+                  .withBlur(context)
+                  .writeToFile(file)
               } catch (ex: Exception) {
                 return@fold CacheState(CacheStatus.Error)
               }

@@ -8,8 +8,7 @@ import kotlinx.coroutines.withContext
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.MediaChannel
-import org.grakovne.lissen.content.cache.common.getImageDimensions
-import org.grakovne.lissen.content.cache.common.sourceWithBackdropBlur
+import org.grakovne.lissen.content.cache.common.withBlur
 import org.grakovne.lissen.content.cache.common.writeToFile
 import java.io.File
 import javax.inject.Inject
@@ -62,14 +61,9 @@ class CachedCoverProvider
           .fetchBookCover(itemId)
           .fold(
             onSuccess = { source ->
-              val dimensions: Pair<Int, Int>? = getImageDimensions(source)
+              source.withBlur(context)
 
-              val blurred =
-                when (dimensions?.first == dimensions?.second) {
-                  true -> source
-                  false -> runCatching { sourceWithBackdropBlur(source, context) }.getOrElse { source }
-                }
-
+              val blurred = source.withBlur(context)
               dest.parentFile?.mkdirs()
 
               blurred.writeToFile(dest)
