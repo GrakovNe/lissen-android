@@ -1,15 +1,18 @@
 package org.grakovne.lissen.content.cache.common
 
 import android.graphics.BitmapFactory
-import java.io.File
+import okio.Buffer
 
-fun getImageDimensions(file: File): Pair<Int, Int>? =
+fun getImageDimensions(buffer: Buffer): Pair<Int, Int>? =
   try {
-    val boundsOptions = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-    file.inputStream().use { fis ->
-      BitmapFactory.decodeStream(fis, null, boundsOptions)
-    }
+    val boundsOptions =
+      BitmapFactory.Options().apply {
+        inJustDecodeBounds = true
+      }
+
+    val peekedSource = buffer.peek()
+    BitmapFactory.decodeStream(peekedSource.inputStream(), null, boundsOptions)
     boundsOptions.outWidth to boundsOptions.outHeight
-  } catch (e: Exception) {
+  } catch (ex: Exception) {
     null
   }

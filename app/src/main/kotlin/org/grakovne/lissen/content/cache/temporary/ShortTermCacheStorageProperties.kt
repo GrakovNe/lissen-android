@@ -2,9 +2,7 @@ package org.grakovne.lissen.content.cache.temporary
 
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
-import org.grakovne.lissen.content.cache.temporary.CoverDimensions.Companion.toPath
 import java.io.File
-import java.io.Serializable
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -16,18 +14,20 @@ class ShortTermCacheStorageProperties
   ) {
     fun provideCoverCacheFolder(): File =
       context
-        .getExternalFilesDir(SHORT_TERM_CACHE_FOLDER)
+        .externalCacheDir
+        ?.resolve(SHORT_TERM_CACHE_FOLDER)
         ?.resolve(COVER_CACHE_FOLDER_NAME)
         ?: throw IllegalStateException("")
 
     fun provideCoverPath(
       itemId: String,
-      dimensions: CoverDimensions?,
+      width: Int?,
     ): File =
       context
-        .getExternalFilesDir(SHORT_TERM_CACHE_FOLDER)
+        .externalCacheDir
+        ?.resolve(SHORT_TERM_CACHE_FOLDER)
         ?.resolve(COVER_CACHE_FOLDER_NAME)
-        ?.resolve(dimensions.toPath())
+        ?.resolve(width.toPath())
         ?.resolve(itemId)
         ?: throw IllegalStateException("")
 
@@ -37,14 +37,8 @@ class ShortTermCacheStorageProperties
     }
   }
 
-data class CoverDimensions(
-  val width: Int,
-) : Serializable {
-  companion object {
-    fun CoverDimensions?.toPath() =
-      when (this) {
-        null -> "raw"
-        else -> "crop_${this.width}"
-      }
+private fun Int?.toPath() =
+  when (this) {
+    null -> "raw"
+    else -> "crop_$this"
   }
-}

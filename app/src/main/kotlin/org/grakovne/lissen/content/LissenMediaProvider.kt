@@ -8,10 +8,8 @@ import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.ChannelCode
 import org.grakovne.lissen.channel.common.ChannelProvider
 import org.grakovne.lissen.channel.common.MediaChannel
-import org.grakovne.lissen.content.cache.common.getImageDimensions
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
-import org.grakovne.lissen.content.cache.temporary.CoverDimensions
 import org.grakovne.lissen.lib.domain.Book
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.Library
@@ -82,28 +80,15 @@ class LissenMediaProvider
       width: Int? = null,
     ): ApiResult<File> {
       Log.d(TAG, "Fetching Cover stream for $bookId")
-
-      val cover =
-        when (preferences.isForceCache()) {
-          true -> localCacheRepository.fetchBookCover(bookId)
-          false ->
-            cachedCoverProvider.provideCover(
-              channel = providePreferredChannel(),
-              itemId = bookId,
-              dimensions = width?.let { CoverDimensions(it) },
-            )
-        }
-
-      return cover
-        .map { source ->
-          val dimensions: Pair<Int, Int>? = getImageDimensions(source)
-
-          when (dimensions?.first == dimensions?.second) {
-            true -> source
-            // false -> runCatching { sourceWithBackdropBlur(source, context) }.getOrElse { source }
-            false -> source
-          }
-        }
+      return when (preferences.isForceCache()) {
+        true -> localCacheRepository.fetchBookCover(bookId)
+        false ->
+          cachedCoverProvider.provideCover(
+            channel = providePreferredChannel(),
+            itemId = bookId,
+            width = width,
+          )
+      }
     }
 
     suspend fun searchBooks(
