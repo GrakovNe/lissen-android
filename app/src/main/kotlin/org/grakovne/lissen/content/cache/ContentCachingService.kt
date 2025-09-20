@@ -60,17 +60,7 @@ class ContentCachingService : LifecycleService() {
         ?: return START_STICKY
 
     lifecycleScope.launch {
-      val item =
-        mediaProvider
-          .fetchBook(task.itemId)
-          .fold(
-            onSuccess = { it },
-            onFailure = {
-              notificationService.updateErrorNotification()
-              null
-            },
-          )
-          ?: return@launch
+      val item = task.item
 
       val executor =
         ContentCachingExecutor(

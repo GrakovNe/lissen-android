@@ -106,6 +106,7 @@ class MediaRepository
         addSource(totalPosition) { updateCurrentTrackData() }
         addSource(playingBook) { updateCurrentTrackData() }
       }
+
     val currentChapterPosition: LiveData<Double> = _currentChapterPosition
 
     private val _currentChapterDuration =

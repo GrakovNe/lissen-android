@@ -9,8 +9,10 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
+import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.common.PlaybackVolumeBoost
 import org.grakovne.lissen.content.LissenMediaProvider
+import org.grakovne.lissen.lib.domain.DownloadOption
 import org.grakovne.lissen.lib.domain.Library
 import org.grakovne.lissen.lib.domain.SeekTimeOption
 import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
@@ -42,6 +44,12 @@ class SettingsViewModel
 
     private val _preferredColorScheme = MutableLiveData(preferences.getColorScheme())
     val preferredColorScheme = _preferredColorScheme
+
+    private val _preferredAutoDownloadNetworkType = MutableLiveData(preferences.getAutoDownloadNetworkType())
+    val preferredAutoDownloadNetworkType = _preferredAutoDownloadNetworkType
+
+    private val _preferredAutoDownloadOption = MutableLiveData(preferences.getAutoDownloadOption())
+    val preferredAutoDownloadOption = _preferredAutoDownloadOption
 
     private val _preferredPlaybackVolumeBoost = MutableLiveData(preferences.getPlaybackVolumeBoost())
     val preferredPlaybackVolumeBoost = _preferredPlaybackVolumeBoost
@@ -114,6 +122,11 @@ class SettingsViewModel
       preferences.savePreferredLibrary(library)
     }
 
+    fun preferAutoDownloadNetworkType(type: NetworkTypeAutoCache) {
+      _preferredAutoDownloadNetworkType.postValue(type)
+      preferences.saveAutoDownloadNetworkType(type)
+    }
+
     fun preferLibraryOrdering(configuration: LibraryOrderingConfiguration) {
       _preferredLibraryOrdering.postValue(configuration)
       preferences.saveLibraryOrdering(configuration)
@@ -127,6 +140,11 @@ class SettingsViewModel
     fun preferColorScheme(colorScheme: ColorScheme) {
       _preferredColorScheme.postValue(colorScheme)
       preferences.saveColorScheme(colorScheme)
+    }
+
+    fun preferAutoDownloadOption(option: DownloadOption?) {
+      _preferredAutoDownloadOption.postValue(option)
+      preferences.saveAutoDownloadOption(option)
     }
 
     fun preferForwardRewind(option: SeekTimeOption) {

@@ -17,7 +17,6 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -60,7 +59,6 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
           Text(
             text = stringResource(R.string.settings_screen_seek_time_title),
             style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-            color = colorScheme.onSurface,
           )
         },
         navigationIcon = {
@@ -68,7 +66,6 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
             Icon(
               imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
               contentDescription = "Back",
-              tint = colorScheme.onSurface,
             )
           }
         },
@@ -97,13 +94,11 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
           SeekTimeOptionComposable(
             title = stringResource(R.string.rewind_interval),
             currentOption = preferredSeekTime?.rewind ?: SeekTime.Default.rewind,
-            enabled = true,
           ) { rewindTimeExpanded = true }
 
           SeekTimeOptionComposable(
             title = stringResource(R.string.forward_interval),
             currentOption = preferredSeekTime?.forward ?: SeekTime.Default.forward,
-            enabled = true,
           ) { forwardTimeExpanded = true }
         }
       }
@@ -141,19 +136,17 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
 
 @Composable
 fun SeekTimeOptionComposable(
-  enabled: Boolean,
   title: String,
   currentOption: SeekTimeOption,
   onClicked: () -> Unit,
 ) {
-  val textColor = if (enabled) colorScheme.onSurface else colorScheme.onSurface.copy(alpha = 0.6f)
   val context = LocalContext.current
 
   Row(
     modifier =
       Modifier
         .fillMaxWidth()
-        .clickable(enabled = enabled) { onClicked() }
+        .clickable { onClicked() }
         .padding(horizontal = 24.dp, vertical = 12.dp),
   ) {
     Column(
@@ -164,16 +157,12 @@ fun SeekTimeOptionComposable(
         style =
           typography.bodyLarge.copy(
             fontWeight = FontWeight.SemiBold,
-            color = textColor,
           ),
         modifier = Modifier.padding(bottom = 4.dp),
       )
       Text(
         text = currentOption.toItem(context),
-        style =
-          typography.bodyMedium.copy(
-            color = textColor,
-          ),
+        style = typography.bodyMedium,
       )
     }
   }

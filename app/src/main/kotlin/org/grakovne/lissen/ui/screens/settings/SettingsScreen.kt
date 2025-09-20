@@ -96,9 +96,9 @@ fun SettingsScreen(
           LibraryOrderingSettingsComposable(viewModel)
 
           AdvancedSettingsItemComposable(
-            title = stringResource(R.string.settings_screen_cached_items_title),
-            description = stringResource(R.string.settings_screen_cached_items_hint),
-            onclick = { navController.showCachedItemsSettings() },
+            title = stringResource(R.string.download_settings_title),
+            description = stringResource(R.string.download_settings_description),
+            onclick = { navController.showCacheSettings() },
           )
 
           AdvancedSettingsItemComposable(

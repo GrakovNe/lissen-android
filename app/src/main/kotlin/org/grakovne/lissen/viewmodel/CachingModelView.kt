@@ -77,13 +77,13 @@ class CachingModelView
     }
 
     fun cache(
-      mediaItemId: String,
+      mediaItem: DetailedItem,
       currentPosition: Double,
       option: DownloadOption,
     ) {
       val task =
         ContentCachingTask(
-          itemId = mediaItemId,
+          item = mediaItem,
           options = option,
           currentPosition = currentPosition,
         )

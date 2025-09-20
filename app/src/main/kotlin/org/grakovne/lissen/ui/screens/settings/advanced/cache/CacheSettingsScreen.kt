@@ -1,4 +1,4 @@
-package org.grakovne.lissen.ui.screens.settings.advanced
+package org.grakovne.lissen.ui.screens.settings.advanced.cache
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,8 +20,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -29,25 +27,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.navigation.AppNavigationService
-import org.grakovne.lissen.ui.screens.settings.composable.PlaybackVolumeBoostSettingsComposable
-import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
+import org.grakovne.lissen.ui.screens.settings.advanced.AdvancedSettingsItemComposable
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AdvancedSettingsComposable(
+@OptIn(ExperimentalMaterial3Api::class)
+fun CacheSettingsScreen(
   onBack: () -> Unit,
   navController: AppNavigationService,
+  viewModel: SettingsViewModel = hiltViewModel(),
 ) {
-  val viewModel: SettingsViewModel = hiltViewModel()
-  val crashReporting by viewModel.crashReporting.observeAsState(true)
-
   Scaffold(
     topBar = {
       TopAppBar(
         title = {
           Text(
-            text = stringResource(R.string.settings_screen_advanced_preferences_title),
+            text = stringResource(R.string.download_settings_title),
             style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
             color = colorScheme.onSurface,
           )
@@ -83,25 +78,15 @@ fun AdvancedSettingsComposable(
               .verticalScroll(rememberScrollState()),
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-          PlaybackVolumeBoostSettingsComposable(viewModel)
+          AutoCacheSettingsComposable(viewModel)
+
+          NetworkTypeAutoCacheSettingsComposable(viewModel)
 
           AdvancedSettingsItemComposable(
-            title = stringResource(R.string.settings_screen_seek_time_title),
-            description = stringResource(R.string.settings_screen_seek_time_hint),
-            onclick = { navController.showSeekSettings() },
+            title = stringResource(R.string.settings_screen_cached_items_title),
+            description = stringResource(R.string.settings_screen_cached_items_hint),
+            onclick = { navController.showCachedItemsSettings() },
           )
-
-          AdvancedSettingsItemComposable(
-            title = stringResource(R.string.settings_screen_custom_headers_title),
-            description = stringResource(R.string.settings_screen_custom_header_hint),
-            onclick = { navController.showCustomHeadersSettings() },
-          )
-
-          SettingsToggleItem(
-            title = stringResource(R.string.settings_screen_crash_report_title),
-            description = stringResource(R.string.settings_screen_crash_report_description),
-            initialState = crashReporting,
-          ) { viewModel.preferCrashReporting(it) }
         }
       }
     },

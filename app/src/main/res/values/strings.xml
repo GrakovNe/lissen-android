@@ -63,6 +63,7 @@
     <string name="downloads_menu_download_book">Download book</string>
     <string name="downloads_menu_download_podcast">Download podcast</string>
     <string name="downloads_menu_download_unknown">Downloads</string>
+    <string name="downloads_menu_download_option_disable">Disabled</string>
     <string name="downloads_menu_download_option_current_chapter">Current chapter</string>
     <string name="downloads_menu_download_option_current_episode">Current episode</string>
     <string name="downloads_menu_download_option_current_item">Current item</string>
@@ -128,4 +129,10 @@
     <string name="settings_screen_advanced_preferences_description">Control seeking, proxy headers, or sound</string>
     <string name="settings_screen_crash_report_title">Crash reporting</string>
     <string name="settings_screen_crash_report_description">Send reports if the app crashes</string>
+    <string name="settings_download_automatically_title">Download automatically</string>
+    <string name="download_settings_title">Download preferences</string>
+    <string name="download_settings_description">Define downloads and manage content</string>
+    <string name="download_settings_network_type_title">Use for automatic downloads</string>
+    <string name="wifi_only_settings_option">WiFi only</string>
+    <string name="wifi_or_cellular_settings_option">WiFi or cellular network</string>
 </resources>

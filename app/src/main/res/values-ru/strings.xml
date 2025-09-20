@@ -59,6 +59,7 @@
     <string name="downloads_menu_download_book">Скачать</string>
     <string name="downloads_menu_download_podcast">Скачать</string>
     <string name="downloads_menu_download_unknown">Загрузки</string>
+    <string name="downloads_menu_download_option_disable">Выключено</string>
     <string name="downloads_menu_download_option_current_chapter">Текущую главу</string>
     <string name="downloads_menu_download_option_current_episode">Текущий выпуск</string>
     <string name="downloads_menu_download_option_current_item">Текущий элемент</string>
@@ -115,8 +116,8 @@
     <string name="playing_item_details_narrator">Чтец</string>
     <string name="playing_item_details_duration">Длительность</string>
     <string name="offline_cache_is_empty">Загруженного контента нет</string>
-    <string name="settings_screen_cached_items_title">Загрузки</string>
-    <string name="settings_screen_cached_items_hint">Управляйте загруженным контентом</string>
+    <string name="settings_screen_cached_items_title">Загруженный контент</string>
+    <string name="settings_screen_cached_items_hint">Управляйте скачанными книгами и подкастами</string>
     <string name="volume_boost_disabled">Отключено</string>
     <string name="volume_boost_low">Небольшое увеличение</string>
     <string name="volume_boost_medium">Среднее увеличение</string>
@@ -127,4 +128,10 @@
     <string name="settings_screen_advanced_preferences_description">Настройте перемотку, прокси-заголовки и звук</string>
     <string name="settings_screen_crash_report_title">Отчёты о сбоях</string>
     <string name="settings_screen_crash_report_description">Отправлять отчёт при сбое приложения</string>
+    <string name="settings_download_automatically_title">Скачивать автоматически</string>
+    <string name="download_settings_title">Загрузки</string>
+    <string name="download_settings_description">Управляйте скачиванием и загруженным контентом</string>
+    <string name="download_settings_network_type_title">Использовать для автоскачивания</string>
+    <string name="wifi_only_settings_option">Только WiFi</string>
+    <string name="wifi_or_cellular_settings_option">WiFi или мобильную сеть</string>
 </resources>
