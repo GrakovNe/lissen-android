@@ -128,4 +128,11 @@
     <string name="login_error_lissen_not_found">未找到该 URL，请检查你的服务器设置</string>
     <string name="player_screen_chapter_list_navigation_podcast">剧集</string>
     <string name="player_screen_chapter_list_navigation_items">项目</string>
+    <string name="settings_download_automatically_title">自动下载</string>
+    <string name="download_settings_title">下载首选项</string>
+    <string name="download_settings_description">定义下载并管理内容</string>
+    <string name="download_settings_network_type_title">用于自动下载</string>
+    <string name="wifi_only_settings_option">仅限 WiFi</string>
+    <string name="wifi_or_cellular_settings_option">WiFi 或蜂窝网络</string>
+    <string name="downloads_menu_download_option_disable">禁用</string>
 </resources>
