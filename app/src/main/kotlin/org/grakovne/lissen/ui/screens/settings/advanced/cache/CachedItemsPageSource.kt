@@ -2,7 +2,7 @@ package org.grakovne.lissen.ui.screens.settings.advanced.cache
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import org.grakovne.lissen.content.cache.LocalCacheRepository
+import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.lib.domain.DetailedItem
 
 class CachedItemsPageSource(

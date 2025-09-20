@@ -82,7 +82,7 @@
         </service>
 
         <service
-            android:name=".content.cache.ContentCachingService"
+            android:name=".content.cache.persistent.ContentCachingService"
             android:exported="false"
             android:foregroundServiceType="dataSync"
             android:enabled="true"

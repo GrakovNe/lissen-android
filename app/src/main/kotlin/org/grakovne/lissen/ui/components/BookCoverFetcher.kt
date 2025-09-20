@@ -15,33 +15,40 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import okio.FileSystem
+import okio.Path.Companion.toOkioPath
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.content.LissenMediaProvider
+import java.io.File
 import javax.inject.Singleton
 
 class BookCoverFetcher(
   private val mediaChannel: LissenMediaProvider,
   private val uri: Uri,
-  private val context: Context,
   private val options: Options,
 ) : Fetcher {
   override suspend fun fetch(): FetchResult? =
     when (
       val response =
-        mediaChannel.fetchBookCover(
-          bookId = uri.toString(),
-          width = options.size.width.pxOrNull(),
-        )
+        mediaChannel
+          .fetchBookCover(
+            bookId = uri.toString(),
+            width = options.size.width.pxOrNull(),
+          )
     ) {
       is ApiResult.Error -> null
       is ApiResult.Success -> {
-        val stream = response.data
-        val imageSource = ImageSource(stream, context)
+        val stream: File = response.data
+        val imageSource =
+          ImageSource(
+            file = stream.toOkioPath(),
+            fileSystem = FileSystem.SYSTEM,
+          )
 
         SourceResult(
           source = imageSource,
           mimeType = null,
-          dataSource = coil.decode.DataSource.NETWORK,
+          dataSource = coil.decode.DataSource.DISK,
         )
       }
     }
@@ -49,13 +56,12 @@ class BookCoverFetcher(
 
 class BookCoverFetcherFactory(
   private val dataProvider: LissenMediaProvider,
-  private val context: Context,
 ) : Fetcher.Factory<Uri> {
   override fun create(
     data: Uri,
     options: Options,
     imageLoader: ImageLoader,
-  ) = BookCoverFetcher(dataProvider, data, context, options)
+  ) = BookCoverFetcher(dataProvider, data, options)
 }
 
 @Module
@@ -63,10 +69,7 @@ class BookCoverFetcherFactory(
 object ImageLoaderModule {
   @Singleton
   @Provides
-  fun provideBookCoverFetcherFactory(
-    mediaChannel: LissenMediaProvider,
-    @ApplicationContext context: Context,
-  ): BookCoverFetcherFactory = BookCoverFetcherFactory(mediaChannel, context)
+  fun provideBookCoverFetcherFactory(mediaChannel: LissenMediaProvider): BookCoverFetcherFactory = BookCoverFetcherFactory(mediaChannel)
 
   @Singleton
   @Provides

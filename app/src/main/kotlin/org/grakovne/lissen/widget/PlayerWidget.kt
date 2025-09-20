@@ -3,6 +3,7 @@ package org.grakovne.lissen.widget
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.BitmapFactory.decodeResource
 import android.graphics.Canvas
 import android.util.Log
@@ -49,10 +50,10 @@ import androidx.glance.text.TextStyle
 import androidx.media3.session.R
 import dagger.hilt.android.EntryPointAccessors
 import org.grakovne.lissen.R.drawable
-import org.grakovne.lissen.common.fromBase64
 import org.grakovne.lissen.lib.domain.SeekTimeOption
 import org.grakovne.lissen.ui.theme.LightBackground
 import org.grakovne.lissen.widget.PlayerWidget.Companion.bookIdKey
+import java.io.File
 
 class PlayerWidget : GlanceAppWidget() {
   override val stateDefinition: GlanceStateDefinition<*> = PreferencesGlanceStateDefinition
@@ -78,7 +79,7 @@ class PlayerWidget : GlanceAppWidget() {
             .lissenSharedPreferences()
 
         val state = currentState<Preferences>()
-        val maybeCover = state[encodedCover]?.takeIf { it.isNotBlank() }?.fromBase64()
+        val maybeCoverFile = state[coverPath]?.takeIf { it.isNotBlank() }?.let { File(it) }
         val bookId = state[bookId] ?: ""
         val bookTitle = state[title] ?: ""
         val chapterTitle =
@@ -107,7 +108,10 @@ class PlayerWidget : GlanceAppWidget() {
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
           ) {
-            val original = maybeCover ?: decodeResource(context.resources, drawable.cover_fallback_png)
+            val original =
+              maybeCoverFile
+                ?.let { BitmapFactory.decodeFile(it.absolutePath) }
+                ?: decodeResource(context.resources, drawable.cover_fallback_png)
 
             val coverImageProvider =
               try {
@@ -252,7 +256,7 @@ class PlayerWidget : GlanceAppWidget() {
 
     val bookIdKey = ActionParameters.Key<String>("book_id")
 
-    val encodedCover = stringPreferencesKey("player_widget_key_cover")
+    val coverPath = stringPreferencesKey("player_widget_key_cover")
     val bookId = stringPreferencesKey("player_widget_key_id")
     val title = stringPreferencesKey("player_widget_key_title")
     val chapterTitle = stringPreferencesKey("player_widget_key_chapter_title")

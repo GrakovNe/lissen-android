@@ -14,10 +14,10 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.RunningComponent
-import org.grakovne.lissen.common.toBase64
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.playback.MediaRepository
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,9 +30,6 @@ class PlayerWidgetStateService
     private val mediaRepository: MediaRepository,
     private val mediaProvider: LissenMediaProvider,
   ) : RunningComponent {
-    private var playingItemId: String? = null
-    private var cachedCover: ByteArray? = null
-
     private val scope = CoroutineScope(Dispatchers.IO)
 
     override fun onCreate() {
@@ -48,36 +45,20 @@ class PlayerWidgetStateService
           val chapterTitle = provideChapterTitle(playingItem, chapterIndex)
 
           val maybeCover =
-            when (playingItem) {
-              null -> null
-              else ->
-                when {
-                  playingItemId != playingItem.id || cachedCover == null -> {
-                    mediaProvider
-                      .fetchBookCover(playingItem.id)
-                      .fold(
-                        onSuccess = { buffer ->
-                          val image = buffer.readByteArray()
-
-                          cachedCover = image
-                          playingItemId = playingItem.id
-
-                          image
-                        },
-                        onFailure = { null },
-                      )
-                  }
-
-                  else -> cachedCover
-                }
-            }
+            playingItem
+              ?.id
+              ?.let { mediaProvider.fetchBookCover(it) }
+              ?.fold(
+                onSuccess = { it },
+                onFailure = { null },
+              )
 
           PlayingItemState(
             id = playingItem?.id ?: "",
             title = playingItem?.title ?: "",
             chapterTitle = chapterTitle,
             isPlaying = isPlaying,
-            imageCover = maybeCover,
+            coverFile = maybeCover,
           )
         }.collect { playingItemState ->
           updatePlayingItem(playingItemState)
@@ -107,7 +88,7 @@ class PlayerWidgetStateService
         .forEach { glanceId ->
           updateAppWidgetState(context, glanceId) { prefs ->
             prefs[PlayerWidget.bookId] = state.id
-            prefs[PlayerWidget.encodedCover] = state.imageCover?.toBase64() ?: ""
+            prefs[PlayerWidget.coverPath] = state.coverFile?.absolutePath ?: ""
             prefs[PlayerWidget.title] = state.title
             prefs[PlayerWidget.chapterTitle] = state.chapterTitle ?: ""
             prefs[PlayerWidget.isPlaying] = state.isPlaying
@@ -122,5 +103,5 @@ data class PlayingItemState(
   val title: String,
   val chapterTitle: String?,
   val isPlaying: Boolean = false,
-  val imageCover: ByteArray?,
+  val coverFile: File?,
 )

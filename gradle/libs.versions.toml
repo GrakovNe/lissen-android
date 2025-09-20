@@ -27,8 +27,8 @@ roomRuntime = "2.8.0"
 runtimeLivedata = "1.9.1"
 media3Session = "1.8.0"
 media3DatasourceOkhttp = "1.8.0"
-lifecycleService = "2.9.3"
-lifecycleProcess = "2.9.3"
+lifecycleService = "2.9.4"
+lifecycleProcess = "2.9.4"
 coreKtx = "1.17.0"
 
 [libraries]
