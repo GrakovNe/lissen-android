@@ -10,6 +10,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvi
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.createOkHttpClient
 import org.grakovne.lissen.content.cache.common.findRelatedFiles
+import org.grakovne.lissen.content.cache.common.writeToFile
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedLibraryRepository
 import org.grakovne.lissen.lib.domain.BookFile
@@ -180,14 +181,7 @@ class ContentCachingManager
           .fold(
             onSuccess = { cover ->
               try {
-                if (!file.exists()) {
-                  file.parentFile?.mkdirs()
-                  file.createNewFile()
-                }
-
-                file.outputStream().use { outputStream ->
-                  cover.writeTo(outputStream)
-                }
+                cover.writeToFile(file)
               } catch (ex: Exception) {
                 return@fold CacheState(CacheStatus.Error)
               }

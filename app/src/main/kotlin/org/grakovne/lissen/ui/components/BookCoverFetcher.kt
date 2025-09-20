@@ -71,7 +71,6 @@ object ImageLoaderModule {
   @Provides
   fun provideBookCoverFetcherFactory(
     mediaChannel: LissenMediaProvider,
-    @ApplicationContext context: Context,
   ): BookCoverFetcherFactory = BookCoverFetcherFactory(mediaChannel)
 
   @Singleton
@@ -83,7 +82,7 @@ object ImageLoaderModule {
     ImageLoader
       .Builder(context)
       .components {
-        // add(CoverCacheKeyHolder())
+        add(CoverCacheKeyHolder())
         add(bookCoverFetcherFactory)
       }.build()
 }
