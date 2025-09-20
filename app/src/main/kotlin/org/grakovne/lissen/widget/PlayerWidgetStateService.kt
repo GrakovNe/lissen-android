@@ -13,11 +13,12 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
+import org.grakovne.lissen.LissenApplication
 import org.grakovne.lissen.common.RunningComponent
-import org.grakovne.lissen.common.toBase64
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.playback.MediaRepository
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -31,7 +32,7 @@ class PlayerWidgetStateService
     private val mediaProvider: LissenMediaProvider,
   ) : RunningComponent {
     private var playingItemId: String? = null
-    private var cachedCover: ByteArray? = null
+    private var cachedCover: File? = null
 
     private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -47,7 +48,7 @@ class PlayerWidgetStateService
         ) { playingItem: DetailedItem?, isPlaying, chapterIndex: Int? ->
           val chapterTitle = provideChapterTitle(playingItem, chapterIndex)
 
-          val maybeCover =
+          val maybeCover: File? =
             when (playingItem) {
               null -> null
               else ->
@@ -57,12 +58,10 @@ class PlayerWidgetStateService
                       .fetchBookCover(playingItem.id)
                       .fold(
                         onSuccess = { buffer ->
-                          val image = buffer.readByteArray()
+                          val cache = File.createTempFile(playingItem.id, null, LissenApplication.appContext.cacheDir)
+                          cache.outputStream().use { outputStream -> buffer.writeTo(outputStream) }
 
-                          cachedCover = image
-                          playingItemId = playingItem.id
-
-                          image
+                          cache
                         },
                         onFailure = { null },
                       )
@@ -107,7 +106,7 @@ class PlayerWidgetStateService
         .forEach { glanceId ->
           updateAppWidgetState(context, glanceId) { prefs ->
             prefs[PlayerWidget.bookId] = state.id
-            prefs[PlayerWidget.encodedCover] = state.imageCover?.toBase64() ?: ""
+            prefs[PlayerWidget.coverPath] = state.imageCover?.absolutePath ?: ""
             prefs[PlayerWidget.title] = state.title
             prefs[PlayerWidget.chapterTitle] = state.chapterTitle ?: ""
             prefs[PlayerWidget.isPlaying] = state.isPlaying
@@ -122,5 +121,5 @@ data class PlayingItemState(
   val title: String,
   val chapterTitle: String?,
   val isPlaying: Boolean = false,
-  val imageCover: ByteArray?,
+  val imageCover: File?,
 )
