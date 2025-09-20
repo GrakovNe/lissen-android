@@ -21,7 +21,6 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.grakovne.lissen.LissenApplication
 import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.lib.domain.BookFile
@@ -30,7 +29,6 @@ import org.grakovne.lissen.lib.domain.MediaProgress
 import org.grakovne.lissen.lib.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.MediaSessionProvider
-import java.io.File
 import javax.inject.Inject
 
 @UnstableApi
@@ -163,8 +161,6 @@ class PlaybackService : MediaSessionService() {
     withContext(Dispatchers.IO) {
       val prepareQueue =
         async {
-          val cachedCover = fetchAndCacheCover(book)
-
           val sourceFactory =
             LissenDataSourceFactory(
               baseContext = baseContext,
@@ -183,7 +179,7 @@ class PlaybackService : MediaSessionService() {
                     .Builder()
                     .setTitle(file.name)
                     .setArtist(book.title)
-                    .setArtworkUri(cachedCover?.toUri())
+                // .setArtworkUri(fetchCover(book))
 
                 val mediaItem =
                   MediaItem
@@ -225,16 +221,12 @@ class PlaybackService : MediaSessionService() {
     }
   }
 
-  private suspend fun fetchAndCacheCover(book: DetailedItem) =
-    channelProvider
-      .fetchBookCover(bookId = book.id)
-      .fold(
-        onSuccess = { buffer ->
-          val cache = File.createTempFile(book.id, null, LissenApplication.appContext.cacheDir)
-          cache.outputStream().use { outputStream -> buffer.writeTo(outputStream) }
-
-          cache
-        },
+  private suspend fun fetchCover(book: DetailedItem) =
+    mediaProvider
+      .fetchBookCover(
+        bookId = book.id,
+      ).fold(
+        onSuccess = { it.toUri() },
         onFailure = { null },
       )
 

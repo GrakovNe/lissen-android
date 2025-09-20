@@ -14,13 +14,6 @@ class ShortTermCacheStorageProperties
   constructor(
     @ApplicationContext private val context: Context,
   ) {
-    fun provideCoverCacheFolder(libraryId: String): File =
-      context
-        .getExternalFilesDir(SHORT_TERM_CACHE_FOLDER)
-        ?.resolve(COVER_CACHE_FOLDER_NAME)
-        ?.resolve(libraryId)
-        ?: throw IllegalStateException("")
-
     fun provideCoverCacheFolder(): File =
       context
         .getExternalFilesDir(SHORT_TERM_CACHE_FOLDER)
@@ -28,14 +21,12 @@ class ShortTermCacheStorageProperties
         ?: throw IllegalStateException("")
 
     fun provideCoverPath(
-      libraryId: String,
       itemId: String,
       dimensions: CoverDimensions?,
     ): File =
       context
         .getExternalFilesDir(SHORT_TERM_CACHE_FOLDER)
         ?.resolve(COVER_CACHE_FOLDER_NAME)
-        ?.resolve(libraryId)
         ?.resolve(dimensions.toPath())
         ?.resolve(itemId)
         ?: throw IllegalStateException("")

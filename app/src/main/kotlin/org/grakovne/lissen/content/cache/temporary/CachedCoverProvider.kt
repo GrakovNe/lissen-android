@@ -1,5 +1,6 @@
 package org.grakovne.lissen.content.cache.temporary
 
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.channel.common.ApiError
@@ -11,32 +12,28 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ShortTermCoverCacheProvider
+class CachedCoverProvider
   @Inject
   constructor(
     private val properties: ShortTermCacheStorageProperties,
   ) {
     suspend fun provideCover(
       channel: MediaChannel,
-      libraryId: String,
       itemId: String,
       dimensions: CoverDimensions?,
     ): ApiResult<File> =
-      when (val cover = fetchCachedCover(libraryId, itemId, dimensions)) {
-        null -> cacheCover(channel, libraryId, itemId, dimensions)
-        else -> cover.let { ApiResult.Success(it) }
+      when (val cover = fetchCachedCover(itemId, dimensions)) {
+        null -> cacheCover(channel, itemId, dimensions).also { Log.d(TAG, "Caching cover $itemId with size: $dimensions") }
+        else -> cover.let { ApiResult.Success(it) }.also { Log.d(TAG, "Fetched cached $itemId with size: $dimensions") }
       }
 
     fun clearCache() = properties.provideCoverCacheFolder().deleteRecursively()
 
-    fun clearLibraryCache(libraryId: String) = properties.provideCoverCacheFolder(libraryId).deleteRecursively()
-
     private fun fetchCachedCover(
-      libraryId: String,
       itemId: String,
       dimensions: CoverDimensions?,
     ): File? {
-      val file = properties.provideCoverPath(libraryId, itemId, dimensions)
+      val file = properties.provideCoverPath(itemId, dimensions)
 
       return when (file.exists()) {
         true -> file
@@ -46,11 +43,10 @@ class ShortTermCoverCacheProvider
 
     private suspend fun cacheCover(
       channel: MediaChannel,
-      libraryId: String,
       itemId: String,
       dimensions: CoverDimensions?,
     ): ApiResult<File> {
-      val dest = properties.provideCoverPath(libraryId, itemId, dimensions)
+      val dest = properties.provideCoverPath(itemId, dimensions)
 
       return withContext(Dispatchers.IO) {
         channel
@@ -71,5 +67,9 @@ class ShortTermCoverCacheProvider
             },
           )
       }
+    }
+
+    companion object {
+      private const val TAG = "CachedCoverProvider"
     }
   }

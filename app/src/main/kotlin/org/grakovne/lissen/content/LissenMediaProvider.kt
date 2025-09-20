@@ -1,10 +1,7 @@
 package org.grakovne.lissen.content
 
-import android.content.Context
 import android.net.Uri
 import android.util.Log
-import dagger.hilt.android.qualifiers.ApplicationContext
-import okio.Buffer
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.ChannelAuthService
@@ -12,8 +9,9 @@ import org.grakovne.lissen.channel.common.ChannelCode
 import org.grakovne.lissen.channel.common.ChannelProvider
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.content.cache.common.getImageDimensions
-import org.grakovne.lissen.content.cache.common.sourceWithBackdropBlur
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
+import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
+import org.grakovne.lissen.content.cache.temporary.CoverDimensions
 import org.grakovne.lissen.lib.domain.Book
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.Library
@@ -24,6 +22,7 @@ import org.grakovne.lissen.lib.domain.PlaybackSession
 import org.grakovne.lissen.lib.domain.RecentBook
 import org.grakovne.lissen.lib.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -31,10 +30,10 @@ import javax.inject.Singleton
 class LissenMediaProvider
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
     private val preferences: LissenSharedPreferences,
     private val channels: Map<ChannelCode, @JvmSuppressWildcards ChannelProvider>,
     private val localCacheRepository: LocalCacheRepository,
+    private val cachedCoverProvider: CachedCoverProvider,
   ) {
     fun provideFileUri(
       libraryItemId: String,
@@ -81,13 +80,18 @@ class LissenMediaProvider
     suspend fun fetchBookCover(
       bookId: String,
       width: Int? = null,
-    ): ApiResult<Buffer> {
+    ): ApiResult<File> {
       Log.d(TAG, "Fetching Cover stream for $bookId")
 
       val cover =
         when (preferences.isForceCache()) {
           true -> localCacheRepository.fetchBookCover(bookId)
-          false -> providePreferredChannel().fetchBookCover(bookId, width)
+          false ->
+            cachedCoverProvider.provideCover(
+              channel = providePreferredChannel(),
+              itemId = bookId,
+              dimensions = width?.let { CoverDimensions(it) },
+            )
         }
 
       return cover
@@ -95,8 +99,9 @@ class LissenMediaProvider
           val dimensions: Pair<Int, Int>? = getImageDimensions(source)
 
           when (dimensions?.first == dimensions?.second) {
-            true -> source.buffer
-            false -> runCatching { sourceWithBackdropBlur(source, context) }.getOrElse { source.buffer }
+            true -> source
+            // false -> runCatching { sourceWithBackdropBlur(source, context) }.getOrElse { source }
+            false -> source
           }
         }
     }

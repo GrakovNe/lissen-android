@@ -47,37 +47,37 @@ class PlayerWidgetStateService
         ) { playingItem: DetailedItem?, isPlaying, chapterIndex: Int? ->
           val chapterTitle = provideChapterTitle(playingItem, chapterIndex)
 
-          val maybeCover =
-            when (playingItem) {
-              null -> null
-              else ->
-                when {
-                  playingItemId != playingItem.id || cachedCover == null -> {
-                    mediaProvider
-                      .fetchBookCover(playingItem.id)
-                      .fold(
-                        onSuccess = { buffer ->
-                          val image = buffer.readByteArray()
-
-                          cachedCover = image
-                          playingItemId = playingItem.id
-
-                          image
-                        },
-                        onFailure = { null },
-                      )
-                  }
-
-                  else -> cachedCover
-                }
-            }
+//          val maybeCover =
+//            when (playingItem) {
+//              null -> null
+//              else ->
+//                when {
+//                  playingItemId != playingItem.id || cachedCover == null -> {
+//                    mediaProvider
+//                      .fetchBookCover(playingItem.id)
+//                      .fold(
+//                        onSuccess = { buffer ->
+//                          val image = buffer.readBytes()
+//
+//                          cachedCover = image
+//                          playingItemId = playingItem.id
+//
+//                          image
+//                        },
+//                        onFailure = { null },
+//                      )
+//                  }
+//
+//                  else -> cachedCover
+//                }
+//            }
 
           PlayingItemState(
             id = playingItem?.id ?: "",
             title = playingItem?.title ?: "",
             chapterTitle = chapterTitle,
             isPlaying = isPlaying,
-            imageCover = maybeCover,
+            imageCover = null,
           )
         }.collect { playingItemState ->
           updatePlayingItem(playingItemState)
