@@ -179,7 +179,7 @@ class PlaybackService : MediaSessionService() {
                     .Builder()
                     .setTitle(file.name)
                     .setArtist(book.title)
-                // .setArtworkUri(fetchCover(book))
+                    .setArtworkUri(fetchCover(book))
 
                 val mediaItem =
                   MediaItem
