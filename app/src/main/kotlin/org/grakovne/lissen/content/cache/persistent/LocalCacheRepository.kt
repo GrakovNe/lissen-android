@@ -49,8 +49,8 @@ class LocalCacheRepository
       val coverFile = cachedBookRepository.provideBookCover(bookId)
 
       return when (coverFile.exists()) {
-        true -> ApiResult.Error(ApiError.InternalError)
-        false -> ApiResult.Success(coverFile)
+        true -> ApiResult.Success(coverFile)
+        false -> ApiResult.Error(ApiError.InternalError)
       }
     }
 

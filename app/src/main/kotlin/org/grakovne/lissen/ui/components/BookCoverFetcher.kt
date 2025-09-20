@@ -69,9 +69,7 @@ class BookCoverFetcherFactory(
 object ImageLoaderModule {
   @Singleton
   @Provides
-  fun provideBookCoverFetcherFactory(
-    mediaChannel: LissenMediaProvider,
-  ): BookCoverFetcherFactory = BookCoverFetcherFactory(mediaChannel)
+  fun provideBookCoverFetcherFactory(mediaChannel: LissenMediaProvider): BookCoverFetcherFactory = BookCoverFetcherFactory(mediaChannel)
 
   @Singleton
   @Provides
