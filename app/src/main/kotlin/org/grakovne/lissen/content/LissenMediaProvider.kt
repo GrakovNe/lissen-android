@@ -11,9 +11,9 @@ import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.ChannelCode
 import org.grakovne.lissen.channel.common.ChannelProvider
 import org.grakovne.lissen.channel.common.MediaChannel
-import org.grakovne.lissen.content.cache.LocalCacheRepository
-import org.grakovne.lissen.content.cache.getImageDimensions
-import org.grakovne.lissen.content.cache.sourceWithBackdropBlur
+import org.grakovne.lissen.content.cache.common.getImageDimensions
+import org.grakovne.lissen.content.cache.common.sourceWithBackdropBlur
+import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.lib.domain.Book
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.Library
