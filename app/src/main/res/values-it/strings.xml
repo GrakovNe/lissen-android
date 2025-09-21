@@ -129,4 +129,10 @@
     <string name="player_screen_chapter_list_navigation_podcast">Episodi</string>
     <string name="player_screen_chapter_list_navigation_items">Elementi</string>
     <string name="downloads_menu_download_option_disable">Disabilitato</string>
+    <string name="settings_download_automatically_title">Scarica automaticamente</string>
+    <string name="download_settings_title">Preferenze di download</string>
+    <string name="download_settings_description">Definisci i download e gestisci i contenuti</string>
+    <string name="download_settings_network_type_title">Usa per i download automatici</string>
+    <string name="wifi_only_settings_option">Solo WiFi</string>
+    <string name="wifi_or_cellular_settings_option">WiFi o rete dati</string>
 </resources>
