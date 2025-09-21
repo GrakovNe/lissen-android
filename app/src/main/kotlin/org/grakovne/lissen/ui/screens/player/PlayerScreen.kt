@@ -214,7 +214,6 @@ fun PlayerScreen(
               contentCachingModelView = cachingModelView,
               navController = navController,
               libraryType = libraryViewModel.fetchPreferredLibraryType(),
-              settingsViewModel = settingsViewModel,
             )
           }
       }

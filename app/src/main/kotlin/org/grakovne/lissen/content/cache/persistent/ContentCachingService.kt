@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.cache.persistent.ContentCachingNotificationService.Companion.NOTIFICATION_ID
@@ -37,22 +38,6 @@ class ContentCachingService : LifecycleService() {
     flags: Int,
     startId: Int,
   ): Int {
-    when {
-      Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
-        startForeground(
-          NOTIFICATION_ID,
-          notificationService.updateCachingNotification(emptyList()),
-          ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
-        )
-      }
-      else -> {
-        startForeground(
-          NOTIFICATION_ID,
-          notificationService.updateCachingNotification(emptyList()),
-        )
-      }
-    }
-
     val task =
       intent
         ?.getSerializableExtra(CACHING_TASK_EXTRA)
@@ -70,9 +55,29 @@ class ContentCachingService : LifecycleService() {
           contentCachingManager = contentCachingManager,
         )
 
+      when {
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
+          startForeground(
+            NOTIFICATION_ID,
+            notificationService.updateCachingNotification(emptyList()),
+            ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
+          )
+        }
+        else -> {
+          startForeground(
+            NOTIFICATION_ID,
+            notificationService.updateCachingNotification(emptyList()),
+          )
+        }
+      }
+
       executor
         .run(mediaProvider.providePreferredChannel())
-        .collect { progress ->
+        .onCompletion {
+          if (executionStatuses.isEmpty()) {
+            finish()
+          }
+        }.collect { progress ->
           executionStatuses[item] = progress
           cacheProgressBus.emit(item, progress)
 

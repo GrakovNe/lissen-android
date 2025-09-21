@@ -34,6 +34,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.map
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.content.cache.persistent.CacheState
@@ -47,12 +48,10 @@ import org.grakovne.lissen.ui.icons.TimerPlay
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.PlayerViewModel
-import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
 fun NavigationBarComposable(
   book: DetailedItem,
-  settingsViewModel: SettingsViewModel,
   playerViewModel: PlayerViewModel,
   contentCachingModelView: CachingModelView,
   navController: AppNavigationService,
@@ -64,6 +63,7 @@ fun NavigationBarComposable(
   val timerRemaining by playerViewModel.timerRemaining.observeAsState(0)
   val playbackSpeed by playerViewModel.playbackSpeed.observeAsState(1f)
   val playingQueueExpanded by playerViewModel.playingQueueExpanded.observeAsState(false)
+  val downloadEnabled by playerViewModel.book.map { book.chapters.isNotEmpty() }.observeAsState(true)
 
   val isMetadataCached by contentCachingModelView.provideCacheState(book.id).observeAsState(false)
 
@@ -135,6 +135,7 @@ fun NavigationBarComposable(
             overflow = TextOverflow.Ellipsis,
           )
         },
+        enabled = downloadEnabled,
         selected = false,
         onClick = { downloadsExpanded = true },
         colors =
