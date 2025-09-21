@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.NetworkTypeAutoCache
+import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItem
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsMultiItemComposable
 import org.grakovne.lissen.viewmodel.SettingsViewModel
@@ -32,7 +33,7 @@ fun LibraryTypeAutoCacheSettingsComposable(viewModel: SettingsViewModel) {
   val context = LocalContext.current
   var libraryTypeExpanded by remember { mutableStateOf(false) }
   val preferredDownloadOption by viewModel.preferredAutoDownloadOption.observeAsState()
-  val preferredNetworkType by viewModel.preferredAutoDownloadNetworkType.observeAsState()
+  val preferredNetworkType by remember { mutableStateOf(LibraryType.LIBRARY) }
 
   val enabled = preferredDownloadOption != null
 
@@ -72,7 +73,8 @@ fun LibraryTypeAutoCacheSettingsComposable(viewModel: SettingsViewModel) {
     CommonSettingsMultiItemComposable(
       items =
         listOf(
-          NetworkTypeAutoCache.WIFI_ONLY.toItem(context) to true,
+          LibraryType.LIBRARY.toItem(context) to true,
+          LibraryType.PODCAST.toItem(context) to true,
         ),
       onDismissRequest = { libraryTypeExpanded = false },
       onItemChanged = { f, ff -> Log.d("HERE", "$f changed to $ff") },
@@ -80,12 +82,13 @@ fun LibraryTypeAutoCacheSettingsComposable(viewModel: SettingsViewModel) {
   }
 }
 
-private fun NetworkTypeAutoCache.toItem(context: Context): CommonSettingsItem {
+private fun LibraryType.toItem(context: Context): CommonSettingsItem {
   val id = this.name
   val name =
     when (this) {
-      NetworkTypeAutoCache.WIFI_ONLY -> context.getString(R.string.wifi_only_settings_option)
-      NetworkTypeAutoCache.WIFI_OR_CELLULAR -> context.getString(R.string.wifi_or_cellular_settings_option)
+      LibraryType.LIBRARY -> context.getString(R.string.library_type_library)
+      LibraryType.PODCAST -> context.getString(R.string.library_type_podcast)
+      LibraryType.UNKNOWN -> context.getString(R.string.library_type_unknown)
     }
 
   return CommonSettingsItem(id, name, null)
