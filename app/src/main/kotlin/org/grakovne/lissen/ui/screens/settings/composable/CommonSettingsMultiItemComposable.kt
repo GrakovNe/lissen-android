@@ -1,7 +1,5 @@
 package org.grakovne.lissen.ui.screens.settings.composable
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,7 +18,10 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
@@ -46,7 +47,7 @@ fun CommonSettingsMultiItemComposable(
 
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
           itemsIndexed(items) { index, item ->
-            var isChecked = true
+            var isChecked by remember { mutableStateOf(item.second) }
 
             ListItem(
               headlineContent = {
@@ -55,7 +56,10 @@ fun CommonSettingsMultiItemComposable(
               trailingContent = {
                 Switch(
                   checked = isChecked,
-                  onCheckedChange = { isChecked = it },
+                  onCheckedChange = {
+                    isChecked = it
+                    onItemChanged(item.first.id, it)
+                  },
                   colors =
                     SwitchDefaults.colors(
                       uncheckedTrackColor = colorScheme.background,
@@ -65,15 +69,6 @@ fun CommonSettingsMultiItemComposable(
                     ),
                 )
               },
-              modifier =
-                Modifier
-                  .fillMaxWidth()
-                  .clickable(
-                    indication = null,
-                    interactionSource = remember { MutableInteractionSource() },
-                  ) {
-                    onItemChanged(item.first.id, isChecked)
-                  },
             )
             if (index < items.lastIndex) {
               HorizontalDivider()

@@ -1,6 +1,7 @@
 package org.grakovne.lissen.ui.screens.settings.advanced.cache
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,7 +24,6 @@ import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItem
-import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItemComposable
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsMultiItemComposable
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
@@ -75,7 +75,7 @@ fun LibraryTypeAutoCacheSettingsComposable(viewModel: SettingsViewModel) {
           NetworkTypeAutoCache.WIFI_ONLY.toItem(context) to true,
         ),
       onDismissRequest = { libraryTypeExpanded = false },
-      onItemChanged = {f, ff -> Unit}
+      onItemChanged = { f, ff -> Log.d("HERE", "$f changed to $ff") },
     )
   }
 }

@@ -81,7 +81,7 @@ fun CacheSettingsScreen(
           AutoCacheSettingsComposable(viewModel)
 
           NetworkTypeAutoCacheSettingsComposable(viewModel)
-          
+
           LibraryTypeAutoCacheSettingsComposable(viewModel)
 
           AdvancedSettingsItemComposable(
