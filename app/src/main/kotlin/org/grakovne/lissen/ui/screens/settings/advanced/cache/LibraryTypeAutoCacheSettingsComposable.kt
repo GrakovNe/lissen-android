@@ -1,7 +1,6 @@
 package org.grakovne.lissen.ui.screens.settings.advanced.cache
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,7 +21,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
-import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItem
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsMultiItemComposable
@@ -33,7 +31,7 @@ fun LibraryTypeAutoCacheSettingsComposable(viewModel: SettingsViewModel) {
   val context = LocalContext.current
   var libraryTypeExpanded by remember { mutableStateOf(false) }
   val preferredDownloadOption by viewModel.preferredAutoDownloadOption.observeAsState()
-  val preferredNetworkType by remember { mutableStateOf(LibraryType.LIBRARY) }
+  val preferredLibraryTypes by viewModel.preferredAutoDownloadLibraryTypes.observeAsState()
 
   val enabled = preferredDownloadOption != null
 
@@ -48,7 +46,7 @@ fun LibraryTypeAutoCacheSettingsComposable(viewModel: SettingsViewModel) {
       modifier = Modifier.weight(1f),
     ) {
       Text(
-        text = stringResource(R.string.download_settings_network_type_title),
+        text = stringResource(R.string.download_settings_library_type_title),
         style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
         modifier = Modifier.padding(bottom = 4.dp),
         color =
@@ -58,7 +56,12 @@ fun LibraryTypeAutoCacheSettingsComposable(viewModel: SettingsViewModel) {
           },
       )
       Text(
-        text = preferredNetworkType?.toItem(context)?.name ?: "",
+        text =
+          preferredLibraryTypes
+            ?.map { it.toItem(context) }
+            ?.takeIf { it.isNotEmpty() }
+            ?.joinToString(", ") { it.name }
+            ?: context.getString(R.string.download_settings_library_type_no_items_selected),
         style = typography.bodyMedium,
         color =
           when (enabled) {
@@ -77,7 +80,12 @@ fun LibraryTypeAutoCacheSettingsComposable(viewModel: SettingsViewModel) {
           LibraryType.PODCAST.toItem(context) to true,
         ),
       onDismissRequest = { libraryTypeExpanded = false },
-      onItemChanged = { f, ff -> Log.d("HERE", "$f changed to $ff") },
+      onItemChanged = { id, state ->
+        LibraryType
+          .entries
+          .find { it.name == id }
+          ?.let { viewModel.changeAutoDownloadLibraryType(it, state) }
+      },
     )
   }
 }
