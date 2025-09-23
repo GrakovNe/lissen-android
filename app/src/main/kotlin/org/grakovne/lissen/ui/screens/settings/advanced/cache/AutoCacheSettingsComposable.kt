@@ -39,7 +39,11 @@ fun AutoCacheSettingsComposable(viewModel: SettingsViewModel) {
   val context = LocalContext.current
   var autoCacheExpanded by remember { mutableStateOf(false) }
   val preferredDownloadOption by viewModel.preferredAutoDownloadOption.observeAsState()
-  val libraryType by viewModel.preferredLibrary.map { it.type }.observeAsState(LibraryType.LIBRARY)
+
+  val libraryType by viewModel
+    .preferredLibrary
+    .map { it?.type ?: LibraryType.LIBRARY }
+    .observeAsState(LibraryType.LIBRARY)
 
   Row(
     modifier =
