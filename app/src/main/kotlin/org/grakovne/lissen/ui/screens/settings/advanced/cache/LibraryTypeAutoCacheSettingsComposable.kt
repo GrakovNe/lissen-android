@@ -18,7 +18,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
@@ -26,7 +25,6 @@ import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItem
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsMultiItemComposable
 import org.grakovne.lissen.viewmodel.SettingsViewModel
-import java.util.Locale
 
 @Composable
 fun LibraryTypeAutoCacheSettingsComposable(viewModel: SettingsViewModel) {

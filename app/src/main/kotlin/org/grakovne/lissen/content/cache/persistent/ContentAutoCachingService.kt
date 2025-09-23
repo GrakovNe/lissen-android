@@ -29,94 +29,96 @@ import javax.inject.Singleton
 @Singleton
 @OptIn(UnstableApi::class)
 class ContentAutoCachingService
-@Inject
-constructor(
-  @ApplicationContext private val context: Context,
-  private val mediaRepository: MediaRepository,
-  private val mediaProvider: LissenMediaProvider,
-  private val sharedPreferences: LissenSharedPreferences,
-  private val networkQualityService: NetworkQualityService,
-) : RunningComponent {
-  private val scope = CoroutineScope(Dispatchers.IO)
-  
-  override fun onCreate() {
-    scope.launch {
-      combine(
-        mediaRepository.playingBook.asFlow().distinctUntilChanged(),
-        mediaRepository.isPlaying
-          .asFlow()
-          .filterNotNull()
-          .distinctUntilChanged(),
-        mediaRepository.currentChapterIndex.asFlow().distinctUntilChanged(),
-      ) { playingItem: DetailedItem?, isPlaying: Boolean, _: Int? -> playingItem to isPlaying }
-        .collectLatest { (playingItem, isPlaying) -> updatePlaybackCache(playingItem, isPlaying) }
+  @Inject
+  constructor(
+    @ApplicationContext private val context: Context,
+    private val mediaRepository: MediaRepository,
+    private val mediaProvider: LissenMediaProvider,
+    private val sharedPreferences: LissenSharedPreferences,
+    private val networkQualityService: NetworkQualityService,
+  ) : RunningComponent {
+    private val scope = CoroutineScope(Dispatchers.IO)
+
+    override fun onCreate() {
+      scope.launch {
+        combine(
+          mediaRepository.playingBook.asFlow().distinctUntilChanged(),
+          mediaRepository.isPlaying
+            .asFlow()
+            .filterNotNull()
+            .distinctUntilChanged(),
+          mediaRepository.currentChapterIndex.asFlow().distinctUntilChanged(),
+        ) { playingItem: DetailedItem?, isPlaying: Boolean, _: Int? -> playingItem to isPlaying }
+          .collectLatest { (playingItem, isPlaying) -> updatePlaybackCache(playingItem, isPlaying) }
+      }
+    }
+
+    private suspend fun updatePlaybackCache(
+      playingItem: DetailedItem?,
+      isPlaying: Boolean,
+    ) {
+      val playbackCacheOption = sharedPreferences.getAutoDownloadOption() ?: return
+      val isNetworkAvailable = networkQualityService.isNetworkAvailable()
+      val currentNetwork = networkQualityService.getCurrentNetworkType() ?: return
+
+      val playingMediaItem = playingItem ?: return
+      val preferredNetwork = sharedPreferences.getAutoDownloadNetworkType()
+      val currentTotalPosition = mediaRepository.totalPosition.value ?: return
+
+      val playingItemLibraryType =
+        mediaProvider
+          .providePreferredChannel()
+          .fetchLibraries()
+          .fold(
+            onSuccess = { libraries -> libraries.find { it.id == playingMediaItem.libraryId }?.type },
+            onFailure = { null },
+          )
+          ?: return
+
+      val requestedLibraryType = sharedPreferences.getAutoDownloadLibraryTypes().contains(playingItemLibraryType)
+
+      val isForceCache = sharedPreferences.isForceCache()
+
+      val cacheAvailable =
+        isNetworkAvailable &&
+          isPlaying &&
+          isForceCache.not() &&
+          validNetworkType(currentNetwork, preferredNetwork) &&
+          requestedLibraryType
+
+      if (cacheAvailable.not()) {
+        return
+      }
+
+      val task =
+        ContentCachingTask(
+          item = playingMediaItem,
+          options = playbackCacheOption,
+          currentPosition = currentTotalPosition,
+        )
+
+      val intent =
+        Intent(context, ContentCachingService::class.java).apply {
+          putExtra(ContentCachingService.CACHING_TASK_EXTRA, task as Serializable)
+        }
+
+      context.startForegroundService(intent)
+    }
+
+    private fun validNetworkType(
+      current: NetworkType,
+      required: NetworkTypeAutoCache,
+    ): Boolean {
+      val positiveNetworkTypes =
+        when (required) {
+          NetworkTypeAutoCache.WIFI_ONLY -> listOf(NetworkType.WIFI)
+          NetworkTypeAutoCache.WIFI_OR_CELLULAR -> listOf(NetworkType.WIFI, NetworkType.CELLULAR)
+        }
+
+      return positiveNetworkTypes.contains(current)
+    }
+
+    companion object {
+      private const val TAG = "ContentAutoCachingService"
     }
   }
-  
-  private suspend fun updatePlaybackCache(
-    playingItem: DetailedItem?,
-    isPlaying: Boolean,
-  ) {
-    val playbackCacheOption = sharedPreferences.getAutoDownloadOption() ?: return
-    val isNetworkAvailable = networkQualityService.isNetworkAvailable()
-    val currentNetwork = networkQualityService.getCurrentNetworkType() ?: return
-    
-    val playingMediaItem = playingItem ?: return
-    val preferredNetwork = sharedPreferences.getAutoDownloadNetworkType()
-    val currentTotalPosition = mediaRepository.totalPosition.value ?: return
-    
-    val playingItemLibraryType = mediaProvider
-      .providePreferredChannel()
-      .fetchLibraries()
-      .fold(
-        onSuccess = { libraries -> libraries.find { it.id == playingMediaItem.libraryId }?.type },
-        onFailure = { null }
-      )
-      ?: return
-    
-    val requestedLibraryType = sharedPreferences.getAutoDownloadLibraryTypes().contains(playingItemLibraryType)
-    
-    val isForceCache = sharedPreferences.isForceCache()
-    
-    val cacheAvailable = isNetworkAvailable
-      && isPlaying
-      && isForceCache.not()
-      && validNetworkType(currentNetwork, preferredNetwork)
-      && requestedLibraryType
-    
-    if (cacheAvailable.not()) {
-      return
-    }
-    
-    val task =
-      ContentCachingTask(
-        item = playingMediaItem,
-        options = playbackCacheOption,
-        currentPosition = currentTotalPosition,
-      )
-    
-    val intent =
-      Intent(context, ContentCachingService::class.java).apply {
-        putExtra(ContentCachingService.CACHING_TASK_EXTRA, task as Serializable)
-      }
-    
-    context.startForegroundService(intent)
-  }
-  
-  private fun validNetworkType(
-    current: NetworkType,
-    required: NetworkTypeAutoCache,
-  ): Boolean {
-    val positiveNetworkTypes =
-      when (required) {
-        NetworkTypeAutoCache.WIFI_ONLY -> listOf(NetworkType.WIFI)
-        NetworkTypeAutoCache.WIFI_OR_CELLULAR -> listOf(NetworkType.WIFI, NetworkType.CELLULAR)
-      }
-    
-    return positiveNetworkTypes.contains(current)
-  }
-  
-  companion object {
-    private const val TAG = "ContentAutoCachingService"
-  }
-}
