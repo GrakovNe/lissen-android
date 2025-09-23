@@ -169,6 +169,23 @@ class LissenSharedPreferences
         ?.let { NetworkTypeAutoCache.valueOf(it) }
         ?: NetworkTypeAutoCache.WIFI_ONLY
 
+    fun saveAutoDownloadLibraryTypes(types: List<LibraryType>) {
+      sharedPreferences.edit {
+        val json = gson.toJson(types)
+        putString(KEY_PREFERRED_AUTO_DOWNLOAD_LIBRARY_TYPE, json)
+      }
+    }
+
+    fun getAutoDownloadLibraryTypes(): List<LibraryType> {
+      val json = sharedPreferences.getString(KEY_PREFERRED_AUTO_DOWNLOAD_LIBRARY_TYPE, null)
+      val type = object : TypeToken<List<LibraryType>>() {}.type
+
+      return when (json == null) {
+        true -> LibraryType.meaningfulTypes
+        false -> gson.fromJson(json, type)
+      }
+    }
+
     fun saveColorScheme(colorScheme: ColorScheme) =
       sharedPreferences.edit {
         putString(KEY_PREFERRED_COLOR_SCHEME, colorScheme.name)
@@ -375,6 +392,7 @@ class LissenSharedPreferences
       private const val KEY_PREFERRED_COLOR_SCHEME = "preferred_color_scheme"
       private const val KEY_PREFERRED_AUTO_DOWNLOAD = "preferred_auto_download"
       private const val KEY_PREFERRED_AUTO_DOWNLOAD_NETWORK_TYPE = "preferred_auto_download_network_type"
+      private const val KEY_PREFERRED_AUTO_DOWNLOAD_LIBRARY_TYPE = "preferred_auto_download_library_type"
       private const val KEY_PREFERRED_LIBRARY_ORDERING = "preferred_library_ordering"
 
       private const val KEY_CUSTOM_HEADERS = "custom_headers"

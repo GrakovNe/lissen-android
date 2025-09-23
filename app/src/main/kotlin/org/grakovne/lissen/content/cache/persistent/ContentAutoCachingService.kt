@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.NetworkQualityService
 import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.common.RunningComponent
+import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.lib.domain.ContentCachingTask
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.NetworkType
@@ -32,6 +33,7 @@ class ContentAutoCachingService
   constructor(
     @ApplicationContext private val context: Context,
     private val mediaRepository: MediaRepository,
+    private val mediaProvider: LissenMediaProvider,
     private val sharedPreferences: LissenSharedPreferences,
     private val networkQualityService: NetworkQualityService,
   ) : RunningComponent {
@@ -51,7 +53,7 @@ class ContentAutoCachingService
       }
     }
 
-    private fun updatePlaybackCache(
+    private suspend fun updatePlaybackCache(
       playingItem: DetailedItem?,
       isPlaying: Boolean,
     ) {
@@ -63,9 +65,26 @@ class ContentAutoCachingService
       val preferredNetwork = sharedPreferences.getAutoDownloadNetworkType()
       val currentTotalPosition = mediaRepository.totalPosition.value ?: return
 
+      val playingItemLibraryType =
+        mediaProvider
+          .providePreferredChannel()
+          .fetchLibraries()
+          .fold(
+            onSuccess = { libraries -> libraries.find { it.id == playingMediaItem.libraryId }?.type },
+            onFailure = { null },
+          )
+          ?: return
+
+      val requestedLibraryType = sharedPreferences.getAutoDownloadLibraryTypes().contains(playingItemLibraryType)
+
       val isForceCache = sharedPreferences.isForceCache()
 
-      val cacheAvailable = isNetworkAvailable && isPlaying && isForceCache.not() && validNetworkType(currentNetwork, preferredNetwork)
+      val cacheAvailable =
+        isNetworkAvailable &&
+          isPlaying &&
+          isForceCache.not() &&
+          validNetworkType(currentNetwork, preferredNetwork) &&
+          requestedLibraryType
 
       if (cacheAvailable.not()) {
         return

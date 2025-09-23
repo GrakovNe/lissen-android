@@ -133,6 +133,11 @@
     <string name="download_settings_title">Download preferences</string>
     <string name="download_settings_description">Define downloads and manage content</string>
     <string name="download_settings_network_type_title">Use for automatic downloads</string>
+    <string name="download_settings_library_type_title">Download automatically</string>
+    <string name="download_settings_library_type_no_items_selected">No types defined</string>
     <string name="wifi_only_settings_option">WiFi only</string>
     <string name="wifi_or_cellular_settings_option">WiFi or cellular network</string>
+    <string name="library_type_library">Books</string>
+    <string name="library_type_podcast">Podcasts</string>
+    <string name="library_type_unknown">Unknown</string>
 </resources>

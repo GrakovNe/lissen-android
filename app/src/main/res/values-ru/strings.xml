@@ -132,6 +132,11 @@
     <string name="download_settings_title">Загрузки</string>
     <string name="download_settings_description">Управляйте скачиванием и загруженным контентом</string>
     <string name="download_settings_network_type_title">Использовать для автоскачивания</string>
+    <string name="download_settings_library_type_title">Автоматически скачивать</string>
+    <string name="download_settings_library_type_no_items_selected">Типы библиотек не выбраны</string>
     <string name="wifi_only_settings_option">Только WiFi</string>
     <string name="wifi_or_cellular_settings_option">WiFi или мобильную сеть</string>
+    <string name="library_type_library">Книги</string>
+    <string name="library_type_podcast">Подкасты</string>
+    <string name="library_type_unknown">Неизвестный тип</string>
 </resources>

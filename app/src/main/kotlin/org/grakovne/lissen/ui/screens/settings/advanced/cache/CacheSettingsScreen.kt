@@ -82,6 +82,8 @@ fun CacheSettingsScreen(
 
           NetworkTypeAutoCacheSettingsComposable(viewModel)
 
+          LibraryTypeAutoCacheSettingsComposable(viewModel)
+
           AdvancedSettingsItemComposable(
             title = stringResource(R.string.settings_screen_cached_items_title),
             description = stringResource(R.string.settings_screen_cached_items_hint),

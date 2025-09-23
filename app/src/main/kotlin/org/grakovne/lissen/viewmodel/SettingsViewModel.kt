@@ -14,6 +14,7 @@ import org.grakovne.lissen.common.PlaybackVolumeBoost
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.lib.domain.DownloadOption
 import org.grakovne.lissen.lib.domain.Library
+import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.SeekTimeOption
 import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader.Companion.clean
@@ -47,6 +48,9 @@ class SettingsViewModel
 
     private val _preferredAutoDownloadNetworkType = MutableLiveData(preferences.getAutoDownloadNetworkType())
     val preferredAutoDownloadNetworkType = _preferredAutoDownloadNetworkType
+
+    private val _preferredAutoDownloadLibraryTypes = MutableLiveData(preferences.getAutoDownloadLibraryTypes())
+    val preferredAutoDownloadLibraryTypes = _preferredAutoDownloadLibraryTypes
 
     private val _preferredAutoDownloadOption = MutableLiveData(preferences.getAutoDownloadOption())
     val preferredAutoDownloadOption = _preferredAutoDownloadOption
@@ -125,6 +129,26 @@ class SettingsViewModel
     fun preferAutoDownloadNetworkType(type: NetworkTypeAutoCache) {
       _preferredAutoDownloadNetworkType.postValue(type)
       preferences.saveAutoDownloadNetworkType(type)
+    }
+
+    fun changeAutoDownloadLibraryType(
+      type: LibraryType,
+      state: Boolean,
+    ) {
+      val currentState: List<LibraryType> = (_preferredAutoDownloadLibraryTypes.value ?: LibraryType.meaningfulTypes)
+
+      val updatedState =
+        currentState
+          .toMutableList()
+          .apply {
+            when (state) {
+              true -> this.add(type)
+              false -> this.remove(type)
+            }
+          }
+
+      _preferredAutoDownloadLibraryTypes.postValue(updatedState)
+      preferences.saveAutoDownloadLibraryTypes(updatedState)
     }
 
     fun preferLibraryOrdering(configuration: LibraryOrderingConfiguration) {
