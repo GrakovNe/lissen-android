@@ -181,7 +181,7 @@ class LissenSharedPreferences
       val type = object : TypeToken<List<LibraryType>>() {}.type
 
       return when (json == null) {
-        true -> listOf(LibraryType.LIBRARY, LibraryType.PODCAST)
+        true -> LibraryType.meaningfulTypes
         false -> gson.fromJson(json, type)
       }
     }

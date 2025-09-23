@@ -31,7 +31,8 @@ fun LibraryTypeAutoCacheSettingsComposable(viewModel: SettingsViewModel) {
   val context = LocalContext.current
   var libraryTypeExpanded by remember { mutableStateOf(false) }
   val preferredDownloadOption by viewModel.preferredAutoDownloadOption.observeAsState()
-  val preferredLibraryTypes by viewModel.preferredAutoDownloadLibraryTypes.observeAsState()
+  val preferredLibraryTypes by viewModel.preferredAutoDownloadLibraryTypes.observeAsState(LibraryType.meaningfulTypes)
+  val libraryTypesState = LibraryType.meaningfulTypes.map { it to preferredLibraryTypes.contains(it) }
 
   val enabled = preferredDownloadOption != null
 
@@ -76,11 +77,7 @@ fun LibraryTypeAutoCacheSettingsComposable(viewModel: SettingsViewModel) {
 
   if (libraryTypeExpanded) {
     CommonSettingsMultiItemComposable(
-      items =
-        listOf(
-          LibraryType.LIBRARY.toItem(context) to true,
-          LibraryType.PODCAST.toItem(context) to true,
-        ),
+      items = libraryTypesState.map { (type, state) -> type.toItem(context) to state },
       onDismissRequest = { libraryTypeExpanded = false },
       onItemChanged = { id, state ->
         LibraryType

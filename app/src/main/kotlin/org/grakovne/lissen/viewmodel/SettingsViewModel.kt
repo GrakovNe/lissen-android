@@ -135,7 +135,7 @@ class SettingsViewModel
       type: LibraryType,
       state: Boolean,
     ) {
-      val currentState: List<LibraryType> = (_preferredAutoDownloadLibraryTypes.value ?: listOf(LibraryType.LIBRARY, LibraryType.PODCAST))
+      val currentState: List<LibraryType> = (_preferredAutoDownloadLibraryTypes.value ?: LibraryType.meaningfulTypes)
 
       val updatedState =
         currentState
