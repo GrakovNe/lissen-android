@@ -135,4 +135,9 @@
     <string name="wifi_only_settings_option">仅限 WiFi</string>
     <string name="wifi_or_cellular_settings_option">WiFi 或蜂窝网络</string>
     <string name="downloads_menu_download_option_disable">禁用</string>
+    <string name="download_settings_library_type_title">自动下载</string>
+    <string name="download_settings_library_type_no_items_selected">未选择类型</string>
+    <string name="library_type_library">书籍</string>
+    <string name="library_type_podcast">播客</string>
+    <string name="library_type_unknown">未知类型</string>
 </resources>
