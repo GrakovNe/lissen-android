@@ -139,4 +139,5 @@
     <string name="library_type_library">Книги</string>
     <string name="library_type_podcast">Подкасты</string>
     <string name="library_type_unknown">Неизвестный тип</string>
+    <string name="player_screen_chapter_list_navigation_items">элементы</string>
 </resources>
