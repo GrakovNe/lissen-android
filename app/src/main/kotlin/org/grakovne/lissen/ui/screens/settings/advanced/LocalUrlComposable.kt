@@ -25,6 +25,7 @@ import org.grakovne.lissen.lib.domain.connection.LocalUrl
 
 @Composable
 fun LocalUrlComposable(
+  enabled: Boolean,
   url: LocalUrl,
   onChanged: (LocalUrl) -> Unit,
   onDelete: (LocalUrl) -> Unit,
@@ -48,14 +49,19 @@ fun LocalUrlComposable(
       ) {
         OutlinedTextField(
           value = url.ssid,
+          enabled = enabled,
           onValueChange = { onChanged(url.copy(ssid = it, route = url.route)) },
           label = { Text(stringResource(R.string.local_url_hint_ssid_name)) },
           singleLine = true,
           shape = RoundedCornerShape(16.dp),
-          modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+          modifier =
+            Modifier
+              .fillMaxWidth()
+              .padding(bottom = 12.dp),
         )
 
         OutlinedTextField(
+          enabled = enabled,
           value = url.route,
           onValueChange = { onChanged(url.copy(ssid = url.ssid, route = it)) },
           label = { Text(stringResource(R.string.local_url_hint_route_value)) },
@@ -66,12 +72,17 @@ fun LocalUrlComposable(
       }
 
       IconButton(
+        enabled = enabled,
         onClick = { onDelete(url) },
       ) {
         Icon(
           imageVector = Icons.Default.DeleteOutline,
           contentDescription = "Delete from cache",
-          tint = colorScheme.error,
+          tint =
+            when (enabled) {
+              true -> colorScheme.error
+              false -> colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+            },
           modifier = Modifier.size(32.dp),
         )
       }

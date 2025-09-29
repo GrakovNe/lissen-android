@@ -1,46 +1,30 @@
 package org.grakovne.lissen.ui.screens.settings.advanced
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.PermDeviceInformation
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.filled.Wifi
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -49,7 +33,6 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -71,6 +54,8 @@ fun LocalUrlSettingsScreen(onBack: () -> Unit) {
 
   val state = rememberLazyListState()
   val coroutineScope = rememberCoroutineScope()
+
+  val hasPermission = false
 
   Scaffold(
     topBar = {
@@ -115,11 +100,10 @@ fun LocalUrlSettingsScreen(onBack: () -> Unit) {
             true -> listOf(LocalUrl.empty())
             false -> localUrls.value
           }
-        
-        item {  LocationPermissionBanner(onRequestPermission = {})}
 
         itemsIndexed(customHeaders) { index, header ->
           LocalUrlComposable(
+            enabled = hasPermission,
             url = header,
             onChanged = { newPair ->
               val updatedList = customHeaders.toMutableList()
@@ -152,75 +136,73 @@ fun LocalUrlSettingsScreen(onBack: () -> Unit) {
     },
     floatingActionButtonPosition = FabPosition.Center,
     floatingActionButton = {
-      FloatingActionButton(
-        containerColor = colorScheme.primary,
-        shape = CircleShape,
-        onClick = {
-          val updatedList = localUrls.value.toMutableList()
-          updatedList.add(LocalUrl.empty())
-          settingsViewModel.updateLocalUrls(updatedList)
+      when (hasPermission) {
+        true -> {
+          FloatingActionButton(
+            containerColor = colorScheme.primary,
+            shape = CircleShape,
+            onClick = {
+              val updatedList = localUrls.value.toMutableList()
+              updatedList.add(LocalUrl.empty())
+              settingsViewModel.updateLocalUrls(updatedList)
 
-          coroutineScope.launch {
-            state.scrollToItem(max(0, updatedList.size - 1))
+              coroutineScope.launch {
+                state.scrollToItem(max(0, updatedList.size - 1))
+              }
+            },
+          ) {
+            Icon(
+              imageVector = Icons.Filled.Add,
+              contentDescription = "Add",
+            )
           }
-        },
-      ) {
-        Icon(
-          imageVector = Icons.Filled.Add,
-          contentDescription = "Add",
-        )
+        }
+
+        false -> LocationPermissionBanner(onRequestPermission = { })
       }
     },
   )
 }
 
-
 @Composable
 fun LocationPermissionBanner(
   onRequestPermission: () -> Unit,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
 ) {
   Row(
-    modifier = modifier
-      .fillMaxWidth()
-      .padding(horizontal = 16.dp, vertical = 8.dp)
-      .clip(RoundedCornerShape(8.dp))
-      .border(
-        BorderStroke(1.dp, colorScheme.outline.copy(alpha = 0.06f)),
-        shape = RoundedCornerShape(8.dp)
-      )
-      .background(color = colorScheme.surfaceContainer.copy(alpha = 0.02f))
-      .padding(horizontal = 12.dp, vertical = 10.dp),
-    verticalAlignment = Alignment.CenterVertically
+    modifier =
+      modifier
+        .fillMaxWidth()
+        .padding(horizontal = 20.dp, vertical = 14.dp),
+    verticalAlignment = Alignment.CenterVertically,
   ) {
     Icon(
-      imageVector = Icons.Default.Info,
+      imageVector = Icons.Default.LocationOn,
       contentDescription = null,
-      modifier = Modifier.size(18.dp),
-      tint = colorScheme.onSurfaceVariant
+      tint = colorScheme.primary,
+      modifier = Modifier.padding(end = 12.dp),
     )
-    
-    Spacer(modifier = Modifier.width(10.dp))
-    
+
     Text(
-      text = "Для проверки Wi-Fi нужно разрешение на местоположение",
-      style = typography.bodyMedium,
-      color = colorScheme.onSurfaceVariant,
+      text = "Для проверки Wi-Fi сети приложению нужно разрешение на местоположение",
+      style =
+        typography.bodyMedium.copy(
+          color = colorScheme.onSurface,
+        ),
       modifier = Modifier.weight(1f),
-      maxLines = 2
     )
-    
+
     TextButton(
       onClick = onRequestPermission,
-      contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
     ) {
       Text(
         text = "Разрешить",
-        style = typography.labelLarge
+        style =
+          typography.bodyMedium.copy(
+            color = colorScheme.primary,
+            fontWeight = FontWeight.SemiBold,
+          ),
       )
     }
   }
 }
-
-
-

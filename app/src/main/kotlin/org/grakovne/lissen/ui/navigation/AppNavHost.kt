@@ -51,7 +51,7 @@ fun AppNavHost(
   }
 
   val book = preferences.getPlayingBook()
-  
+
   val startDestination = "$ROUTE_SETTINGS/local_url"
 
 //  val startDestination =
