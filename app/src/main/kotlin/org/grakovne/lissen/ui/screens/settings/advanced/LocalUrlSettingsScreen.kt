@@ -1,5 +1,8 @@
 package org.grakovne.lissen.ui.screens.settings.advanced
 
+import android.Manifest
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -29,10 +32,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -40,6 +48,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.lib.domain.connection.LocalUrl
+import org.grakovne.lissen.ui.screens.common.hasLocationPermission
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 import kotlin.math.max
 
@@ -49,13 +58,15 @@ fun LocalUrlSettingsScreen(onBack: () -> Unit) {
   val settingsViewModel: SettingsViewModel = hiltViewModel()
   val localUrls = settingsViewModel.localUrls.observeAsState(emptyList())
 
+  val context = LocalContext.current
+
   val fabHeight = 56.dp
   val additionalPadding = 16.dp
 
   val state = rememberLazyListState()
   val coroutineScope = rememberCoroutineScope()
 
-  val hasPermission = false
+  var hasPermission by remember { mutableStateOf(hasLocationPermission(context)) }
 
   Scaffold(
     topBar = {
@@ -158,7 +169,7 @@ fun LocalUrlSettingsScreen(onBack: () -> Unit) {
           }
         }
 
-        false -> LocationPermissionBanner(onRequestPermission = { })
+        false -> LocationPermissionBanner { hasPermission = it }
       }
     },
   )
@@ -166,8 +177,8 @@ fun LocalUrlSettingsScreen(onBack: () -> Unit) {
 
 @Composable
 fun LocationPermissionBanner(
-  onRequestPermission: () -> Unit,
   modifier: Modifier = Modifier,
+  onResult: (Boolean) -> Unit,
 ) {
   Row(
     modifier =
@@ -183,6 +194,12 @@ fun LocationPermissionBanner(
       modifier = Modifier.padding(end = 12.dp),
     )
 
+    val permissionRequestLauncher =
+      rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = onResult,
+      )
+
     Text(
       text = stringResource(R.string.location_permission_request_hint),
       style =
@@ -193,7 +210,7 @@ fun LocationPermissionBanner(
     )
 
     TextButton(
-      onClick = onRequestPermission,
+      onClick = { permissionRequestLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
     ) {
       Text(
         text = stringResource(R.string.permission_request_grant_button),
