@@ -1,13 +1,20 @@
 package org.grakovne.lissen.ui.screens.settings.advanced
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -16,11 +23,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PermDeviceInformation
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -40,6 +49,7 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -106,7 +116,7 @@ fun LocalUrlSettingsScreen(onBack: () -> Unit) {
             false -> localUrls.value
           }
         
-        item {  LocationPermissionBanner {  } }
+        item {  LocationPermissionBanner(onRequestPermission = {})}
 
         itemsIndexed(customHeaders) { index, header ->
           LocalUrlComposable(
@@ -166,40 +176,51 @@ fun LocalUrlSettingsScreen(onBack: () -> Unit) {
 
 
 @Composable
-fun LocationPermissionBanner(onRequestPermission: () -> Unit) {
-  Card(
-    colors = CardDefaults.cardColors(
-      containerColor = MaterialTheme.colorScheme.errorContainer,
-      contentColor = MaterialTheme.colorScheme.onErrorContainer
-    ),
-    shape = RoundedCornerShape(12.dp),
-    modifier = Modifier
+fun LocationPermissionBanner(
+  onRequestPermission: () -> Unit,
+  modifier: Modifier = Modifier
+) {
+  Row(
+    modifier = modifier
       .fillMaxWidth()
-      .padding(horizontal = 16.dp, vertical = 8.dp),
-    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+      .padding(horizontal = 16.dp, vertical = 8.dp)
+      .clip(RoundedCornerShape(8.dp))
+      .border(
+        BorderStroke(1.dp, colorScheme.outline.copy(alpha = 0.06f)),
+        shape = RoundedCornerShape(8.dp)
+      )
+      .background(color = colorScheme.surfaceContainer.copy(alpha = 0.02f))
+      .padding(horizontal = 12.dp, vertical = 10.dp),
+    verticalAlignment = Alignment.CenterVertically
   ) {
-    Row(
-      modifier = Modifier
-        .padding(16.dp)
-        .fillMaxWidth(),
-      verticalAlignment = Alignment.CenterVertically
+    Icon(
+      imageVector = Icons.Default.Info,
+      contentDescription = null,
+      modifier = Modifier.size(18.dp),
+      tint = colorScheme.onSurfaceVariant
+    )
+    
+    Spacer(modifier = Modifier.width(10.dp))
+    
+    Text(
+      text = "Для проверки Wi-Fi нужно разрешение на местоположение",
+      style = typography.bodyMedium,
+      color = colorScheme.onSurfaceVariant,
+      modifier = Modifier.weight(1f),
+      maxLines = 2
+    )
+    
+    TextButton(
+      onClick = onRequestPermission,
+      contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
     ) {
-      Icon(
-        imageVector = Icons.Default.PermDeviceInformation,
-        contentDescription = "Warning",
-        tint = colorScheme.onSurface,
-        modifier = Modifier.padding(end = 12.dp)
-      )
-      
       Text(
-        text = "Для проверки Wi-Fi сети приложению нужно разрешение на местоположение",
-        style = typography.bodyMedium,
-        modifier = Modifier.weight(1f)
+        text = "Разрешить",
+        style = typography.labelLarge
       )
-      
-      TextButton(onClick = onRequestPermission) {
-        Text("Разрешить")
-      }
     }
   }
 }
+
+
+
