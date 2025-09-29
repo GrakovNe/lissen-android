@@ -24,7 +24,7 @@
     <string name="seek_interval_5_seconds">5 ثوانٍ</string>
     <string name="seek_interval_10_seconds">10 ثوانٍ</string>
     <string name="library_screen_preferences_menu_item">التفضيلات</string>
-    <string name="login_screen_server_url_input">رابط الخادم</string>
+    <string name="hint_server_url_input">رابط الخادم</string>
     <string name="login_screen_title">الاتصال بالخادم</string>
     <string name="login_screen_login_input">اسم المستخدم</string>
     <string name="login_screen_show_password_hint">إظهار كلمة المرور</string>

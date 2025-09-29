@@ -10,7 +10,7 @@
     <string name="player_screen_playback_speed_navigation">Nopeus</string>
     <string name="library_screen_preferences_menu_item">Asetukset</string>
     <string name="login_screen_title">Yhdistä palvelimeen</string>
-    <string name="login_screen_server_url_input">Palvelimen URL-osoite</string>
+    <string name="hint_server_url_input">Palvelimen URL-osoite</string>
     <string name="login_screen_login_input">Käyttäjätunnus</string>
     <string name="login_screen_password_input">Salasana</string>
     <string name="player_screen_chapter_list_navigation_library">Luvut</string>

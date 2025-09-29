@@ -7,7 +7,7 @@
     <string name="library_screen_continue_listening_title">தொடர்ந்து கேட்பது</string>
     <string name="library_screen_preferences_menu_item">விருப்பத்தேர்வுகள்</string>
     <string name="login_screen_title">சேவையகத்துடன் இணைக்கவும்</string>
-    <string name="login_screen_server_url_input">சேவையக முகவரி</string>
+    <string name="hint_server_url_input">சேவையக முகவரி</string>
     <string name="login_screen_login_input">புகுபதிவு</string>
     <string name="login_screen_show_password_hint">கடவுச்சொல்லைக் காட்டு</string>
     <string name="login_screen_password_input">கடவுச்சொல்</string>

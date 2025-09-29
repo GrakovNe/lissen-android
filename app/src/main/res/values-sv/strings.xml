@@ -67,7 +67,7 @@
     <string name="playback_speed_title">Uppspelningshastighet</string>
     <string name="audiobookshelf_server_is_required">Audiobookshelf-server krävs</string>
     <string name="library_screen_podcast_title">Podcast</string>
-    <string name="login_screen_server_url_input">Server-URL</string>
+    <string name="hint_server_url_input">Server-URL</string>
     <string name="login_error_host_url_is_missing">Värd-URL saknas</string>
     <string name="login_error_host_url_shall_be_https_or_http">Värd-URL ska vara https:// eller http://</string>
     <string name="settings_screen_custom_header_hint">Specificera rubriker för serveranslutningar</string>

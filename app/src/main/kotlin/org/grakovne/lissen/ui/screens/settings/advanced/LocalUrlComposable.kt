@@ -64,7 +64,7 @@ fun LocalUrlComposable(
           enabled = enabled,
           value = url.route,
           onValueChange = { onChanged(url.copy(ssid = url.ssid, route = it)) },
-          label = { Text(stringResource(R.string.local_url_hint_route_value)) },
+          label = { Text(stringResource(R.string.hint_server_url_input)) },
           singleLine = true,
           shape = RoundedCornerShape(16.dp),
           modifier = Modifier.fillMaxWidth(),

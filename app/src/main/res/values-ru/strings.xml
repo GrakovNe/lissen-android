@@ -4,7 +4,7 @@
     <string name="library_screen_continue_listening_title">Продолжить слушать</string>
     <string name="library_screen_preferences_menu_item">Настройки</string>
     <string name="login_screen_title">Подключиться к серверу</string>
-    <string name="login_screen_server_url_input">URL сервера</string>
+    <string name="hint_server_url_input">URL сервера</string>
     <string name="login_screen_login_input">Имя пользователя</string>
     <string name="login_screen_show_password_hint">Показать пароль</string>
     <string name="login_screen_password_input">Пароль</string>
