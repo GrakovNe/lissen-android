@@ -184,7 +184,7 @@ fun LocationPermissionBanner(
     )
 
     Text(
-      text = "Для проверки Wi-Fi сети приложению нужно разрешение на местоположение",
+      text = stringResource(R.string.location_permission_request_hint),
       style =
         typography.bodyMedium.copy(
           color = colorScheme.onSurface,
@@ -196,7 +196,7 @@ fun LocationPermissionBanner(
       onClick = onRequestPermission,
     ) {
       Text(
-        text = "Разрешить",
+        text = stringResource(R.string.permission_request_grant_button),
         style =
           typography.bodyMedium.copy(
             color = colorScheme.primary,

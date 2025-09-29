@@ -140,4 +140,6 @@
     <string name="library_type_podcast">Подкасты</string>
     <string name="library_type_unknown">Неизвестный тип</string>
     <string name="player_screen_chapter_list_navigation_items">элементы</string>
+    <string name="location_permission_request_hint">Для определения наличия Wi‑Fi приложению нужен доступ к местоположению</string>
+    <string name="permission_request_grant_button">Разрешить</string>
 </resources>
