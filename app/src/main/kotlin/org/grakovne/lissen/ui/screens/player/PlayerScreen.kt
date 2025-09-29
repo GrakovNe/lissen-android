@@ -47,7 +47,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import coil.ImageLoader
+import coil3.ImageLoader
 import org.grakovne.lissen.R
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.ui.icons.Search

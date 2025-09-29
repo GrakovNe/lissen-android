@@ -27,8 +27,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil.ImageLoader
-import coil.request.ImageRequest
+import coil3.ImageLoader
+import coil3.request.ImageRequest
 import org.grakovne.lissen.R
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.LibraryType
@@ -53,7 +53,7 @@ fun TrackDetailsComposable(
       ImageRequest
         .Builder(context)
         .data(book?.id)
-        .size(coil.size.Size.ORIGINAL)
+        .size(coil3.size.Size.ORIGINAL)
         .build()
     }
 

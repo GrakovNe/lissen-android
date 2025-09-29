@@ -20,7 +20,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import coil.ImageLoader
+import coil3.ImageLoader
 import org.grakovne.lissen.common.NetworkQualityService
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.screens.library.LibraryScreen

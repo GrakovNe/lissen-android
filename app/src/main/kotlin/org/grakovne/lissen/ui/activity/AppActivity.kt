@@ -8,7 +8,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.navigation.compose.rememberNavController
-import coil.ImageLoader
+import coil3.ImageLoader
 import dagger.hilt.android.AndroidEntryPoint
 import org.grakovne.lissen.common.NetworkQualityService
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
