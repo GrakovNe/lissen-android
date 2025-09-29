@@ -135,4 +135,9 @@
     <string name="download_settings_network_type_title">Usa per i download automatici</string>
     <string name="wifi_only_settings_option">Solo WiFi</string>
     <string name="wifi_or_cellular_settings_option">WiFi o rete dati</string>
+    <string name="download_settings_library_type_title">Scarica automaticamente</string>
+    <string name="download_settings_library_type_no_items_selected">Nessuna tipologia definita</string>
+    <string name="library_type_library">Libri</string>
+    <string name="library_type_podcast">Podcast</string>
+    <string name="library_type_unknown">Sconosciuti</string>
 </resources>
