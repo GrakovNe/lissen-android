@@ -1,15 +1,14 @@
 package org.grakovne.lissen.ui.components
 
 import android.content.Context
-import android.net.Uri
-import coil.ImageLoader
-import coil.decode.ImageSource
-import coil.fetch.FetchResult
-import coil.fetch.Fetcher
-import coil.fetch.SourceResult
-import coil.key.Keyer
-import coil.request.Options
-import coil.size.Dimension
+import coil3.ImageLoader
+import coil3.Uri
+import coil3.decode.ImageSource
+import coil3.fetch.FetchResult
+import coil3.fetch.Fetcher
+import coil3.fetch.SourceFetchResult
+import coil3.request.Options
+import coil3.size.Dimension
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -24,7 +23,7 @@ import javax.inject.Singleton
 
 class BookCoverFetcher(
   private val mediaChannel: LissenMediaProvider,
-  private val uri: Uri,
+  private val uri: String,
   private val options: Options,
 ) : Fetcher {
   override suspend fun fetch(): FetchResult? =
@@ -32,7 +31,7 @@ class BookCoverFetcher(
       val response =
         mediaChannel
           .fetchBookCover(
-            bookId = uri.toString(),
+            bookId = uri,
             width = options.size.width.pxOrNull(),
           )
     ) {
@@ -45,10 +44,10 @@ class BookCoverFetcher(
             fileSystem = FileSystem.SYSTEM,
           )
 
-        SourceResult(
+        SourceFetchResult(
           source = imageSource,
           mimeType = null,
-          dataSource = coil.decode.DataSource.DISK,
+          dataSource = coil3.decode.DataSource.DISK,
         )
       }
     }
@@ -61,7 +60,7 @@ class BookCoverFetcherFactory(
     data: Uri,
     options: Options,
     imageLoader: ImageLoader,
-  ) = BookCoverFetcher(dataProvider, data, options)
+  ): BookCoverFetcher = BookCoverFetcher(dataProvider, data.toString(), options)
 }
 
 @Module
@@ -79,21 +78,8 @@ object ImageLoaderModule {
   ): ImageLoader =
     ImageLoader
       .Builder(context)
-      .components {
-        add(CoverCacheKeyHolder())
-        add(bookCoverFetcherFactory)
-      }.build()
+      .components { add(bookCoverFetcherFactory) }
+      .build()
 }
 
 fun Dimension.pxOrNull(): Int? = (this as? Dimension.Pixels)?.px
-
-class CoverCacheKeyHolder : Keyer<Uri> {
-  override fun key(
-    data: Uri,
-    options: Options,
-  ): String {
-    val width = options.size.width.pxOrNull()
-
-    return "cover:$data:w=${width ?: "auto"}"
-  }
-}
