@@ -140,10 +140,9 @@
     <string name="library_type_library">Books</string>
     <string name="library_type_podcast">Podcasts</string>
     <string name="library_type_unknown">Unknown</string>
-    <string name="settings_screen_internal_connection_url_title">Internal connection URL</string>
-    <string name="settings_screen_internal_connection_url_description">Define server address for home Wi‑Fi</string>
-    <string name="local_url_hint_ssid_name">WiFi network</string>
+    <string name="settings_screen_internal_connection_url_title">Home network server address</string>
+    <string name="settings_screen_internal_connection_url_description">Define server access for home Wi‑Fi</string>
+    <string name="local_url_hint_ssid_name">WiFi network name</string>
     <string name="location_permission_request_hint">The app needs location access to detect Wi‑Fi connectivity</string>
     <string name="permission_request_grant_button">Allow</string>
-
 </resources>

@@ -139,7 +139,10 @@
     <string name="library_type_library">Книги</string>
     <string name="library_type_podcast">Подкасты</string>
     <string name="library_type_unknown">Неизвестный тип</string>
-    <string name="player_screen_chapter_list_navigation_items">элементы</string>
+    <string name="player_screen_chapter_list_navigation_items">Элементы</string>
+    <string name="settings_screen_internal_connection_url_title">Адрес сервера в домашней сети</string>
+    <string name="settings_screen_internal_connection_url_description">Настройте доступ к серверу из домашней сети</string>
+    <string name="local_url_hint_ssid_name">Имя WiFi сети</string>
     <string name="location_permission_request_hint">Для определения наличия Wi‑Fi приложению нужен доступ к местоположению</string>
     <string name="permission_request_grant_button">Разрешить</string>
 </resources>
