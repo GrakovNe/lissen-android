@@ -1,10 +1,12 @@
 package org.grakovne.lissen.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.common.ColorScheme
@@ -16,6 +18,7 @@ import org.grakovne.lissen.lib.domain.DownloadOption
 import org.grakovne.lissen.lib.domain.Library
 import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.SeekTimeOption
+import org.grakovne.lissen.lib.domain.connection.LocalUrl
 import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader.Companion.clean
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
@@ -25,6 +28,7 @@ import javax.inject.Inject
 class SettingsViewModel
   @Inject
   constructor(
+    @ApplicationContext private val context: Context,
     private val mediaChannel: LissenMediaProvider,
     private val preferences: LissenSharedPreferences,
   ) : ViewModel() {
@@ -63,6 +67,9 @@ class SettingsViewModel
 
     private val _customHeaders = MutableLiveData(preferences.getCustomHeaders())
     val customHeaders = _customHeaders
+
+    private val _localUrls = MutableLiveData(preferences.getLocalUrls())
+    val localUrls = _localUrls
 
     private val _seekTime = MutableLiveData(preferences.getSeekTime())
     val seekTime = _seekTime
@@ -185,6 +192,18 @@ class SettingsViewModel
 
       preferences.saveSeekTime(updated)
       _seekTime.postValue(updated)
+    }
+
+    fun updateLocalUrls(urls: List<LocalUrl>) {
+      _localUrls.postValue(urls)
+
+      val meaningfulHeaders =
+        urls
+          .distinctBy { it.ssid }
+          .filterNot { it.ssid.isEmpty() }
+          .filterNot { it.route.isEmpty() }
+
+      preferences.saveLocalUrls(meaningfulHeaders)
     }
 
     fun updateCustomHeaders(headers: List<ServerRequestHeader>) {

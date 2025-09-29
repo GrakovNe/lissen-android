@@ -140,4 +140,8 @@
     <string name="library_type_library">Books</string>
     <string name="library_type_podcast">Podcasts</string>
     <string name="library_type_unknown">Unknown</string>
+    <string name="settings_screen_internal_connection_url_title">Internal connection URL</string>
+    <string name="settings_screen_internal_connection_url_description">Define server address for home Wi‑Fi</string>
+    <string name="local_url_hint_ssid_name">WiFi SSID</string>
+    <string name="local_url_hint_route_value">URL</string>
 </resources>

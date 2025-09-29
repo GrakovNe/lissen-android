@@ -66,7 +66,6 @@ import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.RecentBook
 import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.ui.navigation.AppNavigationService
-import org.grakovne.lissen.ui.screens.common.RequestLocationPermission
 import org.grakovne.lissen.ui.screens.common.RequestNotificationPermissions
 import org.grakovne.lissen.ui.screens.library.composables.BookComposable
 import org.grakovne.lissen.ui.screens.library.composables.DefaultActionComposable
@@ -116,10 +115,6 @@ fun LibraryScreen(
   var preferredLibraryExpanded by remember { mutableStateOf(false) }
 
   val library = libraryViewModel.getPager(searchRequested).collectAsLazyPagingItems()
-  
-  RequestLocationPermission()
-  val f = networkQualityService.getCurrentWifiSSID()
-  println(f)
 
   BackHandler {
     when (searchRequested) {
