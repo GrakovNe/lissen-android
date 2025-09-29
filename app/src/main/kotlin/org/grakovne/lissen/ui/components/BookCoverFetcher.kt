@@ -2,6 +2,7 @@ package org.grakovne.lissen.ui.components
 
 import android.content.Context
 import coil3.ImageLoader
+import coil3.Uri
 import coil3.decode.ImageSource
 import coil3.fetch.FetchResult
 import coil3.fetch.Fetcher
@@ -54,12 +55,12 @@ class BookCoverFetcher(
 
 class BookCoverFetcherFactory(
   private val dataProvider: LissenMediaProvider,
-) : Fetcher.Factory<Any> {
+) : Fetcher.Factory<Uri> {
   override fun create(
-    data: Any,
+    data: Uri,
     options: Options,
     imageLoader: ImageLoader,
-  ) = BookCoverFetcher(dataProvider, data.toString(), options)
+  ): BookCoverFetcher = BookCoverFetcher(dataProvider, data.toString(), options)
 }
 
 @Module
