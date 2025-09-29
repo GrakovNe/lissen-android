@@ -38,4 +38,18 @@ class NetworkQualityService
         else -> null
       }
     }
+  
+  fun getCurrentWifiSSID(): String? {
+    val network = connectivityManager.activeNetwork ?: return null
+    val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return null
+    
+    if (!capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) return null
+    
+    val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as android.net.wifi.WifiManager
+    val wifiInfo = wifiManager.connectionInfo
+    val ssid = wifiInfo.ssid
+    
+    return if (ssid != "<unknown ssid>") ssid.removeSurrounding("\"") else null
   }
+  
+}
