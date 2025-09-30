@@ -21,6 +21,11 @@ class AudiobookshelfHostProvider
           ?.let(Host.Companion::external)
           ?: return null
 
+      if (sharedPreferences.getLocalUrls().isEmpty()) {
+        Log.d(TAG, "Using external host: ${externalHost.url}, no local routes")
+        return externalHost
+      }
+
       if (networkService.getCurrentNetworkType() == NetworkType.CELLULAR) {
         Log.d(TAG, "Using external host: ${externalHost.url}, no WiFi connection")
         return externalHost
@@ -33,7 +38,7 @@ class AudiobookshelfHostProvider
 
       return sharedPreferences
         .getLocalUrls()
-        .find { it.ssid == currentNetwork }
+        .find { it.ssid.lowercase() == currentNetwork.lowercase() }
         ?.route
         ?.let(Host.Companion::internal)
         ?.also { Log.d(TAG, "Using internal host: ${it.url}") }
