@@ -18,15 +18,12 @@ data class LocalUrl(
 
       return this.copy(ssid = name, route = value)
     }
-
-    /**
-     * Cleans this string to contain only valid tchar characters for HTTP header names as per RFC 7230.
-     *
-     * @return A string containing only allowed tchar characters.
-     */
+    
     private fun String.clean(): String {
-      val invalidCharacters = Regex("[^!#\$%&'*+\\-.^_`|~0-9A-Za-z]")
-      return this.replace(invalidCharacters, "").trim()
+      val validCharacters = Regex("[\\x20-\\x7E]")
+      return this
+        .filter { validCharacters.matches(it.toString()) }
+        .trim()
     }
   }
 }
