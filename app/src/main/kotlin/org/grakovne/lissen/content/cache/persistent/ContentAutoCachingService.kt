@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
-import org.grakovne.lissen.common.NetworkQualityService
+import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.content.LissenMediaProvider
@@ -35,7 +35,7 @@ class ContentAutoCachingService
     private val mediaRepository: MediaRepository,
     private val mediaProvider: LissenMediaProvider,
     private val sharedPreferences: LissenSharedPreferences,
-    private val networkQualityService: NetworkQualityService,
+    private val networkService: NetworkService,
   ) : RunningComponent {
     private val scope = CoroutineScope(Dispatchers.IO)
 
@@ -58,8 +58,8 @@ class ContentAutoCachingService
       isPlaying: Boolean,
     ) {
       val playbackCacheOption = sharedPreferences.getAutoDownloadOption() ?: return
-      val isNetworkAvailable = networkQualityService.isNetworkAvailable()
-      val currentNetwork = networkQualityService.getCurrentNetworkType() ?: return
+      val isNetworkAvailable = networkService.isNetworkAvailable()
+      val currentNetwork = networkService.getCurrentNetworkType() ?: return
 
       val playingMediaItem = playingItem ?: return
       val preferredNetwork = sharedPreferences.getAutoDownloadNetworkType()

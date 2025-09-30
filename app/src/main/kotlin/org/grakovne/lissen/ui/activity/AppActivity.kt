@@ -10,7 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.navigation.compose.rememberNavController
 import coil3.ImageLoader
 import dagger.hilt.android.AndroidEntryPoint
-import org.grakovne.lissen.common.NetworkQualityService
+import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.navigation.AppLaunchAction
 import org.grakovne.lissen.ui.navigation.AppNavHost
@@ -29,7 +29,7 @@ class AppActivity : ComponentActivity() {
   lateinit var imageLoader: ImageLoader
 
   @Inject
-  lateinit var networkQualityService: NetworkQualityService
+  lateinit var networkService: NetworkService
 
   private lateinit var appNavigationService: AppNavigationService
 
@@ -51,7 +51,7 @@ class AppActivity : ComponentActivity() {
           navigationService = appNavigationService,
           preferences = preferences,
           imageLoader = imageLoader,
-          networkQualityService = networkQualityService,
+          networkService = networkService,
           appLaunchAction = getLaunchAction(intent),
         )
       }

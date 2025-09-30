@@ -21,7 +21,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import coil3.ImageLoader
-import org.grakovne.lissen.common.NetworkQualityService
+import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.screens.library.LibraryScreen
 import org.grakovne.lissen.ui.screens.login.LoginScreen
@@ -39,7 +39,7 @@ import org.grakovne.lissen.ui.screens.settings.advanced.cache.CachedItemsSetting
 fun AppNavHost(
   navController: NavHostController,
   preferences: LissenSharedPreferences,
-  networkQualityService: NetworkQualityService,
+  networkService: NetworkService,
   navigationService: AppNavigationService,
   imageLoader: ImageLoader,
   appLaunchAction: AppLaunchAction,
@@ -133,7 +133,7 @@ fun AppNavHost(
         LibraryScreen(
           navController = navigationService,
           imageLoader = imageLoader,
-          networkQualityService = networkQualityService,
+          networkService = networkService,
         )
       }
 

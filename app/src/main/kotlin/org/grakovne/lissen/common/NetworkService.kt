@@ -3,20 +3,41 @@ package org.grakovne.lissen.common
 import android.content.Context
 import android.content.Context.CONNECTIVITY_SERVICE
 import android.net.ConnectivityManager
+import android.net.Network
 import android.net.NetworkCapabilities
+import android.net.NetworkRequest
+import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.grakovne.lissen.lib.domain.NetworkType
-import java.net.InetAddress
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class NetworkQualityService
+class NetworkService
   @Inject
   constructor(
     @ApplicationContext private val context: Context,
-  ) {
+  ) : RunningComponent {
     private val connectivityManager = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+
+    private var cachedSsid: String? = null
+
+    override fun onCreate() {
+      val networkRequest =
+        NetworkRequest
+          .Builder()
+          .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+          .build()
+
+      val networkCallback =
+        object : ConnectivityManager.NetworkCallback() {
+          override fun onLost(network: Network) {
+            cachedSsid = null
+          }
+        }
+
+      connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
+    }
 
     fun isNetworkAvailable(): Boolean {
       val network = connectivityManager.activeNetwork ?: return false
@@ -32,7 +53,7 @@ class NetworkQualityService
     fun getCurrentNetworkType(): NetworkType? {
       val network = connectivityManager.activeNetwork ?: return null
       val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return null
-      
+
       return when {
         capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> NetworkType.WIFI
         capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> NetworkType.CELLULAR
@@ -50,6 +71,18 @@ class NetworkQualityService
       val wifiInfo = wifiManager.connectionInfo
       val ssid = wifiInfo.ssid
 
-      return if (ssid != "<unknown ssid>") ssid.removeSurrounding("\"") else null
+      if (ssid == "<unknown ssid>") {
+        Log.d(TAG, "Using cached value $cachedSsid because the actual SSID cannot be checked")
+        return cachedSsid
+      }
+
+      val networkSsid = ssid.removeSurrounding("\"")
+
+      cachedSsid = networkSsid
+      return cachedSsid
+    }
+
+    companion object {
+      private const val TAG = "NetworkService"
     }
   }
