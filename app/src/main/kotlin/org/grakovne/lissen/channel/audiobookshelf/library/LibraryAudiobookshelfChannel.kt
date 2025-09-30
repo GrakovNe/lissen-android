@@ -4,6 +4,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfHostProvider
 import org.grakovne.lissen.channel.audiobookshelf.common.AudiobookshelfChannel
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.library.AudioBookshelfLibrarySyncService
@@ -32,6 +33,7 @@ import javax.inject.Singleton
 class LibraryAudiobookshelfChannel
   @Inject
   constructor(
+    hostProvider: AudiobookshelfHostProvider,
     repository: AudioBookshelfRepository,
     recentListeningResponseConverter: RecentListeningResponseConverter,
     preferences: LissenSharedPreferences,
@@ -44,6 +46,7 @@ class LibraryAudiobookshelfChannel
     private val bookResponseConverter: BookResponseConverter,
     private val librarySearchItemsConverter: LibrarySearchItemsConverter,
   ) : AudiobookshelfChannel(
+      hostProvider = hostProvider,
       dataRepository = repository,
       recentBookResponseConverter = recentListeningResponseConverter,
       sessionResponseConverter = sessionResponseConverter,

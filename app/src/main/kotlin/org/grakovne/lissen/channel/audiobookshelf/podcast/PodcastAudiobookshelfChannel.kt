@@ -2,6 +2,7 @@ package org.grakovne.lissen.channel.audiobookshelf.podcast
 
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfHostProvider
 import org.grakovne.lissen.channel.audiobookshelf.common.AudiobookshelfChannel
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.podcast.AudioBookshelfPodcastSyncService
@@ -29,6 +30,7 @@ import javax.inject.Singleton
 class PodcastAudiobookshelfChannel
   @Inject
   constructor(
+    hostProvider: AudiobookshelfHostProvider,
     dataRepository: AudioBookshelfRepository,
     recentListeningResponseConverter: RecentListeningResponseConverter,
     preferences: LissenSharedPreferences,
@@ -41,6 +43,7 @@ class PodcastAudiobookshelfChannel
     private val podcastResponseConverter: PodcastResponseConverter,
     private val podcastSearchItemsConverter: PodcastSearchItemsConverter,
   ) : AudiobookshelfChannel(
+      hostProvider = hostProvider,
       dataRepository = dataRepository,
       recentBookResponseConverter = recentListeningResponseConverter,
       sessionResponseConverter = sessionResponseConverter,

@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.core.net.toUri
 import okio.Buffer
 import org.grakovne.lissen.BuildConfig
+import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfHostProvider
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfSyncService
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
@@ -22,6 +23,7 @@ abstract class AudiobookshelfChannel(
   protected val dataRepository: AudioBookshelfRepository,
   protected val sessionResponseConverter: PlaybackSessionResponseConverter,
   protected val preferences: LissenSharedPreferences,
+  private val hostProvider: AudiobookshelfHostProvider,
   private val syncService: AudioBookshelfSyncService,
   private val libraryResponseConverter: LibraryResponseConverter,
   private val recentBookResponseConverter: RecentListeningResponseConverter,
@@ -31,9 +33,10 @@ abstract class AudiobookshelfChannel(
     libraryItemId: String,
     fileId: String,
   ): Uri {
-    val host = preferences.getHost() ?: error("Host is null")
+    val host = hostProvider.provideHost() ?: error("Host is null")
 
     return host
+      .url
       .toUri()
       .buildUpon()
       .appendPath("api")

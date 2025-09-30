@@ -3,6 +3,8 @@ package org.grakovne.lissen.channel.audiobookshelf.common.api
 import android.util.Log
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfHostProvider
+import org.grakovne.lissen.channel.audiobookshelf.Host
 import org.grakovne.lissen.channel.audiobookshelf.common.client.AudiobookshelfApiClient
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LoginResponseConverter
 import org.grakovne.lissen.channel.common.ApiClient
@@ -19,11 +21,12 @@ import javax.inject.Singleton
 class AudioBookShelfApiService
   @Inject
   constructor(
+    private val hostProvider: AudiobookshelfHostProvider,
     private val preferences: LissenSharedPreferences,
     private val requestHeadersProvider: RequestHeadersProvider,
     private val loginResponseConverter: LoginResponseConverter,
   ) {
-    private var cachedHost: String? = null
+    private var cachedHost: Host? = null
     private var cachedToken: String? = null
     private var cachedAccessToken: String? = null
     private var cachedRefreshToken: String? = null
@@ -90,7 +93,7 @@ class AudioBookShelfApiService
     }
 
     private fun getClientInstance(): AudiobookshelfApiClient {
-      val host = preferences.getHost()
+      val host = hostProvider.provideHost()
       val token = preferences.getToken()
       val accessToken = preferences.getAccessToken()
       val refreshToken = preferences.getRefreshToken()
@@ -115,7 +118,7 @@ class AudioBookShelfApiService
     }
 
     private fun createClientInstance(): AudiobookshelfApiClient {
-      val host = preferences.getHost()
+      val host = hostProvider.provideHost()?.url
       val headers = requestHeadersProvider.fetchRequestHeaders()
 
       if (host.isNullOrBlank()) {
@@ -135,7 +138,7 @@ class AudioBookShelfApiService
     }
 
     private fun isClientChanged(
-      host: String?,
+      host: Host?,
       token: String?,
       headers: List<ServerRequestHeader>,
       accessToken: String?,
