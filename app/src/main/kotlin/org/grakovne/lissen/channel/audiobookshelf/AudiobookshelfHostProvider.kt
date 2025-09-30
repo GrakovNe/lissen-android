@@ -2,6 +2,7 @@ package org.grakovne.lissen.channel.audiobookshelf
 
 import android.util.Log
 import org.grakovne.lissen.common.NetworkQualityService
+import org.grakovne.lissen.lib.domain.NetworkType
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -19,6 +20,11 @@ constructor(
         .getHost()
         ?.let(Host.Companion::external)
         ?: return null
+    
+    if (networkQualityService.getCurrentNetworkType() == NetworkType.CELLULAR) {
+      Log.d(TAG, "Using external host: ${externalHost.url}, no WiFi connection")
+      return externalHost
+    }
     
     val currentNetwork = networkQualityService
       .getCurrentWifiSSID()

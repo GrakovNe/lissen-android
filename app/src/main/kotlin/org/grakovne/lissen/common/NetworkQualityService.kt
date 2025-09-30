@@ -6,6 +6,7 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.grakovne.lissen.lib.domain.NetworkType
+import java.net.InetAddress
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -31,7 +32,7 @@ class NetworkQualityService
     fun getCurrentNetworkType(): NetworkType? {
       val network = connectivityManager.activeNetwork ?: return null
       val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return null
-
+      
       return when {
         capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> NetworkType.WIFI
         capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> NetworkType.CELLULAR
