@@ -5,7 +5,6 @@ import android.content.Intent
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.graphics.drawable.Icon
-import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,6 +16,7 @@ import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.activity.AppActivity
 import org.grakovne.lissen.ui.navigation.CONTINUE_PLAYBACK
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -30,7 +30,7 @@ class ContinuePlaybackShortcut
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     override fun onCreate() {
-      Log.d(TAG, "ContinuePlaybackShortcut registered")
+      Timber.d("ContinuePlaybackShortcut registered")
 
       scope.launch {
         sharedPreferences
@@ -40,7 +40,7 @@ class ContinuePlaybackShortcut
     }
 
     private fun updateShortcut(playingBook: DetailedItem?) {
-      Log.d(TAG, "ContinuePlaybackShortcut is updating")
+      Timber.d("ContinuePlaybackShortcut is updating")
 
       val shortcutManager = context.getSystemService(ShortcutManager::class.java)
 
@@ -67,6 +67,5 @@ class ContinuePlaybackShortcut
 
     companion object {
       private const val SHORTCUT_TAG = "continue_playback_shortcut"
-      private const val TAG = "ContinuePlaybackShortcut"
     }
   }

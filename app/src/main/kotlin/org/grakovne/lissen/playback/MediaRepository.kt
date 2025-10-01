@@ -7,7 +7,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
@@ -48,6 +47,7 @@ import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_TICK
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_VALUE_EXTRA
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.playback.service.calculateChapterPosition
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -158,7 +158,7 @@ class MediaRepository
           }
 
           override fun onFailure(t: Throwable) {
-            Log.e(TAG, "Unable to add callback to player")
+            Timber.e("Unable to add callback to player")
           }
         },
         MoreExecutors.directExecutor(),
@@ -321,7 +321,7 @@ class MediaRepository
 
     fun togglePlayPause() {
       if (currentChapterIndex.value == -1) {
-        Log.w(TAG, "Tried to toggle play/pause in the empty book. Skipping")
+        Timber.w("Tried to toggle play/pause in the empty book. Skipping")
         return
       }
 
@@ -485,7 +485,7 @@ class MediaRepository
       val book = playingBook.value ?: return
 
       if (book.chapters.isEmpty()) {
-        Log.d(TAG, "Tried to seek on the empty book")
+        Timber.d("Tried to seek on the empty book")
         return
       }
 
@@ -563,7 +563,6 @@ class MediaRepository
 
     private companion object {
       private const val CURRENT_TRACK_REPLAY_THRESHOLD = 5
-      private const val TAG = "MediaRepository"
 
       private fun getSeekTime(option: SeekTimeOption?): Long =
         when (option) {

@@ -2,7 +2,6 @@ package org.grakovne.lissen.channel.audiobookshelf.common.api
 
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.net.toUri
 import com.google.gson.Gson
@@ -34,6 +33,7 @@ import org.grakovne.lissen.channel.common.createOkHttpClient
 import org.grakovne.lissen.channel.common.randomPkce
 import org.grakovne.lissen.lib.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -134,7 +134,7 @@ class AudiobookshelfAuthService
       onSuccess: () -> Unit,
       onFailure: (ApiError) -> Unit,
     ) {
-      Log.d(TAG, "Starting OAuth flow for $host")
+      Timber.d("Starting OAuth flow for $host")
 
       preferences.saveHost(host)
 
@@ -169,7 +169,7 @@ class AudiobookshelfAuthService
               call: Call,
               e: IOException,
             ) {
-              Log.e(TAG, "Failed OAuth flow due to: $e")
+              Timber.e("Failed OAuth flow due to: $e")
               onFailure(examineError(e.message ?: ""))
             }
 
@@ -177,7 +177,7 @@ class AudiobookshelfAuthService
               call: Call,
               response: Response,
             ) {
-              Log.d(TAG, "Got Redirect from ABS")
+              Timber.d("Got Redirect from ABS")
 
               if (response.code != 302) {
                 onFailure(examineError(response.body.string()))
@@ -254,7 +254,7 @@ class AudiobookshelfAuthService
               call: Call,
               e: IOException,
             ) {
-              Log.e(TAG, "Callback request failed: $e")
+              Timber.e("Callback request failed: $e")
               onFailure(e.message ?: "")
             }
 
@@ -273,7 +273,7 @@ class AudiobookshelfAuthService
                     .fromJson(raw, LoggedUserResponse::class.java)
                     .let { loginResponseConverter.apply(it) }
                 } catch (ex: Exception) {
-                  Log.e(TAG, "Unable to get User data from response: $ex")
+                  Timber.e("Unable to get User data from response: $ex")
                   onFailure(ex.message ?: "")
                   return
                 }
@@ -285,7 +285,6 @@ class AudiobookshelfAuthService
     }
 
     private companion object {
-      private val TAG = "AudiobookshelfAuthService"
       val urlPattern = Regex("^(http|https)://.*\$")
       private val gson = Gson()
     }

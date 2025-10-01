@@ -117,8 +117,4 @@ class ContentAutoCachingService
 
       return positiveNetworkTypes.contains(current)
     }
-
-    companion object {
-      private const val TAG = "ContentAutoCachingService"
-    }
   }

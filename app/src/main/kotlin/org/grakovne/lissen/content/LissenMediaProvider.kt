@@ -1,7 +1,6 @@
 package org.grakovne.lissen.content
 
 import android.net.Uri
-import android.util.Log
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.ChannelAuthService
@@ -20,6 +19,7 @@ import org.grakovne.lissen.lib.domain.PlaybackSession
 import org.grakovne.lissen.lib.domain.RecentBook
 import org.grakovne.lissen.lib.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -37,7 +37,7 @@ class LissenMediaProvider
       libraryItemId: String,
       chapterId: String,
     ): ApiResult<Uri> {
-      Log.d(TAG, "Fetching File $libraryItemId and $chapterId URI")
+      Timber.d("Fetching File $libraryItemId and $chapterId URI")
 
       return when (preferences.isForceCache()) {
         true ->
@@ -61,7 +61,7 @@ class LissenMediaProvider
       itemId: String,
       progress: PlaybackProgress,
     ): ApiResult<Unit> {
-      Log.d(TAG, "Syncing Progress for $itemId. $progress")
+      Timber.d("Syncing Progress for $itemId. $progress")
 
       localCacheRepository.syncProgress(itemId, progress)
 
@@ -79,7 +79,7 @@ class LissenMediaProvider
       bookId: String,
       width: Int? = null,
     ): ApiResult<File> {
-      Log.d(TAG, "Fetching Cover stream for $bookId")
+      Timber.d("Fetching Cover stream for $bookId")
       return when (preferences.isForceCache()) {
         true -> localCacheRepository.fetchBookCover(bookId)
         false ->
@@ -96,7 +96,7 @@ class LissenMediaProvider
       query: String,
       limit: Int,
     ): ApiResult<List<Book>> {
-      Log.d(TAG, "Searching books with query $query of library: $libraryId")
+      Timber.d("Searching books with query $query of library: $libraryId")
 
       return when (preferences.isForceCache()) {
         true -> localCacheRepository.searchBooks(query)
@@ -115,7 +115,7 @@ class LissenMediaProvider
       pageSize: Int,
       pageNumber: Int,
     ): ApiResult<PagedItems<Book>> {
-      Log.d(TAG, "Fetching page $pageNumber of library: $libraryId")
+      Timber.d("Fetching page $pageNumber of library: $libraryId")
 
       return when (preferences.isForceCache()) {
         true -> localCacheRepository.fetchBooks(pageSize, pageNumber)
@@ -124,7 +124,7 @@ class LissenMediaProvider
     }
 
     suspend fun fetchLibraries(): ApiResult<List<Library>> {
-      Log.d(TAG, "Fetching List of libraries")
+      Timber.d("Fetching List of libraries")
 
       return when (preferences.isForceCache()) {
         true -> localCacheRepository.fetchLibraries()
@@ -146,7 +146,7 @@ class LissenMediaProvider
       supportedMimeTypes: List<String>,
       deviceId: String,
     ): ApiResult<PlaybackSession> {
-      Log.d(TAG, "Starting Playback for $itemId. $supportedMimeTypes are supported")
+      Timber.d("Starting Playback for $itemId. $supportedMimeTypes are supported")
 
       return providePreferredChannel().startPlayback(
         bookId = itemId,
@@ -157,7 +157,7 @@ class LissenMediaProvider
     }
 
     suspend fun fetchRecentListenedBooks(libraryId: String): ApiResult<List<RecentBook>> {
-      Log.d(TAG, "Fetching Recent books of library $libraryId")
+      Timber.d("Fetching Recent books of library $libraryId")
 
       return when (preferences.isForceCache()) {
         true -> localCacheRepository.fetchRecentListenedBooks()
@@ -169,7 +169,7 @@ class LissenMediaProvider
     }
 
     suspend fun fetchBook(bookId: String): ApiResult<DetailedItem> {
-      Log.d(TAG, "Fetching Detailed book info for $bookId")
+      Timber.d("Fetching Detailed book info for $bookId")
 
       return when (preferences.isForceCache()) {
         true ->
@@ -190,7 +190,7 @@ class LissenMediaProvider
       username: String,
       password: String,
     ): ApiResult<UserAccount> {
-      Log.d(TAG, "Authorizing for $username@$host")
+      Timber.d("Authorizing for $username@$host")
       return provideAuthService().authorize(host, username, password) { onPostLogin(host, it) }
     }
 
@@ -199,7 +199,7 @@ class LissenMediaProvider
       onSuccess: () -> Unit,
       onFailure: (ApiError) -> Unit,
     ) {
-      Log.d(TAG, "Starting OAuth for $host")
+      Timber.d("Starting OAuth for $host")
 
       return provideAuthService()
         .startOAuth(
@@ -297,8 +297,7 @@ class LissenMediaProvider
           .maxByOrNull { it.lastUpdate }
           ?: return detailedItem
 
-      Log.d(
-        TAG,
+      Timber.d(
         """
         Merging local playback progress into channel-fetched:
             Channel Progress: $channelProgress

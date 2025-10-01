@@ -1,7 +1,6 @@
 package org.grakovne.lissen.playback.service
 
 import android.content.Intent
-import android.util.Log
 import androidx.annotation.OptIn
 import androidx.core.net.toUri
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -29,6 +28,7 @@ import org.grakovne.lissen.lib.domain.MediaProgress
 import org.grakovne.lissen.lib.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.MediaSessionProvider
+import timber.log.Timber
 import javax.inject.Inject
 
 @UnstableApi
@@ -235,12 +235,12 @@ class PlaybackService : MediaSessionService() {
     option: TimerOption,
   ) {
     playbackTimer.startTimer(delay, option)
-    Log.d(TAG, "Timer started for ${delay * 1000} ms.")
+    Timber.d("Timer started for ${delay * 1000} ms.")
   }
 
   private fun cancelTimer() {
     playbackTimer.stopTimer()
-    Log.d(TAG, "Timer canceled.")
+    Timber.d("Timer canceled.")
   }
 
   private fun pause() {
@@ -257,7 +257,7 @@ class PlaybackService : MediaSessionService() {
     position: Double?,
   ) {
     if (items.isEmpty()) {
-      Log.w(TAG, "Tried to seek position $position in the empty book. Skipping")
+      Timber.w("Tried to seek position $position in the empty book. Skipping")
       return
     }
 

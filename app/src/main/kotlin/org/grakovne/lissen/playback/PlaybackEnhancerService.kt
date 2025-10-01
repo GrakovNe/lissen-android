@@ -1,7 +1,6 @@
 package org.grakovne.lissen.playback
 
 import android.media.audiofx.LoudnessEnhancer
-import android.util.Log
 import androidx.annotation.OptIn
 import androidx.media3.common.C
 import androidx.media3.common.Player
@@ -15,6 +14,7 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.PlaybackVolumeBoost
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.roundToInt
@@ -73,7 +73,7 @@ class PlaybackEnhancerService
           }
         }
       } catch (ex: Exception) {
-        Log.e(TAG, "Unable update volume gain with $value due to: $ex")
+        Timber.e("Unable update volume gain with $value due to: $ex")
       }
     }
 
@@ -86,8 +86,4 @@ class PlaybackEnhancerService
       }
 
     private fun dbToMb(db: Float): Int = (db * 100f).roundToInt()
-
-    companion object {
-      private const val TAG = "PlaybackEnhancerService"
-    }
   }

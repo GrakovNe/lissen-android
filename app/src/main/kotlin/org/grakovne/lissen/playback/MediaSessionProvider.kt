@@ -4,7 +4,6 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import android.view.KeyEvent.KEYCODE_MEDIA_NEXT
 import android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS
@@ -20,6 +19,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import org.grakovne.lissen.lib.domain.SeekTimeOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.activity.AppActivity
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -52,14 +52,14 @@ class MediaSessionProvider
               controllerInfo: MediaSession.ControllerInfo,
               intent: Intent,
             ): Boolean {
-              Log.d(TAG, "Executing media button event from: $controllerInfo")
+              Timber.d("Executing media button event from: $controllerInfo")
 
               val keyEvent =
                 intent
                   .getParcelableExtra<KeyEvent>(Intent.EXTRA_KEY_EVENT)
                   ?: return super.onMediaButtonEvent(session, controllerInfo, intent)
 
-              Log.d(TAG, "Got media key event: $keyEvent")
+              Timber.d("Got media key event: $keyEvent")
 
               if (keyEvent.action != KeyEvent.ACTION_DOWN) {
                 return super.onMediaButtonEvent(session, controllerInfo, intent)
@@ -126,7 +126,7 @@ class MediaSessionProvider
               customCommand: SessionCommand,
               args: Bundle,
             ): ListenableFuture<SessionResult> {
-              Log.d(TAG, "Executing: ${customCommand.customAction}")
+              Timber.d("Executing: ${customCommand.customAction}")
 
               when (customCommand.customAction) {
                 FORWARD_COMMAND -> mediaRepository.forward()
@@ -147,7 +147,5 @@ class MediaSessionProvider
 
       private const val REWIND_COMMAND = "notification_rewind"
       private const val FORWARD_COMMAND = "notification_forward"
-
-      private const val TAG = "MediaModule"
     }
   }

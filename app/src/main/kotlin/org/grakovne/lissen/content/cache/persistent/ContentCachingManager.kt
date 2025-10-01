@@ -1,7 +1,6 @@
 package org.grakovne.lissen.content.cache.persistent
 
 import android.content.Context
-import android.util.Log
 import androidx.core.net.toFile
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -22,6 +21,7 @@ import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.DownloadOption
 import org.grakovne.lissen.lib.domain.PlayingChapter
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -149,7 +149,7 @@ class ContentCachingManager
           val response = client.newCall(request).execute()
 
           if (!response.isSuccessful) {
-            Log.e(TAG, "Unable to cache media content: $response")
+            Timber.e("Unable to cache media content: $response")
             return@withContext CacheState(CacheStatus.Error)
           }
 
@@ -228,8 +228,4 @@ class ContentCachingManager
       requestedChapters
         .flatMap { findRelatedFiles(it, book.files) }
         .distinctBy { it.id }
-
-    companion object {
-      private const val TAG = "ContentCachingManager"
-    }
   }

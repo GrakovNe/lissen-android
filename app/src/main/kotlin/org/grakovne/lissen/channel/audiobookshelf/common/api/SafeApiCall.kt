@@ -1,9 +1,9 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.api
 
-import android.util.Log
 import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
 import retrofit2.Response
+import timber.log.Timber
 import java.io.IOException
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -28,14 +28,14 @@ suspend fun <T> safeApiCall(apiCall: suspend () -> Response<T>): ApiResult<T> {
       else -> ApiResult.Error(ApiError.InternalError)
     }
   } catch (e: IOException) {
-    Log.e(TAG, "Unable to make network api call due to: $e")
+    Timber.e("Unable to make network api call due to: $e")
     ApiResult.Error(ApiError.NetworkError)
   } catch (e: CancellationException) {
     // https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-exception-handler/
-    Log.d(TAG, "Api call was cancelled. Skipping")
+    Timber.d("Api call was cancelled. Skipping")
     throw e
   } catch (e: Exception) {
-    Log.e(TAG, "Unable to make network api call due to: $e")
+    Timber.e("Unable to make network api call due to: $e")
     ApiResult.Error(ApiError.InternalError)
   }
 }
