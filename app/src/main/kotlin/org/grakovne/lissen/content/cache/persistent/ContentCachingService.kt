@@ -3,7 +3,6 @@ package org.grakovne.lissen.content.cache.persistent
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
-import android.util.Log
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -14,6 +13,7 @@ import org.grakovne.lissen.content.cache.persistent.ContentCachingNotificationSe
 import org.grakovne.lissen.lib.domain.CacheStatus
 import org.grakovne.lissen.lib.domain.ContentCachingTask
 import org.grakovne.lissen.lib.domain.DetailedItem
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -81,7 +81,7 @@ class ContentCachingService : LifecycleService() {
           executionStatuses[item] = progress
           cacheProgressBus.emit(item, progress)
 
-          Log.d(TAG, "Caching progress updated: $progress")
+          Timber.d("Caching progress updated: $progress")
 
           when (inProgress() && hasErrors().not()) {
             true ->
@@ -120,11 +120,10 @@ class ContentCachingService : LifecycleService() {
     }
 
     stopSelf()
-    Log.d(TAG, "All tasks finished, stopping foreground service")
+    Timber.d("All tasks finished, stopping foreground service")
   }
 
   companion object {
     const val CACHING_TASK_EXTRA = "CACHING_TASK_EXTRA"
-    private const val TAG = "ContentCachingService"
   }
 }

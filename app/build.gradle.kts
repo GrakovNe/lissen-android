@@ -162,6 +162,7 @@ dependencies {
     implementation(libs.androidx.media3.database)
   
     implementation(libs.androidx.localbroadcastmanager)
+    implementation (libs.timber)
 
     implementation(libs.androidx.glance)
     implementation(libs.androidx.glance.appwidget)

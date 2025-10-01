@@ -11,6 +11,7 @@ import org.acra.ktx.initAcra
 import org.acra.security.TLS
 import org.acra.sender.HttpSender
 import org.grakovne.lissen.common.RunningComponent
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -26,6 +27,13 @@ class LissenApplication : Application() {
   override fun onCreate() {
     super.onCreate()
     appContext = applicationContext
+
+    if (BuildConfig.DEBUG) {
+      Timber.plant(Timber.DebugTree())
+    } else {
+      Timber.plant(LoggingReleaseTree())
+    }
+
     runningComponents.forEach { it.onCreate() }
   }
 

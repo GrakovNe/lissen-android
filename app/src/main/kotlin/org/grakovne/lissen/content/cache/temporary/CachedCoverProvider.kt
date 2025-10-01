@@ -1,7 +1,6 @@
 package org.grakovne.lissen.content.cache.temporary
 
 import android.content.Context
-import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -10,6 +9,7 @@ import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.content.cache.common.withBlur
 import org.grakovne.lissen.content.cache.common.writeToFile
+import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -27,15 +27,15 @@ class CachedCoverProvider
       width: Int?,
     ): ApiResult<File> =
       when (val cover = fetchCachedCover(itemId, width)) {
-        null -> cacheCover(channel, itemId, width).also { Log.d(TAG, "Caching cover $itemId with width: $width") }
-        else -> cover.let { ApiResult.Success(it) }.also { Log.d(TAG, "Fetched cached $itemId with width: $width") }
+        null -> cacheCover(channel, itemId, width).also { Timber.d("Caching cover $itemId with width: $width") }
+        else -> cover.let { ApiResult.Success(it) }.also { Timber.d("Fetched cached $itemId with width: $width") }
       }
 
     fun clearCache() =
       properties
         .provideCoverCacheFolder()
         .deleteRecursively()
-        .also { Log.d(TAG, "Clear cover short-term cache") }
+        .also { Timber.d("Clear cover short-term cache") }
 
     private fun fetchCachedCover(
       itemId: String,
@@ -72,9 +72,5 @@ class CachedCoverProvider
             onFailure = { return@fold ApiResult.Error<File>(ApiError.InternalError, it.message) },
           )
       }
-    }
-
-    companion object {
-      private const val TAG = "CachedCoverProvider"
     }
   }

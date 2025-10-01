@@ -1,6 +1,5 @@
 package org.grakovne.lissen.playback.service
 
-import android.util.Log
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.Dispatchers
@@ -16,6 +15,7 @@ import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.PlaybackProgress
 import org.grakovne.lissen.lib.domain.PlaybackSession
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -92,11 +92,11 @@ class PlaybackSynchronizationService
       val elapsedMs = exoPlayer.currentPosition
       val overallProgress = getProgress(elapsedMs) ?: return
 
-      Log.d(TAG, "Trying to sync $overallProgress for ${currentItem?.id}")
+      Timber.d("Trying to sync $overallProgress for ${currentItem?.id}")
 
       serviceScope.launch(Dispatchers.IO) {
         if (syncMutex.tryLock().not()) {
-          Log.d(TAG, "Sync is already running")
+          Timber.d("Sync is already running")
           return@launch
         }
 
@@ -113,7 +113,7 @@ class PlaybackSynchronizationService
 
           playbackSession?.let { requestSync(it, overallProgress) }
         } catch (e: Exception) {
-          Log.e(TAG, "Error during sync", e)
+          Timber.e(e, "Error during sync")
         } finally {
           syncMutex.unlock()
         }
@@ -180,7 +180,6 @@ class PlaybackSynchronizationService
     }
 
     companion object {
-      private const val TAG = "PlaybackSynchronizationService"
       private const val SYNC_INTERVAL_LONG = 30_000L
       private const val SHORT_SYNC_WINDOW = SYNC_INTERVAL_LONG * 2 - 1
 

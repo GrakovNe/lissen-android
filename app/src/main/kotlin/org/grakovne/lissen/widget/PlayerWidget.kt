@@ -6,7 +6,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.BitmapFactory.decodeResource
 import android.graphics.Canvas
-import android.util.Log
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.graphics.Color
@@ -53,6 +52,7 @@ import org.grakovne.lissen.R.drawable
 import org.grakovne.lissen.lib.domain.SeekTimeOption
 import org.grakovne.lissen.ui.theme.LightBackground
 import org.grakovne.lissen.widget.PlayerWidget.Companion.bookIdKey
+import timber.log.Timber
 import java.io.File
 
 class PlayerWidget : GlanceAppWidget() {
@@ -354,8 +354,6 @@ private suspend fun safelyRun(
       else -> action(playbackController)
     }
   } catch (ex: Exception) {
-    Log.w(TAG, "Unable to run $action on $playingItemId due to $ex")
+    Timber.w("Unable to run $action on $playingItemId due to $ex")
   }
 }
-
-private const val TAG = "PlayerWidget"

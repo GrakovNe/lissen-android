@@ -1,9 +1,9 @@
 package org.grakovne.lissen.channel.audiobookshelf
 
-import android.util.Log
 import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.lib.domain.NetworkType
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -22,31 +22,27 @@ class AudiobookshelfHostProvider
           ?: return null
 
       if (sharedPreferences.getLocalUrls().isEmpty()) {
-        Log.d(TAG, "Using external host: ${externalHost.url}, no local routes")
+        Timber.d("Using external host: ${externalHost.url}, no local routes")
         return externalHost
       }
 
       if (networkService.getCurrentNetworkType() == NetworkType.CELLULAR) {
-        Log.d(TAG, "Using external host: ${externalHost.url}, no WiFi connection")
+        Timber.d("Using external host: ${externalHost.url}, no WiFi connection")
         return externalHost
       }
 
       val currentNetwork =
         networkService
           .getCurrentWifiSSID()
-          ?: return externalHost.also { Log.d(TAG, "Using external host: ${externalHost.url}, can't detect WiFi network") }
+          ?: return externalHost.also { Timber.d("Using external host: ${externalHost.url}, can't detect WiFi network") }
 
       return sharedPreferences
         .getLocalUrls()
         .find { it.ssid.lowercase() == currentNetwork.lowercase() }
         ?.route
         ?.let(Host.Companion::internal)
-        ?.also { Log.d(TAG, "Using internal host: ${it.url}") }
-        ?: externalHost.also { Log.d(TAG, "Using external host: ${it.url}, no internal matches") }
-    }
-
-    companion object {
-      private val TAG = "AudiobookshelfHostProvider"
+        ?.also { Timber.d("Using internal host: ${it.url}") }
+        ?: externalHost.also { Timber.d("Using external host: ${it.url}, no internal matches") }
     }
   }
 

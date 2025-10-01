@@ -6,9 +6,9 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
-import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.grakovne.lissen.lib.domain.NetworkType
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -75,7 +75,7 @@ class NetworkService
       val ssid = wifiInfo.ssid
 
       if (ssid == "<unknown ssid>") {
-        Log.d(TAG, "Using cached value $cachedSsid because the actual SSID cannot be checked")
+        Timber.d("Using cached value $cachedSsid because the actual SSID cannot be checked")
         return cachedSsid
       }
 
@@ -84,9 +84,5 @@ class NetworkService
       cachedSsid = networkSsid
       cachedNetworkHandle = network.networkHandle
       return cachedSsid
-    }
-
-    companion object {
-      private const val TAG = "NetworkService"
     }
   }
