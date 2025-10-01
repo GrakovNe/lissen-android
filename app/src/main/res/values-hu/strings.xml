@@ -2,7 +2,7 @@
 <resources>
     <string name="player_screen_chapter_list_navigation_library">Fejezetek</string>
     <string name="library_screen_library_title">Könyvtár</string>
-    <string name="login_screen_server_url_input">Kiszolgáló URL</string>
+    <string name="hint_server_url_input">Kiszolgáló URL</string>
     <string name="library_screen_continue_listening_title">Hallgatás folytatása</string>
     <string name="library_screen_preferences_menu_item">Beállítások</string>
     <string name="login_screen_title">Csatlakozás kiszolgálóhoz</string>

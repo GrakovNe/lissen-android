@@ -97,6 +97,12 @@ fun AdvancedSettingsComposable(
             onclick = { navController.showCustomHeadersSettings() },
           )
 
+          AdvancedSettingsItemComposable(
+            title = stringResource(R.string.settings_screen_internal_connection_url_title),
+            description = stringResource(R.string.settings_screen_internal_connection_url_description),
+            onclick = { navController.showLocalUrlSettings() },
+          )
+
           SettingsToggleItem(
             title = stringResource(R.string.settings_screen_crash_report_title),
             description = stringResource(R.string.settings_screen_crash_report_description),

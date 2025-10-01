@@ -5,7 +5,7 @@
     <string name="library_screen_continue_listening_title">Dinlemeye devam et</string>
     <string name="library_screen_preferences_menu_item">Tercihler</string>
     <string name="login_screen_title">Sunucuya Bağlan</string>
-    <string name="login_screen_server_url_input">Sunucu URL\'si</string>
+    <string name="hint_server_url_input">Sunucu URL\'si</string>
     <string name="login_screen_login_input">Giriş</string>
     <string name="login_screen_show_password_hint">Şifreyi göster</string>
     <string name="login_screen_password_input">Şifre</string>

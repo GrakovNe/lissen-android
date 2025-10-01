@@ -7,7 +7,7 @@
     <string name="library_screen_preferences_menu_item">偏好设置</string>
     <string name="login_screen_password_input">密码</string>
     <string name="login_screen_show_password_hint">显示密码</string>
-    <string name="login_screen_server_url_input">服务器 URL</string>
+    <string name="hint_server_url_input">服务器 URL</string>
     <string name="login_screen_connect_button_text">连接</string>
     <string name="player_screen_playback_speed_navigation">播放速度</string>
     <string name="player_screen_chapter_list_navigation_library">章节</string>

@@ -21,7 +21,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import coil3.ImageLoader
-import org.grakovne.lissen.common.NetworkQualityService
+import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.screens.library.LibraryScreen
 import org.grakovne.lissen.ui.screens.login.LoginScreen
@@ -29,6 +29,7 @@ import org.grakovne.lissen.ui.screens.player.PlayerScreen
 import org.grakovne.lissen.ui.screens.settings.SettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.AdvancedSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.advanced.CustomHeadersSettingsScreen
+import org.grakovne.lissen.ui.screens.settings.advanced.LocalUrlSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.SeekSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.cache.CacheSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.cache.CachedItemsSettingsScreen
@@ -38,7 +39,7 @@ import org.grakovne.lissen.ui.screens.settings.advanced.cache.CachedItemsSetting
 fun AppNavHost(
   navController: NavHostController,
   preferences: LissenSharedPreferences,
-  networkQualityService: NetworkQualityService,
+  networkService: NetworkService,
   navigationService: AppNavigationService,
   imageLoader: ImageLoader,
   appLaunchAction: AppLaunchAction,
@@ -132,7 +133,7 @@ fun AppNavHost(
         LibraryScreen(
           navController = navigationService,
           imageLoader = imageLoader,
-          networkQualityService = networkQualityService,
+          networkService = networkService,
         )
       }
 
@@ -198,6 +199,22 @@ fun AppNavHost(
             }
           },
           navController = navigationService,
+        )
+      }
+
+      composable(
+        route = "settings_screen/local_url",
+        enterTransition = { enterTransition },
+        exitTransition = { exitTransition },
+        popEnterTransition = { popEnterTransition },
+        popExitTransition = { popExitTransition },
+      ) {
+        LocalUrlSettingsScreen(
+          onBack = {
+            if (navController.previousBackStackEntry != null) {
+              navController.popBackStack()
+            }
+          },
         )
       }
 

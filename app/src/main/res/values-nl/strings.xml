@@ -5,7 +5,7 @@
     <string name="settings_screen_connected_as_title">Verbonden als</string>
     <string name="player_screen_now_playing_title_item_of">Item %1$d van %2$s</string>
     <string name="login_screen_title">Verbinden naar server</string>
-    <string name="login_screen_server_url_input">Serveradres</string>
+    <string name="hint_server_url_input">Serveradres</string>
     <string name="login_screen_login_input">Login</string>
     <string name="login_screen_password_input">Wachtwoord</string>
     <string name="login_screen_connect_button_text">Verbinden</string>

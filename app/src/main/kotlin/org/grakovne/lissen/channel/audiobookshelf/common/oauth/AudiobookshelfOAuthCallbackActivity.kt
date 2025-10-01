@@ -9,6 +9,7 @@ import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfHostProvider
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudiobookshelfAuthService
 import org.grakovne.lissen.channel.common.OAuthContextCache
 import org.grakovne.lissen.channel.common.makeText
@@ -32,6 +33,9 @@ class AudiobookshelfOAuthCallbackActivity : ComponentActivity() {
   @Inject
   lateinit var preferences: LissenSharedPreferences
 
+  @Inject
+  lateinit var hostProvider: AudiobookshelfHostProvider
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     val data = intent?.data
@@ -48,7 +52,7 @@ class AudiobookshelfOAuthCallbackActivity : ComponentActivity() {
       lifecycleScope.launch {
         authService.exchangeToken(
           host =
-            preferences.getHost() ?: kotlin.run {
+            hostProvider.provideHost()?.url ?: kotlin.run {
               onLoginFailed("invalid_host")
               return@launch
             },

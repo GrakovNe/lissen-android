@@ -4,7 +4,7 @@
     <string name="library_screen_continue_listening_title">Poursuivre l\'écoute</string>
     <string name="library_screen_preferences_menu_item">Préférences</string>
     <string name="login_screen_title">Se Connecter au Serveur</string>
-    <string name="login_screen_server_url_input">Adresse URL du serveur</string>
+    <string name="hint_server_url_input">Adresse URL du serveur</string>
     <string name="login_screen_login_input">Se connecter</string>
     <string name="login_screen_show_password_hint">Afficher le mot de passe</string>
     <string name="login_screen_password_input">Mot de passe</string>

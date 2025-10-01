@@ -4,7 +4,7 @@
     <string name="library_screen_continue_listening_title">მოსმენის გაგრძელება</string>
     <string name="library_screen_preferences_menu_item">პარამეტრები</string>
     <string name="login_screen_title">სერვერთან დაკავშირება</string>
-    <string name="login_screen_server_url_input">სერვერის URL მისამართი</string>
+    <string name="hint_server_url_input">სერვერის URL მისამართი</string>
     <string name="login_screen_login_input">შესვლა</string>
     <string name="login_screen_show_password_hint">პაროლის ჩვენება</string>
     <string name="login_screen_password_input">პაროლი</string>

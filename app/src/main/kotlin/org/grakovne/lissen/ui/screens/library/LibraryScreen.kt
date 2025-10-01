@@ -60,7 +60,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
-import org.grakovne.lissen.common.NetworkQualityService
+import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.common.hapticAction
 import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.RecentBook
@@ -90,7 +90,7 @@ fun LibraryScreen(
   settingsViewModel: SettingsViewModel = hiltViewModel(),
   cachingModelView: CachingModelView = hiltViewModel(),
   imageLoader: ImageLoader,
-  networkQualityService: NetworkQualityService,
+  networkService: NetworkService,
 ) {
   RequestNotificationPermissions()
 
@@ -187,7 +187,7 @@ fun LibraryScreen(
   val context = LocalContext.current
 
   fun isRecentVisible(): Boolean {
-    val fetchAvailable = networkQualityService.isNetworkAvailable() || cachingModelView.localCacheUsing()
+    val fetchAvailable = networkService.isNetworkAvailable() || cachingModelView.localCacheUsing()
     val hasContent = recentBooks.isEmpty().not()
 
     return searchRequested.not() && hasContent && fetchAvailable
@@ -434,7 +434,7 @@ fun LibraryScreen(
                 LibraryFallbackComposable(
                   searchRequested = searchRequested,
                   contentCachingModelView = cachingModelView,
-                  networkQualityService = networkQualityService,
+                  networkService = networkService,
                   libraryViewModel = libraryViewModel,
                 )
               }

@@ -3,7 +3,7 @@
     <string name="settings_screen_server_version">Serverversion</string>
     <string name="library_screen_library_title">Bibliothek</string>
     <string name="library_screen_continue_listening_title">Weiter hören</string>
-    <string name="login_screen_server_url_input">Server URL</string>
+    <string name="hint_server_url_input">Server URL</string>
     <string name="login_screen_login_input">Login</string>
     <string name="login_screen_show_password_hint">Passwort anzeigen</string>
     <string name="login_screen_password_input">Passwort</string>

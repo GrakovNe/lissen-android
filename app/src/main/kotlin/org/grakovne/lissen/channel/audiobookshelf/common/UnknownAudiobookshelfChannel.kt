@@ -1,5 +1,6 @@
 package org.grakovne.lissen.channel.audiobookshelf.common
 
+import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfHostProvider
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.library.AudioBookshelfLibrarySyncService
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
@@ -21,6 +22,7 @@ import javax.inject.Singleton
 class UnknownAudiobookshelfChannel
   @Inject
   constructor(
+    hostProvider: AudiobookshelfHostProvider,
     dataRepository: AudioBookshelfRepository,
     recentListeningResponseConverter: RecentListeningResponseConverter,
     preferences: LissenSharedPreferences,
@@ -29,6 +31,7 @@ class UnknownAudiobookshelfChannel
     libraryResponseConverter: LibraryResponseConverter,
     connectionInfoResponseConverter: ConnectionInfoResponseConverter,
   ) : AudiobookshelfChannel(
+      hostProvider = hostProvider,
       dataRepository = dataRepository,
       recentBookResponseConverter = recentListeningResponseConverter,
       sessionResponseConverter = sessionResponseConverter,

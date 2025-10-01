@@ -5,7 +5,7 @@
     <string name="library_screen_continue_listening_title">Nastavi slušati</string>
     <string name="library_screen_preferences_menu_item">Postavke</string>
     <string name="login_screen_title">Poveži se na server</string>
-    <string name="login_screen_server_url_input">URL poslužitelja</string>
+    <string name="hint_server_url_input">URL poslužitelja</string>
     <string name="login_screen_login_input">Prijava</string>
     <string name="login_screen_show_password_hint">Prikaži lozinku</string>
     <string name="login_screen_password_input">Lozinka</string>

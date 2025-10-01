@@ -5,7 +5,7 @@
     <string name="no_internet_connection">Nessuna connessione internet</string>
     <string name="library_screen_continue_listening_title">Continua ad ascoltare</string>
     <string name="library_screen_preferences_menu_item">Preferenze</string>
-    <string name="login_screen_server_url_input">URL del server</string>
+    <string name="hint_server_url_input">URL del server</string>
     <string name="login_screen_login_input">Accedi</string>
     <string name="login_screen_show_password_hint">Mostra password</string>
     <string name="login_screen_password_input">Password</string>

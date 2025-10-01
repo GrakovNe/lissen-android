@@ -4,7 +4,7 @@
     <string name="library_screen_continue_listening_title">이어듣기</string>
     <string name="library_screen_preferences_menu_item">설정</string>
     <string name="login_screen_title">서버에 연결</string>
-    <string name="login_screen_server_url_input">서버 주소</string>
+    <string name="hint_server_url_input">서버 주소</string>
     <string name="login_screen_login_input">로그인</string>
     <string name="login_screen_show_password_hint">암호 보기</string>
     <string name="login_screen_password_input">암호</string>

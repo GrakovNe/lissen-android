@@ -23,6 +23,7 @@ import org.grakovne.lissen.lib.domain.DownloadOption
 import org.grakovne.lissen.lib.domain.Library
 import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.SeekTime
+import org.grakovne.lissen.lib.domain.connection.LocalUrl
 import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.lib.domain.makeDownloadOption
 import org.grakovne.lissen.lib.domain.makeId
@@ -369,6 +370,23 @@ class LissenSharedPreferences
       }
     }
 
+    fun saveLocalUrls(headers: List<LocalUrl>) {
+      sharedPreferences.edit {
+        val json = gson.toJson(headers)
+        putString(KEY_LOCAL_URLS, json)
+      }
+    }
+
+    fun getLocalUrls(): List<LocalUrl> {
+      val json = sharedPreferences.getString(KEY_LOCAL_URLS, null)
+      val type = object : TypeToken<MutableList<LocalUrl>>() {}.type
+
+      return when (json == null) {
+        true -> emptyList()
+        false -> gson.fromJson(json, type)
+      }
+    }
+
     companion object {
       private const val KEY_ALIAS = "secure_key_alias"
       private const val KEY_HOST = "host"
@@ -396,6 +414,7 @@ class LissenSharedPreferences
       private const val KEY_PREFERRED_LIBRARY_ORDERING = "preferred_library_ordering"
 
       private const val KEY_CUSTOM_HEADERS = "custom_headers"
+      private const val KEY_LOCAL_URLS = "local_urls"
 
       private const val KEY_PLAYING_BOOK = "playing_book"
       private const val KEY_VOLUME_BOOST = "volume_boost"

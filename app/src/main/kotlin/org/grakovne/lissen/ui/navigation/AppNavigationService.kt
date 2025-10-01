@@ -36,6 +36,8 @@ class AppNavigationService(
 
   fun showCustomHeadersSettings() = host.navigate("$ROUTE_SETTINGS/custom_headers")
 
+  fun showLocalUrlSettings() = host.navigate("$ROUTE_SETTINGS/local_url")
+
   fun showSeekSettings() = host.navigate("$ROUTE_SETTINGS/seek_settings")
 
   fun showCachedItemsSettings() = host.navigate("$ROUTE_SETTINGS/cached_items")
