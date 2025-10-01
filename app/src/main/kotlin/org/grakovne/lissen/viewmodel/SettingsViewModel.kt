@@ -19,6 +19,7 @@ import org.grakovne.lissen.lib.domain.Library
 import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.SeekTimeOption
 import org.grakovne.lissen.lib.domain.connection.LocalUrl
+import org.grakovne.lissen.lib.domain.connection.LocalUrl.Companion.clean
 import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader.Companion.clean
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
@@ -199,6 +200,7 @@ class SettingsViewModel
 
       val meaningfulHeaders =
         urls
+          .map { it.clean() }
           .distinctBy { it.ssid }
           .filterNot { it.ssid.isEmpty() }
           .filterNot { it.route.isEmpty() }

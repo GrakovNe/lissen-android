@@ -20,6 +20,7 @@ class NetworkService
   ) : RunningComponent {
     private val connectivityManager = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
 
+    private var cachedNetworkHandle: Long? = null
     private var cachedSsid: String? = null
 
     override fun onCreate() {
@@ -32,7 +33,9 @@ class NetworkService
       val networkCallback =
         object : ConnectivityManager.NetworkCallback() {
           override fun onLost(network: Network) {
-            cachedSsid = null
+            if (cachedNetworkHandle == network.getNetworkHandle()) {
+              cachedSsid = null
+            }
           }
         }
 
@@ -79,6 +82,7 @@ class NetworkService
       val networkSsid = ssid.removeSurrounding("\"")
 
       cachedSsid = networkSsid
+      cachedNetworkHandle = network.networkHandle
       return cachedSsid
     }
 

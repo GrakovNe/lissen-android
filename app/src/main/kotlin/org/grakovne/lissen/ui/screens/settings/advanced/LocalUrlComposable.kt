@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material3.Card
@@ -19,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.lib.domain.connection.LocalUrl
@@ -50,6 +52,7 @@ fun LocalUrlComposable(
         OutlinedTextField(
           value = url.ssid,
           enabled = enabled,
+          keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
           onValueChange = { onChanged(url.copy(ssid = it, route = url.route)) },
           label = { Text(stringResource(R.string.local_url_hint_ssid_name)) },
           singleLine = true,
@@ -63,6 +66,7 @@ fun LocalUrlComposable(
         OutlinedTextField(
           enabled = enabled,
           value = url.route,
+          keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
           onValueChange = { onChanged(url.copy(ssid = url.ssid, route = it)) },
           label = { Text(stringResource(R.string.hint_server_url_input)) },
           singleLine = true,
@@ -77,7 +81,7 @@ fun LocalUrlComposable(
       ) {
         Icon(
           imageVector = Icons.Default.DeleteOutline,
-          contentDescription = "Delete from cache",
+          contentDescription = null,
           tint =
             when (enabled) {
               true -> colorScheme.error
