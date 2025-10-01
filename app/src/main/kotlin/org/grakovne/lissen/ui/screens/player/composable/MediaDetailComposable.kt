@@ -1,7 +1,12 @@
 package org.grakovne.lissen.ui.screens.player.composable
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -47,6 +52,7 @@ fun MediaDetailComposable(
   settingsViewModel: SettingsViewModel,
 ) {
   val totalPosition by playingViewModel.totalPosition.observeAsState(0.0)
+  val totalDuration = playingBook?.chapters?.sumOf { it.duration }
   val preferredLibrary by settingsViewModel.preferredLibrary.observeAsState()
 
   ModalBottomSheet(
@@ -135,22 +141,19 @@ fun MediaDetailComposable(
           }
 
         if (preferredLibrary?.type == LibraryType.LIBRARY) {
-          playingBook
-            ?.chapters
-            ?.sumOf { it.duration }
-            ?.let {
-              InfoRow(
-                icon = Icons.Filled.AvTimer,
-                label = stringResource(R.string.playing_item_details_duration),
-                textValue = it.toInt().formatTime(),
-              )
+          totalDuration?.let {
+            InfoRow(
+              icon = Icons.Filled.AvTimer,
+              label = stringResource(R.string.playing_item_details_duration),
+              textValue = it.toInt().formatTime(),
+            )
 
-              InfoRow(
-                icon = Icons.Filled.HourglassEmpty,
-                label = stringResource(R.string.playing_item_details_time_remaining),
-                textValue = (it - totalPosition).toInt().formatTime(),
-              )
-            }
+            InfoRow(
+              icon = Icons.Filled.HourglassEmpty,
+              label = stringResource(R.string.playing_item_details_time_remaining),
+              textValue = (it - totalPosition).toInt().formatTime(),
+            )
+          }
         }
 
         playingBook
@@ -176,17 +179,43 @@ fun MediaDetailComposable(
           }
       }
 
+      if (null != totalDuration && preferredLibrary?.type == LibraryType.LIBRARY) {
+        Box(
+          modifier =
+            Modifier
+              .fillMaxWidth()
+              .padding(vertical = 16.dp, horizontal = 16.dp)
+              .height(1.dp)
+              .alpha(0.3f),
+        ) {
+          Box(
+            modifier =
+              Modifier
+                .fillMaxSize()
+                .background(colorScheme.onSurface.copy(alpha = 0.2f)),
+          )
+          Box(
+            modifier =
+              Modifier
+                .fillMaxHeight()
+                .fillMaxWidth((totalPosition / totalDuration).toFloat())
+                .background(colorScheme.primary)
+                .alpha(0.3f),
+          )
+        }
+      } else {
+        HorizontalDivider(
+          modifier =
+            Modifier
+              .padding(vertical = 16.dp, horizontal = 16.dp)
+              .alpha(0.2f),
+        )
+      }
+
       playingBook
         ?.abstract
         ?.takeIf { it.isNotEmpty() }
         ?.let {
-          HorizontalDivider(
-            modifier =
-              Modifier
-                .padding(vertical = 16.dp, horizontal = 16.dp)
-                .alpha(0.2f),
-          )
-
           val html: String = playingBook.abstract?.replace("\n", "<br>").orEmpty()
           val spanned = HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_LEGACY)
 
