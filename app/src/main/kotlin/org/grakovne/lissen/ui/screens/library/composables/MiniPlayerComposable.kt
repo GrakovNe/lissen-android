@@ -99,14 +99,16 @@ fun MiniPlayerComposable(
           Modifier
             .fillMaxSize()
             .padding(horizontal = 12.dp),
-        horizontalArrangement =
-          when (dismissState.targetValue) {
-            SwipeToDismissBoxValue.StartToEnd -> Arrangement.Start
-            SwipeToDismissBoxValue.EndToStart -> Arrangement.End
-            SwipeToDismissBoxValue.Settled -> Arrangement.Center
-          },
+        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
       ) {
+        AnimatedVisibility(
+          visible = backgroundVisible,
+          exit = fadeOut(animationSpec = tween(300)),
+        ) {
+          CloseActionBackground()
+        }
+
         AnimatedVisibility(
           visible = backgroundVisible,
           exit = fadeOut(animationSpec = tween(300)),
