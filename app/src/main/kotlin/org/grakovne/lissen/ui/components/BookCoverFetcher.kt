@@ -1,6 +1,7 @@
 package org.grakovne.lissen.ui.components
 
 import android.content.Context
+import coil3.Extras
 import coil3.ImageLoader
 import coil3.Uri
 import coil3.decode.ImageSource
@@ -18,23 +19,28 @@ import okio.FileSystem
 import okio.Path.Companion.toOkioPath
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.content.LissenMediaProvider
+import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import java.io.File
 import javax.inject.Singleton
 
 class BookCoverFetcher(
+  private val localCacheRepository: LocalCacheRepository,
   private val mediaChannel: LissenMediaProvider,
   private val uri: String,
   private val options: Options,
 ) : Fetcher {
-  override suspend fun fetch(): FetchResult? =
-    when (
-      val response =
-        mediaChannel
-          .fetchBookCover(
-            bookId = uri,
-            width = options.size.width.pxOrNull(),
-          )
-    ) {
+  override suspend fun fetch(): FetchResult? {
+    val localOnly = options.extras[LocalOnlyKey] ?: false
+
+    val response =
+      when (localOnly) {
+        true -> localCacheRepository.fetchBookCover(uri)
+        false ->
+          mediaChannel
+            .fetchBookCover(uri, options.size.width.pxOrNull())
+      }
+
+    return when (response) {
       is ApiResult.Error -> null
       is ApiResult.Success -> {
         val stream: File = response.data
@@ -51,16 +57,22 @@ class BookCoverFetcher(
         )
       }
     }
+  }
+
+  companion object {
+    val LocalOnlyKey = Extras.Key(false)
+  }
 }
 
 class BookCoverFetcherFactory(
+  private val localCacheRepository: LocalCacheRepository,
   private val dataProvider: LissenMediaProvider,
 ) : Fetcher.Factory<Uri> {
   override fun create(
     data: Uri,
     options: Options,
     imageLoader: ImageLoader,
-  ): BookCoverFetcher = BookCoverFetcher(dataProvider, data.toString(), options)
+  ): BookCoverFetcher = BookCoverFetcher(localCacheRepository, dataProvider, data.toString(), options)
 }
 
 @Module
@@ -68,7 +80,10 @@ class BookCoverFetcherFactory(
 object ImageLoaderModule {
   @Singleton
   @Provides
-  fun provideBookCoverFetcherFactory(mediaChannel: LissenMediaProvider): BookCoverFetcherFactory = BookCoverFetcherFactory(mediaChannel)
+  fun provideBookCoverFetcherFactory(
+    localCacheRepository: LocalCacheRepository,
+    mediaChannel: LissenMediaProvider,
+  ): BookCoverFetcherFactory = BookCoverFetcherFactory(localCacheRepository, mediaChannel)
 
   @Singleton
   @Provides
