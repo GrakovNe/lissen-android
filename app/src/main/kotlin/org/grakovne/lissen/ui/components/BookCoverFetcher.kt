@@ -35,9 +35,7 @@ class BookCoverFetcher(
     val response =
       when (localOnly) {
         true -> localCacheRepository.fetchBookCover(uri)
-        false ->
-          mediaChannel
-            .fetchBookCover(uri, options.size.width.pxOrNull())
+        false -> mediaChannel.fetchBookCover(uri, options.size.width.pxOrNull())
       }
 
     return when (response) {
