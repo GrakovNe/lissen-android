@@ -140,4 +140,8 @@
     <string name="library_type_library">Libri</string>
     <string name="library_type_podcast">Podcast</string>
     <string name="library_type_unknown">Sconosciuti</string>
+    <string name="settings_screen_internal_connection_url_title">Indirizzo server rete locale</string>
+    <string name="local_url_hint_ssid_name">Nome rete WiFi</string>
+    <string name="location_permission_request_hint">L\'app necessita dell\'accesso alla posizione per rilevare il nome del Wi-Fi</string>
+    <string name="permission_request_grant_button">Consenti</string>
 </resources>
