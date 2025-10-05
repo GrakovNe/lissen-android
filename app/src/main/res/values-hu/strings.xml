@@ -126,4 +126,23 @@
     <string name="settings_screen_advanced_preferences_description">Keresés, proxy fejlécek vagy hang vezérlése</string>
     <string name="settings_screen_crash_report_title">Összeomlási jelentések</string>
     <string name="settings_screen_crash_report_description">Jelentések küldése, ha az alkalmazás összeomlik</string>
+    <string name="player_screen_chapter_list_navigation_podcast">Epizódok</string>
+    <string name="player_screen_chapter_list_navigation_items">Elemek</string>
+    <string name="downloads_menu_download_option_disable">Kikapcsolva</string>
+    <string name="settings_download_automatically_title">Automatikus lrtöltés</string>
+    <string name="download_settings_title">Letöltési beállítások</string>
+    <string name="download_settings_description">A letöltések meghatározása és a tartalom kezelése</string>
+    <string name="download_settings_network_type_title">Használat automatikus letöltésekhez</string>
+    <string name="download_settings_library_type_title">Automatikus letöltés</string>
+    <string name="download_settings_library_type_no_items_selected">Nincs típus meghatározva</string>
+    <string name="wifi_only_settings_option">Csak WiFi</string>
+    <string name="wifi_or_cellular_settings_option">WiFi vagy mobilhálózat</string>
+    <string name="library_type_library">Könyvek</string>
+    <string name="library_type_podcast">Podcastek</string>
+    <string name="library_type_unknown">Ismeretlen</string>
+    <string name="settings_screen_internal_connection_url_title">Helyi hálózaton található kiszolgáló címe</string>
+    <string name="settings_screen_internal_connection_url_description">Kiszolgáló-hozzáférés meghatározása az otthoni WiFi-hez</string>
+    <string name="local_url_hint_ssid_name">WiFi hálózat neve</string>
+    <string name="location_permission_request_hint">Az alkalmazásnak szüksége van a helymeghatározáshoz a WiFi hálózat nevének érzékeléséhez</string>
+    <string name="permission_request_grant_button">Engedélyezés</string>
 </resources>
