@@ -27,7 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.navigation.AppNavigationService
-import org.grakovne.lissen.ui.screens.settings.advanced.AdvancedSettingsItemComposable
+import org.grakovne.lissen.ui.screens.settings.advanced.AdvancedSettingsNavigationItemComposable
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
@@ -84,7 +84,7 @@ fun CacheSettingsScreen(
 
           LibraryTypeAutoCacheSettingsComposable(viewModel)
 
-          AdvancedSettingsItemComposable(
+          AdvancedSettingsNavigationItemComposable(
             title = stringResource(R.string.settings_screen_cached_items_title),
             description = stringResource(R.string.settings_screen_cached_items_hint),
             onclick = { navController.showCachedItemsSettings() },

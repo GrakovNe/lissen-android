@@ -29,7 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.navigation.AppNavigationService
-import org.grakovne.lissen.ui.screens.settings.advanced.AdvancedSettingsItemComposable
+import org.grakovne.lissen.ui.screens.settings.advanced.AdvancedSettingsNavigationItemComposable
 import org.grakovne.lissen.ui.screens.settings.composable.ColorSchemeSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.GitHubLinkComposable
 import org.grakovne.lissen.ui.screens.settings.composable.LibraryOrderingSettingsComposable
@@ -95,13 +95,13 @@ fun SettingsScreen(
 
           LibraryOrderingSettingsComposable(viewModel)
 
-          AdvancedSettingsItemComposable(
+          AdvancedSettingsNavigationItemComposable(
             title = stringResource(R.string.download_settings_title),
             description = stringResource(R.string.download_settings_description),
             onclick = { navController.showCacheSettings() },
           )
 
-          AdvancedSettingsItemComposable(
+          AdvancedSettingsNavigationItemComposable(
             title = stringResource(R.string.settings_screen_advanced_preferences_title),
             description = stringResource(R.string.settings_screen_advanced_preferences_description),
             onclick = { navController.showAdvancedSettings() },
