@@ -5,10 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
@@ -20,7 +16,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun AdvancedSettingsItemComposable(
+fun AdvancedSettingsSimpleItemComposable(
   title: String,
   description: String,
   onclick: () -> Unit,
@@ -33,7 +29,9 @@ fun AdvancedSettingsItemComposable(
         .padding(start = 24.dp, end = 12.dp, top = 12.dp, bottom = 12.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {
-    Column(modifier = Modifier.weight(1f)) {
+    Column(
+      modifier = Modifier.weight(1f),
+    ) {
       Text(
         text = title,
         style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
@@ -47,14 +45,6 @@ fun AdvancedSettingsItemComposable(
         color = colorScheme.onSurfaceVariant,
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
-      )
-    }
-    IconButton(
-      onClick = { onclick() },
-    ) {
-      Icon(
-        imageVector = Icons.AutoMirrored.Outlined.ArrowForwardIos,
-        contentDescription = "Forward",
       )
     }
   }

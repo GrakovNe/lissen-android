@@ -145,4 +145,7 @@
     <string name="local_url_hint_ssid_name">WiFi network name</string>
     <string name="location_permission_request_hint">The app needs location access to detect Wi‑Fi name</string>
     <string name="permission_request_grant_button">Allow</string>
+    <string name="settings_screen_clear_thumbnail_cache_title">Clear thumbnail cache</string>
+    <string name="settings_screen_clear_thumbnail_cache_hint">Remove cached thumbnails to free up space.</string>
+    <string name="settings_screen_clear_thumbnail_cache_success_toast">Thumbnail cache cleared</string>
 </resources>

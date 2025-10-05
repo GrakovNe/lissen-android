@@ -145,4 +145,7 @@
     <string name="local_url_hint_ssid_name">Имя WiFi сети</string>
     <string name="location_permission_request_hint">Для определения текущейw Wi‑Fi приложению нужен доступ к местоположению</string>
     <string name="permission_request_grant_button">Разрешить</string>
+    <string name="settings_screen_clear_thumbnail_cache_title">Очистить кеш обложек</string>
+    <string name="settings_screen_clear_thumbnail_cache_hint">Удалить загруженные с сервера обложки</string>
+    <string name="settings_screen_clear_thumbnail_cache_success_toast">Кеш обложек очищен</string>
 </resources>
