@@ -236,8 +236,9 @@ class MediaRepository
 
           val chapterDuration =
             calculateChapterIndex(playingBook, currentPosition)
-              .let { playingBook.chapters[it] }
-              .duration
+              .takeIf { it in playingBook.chapters.indices }
+              ?.let { playingBook.chapters[it].duration }
+              ?: return
 
           val chapterPosition =
             calculateChapterPosition(
