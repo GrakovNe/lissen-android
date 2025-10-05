@@ -63,7 +63,7 @@ fun NavigationBarComposable(
   val timerRemaining by playerViewModel.timerRemaining.observeAsState(0)
   val playbackSpeed by playerViewModel.playbackSpeed.observeAsState(1f)
   val playingQueueExpanded by playerViewModel.playingQueueExpanded.observeAsState(false)
-  val downloadEnabled by playerViewModel.book.map { book.chapters.isNotEmpty() }.observeAsState(true)
+  val hasEpisodes by playerViewModel.book.map { book.chapters.isNotEmpty() }.observeAsState(true)
 
   val isMetadataCached by contentCachingModelView.provideCacheState(book.id).observeAsState(false)
 
@@ -86,6 +86,7 @@ fun NavigationBarComposable(
       val labelStyle = typography.labelSmall.copy(fontSize = 10.sp)
 
       NavigationBarItem(
+        enabled = hasEpisodes,
         icon = {
           Icon(
             Icons.AutoMirrored.Rounded.QueueMusic,
@@ -135,7 +136,7 @@ fun NavigationBarComposable(
             overflow = TextOverflow.Ellipsis,
           )
         },
-        enabled = downloadEnabled,
+        enabled = hasEpisodes,
         selected = false,
         onClick = { downloadsExpanded = true },
         colors =
@@ -146,6 +147,7 @@ fun NavigationBarComposable(
       )
 
       NavigationBarItem(
+        enabled = hasEpisodes,
         icon = {
           Icon(
             Icons.Outlined.SlowMotionVideo,
@@ -163,7 +165,6 @@ fun NavigationBarComposable(
         },
         selected = false,
         onClick = { playbackSpeedExpanded = true },
-        enabled = true,
         colors =
           NavigationBarItemDefaults.colors(
             selectedIconColor = colorScheme.primary,
@@ -206,6 +207,7 @@ fun NavigationBarComposable(
               )
           }
         },
+        enabled = hasEpisodes,
         selected = false,
         onClick = { timerExpanded = true },
         colors =
