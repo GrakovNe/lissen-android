@@ -472,7 +472,6 @@ fun LibraryScreen(
         settingsViewModel.preferLibrary(it)
         currentLibraryId = settingsViewModel.fetchPreferredLibraryId()
         refreshContent(false)
-        playerViewModel.clearPlayingBook()
 
         preferredLibraryExpanded = false
       },
