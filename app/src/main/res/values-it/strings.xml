@@ -144,4 +144,7 @@
     <string name="local_url_hint_ssid_name">Nome rete WiFi</string>
     <string name="location_permission_request_hint">L\'app necessita dell\'accesso alla posizione per rilevare il nome del Wi-Fi</string>
     <string name="permission_request_grant_button">Consenti</string>
+    <string name="settings_screen_clear_thumbnail_cache_title">Pulisci cache delle miniature</string>
+    <string name="settings_screen_clear_thumbnail_cache_hint">Rimuovi le miniature in cache per liberare spazio.</string>
+    <string name="settings_screen_clear_thumbnail_cache_success_toast">Cache delle miniature pulita</string>
 </resources>
