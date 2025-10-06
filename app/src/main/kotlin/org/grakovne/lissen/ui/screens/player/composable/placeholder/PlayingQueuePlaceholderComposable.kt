@@ -14,6 +14,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -23,17 +25,20 @@ import androidx.compose.ui.unit.dp
 import com.valentinilk.shimmer.shimmer
 import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
 import org.grakovne.lissen.viewmodel.LibraryViewModel
+import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
 fun PlayingQueuePlaceholderComposable(
   libraryViewModel: LibraryViewModel,
   modifier: Modifier = Modifier,
+  viewModel: PlayerViewModel,
 ) {
   val context = LocalContext.current
+  val book by viewModel.book.observeAsState()
 
   Column(modifier = modifier.padding(horizontal = 16.dp)) {
     Text(
-      text = provideNowPlayingTitle(libraryViewModel.fetchPreferredLibraryType(), context),
+      text = provideNowPlayingTitle(book?.libraryType ?: libraryViewModel.fetchPreferredLibraryType(), context),
       fontSize = typography.titleMedium.fontSize * 1.25f,
       fontWeight = FontWeight.SemiBold,
       color = MaterialTheme.colorScheme.primary,

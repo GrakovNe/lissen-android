@@ -96,7 +96,7 @@ fun PlayerScreen(
 
   val screenTitle =
     when (playingQueueExpanded) {
-      true -> provideNowPlayingTitle(libraryViewModel.fetchPreferredLibraryType(), context)
+      true -> provideNowPlayingTitle(playingBook?.libraryType ?: libraryViewModel.fetchPreferredLibraryType(), context)
       false -> stringResource(R.string.player_screen_title)
     }
 
@@ -204,7 +204,7 @@ fun PlayerScreen(
     },
     bottomBar = {
       if (playingBook == null || isPlaybackReady.not()) {
-        NavigationBarPlaceholderComposable(libraryType = libraryViewModel.fetchPreferredLibraryType())
+        NavigationBarPlaceholderComposable(libraryType = playingBook?.libraryType ?: libraryViewModel.fetchPreferredLibraryType())
       } else {
         playingBook
           ?.let {
@@ -213,7 +213,7 @@ fun PlayerScreen(
               playerViewModel = playerViewModel,
               contentCachingModelView = cachingModelView,
               navController = navController,
-              libraryType = libraryViewModel.fetchPreferredLibraryType(),
+              libraryType = playingBook?.libraryType ?: libraryViewModel.fetchPreferredLibraryType(),
             )
           }
       }
@@ -267,6 +267,7 @@ fun PlayerScreen(
             PlayingQueuePlaceholderComposable(
               libraryViewModel = libraryViewModel,
               modifier = Modifier,
+              viewModel = playerViewModel,
             )
           }
 
@@ -274,6 +275,7 @@ fun PlayerScreen(
             PlayingQueueFallbackComposable(
               libraryViewModel = libraryViewModel,
               modifier = Modifier,
+              viewModel = playerViewModel,
             )
           }
 

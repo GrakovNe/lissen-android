@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -16,12 +18,16 @@ import androidx.compose.ui.unit.sp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.viewmodel.LibraryViewModel
+import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
 fun PlayingQueueFallbackComposable(
   modifier: Modifier = Modifier,
   libraryViewModel: LibraryViewModel,
+  viewModel: PlayerViewModel,
 ) {
+  val book by viewModel.book.observeAsState()
+
   Column(
     modifier =
       modifier
@@ -33,7 +39,7 @@ fun PlayingQueueFallbackComposable(
     Text(
       textAlign = TextAlign.Center,
       text =
-        when (libraryViewModel.fetchPreferredLibraryType()) {
+        when (book?.libraryType ?: libraryViewModel.fetchPreferredLibraryType()) {
           LibraryType.LIBRARY -> stringResource(R.string.chapters_list_empty)
           LibraryType.PODCAST -> stringResource(R.string.episodes_list_empty)
           LibraryType.UNKNOWN -> stringResource(R.string.items_list_empty)

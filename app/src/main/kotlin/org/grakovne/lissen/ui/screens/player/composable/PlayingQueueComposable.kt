@@ -130,7 +130,7 @@ fun PlayingQueueComposable(
   ) {
     if (playingQueueExpanded.not()) {
       Text(
-        text = provideNowPlayingTitle(libraryViewModel.fetchPreferredLibraryType(), context),
+        text = provideNowPlayingTitle(book?.libraryType ?: libraryViewModel.fetchPreferredLibraryType(), context),
         fontSize = fontSize.sp,
         fontWeight = FontWeight.SemiBold,
         color = MaterialTheme.colorScheme.primary,

@@ -121,7 +121,7 @@ fun TrackDetailsComposable(
         provideChapterNumberTitle(
           currentTrackIndex = currentTrackIndex,
           book = book,
-          libraryType = libraryViewModel.fetchPreferredLibraryType(),
+          libraryType = book?.libraryType ?: libraryViewModel.fetchPreferredLibraryType(),
           context = context,
         ),
       style = typography.bodyMedium,
