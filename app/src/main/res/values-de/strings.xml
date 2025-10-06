@@ -140,4 +140,12 @@
     <string name="library_type_library">Bücher</string>
     <string name="library_type_podcast">Podcasts</string>
     <string name="library_type_unknown">Unbekannt</string>
+    <string name="settings_screen_clear_thumbnail_cache_success_toast">Vorschaubild-Cache gelöscht</string>
+    <string name="settings_screen_internal_connection_url_title">Lokale Netzwerkserveradresse</string>
+    <string name="settings_screen_internal_connection_url_description">Serverzugriff für Heim-WLAN definieren</string>
+    <string name="local_url_hint_ssid_name">WLAN Netzwerk Name</string>
+    <string name="location_permission_request_hint">Die App benötigt Zugriff auf den Standort, um den WLAN-Namen zu erkennen</string>
+    <string name="permission_request_grant_button">Erlauben</string>
+    <string name="settings_screen_clear_thumbnail_cache_title">Vorschaubild-Cache löschen</string>
+    <string name="settings_screen_clear_thumbnail_cache_hint">Vorschaubild-Cache löschen, um Speicherplatz freizugeben.</string>
 </resources>
