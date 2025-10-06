@@ -1,6 +1,8 @@
 package org.grakovne.lissen.channel.audiobookshelf.podcast.converter
 
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastEpisodeResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
 import org.grakovne.lissen.lib.domain.BookChapterState
@@ -16,9 +18,12 @@ import javax.inject.Singleton
 @Singleton
 class PodcastResponseConverter
   @Inject
-  constructor() {
+  constructor(
+    private val libraryResponseConverter: LibraryResponseConverter,
+  ) {
     fun apply(
       item: PodcastResponse,
+      libraryResponse: LibraryResponse,
       progressResponses: List<MediaProgressResponse> = emptyList(),
     ): DetailedItem {
       val orderedEpisodes =
@@ -89,6 +94,12 @@ class PodcastResponseConverter
             }
             ?: emptyList(),
         chapters = filesAsChapters,
+        libraryType =
+          libraryResponse
+            .libraries
+            .let { libraryResponseConverter.apply(it) }
+            .find { it.id == item.libraryId }
+            ?.type,
         progress = latestEpisodeMediaProgress,
         year = null, // we have no "Year" for the ongoing media
         abstract = item.media.metadata.description,

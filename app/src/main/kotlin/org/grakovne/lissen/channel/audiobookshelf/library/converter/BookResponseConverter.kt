@@ -1,6 +1,8 @@
 package org.grakovne.lissen.channel.audiobookshelf.library.converter
 
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.BookResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryAuthorResponse
 import org.grakovne.lissen.lib.domain.BookFile
@@ -14,9 +16,12 @@ import javax.inject.Singleton
 @Singleton
 class BookResponseConverter
   @Inject
-  constructor() {
+  constructor(
+    private val libraryResponseConverter: LibraryResponseConverter,
+  ) {
     fun apply(
       item: BookResponse,
+      libraryResponse: LibraryResponse,
       progressResponse: MediaProgressResponse? = null,
     ): DetailedItem {
       val maybeChapters =
@@ -88,6 +93,12 @@ class BookResponseConverter
             }
             ?: emptyList(),
         chapters = maybeChapters ?: filesAsChapters(),
+        libraryType =
+          libraryResponse
+            .libraries
+            .let { libraryResponseConverter.apply(it) }
+            .find { it.id == item.libraryId }
+            ?.type,
         libraryId = item.libraryId,
         localProvided = false,
         year = item.media.metadata.publishedYear,

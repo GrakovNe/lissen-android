@@ -18,6 +18,7 @@ data class DetailedItem(
   val chapters: List<PlayingChapter>,
   val progress: MediaProgress?,
   val libraryId: String?,
+  val libraryType: LibraryType?,
   val localProvided: Boolean,
   val createdAt: Long,
   val updatedAt: Long,

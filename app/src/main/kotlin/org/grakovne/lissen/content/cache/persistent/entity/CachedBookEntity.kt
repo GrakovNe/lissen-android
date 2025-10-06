@@ -7,6 +7,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
+import org.grakovne.lissen.lib.domain.LibraryType
 import java.io.Serializable
 
 @Keep
@@ -42,6 +43,7 @@ data class BookEntity(
   val publisher: String?,
   val duration: Int,
   val libraryId: String?,
+  val libraryType: LibraryType?,
   val seriesJson: String?, // List<BookSeriesDto> Json
   val seriesNames: String?,
   val createdAt: Long,

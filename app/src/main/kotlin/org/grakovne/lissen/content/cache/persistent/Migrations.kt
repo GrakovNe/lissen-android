@@ -256,3 +256,10 @@ val MIGRATION_13_14 =
       db.execSQL("ALTER TABLE detailed_books ADD COLUMN seriesNames TEXT")
     }
   }
+
+val MIGRATION_14_15 =
+  object : Migration(14, 15) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+      db.execSQL("ALTER TABLE detailed_books ADD COLUMN libraryType TEXT")
+    }
+  }

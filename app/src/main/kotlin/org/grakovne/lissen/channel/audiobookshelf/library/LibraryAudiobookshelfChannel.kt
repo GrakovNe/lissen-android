@@ -191,19 +191,29 @@ class LibraryAudiobookshelfChannel
 
     override suspend fun fetchBook(bookId: String): ApiResult<DetailedItem> =
       coroutineScope {
+        val libraries = async { dataRepository.fetchLibraries() }
         val book = async { dataRepository.fetchBook(bookId) }
         val bookProgress = async { dataRepository.fetchLibraryItemProgress(bookId) }
 
-        book.await().foldAsync(
-          onSuccess = { item ->
-            bookProgress
-              .await()
-              .fold(
-                onSuccess = { Success(bookResponseConverter.apply(item, it)) },
-                onFailure = { Success(bookResponseConverter.apply(item, null)) },
-              )
-          },
-          onFailure = { ApiResult.Error(it.code) },
-        )
+        book
+          .await()
+          .foldAsync(
+            onSuccess = { item ->
+              libraries
+                .await()
+                .foldAsync(
+                  onSuccess = { libraries ->
+                    bookProgress
+                      .await()
+                      .fold(
+                        onSuccess = { Success(bookResponseConverter.apply(item, libraries, it)) },
+                        onFailure = { Success(bookResponseConverter.apply(item, libraries, null)) },
+                      )
+                  },
+                  onFailure = { ApiResult.Error(it.code) },
+                )
+            },
+            onFailure = { ApiResult.Error(it.code) },
+          )
       }
   }

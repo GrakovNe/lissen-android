@@ -17,6 +17,7 @@ import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastPageR
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastSearchItemsConverter
 import org.grakovne.lissen.channel.common.ApiResult
+import org.grakovne.lissen.channel.common.ApiResult.Success
 import org.grakovne.lissen.lib.domain.Book
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.LibraryType
@@ -119,29 +120,41 @@ class PodcastAudiobookshelfChannel
 
     override suspend fun fetchBook(bookId: String): ApiResult<DetailedItem> =
       coroutineScope {
+        val libraries = async { dataRepository.fetchLibraries() }
+        val podcast = async { dataRepository.fetchPodcastItem(bookId) }
         val mediaProgress =
           async {
-            val progress =
-              dataRepository
-                .fetchUserInfoResponse()
-                .fold(
-                  onSuccess = { it.user.mediaProgress ?: emptyList() },
-                  onFailure = { emptyList() },
-                )
-
-            if (progress.isEmpty()) {
-              return@async null
-            }
-
-            progress
-              .filter { it.libraryItemId == bookId }
-              .filterNot { it.episodeId == null }
-              .sortedByDescending { it.lastUpdate }
-              .distinctBy { it.episodeId }
+            dataRepository
+              .fetchUserInfoResponse()
+              .map {
+                it.user.mediaProgress
+                  ?.filter { result -> result.libraryItemId == bookId }
+                  ?.filterNot { result -> result.episodeId == null }
+                  ?.sortedByDescending { result -> result.lastUpdate }
+                  ?.distinctBy { result -> result.episodeId }
+                  ?: emptyList()
+              }
           }
 
-        async { dataRepository.fetchPodcastItem(bookId) }
+        podcast
           .await()
-          .map { podcastResponseConverter.apply(it, mediaProgress.await() ?: emptyList()) }
+          .foldAsync(
+            onSuccess = { item ->
+              libraries
+                .await()
+                .foldAsync(
+                  onSuccess = { libraries ->
+                    mediaProgress
+                      .await()
+                      .fold(
+                        onSuccess = { Success(podcastResponseConverter.apply(item, libraries, it)) },
+                        onFailure = { Success(podcastResponseConverter.apply(item, libraries, emptyList())) },
+                      )
+                  },
+                  onFailure = { ApiResult.Error(it.code) },
+                )
+            },
+            onFailure = { ApiResult.Error(it.code) },
+          )
       }
   }
