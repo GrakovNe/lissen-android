@@ -8,6 +8,8 @@ import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -37,6 +39,7 @@ class ContentAutoCachingService
     private val sharedPreferences: LissenSharedPreferences,
     private val networkService: NetworkService,
   ) : RunningComponent {
+    private var delayedJob: Job? = null
     private val scope = CoroutineScope(Dispatchers.IO)
 
     override fun onCreate() {
@@ -56,12 +59,15 @@ class ContentAutoCachingService
     private suspend fun updatePlaybackCache(
       playingItem: DetailedItem?,
       isPlaying: Boolean,
+      delayed: Boolean = false,
     ) {
+      delayedJob?.cancel()
+
       val playbackCacheOption = sharedPreferences.getAutoDownloadOption() ?: return
+      val playingMediaItem = playingItem ?: return
+
       val isNetworkAvailable = networkService.isNetworkAvailable()
       val currentNetwork = networkService.getCurrentNetworkType() ?: return
-
-      val playingMediaItem = playingItem ?: return
       val preferredNetwork = sharedPreferences.getAutoDownloadNetworkType()
       val currentTotalPosition = mediaRepository.totalPosition.value ?: return
 
@@ -76,9 +82,7 @@ class ContentAutoCachingService
           ?: return
 
       val requestedLibraryType = sharedPreferences.getAutoDownloadLibraryTypes().contains(playingItemLibraryType)
-
       val isForceCache = sharedPreferences.isForceCache()
-
       val cacheAvailable =
         isNetworkAvailable &&
           isPlaying &&
@@ -90,22 +94,35 @@ class ContentAutoCachingService
         return
       }
 
-      val task =
-        ContentCachingTask(
-          item = playingMediaItem,
-          options = playbackCacheOption,
-          currentPosition = currentTotalPosition,
-        )
+      if (sharedPreferences.getAutoDownloadDelayed().not() || delayed) {
+        val task = ContentCachingTask(
+            item = playingMediaItem,
+            options = playbackCacheOption,
+            currentPosition = currentTotalPosition,
+          )
+        
+        val intent = Intent(context, ContentCachingService::class.java)
+          .apply {
+            putExtra(ContentCachingService.CACHING_TASK_EXTRA, task as Serializable)
+          }
+        
+        context.startForegroundService(intent)
+        return
+      }
 
-      val intent =
-        Intent(context, ContentCachingService::class.java).apply {
-          putExtra(ContentCachingService.CACHING_TASK_EXTRA, task as Serializable)
+      delayedJob =
+        scope.launch {
+          val originalBookId = playingMediaItem.id
+          delay(DELAY_TIME)
+
+          val currentPlaying = mediaRepository.playingBook.value
+          if (currentPlaying?.id != originalBookId) return@launch
+
+          updatePlaybackCache(currentPlaying, isPlaying, delayed = true)
         }
-
-      context.startForegroundService(intent)
     }
-
-    private fun validNetworkType(
+  
+  private fun validNetworkType(
       current: NetworkType,
       required: NetworkTypeAutoCache,
     ): Boolean {
@@ -116,5 +133,9 @@ class ContentAutoCachingService
         }
 
       return positiveNetworkTypes.contains(current)
+    }
+  
+    companion object {
+      private const val DELAY_TIME: Long = 30_000
     }
   }
