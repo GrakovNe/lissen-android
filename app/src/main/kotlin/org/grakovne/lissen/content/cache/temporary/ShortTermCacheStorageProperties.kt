@@ -17,7 +17,7 @@ class ShortTermCacheStorageProperties
         .externalCacheDir
         ?.resolve(SHORT_TERM_CACHE_FOLDER)
         ?.resolve(COVER_CACHE_FOLDER_NAME)
-        ?: throw IllegalStateException("")
+        ?: throw IllegalStateException("Unable to resole cache cover path. Seems like there is no externalCacheDir")
 
     fun provideCoverPath(
       itemId: String,
@@ -29,7 +29,7 @@ class ShortTermCacheStorageProperties
         ?.resolve(COVER_CACHE_FOLDER_NAME)
         ?.resolve(width.toPath())
         ?.resolve(itemId)
-        ?: throw IllegalStateException("")
+        ?: throw IllegalStateException("Unable to resole cache cover path. Seems like there is no externalCacheDir")
 
     companion object {
       const val SHORT_TERM_CACHE_FOLDER = "short_term_cache"

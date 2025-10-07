@@ -27,19 +27,19 @@ import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItemComp
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
-fun NetworkTypeAutoCacheSettingsComposable(viewModel: SettingsViewModel) {
+fun NetworkTypeAutoCacheSettingsComposable(
+  viewModel: SettingsViewModel,
+  enabled: Boolean,
+) {
   val context = LocalContext.current
   var networkTypeExpanded by remember { mutableStateOf(false) }
-  val preferredDownloadOption by viewModel.preferredAutoDownloadOption.observeAsState()
   val preferredNetworkType by viewModel.preferredAutoDownloadNetworkType.observeAsState()
-
-  val enabled = preferredDownloadOption != null
 
   Row(
     modifier =
       Modifier
         .fillMaxWidth()
-        .clickable(enabled = preferredDownloadOption != null) { networkTypeExpanded = true }
+        .clickable(enabled = enabled) { networkTypeExpanded = true }
         .padding(horizontal = 24.dp, vertical = 12.dp),
   ) {
     Column(

@@ -21,14 +21,19 @@ fun SettingsToggleItem(
   title: String,
   description: String,
   initialState: Boolean,
+  enabled: Boolean = true,
   onCheckedChange: (Boolean) -> Unit,
 ) {
   Row(
     modifier =
       Modifier
         .fillMaxWidth()
-        .clickable { onCheckedChange(initialState.not()) }
-        .padding(horizontal = 24.dp, vertical = 12.dp),
+        .let {
+          when (enabled) {
+            true -> it.clickable { onCheckedChange(initialState.not()) }
+            false -> it
+          }
+        }.padding(horizontal = 24.dp, vertical = 12.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {
     Column(
@@ -38,15 +43,25 @@ fun SettingsToggleItem(
         text = title,
         style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
         modifier = Modifier.padding(bottom = 2.dp),
+        color =
+          when (enabled) {
+            true -> colorScheme.onBackground
+            false -> colorScheme.onBackground.copy(alpha = 0.4f)
+          },
       )
       Text(
         text = description,
         style = typography.bodyMedium,
-        color = colorScheme.onSurfaceVariant,
+        color =
+          when (enabled) {
+            true -> colorScheme.onSurfaceVariant
+            false -> colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+          },
       )
     }
 
     Switch(
+      enabled = enabled,
       checked = initialState,
       onCheckedChange = null,
       colors =

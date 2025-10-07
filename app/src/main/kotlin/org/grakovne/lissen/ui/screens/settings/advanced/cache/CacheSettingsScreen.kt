@@ -40,6 +40,7 @@ fun CacheSettingsScreen(
   navController: AppNavigationService,
   viewModel: SettingsViewModel = hiltViewModel(),
 ) {
+  val preferredDownloadOption by viewModel.preferredAutoDownloadOption.observeAsState()
   val autoDownloadDelayed by viewModel.autoDownloadDelayed.observeAsState(true)
 
   Scaffold(
@@ -85,11 +86,12 @@ fun CacheSettingsScreen(
         ) {
           AutoCacheSettingsComposable(viewModel)
 
-          NetworkTypeAutoCacheSettingsComposable(viewModel)
+          NetworkTypeAutoCacheSettingsComposable(viewModel, preferredDownloadOption != null)
 
-          LibraryTypeAutoCacheSettingsComposable(viewModel)
+          LibraryTypeAutoCacheSettingsComposable(viewModel, preferredDownloadOption != null)
 
           SettingsToggleItem(
+            enabled = preferredDownloadOption != null,
             title = stringResource(R.string.settings_screen_delay_autodownload_title),
             description = stringResource(R.string.settings_screen_delay_autodownload_description),
             initialState = autoDownloadDelayed,
