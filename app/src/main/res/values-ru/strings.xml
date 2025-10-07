@@ -148,4 +148,7 @@
     <string name="settings_screen_clear_thumbnail_cache_title">Очистить кеш обложек</string>
     <string name="settings_screen_clear_thumbnail_cache_hint">Удалить загруженные с сервера обложки</string>
     <string name="settings_screen_clear_thumbnail_cache_success_toast">Кеш обложек очищен</string>
+    <string name="settings_screen_delay_autodownload_title">Отложить автоматическую загрузку</string>
+    <string name="settings_screen_delay_autodownload_description">Подождать перед началом скачивания</string>
+
 </resources>

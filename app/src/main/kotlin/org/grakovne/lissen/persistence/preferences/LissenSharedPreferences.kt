@@ -84,6 +84,14 @@ class LissenSharedPreferences
       }
     }
 
+    fun getAutoDownloadDelayed() = sharedPreferences.getBoolean(KEY_AUTO_DOWNLOAD_DELAYED, false)
+
+    fun saveAutoDownloadDelayed(enabled: Boolean) {
+      sharedPreferences.edit {
+        putBoolean(KEY_AUTO_DOWNLOAD_DELAYED, enabled)
+      }
+    }
+
     fun getAcraEnabled() = sharedPreferences.getBoolean(org.acra.ACRA.PREF_ENABLE_ACRA, true)
 
     fun saveAcraEnabled(enabled: Boolean) {
@@ -411,6 +419,7 @@ class LissenSharedPreferences
       private const val KEY_PREFERRED_AUTO_DOWNLOAD = "preferred_auto_download"
       private const val KEY_PREFERRED_AUTO_DOWNLOAD_NETWORK_TYPE = "preferred_auto_download_network_type"
       private const val KEY_PREFERRED_AUTO_DOWNLOAD_LIBRARY_TYPE = "preferred_auto_download_library_type"
+      private const val KEY_AUTO_DOWNLOAD_DELAYED = "auto_download_delayed"
       private const val KEY_PREFERRED_LIBRARY_ORDERING = "preferred_library_ordering"
 
       private const val KEY_CUSTOM_HEADERS = "custom_headers"
