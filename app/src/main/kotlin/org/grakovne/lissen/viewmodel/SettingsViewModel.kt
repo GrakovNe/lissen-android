@@ -78,9 +78,17 @@ class SettingsViewModel
     private val _crashReporting = MutableLiveData(preferences.getAcraEnabled())
     val crashReporting = _crashReporting
 
+    private val _autoDownloadDelayed = MutableLiveData(preferences.getAutoDownloadDelayed())
+    val autoDownloadDelayed = _autoDownloadDelayed
+
     fun preferCrashReporting(value: Boolean) {
       _crashReporting.postValue(value)
       preferences.saveAcraEnabled(value)
+    }
+
+    fun preferAutoDownloadDelayed(value: Boolean) {
+      _autoDownloadDelayed.postValue(value)
+      preferences.saveAutoDownloadDelayed(value)
     }
 
     fun logout() {

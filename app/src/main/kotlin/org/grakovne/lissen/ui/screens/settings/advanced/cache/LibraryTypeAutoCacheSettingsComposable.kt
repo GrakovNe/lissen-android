@@ -27,14 +27,15 @@ import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsMultiIte
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
-fun LibraryTypeAutoCacheSettingsComposable(viewModel: SettingsViewModel) {
+fun LibraryTypeAutoCacheSettingsComposable(
+  viewModel: SettingsViewModel,
+  enabled: Boolean,
+) {
   val context = LocalContext.current
   var libraryTypeExpanded by remember { mutableStateOf(false) }
   val preferredDownloadOption by viewModel.preferredAutoDownloadOption.observeAsState()
   val preferredLibraryTypes by viewModel.preferredAutoDownloadLibraryTypes.observeAsState(LibraryType.meaningfulTypes)
   val libraryTypesState = LibraryType.meaningfulTypes.map { it to preferredLibraryTypes.contains(it) }
-
-  val enabled = preferredDownloadOption != null
 
   Row(
     modifier =

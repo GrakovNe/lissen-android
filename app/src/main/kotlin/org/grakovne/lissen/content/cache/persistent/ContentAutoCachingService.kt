@@ -8,6 +8,8 @@ import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -37,6 +39,7 @@ class ContentAutoCachingService
     private val sharedPreferences: LissenSharedPreferences,
     private val networkService: NetworkService,
   ) : RunningComponent {
+    private var delayedJob: Job? = null
     private val scope = CoroutineScope(Dispatchers.IO)
 
     override fun onCreate() {
@@ -48,22 +51,27 @@ class ContentAutoCachingService
             .filterNotNull()
             .distinctUntilChanged(),
           mediaRepository.currentChapterIndex.asFlow().distinctUntilChanged(),
-        ) { playingItem: DetailedItem?, isPlaying: Boolean, _: Int? -> playingItem to isPlaying }
-          .collectLatest { (playingItem, isPlaying) -> updatePlaybackCache(playingItem, isPlaying) }
+        ) { playingItem: DetailedItem?, isPlaying: Boolean, _: Int? ->
+          playingItem to isPlaying
+        }.collectLatest { (playingItem, isPlaying) ->
+          delayedJob?.cancel()
+          delayedJob = updatePlaybackCache(playingItem, isPlaying)
+        }
       }
     }
 
     private suspend fun updatePlaybackCache(
       playingItem: DetailedItem?,
       isPlaying: Boolean,
-    ) {
-      val playbackCacheOption = sharedPreferences.getAutoDownloadOption() ?: return
-      val isNetworkAvailable = networkService.isNetworkAvailable()
-      val currentNetwork = networkService.getCurrentNetworkType() ?: return
+      delayed: Boolean = false,
+    ): Job? {
+      val playbackCacheOption = sharedPreferences.getAutoDownloadOption() ?: return null
+      val playingMediaItem = playingItem ?: return null
 
-      val playingMediaItem = playingItem ?: return
+      val isNetworkAvailable = networkService.isNetworkAvailable()
+      val currentNetwork = networkService.getCurrentNetworkType() ?: return null
       val preferredNetwork = sharedPreferences.getAutoDownloadNetworkType()
-      val currentTotalPosition = mediaRepository.totalPosition.value ?: return
+      val currentTotalPosition = mediaRepository.totalPosition.value ?: return null
 
       val playingItemLibraryType =
         mediaProvider
@@ -72,10 +80,12 @@ class ContentAutoCachingService
           .fold(
             onSuccess = { libraries -> libraries.find { it.id == playingMediaItem.libraryId }?.type },
             onFailure = { null },
-          )
-          ?: return
+          ) ?: return null
 
-      val requestedLibraryType = sharedPreferences.getAutoDownloadLibraryTypes().contains(playingItemLibraryType)
+      val requestedLibraryType =
+        sharedPreferences
+          .getAutoDownloadLibraryTypes()
+          .contains(playingItemLibraryType)
 
       val isForceCache = sharedPreferences.isForceCache()
 
@@ -86,23 +96,34 @@ class ContentAutoCachingService
           validNetworkType(currentNetwork, preferredNetwork) &&
           requestedLibraryType
 
-      if (cacheAvailable.not()) {
-        return
+      if (cacheAvailable.not()) return null
+
+      if (sharedPreferences.getAutoDownloadDelayed().not() || delayed) {
+        val task =
+          ContentCachingTask(
+            item = playingMediaItem,
+            options = playbackCacheOption,
+            currentPosition = currentTotalPosition,
+          )
+
+        val intent =
+          Intent(context, ContentCachingService::class.java).apply {
+            putExtra(ContentCachingService.CACHING_TASK_EXTRA, task as Serializable)
+          }
+
+        context.startForegroundService(intent)
+        return null
       }
 
-      val task =
-        ContentCachingTask(
-          item = playingMediaItem,
-          options = playbackCacheOption,
-          currentPosition = currentTotalPosition,
-        )
+      return scope.launch {
+        val originalBookId = playingMediaItem.id
+        delay(DELAY_TIME)
 
-      val intent =
-        Intent(context, ContentCachingService::class.java).apply {
-          putExtra(ContentCachingService.CACHING_TASK_EXTRA, task as Serializable)
-        }
+        val currentPlaying = mediaRepository.playingBook.value
+        if (currentPlaying?.id != originalBookId) return@launch
 
-      context.startForegroundService(intent)
+        updatePlaybackCache(currentPlaying, isPlaying, delayed = true)
+      }
     }
 
     private fun validNetworkType(
@@ -116,5 +137,9 @@ class ContentAutoCachingService
         }
 
       return positiveNetworkTypes.contains(current)
+    }
+
+    companion object {
+      private const val DELAY_TIME: Long = 30_000
     }
   }

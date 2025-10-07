@@ -20,6 +20,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -28,6 +30,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.settings.advanced.AdvancedSettingsNavigationItemComposable
+import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
@@ -37,6 +40,9 @@ fun CacheSettingsScreen(
   navController: AppNavigationService,
   viewModel: SettingsViewModel = hiltViewModel(),
 ) {
+  val preferredDownloadOption by viewModel.preferredAutoDownloadOption.observeAsState()
+  val autoDownloadDelayed by viewModel.autoDownloadDelayed.observeAsState(true)
+
   Scaffold(
     topBar = {
       TopAppBar(
@@ -80,9 +86,16 @@ fun CacheSettingsScreen(
         ) {
           AutoCacheSettingsComposable(viewModel)
 
-          NetworkTypeAutoCacheSettingsComposable(viewModel)
+          NetworkTypeAutoCacheSettingsComposable(viewModel, preferredDownloadOption != null)
 
-          LibraryTypeAutoCacheSettingsComposable(viewModel)
+          LibraryTypeAutoCacheSettingsComposable(viewModel, preferredDownloadOption != null)
+
+          SettingsToggleItem(
+            enabled = preferredDownloadOption != null,
+            title = stringResource(R.string.settings_screen_delay_autodownload_title),
+            description = stringResource(R.string.settings_screen_delay_autodownload_description),
+            initialState = autoDownloadDelayed,
+          ) { viewModel.preferAutoDownloadDelayed(it) }
 
           AdvancedSettingsNavigationItemComposable(
             title = stringResource(R.string.settings_screen_cached_items_title),
