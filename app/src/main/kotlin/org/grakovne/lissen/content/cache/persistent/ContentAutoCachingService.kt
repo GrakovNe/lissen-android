@@ -51,8 +51,12 @@ class ContentAutoCachingService
             .filterNotNull()
             .distinctUntilChanged(),
           mediaRepository.currentChapterIndex.asFlow().distinctUntilChanged(),
-        ) { playingItem: DetailedItem?, isPlaying: Boolean, _: Int? -> playingItem to isPlaying }
-          .collectLatest { (playingItem, isPlaying) -> updatePlaybackCache(playingItem, isPlaying) }
+        ) { playingItem: DetailedItem?, isPlaying: Boolean, _: Int? ->
+          playingItem to isPlaying
+        }.collectLatest { (playingItem, isPlaying) ->
+          delayedJob?.cancel()
+          delayedJob = updatePlaybackCache(playingItem, isPlaying)
+        }
       }
     }
 
@@ -60,16 +64,14 @@ class ContentAutoCachingService
       playingItem: DetailedItem?,
       isPlaying: Boolean,
       delayed: Boolean = false,
-    ) {
-      delayedJob?.cancel()
-
-      val playbackCacheOption = sharedPreferences.getAutoDownloadOption() ?: return
-      val playingMediaItem = playingItem ?: return
+    ): Job? {
+      val playbackCacheOption = sharedPreferences.getAutoDownloadOption() ?: return null
+      val playingMediaItem = playingItem ?: return null
 
       val isNetworkAvailable = networkService.isNetworkAvailable()
-      val currentNetwork = networkService.getCurrentNetworkType() ?: return
+      val currentNetwork = networkService.getCurrentNetworkType() ?: return null
       val preferredNetwork = sharedPreferences.getAutoDownloadNetworkType()
-      val currentTotalPosition = mediaRepository.totalPosition.value ?: return
+      val currentTotalPosition = mediaRepository.totalPosition.value ?: return null
 
       val playingItemLibraryType =
         mediaProvider
@@ -78,11 +80,15 @@ class ContentAutoCachingService
           .fold(
             onSuccess = { libraries -> libraries.find { it.id == playingMediaItem.libraryId }?.type },
             onFailure = { null },
-          )
-          ?: return
+          ) ?: return null
 
-      val requestedLibraryType = sharedPreferences.getAutoDownloadLibraryTypes().contains(playingItemLibraryType)
+      val requestedLibraryType =
+        sharedPreferences
+          .getAutoDownloadLibraryTypes()
+          .contains(playingItemLibraryType)
+
       val isForceCache = sharedPreferences.isForceCache()
+
       val cacheAvailable =
         isNetworkAvailable &&
           isPlaying &&
@@ -90,39 +96,37 @@ class ContentAutoCachingService
           validNetworkType(currentNetwork, preferredNetwork) &&
           requestedLibraryType
 
-      if (cacheAvailable.not()) {
-        return
-      }
+      if (cacheAvailable.not()) return null
 
       if (sharedPreferences.getAutoDownloadDelayed().not() || delayed) {
-        val task = ContentCachingTask(
+        val task =
+          ContentCachingTask(
             item = playingMediaItem,
             options = playbackCacheOption,
             currentPosition = currentTotalPosition,
           )
-        
-        val intent = Intent(context, ContentCachingService::class.java)
-          .apply {
+
+        val intent =
+          Intent(context, ContentCachingService::class.java).apply {
             putExtra(ContentCachingService.CACHING_TASK_EXTRA, task as Serializable)
           }
-        
+
         context.startForegroundService(intent)
-        return
+        return null
       }
 
-      delayedJob =
-        scope.launch {
-          val originalBookId = playingMediaItem.id
-          delay(DELAY_TIME)
+      return scope.launch {
+        val originalBookId = playingMediaItem.id
+        delay(DELAY_TIME)
 
-          val currentPlaying = mediaRepository.playingBook.value
-          if (currentPlaying?.id != originalBookId) return@launch
+        val currentPlaying = mediaRepository.playingBook.value
+        if (currentPlaying?.id != originalBookId) return@launch
 
-          updatePlaybackCache(currentPlaying, isPlaying, delayed = true)
-        }
+        updatePlaybackCache(currentPlaying, isPlaying, delayed = true)
+      }
     }
-  
-  private fun validNetworkType(
+
+    private fun validNetworkType(
       current: NetworkType,
       required: NetworkTypeAutoCache,
     ): Boolean {
@@ -134,7 +138,7 @@ class ContentAutoCachingService
 
       return positiveNetworkTypes.contains(current)
     }
-  
+
     companion object {
       private const val DELAY_TIME: Long = 30_000
     }
