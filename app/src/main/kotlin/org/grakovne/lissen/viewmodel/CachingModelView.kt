@@ -111,6 +111,10 @@ class CachingModelView
     suspend fun dropCache(bookId: String) {
       contentCachingManager.dropCache(bookId)
     }
+  
+  suspend fun stopCaching(bookId: String) {
+    contentCachingManager.stopCaching(bookId)
+  }
 
     suspend fun dropCache(
       item: DetailedItem,
