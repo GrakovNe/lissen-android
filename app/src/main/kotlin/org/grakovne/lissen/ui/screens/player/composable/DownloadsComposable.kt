@@ -100,7 +100,7 @@ fun DownloadsComposable(
             }
           }
 
-          if (true) {
+          if (cachingInProgress) {
             item {
               HorizontalDivider()
 
