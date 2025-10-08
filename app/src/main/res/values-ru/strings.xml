@@ -75,6 +75,7 @@
     <string name="downloads_menu_download_option_clear_chapters">Удалить загруженные главы</string>
     <string name="downloads_menu_download_option_clear_episodes">Удалить загруженные выпуски</string>
     <string name="downloads_menu_download_option_clear_items">Удалить загруженные элементы</string>
+    <string name="downloads_menu_download_option_stop_downloads">Остановить загрузку</string>
     <string name="player_screen_podcast_playing_title">Список выпусков</string>
     <string name="player_screen_items_playing_title">Список элементов</string>
     <string name="player_screen_now_playing_title_podcast_of">Выпуск %1$d из %2$s</string>
