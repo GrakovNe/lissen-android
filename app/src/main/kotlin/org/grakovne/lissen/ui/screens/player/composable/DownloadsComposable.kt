@@ -99,16 +99,16 @@ fun DownloadsComposable(
               HorizontalDivider()
             }
           }
-          
-          if (cachingInProgress) {
+
+          if (true) {
             item {
               HorizontalDivider()
-              
+
               ListItem(
                 headlineContent = {
                   Row {
                     Text(
-                      text = stringResource(R.string.downloads_menu_download_option_stop_downloads,),
+                      text = stringResource(R.string.downloads_menu_download_option_stop_downloads),
                       color = colorScheme.error,
                       style = typography.bodyMedium,
                     )

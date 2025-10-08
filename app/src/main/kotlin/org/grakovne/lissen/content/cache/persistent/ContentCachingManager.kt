@@ -108,11 +108,6 @@ class ContentCachingManager
           }
         }
     }
-  
-  suspend fun stopCaching(
-      bookId: String,
-    ) {
-    }
 
     suspend fun dropCache(itemId: String) {
       bookRepository.removeBook(itemId)

@@ -269,7 +269,7 @@ fun NavigationBarComposable(
               .value
               ?.let {
                 scope.launch {
-                  contentCachingModelView.stopCaching(it.id)
+                  contentCachingModelView.stopCaching(it)
                 }
               }
           },
