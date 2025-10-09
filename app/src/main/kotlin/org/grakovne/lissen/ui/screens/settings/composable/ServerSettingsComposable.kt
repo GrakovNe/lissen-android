@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,6 +31,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
+import org.grakovne.lissen.channel.audiobookshelf.HostType
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
@@ -40,6 +42,9 @@ fun ServerSettingsComposable(
   viewModel: SettingsViewModel,
 ) {
   var connectionInfoExpanded by remember { mutableStateOf(false) }
+
+  val localUrls by viewModel.localUrls.observeAsState(emptyList())
+  val host by viewModel.host.observeAsState()
 
   LaunchedEffect(Unit) {
     viewModel.refreshConnectionInfo()
@@ -60,13 +65,14 @@ fun ServerSettingsComposable(
         modifier = Modifier.padding(bottom = 4.dp),
       )
 
-      Text(
-        text = "${viewModel.host.value}",
-        style = typography.bodyMedium,
-        maxLines = 1,
-        modifier = Modifier.padding(bottom = 4.dp),
-        overflow = TextOverflow.Ellipsis,
-      )
+      host?.let {
+        Text(
+          text = it.url,
+          style = typography.bodyMedium,
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis,
+        )
+      }
     }
     IconButton(
       onClick = {
@@ -98,12 +104,30 @@ fun ServerSettingsComposable(
               label = stringResource(R.string.settings_screen_connected_as_title),
               value = it,
             )
+
             HorizontalDivider()
           }
+
           viewModel.serverVersion.value?.let {
             InfoRow(
               label = stringResource(R.string.settings_screen_server_version),
               value = it,
+            )
+          }
+
+          if (localUrls.isNotEmpty() && host != null) {
+            val connectionType =
+              when (host?.type) {
+                HostType.INTERNAL -> stringResource(R.string.settings_screen_connection_local)
+                HostType.EXTERNAL -> stringResource(R.string.settings_screen_connection_external)
+                else -> ""
+              }
+
+            HorizontalDivider()
+
+            InfoRow(
+              label = stringResource(R.string.settings_screen_connection_type),
+              value = connectionType,
             )
           }
         }

@@ -309,6 +309,8 @@ class LissenMediaProvider
       return detailedItem.copy(progress = updatedProgress)
     }
 
+    fun fetchConnectionHost() = providePreferredChannel().fetchConnectionHost()
+
     suspend fun fetchConnectionInfo() = providePreferredChannel().fetchConnectionInfo()
 
     fun provideAuthService(): ChannelAuthService =

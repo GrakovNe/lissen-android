@@ -5,12 +5,14 @@ import androidx.core.net.toUri
 import okio.Buffer
 import org.grakovne.lissen.BuildConfig
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfHostProvider
+import org.grakovne.lissen.channel.audiobookshelf.Host
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfSyncService
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
+import org.grakovne.lissen.channel.common.ApiError
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.ConnectionInfo
 import org.grakovne.lissen.channel.common.MediaChannel
@@ -62,6 +64,12 @@ abstract class AudiobookshelfChannel(
       .fetchLibraries()
       .map { it.libraries.sortedBy { library -> library.displayOrder } }
       .map { libraryResponseConverter.apply(it) }
+
+  override fun fetchConnectionHost(): ApiResult<Host> =
+    hostProvider
+      .provideHost()
+      ?.let { ApiResult.Success(it) }
+      ?: ApiResult.Error(ApiError.InternalError)
 
   override suspend fun fetchRecentListenedBooks(libraryId: String): ApiResult<List<RecentBook>> {
     val progress: Map<String, Pair<Long, Double>> =
