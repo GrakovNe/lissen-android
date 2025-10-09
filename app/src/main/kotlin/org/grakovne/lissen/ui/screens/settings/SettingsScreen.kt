@@ -20,6 +20,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -44,7 +45,11 @@ fun SettingsScreen(
   navController: AppNavigationService,
 ) {
   val viewModel: SettingsViewModel = hiltViewModel()
-  val host by viewModel.host.observeAsState("")
+  val host by viewModel.host.observeAsState()
+
+  LaunchedEffect(Unit) {
+    viewModel.refreshConnectionInfo()
+  }
 
   Scaffold(
     topBar = {
@@ -87,7 +92,7 @@ fun SettingsScreen(
               .verticalScroll(rememberScrollState()),
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-          if (host?.isNotEmpty() == true) {
+          if (host?.url?.isNotEmpty() == true) {
             ServerSettingsComposable(navController, viewModel)
           }
 

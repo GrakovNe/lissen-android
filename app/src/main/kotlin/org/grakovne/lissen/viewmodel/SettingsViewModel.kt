@@ -1,13 +1,12 @@
 package org.grakovne.lissen.viewmodel
 
-import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.launch
+import org.grakovne.lissen.channel.audiobookshelf.Host
 import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
@@ -29,11 +28,10 @@ import javax.inject.Inject
 class SettingsViewModel
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
     private val mediaChannel: LissenMediaProvider,
     private val preferences: LissenSharedPreferences,
   ) : ViewModel() {
-    private val _host = MutableLiveData(preferences.getHost())
+    private val _host: MutableLiveData<Host> = MutableLiveData(preferences.getHost()?.let { Host.external(it) })
     val host = _host
 
     private val _serverVersion = MutableLiveData(preferences.getServerVersion())
@@ -96,6 +94,8 @@ class SettingsViewModel
     }
 
     fun refreshConnectionInfo() {
+      fetchConnectionHost()
+
       viewModelScope.launch {
         when (val response = mediaChannel.fetchConnectionInfo()) {
           is ApiResult.Error -> Unit
@@ -103,7 +103,7 @@ class SettingsViewModel
             _username.postValue(response.data.username)
             _serverVersion.postValue(response.data.serverVersion)
 
-            updateServerInfo()
+            cacheServerInfo()
           }
         }
       }
@@ -231,8 +231,20 @@ class SettingsViewModel
 
     fun hasCredentials() = preferences.hasCredentials()
 
-    private fun updateServerInfo() {
+    private fun cacheServerInfo() {
       serverVersion.value?.let { preferences.saveServerVersion(it) }
       username.value?.let { preferences.saveUsername(it) }
+    }
+
+    private fun fetchConnectionHost() {
+      val host =
+        when (val response = mediaChannel.fetchConnectionHost()) {
+          is ApiResult.Error -> preferences.getHost()?.let { Host.external(it) }
+          is ApiResult.Success -> {
+            response.data
+          }
+        }
+
+      host?.let { _host.postValue(it) }
     }
   }
