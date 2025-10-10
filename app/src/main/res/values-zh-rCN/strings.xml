@@ -151,4 +151,7 @@
     <string name="downloads_menu_download_option_stop_downloads">停止下载</string>
     <string name="settings_screen_delay_autodownload_title">延迟自动下载</string>
     <string name="settings_screen_delay_autodownload_description">开始下载前等待一小段时间</string>
+    <string name="settings_screen_connection_type">连接类型</string>
+    <string name="settings_screen_connection_local">本地网络</string>
+    <string name="settings_screen_connection_external">外部网络</string>
 </resources>
