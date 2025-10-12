@@ -22,3 +22,4 @@ dependencyResolutionManagement {
 rootProject.name = "Lissen"
 include(":app")
 include(":lib")
+include(":wear")
