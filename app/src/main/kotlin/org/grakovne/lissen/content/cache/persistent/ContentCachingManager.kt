@@ -53,9 +53,7 @@ class ContentCachingManager
           currentTotalPosition = currentTotalPosition,
         )
 
-      val requestedFiles =
-        findRequestedFiles(mediaItem, requestedChapters)
-          .filterNot { bookRepository.provideFileUri(mediaItem.id, it.id).toFile().exists() }
+      val requestedFiles = findRequestedFiles(mediaItem, requestedChapters)
 
       if (requestedFiles.isEmpty()) {
         emit(CacheState(CacheStatus.Completed))
