@@ -102,7 +102,7 @@ class PlaybackNotificationService
     }
 
     private fun isTrackAvailable(fileId: String): Boolean {
-      val mediaItemId =
+      val mediaItem =
         exoPlayer
           .currentMediaItem
           ?.localConfiguration
@@ -110,7 +110,7 @@ class PlaybackNotificationService
           ?: return false
 
       return mediaProvider
-        .provideFileUri(mediaItemId.id, fileId)
+        .provideFileUri(mediaItem.id, fileId)
         .fold(
           onSuccess = { true },
           onFailure = { false },

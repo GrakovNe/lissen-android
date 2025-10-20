@@ -108,6 +108,7 @@ class ContentAutoCachingService
 
         val intent =
           Intent(context, ContentCachingService::class.java).apply {
+            action = ContentCachingService.CACHE_ITEM_ACTION
             putExtra(ContentCachingService.CACHING_TASK_EXTRA, task as Serializable)
           }
 

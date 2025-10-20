@@ -26,6 +26,9 @@ class ContentCachingService : LifecycleService() {
   lateinit var mediaProvider: LissenMediaProvider
 
   @Inject
+  lateinit var localCacheRepository: LocalCacheRepository
+
+  @Inject
   lateinit var cacheProgressBus: ContentCachingProgress
 
   @Inject
@@ -68,6 +71,8 @@ class ContentCachingService : LifecycleService() {
   private fun cacheItem(intent: Intent): Pair<DetailedItem, Job>? {
     val task = intent.getSerializableExtra(CACHING_TASK_EXTRA) as? ContentCachingTask ?: return null
     val item = task.item
+
+    executingCaching[item]?.cancel()
 
     val job =
       lifecycleScope.launch {
