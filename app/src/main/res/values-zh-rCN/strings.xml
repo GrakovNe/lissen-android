@@ -148,4 +148,10 @@
     <string name="settings_screen_clear_thumbnail_cache_title">清除缩略图缓存</string>
     <string name="settings_screen_clear_thumbnail_cache_hint">清除缓存的缩略图以释放空间。</string>
     <string name="settings_screen_clear_thumbnail_cache_success_toast">缩略图缓存已清除</string>
+    <string name="downloads_menu_download_option_stop_downloads">停止下载</string>
+    <string name="settings_screen_delay_autodownload_title">延迟自动下载</string>
+    <string name="settings_screen_delay_autodownload_description">开始下载前等待一小段时间</string>
+    <string name="settings_screen_connection_type">连接类型</string>
+    <string name="settings_screen_connection_local">本地网络</string>
+    <string name="settings_screen_connection_external">外部网络</string>
 </resources>

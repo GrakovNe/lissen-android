@@ -147,4 +147,11 @@
     <string name="settings_screen_clear_thumbnail_cache_title">Pulisci cache delle miniature</string>
     <string name="settings_screen_clear_thumbnail_cache_hint">Rimuovi le miniature in cache per liberare spazio.</string>
     <string name="settings_screen_clear_thumbnail_cache_success_toast">Cache delle miniature pulita</string>
+    <string name="settings_screen_connection_type">Tipo di connessione</string>
+    <string name="settings_screen_connection_local">Rete locale</string>
+    <string name="settings_screen_connection_external">Rete esterna</string>
+    <string name="downloads_menu_download_option_stop_downloads">Ferma il download</string>
+    <string name="settings_screen_internal_connection_url_description">Definisci l\'accesso al server per WiFi casalingo</string>
+    <string name="settings_screen_delay_autodownload_title">Ritarda download automatico</string>
+    <string name="settings_screen_delay_autodownload_description">Attendi un attimo prima di iniziare lo scaricamento</string>
 </resources>

@@ -2,6 +2,7 @@ package org.grakovne.lissen.channel.common
 
 import android.net.Uri
 import okio.Buffer
+import org.grakovne.lissen.channel.audiobookshelf.Host
 import org.grakovne.lissen.lib.domain.Book
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.Library
@@ -49,6 +50,8 @@ interface MediaChannel {
     supportedMimeTypes: List<String>,
     deviceId: String,
   ): ApiResult<PlaybackSession>
+
+  fun fetchConnectionHost(): ApiResult<Host>
 
   suspend fun fetchConnectionInfo(): ApiResult<ConnectionInfo>
 

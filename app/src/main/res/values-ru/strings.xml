@@ -151,5 +151,7 @@
     <string name="settings_screen_clear_thumbnail_cache_success_toast">Кеш обложек очищен</string>
     <string name="settings_screen_delay_autodownload_title">Откладывать автоматическую загрузку</string>
     <string name="settings_screen_delay_autodownload_description">Ждать перед началом скачивания</string>
-
+    <string name="settings_screen_connection_type">Тип подключения</string>
+    <string name="settings_screen_connection_local">Локальная сеть</string>
+    <string name="settings_screen_connection_external">Внешняя сеть</string>
 </resources>
