@@ -37,7 +37,9 @@ fun DownloadsComposable(
   isForceCache: Boolean,
   libraryType: LibraryType,
   hasCachedEpisodes: Boolean,
+  cachingInProgress: Boolean,
   onRequestedDownload: (DownloadOption) -> Unit,
+  onRequestedStop: () -> Unit,
   onRequestedDrop: () -> Unit,
   onDismissRequest: () -> Unit,
 ) {
@@ -95,6 +97,31 @@ fun DownloadsComposable(
             )
             if (index < DownloadOptions.size - 1) {
               HorizontalDivider()
+            }
+          }
+
+          if (cachingInProgress) {
+            item {
+              HorizontalDivider()
+
+              ListItem(
+                headlineContent = {
+                  Row {
+                    Text(
+                      text = stringResource(R.string.downloads_menu_download_option_stop_downloads),
+                      color = colorScheme.error,
+                      style = typography.bodyMedium,
+                    )
+                  }
+                },
+                modifier =
+                  Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                      onRequestedStop()
+                      onDismissRequest()
+                    },
+              )
             }
           }
 

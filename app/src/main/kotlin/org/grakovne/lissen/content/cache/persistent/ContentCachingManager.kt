@@ -1,7 +1,6 @@
 package org.grakovne.lissen.content.cache.persistent
 
 import android.content.Context
-import androidx.core.net.toFile
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
@@ -53,9 +52,16 @@ class ContentCachingManager
           currentTotalPosition = currentTotalPosition,
         )
 
-      val requestedFiles =
-        findRequestedFiles(mediaItem, requestedChapters)
-          .filterNot { bookRepository.provideFileUri(mediaItem.id, it.id).toFile().exists() }
+      val existingChapters =
+        bookRepository
+          .fetchBook(bookId = mediaItem.id)
+          ?.chapters
+          ?.filter { it.available }
+          ?: emptyList()
+
+      val cachingChapters = requestedChapters - existingChapters.toSet()
+
+      val requestedFiles = findRequestedFiles(mediaItem, cachingChapters)
 
       if (requestedFiles.isEmpty()) {
         emit(CacheState(CacheStatus.Completed))
@@ -84,7 +90,10 @@ class ContentCachingManager
           emit(CacheState(CacheStatus.Completed))
         }
 
-        else -> emit(CacheState(CacheStatus.Error))
+        else -> {
+          cachingChapters.map { dropCache(mediaItem, it) }
+          emit(CacheState(CacheStatus.Error))
+        }
       }
     }
 

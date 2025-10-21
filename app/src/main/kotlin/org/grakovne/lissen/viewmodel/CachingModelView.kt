@@ -98,6 +98,7 @@ class CachingModelView
 
       val intent =
         Intent(context, ContentCachingService::class.java).apply {
+          action = ContentCachingService.CACHE_ITEM_ACTION
           putExtra(ContentCachingService.CACHING_TASK_EXTRA, task as Serializable)
         }
 
@@ -110,6 +111,16 @@ class CachingModelView
 
     suspend fun dropCache(bookId: String) {
       contentCachingManager.dropCache(bookId)
+    }
+
+    fun stopCaching(item: DetailedItem) {
+      val intent =
+        Intent(context, ContentCachingService::class.java).apply {
+          action = ContentCachingService.STOP_CACHING_ACTION
+          putExtra(ContentCachingService.CACHING_PLAYING_ITEM, item as Serializable)
+        }
+
+      context.startForegroundService(intent)
     }
 
     suspend fun dropCache(

@@ -239,6 +239,7 @@ fun NavigationBarComposable(
           libraryType = libraryType,
           hasCachedEpisodes = isMetadataCached,
           isForceCache = contentCachingModelView.localCacheUsing(),
+          cachingInProgress = cacheProgress.status is CacheStatus.Caching,
           onRequestedDownload = { option ->
             playerViewModel.book.value?.let {
               contentCachingModelView
@@ -259,6 +260,16 @@ fun NavigationBarComposable(
 
                   playerViewModel.clearPlayingBook()
                   navController.showLibrary(true)
+                }
+              }
+          },
+          onRequestedStop = {
+            playerViewModel
+              .book
+              .value
+              ?.let {
+                scope.launch {
+                  contentCachingModelView.stopCaching(it)
                 }
               }
           },
