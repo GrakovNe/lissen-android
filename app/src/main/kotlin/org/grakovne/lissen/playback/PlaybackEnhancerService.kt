@@ -59,8 +59,12 @@ class PlaybackEnhancerService
 
       if (sessionId == C.AUDIO_SESSION_ID_UNSET) return
 
-      enhancer = LoudnessEnhancer(sessionId)
-      updateGain(boost)
+      try {
+        enhancer = LoudnessEnhancer(sessionId)
+        updateGain(boost)
+      } catch (ex: Exception) {
+        Timber.e("Unable to attach LoudnessEnhancer due to ${ex.message}")
+      }
     }
 
     private fun updateGain(value: PlaybackVolumeBoost) {
