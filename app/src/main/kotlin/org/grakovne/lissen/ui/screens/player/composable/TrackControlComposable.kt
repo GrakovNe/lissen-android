@@ -36,7 +36,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.common.hapticAction
 import org.grakovne.lissen.lib.domain.SeekTime
-import org.grakovne.lissen.ui.extensions.formatTime
+import org.grakovne.lissen.lib.ui.extensions.formatTime
 import org.grakovne.lissen.ui.screens.player.composable.common.provideForwardIcon
 import org.grakovne.lissen.ui.screens.player.composable.common.provideReplayIcon
 import org.grakovne.lissen.viewmodel.PlayerViewModel
