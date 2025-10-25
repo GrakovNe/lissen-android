@@ -1,3 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="library_screen_library_title">Llyfrgell</string>
+    <string name="login_screen_password_input">Cyfrinair</string>
+    <string name="login_screen_show_password_hint">Dangos y cyfrinair</string>
+    <string name="library_screen_preferences_menu_item">Dewisiadau</string>
+    <string name="login_screen_login_input">Mewngofnodi</string>
+    <string name="player_screen_chapter_list_navigation_items">Eitemau</string>
+    <string name="settings_screen_title">Dewisiadau</string>
+    <string name="library_screen_continue_listening_title">Parhau wrando</string>
+    <string name="player_screen_chapter_list_navigation_library">Penodau</string>
+    <string name="player_screen_now_playing_title_chapter_of">Pennod %1$d o %2$s</string>
+    <string name="player_screen_now_playing_title_podcast_of">Rhan %1$d o %2$s</string>
+    <string name="player_screen_now_playing_title_item_of">Eitem %1$d o %2$s</string>
+    <string name="player_screen_chapter_list_navigation_podcast">Rhannau</string>
+    <string name="player_screen_playback_speed_navigation">Cyflymder</string>
 </resources>
