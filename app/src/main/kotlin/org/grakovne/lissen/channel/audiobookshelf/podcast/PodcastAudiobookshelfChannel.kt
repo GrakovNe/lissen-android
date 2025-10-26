@@ -16,7 +16,7 @@ import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastOrder
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastPageResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastSearchItemsConverter
-import org.grakovne.lissen.channel.common.ApiResult
+import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.lib.domain.Book
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.LibraryType
@@ -58,7 +58,7 @@ class PodcastAudiobookshelfChannel
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
-    ): ApiResult<PagedItems<Book>> {
+    ): OperationResult<PagedItems<Book>> {
       val (option, direction) = podcastOrderingRequestConverter.apply(preferences.getLibraryOrdering())
 
       return dataRepository
@@ -75,7 +75,7 @@ class PodcastAudiobookshelfChannel
       libraryId: String,
       query: String,
       limit: Int,
-    ): ApiResult<List<Book>> =
+    ): OperationResult<List<Book>> =
       coroutineScope {
         val byTitle =
           async {
@@ -94,7 +94,7 @@ class PodcastAudiobookshelfChannel
       episodeId: String,
       supportedMimeTypes: List<String>,
       deviceId: String,
-    ): ApiResult<PlaybackSession> {
+    ): OperationResult<PlaybackSession> {
       val request =
         PlaybackStartRequest(
           supportedMimeTypes = supportedMimeTypes,
@@ -117,7 +117,7 @@ class PodcastAudiobookshelfChannel
         ).map { sessionResponseConverter.apply(it) }
     }
 
-    override suspend fun fetchBook(bookId: String): ApiResult<DetailedItem> =
+    override suspend fun fetchBook(bookId: String): OperationResult<DetailedItem> =
       coroutineScope {
         val mediaProgress =
           async {

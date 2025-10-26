@@ -8,7 +8,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryRespon
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
 import org.grakovne.lissen.channel.common.ApiError
-import org.grakovne.lissen.channel.common.ApiResult
+import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.lib.domain.Book
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.LibraryType
@@ -46,20 +46,20 @@ class UnknownAudiobookshelfChannel
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
-    ): ApiResult<PagedItems<Book>> = ApiResult.Error(ApiError.UnsupportedError)
+    ): OperationResult<PagedItems<Book>> = OperationResult.Error(ApiError.UnsupportedError)
 
     override suspend fun searchBooks(
       libraryId: String,
       query: String,
       limit: Int,
-    ): ApiResult<List<Book>> = ApiResult.Error(ApiError.UnsupportedError)
+    ): OperationResult<List<Book>> = OperationResult.Error(ApiError.UnsupportedError)
 
     override suspend fun startPlayback(
       bookId: String,
       episodeId: String,
       supportedMimeTypes: List<String>,
       deviceId: String,
-    ): ApiResult<PlaybackSession> = ApiResult.Error(ApiError.UnsupportedError)
+    ): OperationResult<PlaybackSession> = OperationResult.Error(ApiError.UnsupportedError)
 
-    override suspend fun fetchBook(bookId: String): ApiResult<DetailedItem> = ApiResult.Error(ApiError.UnsupportedError)
+    override suspend fun fetchBook(bookId: String): OperationResult<DetailedItem> = OperationResult.Error(ApiError.UnsupportedError)
   }

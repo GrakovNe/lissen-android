@@ -25,10 +25,10 @@ import org.grakovne.lissen.channel.audiobookshelf.common.oauth.AuthHost
 import org.grakovne.lissen.channel.audiobookshelf.common.oauth.AuthScheme
 import org.grakovne.lissen.channel.common.ApiClient
 import org.grakovne.lissen.channel.common.ApiError
-import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.AuthMethod
 import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.OAuthContextCache
+import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.channel.common.createOkHttpClient
 import org.grakovne.lissen.channel.common.randomPkce
 import org.grakovne.lissen.lib.domain.UserAccount
@@ -60,9 +60,9 @@ class AudiobookshelfAuthService
       username: String,
       password: String,
       onSuccess: suspend (UserAccount) -> Unit,
-    ): ApiResult<UserAccount> {
+    ): OperationResult<UserAccount> {
       if (host.isBlank() || !urlPattern.matches(host)) {
-        return ApiResult.Error(ApiError.InvalidCredentialsHost)
+        return OperationResult.Error(ApiError.InvalidCredentialsHost)
       }
 
       lateinit var apiService: AudiobookshelfApiClient
@@ -77,10 +77,10 @@ class AudiobookshelfAuthService
 
         apiService = apiClient.retrofit.create(AudiobookshelfApiClient::class.java)
       } catch (e: Exception) {
-        return ApiResult.Error(ApiError.InternalError)
+        return OperationResult.Error(ApiError.InternalError)
       }
 
-      val response: ApiResult<LoggedUserResponse> =
+      val response: OperationResult<LoggedUserResponse> =
         safeApiCall { apiService.login(CredentialsLoginRequest(username, password)) }
 
       return response
@@ -89,13 +89,13 @@ class AudiobookshelfAuthService
             loginResponseConverter
               .apply(it)
               .also { onSuccess(it) }
-              .let { ApiResult.Success(it) }
+              .let { OperationResult.Success(it) }
           },
-          onFailure = { ApiResult.Error(it.code) },
+          onFailure = { OperationResult.Error(it.code) },
         )
     }
 
-    override suspend fun fetchAuthMethods(host: String): ApiResult<List<AuthMethod>> {
+    override suspend fun fetchAuthMethods(host: String): OperationResult<List<AuthMethod>> {
       return withContext(Dispatchers.IO) {
         try {
           val url =
@@ -115,16 +115,16 @@ class AudiobookshelfAuthService
           val response = client.newCall(request).execute()
 
           if (!response.isSuccessful) {
-            return@withContext ApiResult.Success(emptyList())
+            return@withContext OperationResult.Success(emptyList())
           }
 
           val body = response.body.string()
           val authMethod = gson.fromJson(body, AuthMethodResponse::class.java)
 
           val converted = authMethodResponseConverter.apply(authMethod)
-          ApiResult.Success(converted)
+          OperationResult.Success(converted)
         } catch (e: Exception) {
-          ApiResult.Success(emptyList())
+          OperationResult.Success(emptyList())
         }
       }
     }

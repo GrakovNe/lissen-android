@@ -2,11 +2,11 @@ package org.grakovne.lissen.content
 
 import android.net.Uri
 import org.grakovne.lissen.channel.common.ApiError
-import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.ChannelCode
 import org.grakovne.lissen.channel.common.ChannelProvider
 import org.grakovne.lissen.channel.common.MediaChannel
+import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
 import org.grakovne.lissen.lib.domain.Book
@@ -36,23 +36,23 @@ class LissenMediaProvider
     fun provideFileUri(
       libraryItemId: String,
       chapterId: String,
-    ): ApiResult<Uri> {
+    ): OperationResult<Uri> {
       Timber.d("Fetching File $libraryItemId and $chapterId URI")
 
       return when (preferences.isForceCache()) {
         true ->
           localCacheRepository
             .provideFileUri(libraryItemId, chapterId)
-            ?.let { ApiResult.Success(it) }
-            ?: ApiResult.Error(ApiError.InternalError)
+            ?.let { OperationResult.Success(it) }
+            ?: OperationResult.Error(ApiError.InternalError)
 
         false ->
           localCacheRepository
             .provideFileUri(libraryItemId, chapterId)
-            ?.let { ApiResult.Success(it) }
+            ?.let { OperationResult.Success(it) }
             ?: providePreferredChannel()
               .provideFileUri(libraryItemId, chapterId)
-              .let { ApiResult.Success(it) }
+              .let { OperationResult.Success(it) }
       }
     }
 
@@ -60,7 +60,7 @@ class LissenMediaProvider
       sessionId: String,
       itemId: String,
       progress: PlaybackProgress,
-    ): ApiResult<Unit> {
+    ): OperationResult<Unit> {
       Timber.d("Syncing Progress for $itemId. $progress")
 
       localCacheRepository.syncProgress(itemId, progress)
@@ -70,7 +70,7 @@ class LissenMediaProvider
           .syncProgress(sessionId, progress)
 
       return when (preferences.isForceCache()) {
-        true -> ApiResult.Success(Unit)
+        true -> OperationResult.Success(Unit)
         false -> channelSyncResult
       }
     }
@@ -78,7 +78,7 @@ class LissenMediaProvider
     suspend fun fetchBookCover(
       bookId: String,
       width: Int? = null,
-    ): ApiResult<File> {
+    ): OperationResult<File> {
       Timber.d("Fetching Cover stream for $bookId")
       return when (preferences.isForceCache()) {
         true -> localCacheRepository.fetchBookCover(bookId)
@@ -95,7 +95,7 @@ class LissenMediaProvider
       libraryId: String,
       query: String,
       limit: Int,
-    ): ApiResult<List<Book>> {
+    ): OperationResult<List<Book>> {
       Timber.d("Searching books with query $query of library: $libraryId")
 
       return when (preferences.isForceCache()) {
@@ -114,7 +114,7 @@ class LissenMediaProvider
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
-    ): ApiResult<PagedItems<Book>> {
+    ): OperationResult<PagedItems<Book>> {
       Timber.d("Fetching page $pageNumber of library: $libraryId")
 
       return when (preferences.isForceCache()) {
@@ -123,7 +123,7 @@ class LissenMediaProvider
       }
     }
 
-    suspend fun fetchLibraries(): ApiResult<List<Library>> {
+    suspend fun fetchLibraries(): OperationResult<List<Library>> {
       Timber.d("Fetching List of libraries")
 
       return when (preferences.isForceCache()) {
@@ -145,7 +145,7 @@ class LissenMediaProvider
       chapterId: String,
       supportedMimeTypes: List<String>,
       deviceId: String,
-    ): ApiResult<PlaybackSession> {
+    ): OperationResult<PlaybackSession> {
       Timber.d("Starting Playback for $itemId. $supportedMimeTypes are supported")
 
       return providePreferredChannel().startPlayback(
@@ -156,7 +156,7 @@ class LissenMediaProvider
       )
     }
 
-    suspend fun fetchRecentListenedBooks(libraryId: String): ApiResult<List<RecentBook>> {
+    suspend fun fetchRecentListenedBooks(libraryId: String): OperationResult<List<RecentBook>> {
       Timber.d("Fetching Recent books of library $libraryId")
 
       return when (preferences.isForceCache()) {
@@ -168,15 +168,15 @@ class LissenMediaProvider
       }
     }
 
-    suspend fun fetchBook(bookId: String): ApiResult<DetailedItem> {
+    suspend fun fetchBook(bookId: String): OperationResult<DetailedItem> {
       Timber.d("Fetching Detailed book info for $bookId")
 
       return when (preferences.isForceCache()) {
         true ->
           localCacheRepository
             .fetchBook(bookId)
-            ?.let { ApiResult.Success(it) }
-            ?: ApiResult.Error(ApiError.InternalError)
+            ?.let { OperationResult.Success(it) }
+            ?: OperationResult.Error(ApiError.InternalError)
 
         false ->
           providePreferredChannel()
@@ -189,7 +189,7 @@ class LissenMediaProvider
       host: String,
       username: String,
       password: String,
-    ): ApiResult<UserAccount> {
+    ): OperationResult<UserAccount> {
       Timber.d("Authorizing for $username@$host")
       return provideAuthService().authorize(host, username, password) { onPostLogin(host, it) }
     }

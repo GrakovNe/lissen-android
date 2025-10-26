@@ -17,7 +17,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okio.FileSystem
 import okio.Path.Companion.toOkioPath
-import org.grakovne.lissen.channel.common.ApiResult
+import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import java.io.File
@@ -39,8 +39,8 @@ class BookCoverFetcher(
       }
 
     return when (response) {
-      is ApiResult.Error -> null
-      is ApiResult.Success -> {
+      is OperationResult.Error -> null
+      is OperationResult.Success -> {
         val stream: File = response.data
         val imageSource =
           ImageSource(

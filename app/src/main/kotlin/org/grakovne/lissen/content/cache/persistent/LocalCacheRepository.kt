@@ -3,7 +3,7 @@ package org.grakovne.lissen.content.cache.persistent
 import android.net.Uri
 import androidx.core.net.toFile
 import org.grakovne.lissen.channel.common.ApiError
-import org.grakovne.lissen.channel.common.ApiResult
+import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedLibraryRepository
 import org.grakovne.lissen.lib.domain.Book
@@ -40,34 +40,34 @@ class LocalCacheRepository
     suspend fun syncProgress(
       bookId: String,
       progress: PlaybackProgress,
-    ): ApiResult<Unit> {
+    ): OperationResult<Unit> {
       cachedBookRepository.syncProgress(bookId, progress)
-      return ApiResult.Success(Unit)
+      return OperationResult.Success(Unit)
     }
 
-    fun fetchBookCover(bookId: String): ApiResult<File> {
+    fun fetchBookCover(bookId: String): OperationResult<File> {
       val coverFile = cachedBookRepository.provideBookCover(bookId)
 
       return when (coverFile.exists()) {
-        true -> ApiResult.Success(coverFile)
-        false -> ApiResult.Error(ApiError.InternalError)
+        true -> OperationResult.Success(coverFile)
+        false -> OperationResult.Error(ApiError.InternalError)
       }
     }
 
-    suspend fun searchBooks(query: String): ApiResult<List<Book>> =
+    suspend fun searchBooks(query: String): OperationResult<List<Book>> =
       cachedBookRepository
         .searchBooks(query = query)
-        .let { ApiResult.Success(it) }
+        .let { OperationResult.Success(it) }
 
     suspend fun fetchDetailedItems(
       pageSize: Int,
       pageNumber: Int,
-    ): ApiResult<PagedItems<DetailedItem>> {
+    ): OperationResult<PagedItems<DetailedItem>> {
       val items =
         cachedBookRepository
           .fetchCachedItems(pageNumber = pageNumber, pageSize = pageSize)
 
-      return ApiResult
+      return OperationResult
         .Success(
           PagedItems(
             items = items,
@@ -79,12 +79,12 @@ class LocalCacheRepository
     suspend fun fetchBooks(
       pageSize: Int,
       pageNumber: Int,
-    ): ApiResult<PagedItems<Book>> {
+    ): OperationResult<PagedItems<Book>> {
       val books =
         cachedBookRepository
           .fetchBooks(pageNumber = pageNumber, pageSize = pageSize)
 
-      return ApiResult
+      return OperationResult
         .Success(
           PagedItems(
             items = books,
@@ -93,19 +93,19 @@ class LocalCacheRepository
         )
     }
 
-    suspend fun fetchLibraries(): ApiResult<List<Library>> =
+    suspend fun fetchLibraries(): OperationResult<List<Library>> =
       cachedLibraryRepository
         .fetchLibraries()
-        .let { ApiResult.Success(it) }
+        .let { OperationResult.Success(it) }
 
     suspend fun updateLibraries(libraries: List<Library>) {
       cachedLibraryRepository.cacheLibraries(libraries)
     }
 
-    suspend fun fetchRecentListenedBooks(): ApiResult<List<RecentBook>> =
+    suspend fun fetchRecentListenedBooks(): OperationResult<List<RecentBook>> =
       cachedBookRepository
         .fetchRecentBooks()
-        .let { ApiResult.Success(it) }
+        .let { OperationResult.Success(it) }
 
     suspend fun fetchLatestUpdate(libraryId: String) = cachedBookRepository.fetchLatestUpdate(libraryId)
 

@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.channel.audiobookshelf.Host
-import org.grakovne.lissen.channel.common.ApiResult
+import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.NetworkTypeAutoCache
@@ -98,8 +98,8 @@ class SettingsViewModel
 
       viewModelScope.launch {
         when (val response = mediaChannel.fetchConnectionInfo()) {
-          is ApiResult.Error -> Unit
-          is ApiResult.Success -> {
+          is OperationResult.Error -> Unit
+          is OperationResult.Success -> {
             _username.postValue(response.data.username)
             _serverVersion.postValue(response.data.serverVersion)
 
@@ -112,7 +112,7 @@ class SettingsViewModel
     fun fetchLibraries() {
       viewModelScope.launch {
         when (val response = mediaChannel.fetchLibraries()) {
-          is ApiResult.Success -> {
+          is OperationResult.Success -> {
             val libraries = response.data
             _libraries.postValue(libraries)
 
@@ -126,7 +126,7 @@ class SettingsViewModel
             )
           }
 
-          is ApiResult.Error -> {
+          is OperationResult.Error -> {
             _libraries.postValue(preferences.getPreferredLibrary()?.let { listOf(it) })
           }
         }
@@ -239,8 +239,8 @@ class SettingsViewModel
     private fun fetchConnectionHost() {
       val host =
         when (val response = mediaChannel.fetchConnectionHost()) {
-          is ApiResult.Error -> preferences.getHost()?.let { Host.external(it) }
-          is ApiResult.Success -> {
+          is OperationResult.Error -> preferences.getHost()?.let { Host.external(it) }
+          is OperationResult.Success -> {
             response.data
           }
         }

@@ -23,39 +23,39 @@ interface MediaChannel {
   suspend fun syncProgress(
     sessionId: String,
     progress: PlaybackProgress,
-  ): ApiResult<Unit>
+  ): OperationResult<Unit>
 
   suspend fun fetchBookCover(
     bookId: String,
     width: Int? = null,
-  ): ApiResult<Buffer>
+  ): OperationResult<Buffer>
 
   suspend fun fetchBooks(
     libraryId: String,
     pageSize: Int,
     pageNumber: Int,
-  ): ApiResult<PagedItems<Book>>
+  ): OperationResult<PagedItems<Book>>
 
   suspend fun searchBooks(
     libraryId: String,
     query: String,
     limit: Int,
-  ): ApiResult<List<Book>>
+  ): OperationResult<List<Book>>
 
-  suspend fun fetchLibraries(): ApiResult<List<Library>>
+  suspend fun fetchLibraries(): OperationResult<List<Library>>
 
   suspend fun startPlayback(
     bookId: String,
     episodeId: String,
     supportedMimeTypes: List<String>,
     deviceId: String,
-  ): ApiResult<PlaybackSession>
+  ): OperationResult<PlaybackSession>
 
-  fun fetchConnectionHost(): ApiResult<Host>
+  fun fetchConnectionHost(): OperationResult<Host>
 
-  suspend fun fetchConnectionInfo(): ApiResult<ConnectionInfo>
+  suspend fun fetchConnectionInfo(): OperationResult<ConnectionInfo>
 
-  suspend fun fetchRecentListenedBooks(libraryId: String): ApiResult<List<RecentBook>>
+  suspend fun fetchRecentListenedBooks(libraryId: String): OperationResult<List<RecentBook>>
 
-  suspend fun fetchBook(bookId: String): ApiResult<DetailedItem>
+  suspend fun fetchBook(bookId: String): OperationResult<DetailedItem>
 }

@@ -3,15 +3,15 @@ package org.grakovne.lissen.channel.common
 import androidx.annotation.Keep
 
 @Keep
-sealed class ApiResult<T> {
+sealed class OperationResult<T> {
   data class Success<T>(
     val data: T,
-  ) : ApiResult<T>()
+  ) : OperationResult<T>()
 
   data class Error<T>(
     val code: ApiError,
     val message: String? = null,
-  ) : ApiResult<T>()
+  ) : OperationResult<T>()
 
   fun <R> fold(
     onSuccess: (T) -> R,
@@ -31,13 +31,13 @@ sealed class ApiResult<T> {
       is Error -> onFailure(this)
     }
 
-  suspend fun <R> map(transform: suspend (T) -> R): ApiResult<R> =
+  suspend fun <R> map(transform: suspend (T) -> R): OperationResult<R> =
     when (this) {
       is Success -> Success(transform(this.data))
       is Error -> Error(this.code, this.message)
     }
 
-  suspend fun <R> flatMap(transform: suspend (T) -> ApiResult<R>): ApiResult<R> =
+  suspend fun <R> flatMap(transform: suspend (T) -> OperationResult<R>): OperationResult<R> =
     when (this) {
       is Success -> transform(this.data)
       is Error -> Error(this.code, this.message)

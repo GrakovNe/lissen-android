@@ -18,8 +18,8 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.Playback
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.BookResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibraryOrderingRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibrarySearchItemsConverter
-import org.grakovne.lissen.channel.common.ApiResult
-import org.grakovne.lissen.channel.common.ApiResult.Success
+import org.grakovne.lissen.channel.common.OperationResult
+import org.grakovne.lissen.channel.common.OperationResult.Success
 import org.grakovne.lissen.lib.domain.Book
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.LibraryType
@@ -61,7 +61,7 @@ class LibraryAudiobookshelfChannel
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
-    ): ApiResult<PagedItems<Book>> {
+    ): OperationResult<PagedItems<Book>> {
       val (option, direction) = libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering())
 
       return dataRepository
@@ -78,7 +78,7 @@ class LibraryAudiobookshelfChannel
       libraryId: String,
       query: String,
       limit: Int,
-    ): ApiResult<List<Book>> =
+    ): OperationResult<List<Book>> =
       coroutineScope {
         val searchResult = dataRepository.searchBooks(libraryId, query, limit)
 
@@ -109,7 +109,7 @@ class LibraryAudiobookshelfChannel
               }.map { librarySearchItemsConverter.apply(it) }
           }
 
-        val bySeries: Deferred<ApiResult<List<Book>>> =
+        val bySeries: Deferred<OperationResult<List<Book>>> =
           async {
             searchResult
               .map { result -> result.series }
@@ -131,16 +131,16 @@ class LibraryAudiobookshelfChannel
         mergeBooks(byTitle, byAuthor, bySeries)
       }
 
-    private suspend fun mergeBooks(vararg queries: Deferred<ApiResult<List<Book>>>): ApiResult<List<Book>> =
+    private suspend fun mergeBooks(vararg queries: Deferred<OperationResult<List<Book>>>): OperationResult<List<Book>> =
       coroutineScope {
-        val results: List<ApiResult<List<Book>>> = awaitAll(*queries)
+        val results: List<OperationResult<List<Book>>> = awaitAll(*queries)
 
-        val merged: ApiResult<List<Book>> =
+        val merged: OperationResult<List<Book>> =
           results
-            .fold<ApiResult<List<Book>>, ApiResult<List<Book>>>(Success(emptyList())) { acc, res ->
+            .fold<OperationResult<List<Book>>, OperationResult<List<Book>>>(Success(emptyList())) { acc, res ->
               when {
-                acc is ApiResult.Error -> acc
-                res is ApiResult.Error -> res
+                acc is OperationResult.Error -> acc
+                res is OperationResult.Error -> res
                 else -> {
                   val combined = (acc as Success).data + (res as Success).data
                   Success(combined)
@@ -167,7 +167,7 @@ class LibraryAudiobookshelfChannel
       episodeId: String,
       supportedMimeTypes: List<String>,
       deviceId: String,
-    ): ApiResult<PlaybackSession> {
+    ): OperationResult<PlaybackSession> {
       val request =
         PlaybackStartRequest(
           supportedMimeTypes = supportedMimeTypes,
@@ -189,7 +189,7 @@ class LibraryAudiobookshelfChannel
         ).map { sessionResponseConverter.apply(it) }
     }
 
-    override suspend fun fetchBook(bookId: String): ApiResult<DetailedItem> =
+    override suspend fun fetchBook(bookId: String): OperationResult<DetailedItem> =
       coroutineScope {
         val book = async { dataRepository.fetchBook(bookId) }
         val bookProgress = async { dataRepository.fetchLibraryItemProgress(bookId) }
@@ -203,7 +203,7 @@ class LibraryAudiobookshelfChannel
                 onFailure = { Success(bookResponseConverter.apply(item, null)) },
               )
           },
-          onFailure = { ApiResult.Error(it.code) },
+          onFailure = { OperationResult.Error(it.code) },
         )
       }
   }

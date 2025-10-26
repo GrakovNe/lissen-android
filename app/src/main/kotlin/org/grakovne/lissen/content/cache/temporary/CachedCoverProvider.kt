@@ -5,8 +5,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.channel.common.ApiError
-import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.MediaChannel
+import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.cache.common.withBlur
 import org.grakovne.lissen.content.cache.common.writeToFile
 import timber.log.Timber
@@ -25,10 +25,10 @@ class CachedCoverProvider
       channel: MediaChannel,
       itemId: String,
       width: Int?,
-    ): ApiResult<File> =
+    ): OperationResult<File> =
       when (val cover = fetchCachedCover(itemId, width)) {
         null -> cacheCover(channel, itemId, width).also { Timber.d("Caching cover $itemId with width: $width") }
-        else -> cover.let { ApiResult.Success(it) }.also { Timber.d("Fetched cached $itemId with width: $width") }
+        else -> cover.let { OperationResult.Success(it) }.also { Timber.d("Fetched cached $itemId with width: $width") }
       }
 
     fun clearCache() =
@@ -53,7 +53,7 @@ class CachedCoverProvider
       channel: MediaChannel,
       itemId: String,
       width: Int?,
-    ): ApiResult<File> {
+    ): OperationResult<File> {
       val dest = properties.provideCoverPath(itemId, width)
 
       return withContext(Dispatchers.IO) {
@@ -67,9 +67,9 @@ class CachedCoverProvider
               dest.parentFile?.mkdirs()
 
               blurred.writeToFile(dest)
-              ApiResult.Success(dest)
+              OperationResult.Success(dest)
             },
-            onFailure = { return@fold ApiResult.Error<File>(ApiError.InternalError, it.message) },
+            onFailure = { return@fold OperationResult.Error<File>(ApiError.InternalError, it.message) },
           )
       }
     }

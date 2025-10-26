@@ -8,7 +8,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.client.AudiobookshelfAp
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LoginResponseConverter
 import org.grakovne.lissen.channel.common.ApiClient
 import org.grakovne.lissen.channel.common.ApiError
-import org.grakovne.lissen.channel.common.ApiResult
+import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.lib.domain.UserAccount
 import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
@@ -36,14 +36,14 @@ class AudioBookShelfApiService
 
     private val mutex = Mutex()
 
-    suspend fun <T> makeRequest(apiCall: suspend (client: AudiobookshelfApiClient) -> Response<T>): ApiResult<T> {
+    suspend fun <T> makeRequest(apiCall: suspend (client: AudiobookshelfApiClient) -> Response<T>): OperationResult<T> {
       val callResult =
         safeApiCall {
           apiCall.invoke(getClientInstance())
         }
 
       return when (callResult) {
-        is ApiResult.Error<*> ->
+        is OperationResult.Error<*> ->
           when (callResult.code) {
             ApiError.Unauthorized -> {
               refreshToken()
@@ -56,7 +56,7 @@ class AudioBookShelfApiService
             else -> callResult
           }
 
-        is ApiResult.Success<*> -> callResult
+        is OperationResult.Success<*> -> callResult
       }
     }
 
@@ -69,14 +69,14 @@ class AudioBookShelfApiService
             .map { loginResponseConverter.apply(it) }
 
         when (refreshResult) {
-          is ApiResult.Error<*> -> {
+          is OperationResult.Error<*> -> {
             Timber.d("Refresh token update has been failed due to: $refreshResult")
             if (refreshResult.code == ApiError.Unauthorized) {
               preferences.clearCredentials()
             }
           }
 
-          is ApiResult.Success<UserAccount> -> {
+          is OperationResult.Success<UserAccount> -> {
             Timber.d("Refresh token has been updated")
 
             refreshResult.data.refreshToken?.let {

@@ -13,9 +13,9 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryRespon
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
 import org.grakovne.lissen.channel.common.ApiError
-import org.grakovne.lissen.channel.common.ApiResult
 import org.grakovne.lissen.channel.common.ConnectionInfo
 import org.grakovne.lissen.channel.common.MediaChannel
+import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.lib.domain.Library
 import org.grakovne.lissen.lib.domain.PlaybackProgress
 import org.grakovne.lissen.lib.domain.RecentBook
@@ -52,26 +52,26 @@ abstract class AudiobookshelfChannel(
   override suspend fun syncProgress(
     sessionId: String,
     progress: PlaybackProgress,
-  ): ApiResult<Unit> = syncService.syncProgress(sessionId, progress)
+  ): OperationResult<Unit> = syncService.syncProgress(sessionId, progress)
 
   override suspend fun fetchBookCover(
     bookId: String,
     width: Int?,
-  ): ApiResult<Buffer> = dataRepository.fetchBookCover(bookId, width)
+  ): OperationResult<Buffer> = dataRepository.fetchBookCover(bookId, width)
 
-  override suspend fun fetchLibraries(): ApiResult<List<Library>> =
+  override suspend fun fetchLibraries(): OperationResult<List<Library>> =
     dataRepository
       .fetchLibraries()
       .map { it.libraries.sortedBy { library -> library.displayOrder } }
       .map { libraryResponseConverter.apply(it) }
 
-  override fun fetchConnectionHost(): ApiResult<Host> =
+  override fun fetchConnectionHost(): OperationResult<Host> =
     hostProvider
       .provideHost()
-      ?.let { ApiResult.Success(it) }
-      ?: ApiResult.Error(ApiError.InternalError)
+      ?.let { OperationResult.Success(it) }
+      ?: OperationResult.Error(ApiError.InternalError)
 
-  override suspend fun fetchRecentListenedBooks(libraryId: String): ApiResult<List<RecentBook>> {
+  override suspend fun fetchRecentListenedBooks(libraryId: String): OperationResult<List<RecentBook>> {
     val progress: Map<String, Pair<Long, Double>> =
       dataRepository
         .fetchUserInfoResponse()
@@ -93,7 +93,7 @@ abstract class AudiobookshelfChannel(
       .map { recentBookResponseConverter.apply(it, progress) }
   }
 
-  override suspend fun fetchConnectionInfo(): ApiResult<ConnectionInfo> =
+  override suspend fun fetchConnectionInfo(): OperationResult<ConnectionInfo> =
     dataRepository
       .fetchConnectionInfo()
       .map { connectionInfoResponseConverter.apply(it) }
