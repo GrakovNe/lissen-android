@@ -16,8 +16,6 @@ import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionResult
 import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.qualifiers.ApplicationContext
-import org.grakovne.lissen.lib.domain.SeekTimeOption
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.activity.AppActivity
 import timber.log.Timber
 import javax.inject.Inject
@@ -29,7 +27,6 @@ class MediaSessionProvider
   @Inject
   constructor(
     @ApplicationContext private val context: Context,
-    private val preferences: LissenSharedPreferences,
     private val mediaRepository: MediaRepository,
     private val exoPlayer: ExoPlayer,
   ) {
@@ -87,7 +84,6 @@ class MediaSessionProvider
             ): MediaSession.ConnectionResult {
               val rewindCommand = SessionCommand(REWIND_COMMAND, Bundle.EMPTY)
               val forwardCommand = SessionCommand(FORWARD_COMMAND, Bundle.EMPTY)
-              val seekTime = preferences.getSeekTime()
 
               val sessionCommands =
                 MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS
@@ -98,7 +94,7 @@ class MediaSessionProvider
 
               val rewindButton =
                 CommandButton
-                  .Builder(provideRewindCommand(seekTime.rewind))
+                  .Builder(provideRewindCommand())
                   .setSessionCommand(rewindCommand)
                   .setDisplayName("Rewind")
                   .setEnabled(true)
@@ -106,7 +102,7 @@ class MediaSessionProvider
 
               val forwardButton =
                 CommandButton
-                  .Builder(provideForwardCommand(seekTime.forward))
+                  .Builder(provideForwardCommand())
                   .setSessionCommand(forwardCommand)
                   .setDisplayName("Forward")
                   .setEnabled(true)
@@ -141,9 +137,9 @@ class MediaSessionProvider
     }
 
     companion object {
-      private fun provideRewindCommand(seekTime: SeekTimeOption) = CommandButton.ICON_SKIP_BACK
+      private fun provideRewindCommand() = CommandButton.ICON_SKIP_BACK
 
-      private fun provideForwardCommand(seekTime: SeekTimeOption) = CommandButton.ICON_SKIP_FORWARD
+      private fun provideForwardCommand() = CommandButton.ICON_SKIP_FORWARD
 
       private const val REWIND_COMMAND = "notification_rewind"
       private const val FORWARD_COMMAND = "notification_forward"

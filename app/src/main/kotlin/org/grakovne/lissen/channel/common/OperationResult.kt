@@ -9,8 +9,8 @@ sealed class OperationResult<T> {
   ) : OperationResult<T>()
 
   data class Error<T>(
-	  val code: OperationError,
-	  val message: String? = null,
+    val code: OperationError,
+    val message: String? = null,
   ) : OperationResult<T>()
 
   fun <R> fold(

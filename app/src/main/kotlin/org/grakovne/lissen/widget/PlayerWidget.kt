@@ -49,7 +49,6 @@ import androidx.glance.text.TextStyle
 import androidx.media3.session.R
 import dagger.hilt.android.EntryPointAccessors
 import org.grakovne.lissen.R.drawable
-import org.grakovne.lissen.lib.domain.SeekTimeOption
 import org.grakovne.lissen.ui.theme.LightBackground
 import org.grakovne.lissen.widget.PlayerWidget.Companion.bookIdKey
 import timber.log.Timber
@@ -192,7 +191,7 @@ class PlayerWidget : GlanceAppWidget() {
 
             WidgetControlButton(
               size = 36.dp,
-              icon = ImageProvider(provideRewindIcon(preferences.getSeekTime().rewind)),
+              icon = ImageProvider(rewindIcon),
               contentColor = GlanceTheme.colors.onBackground,
               onClick =
                 actionRunCallback<RewindActionCallback>(
@@ -218,7 +217,7 @@ class PlayerWidget : GlanceAppWidget() {
             )
 
             WidgetControlButton(
-              icon = ImageProvider(provideForwardIcon(preferences.getSeekTime().forward)),
+              icon = ImageProvider(forwardIcon),
               size = 36.dp,
               contentColor = GlanceTheme.colors.onBackground,
               onClick =
@@ -250,9 +249,8 @@ class PlayerWidget : GlanceAppWidget() {
       ?: this
 
   companion object {
-    fun provideRewindIcon(option: SeekTimeOption): Int = R.drawable.media3_icon_rewind
-
-    fun provideForwardIcon(option: SeekTimeOption): Int = R.drawable.media3_icon_fast_forward
+    val rewindIcon = R.drawable.media3_icon_rewind
+    val forwardIcon = R.drawable.media3_icon_fast_forward
 
     val bookIdKey = ActionParameters.Key<String>("book_id")
 

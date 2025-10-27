@@ -14,9 +14,9 @@ abstract class ChannelAuthService(
   ): OperationResult<UserAccount>
 
   abstract suspend fun startOAuth(
-	  host: String,
-	  onSuccess: () -> Unit,
-	  onFailure: (OperationError) -> Unit,
+    host: String,
+    onSuccess: () -> Unit,
+    onFailure: (OperationError) -> Unit,
   )
 
   abstract suspend fun exchangeToken(

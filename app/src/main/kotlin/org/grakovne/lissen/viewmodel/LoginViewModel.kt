@@ -8,11 +8,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.grakovne.lissen.channel.common.AuthMethod
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationError.MissingCredentialsHost
 import org.grakovne.lissen.channel.common.OperationError.MissingCredentialsPassword
 import org.grakovne.lissen.channel.common.OperationError.MissingCredentialsUsername
-import org.grakovne.lissen.channel.common.AuthMethod
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import javax.inject.Inject
@@ -136,7 +136,7 @@ class LoginViewModel
       data object Success : LoginState()
 
       data class Error(
-		  val message: OperationError,
+        val message: OperationError,
       ) : LoginState()
     }
   }

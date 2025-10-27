@@ -8,7 +8,6 @@ import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
 import com.hoko.blur.HokoBlur
 import com.hoko.blur.HokoBlur.MODE_STACK
-import com.hoko.blur.HokoBlur.SCHEME_NATIVE
 import com.hoko.blur.HokoBlur.SCHEME_OPENGL
 import okio.Buffer
 import okio.BufferedSource

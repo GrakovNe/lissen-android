@@ -1,11 +1,11 @@
 package org.grakovne.lissen.content
 
 import android.net.Uri
-import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.ChannelCode
 import org.grakovne.lissen.channel.common.ChannelProvider
 import org.grakovne.lissen.channel.common.MediaChannel
+import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider

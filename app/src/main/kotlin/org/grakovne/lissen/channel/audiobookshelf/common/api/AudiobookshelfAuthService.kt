@@ -24,10 +24,10 @@ import org.grakovne.lissen.channel.audiobookshelf.common.oauth.AuthClient
 import org.grakovne.lissen.channel.audiobookshelf.common.oauth.AuthHost
 import org.grakovne.lissen.channel.audiobookshelf.common.oauth.AuthScheme
 import org.grakovne.lissen.channel.common.ApiClient
-import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.AuthMethod
 import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.OAuthContextCache
+import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.channel.common.createOkHttpClient
 import org.grakovne.lissen.channel.common.randomPkce
