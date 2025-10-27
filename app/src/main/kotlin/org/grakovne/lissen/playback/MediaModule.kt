@@ -1,5 +1,3 @@
-@file:Suppress("DEPRECATION")
-
 package org.grakovne.lissen.playback
 
 import android.content.Context
@@ -28,12 +26,19 @@ object MediaModule {
   @Singleton
   fun provideMediaCache(
     @ApplicationContext context: Context,
-  ): Cache =
-    SimpleCache(
-      File(context.cacheDir, "playback_cache"),
+  ): Cache {
+    val baseFolder =
+      context
+        .externalCacheDir
+        ?.takeIf { it.exists() && it.canWrite() }
+        ?: context.cacheDir
+
+    return SimpleCache(
+      File(baseFolder, "playback_cache"),
       LeastRecentlyUsedCacheEvictor(buildPlaybackCacheLimit(context)),
       StandaloneDatabaseProvider(context),
     )
+  }
 
   @OptIn(UnstableApi::class)
   @Provides
@@ -58,7 +63,13 @@ object MediaModule {
   }
 
   private fun buildPlaybackCacheLimit(ctx: Context): Long {
-    val stat = android.os.StatFs(ctx.cacheDir.path)
+    val baseFolder =
+      ctx
+        .externalCacheDir
+        ?.takeIf { it.exists() && it.canWrite() }
+        ?: ctx.cacheDir
+
+    val stat = android.os.StatFs(baseFolder.path)
     val available = stat.availableBytes
     val dynamicCap = (available - KEEP_FREE_BYTES).coerceAtLeast(MIN_CACHE_BYTES)
 
