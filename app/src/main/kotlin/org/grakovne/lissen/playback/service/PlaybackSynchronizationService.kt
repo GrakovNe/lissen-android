@@ -9,7 +9,7 @@ import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
-import org.grakovne.lissen.channel.common.ApiError
+import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.PlaybackProgress
@@ -133,7 +133,7 @@ class PlaybackSynchronizationService
           onSuccess = {},
           onFailure = {
             when (it.code) {
-              ApiError.NotFoundError -> openPlaybackSession(overallProgress)
+              OperationError.NotFoundError -> openPlaybackSession(overallProgress)
               else -> Unit
             }
           },

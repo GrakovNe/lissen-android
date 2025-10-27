@@ -7,7 +7,7 @@ import org.grakovne.lissen.channel.audiobookshelf.Host
 import org.grakovne.lissen.channel.audiobookshelf.common.client.AudiobookshelfApiClient
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LoginResponseConverter
 import org.grakovne.lissen.channel.common.ApiClient
-import org.grakovne.lissen.channel.common.ApiError
+import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.lib.domain.UserAccount
 import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
@@ -45,7 +45,7 @@ class AudioBookShelfApiService
       return when (callResult) {
         is OperationResult.Error<*> ->
           when (callResult.code) {
-            ApiError.Unauthorized -> {
+            OperationError.Unauthorized -> {
               refreshToken()
 
               safeApiCall {
@@ -71,7 +71,7 @@ class AudioBookShelfApiService
         when (refreshResult) {
           is OperationResult.Error<*> -> {
             Timber.d("Refresh token update has been failed due to: $refreshResult")
-            if (refreshResult.code == ApiError.Unauthorized) {
+            if (refreshResult.code == OperationError.Unauthorized) {
               preferences.clearCredentials()
             }
           }

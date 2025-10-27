@@ -14,9 +14,9 @@ abstract class ChannelAuthService(
   ): OperationResult<UserAccount>
 
   abstract suspend fun startOAuth(
-    host: String,
-    onSuccess: () -> Unit,
-    onFailure: (ApiError) -> Unit,
+	  host: String,
+	  onSuccess: () -> Unit,
+	  onFailure: (OperationError) -> Unit,
   )
 
   abstract suspend fun exchangeToken(
@@ -43,10 +43,10 @@ abstract class ChannelAuthService(
     refreshToken?.let { preferences.saveRefreshToken(it) }
   }
 
-  fun examineError(raw: String): ApiError =
+  fun examineError(raw: String): OperationError =
     when {
-      raw.contains("Invalid redirect_uri") -> ApiError.InvalidRedirectUri
-      raw.contains("invalid_host") -> ApiError.MissingCredentialsHost
-      else -> ApiError.OAuthFlowFailed
+      raw.contains("Invalid redirect_uri") -> OperationError.InvalidRedirectUri
+      raw.contains("invalid_host") -> OperationError.MissingCredentialsHost
+      else -> OperationError.OAuthFlowFailed
     }
 }

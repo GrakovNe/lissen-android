@@ -12,7 +12,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInf
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
-import org.grakovne.lissen.channel.common.ApiError
+import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.ConnectionInfo
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationResult
@@ -69,7 +69,7 @@ abstract class AudiobookshelfChannel(
     hostProvider
       .provideHost()
       ?.let { OperationResult.Success(it) }
-      ?: OperationResult.Error(ApiError.InternalError)
+      ?: OperationResult.Error(OperationError.InternalError)
 
   override suspend fun fetchRecentListenedBooks(libraryId: String): OperationResult<List<RecentBook>> {
     val progress: Map<String, Pair<Long, Double>> =

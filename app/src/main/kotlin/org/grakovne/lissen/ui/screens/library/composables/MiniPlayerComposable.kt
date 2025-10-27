@@ -50,7 +50,7 @@ import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
 import coil3.request.ImageRequest
 import org.grakovne.lissen.R
-import org.grakovne.lissen.common.hapticAction
+import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.navigation.AppNavigationService
@@ -81,7 +81,7 @@ fun MiniPlayerComposable(
           }
 
         if (dismissing) {
-          hapticAction(view) {
+          withHaptic(view) {
             backgroundVisible = false
             playerViewModel.clearPlayingBook()
           }
@@ -188,7 +188,7 @@ fun MiniPlayerComposable(
         ) {
           Row {
             IconButton(
-              onClick = { hapticAction(view) { playerViewModel.togglePlayPause() } },
+              onClick = { withHaptic(view) { playerViewModel.togglePlayPause() } },
             ) {
               Icon(
                 imageVector = if (isPlaying) Icons.Outlined.PauseCircleOutline else Icons.Outlined.PlayCircle,

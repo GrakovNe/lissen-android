@@ -9,6 +9,7 @@ import androidx.core.graphics.scale
 import com.hoko.blur.HokoBlur
 import com.hoko.blur.HokoBlur.MODE_STACK
 import com.hoko.blur.HokoBlur.SCHEME_NATIVE
+import com.hoko.blur.HokoBlur.SCHEME_OPENGL
 import okio.Buffer
 import okio.BufferedSource
 
@@ -41,7 +42,7 @@ private fun sourceWithBackdropBlur(
   val blurredPadded =
     HokoBlur
       .with(context)
-      .scheme(SCHEME_NATIVE)
+      .scheme(SCHEME_OPENGL)
       .mode(MODE_STACK)
       .radius(radius)
       .forceCopy(true)

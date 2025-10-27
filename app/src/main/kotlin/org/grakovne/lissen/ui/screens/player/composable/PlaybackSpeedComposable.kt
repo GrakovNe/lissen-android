@@ -29,7 +29,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
-import org.grakovne.lissen.common.hapticAction
+import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.ui.PlaybackSpeedSlider
 import java.util.Locale
 
@@ -80,7 +80,7 @@ fun PlaybackSpeedComposable(
           playbackSpeedPresets.forEach { value ->
             FilledTonalButton(
               onClick = {
-                hapticAction(view) {
+                withHaptic(view) {
                   selectedPlaybackSpeed = value
                   onSpeedChange(value)
                 }

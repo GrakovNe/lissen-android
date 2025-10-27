@@ -8,10 +8,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import org.grakovne.lissen.channel.common.ApiError
-import org.grakovne.lissen.channel.common.ApiError.MissingCredentialsHost
-import org.grakovne.lissen.channel.common.ApiError.MissingCredentialsPassword
-import org.grakovne.lissen.channel.common.ApiError.MissingCredentialsUsername
+import org.grakovne.lissen.channel.common.OperationError
+import org.grakovne.lissen.channel.common.OperationError.MissingCredentialsHost
+import org.grakovne.lissen.channel.common.OperationError.MissingCredentialsPassword
+import org.grakovne.lissen.channel.common.OperationError.MissingCredentialsUsername
 import org.grakovne.lissen.channel.common.AuthMethod
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
@@ -121,7 +121,7 @@ class LoginViewModel
       }
     }
 
-    private fun onLoginFailure(error: ApiError): LoginState.Error {
+    private fun onLoginFailure(error: OperationError): LoginState.Error {
       viewModelScope.launch {
         _loginState.value = LoginState.Error(error)
       }
@@ -136,7 +136,7 @@ class LoginViewModel
       data object Success : LoginState()
 
       data class Error(
-        val message: ApiError,
+		  val message: OperationError,
       ) : LoginState()
     }
   }

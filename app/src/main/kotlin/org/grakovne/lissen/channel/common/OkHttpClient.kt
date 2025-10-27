@@ -19,8 +19,8 @@ fun createOkHttpClient(
     .withTrustedCertificates()
     .addInterceptor(loggingInterceptor())
     .addInterceptor { chain -> authInterceptor(chain, preferences, requestHeaders) }
-    .connectTimeout(30, TimeUnit.SECONDS)
-    .readTimeout(90, TimeUnit.SECONDS)
+    .connectTimeout(60, TimeUnit.SECONDS)
+    .readTimeout(120, TimeUnit.SECONDS)
     .build()
 
 private fun loggingInterceptor() =

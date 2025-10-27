@@ -24,7 +24,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.oauth.AuthClient
 import org.grakovne.lissen.channel.audiobookshelf.common.oauth.AuthHost
 import org.grakovne.lissen.channel.audiobookshelf.common.oauth.AuthScheme
 import org.grakovne.lissen.channel.common.ApiClient
-import org.grakovne.lissen.channel.common.ApiError
+import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.AuthMethod
 import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.OAuthContextCache
@@ -62,7 +62,7 @@ class AudiobookshelfAuthService
       onSuccess: suspend (UserAccount) -> Unit,
     ): OperationResult<UserAccount> {
       if (host.isBlank() || !urlPattern.matches(host)) {
-        return OperationResult.Error(ApiError.InvalidCredentialsHost)
+        return OperationResult.Error(OperationError.InvalidCredentialsHost)
       }
 
       lateinit var apiService: AudiobookshelfApiClient
@@ -77,7 +77,7 @@ class AudiobookshelfAuthService
 
         apiService = apiClient.retrofit.create(AudiobookshelfApiClient::class.java)
       } catch (e: Exception) {
-        return OperationResult.Error(ApiError.InternalError)
+        return OperationResult.Error(OperationError.InternalError)
       }
 
       val response: OperationResult<LoggedUserResponse> =
@@ -132,7 +132,7 @@ class AudiobookshelfAuthService
     override suspend fun startOAuth(
       host: String,
       onSuccess: () -> Unit,
-      onFailure: (ApiError) -> Unit,
+      onFailure: (OperationError) -> Unit,
     ) {
       Timber.d("Starting OAuth flow for $host")
 

@@ -17,7 +17,7 @@ fun randomPkce(): Pkce {
   )
 }
 
-private fun generateRandomHexString(byteCount: Int = 32): String {
+private fun generateRandomHexString(byteCount: Int = 42): String {
   val array = ByteArray(byteCount)
   java.security.SecureRandom().nextBytes(array)
 

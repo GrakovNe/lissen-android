@@ -1,7 +1,7 @@
 package org.grakovne.lissen.content
 
 import android.net.Uri
-import org.grakovne.lissen.channel.common.ApiError
+import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.ChannelCode
 import org.grakovne.lissen.channel.common.ChannelProvider
@@ -44,7 +44,7 @@ class LissenMediaProvider
           localCacheRepository
             .provideFileUri(libraryItemId, chapterId)
             ?.let { OperationResult.Success(it) }
-            ?: OperationResult.Error(ApiError.InternalError)
+            ?: OperationResult.Error(OperationError.InternalError)
 
         false ->
           localCacheRepository
@@ -176,7 +176,7 @@ class LissenMediaProvider
           localCacheRepository
             .fetchBook(bookId)
             ?.let { OperationResult.Success(it) }
-            ?: OperationResult.Error(ApiError.InternalError)
+            ?: OperationResult.Error(OperationError.InternalError)
 
         false ->
           providePreferredChannel()
@@ -197,7 +197,7 @@ class LissenMediaProvider
     suspend fun startOAuth(
       host: String,
       onSuccess: () -> Unit,
-      onFailure: (ApiError) -> Unit,
+      onFailure: (OperationError) -> Unit,
     ) {
       Timber.d("Starting OAuth for $host")
 

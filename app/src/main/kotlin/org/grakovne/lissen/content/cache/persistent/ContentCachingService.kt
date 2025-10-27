@@ -37,7 +37,6 @@ class ContentCachingService : LifecycleService() {
   private val executionStatuses = mutableMapOf<DetailedItem, CacheState>()
   private val executingCaching = mutableMapOf<DetailedItem, Job>()
 
-  @Suppress("DEPRECATION")
   override fun onStartCommand(
     intent: Intent?,
     flags: Int,

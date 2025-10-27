@@ -61,7 +61,7 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.NetworkService
-import org.grakovne.lissen.common.hapticAction
+import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.RecentBook
 import org.grakovne.lissen.ui.extensions.withMinimumTime
@@ -172,7 +172,7 @@ fun LibraryScreen(
     rememberPullRefreshState(
       refreshing = pullRefreshing,
       onRefresh = {
-        hapticAction(view) { refreshContent(showPullRefreshing = true) }
+        withHaptic(view) { refreshContent(showPullRefreshing = true) }
       },
     )
 

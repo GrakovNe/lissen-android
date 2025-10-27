@@ -30,11 +30,15 @@ class LissenApplication : Application() {
 
     if (BuildConfig.DEBUG) {
       Timber.plant(Timber.DebugTree())
-    } else {
-      Timber.plant(LoggingReleaseTree())
     }
 
-    runningComponents.forEach { it.onCreate() }
+    runningComponents.forEach {
+      try {
+        it.onCreate()
+      } catch (ex: Exception) {
+        Timber.e("Unable to register Running component due to: ${ex.message}")
+      }
+    }
   }
 
   private fun initCrashReporting() {
@@ -64,6 +68,8 @@ class LissenApplication : Application() {
           ReportField.ANDROID_VERSION,
           ReportField.PHONE_MODEL,
           ReportField.STACK_TRACE,
+          ReportField.ENVIRONMENT,
+          ReportField.MEDIA_CODEC_LIST,
         )
     }
   }

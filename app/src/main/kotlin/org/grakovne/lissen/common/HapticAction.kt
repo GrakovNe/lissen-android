@@ -3,7 +3,7 @@ package org.grakovne.lissen.common
 import android.view.HapticFeedbackConstants
 import android.view.View
 
-fun hapticAction(
+fun withHaptic(
   view: View,
   action: () -> Unit,
 ) {

@@ -34,7 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
-import org.grakovne.lissen.common.hapticAction
+import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.lib.domain.SeekTime
 import org.grakovne.lissen.ui.extensions.formatTime
 import org.grakovne.lissen.ui.screens.player.composable.common.provideForwardIcon
@@ -137,7 +137,7 @@ fun TrackControlComposable(
       ) {
         IconButton(
           onClick = {
-            hapticAction(view) { viewModel.previousTrack() }
+            withHaptic(view) { viewModel.previousTrack() }
           },
           enabled = true,
         ) {
@@ -150,7 +150,7 @@ fun TrackControlComposable(
         }
 
         IconButton(
-          onClick = { hapticAction(view) { viewModel.rewind() } },
+          onClick = { withHaptic(view) { viewModel.rewind() } },
         ) {
           Icon(
             imageVector = provideReplayIcon(seekTime),
@@ -161,7 +161,7 @@ fun TrackControlComposable(
         }
 
         IconButton(
-          onClick = { hapticAction(view) { viewModel.togglePlayPause() } },
+          onClick = { withHaptic(view) { viewModel.togglePlayPause() } },
           modifier = Modifier.size(72.dp),
         ) {
           Icon(
@@ -173,7 +173,7 @@ fun TrackControlComposable(
         }
 
         IconButton(
-          onClick = { hapticAction(view) { viewModel.forward() } },
+          onClick = { withHaptic(view) { viewModel.forward() } },
         ) {
           Icon(
             imageVector = provideForwardIcon(seekTime),
@@ -186,7 +186,7 @@ fun TrackControlComposable(
         IconButton(
           onClick = {
             if (currentTrackIndex < chapters.size - 1) {
-              hapticAction(view) { viewModel.nextTrack() }
+              withHaptic(view) { viewModel.nextTrack() }
             }
           },
           enabled = currentTrackIndex < chapters.size - 1,

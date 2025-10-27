@@ -2,7 +2,7 @@ package org.grakovne.lissen.content.cache.persistent
 
 import android.net.Uri
 import androidx.core.net.toFile
-import org.grakovne.lissen.channel.common.ApiError
+import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedLibraryRepository
@@ -50,7 +50,7 @@ class LocalCacheRepository
 
       return when (coverFile.exists()) {
         true -> OperationResult.Success(coverFile)
-        false -> OperationResult.Error(ApiError.InternalError)
+        false -> OperationResult.Error(OperationError.InternalError)
       }
     }
 

@@ -4,7 +4,7 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.grakovne.lissen.channel.common.ApiError
+import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.cache.common.withBlur
@@ -69,7 +69,7 @@ class CachedCoverProvider
               blurred.writeToFile(dest)
               OperationResult.Success(dest)
             },
-            onFailure = { return@fold OperationResult.Error<File>(ApiError.InternalError, it.message) },
+            onFailure = { return@fold OperationResult.Error<File>(OperationError.InternalError, it.message) },
           )
       }
     }
