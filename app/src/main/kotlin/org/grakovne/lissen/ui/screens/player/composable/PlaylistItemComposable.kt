@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.lib.domain.BookChapterState
 import org.grakovne.lissen.lib.domain.PlayingChapter
-import org.grakovne.lissen.ui.extensions.formatTime
+import org.grakovne.lissen.lib.ui.extensions.formatTime
 
 @Composable
 fun PlaylistItemComposable(
