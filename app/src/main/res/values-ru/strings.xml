@@ -154,4 +154,6 @@
     <string name="settings_screen_connection_type">Тип подключения</string>
     <string name="settings_screen_connection_local">Локальная сеть</string>
     <string name="settings_screen_connection_external">Внешняя сеть</string>
+    <string name="settings_screen_bypass_ssl_title">Игнорировать проверку SSL</string>
+    <string name="settings_screen_bypass_ssl_hint">Подключаться к серверам даже с невалидным сертификатом</string>
 </resources>

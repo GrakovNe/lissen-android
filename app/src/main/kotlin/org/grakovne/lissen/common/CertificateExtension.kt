@@ -2,7 +2,10 @@ package org.grakovne.lissen.common
 
 import okhttp3.OkHttpClient
 import java.security.KeyStore
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
 import javax.net.ssl.SSLContext
+import javax.net.ssl.TrustManager
 import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.TrustManagerFactory.getInstance
 import javax.net.ssl.X509TrustManager
@@ -31,3 +34,29 @@ fun OkHttpClient.Builder.withTrustedCertificates(): OkHttpClient.Builder =
   } catch (ex: Exception) {
     this
   }
+
+fun OkHttpClient.Builder.withSslBypass(): OkHttpClient.Builder {
+  val trustAll =
+    object : X509TrustManager {
+      override fun checkClientTrusted(
+        chain: Array<X509Certificate>,
+        authType: String,
+      ) {}
+
+      override fun checkServerTrusted(
+        chain: Array<X509Certificate>,
+        authType: String,
+      ) {}
+
+      override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
+    }
+
+  val sslContext =
+    SSLContext.getInstance("TLS").apply {
+      init(null, arrayOf<TrustManager>(trustAll), SecureRandom())
+    }
+
+  return this
+    .sslSocketFactory(sslContext.socketFactory, trustAll)
+    .hostnameVerifier { _, _ -> true }
+}

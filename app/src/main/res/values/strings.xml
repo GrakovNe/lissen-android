@@ -154,5 +154,7 @@
     <string name="settings_screen_clear_thumbnail_cache_success_toast">Thumbnail cache cleared</string>
     <string name="settings_screen_delay_autodownload_title">Delay automatic download</string>
     <string name="settings_screen_delay_autodownload_description">Wait a short time before starting download</string>
+    <string name="settings_screen_bypass_ssl_title">Disable SSL verification</string>
+    <string name="settings_screen_bypass_ssl_hint">Connect to servers with any certificate</string>
 
 </resources>

@@ -76,12 +76,20 @@ class SettingsViewModel
     private val _crashReporting = MutableLiveData(preferences.getAcraEnabled())
     val crashReporting = _crashReporting
 
+    private val _bypassSsl = MutableLiveData(preferences.getSslBypass())
+    val bypassSsl = _bypassSsl
+
     private val _autoDownloadDelayed = MutableLiveData(preferences.getAutoDownloadDelayed())
     val autoDownloadDelayed = _autoDownloadDelayed
 
     fun preferCrashReporting(value: Boolean) {
       _crashReporting.postValue(value)
       preferences.saveAcraEnabled(value)
+    }
+
+    fun preferBypassSsl(value: Boolean) {
+      _bypassSsl.postValue(value)
+      preferences.saveSslBypass(value)
     }
 
     fun preferAutoDownloadDelayed(value: Boolean) {
