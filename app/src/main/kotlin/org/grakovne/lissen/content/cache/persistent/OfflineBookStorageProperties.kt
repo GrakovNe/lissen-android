@@ -12,26 +12,33 @@ class OfflineBookStorageProperties
   constructor(
     @ApplicationContext private val context: Context,
   ) {
-    fun provideBookCache(bookId: String) =
+    private fun baseFolder(): File =
       context
         .getExternalFilesDir(MEDIA_CACHE_FOLDER)
-        ?.resolve(bookId)
+        ?.takeIf { it.exists() || it.mkdirs() && it.canWrite() }
+        ?: context
+          .cacheDir
+          .resolve(MEDIA_CACHE_FOLDER)
+          .apply {
+            if (exists().not()) {
+              mkdirs()
+            }
+          }
+
+    fun provideBookCache(bookId: String): File = baseFolder().resolve(bookId)
 
     fun provideMediaCachePatch(
       bookId: String,
       fileId: String,
-    ) = context
-      .getExternalFilesDir(MEDIA_CACHE_FOLDER)
-      ?.resolve(bookId)
-      ?.resolve(fileId)
-      ?: throw IllegalStateException("")
+    ): File =
+      baseFolder()
+        .resolve(bookId)
+        .resolve(fileId)
 
     fun provideBookCoverPath(bookId: String): File =
-      context
-        .getExternalFilesDir(MEDIA_CACHE_FOLDER)
-        ?.resolve(bookId)
-        ?.resolve("cover.img")
-        ?: throw IllegalStateException("")
+      baseFolder()
+        .resolve(bookId)
+        .resolve("cover.img")
 
     companion object {
       const val MEDIA_CACHE_FOLDER = "media_cache"

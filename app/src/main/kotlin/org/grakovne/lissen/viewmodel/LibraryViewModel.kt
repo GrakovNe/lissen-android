@@ -63,7 +63,7 @@ class LibraryViewModel
         false -> libraryPager
       }
 
-    val searchPager: Flow<PagingData<Book>> =
+    private val searchPager: Flow<PagingData<Book>> =
       combine(
         _searchToken,
         searchRequested.asFlow(),
@@ -87,7 +87,7 @@ class LibraryViewModel
         ).flow
       }.cachedIn(viewModelScope)
 
-    val libraryPager: Flow<PagingData<Book>> by lazy {
+    private val libraryPager: Flow<PagingData<Book>> by lazy {
       Pager(
         config = pageConfig,
         pagingSourceFactory = {
