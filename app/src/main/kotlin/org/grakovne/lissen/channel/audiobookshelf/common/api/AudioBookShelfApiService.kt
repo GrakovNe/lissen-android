@@ -31,6 +31,7 @@ class AudioBookShelfApiService
     private var cachedAccessToken: String? = null
     private var cachedRefreshToken: String? = null
     private var cachedHeaders: List<ServerRequestHeader> = emptyList()
+    private var cachedBypassSsl: Boolean = false
 
     private var clientCache: AudiobookshelfApiClient? = null
 
@@ -98,8 +99,9 @@ class AudioBookShelfApiService
       val accessToken = preferences.getAccessToken()
       val refreshToken = preferences.getRefreshToken()
       val headers = requestHeadersProvider.fetchRequestHeaders()
+      val bypassSsl = preferences.getSslBypass()
 
-      val clientChanged = isClientChanged(host, token, headers, accessToken)
+      val clientChanged = isClientChanged(host, token, headers, accessToken, bypassSsl)
       val current = clientCache
 
       return when {
@@ -109,6 +111,7 @@ class AudioBookShelfApiService
           cachedAccessToken = accessToken
           cachedRefreshToken = refreshToken
           cachedHeaders = headers
+          cachedBypassSsl = bypassSsl
 
           createClientInstance().also { clientCache = it }
         }
@@ -142,5 +145,10 @@ class AudioBookShelfApiService
       token: String?,
       headers: List<ServerRequestHeader>,
       accessToken: String?,
-    ) = host != cachedHost || token != cachedToken || headers != cachedHeaders || accessToken != cachedAccessToken
+      bypassSsl: Boolean,
+    ) = host != cachedHost ||
+      token != cachedToken ||
+      headers != cachedHeaders ||
+      accessToken != cachedAccessToken ||
+      bypassSsl != cachedBypassSsl
   }

@@ -100,6 +100,14 @@ class LissenSharedPreferences
       }
     }
 
+    fun getSslBypass() = sharedPreferences.getBoolean(KEY_BYPASS_SSL, false)
+
+    fun saveSslBypass(enabled: Boolean) {
+      sharedPreferences.edit {
+        putBoolean(KEY_BYPASS_SSL, enabled)
+      }
+    }
+
     fun saveHost(host: String) = sharedPreferences.edit { putString(KEY_HOST, host) }
 
     fun getHost(): String? = sharedPreferences.getString(KEY_HOST, null)
@@ -423,6 +431,7 @@ class LissenSharedPreferences
       private const val KEY_PREFERRED_LIBRARY_ORDERING = "preferred_library_ordering"
 
       private const val KEY_CUSTOM_HEADERS = "custom_headers"
+      private const val KEY_BYPASS_SSL = "bypass_ssl"
       private const val KEY_LOCAL_URLS = "local_urls"
 
       private const val KEY_PLAYING_BOOK = "playing_book"
