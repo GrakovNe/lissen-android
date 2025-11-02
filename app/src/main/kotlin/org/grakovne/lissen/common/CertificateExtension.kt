@@ -1,5 +1,6 @@
 package org.grakovne.lissen.common
 
+import android.annotation.SuppressLint
 import okhttp3.OkHttpClient
 import java.security.KeyStore
 import java.security.SecureRandom
@@ -35,6 +36,7 @@ fun OkHttpClient.Builder.withTrustedCertificates(): OkHttpClient.Builder =
     this
   }
 
+@SuppressLint("TrustAllX509TrustManager", "CustomX509TrustManager")
 fun OkHttpClient.Builder.withSslBypass(): OkHttpClient.Builder {
   val trustAll =
     object : X509TrustManager {
