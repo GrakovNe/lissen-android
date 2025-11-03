@@ -22,7 +22,6 @@ class PodcastPageResponseConverter
             subtitle = null,
             series = null,
             author = it.media.metadata.author,
-            duration = it.media.duration?.toInt() ?: 0,
           )
         }.let {
           PagedItems(

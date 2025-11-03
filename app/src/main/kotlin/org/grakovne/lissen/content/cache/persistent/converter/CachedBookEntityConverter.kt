@@ -32,6 +32,5 @@ class CachedBookEntityConverter
                   ?.let { append(" #$it") }
               }
             },
-        duration = entity.duration,
       )
   }

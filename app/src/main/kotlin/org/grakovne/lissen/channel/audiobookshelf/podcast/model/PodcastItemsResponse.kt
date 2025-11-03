@@ -20,7 +20,6 @@ data class PodcastItem(
 @Keep
 @JsonClass(generateAdapter = true)
 data class PodcastItemMedia(
-  val duration: Double?,
   val numEpisodes: Int?,
   val metadata: PodcastMetadata,
 )
