@@ -79,8 +79,13 @@ class LissenSharedPreferences
 
         remove(KEY_PREFERRED_LIBRARY_ID)
         remove(KEY_PREFERRED_LIBRARY_NAME)
+        remove(KEY_PREFERRED_LIBRARY_TYPE)
 
-        remove(KEY_PREFERRED_PLAYBACK_SPEED)
+        remove(KEY_CUSTOM_HEADERS)
+        remove(KEY_BYPASS_SSL)
+        remove(KEY_LOCAL_URLS)
+
+        remove(KEY_PLAYING_BOOK)
       }
     }
 
