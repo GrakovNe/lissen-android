@@ -19,7 +19,7 @@ class RecentListeningResponseConverter
         ?.distinctBy { it.id }
         ?.mapNotNull {
           val media = it.media ?: return@mapNotNull null
-          
+
           RecentBook(
             id = it.id,
             title = media.metadata.title,

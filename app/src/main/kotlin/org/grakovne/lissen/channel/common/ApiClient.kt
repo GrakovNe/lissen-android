@@ -14,11 +14,13 @@ class ApiClient(
   preferences: LissenSharedPreferences,
 ) {
   private val httpClient = createOkHttpClient(requestHeaders, preferences = preferences)
-  
-  private val moshi: Moshi = Moshi.Builder()
-    .add(KotlinJsonAdapterFactory())
-    .build()
-  
+
+  private val moshi: Moshi =
+    Moshi
+      .Builder()
+      .add(KotlinJsonAdapterFactory())
+      .build()
+
   val retrofit: Retrofit =
     Retrofit
       .Builder()

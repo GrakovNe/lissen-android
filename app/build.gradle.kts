@@ -20,6 +20,10 @@ val localProperties = Properties().apply {
   rootProject.file("local.properties").takeIf { it.exists() }?.let { file -> file.inputStream().use { load(it) } }
 }
 
+tasks.named("preBuild") {
+  dependsOn("formatKotlin")
+}
+
 android {
   namespace = "org.grakovne.lissen"
   compileSdk = 36
