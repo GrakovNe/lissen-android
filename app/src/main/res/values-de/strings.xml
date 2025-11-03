@@ -150,4 +150,10 @@
     <string name="settings_screen_clear_thumbnail_cache_hint">Vorschaubild-Cache löschen, um Speicherplatz freizugeben.</string>
     <string name="settings_screen_delay_autodownload_title">Verzögere automatisches Herunterladen</string>
     <string name="settings_screen_delay_autodownload_description">Warte eine kurze Zeit bevor der Download startet</string>
+    <string name="settings_screen_connection_type">Verbindungstyp</string>
+    <string name="settings_screen_connection_local">Lokales Netzwerk</string>
+    <string name="settings_screen_connection_external">Externes Netzwerk</string>
+    <string name="downloads_menu_download_option_stop_downloads">Download stoppen</string>
+    <string name="settings_screen_bypass_ssl_title">SSL Zertifikatprüfung deaktivieren</string>
+    <string name="settings_screen_bypass_ssl_hint">Verbindung zum Server mit jedem Zertifikat</string>
 </resources>
