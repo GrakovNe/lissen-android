@@ -21,7 +21,6 @@ data class LibraryItem(
 @JsonClass(generateAdapter = true)
 data class Media(
   val numChapters: Int?,
-  val duration: Double?,
   val metadata: LibraryMetadata,
 )
 
