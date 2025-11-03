@@ -1,6 +1,7 @@
 package org.grakovne.lissen.channel.common
 
 import androidx.annotation.Keep
+import com.squareup.moshi.JsonClass
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.util.Base64
@@ -36,6 +37,7 @@ private fun base64UrlEncode(bytes: ByteArray) =
     .encodeToString(bytes)
 
 @Keep
+@JsonClass(generateAdapter = true)
 data class Pkce(
   val verifier: String,
   val challenge: String,

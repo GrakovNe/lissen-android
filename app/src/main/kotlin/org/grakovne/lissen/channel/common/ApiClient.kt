@@ -1,9 +1,12 @@
 package org.grakovne.lissen.channel.common
 
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.converter.moshi.MoshiConverterFactory
 
 class ApiClient(
   host: String,
@@ -11,12 +14,16 @@ class ApiClient(
   preferences: LissenSharedPreferences,
 ) {
   private val httpClient = createOkHttpClient(requestHeaders, preferences = preferences)
-
+  
+  private val moshi: Moshi = Moshi.Builder()
+    .add(KotlinJsonAdapterFactory())
+    .build()
+  
   val retrofit: Retrofit =
     Retrofit
       .Builder()
       .baseUrl(host)
       .client(httpClient)
-      .addConverterFactory(GsonConverterFactory.create())
+      .addConverterFactory(MoshiConverterFactory.create(moshi))
       .build()
 }

@@ -2,6 +2,7 @@ package org.grakovne.lissen.common
 
 import androidx.annotation.Keep
 import androidx.compose.runtime.saveable.Saver
+import com.squareup.moshi.JsonClass
 
 @Keep
 data class LibraryOrderingConfiguration(

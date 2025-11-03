@@ -7,8 +7,6 @@ import timber.log.Timber
 import java.io.IOException
 import kotlin.coroutines.cancellation.CancellationException
 
-private const val TAG: String = "safeApiCall"
-
 suspend fun <T> safeApiCall(apiCall: suspend () -> Response<T>): OperationResult<T> {
   return try {
     val response = apiCall.invoke()
