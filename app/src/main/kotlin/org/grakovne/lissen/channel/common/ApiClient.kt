@@ -15,12 +15,6 @@ class ApiClient(
 ) {
   private val httpClient = createOkHttpClient(requestHeaders, preferences = preferences)
 
-  private val moshi: Moshi =
-    Moshi
-      .Builder()
-      .add(KotlinJsonAdapterFactory())
-      .build()
-
   val retrofit: Retrofit =
     Retrofit
       .Builder()
@@ -28,4 +22,12 @@ class ApiClient(
       .client(httpClient)
       .addConverterFactory(MoshiConverterFactory.create(moshi))
       .build()
+
+  companion object {
+    private val moshi: Moshi =
+      Moshi
+        .Builder()
+        .add(KotlinJsonAdapterFactory())
+        .build()
+  }
 }
