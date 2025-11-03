@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package org.grakovne.lissen.widget
 
 import android.content.BroadcastReceiver
