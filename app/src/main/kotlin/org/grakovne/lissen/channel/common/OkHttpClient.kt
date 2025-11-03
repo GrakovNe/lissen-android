@@ -1,5 +1,6 @@
 package org.grakovne.lissen.channel.common
 
+import okhttp3.Cache
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -14,8 +15,10 @@ import java.util.concurrent.TimeUnit
 fun createOkHttpClient(
   requestHeaders: List<ServerRequestHeader>?,
   preferences: LissenSharedPreferences,
+  cache: Cache? = null,
 ): OkHttpClient {
   var builder = OkHttpClient.Builder()
+  cache?.let { builder.cache(it) }
 
   builder =
     when (preferences.getSslBypass()) {

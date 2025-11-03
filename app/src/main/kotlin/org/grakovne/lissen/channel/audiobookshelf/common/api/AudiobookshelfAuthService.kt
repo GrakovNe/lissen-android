@@ -75,6 +75,7 @@ class AudiobookshelfAuthService
             host = host,
             preferences = preferences,
             requestHeaders = requestHeadersProvider.fetchRequestHeaders(),
+            context = context,
           )
 
         apiService = apiClient.retrofit.create(AudiobookshelfApiClient::class.java)
