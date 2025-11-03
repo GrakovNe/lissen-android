@@ -132,8 +132,8 @@
     <string name="download_settings_title">下载首选项</string>
     <string name="download_settings_description">定义下载并管理内容</string>
     <string name="download_settings_network_type_title">用于自动下载</string>
-    <string name="wifi_only_settings_option">仅限 WiFi</string>
-    <string name="wifi_or_cellular_settings_option">WiFi 或蜂窝网络</string>
+    <string name="wifi_only_settings_option">仅限 Wi-Fi</string>
+    <string name="wifi_or_cellular_settings_option">Wi-Fi 或蜂窝网络</string>
     <string name="downloads_menu_download_option_disable">禁用</string>
     <string name="download_settings_library_type_title">自动下载</string>
     <string name="download_settings_library_type_no_items_selected">未选择类型</string>
@@ -141,9 +141,9 @@
     <string name="library_type_podcast">播客</string>
     <string name="library_type_unknown">未知类型</string>
     <string name="settings_screen_internal_connection_url_title">本地网络服务器地址</string>
-    <string name="settings_screen_internal_connection_url_description">设置家庭Wi-Fi的服务器访问权限</string>
-    <string name="local_url_hint_ssid_name">WiFi网络名称</string>
-    <string name="location_permission_request_hint">该应用需要访问位置权限以检测Wi-Fi名称</string>
+    <string name="settings_screen_internal_connection_url_description">设置家庭 Wi-Fi 的服务器访问权限</string>
+    <string name="local_url_hint_ssid_name">Wi-Fi 网络名称</string>
+    <string name="location_permission_request_hint">该应用需要访问位置权限以检测 Wi-Fi 名称</string>
     <string name="permission_request_grant_button">允许</string>
     <string name="settings_screen_clear_thumbnail_cache_title">清除缩略图缓存</string>
     <string name="settings_screen_clear_thumbnail_cache_hint">清除缓存的缩略图以释放空间。</string>
@@ -154,4 +154,6 @@
     <string name="settings_screen_connection_type">连接类型</string>
     <string name="settings_screen_connection_local">本地网络</string>
     <string name="settings_screen_connection_external">外部网络</string>
+    <string name="settings_screen_bypass_ssl_hint">连接到任何证书的服务器</string>
+    <string name="settings_screen_bypass_ssl_title">禁用 SSL 验证</string>
 </resources>
