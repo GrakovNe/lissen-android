@@ -4,7 +4,8 @@ import android.content.Context
 import android.content.Intent
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.net.toUri
-import com.google.gson.Gson
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -31,6 +32,7 @@ import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.channel.common.createOkHttpClient
 import org.grakovne.lissen.channel.common.randomPkce
+import org.grakovne.lissen.common.createMoshi
 import org.grakovne.lissen.lib.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import timber.log.Timber
@@ -119,7 +121,12 @@ class AudiobookshelfAuthService
           }
 
           val body = response.body.string()
-          val authMethod = gson.fromJson(body, AuthMethodResponse::class.java)
+
+          val authMethod =
+            moshi
+              .adapter(AuthMethodResponse::class.java)
+              .fromJson(body)
+              ?: return@withContext OperationResult.Success(emptyList())
 
           val converted = authMethodResponseConverter.apply(authMethod)
           OperationResult.Success(converted)
@@ -269,9 +276,11 @@ class AudiobookshelfAuthService
 
               val user =
                 try {
-                  Gson()
-                    .fromJson(raw, LoggedUserResponse::class.java)
-                    .let { loginResponseConverter.apply(it) }
+                  moshi
+                    .adapter(LoggedUserResponse::class.java)
+                    .fromJson(raw)
+                    ?.let { loginResponseConverter.apply(it) }
+                    ?: return
                 } catch (ex: Exception) {
                   Timber.e("Unable to get User data from response: $ex")
                   onFailure(ex.message ?: "")
@@ -286,6 +295,6 @@ class AudiobookshelfAuthService
 
     private companion object {
       val urlPattern = Regex("^(http|https)://.*\$")
-      private val gson = Gson()
+      val moshi = createMoshi()
     }
   }

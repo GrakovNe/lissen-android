@@ -72,8 +72,7 @@ data class AudioFileMetadata(
 @Keep
 @JsonClass(generateAdapter = true)
 data class AudioFileTag(
-  val tagAlbum: String,
-  val tagTitle: String,
+  val tagTitle: String?,
 )
 
 @Keep

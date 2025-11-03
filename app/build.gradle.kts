@@ -111,7 +111,6 @@ dependencies {
   implementation(libs.compose.shimmer.android)
   
   implementation(libs.retrofit)
-  implementation(libs.converter.gson)
   implementation(libs.logging.interceptor)
   implementation(libs.okhttp)
   implementation(libs.androidx.browser)
@@ -130,7 +129,10 @@ dependencies {
   implementation(libs.androidx.media3.datasource.okhttp)
   implementation(libs.androidx.lifecycle.service)
   implementation(libs.androidx.lifecycle.process)
+  
+  ksp(libs.androidx.room.compiler)
   ksp(libs.hilt.android.compiler)
+  ksp(libs.moshi.kotlin.codegen)
   
   implementation(libs.androidx.activity.compose)
   implementation(platform(libs.androidx.compose.bom))
@@ -158,12 +160,10 @@ dependencies {
   
   implementation(libs.androidx.room.runtime)
   implementation(libs.androidx.room.ktx)
-  ksp(libs.androidx.room.compiler)
   
-  implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
-  implementation("com.squareup.moshi:moshi:1.15.0")
-  implementation("com.squareup.moshi:moshi-kotlin:1.15.0")
-  ksp("com.squareup.moshi:moshi-kotlin-codegen:1.15.0")
+  implementation(libs.converter.moshi)
+  implementation(libs.moshi)
+  implementation(libs.moshi.kotlin)
   
   debugImplementation(libs.androidx.ui.tooling)
   debugImplementation(libs.androidx.ui.test.manifest)

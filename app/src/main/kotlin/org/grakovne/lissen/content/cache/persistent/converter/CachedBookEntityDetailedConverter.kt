@@ -1,7 +1,9 @@
 package org.grakovne.lissen.content.cache.persistent.converter
 
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import org.grakovne.lissen.common.createMoshi
 import org.grakovne.lissen.content.cache.persistent.entity.BookSeriesDto
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
 import org.grakovne.lissen.lib.domain.BookFile
@@ -56,8 +58,9 @@ class CachedBookEntityDetailedConverter
             .detailedBook
             .seriesJson
             ?.let {
-              val type = object : TypeToken<List<BookSeriesDto>>() {}.type
-              gson.fromJson<List<BookSeriesDto>>(it, type)
+              val type = Types.newParameterizedType(List::class.java, BookSeriesDto::class.java)
+              val adapter = moshi.adapter<List<BookSeriesDto>>(type)
+              adapter.fromJson(it)
             }?.map {
               BookSeries(
                 name = it.title,
@@ -75,6 +78,6 @@ class CachedBookEntityDetailedConverter
       )
 
     companion object {
-      val gson = Gson()
+      val moshi = createMoshi()
     }
   }

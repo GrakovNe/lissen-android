@@ -11,7 +11,10 @@ import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Transaction
 import androidx.room.Update
 import androidx.sqlite.db.SupportSQLiteQuery
-import com.google.gson.Gson
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.Types
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import org.grakovne.lissen.common.createMoshi
 import org.grakovne.lissen.content.cache.persistent.entity.BookChapterEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookFileEntity
@@ -51,7 +54,9 @@ interface CachedBookDao {
           book
             .series
             .map { BookSeriesDto(title = it.name, sequence = it.serialNumber) }
-            .let { gson.toJson(it) },
+            .let {
+              adapter.toJson(it)
+            },
       )
 
     val bookFiles =
@@ -207,6 +212,9 @@ interface CachedBookDao {
   suspend fun deleteBook(book: BookEntity)
 
   companion object {
-    val gson = Gson()
+    val moshi = createMoshi()
+
+    val type = Types.newParameterizedType(List::class.java, BookSeriesDto::class.java)
+    val adapter = moshi.adapter<List<BookSeriesDto>>(type)
   }
 }
