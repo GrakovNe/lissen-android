@@ -44,7 +44,7 @@ data class PodcastEpisodeResponse(
 @Keep
 @JsonClass(generateAdapter = true)
 data class PodcastAudioFileResponse(
-  val index: Int,
+  val index: Int?,
   val ino: String,
   val duration: Double,
   val mimeType: String,

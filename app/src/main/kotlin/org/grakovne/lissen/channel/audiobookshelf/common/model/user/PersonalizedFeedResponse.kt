@@ -31,5 +31,5 @@ data class PersonalizedFeedItemMediaResponse(
 data class PersonalizedFeedItemMetadataResponse(
   val title: String,
   val subtitle: String?,
-  val authorName: String,
+  val authorName: String?,
 )
