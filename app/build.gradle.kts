@@ -6,7 +6,7 @@ plugins {
     alias(libs.plugins.compose.compiler)
 
     id("com.google.dagger.hilt.android")
-    id("org.jmailen.kotlinter") version "5.1.0"
+    id("org.jmailen.kotlinter") version "5.2.0"
     id("com.google.devtools.ksp")
 }
 
@@ -14,11 +14,6 @@ kotlinter {
     reporters = arrayOf("checkstyle", "plain")
     ignoreFormatFailures = false
     ignoreLintFailures = false
-}
-
-
-tasks.lintKotlinMain {
-    dependsOn(tasks.formatKotlinMain)
 }
 
 val localProperties = Properties().apply {
@@ -40,14 +35,10 @@ android {
         applicationId = "org.grakovne.lissen"
         minSdk = 28
         targetSdk = 36
-        versionCode = 10705
-        versionName = "1.7.5"
+        versionCode = 10706
+        versionName = "1.7.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-
-        ksp {
-            arg("room.schemaLocation", "$projectDir/schemas")
-        }
 
         val acraReportLogin = "VxOasuhbz9DP5HTy"
         val acraReportPassword = "21E1sv6utE36sbpm"
@@ -62,8 +53,6 @@ android {
                     storePassword = project.property("RELEASE_STORE_PASSWORD") as String?
                     keyAlias = project.property("RELEASE_KEY_ALIAS") as String?
                     keyPassword = project.property("RELEASE_KEY_PASSWORD") as String?
-
-                    // Optional, specify signing versions used
                     enableV1Signing = true
                     enableV2Signing = true
                 }
@@ -79,12 +68,7 @@ android {
             isMinifyEnabled = false
             isShrinkResources = false
             proguardFiles(
-                    // Includes the default ProGuard rules files that are packaged with
-                    // the Android Gradle plugin. To learn more, go to the section about
-                    // R8 configuration files.
                     getDefaultProguardFile("proguard-android-optimize.txt"),
-
-                    // Includes a local, custom Proguard rules file
                     "proguard-rules.pro"
             )
         }
@@ -100,8 +84,8 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        jvmTarget = "21"
+    kotlin {
+      jvmToolchain(21)
     }
     buildFeatures {
         buildConfig = true
@@ -112,7 +96,7 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1,MIT}"
         }
     }
-  buildToolsVersion = "35.0.0"
+  buildToolsVersion = "36.0.0"
   
 }
 
@@ -178,4 +162,8 @@ dependencies {
 
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+}
+
+ksp {
+  arg("room.schemaLocation", "$projectDir/schemas")
 }

@@ -26,7 +26,7 @@ import javax.inject.Singleton
 class PlayerWidgetStateService
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val mediaRepository: MediaRepository,
     private val mediaProvider: LissenMediaProvider,
   ) : RunningComponent {

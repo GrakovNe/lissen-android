@@ -63,6 +63,7 @@ class ContinuePlaybackShortcut
           ).build()
 
       shortcutManager.dynamicShortcuts = listOf(shortcut)
+      shortcutManager.reportShortcutUsed(shortcut.id)
     }
 
     companion object {
