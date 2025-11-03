@@ -6,9 +6,7 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
 import androidx.core.content.edit
-import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -19,7 +17,7 @@ import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.common.PlaybackVolumeBoost
-import org.grakovne.lissen.common.createMoshi
+import org.grakovne.lissen.common.moshi
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.DownloadOption
 import org.grakovne.lissen.lib.domain.Library
@@ -511,7 +509,5 @@ class LissenSharedPreferences
           null
         }
       }
-
-      val moshi = createMoshi()
     }
   }

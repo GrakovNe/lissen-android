@@ -2,8 +2,7 @@ package org.grakovne.lissen.content.cache.persistent.converter
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import org.grakovne.lissen.common.createMoshi
+import org.grakovne.lissen.common.moshi
 import org.grakovne.lissen.content.cache.persistent.entity.BookSeriesDto
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
 import org.grakovne.lissen.lib.domain.BookFile
@@ -76,8 +75,4 @@ class CachedBookEntityDetailedConverter
             )
           },
       )
-
-    companion object {
-      val moshi = createMoshi()
-    }
   }

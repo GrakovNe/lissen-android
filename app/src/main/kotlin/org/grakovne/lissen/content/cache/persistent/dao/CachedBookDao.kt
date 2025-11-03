@@ -13,8 +13,7 @@ import androidx.room.Update
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import org.grakovne.lissen.common.createMoshi
+import org.grakovne.lissen.common.moshi
 import org.grakovne.lissen.content.cache.persistent.entity.BookChapterEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookFileEntity
@@ -212,8 +211,6 @@ interface CachedBookDao {
   suspend fun deleteBook(book: BookEntity)
 
   companion object {
-    val moshi = createMoshi()
-
     val type = Types.newParameterizedType(List::class.java, BookSeriesDto::class.java)
     val adapter = moshi.adapter<List<BookSeriesDto>>(type)
   }

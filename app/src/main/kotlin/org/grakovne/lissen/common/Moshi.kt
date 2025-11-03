@@ -9,7 +9,7 @@ import com.squareup.moshi.ToJson
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import java.util.UUID
 
-fun createMoshi(): Moshi =
+val moshi: Moshi =
   Moshi
     .Builder()
     .add(KotlinJsonAdapterFactory())
