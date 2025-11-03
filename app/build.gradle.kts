@@ -6,7 +6,7 @@ plugins {
     alias(libs.plugins.compose.compiler)
 
     id("com.google.dagger.hilt.android")
-    id("org.jmailen.kotlinter") version "5.1.0"
+    id("org.jmailen.kotlinter") version "5.2.0"
     id("com.google.devtools.ksp")
 }
 
@@ -14,11 +14,6 @@ kotlinter {
     reporters = arrayOf("checkstyle", "plain")
     ignoreFormatFailures = false
     ignoreLintFailures = false
-}
-
-
-tasks.lintKotlinMain {
-    dependsOn(tasks.formatKotlinMain)
 }
 
 val localProperties = Properties().apply {
