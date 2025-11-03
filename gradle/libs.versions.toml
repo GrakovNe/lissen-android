@@ -4,7 +4,6 @@ agp = "8.13.0"
 browser = "1.9.0"
 coilCompose = "3.3.0"
 composeShimmerAndroid = "1.3.3"
-converterGson = "3.0.0"
 glance = "1.2.0-beta01"
 hiltAndroid = "2.57.2"
 hiltNavigationCompose = "1.3.0"
@@ -31,8 +30,8 @@ lifecycleService = "2.9.4"
 lifecycleProcess = "2.9.4"
 coreKtx = "1.17.0"
 timber = "5.0.1"
-moshi = "1.15.0"
-converterMoshi = "2.9.0"
+moshi = "1.15.2"
+converterMoshi = "3.0.0"
 
 [libraries]
 acra-core = { module = "ch.acra:acra-core", version.ref = "acraCore" }
@@ -58,7 +57,6 @@ androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "
 coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coilCompose" }
 coil-svg = { module = "io.coil-kt.coil3:coil-svg", version.ref = "coilCompose" }
 compose-shimmer-android = { module = "com.valentinilk.shimmer:compose-shimmer-android", version.ref = "composeShimmerAndroid" }
-converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroid" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
