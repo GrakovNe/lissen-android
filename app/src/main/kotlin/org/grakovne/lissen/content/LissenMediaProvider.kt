@@ -1,9 +1,8 @@
 package org.grakovne.lissen.content
 
 import android.net.Uri
+import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfChannelProvider
 import org.grakovne.lissen.channel.common.ChannelAuthService
-import org.grakovne.lissen.channel.common.ChannelCode
-import org.grakovne.lissen.channel.common.ChannelProvider
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
@@ -29,7 +28,7 @@ class LissenMediaProvider
   @Inject
   constructor(
     private val preferences: LissenSharedPreferences,
-    private val channels: Map<ChannelCode, @JvmSuppressWildcards ChannelProvider>,
+    private val audiobookshelfChannelProvider: AudiobookshelfChannelProvider, // the only one channel which may be extended
     private val localCacheRepository: LocalCacheRepository,
     private val cachedCoverProvider: CachedCoverProvider,
   ) {
@@ -313,17 +312,7 @@ class LissenMediaProvider
 
     suspend fun fetchConnectionInfo() = providePreferredChannel().fetchConnectionInfo()
 
-    fun provideAuthService(): ChannelAuthService =
-      channels[preferences.getChannel()]
-        ?.provideChannelAuth()
-        ?: throw IllegalStateException("Selected auth service has been requested but not selected")
+    fun provideAuthService(): ChannelAuthService = audiobookshelfChannelProvider.provideChannelAuth()
 
-    fun providePreferredChannel(): MediaChannel =
-      channels[preferences.getChannel()]
-        ?.provideMediaChannel()
-        ?: throw IllegalStateException("Channel has been requested but not implemented")
-
-    companion object {
-      private const val TAG: String = "LissenMediaProvider"
-    }
+    fun providePreferredChannel(): MediaChannel = audiobookshelfChannelProvider.provideMediaChannel()
   }

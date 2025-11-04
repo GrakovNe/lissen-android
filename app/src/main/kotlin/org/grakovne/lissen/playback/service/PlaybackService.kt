@@ -310,7 +310,5 @@ class PlaybackService : MediaSessionService() {
     const val TIMER_REMAINING = "org.grakovne.lissen.player.service.TIMER_REMAINING"
     const val PLAYBACK_READY = "org.grakovne.lissen.player.service.PLAYBACK_READY"
     const val POSITION = "org.grakovne.lissen.player.service.POSITION"
-
-    private const val TAG: String = "PlaybackService"
   }
 }
