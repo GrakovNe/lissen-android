@@ -24,6 +24,10 @@ tasks.named("preBuild") {
   dependsOn("formatKotlin")
 }
 
+ksp {
+  arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 android {
   namespace = "org.grakovne.lissen"
   compileSdk = 36
@@ -167,8 +171,4 @@ dependencies {
   
   debugImplementation(libs.androidx.ui.tooling)
   debugImplementation(libs.androidx.ui.test.manifest)
-}
-
-ksp {
-  arg("room.schemaLocation", "$projectDir/schemas")
 }
