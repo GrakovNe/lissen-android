@@ -5,6 +5,7 @@ import androidx.compose.runtime.saveable.Saver
 import com.squareup.moshi.JsonClass
 
 @Keep
+@JsonClass(generateAdapter = true)
 data class LibraryOrderingConfiguration(
   val option: LibraryOrderingOption,
   val direction: LibraryOrderingDirection,

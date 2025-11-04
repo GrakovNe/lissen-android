@@ -1,9 +1,11 @@
 package org.grakovne.lissen.lib.domain.connection
 
 import androidx.annotation.Keep
+import com.squareup.moshi.JsonClass
 import java.util.UUID
 
 @Keep
+@JsonClass(generateAdapter = true)
 data class ServerRequestHeader(
   val name: String,
   val value: String,

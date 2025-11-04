@@ -1,9 +1,11 @@
 package org.grakovne.lissen.lib.domain
 
 import androidx.annotation.Keep
+import com.squareup.moshi.JsonClass
 import java.io.Serializable
 
 @Keep
+@JsonClass(generateAdapter = true)
 data class DetailedItem(
   val id: String,
   val title: String,
@@ -24,6 +26,7 @@ data class DetailedItem(
 ) : Serializable
 
 @Keep
+@JsonClass(generateAdapter = true)
 data class BookFile(
   val id: String,
   val name: String,
@@ -32,6 +35,7 @@ data class BookFile(
 ) : Serializable
 
 @Keep
+@JsonClass(generateAdapter = true)
 data class MediaProgress(
   val currentTime: Double,
   val isFinished: Boolean,
@@ -39,6 +43,7 @@ data class MediaProgress(
 ) : Serializable
 
 @Keep
+@JsonClass(generateAdapter = true)
 data class PlayingChapter(
   val available: Boolean,
   val podcastEpisodeState: BookChapterState?,
@@ -50,6 +55,7 @@ data class PlayingChapter(
 ) : Serializable
 
 @Keep
+@JsonClass(generateAdapter = true)
 data class BookSeries(
   val serialNumber: String?,
   val name: String,

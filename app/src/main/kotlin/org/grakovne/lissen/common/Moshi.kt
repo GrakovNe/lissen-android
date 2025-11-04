@@ -12,7 +12,6 @@ import java.util.UUID
 val moshi: Moshi =
   Moshi
     .Builder()
-    .add(KotlinJsonAdapterFactory())
     .add(
       UUID::class.java,
       object : JsonAdapter<UUID>() {
