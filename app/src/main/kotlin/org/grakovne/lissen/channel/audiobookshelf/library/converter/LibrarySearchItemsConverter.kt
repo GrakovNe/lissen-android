@@ -20,7 +20,6 @@ class LibrarySearchItemsConverter
             series = it.media.metadata.seriesName,
             subtitle = it.media.metadata.subtitle,
             author = it.media.metadata.authorName,
-            duration = it.media.duration.toInt(),
           )
         }
   }

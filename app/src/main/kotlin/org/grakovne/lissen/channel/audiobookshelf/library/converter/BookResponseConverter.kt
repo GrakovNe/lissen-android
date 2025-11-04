@@ -47,9 +47,7 @@ class BookResponseConverter
                 available = true,
                 start = accDuration,
                 end = accDuration + file.duration,
-                title =
-                  file.metaTags?.tagTitle
-                    ?: file.metadata.filename.removeSuffix(file.metadata.ext),
+                title = file.metaTags?.tagTitle ?: file.metadata.filename.removeSuffix(file.metadata.ext),
                 duration = file.duration,
                 id = file.ino,
                 podcastEpisodeState = null,

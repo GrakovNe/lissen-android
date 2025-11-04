@@ -1,8 +1,10 @@
 package org.grakovne.lissen.channel.audiobookshelf.podcast.model
 
 import androidx.annotation.Keep
+import com.squareup.moshi.JsonClass
 
 @Keep
+@JsonClass(generateAdapter = true)
 data class PodcastResponse(
   val id: String,
   val ino: String,
@@ -13,12 +15,14 @@ data class PodcastResponse(
 )
 
 @Keep
+@JsonClass(generateAdapter = true)
 data class PodcastMedia(
   val metadata: PodcastMediaMetadataResponse,
   val episodes: List<PodcastEpisodeResponse>?,
 )
 
 @Keep
+@JsonClass(generateAdapter = true)
 data class PodcastMediaMetadataResponse(
   val title: String,
   val author: String?,
@@ -27,6 +31,7 @@ data class PodcastMediaMetadataResponse(
 )
 
 @Keep
+@JsonClass(generateAdapter = true)
 data class PodcastEpisodeResponse(
   val id: String,
   val season: String?,
@@ -37,8 +42,8 @@ data class PodcastEpisodeResponse(
 )
 
 @Keep
+@JsonClass(generateAdapter = true)
 data class PodcastAudioFileResponse(
-  val index: Int,
   val ino: String,
   val duration: Double,
   val mimeType: String,

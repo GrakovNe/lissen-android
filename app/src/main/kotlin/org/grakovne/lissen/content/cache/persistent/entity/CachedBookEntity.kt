@@ -7,9 +7,11 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
+import com.squareup.moshi.JsonClass
 import java.io.Serializable
 
 @Keep
+@JsonClass(generateAdapter = true)
 data class CachedBookEntity(
   @Embedded val detailedBook: BookEntity,
   @Relation(
@@ -31,6 +33,7 @@ data class CachedBookEntity(
 
 @Keep
 @Entity(tableName = "detailed_books")
+@JsonClass(generateAdapter = true)
 data class BookEntity(
   @PrimaryKey val id: String,
   val title: String,
@@ -61,6 +64,7 @@ data class BookEntity(
   ],
   indices = [Index(value = ["bookId"])],
 )
+@JsonClass(generateAdapter = true)
 data class BookFileEntity(
   @PrimaryKey(autoGenerate = true) val id: Long = 0L,
   val bookFileId: String,
@@ -83,6 +87,7 @@ data class BookFileEntity(
   ],
   indices = [Index(value = ["bookId"])],
 )
+@JsonClass(generateAdapter = true)
 data class BookChapterEntity(
   @PrimaryKey(autoGenerate = true) val id: Long = 0L,
   val bookChapterId: String,
@@ -107,6 +112,7 @@ data class BookChapterEntity(
   ],
   indices = [Index(value = ["bookId"])],
 )
+@JsonClass(generateAdapter = true)
 data class MediaProgressEntity(
   @PrimaryKey val bookId: String,
   val currentTime: Double,
@@ -115,6 +121,7 @@ data class MediaProgressEntity(
 ) : Serializable
 
 @Keep
+@JsonClass(generateAdapter = true)
 data class BookSeriesDto(
   val title: String,
   val sequence: String?,

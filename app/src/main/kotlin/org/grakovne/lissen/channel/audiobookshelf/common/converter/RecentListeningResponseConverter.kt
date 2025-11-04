@@ -17,12 +17,14 @@ class RecentListeningResponseConverter
         .find { it.labelStringKey == LABEL_CONTINUE_LISTENING }
         ?.entities
         ?.distinctBy { it.id }
-        ?.map {
+        ?.mapNotNull {
+          val media = it.media ?: return@mapNotNull null
+
           RecentBook(
             id = it.id,
-            title = it.media.metadata.title,
-            subtitle = it.media.metadata.subtitle,
-            author = it.media.metadata.authorName,
+            title = media.metadata.title,
+            subtitle = media.metadata.subtitle,
+            author = media.metadata.authorName,
             listenedPercentage = progress[it.id]?.second?.let { it * 100 }?.toInt(),
             listenedLastUpdate = progress[it.id]?.first,
           )

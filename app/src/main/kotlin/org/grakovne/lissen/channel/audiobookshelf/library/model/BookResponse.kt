@@ -1,8 +1,10 @@
 package org.grakovne.lissen.channel.audiobookshelf.library.model
 
 import androidx.annotation.Keep
+import com.squareup.moshi.JsonClass
 
 @Keep
+@JsonClass(generateAdapter = true)
 data class BookResponse(
   val id: String,
   val ino: String,
@@ -13,6 +15,7 @@ data class BookResponse(
 )
 
 @Keep
+@JsonClass(generateAdapter = true)
 data class BookMedia(
   val metadata: LibraryMetadataResponse,
   val audioFiles: List<BookAudioFileResponse>?,
@@ -20,6 +23,7 @@ data class BookMedia(
 )
 
 @Keep
+@JsonClass(generateAdapter = true)
 data class LibraryMetadataResponse(
   val title: String,
   val subtitle: String?,
@@ -32,6 +36,7 @@ data class LibraryMetadataResponse(
 )
 
 @Keep
+@JsonClass(generateAdapter = true)
 data class LibrarySeriesResponse(
   val id: String,
   val name: String,
@@ -39,12 +44,14 @@ data class LibrarySeriesResponse(
 )
 
 @Keep
+@JsonClass(generateAdapter = true)
 data class LibraryAuthorResponse(
   val id: String,
   val name: String,
 )
 
 @Keep
+@JsonClass(generateAdapter = true)
 data class BookAudioFileResponse(
   val index: Int,
   val ino: String,
@@ -55,6 +62,7 @@ data class BookAudioFileResponse(
 )
 
 @Keep
+@JsonClass(generateAdapter = true)
 data class AudioFileMetadata(
   val filename: String,
   val ext: String,
@@ -62,12 +70,13 @@ data class AudioFileMetadata(
 )
 
 @Keep
+@JsonClass(generateAdapter = true)
 data class AudioFileTag(
-  val tagAlbum: String,
-  val tagTitle: String,
+  val tagTitle: String?,
 )
 
 @Keep
+@JsonClass(generateAdapter = true)
 data class LibraryChapterResponse(
   val start: Double,
   val end: Double,

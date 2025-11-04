@@ -1,13 +1,12 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.api
 
+import org.acra.ACRA
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import retrofit2.Response
 import timber.log.Timber
 import java.io.IOException
 import kotlin.coroutines.cancellation.CancellationException
-
-private const val TAG: String = "safeApiCall"
 
 suspend fun <T> safeApiCall(apiCall: suspend () -> Response<T>): OperationResult<T> {
   return try {
@@ -29,6 +28,7 @@ suspend fun <T> safeApiCall(apiCall: suspend () -> Response<T>): OperationResult
     }
   } catch (e: IOException) {
     Timber.e("Unable to make network api call due to: $e")
+    ACRA.errorReporter.handleSilentException(e)
     OperationResult.Error(OperationError.NetworkError)
   } catch (e: CancellationException) {
     // https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-exception-handler/
@@ -36,6 +36,7 @@ suspend fun <T> safeApiCall(apiCall: suspend () -> Response<T>): OperationResult
     throw e
   } catch (e: Exception) {
     Timber.e("Unable to make network api call due to: $e")
+    ACRA.errorReporter.handleSilentException(e)
     OperationResult.Error(OperationError.InternalError)
   }
 }

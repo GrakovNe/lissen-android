@@ -6,8 +6,7 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
 import androidx.core.content.edit
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import com.squareup.moshi.Types
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -18,6 +17,7 @@ import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.common.PlaybackVolumeBoost
+import org.grakovne.lissen.common.moshi
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.DownloadOption
 import org.grakovne.lissen.lib.domain.Library
@@ -79,8 +79,13 @@ class LissenSharedPreferences
 
         remove(KEY_PREFERRED_LIBRARY_ID)
         remove(KEY_PREFERRED_LIBRARY_NAME)
+        remove(KEY_PREFERRED_LIBRARY_TYPE)
 
-        remove(KEY_PREFERRED_PLAYBACK_SPEED)
+        remove(KEY_CUSTOM_HEADERS)
+        remove(KEY_BYPASS_SSL)
+        remove(KEY_LOCAL_URLS)
+
+        remove(KEY_PLAYING_BOOK)
       }
     }
 
@@ -148,19 +153,22 @@ class LissenSharedPreferences
     }
 
     fun saveLibraryOrdering(configuration: LibraryOrderingConfiguration) {
+      val adapter = moshi.adapter(LibraryOrderingConfiguration::class.java)
+
+      val json = adapter.toJson(configuration)
       sharedPreferences.edit {
-        val json = gson.toJson(configuration)
         putString(KEY_PREFERRED_LIBRARY_ORDERING, json)
       }
     }
 
     fun getLibraryOrdering(): LibraryOrderingConfiguration {
       val json = sharedPreferences.getString(KEY_PREFERRED_LIBRARY_ORDERING, null)
-      val type = object : TypeToken<LibraryOrderingConfiguration>() {}.type
-
-      return when (json == null) {
-        true -> LibraryOrderingConfiguration.default
-        false -> gson.fromJson(json, type)
+      return when (json) {
+        null -> LibraryOrderingConfiguration.default
+        else -> {
+          val adapter = moshi.adapter(LibraryOrderingConfiguration::class.java)
+          adapter.fromJson(json) ?: LibraryOrderingConfiguration.default
+        }
       }
     }
 
@@ -187,19 +195,24 @@ class LissenSharedPreferences
         ?: NetworkTypeAutoCache.WIFI_ONLY
 
     fun saveAutoDownloadLibraryTypes(types: List<LibraryType>) {
+      val type = Types.newParameterizedType(List::class.java, LibraryType::class.java)
+      val adapter = moshi.adapter<List<LibraryType>>(type)
+      val json = adapter.toJson(types)
       sharedPreferences.edit {
-        val json = gson.toJson(types)
         putString(KEY_PREFERRED_AUTO_DOWNLOAD_LIBRARY_TYPE, json)
       }
     }
 
     fun getAutoDownloadLibraryTypes(): List<LibraryType> {
       val json = sharedPreferences.getString(KEY_PREFERRED_AUTO_DOWNLOAD_LIBRARY_TYPE, null)
-      val type = object : TypeToken<List<LibraryType>>() {}.type
 
-      return when (json == null) {
-        true -> LibraryType.meaningfulTypes
-        false -> gson.fromJson(json, type)
+      return when (json) {
+        null -> LibraryType.meaningfulTypes
+        else -> {
+          val type = Types.newParameterizedType(List::class.java, LibraryType::class.java)
+          val adapter = moshi.adapter<List<LibraryType>>(type)
+          adapter.fromJson(json) ?: LibraryType.meaningfulTypes
+        }
       }
     }
 
@@ -331,75 +344,89 @@ class LissenSharedPreferences
     }
 
     fun savePlayingBook(book: DetailedItem?) {
-      if (null == book) {
+      if (book == null) {
         sharedPreferences.edit {
           remove(KEY_PLAYING_BOOK)
         }
         return
       }
 
+      val adapter = moshi.adapter(DetailedItem::class.java)
+      val json = adapter.toJson(book)
       sharedPreferences.edit {
-        val json = gson.toJson(book)
         putString(KEY_PLAYING_BOOK, json)
       }
     }
 
     fun getPlayingBook(): DetailedItem? {
       val json = sharedPreferences.getString(KEY_PLAYING_BOOK, null)
-      val type = object : TypeToken<DetailedItem>() {}.type
 
-      return when (json == null) {
-        true -> null
-        false -> gson.fromJson(json, type)
+      return when (json) {
+        null -> null
+        else -> {
+          val adapter = moshi.adapter(DetailedItem::class.java)
+          adapter.fromJson(json)
+        }
       }
     }
 
     fun saveSeekTime(seekTime: SeekTime) {
-      val json = gson.toJson(seekTime)
+      val adapter = moshi.adapter(SeekTime::class.java)
+      val json = adapter.toJson(seekTime)
+
       sharedPreferences.edit(commit = true) { putString(KEY_PREFERRED_SEEK_TIME, json) }
     }
 
     fun getSeekTime(): SeekTime {
       val json = sharedPreferences.getString(KEY_PREFERRED_SEEK_TIME, null)
-      val type = object : TypeToken<SeekTime>() {}.type
-
-      return when (json == null) {
-        true -> SeekTime.Default
-        false -> gson.fromJson(json, type)
+      return when (json) {
+        null -> SeekTime.Default
+        else -> {
+          val adapter = moshi.adapter(SeekTime::class.java)
+          adapter.fromJson(json) ?: SeekTime.Default
+        }
       }
     }
 
     fun saveCustomHeaders(headers: List<ServerRequestHeader>) {
+      val type = Types.newParameterizedType(List::class.java, ServerRequestHeader::class.java)
+      val adapter = moshi.adapter<List<ServerRequestHeader>>(type)
+      val json = adapter.toJson(headers)
       sharedPreferences.edit {
-        val json = gson.toJson(headers)
         putString(KEY_CUSTOM_HEADERS, json)
       }
     }
 
     fun getCustomHeaders(): List<ServerRequestHeader> {
       val json = sharedPreferences.getString(KEY_CUSTOM_HEADERS, null)
-      val type = object : TypeToken<MutableList<ServerRequestHeader>>() {}.type
-
-      return when (json == null) {
-        true -> emptyList()
-        false -> gson.fromJson(json, type)
+      return when (json) {
+        null -> emptyList()
+        else -> {
+          val type = Types.newParameterizedType(List::class.java, ServerRequestHeader::class.java)
+          val adapter = moshi.adapter<List<ServerRequestHeader>>(type)
+          adapter.fromJson(json) ?: emptyList()
+        }
       }
     }
 
-    fun saveLocalUrls(headers: List<LocalUrl>) {
+    fun saveLocalUrls(urls: List<LocalUrl>) {
+      val type = Types.newParameterizedType(List::class.java, LocalUrl::class.java)
+      val adapter = moshi.adapter<List<LocalUrl>>(type)
+      val json = adapter.toJson(urls)
       sharedPreferences.edit {
-        val json = gson.toJson(headers)
         putString(KEY_LOCAL_URLS, json)
       }
     }
 
     fun getLocalUrls(): List<LocalUrl> {
       val json = sharedPreferences.getString(KEY_LOCAL_URLS, null)
-      val type = object : TypeToken<MutableList<LocalUrl>>() {}.type
-
-      return when (json == null) {
-        true -> emptyList()
-        false -> gson.fromJson(json, type)
+      return when (json) {
+        null -> emptyList()
+        else -> {
+          val type = Types.newParameterizedType(List::class.java, LocalUrl::class.java)
+          val adapter = moshi.adapter<List<LocalUrl>>(type)
+          adapter.fromJson(json) ?: emptyList()
+        }
       }
     }
 
@@ -487,7 +514,5 @@ class LissenSharedPreferences
           null
         }
       }
-
-      private val gson = Gson()
     }
   }
