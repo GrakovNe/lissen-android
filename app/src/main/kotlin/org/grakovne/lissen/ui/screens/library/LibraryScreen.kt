@@ -364,10 +364,10 @@ fun LibraryScreen(
                   imageLoader = imageLoader,
                   libraryViewModel = libraryViewModel,
                 )
+
+                Spacer(modifier = Modifier.height(20.dp))
               }
             }
-
-            Spacer(modifier = Modifier.height(20.dp))
           }
 
           item(key = "library_title") {
