@@ -154,4 +154,6 @@
     <string name="settings_screen_clear_thumbnail_cache_success_toast">썸네일 캐시 삭제됨</string>
     <string name="settings_screen_delay_autodownload_title">자동 다운로드 지연</string>
     <string name="settings_screen_delay_autodownload_description">다운로드를 시작하기 전에 잠시 대기</string>
+    <string name="settings_screen_bypass_ssl_title">SSL 인증 비활성화</string>
+    <string name="settings_screen_bypass_ssl_hint">SSL 인증 없이 서버에 연결</string>
 </resources>
