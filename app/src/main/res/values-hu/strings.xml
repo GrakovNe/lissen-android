@@ -145,4 +145,15 @@
     <string name="local_url_hint_ssid_name">WiFi hálózat neve</string>
     <string name="location_permission_request_hint">Az alkalmazásnak szüksége van a helymeghatározáshoz a WiFi hálózat nevének érzékeléséhez</string>
     <string name="permission_request_grant_button">Engedélyezés</string>
+    <string name="settings_screen_connection_type">Kapcsolat típusa</string>
+    <string name="settings_screen_connection_local">Helyi hálózat</string>
+    <string name="settings_screen_connection_external">Távoli hálózat</string>
+    <string name="downloads_menu_download_option_stop_downloads">Letöltés leállítása</string>
+    <string name="settings_screen_clear_thumbnail_cache_title">Miniatűrök gyorsítótárának törlése</string>
+    <string name="settings_screen_clear_thumbnail_cache_hint">Távolítsa el a gyorsítótárban tárolt miniatűröket, hogy helyet szabadítson fel.</string>
+    <string name="settings_screen_clear_thumbnail_cache_success_toast">Miniatűrök gyorsítótára törölve</string>
+    <string name="settings_screen_delay_autodownload_title">Automatikus letöltés késleltetése</string>
+    <string name="settings_screen_delay_autodownload_description">Várjon egy kicsit, mielőtt elkezdené a letöltést</string>
+    <string name="settings_screen_bypass_ssl_title">SSL-ellenőrzés letiltása</string>
+    <string name="settings_screen_bypass_ssl_hint">Csatlakozás bármilyen tanúsítvánnyal rendelkező kiszolgálókhoz</string>
 </resources>
