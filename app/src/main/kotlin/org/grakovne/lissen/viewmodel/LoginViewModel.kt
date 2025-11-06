@@ -39,7 +39,10 @@ class LoginViewModel
     private val _authMethods = MutableLiveData<List<AuthMethod>>(emptyList())
     val authMethods = _authMethods
 
-    fun updateAuthMethods() {
+    private val _customOAuthLoginButtonText = MutableLiveData<String?>()
+    val customOAuthLoginButtonText = _customOAuthLoginButtonText
+
+    fun updateAuthData() {
       viewModelScope
         .launch {
           val value = host.value ?: return@launch
@@ -48,8 +51,14 @@ class LoginViewModel
             .provideAuthService()
             .fetchAuthMethods(host = value)
             .fold(
-              onSuccess = { _authMethods.value = it },
-              onFailure = { _authMethods.value = emptyList() },
+              onSuccess = {
+                _authMethods.value = it.methods
+                _customOAuthLoginButtonText.value = it.oauthLoginText
+              },
+              onFailure = {
+                _authMethods.value = emptyList()
+                _customOAuthLoginButtonText.value = null
+              },
             )
         }
     }

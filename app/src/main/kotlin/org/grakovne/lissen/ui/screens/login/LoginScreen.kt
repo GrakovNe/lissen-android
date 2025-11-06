@@ -52,6 +52,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -79,6 +80,7 @@ fun LoginScreen(
   val password by viewModel.password.observeAsState("")
 
   val authMethods by viewModel.authMethods.observeAsState(emptyList())
+  val customOAuthLoginButton by viewModel.customOAuthLoginButtonText.observeAsState()
 
   var showPassword by remember { mutableStateOf(false) }
 
@@ -109,7 +111,7 @@ fun LoginScreen(
   LaunchedEffect(Unit) {
     snapshotFlow { host }
       .debounce(150)
-      .collect { viewModel.updateAuthMethods() }
+      .collect { viewModel.updateAuthData() }
   }
   Scaffold(
     modifier =
@@ -252,6 +254,12 @@ fun LoginScreen(
           }
 
           val isEnabled = authMethods.contains(AuthMethod.O_AUTH)
+          val oAuthButtonText =
+            when {
+              isEnabled.not() -> ""
+              customOAuthLoginButton != null -> customOAuthLoginButton
+              else -> stringResource(R.string.login_screen_open_id_button)
+            }
 
           TextButton(
             onClick = { viewModel.startOAuth() },
@@ -263,7 +271,9 @@ fun LoginScreen(
                 .padding(top = 12.dp),
           ) {
             Text(
-              text = if (isEnabled) stringResource(R.string.login_screen_open_id_button) else "",
+              text = oAuthButtonText ?: stringResource(R.string.login_screen_open_id_button),
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis,
               style =
                 typography.bodyMedium.copy(
                   fontSize = 16.sp,

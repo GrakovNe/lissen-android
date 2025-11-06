@@ -25,6 +25,8 @@ import org.grakovne.lissen.channel.audiobookshelf.common.oauth.AuthClient
 import org.grakovne.lissen.channel.audiobookshelf.common.oauth.AuthHost
 import org.grakovne.lissen.channel.audiobookshelf.common.oauth.AuthScheme
 import org.grakovne.lissen.channel.common.ApiClient
+import org.grakovne.lissen.channel.common.AuthData
+import org.grakovne.lissen.channel.common.AuthData.Companion.empty
 import org.grakovne.lissen.channel.common.AuthMethod
 import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.OAuthContextCache
@@ -98,7 +100,7 @@ class AudiobookshelfAuthService
         )
     }
 
-    override suspend fun fetchAuthMethods(host: String): OperationResult<List<AuthMethod>> {
+    override suspend fun fetchAuthMethods(host: String): OperationResult<AuthData> {
       return withContext(Dispatchers.IO) {
         try {
           val url =
@@ -118,7 +120,7 @@ class AudiobookshelfAuthService
           val response = client.newCall(request).execute()
 
           if (!response.isSuccessful) {
-            return@withContext OperationResult.Success(emptyList())
+            return@withContext OperationResult.Success(empty)
           }
 
           val body = response.body.string()
@@ -127,12 +129,12 @@ class AudiobookshelfAuthService
             moshi
               .adapter(AuthMethodResponse::class.java)
               .fromJson(body)
-              ?: return@withContext OperationResult.Success(emptyList())
+              ?: return@withContext OperationResult.Success(empty)
 
           val converted = authMethodResponseConverter.apply(authMethod)
           OperationResult.Success(converted)
         } catch (e: Exception) {
-          OperationResult.Success(emptyList())
+          OperationResult.Success(empty)
         }
       }
     }

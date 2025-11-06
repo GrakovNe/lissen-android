@@ -95,7 +95,7 @@
     <string name="notification_content_caching_error_description">Некоторые файлы не были загружены</string>
     <string name="login_error_lissen_auth_scheme_must_be_whitelisted">Схема %1$s://%2$s не разрешена в настройках URI редиректа сервера</string>
     <string name="login_error_lissen_auth_failed">Не удалось авторизоваться. Проверьте настройки сервера</string>
-    <string name="login_screen_open_id_button">Подключиться с OpenID</string>
+    <string name="пlogin_screen_open_id_button">Подключиться с OpenID</string>
     <string name="source_code_on_github_title">Исходный код на GitHub</string>
     <string name="source_code_on_github_subtitle">Сообщите об ошибке или предложите улучшение</string>
     <string name="settings_screen_library_ordering_title">Сортировка библиотеки</string>
