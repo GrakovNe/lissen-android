@@ -42,9 +42,9 @@ class AudioBookShelfApiService
 
     suspend fun <T> makeRequest(apiCall: suspend (client: AudiobookshelfApiClient) -> Response<T>): OperationResult<T> {
       val callResult =
-        safeApiCall {
-          apiCall.invoke(getClientInstance())
-        }
+        getClientInstance()
+          ?.let { safeApiCall { apiCall.invoke(it) } }
+          ?: return OperationResult.Error(OperationError.NetworkError)
 
       return when (callResult) {
         is OperationResult.Error<*> ->
@@ -52,9 +52,9 @@ class AudioBookShelfApiService
             OperationError.Unauthorized -> {
               refreshToken()
 
-              safeApiCall {
-                apiCall.invoke(getClientInstance())
-              }
+              getClientInstance()
+                ?.let { safeApiCall { apiCall.invoke(it) } }
+                ?: return OperationResult.Error(OperationError.NetworkError)
             }
 
             else -> callResult
@@ -69,8 +69,10 @@ class AudioBookShelfApiService
         val currentToken = preferences.getRefreshToken() ?: return@withLock
 
         val refreshResult =
-          safeApiCall { getClientInstance().refreshToken(currentToken) }
-            .map { loginResponseConverter.apply(it) }
+          getClientInstance()
+            ?.let { safeApiCall { it.refreshToken(currentToken) } }
+            ?.map { loginResponseConverter.apply(it) }
+            ?: return
 
         when (refreshResult) {
           is OperationResult.Error<*> -> {
@@ -96,7 +98,7 @@ class AudioBookShelfApiService
       }
     }
 
-    private fun getClientInstance(): AudiobookshelfApiClient {
+    private fun getClientInstance(): AudiobookshelfApiClient? {
       val host = hostProvider.provideHost()
       val token = preferences.getToken()
       val accessToken = preferences.getAccessToken()
@@ -116,14 +118,14 @@ class AudioBookShelfApiService
           cachedHeaders = headers
           cachedBypassSsl = bypassSsl
 
-          createClientInstance().also { clientCache = it }
+          createClientInstance()?.also { clientCache = it }
         }
 
         else -> current
       }
     }
 
-    private fun createClientInstance(): AudiobookshelfApiClient {
+    private fun createClientInstance(): AudiobookshelfApiClient? {
       val host = hostProvider.provideHost()?.url
       val headers = requestHeadersProvider.fetchRequestHeaders()
 
