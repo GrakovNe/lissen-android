@@ -67,8 +67,8 @@ To contribute:
 ### Release policy
 
 - **Current state:**  
-  - The **main branch** is the latest stable build at every moment with every feature available at that time.  
-  - The dedicated [`release/stable`](https://github.com/GrakovNe/lissen-android/tree/release/stable) contains the latest stable full-feature.  
+  - The **main branch** is the latest stable state at every moment with every feature available at that time.  
+  - The dedicated [`release/stable`](https://github.com/GrakovNe/lissen-android/tree/release/stable) contains the latest stable full-feature build.  
   - The dedicated [`release/google-play-store`](https://github.com/GrakovNe/lissen-android/tree/release/google-play-store) branch contains the Google Play Store–compliant build.
 
 - **Every release contains:**  
