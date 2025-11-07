@@ -6,12 +6,6 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResp
 
 @Keep
 @JsonClass(generateAdapter = true)
-data class UserInfoResponse(
-  val user: UserResponse,
-)
-
-@Keep
-@JsonClass(generateAdapter = true)
 data class UserResponse(
   val mediaProgress: List<MediaProgressResponse>?,
 )

@@ -125,7 +125,7 @@ class PodcastAudiobookshelfChannel
               dataRepository
                 .fetchUserInfoResponse()
                 .fold(
-                  onSuccess = { it.user.mediaProgress ?: emptyList() },
+                  onSuccess = { it.mediaProgress ?: emptyList() },
                   onFailure = { emptyList() },
                 )
 

@@ -11,7 +11,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.Playback
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.ProgressSyncRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.PersonalizedFeedResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.user.UserInfoResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.user.UserResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.BookResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibrarySearchResponse
@@ -136,7 +136,7 @@ class AudioBookshelfRepository
         )
       }
 
-    suspend fun fetchUserInfoResponse(): OperationResult<UserInfoResponse> =
+    suspend fun fetchUserInfoResponse(): OperationResult<UserResponse> =
       audioBookShelfApiService.makeRequest {
         it.fetchUserInfo()
       }
