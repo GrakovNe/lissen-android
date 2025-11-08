@@ -130,7 +130,7 @@ class AudioBookShelfApiService
       val headers = requestHeadersProvider.fetchRequestHeaders()
 
       if (host.isNullOrBlank()) {
-        throw IllegalStateException("Host or token is missing")
+        return null
       }
 
       val client =
