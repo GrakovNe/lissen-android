@@ -40,8 +40,8 @@ android {
     applicationId = "org.grakovne.lissen"
     minSdk = 28
     targetSdk = 36
-    versionCode = 10706
-    versionName = "1.7.6"
+    versionCode = 10707
+    versionName = "1.7.7"
     
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     
