@@ -38,7 +38,7 @@ class AudiobookshelfHostProvider
 
       return sharedPreferences
         .getLocalUrls()
-        .find { it.ssid.lowercase() == currentNetwork.lowercase() }
+        .find { it.ssid.equals(currentNetwork, ignoreCase = true) }
         ?.route
         ?.let(Host.Companion::internal)
         ?.also { Timber.d("Using internal host: ${it.url}") }
