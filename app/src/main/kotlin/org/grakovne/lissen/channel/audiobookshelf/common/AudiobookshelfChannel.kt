@@ -78,7 +78,6 @@ abstract class AudiobookshelfChannel(
         .fold(
           onSuccess = {
             it
-              .user
               .mediaProgress
               ?.groupBy { item -> item.libraryItemId }
               ?.map { (item, value) -> item to value.maxBy { progress -> progress.lastUpdate } }
