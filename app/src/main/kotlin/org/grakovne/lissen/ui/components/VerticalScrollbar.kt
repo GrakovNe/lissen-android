@@ -33,7 +33,7 @@ fun Modifier.withScrollbar(
   totalItems: Int?,
   offsetItems: Int = 0,
 ): Modifier =
-  baseScrollbar(Orientation.Vertical) { atEnd ->
+  baseScrollbar { atEnd ->
     val layoutInfo = state.layoutInfo
     val viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
     val items = layoutInfo.visibleItemsInfo
@@ -79,10 +79,7 @@ private fun DrawScope.drawScrollbarThumb(
   )
 }
 
-private fun Modifier.baseScrollbar(
-  orientation: Orientation,
-  onDraw: DrawScope.(atEnd: Boolean) -> Unit,
-): Modifier =
+private fun Modifier.baseScrollbar(onDraw: DrawScope.(atEnd: Boolean) -> Unit): Modifier =
   composed {
     val scrolled =
       remember {
@@ -90,14 +87,14 @@ private fun Modifier.baseScrollbar(
       }
 
     val nestedScrollConnection =
-      remember(orientation, scrolled) {
+      remember(Orientation.Vertical, scrolled) {
         object : NestedScrollConnection {
           override fun onPostScroll(
             consumed: Offset,
             available: Offset,
             source: NestedScrollSource,
           ) = Offset.Zero.also {
-            val delta = if (orientation == Orientation.Horizontal) consumed.x else consumed.y
+            val delta = consumed.y
             if (delta != 0f) scrolled.tryEmit(Unit)
           }
         }
@@ -113,11 +110,10 @@ private fun Modifier.baseScrollbar(
       }
     }
 
-    val isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr
-    val atEnd = orientation == Orientation.Vertical && isLtr || orientation == Orientation.Horizontal
+    val reachedEnd = LocalLayoutDirection.current == LayoutDirection.Ltr
 
     nestedScroll(nestedScrollConnection).drawWithContent {
       drawContent()
-      onDraw(atEnd)
+      onDraw(reachedEnd)
     }
   }
