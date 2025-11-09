@@ -196,15 +196,7 @@ fun LibraryScreen(
   }
 
   val showScrollbar by remember {
-    derivedStateOf {
-      libraryListState
-        .layoutInfo
-        .visibleItemsInfo
-        .all {
-          val key = it.key
-          key is String && key.startsWith("library_item")
-        }
-    }
+    derivedStateOf { libraryListState.isScrollInProgress }
   }
 
   val scrollbarAlpha by animateFloatAsState(
