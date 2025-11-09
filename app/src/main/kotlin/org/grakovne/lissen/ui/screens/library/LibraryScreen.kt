@@ -368,7 +368,7 @@ fun LibraryScreen(
                   true ->
                     Modifier.withScrollbar(
                       state = libraryListState,
-                      color = colorScheme.primary,
+                      color = colorScheme.onBackground,
                       totalItems = libraryCount,
                       offsetItems = 3, // non-library items: recent_books, library_title, library_spacer
                     )
