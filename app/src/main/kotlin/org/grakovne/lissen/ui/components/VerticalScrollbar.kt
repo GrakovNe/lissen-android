@@ -32,17 +32,16 @@ fun Modifier.withScrollbar(
   color: Color,
   totalItems: Int,
 ): Modifier =
-  baseScrollbar(Orientation.Vertical) { atEnd, alpha ->
+  baseScrollbar(Orientation.Vertical) { atEnd ->
     val layoutInfo = state.layoutInfo
     val viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
     val items = layoutInfo.visibleItemsInfo
     val itemsSize = items.fastSumBy { it.size }
 
     if (items.size < totalItems || itemsSize > viewportSize) {
-      val efficientItems = items.size.takeIf { it > 0 }?.toFloat() ?: 1f
-      val estimatedItemSize = itemsSize.toFloat() / efficientItems
+      val itemSize = itemsSize.toFloat() / items.size
 
-      val totalSize = estimatedItemSize * totalItems
+      val totalSize = itemSize * totalItems
       val canvasSize = size.height
       val thumbSize = (viewportSize / totalSize) * canvasSize
       val startOffset =
@@ -50,15 +49,14 @@ fun Modifier.withScrollbar(
           0f
         } else {
           val first = items.first()
-          (estimatedItemSize * first.index - first.offset) / totalSize * canvasSize
+          (itemSize * first.index - first.offset) / totalSize * canvasSize
         }
-      drawScrollbarThumb(atEnd, alpha, thumbSize, startOffset, color)
+      drawScrollbarThumb(atEnd, thumbSize, startOffset, color)
     }
   }
 
 private fun DrawScope.drawScrollbarThumb(
   atEnd: Boolean,
-  alpha: () -> Float,
   thumbSize: Float,
   startOffset: Float,
   color: Color,
@@ -71,7 +69,7 @@ private fun DrawScope.drawScrollbarThumb(
   val rectSize = Size(thickness, thumbSize)
 
   drawRoundRect(
-    color = color.copy(alpha = alpha()),
+    color = color,
     topLeft = topLeft,
     size = rectSize,
     cornerRadius = CornerRadius(radius),
@@ -80,7 +78,7 @@ private fun DrawScope.drawScrollbarThumb(
 
 private fun Modifier.baseScrollbar(
   orientation: Orientation,
-  onDraw: DrawScope.(atEnd: Boolean, alpha: () -> Float) -> Unit,
+  onDraw: DrawScope.(atEnd: Boolean) -> Unit,
 ): Modifier =
   composed {
     val scrolled =
@@ -117,6 +115,6 @@ private fun Modifier.baseScrollbar(
 
     nestedScroll(nestedScrollConnection).drawWithContent {
       drawContent()
-      onDraw(atEnd) { alpha.value }
+      onDraw(atEnd)
     }
   }
