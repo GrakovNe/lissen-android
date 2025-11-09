@@ -107,18 +107,19 @@ private fun DrawScope.drawScrollbarThumb(
   val horizontalPadding = 6.dp.toPx()
   val verticalPadding = 4.dp.toPx()
 
-  val availableHeight = size.height - 2 * verticalPadding
+  val availableHeight = (size.height - 2 * verticalPadding).coerceAtLeast(0f)
+  val maxY = (availableHeight - thumbSize).coerceAtLeast(0f)
 
   val topLeft =
     Offset(
       x = if (atEnd) size.width - thickness - horizontalPadding else horizontalPadding,
-      y = verticalPadding + startOffset.coerceIn(0f, availableHeight - thumbSize),
+      y = verticalPadding + startOffset.coerceIn(0f, maxY),
     )
 
   drawRoundRect(
     color = color,
     topLeft = topLeft,
-    size = Size(thickness, thumbSize),
+    size = Size(thickness, thumbSize.coerceAtMost(availableHeight)),
     cornerRadius = CornerRadius(radius),
   )
 }

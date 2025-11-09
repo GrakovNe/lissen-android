@@ -123,6 +123,9 @@ interface CachedBookDao {
   @RawQuery
   suspend fun fetchCachedBooks(query: SupportSQLiteQuery): List<BookEntity>
 
+  @RawQuery
+  suspend fun countCachedBooks(query: SupportSQLiteQuery): Int
+
   @Transaction
   @RawQuery
   suspend fun searchBooks(query: SupportSQLiteQuery): List<BookEntity>
@@ -159,6 +162,9 @@ interface CachedBookDao {
     pageSize: Int,
     pageNumber: Int,
   ): List<CachedBookEntity>
+
+  @Query("SELECT COUNT(*) FROM detailed_books")
+  suspend fun fetchCachedItemsCount(): Int
 
   @Query(
     """

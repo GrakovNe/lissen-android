@@ -70,6 +70,8 @@ class CachedBookRepository
       .fetchCachedItems(pageSize = pageSize, pageNumber = pageNumber)
       .map { cachedBookEntityDetailedConverter.apply(it) }
 
+    suspend fun countCachedItems(): Int = bookDao.fetchCachedItemsCount()
+
     suspend fun fetchLatestUpdate(libraryId: String) = bookDao.fetchLatestUpdate(libraryId)
 
     suspend fun fetchBooks(
@@ -90,6 +92,15 @@ class CachedBookRepository
       return bookDao
         .fetchCachedBooks(request)
         .map { cachedBookEntityConverter.apply(it) }
+    }
+
+    suspend fun countBooks(): Int {
+      val request =
+        FetchRequestBuilder()
+          .libraryId(preferences.getPreferredLibrary()?.id)
+          .build()
+
+      return bookDao.countCachedBooks(request)
     }
 
     suspend fun searchBooks(query: String): List<Book> {
