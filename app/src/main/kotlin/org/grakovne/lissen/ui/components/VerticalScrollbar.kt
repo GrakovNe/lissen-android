@@ -79,13 +79,17 @@ fun Modifier.withScrollbar(
       val totalSize = itemSize * count
       val canvasSize = size.height
       val thumbSize = (viewportSize / totalSize) * canvasSize
+
+      if (thumbSize > canvasSize * 0.9) {
+        return@baseScrollbar
+      }
+
       val startOffset =
-        if (items.isEmpty()) {
-          0f
-        } else {
-          val first = items.first()
-          (itemSize * first.index - first.offset) / totalSize * canvasSize
-        }
+        items
+          .firstOrNull()
+          ?.let { (itemSize * it.index - it.offset) / totalSize * canvasSize }
+          ?: 0f
+
       drawScrollbarThumb(atEnd, thumbSize, startOffset, color)
     }
   }
