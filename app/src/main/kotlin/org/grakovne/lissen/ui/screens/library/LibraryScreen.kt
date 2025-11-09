@@ -363,8 +363,7 @@ fun LibraryScreen(
                 state = libraryListState,
                 color = colorScheme.onBackground.copy(alpha = scrollbarAlpha),
                 totalItems = libraryCount,
-                scrollableElementPrefix = "library_item",
-                offsetItems = 3, // non-library items: recent_books, library_title, library_spacer
+                ignoreItems = listOf("recent_books", "library_title"),
               ),
           contentPadding = PaddingValues(horizontal = 16.dp),
         ) {
@@ -442,9 +441,9 @@ fun LibraryScreen(
                 }
               }
             }
-          }
 
-          item(key = "library_spacer") { Spacer(modifier = Modifier.height(8.dp)) }
+            Spacer(modifier = Modifier.height(8.dp))
+          }
 
           when {
             isPlaceholderRequired -> item { LibraryPlaceholderComposable() }

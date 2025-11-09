@@ -48,7 +48,6 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastSumBy
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -58,26 +57,21 @@ fun Modifier.withScrollbar(
   state: LazyListState,
   color: Color,
   totalItems: Int?,
-  offsetItems: Int = 0,
-  scrollableElementPrefix: String? = null,
+  ignoreItems: List<String> = emptyList(),
 ): Modifier =
   baseScrollbar { atEnd ->
     val layoutInfo = state.layoutInfo
     val viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
 
     val items =
-      when (scrollableElementPrefix) {
-        null -> layoutInfo.visibleItemsInfo
-        else ->
-          layoutInfo.visibleItemsInfo.filter {
-            val key = it.key
-            key is String && key.startsWith(scrollableElementPrefix)
-          }
-      }
+      layoutInfo.visibleItemsInfo
+        .filterNot {
+          val key = it.key
+          key is String && ignoreItems.contains(key)
+        }
 
-    val itemsSize = items.fastSumBy { it.size }
-
-    val count = totalItems?.let { it + offsetItems } ?: layoutInfo.totalItemsCount
+    val itemsSize = items.sumOf { it.size }
+    val count = totalItems ?: layoutInfo.totalItemsCount
 
     if (items.size < count || itemsSize > viewportSize) {
       val itemSize = itemsSize.toFloat() / items.size
