@@ -1,3 +1,30 @@
+/*
+ * MIT License
+ *
+ * Original Copyright (c) 2022 Albert Chang
+ * Adapted Copyright (c) 2025 Max Grakov
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Adapted from:
+ * https://gist.github.com/mxalbert1996/33a360fcab2105a31e5355af98216f5a
+ */
 package org.grakovne.lissen.ui.components
 
 import android.view.ViewConfiguration
@@ -38,7 +65,8 @@ fun Modifier.withScrollbar(
     val layoutInfo = state.layoutInfo
     val viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
 
-    val items = when (scrollableElementPrefix) {
+    val items =
+      when (scrollableElementPrefix) {
         null -> layoutInfo.visibleItemsInfo
         else ->
           layoutInfo.visibleItemsInfo.filter {
@@ -76,15 +104,21 @@ private fun DrawScope.drawScrollbarThumb(
 ) {
   val thickness = 3.dp.toPx()
   val radius = 3.dp.toPx()
-  val padding = 6.dp.toPx()
+  val horizontalPadding = 6.dp.toPx()
+  val verticalPadding = 4.dp.toPx()
 
-  val topLeft = Offset(if (atEnd) size.width - thickness - padding else padding, startOffset)
-  val rectSize = Size(thickness, thumbSize)
+  val availableHeight = size.height - 2 * verticalPadding
+
+  val topLeft =
+    Offset(
+      x = if (atEnd) size.width - thickness - horizontalPadding else horizontalPadding,
+      y = verticalPadding + startOffset.coerceIn(0f, availableHeight - thumbSize),
+    )
 
   drawRoundRect(
     color = color,
     topLeft = topLeft,
-    size = rectSize,
+    size = Size(thickness, thumbSize),
     cornerRadius = CornerRadius(radius),
   )
 }
