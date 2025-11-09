@@ -75,6 +75,7 @@ class CachedBookRepository
     suspend fun fetchLatestUpdate(libraryId: String) = bookDao.fetchLatestUpdate(libraryId)
 
     suspend fun fetchBooks(
+      libraryId: String,
       pageNumber: Int,
       pageSize: Int,
     ): List<Book> {
@@ -82,7 +83,7 @@ class CachedBookRepository
 
       val request =
         FetchRequestBuilder()
-          .libraryId(preferences.getPreferredLibrary()?.id)
+          .libraryId(libraryId)
           .pageNumber(pageNumber)
           .pageSize(pageSize)
           .orderField(option)
@@ -94,22 +95,25 @@ class CachedBookRepository
         .map { cachedBookEntityConverter.apply(it) }
     }
 
-    suspend fun countBooks(): Int {
+    suspend fun countBooks(libraryId: String): Int {
       val request =
         FetchRequestBuilder()
-          .libraryId(preferences.getPreferredLibrary()?.id)
+          .libraryId(libraryId)
           .build()
 
       return bookDao.countCachedBooks(request)
     }
 
-    suspend fun searchBooks(query: String): List<Book> {
+    suspend fun searchBooks(
+      libraryId: String,
+      query: String,
+    ): List<Book> {
       val (option, direction) = buildOrdering()
 
       val request =
         SearchRequestBuilder()
           .searchQuery(query)
-          .libraryId(preferences.getPreferredLibrary()?.id)
+          .libraryId(libraryId)
           .orderField(option)
           .orderDirection(direction)
           .build()
@@ -119,10 +123,10 @@ class CachedBookRepository
         .map { cachedBookEntityConverter.apply(it) }
     }
 
-    suspend fun fetchRecentBooks(): List<RecentBook> {
+    suspend fun fetchRecentBooks(libraryId: String): List<RecentBook> {
       val recentBooks =
         bookDao.fetchRecentlyListenedCachedBooks(
-          libraryId = preferences.getPreferredLibrary()?.id,
+          libraryId = libraryId,
         )
 
       val progress =

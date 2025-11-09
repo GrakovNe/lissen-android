@@ -98,7 +98,7 @@ class LissenMediaProvider
       Timber.d("Searching books with query $query of library: $libraryId")
 
       return when (preferences.isForceCache()) {
-        true -> localCacheRepository.searchBooks(query)
+        true -> localCacheRepository.searchBooks(libraryId = libraryId, query = query)
         false ->
           providePreferredChannel()
             .searchBooks(
@@ -117,8 +117,8 @@ class LissenMediaProvider
       Timber.d("Fetching page $pageNumber of library: $libraryId")
 
       return when (preferences.isForceCache()) {
-        true -> localCacheRepository.fetchBooks(pageSize, pageNumber)
-        false -> providePreferredChannel().fetchBooks(libraryId, pageSize, pageNumber)
+        true -> localCacheRepository.fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
+        false -> providePreferredChannel().fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
       }
     }
 
@@ -159,11 +159,11 @@ class LissenMediaProvider
       Timber.d("Fetching Recent books of library $libraryId")
 
       return when (preferences.isForceCache()) {
-        true -> localCacheRepository.fetchRecentListenedBooks()
+        true -> localCacheRepository.fetchRecentListenedBooks(libraryId)
         false ->
           providePreferredChannel()
             .fetchRecentListenedBooks(libraryId)
-            .map { items -> syncFromLocalProgress(items) }
+            .map { items -> syncFromLocalProgress(libraryId = libraryId, detailedItems = items) }
       }
     }
 
@@ -254,10 +254,13 @@ class LissenMediaProvider
         )
     }
 
-    private suspend fun syncFromLocalProgress(detailedItems: List<RecentBook>): List<RecentBook> {
+    private suspend fun syncFromLocalProgress(
+      libraryId: String,
+      detailedItems: List<RecentBook>,
+    ): List<RecentBook> {
       val localRecentlyBooks =
         localCacheRepository
-          .fetchRecentListenedBooks()
+          .fetchRecentListenedBooks(libraryId)
           .fold(
             onSuccess = { it },
             onFailure = { return@fold detailedItems },
