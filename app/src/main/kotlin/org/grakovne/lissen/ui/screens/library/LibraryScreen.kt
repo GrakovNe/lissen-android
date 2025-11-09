@@ -346,7 +346,7 @@ fun LibraryScreen(
       ) {
         LazyColumn(
           state = libraryListState,
-          modifier = Modifier.fillMaxSize().drawVerticalScrollbar(libraryListState, false),
+          modifier = Modifier.fillMaxSize().drawVerticalScrollbar(libraryListState, false, colorScheme),
           contentPadding = PaddingValues(horizontal = 16.dp),
         ) {
           item(key = "recent_books") {
