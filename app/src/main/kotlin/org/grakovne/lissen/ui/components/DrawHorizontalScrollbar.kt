@@ -71,7 +71,7 @@ private fun Modifier.drawScrollbar(
     val viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
     val items = layoutInfo.visibleItemsInfo
     val itemsSize = items.fastSumBy { it.size }
-    
+
     if (items.size < layoutInfo.totalItemsCount || itemsSize > viewportSize) {
       val estimatedItemSize = if (items.isEmpty()) 0f else itemsSize.toFloat() / items.size
       val totalSize = estimatedItemSize * layoutInfo.totalItemsCount
@@ -96,11 +96,11 @@ private fun DrawScope.drawScrollbarThumb(
   startOffset: Float,
   colorScheme: ColorScheme,
 ) {
-  val color = colorScheme.primary.copy(alpha = 0.2f)
-  val thicknessPx = 6.dp.toPx()
+  val color = colorScheme.primary
+  val thicknessPx = 3.dp.toPx()
   val radiusPx = 3.dp.toPx()
-  val paddingPx = 4.dp.toPx()
-  
+  val paddingPx = 6.dp.toPx()
+
   val topLeft =
     if (orientation == Orientation.Horizontal) {
       Offset(
@@ -113,14 +113,14 @@ private fun DrawScope.drawScrollbarThumb(
         if (reverseDirection) size.height - startOffset - thumbSize else startOffset,
       )
     }
-  
+
   val rectSize =
     if (orientation == Orientation.Horizontal) {
       Size(thumbSize, thicknessPx)
     } else {
       Size(thicknessPx, thumbSize)
     }
-  
+
   drawRoundRect(
     color = color.copy(alpha = alpha()),
     topLeft = topLeft,
@@ -142,7 +142,7 @@ private fun Modifier.baseScrollbar(
           onBufferOverflow = BufferOverflow.DROP_OLDEST,
         )
       }
-    
+
     val nestedScrollConnection =
       remember(orientation, scrolled) {
         object : NestedScrollConnection {
@@ -157,9 +157,9 @@ private fun Modifier.baseScrollbar(
           }
         }
       }
-    
+
     val alpha = remember { Animatable(0f) }
-    
+
     LaunchedEffect(scrolled, alpha) {
       scrolled.collectLatest {
         alpha.snapTo(1f)
@@ -167,7 +167,7 @@ private fun Modifier.baseScrollbar(
         alpha.animateTo(0f, animationSpec = FadeOutAnimationSpec)
       }
     }
-    
+
     val isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr
     val reverseDirection =
       if (orientation == Orientation.Horizontal) {
@@ -176,7 +176,7 @@ private fun Modifier.baseScrollbar(
         reverseScrolling
       }
     val atEnd = if (orientation == Orientation.Vertical) isLtr else true
-    
+
     Modifier
       .nestedScroll(nestedScrollConnection)
       .drawWithContent {
