@@ -4,6 +4,7 @@ import android.view.View
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -193,6 +194,22 @@ fun LibraryScreen(
     return searchRequested.not() && hasContent && fetchAvailable
   }
 
+  val showScrollbar by remember {
+    derivedStateOf {
+      val recentVisible =
+        libraryListState.layoutInfo.visibleItemsInfo
+          .any { it.key == "recent_books" }
+
+      !recentVisible
+    }
+  }
+
+  val scrollbarAlpha by animateFloatAsState(
+    targetValue = if (showScrollbar) 0f else 1f,
+    animationSpec = tween(300),
+    label = "scrollbar_alpha",
+  )
+
   LaunchedEffect(Unit) {
     val emptyContent = library.itemCount == 0
     val libraryChanged = currentLibraryId != settingsViewModel.fetchPreferredLibraryId()
@@ -346,7 +363,14 @@ fun LibraryScreen(
       ) {
         LazyColumn(
           state = libraryListState,
-          modifier = Modifier.fillMaxSize().drawVerticalScrollbar(libraryListState, colorScheme),
+          modifier =
+            Modifier.fillMaxSize().then(
+              if (showScrollbar) {
+                Modifier.drawVerticalScrollbar(libraryListState, colorScheme.primary.copy(alpha = scrollbarAlpha))
+              } else {
+                Modifier
+              },
+            ),
           contentPadding = PaddingValues(horizontal = 16.dp),
         ) {
           item(key = "recent_books") {

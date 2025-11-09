@@ -38,6 +38,7 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -53,13 +54,13 @@ import kotlinx.coroutines.flow.collectLatest
 
 fun Modifier.drawVerticalScrollbar(
   state: LazyListState,
-  colorScheme: ColorScheme,
-): Modifier = drawScrollbar(state, Orientation.Vertical, colorScheme)
+  color: Color,
+): Modifier = drawScrollbar(state, Orientation.Vertical, color)
 
 private fun Modifier.drawScrollbar(
   state: LazyListState,
   orientation: Orientation,
-  colorScheme: ColorScheme,
+  color: Color,
 ): Modifier =
   baseScrollbar(
     orientation,
@@ -80,7 +81,7 @@ private fun Modifier.drawScrollbar(
         } else {
           items.first().run { (estimatedItemSize * index - offset) / totalSize * canvasSize }
         }
-      drawScrollbarThumb(orientation, atEnd, alpha, thumbSize, startOffset, colorScheme)
+      drawScrollbarThumb(orientation, atEnd, alpha, thumbSize, startOffset, color)
     }
   }
 
@@ -90,9 +91,9 @@ private fun DrawScope.drawScrollbarThumb(
   alpha: () -> Float,
   thumbSize: Float,
   startOffset: Float,
-  colorScheme: ColorScheme,
+  color: Color,
 ) {
-  val color = colorScheme.primary
+  val color = color
   val thicknessPx = 3.dp.toPx()
   val radiusPx = 3.dp.toPx()
   val paddingPx = 6.dp.toPx()
