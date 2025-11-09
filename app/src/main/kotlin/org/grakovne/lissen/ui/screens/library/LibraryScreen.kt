@@ -10,7 +10,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -66,7 +65,7 @@ import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.RecentBook
-import org.grakovne.lissen.ui.components.drawVerticalScrollbar
+import org.grakovne.lissen.ui.components.withScrollbar
 import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.common.RequestNotificationPermissions
@@ -194,22 +193,17 @@ fun LibraryScreen(
     return searchRequested.not() && hasContent && fetchAvailable
   }
 
-  val showScrollbar by remember {
-    derivedStateOf {
-      val recentVisible =
-        libraryListState.layoutInfo.visibleItemsInfo
-          .any { it.key == "recent_books" }
+  val showScrollbar = true
 
-      !recentVisible
-    }
-  }
-
-  val scrollbarAlpha by animateFloatAsState(
-    targetValue = if (showScrollbar) 0f else 1f,
-    animationSpec = tween(300),
-    label = "scrollbar_alpha",
-  )
-
+//  val showScrollbar by remember {
+//    derivedStateOf {
+//      val recentVisible =
+//        libraryListState.layoutInfo.visibleItemsInfo
+//          .any { it.key == "recent_books" }
+//
+//      !recentVisible
+//    }
+//  }
   LaunchedEffect(Unit) {
     val emptyContent = library.itemCount == 0
     val libraryChanged = currentLibraryId != settingsViewModel.fetchPreferredLibraryId()
@@ -366,7 +360,7 @@ fun LibraryScreen(
           modifier =
             Modifier.fillMaxSize().then(
               if (showScrollbar) {
-                Modifier.drawVerticalScrollbar(libraryListState, colorScheme.primary.copy(alpha = scrollbarAlpha))
+                Modifier.withScrollbar(libraryListState, colorScheme.primary, 114)
               } else {
                 Modifier
               },
