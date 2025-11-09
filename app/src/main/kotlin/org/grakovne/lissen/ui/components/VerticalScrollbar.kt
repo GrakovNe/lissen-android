@@ -108,6 +108,8 @@ private fun DrawScope.drawScrollbarThumb(
   val verticalPadding = 4.dp.toPx()
 
   val availableHeight = (size.height - 2 * verticalPadding).coerceAtLeast(0f)
+  // if (thumbSize > availableHeight) return
+
   val maxY = (availableHeight - thumbSize).coerceAtLeast(0f)
 
   val topLeft =

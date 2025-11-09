@@ -95,14 +95,7 @@ class CachedBookRepository
         .map { cachedBookEntityConverter.apply(it) }
     }
 
-    suspend fun countBooks(libraryId: String): Int {
-      val request =
-        FetchRequestBuilder()
-          .libraryId(libraryId)
-          .build()
-
-      return bookDao.countCachedBooks(request)
-    }
+    suspend fun countBooks(libraryId: String): Int = bookDao.countCachedBooks(libraryId = libraryId)
 
     suspend fun searchBooks(
       libraryId: String,
