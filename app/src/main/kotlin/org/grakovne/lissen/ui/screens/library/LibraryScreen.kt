@@ -9,6 +9,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -64,6 +65,7 @@ import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.RecentBook
+import org.grakovne.lissen.ui.components.drawVerticalScrollbar
 import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.common.RequestNotificationPermissions
@@ -344,7 +346,7 @@ fun LibraryScreen(
       ) {
         LazyColumn(
           state = libraryListState,
-          modifier = Modifier.fillMaxSize(),
+          modifier = Modifier.fillMaxSize().drawVerticalScrollbar(libraryListState, false),
           contentPadding = PaddingValues(horizontal = 16.dp),
         ) {
           item(key = "recent_books") {

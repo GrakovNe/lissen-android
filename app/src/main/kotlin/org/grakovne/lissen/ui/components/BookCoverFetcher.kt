@@ -95,4 +95,4 @@ object ImageLoaderModule {
       .build()
 }
 
-fun Dimension.pxOrNull(): Int? = (this as? Dimension.Pixels)?.px
+private fun Dimension.pxOrNull(): Int? = (this as? Dimension.Pixels)?.px
