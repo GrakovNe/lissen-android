@@ -46,47 +46,56 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import org.acra.ACRA
+import timber.log.Timber
 
 fun Modifier.withScrollbar(
   state: LazyListState,
   color: Color,
   totalItems: Int?,
   ignoreItems: List<String> = emptyList(),
-): Modifier =
-  baseScrollbar { atEnd ->
-    val layoutInfo = state.layoutInfo
-    val viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
-
-    val items =
-      layoutInfo.visibleItemsInfo
-        .filterNot {
-          val key = it.key
-          key is String && ignoreItems.contains(key)
+): Modifier {
+  try {
+    return baseScrollbar { atEnd ->
+      val layoutInfo = state.layoutInfo
+      val viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
+      
+      val items =
+        layoutInfo.visibleItemsInfo
+          .filterNot {
+            val key = it.key
+            key is String && ignoreItems.contains(key)
+          }
+      
+      val itemsSize = items.sumOf { it.size }
+      val count = totalItems ?: layoutInfo.totalItemsCount
+      
+      if (items.size < count || itemsSize > viewportSize) {
+        val itemSize = itemsSize.toFloat() / items.size
+        
+        val totalSize = itemSize * count
+        val canvasSize = size.height
+        val thumbSize = (viewportSize / totalSize) * canvasSize
+        
+        if (thumbSize > canvasSize * 0.95) {
+          return@baseScrollbar
         }
-
-    val itemsSize = items.sumOf { it.size }
-    val count = totalItems ?: layoutInfo.totalItemsCount
-
-    if (items.size < count || itemsSize > viewportSize) {
-      val itemSize = itemsSize.toFloat() / items.size
-
-      val totalSize = itemSize * count
-      val canvasSize = size.height
-      val thumbSize = (viewportSize / totalSize) * canvasSize
-
-      if (thumbSize > canvasSize * 0.95) {
-        return@baseScrollbar
+        
+        val startOffset =
+          items
+            .firstOrNull()
+            ?.let { (itemSize * it.index - it.offset) / totalSize * canvasSize }
+            ?: 0f
+        
+        drawScrollbarThumb(atEnd, thumbSize, startOffset, color)
       }
-
-      val startOffset =
-        items
-          .firstOrNull()
-          ?.let { (itemSize * it.index - it.offset) / totalSize * canvasSize }
-          ?: 0f
-
-      drawScrollbarThumb(atEnd, thumbSize, startOffset, color)
     }
+  } catch (ex: Exception) {
+    Timber.w("Unable to apply scrollbar due to ${ex.message}")
+    ACRA.errorReporter.handleSilentException(ex)
+    return this
   }
+}
 
 private fun DrawScope.drawScrollbarThumb(
   atEnd: Boolean,
