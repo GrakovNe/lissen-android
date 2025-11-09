@@ -87,6 +87,7 @@ class PlaybackEnhancerService
         PlaybackVolumeBoost.LOW -> dbToMb(3f)
         PlaybackVolumeBoost.MEDIUM -> dbToMb(6f)
         PlaybackVolumeBoost.HIGH -> dbToMb(12f)
+        PlaybackVolumeBoost.MAX -> dbToMb(20f)
       }
 
     private fun dbToMb(db: Float): Int = (db * 100f).roundToInt()

@@ -61,6 +61,7 @@ fun PlaybackVolumeBoostSettingsComposable(viewModel: SettingsViewModel) {
           PlaybackVolumeBoost.LOW.toItem(context),
           PlaybackVolumeBoost.MEDIUM.toItem(context),
           PlaybackVolumeBoost.HIGH.toItem(context),
+          PlaybackVolumeBoost.MAX.toItem(context),
         ),
       selectedItem = preferredPlaybackVolumeBoost?.toItem(context),
       onDismissRequest = { volumeBoostExpanded = false },
@@ -82,6 +83,7 @@ private fun PlaybackVolumeBoost.toItem(context: Context): CommonSettingsItem {
       PlaybackVolumeBoost.LOW -> context.getString(R.string.volume_boost_low)
       PlaybackVolumeBoost.MEDIUM -> context.getString(R.string.volume_boost_medium)
       PlaybackVolumeBoost.HIGH -> context.getString(R.string.volume_boost_high)
+      PlaybackVolumeBoost.MAX -> context.getString(R.string.volume_boost_max)
     }
 
   return CommonSettingsItem(id, name, null)

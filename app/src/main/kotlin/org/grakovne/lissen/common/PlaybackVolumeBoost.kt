@@ -5,4 +5,5 @@ enum class PlaybackVolumeBoost {
   LOW,
   MEDIUM,
   HIGH,
+  MAX,
 }

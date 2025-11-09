@@ -122,7 +122,8 @@
     <string name="volume_boost_disabled">Отключено</string>
     <string name="volume_boost_low">Небольшое увеличение</string>
     <string name="volume_boost_medium">Среднее увеличение</string>
-    <string name="volume_boost_high">Максимальное увеличение</string>
+    <string name="volume_boost_high">Значительное увеличение</string>
+    <string name="volume_boost_max">Максимальное увеличение</string>
     <string name="volume_boost_title">Усиление громкости</string>
     <string name="playing_item_details_time_remaining">Оставшееся время</string>
     <string name="settings_screen_advanced_preferences_title">Расширенные настройки</string>

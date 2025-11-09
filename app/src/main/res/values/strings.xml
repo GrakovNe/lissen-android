@@ -127,6 +127,7 @@
     <string name="volume_boost_low">Low</string>
     <string name="volume_boost_medium">Medium</string>
     <string name="volume_boost_high">High</string>
+    <string name="volume_boost_max">Maximum</string>
     <string name="volume_boost_title">Boosted volume</string>
     <string name="playing_item_details_time_remaining">Time remaining</string>
     <string name="settings_screen_advanced_preferences_title">Advanced preferences</string>
