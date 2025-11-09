@@ -27,6 +27,7 @@ class PodcastPageResponseConverter
           PagedItems(
             items = it,
             currentPage = response.page,
+            totalItems = response.total,
           )
         }
   }

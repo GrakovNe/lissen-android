@@ -39,6 +39,8 @@ class LibraryDefaultPagingSource(
           val nextPage = if (result.items.isEmpty()) null else result.currentPage + 1
           val prevKey = if (result.currentPage == 0) null else result.currentPage - 1
 
+          onTotalCountChanged.invoke(result.totalItems)
+
           LoadResult.Page(
             data = result.items,
             prevKey = prevKey,

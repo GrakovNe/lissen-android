@@ -29,7 +29,10 @@ class LibrarySearchPagingSource(
     return mediaChannel
       .searchBooks(libraryId, searchToken, limit)
       .fold(
-        onSuccess = { LoadResult.Page(it, null, null) },
+        onSuccess = {
+          onTotalCountChanged.invoke(it.size)
+          LoadResult.Page(it, null, null)
+        },
         onFailure = { LoadResult.Page(emptyList(), null, null) },
       )
   }

@@ -8,6 +8,7 @@ import com.squareup.moshi.JsonClass
 data class LibraryItemsResponse(
   val results: List<LibraryItem>,
   val page: Int,
+  val total: Int,
 )
 
 @Keep

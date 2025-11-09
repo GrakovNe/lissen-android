@@ -30,7 +30,7 @@ import kotlinx.coroutines.flow.collectLatest
 fun Modifier.withScrollbar(
   state: LazyListState,
   color: Color,
-  totalItems: Int,
+  totalItems: Int?,
 ): Modifier =
   baseScrollbar(Orientation.Vertical) { atEnd ->
     val layoutInfo = state.layoutInfo
@@ -38,10 +38,12 @@ fun Modifier.withScrollbar(
     val items = layoutInfo.visibleItemsInfo
     val itemsSize = items.fastSumBy { it.size }
 
-    if (items.size < totalItems || itemsSize > viewportSize) {
+    val count = totalItems ?: layoutInfo.totalItemsCount
+
+    if (items.size < count || itemsSize > viewportSize) {
       val itemSize = itemsSize.toFloat() / items.size
 
-      val totalSize = itemSize * totalItems
+      val totalSize = itemSize * count
       val canvasSize = size.height
       val thumbSize = (viewportSize / totalSize) * canvasSize
       val startOffset =

@@ -72,6 +72,7 @@ class LocalCacheRepository
           PagedItems(
             items = items,
             currentPage = pageNumber,
+            totalItems = 42,
           ),
         )
     }
@@ -89,6 +90,7 @@ class LocalCacheRepository
           PagedItems(
             items = books,
             currentPage = pageNumber,
+            totalItems = 42,
           ),
         )
     }
