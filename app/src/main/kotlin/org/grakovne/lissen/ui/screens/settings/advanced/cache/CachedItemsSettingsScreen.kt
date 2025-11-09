@@ -185,7 +185,10 @@ private fun CachedItemsComposable(
   val itemsCount by viewModel.totalCount.observeAsState()
 
   val showScrollbar by remember {
-    derivedStateOf { state.isScrollInProgress }
+    derivedStateOf {
+      val scrolledDown = state.firstVisibleItemIndex > 0 || state.firstVisibleItemScrollOffset > 0
+      state.isScrollInProgress && scrolledDown
+    }
   }
 
   val scrollbarAlpha by animateFloatAsState(

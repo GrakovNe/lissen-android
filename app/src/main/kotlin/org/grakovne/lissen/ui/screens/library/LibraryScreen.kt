@@ -194,7 +194,10 @@ fun LibraryScreen(
   }
 
   val showScrollbar by remember {
-    derivedStateOf { libraryListState.isScrollInProgress }
+    derivedStateOf {
+      val scrolledDown = libraryListState.firstVisibleItemIndex > 0 || libraryListState.firstVisibleItemScrollOffset > 0
+      libraryListState.isScrollInProgress && scrolledDown
+    }
   }
 
   val scrollbarAlpha by animateFloatAsState(
