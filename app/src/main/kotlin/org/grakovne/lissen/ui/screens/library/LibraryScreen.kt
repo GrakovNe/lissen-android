@@ -207,6 +207,11 @@ fun LibraryScreen(
     }
   }
 
+  val scrollbarAlpha by animateFloatAsState(
+    targetValue = if (showScrollbar) 1f else 0f,
+    animationSpec = tween(durationMillis = 300),
+  )
+
   LaunchedEffect(Unit) {
     val emptyContent = library.itemCount == 0
     val libraryChanged = currentLibraryId != settingsViewModel.fetchPreferredLibraryId()
@@ -354,7 +359,6 @@ fun LibraryScreen(
         modifier =
           Modifier
             .padding(innerPadding)
-            .testTag("libraryScreen")
             .pullRefresh(pullRefreshState)
             .fillMaxSize(),
       ) {
@@ -363,18 +367,12 @@ fun LibraryScreen(
           modifier =
             Modifier
               .fillMaxSize()
-              .then(
-                when (showScrollbar) {
-                  true ->
-                    Modifier.withScrollbar(
-                      state = libraryListState,
-                      color = colorScheme.onBackground,
-                      totalItems = libraryCount,
-                      offsetItems = 3, // non-library items: recent_books, library_title, library_spacer
-                    )
-
-                  false -> Modifier
-                },
+              .withScrollbar(
+                state = libraryListState,
+                color = colorScheme.onBackground.copy(alpha = scrollbarAlpha),
+                totalItems = libraryCount,
+                scrollableElementPrefix = "library_item",
+                offsetItems = 3, // non-library items: recent_books, library_title, library_spacer
               ),
           contentPadding = PaddingValues(horizontal = 16.dp),
         ) {

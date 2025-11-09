@@ -32,11 +32,21 @@ fun Modifier.withScrollbar(
   color: Color,
   totalItems: Int?,
   offsetItems: Int = 0,
+  scrollableElementPrefix: String? = null,
 ): Modifier =
   baseScrollbar { atEnd ->
     val layoutInfo = state.layoutInfo
     val viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
-    val items = layoutInfo.visibleItemsInfo
+
+    val items = when (scrollableElementPrefix) {
+        null -> layoutInfo.visibleItemsInfo
+        else ->
+          layoutInfo.visibleItemsInfo.filter {
+            val key = it.key
+            key is String && key.startsWith(scrollableElementPrefix)
+          }
+      }
+
     val itemsSize = items.fastSumBy { it.size }
 
     val count = totalItems?.let { it + offsetItems } ?: layoutInfo.totalItemsCount
