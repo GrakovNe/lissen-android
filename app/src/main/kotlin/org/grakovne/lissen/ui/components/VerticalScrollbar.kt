@@ -37,7 +37,7 @@ fun Modifier.withScrollbar(
     val viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
     val items = layoutInfo.visibleItemsInfo
     val itemsSize = items.fastSumBy { it.size }
-    
+
     if (items.size < totalItems || itemsSize > viewportSize) {
       val itemSize = itemsSize.toFloat() / items.size
 

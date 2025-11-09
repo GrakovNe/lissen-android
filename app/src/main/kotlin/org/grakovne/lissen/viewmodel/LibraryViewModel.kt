@@ -79,7 +79,7 @@ class LibraryViewModel
                 mediaChannel = mediaChannel,
                 searchToken = token,
                 limit = PAGE_SEARCH_SIZE,
-              )
+              ) {}
 
             searchPagingSource = source
             source
@@ -91,7 +91,7 @@ class LibraryViewModel
       Pager(
         config = pageConfig,
         pagingSourceFactory = {
-          val source = LibraryDefaultPagingSource(preferences, mediaChannel)
+          val source = LibraryDefaultPagingSource(preferences, mediaChannel) {}
           defaultPagingSource = source
 
           source

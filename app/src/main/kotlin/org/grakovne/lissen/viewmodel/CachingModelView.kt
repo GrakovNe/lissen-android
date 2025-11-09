@@ -58,7 +58,7 @@ class CachingModelView
       Pager(
         config = pageConfig,
         pagingSourceFactory = {
-          val source = CachedItemsPageSource(localCacheRepository)
+          val source = CachedItemsPageSource(localCacheRepository) {}
 
           pageSource = source
           source
