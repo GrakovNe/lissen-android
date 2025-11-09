@@ -38,21 +38,25 @@ fun Modifier.withScrollbar(
     val items = layoutInfo.visibleItemsInfo
     val itemsSize = items.fastSumBy { it.size }
 
-    val count = totalItems ?: layoutInfo.totalItemsCount
+    val networkItems = totalItems ?: 0
+    val extraItems = layoutInfo.totalItemsCount - networkItems
+    val count = networkItems + extraItems
 
     if (items.size < count || itemsSize > viewportSize) {
       val itemSize = itemsSize.toFloat() / items.size
-
       val totalSize = itemSize * count
       val canvasSize = size.height
       val thumbSize = (viewportSize / totalSize) * canvasSize
+
+      val firstVisible = items.firstOrNull()
       val startOffset =
-        if (items.isEmpty()) {
-          0f
+        if (firstVisible != null) {
+          val scrolled = firstVisible.index * itemSize - firstVisible.offset
+          (scrolled / totalSize * canvasSize).coerceIn(0f, canvasSize - thumbSize)
         } else {
-          val first = items.first()
-          (itemSize * first.index - first.offset) / totalSize * canvasSize
+          0f
         }
+
       drawScrollbarThumb(atEnd, thumbSize, startOffset, color)
     }
   }
