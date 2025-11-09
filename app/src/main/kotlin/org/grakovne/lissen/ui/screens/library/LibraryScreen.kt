@@ -193,17 +193,18 @@ fun LibraryScreen(
     return searchRequested.not() && hasContent && fetchAvailable
   }
 
-  val showScrollbar = true
+  val showScrollbar by remember {
+    derivedStateOf {
+      libraryListState
+        .layoutInfo
+        .visibleItemsInfo
+        .all {
+          val key = it.key
+          key is String && key.startsWith("library_item")
+        }
+    }
+  }
 
-//  val showScrollbar by remember {
-//    derivedStateOf {
-//      val recentVisible =
-//        libraryListState.layoutInfo.visibleItemsInfo
-//          .any { it.key == "recent_books" }
-//
-//      !recentVisible
-//    }
-//  }
   LaunchedEffect(Unit) {
     val emptyContent = library.itemCount == 0
     val libraryChanged = currentLibraryId != settingsViewModel.fetchPreferredLibraryId()
@@ -358,13 +359,15 @@ fun LibraryScreen(
         LazyColumn(
           state = libraryListState,
           modifier =
-            Modifier.fillMaxSize().then(
-              if (showScrollbar) {
-                Modifier.withScrollbar(libraryListState, colorScheme.primary, 114)
-              } else {
-                Modifier
-              },
-            ),
+            Modifier
+              .fillMaxSize()
+              .then(
+                if (showScrollbar) {
+                  Modifier.withScrollbar(libraryListState, colorScheme.primary, 114)
+                } else {
+                  Modifier
+                },
+              ),
           contentPadding = PaddingValues(horizontal = 16.dp),
         ) {
           item(key = "recent_books") {
