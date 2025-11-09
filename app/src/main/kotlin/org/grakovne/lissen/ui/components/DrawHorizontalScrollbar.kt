@@ -53,20 +53,17 @@ import kotlinx.coroutines.flow.collectLatest
 
 fun Modifier.drawVerticalScrollbar(
   state: LazyListState,
-  reverseScrolling: Boolean = false,
   colorScheme: ColorScheme,
-): Modifier = drawScrollbar(state, Orientation.Vertical, reverseScrolling, colorScheme)
+): Modifier = drawScrollbar(state, Orientation.Vertical, colorScheme)
 
 private fun Modifier.drawScrollbar(
   state: LazyListState,
   orientation: Orientation,
-  reverseScrolling: Boolean,
   colorScheme: ColorScheme,
 ): Modifier =
   baseScrollbar(
     orientation,
-    reverseScrolling,
-  ) { reverseDirection, atEnd, alpha ->
+  ) { atEnd, alpha ->
     val layoutInfo = state.layoutInfo
     val viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
     val items = layoutInfo.visibleItemsInfo
@@ -83,13 +80,12 @@ private fun Modifier.drawScrollbar(
         } else {
           items.first().run { (estimatedItemSize * index - offset) / totalSize * canvasSize }
         }
-      drawScrollbarThumb(orientation, reverseDirection, atEnd, alpha, thumbSize, startOffset, colorScheme)
+      drawScrollbarThumb(orientation, atEnd, alpha, thumbSize, startOffset, colorScheme)
     }
   }
 
 private fun DrawScope.drawScrollbarThumb(
   orientation: Orientation,
-  reverseDirection: Boolean,
   atEnd: Boolean,
   alpha: () -> Float,
   thumbSize: Float,
@@ -104,13 +100,13 @@ private fun DrawScope.drawScrollbarThumb(
   val topLeft =
     if (orientation == Orientation.Horizontal) {
       Offset(
-        if (reverseDirection) size.width - startOffset - thumbSize else startOffset,
+        startOffset,
         if (atEnd) size.height - thicknessPx - paddingPx else paddingPx,
       )
     } else {
       Offset(
         if (atEnd) size.width - thicknessPx - paddingPx else paddingPx,
-        if (reverseDirection) size.height - startOffset - thumbSize else startOffset,
+        startOffset,
       )
     }
 
@@ -131,8 +127,7 @@ private fun DrawScope.drawScrollbarThumb(
 
 private fun Modifier.baseScrollbar(
   orientation: Orientation,
-  reverseScrolling: Boolean,
-  onDraw: DrawScope.(reverseDirection: Boolean, atEnd: Boolean, alpha: () -> Float) -> Unit,
+  onDraw: DrawScope.(atEnd: Boolean, alpha: () -> Float) -> Unit,
 ): Modifier =
   composed {
     val scrolled =
@@ -169,19 +164,13 @@ private fun Modifier.baseScrollbar(
     }
 
     val isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr
-    val reverseDirection =
-      if (orientation == Orientation.Horizontal) {
-        if (isLtr) reverseScrolling else !reverseScrolling
-      } else {
-        reverseScrolling
-      }
     val atEnd = if (orientation == Orientation.Vertical) isLtr else true
 
     Modifier
       .nestedScroll(nestedScrollConnection)
       .drawWithContent {
         drawContent()
-        onDraw(reverseDirection, atEnd, alpha::value)
+        onDraw(atEnd, alpha::value)
       }
   }
 
