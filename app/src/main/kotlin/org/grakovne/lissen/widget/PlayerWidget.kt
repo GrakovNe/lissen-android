@@ -50,6 +50,7 @@ import androidx.media3.session.R
 import dagger.hilt.android.EntryPointAccessors
 import org.grakovne.lissen.R.drawable
 import org.grakovne.lissen.ui.theme.LightBackground
+import org.grakovne.lissen.ui.theme.MediumBackground
 import org.grakovne.lissen.widget.PlayerWidget.Companion.bookIdKey
 import timber.log.Timber
 import java.io.File
@@ -72,11 +73,6 @@ class PlayerWidget : GlanceAppWidget() {
             dark = darkColorScheme(),
           ),
       ) {
-        val preferences =
-          EntryPointAccessors
-            .fromApplication(context, WidgetPreferencesEntryPoint::class.java)
-            .lissenSharedPreferences()
-
         val state = currentState<Preferences>()
         val maybeCoverFile = state[coverPath]?.takeIf { it.isNotBlank() }?.let { File(it) }
         val bookId = state[bookId] ?: ""
@@ -168,7 +164,7 @@ class PlayerWidget : GlanceAppWidget() {
               GlanceModifier
                 .fillMaxWidth()
                 .height(1.dp)
-                .background(Color(0xFFDADADA)),
+                .background(MediumBackground),
           )
 
           Row(
