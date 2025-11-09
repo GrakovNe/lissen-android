@@ -370,6 +370,7 @@ fun LibraryScreen(
                       state = libraryListState,
                       color = colorScheme.primary,
                       totalItems = libraryCount,
+                      offsetItems = 3, // non-library items: recent_books, library_title, library_spacer
                     )
 
                   false -> Modifier

@@ -31,6 +31,7 @@ fun Modifier.withScrollbar(
   state: LazyListState,
   color: Color,
   totalItems: Int?,
+  offsetItems: Int = 0,
 ): Modifier =
   baseScrollbar(Orientation.Vertical) { atEnd ->
     val layoutInfo = state.layoutInfo
@@ -38,25 +39,21 @@ fun Modifier.withScrollbar(
     val items = layoutInfo.visibleItemsInfo
     val itemsSize = items.fastSumBy { it.size }
 
-    val networkItems = totalItems ?: 0
-    val extraItems = layoutInfo.totalItemsCount - networkItems
-    val count = networkItems + extraItems
+    val count = totalItems?.let { it + offsetItems } ?: layoutInfo.totalItemsCount
 
     if (items.size < count || itemsSize > viewportSize) {
       val itemSize = itemsSize.toFloat() / items.size
+
       val totalSize = itemSize * count
       val canvasSize = size.height
       val thumbSize = (viewportSize / totalSize) * canvasSize
-
-      val firstVisible = items.firstOrNull()
       val startOffset =
-        if (firstVisible != null) {
-          val scrolled = firstVisible.index * itemSize - firstVisible.offset
-          (scrolled / totalSize * canvasSize).coerceIn(0f, canvasSize - thumbSize)
-        } else {
+        if (items.isEmpty()) {
           0f
+        } else {
+          val first = items.first()
+          (itemSize * first.index - first.offset) / totalSize * canvasSize
         }
-
       drawScrollbarThumb(atEnd, thumbSize, startOffset, color)
     }
   }
