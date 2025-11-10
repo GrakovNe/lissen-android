@@ -1,13 +1,14 @@
 package org.grakovne.lissen.ui.screens.settings.advanced.cache
 
-import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import org.grakovne.lissen.common.LibraryPagingSource
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.lib.domain.DetailedItem
 
 class CachedItemsPageSource(
   private val localCacheRepository: LocalCacheRepository,
-) : PagingSource<Int, DetailedItem>() {
+  onTotalCountChanged: (Int) -> Unit,
+) : LibraryPagingSource<DetailedItem>(onTotalCountChanged) {
   override fun getRefreshKey(state: PagingState<Int, DetailedItem>): Int? =
     state
       .anchorPosition

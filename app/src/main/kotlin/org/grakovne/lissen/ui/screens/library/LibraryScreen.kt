@@ -4,6 +4,7 @@ import android.view.View
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -48,7 +50,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -64,6 +65,7 @@ import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.RecentBook
+import org.grakovne.lissen.ui.components.withScrollbar
 import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.common.RequestNotificationPermissions
@@ -115,6 +117,7 @@ fun LibraryScreen(
   var preferredLibraryExpanded by remember { mutableStateOf(false) }
 
   val library = libraryViewModel.getPager(searchRequested).collectAsLazyPagingItems()
+  val libraryCount by libraryViewModel.totalCount.observeAsState()
 
   BackHandler {
     when (searchRequested) {
@@ -190,6 +193,18 @@ fun LibraryScreen(
 
     return searchRequested.not() && hasContent && fetchAvailable
   }
+
+  val showScrollbar by remember {
+    derivedStateOf {
+      val scrolledDown = libraryListState.firstVisibleItemIndex > 0 || libraryListState.firstVisibleItemScrollOffset > 0
+      libraryListState.isScrollInProgress && scrolledDown
+    }
+  }
+
+  val scrollbarAlpha by animateFloatAsState(
+    targetValue = if (showScrollbar) 1f else 0f,
+    animationSpec = tween(durationMillis = 300),
+  )
 
   LaunchedEffect(Unit) {
     val emptyContent = library.itemCount == 0
@@ -338,13 +353,21 @@ fun LibraryScreen(
         modifier =
           Modifier
             .padding(innerPadding)
-            .testTag("libraryScreen")
             .pullRefresh(pullRefreshState)
             .fillMaxSize(),
       ) {
         LazyColumn(
           state = libraryListState,
-          modifier = Modifier.fillMaxSize(),
+          modifier =
+            Modifier
+              .fillMaxSize()
+              .imePadding()
+              .withScrollbar(
+                state = libraryListState,
+                color = colorScheme.onBackground.copy(alpha = scrollbarAlpha),
+                totalItems = libraryCount,
+                ignoreItems = listOf("recent_books", "library_title"),
+              ),
           contentPadding = PaddingValues(horizontal = 16.dp),
         ) {
           item(key = "recent_books") {
@@ -421,9 +444,9 @@ fun LibraryScreen(
                 }
               }
             }
-          }
 
-          item(key = "library_spacer") { Spacer(modifier = Modifier.height(8.dp)) }
+            Spacer(modifier = Modifier.height(8.dp))
+          }
 
           when {
             isPlaceholderRequired -> item { LibraryPlaceholderComposable() }

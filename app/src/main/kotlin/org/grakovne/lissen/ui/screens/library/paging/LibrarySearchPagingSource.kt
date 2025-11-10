@@ -1,7 +1,7 @@
 package org.grakovne.lissen.ui.screens.library.paging
 
-import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import org.grakovne.lissen.common.LibraryPagingSource
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.lib.domain.Book
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
@@ -11,7 +11,8 @@ class LibrarySearchPagingSource(
   private val mediaChannel: LissenMediaProvider,
   private val searchToken: String,
   private val limit: Int,
-) : PagingSource<Int, Book>() {
+  onTotalCountChanged: (Int) -> Unit,
+) : LibraryPagingSource<Book>(onTotalCountChanged) {
   override fun getRefreshKey(state: PagingState<Int, Book>) = null
 
   override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Book> {
@@ -28,7 +29,10 @@ class LibrarySearchPagingSource(
     return mediaChannel
       .searchBooks(libraryId, searchToken, limit)
       .fold(
-        onSuccess = { LoadResult.Page(it, null, null) },
+        onSuccess = {
+          onTotalCountChanged.invoke(it.size)
+          LoadResult.Page(it, null, null)
+        },
         onFailure = { LoadResult.Page(emptyList(), null, null) },
       )
   }

@@ -3,6 +3,7 @@ package org.grakovne.lissen.viewmodel
 import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -44,6 +45,8 @@ class CachingModelView
     private val preferences: LissenSharedPreferences,
     private val cachedCoverProvider: CachedCoverProvider,
   ) : ViewModel() {
+    private val _totalCount = MutableLiveData<Int>()
+    val totalCount: LiveData<Int> = _totalCount
     private val _bookCachingProgress = mutableMapOf<String, MutableStateFlow<CacheState>>()
 
     private val pageConfig =
@@ -58,7 +61,7 @@ class CachingModelView
       Pager(
         config = pageConfig,
         pagingSourceFactory = {
-          val source = CachedItemsPageSource(localCacheRepository)
+          val source = CachedItemsPageSource(localCacheRepository) { _totalCount.postValue(it) }
 
           pageSource = source
           source

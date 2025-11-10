@@ -15,6 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
@@ -50,6 +51,9 @@ class LibraryViewModel
     private var defaultPagingSource: PagingSource<Int, Book>? = null
     private var searchPagingSource: PagingSource<Int, Book>? = null
 
+    private val _totalCount = MutableLiveData<Int>()
+    val totalCount: LiveData<Int> = _totalCount
+
     private val pageConfig =
       PagingConfig(
         pageSize = PAGE_SIZE,
@@ -79,7 +83,7 @@ class LibraryViewModel
                 mediaChannel = mediaChannel,
                 searchToken = token,
                 limit = PAGE_SEARCH_SIZE,
-              )
+              ) { _totalCount.postValue(it) }
 
             searchPagingSource = source
             source
@@ -91,7 +95,7 @@ class LibraryViewModel
       Pager(
         config = pageConfig,
         pagingSourceFactory = {
-          val source = LibraryDefaultPagingSource(preferences, mediaChannel)
+          val source = LibraryDefaultPagingSource(preferences, mediaChannel) { _totalCount.postValue(it) }
           defaultPagingSource = source
 
           source

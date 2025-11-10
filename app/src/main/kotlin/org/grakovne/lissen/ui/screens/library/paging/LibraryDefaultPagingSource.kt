@@ -1,7 +1,7 @@
 package org.grakovne.lissen.ui.screens.library.paging
 
-import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import org.grakovne.lissen.common.LibraryPagingSource
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.lib.domain.Book
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
@@ -9,7 +9,8 @@ import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 class LibraryDefaultPagingSource(
   private val preferences: LissenSharedPreferences,
   private val mediaChannel: LissenMediaProvider,
-) : PagingSource<Int, Book>() {
+  onTotalCountChanged: (Int) -> Unit,
+) : LibraryPagingSource<Book>(onTotalCountChanged) {
   override fun getRefreshKey(state: PagingState<Int, Book>) =
     state
       .anchorPosition
@@ -37,6 +38,8 @@ class LibraryDefaultPagingSource(
         onSuccess = { result ->
           val nextPage = if (result.items.isEmpty()) null else result.currentPage + 1
           val prevKey = if (result.currentPage == 0) null else result.currentPage - 1
+
+          onTotalCountChanged.invoke(result.totalItems)
 
           LoadResult.Page(
             data = result.items,

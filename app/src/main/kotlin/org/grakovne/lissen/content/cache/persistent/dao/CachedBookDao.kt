@@ -123,6 +123,15 @@ interface CachedBookDao {
   @RawQuery
   suspend fun fetchCachedBooks(query: SupportSQLiteQuery): List<BookEntity>
 
+  @Query(
+    """
+    SELECT COUNT(*) FROM detailed_books
+    WHERE (:libraryId IS NULL AND libraryId IS NULL)
+       OR (libraryId = :libraryId)
+    """,
+  )
+  suspend fun countCachedBooks(libraryId: String?): Int
+
   @Transaction
   @RawQuery
   suspend fun searchBooks(query: SupportSQLiteQuery): List<BookEntity>
@@ -159,6 +168,9 @@ interface CachedBookDao {
     pageSize: Int,
     pageNumber: Int,
   ): List<CachedBookEntity>
+
+  @Query("SELECT COUNT(*) FROM detailed_books")
+  suspend fun fetchCachedItemsCount(): Int
 
   @Query(
     """

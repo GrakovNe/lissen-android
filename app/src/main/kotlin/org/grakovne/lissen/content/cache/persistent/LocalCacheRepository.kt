@@ -54,9 +54,12 @@ class LocalCacheRepository
       }
     }
 
-    suspend fun searchBooks(query: String): OperationResult<List<Book>> =
+    suspend fun searchBooks(
+      libraryId: String,
+      query: String,
+    ): OperationResult<List<Book>> =
       cachedBookRepository
-        .searchBooks(query = query)
+        .searchBooks(libraryId = libraryId, query = query)
         .let { OperationResult.Success(it) }
 
     suspend fun fetchDetailedItems(
@@ -72,23 +75,26 @@ class LocalCacheRepository
           PagedItems(
             items = items,
             currentPage = pageNumber,
+            totalItems = cachedBookRepository.countCachedItems(),
           ),
         )
     }
 
     suspend fun fetchBooks(
+      libraryId: String,
       pageSize: Int,
       pageNumber: Int,
     ): OperationResult<PagedItems<Book>> {
       val books =
         cachedBookRepository
-          .fetchBooks(pageNumber = pageNumber, pageSize = pageSize)
+          .fetchBooks(pageNumber = pageNumber, pageSize = pageSize, libraryId = libraryId)
 
       return OperationResult
         .Success(
           PagedItems(
             items = books,
             currentPage = pageNumber,
+            totalItems = cachedBookRepository.countBooks(libraryId),
           ),
         )
     }
@@ -102,9 +108,9 @@ class LocalCacheRepository
       cachedLibraryRepository.cacheLibraries(libraries)
     }
 
-    suspend fun fetchRecentListenedBooks(): OperationResult<List<RecentBook>> =
+    suspend fun fetchRecentListenedBooks(libraryId: String): OperationResult<List<RecentBook>> =
       cachedBookRepository
-        .fetchRecentBooks()
+        .fetchRecentBooks(libraryId)
         .let { OperationResult.Success(it) }
 
     suspend fun fetchLatestUpdate(libraryId: String) = cachedBookRepository.fetchLatestUpdate(libraryId)

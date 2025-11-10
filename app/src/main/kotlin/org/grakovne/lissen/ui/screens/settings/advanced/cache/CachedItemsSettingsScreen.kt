@@ -1,6 +1,8 @@
 package org.grakovne.lissen.ui.screens.settings.advanced.cache
 
 import android.view.View
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -15,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
@@ -35,8 +38,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -67,6 +72,7 @@ import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.PlayingChapter
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.components.BookCoverFetcher.Companion.LocalOnlyKey
+import org.grakovne.lissen.ui.components.withScrollbar
 import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.PlayerViewModel
@@ -175,8 +181,30 @@ private fun CachedItemsComposable(
   playerViewModel: PlayerViewModel,
   onItemRemoved: () -> Unit,
 ) {
+  val state = rememberLazyListState()
+  val itemsCount by viewModel.totalCount.observeAsState()
+
+  val showScrollbar by remember {
+    derivedStateOf {
+      val scrolledDown = state.firstVisibleItemIndex > 0 || state.firstVisibleItemScrollOffset > 0
+      state.isScrollInProgress && scrolledDown
+    }
+  }
+
+  val scrollbarAlpha by animateFloatAsState(
+    targetValue = if (showScrollbar) 1f else 0f,
+    animationSpec = tween(durationMillis = 300),
+  )
+
   LazyColumn(
-    modifier = Modifier.fillMaxSize(),
+    state = state,
+    modifier =
+      Modifier
+        .withScrollbar(
+          state = state,
+          color = colorScheme.onBackground.copy(alpha = scrollbarAlpha),
+          totalItems = itemsCount,
+        ).fillMaxSize(),
   ) {
     items(count = cachedItems.itemCount, key = { index -> cachedItems[index]?.id ?: "cached_library_item_$index" }) {
       val item = cachedItems[it] ?: return@items

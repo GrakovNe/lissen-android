@@ -7,7 +7,7 @@ import android.graphics.Canvas
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
 import com.hoko.blur.HokoBlur
-import com.hoko.blur.HokoBlur.MODE_STACK
+import com.hoko.blur.HokoBlur.MODE_GAUSSIAN
 import com.hoko.blur.HokoBlur.SCHEME_OPENGL
 import okio.Buffer
 import okio.BufferedSource
@@ -33,7 +33,7 @@ private fun sourceWithBackdropBlur(
 
   val size = maxOf(width, height)
 
-  val radius = 24
+  val radius = 32
   val padding = radius * 2
 
   val scaled = original.scale(size + padding, size + padding)
@@ -42,7 +42,7 @@ private fun sourceWithBackdropBlur(
     HokoBlur
       .with(context)
       .scheme(SCHEME_OPENGL)
-      .mode(MODE_STACK)
+      .mode(MODE_GAUSSIAN)
       .radius(radius)
       .forceCopy(true)
       .blur(scaled)
