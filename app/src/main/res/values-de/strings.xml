@@ -156,4 +156,5 @@
     <string name="downloads_menu_download_option_stop_downloads">Download stoppen</string>
     <string name="settings_screen_bypass_ssl_title">SSL Zertifikatprüfung deaktivieren</string>
     <string name="settings_screen_bypass_ssl_hint">Verbindung zum Server mit jedem Zertifikat</string>
+    <string name="volume_boost_max">Maximum</string>
 </resources>

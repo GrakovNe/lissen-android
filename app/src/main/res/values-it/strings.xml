@@ -154,4 +154,7 @@
     <string name="settings_screen_internal_connection_url_description">Definisci l\'accesso al server per WiFi casalingo</string>
     <string name="settings_screen_delay_autodownload_title">Ritarda download automatico</string>
     <string name="settings_screen_delay_autodownload_description">Attendi un attimo prima di iniziare lo scaricamento</string>
+    <string name="volume_boost_max">Massimo</string>
+    <string name="settings_screen_bypass_ssl_title">Disabilita verifica SSL</string>
+    <string name="settings_screen_bypass_ssl_hint">Connetti ai server senza alcun certificato</string>
 </resources>
