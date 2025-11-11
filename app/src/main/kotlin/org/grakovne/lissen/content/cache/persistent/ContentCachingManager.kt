@@ -121,7 +121,7 @@ class ContentCachingManager
     suspend fun dropCache(itemId: String) {
       bookRepository.removeBook(itemId)
 
-      val cachedContent: File = properties.provideBookCache(itemId) ?: return
+      val cachedContent: File = properties.provideBookCache(itemId)
 
       if (cachedContent.exists()) {
         cachedContent.deleteRecursively()

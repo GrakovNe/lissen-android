@@ -15,10 +15,8 @@ import java.util.concurrent.TimeUnit
 fun createOkHttpClient(
   requestHeaders: List<ServerRequestHeader>?,
   preferences: LissenSharedPreferences,
-  cache: Cache? = null,
 ): OkHttpClient {
   var builder = OkHttpClient.Builder()
-  cache?.let { builder.cache(it) }
 
   builder =
     when (preferences.getSslBypass()) {

@@ -29,7 +29,7 @@
         android:theme="@style/Theme.Lissen"
         tools:ignore="DiscouragedApi,UnusedAttribute"
         android:manageSpaceActivity="org.grakovne.lissen.content.LissenDataManagementActivity"
-        tools:targetApi="35">
+        tools:targetApi="36">
 
         <!-- Add Android Auto support -->
         <meta-data

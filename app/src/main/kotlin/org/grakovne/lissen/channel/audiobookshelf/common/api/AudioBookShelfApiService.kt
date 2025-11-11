@@ -1,7 +1,5 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.api
 
-import android.content.Context
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfHostProvider
@@ -23,7 +21,6 @@ import javax.inject.Singleton
 class AudioBookShelfApiService
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
     private val hostProvider: AudiobookshelfHostProvider,
     private val preferences: LissenSharedPreferences,
     private val requestHeadersProvider: RequestHeadersProvider,
@@ -138,7 +135,6 @@ class AudioBookShelfApiService
           host = host,
           preferences = preferences,
           requestHeaders = headers,
-          context = context,
         )
 
       return client
