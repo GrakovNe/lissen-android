@@ -60,8 +60,8 @@ android {
     
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     
-    val acraReportLogin = "VxOasuhbz9DP5HTy"
-    val acraReportPassword = "21E1sv6utE36sbpm"
+    val acraReportLogin = "8yJ59n0UToCja8LR"
+    val acraReportPassword = "kuW9TV7BbJByuIAc"
     
     buildConfigField("String", "ACRA_REPORT_LOGIN", "\"$acraReportLogin\"")
     buildConfigField("String", "ACRA_REPORT_PASSWORD", "\"$acraReportPassword\"")
