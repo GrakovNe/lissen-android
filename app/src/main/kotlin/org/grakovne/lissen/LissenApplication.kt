@@ -69,7 +69,6 @@ class LissenApplication : Application() {
           ReportField.PHONE_MODEL,
           ReportField.STACK_TRACE,
           ReportField.ENVIRONMENT,
-          ReportField.MEDIA_CODEC_LIST,
         )
     }
   }
