@@ -151,4 +151,10 @@
     <string name="settings_screen_delay_autodownload_description">انتظر وقتاً قصيراً قبل البدء بالتنزيل</string>
     <string name="settings_screen_bypass_ssl_title">تعطيل التحقق من SSL</string>
     <string name="settings_screen_bypass_ssl_hint">الإتصال بالخادم بإستخدام أي شهادة</string>
+    <string name="volume_boost_max">الحد الأعلى</string>
+    <string name="settings_screen_advanced_preferences_description">التحكم بالتقدم، ترويسات الخادم الوسيط أو الصوت</string>
+    <string name="download_settings_description">ضبط التنزيلات و إدارتها</string>
+    <string name="download_settings_network_type_title">للتنزيل التلقائي استخدم</string>
+    <string name="download_settings_library_type_no_items_selected">لا يوجد أنواع مختارة</string>
+    <string name="settings_screen_internal_connection_url_description">ضبط الوصول للخادم في شبكة البيت</string>
 </resources>
