@@ -24,7 +24,6 @@
     <string name="login_error_username_is_missing">사용자 이름을 입력하세요</string>
     <string name="login_error_password_is_missing">암호를 입력하세요</string>
     <string name="login_error_credentials_are_invalid">로그인 정보가 올바르지 않습니다</string>
-    <string name="login_error_host_url_shall_be_https_or_http">호스트 URL은 https://나 http://로 시작해야 합니다</string>
     <string name="login_error_connection_error">연결 에러</string>
     <string name="the_library_is_empty">라이브러리가 비어있습니다</string>
     <string name="the_offline_library_is_empty">저장된 책이 없습니다</string>

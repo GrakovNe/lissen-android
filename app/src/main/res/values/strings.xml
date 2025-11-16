@@ -30,7 +30,6 @@
     <string name="login_error_username_is_missing">Username is missing</string>
     <string name="login_error_password_is_missing">Password is missing</string>
     <string name="login_error_credentials_are_invalid">Credentials are invalid</string>
-    <string name="login_error_host_url_shall_be_https_or_http">Host URL shall be https:// or http://</string>
     <string name="login_error_connection_error">Connection error</string>
     <string name="disable_offline">All items</string>
     <string name="enable_offline">Downloaded only</string>

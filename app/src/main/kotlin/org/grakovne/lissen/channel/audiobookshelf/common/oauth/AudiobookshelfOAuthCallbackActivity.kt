@@ -66,7 +66,6 @@ class AudiobookshelfOAuthCallbackActivity : ComponentActivity() {
 
   private suspend fun onLogged(userAccount: UserAccount) {
     mediaProvider.onPostLogin(
-      host = preferences.getHost() ?: return,
       account = userAccount,
     )
 

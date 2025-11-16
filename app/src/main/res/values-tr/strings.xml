@@ -28,7 +28,6 @@
     <string name="login_error_username_is_missing">Kullanıcı adı eksik</string>
     <string name="login_error_password_is_missing">Şifre eksik</string>
     <string name="login_error_credentials_are_invalid">Kimlik bilgileri geçersiz</string>
-    <string name="login_error_host_url_shall_be_https_or_http">Ana bilgisayar URL\'si https:// veya http:// olmalı</string>
     <string name="login_error_connection_error">Bağlantı hatası</string>
     <string name="the_library_is_empty">Kütüphane boş</string>
     <string name="the_offline_library_is_empty">Henüz kaydedilmiş kitap yok</string>

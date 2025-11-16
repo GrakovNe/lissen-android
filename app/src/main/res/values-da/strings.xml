@@ -29,7 +29,6 @@
     <string name="login_error_username_is_missing">Brugernavn mangler</string>
     <string name="login_error_password_is_missing">Adgangskode mangler</string>
     <string name="login_error_credentials_are_invalid">Loginoplysninger er ugyldige</string>
-    <string name="login_error_host_url_shall_be_https_or_http">Serverens URL skal starte med https:// eller http://</string>
     <string name="login_error_connection_error">Forbindelsesfejl</string>
     <string name="disable_offline">Alle elementer</string>
     <string name="enable_offline">Kun lokalt indhold</string>

@@ -36,7 +36,7 @@ fun OperationError.makeText(context: Context) =
     OperationError.MissingCredentialsPassword -> context.getString(R.string.login_error_username_is_missing)
     OperationError.MissingCredentialsUsername -> context.getString(R.string.login_error_password_is_missing)
     OperationError.Unauthorized -> context.getString(R.string.login_error_credentials_are_invalid)
-    OperationError.InvalidCredentialsHost -> context.getString(R.string.login_error_host_url_shall_be_https_or_http)
+    OperationError.InvalidCredentialsHost -> context.getString(R.string.login_error_credentials_are_invalid)
     OperationError.NetworkError -> context.getString(R.string.login_error_connection_error)
     OperationError.InvalidRedirectUri ->
       context.getString(

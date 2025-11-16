@@ -9,8 +9,12 @@ import javax.inject.Singleton
 class LoginResponseConverter
   @Inject
   constructor() {
-    fun apply(response: LoggedUserResponse): UserAccount =
+    fun apply(
+      host: String,
+      response: LoggedUserResponse,
+    ): UserAccount =
       UserAccount(
+        host = host,
         token = response.user.token,
         accessToken = response.user.accessToken,
         refreshToken = response.user.refreshToken,

@@ -3,6 +3,7 @@ package org.grakovne.lissen.channel.audiobookshelf.common.api
 import android.content.Context
 import android.content.Intent
 import androidx.browser.customtabs.CustomTabsIntent
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.core.net.toUri
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -13,12 +14,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.Call
 import okhttp3.Callback
+import okhttp3.HttpUrl
 import okhttp3.Request
 import okhttp3.Response
 import org.grakovne.lissen.channel.audiobookshelf.common.client.AudiobookshelfApiClient
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.AuthMethodResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LoginResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.auth.AuthMethodResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.connection.PingResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.CredentialsLoginRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.LoggedUserResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.oauth.AuthClient
@@ -59,27 +62,75 @@ class AudiobookshelfAuthService
         .followRedirects(false)
         .build()
 
+    private suspend fun suggestHost(input: String): String {
+      if (PROTOCOL_SCHEMES.any { input.startsWith(it) } || input.contains("://")) {
+        return input
+      }
+
+      val suggestedHost =
+        PROTOCOL_SCHEMES
+          .firstNotNullOfOrNull { scheme ->
+            try {
+              val baseUrl =
+                HttpUrl
+                  .Builder()
+                  .scheme(scheme.removeSuffix("://"))
+                  .host(input)
+                  .build()
+
+              val client = createApiClient(baseUrl.toString())
+              val response = client.ping()
+
+              when (response.isSuccessful && response.body()?.success == true) {
+                true -> {
+                  val url = response.raw().request.url
+
+                  when (url.port == HttpUrl.defaultPort(url.scheme)) {
+                    true ->
+                      HttpUrl
+                        .Builder()
+                        .scheme(url.scheme)
+                        .host(url.host)
+                        .build()
+                        .toString()
+
+                    false ->
+                      HttpUrl
+                        .Builder()
+                        .scheme(url.scheme)
+                        .host(url.host)
+                        .port(url.port)
+                        .build()
+                        .toString()
+                  }
+                }
+
+                false -> null
+              }
+            } catch (_: Exception) {
+              null
+            }
+          }
+
+      return suggestedHost ?: input
+    }
+
     override suspend fun authorize(
-      host: String,
+      input: String,
       username: String,
       password: String,
       onSuccess: suspend (UserAccount) -> Unit,
     ): OperationResult<UserAccount> {
-      if (host.isBlank() || !urlPattern.matches(host)) {
+      if (input.isBlank()) {
         return OperationResult.Error(OperationError.InvalidCredentialsHost)
       }
+
+      val host = suggestHost(input)
 
       lateinit var apiService: AudiobookshelfApiClient
 
       try {
-        val apiClient =
-          ApiClient(
-            host = host,
-            preferences = preferences,
-            requestHeaders = requestHeadersProvider.fetchRequestHeaders(),
-          )
-
-        apiService = apiClient.retrofit.create(AudiobookshelfApiClient::class.java)
+        apiService = createApiClient(host)
       } catch (e: Exception) {
         return OperationResult.Error(OperationError.InternalError)
       }
@@ -91,7 +142,7 @@ class AudiobookshelfAuthService
         .foldAsync(
           onSuccess = {
             loginResponseConverter
-              .apply(it)
+              .apply(host, it)
               .also { onSuccess(it) }
               .let { OperationResult.Success(it) }
           },
@@ -196,7 +247,7 @@ class AudiobookshelfAuthService
               val location =
                 response
                   .header("Location")
-                  ?: kotlin.run {
+                  ?: run {
                     onFailure(examineError("invalid_redirect"))
                     return
                   }
@@ -278,7 +329,7 @@ class AudiobookshelfAuthService
                   moshi
                     .adapter(LoggedUserResponse::class.java)
                     .fromJson(raw)
-                    ?.let { loginResponseConverter.apply(it) }
+                    ?.let { loginResponseConverter.apply(host, it) }
                     ?: return
                 } catch (ex: Exception) {
                   Timber.e("Unable to get User data from response: $ex")
@@ -292,7 +343,18 @@ class AudiobookshelfAuthService
         )
     }
 
+    private fun createApiClient(host: String): AudiobookshelfApiClient {
+      val client =
+        ApiClient(
+          host = host,
+          preferences = preferences,
+          requestHeaders = requestHeadersProvider.fetchRequestHeaders(),
+        )
+
+      return client.retrofit.create(AudiobookshelfApiClient::class.java)
+    }
+
     private companion object {
-      val urlPattern = Regex("^(http|https)://.*\$")
+      private val PROTOCOL_SCHEMES = listOf("https://", "http://")
     }
   }

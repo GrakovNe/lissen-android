@@ -68,7 +68,7 @@ class AudioBookShelfApiService
         val refreshResult =
           getClientInstance()
             ?.let { safeApiCall { it.refreshToken(currentToken) } }
-            ?.map { loginResponseConverter.apply(it) }
+            ?.map { loginResponseConverter.apply(preferences.getHost() ?: "", it) }
             ?: return
 
         when (refreshResult) {

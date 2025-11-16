@@ -22,7 +22,6 @@
     <string name="login_error_username_is_missing">Falta el nombre de usuario</string>
     <string name="login_error_password_is_missing">Falta la contraseña</string>
     <string name="login_error_credentials_are_invalid">Las credenciales no son válidas</string>
-    <string name="login_error_host_url_shall_be_https_or_http">La URL del servidor debe ser https:// o http://</string>
     <string name="login_error_connection_error">Error de conexión</string>
     <string name="the_library_is_empty">La biblioteca esta vacía</string>
     <string name="the_offline_library_is_empty">Aún no hay libros guardados</string>
