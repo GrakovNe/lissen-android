@@ -150,9 +150,11 @@ class AudiobookshelfAuthService
         )
     }
 
-    override suspend fun fetchAuthMethods(host: String): OperationResult<AuthData> {
+    override suspend fun fetchAuthMethods(input: String): OperationResult<AuthData> {
       return withContext(Dispatchers.IO) {
         try {
+          val host = suggestHost(input)
+          
           val url =
             host
               .toUri()
@@ -190,10 +192,11 @@ class AudiobookshelfAuthService
     }
 
     override suspend fun startOAuth(
-      host: String,
+      input: String,
       onSuccess: () -> Unit,
       onFailure: (OperationError) -> Unit,
     ) {
+      val host = suggestHost(input)
       Timber.d("Starting OAuth flow for $host")
 
       preferences.saveHost(host)
@@ -273,11 +276,12 @@ class AudiobookshelfAuthService
     }
 
     override suspend fun exchangeToken(
-      host: String,
+      input: String,
       code: String,
       onSuccess: suspend (UserAccount) -> Unit,
       onFailure: (String) -> Unit,
     ) {
+      val host = suggestHost(input)
       val pkce = contextCache.readPkce()
       val cookie = contextCache.readCookies()
 
