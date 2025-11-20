@@ -58,7 +58,6 @@
     <string name="downloads_menu_download_podcast">Scarica podcast</string>
     <string name="player_screen_playback_speed_navigation">Velocità</string>
     <string name="player_screen_now_playing_title_chapter_of">Capitolo %1$d di %2$s</string>
-    <string name="login_error_host_url_shall_be_https_or_http">L\'URL host deve iniziare con https:// o http://</string>
     <string name="widget_placeholder_text">Clicca per aprire l\'app</string>
     <string name="downloads_menu_download_unknown">Download</string>
     <string name="downloads_menu_download_option_current_chapter">Capitolo attuale</string>
