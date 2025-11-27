@@ -1,3 +1,11 @@
+# Project Update
+
+From **24 December 2025** to **11 January 2026**, I will be away celebrating my annual Russian holidays. During this period, I will not be able to work on the project.
+
+After **11 January 2026**, I will return, and we will **continue** building a clean, reliable, and beautiful audiobook application together.
+
+Wishing everyone a warm and joyful holiday season
+
 # Lissen - Clean Audiobookshelf Player
 [![Build Lissen App](https://github.com/GrakovNe/lissen-android/actions/workflows/build_app.yml/badge.svg)](https://github.com/GrakovNe/lissen-android/actions/workflows/build_app.yml)
 
