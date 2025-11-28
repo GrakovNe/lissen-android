@@ -185,12 +185,12 @@ class LissenMediaProvider
     }
 
     suspend fun authorize(
-      host: String,
+      input: String,
       username: String,
       password: String,
     ): OperationResult<UserAccount> {
-      Timber.d("Authorizing for $username@$host")
-      return provideAuthService().authorize(host, username, password) { onPostLogin(host, it) }
+      Timber.d("Authorizing for $username@$input")
+      return provideAuthService().authorize(input, username, password) { onPostLogin(it) }
     }
 
     suspend fun startOAuth(
@@ -208,13 +208,10 @@ class LissenMediaProvider
         )
     }
 
-    suspend fun onPostLogin(
-      host: String,
-      account: UserAccount,
-    ) {
+    suspend fun onPostLogin(account: UserAccount) {
       provideAuthService()
         .persistCredentials(
-          host = host,
+          host = account.host,
           username = account.username,
           token = account.token,
           accessToken = account.accessToken,

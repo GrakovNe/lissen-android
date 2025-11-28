@@ -51,7 +51,7 @@ class AudiobookshelfOAuthCallbackActivity : ComponentActivity() {
 
       lifecycleScope.launch {
         authService.exchangeToken(
-          host =
+          input =
             hostProvider.provideHost()?.url ?: kotlin.run {
               onLoginFailed("invalid_host")
               return@launch
@@ -66,7 +66,6 @@ class AudiobookshelfOAuthCallbackActivity : ComponentActivity() {
 
   private suspend fun onLogged(userAccount: UserAccount) {
     mediaProvider.onPostLogin(
-      host = preferences.getHost() ?: return,
       account = userAccount,
     )
 

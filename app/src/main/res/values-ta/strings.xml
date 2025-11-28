@@ -28,7 +28,6 @@
     <string name="login_error_username_is_missing">பயனர்பெயர் காணவில்லை</string>
     <string name="login_error_password_is_missing">கடவுச்சொல் இல்லை</string>
     <string name="login_error_credentials_are_invalid">நற்சான்றிதழ்கள் தவறானவை</string>
-    <string name="login_error_host_url_shall_be_https_or_http">புரவலன் முகவரி https: // அல்லது http: // ஆக இருக்கும்</string>
     <string name="login_error_connection_error">இணைப்பு பிழை</string>
     <string name="the_library_is_empty">நூலகம் காலியாக உள்ளது</string>
     <string name="the_offline_library_is_empty">சேமித்த புத்தகங்கள் இதுவரை இல்லை</string>
