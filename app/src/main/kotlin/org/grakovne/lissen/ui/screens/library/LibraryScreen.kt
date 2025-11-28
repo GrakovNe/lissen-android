@@ -119,6 +119,8 @@ fun LibraryScreen(
   val library = libraryViewModel.getPager(searchRequested).collectAsLazyPagingItems()
   val libraryCount by libraryViewModel.totalCount.observeAsState()
 
+  val libraryListState = rememberLazyListState()
+
   BackHandler {
     when (searchRequested) {
       true -> libraryViewModel.dismissSearch()
@@ -182,8 +184,6 @@ fun LibraryScreen(
   val titleTextStyle = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
   val titleHeightDp = with(LocalDensity.current) { titleTextStyle.lineHeight.toPx().toDp() }
 
-  val libraryListState = rememberLazyListState()
-
   val playingBook by playerViewModel.book.observeAsState()
   val context = LocalContext.current
 
@@ -228,12 +228,6 @@ fun LibraryScreen(
 
     if (settingsViewModel.hasCredentials().not()) {
       navController.showLogin()
-    }
-  }
-
-  LaunchedEffect(searchRequested) {
-    if (!searchRequested) {
-      libraryListState.scrollToItem(0)
     }
   }
 
@@ -496,7 +490,6 @@ fun LibraryScreen(
         currentLibraryId = settingsViewModel.fetchPreferredLibraryId()
         refreshContent(false)
         playerViewModel.clearPlayingBook()
-
         preferredLibraryExpanded = false
       },
     )
