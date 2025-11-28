@@ -149,9 +149,12 @@
     <string name="local_url_hint_ssid_name">Nom du réseau WiFi</string>
     <string name="location_permission_request_hint">L\'application nécessite l\'accès à la localisation pour détecter le nom du Wi-Fi</string>
     <string name="permission_request_grant_button">Autoriser</string>
-    <string name="settings_screen_clear_thumbnail_cache_title">Nettoyer le cache des minatures</string>
+    <string name="settings_screen_clear_thumbnail_cache_title">Nettoyer le cache des miniatures</string>
     <string name="settings_screen_clear_thumbnail_cache_hint">Supprimer le cache des miniatures pour libérer de l\'espace.</string>
     <string name="settings_screen_clear_thumbnail_cache_success_toast">Cache des miniatures nettoyé</string>
     <string name="settings_screen_delay_autodownload_title">Reporter le téléchargement automatique</string>
     <string name="settings_screen_delay_autodownload_description">Attendre un peu avant que le téléchargement ne commence</string>
+    <string name="volume_boost_max">Maximum</string>
+    <string name="settings_screen_bypass_ssl_title">Désactiver la vérification SSL</string>
+    <string name="settings_screen_bypass_ssl_hint">Se connecter aux serveurs avec tout certificat</string>
 </resources>
