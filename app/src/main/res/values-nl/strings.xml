@@ -19,7 +19,6 @@
     <string name="login_error_host_url_is_missing">Host URL ontbreekt</string>
     <string name="login_error_password_is_missing">Wachtwoord ontbreekt</string>
     <string name="login_error_credentials_are_invalid">Inloggegevens zijn ongeldig</string>
-    <string name="login_error_host_url_shall_be_https_or_http">De host-URL moet https:// of http:// zijn</string>
     <string name="login_error_connection_error">Verbindings-fout</string>
     <string name="library_screen_continue_listening_title">Verder luisteren</string>
     <string name="login_screen_show_password_hint">Toon wachtwoord</string>
