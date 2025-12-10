@@ -115,4 +115,15 @@
     <string name="settings_screen_library_ordering_title">Bibliotheek sorteren</string>
     <string name="settings_screen_seek_time_hint">Zoekbediening instellen</string>
     <string name="forward_interval">Vooruitspoelinterval</string>
+    <string name="player_screen_chapter_list_navigation_podcast">Afleveringen</string>
+    <string name="settings_screen_connection_type">Connectietype</string>
+    <string name="settings_screen_connection_local">Lokaal netwerk</string>
+    <string name="settings_screen_connection_external">Extern netwerk</string>
+    <string name="downloads_menu_download_option_stop_downloads">Stop downloaden</string>
+    <string name="volume_boost_disabled">Uitgeschakeld</string>
+    <string name="volume_boost_low">Laag</string>
+    <string name="volume_boost_medium">Gemiddeld</string>
+    <string name="volume_boost_high">Hoog</string>
+    <string name="volume_boost_max">Maximaal</string>
+    <string name="playing_item_details_time_remaining">Tijd resterend</string>
 </resources>
