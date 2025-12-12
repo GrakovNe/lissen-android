@@ -7,7 +7,7 @@ abstract class ChannelAuthService(
   private val preferences: LissenSharedPreferences,
 ) {
   abstract suspend fun authorize(
-    host: String,
+    input: String,
     username: String,
     password: String,
     onSuccess: suspend (UserAccount) -> Unit,
