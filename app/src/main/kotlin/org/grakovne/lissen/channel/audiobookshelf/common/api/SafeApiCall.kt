@@ -1,6 +1,5 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.api
 
-import org.acra.ACRA
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import retrofit2.Response

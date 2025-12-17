@@ -10,7 +10,6 @@ class MimeTypeProvider {
         "audio/mpeg",
         "audio/mp3",
         "audio/webm",
-        "audio/ac3",
         "audio/opus",
         "audio/ogg",
         "audio/vorbis",
