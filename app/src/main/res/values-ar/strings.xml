@@ -108,7 +108,6 @@
     <string name="settings_screen_custom_headers_title">رؤوس مخصصة</string>
     <string name="settings_screen_custom_header_hint">تحديد الرؤوس لاتصالات الخادم</string>
     <string name="custom_header_hint_name">المفتاح</string>
-    <string name="login_error_host_url_shall_be_https_or_http">يجب أن يكون رابط الخادم بصيغة https:// أو http://</string>
     <string name="downloads_menu_download_option_remaining_chapters">الفصول المتبقية</string>
     <string name="downloads_menu_download_option_remaining_episodes">الحلقات المتبقية</string>
     <string name="settings_screen_cached_items_hint">إدارة المحتوى المحفوظ</string>

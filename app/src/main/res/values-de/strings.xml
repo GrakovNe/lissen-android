@@ -19,7 +19,6 @@
     <string name="settings_screen_connected_as_title">Verbunden als</string>
     <string name="login_error_password_is_missing">Passwort fehlt</string>
     <string name="login_error_credentials_are_invalid">Zugangsdaten falsch</string>
-    <string name="login_error_host_url_shall_be_https_or_http">Serveradresse muss mit https:// oder http:// beginnen</string>
     <string name="login_error_connection_error">Verbindungsfehler</string>
     <string name="the_library_is_empty">Die Bibliothek ist leer</string>
     <string name="audiobookshelf_server_is_required">Audiobookshelf Server ist notwendig</string>
