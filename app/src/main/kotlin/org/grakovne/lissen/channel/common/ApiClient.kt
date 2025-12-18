@@ -3,6 +3,7 @@ package org.grakovne.lissen.channel.common
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
+import org.grakovne.lissen.lib.domain.fixUriScheme
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
@@ -17,7 +18,7 @@ class ApiClient(
   val retrofit: Retrofit =
     Retrofit
       .Builder()
-      .baseUrl(host)
+      .baseUrl(host.fixUriScheme())
       .client(httpClient)
       .addConverterFactory(MoshiConverterFactory.create(moshi))
       .build()

@@ -2,6 +2,7 @@ package org.grakovne.lissen.lib.domain.connection
 
 import androidx.annotation.Keep
 import com.squareup.moshi.JsonClass
+import org.grakovne.lissen.lib.domain.fixUriScheme
 import java.net.URI
 import java.util.UUID
 
@@ -34,12 +35,7 @@ data class LocalUrl(
 			return this
 				.filter { validCharacters.matches(it.toString()) }
 				.trim()
-				.let {
-					when (it.startsWith("http://") || it.startsWith("https://")) {
-						true -> it
-						false -> "http://$it"
-					}
-				}
+				.fixUriScheme()
 		}
 	}
 }
