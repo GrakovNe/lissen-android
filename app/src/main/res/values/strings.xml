@@ -128,7 +128,7 @@
     <string name="volume_boost_medium">Medium</string>
     <string name="volume_boost_high">High</string>
     <string name="volume_boost_max">Maximum</string>
-    <string name="volume_boost_title">Boosted volume</string>
+    <string name="volume_boost_title">Boost volume</string>
     <string name="playing_item_details_time_remaining">Time remaining</string>
     <string name="settings_screen_advanced_preferences_title">Advanced preferences</string>
     <string name="settings_screen_advanced_preferences_description">Control seeking, proxy headers, or sound</string>
@@ -157,5 +157,27 @@
     <string name="settings_screen_delay_autodownload_description">Wait a short time before starting download</string>
     <string name="settings_screen_bypass_ssl_title">Disable SSL verification</string>
     <string name="settings_screen_bypass_ssl_hint">Connect to servers with any certificate</string>
-
+    <string name="book_detail_author_pattern">By %1$s</string>
+    <string name="book_detail_narrator_pattern">Narrated by %1$s</string>
+    <string name="smart_rewind_title">Smart Rewind</string>
+    <string name="smart_rewind_subtitle">Rewind slightly when resuming after a break</string>
+    <string name="smart_rewind_threshold_title">If inactive for</string>
+    <string name="smart_rewind_duration_title">Rewind by</string>
+    <string name="smart_rewind_threshold_30_min">30 minutes</string>
+    <string name="smart_rewind_threshold_1_hour">1 hour</string>
+    <string name="smart_rewind_threshold_1_day">1 day</string>
+    <string name="smart_rewind_duration_30_sec">30 seconds</string>
+    <string name="smart_rewind_duration_1_min">1 minute</string>
+    <string name="smart_rewind_duration_5_min">5 minutes</string>
+    <string name="book_detail_action_pause">Pause</string>
+    <string name="book_detail_action_listen_again">Listen Again</string>
+    <string name="book_detail_action_resume">Resume</string>
+    <string name="book_detail_action_start">Start Listening</string>
+    <string name="book_detail_published">Published</string>
+    <string name="book_detail_length">Length</string>
+    <string name="book_detail_remaining">Remaining</string>
+    <string name="book_detail_read_more">Read more</string>
+    <string name="book_detail_see_less">See less</string>
+    <string name="duration_hours">%1$d hrs</string>
+    <string name="duration_minutes">%1$d min</string>
 </resources>

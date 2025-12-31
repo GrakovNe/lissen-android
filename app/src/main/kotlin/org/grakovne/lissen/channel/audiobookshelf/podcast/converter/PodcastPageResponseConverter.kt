@@ -10,7 +10,10 @@ import javax.inject.Singleton
 class PodcastPageResponseConverter
   @Inject
   constructor() {
-    fun apply(response: PodcastItemsResponse): PagedItems<Book> =
+    fun apply(
+      response: PodcastItemsResponse,
+      libraryId: String,
+    ): PagedItems<Book> =
       response
         .results
         .mapNotNull {
@@ -22,6 +25,8 @@ class PodcastPageResponseConverter
             subtitle = null,
             series = null,
             author = it.media.metadata.author,
+            duration = 0.0,
+            libraryId = libraryId,
           )
         }.let {
           PagedItems(

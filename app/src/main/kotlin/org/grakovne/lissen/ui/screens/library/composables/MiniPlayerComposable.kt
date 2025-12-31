@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -62,6 +63,7 @@ fun MiniPlayerComposable(
   book: DetailedItem,
   imageLoader: ImageLoader,
   playerViewModel: PlayerViewModel,
+  onContentClick: (() -> Unit)? = null,
 ) {
   val view: View = LocalView.current
 
@@ -122,79 +124,111 @@ fun MiniPlayerComposable(
       visible = backgroundVisible,
       exit = fadeOut(animationSpec = tween(300)),
     ) {
-      Row(
+      Column(
         modifier =
           Modifier
             .fillMaxWidth()
             .background(colorScheme.tertiaryContainer)
-            .clickable { navController.showPlayer(book.id, book.title, book.subtitle) }
-            .padding(horizontal = 20.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            .clickable {
+              if (onContentClick != null) {
+                onContentClick()
+              } else {
+                navController.showPlayer(book.id, book.title, book.subtitle)
+              }
+            },
       ) {
-        val context = LocalContext.current
-        val imageRequest =
-          remember(book.id) {
-            ImageRequest
-              .Builder(context)
-              .data(book.id)
-              .build()
-          }
+        val totalDuration = remember(book) { book.chapters.sumOf { it.duration } }
+        val currentTime = book.progress?.currentTime ?: 0.0
+        val progress = if (totalDuration > 0) (currentTime / totalDuration).toFloat() else 0f
 
-        AsyncShimmeringImage(
-          imageRequest = imageRequest,
-          imageLoader = imageLoader,
-          contentDescription = "${book.title} cover",
-          contentScale = ContentScale.FillBounds,
+        Box(
           modifier =
             Modifier
-              .size(48.dp)
-              .aspectRatio(1f)
-              .clip(RoundedCornerShape(4.dp)),
-          error = painterResource(R.drawable.cover_fallback),
-        )
-
-        Spacer(modifier = Modifier.width(16.dp))
-
-        Column(
-          modifier = Modifier.weight(1f),
-        ) {
-          Text(
-            text = book.title,
-            style =
-              typography.bodyMedium.copy(
-                fontWeight = FontWeight.SemiBold,
-                color = colorScheme.onBackground,
+              .fillMaxWidth()
+              .height(2.dp)
+              .background(
+                colorScheme.outlineVariant
+                  .copy(alpha = 0.4f),
               ),
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
+        ) {
+          Box(
+            modifier =
+              Modifier
+                .fillMaxWidth(progress)
+                .height(2.dp)
+                .background(colorScheme.primary),
           )
-
-          book.author?.let {
-            Text(
-              text = it,
-              style =
-                typography.bodyMedium.copy(
-                  color = colorScheme.onBackground.copy(alpha = 0.6f),
-                ),
-              maxLines = 1,
-              overflow = TextOverflow.Ellipsis,
-            )
-          }
         }
 
-        Column(
-          horizontalAlignment = Alignment.CenterHorizontally,
-          verticalArrangement = Arrangement.Center,
+        Row(
+          modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+          verticalAlignment = Alignment.CenterVertically,
         ) {
-          Row {
-            IconButton(
-              onClick = { withHaptic(view) { playerViewModel.togglePlayPause() } },
-            ) {
-              Icon(
-                imageVector = if (isPlaying) Icons.Outlined.PauseCircleOutline else Icons.Outlined.PlayCircle,
-                contentDescription = if (isPlaying) "Pause" else "Play",
-                modifier = Modifier.size(34.dp),
+          val context = LocalContext.current
+          val imageRequest =
+            remember(book.id) {
+              ImageRequest
+                .Builder(context)
+                .data(book.id)
+                .build()
+            }
+
+          AsyncShimmeringImage(
+            imageRequest = imageRequest,
+            imageLoader = imageLoader,
+            contentDescription = "${book.title} cover",
+            contentScale = ContentScale.FillBounds,
+            modifier =
+              Modifier
+                .size(48.dp)
+                .aspectRatio(1f)
+                .clip(RoundedCornerShape(4.dp)),
+            error = painterResource(R.drawable.cover_fallback),
+          )
+
+          Spacer(modifier = Modifier.width(16.dp))
+
+          Column(
+            modifier = Modifier.weight(1f),
+          ) {
+            Text(
+              text = book.title,
+              style =
+                typography.bodyMedium.copy(
+                  fontWeight = FontWeight.SemiBold,
+                  color = colorScheme.onBackground,
+                ),
+              maxLines = 2,
+              overflow = TextOverflow.Ellipsis,
+            )
+
+            book.author?.let {
+              Text(
+                text = it,
+                style =
+                  typography.bodyMedium.copy(
+                    color = colorScheme.onBackground.copy(alpha = 0.6f),
+                  ),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
               )
+            }
+          }
+
+          Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+          ) {
+            Row {
+              IconButton(
+                onClick = { withHaptic(view) { playerViewModel.togglePlayPause() } },
+              ) {
+                Icon(
+                  imageVector = if (isPlaying) Icons.Outlined.PauseCircleOutline else Icons.Outlined.PlayCircle,
+                  contentDescription = if (isPlaying) "Pause" else "Play",
+                  modifier = Modifier.size(34.dp),
+                )
+              }
             }
           }
         }

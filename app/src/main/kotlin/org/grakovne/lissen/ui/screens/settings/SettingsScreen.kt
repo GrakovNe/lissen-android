@@ -101,6 +101,12 @@ fun SettingsScreen(
           LibraryOrderingSettingsComposable(viewModel)
 
           AdvancedSettingsNavigationItemComposable(
+            title = "Playback preferences",
+            description = "Player controls and sleep timer settings",
+            onclick = { navController.showPlaybackSettings() },
+          )
+
+          AdvancedSettingsNavigationItemComposable(
             title = stringResource(R.string.download_settings_title),
             description = stringResource(R.string.download_settings_description),
             onclick = { navController.showCacheSettings() },

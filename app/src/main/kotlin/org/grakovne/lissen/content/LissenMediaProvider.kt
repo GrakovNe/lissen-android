@@ -1,11 +1,14 @@
 package org.grakovne.lissen.content
 
 import android.net.Uri
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfChannelProvider
 import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
+import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
 import org.grakovne.lissen.lib.domain.Book
@@ -31,6 +34,7 @@ class LissenMediaProvider
     private val audiobookshelfChannelProvider: AudiobookshelfChannelProvider, // the only one channel which may be extended
     private val localCacheRepository: LocalCacheRepository,
     private val cachedCoverProvider: CachedCoverProvider,
+    private val networkService: NetworkService,
   ) {
     fun provideFileUri(
       libraryItemId: String,
@@ -38,21 +42,20 @@ class LissenMediaProvider
     ): OperationResult<Uri> {
       Timber.d("Fetching File $libraryItemId and $chapterId URI")
 
-      return when (preferences.isForceCache()) {
-        true ->
-          localCacheRepository
-            .provideFileUri(libraryItemId, chapterId)
-            ?.let { OperationResult.Success(it) }
-            ?: OperationResult.Error(OperationError.InternalError)
+      localCacheRepository
+        .provideFileUri(libraryItemId, chapterId)
+        ?.let {
+          Timber.d("Providing LOCAL URI for $libraryItemId / $chapterId: $it")
+          return OperationResult.Success(it)
+        }
 
-        false ->
-          localCacheRepository
-            .provideFileUri(libraryItemId, chapterId)
-            ?.let { OperationResult.Success(it) }
-            ?: providePreferredChannel()
-              .provideFileUri(libraryItemId, chapterId)
-              .let { OperationResult.Success(it) }
-      }
+      Timber.d("Local URI miss for $libraryItemId / $chapterId. Falling back to REMOTE.")
+      return providePreferredChannel()
+        .provideFileUri(libraryItemId, chapterId)
+        .let {
+          Timber.d("Providing REMOTE URI for $libraryItemId / $chapterId: $it")
+          OperationResult.Success(it)
+        }
     }
 
     suspend fun syncProgress(
@@ -78,16 +81,16 @@ class LissenMediaProvider
       bookId: String,
       width: Int? = null,
     ): OperationResult<File> {
-      Timber.d("Fetching Cover stream for $bookId")
-      return when (preferences.isForceCache()) {
-        true -> localCacheRepository.fetchBookCover(bookId)
-        false ->
-          cachedCoverProvider.provideCover(
-            channel = providePreferredChannel(),
-            itemId = bookId,
-            width = width,
-          )
+      val localResult = localCacheRepository.fetchBookCover(bookId)
+      if (localResult is OperationResult.Success) {
+        return localResult
       }
+
+      return cachedCoverProvider.provideCover(
+        channel = providePreferredChannel(),
+        itemId = bookId,
+        width = width,
+      )
     }
 
     suspend fun searchBooks(
@@ -97,46 +100,88 @@ class LissenMediaProvider
     ): OperationResult<List<Book>> {
       Timber.d("Searching books with query $query of library: $libraryId")
 
-      return when (preferences.isForceCache()) {
-        true -> localCacheRepository.searchBooks(libraryId = libraryId, query = query)
-        false ->
-          providePreferredChannel()
-            .searchBooks(
-              libraryId = libraryId,
-              query = query,
-              limit = limit,
-            )
+      val localResult = localCacheRepository.searchBooks(libraryId = libraryId, query = query)
+      if (localResult is OperationResult.Success && localResult.data.isNotEmpty()) {
+        return localResult
       }
+
+      return providePreferredChannel()
+        .searchBooks(
+          libraryId = libraryId,
+          query = query,
+          limit = limit,
+        )
     }
 
     suspend fun fetchBooks(
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
+      downloadedOnly: Boolean = false,
     ): OperationResult<PagedItems<Book>> {
-      Timber.d("Fetching page $pageNumber of library: $libraryId")
+      Timber.d("Fetching page $pageNumber of library: $libraryId. Downloaded only: $downloadedOnly")
 
-      return when (preferences.isForceCache()) {
-        true -> localCacheRepository.fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
-        false -> providePreferredChannel().fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
+      val localResult =
+        localCacheRepository.fetchBooks(
+          libraryId = libraryId,
+          pageSize = pageSize,
+          pageNumber = pageNumber,
+          downloadedOnly = downloadedOnly,
+        )
+
+      if (downloadedOnly) {
+        return localResult
       }
+
+      val localItems =
+        localResult.fold(
+          onSuccess = { it.items },
+          onFailure = { emptyList() },
+        )
+
+      if (localItems.isEmpty()) {
+        Timber.d("Local cache miss for page $pageNumber. Fetching from remote.")
+        return providePreferredChannel()
+          .fetchBooks(
+            libraryId = libraryId,
+            pageSize = pageSize,
+            pageNumber = pageNumber,
+          ).also {
+            it.foldAsync(
+              onSuccess = { result -> localCacheRepository.cacheBooks(result.items) },
+              onFailure = {},
+            )
+          }
+      }
+
+      return localResult
     }
+
+    suspend fun syncLibraryPage(
+      libraryId: String,
+      pageSize: Int,
+      pageNumber: Int,
+    ): OperationResult<Unit> =
+      providePreferredChannel()
+        .fetchBooks(libraryId, pageSize, pageNumber)
+        .map { localCacheRepository.cacheBooks(it.items) }
 
     suspend fun fetchLibraries(): OperationResult<List<Library>> {
       Timber.d("Fetching List of libraries")
 
-      return when (preferences.isForceCache()) {
-        true -> localCacheRepository.fetchLibraries()
-        false ->
-          providePreferredChannel()
-            .fetchLibraries()
-            .also {
-              it.foldAsync(
-                onSuccess = { libraries -> localCacheRepository.updateLibraries(libraries) },
-                onFailure = {},
-              )
-            }
+      val localResult = localCacheRepository.fetchLibraries()
+      if (localResult is OperationResult.Success && localResult.data.isNotEmpty()) {
+        return localResult
       }
+
+      return providePreferredChannel()
+        .fetchLibraries()
+        .also {
+          it.foldAsync(
+            onSuccess = { libraries -> localCacheRepository.updateLibraries(libraries) },
+            onFailure = {},
+          )
+        }
     }
 
     suspend fun startPlayback(
@@ -158,31 +203,79 @@ class LissenMediaProvider
     suspend fun fetchRecentListenedBooks(libraryId: String): OperationResult<List<RecentBook>> {
       Timber.d("Fetching Recent books of library $libraryId")
 
-      return when (preferences.isForceCache()) {
-        true -> localCacheRepository.fetchRecentListenedBooks(libraryId)
-        false ->
-          providePreferredChannel()
-            .fetchRecentListenedBooks(libraryId)
-            .map { items -> syncFromLocalProgress(libraryId = libraryId, detailedItems = items) }
+      val isOffline = !networkService.isServerAvailable.value || preferences.isForceCache()
+
+      val localResult =
+        localCacheRepository.fetchRecentListenedBooks(
+          libraryId = libraryId,
+          downloadedOnly = isOffline,
+        )
+
+      if (isOffline) {
+        return localResult
       }
+
+      if (localResult is OperationResult.Success && localResult.data.isNotEmpty()) {
+        return localResult
+      }
+
+      return providePreferredChannel()
+        .fetchRecentListenedBooks(libraryId)
+        .map { items -> syncFromLocalProgress(libraryId = libraryId, detailedItems = items) }
     }
 
     suspend fun fetchBook(bookId: String): OperationResult<DetailedItem> {
       Timber.d("Fetching Detailed book info for $bookId")
 
-      return when (preferences.isForceCache()) {
-        true ->
-          localCacheRepository
-            .fetchBook(bookId)
-            ?.let { OperationResult.Success(it) }
-            ?: OperationResult.Error(OperationError.InternalError)
+      val localResult = localCacheRepository.fetchBook(bookId)
+      val isDetailed =
+        localResult
+          ?.let { it.chapters.isNotEmpty() || it.files.isNotEmpty() }
+          ?: false
 
-        false ->
-          providePreferredChannel()
-            .fetchBook(bookId)
-            .map { syncFromLocalProgress(it) }
+      if (localResult != null && isDetailed) {
+        return OperationResult.Success(makeAvailableIfOnline(localResult))
       }
+
+      return providePreferredChannel()
+        .fetchBook(bookId)
+        .map { syncFromLocalProgress(it) }
+        .also {
+          it.foldAsync(
+            onSuccess = { book -> localCacheRepository.cacheBookMetadata(book) },
+            onFailure = {},
+          )
+        }.map { makeAvailableIfOnline(it) }
     }
+
+    private fun makeAvailableIfOnline(book: DetailedItem): DetailedItem {
+      if (!networkService.isNetworkAvailable()) {
+        return book
+      }
+
+      val isAllCached = book.chapters.all { it.available }
+      if (isAllCached) {
+        return book
+      }
+
+      return book.copy(
+        chapters = book.chapters.map { it.copy(available = true) },
+      )
+    }
+
+    fun fetchBookFlow(bookId: String): Flow<DetailedItem?> =
+      localCacheRepository
+        .fetchBookFlow(bookId)
+        .combine(networkService.networkStatus) { book: DetailedItem?, isOnline: Boolean ->
+          if (book == null) return@combine null
+
+          val isAllCached = book.chapters.all { it.available }
+          if (!isOnline || isAllCached) return@combine book
+
+          book.copy(
+            chapters = book.chapters.map { it.copy(available = true) },
+          )
+        }
 
     suspend fun authorize(
       host: String,
@@ -254,21 +347,61 @@ class LissenMediaProvider
         )
     }
 
+    suspend fun syncRepositories() {
+      val libraryId = preferences.getPreferredLibrary()?.id ?: return
+      val remoteRecents = providePreferredChannel().fetchRecentListenedBooks(libraryId).getOrNull() ?: emptyList()
+      val localRecents =
+        localCacheRepository
+          .fetchRecentListenedBooks(
+            libraryId = libraryId,
+            downloadedOnly = false,
+          ).getOrNull() ?: emptyList()
+
+      val remoteMap = remoteRecents.associateBy { it.id }
+      val localMap = localRecents.associateBy { it.id }
+      val allIds = (remoteMap.keys + localMap.keys).toSet()
+
+      for (id in allIds) {
+        val remote = remoteMap[id]
+        val local = localMap[id]
+
+        val remoteTime = remote?.listenedLastUpdate ?: 0L
+        val localTime = local?.listenedLastUpdate ?: 0L
+
+        if (remoteTime > localTime) {
+          providePreferredChannel().fetchBook(id).foldAsync(
+            onSuccess = { localCacheRepository.cacheBookMetadata(it) },
+            onFailure = {},
+          )
+        }
+      }
+    }
+
+    private fun <T> OperationResult<T>.getOrNull(): T? =
+      when (this) {
+        is OperationResult.Success -> data
+        is OperationResult.Error -> null
+      }
+
     private suspend fun syncFromLocalProgress(
       libraryId: String,
       detailedItems: List<RecentBook>,
     ): List<RecentBook> {
       val localRecentlyBooks =
         localCacheRepository
-          .fetchRecentListenedBooks(libraryId)
-          .fold(
+          .fetchRecentListenedBooks(
+            libraryId = libraryId,
+            downloadedOnly = false,
+          ).fold(
             onSuccess = { it },
             onFailure = { return@fold detailedItems },
           )
 
+      val localMap = localRecentlyBooks.associateBy { it.id }
+
       val syncedRecentlyBooks =
         detailedItems
-          .mapNotNull { item -> localRecentlyBooks.find { it.id == item.id }?.let { item to it } }
+          .mapNotNull { item -> localMap[item.id]?.let { item to it } }
           .map { (remote, local) ->
             val localTimestamp = local.listenedLastUpdate ?: return@map remote
             val remoteTimestamp = remote.listenedLastUpdate ?: return@map remote
@@ -279,10 +412,12 @@ class LissenMediaProvider
             }
           }
 
+      val syncedMap = syncedRecentlyBooks.associateBy { it.id }
+
       return detailedItems
         .map { item ->
-          syncedRecentlyBooks
-            .find { item.id == it.id }
+          syncedMap
+            .get(item.id)
             ?.let { local -> item.copy(listenedPercentage = local.listenedPercentage) }
             ?: item
         }
@@ -291,22 +426,25 @@ class LissenMediaProvider
     private suspend fun syncFromLocalProgress(detailedItem: DetailedItem): DetailedItem {
       val cachedBook = localCacheRepository.fetchBook(detailedItem.id) ?: return detailedItem
 
+      // Always prefer local progress if available and newer?
+      // Or if we just fetched from remote (in caller), and remote is newer, we use remote?
+      // But here we are "syncing FROM local".
+      // If we seeked offline, local is newer.
+      // If we seeked online on other device, remote is newer.
+      // We need timestamp check.
+
       val cachedProgress = cachedBook.progress ?: return detailedItem
       val channelProgress = detailedItem.progress
 
-      val updatedProgress =
-        listOfNotNull(cachedProgress, channelProgress)
-          .maxByOrNull { it.lastUpdate }
-          ?: return detailedItem
+      // If channel progress is null, use cached.
+      if (channelProgress == null) return detailedItem.copy(progress = cachedProgress)
 
-      Timber.d(
-        """
-        Merging local playback progress into channel-fetched:
-            Channel Progress: $channelProgress
-            Cached Progress: $cachedProgress
-            Final Progress: $updatedProgress
-        """.trimIndent(),
-      )
+      val updatedProgress =
+        if (cachedProgress.lastUpdate > channelProgress.lastUpdate) {
+          cachedProgress
+        } else {
+          channelProgress
+        }
 
       return detailedItem.copy(progress = updatedProgress)
     }

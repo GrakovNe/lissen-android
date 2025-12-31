@@ -5,6 +5,8 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.media.AudioManager
+import android.media.ToneGenerator
 import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.Lifecycle
@@ -26,6 +28,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.LissenMediaProvider
@@ -45,6 +48,7 @@ import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_OPTI
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_REMAINING
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_TICK
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_VALUE_EXTRA
+import org.grakovne.lissen.playback.service.ShakeDetector
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.playback.service.calculateChapterPosition
 import timber.log.Timber
@@ -59,7 +63,10 @@ class MediaRepository
     @ApplicationContext private val context: Context,
     private val preferences: LissenSharedPreferences,
     private val mediaChannel: LissenMediaProvider,
+    private val shakeDetector: ShakeDetector,
   ) {
+    fun getBookFlow(bookId: String): Flow<DetailedItem?> = mediaChannel.fetchBookFlow(bookId)
+
     private lateinit var mediaController: MediaController
 
     private val token =
@@ -145,6 +152,7 @@ class MediaRepository
               object : Player.Listener {
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
                   _isPlaying.value = isPlaying
+                  updateShakeDetectorState(preferences.getShakeToResetTimer(), isPlaying)
                 }
 
                 override fun onPlaybackStateChanged(playbackState: Int) {
@@ -163,6 +171,12 @@ class MediaRepository
         },
         MoreExecutors.directExecutor(),
       )
+
+      CoroutineScope(Dispatchers.Main).launch {
+        preferences.shakeToResetTimerFlow.collect { enabled ->
+          updateShakeDetectorState(enabled, isPlaying.value == true)
+        }
+      }
     }
 
     private val playbackReadyReceiver =
@@ -253,6 +267,39 @@ class MediaRepository
         }
 
         null -> cancelServiceTimer()
+      }
+    }
+
+    private fun resetSleepTimer() {
+      val currentOption = _timerOption.value
+      if (currentOption != null) {
+        updateTimer(currentOption)
+        playResetSound()
+      }
+    }
+
+    private fun playResetSound() {
+      try {
+        val toneGen = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
+        toneGen.startTone(ToneGenerator.TONE_PROP_BEEP)
+        Handler(Looper.getMainLooper()).postDelayed({
+          toneGen.release()
+        }, 200)
+      } catch (e: Exception) {
+        Timber.e(e, "Failed to play reset sound")
+      }
+    }
+
+    private fun updateShakeDetectorState(
+      enabled: Boolean,
+      isPlaying: Boolean,
+    ) {
+      if (enabled && isPlaying) {
+        shakeDetector.start {
+          resetSleepTimer()
+        }
+      } else {
+        shakeDetector.stop()
       }
     }
 

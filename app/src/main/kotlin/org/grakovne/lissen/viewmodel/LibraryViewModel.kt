@@ -20,7 +20,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.grakovne.lissen.content.LissenMediaProvider
+import org.grakovne.lissen.common.LibraryOrderingConfiguration
+import org.grakovne.lissen.common.NetworkService
+import org.grakovne.lissen.content.BookRepository
 import org.grakovne.lissen.lib.domain.Book
 import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.RecentBook
@@ -34,8 +36,9 @@ import javax.inject.Inject
 class LibraryViewModel
   @Inject
   constructor(
-    private val mediaChannel: LissenMediaProvider,
+    private val bookRepository: BookRepository,
     private val preferences: LissenSharedPreferences,
+    private val networkService: NetworkService,
   ) : ViewModel() {
     private val _recentBooks = MutableLiveData<List<RecentBook>>(emptyList())
     val recentBooks: LiveData<List<RecentBook>> = _recentBooks
@@ -61,6 +64,64 @@ class LibraryViewModel
         prefetchDistance = PAGE_SIZE,
       )
 
+    private val downloadedOnlyFlow =
+      combine(
+        networkService.isServerAvailable,
+        preferences.forceCacheFlow,
+      ) { isServerAvailable, isForceCache ->
+        !isServerAvailable || isForceCache
+      }
+
+    private var currentLibraryId = ""
+    private var currentOrdering = LibraryOrderingConfiguration.default
+    private var localCacheUpdatedAt = 0L
+
+    fun checkRefreshNeeded(
+      itemCount: Int,
+      latestLocalUpdate: Long?,
+      isLocalCacheUsing: Boolean,
+    ) {
+      val emptyContent = itemCount == 0
+      val libraryChanged = currentLibraryId != (preferences.getPreferredLibrary()?.id ?: "")
+      val orderingChanged = currentOrdering != preferences.getLibraryOrdering()
+      val localCacheUpdated = latestLocalUpdate?.let { it > localCacheUpdatedAt } ?: true
+
+      if (emptyContent || libraryChanged || orderingChanged || (isLocalCacheUsing && localCacheUpdated)) {
+        refreshRecentListening()
+        refreshLibrary()
+
+        currentLibraryId = preferences.getPreferredLibrary()?.id ?: ""
+        currentOrdering = preferences.getLibraryOrdering()
+        localCacheUpdatedAt = latestLocalUpdate ?: 0L
+      }
+    }
+
+    init {
+      viewModelScope.launch {
+        downloadedOnlyFlow.collect { refreshRecentListening() }
+      }
+
+      viewModelScope.launch {
+        combine(
+          preferences.preferredLibraryIdFlow,
+          downloadedOnlyFlow,
+        ) { libraryId, downloadedOnly ->
+          Pair(libraryId, downloadedOnly)
+        }.flatMapLatest { (libraryId, _) ->
+          // When downloadedOnly changes, recent books flow in CachedBookRepository
+          // (which BookRepository delegates to) handles sorting/filtering if needed.
+          // Note: BookRepository.fetchRecentListenedBooksFlow checks isOffline internally one-shot,
+          // but we want it to be reactive.
+          // For now, let's just trigger the flow. Ideally, BookRepository should handle the isOffline check reactively too.
+          // But re-collecting here when downloadedOnlyFlow emits will re-call fetchRecentListenedBooksFlow,
+          // effectively re-checking the isOffline state.
+          bookRepository.fetchRecentListenedBooksFlow(libraryId ?: "")
+        }.collect {
+          _recentBooks.postValue(it)
+        }
+      }
+    }
+
     fun getPager(isSearchRequested: Boolean) =
       when (isSearchRequested) {
         true -> searchPager
@@ -80,7 +141,7 @@ class LibraryViewModel
             val source =
               LibrarySearchPagingSource(
                 preferences = preferences,
-                mediaChannel = mediaChannel,
+                bookRepository = bookRepository,
                 searchToken = token,
                 limit = PAGE_SEARCH_SIZE,
               ) { _totalCount.postValue(it) }
@@ -91,16 +152,40 @@ class LibraryViewModel
         ).flow
       }.cachedIn(viewModelScope)
 
-    private val libraryPager: Flow<PagingData<Book>> by lazy {
-      Pager(
-        config = pageConfig,
-        pagingSourceFactory = {
-          val source = LibraryDefaultPagingSource(preferences, mediaChannel) { _totalCount.postValue(it) }
-          defaultPagingSource = source
+    private val libraryPager: Flow<PagingData<Book>> =
+      combine(
+        preferences.preferredLibraryIdFlow,
+        downloadedOnlyFlow,
+      ) { libraryId, downloadedOnly ->
+        Pair(libraryId, downloadedOnly)
+      }.flatMapLatest { (libraryId, downloadedOnly) ->
+        if (!downloadedOnly && libraryId != null) {
+          syncLibrary(libraryId)
+        }
 
-          source
-        },
-      ).flow.cachedIn(viewModelScope)
+        Pager(
+          config = pageConfig,
+          pagingSourceFactory = {
+            val source =
+              LibraryDefaultPagingSource(
+                preferences = preferences,
+                bookRepository = bookRepository,
+                downloadedOnly = downloadedOnly,
+              ) { _totalCount.postValue(it) }
+            defaultPagingSource = source
+
+            source
+          },
+        ).flow
+      }.cachedIn(viewModelScope)
+
+    private fun syncLibrary(libraryId: String) {
+      viewModelScope.launch(Dispatchers.IO) {
+        bookRepository.syncLibraryPage(libraryId, PAGE_SIZE, 0)
+        bookRepository.syncRepositories()
+        refreshRecentListening()
+        defaultPagingSource?.invalidate()
+      }
     }
 
     fun requestSearch() {
@@ -156,17 +241,8 @@ class LibraryViewModel
         }
 
       viewModelScope.launch {
-        mediaChannel
-          .fetchRecentListenedBooks(preferredLibrary)
-          .fold(
-            onSuccess = {
-              _recentBooks.postValue(it)
-              _recentBookUpdating.postValue(false)
-            },
-            onFailure = {
-              _recentBookUpdating.postValue(false)
-            },
-          )
+        bookRepository.fetchRecentListenedBooks(preferredLibrary)
+        _recentBookUpdating.postValue(false)
       }
     }
 

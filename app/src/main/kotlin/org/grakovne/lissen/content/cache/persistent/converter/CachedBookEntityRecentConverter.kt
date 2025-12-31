@@ -22,7 +22,7 @@ class CachedBookEntityRecentConverter
         listenedPercentage =
           currentTime
             ?.second
-            ?.let { it / entity.duration }
+            ?.let { if (entity.duration > 0) it / entity.duration else 0.0 }
             ?.let { it * 100 }
             ?.toInt(),
       )

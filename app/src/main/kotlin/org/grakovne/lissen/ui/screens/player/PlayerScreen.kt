@@ -59,7 +59,6 @@ import org.grakovne.lissen.ui.screens.player.composable.TrackControlComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackDetailsComposable
 import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
 import org.grakovne.lissen.ui.screens.player.composable.fallback.PlayingQueueFallbackComposable
-import org.grakovne.lissen.ui.screens.player.composable.placeholder.NavigationBarPlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.PlayingQueuePlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackControlPlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackDetailsPlaceholderComposable
@@ -203,19 +202,15 @@ fun PlayerScreen(
       )
     },
     bottomBar = {
-      if (playingBook == null || isPlaybackReady.not()) {
-        NavigationBarPlaceholderComposable(libraryType = libraryViewModel.fetchPreferredLibraryType())
-      } else {
-        playingBook
-          ?.let {
-            NavigationBarComposable(
-              book = it,
-              playerViewModel = playerViewModel,
-              contentCachingModelView = cachingModelView,
-              navController = navController,
-              libraryType = libraryViewModel.fetchPreferredLibraryType(),
-            )
-          }
+      playingBook?.let {
+        NavigationBarComposable(
+          book = it,
+          playerViewModel = playerViewModel,
+          contentCachingModelView = cachingModelView,
+          settingsViewModel = settingsViewModel,
+          navController = navController,
+          libraryType = libraryViewModel.fetchPreferredLibraryType(),
+        )
       }
     },
     modifier = Modifier.systemBarsPadding(),
@@ -319,7 +314,7 @@ fun InfoRow(
     Text(
       text = "$label: ",
       style = typography.bodyMedium,
-      color = Color.Gray,
+      color = colorScheme.onSurface.copy(alpha = 0.6f),
       maxLines = 1,
       overflow = TextOverflow.Ellipsis,
     )

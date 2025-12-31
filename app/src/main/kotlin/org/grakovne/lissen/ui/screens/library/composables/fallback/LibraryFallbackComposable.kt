@@ -85,7 +85,7 @@ fun LibraryFallbackComposable(
           Icon(
             imageVector = it,
             contentDescription = "Library placeholder",
-            tint = Color.White,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.size(64.dp),
           )
         }

@@ -45,7 +45,7 @@ fun LibraryItemPlaceholderComposable() {
           .aspectRatio(1f)
           .clip(RoundedCornerShape(4.dp))
           .shimmer()
-          .background(Color.Gray),
+          .background(androidx.compose.material3.MaterialTheme.colorScheme.surfaceVariant),
     )
 
     Spacer(modifier = Modifier.width(16.dp))
@@ -58,7 +58,7 @@ fun LibraryItemPlaceholderComposable() {
             .height(16.dp)
             .clip(RoundedCornerShape(4.dp))
             .shimmer()
-            .background(Color.Gray),
+            .background(androidx.compose.material3.MaterialTheme.colorScheme.surfaceVariant),
       )
 
       Spacer(modifier = Modifier.height(8.dp))
@@ -70,7 +70,7 @@ fun LibraryItemPlaceholderComposable() {
             .height(12.dp)
             .clip(RoundedCornerShape(4.dp))
             .shimmer()
-            .background(Color.Gray),
+            .background(androidx.compose.material3.MaterialTheme.colorScheme.surfaceVariant),
       )
     }
 

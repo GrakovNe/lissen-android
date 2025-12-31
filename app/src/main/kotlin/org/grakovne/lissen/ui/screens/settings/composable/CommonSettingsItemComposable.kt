@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import org.grakovne.lissen.ui.effects.WindowBlurEffect
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,11 +38,15 @@ fun CommonSettingsItemComposable(
   onDismissRequest: () -> Unit,
   onItemSelected: (CommonSettingsItem) -> Unit,
   selectedImage: ImageVector = Icons.Outlined.Check,
+  title: String? = null,
 ) {
   var activeItem by remember { mutableStateOf(selectedItem) }
 
+  WindowBlurEffect()
+
   ModalBottomSheet(
     containerColor = MaterialTheme.colorScheme.background,
+    scrimColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.65f),
     onDismissRequest = onDismissRequest,
     content = {
       Column(
@@ -50,8 +55,17 @@ fun CommonSettingsItemComposable(
             .fillMaxWidth()
             .padding(bottom = 16.dp)
             .padding(horizontal = 16.dp),
+        horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
       ) {
-        Spacer(modifier = Modifier.height(8.dp))
+        if (title != null) {
+          Text(
+            text = title,
+            style = MaterialTheme.typography.bodyLarge,
+          )
+          Spacer(modifier = Modifier.height(8.dp))
+        } else {
+          Spacer(modifier = Modifier.height(8.dp))
+        }
 
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
           itemsIndexed(items) { index, item ->

@@ -35,3 +35,4 @@ google-services.json
 
 # Schemas
 app/schemas
+.DS_Store

@@ -8,6 +8,9 @@ import org.grakovne.lissen.lib.domain.BookSeries
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.MediaProgress
 import org.grakovne.lissen.lib.domain.PlayingChapter
+import java.time.LocalDate
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -88,7 +91,7 @@ class BookResponseConverter
         chapters = maybeChapters ?: filesAsChapters(),
         libraryId = item.libraryId,
         localProvided = false,
-        year = item.media.metadata.publishedYear,
+        year = extractYear(item.media.metadata.publishedYear),
         abstract = item.media.metadata.description,
         publisher = item.media.metadata.publisher,
         series =
@@ -114,5 +117,29 @@ class BookResponseConverter
               )
             },
       )
+    }
+
+    private fun extractYear(rawYear: String?): String? {
+      if (rawYear.isNullOrBlank()) {
+        return null
+      }
+
+      // 1. If it's explicitly 4 digits, assume it's a year
+      if (rawYear.matches(Regex("^\\d{4}$"))) {
+        return rawYear
+      }
+
+      return try {
+        // 2. Try parsing as ZonedDateTime (ISO 8601 with timezone, e.g. 2010-10-07T07:13:01Z)
+        ZonedDateTime.parse(rawYear).year.toString()
+      } catch (e: Exception) {
+        try {
+          // 3. Try parsing as LocalDate (yyyy-MM-dd)
+          LocalDate.parse(rawYear).year.toString()
+        } catch (e: Exception) {
+          // 4. Fallback: If it starts with 4 digits, take them
+          Regex("^(\\d{4})").find(rawYear)?.groupValues?.get(1) ?: rawYear
+        }
+      }
     }
   }

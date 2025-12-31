@@ -2,6 +2,8 @@ package org.grakovne.lissen.content.cache.persistent.api
 
 import android.net.Uri
 import androidx.core.net.toUri
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.common.LibraryOrderingOption
 import org.grakovne.lissen.content.cache.persistent.OfflineBookStorageProperties
@@ -9,6 +11,7 @@ import org.grakovne.lissen.content.cache.persistent.converter.CachedBookEntityCo
 import org.grakovne.lissen.content.cache.persistent.converter.CachedBookEntityDetailedConverter
 import org.grakovne.lissen.content.cache.persistent.converter.CachedBookEntityRecentConverter
 import org.grakovne.lissen.content.cache.persistent.dao.CachedBookDao
+import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
 import org.grakovne.lissen.lib.domain.Book
 import org.grakovne.lissen.lib.domain.DetailedItem
@@ -58,10 +61,45 @@ class CachedBookRepository
 
     fun provideCacheState(bookId: String) = bookDao.isBookCached(bookId)
 
+    suspend fun cacheBooks(books: List<Book>) {
+      books.forEach { book ->
+        val existing = bookDao.fetchBook(book.id)
+
+        val entity =
+          existing?.copy(
+            title = book.title,
+            author = book.author,
+            duration = book.duration.toInt(),
+          ) ?: BookEntity(
+            id = book.id,
+            title = book.title,
+            author = book.author,
+            subtitle = null,
+            narrator = null,
+            publisher = null,
+            year = null,
+            abstract = null,
+            duration = book.duration.toInt(),
+            libraryId = book.libraryId,
+            createdAt = 0,
+            updatedAt = 0,
+            seriesNames = "",
+            seriesJson = "[]",
+          )
+
+        when (existing) {
+          null -> bookDao.upsertBook(entity)
+          else -> bookDao.updateBook(entity)
+        }
+      }
+    }
+
     fun provideCacheState(
       bookId: String,
       chapterId: String,
     ) = bookDao.isBookChapterCached(bookId, chapterId)
+
+    fun hasDownloadedChapters(bookId: String) = bookDao.hasDownloadedChapters(bookId)
 
     suspend fun fetchCachedItems(
       pageSize: Int,
@@ -78,6 +116,7 @@ class CachedBookRepository
       libraryId: String,
       pageNumber: Int,
       pageSize: Int,
+      downloadedOnly: Boolean = false,
     ): List<Book> {
       val (option, direction) = buildOrdering()
 
@@ -88,6 +127,7 @@ class CachedBookRepository
           .pageSize(pageSize)
           .orderField(option)
           .orderDirection(direction)
+          .downloadedOnly(downloadedOnly)
           .build()
 
       return bookDao
@@ -116,11 +156,17 @@ class CachedBookRepository
         .map { cachedBookEntityConverter.apply(it) }
     }
 
-    suspend fun fetchRecentBooks(libraryId: String): List<RecentBook> {
-      val recentBooks =
-        bookDao.fetchRecentlyListenedCachedBooks(
-          libraryId = libraryId,
-        )
+    suspend fun fetchRecentBooks(
+      libraryId: String,
+      downloadedOnly: Boolean,
+    ): List<RecentBook> {
+      val request =
+        RecentRequestBuilder()
+          .libraryId(libraryId)
+          .downloadedOnly(downloadedOnly)
+          .build()
+
+      val recentBooks = bookDao.fetchRecentlyListenedCachedBooks(request)
 
       val progress =
         recentBooks
@@ -132,10 +178,35 @@ class CachedBookRepository
         .map { cachedBookEntityRecentConverter.apply(it, progress[it.id]) }
     }
 
+    fun fetchRecentBooksFlow(
+      libraryId: String,
+      downloadedOnly: Boolean,
+    ): Flow<List<RecentBook>> {
+      val request =
+        RecentRequestBuilder()
+          .libraryId(libraryId)
+          .downloadedOnly(downloadedOnly)
+          .build()
+
+      return bookDao
+        .fetchRecentlyListenedCachedBooksFlow(request)
+        .map { entities ->
+          entities.map { entity ->
+            val progress = entity.progress?.let { it.lastUpdate to it.currentTime }
+            cachedBookEntityRecentConverter.apply(entity.detailedBook, progress)
+          }
+        }
+    }
+
     suspend fun fetchBook(bookId: String): DetailedItem? =
       bookDao
         .fetchCachedBook(bookId)
         ?.let { cachedBookEntityDetailedConverter.apply(it) }
+
+    fun fetchBookFlow(bookId: String): Flow<DetailedItem?> =
+      bookDao
+        .fetchBookFlow(bookId)
+        .map { it?.let { cachedBookEntityDetailedConverter.apply(it) } }
 
     suspend fun syncProgress(
       bookId: String,

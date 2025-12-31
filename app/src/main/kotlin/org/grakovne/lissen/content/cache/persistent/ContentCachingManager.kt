@@ -119,7 +119,13 @@ class ContentCachingManager
     }
 
     suspend fun dropCache(itemId: String) {
-      bookRepository.removeBook(itemId)
+      val book = bookRepository.fetchBook(itemId) ?: return
+
+      bookRepository.cacheBook(
+        book = book,
+        fetchedChapters = emptyList(),
+        droppedChapters = book.chapters,
+      )
 
       val cachedContent: File = properties.provideBookCache(itemId)
 
@@ -134,6 +140,8 @@ class ContentCachingManager
       mediaItemId: String,
       chapterId: String,
     ) = bookRepository.provideCacheState(mediaItemId, chapterId)
+
+    fun hasDownloadedChapters(mediaItemId: String) = bookRepository.hasDownloadedChapters(mediaItemId)
 
     private suspend fun cacheBookMedia(
       bookId: String,

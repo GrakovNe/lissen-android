@@ -9,7 +9,10 @@ import javax.inject.Singleton
 class PodcastSearchItemsConverter
   @Inject
   constructor() {
-    fun apply(response: List<PodcastItem>): List<Book> {
+    fun apply(
+      response: List<PodcastItem>,
+      libraryId: String,
+    ): List<Book> {
       return response
         .mapNotNull {
           val title = it.media.metadata.title ?: return@mapNotNull null
@@ -20,6 +23,8 @@ class PodcastSearchItemsConverter
             subtitle = null,
             series = null,
             author = it.media.metadata.author,
+            duration = 0.0,
+            libraryId = libraryId,
           )
         }
     }

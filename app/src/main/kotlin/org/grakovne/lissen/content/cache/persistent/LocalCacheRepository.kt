@@ -2,8 +2,11 @@ package org.grakovne.lissen.content.cache.persistent
 
 import android.net.Uri
 import androidx.core.net.toFile
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
+import org.grakovne.lissen.content.cache.common.findRelatedFiles
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedLibraryRepository
 import org.grakovne.lissen.lib.domain.Book
@@ -14,6 +17,7 @@ import org.grakovne.lissen.lib.domain.PagedItems
 import org.grakovne.lissen.lib.domain.PlaybackProgress
 import org.grakovne.lissen.lib.domain.RecentBook
 import org.grakovne.lissen.playback.service.calculateChapterIndex
+import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -24,6 +28,7 @@ class LocalCacheRepository
   constructor(
     private val cachedBookRepository: CachedBookRepository,
     private val cachedLibraryRepository: CachedLibraryRepository,
+    private val storageProperties: OfflineBookStorageProperties,
   ) {
     fun provideFileUri(
       libraryItemId: String,
@@ -84,10 +89,16 @@ class LocalCacheRepository
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
+      downloadedOnly: Boolean = false,
     ): OperationResult<PagedItems<Book>> {
       val books =
         cachedBookRepository
-          .fetchBooks(pageNumber = pageNumber, pageSize = pageSize, libraryId = libraryId)
+          .fetchBooks(
+            pageNumber = pageNumber,
+            pageSize = pageSize,
+            libraryId = libraryId,
+            downloadedOnly = downloadedOnly,
+          )
 
       return OperationResult
         .Success(
@@ -108,10 +119,25 @@ class LocalCacheRepository
       cachedLibraryRepository.cacheLibraries(libraries)
     }
 
-    suspend fun fetchRecentListenedBooks(libraryId: String): OperationResult<List<RecentBook>> =
+    suspend fun fetchRecentListenedBooks(
+      libraryId: String,
+      downloadedOnly: Boolean,
+    ): OperationResult<List<RecentBook>> =
       cachedBookRepository
-        .fetchRecentBooks(libraryId)
-        .let { OperationResult.Success(it) }
+        .fetchRecentBooks(
+          libraryId = libraryId,
+          downloadedOnly = downloadedOnly,
+        ).let { OperationResult.Success(it) }
+
+    fun fetchRecentListenedBooksFlow(
+      libraryId: String,
+      downloadedOnly: Boolean,
+    ): Flow<List<RecentBook>> =
+      cachedBookRepository
+        .fetchRecentBooksFlow(
+          libraryId = libraryId,
+          downloadedOnly = downloadedOnly,
+        )
 
     suspend fun fetchLatestUpdate(libraryId: String) = cachedBookRepository.fetchLatestUpdate(libraryId)
 
@@ -127,37 +153,38 @@ class LocalCacheRepository
      * @return the detailed book item with updated playback progress if necessary,
      *         or `null` if the book is not found in the cache.
      */
-    suspend fun fetchBook(bookId: String): DetailedItem? {
-      val cachedBook =
-        cachedBookRepository
-          .fetchBook(bookId)
-          ?: return null
+    suspend fun cacheBooks(books: List<Book>) {
+      cachedBookRepository.cacheBooks(books)
+    }
 
-      val cachedPosition =
-        cachedBook
-          .progress
-          ?.currentTime
-          ?: 0.0
+    suspend fun fetchBook(bookId: String): DetailedItem? = cachedBookRepository.fetchBook(bookId)
 
-      val currentChapter = calculateChapterIndex(cachedBook, cachedPosition)
+    suspend fun cacheBookMetadata(book: DetailedItem) {
+      try {
+        val restoredChapters =
+          book
+            .chapters
+            .filter { chapter ->
+              val files = findRelatedFiles(chapter, book.files)
+              if (files.isEmpty()) return@filter false
 
-      return when (currentChapter in cachedBook.chapters.indices && cachedBook.chapters[currentChapter].available) {
-        true -> cachedBook
+              files.all { file ->
+                storageProperties
+                  .provideMediaCachePatch(book.id, file.id)
+                  .exists()
+              }
+            }
 
-        false ->
-          cachedBook
-            .copy(
-              progress =
-                MediaProgress(
-                  currentTime =
-                    cachedBook.chapters
-                      .firstOrNull { it.available }
-                      ?.start
-                      ?: return null,
-                  isFinished = false,
-                  lastUpdate = 946728000000, // 2000-01-01T12:00
-                ),
-            )
+        cachedBookRepository.cacheBook(
+          book = book,
+          fetchedChapters = restoredChapters,
+          droppedChapters = emptyList(),
+        )
+        Timber.d("Successfully cached book metadata for ${book.id}")
+      } catch (e: Exception) {
+        Timber.e(e, "Failed to cache book metadata for ${book.id}")
       }
     }
+
+    fun fetchBookFlow(bookId: String): Flow<DetailedItem?> = cachedBookRepository.fetchBookFlow(bookId)
   }

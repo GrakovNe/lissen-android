@@ -29,12 +29,13 @@ import org.grakovne.lissen.lib.domain.DownloadOption
 import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.NumberItemDownloadOption
 import org.grakovne.lissen.lib.domain.RemainingItemsDownloadOption
+import org.grakovne.lissen.ui.effects.WindowBlurEffect
 import org.grakovne.lissen.ui.screens.common.makeText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DownloadsComposable(
-  isForceCache: Boolean,
+  isOnline: Boolean,
   libraryType: LibraryType,
   hasCachedEpisodes: Boolean,
   cachingInProgress: Boolean,
@@ -45,8 +46,11 @@ fun DownloadsComposable(
 ) {
   val context = LocalContext.current
 
+  WindowBlurEffect()
+
   ModalBottomSheet(
     containerColor = colorScheme.background,
+    scrimColor = colorScheme.scrim.copy(alpha = 0.65f),
     onDismissRequest = onDismissRequest,
     content = {
       Column(
@@ -78,9 +82,9 @@ fun DownloadsComposable(
                     text = item.makeText(context, libraryType),
                     style = typography.bodyMedium,
                     color =
-                      when (isForceCache) {
-                        true -> colorScheme.onBackground.copy(alpha = 0.4f)
-                        false -> colorScheme.onBackground
+                      when (isOnline) {
+                        true -> colorScheme.onBackground
+                        false -> colorScheme.onBackground.copy(alpha = 0.4f)
                       },
                   )
                 }
@@ -89,7 +93,7 @@ fun DownloadsComposable(
                 Modifier
                   .fillMaxWidth()
                   .clickable {
-                    if (isForceCache.not()) {
+                    if (isOnline) {
                       onRequestedDownload(item)
                       onDismissRequest()
                     }

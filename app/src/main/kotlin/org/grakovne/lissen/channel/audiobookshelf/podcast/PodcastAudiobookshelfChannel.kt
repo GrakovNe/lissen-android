@@ -68,7 +68,7 @@ class PodcastAudiobookshelfChannel
           pageNumber = pageNumber,
           sort = option,
           direction = direction,
-        ).map { podcastPageResponseConverter.apply(it) }
+        ).map { podcastPageResponseConverter.apply(it, libraryId) }
     }
 
     override suspend fun searchBooks(
@@ -83,7 +83,7 @@ class PodcastAudiobookshelfChannel
               .searchPodcasts(libraryId, query, limit)
               .map { it.podcast }
               .map { it.map { response -> response.libraryItem } }
-              .map { podcastSearchItemsConverter.apply(it) }
+              .map { podcastSearchItemsConverter.apply(it, libraryId) }
           }
 
         byTitle.await()

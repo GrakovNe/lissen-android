@@ -139,12 +139,16 @@ private fun provideChapterNumberTitle(
   context: Context,
 ): String =
   when (libraryType) {
-    LibraryType.LIBRARY ->
-      context.getString(
-        R.string.player_screen_now_playing_title_chapter_of,
-        currentTrackIndex + 1,
-        book?.chapters?.size ?: "?",
-      )
+    LibraryType.LIBRARY -> {
+      val part =
+        context.getString(
+          R.string.player_screen_now_playing_title_chapter_of,
+          currentTrackIndex + 1,
+          book?.chapters?.size ?: "?",
+        )
+      val chapterTitle = book?.chapters?.getOrNull(currentTrackIndex)?.title
+      if (chapterTitle.isNullOrBlank()) part else "$chapterTitle ($part)"
+    }
 
     LibraryType.PODCAST ->
       context.getString(

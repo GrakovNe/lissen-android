@@ -2,13 +2,13 @@ package org.grakovne.lissen.ui.screens.library.paging
 
 import androidx.paging.PagingState
 import org.grakovne.lissen.common.LibraryPagingSource
-import org.grakovne.lissen.content.LissenMediaProvider
+import org.grakovne.lissen.content.BookRepository
 import org.grakovne.lissen.lib.domain.Book
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 
 class LibrarySearchPagingSource(
   private val preferences: LissenSharedPreferences,
-  private val mediaChannel: LissenMediaProvider,
+  private val bookRepository: BookRepository,
   private val searchToken: String,
   private val limit: Int,
   onTotalCountChanged: (Int) -> Unit,
@@ -26,7 +26,7 @@ class LibrarySearchPagingSource(
       return LoadResult.Page(emptyList(), null, null)
     }
 
-    return mediaChannel
+    return bookRepository
       .searchBooks(libraryId, searchToken, limit)
       .fold(
         onSuccess = {

@@ -41,6 +41,7 @@ fun PlaylistItemComposable(
   modifier: Modifier,
   maxDuration: Double,
   isCached: Boolean,
+  canPlay: Boolean = true,
 ) {
   val fontScale = LocalDensity.current.fontScale
   val textMeasurer = rememberTextMeasurer()
@@ -71,6 +72,7 @@ fun PlaylistItemComposable(
         .padding(end = 4.dp)
         .padding(vertical = 2.dp)
         .clickable(
+          enabled = canPlay,
           onClick = onClick,
           indication = null,
           interactionSource = remember { MutableInteractionSource() },
@@ -82,6 +84,7 @@ fun PlaylistItemComposable(
           imageVector = Icons.Outlined.Audiotrack,
           contentDescription = stringResource(R.string.player_screen_library_playing_title),
           modifier = Modifier.size(16.dp),
+          tint = if (canPlay) colorScheme.primary else colorScheme.onBackground.copy(alpha = 0.4f),
         )
 
       track.podcastEpisodeState == BookChapterState.FINISHED ->
@@ -89,6 +92,7 @@ fun PlaylistItemComposable(
           imageVector = Icons.Outlined.Check,
           contentDescription = stringResource(R.string.player_screen_library_playing_title),
           modifier = Modifier.size(16.dp),
+          tint = if (canPlay) colorScheme.onBackground else colorScheme.onBackground.copy(alpha = 0.4f),
         )
 
       else -> Spacer(modifier = Modifier.size(16.dp))
@@ -100,7 +104,7 @@ fun PlaylistItemComposable(
       text = track.title,
       style = MaterialTheme.typography.titleSmall,
       color =
-        when (track.available) {
+        when (canPlay) {
           true -> colorScheme.onBackground
           false -> colorScheme.onBackground.copy(alpha = 0.4f)
         },
@@ -133,8 +137,9 @@ fun PlaylistItemComposable(
       modifier = Modifier.width(durationColumnWidth),
       textAlign = TextAlign.End,
       fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+      maxLines = 1,
       color =
-        when (track.available) {
+        when (canPlay) {
           true -> colorScheme.onBackground.copy(alpha = 0.6f)
           false -> colorScheme.onBackground.copy(alpha = 0.4f)
         },

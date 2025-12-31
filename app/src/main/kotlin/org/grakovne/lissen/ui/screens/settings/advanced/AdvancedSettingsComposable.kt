@@ -33,7 +33,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.navigation.AppNavigationService
-import org.grakovne.lissen.ui.screens.settings.composable.PlaybackVolumeBoostSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
 import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.SettingsViewModel
@@ -93,14 +92,6 @@ fun AdvancedSettingsComposable(
               .verticalScroll(rememberScrollState()),
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-          PlaybackVolumeBoostSettingsComposable(viewModel)
-
-          AdvancedSettingsNavigationItemComposable(
-            title = stringResource(R.string.settings_screen_seek_time_title),
-            description = stringResource(R.string.settings_screen_seek_time_hint),
-            onclick = { navController.showSeekSettings() },
-          )
-
           AdvancedSettingsNavigationItemComposable(
             title = stringResource(R.string.settings_screen_custom_headers_title),
             description = stringResource(R.string.settings_screen_custom_header_hint),

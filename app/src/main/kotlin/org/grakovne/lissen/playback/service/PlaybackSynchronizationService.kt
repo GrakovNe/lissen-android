@@ -190,6 +190,7 @@ class PlaybackSynchronizationService
           Player.EVENT_MEDIA_ITEM_TRANSITION,
           Player.EVENT_PLAYBACK_STATE_CHANGED,
           Player.EVENT_IS_PLAYING_CHANGED,
+          Player.EVENT_POSITION_DISCONTINUITY,
         )
     }
   }

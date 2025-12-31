@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.ui.PlaybackSpeedSlider
+import org.grakovne.lissen.ui.effects.WindowBlurEffect
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,11 +41,14 @@ fun PlaybackSpeedComposable(
   onSpeedChange: (Float) -> Unit,
   onDismissRequest: () -> Unit,
 ) {
-  val view: View = LocalView.current
+  val view = LocalView.current
   var selectedPlaybackSpeed by remember { mutableFloatStateOf(currentSpeed) }
+
+  WindowBlurEffect()
 
   ModalBottomSheet(
     containerColor = colorScheme.background,
+    scrimColor = colorScheme.scrim.copy(alpha = 0.65f),
     onDismissRequest = onDismissRequest,
     content = {
       Column(

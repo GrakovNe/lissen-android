@@ -7,7 +7,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.PlayingChapter
 import org.grakovne.lissen.lib.domain.TimerOption
@@ -22,7 +25,18 @@ class PlayerViewModel
   constructor(
     private val mediaRepository: MediaRepository,
     private val preferences: LissenSharedPreferences,
+    private val networkService: NetworkService,
   ) : ViewModel() {
+    val isOnline: Flow<Boolean> =
+      combine(
+        networkService.isServerAvailable,
+        preferences.forceCacheFlow,
+      ) { isServerAvailable, isForceCache ->
+        isServerAvailable && !isForceCache
+      }
+
+    fun getBookFlow(bookId: String): Flow<DetailedItem?> = mediaRepository.getBookFlow(bookId)
+
     val book: LiveData<DetailedItem?> = mediaRepository.playingBook
 
     val currentChapterIndex: LiveData<Int> = mediaRepository.currentChapterIndex
