@@ -3,12 +3,15 @@ package org.grakovne.lissen.playback.service
 import android.content.Intent
 import androidx.annotation.OptIn
 import androidx.core.net.toUri
+import androidx.core.os.bundleOf
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.source.ClippingMediaSource
+import androidx.media3.exoplayer.source.ConcatenatingMediaSource2
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
@@ -25,6 +28,7 @@ import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.lib.domain.BookFile
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.MediaProgress
+import org.grakovne.lissen.lib.domain.PlayingChapter
 import org.grakovne.lissen.lib.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.MediaSessionProvider
@@ -123,7 +127,7 @@ class PlaybackService : MediaSessionService() {
       ACTION_SEEK_TO -> {
         val book = intent.getSerializableExtra(BOOK_EXTRA) as? DetailedItem
         val position = intent.getDoubleExtra(POSITION, 0.0)
-        book?.let { seek(it.files, position) }
+        book?.let { seek(it.chapters, position) }
         return START_NOT_STICKY
       }
 
@@ -154,6 +158,50 @@ class PlaybackService : MediaSessionService() {
     super.onDestroy()
   }
 
+  private data class CompositeChapter(
+    val chapter: PlayingChapter,
+    val files: List<BookFile>,
+    val startPosition: Long,
+    val endPosition: Long,
+  )
+
+  private fun mapFilesAndChapters(book: DetailedItem): List<CompositeChapter> {
+    var time = 0.0
+    var i = 0
+    var j = 0
+
+    return arrayListOf<CompositeChapter>().apply {
+      while (i < book.chapters.size && j < book.files.size) {
+        val chapter = book.chapters[i++]
+        val startTime = chapter.start - time
+
+        val files =
+          arrayListOf<BookFile>().apply {
+            while (time < chapter.end) {
+              val file = book.files[j]
+              add(file)
+
+              if (time + file.duration > chapter.end) {
+                break
+              }
+
+              time += file.duration
+              j++
+            }
+          }
+
+        add(
+          CompositeChapter(
+            chapter,
+            files,
+            (startTime * 1000).toLong(),
+            ((startTime + chapter.end) * 1000).toLong(),
+          ),
+        )
+      }
+    }
+  }
+
   @OptIn(UnstableApi::class)
   private suspend fun preparePlayback(book: DetailedItem) {
     exoPlayer.playWhenReady = false
@@ -170,36 +218,58 @@ class PlaybackService : MediaSessionService() {
               mediaProvider = mediaProvider,
             )
 
-          val playingQueue =
-            book
-              .files
-              .map { file ->
+          val sources =
+            mapFilesAndChapters(book)
+              .map { item ->
                 val mediaData =
                   MediaMetadata
                     .Builder()
-                    .setTitle(file.name)
+                    .setTitle(item.chapter.title)
                     .setArtist(book.title)
+                    .setExtras(bundleOf("book" to book))
                     .setArtworkUri(fetchCover(book))
 
-                val mediaItem =
-                  MediaItem
-                    .Builder()
-                    .setMediaId(file.id)
-                    .setUri(apply(book.id, file.id))
-                    .setTag(book)
-                    .setMediaMetadata(mediaData.build())
-                    .build()
+                ConcatenatingMediaSource2
+                  .Builder()
+                  .setMediaItem(
+                    MediaItem
+                      .Builder()
+                      .setMediaId(item.chapter.id + "_source")
+                      .setMediaMetadata(mediaData.build())
+                      .build(),
+                  ).apply {
+                    item.files.forEachIndexed { i, file ->
+                      val mediaItem =
+                        MediaItem
+                          .Builder()
+                          .setMediaId(item.chapter.id + '_' + file.id)
+                          .setUri(apply(book.id, file.id))
+                          .build()
 
-                ProgressiveMediaSource
-                  .Factory(sourceFactory)
-                  .createMediaSource(mediaItem)
+                      val endPos = if (i == item.files.lastIndex) item.endPosition else (file.duration * 1000).toLong()
+                      val startPos = if (i == 0) item.startPosition else 0
+
+                      val mediaSource =
+                        ProgressiveMediaSource
+                          .Factory(sourceFactory)
+                          .createMediaSource(mediaItem)
+
+                      add(
+                        ClippingMediaSource
+                          .Builder(mediaSource)
+                          .setStartPositionMs(startPos)
+                          .setEndPositionMs(endPos)
+                          .build(),
+                      )
+                    }
+                  }.build()
               }
 
           withContext(Dispatchers.Main) {
-            exoPlayer.setMediaSources(playingQueue)
+            exoPlayer.setMediaSources(sources)
             exoPlayer.prepare()
 
-            setPlaybackProgress(book.files, book.progress)
+            setPlaybackProgress(book.chapters, book.progress)
           }
         }
 
@@ -253,7 +323,7 @@ class PlaybackService : MediaSessionService() {
   }
 
   private fun seek(
-    items: List<BookFile>,
+    items: List<PlayingChapter>,
     position: Double?,
   ) {
     if (items.isEmpty()) {
@@ -289,7 +359,7 @@ class PlaybackService : MediaSessionService() {
   }
 
   private fun setPlaybackProgress(
-    chapters: List<BookFile>,
+    chapters: List<PlayingChapter>,
     progress: MediaProgress?,
   ) = seek(chapters, progress?.currentTime)
 

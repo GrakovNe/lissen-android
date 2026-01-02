@@ -159,14 +159,15 @@ class PlaybackSynchronizationService
       val currentItem =
         exoPlayer
           .currentMediaItem
-          ?.localConfiguration
-          ?.tag as? DetailedItem
+          ?.mediaMetadata
+          ?.extras
+          ?.getParcelable("book", DetailedItem::class.java)
           ?: return null
 
       val currentIndex = exoPlayer.currentMediaItemIndex
 
       val previousDuration =
-        currentItem.files
+        currentItem.chapters
           .take(currentIndex)
           .sumOf { it.duration * 1000 }
 
