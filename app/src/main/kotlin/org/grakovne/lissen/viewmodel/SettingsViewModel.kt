@@ -82,6 +82,8 @@ class SettingsViewModel
     private val _bypassSsl = MutableLiveData(preferences.getSslBypass())
     val bypassSsl = _bypassSsl
 
+    val collapseOnFling = MutableLiveData(preferences.getCollapseOnFling())
+
     private val _autoDownloadDelayed = MutableLiveData(preferences.getAutoDownloadDelayed())
     val autoDownloadDelayed = _autoDownloadDelayed
 
@@ -196,6 +198,11 @@ class SettingsViewModel
     fun preferMaterialYou(value: Boolean) {
       _materialYouEnabled.postValue(value)
       preferences.saveMaterialYou(value)
+    }
+
+    fun preferCollapseOnFling(value: Boolean) {
+      collapseOnFling.postValue(value)
+      preferences.saveCollapseOnFling(value)
     }
 
     fun preferAutoDownloadOption(option: DownloadOption?) {

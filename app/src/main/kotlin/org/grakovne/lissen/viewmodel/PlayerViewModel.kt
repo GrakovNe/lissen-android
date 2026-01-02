@@ -49,6 +49,8 @@ class PlayerViewModel
 
     val isPlaying: LiveData<Boolean> = mediaRepository.isPlaying
 
+    val collapseOnFling = preferences.collapseOnFlingFlow
+
     fun recoverMiniPlayer() {
       val playingBook = preferences.getPlayingBook()
 

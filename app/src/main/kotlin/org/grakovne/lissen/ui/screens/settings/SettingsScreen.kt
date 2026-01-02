@@ -48,6 +48,7 @@ fun SettingsScreen(
 ) {
   val viewModel: SettingsViewModel = hiltViewModel()
   val host by viewModel.host.observeAsState()
+  val collapseOnFling by viewModel.collapseOnFling.observeAsState(false)
 
   LaunchedEffect(Unit) {
     viewModel.refreshConnectionInfo()
@@ -109,6 +110,14 @@ fun SettingsScreen(
             ) {
               viewModel.preferMaterialYou(it)
             }
+          }
+
+          SettingsToggleItem(
+            stringResource(R.string.settings_screen_collapse_on_fling_title),
+            stringResource(R.string.settings_screen_collapse_on_fling_description),
+            collapseOnFling,
+          ) {
+            viewModel.preferCollapseOnFling(it)
           }
 
           LibraryOrderingSettingsComposable(viewModel)

@@ -25,6 +25,8 @@
     <string name="settings_screen_connection_type">Connection type</string>
     <string name="settings_screen_connection_local">Local network</string>
     <string name="settings_screen_connection_external">External network</string>
+    <string name="settings_screen_collapse_on_fling_title">Collapse on fling</string>
+    <string name="settings_screen_collapse_on_fling_description">Collapse the chapter/queue screen with a fling</string>
     <string name="login_error_host_is_down">Host is down</string>
     <string name="login_error_host_url_is_missing">Host URL is missing</string>
     <string name="login_error_username_is_missing">Username is missing</string>

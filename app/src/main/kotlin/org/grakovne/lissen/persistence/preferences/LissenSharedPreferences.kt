@@ -272,6 +272,8 @@ class LissenSharedPreferences
 
     val materialYouFlow = asFlow(KEY_MATERIAL_YOU_ENABLED, ::getMaterialYou)
 
+    val collapseOnFlingFlow = asFlow(KEY_COLLAPSE_ON_FLING, ::getCollapseOnFling)
+
     private fun saveActiveLibraryId(host: String) = sharedPreferences.edit { putString(KEY_PREFERRED_LIBRARY_ID, host) }
 
     private fun getPreferredLibraryId(): String? = sharedPreferences.getString(KEY_PREFERRED_LIBRARY_ID, null)
@@ -422,6 +424,13 @@ class LissenSharedPreferences
       }
     }
 
+    fun getCollapseOnFling(): Boolean = sharedPreferences.getBoolean(KEY_COLLAPSE_ON_FLING, true)
+
+    fun saveCollapseOnFling(value: Boolean) =
+      sharedPreferences.edit {
+        putBoolean(KEY_COLLAPSE_ON_FLING, value)
+      }
+
     companion object {
       private const val KEY_ALIAS = "secure_key_alias"
       private const val KEY_HOST = "host"
@@ -449,6 +458,7 @@ class LissenSharedPreferences
       private const val KEY_PREFERRED_AUTO_DOWNLOAD_LIBRARY_TYPE = "preferred_auto_download_library_type"
       private const val KEY_AUTO_DOWNLOAD_DELAYED = "auto_download_delayed"
       private const val KEY_PREFERRED_LIBRARY_ORDERING = "preferred_library_ordering"
+      private const val KEY_COLLAPSE_ON_FLING = "collapse_on_fling"
 
       private const val KEY_CUSTOM_HEADERS = "custom_headers"
       private const val KEY_BYPASS_SSL = "bypass_ssl"
