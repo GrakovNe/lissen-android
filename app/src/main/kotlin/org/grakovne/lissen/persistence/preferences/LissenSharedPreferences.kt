@@ -227,6 +227,13 @@ class LissenSharedPreferences
         ?.let { ColorScheme.valueOf(it) }
         ?: ColorScheme.FOLLOW_SYSTEM
 
+    fun saveMaterialYou(enabled: Boolean) =
+      sharedPreferences.edit {
+        putBoolean(KEY_MATERIAL_YOU_ENABLED, enabled)
+      }
+
+    fun getMaterialYou() = sharedPreferences.getBoolean(KEY_MATERIAL_YOU_ENABLED, true)
+
     fun saveAutoDownloadOption(option: DownloadOption?) =
       sharedPreferences.edit {
         putString(KEY_PREFERRED_AUTO_DOWNLOAD, option?.makeId())
@@ -241,44 +248,29 @@ class LissenSharedPreferences
 
     fun getPlaybackSpeed(): Float = sharedPreferences.getFloat(KEY_PREFERRED_PLAYBACK_SPEED, 1f)
 
-    val playingBookFlow: Flow<DetailedItem?> =
+    private fun <T> asFlow(
+      key: String,
+      getter: () -> T,
+    ): Flow<T> =
       callbackFlow {
         val listener =
-          SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == KEY_PLAYING_BOOK) {
-              trySend(getPlayingBook())
+          SharedPreferences.OnSharedPreferenceChangeListener { _, changeKey ->
+            if (changeKey == key) {
+              trySend(getter())
             }
           }
         sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
-        trySend(getPlayingBook())
+        trySend(getter())
         awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
       }.distinctUntilChanged()
 
-    val playbackVolumeBoostFlow: Flow<PlaybackVolumeBoost> =
-      callbackFlow {
-        val listener =
-          SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == KEY_VOLUME_BOOST) {
-              trySend(getPlaybackVolumeBoost())
-            }
-          }
-        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
-        trySend(getPlaybackVolumeBoost())
-        awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
-      }.distinctUntilChanged()
+    val playingBookFlow = asFlow(KEY_PLAYING_BOOK, ::getPlayingBook)
 
-    val colorSchemeFlow: Flow<ColorScheme> =
-      callbackFlow {
-        val listener =
-          SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == KEY_PREFERRED_COLOR_SCHEME) {
-              trySend(getColorScheme())
-            }
-          }
-        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
-        trySend(getColorScheme())
-        awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
-      }.distinctUntilChanged()
+    val playbackVolumeBoostFlow = asFlow(KEY_VOLUME_BOOST, ::getPlaybackVolumeBoost)
+
+    val colorSchemeFlow = asFlow(KEY_PREFERRED_COLOR_SCHEME, ::getColorScheme)
+
+    val materialYouFlow = asFlow(KEY_MATERIAL_YOU_ENABLED, ::getMaterialYou)
 
     private fun saveActiveLibraryId(host: String) = sharedPreferences.edit { putString(KEY_PREFERRED_LIBRARY_ID, host) }
 
@@ -451,6 +443,7 @@ class LissenSharedPreferences
       private const val KEY_PREFERRED_SEEK_TIME = "preferred_seek_time"
 
       private const val KEY_PREFERRED_COLOR_SCHEME = "preferred_color_scheme"
+      private const val KEY_MATERIAL_YOU_ENABLED = "material_you_enabled"
       private const val KEY_PREFERRED_AUTO_DOWNLOAD = "preferred_auto_download"
       private const val KEY_PREFERRED_AUTO_DOWNLOAD_NETWORK_TYPE = "preferred_auto_download_network_type"
       private const val KEY_PREFERRED_AUTO_DOWNLOAD_LIBRARY_TYPE = "preferred_auto_download_library_type"

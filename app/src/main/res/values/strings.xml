@@ -44,6 +44,8 @@
     <string name="color_scheme_light">Light</string>
     <string name="color_scheme_dark">Dark</string>
     <string name="settings_screen_color_scheme_title">Color scheme</string>
+    <string name="settings_screen_material_you_title">Material You colors</string>
+    <string name="settings_screen_material_you_description">Match the app\'s colors to your wallpaper</string>
     <string name="library_search_hint">Search by title, author, or series</string>
     <string name="player_screen_title">Listening now</string>
     <string name="settings_screen_custom_headers_title">Custom Headers</string>

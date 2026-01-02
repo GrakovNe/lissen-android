@@ -49,6 +49,9 @@ class SettingsViewModel
     private val _preferredColorScheme = MutableLiveData(preferences.getColorScheme())
     val preferredColorScheme = _preferredColorScheme
 
+    private val _materialYouEnabled = MutableLiveData(preferences.getMaterialYou())
+    val materialYouEnabled = _materialYouEnabled
+
     private val _preferredAutoDownloadNetworkType = MutableLiveData(preferences.getAutoDownloadNetworkType())
     val preferredAutoDownloadNetworkType = _preferredAutoDownloadNetworkType
 
@@ -188,6 +191,11 @@ class SettingsViewModel
     fun preferColorScheme(colorScheme: ColorScheme) {
       _preferredColorScheme.postValue(colorScheme)
       preferences.saveColorScheme(colorScheme)
+    }
+
+    fun preferMaterialYou(value: Boolean) {
+      _materialYouEnabled.postValue(value)
+      preferences.saveMaterialYou(value)
     }
 
     fun preferAutoDownloadOption(option: DownloadOption?) {
