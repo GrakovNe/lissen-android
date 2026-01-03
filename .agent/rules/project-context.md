@@ -6,16 +6,16 @@ trigger: always_on
 
 ## About Project
 
-This is an offline first Android client app for the [audiobookshelf](https://github.com/advplyr/audiobookshelf) server.
+This is an offline-first Android client app for the [audiobookshelf](https://github.com/advplyr/audiobookshelf) server.
 
 ## Feature Requirements (Offline first behavior)
 
 - As the app is an offline-first app, assume that the server is not always reachable.
-- Playback progress should be saved in local database first **immediately**.
-- The app should watch the network changes, such as connecting to a new wifi network, or lan network, or disconnecting from a network and connecting to a new network, disconnecting from wifi and connecting to celular network etc, and try to ping or reachout the audiobook server to check whether the server is reachable.
-- If the server is reachable, the app should sync the local progress to the server and pull the latest progress updates from the server to the local database, it should merge the updates from both.
-- If the server is reachable, and some chapters of any audiobook is download, i.e. available offline, then offline track should be given priority for playback.
-- If the offline track is deleted / cleared while the book is being played, the player should attempt to fallback to the online URL if the server is reachable, otherwise pause playback and persist the last playback state (track ID, playback position/timestamp, current chapter/index, and playback status) plus a flag indicating offline content was removed; ensure the rule notes that these persisted fields are used to resume or report playback state and are written atomically to the player state store.
+- Playback progress should be saved in the local database first **immediately**.
+- The app should watch the network changes, such as connecting to a new wifi network, or Ethernet LAN, or disconnecting from a network and connecting to a new network, disconnecting from wifi and connecting to celular network, etc., and try to ping or reach out to the audiobook server to check whether the server is reachable.
+- If the server is reachable, the app should sync the local progress to the server and pull the latest progress updates from the server to the local database; it should merge the updates from both.
+- If the server is reachable, and some chapters of any audiobook are downloaded, i.e., available offline, then the offline track should be given priority for playback.
+- If the offline track is deleted/cleared while the book is being played, the player should attempt to fallback to the online URL if the server is reachable, otherwise pause playback and persist the last playback state (track ID, playback position/timestamp, current chapter/index, and playback status) plus a flag indicating offline content was removed; ensure the rule notes that these persisted fields are used to resume or report playback state and are written atomically to the player state store.
 - The app must be fully functional for downloaded content when offline.
 
 ## Ensure Stability

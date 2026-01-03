@@ -1,0 +1,21 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "gradle",
+      "id": "${workspaceFolder}app:installDebugapp",
+      "script": "app:installDebug",
+      "description": "Installs the Debug build.",
+      "group": "install",
+      "project": "app",
+      "buildFile": "${workspaceFolder}/app/build.gradle.kts",
+      "rootProject": "Lissen",
+      "projectFolder": "${workspaceFolder}",
+      "workspaceFolder": "${workspaceFolder}",
+      "args": "",
+      "javaDebug": false,
+      "problemMatcher": ["$gradle"],
+      "label": "gradle: app:installDebug"
+    }
+  ]
+}

@@ -74,6 +74,12 @@ class NetworkService
 
       connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
       checkServerAvailability()
+
+      scope.launch {
+        preferences.hostFlow.collect {
+          checkServerAvailability()
+        }
+      }
     }
 
     private var checkJob: Job? = null

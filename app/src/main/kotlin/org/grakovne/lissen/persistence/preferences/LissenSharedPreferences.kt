@@ -579,6 +579,19 @@ class LissenSharedPreferences
         awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
       }.distinctUntilChanged()
 
+    val hostFlow: Flow<String?> =
+      callbackFlow {
+        val listener =
+          SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == KEY_HOST) {
+              trySend(getHost())
+            }
+          }
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+        trySend(getHost())
+        awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
+      }.distinctUntilChanged()
+
     companion object {
       private const val KEY_ALIAS = "secure_key_alias"
       private const val KEY_HOST = "host"
