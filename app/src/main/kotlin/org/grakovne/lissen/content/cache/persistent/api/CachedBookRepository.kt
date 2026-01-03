@@ -40,7 +40,7 @@ class CachedBookRepository
       fileId: String,
     ): Uri =
       properties
-        .provideMediaCachePatch(bookId, fileId)
+        .provideMediaCachePath(bookId, fileId)
         .toUri()
 
     fun provideBookCover(bookId: String): File = properties.provideBookCoverPath(bookId)
@@ -62,36 +62,44 @@ class CachedBookRepository
     fun provideCacheState(bookId: String) = bookDao.isBookCached(bookId)
 
     suspend fun cacheBooks(books: List<Book>) {
-      books.forEach { book ->
-        val existing = bookDao.fetchBook(book.id)
+      if (books.isEmpty()) return
 
-        val entity =
-          existing?.copy(
-            title = book.title,
-            author = book.author,
-            duration = book.duration.toInt(),
-          ) ?: BookEntity(
-            id = book.id,
-            title = book.title,
-            author = book.author,
-            subtitle = null,
-            narrator = null,
-            publisher = null,
-            year = null,
-            abstract = null,
-            duration = book.duration.toInt(),
-            libraryId = book.libraryId,
-            createdAt = 0,
-            updatedAt = 0,
-            seriesNames = "",
-            seriesJson = "[]",
-          )
+      val bookIds = books.map { it.id }
+      val existingBooks =
+        bookDao
+          .fetchBooks(bookIds)
+          .associateBy { it.id }
 
-        when (existing) {
-          null -> bookDao.upsertBook(entity)
-          else -> bookDao.updateBook(entity)
-        }
-      }
+      val entities =
+        books
+          .map { book ->
+            val existing = existingBooks[book.id]
+
+            existing?.copy(
+              title = book.title,
+              author = book.author,
+              subtitle = book.subtitle,
+              seriesNames = book.series,
+              duration = book.duration.toInt(),
+            ) ?: BookEntity(
+              id = book.id,
+              title = book.title,
+              author = book.author,
+              subtitle = book.subtitle,
+              narrator = null,
+              publisher = null,
+              year = null,
+              abstract = null,
+              duration = book.duration.toInt(),
+              libraryId = book.libraryId,
+              createdAt = 0,
+              updatedAt = 0,
+              seriesNames = book.series,
+              seriesJson = "[]",
+            )
+          }
+
+      bookDao.upsertBooks(entities)
     }
 
     fun provideCacheState(

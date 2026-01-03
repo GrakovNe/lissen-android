@@ -110,7 +110,7 @@ class ContentCachingManager
 
       findRequestedFiles(item, listOf(chapter))
         .forEach { file ->
-          val binaryContent = properties.provideMediaCachePatch(item.id, file.id)
+          val binaryContent = properties.provideMediaCachePath(item.id, file.id)
 
           if (binaryContent.exists()) {
             binaryContent.delete()
@@ -171,7 +171,7 @@ class ContentCachingManager
           }
 
           val body = response.body
-          val dest = properties.provideMediaCachePatch(bookId, file.id)
+          val dest = properties.provideMediaCachePath(bookId, file.id)
           dest.parentFile?.mkdirs()
 
           try {

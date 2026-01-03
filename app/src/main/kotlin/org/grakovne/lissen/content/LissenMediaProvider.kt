@@ -50,12 +50,14 @@ class LissenMediaProvider
         }
 
       Timber.d("Local URI miss for $libraryItemId / $chapterId. Falling back to REMOTE.")
-      return providePreferredChannel()
-        .provideFileUri(libraryItemId, chapterId)
-        .let {
-          Timber.d("Providing REMOTE URI for $libraryItemId / $chapterId: $it")
-          OperationResult.Success(it)
-        }
+      return try {
+        val uri = providePreferredChannel().provideFileUri(libraryItemId, chapterId)
+        Timber.d("Providing REMOTE URI for $libraryItemId / $chapterId: $uri")
+        OperationResult.Success(uri)
+      } catch (e: Exception) {
+        Timber.e(e, "Failed to provide file URI for $libraryItemId and $chapterId")
+        OperationResult.Error(OperationError.InternalError, e.message)
+      }
     }
 
     suspend fun syncProgress(

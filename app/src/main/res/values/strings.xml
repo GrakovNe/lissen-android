@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">Lissen</string>
+    <string name="app_name" translatable="false">Lissen Up</string>
     <string name="library_screen_library_title">Library</string>
     <string name="library_screen_continue_listening_title">Continue listening</string>
     <string name="library_screen_preferences_menu_item">Preferences</string>
@@ -178,6 +178,23 @@
     <string name="book_detail_remaining">Remaining</string>
     <string name="book_detail_read_more">Read more</string>
     <string name="book_detail_see_less">See less</string>
-    <string name="duration_hours">%1$d hrs</string>
-    <string name="duration_minutes">%1$d min</string>
+    <plurals name="duration_hours">
+        <item quantity="one">%1$d hr</item>
+        <item quantity="other">%1$d hrs</item>
+    </plurals>
+    <plurals name="duration_minutes">
+        <item quantity="one">%1$d min</item>
+        <item quantity="other">%1$d mins</item>
+    </plurals>
+    <string name="download_progress_description">Download progress: %1$d percent</string>
+    <string name="seek_forward_description">Forward %1$d seconds</string>
+    <string name="seek_rewind_description">Rewind %1$d seconds</string>
+    <string name="playback_settings_title">Playback preferences</string>
+    <string name="playback_settings_description">Player controls and sleep timer settings</string>
+    <string name="back">Back</string>
+    <string name="playback_next_previous_title">Next/previous buttons</string>
+    <string name="playback_next_previous_description">Show next and previous track buttons in the player</string>
+    <string name="playback_shake_reset_title">Shake to reset sleep timer</string>
+    <string name="playback_shake_reset_description">Shake device to reset the sleep timer</string>
+    <string name="playback_preferences">Playback preferences</string>
 </resources>

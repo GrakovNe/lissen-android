@@ -59,10 +59,10 @@ import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
 fun MiniPlayerComposable(
-  navController: AppNavigationService,
   book: DetailedItem,
   imageLoader: ImageLoader,
   playerViewModel: PlayerViewModel,
+  navController: AppNavigationService? = null,
   onContentClick: (() -> Unit)? = null,
 ) {
   val view: View = LocalView.current
@@ -133,7 +133,7 @@ fun MiniPlayerComposable(
               if (onContentClick != null) {
                 onContentClick()
               } else {
-                navController.showPlayer(book.id, book.title, book.subtitle)
+                navController?.showPlayer(book.id, book.title, book.subtitle)
               }
             },
       ) {

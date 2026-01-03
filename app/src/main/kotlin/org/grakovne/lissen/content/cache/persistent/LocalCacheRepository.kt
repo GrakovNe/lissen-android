@@ -121,7 +121,7 @@ class LocalCacheRepository
 
     suspend fun fetchRecentListenedBooks(
       libraryId: String,
-      downloadedOnly: Boolean,
+      downloadedOnly: Boolean = false,
     ): OperationResult<List<RecentBook>> =
       cachedBookRepository
         .fetchRecentBooks(
@@ -161,16 +161,16 @@ class LocalCacheRepository
 
     suspend fun cacheBookMetadata(book: DetailedItem) {
       try {
-        val restoredChapters =
+        val (restoredChapters, droppedChapters) =
           book
             .chapters
-            .filter { chapter ->
+            .partition { chapter ->
               val files = findRelatedFiles(chapter, book.files)
-              if (files.isEmpty()) return@filter false
+              if (files.isEmpty()) return@partition false
 
               files.all { file ->
                 storageProperties
-                  .provideMediaCachePatch(book.id, file.id)
+                  .provideMediaCachePath(book.id, file.id)
                   .exists()
               }
             }
@@ -178,7 +178,7 @@ class LocalCacheRepository
         cachedBookRepository.cacheBook(
           book = book,
           fetchedChapters = restoredChapters,
-          droppedChapters = emptyList(),
+          droppedChapters = droppedChapters,
         )
         Timber.d("Successfully cached book metadata for ${book.id}")
       } catch (e: Exception) {

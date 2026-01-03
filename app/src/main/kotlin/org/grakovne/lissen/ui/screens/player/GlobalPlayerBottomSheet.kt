@@ -23,7 +23,6 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -152,13 +151,8 @@ fun GlobalMiniPlayer(
   // However, MiniPlayerComposable still requires a AppNavigationService in the signature.
   // We can construct a dummy one safely because it won't be used for the click action.
   val context = androidx.compose.ui.platform.LocalContext.current
-  val dummyNavController =
-    remember {
-      AppNavigationService(androidx.navigation.NavHostController(context))
-    }
 
   org.grakovne.lissen.ui.screens.library.composables.MiniPlayerComposable(
-    navController = dummyNavController,
     book = book,
     imageLoader = imageLoader,
     playerViewModel = playerViewModel,
@@ -179,13 +173,6 @@ fun PlayerContent(
   val playingBook by playerViewModel.book.observeAsState()
   val isPlaybackReady by playerViewModel.isPlaybackReady.observeAsState(false)
   val playingQueueExpanded by playerViewModel.playingQueueExpanded.observeAsState(false)
-
-  // Observe queue expansion to potentially handle back/collapse
-  LaunchedEffect(playingQueueExpanded) {
-    // If queue was collapsed, we don't do anything special here as we are in a sheet.
-    // But if the user wants to "Collapse Player", we might want to close the sheet.
-    // However, "Collapse Playing Queue" just means show controls.
-  }
 
   Column(
     modifier =

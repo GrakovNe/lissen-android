@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfChannelProvider
 import org.grakovne.lissen.channel.common.MediaChannel
+import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
@@ -46,12 +47,20 @@ class BookRepository
         }
 
       Timber.d("Local URI miss for $libraryItemId / $chapterId. Falling back to REMOTE.")
-      return providePreferredChannel()
-        .provideFileUri(libraryItemId, chapterId)
-        .let {
-          Timber.d("Providing REMOTE URI for $libraryItemId / $chapterId: $it")
-          OperationResult.Success(it)
+
+      return try {
+        val uri = providePreferredChannel().provideFileUri(libraryItemId, chapterId)
+
+        if (uri == null) {
+          OperationResult.Error(OperationError.InternalError, "Remote URI is null")
+        } else {
+          Timber.d("Providing REMOTE URI for $libraryItemId / $chapterId: $uri")
+          OperationResult.Success(uri)
         }
+      } catch (e: Exception) {
+        Timber.e(e, "Failed to provide file URI for $libraryItemId and $chapterId")
+        OperationResult.Error(OperationError.InternalError, e.message ?: "Unknown error occurred")
+      }
     }
 
     suspend fun syncProgress(

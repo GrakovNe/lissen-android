@@ -102,7 +102,13 @@ class LissenDataSourceFactory(
         buffer: ByteArray,
         offset: Int,
         length: Int,
-      ): Int = currentDataSource?.read(buffer, offset, length) ?: 0
+      ): Int {
+        val dataSource =
+          currentDataSource
+            ?: throw IllegalStateException("DataSource is not open. Call open() first.")
+
+        return dataSource.read(buffer, offset, length)
+      }
 
       override fun getUri(): Uri? = currentDataSource?.uri
 

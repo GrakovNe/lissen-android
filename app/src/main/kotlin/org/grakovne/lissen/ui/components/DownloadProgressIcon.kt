@@ -12,6 +12,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
@@ -25,10 +29,19 @@ fun DownloadProgressIcon(
   color: Color = LocalContentColor.current,
 ) {
   if (cacheState.status is CacheStatus.Caching) {
+    val progress = cacheState.progress.coerceIn(0.0, 1.0).toFloat()
+    val progressPercent = (progress * 100).toInt()
+    val progressDescription = stringResource(R.string.download_progress_description, progressPercent)
+
     val iconSize = size - 2.dp
     CircularProgressIndicator(
-      progress = { cacheState.progress.coerceIn(0.0, 1.0).toFloat() },
-      modifier = Modifier.size(iconSize),
+      progress = { progress },
+      modifier =
+        Modifier
+          .semantics(mergeDescendants = true) {
+            progressBarRangeInfo = ProgressBarRangeInfo(progress, 0f..1f)
+            contentDescription = progressDescription
+          }.size(iconSize),
       strokeWidth = iconSize * 0.1f,
       color = colorScheme.primary,
       trackColor = color,

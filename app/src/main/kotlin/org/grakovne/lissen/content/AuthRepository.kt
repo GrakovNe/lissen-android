@@ -25,7 +25,7 @@ class AuthRepository
       username: String,
       password: String,
     ): OperationResult<UserAccount> {
-      Timber.d("Authorizing for $username@$host")
+      Timber.d("Authorizing for host: $host")
       return provideAuthService().authorize(host, username, password) { onPostLogin(host, it) }
     }
 

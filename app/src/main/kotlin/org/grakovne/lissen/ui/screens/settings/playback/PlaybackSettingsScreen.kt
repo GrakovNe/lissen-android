@@ -49,7 +49,7 @@ fun PlaybackSettingsScreen(
       TopAppBar(
         title = {
           Text(
-            text = "Playback preferences",
+            text = stringResource(R.string.playback_preferences),
             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
             color = MaterialTheme.colorScheme.onSurface,
           )
@@ -58,7 +58,7 @@ fun PlaybackSettingsScreen(
           IconButton(onClick = { onBack() }) {
             Icon(
               imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-              contentDescription = "Back",
+              contentDescription = stringResource(R.string.back),
               tint = MaterialTheme.colorScheme.onSurface,
             )
           }
@@ -86,15 +86,15 @@ fun PlaybackSettingsScreen(
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
           SettingsToggleItem(
-            title = "Next/previous buttons",
-            description = "Show next and previous track buttons in the player",
+            title = stringResource(R.string.playback_next_previous_title),
+            description = stringResource(R.string.playback_next_previous_description),
             initialState = showPlayerNavButtons,
             onCheckedChange = { viewModel.preferShowPlayerNavButtons(it) },
           )
 
           SettingsToggleItem(
-            title = "Shake to reset sleep timer",
-            description = "Shake device to reset the sleep timer",
+            title = stringResource(R.string.playback_shake_reset_title),
+            description = stringResource(R.string.playback_shake_reset_description),
             initialState = shakeToResetTimer,
             onCheckedChange = { viewModel.preferShakeToResetTimer(it) },
           )

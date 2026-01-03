@@ -1,5 +1,6 @@
 package org.grakovne.lissen.ui.effects
 
+import android.app.Activity
 import android.os.Build.VERSION
 import android.os.Build.VERSION_CODES
 import android.view.Window
@@ -12,7 +13,8 @@ fun WindowBlurEffect() {
   val view = LocalView.current
   if (VERSION.SDK_INT >= VERSION_CODES.S) {
     SideEffect {
-      val window = view.context as? Window ?: return@SideEffect
+      val activity = view.context as? Activity ?: return@SideEffect
+      val window = activity.window
       window.setBackgroundBlurRadius(30)
     }
   }

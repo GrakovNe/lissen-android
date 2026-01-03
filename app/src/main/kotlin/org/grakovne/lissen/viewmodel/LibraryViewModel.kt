@@ -14,10 +14,14 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
@@ -51,7 +55,7 @@ class LibraryViewModel
 
     private val _searchToken = MutableStateFlow(EMPTY_SEARCH)
 
-    private var defaultPagingSource: PagingSource<Int, Book>? = null
+    private val defaultPagingSource = MutableStateFlow<PagingSource<Int, Book>?>(null)
     private var searchPagingSource: PagingSource<Int, Book>? = null
 
     private val _totalCount = MutableLiveData<Int>()
@@ -158,11 +162,11 @@ class LibraryViewModel
         downloadedOnlyFlow,
       ) { libraryId, downloadedOnly ->
         Pair(libraryId, downloadedOnly)
-      }.flatMapLatest { (libraryId, downloadedOnly) ->
+      }.onEach { (libraryId, downloadedOnly) ->
         if (!downloadedOnly && libraryId != null) {
           syncLibrary(libraryId)
         }
-
+      }.flatMapLatest { (libraryId, downloadedOnly) ->
         Pager(
           config = pageConfig,
           pagingSourceFactory = {
@@ -172,7 +176,7 @@ class LibraryViewModel
                 bookRepository = bookRepository,
                 downloadedOnly = downloadedOnly,
               ) { _totalCount.postValue(it) }
-            defaultPagingSource = source
+            defaultPagingSource.tryEmit(source)
 
             source
           },
@@ -181,10 +185,9 @@ class LibraryViewModel
 
     private fun syncLibrary(libraryId: String) {
       viewModelScope.launch(Dispatchers.IO) {
-        bookRepository.syncLibraryPage(libraryId, PAGE_SIZE, 0)
         bookRepository.syncRepositories()
         refreshRecentListening()
-        defaultPagingSource?.invalidate()
+        defaultPagingSource.value?.invalidate()
       }
     }
 
@@ -225,7 +228,7 @@ class LibraryViewModel
         withContext(Dispatchers.IO) {
           when (searchRequested.value) {
             true -> searchPagingSource?.invalidate()
-            else -> defaultPagingSource?.invalidate()
+            else -> defaultPagingSource.value?.invalidate()
           }
         }
       }

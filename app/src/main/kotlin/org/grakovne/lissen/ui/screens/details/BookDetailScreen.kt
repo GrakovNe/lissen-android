@@ -1,8 +1,16 @@
 package org.grakovne.lissen.ui.screens.details
 
+import android.graphics.Typeface
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
+import android.text.style.StrikethroughSpan
+import android.text.style.StyleSpan
+import android.text.style.URLSpan
+import android.text.style.UnderlineSpan
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -60,13 +68,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -236,7 +251,7 @@ fun BookDetailScreen(
                   if (playingBook?.id == bookId && isPlaying) {
                     playerViewModel.togglePlayPause()
                   } else {
-                    if (!playerViewModel.isPlaying.value!!) {
+                    if (!isPlaying) {
                       playerViewModel.togglePlayPause()
                     }
                   }
@@ -331,14 +346,14 @@ fun BookDetailScreen(
                 ) {
                   if (hours > 0) {
                     Text(
-                      text = stringResource(R.string.duration_hours, hours),
+                      text = context.resources.getQuantityString(R.plurals.duration_hours, hours.toInt(), hours.toInt()),
                       style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black),
                       color = MaterialTheme.colorScheme.onSurface,
                       textAlign = TextAlign.Center,
                     )
                     if (minutes > 0) {
                       Text(
-                        text = stringResource(R.string.duration_minutes, minutes),
+                        text = context.resources.getQuantityString(R.plurals.duration_minutes, minutes.toInt(), minutes.toInt()),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
@@ -346,7 +361,7 @@ fun BookDetailScreen(
                     }
                   } else {
                     Text(
-                      text = stringResource(R.string.duration_minutes, minutes),
+                      text = context.resources.getQuantityString(R.plurals.duration_minutes, minutes.toInt(), minutes.toInt()),
                       style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black),
                       color = MaterialTheme.colorScheme.onSurface,
                       textAlign = TextAlign.Center,
@@ -437,7 +452,7 @@ fun BookDetailScreen(
       isOnline = isOnline,
       cachingInProgress = cacheProgress.status is CacheStatus.Caching,
       onRequestedDownload = { option ->
-        playingBook?.let {
+        bookDetail?.let {
           cachingModelView.cache(
             mediaItem = it,
             currentPosition = playerViewModel.totalPosition.value ?: 0.0,
@@ -446,14 +461,14 @@ fun BookDetailScreen(
         }
       },
       onRequestedDrop = {
-        playingBook?.let {
+        bookDetail?.let {
           scope.launch {
             cachingModelView.dropCache(it.id)
           }
         }
       },
       onRequestedStop = {
-        playingBook?.let {
+        bookDetail?.let {
           scope.launch {
             cachingModelView.stopCaching(it)
           }
@@ -489,15 +504,36 @@ fun ExpandableDescription(description: String) {
   val html = description.replace("\n", "<br>")
   val spanned = remember(html) { HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_LEGACY) }
 
+  val linkColor = MaterialTheme.colorScheme.primary
+  val annotatedString = remember(spanned) { spanned.toAnnotatedString(linkColor) }
+  val uriHandler = LocalUriHandler.current
+  var layoutResult by remember { androidx.compose.runtime.mutableStateOf<TextLayoutResult?>(null) }
+
   Column {
     Text(
-      text = spanned.toString(),
+      text = annotatedString,
       style = MaterialTheme.typography.bodyMedium.copy(lineHeight = 24.sp),
       color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
       maxLines = if (expanded) Int.MAX_VALUE else 3,
       overflow = TextOverflow.Ellipsis,
-      modifier = Modifier.animateContentSize(),
+      modifier =
+        Modifier
+          .animateContentSize()
+          .pointerInput(key1 = spanned) {
+            detectTapGestures { pos ->
+              layoutResult?.let { layout ->
+                val offset = layout.getOffsetForPosition(pos)
+                annotatedString
+                  .getStringAnnotations("URL", offset, offset)
+                  .firstOrNull()
+                  ?.let { annotation ->
+                    uriHandler.openUri(annotation.item)
+                  }
+              }
+            }
+          },
       onTextLayout = { result ->
+        layoutResult = result
         if (!expanded && result.hasVisualOverflow) {
           overflowDetected = true
         }
@@ -520,6 +556,36 @@ fun ExpandableDescription(description: String) {
     }
   }
 }
+
+private fun Spanned.toAnnotatedString(linkColor: Color): androidx.compose.ui.text.AnnotatedString =
+  buildAnnotatedString {
+    append(this@toAnnotatedString.toString())
+    val spans = this@toAnnotatedString.getSpans(0, this@toAnnotatedString.length, Any::class.java)
+    spans.forEach { span ->
+      val start = this@toAnnotatedString.getSpanStart(span)
+      val end = this@toAnnotatedString.getSpanEnd(span)
+      when (span) {
+        is StyleSpan -> {
+          when (span.style) {
+            Typeface.BOLD -> addStyle(SpanStyle(fontWeight = FontWeight.Bold), start, end)
+            Typeface.ITALIC -> addStyle(SpanStyle(fontStyle = FontStyle.Italic), start, end)
+            Typeface.BOLD_ITALIC -> addStyle(SpanStyle(fontWeight = FontWeight.Bold, fontStyle = FontStyle.Italic), start, end)
+          }
+        }
+        is UnderlineSpan -> addStyle(SpanStyle(textDecoration = TextDecoration.Underline), start, end)
+        is StrikethroughSpan -> addStyle(SpanStyle(textDecoration = TextDecoration.LineThrough), start, end)
+        is ForegroundColorSpan -> addStyle(SpanStyle(color = Color(span.foregroundColor)), start, end)
+        is URLSpan -> {
+          addStyle(
+            SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline),
+            start,
+            end,
+          )
+          addStringAnnotation(tag = "URL", annotation = span.url, start = start, end = end)
+        }
+      }
+    }
+  }
 
 @Composable
 fun BookInfoTile(

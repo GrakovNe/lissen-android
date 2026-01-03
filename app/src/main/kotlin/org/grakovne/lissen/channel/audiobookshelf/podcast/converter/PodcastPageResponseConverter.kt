@@ -25,6 +25,7 @@ class PodcastPageResponseConverter
             subtitle = null,
             series = null,
             author = it.media.metadata.author,
+            // Duration is unavailable from the API
             duration = 0.0,
             libraryId = libraryId,
           )

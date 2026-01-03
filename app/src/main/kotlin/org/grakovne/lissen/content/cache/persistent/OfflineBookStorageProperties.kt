@@ -27,7 +27,7 @@ class OfflineBookStorageProperties
 
     fun provideBookCache(bookId: String): File = baseFolder().resolve(bookId)
 
-    fun provideMediaCachePatch(
+    fun provideMediaCachePath(
       bookId: String,
       fileId: String,
     ): File =

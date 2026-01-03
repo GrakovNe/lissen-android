@@ -11,6 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -92,18 +93,19 @@ class NetworkService
 
           val hostUrl = preferences.getHost()
           if (hostUrl.isNullOrBlank()) {
-            _isServerAvailable.emit(isConnectedToInternet)
+            _isServerAvailable.emit(false)
             return@launch
           }
 
           try {
             val url = java.net.URL(hostUrl)
             val port = if (url.port == -1) url.defaultPort else url.port
-            val socket = java.net.Socket()
             val address = java.net.InetSocketAddress(url.host, port)
 
-            socket.connect(address, 2000)
-            socket.close()
+            java.net.Socket().use { socket ->
+              socket.connect(address, 2000)
+            }
+
             _isServerAvailable.emit(true)
           } catch (e: Exception) {
             Timber.e(e, "Server reachability check failed for $hostUrl")
@@ -155,5 +157,9 @@ class NetworkService
       cachedSsid = networkSsid
       cachedNetworkHandle = network.networkHandle
       return cachedSsid
+    }
+
+    override fun onDestroy() {
+      scope.cancel()
     }
   }

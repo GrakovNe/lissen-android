@@ -18,33 +18,51 @@ class ShakeDetector
   constructor(
     @ApplicationContext private val context: Context,
   ) : SensorEventListener {
-    private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
-    private val accelerometer: Sensor? = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+    private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+    private val accelerometer: Sensor? = sensorManager?.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+    private val mainHandler = android.os.Handler(android.os.Looper.getMainLooper())
 
+    @Volatile
     private var onShake: (() -> Unit)? = null
 
+    @Volatile
     private var lastUpdate: Long = 0
+
+    @Volatile
     private var lastX: Float = 0f
+
+    @Volatile
     private var lastY: Float = 0f
+
+    @Volatile
     private var lastZ: Float = 0f
 
+    @Volatile
+    private var lastShakeTimestamp: Long = 0
+
     // Configurable Thresholds
-    private val threshold = 12.0f // Accelerometer sensitivity
     private val timeThreshold = 1000L // Minimum time between shakes in ms
-    private val debounceTime = 500L // Time buffer to avoid duplicate triggers
+
+    private val lock = Any()
 
     fun start(onShake: () -> Unit) {
-      this.onShake = onShake
+      synchronized(lock) {
+        this.onShake = onShake
+      }
+
       if (accelerometer != null) {
-        sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL)
+        sensorManager?.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL)
       } else {
         Timber.w("Accelerometer not supported on this device.")
       }
     }
 
     fun stop() {
-      sensorManager.unregisterListener(this)
-      onShake = null
+      sensorManager?.unregisterListener(this)
+
+      synchronized(lock) {
+        onShake = null
+      }
     }
 
     override fun onSensorChanged(event: SensorEvent?) {
@@ -52,48 +70,62 @@ class ShakeDetector
 
       if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
         val curTime = System.currentTimeMillis()
+        val x = event.values[0]
+        val y = event.values[1]
+        val z = event.values[2]
 
-        // Only process if enough time has passed
-        if ((curTime - lastUpdate) > 100) {
-          val diffTime = (curTime - lastUpdate)
-          lastUpdate = curTime
+        var diffTime = 0L
+        var prevX = 0f
+        var prevY = 0f
+        var prevZ = 0f
+        var shouldProcess = false
 
-          val x = event.values[0]
-          val y = event.values[1]
-          val z = event.values[2]
+        // First synchronized block: Read/Update State
+        synchronized(lock) {
+          if ((curTime - lastUpdate) > 100) {
+            diffTime = (curTime - lastUpdate)
+            lastUpdate = curTime
 
-          // Simple shake detection logic based on g-force change
-          // We're looking for significant acceleration in any direction
-          val gX = x / SensorManager.GRAVITY_EARTH
-          val gY = y / SensorManager.GRAVITY_EARTH
-          val gZ = z / SensorManager.GRAVITY_EARTH
+            prevX = lastX
+            prevY = lastY
+            prevZ = lastZ
 
-          // Calculate g-force
-          val gForce = Math.sqrt((gX * gX + gY * gY + gZ * gZ).toDouble()).toFloat()
+            lastX = x
+            lastY = y
+            lastZ = z
+            shouldProcess = true
+          }
+        }
 
-          // 1.0 is minimal gravity. Anything significantly above suggests movement.
-          // Using raw values might be simpler if gForce logic is too sensitive or not enough.
-          // Let's stick to the classic implementation:
+        if (!shouldProcess) return
 
-          val speed = Math.abs(x + y + z - lastX - lastY - lastZ) / diffTime * 10000
+        // Calculation outside lock
+        val deltaX = x - prevX
+        val deltaY = y - prevY
+        val deltaZ = z - prevZ
 
-          if (speed > SHAKE_THRESHOLD) { // Using a constant threshold
-            val now = System.currentTimeMillis()
+        val speed = Math.sqrt((deltaX * deltaX + deltaY * deltaY + deltaZ * deltaZ).toDouble()) / diffTime * 10000
+
+        if (speed > SHAKE_THRESHOLD) {
+          val now = System.currentTimeMillis()
+          var callback: (() -> Unit)? = null
+
+          // Second synchronized block: Throttle & Callback Retrieval
+          synchronized(lock) {
             if (now - lastShakeTimestamp > timeThreshold) {
               lastShakeTimestamp = now
-              Timber.d("Shake detected! Speed: $speed")
-              onShake?.invoke()
+              callback = onShake
             }
           }
 
-          lastX = x
-          lastY = y
-          lastZ = z
+          // Execution outside lock
+          if (callback != null) {
+            Timber.d("Shake detected! Speed: $speed")
+            mainHandler.post { callback?.invoke() }
+          }
         }
       }
     }
-
-    private var lastShakeTimestamp: Long = 0
 
     companion object {
       private const val SHAKE_THRESHOLD = 800

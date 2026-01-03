@@ -14,9 +14,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.grakovne.lissen.R
 
 @Composable
 fun SeekButton(
@@ -31,7 +33,11 @@ fun SeekButton(
     Box(contentAlignment = Alignment.Center) {
       Icon(
         imageVector = Icons.Rounded.Replay,
-        contentDescription = if (isForward) "Forward $duration seconds" else "Rewind $duration seconds",
+        contentDescription =
+          when (isForward) {
+            true -> stringResource(R.string.seek_forward_description, duration)
+            false -> stringResource(R.string.seek_rewind_description, duration)
+          },
         tint = MaterialTheme.colorScheme.onBackground,
         modifier =
           Modifier

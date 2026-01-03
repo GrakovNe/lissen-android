@@ -47,7 +47,7 @@ fun SmartRewindSettingsScreen(onBack: () -> Unit) {
           IconButton(onClick = { onBack() }) {
             Icon(
               imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-              contentDescription = "Back",
+              contentDescription = stringResource(R.string.back),
               tint = MaterialTheme.colorScheme.onSurface,
             )
           }

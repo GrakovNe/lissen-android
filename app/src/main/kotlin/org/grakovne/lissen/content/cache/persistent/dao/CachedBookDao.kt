@@ -214,6 +214,12 @@ interface CachedBookDao {
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   suspend fun upsertBook(book: BookEntity)
 
+  @Insert(onConflict = OnConflictStrategy.REPLACE)
+  suspend fun upsertBooks(books: List<BookEntity>)
+
+  @Query("SELECT * FROM detailed_books WHERE id IN (:bookIds)")
+  suspend fun fetchBooks(bookIds: List<String>): List<BookEntity>
+
   @Update
   suspend fun updateBook(book: BookEntity)
 
