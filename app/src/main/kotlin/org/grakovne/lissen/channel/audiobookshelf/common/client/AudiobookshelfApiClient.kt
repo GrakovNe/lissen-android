@@ -3,6 +3,7 @@ package org.grakovne.lissen.channel.audiobookshelf.common.client
 import okhttp3.ResponseBody
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.connection.ConnectionInfoResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.connection.PingResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.AuthorItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackSessionResponse
@@ -127,6 +128,10 @@ interface AudiobookshelfApiClient {
   suspend fun refreshToken(
     @Header("x-refresh-token") refreshToken: String,
   ): Response<LoggedUserResponse>
+
+  @GET("ping")
+  @Headers("x-return-tokens: true")
+  suspend fun ping(): Response<PingResponse>
 
   @GET("/api/items/{itemId}/cover?raw=1")
   @Streaming
