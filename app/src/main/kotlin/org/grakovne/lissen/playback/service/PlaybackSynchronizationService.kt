@@ -160,8 +160,8 @@ class PlaybackSynchronizationService
 
     private fun getProgress(): PlaybackProgress =
       PlaybackProgress(
-        currentTotalTime = lissenPlayer.currentPositionAbsolute.toDouble(),
-        currentChapterTime = lissenPlayer.currentPosition.toDouble(),
+        currentTotalTime = lissenPlayer.currentPositionAbsolute.toDouble() / 1000,
+        currentChapterTime = lissenPlayer.currentPosition.toDouble() / 1000,
       )
 
     companion object {
