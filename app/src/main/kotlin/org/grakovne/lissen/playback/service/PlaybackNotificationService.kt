@@ -1,6 +1,7 @@
 package org.grakovne.lissen.playback.service
 
 import androidx.annotation.OptIn
+import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
@@ -31,6 +32,17 @@ class PlaybackNotificationService
             if (playWhenReady) {
               lissenPlayer.setPlaybackSpeed(sharedPreferences.getPlaybackSpeed())
             }
+          }
+
+          override fun onMediaItemTransition(
+            mediaItem: MediaItem?,
+            reason: Int,
+          ) {
+            if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_AUTO) {
+              return
+            }
+
+            lissenPlayer.onMediaItemTransition()
           }
         },
       )

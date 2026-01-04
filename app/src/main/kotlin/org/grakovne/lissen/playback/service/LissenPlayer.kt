@@ -23,6 +23,11 @@ class LissenPlayer(
   var currentIndex: Int = 0
     private set
 
+  fun onMediaItemTransition() {
+    precacheIfNeeded(currentIndex + 1)
+    currentIndex++
+  }
+
   fun setMediaSources(
     sources: List<MediaSource>,
     chapters: List<PlayingChapter>,
@@ -54,6 +59,22 @@ class LissenPlayer(
     seekTo(mediaItemIndex, positionMs)
   }
 
+  private fun precacheIfNeeded(mediaItemIndex: Int) {
+    val offset = mediaItemIndex - currentIndex
+    val end = cachedRange.last + offset
+
+    if (offset <= 0 ||
+      mediaItemIndex + PLAYBACK_BUFFER_ITEMS <= cachedRange.last ||
+      end > mediaSources.lastIndex
+    ) {
+      return
+    }
+
+    val sources = mediaSources.subList(cachedRange.last + 1, end + 1)
+    cachedRange = cachedRange.first..end
+    player.addMediaSources(sources)
+  }
+
   override fun seekTo(
     mediaItemIndex: Int,
     positionMs: Long,
@@ -63,20 +84,12 @@ class LissenPlayer(
         super.seekTo(positionMs)
 
       in cachedRange -> {
-        val offset = mediaItemIndex - currentIndex
-        val end = cachedRange.last + offset
+        super.seekTo(
+          player.currentMediaItemIndex + mediaItemIndex - currentIndex,
+          positionMs,
+        )
 
-        super.seekTo(player.currentMediaItemIndex + mediaItemIndex - currentIndex, positionMs)
-
-        if (offset > 0 &&
-          mediaItemIndex + PLAYBACK_BUFFER_ITEMS > cachedRange.last &&
-          end <= mediaSources.lastIndex
-        ) {
-          val sources = mediaSources.subList(cachedRange.last + 1, end + 1)
-
-          cachedRange = cachedRange.first..end
-          player.addMediaSources(sources)
-        }
+        precacheIfNeeded(mediaItemIndex)
       }
 
       else -> {
