@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.PlaybackVolumeBoost
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.playback.service.LissenPlayer
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -24,7 +25,7 @@ class PlaybackEnhancerService
   @OptIn(UnstableApi::class)
   @Inject
   constructor(
-    private val player: ExoPlayer,
+    private val player: LissenPlayer,
     private val sharedPreferences: LissenSharedPreferences,
   ) : RunningComponent {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)

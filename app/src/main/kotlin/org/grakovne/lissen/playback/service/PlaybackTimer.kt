@@ -6,7 +6,6 @@ import androidx.annotation.OptIn
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.lib.domain.TimerOption
@@ -18,7 +17,7 @@ class PlaybackTimer
   @Inject
   constructor(
     @ApplicationContext private val applicationContext: Context,
-    private val exoPlayer: ExoPlayer,
+    private val lissenPlayer: LissenPlayer,
   ) {
     private val localBroadcastManager = LocalBroadcastManager.getInstance(applicationContext)
 
@@ -62,11 +61,11 @@ class PlaybackTimer
           },
         ).also { it.start() }
 
-      exoPlayer.removeListener(playerListener)
-      exoPlayer.addListener(playerListener)
+      lissenPlayer.removeListener(playerListener)
+      lissenPlayer.addListener(playerListener)
 
       this.option = option
-      if (exoPlayer.isPlaying.not() && option == CurrentEpisodeTimerOption) {
+      if (lissenPlayer.isPlaying.not() && option == CurrentEpisodeTimerOption) {
         timer?.pause()
       }
     }
@@ -83,6 +82,6 @@ class PlaybackTimer
       timer?.cancel()
       timer = null
 
-      exoPlayer.removeListener(playerListener)
+      lissenPlayer.removeListener(playerListener)
     }
   }

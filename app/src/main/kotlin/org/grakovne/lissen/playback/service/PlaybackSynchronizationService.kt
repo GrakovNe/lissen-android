@@ -1,7 +1,8 @@
 package org.grakovne.lissen.playback.service
 
+import androidx.annotation.OptIn
 import androidx.media3.common.Player
-import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
@@ -20,10 +21,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+@OptIn(UnstableApi::class)
 class PlaybackSynchronizationService
   @Inject
   constructor(
-    private val exoPlayer: ExoPlayer,
+    private val lissenPlayer: LissenPlayer,
     private val mediaChannel: LissenMediaProvider,
     private val sharedPreferences: LissenSharedPreferences,
   ) {
@@ -35,13 +37,15 @@ class PlaybackSynchronizationService
     private val syncMutex = Mutex()
 
     init {
-      exoPlayer.addListener(
+      lissenPlayer.addListener(
         object : Player.Listener {
           override fun onEvents(
             player: Player,
             events: Player.Events,
           ) {
-            if (syncEvents.any(events::contains)) {
+            // don't sync un-prepare()'d player
+            if (syncEvents.any(events::contains) && player.playbackState != Player.STATE_IDLE) {
+              Timber.d("Got sync event(s): ${syncEvents.filter(events::contains)}")
               handleSyncEvent()
             }
           }
@@ -68,11 +72,11 @@ class PlaybackSynchronizationService
           .launch {
             while (
               syncJob?.isActive == true &&
-              exoPlayer.playWhenReady &&
-              exoPlayer.playbackState != Player.STATE_ENDED
+              lissenPlayer.playWhenReady &&
+              lissenPlayer.playbackState != Player.STATE_ENDED
             ) {
-              val nearStart = exoPlayer.duration - exoPlayer.currentPosition < SHORT_SYNC_WINDOW
-              val nearEnd = exoPlayer.currentPosition < SHORT_SYNC_WINDOW
+              val nearStart = lissenPlayer.duration - lissenPlayer.currentPosition < SHORT_SYNC_WINDOW
+              val nearEnd = lissenPlayer.currentPosition < SHORT_SYNC_WINDOW
 
               when (nearEnd || nearStart) {
                 true -> delay(SYNC_INTERVAL_SHORT)
@@ -89,8 +93,7 @@ class PlaybackSynchronizationService
     }
 
     private fun runSync() {
-      val elapsedMs = exoPlayer.currentPosition
-      val overallProgress = getProgress(elapsedMs) ?: return
+      val overallProgress = getProgress()
 
       Timber.d("Trying to sync $overallProgress for ${currentItem?.id}")
 
@@ -155,30 +158,11 @@ class PlaybackSynchronizationService
             )
         }
 
-    private fun getProgress(currentElapsedMs: Long): PlaybackProgress? {
-      val currentItem =
-        exoPlayer
-          .currentMediaItem
-          ?.mediaMetadata
-          ?.extras
-          ?.getParcelable("book", DetailedItem::class.java)
-          ?: return null
-
-      val currentIndex = exoPlayer.currentMediaItemIndex
-
-      val previousDuration =
-        currentItem.chapters
-          .take(currentIndex)
-          .sumOf { it.duration * 1000 }
-
-      val currentTotalTime = (previousDuration + currentElapsedMs) / 1000.0
-      val currentChapterTime = calculateChapterPosition(currentItem, currentTotalTime)
-
-      return PlaybackProgress(
-        currentTotalTime = currentTotalTime,
-        currentChapterTime = currentChapterTime,
+    private fun getProgress(): PlaybackProgress =
+      PlaybackProgress(
+        currentTotalTime = lissenPlayer.currentPositionAbsolute.toDouble(),
+        currentChapterTime = lissenPlayer.currentPosition.toDouble(),
       )
-    }
 
     companion object {
       private const val SYNC_INTERVAL_LONG = 30_000L

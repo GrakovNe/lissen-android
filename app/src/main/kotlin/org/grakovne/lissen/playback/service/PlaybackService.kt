@@ -3,13 +3,11 @@ package org.grakovne.lissen.playback.service
 import android.content.Intent
 import androidx.annotation.OptIn
 import androidx.core.net.toUri
-import androidx.core.os.bundleOf
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.Cache
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ClippingMediaSource
 import androidx.media3.exoplayer.source.ConcatenatingMediaSource2
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
@@ -25,10 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.lib.domain.BookFile
 import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.MediaProgress
-import org.grakovne.lissen.lib.domain.PlayingChapter
 import org.grakovne.lissen.lib.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.MediaSessionProvider
@@ -39,7 +34,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class PlaybackService : MediaSessionService() {
   @Inject
-  lateinit var exoPlayer: ExoPlayer
+  lateinit var lissenPlayer: LissenPlayer
 
   @Inject
   lateinit var mediaSessionProvider: MediaSessionProvider
@@ -103,9 +98,9 @@ class PlaybackService : MediaSessionService() {
       ACTION_PLAY -> {
         playerServiceScope
           .launch {
-            exoPlayer.prepare()
-            exoPlayer.setPlaybackSpeed(sharedPreferences.getPlaybackSpeed())
-            exoPlayer.playWhenReady = true
+            lissenPlayer.prepare()
+            lissenPlayer.setPlaybackSpeed(sharedPreferences.getPlaybackSpeed())
+            lissenPlayer.playWhenReady = true
           }
         return START_STICKY
       }
@@ -125,9 +120,10 @@ class PlaybackService : MediaSessionService() {
       }
 
       ACTION_SEEK_TO -> {
-        val book = intent.getSerializableExtra(BOOK_EXTRA) as? DetailedItem
         val position = intent.getDoubleExtra(POSITION, 0.0)
-        book?.let { seek(it.chapters, position) }
+        playerServiceScope.launch {
+          lissenPlayer.seekTo(position)
+        }
         return START_NOT_STICKY
       }
 
@@ -149,8 +145,8 @@ class PlaybackService : MediaSessionService() {
     playbackSynchronizationService.cancelSynchronization()
     playerServiceScope.cancel()
 
-    exoPlayer.clearMediaItems()
-    exoPlayer.release()
+    lissenPlayer.clearMediaItems()
+    lissenPlayer.release()
 
     session?.release()
     session = null
@@ -158,53 +154,9 @@ class PlaybackService : MediaSessionService() {
     super.onDestroy()
   }
 
-  private data class CompositeChapter(
-    val chapter: PlayingChapter,
-    val files: List<BookFile>,
-    val startPosition: Long,
-    val endPosition: Long,
-  )
-
-  private fun mapFilesAndChapters(book: DetailedItem): List<CompositeChapter> {
-    var time = 0.0
-    var i = 0
-    var j = 0
-
-    return arrayListOf<CompositeChapter>().apply {
-      while (i < book.chapters.size && j < book.files.size) {
-        val chapter = book.chapters[i++]
-        val startTime = chapter.start - time
-
-        val files =
-          arrayListOf<BookFile>().apply {
-            while (time < chapter.end) {
-              val file = book.files[j]
-              add(file)
-
-              if (time + file.duration > chapter.end) {
-                break
-              }
-
-              time += file.duration
-              j++
-            }
-          }
-
-        add(
-          CompositeChapter(
-            chapter,
-            files,
-            (startTime * 1000).toLong(),
-            ((startTime + chapter.end) * 1000).toLong(),
-          ),
-        )
-      }
-    }
-  }
-
   @OptIn(UnstableApi::class)
   private suspend fun preparePlayback(book: DetailedItem) {
-    exoPlayer.playWhenReady = false
+    lissenPlayer.playWhenReady = false
 
     withContext(Dispatchers.IO) {
       val prepareQueue =
@@ -219,14 +171,14 @@ class PlaybackService : MediaSessionService() {
             )
 
           val sources =
-            mapFilesAndChapters(book)
+            CompositeChapter
+              .mapFilesToChapters(book)
               .map { item ->
                 val mediaData =
                   MediaMetadata
                     .Builder()
                     .setTitle(item.chapter.title)
                     .setArtist(book.title)
-                    .setExtras(bundleOf("book" to book))
                     .setArtworkUri(fetchCover(book))
 
                 ConcatenatingMediaSource2
@@ -266,10 +218,9 @@ class PlaybackService : MediaSessionService() {
               }
 
           withContext(Dispatchers.Main) {
-            exoPlayer.setMediaSources(sources)
-            exoPlayer.prepare()
-
-            setPlaybackProgress(book.chapters, book.progress)
+            lissenPlayer.setMediaSources(sources, book.chapters)
+            lissenPlayer.seekTo(book.progress?.currentTime)
+            lissenPlayer.prepare()
           }
         }
 
@@ -316,52 +267,11 @@ class PlaybackService : MediaSessionService() {
   private fun pause() {
     playerServiceScope
       .launch {
-        exoPlayer.playWhenReady = false
+        lissenPlayer.playWhenReady = false
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
       }
   }
-
-  private fun seek(
-    items: List<PlayingChapter>,
-    position: Double?,
-  ) {
-    if (items.isEmpty()) {
-      Timber.w("Tried to seek position $position in the empty book. Skipping")
-      return
-    }
-
-    when (position) {
-      null -> exoPlayer.seekTo(0, 0)
-      else -> {
-        val positionMs = (position * 1000).toLong()
-
-        val durationsMs = items.map { (it.duration * 1000).toLong() }
-        val cumulativeDurationsMs = durationsMs.runningFold(0L) { acc, duration -> acc + duration }
-
-        val targetChapterIndex = cumulativeDurationsMs.indexOfFirst { it > positionMs }
-
-        when (targetChapterIndex - 1 >= 0) {
-          true -> {
-            val chapterStartTimeMs = cumulativeDurationsMs[targetChapterIndex - 1]
-            val chapterProgressMs = positionMs - chapterStartTimeMs
-            exoPlayer.seekTo(targetChapterIndex - 1, chapterProgressMs)
-          }
-
-          false -> {
-            val lastChapterIndex = items.size - 1
-            val lastChapterDurationMs = durationsMs.last()
-            exoPlayer.seekTo(lastChapterIndex, lastChapterDurationMs)
-          }
-        }
-      }
-    }
-  }
-
-  private fun setPlaybackProgress(
-    chapters: List<PlayingChapter>,
-    progress: MediaProgress?,
-  ) = seek(chapters, progress?.currentTime)
 
   companion object {
     const val ACTION_PLAY = "org.grakovne.lissen.player.service.PLAY"

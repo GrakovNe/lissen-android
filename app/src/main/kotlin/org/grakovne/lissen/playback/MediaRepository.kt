@@ -35,6 +35,7 @@ import org.grakovne.lissen.lib.domain.DurationTimerOption
 import org.grakovne.lissen.lib.domain.SeekTimeOption
 import org.grakovne.lissen.lib.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.playback.service.LissenPlayer
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.ACTION_SEEK_TO
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.BOOK_EXTRA
@@ -59,6 +60,7 @@ class MediaRepository
     @ApplicationContext private val context: Context,
     private val preferences: LissenSharedPreferences,
     private val mediaChannel: LissenMediaProvider,
+    private val lissenPlayer: LissenPlayer,
   ) {
     private lateinit var mediaController: MediaController
 
@@ -457,9 +459,9 @@ class MediaRepository
 
     private fun updateProgress(detailedItem: DetailedItem): Deferred<Unit> =
       CoroutineScope(Dispatchers.Main).async {
-        val currentIndex = mediaController.currentMediaItemIndex
+        val currentIndex = lissenPlayer.currentIndex
         val accumulated = detailedItem.chapters.take(currentIndex).sumOf { it.duration }
-        val currentFilePosition = mediaController.currentPosition / 1000.0
+        val currentFilePosition = lissenPlayer.currentPosition / 1000.0
 
         _totalPosition.postValue(accumulated + currentFilePosition)
       }
@@ -483,52 +485,14 @@ class MediaRepository
     }
 
     private fun seekTo(position: Double) {
-      val book = playingBook.value ?: return
-
-      if (book.chapters.isEmpty()) {
-        Timber.d("Tried to seek on the empty book")
-        return
-      }
-
-      val overallDuration =
-        book
-          .chapters
-          .sumOf { it.duration }
-
-      val current = totalPosition.value ?: 0.0
-
-      val direction =
-        when (current > maxOf(0.0, position)) {
-          true -> ScrollingDirection.BACKWARD
-          false -> ScrollingDirection.FORWARD
-        }
-
-      var safePosition = minOf(overallDuration, maxOf(0.0, position))
-
-      while (book.chapters[calculateChapterIndex(book, safePosition)].available.not()) {
-        val chapterIndex =
-          when (direction) {
-            ScrollingDirection.FORWARD -> calculateChapterIndex(book, safePosition) + 1
-            ScrollingDirection.BACKWARD -> calculateChapterIndex(book, safePosition) - 1
-          }
-
-        safePosition =
-          when {
-            chapterIndex in 0..book.chapters.lastIndex -> book.chapters[chapterIndex].start
-            else -> break
-          }
-      }
-
       val intent =
         Intent(context, PlaybackService::class.java).apply {
           action = ACTION_SEEK_TO
-
-          putExtra(BOOK_EXTRA, playingBook.value)
-          putExtra(POSITION, safePosition)
+          putExtra(POSITION, position)
         }
 
       context.startService(intent)
-      adjustTimer(safePosition)
+      adjustTimer(position)
     }
 
     private fun adjustTimer(position: Double) {
