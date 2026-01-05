@@ -2,6 +2,8 @@ package org.grakovne.lissen.playback.service
 
 import androidx.annotation.OptIn
 import androidx.media3.common.ForwardingPlayer
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.MediaSource
@@ -23,9 +25,18 @@ class LissenPlayer(
   var currentIndex: Int = 0
     private set
 
-  fun onMediaItemTransition() {
-    precacheIfNeeded(currentIndex + 1)
-    currentIndex++
+  init {
+    player.addListener(object : Player.Listener {
+      override fun onMediaItemTransition(
+        mediaItem: MediaItem?,
+        reason: Int,
+      ) {
+        if (reason == MEDIA_ITEM_TRANSITION_REASON_AUTO) {
+          precacheIfNeeded(currentIndex + 1)
+          currentIndex++
+        }
+      }
+    })
   }
 
   fun setMediaSources(
