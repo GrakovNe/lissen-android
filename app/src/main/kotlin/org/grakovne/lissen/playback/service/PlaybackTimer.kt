@@ -12,6 +12,7 @@ import org.grakovne.lissen.lib.domain.TimerOption
 import javax.inject.Inject
 import javax.inject.Singleton
 
+@OptIn(UnstableApi::class)
 @Singleton
 class PlaybackTimer
   @Inject
@@ -38,7 +39,6 @@ class PlaybackTimer
         }
       }
 
-    @OptIn(UnstableApi::class)
     fun startTimer(
       delayInSeconds: Double,
       option: TimerOption,
@@ -70,7 +70,6 @@ class PlaybackTimer
       }
     }
 
-    @OptIn(UnstableApi::class)
     private fun broadcastRemaining(seconds: Long) {
       localBroadcastManager.sendBroadcast(
         Intent(PlaybackService.TIMER_TICK)
