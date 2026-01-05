@@ -157,6 +157,18 @@ class MediaRepository
                 }
               },
             )
+
+            lissenPlayer.addListener(
+              object : Player.Listener {
+                override fun onPositionDiscontinuity(
+                  oldPosition: Player.PositionInfo,
+                  newPosition: Player.PositionInfo,
+                  reason: Int,
+                ) {
+                  updateProgress()
+                }
+              },
+            )
           }
 
           override fun onFailure(t: Throwable) {
@@ -179,8 +191,8 @@ class MediaRepository
 
             book?.let {
               CoroutineScope(Dispatchers.Main).launch {
-                updateProgress(book).await()
-                startUpdatingProgress(book)
+                updateProgress().await()
+                startUpdatingProgress()
 
                 _playingBook.postValue(it)
                 preferences.savePlayingBook(it)
@@ -416,13 +428,13 @@ class MediaRepository
       context.startService(intent)
     }
 
-    private fun startUpdatingProgress(detailedItem: DetailedItem) {
+    private fun startUpdatingProgress() {
       handler.removeCallbacksAndMessages(null)
 
       handler.postDelayed(
         object : Runnable {
           override fun run() {
-            updateProgress(detailedItem)
+            updateProgress()
             handler.postDelayed(this, 500)
           }
         },
@@ -457,13 +469,9 @@ class MediaRepository
       }
     }
 
-    private fun updateProgress(detailedItem: DetailedItem): Deferred<Unit> =
+    private fun updateProgress(): Deferred<Unit> =
       CoroutineScope(Dispatchers.Main).async {
-        val currentIndex = lissenPlayer.currentIndex
-        val accumulated = detailedItem.chapters.take(currentIndex).sumOf { it.duration }
-        val currentFilePosition = lissenPlayer.currentPosition / 1000.0
-
-        _totalPosition.postValue(accumulated + currentFilePosition)
+        _totalPosition.postValue(lissenPlayer.currentPositionAbsolute / 1000.0)
       }
 
     private fun play() {

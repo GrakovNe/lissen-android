@@ -26,17 +26,19 @@ class LissenPlayer(
     private set
 
   init {
-    player.addListener(object : Player.Listener {
-      override fun onMediaItemTransition(
-        mediaItem: MediaItem?,
-        reason: Int,
-      ) {
-        if (reason == MEDIA_ITEM_TRANSITION_REASON_AUTO) {
-          precacheIfNeeded(currentIndex + 1)
-          currentIndex++
+    player.addListener(
+      object : Player.Listener {
+        override fun onMediaItemTransition(
+          mediaItem: MediaItem?,
+          reason: Int,
+        ) {
+          if (reason == MEDIA_ITEM_TRANSITION_REASON_AUTO) {
+            precacheIfNeeded(currentIndex + 1)
+            currentIndex++
+          }
         }
-      }
-    })
+      },
+    )
   }
 
   fun setMediaSources(
