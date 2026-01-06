@@ -15,6 +15,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import org.grakovne.lissen.playback.service.LissenPlayer
 import java.io.File
 import javax.inject.Singleton
 
@@ -40,13 +41,12 @@ object MediaModule {
     )
   }
 
-  @OptIn(UnstableApi::class)
   @Provides
   @Singleton
-  fun provideExoPlayer(
+  fun provideLissenPlayer(
     @ApplicationContext context: Context,
-  ): ExoPlayer {
-    val player =
+  ): LissenPlayer =
+    LissenPlayer(
       ExoPlayer
         .Builder(context)
         .setHandleAudioBecomingNoisy(true)
@@ -57,10 +57,8 @@ object MediaModule {
             .setContentType(C.AUDIO_CONTENT_TYPE_SPEECH)
             .build(),
           true,
-        ).build()
-
-    return player
-  }
+        ).build(),
+    )
 
   private fun buildPlaybackCacheLimit(ctx: Context): Long {
     val baseFolder =
