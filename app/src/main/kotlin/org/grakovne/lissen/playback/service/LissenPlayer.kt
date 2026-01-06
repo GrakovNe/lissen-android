@@ -112,7 +112,7 @@ class LissenPlayer(
 
         cachedRange = start..end
         player.setMediaSources(sources, false)
-        super.seekTo(PLAYBACK_BUFFER_ITEMS, positionMs)
+        super.seekTo(min(PLAYBACK_BUFFER_ITEMS, start), positionMs)
       }
     }
 
