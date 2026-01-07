@@ -79,6 +79,11 @@ class LissenMediaProvider
       }
     }
 
+    suspend fun syncLocalProgress(
+      itemId: String,
+      progress: PlaybackProgress,
+    ): OperationResult<Unit> = localCacheRepository.syncProgress(itemId, progress)
+
     suspend fun fetchBookCover(
       bookId: String,
       width: Int? = null,

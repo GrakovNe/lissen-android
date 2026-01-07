@@ -26,7 +26,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:largeHeap="true"
-        android:theme="@style/Theme.Lissen"
+        android:theme="@style/Theme.Kahani"
         tools:ignore="DiscouragedApi,UnusedAttribute"
         android:manageSpaceActivity="org.grakovne.lissen.content.LissenDataManagementActivity"
         tools:targetApi="36">
@@ -41,7 +41,7 @@
             android:name=".ui.activity.AppActivity"
             android:exported="true"
             android:launchMode="singleTop"
-            android:theme="@style/Theme.Lissen"
+            android:theme="@style/Theme.Kahani"
             tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -68,7 +68,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:scheme="lissen"
+                    android:scheme="kahani"
                     android:host="oauth" />
             </intent-filter>
         </activity>

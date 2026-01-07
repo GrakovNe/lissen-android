@@ -33,6 +33,7 @@ import org.grakovne.lissen.lib.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.screens.library.paging.LibraryDefaultPagingSource
 import org.grakovne.lissen.ui.screens.library.paging.LibrarySearchPagingSource
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -123,6 +124,19 @@ class LibraryViewModel
         }.collect {
           _recentBooks.postValue(it)
         }
+      }
+
+      viewModelScope.launch {
+        networkService
+          .isServerAvailable
+          .collect { isAvailable ->
+            if (isAvailable) {
+              Timber.d("Server is reachable. Triggering repository sync.")
+              bookRepository.syncRepositories()
+              refreshRecentListening()
+              refreshLibrary()
+            }
+          }
       }
     }
 

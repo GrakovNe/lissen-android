@@ -82,6 +82,15 @@ class BookRepository
       }
     }
 
+    suspend fun syncLocalProgress(
+      itemId: String,
+      progress: PlaybackProgress,
+    ): OperationResult<Unit> {
+      Timber.d("Syncing LOCAL Progress only for $itemId. $progress")
+      localCacheRepository.syncProgress(itemId, progress)
+      return OperationResult.Success(Unit)
+    }
+
     suspend fun fetchBookCover(
       bookId: String,
       width: Int? = null,
@@ -312,11 +321,36 @@ class BookRepository
         val remoteTime = remote?.listenedLastUpdate ?: 0L
         val localTime = local?.listenedLastUpdate ?: 0L
 
-        if (remoteTime > localTime) {
-          providePreferredChannel().fetchBook(id).foldAsync(
-            onSuccess = { localCacheRepository.cacheBookMetadata(it) },
-            onFailure = {},
-          )
+        when {
+          remoteTime > localTime -> {
+            providePreferredChannel().fetchBook(id).foldAsync(
+              onSuccess = { localCacheRepository.cacheBookMetadata(it) },
+              onFailure = {},
+            )
+          }
+
+          localTime > remoteTime -> {
+            val book = localCacheRepository.fetchBook(id) ?: continue
+            val progress = book.progress ?: continue
+
+            val session =
+              providePreferredChannel()
+                .startPlayback(
+                  bookId = id,
+                  episodeId = book.chapters.firstOrNull()?.id ?: continue,
+                  supportedMimeTypes = emptyList(),
+                  deviceId = preferences.getDeviceId(),
+                ).getOrNull() ?: continue
+
+            providePreferredChannel().syncProgress(
+              sessionId = session.sessionId,
+              progress =
+                PlaybackProgress(
+                  currentTotalTime = progress.currentTime,
+                  currentChapterTime = 0.0, // Server will recalculate based on total time
+                ),
+            )
+          }
         }
       }
     }
