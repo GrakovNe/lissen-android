@@ -475,7 +475,6 @@ fun LibraryScreen(
       onItemSelected = {
         settingsViewModel.preferLibrary(it)
         refreshContent(false)
-        playerViewModel.clearPlayingBook()
         preferredLibraryExpanded = false
       },
     )
