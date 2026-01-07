@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Audiotrack
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -42,6 +43,7 @@ fun PlaylistItemComposable(
   maxDuration: Double,
   isCached: Boolean,
   canPlay: Boolean = true,
+  progress: Float = 0f,
 ) {
   val fontScale = LocalDensity.current.fontScale
   val textMeasurer = rememberTextMeasurer()
@@ -78,24 +80,30 @@ fun PlaylistItemComposable(
           interactionSource = remember { MutableInteractionSource() },
         ),
   ) {
-    when {
-      isSelected ->
-        Icon(
-          imageVector = Icons.Outlined.Audiotrack,
-          contentDescription = stringResource(R.string.player_screen_library_playing_title),
-          modifier = Modifier.size(16.dp),
-          tint = if (canPlay) colorScheme.primary else colorScheme.onBackground.copy(alpha = 0.4f),
-        )
-
-      track.podcastEpisodeState == BookChapterState.FINISHED ->
-        Icon(
-          imageVector = Icons.Outlined.Check,
-          contentDescription = stringResource(R.string.player_screen_library_playing_title),
-          modifier = Modifier.size(16.dp),
-          tint = if (canPlay) colorScheme.onBackground else colorScheme.onBackground.copy(alpha = 0.4f),
-        )
-
-      else -> Spacer(modifier = Modifier.size(16.dp))
+    if (isSelected) {
+      Icon(
+        imageVector = Icons.Outlined.Audiotrack,
+        contentDescription = stringResource(R.string.player_screen_library_playing_title),
+        modifier = Modifier.size(16.dp),
+        tint = if (canPlay) colorScheme.primary else colorScheme.onBackground.copy(alpha = 0.4f),
+      )
+    } else if (track.podcastEpisodeState == BookChapterState.FINISHED || progress >= 1f) {
+      Icon(
+        imageVector = Icons.Outlined.CheckCircle,
+        contentDescription = stringResource(R.string.player_screen_library_playing_title),
+        modifier = Modifier.size(16.dp),
+        tint = if (canPlay) colorScheme.onBackground.copy(alpha = 0.4f) else colorScheme.onBackground.copy(alpha = 0.2f),
+      )
+    } else if (progress > 0f) {
+      androidx.compose.material3.CircularProgressIndicator(
+        progress = { progress },
+        modifier = Modifier.size(16.dp),
+        color = if (canPlay) colorScheme.onSurface else colorScheme.onSurface.copy(alpha = 0.4f),
+        strokeWidth = 2.dp,
+        trackColor = colorScheme.onSurface.copy(alpha = 0.2f),
+      )
+    } else {
+      Spacer(modifier = Modifier.size(16.dp))
     }
 
     Spacer(modifier = Modifier.width(8.dp))

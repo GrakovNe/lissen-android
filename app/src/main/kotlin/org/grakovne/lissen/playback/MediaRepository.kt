@@ -97,6 +97,9 @@ class MediaRepository
     private val _mediaPreparingError = MutableLiveData<Boolean>()
     val mediaPreparingError: LiveData<Boolean> = _mediaPreparingError
 
+    private val _preparingBookId = MutableLiveData<String?>()
+    val preparingBookId: LiveData<String?> = _preparingBookId
+
     private val _playbackSpeed = MutableLiveData(preferences.getPlaybackSpeed())
     val playbackSpeed: LiveData<Float> = _playbackSpeed
 
@@ -125,6 +128,8 @@ class MediaRepository
     val currentChapterDuration: LiveData<Double> = _currentChapterDuration
 
     private val handler = Handler(Looper.getMainLooper())
+
+    private var pendingChapterIndex: Int? = null
 
     init {
       val controllerBuilder = MediaController.Builder(context, token)
@@ -198,6 +203,12 @@ class MediaRepository
                 preferences.savePlayingBook(it)
 
                 _isPlaybackReady.postValue(true)
+                _preparingBookId.postValue(null)
+
+                pendingChapterIndex?.let { index ->
+                  setChapter(index)
+                  pendingChapterIndex = null
+                }
 
                 if (_playAfterPrepare.value == true) {
                   _playAfterPrepare.postValue(false)
@@ -209,6 +220,9 @@ class MediaRepository
         }
       }
 
+    // ... existing timer receivers ...
+
+    // ... existing updateTimer ...
     private val timerExpiredReceiver =
       object : BroadcastReceiver() {
         override fun onReceive(
@@ -357,9 +371,18 @@ class MediaRepository
       }
     }
 
-    fun prepareAndPlay(book: DetailedItem) {
-      when (isPlaybackReady.value) {
-        true -> play()
+    fun prepareAndPlay(
+      book: DetailedItem,
+      chapterIndex: Int? = null,
+    ) {
+      val isDifferentBook = playingBook.value?.id != book.id
+      this.pendingChapterIndex = chapterIndex
+
+      when {
+        !isDifferentBook && isPlaybackReady.value == true -> {
+          chapterIndex?.let { setChapter(it) }
+          play()
+        }
         else -> {
           _playAfterPrepare.postValue(true)
           startPreparingPlayback(book)
@@ -404,9 +427,18 @@ class MediaRepository
             .fetchBook(bookId)
             .foldAsync(
               onSuccess = { startPreparingPlayback(it) },
-              onFailure = { _mediaPreparingError.postValue(true) },
+              onFailure = {
+                _mediaPreparingError.postValue(true)
+                _preparingBookId.postValue(null)
+              },
             )
         }
+      }
+    }
+
+    suspend fun fetchBook(bookId: String) {
+      withContext(Dispatchers.IO) {
+        mediaChannel.fetchBook(bookId)
       }
     }
 
@@ -486,6 +518,7 @@ class MediaRepository
 
     private fun startPreparingPlayback(book: DetailedItem) {
       if (_playingBook.value != book) {
+        _preparingBookId.postValue(book.id)
         _totalPosition.postValue(0.0)
         _isPlaying.postValue(false)
 
@@ -511,7 +544,7 @@ class MediaRepository
         _totalPosition.postValue(accumulated + currentFilePosition)
       }
 
-    private fun play() {
+    fun play() {
       val intent =
         Intent(context, PlaybackService::class.java).apply {
           action = PlaybackService.ACTION_PLAY
@@ -576,6 +609,7 @@ class MediaRepository
 
       context.startService(intent)
       adjustTimer(safePosition)
+      _totalPosition.postValue(safePosition)
     }
 
     private fun adjustTimer(position: Double) {

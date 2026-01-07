@@ -54,6 +54,7 @@ class PlayerViewModel
     val isPlaybackReady: LiveData<Boolean> = mediaRepository.isPlaybackReady
     val playbackSpeed: LiveData<Float> = mediaRepository.playbackSpeed
     val preparingError: LiveData<Boolean> = mediaRepository.mediaPreparingError
+    val preparingBookId: LiveData<String?> = mediaRepository.preparingBookId
 
     private val _searchRequested = MutableLiveData(false)
     val searchRequested: LiveData<Boolean> = _searchRequested
@@ -125,6 +126,7 @@ class PlayerViewModel
       if (chapter.available) {
         val index = book.value?.chapters?.indexOf(chapter) ?: -1
         mediaRepository.setChapter(index)
+        mediaRepository.play()
       }
     }
 
@@ -141,6 +143,19 @@ class PlayerViewModel
     fun prepareAndPlay() {
       val playingBook = preferences.getPlayingBook() ?: return
       mediaRepository.prepareAndPlay(playingBook)
+    }
+
+    fun playBook(
+      book: DetailedItem,
+      chapterIndex: Int? = null,
+    ) {
+      mediaRepository.prepareAndPlay(book, chapterIndex)
+    }
+
+    fun fetchBook(bookId: String) {
+      viewModelScope.launch {
+        mediaRepository.fetchBook(bookId)
+      }
     }
 
     companion object {

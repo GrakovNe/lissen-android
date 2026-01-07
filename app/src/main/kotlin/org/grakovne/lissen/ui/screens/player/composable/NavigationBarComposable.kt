@@ -12,11 +12,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
-import androidx.compose.material.icons.outlined.CloudDownload
 import androidx.compose.material.icons.outlined.SlowMotionVideo
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material.icons.outlined.VolumeUp
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -45,11 +43,8 @@ import androidx.lifecycle.map
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.PlaybackVolumeBoost
-import org.grakovne.lissen.content.cache.persistent.CacheState
-import org.grakovne.lissen.lib.domain.CacheStatus
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.LibraryType
-import org.grakovne.lissen.ui.components.DownloadProgressIcon
 import org.grakovne.lissen.ui.extensions.formatTime
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItem
@@ -68,7 +63,6 @@ fun NavigationBarComposable(
   modifier: Modifier = Modifier,
   libraryType: LibraryType,
 ) {
-  val cacheProgress: CacheState by contentCachingModelView.getProgress(book.id).collectAsState()
   val timerOption by playerViewModel.timerOption.observeAsState(null)
   val timerRemaining by playerViewModel.timerRemaining.observeAsState(0)
   val playbackSpeed by playerViewModel.playbackSpeed.observeAsState(1f)
@@ -77,11 +71,9 @@ fun NavigationBarComposable(
   val preferredPlaybackVolumeBoost by settingsViewModel.preferredPlaybackVolumeBoost.observeAsState()
   val isOnline by playerViewModel.isOnline.collectAsState(initial = false)
 
-  val hasDownloadedChapters by contentCachingModelView.hasDownloadedChapters(book.id).observeAsState(false)
-
   var playbackSpeedExpanded by remember { mutableStateOf(false) }
   var timerExpanded by remember { mutableStateOf(false) }
-  var downloadsExpanded by remember { mutableStateOf(false) }
+
   var volumeBoostExpanded by remember { mutableStateOf(false) }
 
   val scope = rememberCoroutineScope()
@@ -93,28 +85,16 @@ fun NavigationBarComposable(
     modifier = modifier.padding(top = 24.dp, bottom = 12.dp, start = 12.dp, end = 12.dp),
   ) {
     Surface(
-      color = colorScheme.surfaceVariant.copy(alpha = 0.4f),
+      color = colorScheme.surface.copy(alpha = 0.75f),
       shape = androidx.compose.foundation.shape.CircleShape,
       modifier = Modifier.fillMaxWidth().height(48.dp),
     ) {
       Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(0.dp),
+        horizontalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
       ) {
         val iconSize = 24.dp
-
-        PlayerActionItem(
-          icon = {
-            DownloadProgressIcon(
-              cacheState = cacheProgress,
-              size = iconSize,
-            )
-          },
-          enabled = hasEpisodes,
-          onClick = { downloadsExpanded = true },
-          modifier = Modifier.weight(1f),
-        )
 
         PlayerActionItem(
           icon = {
@@ -126,7 +106,6 @@ fun NavigationBarComposable(
           },
           enabled = true,
           onClick = { volumeBoostExpanded = true },
-          modifier = Modifier.weight(1f),
         )
 
         PlayerActionItem(
@@ -148,7 +127,6 @@ fun NavigationBarComposable(
           },
           enabled = hasEpisodes,
           onClick = { playbackSpeedExpanded = true },
-          modifier = Modifier.weight(1f),
         )
 
         PlayerActionItem(
@@ -170,7 +148,6 @@ fun NavigationBarComposable(
           },
           enabled = hasEpisodes,
           onClick = { timerExpanded = true },
-          modifier = Modifier.weight(1f),
         )
       }
     }
@@ -211,46 +188,6 @@ fun NavigationBarComposable(
             .find { it.name == item.id }
             ?.let { settingsViewModel.preferPlaybackVolumeBoost(it) }
         },
-      )
-    }
-
-    if (downloadsExpanded) {
-      DownloadsComposable(
-        libraryType = libraryType,
-        hasCachedEpisodes = hasDownloadedChapters,
-        isOnline = isOnline,
-        cachingInProgress = cacheProgress.status is CacheStatus.Caching,
-        onRequestedDownload = { option ->
-          playerViewModel.book.value?.let {
-            contentCachingModelView
-              .cache(
-                mediaItem = it,
-                currentPosition = playerViewModel.totalPosition.value ?: 0.0,
-                option = option,
-              )
-          }
-        },
-        onRequestedDrop = {
-          playerViewModel
-            .book
-            .value
-            ?.let {
-              scope.launch {
-                contentCachingModelView.dropCache(it.id)
-              }
-            }
-        },
-        onRequestedStop = {
-          playerViewModel
-            .book
-            .value
-            ?.let {
-              scope.launch {
-                contentCachingModelView.stopCaching(it)
-              }
-            }
-        },
-        onDismissRequest = { downloadsExpanded = false },
       )
     }
   }

@@ -6,6 +6,9 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -14,15 +17,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -31,14 +38,22 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.ImageLoader
+import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
+import coil3.size.Size
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.ui.effects.WindowBlurEffect
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.library.composables.MiniPlayerComposable
+import org.grakovne.lissen.ui.screens.player.composable.ChaptersBottomSheet
 import org.grakovne.lissen.ui.screens.player.composable.NavigationBarComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackControlComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackDetailsComposable
@@ -93,7 +108,7 @@ fun GlobalPlayerBottomSheet(
         Surface(
           shadowElevation = 0.dp,
           tonalElevation = 0.dp,
-          color = MaterialTheme.colorScheme.surface,
+          color = androidx.compose.ui.graphics.Color.Transparent,
           modifier = Modifier.fillMaxWidth(),
         ) {
           Column(modifier = Modifier.navigationBarsPadding()) {
@@ -111,14 +126,14 @@ fun GlobalPlayerBottomSheet(
 
     // Full Player Bottom Sheet
     if (showBottomSheet) {
-      WindowBlurEffect()
-
       ModalBottomSheet(
         onDismissRequest = { showBottomSheet = false },
         sheetState = sheetState,
-        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-        containerColor = MaterialTheme.colorScheme.surface,
-        scrimColor = MaterialTheme.colorScheme.scrim.copy(alpha = 0.65f),
+        shape = androidx.compose.ui.graphics.RectangleShape,
+        containerColor = MaterialTheme.colorScheme.background,
+        scrimColor = androidx.compose.ui.graphics.Color.Transparent,
+        dragHandle = null,
+        modifier = Modifier.fillMaxSize(),
       ) {
         PlayerContent(
           navController = navController,
@@ -174,64 +189,163 @@ fun PlayerContent(
   val isPlaybackReady by playerViewModel.isPlaybackReady.observeAsState(false)
   val playingQueueExpanded by playerViewModel.playingQueueExpanded.observeAsState(false)
 
-  Column(
-    modifier =
-      Modifier
-        .fillMaxWidth()
-        .padding(horizontal = 16.dp),
-    horizontalAlignment = Alignment.CenterHorizontally,
-  ) {
-    // Drag Handle (optional, ModalBottomSheet adds one)
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    // Track Details
-    AnimatedVisibility(
-      visible = playingQueueExpanded.not(),
-      enter = expandVertically(animationSpec = tween(400)),
-      exit = shrinkVertically(animationSpec = tween(400)),
-    ) {
-      Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        if (!isPlaybackReady) {
-          TrackDetailsPlaceholderComposable("Loading...", null)
-        } else {
-          TrackDetailsComposable(
-            viewModel = playerViewModel,
-            imageLoader = imageLoader,
-            libraryViewModel = libraryViewModel,
-          )
+  Box(modifier = Modifier.fillMaxSize()) {
+    // Dynamic Background
+    playingBook?.let { book ->
+      val context = LocalContext.current
+      val imageRequest =
+        remember(book.id) {
+          ImageRequest
+            .Builder(context)
+            .data(book.id)
+            .size(Size.ORIGINAL)
+            .build()
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        if (!isPlaybackReady) {
-          TrackControlPlaceholderComposable(
-            modifier = Modifier,
-            settingsViewModel = settingsViewModel,
-          )
+      val blurModifier =
+        if (android.os.Build.VERSION.SDK_INT >= 31) {
+          Modifier.blur(radius = 40.dp)
         } else {
-          TrackControlComposable(
-            viewModel = playerViewModel,
-            modifier = Modifier,
-            settingsViewModel = settingsViewModel,
-          )
+          Modifier
         }
-      }
+
+      AsyncImage(
+        model = imageRequest,
+        imageLoader = imageLoader,
+        contentDescription = null,
+        contentScale = ContentScale.Crop,
+        modifier =
+          Modifier
+            .fillMaxSize()
+            .then(blurModifier)
+            .alpha(0.6f),
+      )
+
+      // Scrim
+      Box(
+        modifier =
+          Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background.copy(alpha = 0.5f)),
+      )
     }
 
-    // Controls (Sleep timer, etc)
-    Spacer(modifier = Modifier.height(16.dp))
+    // We control the chapters sheet visibility
+    var showChaptersList by remember { mutableStateOf(false) }
 
-    if (playingBook != null && isPlaybackReady) {
-      playingBook?.let {
-        NavigationBarComposable(
-          book = it,
-          playerViewModel = playerViewModel,
-          contentCachingModelView = cachingModelView,
-          settingsViewModel = settingsViewModel,
-          navController = navController,
-          libraryType = libraryViewModel.fetchPreferredLibraryType(),
+    Column(
+      modifier =
+        Modifier
+          .fillMaxSize()
+          .systemBarsPadding()
+          .padding(horizontal = 16.dp),
+      horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+      // Drag Handle / Chevron
+      Box(
+        modifier =
+          Modifier
+            .fillMaxWidth()
+            .height(32.dp)
+            .clickable(onClick = onCollapse),
+        contentAlignment = Alignment.Center,
+      ) {
+        Image(
+          imageVector = Icons.Rounded.KeyboardArrowDown,
+          contentDescription = "Close",
+          colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)),
+          contentScale = ContentScale.FillBounds,
+          modifier = Modifier.size(width = 64.dp, height = 32.dp),
         )
+      }
+
+      // Track Details
+      AnimatedVisibility(
+        visible = playingQueueExpanded.not(),
+        enter = expandVertically(animationSpec = tween(400)),
+        exit = shrinkVertically(animationSpec = tween(400)),
+      ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+          if (!isPlaybackReady) {
+            TrackDetailsPlaceholderComposable("Loading...", null)
+          } else {
+            TrackDetailsComposable(
+              viewModel = playerViewModel,
+              imageLoader = imageLoader,
+              libraryViewModel = libraryViewModel,
+              onTitleClick = {
+                playingBook?.let { book ->
+                  navController.showPlayer(book.id, book.title, book.subtitle, false)
+                  onCollapse()
+                }
+              },
+              onChapterClick = { showChaptersList = true },
+            )
+          }
+        }
+      }
+
+      Spacer(modifier = Modifier.weight(1f))
+
+      AnimatedVisibility(
+        visible = playingQueueExpanded.not(),
+        enter = expandVertically(animationSpec = tween(400)),
+        exit = shrinkVertically(animationSpec = tween(400)),
+      ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+          if (!isPlaybackReady) {
+            TrackControlPlaceholderComposable(
+              modifier = Modifier,
+              settingsViewModel = settingsViewModel,
+            )
+          } else {
+            TrackControlComposable(
+              viewModel = playerViewModel,
+              modifier = Modifier,
+              settingsViewModel = settingsViewModel,
+            )
+          }
+        }
+      }
+
+      // Controls (Sleep timer, etc)
+      Spacer(modifier = Modifier.weight(1f))
+
+      if (playingBook != null && isPlaybackReady) {
+        playingBook?.let {
+          NavigationBarComposable(
+            book = it,
+            playerViewModel = playerViewModel,
+            contentCachingModelView = cachingModelView,
+            settingsViewModel = settingsViewModel,
+            navController = navController,
+            libraryType = libraryViewModel.fetchPreferredLibraryType(),
+          )
+
+          if (showChaptersList) {
+            val isOnline by playerViewModel.isOnline.collectAsState(initial = false)
+
+            ChaptersBottomSheet(
+              book = it,
+              currentPosition = playerViewModel.totalPosition.value ?: 0.0,
+              currentChapterIndex = playerViewModel.currentChapterIndex.value ?: 0,
+              isOnline = isOnline,
+              cachingModelView = cachingModelView,
+              onChapterSelected = { chapter ->
+                val currentChapterIndex = playerViewModel.currentChapterIndex.value
+                val index = it.chapters.indexOf(chapter)
+
+                if (index == currentChapterIndex) {
+                  playerViewModel.togglePlayPause()
+                } else {
+                  playerViewModel.setChapter(chapter)
+                }
+                showChaptersList = false
+              },
+              onDismissRequest = { showChaptersList = false },
+            )
+          }
+        }
       }
     }
   }

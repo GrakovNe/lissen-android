@@ -39,7 +39,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -95,6 +99,11 @@ fun MiniPlayerComposable(
 
   SwipeToDismissBox(
     state = dismissState,
+    modifier =
+      Modifier
+        .padding(horizontal = 16.dp, vertical = 8.dp)
+        .shadow(elevation = 8.dp, shape = RoundedCornerShape(16.dp))
+        .clip(RoundedCornerShape(16.dp)),
     backgroundContent = {
       Row(
         modifier =
@@ -124,11 +133,20 @@ fun MiniPlayerComposable(
       visible = backgroundVisible,
       exit = fadeOut(animationSpec = tween(300)),
     ) {
-      Column(
+      val context = LocalContext.current
+      val imageRequest =
+        remember(book.id) {
+          ImageRequest
+            .Builder(context)
+            .data(book.id)
+            .build()
+        }
+
+      Box(
         modifier =
           Modifier
             .fillMaxWidth()
-            .background(colorScheme.tertiaryContainer)
+            .background(colorScheme.surface)
             .clickable {
               if (onContentClick != null) {
                 onContentClick()
@@ -137,97 +155,117 @@ fun MiniPlayerComposable(
               }
             },
       ) {
-        val totalDuration = remember(book) { book.chapters.sumOf { it.duration } }
-        val currentTime = book.progress?.currentTime ?: 0.0
-        val progress = if (totalDuration > 0) (currentTime / totalDuration).toFloat() else 0f
+        val blurModifier =
+          if (android.os.Build.VERSION.SDK_INT >= 31) {
+            Modifier.blur(radius = 30.dp)
+          } else {
+            Modifier
+          }
+
+        AsyncShimmeringImage(
+          imageRequest = imageRequest,
+          imageLoader = imageLoader,
+          contentDescription = "",
+          contentScale = ContentScale.Crop,
+          modifier =
+            Modifier
+              .matchParentSize()
+              .then(blurModifier)
+              .alpha(0.8f),
+          error = painterResource(R.drawable.cover_fallback),
+        )
 
         Box(
           modifier =
             Modifier
-              .fillMaxWidth()
-              .height(2.dp)
-              .background(
-                colorScheme.outlineVariant
-                  .copy(alpha = 0.4f),
-              ),
-        ) {
+              .matchParentSize()
+              .background(colorScheme.surface.copy(alpha = 0.7f)),
+        )
+
+        Column(modifier = Modifier.fillMaxWidth()) {
+          val totalDuration = remember(book) { book.chapters.sumOf { it.duration } }
+          val currentTime = book.progress?.currentTime ?: 0.0
+          val progress = if (totalDuration > 0) (currentTime / totalDuration).toFloat() else 0f
+
           Box(
             modifier =
               Modifier
-                .fillMaxWidth(progress)
+                .fillMaxWidth()
                 .height(2.dp)
-                .background(colorScheme.primary),
-          )
-        }
-
-        Row(
-          modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
-          verticalAlignment = Alignment.CenterVertically,
-        ) {
-          val context = LocalContext.current
-          val imageRequest =
-            remember(book.id) {
-              ImageRequest
-                .Builder(context)
-                .data(book.id)
-                .build()
-            }
-
-          AsyncShimmeringImage(
-            imageRequest = imageRequest,
-            imageLoader = imageLoader,
-            contentDescription = "${book.title} cover",
-            contentScale = ContentScale.FillBounds,
-            modifier =
-              Modifier
-                .size(48.dp)
-                .aspectRatio(1f)
-                .clip(RoundedCornerShape(4.dp)),
-            error = painterResource(R.drawable.cover_fallback),
-          )
-
-          Spacer(modifier = Modifier.width(16.dp))
-
-          Column(
-            modifier = Modifier.weight(1f),
-          ) {
-            Text(
-              text = book.title,
-              style =
-                typography.bodyMedium.copy(
-                  fontWeight = FontWeight.SemiBold,
-                  color = colorScheme.onBackground,
+                .background(
+                  colorScheme.outlineVariant
+                    .copy(alpha = 0.4f),
                 ),
-              maxLines = 2,
-              overflow = TextOverflow.Ellipsis,
+          ) {
+            Box(
+              modifier =
+                Modifier
+                  .fillMaxWidth(progress)
+                  .height(2.dp)
+                  .background(colorScheme.primary),
             )
-
-            book.author?.let {
-              Text(
-                text = it,
-                style =
-                  typography.bodyMedium.copy(
-                    color = colorScheme.onBackground.copy(alpha = 0.6f),
-                  ),
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-              )
-            }
           }
 
-          Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+          Row(
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
           ) {
-            Row {
-              IconButton(
-                onClick = { withHaptic(view) { playerViewModel.togglePlayPause() } },
-              ) {
-                Icon(
-                  imageVector = if (isPlaying) Icons.Outlined.PauseCircleOutline else Icons.Outlined.PlayCircle,
-                  contentDescription = if (isPlaying) "Pause" else "Play",
-                  modifier = Modifier.size(34.dp),
+            AsyncShimmeringImage(
+              imageRequest = imageRequest,
+              imageLoader = imageLoader,
+              contentDescription = "${book.title} cover",
+              contentScale = ContentScale.FillBounds,
+              modifier =
+                Modifier
+                  .size(48.dp)
+                  .aspectRatio(1f)
+                  .clip(RoundedCornerShape(4.dp)),
+              error = painterResource(R.drawable.cover_fallback),
+            )
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column(
+              modifier = Modifier.weight(1f),
+            ) {
+              Text(
+                text = book.title,
+                style =
+                  typography.bodyMedium.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    color = colorScheme.onSurface,
+                  ),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+              )
+
+              book.author?.let {
+                Text(
+                  text = it,
+                  style =
+                    typography.bodyMedium.copy(
+                      color = colorScheme.onBackground.copy(alpha = 0.6f),
+                    ),
+                  maxLines = 1,
+                  overflow = TextOverflow.Ellipsis,
                 )
+              }
+            }
+
+            Column(
+              horizontalAlignment = Alignment.CenterHorizontally,
+              verticalArrangement = Arrangement.Center,
+            ) {
+              Row {
+                IconButton(
+                  onClick = { withHaptic(view) { playerViewModel.togglePlayPause() } },
+                ) {
+                  Icon(
+                    imageVector = if (isPlaying) Icons.Outlined.PauseCircleOutline else Icons.Outlined.PlayCircle,
+                    contentDescription = if (isPlaying) "Pause" else "Play",
+                    modifier = Modifier.size(34.dp),
+                  )
+                }
               }
             }
           }

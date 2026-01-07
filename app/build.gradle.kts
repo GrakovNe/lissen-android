@@ -50,11 +50,11 @@ android {
   defaultConfig {
     val commitHash = gitCommitHash()
     
-    applicationId = "org.grakovne.lissen"
+    applicationId = "org.surjit.lissen_up"
     minSdk = 28
     targetSdk = 36
-    versionCode = 10800
-    versionName = "1.8.0-$commitHash"
+    versionCode = 10000
+    versionName = "1.0.0-${commitHash}"
     
     buildConfigField("String", "GIT_HASH", "\"$commitHash\"")
     
@@ -83,9 +83,7 @@ android {
   
   buildTypes {
     release {
-      if (project.hasProperty("RELEASE_STORE_FILE")) {
-        signingConfig = signingConfigs.getByName("release")
-      }
+      signingConfig = signingConfigs.getByName("debug")
       isMinifyEnabled = false
       isShrinkResources = false
       proguardFiles(

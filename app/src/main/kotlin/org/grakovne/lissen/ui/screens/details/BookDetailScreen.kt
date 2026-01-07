@@ -9,8 +9,10 @@ import android.text.style.URLSpan
 import android.text.style.UnderlineSpan
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -53,6 +55,7 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -64,8 +67,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
@@ -88,7 +93,9 @@ import androidx.compose.ui.unit.sp
 import androidx.core.text.HtmlCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil3.ImageLoader
+import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
+import coil3.size.Size
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
@@ -125,6 +132,9 @@ fun BookDetailScreen(
   val isPlaying by playerViewModel.isPlaying.observeAsState(false)
   val preferredLibrary by settingsViewModel.preferredLibrary.observeAsState()
   val isOnline by playerViewModel.isOnline.collectAsState(initial = false)
+  val preparingBookId by playerViewModel.preparingBookId.observeAsState(null)
+  val currentChapterIndex by playerViewModel.currentChapterIndex.observeAsState(-1)
+  val totalPosition by playerViewModel.totalPosition.observeAsState(0.0)
 
   val cacheProgress: CacheState by cachingModelView.getProgress(bookId).collectAsState(initial = CacheState(CacheStatus.Idle))
   val hasDownloadedChapters by cachingModelView.hasDownloadedChapters(bookId).observeAsState(false)
@@ -140,342 +150,424 @@ fun BookDetailScreen(
   }
 
   LaunchedEffect(bookId) {
-    if (playingBook?.id != bookId) {
-      playerViewModel.preparePlayback(bookId)
-    }
+    playerViewModel.fetchBook(bookId)
   }
 
-  Scaffold(
-    topBar = {
-      TopAppBar(
-        title = {},
-        navigationIcon = {
-          IconButton(onClick = { navController.back() }) {
-            Icon(
-              imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-              contentDescription = "Back",
-              tint = colorScheme.onSurface,
-            )
-          }
-        },
-        actions = {
-          IconButton(onClick = { downloadsExpanded = true }) {
-            DownloadProgressIcon(
-              cacheState = cacheProgress,
-              color = colorScheme.onSurface,
-            )
-          }
-        },
-      )
-    },
-    modifier = Modifier.systemBarsPadding(),
-  ) { innerPadding ->
-    if (bookDetail == null) {
-      Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        CircularProgressIndicator()
-      }
-    } else {
-      val book = bookDetail!!
-      val chapters = book.chapters
-      val maxDuration = chapters.maxOfOrNull { it.duration } ?: 0.0
+  Box(modifier = Modifier.fillMaxSize()) {
+    // Dynamic Background
+    bookDetail?.let { book ->
+      val imageRequest =
+        remember(book.id) {
+          ImageRequest
+            .Builder(context)
+            .data(book.id)
+            .size(Size.ORIGINAL)
+            .build()
+        }
 
-      LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(innerPadding),
-        horizontalAlignment = Alignment.CenterHorizontally,
-      ) {
-        item {
-          Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            // Cover Image
-            val imageRequest =
-              remember(book.id) {
-                ImageRequest
-                  .Builder(context)
-                  .data(book.id)
-                  .build()
+      val blurModifier =
+        if (android.os.Build.VERSION.SDK_INT >= 31) {
+          Modifier.blur(radius = 80.dp)
+        } else {
+          Modifier
+        }
+
+      AsyncImage(
+        model = imageRequest,
+        imageLoader = imageLoader,
+        contentDescription = null,
+        contentScale = ContentScale.Crop,
+        modifier =
+          Modifier
+            .fillMaxSize()
+            .then(blurModifier)
+            .alpha(0.6f),
+      )
+
+      // Scrim
+      Box(
+        modifier =
+          Modifier
+            .fillMaxSize()
+            .background(
+              Brush.verticalGradient(
+                colors =
+                  listOf(
+                    MaterialTheme.colorScheme.background.copy(alpha = 0.2f),
+                    MaterialTheme.colorScheme.background.copy(alpha = 0.8f),
+                  ),
+              ),
+            ),
+      )
+    }
+
+    Scaffold(
+      containerColor = Color.Transparent,
+      topBar = {
+        TopAppBar(
+          colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent),
+          title = {},
+          navigationIcon = {
+            IconButton(onClick = { navController.back() }) {
+              Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Back",
+                tint = colorScheme.onSurface,
+              )
+            }
+          },
+          actions = {
+            IconButton(onClick = { downloadsExpanded = true }) {
+              DownloadProgressIcon(
+                cacheState = cacheProgress,
+                color = colorScheme.onSurface,
+              )
+            }
+          },
+        )
+      },
+      modifier = Modifier.systemBarsPadding(),
+    ) { innerPadding ->
+      if (bookDetail == null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+          CircularProgressIndicator()
+        }
+      } else {
+        val book = bookDetail!!
+        val chapters = book.chapters
+        val maxDuration = chapters.maxOfOrNull { it.duration } ?: 0.0
+
+        LazyColumn(
+          modifier = Modifier.fillMaxSize().padding(innerPadding),
+          horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+          item {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+              // Cover Image
+              val imageRequest =
+                remember(book.id) {
+                  ImageRequest
+                    .Builder(context)
+                    .data(book.id)
+                    .build()
+                }
+
+              Box(
+                modifier =
+                  Modifier
+                    .padding(top = 16.dp, bottom = 16.dp)
+                    .height(260.dp) // Large cover
+                    .aspectRatio(1f)
+                    .shadow(12.dp, RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(12.dp)),
+              ) {
+                AsyncShimmeringImage(
+                  imageRequest = imageRequest,
+                  imageLoader = imageLoader,
+                  contentDescription = "${book.title} cover",
+                  contentScale = ContentScale.FillBounds,
+                  modifier = Modifier.fillMaxSize(),
+                  error = painterResource(R.drawable.cover_fallback),
+                )
               }
 
-            Box(
-              modifier =
-                Modifier
-                  .padding(top = 16.dp, bottom = 16.dp)
-                  .height(260.dp) // Large cover
-                  .aspectRatio(1f)
-                  .shadow(12.dp, RoundedCornerShape(12.dp))
-                  .clip(RoundedCornerShape(12.dp)),
-            ) {
-              AsyncShimmeringImage(
-                imageRequest = imageRequest,
-                imageLoader = imageLoader,
-                contentDescription = "${book.title} cover",
-                contentScale = ContentScale.FillBounds,
-                modifier = Modifier.fillMaxSize(),
-                error = painterResource(R.drawable.cover_fallback),
-              )
-            }
-
-            // Title & Author
-            Text(
-              text = book.title,
-              style = typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-              color = colorScheme.onSurface,
-              textAlign = TextAlign.Center,
-              modifier = Modifier.padding(horizontal = 24.dp),
-            )
-
-            book.author?.takeIf { it.isNotBlank() }?.let {
+              // Title & Author
               Text(
-                text = stringResource(R.string.book_detail_author_pattern, it),
-                style = typography.titleMedium,
-                color = colorScheme.onSurface.copy(alpha = 0.7f),
+                text = book.title,
+                style = typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                color = colorScheme.onSurface,
                 textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = 4.dp, start = 24.dp, end = 24.dp),
+                modifier = Modifier.padding(horizontal = 24.dp),
               )
-            }
 
-            book.narrator?.takeIf { it.isNotEmpty() }?.let {
-              Text(
-                text = stringResource(R.string.book_detail_narrator_pattern, it),
-                style = typography.bodyMedium,
-                color = colorScheme.onSurface.copy(alpha = 0.5f),
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(top = 2.dp, start = 24.dp, end = 24.dp),
-              )
-            }
+              book.author?.takeIf { it.isNotBlank() }?.let {
+                Text(
+                  text = stringResource(R.string.book_detail_author_pattern, it),
+                  style = typography.titleMedium,
+                  color = colorScheme.onSurface.copy(alpha = 0.7f),
+                  textAlign = TextAlign.Center,
+                  modifier = Modifier.padding(top = 4.dp, start = 24.dp, end = 24.dp),
+                )
+              }
 
-            Spacer(modifier = Modifier.height(16.dp))
+              book.narrator?.takeIf { it.isNotEmpty() }?.let {
+                Text(
+                  text = stringResource(R.string.book_detail_narrator_pattern, it),
+                  style = typography.bodyMedium,
+                  color = colorScheme.onSurface.copy(alpha = 0.5f),
+                  textAlign = TextAlign.Center,
+                  modifier = Modifier.padding(top = 2.dp, start = 24.dp, end = 24.dp),
+                )
+              }
 
-            // Action Button
-            Button(
-              onClick = {
-                withHaptic(view) {
-                  if (playingBook?.id == bookId && isPlaying) {
-                    playerViewModel.togglePlayPause()
-                  } else {
-                    if (!isPlaying) {
+              Spacer(modifier = Modifier.height(16.dp))
+
+              // Action Button
+              Button(
+                onClick = {
+                  withHaptic(view) {
+                    if (playingBook?.id == bookId) {
                       playerViewModel.togglePlayPause()
+                    } else {
+                      playerViewModel.playBook(book)
                     }
                   }
-                }
-              },
-              modifier =
-                Modifier
-                  .fillMaxWidth()
-                  .padding(horizontal = 24.dp)
-                  .height(56.dp),
-            ) {
-              val isCurrentBookPlaying = playingBook?.id == bookId && isPlaying
-
-              val icon = if (isCurrentBookPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow
-              Icon(imageVector = icon, contentDescription = null, tint = colorScheme.onPrimary)
-
-              Spacer(modifier = Modifier.width(8.dp))
-              val isCompleted = book.progress?.isFinished == true
-              val isStarted = (book.progress?.currentTime ?: 0.0) > 0
-
-              val buttonText =
-                when {
-                  isCurrentBookPlaying -> stringResource(R.string.book_detail_action_pause)
-                  isCompleted -> stringResource(R.string.book_detail_action_listen_again)
-                  isStarted -> stringResource(R.string.book_detail_action_resume)
-                  else -> stringResource(R.string.book_detail_action_start)
-                }
-
-              Text(
-                text = buttonText,
-                style = typography.titleMedium,
-                color = colorScheme.onPrimary,
-              )
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Details
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-              val totalDuration = chapters.sumOf { it.duration }
-              val currentPosition = book.progress?.currentTime ?: 0.0
-              val isStarted = currentPosition > 0 && book.progress?.isFinished != true
-
-              Row(
+                },
+                enabled = preparingBookId != bookId,
                 modifier =
                   Modifier
                     .fillMaxWidth()
-                    .height(IntrinsicSize.Max),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    .padding(horizontal = 24.dp)
+                    .height(56.dp),
               ) {
-                // Published Tile
-                BookInfoTile(
-                  label = stringResource(R.string.book_detail_published),
-                  modifier =
-                    Modifier
-                      .weight(1f)
-                      .fillMaxHeight(),
-                ) {
+                if (preparingBookId == bookId) {
+                  CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = colorScheme.onPrimary,
+                    strokeWidth = 2.dp,
+                  )
+                } else {
+                  val isCurrentBookPlaying = playingBook?.id == bookId && isPlaying
+
+                  val icon = if (isCurrentBookPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow
+                  Icon(imageVector = icon, contentDescription = null, tint = colorScheme.onPrimary)
+
+                  Spacer(modifier = Modifier.width(8.dp))
+                  val isCompleted = book.progress?.isFinished == true
+                  val isStarted = (book.progress?.currentTime ?: 0.0) > 0
+
+                  val buttonText =
+                    when {
+                      isCurrentBookPlaying -> stringResource(R.string.book_detail_action_pause)
+                      isCompleted -> stringResource(R.string.book_detail_action_listen_again)
+                      isStarted -> stringResource(R.string.book_detail_action_resume)
+                      else -> stringResource(R.string.book_detail_action_start)
+                    }
+
                   Text(
-                    text = book.year ?: "-",
-                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Black),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    textAlign = TextAlign.Center,
+                    text = buttonText,
+                    style = typography.titleMedium,
+                    color = colorScheme.onPrimary,
                   )
                 }
+              }
 
-                // Length/Remaining Tile
-                val durationLabel =
-                  if (isStarted) {
-                    stringResource(
-                      R.string.book_detail_remaining,
-                    )
-                  } else {
-                    stringResource(R.string.book_detail_length)
-                  }
-                var durationSeconds =
-                  if (isStarted) {
-                    (totalDuration - currentPosition).toLong()
-                  } else {
-                    totalDuration.toLong()
-                  }
+              Spacer(modifier = Modifier.height(24.dp))
 
-                val hours = durationSeconds / 3600
-                val minutes = (durationSeconds % 3600) / 60
+              // Details
+              Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                val totalDuration = chapters.sumOf { it.duration }
+                val currentPosition = book.progress?.currentTime ?: 0.0
+                val isStarted = currentPosition > 0 && book.progress?.isFinished != true
 
-                BookInfoTile(
-                  label = durationLabel,
+                Row(
                   modifier =
                     Modifier
-                      .weight(1f)
-                      .fillMaxHeight(),
+                      .fillMaxWidth()
+                      .height(IntrinsicSize.Max),
+                  horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                  if (hours > 0) {
+                  // Published Tile
+                  BookInfoTile(
+                    label = stringResource(R.string.book_detail_published),
+                    modifier =
+                      Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                  ) {
                     Text(
-                      text = context.resources.getQuantityString(R.plurals.duration_hours, hours.toInt(), hours.toInt()),
-                      style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black),
+                      text = book.year?.takeIf { it.isNotBlank() } ?: stringResource(R.string.book_detail_unknown_year),
+                      style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Black),
                       color = MaterialTheme.colorScheme.onSurface,
                       textAlign = TextAlign.Center,
                     )
-                    if (minutes > 0) {
+                  }
+
+                  // Length/Remaining Tile
+                  val durationLabel =
+                    if (isStarted) {
+                      stringResource(
+                        R.string.book_detail_remaining,
+                      )
+                    } else {
+                      stringResource(R.string.book_detail_length)
+                    }
+                  var durationSeconds =
+                    if (isStarted) {
+                      (totalDuration - currentPosition).toLong()
+                    } else {
+                      totalDuration.toLong()
+                    }
+
+                  val hours = durationSeconds / 3600
+                  val minutes = (durationSeconds % 3600) / 60
+
+                  BookInfoTile(
+                    label = durationLabel,
+                    modifier =
+                      Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                  ) {
+                    if (hours > 0) {
+                      Text(
+                        text = context.resources.getQuantityString(R.plurals.duration_hours, hours.toInt(), hours.toInt()),
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black),
+                        color = MaterialTheme.colorScheme.onSurface,
+                        textAlign = TextAlign.Center,
+                      )
+                      if (minutes > 0) {
+                        Text(
+                          text = context.resources.getQuantityString(R.plurals.duration_minutes, minutes.toInt(), minutes.toInt()),
+                          style = MaterialTheme.typography.bodySmall,
+                          color = MaterialTheme.colorScheme.onSurfaceVariant,
+                          textAlign = TextAlign.Center,
+                        )
+                      }
+                    } else {
                       Text(
                         text = context.resources.getQuantityString(R.plurals.duration_minutes, minutes.toInt(), minutes.toInt()),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black),
+                        color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center,
                       )
                     }
-                  } else {
+                  }
+
+                  // Publisher Tile
+                  BookInfoTile(
+                    label = stringResource(R.string.playing_item_details_publisher),
+                    modifier =
+                      Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                  ) {
                     Text(
-                      text = context.resources.getQuantityString(R.plurals.duration_minutes, minutes.toInt(), minutes.toInt()),
-                      style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black),
+                      text = book.publisher?.takeIf { it.isNotBlank() } ?: stringResource(R.string.book_detail_unknown_publisher),
+                      style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
                       color = MaterialTheme.colorScheme.onSurface,
                       textAlign = TextAlign.Center,
+                      maxLines = 2,
+                      overflow = TextOverflow.Ellipsis,
                     )
                   }
                 }
 
-                // Publisher Tile
-                BookInfoTile(
-                  label = stringResource(R.string.playing_item_details_publisher),
-                  modifier =
-                    Modifier
-                      .weight(1f)
-                      .fillMaxHeight(),
-                ) {
-                  Text(
-                    text = book.publisher ?: "-",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black),
-                    color = MaterialTheme.colorScheme.onSurface,
-                    textAlign = TextAlign.Center,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                  )
+                book.abstract?.takeIf { it.isNotEmpty() }?.let {
+                  Spacer(modifier = Modifier.height(16.dp))
+                  ExpandableDescription(it)
                 }
               }
 
-              book.abstract?.takeIf { it.isNotEmpty() }?.let {
-                Spacer(modifier = Modifier.height(16.dp))
-                ExpandableDescription(it)
-              }
+              Spacer(modifier = Modifier.height(24.dp))
+              Text(
+                text = stringResource(R.string.player_screen_chapter_list_title),
+                style = typography.titleMedium.copy(fontWeight = FontWeight.Black),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
+              )
+              Spacer(modifier = Modifier.height(8.dp))
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
-            Text(
-              text = stringResource(R.string.player_screen_chapter_list_navigation_library),
-              style = typography.titleMedium.copy(fontWeight = FontWeight.Black),
-              modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
-            )
-            Spacer(modifier = Modifier.height(8.dp))
           }
-        }
 
-        itemsIndexed(chapters) { index, chapter ->
-          val isCached by cachingModelView.provideCacheState(book.id, chapter.id).observeAsState(false)
-          val isPlayingChapter = playingBook?.id == bookId && playerViewModel.currentChapterIndex.value == index
+          itemsIndexed(chapters) { index, chapter ->
+            val isCached by cachingModelView.provideCacheState(book.id, chapter.id).observeAsState(false)
+            val isPlayingChapter = playingBook?.id == bookId && currentChapterIndex == index
 
-          PlaylistItemComposable(
-            track = chapter,
-            onClick = {
-              if (playingBook?.id == bookId) {
-                playerViewModel.setChapter(chapter)
-              } else {
-                // If not playing, we should probably start playback from this chapter?
-                // PlayerViewModel might not have a direct method for "play book from chapter X".
-                // For now, if we click, we toggle play if it's the current book, or we ignore/start book?
-                // simpler: just call setChapter if it's prepared.
-                if (isPlaybackReady) {
-                  playerViewModel.setChapter(chapter)
-                }
+            val overallPosition =
+              when {
+                playingBook?.id == bookId -> totalPosition
+                else -> book.progress?.currentTime ?: 0.0
               }
-            },
-            isSelected = isPlayingChapter,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-            maxDuration = maxDuration,
-            isCached = isCached,
-            canPlay = isCached || isOnline,
-          )
 
-          if (index < chapters.size - 1) {
-            HorizontalDivider(
-              thickness = 1.dp,
-              modifier = Modifier.padding(start = 40.dp, end = 16.dp, top = 8.dp, bottom = 8.dp).alpha(0.1f),
+            val chapterStart = chapter.start
+            val chapterEnd = chapterStart + chapter.duration
+
+            val progressRaw = (overallPosition - chapterStart) / (chapterEnd - chapterStart)
+            val progress =
+              when {
+                overallPosition >= chapterEnd -> 1f
+                overallPosition <= chapterStart -> 0f
+                else -> progressRaw.toFloat()
+              }
+
+            PlaylistItemComposable(
+              track = chapter,
+              onClick = {
+                val isSameBook = playingBook?.id == bookId
+
+                if (isSameBook) {
+                  if (currentChapterIndex == index) {
+                    playerViewModel.togglePlayPause()
+                  } else {
+                    playerViewModel.setChapter(chapter)
+                  }
+                } else {
+                  // Check if this chapter is the "last ongoing" one
+                  val currentTime = book.progress?.currentTime ?: 0.0
+                  val isLastOngoing = currentTime >= chapter.start && currentTime < (chapter.start + chapter.duration)
+
+                  if (isLastOngoing) {
+                    playerViewModel.playBook(book) // Resume logic
+                  } else {
+                    playerViewModel.playBook(book, index)
+                  }
+                }
+              },
+              isSelected = isPlayingChapter,
+              modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+              maxDuration = maxDuration,
+              isCached = isCached,
+              canPlay = isCached || isOnline,
+              progress = progress,
             )
-          }
-        }
 
-        item {
-          Spacer(modifier = Modifier.height(32.dp)) // Bottom padding
+            if (index < chapters.size - 1) {
+              HorizontalDivider(
+                thickness = 1.dp,
+                modifier = Modifier.padding(start = 40.dp, end = 16.dp, top = 8.dp, bottom = 8.dp).alpha(0.1f),
+              )
+            }
+          }
+
+          item {
+            Spacer(modifier = Modifier.height(32.dp)) // Bottom padding
+          }
         }
       }
     }
-  }
 
-  if (downloadsExpanded) {
-    DownloadsComposable(
-      libraryType = preferredLibrary?.type ?: LibraryType.UNKNOWN,
-      hasCachedEpisodes = hasDownloadedChapters,
-      isOnline = isOnline,
-      cachingInProgress = cacheProgress.status is CacheStatus.Caching,
-      onRequestedDownload = { option ->
-        bookDetail?.let {
-          cachingModelView.cache(
-            mediaItem = it,
-            currentPosition = playerViewModel.totalPosition.value ?: 0.0,
-            option = option,
-          )
-        }
-      },
-      onRequestedDrop = {
-        bookDetail?.let {
-          scope.launch {
-            cachingModelView.dropCache(it.id)
+    if (downloadsExpanded) {
+      DownloadsComposable(
+        libraryType = preferredLibrary?.type ?: LibraryType.UNKNOWN,
+        hasCachedEpisodes = hasDownloadedChapters,
+        isOnline = isOnline,
+        cachingInProgress = cacheProgress.status is CacheStatus.Caching,
+        onRequestedDownload = { option ->
+          bookDetail?.let {
+            cachingModelView.cache(
+              mediaItem = it,
+              currentPosition = playerViewModel.totalPosition.value ?: 0.0,
+              option = option,
+            )
           }
-        }
-      },
-      onRequestedStop = {
-        bookDetail?.let {
-          scope.launch {
-            cachingModelView.stopCaching(it)
+        },
+        onRequestedDrop = {
+          bookDetail?.let {
+            scope.launch {
+              cachingModelView.dropCache(it.id)
+            }
           }
-        }
-      },
-      onDismissRequest = { downloadsExpanded = false },
-    )
+        },
+        onRequestedStop = {
+          bookDetail?.let {
+            scope.launch {
+              cachingModelView.stopCaching(it)
+            }
+          }
+        },
+        onDismissRequest = { downloadsExpanded = false },
+      )
+    }
   }
 }
 
@@ -596,8 +688,9 @@ fun BookInfoTile(
   Column(
     modifier =
       modifier
-        .clip(RoundedCornerShape(8.dp))
-        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+        .clip(RoundedCornerShape(12.dp))
+        .background(MaterialTheme.colorScheme.surface.copy(alpha = if (isSystemInDarkTheme()) 0.15f else 0.6f))
+        .border(1.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f), RoundedCornerShape(12.dp))
         .padding(vertical = 12.dp, horizontal = 4.dp),
     horizontalAlignment = Alignment.CenterHorizontally,
     verticalArrangement = Arrangement.Top,

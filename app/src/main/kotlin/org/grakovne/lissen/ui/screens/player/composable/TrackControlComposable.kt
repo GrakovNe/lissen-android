@@ -1,6 +1,7 @@
 package org.grakovne.lissen.ui.screens.player.composable
 
 import android.view.View
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -66,6 +67,7 @@ fun TrackControlComposable(
 
   var sliderPosition by remember { mutableDoubleStateOf(0.0) }
   var isDragging by remember { mutableStateOf(false) }
+  var showRemainingTime by remember { mutableStateOf(false) }
 
   LaunchedEffect(currentTrackPosition, currentTrackIndex, currentTrackDuration) {
     if (!isDragging) {
@@ -121,11 +123,17 @@ fun TrackControlComposable(
           )
           Text(
             text =
-              maxOf(0.0, currentTrackDuration - sliderPosition)
-                .toInt()
-                .formatTime(true),
+              if (showRemainingTime) {
+                "-" +
+                  maxOf(0.0, currentTrackDuration - sliderPosition)
+                    .toInt()
+                    .formatTime(true)
+              } else {
+                currentTrackDuration.toInt().formatTime(true)
+              },
             style = typography.bodySmall,
             color = colorScheme.onBackground.copy(alpha = 0.6f),
+            modifier = Modifier.clickable { showRemainingTime = !showRemainingTime },
           )
         }
       }
@@ -134,7 +142,7 @@ fun TrackControlComposable(
         modifier =
           Modifier
             .fillMaxWidth()
-            .padding(top = 24.dp)
+            .padding(top = 48.dp)
             .align(Alignment.BottomCenter),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically,

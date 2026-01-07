@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">Lissen Up</string>
+    <string name="app_name" translatable="false">Kahani</string>
     <string name="library_screen_library_title">Library</string>
     <string name="library_screen_continue_listening_title">Continue listening</string>
     <string name="library_screen_preferences_menu_item">Preferences</string>
@@ -10,9 +10,7 @@
     <string name="login_screen_password_input">Password</string>
     <string name="login_screen_connect_button_text">Connect</string>
     <string name="player_screen_playback_speed_navigation">Speed</string>
-    <string name="player_screen_chapter_list_navigation_library">Chapters</string>
-    <string name="player_screen_chapter_list_navigation_podcast">Episodes</string>
-    <string name="player_screen_chapter_list_navigation_items">Items</string>
+    <string name="player_screen_chapter_list_title">Chapters</string>
     <string name="player_screen_library_playing_title">Playing chapters</string>
     <string name="player_screen_podcast_playing_title">Playing episodes</string>
     <string name="player_screen_items_playing_title">Playing items</string>
@@ -173,9 +171,15 @@
     <string name="book_detail_action_listen_again">Listen Again</string>
     <string name="book_detail_action_resume">Resume</string>
     <string name="book_detail_action_start">Start Listening</string>
+    <!-- Missing strings required for release build lint check -->
+    <string name="player_screen_chapter_list_navigation_library">Chapters</string>
+    <string name="player_screen_chapter_list_navigation_items">Items</string>
+    <string name="player_screen_chapter_list_navigation_podcast">Episodes</string>
     <string name="book_detail_published">Published</string>
     <string name="book_detail_length">Length</string>
     <string name="book_detail_remaining">Remaining</string>
+    <string name="book_detail_unknown_publisher">Unknown</string>
+    <string name="book_detail_unknown_year">Unknown</string>
     <string name="book_detail_read_more">Read more</string>
     <string name="book_detail_see_less">See less</string>
     <plurals name="duration_hours">
