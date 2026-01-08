@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name" translatable="false">Kahani</string>
+    <string name="branding_name" translatable="false">Kahani</string>
     <string name="library_screen_library_title">Library</string>
     <string name="library_screen_continue_listening_title">Continue listening</string>
     <string name="library_screen_preferences_menu_item">Preferences</string>
@@ -201,4 +202,8 @@
     <string name="playback_shake_reset_title">Shake to reset sleep timer</string>
     <string name="playback_shake_reset_description">Shake device to reset the sleep timer</string>
     <string name="playback_preferences">Playback preferences</string>
+    <string name="settings_screen_footer_app_name_pattern">%1$s %2$s</string>
+    <string name="settings_screen_footer_copyright_original">© 2024–2026 Max Grakov</string>
+    <string name="settings_screen_footer_copyright_fork">© 2026 Surjit Sahoo</string>
+    <string name="settings_screen_footer_license">MIT License</string>
 </resources>
