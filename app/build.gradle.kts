@@ -66,25 +66,31 @@ android {
     buildConfigField("String", "ACRA_REPORT_LOGIN", "\"$acraReportLogin\"")
     buildConfigField("String", "ACRA_REPORT_PASSWORD", "\"$acraReportPassword\"")
     
-    if (project.hasProperty("RELEASE_STORE_FILE")) {
-      signingConfigs {
-        create("release") {
-          storeFile = file(project.property("RELEASE_STORE_FILE")!!)
-          storePassword = project.property("RELEASE_STORE_PASSWORD") as String?
-          keyAlias = project.property("RELEASE_KEY_ALIAS") as String?
-          keyPassword = project.property("RELEASE_KEY_PASSWORD") as String?
-          enableV1Signing = true
-          enableV2Signing = true
+    signingConfigs {
+      create("release") {
+        val envKeyStore = System.getenv("RELEASE_STORE_FILE")
+        val propKeyStore = localProperties.getProperty("RELEASE_STORE_FILE")
+
+        storeFile = when {
+          envKeyStore != null -> file(envKeyStore)
+          propKeyStore != null -> file(propKeyStore)
+          else -> null
         }
+
+        storePassword = System.getenv("RELEASE_STORE_PASSWORD") ?: localProperties.getProperty("RELEASE_STORE_PASSWORD")
+        keyAlias = System.getenv("RELEASE_KEY_ALIAS") ?: localProperties.getProperty("RELEASE_KEY_ALIAS")
+        keyPassword = System.getenv("RELEASE_KEY_PASSWORD") ?: localProperties.getProperty("RELEASE_KEY_PASSWORD")
+
+        enableV1Signing = true
+        enableV2Signing = true
       }
     }
   }
 
-  
   buildTypes {
     release {
-      signingConfig = signingConfigs.getByName("debug")
-      isMinifyEnabled = false
+      signingConfig = signingConfigs.getByName("release")
+      isMinifyEnabled = true
       isShrinkResources = false
       proguardFiles(
         getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
