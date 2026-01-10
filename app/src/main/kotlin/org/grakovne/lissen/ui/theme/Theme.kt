@@ -66,24 +66,21 @@ fun LissenTheme(
 
   val context = LocalContext.current
 
+  val materialYouPreferred = Build.VERSION.SDK_INT > Build.VERSION_CODES.S && materialYouEnabled
+
   val colors =
-    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.S && materialYouEnabled) {
-      if (isDarkTheme) {
-        dynamicDarkColorScheme(context)
-      } else {
-        dynamicLightColorScheme(context)
-      }
-    } else {
-      when (isDarkTheme) {
-        true -> {
-          if (colorSchemePreference == ColorScheme.BLACK) {
-            BlackColorScheme
-          } else {
-            DarkColorScheme
-          }
+    when {
+      materialYouPreferred -> {
+        if (isDarkTheme) {
+          dynamicDarkColorScheme(context)
+        } else {
+          dynamicLightColorScheme(context)
         }
-        false -> LightColorScheme
       }
+
+      isDarkTheme && colorSchemePreference == ColorScheme.BLACK -> BlackColorScheme
+      isDarkTheme -> DarkColorScheme
+      else -> LightColorScheme
     }
 
   MaterialTheme(

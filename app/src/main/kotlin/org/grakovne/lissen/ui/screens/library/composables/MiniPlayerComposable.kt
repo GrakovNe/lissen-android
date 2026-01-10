@@ -70,6 +70,7 @@ fun MiniPlayerComposable(
 
   val dismissState =
     rememberSwipeToDismissBoxState(
+      initialValue = SwipeToDismissBoxValue.Settled,
       positionalThreshold = { it * 0.2f },
       confirmValueChange = { newValue: SwipeToDismissBoxValue ->
         val dismissing =
@@ -126,7 +127,7 @@ fun MiniPlayerComposable(
         modifier =
           Modifier
             .fillMaxWidth()
-            .background(colorScheme.surfaceContainer)
+            .background(colorScheme.background)
             .clickable { navController.showPlayer(book.id, book.title, book.subtitle) }
             .padding(horizontal = 20.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
