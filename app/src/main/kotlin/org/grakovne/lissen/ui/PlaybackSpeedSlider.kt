@@ -58,37 +58,28 @@ fun PlaybackSpeedSlider(
       )
     }
 
-  LaunchedEffect(Unit) {
-    sliderState.snapTo(sliderState.current)
-  }
-  LaunchedEffect(speed) {
-    sliderState.animateDecayTo(speed.toSliderValue().toFloat())
-  }
+  LaunchedEffect(Unit) { sliderState.snapTo(sliderState.current) }
+  LaunchedEffect(speed) { sliderState.animateDecayTo(speed.toSliderValue().toFloat()) }
 
   Column(
     modifier = modifier,
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
     Text(
-      text = String.format(Locale.US, "%.1fx", sliderState.current.roundToInt().toSpeed()),
+      text = String.format(Locale.US, "%.2fx", sliderState.current.roundToInt().toSpeed()),
       style = typography.headlineSmall,
     )
     Icon(imageVector = Icons.Filled.ArrowDropDown, contentDescription = null)
 
     BoxWithConstraints(
-      modifier =
-        Modifier
-          .fillMaxWidth()
-          .sliderDrag(sliderState, totalSegments),
+      modifier = Modifier.fillMaxWidth().sliderDrag(sliderState, totalSegments),
       contentAlignment = Alignment.TopCenter,
     ) {
       val segmentWidth: Dp = maxWidth / totalSegments
       val segmentPixelWidth: Float = constraints.maxWidth.toFloat() / totalSegments
       val visibleSegmentCount = (totalSegments + 1) / 2
-
       val minIndex = (sliderState.current - visibleSegmentCount).toInt().coerceAtLeast(sliderRange.first)
       val maxIndex = (sliderState.current + visibleSegmentCount).toInt().coerceAtMost(sliderRange.last)
-
       val centerPixel = constraints.maxWidth / 2f
 
       for (index in minIndex..maxIndex) {
@@ -118,22 +109,15 @@ private fun SpeedSliderSegment(
   val alphaValue = calculateAlpha(offset, centerPixel)
 
   Column(
-    modifier =
-      Modifier
-        .width(segmentWidth)
-        .graphicsLayer(alpha = alphaValue, translationX = offset),
+    modifier = Modifier.width(segmentWidth).graphicsLayer(alpha = alphaValue, translationX = offset),
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
     Box(
-      modifier =
-        Modifier
-          .width(barThickness)
-          .height(barLength)
-          .background(barColor),
+      modifier = Modifier.width(barThickness).height(barLength).background(barColor),
     )
     if (index % 5 == 0) {
       Text(
-        text = String.format(Locale.US, "%.1f", index.toSpeed()),
+        text = String.format(Locale.US, "%.2f", index.toSpeed()),
         style = typography.bodyMedium,
       )
     }
@@ -159,7 +143,6 @@ private fun Modifier.sliderDrag(
       while (isActive) {
         val pointerId = awaitPointerEventScope { awaitFirstDown().id }
         state.cancelAnimations()
-
         val velocityTracker = VelocityTracker()
         awaitPointerEventScope {
           horizontalDrag(pointerId) { change ->
@@ -171,10 +154,8 @@ private fun Modifier.sliderDrag(
             change.consume()
           }
         }
-
         val velocity = velocityTracker.calculateVelocity().x / segments
         val targetValue = decayAnimation.calculateTargetValue(state.current, -velocity)
-
         launch {
           state.animateDecayTo(targetValue)
           state.snapToNearest()
@@ -190,9 +171,7 @@ class SpeedSliderState(
 ) {
   private val floatBounds = bounds.start.toFloat()..bounds.endInclusive.toFloat()
   private val animState = Animatable(current.toFloat())
-
-  val current: Float
-    get() = animState.value
+  val current: Float get() = animState.value
 
   suspend fun cancelAnimations() {
     animState.stop()
@@ -216,20 +195,12 @@ class SpeedSliderState(
 
   suspend fun animateDecayTo(target: Float) {
     val initialVelocity = (target - current).coerceIn(-maxSpeed, maxSpeed)
-    animState.animateTo(
-      targetValue = target.coerceIn(floatBounds),
-      initialVelocity = initialVelocity,
-      animationSpec = springSpec,
-    )
+    animState.animateTo(target.coerceIn(floatBounds), initialVelocity = initialVelocity, animationSpec = springSpec)
   }
 
   companion object {
     private const val maxSpeed = 10f
-    private val springSpec =
-      FloatSpringSpec(
-        dampingRatio = Spring.DampingRatioLowBouncy,
-        stiffness = Spring.StiffnessLow,
-      )
+    private val springSpec = FloatSpringSpec(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)
 
     fun saver(onUpdate: (Float) -> Unit) =
       Saver<SpeedSliderState, List<Any>>(
@@ -245,11 +216,12 @@ class SpeedSliderState(
   }
 }
 
-private fun Float.toSliderValue(): Int = (this * 10).roundToInt()
-
-private fun Int.toSpeed(): Float = this / 10f
-
+private const val speedStep = 0.05f
 private val barThickness = 2.dp
 private val barLength = 28.dp
 private const val totalSegments = 12
 private const val minAlpha = 0.25f
+
+private fun Float.toSliderValue(): Int = (this / speedStep).roundToInt()
+
+private fun Int.toSpeed(): Float = this * speedStep
