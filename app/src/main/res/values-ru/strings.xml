@@ -157,8 +157,8 @@
     <string name="settings_screen_connection_external">Внешняя сеть</string>
     <string name="settings_screen_bypass_ssl_title">Игнорировать проверку SSL</string>
     <string name="settings_screen_bypass_ssl_hint">Подключаться с невалидным сертификатом</string>
-    <string name="settings_screen_collapse_on_fling_title">Инерционная прокрутка очереди</string>
-    <string name="settings_screen_collapse_on_fling_description">Плавно прокручивать список глав или выпусков</string>
+    <string name="settings_screen_collapse_on_fling_title">Свернуть очередь воспроизведения свайпом</string>
+    <string name="settings_screen_collapse_on_fling_description">Смахните, чтобы свернуть список глав</string>
     <string name="settings_screen_material_you_title">Цвета Material You</string>
     <string name="settings_screen_material_you_description">Подбирать цвета приложения под обои</string>
 </resources>
