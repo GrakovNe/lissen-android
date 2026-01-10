@@ -54,7 +54,7 @@ android {
     minSdk = 28
     targetSdk = 36
     versionCode = 10800
-    versionName = "1.8.0-$commitHash"
+    versionName = "1.8.1-$commitHash"
     
     buildConfigField("String", "GIT_HASH", "\"$commitHash\"")
     

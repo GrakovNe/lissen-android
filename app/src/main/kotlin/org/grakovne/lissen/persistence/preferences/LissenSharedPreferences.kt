@@ -424,7 +424,7 @@ class LissenSharedPreferences
       }
     }
 
-    fun getCollapseOnFling(): Boolean = sharedPreferences.getBoolean(KEY_COLLAPSE_ON_FLING, true)
+    fun getCollapseOnFling(): Boolean = sharedPreferences.getBoolean(KEY_COLLAPSE_ON_FLING, false)
 
     fun saveCollapseOnFling(value: Boolean) =
       sharedPreferences.edit {
