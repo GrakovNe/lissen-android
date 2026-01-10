@@ -227,12 +227,12 @@ class LissenSharedPreferences
         ?.let { ColorScheme.valueOf(it) }
         ?: ColorScheme.FOLLOW_SYSTEM
 
-    fun saveMaterialYou(enabled: Boolean) =
+    fun saveMaterialYouColors(enabled: Boolean) =
       sharedPreferences.edit {
         putBoolean(KEY_MATERIAL_YOU_ENABLED, enabled)
       }
 
-    fun getMaterialYou() = sharedPreferences.getBoolean(KEY_MATERIAL_YOU_ENABLED, true)
+    fun getMaterialYouColors() = sharedPreferences.getBoolean(KEY_MATERIAL_YOU_ENABLED, false)
 
     fun saveAutoDownloadOption(option: DownloadOption?) =
       sharedPreferences.edit {
@@ -270,7 +270,7 @@ class LissenSharedPreferences
 
     val colorSchemeFlow = asFlow(KEY_PREFERRED_COLOR_SCHEME, ::getColorScheme)
 
-    val materialYouFlow = asFlow(KEY_MATERIAL_YOU_ENABLED, ::getMaterialYou)
+    val materialYouFlow = asFlow(KEY_MATERIAL_YOU_ENABLED, ::getMaterialYouColors)
 
     val collapseOnFlingFlow = asFlow(KEY_COLLAPSE_ON_FLING, ::getCollapseOnFling)
 

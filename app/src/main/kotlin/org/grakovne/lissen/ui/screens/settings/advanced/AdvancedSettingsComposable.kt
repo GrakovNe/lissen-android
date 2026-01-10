@@ -46,6 +46,8 @@ fun AdvancedSettingsComposable(
 ) {
   val cachingModelView: CachingModelView = hiltViewModel()
   val viewModel: SettingsViewModel = hiltViewModel()
+
+  val collapseOnFling by viewModel.collapseOnFling.observeAsState(false)
   val crashReporting by viewModel.crashReporting.observeAsState(true)
   val bypassSsl by viewModel.bypassSsl.observeAsState(false)
 
@@ -100,6 +102,12 @@ fun AdvancedSettingsComposable(
             description = stringResource(R.string.settings_screen_seek_time_hint),
             onclick = { navController.showSeekSettings() },
           )
+
+          SettingsToggleItem(
+            stringResource(R.string.settings_screen_collapse_on_fling_title),
+            stringResource(R.string.settings_screen_collapse_on_fling_description),
+            collapseOnFling,
+          ) { viewModel.preferCollapseOnFling(it) }
 
           AdvancedSettingsNavigationItemComposable(
             title = stringResource(R.string.settings_screen_custom_headers_title),

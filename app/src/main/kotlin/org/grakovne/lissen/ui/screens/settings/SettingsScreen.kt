@@ -48,7 +48,8 @@ fun SettingsScreen(
 ) {
   val viewModel: SettingsViewModel = hiltViewModel()
   val host by viewModel.host.observeAsState()
-  val collapseOnFling by viewModel.collapseOnFling.observeAsState(false)
+
+  val materialYouColorsEnabled by viewModel.materialYouEnabled.observeAsState(false)
 
   LaunchedEffect(Unit) {
     viewModel.refreshConnectionInfo()
@@ -102,22 +103,13 @@ fun SettingsScreen(
           ColorSchemeSettingsComposable(viewModel)
 
           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val state by viewModel.materialYouEnabled.observeAsState(false)
             SettingsToggleItem(
               stringResource(R.string.settings_screen_material_you_title),
               stringResource(R.string.settings_screen_material_you_description),
-              state,
+              materialYouColorsEnabled,
             ) {
-              viewModel.preferMaterialYou(it)
+              viewModel.preferMaterialYouColors(it)
             }
-          }
-
-          SettingsToggleItem(
-            stringResource(R.string.settings_screen_collapse_on_fling_title),
-            stringResource(R.string.settings_screen_collapse_on_fling_description),
-            collapseOnFling,
-          ) {
-            viewModel.preferCollapseOnFling(it)
           }
 
           LibraryOrderingSettingsComposable(viewModel)

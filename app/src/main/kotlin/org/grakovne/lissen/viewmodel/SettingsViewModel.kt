@@ -49,7 +49,7 @@ class SettingsViewModel
     private val _preferredColorScheme = MutableLiveData(preferences.getColorScheme())
     val preferredColorScheme = _preferredColorScheme
 
-    private val _materialYouEnabled = MutableLiveData(preferences.getMaterialYou())
+    private val _materialYouEnabled = MutableLiveData(preferences.getMaterialYouColors())
     val materialYouEnabled = _materialYouEnabled
 
     private val _preferredAutoDownloadNetworkType = MutableLiveData(preferences.getAutoDownloadNetworkType())
@@ -195,9 +195,9 @@ class SettingsViewModel
       preferences.saveColorScheme(colorScheme)
     }
 
-    fun preferMaterialYou(value: Boolean) {
+    fun preferMaterialYouColors(value: Boolean) {
       _materialYouEnabled.postValue(value)
-      preferences.saveMaterialYou(value)
+      preferences.saveMaterialYouColors(value)
     }
 
     fun preferCollapseOnFling(value: Boolean) {
