@@ -49,6 +49,9 @@ class SettingsViewModel
     private val _preferredColorScheme = MutableLiveData(preferences.getColorScheme())
     val preferredColorScheme = _preferredColorScheme
 
+    private val _materialYouEnabled = MutableLiveData(preferences.getMaterialYou())
+    val materialYouEnabled = _materialYouEnabled
+
     private val _preferredAutoDownloadNetworkType = MutableLiveData(preferences.getAutoDownloadNetworkType())
     val preferredAutoDownloadNetworkType = _preferredAutoDownloadNetworkType
 
@@ -78,6 +81,8 @@ class SettingsViewModel
 
     private val _bypassSsl = MutableLiveData(preferences.getSslBypass())
     val bypassSsl = _bypassSsl
+
+    val collapseOnFling = MutableLiveData(preferences.getCollapseOnFling())
 
     private val _autoDownloadDelayed = MutableLiveData(preferences.getAutoDownloadDelayed())
     val autoDownloadDelayed = _autoDownloadDelayed
@@ -188,6 +193,16 @@ class SettingsViewModel
     fun preferColorScheme(colorScheme: ColorScheme) {
       _preferredColorScheme.postValue(colorScheme)
       preferences.saveColorScheme(colorScheme)
+    }
+
+    fun preferMaterialYou(value: Boolean) {
+      _materialYouEnabled.postValue(value)
+      preferences.saveMaterialYou(value)
+    }
+
+    fun preferCollapseOnFling(value: Boolean) {
+      collapseOnFling.postValue(value)
+      preferences.saveCollapseOnFling(value)
     }
 
     fun preferAutoDownloadOption(option: DownloadOption?) {

@@ -42,7 +42,11 @@ class AppActivity : ComponentActivity() {
         .colorSchemeFlow
         .collectAsState(initial = preferences.getColorScheme())
 
-      LissenTheme(colorScheme) {
+      val materialYou by preferences
+        .materialYouFlow
+        .collectAsState(initial = preferences.getMaterialYou())
+
+      LissenTheme(colorScheme, materialYou) {
         val navController = rememberNavController()
         appNavigationService = AppNavigationService(navController)
 

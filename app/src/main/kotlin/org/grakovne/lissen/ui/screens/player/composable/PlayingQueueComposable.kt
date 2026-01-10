@@ -24,6 +24,7 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -64,6 +65,7 @@ fun PlayingQueueComposable(
 
   val book by viewModel.book.observeAsState()
   val searchToken by viewModel.searchToken.observeAsState("")
+  val collapseOnFling by viewModel.collapseOnFling.collectAsState(false)
 
   val showingChapters by remember {
     derivedStateOf {
@@ -95,7 +97,6 @@ fun PlayingQueueComposable(
   val density = LocalDensity.current
 
   var collapsedPlayingQueueHeight by remember { mutableIntStateOf(0) }
-  val isFlinging = remember { mutableStateOf(false) }
 
   val expandFlingThreshold =
     remember { ViewConfiguration.get(context).scaledMinimumFlingVelocity.toFloat() * 2 }
@@ -179,18 +180,16 @@ fun PlayingQueueComposable(
 
               override suspend fun onPreFling(available: Velocity): Velocity {
                 if (available.y < -expandFlingThreshold && !playingQueueExpanded) {
-                  isFlinging.value = true
                   viewModel.expandPlayingQueue()
                   return available
                 }
 
-                if (available.y > collapseFlingThreshold && playingQueueExpanded) {
-                  isFlinging.value = true
+                if (available.y > collapseFlingThreshold && playingQueueExpanded && collapseOnFling) {
                   viewModel.collapsePlayingQueue()
                   return available
                 }
-                isFlinging.value = false
-                return available
+
+                return Velocity.Zero
               }
             },
           ),

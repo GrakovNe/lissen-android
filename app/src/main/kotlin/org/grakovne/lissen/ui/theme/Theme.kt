@@ -1,13 +1,17 @@
 package org.grakovne.lissen.ui.theme
 
 import android.app.Activity
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import org.grakovne.lissen.common.ColorScheme
@@ -40,6 +44,7 @@ private val BlackColorScheme =
 @Composable
 fun LissenTheme(
   colorSchemePreference: ColorScheme,
+  materialYouEnabled: Boolean,
   content: @Composable () -> Unit,
 ) {
   val view = LocalView.current
@@ -59,16 +64,26 @@ fun LissenTheme(
     }
   }
 
+  val context = LocalContext.current
+
   val colors =
-    when (isDarkTheme) {
-      true -> {
-        if (colorSchemePreference == ColorScheme.BLACK) {
-          BlackColorScheme
-        } else {
-          DarkColorScheme
-        }
+    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.S && materialYouEnabled) {
+      if (isDarkTheme) {
+        dynamicDarkColorScheme(context)
+      } else {
+        dynamicLightColorScheme(context)
       }
-      false -> LightColorScheme
+    } else {
+      when (isDarkTheme) {
+        true -> {
+          if (colorSchemePreference == ColorScheme.BLACK) {
+            BlackColorScheme
+          } else {
+            DarkColorScheme
+          }
+        }
+        false -> LightColorScheme
+      }
     }
 
   MaterialTheme(
