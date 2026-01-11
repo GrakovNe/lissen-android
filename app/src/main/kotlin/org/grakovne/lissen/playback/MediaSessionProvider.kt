@@ -9,13 +9,13 @@ import android.view.KeyEvent.KEYCODE_MEDIA_NEXT
 import android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.CommandButton
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionResult
 import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.qualifiers.ApplicationContext
+import org.grakovne.lissen.playback.service.LissenPlayer
 import org.grakovne.lissen.ui.activity.AppActivity
 import timber.log.Timber
 import javax.inject.Inject
@@ -28,7 +28,7 @@ class MediaSessionProvider
   constructor(
     @ApplicationContext private val context: Context,
     private val mediaRepository: MediaRepository,
-    private val exoPlayer: ExoPlayer,
+    private val lissenPlayer: LissenPlayer,
   ) {
     @OptIn(UnstableApi::class)
     fun provideMediaSession(): MediaSession {
@@ -41,7 +41,7 @@ class MediaSessionProvider
         )
 
       return MediaSession
-        .Builder(context, exoPlayer)
+        .Builder(context, lissenPlayer)
         .setCallback(
           object : MediaSession.Callback {
             override fun onMediaButtonEvent(
