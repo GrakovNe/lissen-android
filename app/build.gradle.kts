@@ -127,6 +127,7 @@ dependencies {
   implementation(libs.material)
   implementation(libs.material3)
   
+  implementation("org.jellyfin.media3:media3-ffmpeg-decoder:1.9.0+1")
   implementation(libs.androidx.material)
   implementation(libs.compose.shimmer.android)
   

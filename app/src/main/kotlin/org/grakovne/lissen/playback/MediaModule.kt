@@ -10,11 +10,14 @@ import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.analytics.AnalyticsListener
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import org.grakovne.lissen.BuildConfig
+import timber.log.Timber
 import java.io.File
 import javax.inject.Singleton
 
@@ -46,10 +49,13 @@ object MediaModule {
   fun provideExoPlayer(
     @ApplicationContext context: Context,
   ): ExoPlayer {
+    val renderersFactory = SoftwareCodecRendersFactory(context)
+
     val player =
       ExoPlayer
         .Builder(context)
         .setHandleAudioBecomingNoisy(true)
+        .setRenderersFactory(renderersFactory)
         .setAudioAttributes(
           AudioAttributes
             .Builder()
@@ -58,6 +64,10 @@ object MediaModule {
             .build(),
           true,
         ).build()
+
+    if (BuildConfig.DEBUG) {
+      player.addAnalyticsListener(mediaCodecListener())
+    }
 
     return player
   }
@@ -80,3 +90,15 @@ object MediaModule {
   private const val KEEP_FREE_BYTES = 20L * 1024 * 1024
   private const val MIN_CACHE_BYTES = 10L * 1024 * 1024
 }
+
+private fun mediaCodecListener(): AnalyticsListener =
+  object : AnalyticsListener {
+    override fun onAudioDecoderInitialized(
+      eventTime: AnalyticsListener.EventTime,
+      decoderName: String,
+      initializedTimestampMs: Long,
+      initializationDurationMs: Long,
+    ) {
+      Timber.d("Audio decoder initialized: $decoderName")
+    }
+  }
