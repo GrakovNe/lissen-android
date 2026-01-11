@@ -157,4 +157,8 @@
     <string name="settings_screen_bypass_ssl_hint">连接到任何证书的服务器</string>
     <string name="settings_screen_bypass_ssl_title">禁用 SSL 验证</string>
     <string name="volume_boost_max">最大</string>
+    <string name="settings_screen_material_you_description">根据当前壁纸自动调整应用的颜色主题</string>
+    <string name="settings_screen_material_you_title">Material You 动态配色</string>
+    <string name="settings_screen_collapse_on_fling_title">快速滑动收起播放列表</string>
+    <string name="settings_screen_collapse_on_fling_description">向下滑动即可收起章节列表</string>
 </resources>
