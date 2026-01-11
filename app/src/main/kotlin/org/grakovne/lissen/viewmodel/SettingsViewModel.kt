@@ -40,7 +40,7 @@ class SettingsViewModel
     private val _username = MutableLiveData(preferences.getUsername())
     val username = _username
 
-    private val _libraries = MutableLiveData<List<Library>>()
+    private val _libraries = MutableLiveData<List<Library>>(emptyList())
     val libraries = _libraries
 
     private val _preferredLibrary = MutableLiveData<Library>(preferences.getPreferredLibrary())

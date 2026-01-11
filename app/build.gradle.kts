@@ -127,8 +127,8 @@ dependencies {
   implementation(libs.material)
   implementation(libs.material3)
   
-  implementation("org.jellyfin.media3:media3-ffmpeg-decoder:1.9.0+1")
-  implementation("com.jakewharton:process-phoenix:3.0.0")
+  implementation(libs.androidx.media3.ffmpeg.decoder)
+  implementation(libs.process.phoenix)
   implementation(libs.androidx.material)
   implementation(libs.compose.shimmer.android)
   

@@ -32,6 +32,8 @@ coreKtx = "1.17.0"
 timber = "5.0.1"
 moshi = "1.15.2"
 converterMoshi = "3.0.0"
+media3Ffmpeg = "1.9.0+1"
+processPhoenix = "3.0.0"
 
 [libraries]
 acra-core = { module = "ch.acra:acra-core", version.ref = "acraCore" }
@@ -84,6 +86,8 @@ converter-moshi = { module = "com.squareup.retrofit2:converter-moshi", version.r
 moshi = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
 moshi-kotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi" }
 moshi-kotlin-codegen = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "moshi" }
+androidx-media3-ffmpeg-decoder = { module = "org.jellyfin.media3:media3-ffmpeg-decoder", version.ref = "media3Ffmpeg" }
+process-phoenix = { module = "com.jakewharton:process-phoenix", version.ref = "processPhoenix" }
 
 [plugins]
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
