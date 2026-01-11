@@ -82,6 +82,11 @@ class SettingsViewModel
     private val _bypassSsl = MutableLiveData(preferences.getSslBypass())
     val bypassSsl = _bypassSsl
 
+    private val _softwareCodecsEnabled = MutableLiveData(preferences.getSoftwareCodecsEnabled())
+
+    val softwareCodecsEnabled: LiveData<Boolean> = _softwareCodecsEnabled
+    val softwareCodecsEnabledOnStart: Boolean = preferences.getSoftwareCodecsEnabled()
+
     val collapseOnFling = MutableLiveData(preferences.getCollapseOnFling())
 
     private val _autoDownloadDelayed = MutableLiveData(preferences.getAutoDownloadDelayed())
@@ -203,6 +208,11 @@ class SettingsViewModel
     fun preferCollapseOnFling(value: Boolean) {
       collapseOnFling.postValue(value)
       preferences.saveCollapseOnFling(value)
+    }
+
+    fun preferSoftwareCodecsEnabled(value: Boolean) {
+      _softwareCodecsEnabled.postValue(value)
+      preferences.saveSoftwareCodecsEnabled(value)
     }
 
     fun preferAutoDownloadOption(option: DownloadOption?) {

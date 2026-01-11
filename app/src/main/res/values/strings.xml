@@ -138,6 +138,8 @@
     <string name="settings_screen_advanced_preferences_description">Control seeking, proxy headers, or sound</string>
     <string name="settings_screen_crash_report_title">Crash reporting</string>
     <string name="settings_screen_crash_report_description">Send reports if the app crashes</string>
+    <string name="settings_screen_software_codecs_enabled_title">Force software decoding</string>
+    <string name="settings_screen_software_codecs_enabled_description">Use software codecs for audio playback</string>
     <string name="settings_download_automatically_title">Download automatically</string>
     <string name="download_settings_title">Download preferences</string>
     <string name="download_settings_description">Define downloads and manage content</string>
@@ -161,5 +163,7 @@
     <string name="settings_screen_delay_autodownload_description">Wait a short time before starting download</string>
     <string name="settings_screen_bypass_ssl_title">Disable SSL verification</string>
     <string name="settings_screen_bypass_ssl_hint">Connect to servers with any certificate</string>
-
+    <string name="restart_the_app_to_start_using_the_new_codecs_title">Restart the app to start using the new codecs</string>
+    <string name="restart_the_app_to_start_using_the_new_codecs_cta">Restart</string>
+    <string name="codes_not_supported_warning_toast">Audio format not supported</string>
 </resources>
