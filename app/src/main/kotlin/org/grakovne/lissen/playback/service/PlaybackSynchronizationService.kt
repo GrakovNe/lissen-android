@@ -1,6 +1,7 @@
 package org.grakovne.lissen.playback.service
 
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -15,15 +16,17 @@ import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.PlaybackProgress
 import org.grakovne.lissen.lib.domain.PlaybackSession
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.playback.ExoPlayerProvider
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
+@UnstableApi
 @Singleton
 class PlaybackSynchronizationService
   @Inject
   constructor(
-    private val exoPlayer: ExoPlayer,
+    private val exoPlayerProvider: ExoPlayerProvider,
     private val mediaChannel: LissenMediaProvider,
     private val sharedPreferences: LissenSharedPreferences,
   ) {
@@ -35,7 +38,9 @@ class PlaybackSynchronizationService
     private val syncMutex = Mutex()
 
     init {
-      exoPlayer.addListener(
+      val player = exoPlayerProvider.provideExoPlayer()
+
+      player.addListener(
         object : Player.Listener {
           override fun onEvents(
             player: Player,
@@ -59,8 +64,9 @@ class PlaybackSynchronizationService
     }
 
     private fun handleSyncEvent() {
-      runSync()
+      val exoPlayer = exoPlayerProvider.provideExoPlayer()
 
+      runSync()
       if (syncJob?.isActive == true) return
 
       syncJob =
@@ -89,7 +95,7 @@ class PlaybackSynchronizationService
     }
 
     private fun runSync() {
-      val elapsedMs = exoPlayer.currentPosition
+      val elapsedMs = exoPlayerProvider.provideExoPlayer().currentPosition
       val overallProgress = getProgress(elapsedMs) ?: return
 
       Timber.d("Trying to sync $overallProgress for ${currentItem?.id}")
@@ -156,6 +162,8 @@ class PlaybackSynchronizationService
         }
 
     private fun getProgress(currentElapsedMs: Long): PlaybackProgress? {
+      val exoPlayer = exoPlayerProvider.provideExoPlayer()
+
       val currentItem =
         exoPlayer
           .currentMediaItem

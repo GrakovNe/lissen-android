@@ -27,6 +27,7 @@ import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.MediaProgress
 import org.grakovne.lissen.lib.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.playback.ExoPlayerProvider
 import org.grakovne.lissen.playback.MediaSessionProvider
 import timber.log.Timber
 import javax.inject.Inject
@@ -35,7 +36,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class PlaybackService : MediaSessionService() {
   @Inject
-  lateinit var exoPlayer: ExoPlayer
+  lateinit var exoPlayerProvider: ExoPlayerProvider
 
   @Inject
   lateinit var mediaSessionProvider: MediaSessionProvider
@@ -77,6 +78,8 @@ class PlaybackService : MediaSessionService() {
     flags: Int,
     startId: Int,
   ): Int {
+    val exoPlayer = exoPlayerProvider.provideExoPlayer()
+
     super.onStartCommand(intent, flags, startId)
 
     when (intent?.action) {
@@ -142,6 +145,8 @@ class PlaybackService : MediaSessionService() {
     }
 
   override fun onDestroy() {
+    val exoPlayer = exoPlayerProvider.provideExoPlayer()
+
     playbackSynchronizationService.cancelSynchronization()
     playerServiceScope.cancel()
 
@@ -156,6 +161,8 @@ class PlaybackService : MediaSessionService() {
 
   @OptIn(UnstableApi::class)
   private suspend fun preparePlayback(book: DetailedItem) {
+    val exoPlayer = exoPlayerProvider.provideExoPlayer()
+
     exoPlayer.playWhenReady = false
 
     withContext(Dispatchers.IO) {
@@ -244,6 +251,8 @@ class PlaybackService : MediaSessionService() {
   }
 
   private fun pause() {
+    val exoPlayer = exoPlayerProvider.provideExoPlayer()
+
     playerServiceScope
       .launch {
         exoPlayer.playWhenReady = false
@@ -256,6 +265,8 @@ class PlaybackService : MediaSessionService() {
     items: List<BookFile>,
     position: Double?,
   ) {
+    val exoPlayer = exoPlayerProvider.provideExoPlayer()
+
     if (items.isEmpty()) {
       Timber.w("Tried to seek position $position in the empty book. Skipping")
       return

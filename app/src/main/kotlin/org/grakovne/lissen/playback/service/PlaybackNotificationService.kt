@@ -8,6 +8,7 @@ import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.playback.ExoPlayerProvider
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -16,66 +17,69 @@ import javax.inject.Singleton
 class PlaybackNotificationService
   @Inject
   constructor(
-    private val exoPlayer: ExoPlayer,
+    private val exoPlayerProvider: ExoPlayerProvider,
     private val sharedPreferences: LissenSharedPreferences,
     private val mediaProvider: LissenMediaProvider,
   ) : RunningComponent {
     override fun onCreate() {
-      exoPlayer.addListener(
-        object : Player.Listener {
-          override fun onPlayWhenReadyChanged(
-            playWhenReady: Boolean,
-            reason: Int,
-          ) {
-            super.onPlayWhenReadyChanged(playWhenReady, reason)
+      val player = exoPlayerProvider.provideExoPlayer()
 
-            if (playWhenReady) {
-              exoPlayer.setPlaybackSpeed(sharedPreferences.getPlaybackSpeed())
-            }
-          }
+      player
+        .addListener(
+          object : Player.Listener {
+            override fun onPlayWhenReadyChanged(
+              playWhenReady: Boolean,
+              reason: Int,
+            ) {
+              super.onPlayWhenReadyChanged(playWhenReady, reason)
 
-          override fun onPositionDiscontinuity(
-            oldPosition: Player.PositionInfo,
-            newPosition: Player.PositionInfo,
-            reason: Int,
-          ) {
-            val previousIndex = oldPosition.mediaItemIndex
-            val currentIndex = newPosition.mediaItemIndex
-            val currentItem =
-              exoPlayer
-                .currentMediaItem
-                ?.localConfiguration
-                ?.tag as? DetailedItem
-
-            if (null == currentItem) {
-              return
-            }
-
-            if (exoPlayer.currentMediaItem?.mediaId?.let { isTrackAvailable(it) } != false) {
-              return
-            }
-
-            if (currentIndex != previousIndex) {
-              val direction =
-                when (
-                  currentIndex > previousIndex ||
-                    (currentIndex == 0 && previousIndex == exoPlayer.mediaItemCount - 1)
-                ) {
-                  true -> Direction.FORWARD
-                  false -> Direction.BACKWARD
-                }
-
-              val nextTrack =
-                findAvailableTrackIndex(exoPlayer.currentMediaItemIndex, direction, exoPlayer, 0)
-              nextTrack?.let { exoPlayer.seekTo(it, 0) }
-
-              if (nextTrack == null || nextTrack < currentIndex) {
-                exoPlayer.pause()
+              if (playWhenReady) {
+                player.setPlaybackSpeed(sharedPreferences.getPlaybackSpeed())
               }
             }
-          }
-        },
-      )
+
+            override fun onPositionDiscontinuity(
+              oldPosition: Player.PositionInfo,
+              newPosition: Player.PositionInfo,
+              reason: Int,
+            ) {
+              val previousIndex = oldPosition.mediaItemIndex
+              val currentIndex = newPosition.mediaItemIndex
+              val currentItem =
+                player
+                  .currentMediaItem
+                  ?.localConfiguration
+                  ?.tag as? DetailedItem
+
+              if (null == currentItem) {
+                return
+              }
+
+              if (player.currentMediaItem?.mediaId?.let { isTrackAvailable(it) } != false) {
+                return
+              }
+
+              if (currentIndex != previousIndex) {
+                val direction =
+                  when (
+                    currentIndex > previousIndex ||
+                      (currentIndex == 0 && previousIndex == player.mediaItemCount - 1)
+                  ) {
+                    true -> Direction.FORWARD
+                    false -> Direction.BACKWARD
+                  }
+
+                val nextTrack =
+                  findAvailableTrackIndex(player.currentMediaItemIndex, direction, player, 0)
+                nextTrack?.let { player.seekTo(it, 0) }
+
+                if (nextTrack == null || nextTrack < currentIndex) {
+                  player.pause()
+                }
+              }
+            }
+          },
+        )
     }
 
     private fun findAvailableTrackIndex(
@@ -102,8 +106,10 @@ class PlaybackNotificationService
     }
 
     private fun isTrackAvailable(fileId: String): Boolean {
+      val player = exoPlayerProvider.provideExoPlayer()
+
       val mediaItem =
-        exoPlayer
+        player
           .currentMediaItem
           ?.localConfiguration
           ?.tag as? DetailedItem

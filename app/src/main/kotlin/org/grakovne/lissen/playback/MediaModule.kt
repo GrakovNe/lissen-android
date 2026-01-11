@@ -2,22 +2,16 @@ package org.grakovne.lissen.playback
 
 import android.content.Context
 import androidx.annotation.OptIn
-import androidx.media3.common.AudioAttributes
-import androidx.media3.common.C
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
-import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.analytics.AnalyticsListener
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import org.grakovne.lissen.BuildConfig
-import timber.log.Timber
 import java.io.File
 import javax.inject.Singleton
 
@@ -43,35 +37,6 @@ object MediaModule {
     )
   }
 
-  @OptIn(UnstableApi::class)
-  @Provides
-  @Singleton
-  fun provideExoPlayer(
-    @ApplicationContext context: Context,
-  ): ExoPlayer {
-    val renderersFactory = SoftwareCodecRendersFactory(context)
-
-    val player =
-      ExoPlayer
-        .Builder(context)
-        .setHandleAudioBecomingNoisy(true)
-        .setRenderersFactory(renderersFactory)
-        .setAudioAttributes(
-          AudioAttributes
-            .Builder()
-            .setUsage(C.USAGE_MEDIA)
-            .setContentType(C.AUDIO_CONTENT_TYPE_SPEECH)
-            .build(),
-          true,
-        ).build()
-
-    if (BuildConfig.DEBUG) {
-      player.addAnalyticsListener(mediaCodecListener())
-    }
-
-    return player
-  }
-
   private fun buildPlaybackCacheLimit(ctx: Context): Long {
     val baseFolder =
       ctx
@@ -90,15 +55,3 @@ object MediaModule {
   private const val KEEP_FREE_BYTES = 20L * 1024 * 1024
   private const val MIN_CACHE_BYTES = 10L * 1024 * 1024
 }
-
-private fun mediaCodecListener(): AnalyticsListener =
-  object : AnalyticsListener {
-    override fun onAudioDecoderInitialized(
-      eventTime: AnalyticsListener.EventTime,
-      decoderName: String,
-      initializedTimestampMs: Long,
-      initializationDurationMs: Long,
-    ) {
-      Timber.d("Audio decoder initialized: $decoderName")
-    }
-  }

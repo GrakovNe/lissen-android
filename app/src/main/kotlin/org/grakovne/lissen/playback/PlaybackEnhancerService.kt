@@ -24,7 +24,7 @@ class PlaybackEnhancerService
   @OptIn(UnstableApi::class)
   @Inject
   constructor(
-    private val player: ExoPlayer,
+    private val playerProvider: ExoPlayerProvider,
     private val sharedPreferences: LissenSharedPreferences,
   ) : RunningComponent {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -33,6 +33,8 @@ class PlaybackEnhancerService
 
     @OptIn(UnstableApi::class)
     override fun onCreate() {
+      val player = playerProvider.provideExoPlayer()
+
       player.addListener(
         object : Player.Listener {
           override fun onAudioSessionIdChanged(id: Int) {

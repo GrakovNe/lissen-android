@@ -10,15 +10,17 @@ import androidx.media3.exoplayer.ExoPlayer
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.lib.domain.TimerOption
+import org.grakovne.lissen.playback.ExoPlayerProvider
 import javax.inject.Inject
 import javax.inject.Singleton
 
+@UnstableApi
 @Singleton
 class PlaybackTimer
   @Inject
   constructor(
     @ApplicationContext private val applicationContext: Context,
-    private val exoPlayer: ExoPlayer,
+    private val exoPlayerProvider: ExoPlayerProvider,
   ) {
     private val localBroadcastManager = LocalBroadcastManager.getInstance(applicationContext)
 
@@ -44,6 +46,8 @@ class PlaybackTimer
       delayInSeconds: Double,
       option: TimerOption,
     ) {
+      val exoPlayer = exoPlayerProvider.provideExoPlayer()
+
       stopTimer()
 
       val totalMillis = (delayInSeconds * 1000).toLong()
@@ -83,6 +87,6 @@ class PlaybackTimer
       timer?.cancel()
       timer = null
 
-      exoPlayer.removeListener(playerListener)
+      exoPlayerProvider.provideExoPlayer().removeListener(playerListener)
     }
   }

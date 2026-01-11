@@ -28,7 +28,7 @@ class MediaSessionProvider
   constructor(
     @ApplicationContext private val context: Context,
     private val mediaRepository: MediaRepository,
-    private val exoPlayer: ExoPlayer,
+    private val exoPlayerProvider: ExoPlayerProvider,
   ) {
     @OptIn(UnstableApi::class)
     fun provideMediaSession(): MediaSession {
@@ -41,7 +41,7 @@ class MediaSessionProvider
         )
 
       return MediaSession
-        .Builder(context, exoPlayer)
+        .Builder(context, exoPlayerProvider.provideExoPlayer())
         .setCallback(
           object : MediaSession.Callback {
             override fun onMediaButtonEvent(
