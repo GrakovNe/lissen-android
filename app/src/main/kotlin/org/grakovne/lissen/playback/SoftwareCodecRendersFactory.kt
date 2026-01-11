@@ -2,6 +2,7 @@ package org.grakovne.lissen.playback
 
 import android.content.Context
 import android.os.Handler
+import androidx.media3.common.util.UnstableApi
 import androidx.media3.decoder.ffmpeg.FfmpegAudioRenderer
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.Renderer
@@ -9,6 +10,7 @@ import androidx.media3.exoplayer.audio.AudioRendererEventListener
 import androidx.media3.exoplayer.audio.AudioSink
 import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
 
+@UnstableApi
 class SoftwareCodecRendersFactory(
   context: Context,
 ) : DefaultRenderersFactory(context) {

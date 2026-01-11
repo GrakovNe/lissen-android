@@ -91,6 +91,7 @@ object MediaModule {
   private const val MIN_CACHE_BYTES = 10L * 1024 * 1024
 }
 
+@UnstableApi
 private fun mediaCodecListener(): AnalyticsListener =
   object : AnalyticsListener {
     override fun onAudioDecoderInitialized(
