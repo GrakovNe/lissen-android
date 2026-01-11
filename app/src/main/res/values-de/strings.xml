@@ -157,4 +157,8 @@
     <string name="settings_screen_bypass_ssl_title">SSL Zertifikatprüfung deaktivieren</string>
     <string name="settings_screen_bypass_ssl_hint">Verbindung zum Server mit jedem Zertifikat</string>
     <string name="volume_boost_max">Maximum</string>
+    <string name="settings_screen_collapse_on_fling_title">Wiedergabeliste mittels swipe einklappen</string>
+    <string name="settings_screen_collapse_on_fling_description">Wische um die Kapitelliste einzuklappen</string>
+    <string name="settings_screen_material_you_title">Material You Farben</string>
+    <string name="settings_screen_material_you_description">Passe die Farben der App an dein Hintergrundbild an</string>
 </resources>
