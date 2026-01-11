@@ -157,4 +157,8 @@
     <string name="volume_boost_max">Massimo</string>
     <string name="settings_screen_bypass_ssl_title">Disabilita verifica SSL</string>
     <string name="settings_screen_bypass_ssl_hint">Connetti ai server senza alcun certificato</string>
+    <string name="settings_screen_collapse_on_fling_description">Scorri per comprimere l\'elenco dei capitoli</string>
+    <string name="settings_screen_material_you_title">Colori Material You</string>
+    <string name="settings_screen_material_you_description">Abbina i colori dell\'app al tuo sfondo</string>
+    <string name="settings_screen_collapse_on_fling_title">Comprimi coda con scorrimento rapido</string>
 </resources>
