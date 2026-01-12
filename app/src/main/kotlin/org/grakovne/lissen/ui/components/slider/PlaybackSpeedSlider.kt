@@ -54,12 +54,12 @@ fun PlaybackSpeedSlider(
       modifier =
         Modifier
           .fillMaxWidth()
-          .sliderDrag(sliderState, totalSegments),
+          .sliderDrag(sliderState, visibleSegments),
       contentAlignment = Alignment.TopCenter,
     ) {
-      val segmentWidth: Dp = maxWidth / totalSegments
-      val segmentPixelWidth: Float = constraints.maxWidth.toFloat() / totalSegments
-      val visibleSegmentCount = (totalSegments + 1) / 2
+      val segmentWidth: Dp = maxWidth / visibleSegments
+      val segmentPixelWidth: Float = constraints.maxWidth.toFloat() / visibleSegments
+      val visibleSegmentCount = (visibleSegments + 1) / 2
       val minIndex = (sliderState.current - visibleSegmentCount).toInt().coerceAtLeast(sliderRange.first)
       val maxIndex = (sliderState.current + visibleSegmentCount).toInt().coerceAtMost(sliderRange.last)
       val centerPixel = constraints.maxWidth / 2f
@@ -80,7 +80,7 @@ fun PlaybackSpeedSlider(
 }
 
 private const val speedStep = 0.05f
-private const val totalSegments = 12
+private const val visibleSegments = 12
 
 private fun Float.toSliderValue(): Int = (this / speedStep).roundToInt()
 
