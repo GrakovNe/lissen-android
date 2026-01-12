@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,24 +25,34 @@ fun SpeedSliderSegment(
   segmentPixelWidth: Float,
   centerPixel: Float,
   barColor: Color,
-  formatIndex: (Int) -> String,
+  formatIndex: (Int) -> Any,
   maxIndex: Int? = null,
 ) {
   val offset = (index - currentValue) * segmentPixelWidth
   val alphaValue = calculateAlpha(offset, centerPixel)
 
   Column(
-    modifier = Modifier.width(segmentWidth).graphicsLayer(alpha = alphaValue, translationX = offset),
+    modifier =
+      Modifier
+        .width(segmentWidth)
+        .graphicsLayer(alpha = alphaValue, translationX = offset),
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
     Box(
-      modifier = Modifier.width(barThickness).height(barLength).background(barColor),
+      modifier =
+        Modifier
+          .width(barThickness)
+          .height(barLength)
+          .background(barColor),
     )
     if (index == 0 || index % 5 == 0 || index == maxIndex) {
-      Text(
-        text = formatIndex(index),
-        style = typography.bodyMedium,
-      )
+      val label = formatIndex(index)
+      when (label) {
+        is String -> Text(text = label, style = typography.bodyMedium)
+        is Int -> Text(text = label.toString(), style = typography.bodyMedium)
+        is androidx.compose.ui.graphics.vector.ImageVector ->
+          Icon(imageVector = label, contentDescription = null)
+      }
     }
   }
 }

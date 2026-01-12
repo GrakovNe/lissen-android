@@ -5,6 +5,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.PlayCircleFilled
+import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.MusicNote
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
@@ -14,6 +18,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.lib.domain.DurationTimerOption
@@ -26,14 +31,13 @@ fun SleepTimerSlider(
   onUpdate: (TimerOption?) -> Unit,
 ) {
   val sliderRange = INTERNAL_DISABLED..INTERNAL_CHAPTER_END
-
   val valueModifier: (Float) -> Unit = { onUpdate(it.toInt().toOption()) }
 
   val sliderState =
     rememberSaveable(saver = SliderState.saver(valueModifier)) {
       SliderState(
         current = option.toValue(),
-        bounds = sliderRange,
+        bounds = sliderRange.first..sliderRange.last,
         onUpdate = valueModifier,
       )
     }
@@ -46,7 +50,7 @@ fun SleepTimerSlider(
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
     Text(
-      text = sliderState.current.toInt().toLabel(),
+      text = sliderState.current.toInt().toLabelText(),
       style = typography.headlineSmall,
     )
     Icon(imageVector = Icons.Filled.ArrowDropDown, contentDescription = null)
@@ -73,7 +77,7 @@ fun SleepTimerSlider(
           segmentPixelWidth = segmentPixelWidth,
           centerPixel = centerPixel,
           barColor = colorScheme.onSurface,
-          formatIndex = { it.toLabel() },
+          formatIndex = { it.toLabelIcon() },
           maxIndex = INTERNAL_CHAPTER_END,
         )
       }
@@ -81,8 +85,23 @@ fun SleepTimerSlider(
   }
 }
 
+private fun Int.toLabelText(): String =
+  when (this) {
+    INTERNAL_DISABLED -> "Disabled"
+    INTERNAL_CHAPTER_END -> "When the chapter ends"
+    else -> "$this min"
+  }
+
+private fun Int.toLabelIcon(): Any =
+  when (this) {
+    INTERNAL_DISABLED -> Icons.Outlined.Close
+    INTERNAL_CHAPTER_END -> Icons.Outlined.MusicNote
+    else -> this
+  }
+
 private const val INTERNAL_DISABLED = 0
 private const val INTERNAL_CHAPTER_END = 61
+private const val visibleSegments = 12
 
 private fun TimerOption?.toValue(): Int =
   when (this) {
@@ -97,12 +116,3 @@ private fun Int.toOption(): TimerOption? =
     INTERNAL_CHAPTER_END -> CurrentEpisodeTimerOption
     else -> DurationTimerOption(this)
   }
-
-private fun Int.toLabel(): String =
-  when (this) {
-    INTERNAL_DISABLED -> "Disabled"
-    INTERNAL_CHAPTER_END -> "When the chapter ends"
-    else -> "$this min"
-  }
-
-private const val visibleSegments = 12
