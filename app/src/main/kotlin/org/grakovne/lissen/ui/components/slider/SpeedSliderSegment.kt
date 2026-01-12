@@ -2,8 +2,13 @@ package org.grakovne.lissen.ui.components.slider
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.typography
@@ -13,8 +18,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlin.math.absoluteValue
 
 @Composable
@@ -43,15 +51,33 @@ fun SpeedSliderSegment(
         Modifier
           .width(barThickness)
           .height(barLength)
+          .padding(bottom = 2.dp)
           .background(barColor),
     )
+
     if (index == 0 || index % 5 == 0 || index == maxIndex) {
       val label = formatIndex(index)
-      when (label) {
-        is String -> Text(text = label, style = typography.bodyMedium)
-        is Int -> Text(text = label.toString(), style = typography.bodyMedium)
-        is androidx.compose.ui.graphics.vector.ImageVector ->
-          Icon(imageVector = label, contentDescription = null)
+      val fontSize = typography.bodyMedium.fontSize
+      val itemHeightDp = with(LocalDensity.current) { fontSize.toDp() }
+
+      Box(
+        modifier = Modifier.height(itemHeightDp),
+        contentAlignment = Alignment.Center,
+      ) {
+        when (label) {
+          is String, is Int ->
+            Text(
+              text = label.toString(),
+              fontSize = fontSize,
+              lineHeight = fontSize,
+            )
+          is ImageVector ->
+            Icon(
+              imageVector = label,
+              contentDescription = null,
+              modifier = Modifier.fillMaxHeight(),
+            )
+        }
       }
     }
   }
