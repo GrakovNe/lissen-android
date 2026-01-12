@@ -54,7 +54,7 @@ android {
     minSdk = 28
     targetSdk = 36
     versionCode = 10801
-    versionName = "1.8.1-$commitHash"
+    versionName = "1.8.2-$commitHash"
     
     buildConfigField("String", "GIT_HASH", "\"$commitHash\"")
     
@@ -127,6 +127,8 @@ dependencies {
   implementation(libs.material)
   implementation(libs.material3)
   
+  implementation(libs.androidx.media3.ffmpeg.decoder)
+  implementation(libs.process.phoenix)
   implementation(libs.androidx.material)
   implementation(libs.compose.shimmer.android)
   

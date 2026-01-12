@@ -431,6 +431,13 @@ class LissenSharedPreferences
         putBoolean(KEY_COLLAPSE_ON_FLING, value)
       }
 
+    fun getSoftwareCodecsEnabled(): Boolean = sharedPreferences.getBoolean(KEY_SOFTWARE_CODECS, false)
+
+    fun saveSoftwareCodecsEnabled(value: Boolean) =
+      sharedPreferences.edit {
+        putBoolean(KEY_SOFTWARE_CODECS, value)
+      }
+
     companion object {
       private const val KEY_ALIAS = "secure_key_alias"
       private const val KEY_HOST = "host"
@@ -459,6 +466,7 @@ class LissenSharedPreferences
       private const val KEY_AUTO_DOWNLOAD_DELAYED = "auto_download_delayed"
       private const val KEY_PREFERRED_LIBRARY_ORDERING = "preferred_library_ordering"
       private const val KEY_COLLAPSE_ON_FLING = "collapse_on_fling"
+      private const val KEY_SOFTWARE_CODECS = "software_codecs"
 
       private const val KEY_CUSTOM_HEADERS = "custom_headers"
       private const val KEY_BYPASS_SSL = "bypass_ssl"

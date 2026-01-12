@@ -157,8 +157,13 @@
     <string name="settings_screen_connection_external">Внешняя сеть</string>
     <string name="settings_screen_bypass_ssl_title">Игнорировать проверку SSL</string>
     <string name="settings_screen_bypass_ssl_hint">Подключаться с невалидным сертификатом</string>
-    <string name="settings_screen_collapse_on_fling_title">Свернуть список глав свайпом</string>
+    <string name="settings_screen_collapse_on_fling_title">Сворачивать список глав свайпом</string>
     <string name="settings_screen_collapse_on_fling_description">Смахните, чтобы свернуть очередь воспроизведения</string>
     <string name="settings_screen_material_you_title">Цвета Material You</string>
     <string name="settings_screen_material_you_description">Подбирать цвета приложения под обои</string>
+    <string name="restart_the_app_to_start_using_the_new_codecs_title">Перезапустите приложение, чтобы применить новые кодеки</string>
+    <string name="restart_the_app_to_start_using_the_new_codecs_cta">Перезапустить</string>
+    <string name="settings_screen_software_codecs_enabled_title">Отключить аппаратное декодирование</string>
+    <string name="settings_screen_software_codecs_enabled_description">Декодировать аудио программно</string>
+    <string name="codes_not_supported_warning_toast">Аудиоформат не поддерживается</string>
 </resources>
