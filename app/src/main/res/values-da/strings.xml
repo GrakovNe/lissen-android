@@ -54,7 +54,10 @@
     <string name="settings_screen_server_version">Serverversion</string>
     <string name="timer_option_after_current_chapter">Når kapitlet slutter</string>
     <string name="timer_option_after_current_episode">Når afsnittet slutter</string>
-    <string name="timer_option_after_minutes">%1$d minutter</string>
+    <plurals name="timer_option_after_time">
+        <item quantity="one">%d minut</item>
+        <item quantity="other">%d minutter</item>
+    </plurals>
     <string name="timer_option_disable_timer">Deaktiver afbryderur</string>
     <string name="timer_title">Søvnafbryderur</string>
     <string name="player_screen_timer_navigation">Afbryderur</string>

@@ -46,8 +46,11 @@
     <string name="settings_screen_server_version">Versión del servidor</string>
     <string name="timer_option_after_current_episode">Cuando termine el episodio</string>
     <string name="timer_option_after_current_chapter">Cuando termine el capítulo</string>
-    <string name="timer_option_after_minutes">%1$d minutos</string>
     <string name="timer_option_disable_timer">Desactivar temporizador</string>
+    <plurals name="timer_option_after_time">
+        <item quantity="one">%d minuto</item>
+        <item quantity="other">%d minutos</item>
+    </plurals>
     <string name="timer_title">Temporizador de apagado</string>
     <string name="player_screen_timer_navigation">Temporizador</string>
     <string name="chapter_search_hint">Buscar por título del capítulo</string>

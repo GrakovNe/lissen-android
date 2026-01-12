@@ -50,7 +50,10 @@
     <string name="settings_screen_server_version">სერვერის ვერსია</string>
     <string name="timer_option_after_current_chapter">როდესაც თავი სრულდება</string>
     <string name="timer_option_after_current_episode">როდესაც ეპიზოდი სრულდება</string>
-    <string name="timer_option_after_minutes">%1$d წუთი</string>
+    <plurals name="timer_option_after_time">
+        <item quantity="one">%d წუთი</item>
+        <item quantity="other">%d წუთი</item>
+    </plurals>
     <string name="timer_option_disable_timer">ტაიმერის გამორთვა</string>
     <string name="timer_title">ძილის ტაიმერი</string>
     <string name="player_screen_timer_navigation">ტაიმერი</string>

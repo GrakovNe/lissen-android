@@ -55,7 +55,12 @@
     <string name="settings_screen_server_version">Wersja Serwera</string>
     <string name="timer_option_after_current_chapter">Kiedy rozdział się skonczy</string>
     <string name="timer_option_after_current_episode">Kiedy odcinek się skończy</string>
-    <string name="timer_option_after_minutes">%1$d minut</string>
+    <plurals name="timer_option_after_time">
+        <item quantity="one">%d minuta</item>
+        <item quantity="few">%d minuty</item>
+        <item quantity="many">%d minut</item>
+        <item quantity="other">%d minuty</item>
+    </plurals>
     <string name="timer_option_disable_timer">Wyłącz uśpienie</string>
     <string name="timer_title">Uśpienie</string>
     <string name="player_screen_timer_navigation">Uśpienie</string>

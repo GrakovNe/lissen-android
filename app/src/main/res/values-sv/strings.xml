@@ -39,7 +39,10 @@
     <string name="settings_screen_server_version">Server version</string>
     <string name="timer_option_after_current_episode">När avsnittet slutar</string>
     <string name="timer_option_after_current_chapter">När kapitlet slutar</string>
-    <string name="timer_option_after_minutes">%1$d minuter</string>
+    <plurals name="timer_option_after_time">
+        <item quantity="one">%d minut</item>
+        <item quantity="other">%d minuter</item>
+    </plurals>
     <string name="timer_option_disable_timer">Inaktivera timer</string>
     <string name="timer_title">Sömntimer</string>
     <string name="player_screen_timer_navigation">Timer</string>

@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.PlayCircleFilled
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.MusicNote
 import androidx.compose.material3.Icon
@@ -19,7 +17,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
@@ -102,8 +99,7 @@ private fun Int.toLabelText(
         LibraryType.PODCAST -> context.getString(R.string.timer_option_after_current_episode)
         LibraryType.UNKNOWN -> context.getString(R.string.timer_option_after_current_episode)
       }
-
-    else -> "$this min"
+    else -> context.resources.getQuantityString(R.plurals.timer_option_after_time, this, this)
   }
 
 private fun Int.toLabelIcon(): Any =

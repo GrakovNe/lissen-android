@@ -67,7 +67,14 @@
     <string name="timer_option_after_current_chapter">عند انتهاء الفصل الحالي</string>
     <string name="downloads_menu_download_option_next_chapters">الفصول %1$d التالية</string>
     <string name="timer_option_after_current_episode">عند انتهاء الحلقة الحالية</string>
-    <string name="timer_option_after_minutes">%1$d دقيقة</string>
+    <plurals name="timer_option_after_time">
+        <item quantity="zero">٠ دقيقة</item>
+        <item quantity="one">دقيقة واحدة</item>
+        <item quantity="two">دقيقتان</item>
+        <item quantity="few">%d دقائق</item>
+        <item quantity="many">%d دقيقة</item>
+        <item quantity="other">%d دقيقة</item>
+    </plurals>
     <string name="timer_option_disable_timer">تعطيل المؤقت</string>
     <string name="player_screen_timer_navigation">المؤقت</string>
     <string name="chapter_search_hint">البحث حسب عنوان الفصل</string>

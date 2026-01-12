@@ -24,10 +24,13 @@
     <string name="playing_item_details_author">作者</string>
     <string name="playing_item_details_year">发行年份</string>
     <string name="settings_screen_server_connection">服务器连接</string>
-    <string name="timer_option_after_minutes">%1$d 分钟</string>
     <string name="settings_screen_server_version">服务器版本</string>
     <string name="timer_option_disable_timer">关闭定时</string>
     <string name="timer_title">睡眠定时</string>
+    <plurals name="timer_option_after_time">
+        <item quantity="one">%d 分钟</item>
+        <item quantity="other">%d 分钟</item>
+    </plurals>
     <string name="chapter_search_hint">按章节搜索</string>
     <string name="downloads_menu_download_podcast">下载播客</string>
     <string name="the_offline_podcasts_is_empty">无保存播客</string>

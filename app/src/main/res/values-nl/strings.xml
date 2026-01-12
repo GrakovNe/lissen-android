@@ -48,6 +48,10 @@
     <string name="settings_screen_server_version">Serverversie</string>
     <string name="timer_option_after_current_episode">Wanneer de aflevering eindigt</string>
     <string name="timer_option_after_current_chapter">Wanneer het hoofdstuk eindigt</string>
+    <plurals name="timer_option_after_time">
+        <item quantity="one">%d minuut</item>
+        <item quantity="other">%d minuten</item>
+    </plurals>
     <string name="timer_option_disable_timer">Schakel Timer uit</string>
     <string name="chapter_search_hint">Zoek op hoofdstuktitel</string>
     <string name="the_offline_podcasts_is_empty">Nog geen opgeslagen podcasts</string>
@@ -75,7 +79,6 @@
     <string name="downloads_menu_download_option_entire_item">Hele item</string>
     <string name="downloads_menu_download_option_next_episodes">Volgende %1$d afleveringen</string>
     <string name="downloads_menu_download_option_next_items">Volgende %1$d items</string>
-    <string name="timer_option_after_minutes">%1$d minuten</string>
     <string name="playing_item_details_year">Jaar</string>
     <string name="playing_item_details_series">Serie</string>
     <string name="color_scheme_black">Zwart</string>

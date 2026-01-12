@@ -45,7 +45,10 @@
     <string name="library_screen_podcast_title">팟캐스트</string>
     <string name="timer_option_after_current_chapter">챕터 종료 시</string>
     <string name="timer_option_after_current_episode">에피소드 종료 시</string>
-    <string name="timer_option_after_minutes">%1$d 분</string>
+    <plurals name="timer_option_after_time">
+        <item quantity="one">%d분</item>
+        <item quantity="other">%d분</item>
+    </plurals>
     <string name="timer_option_disable_timer">타이머 해제</string>
     <string name="timer_title">슬립 타이머</string>
     <string name="player_screen_timer_navigation">타이머</string>

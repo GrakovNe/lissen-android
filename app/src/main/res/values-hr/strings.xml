@@ -51,7 +51,11 @@
     <string name="settings_screen_server_version">Verzija poslužitelja</string>
     <string name="timer_option_after_current_chapter">Kada završi poglavlje</string>
     <string name="timer_option_after_current_episode">Kada završi epizoda</string>
-    <string name="timer_option_after_minutes">%1$d minuta</string>
+    <plurals name="timer_option_after_time">
+        <item quantity="one">%d minuta</item>
+        <item quantity="few">%d minute</item>
+        <item quantity="other">%d minuta</item>
+    </plurals>
     <string name="timer_option_disable_timer">Onemogući mjerač vremena</string>
     <string name="timer_title">Mjerač uspavljivanja</string>
     <string name="player_screen_timer_navigation">Timer</string>

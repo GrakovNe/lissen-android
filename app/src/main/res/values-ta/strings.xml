@@ -51,7 +51,10 @@
     <string name="settings_screen_server_version">சேவையக பதிப்பு</string>
     <string name="timer_option_after_current_episode">அத்தியாயம் முடிவடையும்போது</string>
     <string name="timer_option_after_current_chapter">அத்தியாயம் முடிவடையும்போது</string>
-    <string name="timer_option_after_minutes">%1$d நிமிடங்கள்</string>
+    <plurals name="timer_option_after_time">
+        <item quantity="one">%d நிமிடம்</item>
+        <item quantity="other">%d நிமிடங்கள்</item>
+    </plurals>
     <string name="timer_option_disable_timer">டைமரை முடக்கு</string>
     <string name="timer_title">தூக்க நேரங்குறிகருவி</string>
     <string name="player_screen_timer_navigation">நேரங்குறிகருவி</string>

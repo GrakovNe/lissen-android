@@ -33,6 +33,10 @@
     <string name="custom_headers_title">Benutzerdefinierte Kopfzeilen</string>
     <string name="timer_option_after_current_episode">Wenn die Episode endet</string>
     <string name="timer_option_after_current_chapter">Wenn das Kapitel endet</string>
+    <plurals name="timer_option_after_time">
+        <item quantity="one">%d Minute</item>
+        <item quantity="other">%d Minuten</item>
+    </plurals>
     <string name="timer_option_disable_timer">Timer deaktivieren</string>
     <string name="player_screen_timer_navigation">Timer</string>
     <string name="widget_placeholder_text">Klicke zum Öffnen der App</string>
@@ -72,7 +76,6 @@
     <string name="timer_title">Schlaf-Timer</string>
     <string name="chapter_search_hint">Suche nach Titel des Kapitels</string>
     <string name="playing_item_details_year">Jahr</string>
-    <string name="timer_option_after_minutes">%1$d Minuten</string>
     <string name="playing_item_details_series">Serie</string>
     <string name="downloads_menu_download_unknown">Downloads</string>
     <string name="downloads_menu_download_option_current_item">Aktuelles Element</string>

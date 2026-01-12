@@ -50,7 +50,10 @@
     <string name="settings_screen_server_version">Version du Serveur</string>
     <string name="timer_option_after_current_episode">A la fin de l\'episode</string>
     <string name="timer_option_after_current_chapter">À la fin du chapitre</string>
-    <string name="timer_option_after_minutes">%1$d minutes</string>
+    <plurals name="timer_option_after_time">
+        <item quantity="one">%d minute</item>
+        <item quantity="other">%d minutes</item>
+    </plurals>
     <string name="timer_option_disable_timer">Désactiver le Timer</string>
     <string name="timer_title">Mise en veille programmée</string>
     <string name="player_screen_timer_navigation">Mise en veille</string>

@@ -55,7 +55,6 @@
     <string name="settings_screen_server_version">גרסת שרת</string>
     <string name="timer_option_after_current_chapter">כשהפרק יסתיים</string>
     <string name="timer_option_after_current_episode">כשהפרק יסתיים</string>
-    <string name="timer_option_after_minutes">%1$d דקות</string>
     <string name="timer_option_disable_timer">ביטול טיימר</string>
     <string name="timer_title">טיימר שינה</string>
     <string name="player_screen_timer_navigation">טיימר</string>

@@ -43,7 +43,10 @@
     <string name="timer_option_after_current_chapter">Kun kappale päättyy</string>
     <string name="timer_option_after_current_episode">Kun jakso päättyy</string>
     <string name="timer_title">Uniajastin</string>
-    <string name="timer_option_after_minutes">%1$d minuutin kuluttua</string>
+    <plurals name="timer_option_after_time">
+        <item quantity="one">%d minuutti</item>
+        <item quantity="other">%d minuuttia</item>
+    </plurals>
     <string name="chapter_search_hint">Etsi luvun otsikolla</string>
     <string name="the_offline_podcasts_is_empty">Ei Offline-tilaan tallennettuja podcasteja</string>
     <string name="player_screen_downloads_navigation">Lataukset</string>
