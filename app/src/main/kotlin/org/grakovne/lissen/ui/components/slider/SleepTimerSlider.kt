@@ -1,5 +1,6 @@
 package org.grakovne.lissen.ui.components.slider
 
+import android.content.Context
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,12 +21,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
+import org.grakovne.lissen.R
 import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.lib.domain.DurationTimerOption
+import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.TimerOption
 
 @Composable
 fun SleepTimerSlider(
+  context: Context,
+  libraryType: LibraryType,
   option: TimerOption?,
   modifier: Modifier = Modifier,
   onUpdate: (TimerOption?) -> Unit,
@@ -50,7 +55,7 @@ fun SleepTimerSlider(
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
     Text(
-      text = sliderState.current.toInt().toLabelText(),
+      text = sliderState.current.toInt().toLabelText(libraryType, context),
       style = typography.headlineSmall,
     )
     Icon(imageVector = Icons.Filled.ArrowDropDown, contentDescription = null)
@@ -85,10 +90,19 @@ fun SleepTimerSlider(
   }
 }
 
-private fun Int.toLabelText(): String =
+private fun Int.toLabelText(
+  libraryType: LibraryType,
+  context: Context,
+): String =
   when (this) {
-    INTERNAL_DISABLED -> "Disabled"
-    INTERNAL_CHAPTER_END -> "When the chapter ends"
+    INTERNAL_DISABLED -> context.getString(R.string.timer_option_disabled)
+    INTERNAL_CHAPTER_END ->
+      when (libraryType) {
+        LibraryType.LIBRARY -> context.getString(R.string.timer_option_after_current_chapter)
+        LibraryType.PODCAST -> context.getString(R.string.timer_option_after_current_episode)
+        LibraryType.UNKNOWN -> context.getString(R.string.timer_option_after_current_episode)
+      }
+
     else -> "$this min"
   }
 

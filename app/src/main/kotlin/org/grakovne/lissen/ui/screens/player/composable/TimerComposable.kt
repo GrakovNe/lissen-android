@@ -47,6 +47,8 @@ fun TimerComposable(
         )
 
         SleepTimerSlider(
+          libraryType = libraryType,
+          context = context,
           option = currentOption,
           modifier =
             Modifier

@@ -49,6 +49,7 @@
     <string name="timer_option_after_current_episode">Когда закончится выпуск</string>
     <string name="timer_option_after_current_chapter">Когда закончится глава</string>
     <string name="timer_option_after_minutes">%1$d минут</string>
+    <string name="timer_option_disabled">Выключен</string>
     <string name="timer_option_disable_timer">Отключить таймер</string>
     <string name="timer_title">Таймер</string>
     <string name="player_screen_timer_navigation">Таймер</string>
