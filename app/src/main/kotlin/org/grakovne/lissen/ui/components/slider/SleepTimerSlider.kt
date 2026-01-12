@@ -32,14 +32,14 @@ fun SleepTimerSlider(
   val sliderState =
     rememberSaveable(saver = SliderState.saver(valueModifier)) {
       SliderState(
-        current = option.toInternal(),
+        current = option.toValue(),
         bounds = sliderRange,
         onUpdate = valueModifier,
       )
     }
 
   LaunchedEffect(Unit) { sliderState.snapTo(sliderState.current) }
-  LaunchedEffect(option) { sliderState.animateDecayTo(option.toInternal().toFloat()) }
+  LaunchedEffect(option) { sliderState.animateDecayTo(option.toValue().toFloat()) }
 
   Column(
     modifier = modifier,
@@ -83,7 +83,7 @@ fun SleepTimerSlider(
 private const val INTERNAL_DISABLED = 0
 private const val INTERNAL_CHAPTER_END = 61
 
-private fun TimerOption?.toInternal(): Int =
+private fun TimerOption?.toValue(): Int =
   when (this) {
     null -> INTERNAL_DISABLED
     is DurationTimerOption -> duration.coerceIn(1, 60)
