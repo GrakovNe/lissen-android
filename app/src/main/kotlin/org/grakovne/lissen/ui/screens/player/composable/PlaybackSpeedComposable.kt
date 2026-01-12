@@ -30,7 +30,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
-import org.grakovne.lissen.ui.PlaybackSpeedSlider
+import org.grakovne.lissen.ui.components.slider.PlaybackSpeedSlider
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)

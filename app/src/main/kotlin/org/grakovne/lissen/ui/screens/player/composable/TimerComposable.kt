@@ -1,9 +1,7 @@
 package org.grakovne.lissen.ui.screens.player.composable
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -19,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.TimerOption
-import org.grakovne.lissen.ui.SleepTimerSlider
+import org.grakovne.lissen.ui.components.slider.SleepTimerSlider
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

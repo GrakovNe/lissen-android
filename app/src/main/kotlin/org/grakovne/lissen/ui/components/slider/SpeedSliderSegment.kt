@@ -1,0 +1,58 @@
+package org.grakovne.lissen.ui.components.slider
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import kotlin.math.absoluteValue
+
+@Composable
+fun SpeedSliderSegment(
+  index: Int,
+  currentValue: Float,
+  segmentWidth: Dp,
+  segmentPixelWidth: Float,
+  centerPixel: Float,
+  barColor: Color,
+  formatIndex: (Int) -> String,
+) {
+  val offset = (index - currentValue) * segmentPixelWidth
+  val alphaValue = calculateAlpha(offset, centerPixel)
+
+  Column(
+    modifier = Modifier.width(segmentWidth).graphicsLayer(alpha = alphaValue, translationX = offset),
+    horizontalAlignment = Alignment.CenterHorizontally,
+  ) {
+    Box(
+      modifier = Modifier.width(barThickness).height(barLength).background(barColor),
+    )
+    if (index % 5 == 0) {
+      Text(
+        text = formatIndex(index),
+        style = typography.bodyMedium,
+      )
+    }
+  }
+}
+
+private fun calculateAlpha(
+  offset: Float,
+  centerPixel: Float,
+): Float {
+  val factor = (offset / centerPixel).absoluteValue
+  return 1f - (1f - minAlpha) * factor
+}
+
+private val barThickness = 2.dp
+private val barLength = 28.dp
+private const val minAlpha = 0.25f
