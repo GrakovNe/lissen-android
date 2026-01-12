@@ -74,6 +74,7 @@ fun SleepTimerSlider(
           centerPixel = centerPixel,
           barColor = colorScheme.onSurface,
           formatIndex = { it.toLabel() },
+          maxIndex = INTERNAL_CHAPTER_END,
         )
       }
     }

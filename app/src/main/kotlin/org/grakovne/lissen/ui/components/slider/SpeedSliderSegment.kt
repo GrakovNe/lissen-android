@@ -25,6 +25,7 @@ fun SpeedSliderSegment(
   centerPixel: Float,
   barColor: Color,
   formatIndex: (Int) -> String,
+  maxIndex: Int? = null,
 ) {
   val offset = (index - currentValue) * segmentPixelWidth
   val alphaValue = calculateAlpha(offset, centerPixel)
@@ -36,7 +37,7 @@ fun SpeedSliderSegment(
     Box(
       modifier = Modifier.width(barThickness).height(barLength).background(barColor),
     )
-    if (index % 5 == 0) {
+    if (index == 0 || index % 5 == 0 || index == maxIndex) {
       Text(
         text = formatIndex(index),
         style = typography.bodyMedium,
