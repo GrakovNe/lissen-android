@@ -36,16 +36,16 @@ fun SleepTimerSlider(
   modifier: Modifier = Modifier,
   onUpdate: (TimerOption?) -> Unit,
 ) {
-  val sliderRange = VISUAL_CHAPTER_END..INTERNAL_MAX_VALUE
+  val sliderRange = INTERNAL_MIN_VALUE..INTERNAL_MAX_VALUE
 
-  val onValueUpdate: (Float) -> Unit = {
-    onUpdate(it.roundToInt().toOption())
+  val onValueUpdate: (Float) -> Unit = { value ->
+    onUpdate(value.toTimerOption())
   }
 
   val sliderState =
     rememberSaveable(saver = SliderState.saver(onValueUpdate)) {
       SliderState(
-        current = option.toVisualIndex(),
+        current = option.toInternalValue(),
         bounds = sliderRange,
         onUpdate = onValueUpdate,
       )
@@ -56,7 +56,7 @@ fun SleepTimerSlider(
   }
 
   LaunchedEffect(option) {
-    sliderState.animateDecayTo(option.toVisualIndex().toFloat())
+    sliderState.animateDecayTo(option.toInternalValue().toFloat())
   }
 
   Column(
@@ -64,7 +64,7 @@ fun SleepTimerSlider(
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
     Text(
-      text = sliderState.current.roundToInt().toLabelText(libraryType, context),
+      text = sliderState.current.toLabelText(libraryType, context),
       style = typography.headlineSmall,
     )
 
@@ -112,51 +112,61 @@ fun SleepTimerSlider(
   }
 }
 
-private fun TimerOption?.toVisualIndex(): Int =
+private fun TimerOption?.toInternalValue(): Int =
   when (this) {
-    null -> VISUAL_DISABLED
+    null -> INTERNAL_DISABLED
     is DurationTimerOption -> duration.coerceIn(1, INTERNAL_MAX_VALUE)
-    CurrentEpisodeTimerOption -> VISUAL_CHAPTER_END
+    CurrentEpisodeTimerOption -> INTERNAL_CHAPTER_END
   }
 
-private fun Int.toOption(): TimerOption? =
-  when (this) {
-    VISUAL_DISABLED -> null
-    VISUAL_CHAPTER_END -> CurrentEpisodeTimerOption
-    else -> DurationTimerOption(this)
+private fun Float.toTimerOption(): TimerOption? {
+  val value = roundToInt()
+  return when (value) {
+    INTERNAL_DISABLED -> null
+    INTERNAL_CHAPTER_END -> CurrentEpisodeTimerOption
+    else -> DurationTimerOption(value)
   }
+}
 
-private fun Int.toLabelText(
+private fun Float.toLabelText(
   libraryType: LibraryType,
   context: Context,
-): String =
-  when (this) {
-    VISUAL_DISABLED -> context.getString(R.string.timer_option_disabled)
-    VISUAL_CHAPTER_END ->
+): String {
+  val value = roundToInt()
+  return when (value) {
+    INTERNAL_DISABLED -> context.getString(R.string.timer_option_disabled)
+    INTERNAL_CHAPTER_END ->
       when (libraryType) {
         LIBRARY -> context.getString(R.string.timer_option_after_current_chapter)
         PODCAST, UNKNOWN -> context.getString(R.string.timer_option_after_current_episode)
       }
 
-    else -> context.resources.getQuantityString(R.plurals.timer_option_after_time, this, this)
+    else ->
+      context.resources.getQuantityString(
+        R.plurals.timer_option_after_time,
+        value,
+        value,
+      )
   }
+}
 
 private fun Int.toLabelIcon(): Any =
   when (this) {
-    VISUAL_DISABLED -> Icons.Outlined.Close
-    VISUAL_CHAPTER_END -> Icons.Outlined.MusicNote
+    INTERNAL_DISABLED -> Icons.Outlined.Close
+    INTERNAL_CHAPTER_END -> Icons.Outlined.MusicNote
     else -> this
   }
 
+private const val INTERNAL_MIN_VALUE = -1
 private const val INTERNAL_MAX_VALUE = 120
 
-private const val VISUAL_DISABLED = 0
-private const val VISUAL_CHAPTER_END = -1
+private const val INTERNAL_DISABLED = 0
+private const val INTERNAL_CHAPTER_END = -1
 
 private const val visibleSegments = 12
 
 private val labeledIndexes =
   listOf(
-    VISUAL_CHAPTER_END,
-    VISUAL_DISABLED,
+    INTERNAL_CHAPTER_END,
+    INTERNAL_DISABLED,
   ) + (5..INTERNAL_MAX_VALUE step 5)

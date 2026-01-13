@@ -13,16 +13,18 @@ class SliderState(
 ) {
   private val floatBounds = bounds.start.toFloat()..bounds.endInclusive.toFloat()
   private val animState = Animatable(current.toFloat())
-  val current: Float get() = animState.value
+
+  val current: Float
+    get() = animState.value
 
   suspend fun cancelAnimations() {
     animState.stop()
   }
 
   suspend fun snapTo(value: Float) {
-    val limitedValue = value.coerceIn(floatBounds)
-    animState.snapTo(limitedValue)
-    onUpdate(limitedValue)
+    val limited = value.coerceIn(floatBounds)
+    animState.snapTo(limited)
+    onUpdate(limited)
   }
 
   suspend fun snapToNearest() {
@@ -36,21 +38,37 @@ class SliderState(
   }
 
   suspend fun animateDecayTo(target: Float) {
-    val initialVelocity = (target - current).coerceIn(-maxSpeed, maxSpeed)
-    animState.animateTo(target.coerceIn(floatBounds), initialVelocity = initialVelocity, animationSpec = springSpec)
+    val limitedTarget = target.coerceIn(floatBounds)
+    val velocity = (limitedTarget - current).coerceIn(-maxSpeed, maxSpeed)
+    animState.animateTo(
+      targetValue = limitedTarget,
+      initialVelocity = velocity,
+      animationSpec = springSpec,
+    )
   }
 
   companion object {
-    private const val maxSpeed = 10f
-    private val springSpec = FloatSpringSpec(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)
+    private const val maxSpeed = 25f
+
+    private val springSpec =
+      FloatSpringSpec(
+        dampingRatio = Spring.DampingRatioMediumBouncy,
+        stiffness = Spring.StiffnessLow,
+      )
 
     fun saver(onUpdate: (Float) -> Unit) =
-      Saver<SliderState, List<Any>>(
-        save = { listOf(it.current.roundToInt(), it.bounds.start, it.bounds.endInclusive) },
+      Saver<SliderState, List<Int>>(
+        save = {
+          listOf(
+            it.current.roundToInt(),
+            it.bounds.start,
+            it.bounds.endInclusive,
+          )
+        },
         restore = {
           SliderState(
-            current = it[0] as Int,
-            bounds = (it[1] as Int)..(it[2] as Int),
+            current = it[0],
+            bounds = it[1]..it[2],
             onUpdate = onUpdate,
           )
         },

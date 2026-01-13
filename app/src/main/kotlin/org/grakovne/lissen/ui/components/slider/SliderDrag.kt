@@ -12,33 +12,65 @@ import androidx.compose.ui.input.pointer.util.VelocityTracker
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.math.abs
 
 @SuppressLint("ReturnFromAwaitPointerEventScope", "MultipleAwaitPointerEventScopes")
 fun Modifier.sliderDrag(
   state: SliderState,
   segments: Int,
 ): Modifier =
-  pointerInput(state) {
-    val decayAnimation = splineBasedDecay<Float>(this)
+  pointerInput(state, segments) {
+    val decay = splineBasedDecay<Float>(this)
+
     coroutineScope {
       while (isActive) {
         val pointerId = awaitPointerEventScope { awaitFirstDown().id }
         state.cancelAnimations()
+
         val velocityTracker = VelocityTracker()
+        var lastValue = state.current
+
         awaitPointerEventScope {
           horizontalDrag(pointerId) { change ->
             val deltaX = change.positionChange().x
-            val sliderStep = size.width / segments
-            val newSliderValue = state.current - deltaX / sliderStep
-            launch { state.snapTo(newSliderValue) }
-            velocityTracker.addPosition(change.uptimeMillis, change.position)
+            if (deltaX == 0f) return@horizontalDrag
+
+            val pixelsPerStep = size.width / segments.toFloat()
+            val deltaValue = -deltaX / pixelsPerStep
+            val newValue = lastValue + deltaValue
+            lastValue = newValue
+
+            launch {
+              state.snapTo(newValue)
+            }
+
+            velocityTracker.addPosition(
+              change.uptimeMillis,
+              change.position,
+            )
+
             change.consume()
           }
         }
-        val velocity = velocityTracker.calculateVelocity().x / segments
-        val targetValue = decayAnimation.calculateTargetValue(state.current, -velocity)
+
+        val velocityPx = velocityTracker.calculateVelocity().x
+        val pixelsPerStep = size.width / segments.toFloat()
+
+        val velocityValue = (-velocityPx / pixelsPerStep).coerceIn(-50f, 50f)
+
+        if (abs(velocityValue) < 0.2f) {
+          launch { state.snapToNearest() }
+          continue
+        }
+
+        val target =
+          decay.calculateTargetValue(
+            state.current,
+            velocityValue,
+          )
+
         launch {
-          state.animateDecayTo(targetValue)
+          state.animateDecayTo(target)
           state.snapToNearest()
         }
       }
