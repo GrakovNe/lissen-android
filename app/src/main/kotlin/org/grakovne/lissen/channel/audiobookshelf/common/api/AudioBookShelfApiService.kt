@@ -139,7 +139,7 @@ class AudioBookShelfApiService
 
       return client
         .retrofit
-        .create(AudiobookshelfApiClient::class.java)
+        ?.create(AudiobookshelfApiClient::class.java)
     }
 
     private fun isClientChanged(

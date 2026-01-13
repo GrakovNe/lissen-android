@@ -79,7 +79,9 @@ class AudiobookshelfAuthService
             requestHeaders = requestHeadersProvider.fetchRequestHeaders(),
           )
 
-        apiService = apiClient.retrofit.create(AudiobookshelfApiClient::class.java)
+        apiService = apiClient.retrofit
+          ?.create(AudiobookshelfApiClient::class.java)
+          ?: return OperationResult.Error(OperationError.InvalidCredentialsHost)
       } catch (e: Exception) {
         return OperationResult.Error(OperationError.InternalError)
       }

@@ -15,13 +15,15 @@ class ApiClient(
 ) {
   private val httpClient = createOkHttpClient(requestHeaders, preferences = preferences)
 
-  val retrofit: Retrofit =
-    Retrofit
-      .Builder()
-      .baseUrl(host.fixUriScheme())
-      .client(httpClient)
-      .addConverterFactory(MoshiConverterFactory.create(moshi))
-      .build()
+  val retrofit: Retrofit? =
+    runCatching {
+      Retrofit
+        .Builder()
+        .baseUrl(host.fixUriScheme())
+        .client(httpClient)
+        .addConverterFactory(MoshiConverterFactory.create(moshi))
+        .build()
+    }.getOrNull()
 
   companion object {
     private val moshi: Moshi =
