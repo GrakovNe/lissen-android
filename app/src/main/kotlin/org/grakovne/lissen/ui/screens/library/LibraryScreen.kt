@@ -70,12 +70,14 @@ import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.common.RequestNotificationPermissions
 import org.grakovne.lissen.ui.screens.library.composables.BookComposable
+import org.grakovne.lissen.ui.screens.library.composables.ContinueSeriesComposable
 import org.grakovne.lissen.ui.screens.library.composables.DefaultActionComposable
 import org.grakovne.lissen.ui.screens.library.composables.LibrarySearchActionComposable
 import org.grakovne.lissen.ui.screens.library.composables.LibrarySwitchComposable
 import org.grakovne.lissen.ui.screens.library.composables.MiniPlayerComposable
 import org.grakovne.lissen.ui.screens.library.composables.RecentBooksComposable
 import org.grakovne.lissen.ui.screens.library.composables.fallback.LibraryFallbackComposable
+import org.grakovne.lissen.ui.screens.library.composables.placeholder.ContinueSeriesPlaceholderComposable
 import org.grakovne.lissen.ui.screens.library.composables.placeholder.LibraryPlaceholderComposable
 import org.grakovne.lissen.ui.screens.library.composables.placeholder.RecentBooksPlaceholderComposable
 import org.grakovne.lissen.viewmodel.CachingModelView
@@ -101,6 +103,7 @@ fun LibraryScreen(
 
   val activity = LocalActivity.current
   val recentBooks: List<RecentBook> by libraryViewModel.recentBooks.observeAsState(emptyList())
+  val continueSeriesBooks: List<RecentBook> by libraryViewModel.continueSeriesBooks.observeAsState(emptyList())
 
   var currentLibraryId by rememberSaveable { mutableStateOf("") }
   var localCacheUpdatedAt by rememberSaveable { mutableStateOf(0L) }
@@ -109,6 +112,7 @@ fun LibraryScreen(
   }
   var pullRefreshing by remember { mutableStateOf(false) }
   val recentBookRefreshing by libraryViewModel.recentBookUpdating.observeAsState(false)
+  val continueSeriesBooksRefreshing by libraryViewModel.continueSeriesBooksUpdating.observeAsState(false)
   val searchRequested by libraryViewModel.searchRequested.observeAsState(false)
   val preparingError by playerViewModel.preparingError.observeAsState(false)
 
@@ -150,6 +154,7 @@ fun LibraryScreen(
           async { settingsViewModel.fetchLibraries() },
           async { libraryViewModel.refreshLibrary() },
           async { libraryViewModel.fetchRecentListening() },
+          async { libraryViewModel.fetchContinueSeries() },
         ).awaitAll()
       }
 
@@ -163,7 +168,7 @@ fun LibraryScreen(
         return@derivedStateOf false
       }
 
-      pullRefreshing || recentBookRefreshing || library.loadState.refresh is LoadState.Loading
+      pullRefreshing || recentBookRefreshing || continueSeriesBooksRefreshing || library.loadState.refresh is LoadState.Loading
     }
   }
 
@@ -194,6 +199,13 @@ fun LibraryScreen(
     return searchRequested.not() && hasContent && fetchAvailable
   }
 
+  fun isContinueSeriesVisible(): Boolean {
+    val fetchAvailable = networkService.isNetworkAvailable() || cachingModelView.localCacheUsing()
+    val hasContent = continueSeriesBooks.isEmpty().not()
+
+    return searchRequested.not() && hasContent && fetchAvailable
+  }
+
   val showScrollbar by remember {
     derivedStateOf {
       val scrolledDown = libraryListState.firstVisibleItemIndex > 0 || libraryListState.firstVisibleItemScrollOffset > 0
@@ -216,6 +228,7 @@ fun LibraryScreen(
 
     if (emptyContent || libraryChanged || orderingChanged || (localCacheUsing && localCacheUpdated)) {
       libraryViewModel.refreshRecentListening()
+      libraryViewModel.refreshContinueSeries()
       libraryViewModel.refreshLibrary()
 
       currentLibraryId = settingsViewModel.fetchPreferredLibraryId()
@@ -360,7 +373,7 @@ fun LibraryScreen(
                 state = libraryListState,
                 color = colorScheme.onBackground.copy(alpha = scrollbarAlpha),
                 totalItems = libraryCount,
-                ignoreItems = listOf("recent_books", "library_title"),
+                ignoreItems = listOf("recent_books", "continue_series", "library_title"),
               ),
           contentPadding = PaddingValues(horizontal = 16.dp),
         ) {
@@ -378,6 +391,29 @@ fun LibraryScreen(
                 RecentBooksComposable(
                   navController = navController,
                   recentBooks = recentBooks,
+                  imageLoader = imageLoader,
+                  libraryViewModel = libraryViewModel,
+                )
+
+                Spacer(modifier = Modifier.height(20.dp))
+              }
+            }
+          }
+
+          item(key = "continue_series") {
+            val showContinueSeries = isContinueSeriesVisible()
+
+            when {
+              isPlaceholderRequired -> {
+                ContinueSeriesPlaceholderComposable(
+                  libraryViewModel = libraryViewModel,
+                )
+              }
+
+              showContinueSeries -> {
+                ContinueSeriesComposable(
+                  navController = navController,
+                  continueSeriesBooks = continueSeriesBooks,
                   imageLoader = imageLoader,
                   libraryViewModel = libraryViewModel,
                 )

@@ -9,6 +9,7 @@ import org.grakovne.lissen.channel.audiobookshelf.Host
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfSyncService
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.ContinueSeriesResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
@@ -29,6 +30,7 @@ abstract class AudiobookshelfChannel(
   private val syncService: AudioBookshelfSyncService,
   private val libraryResponseConverter: LibraryResponseConverter,
   private val recentBookResponseConverter: RecentListeningResponseConverter,
+  private val continueSeriesResponseConverter: ContinueSeriesResponseConverter,
   private val connectionInfoResponseConverter: ConnectionInfoResponseConverter,
 ) : MediaChannel {
   override fun provideFileUri(
@@ -90,6 +92,27 @@ abstract class AudiobookshelfChannel(
     return dataRepository
       .fetchPersonalizedFeed(libraryId)
       .map { recentBookResponseConverter.apply(it, progress) }
+  }
+
+  override suspend fun fetchContinueSeriesBooks(libraryId: String): OperationResult<List<RecentBook>> {
+    val progress: Map<String, Pair<Long, Double>> =
+      dataRepository
+        .fetchUserInfoResponse()
+        .fold(
+          onSuccess = {
+            it
+              .mediaProgress
+              ?.groupBy { item -> item.libraryItemId }
+              ?.map { (item, value) -> item to value.maxBy { progress -> progress.lastUpdate } }
+              ?.associate { (item, progress) -> item to (progress.lastUpdate to progress.progress) }
+              ?: emptyMap()
+          },
+          onFailure = { emptyMap() },
+        )
+
+    return dataRepository
+      .fetchPersonalizedFeed(libraryId)
+      .map { continueSeriesResponseConverter.apply(it, progress) }
   }
 
   override suspend fun fetchConnectionInfo(): OperationResult<ConnectionInfo> =

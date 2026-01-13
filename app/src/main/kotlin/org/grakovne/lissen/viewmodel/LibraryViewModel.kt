@@ -43,6 +43,12 @@ class LibraryViewModel
     private val _recentBookUpdating = MutableLiveData(false)
     val recentBookUpdating: LiveData<Boolean> = _recentBookUpdating
 
+    private val _continueSeriesBooks = MutableLiveData<List<RecentBook>>(emptyList())
+    val continueSeriesBooks: LiveData<List<RecentBook>> = _continueSeriesBooks
+
+    private val _continueSeriesBooksUpdating = MutableLiveData(false)
+    val continueSeriesBooksUpdating: LiveData<Boolean> = _continueSeriesBooksUpdating
+
     private val _searchRequested = MutableLiveData(false)
     val searchRequested: LiveData<Boolean> = _searchRequested
 
@@ -131,6 +137,38 @@ class LibraryViewModel
       viewModelScope.launch {
         withContext(Dispatchers.IO) {
           fetchRecentListening()
+        }
+      }
+    }
+
+    fun fetchContinueSeries() {
+      _continueSeriesBooksUpdating.postValue(true)
+
+      val preferredLibrary =
+        preferences.getPreferredLibrary()?.id ?: run {
+          _continueSeriesBooksUpdating.postValue(false)
+          return
+        }
+
+      viewModelScope.launch {
+        mediaChannel
+          .fetchContinueSeriesBooks(preferredLibrary)
+          .fold(
+            onSuccess = {
+              _continueSeriesBooks.postValue(it)
+              _continueSeriesBooksUpdating.postValue(false)
+            },
+            onFailure = {
+              _continueSeriesBooksUpdating.postValue(false)
+            },
+          )
+      }
+    }
+
+    fun refreshContinueSeries() {
+      viewModelScope.launch {
+        withContext(Dispatchers.IO) {
+          fetchContinueSeries()
         }
       }
     }

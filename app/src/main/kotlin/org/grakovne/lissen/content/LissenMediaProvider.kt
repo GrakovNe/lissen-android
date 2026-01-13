@@ -167,6 +167,18 @@ class LissenMediaProvider
       }
     }
 
+    suspend fun fetchContinueSeriesBooks(libraryId: String): OperationResult<List<RecentBook>> {
+      Timber.d("Fetching Continue Series books of library $libraryId")
+
+      return when (preferences.isForceCache()) {
+        true -> localCacheRepository.fetchRecentListenedBooks(libraryId)
+        false ->
+          providePreferredChannel()
+            .fetchContinueSeriesBooks(libraryId)
+            .map { items -> syncFromLocalProgress(libraryId = libraryId, detailedItems = items) }
+      }
+    }
+
     suspend fun fetchBook(bookId: String): OperationResult<DetailedItem> {
       Timber.d("Fetching Detailed book info for $bookId")
 

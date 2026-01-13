@@ -57,5 +57,7 @@ interface MediaChannel {
 
   suspend fun fetchRecentListenedBooks(libraryId: String): OperationResult<List<RecentBook>>
 
+  suspend fun fetchContinueSeriesBooks(libraryId: String): OperationResult<List<RecentBook>>
+
   suspend fun fetchBook(bookId: String): OperationResult<DetailedItem>
 }

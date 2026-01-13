@@ -7,6 +7,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.AudiobookshelfChannel
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.api.podcast.AudioBookshelfPodcastSyncService
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.ContinueSeriesResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
@@ -33,6 +34,7 @@ class PodcastAudiobookshelfChannel
     hostProvider: AudiobookshelfHostProvider,
     dataRepository: AudioBookshelfRepository,
     recentListeningResponseConverter: RecentListeningResponseConverter,
+    continueSeriesResponseConverter: ContinueSeriesResponseConverter,
     preferences: LissenSharedPreferences,
     syncService: AudioBookshelfPodcastSyncService,
     sessionResponseConverter: PlaybackSessionResponseConverter,
@@ -46,6 +48,7 @@ class PodcastAudiobookshelfChannel
       hostProvider = hostProvider,
       dataRepository = dataRepository,
       recentBookResponseConverter = recentListeningResponseConverter,
+      continueSeriesResponseConverter = continueSeriesResponseConverter,
       sessionResponseConverter = sessionResponseConverter,
       preferences = preferences,
       syncService = syncService,
