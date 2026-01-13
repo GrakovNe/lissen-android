@@ -16,6 +16,7 @@ data class PersonalizedFeedResponse(
 data class PersonalizedFeedItemResponse(
   val id: String,
   val libraryId: String,
+  val updatedAt: Long,
   val media: PersonalizedFeedItemMediaResponse?,
 )
 

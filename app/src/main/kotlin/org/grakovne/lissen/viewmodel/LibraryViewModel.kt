@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.lib.domain.Book
 import org.grakovne.lissen.lib.domain.LibraryType
@@ -42,12 +43,6 @@ class LibraryViewModel
 
     private val _recentBookUpdating = MutableLiveData(false)
     val recentBookUpdating: LiveData<Boolean> = _recentBookUpdating
-
-    private val _continueSeriesBooks = MutableLiveData<List<RecentBook>>(emptyList())
-    val continueSeriesBooks: LiveData<List<RecentBook>> = _continueSeriesBooks
-
-    private val _continueSeriesBooksUpdating = MutableLiveData(false)
-    val continueSeriesBooksUpdating: LiveData<Boolean> = _continueSeriesBooksUpdating
 
     private val _searchRequested = MutableLiveData(false)
     val searchRequested: LiveData<Boolean> = _searchRequested
@@ -141,38 +136,6 @@ class LibraryViewModel
       }
     }
 
-    fun fetchContinueSeries() {
-      _continueSeriesBooksUpdating.postValue(true)
-
-      val preferredLibrary =
-        preferences.getPreferredLibrary()?.id ?: run {
-          _continueSeriesBooksUpdating.postValue(false)
-          return
-        }
-
-      viewModelScope.launch {
-        mediaChannel
-          .fetchContinueSeriesBooks(preferredLibrary)
-          .fold(
-            onSuccess = {
-              _continueSeriesBooks.postValue(it)
-              _continueSeriesBooksUpdating.postValue(false)
-            },
-            onFailure = {
-              _continueSeriesBooksUpdating.postValue(false)
-            },
-          )
-      }
-    }
-
-    fun refreshContinueSeries() {
-      viewModelScope.launch {
-        withContext(Dispatchers.IO) {
-          fetchContinueSeries()
-        }
-      }
-    }
-
     fun refreshLibrary() {
       viewModelScope.launch {
         withContext(Dispatchers.IO) {
@@ -194,17 +157,23 @@ class LibraryViewModel
         }
 
       viewModelScope.launch {
-        mediaChannel
-          .fetchRecentListenedBooks(preferredLibrary)
-          .fold(
-            onSuccess = {
-              _recentBooks.postValue(it)
-              _recentBookUpdating.postValue(false)
-            },
-            onFailure = {
-              _recentBookUpdating.postValue(false)
-            },
-          )
+        val recentListeningResult = mediaChannel.fetchRecentListenedBooks(preferredLibrary)
+        val continueSeriesResult = mediaChannel.fetchContinueSeriesBooks(preferredLibrary)
+
+        val mergedBooks =
+          when {
+            recentListeningResult is OperationResult.Success && continueSeriesResult is OperationResult.Success -> {
+              (recentListeningResult.data + continueSeriesResult.data)
+                .distinctBy { it.id }
+                .sortedByDescending { it.listenedLastUpdate ?: 0L }
+            }
+            recentListeningResult is OperationResult.Success -> recentListeningResult.data
+            continueSeriesResult is OperationResult.Success -> continueSeriesResult.data
+            else -> emptyList()
+          }
+
+        _recentBooks.postValue(mergedBooks)
+        _recentBookUpdating.postValue(false)
       }
     }
 

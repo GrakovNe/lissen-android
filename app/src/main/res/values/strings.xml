@@ -2,7 +2,6 @@
     <string name="app_name" translatable="false">Lissen</string>
     <string name="library_screen_library_title">Library</string>
     <string name="library_screen_continue_listening_title">Continue listening</string>
-    <string name="library_screen_continue_series_title">Continue series</string>
     <string name="library_screen_preferences_menu_item">Preferences</string>
     <string name="login_screen_title">Connect to server</string>
     <string name="hint_server_url_input">Server URL</string>

@@ -26,7 +26,7 @@ class RecentListeningResponseConverter
             subtitle = media.metadata.subtitle,
             author = media.metadata.authorName,
             listenedPercentage = progress[it.id]?.second?.let { it * 100 }?.toInt(),
-            listenedLastUpdate = progress[it.id]?.first,
+            listenedLastUpdate = it.updatedAt,
           )
         } ?: emptyList()
 
