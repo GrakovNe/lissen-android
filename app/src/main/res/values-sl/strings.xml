@@ -50,7 +50,12 @@
     <string name="settings_screen_server_version">Verzija strežnika</string>
     <string name="timer_option_after_current_episode">Ko se epizoda konča</string>
     <string name="timer_option_after_current_chapter">Ko se poglavje konča</string>
-    <string name="timer_option_after_minutes">%1$d minut</string>
+    <plurals name="timer_option_after_time">
+        <item quantity="one">%d minuta</item>
+        <item quantity="two">%d minuti</item>
+        <item quantity="few">%d minute</item>
+        <item quantity="other">%d minut</item>
+    </plurals>
     <string name="timer_option_disable_timer">Onemogoči časovnik</string>
     <string name="timer_title">Časovnik za spanje</string>
     <string name="player_screen_timer_navigation">Časovnik</string>

@@ -57,9 +57,13 @@
     <string name="custom_headers_title">Custom Headers</string>
     <string name="library_screen_podcast_title">Podcasts</string>
     <string name="settings_screen_server_version">Server Version</string>
+    <string name="timer_option_disabled">Disabled</string>
     <string name="timer_option_after_current_chapter">When the chapter ends</string>
     <string name="timer_option_after_current_episode">When the episode ends</string>
-    <string name="timer_option_after_minutes">%1$d minutes</string>
+    <plurals name="timer_option_after_time">
+        <item quantity="one">%d minute</item>
+        <item quantity="other">%d minutes</item>
+    </plurals>
     <string name="timer_option_disable_timer">Disable Timer</string>
     <string name="timer_title">Sleep Timer</string>
     <string name="player_screen_timer_navigation">Timer</string>

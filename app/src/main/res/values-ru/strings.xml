@@ -48,7 +48,13 @@
     <string name="settings_screen_server_version">Версия сервера</string>
     <string name="timer_option_after_current_episode">Когда закончится выпуск</string>
     <string name="timer_option_after_current_chapter">Когда закончится глава</string>
-    <string name="timer_option_after_minutes">%1$d минут</string>
+    <plurals name="timer_option_after_time">
+        <item quantity="one">%d минута</item>
+        <item quantity="few">%d минуты</item>
+        <item quantity="many">%d минут</item>
+        <item quantity="other">%d мин</item>
+    </plurals>
+    <string name="timer_option_disabled">Выключен</string>
     <string name="timer_option_disable_timer">Отключить таймер</string>
     <string name="timer_title">Таймер</string>
     <string name="player_screen_timer_navigation">Таймер</string>

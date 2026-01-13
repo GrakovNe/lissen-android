@@ -47,7 +47,10 @@
     <string name="settings_screen_server_version">Versione del server</string>
     <string name="timer_option_after_current_episode">Quando finisce l\'episodio</string>
     <string name="timer_option_after_current_chapter">Quando finisce il capitolo</string>
-    <string name="timer_option_after_minutes">%1$d minuti</string>
+    <plurals name="timer_option_after_time">
+        <item quantity="one">%d minuto</item>
+        <item quantity="other">%d minuti</item>
+    </plurals>
     <string name="timer_option_disable_timer">Disabilita timer</string>
     <string name="timer_title">Timer di riposo</string>
     <string name="player_screen_timer_navigation">Timer</string>

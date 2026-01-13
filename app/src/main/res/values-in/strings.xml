@@ -55,7 +55,10 @@
     <string name="settings_screen_server_version">Versi server</string>
     <string name="timer_option_after_current_chapter">Saat segmen berakhir</string>
     <string name="timer_option_after_current_episode">Saat episode berakhir</string>
-    <string name="timer_option_after_minutes">%1$d menit</string>
+    <plurals name="timer_option_after_time">
+        <item quantity="one">%d menit</item>
+        <item quantity="other">%d menit</item>
+    </plurals>
     <string name="timer_option_disable_timer">Nonaktifkan Timer</string>
     <string name="timer_title">Timer Tidur</string>
     <string name="player_screen_timer_navigation">Timer</string>

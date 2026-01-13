@@ -51,7 +51,10 @@
     <string name="settings_screen_server_version">Sunucu Sürümü</string>
     <string name="timer_option_after_current_episode">Bölüm sona erdiğinde</string>
     <string name="timer_option_after_current_chapter">Bölüm sona erdiğinde</string>
-    <string name="timer_option_after_minutes">%1$d dakika</string>
+    <plurals name="timer_option_after_time">
+        <item quantity="one">%d dakika</item>
+        <item quantity="other">%d dakika</item>
+    </plurals>
     <string name="timer_option_disable_timer">Zamanlayıcıyı Devre Dışı Bırak</string>
     <string name="timer_title">Uyku Zamanlayıcısı</string>
     <string name="player_screen_timer_navigation">Zamanlayıcı</string>

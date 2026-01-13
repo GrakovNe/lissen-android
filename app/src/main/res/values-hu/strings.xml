@@ -49,8 +49,11 @@
     <string name="settings_screen_server_version">Kiszolgáló verziója</string>
     <string name="timer_option_after_current_episode">Amikor a rész véget ér</string>
     <string name="timer_option_after_current_chapter">Amikor a fejezet véget ér</string>
+    <plurals name="timer_option_after_time">
+        <item quantity="one">%d perc</item>
+        <item quantity="other">%d perc</item>
+    </plurals>
     <string name="app_crach_toast">Elnézést kérünk az alkalmazás összeomlásáért\nA naplókat elküldtük kivizsgálásra</string>
-    <string name="timer_option_after_minutes">%1$d perc</string>
     <string name="timer_option_disable_timer">Időzítő kikapcsolása</string>
     <string name="timer_title">Elalvás időzítő</string>
     <string name="player_screen_timer_navigation">Időzítő</string>
