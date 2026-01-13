@@ -148,7 +148,7 @@ private fun Int.toLabelIcon(): Any =
     else -> this
   }
 
-private const val INTERNAL_MAX_VALUE = 60
+private const val INTERNAL_MAX_VALUE = 120
 
 private const val VISUAL_DISABLED = 0
 private const val VISUAL_CHAPTER_END = -1
