@@ -22,7 +22,11 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.lib.domain.DurationTimerOption
 import org.grakovne.lissen.lib.domain.LibraryType
+import org.grakovne.lissen.lib.domain.LibraryType.LIBRARY
+import org.grakovne.lissen.lib.domain.LibraryType.PODCAST
+import org.grakovne.lissen.lib.domain.LibraryType.UNKNOWN
 import org.grakovne.lissen.lib.domain.TimerOption
+import kotlin.math.roundToInt
 
 @Composable
 fun SleepTimerSlider(
@@ -32,30 +36,42 @@ fun SleepTimerSlider(
   modifier: Modifier = Modifier,
   onUpdate: (TimerOption?) -> Unit,
 ) {
-  val sliderRange = INTERNAL_DISABLED..INTERNAL_CHAPTER_END
-  val valueModifier: (Float) -> Unit = { onUpdate(it.toInt().toOption()) }
+  val sliderRange = VISUAL_CHAPTER_END..INTERNAL_MAX_VALUE
+
+  val onValueUpdate: (Float) -> Unit = {
+    onUpdate(it.roundToInt().toOption())
+  }
 
   val sliderState =
-    rememberSaveable(saver = SliderState.saver(valueModifier)) {
+    rememberSaveable(saver = SliderState.saver(onValueUpdate)) {
       SliderState(
-        current = option.toValue(),
-        bounds = sliderRange.first..sliderRange.last,
-        onUpdate = valueModifier,
+        current = option.toVisualIndex(),
+        bounds = sliderRange,
+        onUpdate = onValueUpdate,
       )
     }
 
-  LaunchedEffect(Unit) { sliderState.snapTo(sliderState.current) }
-  LaunchedEffect(option) { sliderState.animateDecayTo(option.toValue().toFloat()) }
+  LaunchedEffect(Unit) {
+    sliderState.snapTo(sliderState.current)
+  }
+
+  LaunchedEffect(option) {
+    sliderState.animateDecayTo(option.toVisualIndex().toFloat())
+  }
 
   Column(
     modifier = modifier,
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
     Text(
-      text = sliderState.current.toInt().toLabelText(libraryType, context),
+      text = sliderState.current.roundToInt().toLabelText(libraryType, context),
       style = typography.headlineSmall,
     )
-    Icon(imageVector = Icons.Filled.ArrowDropDown, contentDescription = null)
+
+    Icon(
+      imageVector = Icons.Filled.ArrowDropDown,
+      contentDescription = null,
+    )
 
     BoxWithConstraints(
       modifier =
@@ -65,10 +81,19 @@ fun SleepTimerSlider(
       contentAlignment = Alignment.TopCenter,
     ) {
       val segmentWidth: Dp = maxWidth / visibleSegments
-      val segmentPixelWidth: Float = constraints.maxWidth.toFloat() / visibleSegments
+      val segmentPixelWidth = constraints.maxWidth.toFloat() / visibleSegments
       val visibleSegmentCount = (visibleSegments + 1) / 2
-      val minIndex = (sliderState.current - visibleSegmentCount).toInt().coerceAtLeast(sliderRange.first)
-      val maxIndex = (sliderState.current + visibleSegmentCount).toInt().coerceAtMost(sliderRange.last)
+
+      val minIndex =
+        (sliderState.current - visibleSegmentCount)
+          .roundToInt()
+          .coerceAtLeast(sliderRange.first)
+
+      val maxIndex =
+        (sliderState.current + visibleSegmentCount)
+          .roundToInt()
+          .coerceAtMost(sliderRange.last)
+
       val centerPixel = constraints.maxWidth / 2f
 
       for (index in minIndex..maxIndex) {
@@ -79,50 +104,59 @@ fun SleepTimerSlider(
           segmentPixelWidth = segmentPixelWidth,
           centerPixel = centerPixel,
           barColor = colorScheme.onSurface,
-          formatIndex = { it.toLabelIcon() },
-          maxIndex = INTERNAL_CHAPTER_END,
+          formatIndex = { index.toLabelIcon() },
+          labeledIndexes = labeledIndexes,
         )
       }
     }
   }
 }
 
+private fun TimerOption?.toVisualIndex(): Int =
+  when (this) {
+    null -> VISUAL_DISABLED
+    is DurationTimerOption -> duration.coerceIn(1, INTERNAL_MAX_VALUE)
+    CurrentEpisodeTimerOption -> VISUAL_CHAPTER_END
+  }
+
+private fun Int.toOption(): TimerOption? =
+  when (this) {
+    VISUAL_DISABLED -> null
+    VISUAL_CHAPTER_END -> CurrentEpisodeTimerOption
+    else -> DurationTimerOption(this)
+  }
+
 private fun Int.toLabelText(
   libraryType: LibraryType,
   context: Context,
 ): String =
   when (this) {
-    INTERNAL_DISABLED -> context.getString(R.string.timer_option_disabled)
-    INTERNAL_CHAPTER_END ->
+    VISUAL_DISABLED -> context.getString(R.string.timer_option_disabled)
+    VISUAL_CHAPTER_END ->
       when (libraryType) {
-        LibraryType.LIBRARY -> context.getString(R.string.timer_option_after_current_chapter)
-        LibraryType.PODCAST -> context.getString(R.string.timer_option_after_current_episode)
-        LibraryType.UNKNOWN -> context.getString(R.string.timer_option_after_current_episode)
+        LIBRARY -> context.getString(R.string.timer_option_after_current_chapter)
+        PODCAST, UNKNOWN -> context.getString(R.string.timer_option_after_current_episode)
       }
+
     else -> context.resources.getQuantityString(R.plurals.timer_option_after_time, this, this)
   }
 
 private fun Int.toLabelIcon(): Any =
   when (this) {
-    INTERNAL_DISABLED -> Icons.Outlined.Close
-    INTERNAL_CHAPTER_END -> Icons.Outlined.MusicNote
+    VISUAL_DISABLED -> Icons.Outlined.Close
+    VISUAL_CHAPTER_END -> Icons.Outlined.MusicNote
     else -> this
   }
 
-private const val INTERNAL_DISABLED = 0
-private const val INTERNAL_CHAPTER_END = 61
+private const val INTERNAL_MAX_VALUE = 60
+
+private const val VISUAL_DISABLED = 0
+private const val VISUAL_CHAPTER_END = -1
+
 private const val visibleSegments = 12
 
-private fun TimerOption?.toValue(): Int =
-  when (this) {
-    null -> INTERNAL_DISABLED
-    is DurationTimerOption -> duration.coerceIn(1, 60)
-    CurrentEpisodeTimerOption -> INTERNAL_CHAPTER_END
-  }
-
-private fun Int.toOption(): TimerOption? =
-  when (this) {
-    INTERNAL_DISABLED -> null
-    INTERNAL_CHAPTER_END -> CurrentEpisodeTimerOption
-    else -> DurationTimerOption(this)
-  }
+private val labeledIndexes =
+  listOf(
+    VISUAL_CHAPTER_END,
+    VISUAL_DISABLED,
+  ) + (5..INTERNAL_MAX_VALUE step 5)

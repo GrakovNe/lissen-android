@@ -33,7 +33,7 @@ fun SpeedSliderSegment(
   centerPixel: Float,
   barColor: Color,
   formatIndex: (Int) -> Any,
-  maxIndex: Int? = null,
+  labeledIndexes: List<Int> = emptyList(),
 ) {
   val offset = (index - currentValue) * segmentPixelWidth
   val alphaValue = calculateAlpha(offset, centerPixel)
@@ -54,7 +54,13 @@ fun SpeedSliderSegment(
           .background(barColor),
     )
 
-    if (index == 0 || index % 5 == 0 || index == maxIndex) {
+    val labelRequired =
+      when (labeledIndexes.isNotEmpty()) {
+        true -> labeledIndexes.contains(index)
+        false -> index == 0 || index % 5 == 0
+      }
+
+    if (labelRequired) {
       val label = formatIndex(index)
       val fontSize = typography.bodyMedium.fontSize
       val itemHeightDp = with(LocalDensity.current) { fontSize.toDp() }
