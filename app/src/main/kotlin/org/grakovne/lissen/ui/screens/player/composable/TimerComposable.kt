@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
+import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.lib.domain.DurationTimerOption
 import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.TimerOption
@@ -50,7 +51,6 @@ fun TimerComposable(
 ) {
   val view = LocalView.current
   val context = LocalContext.current
-  var selectedOption by remember { mutableStateOf(currentOption) }
 
   ModalBottomSheet(
     containerColor = colorScheme.background,
@@ -77,7 +77,9 @@ fun TimerComposable(
             Modifier
               .fillMaxWidth()
               .padding(vertical = 16.dp),
-          onUpdate = { onOptionSelected(it) },
+          onUpdate = {
+            onOptionSelected(it)
+          },
         )
 
         Row(
@@ -88,7 +90,6 @@ fun TimerComposable(
             FilledTonalButton(
               onClick = {
                 withHaptic(view) {
-                  selectedOption = value
                   onOptionSelected(value)
                 }
               },
@@ -97,13 +98,13 @@ fun TimerComposable(
               colors =
                 ButtonDefaults.filledTonalButtonColors(
                   containerColor =
-                    if (selectedOption == value) {
+                    if (currentOption.isSame(value)) {
                       colorScheme.primary
                     } else {
                       colorScheme.surfaceContainer
                     },
                   contentColor =
-                    if (selectedOption == value) {
+                    if (currentOption.isSame(value)) {
                       colorScheme.onPrimary
                     } else {
                       colorScheme.onSurfaceVariant
@@ -124,7 +125,7 @@ fun TimerComposable(
                 Text(
                   text = value.duration.toString(),
                   style =
-                    if (selectedOption == value) {
+                    if (currentOption.isSame(value)) {
                       typography.labelMedium.copy(fontWeight = FontWeight.Bold)
                     } else {
                       typography.labelMedium
@@ -140,6 +141,13 @@ fun TimerComposable(
     },
   )
 }
+
+private fun TimerOption?.isSame(that: TimerOption?) =
+  when (this) {
+    CurrentEpisodeTimerOption -> that == CurrentEpisodeTimerOption
+    is DurationTimerOption -> that is DurationTimerOption && that.duration == this.duration
+    null -> that == null
+  }
 
 private val OptionPresets =
   listOf(
