@@ -13,9 +13,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import org.grakovne.lissen.lib.domain.DetailedItem
+import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.MediaRepository
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.BOOK_EXTRA
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.PLAYBACK_READY
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -27,6 +26,7 @@ class WidgetPlaybackController
   constructor(
     @ApplicationContext context: Context,
     private val mediaRepository: MediaRepository,
+    private val sharedPreferences: LissenSharedPreferences,
   ) {
     private var playbackReadyAction: () -> Unit = {}
 
@@ -38,7 +38,7 @@ class WidgetPlaybackController
           intent: Intent?,
         ) {
           if (intent?.action == PLAYBACK_READY) {
-            val book = intent.getSerializableExtra(BOOK_EXTRA) as? DetailedItem
+            val book = sharedPreferences.getPlayingBook()
 
             book?.let {
               CoroutineScope(Dispatchers.Main).launch {
