@@ -112,7 +112,8 @@ class PlaybackService : MediaSessionService() {
       }
 
       ACTION_SET_PLAYBACK -> {
-        val book = intent.getSerializableExtra(BOOK_EXTRA) as? DetailedItem
+        val book = sharedPreferences.getPlayingBook()
+
         book?.let {
           playerServiceScope
             .launch { preparePlayback(it) }
@@ -121,7 +122,8 @@ class PlaybackService : MediaSessionService() {
       }
 
       ACTION_SEEK_TO -> {
-        val book = intent.getSerializableExtra(BOOK_EXTRA) as? DetailedItem
+        val book = sharedPreferences.getPlayingBook()
+
         val position = intent.getDoubleExtra(POSITION, 0.0)
         book?.let { seek(it.files, position) }
         return START_NOT_STICKY
@@ -211,9 +213,7 @@ class PlaybackService : MediaSessionService() {
       awaitAll(prepareSession, prepareQueue)
 
       val intent =
-        Intent(PLAYBACK_READY).apply {
-          putExtra(BOOK_EXTRA, book)
-        }
+        Intent(PLAYBACK_READY)
 
       LocalBroadcastManager
         .getInstance(baseContext)
@@ -301,7 +301,6 @@ class PlaybackService : MediaSessionService() {
     const val ACTION_SET_TIMER = "org.grakovne.lissen.player.service.ACTION_SET_TIMER"
     const val ACTION_CANCEL_TIMER = "org.grakovne.lissen.player.service.CANCEL_TIMER"
 
-    const val BOOK_EXTRA = "org.grakovne.lissen.player.service.BOOK"
     const val TIMER_VALUE_EXTRA = "org.grakovne.lissen.player.service.TIMER_VALUE"
     const val TIMER_OPTION_EXTRA = "org.grakovne.lissen.player.service.TIMER_OPTION"
     const val TIMER_EXPIRED = "org.grakovne.lissen.player.service.TIMER_EXPIRED"

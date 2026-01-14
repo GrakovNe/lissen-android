@@ -37,7 +37,6 @@ import org.grakovne.lissen.lib.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.ACTION_SEEK_TO
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.BOOK_EXTRA
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.PLAYBACK_READY
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.POSITION
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_EXPIRED
@@ -173,16 +172,12 @@ class MediaRepository
           intent: Intent?,
         ) {
           if (intent?.action == PLAYBACK_READY) {
-            val book = intent.getSerializableExtra(BOOK_EXTRA) as? DetailedItem
+            val book = preferences.getPlayingBook()
 
             book?.let {
               CoroutineScope(Dispatchers.Main).launch {
                 updateProgress(book).await()
                 startUpdatingProgress(book)
-
-                _playingBook.postValue(it)
-                preferences.savePlayingBook(it)
-
                 _isPlaybackReady.postValue(true)
 
                 if (_playAfterPrepare.value == true) {
@@ -442,10 +437,12 @@ class MediaRepository
         _totalPosition.postValue(0.0)
         _isPlaying.postValue(false)
 
+        _playingBook.postValue(book)
+        preferences.savePlayingBook(book)
+
         val intent =
           Intent(context, PlaybackService::class.java).apply {
             action = PlaybackService.ACTION_SET_PLAYBACK
-            putExtra(BOOK_EXTRA, book)
           }
 
         when (inBackground()) {
@@ -522,8 +519,6 @@ class MediaRepository
       val intent =
         Intent(context, PlaybackService::class.java).apply {
           action = ACTION_SEEK_TO
-
-          putExtra(BOOK_EXTRA, playingBook.value)
           putExtra(POSITION, safePosition)
         }
 
