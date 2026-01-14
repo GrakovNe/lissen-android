@@ -155,7 +155,8 @@ private fun Float.toLabelText(
   }
 }
 
-private fun Int.toLabelIcon(): Any = when (this) {
+private fun Int.toLabelIcon(): Any =
+  when (this) {
     INTERNAL_DISABLED -> Icons.Outlined.Close
     INTERNAL_CHAPTER_END -> Icons.Outlined.MusicNote
     else -> this
