@@ -48,11 +48,11 @@ class SliderState(
   }
 
   companion object {
-    private const val maxSpeed = 25f
+    private const val maxSpeed = 10f
 
     private val springSpec =
       FloatSpringSpec(
-        dampingRatio = Spring.DampingRatioMediumBouncy,
+        dampingRatio = Spring.DampingRatioLowBouncy,
         stiffness = Spring.StiffnessLow,
       )
 
