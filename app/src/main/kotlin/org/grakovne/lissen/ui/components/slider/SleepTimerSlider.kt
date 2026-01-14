@@ -37,9 +37,10 @@ fun SleepTimerSlider(
   onUpdate: (TimerOption?) -> Unit,
 ) {
   val sliderRange = INTERNAL_MIN_VALUE..INTERNAL_MAX_VALUE
+  val floatRange = sliderRange.first.toFloat()..sliderRange.last.toFloat()
 
   val onValueUpdate: (Float) -> Unit = { value ->
-    onUpdate(value.toTimerOption())
+    onUpdate(value.coerceIn(floatRange).toTimerOption())
   }
 
   val sliderState =
@@ -56,15 +57,17 @@ fun SleepTimerSlider(
   }
 
   LaunchedEffect(option) {
-    sliderState.animateDecayTo(option.toInternalValue().toFloat())
+    sliderState.animateDecayTo(option.toInternalValue().toFloat().coerceIn(floatRange))
   }
+
+  val clampedCurrent = sliderState.current.coerceIn(floatRange)
 
   Column(
     modifier = modifier,
     horizontalAlignment = Alignment.CenterHorizontally,
   ) {
     Text(
-      text = sliderState.current.toLabelText(libraryType, context),
+      text = clampedCurrent.toLabelText(libraryType, context),
       style = typography.headlineSmall,
     )
 
@@ -85,12 +88,12 @@ fun SleepTimerSlider(
       val visibleSegmentCount = (visibleSegments + 1) / 2
 
       val minIndex =
-        (sliderState.current - visibleSegmentCount)
+        (clampedCurrent - visibleSegmentCount)
           .roundToInt()
           .coerceAtLeast(sliderRange.first)
 
       val maxIndex =
-        (sliderState.current + visibleSegmentCount)
+        (clampedCurrent + visibleSegmentCount)
           .roundToInt()
           .coerceAtMost(sliderRange.last)
 
@@ -99,7 +102,7 @@ fun SleepTimerSlider(
       for (index in minIndex..maxIndex) {
         SpeedSliderSegment(
           index = index,
-          currentValue = sliderState.current,
+          currentValue = clampedCurrent,
           segmentWidth = segmentWidth,
           segmentPixelWidth = segmentPixelWidth,
           centerPixel = centerPixel,
@@ -120,7 +123,8 @@ private fun TimerOption?.toInternalValue(): Int =
   }
 
 private fun Float.toTimerOption(): TimerOption? {
-  val value = roundToInt()
+  val value = roundToInt().coerceIn(INTERNAL_MIN_VALUE, INTERNAL_MAX_VALUE)
+
   return when (value) {
     INTERNAL_DISABLED -> null
     INTERNAL_CHAPTER_END -> CurrentEpisodeTimerOption
@@ -132,7 +136,8 @@ private fun Float.toLabelText(
   libraryType: LibraryType,
   context: Context,
 ): String {
-  val value = roundToInt()
+  val value = roundToInt().coerceIn(INTERNAL_MIN_VALUE, INTERNAL_MAX_VALUE)
+
   return when (value) {
     INTERNAL_DISABLED -> context.getString(R.string.timer_option_disabled)
     INTERNAL_CHAPTER_END ->
