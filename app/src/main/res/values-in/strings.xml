@@ -160,4 +160,14 @@
     <string name="settings_screen_delay_autodownload_description">Jeda singkat sebelum memulai unduhan</string>
     <string name="settings_screen_bypass_ssl_title">Nonaktifkan verifikasi SSL</string>
     <string name="settings_screen_bypass_ssl_hint">Hubungkan ke server dengan sertifikat apa pun</string>
+    <string name="settings_screen_collapse_on_fling_title">Sembunyikan antrean putar saat usap cepat</string>
+    <string name="settings_screen_collapse_on_fling_description">Usap untuk menyembunyikan daftar chapter</string>
+    <string name="settings_screen_material_you_title">Warna Material You</string>
+    <string name="settings_screen_material_you_description">Sesuaikan warna aplikasi dengan wallpaper</string>
+    <string name="timer_option_disabled">Nonaktif</string>
+    <string name="settings_screen_software_codecs_enabled_title">Paksa dekode perangkat lunak</string>
+    <string name="settings_screen_software_codecs_enabled_description">Gunakan kodek perangkat lunak untuk pemutaran audio</string>
+    <string name="restart_the_app_to_start_using_the_new_codecs_title">Mulai ulang aplikasi untuk mulai menggunakan kodek baru</string>
+    <string name="restart_the_app_to_start_using_the_new_codecs_cta">Mulai ulang</string>
+    <string name="codes_not_supported_warning_toast">Format audio tidak didukung</string>
 </resources>
