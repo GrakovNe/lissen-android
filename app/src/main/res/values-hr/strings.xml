@@ -162,4 +162,14 @@
     <string name="volume_boost_high">Visoko</string>
     <string name="download_settings_description">Definiranje preuzimanja i upravljanje sadržajem</string>
     <string name="settings_screen_advanced_preferences_description">Kontrola pretraživanja, proxy zaglavlje ili zvuk</string>
+    <string name="settings_screen_collapse_on_fling_title">Sažmi red za reprodukciju prilikom flistanja</string>
+    <string name="settings_screen_collapse_on_fling_description">Prijeđi prstom da bi sažeo popis poglavlja</string>
+    <string name="settings_screen_material_you_description">Uskladi boje aplikacije s pozadinom</string>
+    <string name="timer_option_disabled">Onemogućeno</string>
+    <string name="settings_screen_software_codecs_enabled_title">Forsiraj softversko dekodiranje</string>
+    <string name="settings_screen_software_codecs_enabled_description">Koristi softverske kodeke za reprodukciju zvuka</string>
+    <string name="restart_the_app_to_start_using_the_new_codecs_title">Ponovno pokreni aplikaciju da bi počeo koristiti nove kodeke</string>
+    <string name="restart_the_app_to_start_using_the_new_codecs_cta">Ponovno pokretanje</string>
+    <string name="codes_not_supported_warning_toast">Audio format nije podržan</string>
+    <string name="settings_screen_material_you_title">Boja aplikacije</string>
 </resources>
