@@ -144,7 +144,10 @@ private fun CompactBookmarkRow(
     horizontalArrangement = Arrangement.spacedBy(12.dp),
   ) {
     Column(
-      modifier = Modifier.weight(1f),
+      modifier =
+        Modifier
+          .weight(1f)
+          .padding(start = 16.dp),
       verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
       Text(
