@@ -48,7 +48,7 @@ fun BookmarksComposable(
         Modifier
           .fillMaxWidth()
           .padding(bottom = 16.dp)
-          .padding(horizontal = 16.dp),
+          .padding(start = 16.dp, end = 4.dp),
       horizontalAlignment = Alignment.CenterHorizontally,
     ) {
       Text(
