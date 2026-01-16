@@ -10,6 +10,7 @@ import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.content.cache.temporary.CachedBookmarkProvider
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
 import org.grakovne.lissen.lib.domain.Book
+import org.grakovne.lissen.lib.domain.Bookmark
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.Library
 import org.grakovne.lissen.lib.domain.LibraryType
@@ -30,16 +31,13 @@ class LissenMediaProvider
   @Inject
   constructor(
     private val preferences: LissenSharedPreferences,
-    private val audiobookshelfChannelProvider: AudiobookshelfChannelProvider, // the only one channel which may be extended
+    private val channelProvider: AudiobookshelfChannelProvider,
     private val localCacheRepository: LocalCacheRepository,
     private val cachedCoverProvider: CachedCoverProvider,
     private val cachedBookmarkProvider: CachedBookmarkProvider,
   ) {
-    fun dropBookmark(
-      libraryItemId: String,
-      bookmarkId: String,
-    ) {
-      cachedBookmarkProvider.dropBookmark(libraryItemId = libraryItemId, bookmarkId = bookmarkId)
+    fun dropBookmark(bookmark: Bookmark) {
+      cachedBookmarkProvider.dropBookmark(bookmark = bookmark)
     }
 
     fun createBookmark(
@@ -58,7 +56,7 @@ class LissenMediaProvider
         )
     }
 
-    fun provideBookmarks(playingItemId: String) = cachedBookmarkProvider.fetchBookmarks(playingItemId)
+    suspend fun provideBookmarks(playingItemId: String) = cachedBookmarkProvider.fetchBookmarks(playingItemId)
 
     fun provideFileUri(
       libraryItemId: String,
@@ -343,7 +341,7 @@ class LissenMediaProvider
 
     suspend fun fetchConnectionInfo() = providePreferredChannel().fetchConnectionInfo()
 
-    fun provideAuthService(): ChannelAuthService = audiobookshelfChannelProvider.provideChannelAuth()
+    fun provideAuthService(): ChannelAuthService = channelProvider.provideChannelAuth()
 
-    fun providePreferredChannel(): MediaChannel = audiobookshelfChannelProvider.provideMediaChannel()
+    fun providePreferredChannel(): MediaChannel = channelProvider.provideMediaChannel()
   }

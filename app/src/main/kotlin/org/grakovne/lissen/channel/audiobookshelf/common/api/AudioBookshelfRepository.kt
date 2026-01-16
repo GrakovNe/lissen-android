@@ -4,6 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okio.Buffer
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarksResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.connection.ConnectionInfoResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.AuthorItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryResponse
@@ -116,6 +117,12 @@ class AudioBookshelfRepository
           itemId = itemId,
         )
       }
+
+    suspend fun fetchBookmarks(): OperationResult<BookmarksResponse> =
+      audioBookShelfApiService
+        .makeRequest {
+          it.fetchBookmarks()
+        }
 
     suspend fun fetchConnectionInfo(): OperationResult<ConnectionInfoResponse> =
       audioBookShelfApiService.makeRequest {

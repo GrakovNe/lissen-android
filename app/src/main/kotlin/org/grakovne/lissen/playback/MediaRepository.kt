@@ -24,6 +24,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -61,6 +62,8 @@ class MediaRepository
     private val mediaChannel: LissenMediaProvider,
   ) {
     private lateinit var mediaController: MediaController
+
+    private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     private val token =
       SessionToken(
@@ -117,7 +120,11 @@ class MediaRepository
 
     private val _bookmarks =
       MediatorLiveData<List<Bookmark>>().apply {
-        addSource(playingBook) { updateBookmarks() }
+        addSource(playingBook) {
+          repositoryScope.launch {
+            updateBookmarks()
+          }
+        }
       }
 
     val bookmarks: LiveData<List<Bookmark>> = _bookmarks
@@ -569,7 +576,7 @@ class MediaRepository
       )
     }
 
-    fun createBookmark() {
+    suspend fun createBookmark() {
       val playingBook = _playingBook.value ?: return
       val chapterPosition = _currentChapterPosition.value ?: return
       val totalPosition = _totalPosition.value ?: return
@@ -584,23 +591,22 @@ class MediaRepository
       updateBookmarks()
     }
 
-    fun dropBookmark(bookmarkId: String) {
-      val playingBook = _playingBook.value ?: return
-
+    suspend fun dropBookmark(bookmark: Bookmark) {
       mediaChannel
         .dropBookmark(
-          libraryItemId = playingBook.id,
-          bookmarkId = bookmarkId,
+          bookmark = bookmark,
         )
 
       updateBookmarks()
     }
 
-    private fun updateBookmarks() {
+    private suspend fun updateBookmarks() {
       val book = playingBook.value ?: return
-
-      val bookmarks = mediaChannel.provideBookmarks(book.id)
-      _bookmarks.postValue(bookmarks)
+      val bookmarks =
+        withContext(Dispatchers.IO) {
+          mediaChannel.provideBookmarks(book.id)
+        }
+      _bookmarks.value = bookmarks
     }
 
     private companion object {

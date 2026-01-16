@@ -4,6 +4,8 @@ import android.net.Uri
 import okio.Buffer
 import org.grakovne.lissen.channel.audiobookshelf.Host
 import org.grakovne.lissen.lib.domain.Book
+import org.grakovne.lissen.lib.domain.Bookmark
+import org.grakovne.lissen.lib.domain.CreateBookmarkRequest
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.Library
 import org.grakovne.lissen.lib.domain.LibraryType
@@ -58,4 +60,10 @@ interface MediaChannel {
   suspend fun fetchRecentListenedBooks(libraryId: String): OperationResult<List<RecentBook>>
 
   suspend fun fetchBook(bookId: String): OperationResult<DetailedItem>
+
+  suspend fun fetchBookmarks(libraryItemId: String): OperationResult<List<Bookmark>>
+
+//  suspend fun dropBookmark(bookmarkId: String): OperationResult<Unit>
+//
+//  suspend fun createBookmark(request: CreateBookmarkRequest): OperationResult<Unit>
 }

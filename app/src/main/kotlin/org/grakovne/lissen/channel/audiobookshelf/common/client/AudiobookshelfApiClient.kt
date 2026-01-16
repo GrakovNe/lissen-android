@@ -2,6 +2,7 @@ package org.grakovne.lissen.channel.audiobookshelf.common.client
 
 import okhttp3.ResponseBody
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarksResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.connection.ConnectionInfoResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.AuthorItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryResponse
@@ -44,6 +45,9 @@ interface AudiobookshelfApiClient {
 
   @POST("/api/authorize")
   suspend fun fetchConnectionInfo(): Response<ConnectionInfoResponse>
+
+  @POST("/api/authorize")
+  suspend fun fetchBookmarks(): Response<BookmarksResponse>
 
   @GET("/api/me")
   suspend fun fetchUserInfo(): Response<UserResponse>

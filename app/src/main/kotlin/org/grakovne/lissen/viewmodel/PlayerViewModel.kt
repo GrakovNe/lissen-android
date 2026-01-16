@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import org.grakovne.lissen.lib.domain.Bookmark
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.PlayingChapter
 import org.grakovne.lissen.lib.domain.TimerOption
@@ -53,11 +54,15 @@ class PlayerViewModel
     val bookmarks = mediaRepository.bookmarks
 
     fun createBookmark() {
-      mediaRepository.createBookmark()
+      viewModelScope.launch {
+        mediaRepository.createBookmark()
+      }
     }
 
-    fun dropBookmark(bookmarkId: String) {
-      mediaRepository.dropBookmark(bookmarkId = bookmarkId)
+    fun dropBookmark(bookmark: Bookmark) {
+      viewModelScope.launch {
+        mediaRepository.dropBookmark(bookmark = bookmark)
+      }
     }
 
     fun recoverMiniPlayer() {
