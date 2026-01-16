@@ -23,21 +23,22 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.ui.extensions.formatTime
+import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookmarksComposable(
-  onRequestedCreate: () -> Unit,
-  onRequestedOpen: (Bookmark) -> Unit,
-  onRequestedDelete: (Bookmark) -> Unit,
+  playerViewModel: PlayerViewModel,
   onDismissRequest: () -> Unit,
 ) {
-  val bookmarks = StubBookmarks
+  val bookmarks by playerViewModel.bookmarks.observeAsState(emptyList())
 
   ModalBottomSheet(
     containerColor = colorScheme.background,
@@ -71,8 +72,7 @@ fun BookmarksComposable(
             trailing = {
               IconButton(
                 onClick = {
-                  onRequestedCreate()
-                  onDismissRequest()
+                  // onDismissRequest()
                 },
               ) {
                 Icon(
@@ -83,8 +83,7 @@ fun BookmarksComposable(
               }
             },
             onClick = {
-              onRequestedCreate()
-              onDismissRequest()
+              // onDismissRequest()
             },
           )
           HorizontalDivider()
@@ -93,14 +92,13 @@ fun BookmarksComposable(
         itemsIndexed(bookmarks) { index, item ->
           CompactBookmarkRow(
             title = item.title,
-            timeText = item.position.formatTime(true),
+            timeText = item.time.formatTime(true),
             titleColor = colorScheme.onBackground,
             timeColor = colorScheme.onBackground.copy(alpha = 0.6f),
             trailing = {
               IconButton(
                 onClick = {
-                  onRequestedDelete(item)
-                  onDismissRequest()
+                  //
                 },
               ) {
                 Icon(
@@ -111,8 +109,7 @@ fun BookmarksComposable(
               }
             },
             onClick = {
-              onRequestedOpen(item)
-              onDismissRequest()
+              //
             },
           )
 
@@ -169,17 +166,3 @@ private fun CompactBookmarkRow(
     trailing()
   }
 }
-
-data class Bookmark(
-  val id: String,
-  val title: String,
-  val position: Int,
-)
-
-private val StubBookmarks =
-  listOf(
-    Bookmark(id = "b1", title = "Глава 3 — важный момент", position = 1_005),
-    Bookmark(id = "b2", title = "Место про персонажа", position = 3_742),
-    Bookmark(id = "b3", title = "Начало главы 7", position = 12_345),
-    Bookmark(id = "b4", title = "Цитата", position = 65_432),
-  )

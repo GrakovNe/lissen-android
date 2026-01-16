@@ -7,8 +7,10 @@ import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
+import org.grakovne.lissen.content.cache.temporary.CachedBookmarkProvider
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
 import org.grakovne.lissen.lib.domain.Book
+import org.grakovne.lissen.lib.domain.Bookmark
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.Library
 import org.grakovne.lissen.lib.domain.LibraryType
@@ -31,7 +33,10 @@ class LissenMediaProvider
     private val audiobookshelfChannelProvider: AudiobookshelfChannelProvider, // the only one channel which may be extended
     private val localCacheRepository: LocalCacheRepository,
     private val cachedCoverProvider: CachedCoverProvider,
+    private val cachedBookmarkProvider: CachedBookmarkProvider,
   ) {
+    fun provideBookmarks(playingItemId: String) = cachedBookmarkProvider.fetchBookmarks(playingItemId)
+
     fun provideFileUri(
       libraryItemId: String,
       chapterId: String,

@@ -1,5 +1,6 @@
 package org.grakovne.lissen.playback
 
+import android.R
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
@@ -29,6 +30,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.LissenMediaProvider
+import org.grakovne.lissen.lib.domain.Bookmark
 import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.DurationTimerOption
@@ -113,6 +115,13 @@ class MediaRepository
         addSource(totalPosition) { updateCurrentTrackData() }
         addSource(playingBook) { updateCurrentTrackData() }
       }
+
+    private val _bookmarks =
+      MediatorLiveData<List<Bookmark>>().apply {
+        addSource(playingBook) { updateBookmarks() }
+      }
+
+    val bookmarks: LiveData<List<Bookmark>> = _bookmarks
 
     val currentChapterDuration: LiveData<Double> = _currentChapterDuration
 
@@ -555,6 +564,13 @@ class MediaRepository
           ?.duration
           ?: 0.0,
       )
+    }
+
+    private fun updateBookmarks() {
+      val book = playingBook.value ?: return
+
+      val bookmarks = mediaChannel.provideBookmarks(book.id)
+      _bookmarks.postValue(bookmarks)
     }
 
     private companion object {

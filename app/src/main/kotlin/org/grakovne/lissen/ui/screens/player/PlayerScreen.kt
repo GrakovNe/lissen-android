@@ -314,9 +314,7 @@ fun PlayerScreen(
 
   if (bookmarksSelected) {
     BookmarksComposable(
-      onRequestedCreate = {},
-      onRequestedOpen = {},
-      onRequestedDelete = {},
+      playerViewModel = playerViewModel,
       onDismissRequest = { bookmarksSelected = false },
     )
   }
