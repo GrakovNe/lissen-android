@@ -52,6 +52,10 @@ class PlayerViewModel
 
     val bookmarks = mediaRepository.bookmarks
 
+    fun createBookmark() {
+      mediaRepository.createBookmark()
+    }
+
     fun recoverMiniPlayer() {
       val playingBook = preferences.getPlayingBook()
 

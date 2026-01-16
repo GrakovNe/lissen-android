@@ -71,9 +71,7 @@ fun BookmarksComposable(
             timeColor = colorScheme.onBackground.copy(alpha = 0.6f),
             trailing = {
               IconButton(
-                onClick = {
-                  // onDismissRequest()
-                },
+                onClick = { playerViewModel.createBookmark() },
               ) {
                 Icon(
                   imageVector = Icons.Outlined.BookmarkAdd,
@@ -81,9 +79,6 @@ fun BookmarksComposable(
                   tint = colorScheme.primary,
                 )
               }
-            },
-            onClick = {
-              // onDismissRequest()
             },
           )
           HorizontalDivider()
@@ -97,9 +92,7 @@ fun BookmarksComposable(
             timeColor = colorScheme.onBackground.copy(alpha = 0.6f),
             trailing = {
               IconButton(
-                onClick = {
-                  //
-                },
+                onClick = {},
               ) {
                 Icon(
                   imageVector = Icons.Outlined.DeleteOutline,
@@ -107,9 +100,6 @@ fun BookmarksComposable(
                   tint = colorScheme.error,
                 )
               }
-            },
-            onClick = {
-              //
             },
           )
 
@@ -129,13 +119,12 @@ private fun BookmarkRow(
   titleColor: androidx.compose.ui.graphics.Color,
   timeColor: androidx.compose.ui.graphics.Color,
   trailing: @Composable () -> Unit,
-  onClick: () -> Unit,
+  onClick: () -> Unit = { },
 ) {
   Row(
     modifier =
       Modifier
         .fillMaxWidth()
-        .clickable(onClick = onClick)
         .padding(vertical = 4.dp),
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -143,6 +132,7 @@ private fun BookmarkRow(
     Column(
       modifier =
         Modifier
+          .clickable { onClick() }
           .weight(1f)
           .padding(start = 16.dp),
       verticalArrangement = Arrangement.spacedBy(2.dp),
