@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -52,6 +53,7 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.ui.icons.Search
 import org.grakovne.lissen.ui.navigation.AppNavigationService
+import org.grakovne.lissen.ui.screens.player.composable.BookmarksComposable
 import org.grakovne.lissen.ui.screens.player.composable.MediaDetailComposable
 import org.grakovne.lissen.ui.screens.player.composable.NavigationBarComposable
 import org.grakovne.lissen.ui.screens.player.composable.PlayingQueueComposable
@@ -93,6 +95,7 @@ fun PlayerScreen(
   val searchRequested by playerViewModel.searchRequested.observeAsState(false)
 
   var itemDetailsSelected by remember { mutableStateOf(false) }
+  var bookmarksSelected by remember { mutableStateOf(false) }
 
   val screenTitle =
     when (playingQueueExpanded) {
@@ -170,6 +173,16 @@ fun PlayerScreen(
             }
           } else {
             Row {
+              IconButton(
+                onClick = { bookmarksSelected = true },
+                modifier = Modifier.padding(end = 4.dp),
+              ) {
+                Icon(
+                  imageVector = Icons.Outlined.Bookmarks,
+                  contentDescription = null,
+                )
+              }
+
               IconButton(
                 onClick = { itemDetailsSelected = true },
                 modifier = Modifier.padding(end = 4.dp),
@@ -296,6 +309,15 @@ fun PlayerScreen(
       playingViewModel = playerViewModel,
       settingsViewModel = settingsViewModel,
       onDismissRequest = { itemDetailsSelected = false },
+    )
+  }
+
+  if (bookmarksSelected) {
+    BookmarksComposable(
+      onRequestedCreate = {},
+      onRequestedOpen = {},
+      onRequestedDelete = {},
+      onDismissRequest = { bookmarksSelected = false },
     )
   }
 }
