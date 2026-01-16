@@ -566,6 +566,21 @@ class MediaRepository
       )
     }
 
+    fun createBookmark() {
+      val playingBook = _playingBook.value ?: return
+      val chapterPosition = _currentChapterPosition.value ?: return
+      val totalPosition = _totalPosition.value ?: return
+
+      mediaChannel
+        .createBookmark(
+          libraryItemId = playingBook.id,
+          chapterPosition = chapterPosition,
+          totalPosition = totalPosition,
+        )
+
+      updateBookmarks()
+    }
+
     private fun updateBookmarks() {
       val book = playingBook.value ?: return
 

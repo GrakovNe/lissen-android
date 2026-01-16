@@ -10,7 +10,6 @@ import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.content.cache.temporary.CachedBookmarkProvider
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
 import org.grakovne.lissen.lib.domain.Book
-import org.grakovne.lissen.lib.domain.Bookmark
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.Library
 import org.grakovne.lissen.lib.domain.LibraryType
@@ -20,6 +19,7 @@ import org.grakovne.lissen.lib.domain.PlaybackSession
 import org.grakovne.lissen.lib.domain.RecentBook
 import org.grakovne.lissen.lib.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.playback.service.calculateChapterIndex
 import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
@@ -35,6 +35,22 @@ class LissenMediaProvider
     private val cachedCoverProvider: CachedCoverProvider,
     private val cachedBookmarkProvider: CachedBookmarkProvider,
   ) {
+    fun createBookmark(
+      libraryItemId: String,
+      chapterPosition: Double,
+      totalPosition: Double,
+    ) {
+      val playingItem = preferences.getPlayingBook() ?: return
+
+      cachedBookmarkProvider
+        .createBookmark(
+          chapterTime = chapterPosition,
+          libraryItemId = libraryItemId,
+          totalTime = totalPosition,
+          currentChapter = playingItem.chapters[calculateChapterIndex(playingItem, totalPosition)].title,
+        )
+    }
+
     fun provideBookmarks(playingItemId: String) = cachedBookmarkProvider.fetchBookmarks(playingItemId)
 
     fun provideFileUri(

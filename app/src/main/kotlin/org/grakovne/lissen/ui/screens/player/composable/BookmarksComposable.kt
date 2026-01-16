@@ -64,7 +64,7 @@ fun BookmarksComposable(
         contentPadding = PaddingValues(vertical = 4.dp),
       ) {
         item {
-          CompactBookmarkRow(
+          BookmarkRow(
             title = "Создать закладку",
             timeText = "Текущая позиция",
             titleColor = colorScheme.primary,
@@ -90,9 +90,9 @@ fun BookmarksComposable(
         }
 
         itemsIndexed(bookmarks) { index, item ->
-          CompactBookmarkRow(
+          BookmarkRow(
             title = item.title,
-            timeText = item.time.formatTime(true),
+            timeText = item.totalPosition.toInt().formatTime(true),
             titleColor = colorScheme.onBackground,
             timeColor = colorScheme.onBackground.copy(alpha = 0.6f),
             trailing = {
@@ -123,7 +123,7 @@ fun BookmarksComposable(
 }
 
 @Composable
-private fun CompactBookmarkRow(
+private fun BookmarkRow(
   title: String,
   timeText: String,
   titleColor: androidx.compose.ui.graphics.Color,

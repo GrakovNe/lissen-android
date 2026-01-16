@@ -1,10 +1,7 @@
 package org.grakovne.lissen.lib.domain
 
-
-data class Bookmark(
-	val id: String,
+data class CreateBookmarkRequest (
 	val libraryItemId: String,
 	val title: String,
-	val totalPosition: Double,
-	val createdAt: Long
+	val time: Int,
 )

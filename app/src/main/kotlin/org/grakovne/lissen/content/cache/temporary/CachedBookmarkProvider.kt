@@ -9,15 +9,14 @@ class CachedBookmarkProvider
   @Inject
   constructor() {
     private val _memCache = mutableMapOf<String, List<Bookmark>>()
-    val bookmarks: Map<String, List<Bookmark>> = _memCache
 
     fun fetchBookmarks(libraryItemId: String): List<Bookmark> {
       val bookmark =
         Bookmark(
-          id = libraryItemId,
+          id = "testId",
           title = "Test bookmark",
           createdAt = 123,
-          time = 12356,
+          totalPosition = 12356.0,
           libraryItemId = libraryItemId,
         )
 
@@ -30,12 +29,28 @@ class CachedBookmarkProvider
     }
 
     fun createBookmark(
+      chapterTime: Double,
+      totalTime: Double,
       libraryItemId: String,
-      bookmark: Bookmark,
+      currentChapter: String,
     ) {
+      val bookmark =
+        Bookmark(
+          id = "testId",
+          title = buildTitle(currentChapter, chapterTime),
+          createdAt = 123,
+          totalPosition = totalTime,
+          libraryItemId = libraryItemId,
+        )
+
       val updated = _memCache[libraryItemId].orEmpty() + bookmark
       _memCache[libraryItemId] = updated
     }
+
+    private fun buildTitle(
+      currentChapter: String,
+      time: Double,
+    ): String = "$currentChapter - ${time.toInt()}"
 
     fun removeBookmark(
       libraryItemId: String,
