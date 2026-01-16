@@ -27,8 +27,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import org.grakovne.lissen.R
+import org.grakovne.lissen.common.buildBookmarkTitle
 import org.grakovne.lissen.ui.extensions.formatTime
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
@@ -38,6 +41,9 @@ fun BookmarksComposable(
   playerViewModel: PlayerViewModel,
   onDismissRequest: () -> Unit,
 ) {
+  val currentPlayingItem by playerViewModel.book.observeAsState()
+  val currentPosition by playerViewModel.currentChapterPosition.observeAsState()
+  val currentTrackIndex by playerViewModel.currentChapterIndex.observeAsState(0)
   val bookmarks by playerViewModel.bookmarks.observeAsState(emptyList())
 
   ModalBottomSheet(
@@ -64,9 +70,18 @@ fun BookmarksComposable(
         contentPadding = PaddingValues(vertical = 4.dp),
       ) {
         item {
+          val currentChapterTitle =
+            currentPlayingItem
+              ?.chapters
+              ?.get(currentTrackIndex)
+              ?.title
+              ?: return@item
+
+          val position = currentPosition ?: return@item
+
           BookmarkRow(
-            title = "Создать закладку",
-            timeText = "Текущая позиция",
+            title = stringResource(R.string.bookmarks_create_bookmark),
+            timeText = buildBookmarkTitle(currentChapterTitle = currentChapterTitle, currentChapterPosition = position),
             titleColor = colorScheme.primary,
             timeColor = colorScheme.onBackground.copy(alpha = 0.6f),
             trailing = {
@@ -90,6 +105,7 @@ fun BookmarksComposable(
             timeText = item.totalPosition.toInt().formatTime(true),
             titleColor = colorScheme.onBackground,
             timeColor = colorScheme.onBackground.copy(alpha = 0.6f),
+            onClick = { playerViewModel.setTotalPosition(item.totalPosition) },
             trailing = {
               IconButton(
                 onClick = { playerViewModel.dropBookmark(item.id) },

@@ -291,6 +291,10 @@ class MediaRepository
       preferences.savePlayingBook(null)
     }
 
+    fun setTotalPosition(totalPosition: Double) {
+      seekTo(totalPosition)
+    }
+
     fun setChapterPosition(chapterPosition: Double) {
       val book = playingBook.value ?: return
       val overallPosition = totalPosition.value ?: return

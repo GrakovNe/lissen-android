@@ -118,6 +118,10 @@ class PlayerViewModel
       mediaRepository.setChapterPosition(chapterPosition)
     }
 
+    fun setTotalPosition(totalPosition: Double) {
+      mediaRepository.setTotalPosition(totalPosition)
+    }
+
     fun setChapter(chapter: PlayingChapter) {
       if (chapter.available) {
         val index = book.value?.chapters?.indexOf(chapter) ?: -1

@@ -2,8 +2,8 @@ package org.grakovne.lissen.content.cache.temporary
 
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import org.grakovne.lissen.common.buildBookmarkTitle
 import org.grakovne.lissen.lib.domain.Bookmark
-import org.grakovne.lissen.ui.extensions.formatTime
 
 @Singleton
 class CachedBookmarkProvider
@@ -29,7 +29,7 @@ class CachedBookmarkProvider
       val bookmark =
         Bookmark(
           id = "testId",
-          title = buildTitle(currentChapter, chapterTime),
+          title = buildBookmarkTitle(currentChapter, chapterTime),
           createdAt = 123,
           totalPosition = totalTime,
           libraryItemId = libraryItemId,
@@ -38,11 +38,6 @@ class CachedBookmarkProvider
       val updated = listOf(bookmark) + _memCache[libraryItemId].orEmpty()
       _memCache[libraryItemId] = updated
     }
-
-    private fun buildTitle(
-      currentChapter: String,
-      time: Double,
-    ): String = "$currentChapter - ${time.toInt().formatTime()}"
 
     fun dropBookmark(
       libraryItemId: String,
