@@ -92,7 +92,7 @@ fun BookmarksComposable(
             timeColor = colorScheme.onBackground.copy(alpha = 0.6f),
             trailing = {
               IconButton(
-                onClick = {},
+                onClick = { playerViewModel.dropBookmark(item.id) },
               ) {
                 Icon(
                   imageVector = Icons.Outlined.DeleteOutline,

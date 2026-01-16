@@ -35,6 +35,13 @@ class LissenMediaProvider
     private val cachedCoverProvider: CachedCoverProvider,
     private val cachedBookmarkProvider: CachedBookmarkProvider,
   ) {
+    fun dropBookmark(
+      libraryItemId: String,
+      bookmarkId: String,
+    ) {
+      cachedBookmarkProvider.dropBookmark(libraryItemId = libraryItemId, bookmarkId = bookmarkId)
+    }
+
     fun createBookmark(
       libraryItemId: String,
       chapterPosition: Double,

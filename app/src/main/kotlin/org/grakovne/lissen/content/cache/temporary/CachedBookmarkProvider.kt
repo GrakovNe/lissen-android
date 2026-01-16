@@ -44,7 +44,7 @@ class CachedBookmarkProvider
       time: Double,
     ): String = "$currentChapter - ${time.toInt().formatTime()}"
 
-    fun removeBookmark(
+    fun dropBookmark(
       libraryItemId: String,
       bookmarkId: String,
     ) {

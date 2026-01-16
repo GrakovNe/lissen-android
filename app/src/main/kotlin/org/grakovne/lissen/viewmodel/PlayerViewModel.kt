@@ -56,6 +56,10 @@ class PlayerViewModel
       mediaRepository.createBookmark()
     }
 
+    fun dropBookmark(bookmarkId: String) {
+      mediaRepository.dropBookmark(bookmarkId = bookmarkId)
+    }
+
     fun recoverMiniPlayer() {
       val playingBook = preferences.getPlayingBook()
 

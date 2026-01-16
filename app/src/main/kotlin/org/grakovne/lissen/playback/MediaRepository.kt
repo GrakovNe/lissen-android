@@ -1,6 +1,5 @@
 package org.grakovne.lissen.playback
 
-import android.R
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
@@ -576,6 +575,18 @@ class MediaRepository
           libraryItemId = playingBook.id,
           chapterPosition = chapterPosition,
           totalPosition = totalPosition,
+        )
+
+      updateBookmarks()
+    }
+
+    fun dropBookmark(bookmarkId: String) {
+      val playingBook = _playingBook.value ?: return
+
+      mediaChannel
+        .dropBookmark(
+          libraryItemId = playingBook.id,
+          bookmarkId = bookmarkId,
         )
 
       updateBookmarks()
