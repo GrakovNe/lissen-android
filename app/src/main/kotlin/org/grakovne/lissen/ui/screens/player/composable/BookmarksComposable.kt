@@ -1,6 +1,9 @@
 package org.grakovne.lissen.ui.screens.player.composable
 
+import android.view.View
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -25,13 +28,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.buildBookmarkTitle
+import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.ui.extensions.formatTime
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
@@ -96,7 +103,10 @@ fun BookmarksComposable(
               }
             },
           )
-          HorizontalDivider()
+
+          if (bookmarks.isNotEmpty()) {
+            HorizontalDivider()
+          }
         }
 
         itemsIndexed(bookmarks) { index, item ->
@@ -132,23 +142,32 @@ fun BookmarksComposable(
 private fun BookmarkRow(
   title: String,
   timeText: String,
-  titleColor: androidx.compose.ui.graphics.Color,
-  timeColor: androidx.compose.ui.graphics.Color,
+  titleColor: Color,
+  timeColor: Color,
   trailing: @Composable () -> Unit,
-  onClick: () -> Unit = { },
+  onClick: (() -> Unit)? = null,
 ) {
+  val view: View = LocalView.current
+  val enabled = onClick != null
+  val interactionSource = remember { MutableInteractionSource() }
+  val indication = if (enabled) LocalIndication.current else null
+
   Row(
     modifier =
       Modifier
         .fillMaxWidth()
-        .padding(vertical = 4.dp),
+        .padding(vertical = 4.dp)
+        .clickable(
+          enabled = enabled,
+          interactionSource = interactionSource,
+          indication = indication,
+        ) { onClick?.let { withHaptic(view = view) { it.invoke() } } },
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.spacedBy(12.dp),
   ) {
     Column(
       modifier =
         Modifier
-          .clickable { onClick() }
           .weight(1f)
           .padding(start = 16.dp),
       verticalArrangement = Arrangement.spacedBy(2.dp),
