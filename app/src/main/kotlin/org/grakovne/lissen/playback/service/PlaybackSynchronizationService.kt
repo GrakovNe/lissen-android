@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.content.LissenMediaProvider
+import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.PlaybackProgress
 import org.grakovne.lissen.lib.domain.PlaybackSession
@@ -25,6 +26,7 @@ class PlaybackSynchronizationService
   constructor(
     private val exoPlayer: ExoPlayer,
     private val mediaChannel: LissenMediaProvider,
+    private val localCacheRepository: LocalCacheRepository,
     private val sharedPreferences: LissenSharedPreferences,
   ) {
     private var currentItem: DetailedItem? = null
@@ -91,8 +93,19 @@ class PlaybackSynchronizationService
     private fun runSync() {
       val elapsedMs = exoPlayer.currentPosition
       val overallProgress = getProgress(elapsedMs) ?: return
+      val bookId = currentItem?.id ?: return
 
       Timber.d("Trying to sync $overallProgress for ${currentItem?.id}")
+
+      // Save locally first always.
+      serviceScope.launch(Dispatchers.IO) {
+        localCacheRepository
+          .syncProgress(bookId, overallProgress)
+          .fold(
+            onSuccess = { Timber.d("Local progress saved.") },
+            onFailure = { Timber.d("Local progress save failed: $it") },
+          )
+      }
 
       serviceScope.launch(Dispatchers.IO) {
         if (syncMutex.tryLock().not()) {
