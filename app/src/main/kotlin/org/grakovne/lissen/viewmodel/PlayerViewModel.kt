@@ -65,6 +65,10 @@ class PlayerViewModel
       }
     }
 
+    fun updateBookmarks() {
+      viewModelScope.launch { mediaRepository.updateBookmarks() }
+    }
+
     fun recoverMiniPlayer() {
       val playingBook = preferences.getPlayingBook()
 

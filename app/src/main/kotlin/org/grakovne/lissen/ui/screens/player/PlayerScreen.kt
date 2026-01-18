@@ -138,6 +138,10 @@ fun PlayerScreen(
     }
   }
 
+  LaunchedEffect(playingBook) {
+    playerViewModel.updateBookmarks()
+  }
+
   Scaffold(
     topBar = {
       TopAppBar(

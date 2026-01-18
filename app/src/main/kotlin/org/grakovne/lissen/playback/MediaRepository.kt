@@ -118,15 +118,7 @@ class MediaRepository
         addSource(playingBook) { updateCurrentTrackData() }
       }
 
-    private val _bookmarks =
-      MediatorLiveData<List<Bookmark>>().apply {
-        addSource(playingBook) {
-          repositoryScope.launch {
-            updateBookmarks()
-          }
-        }
-      }
-
+    private val _bookmarks = MutableLiveData<List<Bookmark>>()
     val bookmarks: LiveData<List<Bookmark>> = _bookmarks
 
     val currentChapterDuration: LiveData<Double> = _currentChapterDuration
@@ -600,7 +592,7 @@ class MediaRepository
       updateBookmarks()
     }
 
-    private suspend fun updateBookmarks() {
+    suspend fun updateBookmarks() {
       val book = playingBook.value ?: return
       val bookmarks =
         withContext(Dispatchers.IO) {

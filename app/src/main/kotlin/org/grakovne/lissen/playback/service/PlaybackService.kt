@@ -202,7 +202,6 @@ class PlaybackService : MediaSessionService() {
             exoPlayer.prepare()
 
             setPlaybackProgress(book.files, book.progress)
-            prepareBookmarks(book.id)
           }
         }
 
@@ -293,10 +292,6 @@ class PlaybackService : MediaSessionService() {
     chapters: List<BookFile>,
     progress: MediaProgress?,
   ) = seek(chapters, progress?.currentTime)
-
-  private suspend fun prepareBookmarks(libraryItemId: String) {
-    channelProvider.provideBookmarks(libraryItemId)
-  }
 
   companion object {
     const val ACTION_PLAY = "org.grakovne.lissen.player.service.PLAY"
