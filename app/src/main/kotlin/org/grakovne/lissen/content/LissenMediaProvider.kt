@@ -19,6 +19,7 @@ import org.grakovne.lissen.lib.domain.PlaybackProgress
 import org.grakovne.lissen.lib.domain.PlaybackSession
 import org.grakovne.lissen.lib.domain.RecentBook
 import org.grakovne.lissen.lib.domain.UserAccount
+import org.grakovne.lissen.lib.domain.isSame
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import timber.log.Timber
@@ -54,7 +55,11 @@ class LissenMediaProvider
         )
     }
 
-    fun provideBookmarks(playingItemId: String) = cachedBookmarkProvider.provideBookmarks(playingItemId)
+    fun provideBookmarks(playingItemId: String): List<Bookmark> =
+      cachedBookmarkProvider
+        .provideBookmarks(playingItemId)
+        .sortedByDescending { it.createdAt }
+        .fold(emptyList()) { acc, b -> if (acc.any { it.isSame(b) }) acc else acc + b }
 
     suspend fun fetchBookmarks(playingItemId: String) = cachedBookmarkProvider.fetchBookmarks(playingItemId)
 

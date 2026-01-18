@@ -49,12 +49,12 @@ fun BookmarksComposable(
   onDismissRequest: () -> Unit,
 ) {
   val view: View = LocalView.current
-  
+
   val currentPlayingItem by playerViewModel.book.observeAsState()
   val currentPosition by playerViewModel.currentChapterPosition.observeAsState()
   val currentTrackIndex by playerViewModel.currentChapterIndex.observeAsState(0)
   val bookmarks by playerViewModel.bookmarks.observeAsState(emptyList())
-  
+
   ModalBottomSheet(
     containerColor = colorScheme.background,
     onDismissRequest = onDismissRequest,
@@ -71,9 +71,9 @@ fun BookmarksComposable(
         text = "Закладки",
         style = typography.bodyLarge,
       )
-      
+
       Spacer(modifier = Modifier.height(8.dp))
-      
+
       LazyColumn(
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(vertical = 4.dp),
@@ -85,9 +85,9 @@ fun BookmarksComposable(
               ?.get(currentTrackIndex)
               ?.title
               ?: return@item
-          
+
           val position = currentPosition ?: return@item
-          
+
           BookmarkRow(
             title = stringResource(R.string.bookmarks_create_bookmark),
             timeText = buildBookmarkTitle(currentChapterTitle = currentChapterTitle, currentChapterPosition = position),
@@ -105,12 +105,12 @@ fun BookmarksComposable(
               }
             },
           )
-          
+
           if (bookmarks.isNotEmpty()) {
             HorizontalDivider()
           }
         }
-        
+
         itemsIndexed(bookmarks) { index, item ->
           BookmarkRow(
             title = item.title,
@@ -130,7 +130,7 @@ fun BookmarksComposable(
               }
             },
           )
-          
+
           if (index < bookmarks.size - 1) {
             HorizontalDivider()
           }
@@ -153,7 +153,7 @@ private fun BookmarkRow(
   val enabled = onClick != null
   val interactionSource = remember { MutableInteractionSource() }
   val indication = if (enabled) LocalIndication.current else null
-  
+
   Row(
     modifier =
       Modifier
@@ -189,7 +189,7 @@ private fun BookmarkRow(
         overflow = TextOverflow.Ellipsis,
       )
     }
-    
+
     trailing()
   }
 }
