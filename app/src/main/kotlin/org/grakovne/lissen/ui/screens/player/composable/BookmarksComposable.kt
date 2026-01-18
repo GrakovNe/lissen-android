@@ -117,7 +117,7 @@ fun BookmarksComposable(
             timeText = item.totalPosition.toInt().formatTime(true),
             titleColor = colorScheme.onBackground,
             timeColor = colorScheme.onBackground.copy(alpha = 0.6f),
-            onClick = { playerViewModel.setTotalPosition(item.totalPosition.toDouble()) },
+            onClick = { playerViewModel.setTotalPosition(item.totalPosition) },
             trailing = {
               IconButton(
                 onClick = { withHaptic(view) { playerViewModel.dropBookmark(item) } },
