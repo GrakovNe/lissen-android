@@ -1,6 +1,9 @@
 package org.grakovne.lissen.content
 
 import android.net.Uri
+import androidx.annotation.OptIn
+import androidx.media3.common.util.UnstableApi
+import dagger.Lazy
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfChannelProvider
 import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.MediaChannel
@@ -19,6 +22,7 @@ import org.grakovne.lissen.lib.domain.PlaybackSession
 import org.grakovne.lissen.lib.domain.RecentBook
 import org.grakovne.lissen.lib.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.playback.MediaRepository
 import org.grakovne.lissen.playback.service.calculateChapterPosition
 import timber.log.Timber
 import java.io.File
@@ -27,6 +31,7 @@ import javax.inject.Singleton
 
 @Singleton
 class LissenMediaProvider
+  @OptIn(UnstableApi::class)
   @Inject
   constructor(
     private val preferences: LissenSharedPreferences,
@@ -34,6 +39,7 @@ class LissenMediaProvider
     private val localCacheRepository: LocalCacheRepository,
     private val bookRepository: CachedBookRepository,
     private val cachedCoverProvider: CachedCoverProvider,
+    private val mediaRepository: Lazy<MediaRepository>,
   ) {
     fun provideFileUri(
       libraryItemId: String,
@@ -58,6 +64,7 @@ class LissenMediaProvider
       }
     }
 
+    @OptIn(UnstableApi::class)
     suspend fun syncProgress(
       sessionId: String,
       itemId: String,
@@ -74,6 +81,7 @@ class LissenMediaProvider
       val localBook = bookRepository.fetchBook(itemId)
       val localProgress = localBook?.progress
       var finalProgress = progress
+      var updatePlayer = false
 
       if (remoteProgress != null && localProgress != null &&
         localProgress.lastUpdate < remoteProgress.lastUpdate
@@ -89,9 +97,24 @@ class LissenMediaProvider
             chapterProgress,
             remoteProgress.currentTime,
           )
+
+        updatePlayer = true
       }
 
       localCacheRepository.syncProgress(itemId, finalProgress)
+
+      if (updatePlayer) {
+        if (mediaRepository.get().isPlaying.value == true) {
+          mediaRepository.get().togglePlayPause()
+          localBook?.let {
+            mediaRepository.get().setChapterPosition(finalProgress.currentChapterTime)
+            mediaRepository.get().prepareAndPlay(it)
+          }
+        } else {
+          mediaRepository.get().setChapterPosition(finalProgress.currentChapterTime)
+          mediaRepository.get().preparePlayback(itemId)
+        }
+      }
 
       val channelSyncResult =
         providePreferredChannel()
