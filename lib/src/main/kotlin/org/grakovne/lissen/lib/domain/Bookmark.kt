@@ -9,6 +9,4 @@ data class Bookmark(
 
 fun Bookmark.isSame(other: Bookmark): Boolean =
 	libraryItemId == other.libraryItemId &&
-		title == other.title &&
-		totalPosition == other.totalPosition &&
-		createdAt == other.createdAt
+		totalPosition == other.totalPosition

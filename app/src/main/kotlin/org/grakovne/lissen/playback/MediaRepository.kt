@@ -573,7 +573,7 @@ class MediaRepository
       val chapterPosition = _currentChapterPosition.value ?: return
       val totalPosition = _totalPosition.value ?: return
 
-      mediaChannel
+      val bookmark = mediaChannel
         .createBookmark(
           libraryItemId = playingBook.id,
           chapterPosition = chapterPosition,

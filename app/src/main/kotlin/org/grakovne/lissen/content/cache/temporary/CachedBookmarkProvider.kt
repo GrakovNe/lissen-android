@@ -3,8 +3,10 @@ package org.grakovne.lissen.content.cache.temporary
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfChannelProvider
+import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.common.buildBookmarkTitle
 import org.grakovne.lissen.lib.domain.Bookmark
+import org.grakovne.lissen.lib.domain.CreateBookmarkRequest
 import org.grakovne.lissen.lib.domain.isSame
 
 @Singleton
@@ -16,43 +18,37 @@ class CachedBookmarkProvider
     private val _memCache = mutableMapOf<String, List<Bookmark>>()
 
     suspend fun fetchBookmarks(libraryItemId: String): List<Bookmark> {
-      val fetchedBookmarks =
+      val updated =
         channelProvider
           .provideMediaChannel()
           .fetchBookmarks(libraryItemId)
           .fold(
             onSuccess = { it },
-            onFailure = { emptyList() },
+            onFailure = { _memCache[libraryItemId] ?: emptyList() },
           )
 
-      val current = _memCache[libraryItemId] ?: emptyList()
-
-      val updated =
-        (current + fetchedBookmarks)
-          .distinctBy { b -> (current + fetchedBookmarks).indexOfFirst { it.isSame(b) } }
-
       _memCache[libraryItemId] = updated
-
       return updated
     }
 
-    fun createBookmark(
+    suspend fun createBookmark(
       chapterTime: Double,
       totalTime: Double,
       libraryItemId: String,
       currentChapter: String,
-    ) {
-      val bookmark =
-        Bookmark(
+    ): Bookmark? = channelProvider
+      .provideMediaChannel()
+      .createBookmark(
+        CreateBookmarkRequest(
           title = buildBookmarkTitle(currentChapter, chapterTime),
-          createdAt = 123,
-          totalPosition = totalTime,
+          time = totalTime.toInt(),
           libraryItemId = libraryItemId,
-        )
-
-      val updated = listOf(bookmark) + _memCache[libraryItemId].orEmpty()
-      _memCache[libraryItemId] = updated
-    }
+        ),
+      )
+      .fold(
+        onSuccess = { it },
+        onFailure = { null },
+      )
 
     fun dropBookmark(bookmark: Bookmark) {
       val current = _memCache[bookmark.libraryItemId] ?: return

@@ -10,17 +10,12 @@ import javax.inject.Singleton
 @Singleton
 class BookmarksResponseConverter
   @Inject
-  constructor() {
+  constructor(
+    private val itemConverter: BookmarkItemResponseConverter,
+  ) {
     fun apply(response: BookmarksResponse): List<Bookmark> =
       response
         .user
         .bookmarks
-        .map {
-          Bookmark(
-            libraryItemId = it.libraryItemId,
-            title = it.title,
-            totalPosition = it.time,
-            createdAt = it.createdAt,
-          )
-        }
+        .map { itemConverter.apply(it) }
   }

@@ -4,6 +4,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okio.Buffer
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarkRequest
+import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarksItemResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarksResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.connection.ConnectionInfoResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.AuthorItemsResponse
@@ -20,6 +22,7 @@ import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastItemsResp
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastSearchResponse
 import org.grakovne.lissen.channel.common.OperationResult
+import org.grakovne.lissen.lib.domain.CreateBookmarkRequest
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -122,6 +125,19 @@ class AudioBookshelfRepository
       audioBookShelfApiService
         .makeRequest {
           it.fetchBookmarks()
+        }
+
+    suspend fun createBookmarks(request: CreateBookmarkRequest): OperationResult<BookmarksItemResponse> =
+      audioBookShelfApiService
+        .makeRequest {
+          it.createBookmarks(
+            libraryItemId = request.libraryItemId,
+            request =
+              BookmarkRequest(
+                title = request.title,
+                time = request.time,
+              ),
+          )
         }
 
     suspend fun fetchConnectionInfo(): OperationResult<ConnectionInfoResponse> =

@@ -2,6 +2,8 @@ package org.grakovne.lissen.channel.audiobookshelf.common.client
 
 import okhttp3.ResponseBody
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarkRequest
+import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarksItemResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarksResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.connection.ConnectionInfoResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.AuthorItemsResponse
@@ -19,6 +21,7 @@ import org.grakovne.lissen.channel.audiobookshelf.library.model.LibrarySearchRes
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastSearchResponse
+import org.grakovne.lissen.lib.domain.CreateBookmarkRequest
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -48,6 +51,12 @@ interface AudiobookshelfApiClient {
 
   @POST("/api/authorize")
   suspend fun fetchBookmarks(): Response<BookmarksResponse>
+
+  @POST("/api/me/item/{libraryItemId}/bookmark")
+  suspend fun createBookmarks(
+    @Path("libraryItemId") libraryItemId: String,
+    @Body request: BookmarkRequest,
+  ): Response<BookmarksItemResponse>
 
   @GET("/api/me")
   suspend fun fetchUserInfo(): Response<UserResponse>
