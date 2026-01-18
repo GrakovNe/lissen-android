@@ -114,9 +114,7 @@ abstract class AudiobookshelfChannel(
         )
       }.map { bookmarksResponseConverter.apply(it) }
 
-  override suspend fun dropBookmark(bookmarkId: String): OperationResult<Unit> {
-    TODO("Not yet implemented")
-  }
+  override suspend fun dropBookmark(bookmark: Bookmark): OperationResult<Unit> = dataRepository.dropBookmark(bookmark)
 
   override suspend fun createBookmark(request: CreateBookmarkRequest): OperationResult<Bookmark> =
     dataRepository

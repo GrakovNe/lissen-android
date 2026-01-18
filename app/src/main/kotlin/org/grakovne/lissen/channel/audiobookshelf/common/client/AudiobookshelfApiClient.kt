@@ -21,9 +21,9 @@ import org.grakovne.lissen.channel.audiobookshelf.library.model.LibrarySearchRes
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastSearchResponse
-import org.grakovne.lissen.lib.domain.CreateBookmarkRequest
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Headers
@@ -57,6 +57,12 @@ interface AudiobookshelfApiClient {
     @Path("libraryItemId") libraryItemId: String,
     @Body request: BookmarkRequest,
   ): Response<BookmarksItemResponse>
+
+  @DELETE("/api/me/item/{libraryItemId}/bookmark/{totalTime}")
+  suspend fun dropBookmarks(
+    @Path("libraryItemId") libraryItemId: String,
+    @Path("totalTime") totalTime: Int,
+  ): Response<Unit>
 
   @GET("/api/me")
   suspend fun fetchUserInfo(): Response<UserResponse>

@@ -63,7 +63,7 @@ interface MediaChannel {
 
   suspend fun fetchBookmarks(libraryItemId: String): OperationResult<List<Bookmark>>
 
-  suspend fun dropBookmark(bookmarkId: String): OperationResult<Unit>
+  suspend fun dropBookmark(bookmark: Bookmark): OperationResult<Unit>
 
   suspend fun createBookmark(request: CreateBookmarkRequest): OperationResult<Bookmark>
 }

@@ -1,5 +1,6 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.api
 
+import android.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okio.Buffer
@@ -22,6 +23,7 @@ import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastItemsResp
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastSearchResponse
 import org.grakovne.lissen.channel.common.OperationResult
+import org.grakovne.lissen.lib.domain.Bookmark
 import org.grakovne.lissen.lib.domain.CreateBookmarkRequest
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -137,6 +139,15 @@ class AudioBookshelfRepository
                 title = request.title,
                 time = request.time,
               ),
+          )
+        }
+
+    suspend fun dropBookmark(bookmark: Bookmark): OperationResult<Unit> =
+      audioBookShelfApiService
+        .makeRequest {
+          it.dropBookmarks(
+            libraryItemId = bookmark.libraryItemId,
+            totalTime = bookmark.totalPosition.toInt(),
           )
         }
 

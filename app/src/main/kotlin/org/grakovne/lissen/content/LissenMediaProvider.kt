@@ -36,9 +36,7 @@ class LissenMediaProvider
     private val cachedCoverProvider: CachedCoverProvider,
     private val cachedBookmarkProvider: CachedBookmarkProvider,
   ) {
-    fun dropBookmark(bookmark: Bookmark) {
-      cachedBookmarkProvider.dropBookmark(bookmark = bookmark)
-    }
+    suspend fun dropBookmark(bookmark: Bookmark) = cachedBookmarkProvider.dropBookmark(bookmark = bookmark)
 
     suspend fun createBookmark(
       libraryItemId: String,
@@ -56,7 +54,9 @@ class LissenMediaProvider
         )
     }
 
-    suspend fun provideBookmarks(playingItemId: String) = cachedBookmarkProvider.fetchBookmarks(playingItemId)
+    fun provideBookmarks(playingItemId: String) = cachedBookmarkProvider.provideBookmarks(playingItemId)
+
+    suspend fun fetchBookmarks(playingItemId: String) = cachedBookmarkProvider.fetchBookmarks(playingItemId)
 
     fun provideFileUri(
       libraryItemId: String,

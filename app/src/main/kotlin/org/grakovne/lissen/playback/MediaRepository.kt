@@ -573,30 +573,27 @@ class MediaRepository
       val chapterPosition = _currentChapterPosition.value ?: return
       val totalPosition = _totalPosition.value ?: return
 
-      val bookmark = mediaChannel
+      mediaChannel
         .createBookmark(
           libraryItemId = playingBook.id,
           chapterPosition = chapterPosition,
           totalPosition = totalPosition,
         )
 
-      updateBookmarks()
+      _bookmarks.value = mediaChannel.provideBookmarks(playingBook.id)
     }
 
     suspend fun dropBookmark(bookmark: Bookmark) {
-      mediaChannel
-        .dropBookmark(
-          bookmark = bookmark,
-        )
+      mediaChannel.dropBookmark(bookmark = bookmark)
 
-      updateBookmarks()
+      _bookmarks.value = mediaChannel.provideBookmarks(bookmark.libraryItemId)
     }
 
     suspend fun updateBookmarks() {
       val book = playingBook.value ?: return
       val bookmarks =
         withContext(Dispatchers.IO) {
-          mediaChannel.provideBookmarks(book.id)
+          mediaChannel.fetchBookmarks(book.id)
         }
       _bookmarks.value = bookmarks
     }
