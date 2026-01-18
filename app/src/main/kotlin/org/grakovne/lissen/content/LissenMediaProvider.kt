@@ -7,6 +7,7 @@ import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
+import org.grakovne.lissen.content.cache.persistent.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
 import org.grakovne.lissen.lib.domain.Book
 import org.grakovne.lissen.lib.domain.DetailedItem
@@ -18,6 +19,7 @@ import org.grakovne.lissen.lib.domain.PlaybackSession
 import org.grakovne.lissen.lib.domain.RecentBook
 import org.grakovne.lissen.lib.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.playback.service.calculateChapterPosition
 import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
@@ -30,6 +32,7 @@ class LissenMediaProvider
     private val preferences: LissenSharedPreferences,
     private val audiobookshelfChannelProvider: AudiobookshelfChannelProvider, // the only one channel which may be extended
     private val localCacheRepository: LocalCacheRepository,
+    private val bookRepository: CachedBookRepository,
     private val cachedCoverProvider: CachedCoverProvider,
   ) {
     fun provideFileUri(
@@ -62,11 +65,37 @@ class LissenMediaProvider
     ): OperationResult<Unit> {
       Timber.d("Syncing Progress for $itemId. $progress")
 
-      localCacheRepository.syncProgress(itemId, progress)
+      val remoteBook =
+        providePreferredChannel().fetchBook(itemId).fold(
+          onSuccess = { it },
+          onFailure = { null },
+        )
+      val remoteProgress = remoteBook?.progress
+      val localBook = bookRepository.fetchBook(itemId)
+      val localProgress = localBook?.progress
+      var finalProgress = progress
+
+      if (remoteProgress != null && localProgress != null &&
+        localProgress.lastUpdate < remoteProgress.lastUpdate
+      ) {
+        Timber.d("Updating to server progress: ${remoteProgress.currentTime}")
+        val chapterProgress =
+          calculateChapterPosition(
+            book = remoteBook,
+            overallPosition = remoteProgress.currentTime,
+          )
+        finalProgress =
+          PlaybackProgress(
+            chapterProgress,
+            remoteProgress.currentTime,
+          )
+      }
+
+      localCacheRepository.syncProgress(itemId, finalProgress)
 
       val channelSyncResult =
         providePreferredChannel()
-          .syncProgress(sessionId, progress)
+          .syncProgress(sessionId, finalProgress)
 
       return when (preferences.isForceCache()) {
         true -> OperationResult.Success(Unit)
