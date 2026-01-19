@@ -26,6 +26,7 @@ import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.collections.plus
 
 @Singleton
 class LissenMediaProvider
@@ -59,13 +60,19 @@ class LissenMediaProvider
       cachedBookmarkProvider
         .provideBookmarks(playingItemId)
         .sortedByDescending { it.createdAt }
-        .fold(emptyList()) { acc, b -> if (acc.any { it.isSame(b) }) acc else acc + b }
+        .fold(emptyList()) { acc, item -> if (acc.any { it.isSame(item) }) acc else acc + item }
 
-    suspend fun fetchBookmarks(playingItemId: String): List<Bookmark> =
-      when (preferences.isForceCache()) {
-        true -> localCacheRepository.fetchBookmarks(playingItemId)
-        false -> cachedBookmarkProvider.fetchBookmarks(playingItemId)
-      }
+    suspend fun fetchBookmarks(playingItemId: String): List<Bookmark> {
+      val bookmarks =
+        when (preferences.isForceCache()) {
+          true -> localCacheRepository.fetchBookmarks(playingItemId)
+          false -> cachedBookmarkProvider.fetchBookmarks(playingItemId)
+        }
+
+      return bookmarks
+        .sortedByDescending { it.createdAt }
+        .fold(emptyList()) { acc, b -> if (acc.any { it.isSame(b) }) acc else acc + b }
+    }
 
     fun provideFileUri(
       libraryItemId: String,
