@@ -160,4 +160,14 @@
     <string name="settings_screen_bypass_ssl_title">SSL-ellenőrzés letiltása</string>
     <string name="settings_screen_bypass_ssl_hint">Csatlakozás bármilyen tanúsítvánnyal rendelkező kiszolgálókhoz</string>
     <string name="volume_boost_max">Maximum</string>
+    <string name="settings_screen_collapse_on_fling_title">Lendítés közben a lejátszási sor összecsukása</string>
+    <string name="settings_screen_collapse_on_fling_description">Csúsztatás a fejezetlista összecsukásához</string>
+    <string name="settings_screen_material_you_title">Material You színek</string>
+    <string name="settings_screen_material_you_description">Az alkalmazás színeinek illesztése a háttérképhez</string>
+    <string name="timer_option_disabled">Letiltva</string>
+    <string name="settings_screen_software_codecs_enabled_title">Szoftveres dekódolás kényszerítése</string>
+    <string name="settings_screen_software_codecs_enabled_description">Szoftveres kodek használata a hang lejátszásához</string>
+    <string name="restart_the_app_to_start_using_the_new_codecs_title">Indítsd újra az alkalmazást az új kodekek használatához</string>
+    <string name="restart_the_app_to_start_using_the_new_codecs_cta">Újraindítás</string>
+    <string name="codes_not_supported_warning_toast">A hangformátum nem támogatott</string>
 </resources>
