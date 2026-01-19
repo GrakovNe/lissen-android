@@ -106,7 +106,11 @@ class PlaybackSynchronizationService
               ?.let { calculateChapterIndex(it, overallProgress.currentTotalTime) }
               ?: return@launch
 
-          if (playbackSession == null || playbackSession?.itemId != currentItem?.id || currentIndex != currentChapterIndex) {
+          if (playbackSession == null ||
+            playbackSession?.itemId != currentItem?.id ||
+            currentIndex != currentChapterIndex ||
+            playbackSession?.sessionId?.startsWith("local-") == true
+          ) {
             openPlaybackSession(overallProgress)
             currentChapterIndex = currentIndex
           }
