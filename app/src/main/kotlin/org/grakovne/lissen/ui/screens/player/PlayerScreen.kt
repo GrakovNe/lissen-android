@@ -178,7 +178,12 @@ fun PlayerScreen(
           } else {
             Row {
               IconButton(
-                onClick = { bookmarksSelected = true },
+                onClick = {
+                  if (isPlaybackReady) {
+                    playerViewModel.updateBookmarks()
+                    bookmarksSelected = true
+                  }
+                },
                 modifier = Modifier.padding(end = 4.dp),
               ) {
                 Icon(
