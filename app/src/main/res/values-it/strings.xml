@@ -164,4 +164,10 @@
     <string name="settings_screen_material_you_title">Colori Material You</string>
     <string name="settings_screen_material_you_description">Abbina i colori dell\'app al tuo sfondo</string>
     <string name="settings_screen_collapse_on_fling_title">Comprimi coda con scorrimento rapido</string>
+    <string name="timer_option_disabled">Disabilitato</string>
+    <string name="settings_screen_software_codecs_enabled_title">Forza decodifica software</string>
+    <string name="settings_screen_software_codecs_enabled_description">Usa codec software per la riproduzione audio</string>
+    <string name="restart_the_app_to_start_using_the_new_codecs_title">Riavvia l\'app per iniziare ad utilizzare i nuovi codec</string>
+    <string name="restart_the_app_to_start_using_the_new_codecs_cta">Riavvia</string>
+    <string name="codes_not_supported_warning_toast">Formato audio non supportato</string>
 </resources>

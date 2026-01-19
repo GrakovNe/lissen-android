@@ -5,8 +5,10 @@ import androidx.core.net.toFile
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookRepository
+import org.grakovne.lissen.content.cache.persistent.api.CachedBookmarkRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedLibraryRepository
 import org.grakovne.lissen.lib.domain.Book
+import org.grakovne.lissen.lib.domain.Bookmark
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.Library
 import org.grakovne.lissen.lib.domain.MediaProgress
@@ -24,6 +26,7 @@ class LocalCacheRepository
   constructor(
     private val cachedBookRepository: CachedBookRepository,
     private val cachedLibraryRepository: CachedLibraryRepository,
+    private val cachedBookmarkRepository: CachedBookmarkRepository,
   ) {
     fun provideFileUri(
       libraryItemId: String,
@@ -159,5 +162,20 @@ class LocalCacheRepository
                 ),
             )
       }
+    }
+
+    suspend fun fetchBookmarks(libraryItemId: String) =
+      cachedBookmarkRepository
+        .fetchBookmarks(libraryItemId)
+
+    suspend fun upsertBookmark(bookmark: Bookmark) {
+      cachedBookmarkRepository.upsertBookmark(bookmark)
+    }
+
+    suspend fun deleteBookmark(
+      libraryItemId: String,
+      totalPosition: Double,
+    ) {
+      cachedBookmarkRepository.deleteBookmark(libraryItemId, totalPosition)
     }
   }

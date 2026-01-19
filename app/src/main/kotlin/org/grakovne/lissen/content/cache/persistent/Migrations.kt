@@ -256,3 +256,35 @@ val MIGRATION_13_14 =
       db.execSQL("ALTER TABLE detailed_books ADD COLUMN seriesNames TEXT")
     }
   }
+
+val MIGRATION_14_15 =
+  object : Migration(14, 15) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+      db.execSQL(
+        """
+        CREATE TABLE IF NOT EXISTS cached_bookmark (
+            id TEXT NOT NULL PRIMARY KEY,
+            title TEXT NOT NULL,
+            libraryItemId TEXT NOT NULL,
+            createdAt INTEGER NOT NULL,
+            totalPosition INTEGER NOT NULL
+        )
+        """.trimIndent(),
+      )
+
+      db.execSQL("CREATE INDEX IF NOT EXISTS index_cached_bookmark_libraryItemId ON cached_bookmark(libraryItemId)")
+      db.execSQL("CREATE INDEX IF NOT EXISTS index_cached_bookmark_createdAt ON cached_bookmark(createdAt)")
+    }
+  }
+
+val MIGRATION_15_16 =
+  object : Migration(15, 16) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+      db.execSQL(
+        """
+        ALTER TABLE cached_bookmark
+        ADD COLUMN syncState INTEGER NOT NULL DEFAULT 0
+        """.trimIndent(),
+      )
+    }
+  }
