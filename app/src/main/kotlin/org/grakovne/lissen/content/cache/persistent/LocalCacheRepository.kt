@@ -5,8 +5,10 @@ import androidx.core.net.toFile
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookRepository
+import org.grakovne.lissen.content.cache.persistent.api.CachedBookmarkRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedLibraryRepository
 import org.grakovne.lissen.lib.domain.Book
+import org.grakovne.lissen.lib.domain.Bookmark
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.Library
 import org.grakovne.lissen.lib.domain.MediaProgress
@@ -24,6 +26,7 @@ class LocalCacheRepository
   constructor(
     private val cachedBookRepository: CachedBookRepository,
     private val cachedLibraryRepository: CachedLibraryRepository,
+    private val cachedBookmarkRepository: CachedBookmarkRepository,
   ) {
     fun provideFileUri(
       libraryItemId: String,
@@ -159,5 +162,23 @@ class LocalCacheRepository
                 ),
             )
       }
+    }
+
+    suspend fun fetchBookmarks(libraryItemId: String) =
+      cachedBookmarkRepository
+        .fetchBookmarks(libraryItemId)
+        .let { OperationResult.Success(it) }
+
+    suspend fun upsertBookmark(bookmark: Bookmark): OperationResult<Unit> {
+      cachedBookmarkRepository.upsertBookmark(bookmark)
+      return OperationResult.Success(Unit)
+    }
+
+    suspend fun deleteBookmark(
+      libraryItemId: String,
+      totalPosition: Double,
+    ): OperationResult<Unit> {
+      cachedBookmarkRepository.deleteBookmark(libraryItemId, totalPosition)
+      return OperationResult.Success(Unit)
     }
   }
