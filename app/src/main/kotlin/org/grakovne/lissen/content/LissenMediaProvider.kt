@@ -55,7 +55,7 @@ class LissenMediaProvider
         )
     }
 
-    fun provideBookmarks(playingItemId: String): List<Bookmark> =
+    suspend fun provideBookmarks(playingItemId: String): List<Bookmark> =
       cachedBookmarkProvider
         .provideBookmarks(playingItemId)
         .sortedByDescending { it.createdAt }
