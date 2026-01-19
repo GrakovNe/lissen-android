@@ -164,4 +164,10 @@
     <string name="settings_screen_material_you_title">Material You 动态配色</string>
     <string name="settings_screen_collapse_on_fling_title">快速滑动收起播放列表</string>
     <string name="settings_screen_collapse_on_fling_description">向下滑动即可收起章节列表</string>
+    <string name="timer_option_disabled">禁用</string>
+    <string name="settings_screen_software_codecs_enabled_title">强制使用软件解码</string>
+    <string name="settings_screen_software_codecs_enabled_description">使用软件解码器播放音频</string>
+    <string name="restart_the_app_to_start_using_the_new_codecs_title">重启应用程序以开始使用新的编解码器</string>
+    <string name="restart_the_app_to_start_using_the_new_codecs_cta">重启</string>
+    <string name="codes_not_supported_warning_toast">不支持此音频格式</string>
 </resources>

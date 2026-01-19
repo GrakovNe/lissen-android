@@ -7,8 +7,10 @@ import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
+import org.grakovne.lissen.content.cache.temporary.CachedBookmarkProvider
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
 import org.grakovne.lissen.lib.domain.Book
+import org.grakovne.lissen.lib.domain.Bookmark
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.Library
 import org.grakovne.lissen.lib.domain.LibraryType
@@ -17,21 +19,55 @@ import org.grakovne.lissen.lib.domain.PlaybackProgress
 import org.grakovne.lissen.lib.domain.PlaybackSession
 import org.grakovne.lissen.lib.domain.RecentBook
 import org.grakovne.lissen.lib.domain.UserAccount
+import org.grakovne.lissen.lib.domain.isSame
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.playback.service.calculateChapterIndex
 import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.collections.plus
 
 @Singleton
 class LissenMediaProvider
   @Inject
   constructor(
     private val preferences: LissenSharedPreferences,
-    private val audiobookshelfChannelProvider: AudiobookshelfChannelProvider, // the only one channel which may be extended
+    private val channelProvider: AudiobookshelfChannelProvider,
     private val localCacheRepository: LocalCacheRepository,
     private val cachedCoverProvider: CachedCoverProvider,
+    private val cachedBookmarkProvider: CachedBookmarkProvider,
   ) {
+    suspend fun dropBookmark(bookmark: Bookmark) = cachedBookmarkProvider.dropBookmark(bookmark = bookmark)
+
+    suspend fun createBookmark(
+      libraryItemId: String,
+      chapterPosition: Double,
+      totalPosition: Double,
+    ): Bookmark? {
+      val playingItem = preferences.getPlayingBook() ?: return null
+
+      return cachedBookmarkProvider
+        .createBookmark(
+          chapterTime = chapterPosition,
+          libraryItemId = libraryItemId,
+          totalTime = totalPosition,
+          currentChapter = playingItem.chapters[calculateChapterIndex(playingItem, totalPosition)].title,
+        )
+    }
+
+    suspend fun provideBookmarks(playingItemId: String): List<Bookmark> =
+      cachedBookmarkProvider
+        .provideBookmarks(playingItemId)
+        .sortedByDescending { it.createdAt }
+        .fold(emptyList()) { acc, item -> if (acc.any { it.isSame(item) }) acc else acc + item }
+
+    suspend fun updateAndProvideBookmarks(playingItemId: String): List<Bookmark> =
+      cachedBookmarkProvider
+        .fetchBookmarks(playingItemId)
+        .sortedByDescending { it.createdAt }
+        .fold(emptyList()) { acc, b -> if (acc.any { it.isSame(b) }) acc else acc + b }
+
     fun provideFileUri(
       libraryItemId: String,
       chapterId: String,
@@ -315,7 +351,7 @@ class LissenMediaProvider
 
     suspend fun fetchConnectionInfo() = providePreferredChannel().fetchConnectionInfo()
 
-    fun provideAuthService(): ChannelAuthService = audiobookshelfChannelProvider.provideChannelAuth()
+    fun provideAuthService(): ChannelAuthService = channelProvider.provideChannelAuth()
 
-    fun providePreferredChannel(): MediaChannel = audiobookshelfChannelProvider.provideMediaChannel()
+    fun providePreferredChannel(): MediaChannel = channelProvider.provideMediaChannel()
   }
