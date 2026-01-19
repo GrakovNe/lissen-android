@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import org.grakovne.lissen.lib.domain.Bookmark
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.PlayingChapter
 import org.grakovne.lissen.lib.domain.TimerOption
@@ -48,8 +49,25 @@ class PlayerViewModel
     val searchToken: LiveData<String> = _searchToken
 
     val isPlaying: LiveData<Boolean> = mediaRepository.isPlaying
-
     val collapseOnFling = preferences.collapseOnFlingFlow
+
+    val bookmarks = mediaRepository.bookmarks
+
+    fun createBookmark() {
+      viewModelScope.launch {
+        mediaRepository.createBookmark()
+      }
+    }
+
+    fun dropBookmark(bookmark: Bookmark) {
+      viewModelScope.launch {
+        mediaRepository.dropBookmark(bookmark = bookmark)
+      }
+    }
+
+    fun updateBookmarks() {
+      viewModelScope.launch { mediaRepository.updateBookmarks() }
+    }
 
     fun recoverMiniPlayer() {
       val playingBook = preferences.getPlayingBook()
@@ -107,6 +125,10 @@ class PlayerViewModel
 
     fun seekTo(chapterPosition: Double) {
       mediaRepository.setChapterPosition(chapterPosition)
+    }
+
+    fun setTotalPosition(totalPosition: Double) {
+      mediaRepository.setTotalPosition(totalPosition)
     }
 
     fun setChapter(chapter: PlayingChapter) {

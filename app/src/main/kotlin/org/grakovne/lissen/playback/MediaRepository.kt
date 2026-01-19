@@ -24,11 +24,13 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.LissenMediaProvider
+import org.grakovne.lissen.lib.domain.Bookmark
 import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.DurationTimerOption
@@ -60,6 +62,8 @@ class MediaRepository
     private val mediaChannel: LissenMediaProvider,
   ) {
     private lateinit var mediaController: MediaController
+
+    private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     private val token =
       SessionToken(
@@ -113,6 +117,9 @@ class MediaRepository
         addSource(totalPosition) { updateCurrentTrackData() }
         addSource(playingBook) { updateCurrentTrackData() }
       }
+
+    private val _bookmarks = MutableLiveData<List<Bookmark>>()
+    val bookmarks: LiveData<List<Bookmark>> = _bookmarks
 
     val currentChapterDuration: LiveData<Double> = _currentChapterDuration
 
@@ -281,6 +288,10 @@ class MediaRepository
       pause()
       _playingBook.postValue(null)
       preferences.savePlayingBook(null)
+    }
+
+    fun setTotalPosition(totalPosition: Double) {
+      seekTo(totalPosition)
     }
 
     fun setChapterPosition(chapterPosition: Double) {
@@ -555,6 +566,34 @@ class MediaRepository
           ?.duration
           ?: 0.0,
       )
+    }
+
+    suspend fun createBookmark() {
+      val playingBook = _playingBook.value ?: return
+      val chapterPosition = _currentChapterPosition.value ?: return
+      val totalPosition = _totalPosition.value ?: return
+
+      mediaChannel
+        .createBookmark(
+          libraryItemId = playingBook.id,
+          chapterPosition = chapterPosition,
+          totalPosition = totalPosition,
+        )
+
+      _bookmarks.value = mediaChannel.provideBookmarks(playingBook.id)
+    }
+
+    suspend fun dropBookmark(bookmark: Bookmark) {
+      mediaChannel.dropBookmark(bookmark = bookmark)
+
+      _bookmarks.value = mediaChannel.provideBookmarks(bookmark.libraryItemId)
+    }
+
+    suspend fun updateBookmarks() {
+      val book = playingBook.value ?: return
+      val bookmarks = withContext(Dispatchers.IO) { mediaChannel.updateAndProvideBookmarks(book.id) }
+
+      _bookmarks.value = bookmarks
     }
 
     private companion object {

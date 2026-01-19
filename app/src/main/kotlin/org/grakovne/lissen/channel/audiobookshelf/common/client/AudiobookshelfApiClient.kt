@@ -2,6 +2,9 @@ package org.grakovne.lissen.channel.audiobookshelf.common.client
 
 import okhttp3.ResponseBody
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarkRequest
+import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarksItemResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarksResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.connection.ConnectionInfoResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.AuthorItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryResponse
@@ -20,6 +23,7 @@ import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastSearchResponse
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Headers
@@ -44,6 +48,21 @@ interface AudiobookshelfApiClient {
 
   @POST("/api/authorize")
   suspend fun fetchConnectionInfo(): Response<ConnectionInfoResponse>
+
+  @GET("/api/me")
+  suspend fun fetchBookmarks(): Response<BookmarksResponse>
+
+  @POST("/api/me/item/{libraryItemId}/bookmark")
+  suspend fun createBookmarks(
+    @Path("libraryItemId") libraryItemId: String,
+    @Body request: BookmarkRequest,
+  ): Response<BookmarksItemResponse>
+
+  @DELETE("/api/me/item/{libraryItemId}/bookmark/{totalTime}")
+  suspend fun dropBookmarks(
+    @Path("libraryItemId") libraryItemId: String,
+    @Path("totalTime") totalTime: Int,
+  ): Response<Unit>
 
   @GET("/api/me")
   suspend fun fetchUserInfo(): Response<UserResponse>

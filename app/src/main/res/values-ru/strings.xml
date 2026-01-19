@@ -172,4 +172,6 @@
     <string name="settings_screen_software_codecs_enabled_title">Отключить аппаратное декодирование</string>
     <string name="settings_screen_software_codecs_enabled_description">Декодировать аудио программно</string>
     <string name="codes_not_supported_warning_toast">Аудиоформат не поддерживается</string>
+    <string name="bookmarks_create_bookmark">Новая закладка</string>
+    <string name="bookmarks_title">Закладки</string>
 </resources>

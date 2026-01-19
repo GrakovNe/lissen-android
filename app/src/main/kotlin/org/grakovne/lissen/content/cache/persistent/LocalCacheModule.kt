@@ -8,6 +8,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import org.grakovne.lissen.content.cache.persistent.dao.CachedBookDao
+import org.grakovne.lissen.content.cache.persistent.dao.CachedBookmarkDao
 import org.grakovne.lissen.content.cache.persistent.dao.CachedLibraryDao
 import javax.inject.Singleton
 
@@ -42,12 +43,18 @@ object LocalCacheModule {
       .addMigrations(MIGRATION_11_12)
       .addMigrations(MIGRATION_12_13)
       .addMigrations(MIGRATION_13_14)
+      .addMigrations(MIGRATION_14_15)
+      .addMigrations(MIGRATION_15_16)
       .build()
   }
 
   @Provides
   @Singleton
   fun provideCachedBookDao(appDatabase: LocalCacheStorage): CachedBookDao = appDatabase.cachedBookDao()
+
+  @Provides
+  @Singleton
+  fun provideCachedBookmarkDao(appDatabase: LocalCacheStorage): CachedBookmarkDao = appDatabase.cachedBookmarkDao()
 
   @Provides
   @Singleton
