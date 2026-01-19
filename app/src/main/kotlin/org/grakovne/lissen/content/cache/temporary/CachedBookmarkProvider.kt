@@ -19,13 +19,11 @@ class CachedBookmarkProvider
     suspend fun provideBookmarks(libraryItemId: String): List<Bookmark> =
       localCacheRepository
         .fetchBookmarks(libraryItemId)
-        .fold(onSuccess = { it }, onFailure = { emptyList() })
 
     suspend fun fetchBookmarks(libraryItemId: String): List<Bookmark> {
       val local =
         localCacheRepository
           .fetchBookmarks(libraryItemId)
-          .fold(onSuccess = { it }, onFailure = { emptyList() })
 
       val remote =
         channelProvider

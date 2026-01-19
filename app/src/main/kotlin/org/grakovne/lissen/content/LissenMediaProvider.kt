@@ -61,7 +61,11 @@ class LissenMediaProvider
         .sortedByDescending { it.createdAt }
         .fold(emptyList()) { acc, b -> if (acc.any { it.isSame(b) }) acc else acc + b }
 
-    suspend fun fetchBookmarks(playingItemId: String) = cachedBookmarkProvider.fetchBookmarks(playingItemId)
+    suspend fun fetchBookmarks(playingItemId: String): List<Bookmark> =
+      when (preferences.isForceCache()) {
+        true -> localCacheRepository.fetchBookmarks(playingItemId)
+        false -> cachedBookmarkProvider.fetchBookmarks(playingItemId)
+      }
 
     fun provideFileUri(
       libraryItemId: String,

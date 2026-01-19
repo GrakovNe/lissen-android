@@ -167,18 +167,15 @@ class LocalCacheRepository
     suspend fun fetchBookmarks(libraryItemId: String) =
       cachedBookmarkRepository
         .fetchBookmarks(libraryItemId)
-        .let { OperationResult.Success(it) }
 
-    suspend fun upsertBookmark(bookmark: Bookmark): OperationResult<Unit> {
+    suspend fun upsertBookmark(bookmark: Bookmark) {
       cachedBookmarkRepository.upsertBookmark(bookmark)
-      return OperationResult.Success(Unit)
     }
 
     suspend fun deleteBookmark(
       libraryItemId: String,
       totalPosition: Double,
-    ): OperationResult<Unit> {
+    ) {
       cachedBookmarkRepository.deleteBookmark(libraryItemId, totalPosition)
-      return OperationResult.Success(Unit)
     }
   }
