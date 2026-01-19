@@ -276,3 +276,15 @@ val MIGRATION_14_15 =
       db.execSQL("CREATE INDEX IF NOT EXISTS index_cached_bookmark_createdAt ON cached_bookmark(createdAt)")
     }
   }
+
+val MIGRATION_15_16 =
+  object : Migration(15, 16) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+      db.execSQL(
+        """
+        ALTER TABLE cached_bookmark
+        ADD COLUMN syncState INTEGER NOT NULL DEFAULT 0
+        """.trimIndent(),
+      )
+    }
+  }

@@ -4,6 +4,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.Bookmark
 import org.grakovne.lissen.channel.audiobookshelf.common.model.connection.ConnectionInfoResponse
 import org.grakovne.lissen.channel.common.ConnectionInfo
 import org.grakovne.lissen.lib.domain.Bookmark
+import org.grakovne.lissen.lib.domain.BookmarkSyncState
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -13,9 +14,12 @@ class BookmarksResponseConverter
   constructor(
     private val itemConverter: BookmarkItemResponseConverter,
   ) {
-    fun apply(response: BookmarksResponse): List<Bookmark> =
+    fun apply(
+      response: BookmarksResponse,
+      syncState: BookmarkSyncState,
+    ): List<Bookmark> =
       response
         .user
         .bookmarks
-        .map { itemConverter.apply(it) }
+        .map { itemConverter.apply(item = it, syncState = syncState) }
   }

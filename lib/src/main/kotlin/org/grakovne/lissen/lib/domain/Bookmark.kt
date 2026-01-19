@@ -4,7 +4,8 @@ data class Bookmark(
 	val libraryItemId: String,
 	val title: String,
 	val totalPosition: Double,
-	val createdAt: Long
+	val createdAt: Long,
+	val syncState: BookmarkSyncState
 )
 
 fun Bookmark.isSame(other: Bookmark): Boolean =

@@ -4,6 +4,9 @@ import org.grakovne.lissen.content.cache.persistent.converter.CachedBookmarkEnti
 import org.grakovne.lissen.content.cache.persistent.dao.CachedBookmarkDao
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookmarkEntity
 import org.grakovne.lissen.lib.domain.Bookmark
+import org.grakovne.lissen.lib.domain.BookmarkSyncState
+import org.grakovne.lissen.lib.domain.asBookmarkSyncState
+import org.grakovne.lissen.lib.domain.asInteger
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -18,7 +21,7 @@ class CachedBookmarkRepository
     suspend fun fetchBookmarks(libraryItemId: String): List<Bookmark> =
       dao
         .fetchByLibraryItemId(libraryItemId)
-        .map { converter.apply(it) }
+        .map { converter.apply(entity = it, syncState = it.syncState.asBookmarkSyncState()) }
 
     suspend fun upsertBookmark(bookmark: Bookmark) {
       dao.upsert(
@@ -28,6 +31,7 @@ class CachedBookmarkRepository
           libraryItemId = bookmark.libraryItemId,
           createdAt = bookmark.createdAt,
           totalPosition = bookmark.totalPosition.toLong(),
+          syncState = bookmark.syncState.asInteger(),
         ),
       )
     }

@@ -19,6 +19,7 @@ import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.lib.domain.Bookmark
+import org.grakovne.lissen.lib.domain.BookmarkSyncState
 import org.grakovne.lissen.lib.domain.CreateBookmarkRequest
 import org.grakovne.lissen.lib.domain.Library
 import org.grakovne.lissen.lib.domain.PlaybackProgress
@@ -112,16 +113,14 @@ abstract class AudiobookshelfChannel(
                   .filter { it.libraryItemId == libraryItemId },
             ),
         )
-      }.map { bookmarksResponseConverter.apply(it) }
+      }.map { bookmarksResponseConverter.apply(response = it, syncState = BookmarkSyncState.SYNCED) }
 
   override suspend fun dropBookmark(bookmark: Bookmark): OperationResult<Unit> = dataRepository.dropBookmark(bookmark)
 
   override suspend fun createBookmark(request: CreateBookmarkRequest): OperationResult<Bookmark> =
     dataRepository
       .createBookmarks(request = request)
-      .map {
-        bookmarkItemResponseConverter.apply(it)
-      }
+      .map { bookmarkItemResponseConverter.apply(item = it, syncState = BookmarkSyncState.SYNCED) }
 
   override suspend fun fetchConnectionInfo(): OperationResult<ConnectionInfo> =
     dataRepository

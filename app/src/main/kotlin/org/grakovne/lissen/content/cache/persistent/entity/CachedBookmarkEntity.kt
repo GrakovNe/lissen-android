@@ -21,4 +21,5 @@ data class CachedBookmarkEntity(
   val libraryItemId: String,
   val createdAt: Long,
   val totalPosition: Long,
+  val syncState: Int,
 )
