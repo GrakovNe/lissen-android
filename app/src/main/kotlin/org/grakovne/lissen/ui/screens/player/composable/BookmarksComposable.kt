@@ -68,7 +68,7 @@ fun BookmarksComposable(
       horizontalAlignment = Alignment.CenterHorizontally,
     ) {
       Text(
-        text = "Закладки",
+        text = stringResource(R.string.bookmarks_title),
         style = typography.bodyLarge,
       )
 

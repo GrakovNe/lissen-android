@@ -171,4 +171,5 @@
     <string name="restart_the_app_to_start_using_the_new_codecs_cta">Restart</string>
     <string name="codes_not_supported_warning_toast">Audio format not supported</string>
     <string name="bookmarks_create_bookmark">Create bookmark</string>
+    <string name="bookmarks_title">Bookmarks</string>
 </resources>
