@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.launch
+import org.grakovne.lissen.ui.components.withScrollbar
 import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
 import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.LibraryViewModel
@@ -106,6 +108,17 @@ fun PlayingQueueComposable(
 
   val listState = rememberLazyListState()
 
+  val showScrollbar by remember {
+    derivedStateOf {
+      listState.isScrollInProgress
+    }
+  }
+
+  val scrollbarAlpha by animateFloatAsState(
+    targetValue = if (showScrollbar) 1f else 0f,
+    animationSpec = tween(durationMillis = 300),
+  )
+
   val fontSize by animateFloatAsState(
     targetValue = typography.titleMedium.fontSize.value * 1.25f,
     animationSpec = tween(durationMillis = 500),
@@ -122,12 +135,23 @@ fun PlayingQueueComposable(
       playingQueueExpanded = playingQueueExpanded,
     )
   }
-
   Column(
     modifier =
       modifier
         .fillMaxSize()
-        .padding(horizontal = 16.dp),
+        .let {
+          when (playingQueueExpanded) {
+            true ->
+              it.withScrollbar(
+                state = listState,
+                color = colorScheme.onBackground.copy(alpha = scrollbarAlpha),
+                totalItems = showingChapters.size,
+                ignoreItems = emptyList(),
+              )
+
+            false -> it
+          }
+        }.padding(horizontal = 16.dp),
   ) {
     if (playingQueueExpanded.not()) {
       Text(
