@@ -104,14 +104,10 @@ abstract class AudiobookshelfChannel(
       .fetchBookmarks()
       .map { result ->
         result.copy(
-          user =
-            result.user.copy(
-              bookmarks =
-                result
-                  .user
-                  .bookmarks
-                  .filter { it.libraryItemId == libraryItemId },
-            ),
+          bookmarks =
+            result
+              .bookmarks
+              .filter { it.libraryItemId == libraryItemId },
         )
       }.map { bookmarksResponseConverter.apply(response = it, syncState = BookmarkSyncState.SYNCED) }
 

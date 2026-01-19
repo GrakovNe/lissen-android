@@ -49,7 +49,7 @@ interface AudiobookshelfApiClient {
   @POST("/api/authorize")
   suspend fun fetchConnectionInfo(): Response<ConnectionInfoResponse>
 
-  @POST("/api/authorize")
+  @GET("/api/me")
   suspend fun fetchBookmarks(): Response<BookmarksResponse>
 
   @POST("/api/me/item/{libraryItemId}/bookmark")

@@ -19,7 +19,6 @@ class BookmarksResponseConverter
       syncState: BookmarkSyncState,
     ): List<Bookmark> =
       response
-        .user
         .bookmarks
         .map { itemConverter.apply(item = it, syncState = syncState) }
   }

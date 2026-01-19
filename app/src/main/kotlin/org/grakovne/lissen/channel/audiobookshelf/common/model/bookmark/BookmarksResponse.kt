@@ -6,12 +6,6 @@ import com.squareup.moshi.JsonClass
 @Keep
 @JsonClass(generateAdapter = true)
 data class BookmarksResponse(
-  val user: BookmarksUserResponse,
-)
-
-@Keep
-@JsonClass(generateAdapter = true)
-data class BookmarksUserResponse(
   val bookmarks: List<BookmarksItemResponse>,
 )
 
