@@ -20,26 +20,74 @@ class CachedBookmarkProvider
     suspend fun provideBookmarks(libraryItemId: String): List<Bookmark> =
       localCacheRepository
         .fetchBookmarks(libraryItemId)
-
-    suspend fun fetchBookmarks(libraryItemId: String): List<Bookmark> {
-      val local =
-        localCacheRepository
-          .fetchBookmarks(libraryItemId)
-
-      val remote =
-        channelProvider
-          .provideMediaChannel()
-          .fetchBookmarks(libraryItemId)
-          .fold(onSuccess = { it }, onFailure = { emptyList() })
-
-      remote.forEach { localCacheRepository.upsertBookmark(it) }
-
-      return (remote + local)
+        .filter { it.syncState != BookmarkSyncState.PENDING_DELETE }
         .sortedByDescending { it.createdAt }
         .fold(mutableListOf<Bookmark>()) { acc, b ->
           if (acc.none { it.isSame(b) }) acc.add(b)
           acc
         }
+
+    suspend fun fetchBookmarks(libraryItemId: String): List<Bookmark> {
+      val local = localCacheRepository.fetchBookmarks(libraryItemId)
+
+      local
+        .asSequence()
+        .filter { it.libraryItemId == libraryItemId }
+        .filter { it.syncState == BookmarkSyncState.PENDING_CREATE }
+        .forEach { pending ->
+          channelProvider
+            .provideMediaChannel()
+            .createBookmark(
+              CreateBookmarkRequest(
+                title = pending.title,
+                time = pending.totalPosition.toInt(),
+                libraryItemId = pending.libraryItemId,
+              ),
+            ).foldAsync(
+              onSuccess = { remoteCreated ->
+                localCacheRepository.deleteBookmark(pending.libraryItemId, pending.totalPosition)
+                localCacheRepository.upsertBookmark(remoteCreated.copy(syncState = BookmarkSyncState.SYNCED))
+              },
+              onFailure = { Unit },
+            )
+        }
+
+      local
+        .asSequence()
+        .filter { it.libraryItemId == libraryItemId }
+        .filter { it.syncState == BookmarkSyncState.PENDING_DELETE }
+        .forEach { pendingDelete ->
+          channelProvider
+            .provideMediaChannel()
+            .dropBookmark(pendingDelete)
+            .foldAsync(
+              onSuccess = {
+                localCacheRepository.deleteBookmark(pendingDelete.libraryItemId, pendingDelete.totalPosition)
+              },
+              onFailure = { Unit },
+            )
+        }
+
+      val remote =
+        channelProvider
+          .provideMediaChannel()
+          .fetchBookmarks(libraryItemId)
+          .foldAsync(
+            onSuccess = { it },
+            onFailure = { return@foldAsync null },
+          ) ?: return provideBookmarks(libraryItemId)
+
+      remote.forEach { localCacheRepository.upsertBookmark(it.copy(syncState = BookmarkSyncState.SYNCED)) }
+
+      val afterSyncLocal = localCacheRepository.fetchBookmarks(libraryItemId)
+
+      afterSyncLocal
+        .asSequence()
+        .filter { it.syncState == BookmarkSyncState.SYNCED }
+        .filter { l -> remote.none { r -> r.isSame(l) } }
+        .forEach { orphan -> localCacheRepository.deleteBookmark(orphan.libraryItemId, orphan.totalPosition) }
+
+      return provideBookmarks(libraryItemId)
     }
 
     suspend fun createBookmark(
@@ -47,7 +95,7 @@ class CachedBookmarkProvider
       totalTime: Double,
       libraryItemId: String,
       currentChapter: String,
-    ): Bookmark? {
+    ): Bookmark {
       val localDraft =
         Bookmark(
           libraryItemId = libraryItemId,
@@ -56,6 +104,8 @@ class CachedBookmarkProvider
           createdAt = System.currentTimeMillis(),
           syncState = BookmarkSyncState.PENDING_CREATE,
         )
+
+      localCacheRepository.upsertBookmark(localDraft)
 
       return channelProvider
         .provideMediaChannel()
@@ -67,28 +117,26 @@ class CachedBookmarkProvider
           ),
         ).foldAsync(
           onSuccess = { remote ->
-            localCacheRepository.upsertBookmark(remote)
-            remote
+            localCacheRepository.upsertBookmark(remote.copy(syncState = BookmarkSyncState.SYNCED))
+            remote.copy(syncState = BookmarkSyncState.SYNCED)
           },
           onFailure = {
-            localCacheRepository.deleteBookmark(libraryItemId, totalTime)
-            null
+            localDraft
           },
         )
     }
 
     suspend fun dropBookmark(bookmark: Bookmark) {
-      localCacheRepository.deleteBookmark(bookmark.libraryItemId, bookmark.totalPosition)
+      localCacheRepository.upsertBookmark(
+        bookmark.copy(syncState = BookmarkSyncState.PENDING_DELETE),
+      )
 
       channelProvider
         .provideMediaChannel()
         .dropBookmark(bookmark)
         .foldAsync(
-          onSuccess = { Unit },
-          onFailure = {
-            localCacheRepository.deleteBookmark(bookmark.libraryItemId, bookmark.totalPosition)
-            localCacheRepository.upsertBookmark(bookmark)
-          },
+          onSuccess = { localCacheRepository.deleteBookmark(bookmark.libraryItemId, bookmark.totalPosition) },
+          onFailure = { Unit },
         )
     }
   }
