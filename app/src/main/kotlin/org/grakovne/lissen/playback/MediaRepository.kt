@@ -591,10 +591,8 @@ class MediaRepository
 
     suspend fun updateBookmarks() {
       val book = playingBook.value ?: return
-      val bookmarks =
-        withContext(Dispatchers.IO) {
-          mediaChannel.fetchBookmarks(book.id)
-        }
+      val bookmarks = withContext(Dispatchers.IO) { mediaChannel.updateAndProvideBookmarks(book.id) }
+
       _bookmarks.value = bookmarks
     }
 

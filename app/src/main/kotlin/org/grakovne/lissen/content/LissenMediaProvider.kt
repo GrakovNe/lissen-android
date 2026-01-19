@@ -62,17 +62,11 @@ class LissenMediaProvider
         .sortedByDescending { it.createdAt }
         .fold(emptyList()) { acc, item -> if (acc.any { it.isSame(item) }) acc else acc + item }
 
-    suspend fun fetchBookmarks(playingItemId: String): List<Bookmark> {
-      val bookmarks =
-        when (preferences.isForceCache()) {
-          true -> localCacheRepository.fetchBookmarks(playingItemId)
-          false -> cachedBookmarkProvider.fetchBookmarks(playingItemId)
-        }
-
-      return bookmarks
+    suspend fun updateAndProvideBookmarks(playingItemId: String): List<Bookmark> =
+      cachedBookmarkProvider
+        .fetchBookmarks(playingItemId)
         .sortedByDescending { it.createdAt }
         .fold(emptyList()) { acc, b -> if (acc.any { it.isSame(b) }) acc else acc + b }
-    }
 
     fun provideFileUri(
       libraryItemId: String,
