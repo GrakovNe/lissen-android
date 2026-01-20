@@ -20,7 +20,6 @@ import org.grakovne.lissen.lib.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import timber.log.Timber
 import java.io.File
-import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -158,12 +157,7 @@ class LissenMediaProvider
           OperationResult.Success(it)
         },
         onFailure = {
-          OperationResult.Success(
-            PlaybackSession(
-              sessionId = "local-${UUID.randomUUID()}",
-              itemId = itemId,
-            ),
-          )
+          OperationResult.Success(PlaybackSession.local(itemId))
         },
       )
     }
