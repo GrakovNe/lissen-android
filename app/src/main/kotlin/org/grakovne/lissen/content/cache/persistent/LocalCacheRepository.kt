@@ -41,10 +41,10 @@ class LocalCacheRepository
      * as a Playback Session Key
      */
     suspend fun syncProgress(
-      bookId: String,
+      detailedItem: DetailedItem,
       progress: PlaybackProgress,
     ): OperationResult<Unit> {
-      cachedBookRepository.syncProgress(bookId, progress)
+      cachedBookRepository.syncProgress(detailedItem, progress)
       return OperationResult.Success(Unit)
     }
 
@@ -110,6 +110,10 @@ class LocalCacheRepository
     suspend fun updateLibraries(libraries: List<Library>) {
       cachedLibraryRepository.cacheLibraries(libraries)
     }
+
+    suspend fun fetchPlayingItemProgress(itemId: String) =
+      cachedBookRepository
+        .fetchMediaProgress(itemId)
 
     suspend fun fetchRecentListenedBooks(libraryId: String): OperationResult<List<RecentBook>> =
       cachedBookRepository

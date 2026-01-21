@@ -170,4 +170,6 @@
     <string name="restart_the_app_to_start_using_the_new_codecs_cta">Neustart</string>
     <string name="codes_not_supported_warning_toast">Audioformat wird nicht unterstützt</string>
     <string name="timer_option_disabled">Ausgeschaltet</string>
+    <string name="bookmarks_create_bookmark">Lesezeichen erstellen</string>
+    <string name="bookmarks_title">Lesezeichen</string>
 </resources>
