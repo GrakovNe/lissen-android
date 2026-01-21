@@ -1,7 +1,6 @@
 package org.grakovne.lissen.content.cache.persistent
 
 import androidx.annotation.Keep
-import com.squareup.moshi.JsonClass
 import org.grakovne.lissen.lib.domain.CacheStatus
 
 @Keep

@@ -4,7 +4,6 @@ import org.grakovne.lissen.content.cache.persistent.converter.CachedBookmarkEnti
 import org.grakovne.lissen.content.cache.persistent.dao.CachedBookmarkDao
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookmarkEntity
 import org.grakovne.lissen.lib.domain.Bookmark
-import org.grakovne.lissen.lib.domain.BookmarkSyncState
 import org.grakovne.lissen.lib.domain.asBookmarkSyncState
 import org.grakovne.lissen.lib.domain.asInteger
 import java.util.UUID

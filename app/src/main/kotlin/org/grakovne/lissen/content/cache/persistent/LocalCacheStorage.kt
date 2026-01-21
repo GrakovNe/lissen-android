@@ -8,7 +8,6 @@ import org.grakovne.lissen.content.cache.persistent.dao.CachedLibraryDao
 import org.grakovne.lissen.content.cache.persistent.entity.BookChapterEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookFileEntity
-import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookmarkEntity
 import org.grakovne.lissen.content.cache.persistent.entity.CachedLibraryEntity
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity

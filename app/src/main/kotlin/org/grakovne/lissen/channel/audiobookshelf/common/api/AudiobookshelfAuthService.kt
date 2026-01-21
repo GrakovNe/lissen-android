@@ -4,8 +4,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.net.toUri
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,7 +25,6 @@ import org.grakovne.lissen.channel.audiobookshelf.common.oauth.AuthScheme
 import org.grakovne.lissen.channel.common.ApiClient
 import org.grakovne.lissen.channel.common.AuthData
 import org.grakovne.lissen.channel.common.AuthData.Companion.empty
-import org.grakovne.lissen.channel.common.AuthMethod
 import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.OAuthContextCache
 import org.grakovne.lissen.channel.common.OperationError

@@ -1,6 +1,5 @@
 package org.grakovne.lissen.channel.common
 
-import okhttp3.Cache
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request

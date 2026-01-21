@@ -8,7 +8,6 @@ import android.graphics.BitmapFactory.decodeResource
 import android.graphics.Canvas
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.createBitmap

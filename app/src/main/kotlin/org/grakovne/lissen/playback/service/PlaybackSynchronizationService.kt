@@ -92,8 +92,9 @@ class PlaybackSynchronizationService
     private fun runSync() {
       val elapsedMs = exoPlayer.currentPosition
       val overallProgress = getProgress(elapsedMs) ?: return
+      val currentItem = currentItem ?: return
 
-      Timber.d("Trying to sync $overallProgress for ${currentItem?.id}")
+      Timber.d("Trying to sync $overallProgress for ${currentItem.id}")
 
       serviceScope.launch(Dispatchers.IO) {
         if (syncMutex.tryLock().not()) {
@@ -102,13 +103,10 @@ class PlaybackSynchronizationService
         }
 
         try {
-          val currentIndex =
-            currentItem
-              ?.let { calculateChapterIndex(it, overallProgress.currentTotalTime) }
-              ?: return@launch
+          val currentIndex = calculateChapterIndex(currentItem, overallProgress.currentTotalTime)
 
           if (playbackSession == null ||
-            playbackSession?.itemId != currentItem?.id ||
+            playbackSession?.itemId != currentItem.id ||
             currentIndex != currentChapterIndex ||
             playbackSession?.sessionSource == PlaybackSessionSource.LOCAL
           ) {
@@ -116,7 +114,13 @@ class PlaybackSynchronizationService
             currentChapterIndex = currentIndex
           }
 
-          playbackSession?.let { requestSync(it, overallProgress) }
+          playbackSession?.let {
+            requestSync(
+              item = currentItem,
+              it = it,
+              overallProgress = overallProgress,
+            )
+          }
         } catch (e: Exception) {
           Timber.e(e, "Error during sync")
         } finally {
@@ -126,13 +130,14 @@ class PlaybackSynchronizationService
     }
 
     private suspend fun requestSync(
+      item: DetailedItem,
       it: PlaybackSession,
       overallProgress: PlaybackProgress,
     ): Unit? =
       mediaChannel
         .syncProgress(
           sessionId = it.sessionId,
-          itemId = it.itemId,
+          detailedItem = item,
           progress = overallProgress,
         ).foldAsync(
           onSuccess = {},

@@ -1,6 +1,5 @@
 package org.grakovne.lissen.content.cache.persistent.converter
 
-import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import org.grakovne.lissen.common.moshi
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity

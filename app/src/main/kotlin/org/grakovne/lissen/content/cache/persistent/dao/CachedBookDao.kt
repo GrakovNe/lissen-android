@@ -9,9 +9,7 @@ import androidx.room.Query
 import androidx.room.RawQuery
 import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Transaction
-import androidx.room.Update
 import androidx.sqlite.db.SupportSQLiteQuery
-import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import org.grakovne.lissen.common.moshi
 import org.grakovne.lissen.content.cache.persistent.entity.BookChapterEntity

@@ -8,6 +8,7 @@ import org.grakovne.lissen.content.cache.persistent.OfflineBookStorageProperties
 import org.grakovne.lissen.content.cache.persistent.converter.CachedBookEntityConverter
 import org.grakovne.lissen.content.cache.persistent.converter.CachedBookEntityDetailedConverter
 import org.grakovne.lissen.content.cache.persistent.converter.CachedBookEntityRecentConverter
+import org.grakovne.lissen.content.cache.persistent.converter.MediaProgressEntityConverter
 import org.grakovne.lissen.content.cache.persistent.dao.CachedBookDao
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
 import org.grakovne.lissen.lib.domain.Book
@@ -30,6 +31,7 @@ class CachedBookRepository
     private val cachedBookEntityConverter: CachedBookEntityConverter,
     private val cachedBookEntityDetailedConverter: CachedBookEntityDetailedConverter,
     private val cachedBookEntityRecentConverter: CachedBookEntityRecentConverter,
+    private val mediaProgressEntityConverter: MediaProgressEntityConverter,
     private val preferences: LissenSharedPreferences,
   ) {
     fun provideFileUri(
@@ -137,17 +139,20 @@ class CachedBookRepository
         .fetchCachedBook(bookId)
         ?.let { cachedBookEntityDetailedConverter.apply(it) }
 
+    suspend fun fetchMediaProgress(playingItemId: String) =
+      bookDao
+        .fetchMediaProgress(playingItemId)
+        ?.let { mediaProgressEntityConverter.apply(it) }
+
     suspend fun syncProgress(
-      bookId: String,
+      playingItem: DetailedItem,
       progress: PlaybackProgress,
     ) {
-      val book = bookDao.fetchCachedBook(bookId) ?: return
-
       val entity =
         MediaProgressEntity(
-          bookId = bookId,
+          bookId = playingItem.id,
           currentTime = progress.currentTotalTime,
-          isFinished = progress.currentTotalTime == book.chapters.sumOf { it.duration },
+          isFinished = progress.currentTotalTime == playingItem.chapters.sumOf { it.duration },
           lastUpdate = Instant.now().toEpochMilli(),
         )
 

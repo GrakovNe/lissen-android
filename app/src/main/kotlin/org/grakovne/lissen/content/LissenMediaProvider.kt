@@ -26,7 +26,6 @@ import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.collections.plus
 
 @Singleton
 class LissenMediaProvider
@@ -93,12 +92,12 @@ class LissenMediaProvider
 
     suspend fun syncProgress(
       sessionId: String,
-      itemId: String,
+      detailedItem: DetailedItem,
       progress: PlaybackProgress,
     ): OperationResult<Unit> {
-      Timber.d("Syncing Progress for $itemId. $progress")
+      Timber.d("Syncing Progress for $detailedItem. $progress")
 
-      localCacheRepository.syncProgress(itemId, progress)
+      localCacheRepository.syncProgress(detailedItem, progress)
 
       val channelSyncResult =
         providePreferredChannel()
@@ -183,19 +182,20 @@ class LissenMediaProvider
     ): OperationResult<PlaybackSession> {
       Timber.d("Starting Playback for $itemId. $supportedMimeTypes are supported")
 
-      return providePreferredChannel().startPlayback(
-        bookId = itemId,
-        episodeId = chapterId,
-        supportedMimeTypes = supportedMimeTypes,
-        deviceId = deviceId,
-      ).foldAsync(
-        onSuccess = {
-          OperationResult.Success(it)
-        },
-        onFailure = {
-          OperationResult.Success(PlaybackSession.local(itemId))
-        },
-      )
+      return providePreferredChannel()
+        .startPlayback(
+          bookId = itemId,
+          episodeId = chapterId,
+          supportedMimeTypes = supportedMimeTypes,
+          deviceId = deviceId,
+        ).foldAsync(
+          onSuccess = {
+            OperationResult.Success(it)
+          },
+          onFailure = {
+            OperationResult.Success(PlaybackSession.local(itemId))
+          },
+        )
     }
 
     suspend fun fetchRecentListenedBooks(libraryId: String): OperationResult<List<RecentBook>> {
@@ -332,9 +332,7 @@ class LissenMediaProvider
     }
 
     private suspend fun syncFromLocalProgress(detailedItem: DetailedItem): DetailedItem {
-      val cachedBook = localCacheRepository.fetchBook(detailedItem.id) ?: return detailedItem
-
-      val cachedProgress = cachedBook.progress ?: return detailedItem
+      val cachedProgress = localCacheRepository.fetchPlayingItemProgress(detailedItem.id)
       val channelProgress = detailedItem.progress
 
       val updatedProgress =
