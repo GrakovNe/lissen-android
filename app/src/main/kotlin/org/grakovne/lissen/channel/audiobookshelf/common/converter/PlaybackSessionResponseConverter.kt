@@ -10,7 +10,7 @@ class PlaybackSessionResponseConverter
   @Inject
   constructor() {
     fun apply(response: PlaybackSessionResponse): PlaybackSession =
-      PlaybackSession(
+      PlaybackSession.remote(
         sessionId = response.id,
         itemId = response.libraryItemId,
       )

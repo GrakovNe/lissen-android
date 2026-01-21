@@ -170,4 +170,6 @@
     <string name="restart_the_app_to_start_using_the_new_codecs_title">重启应用程序以开始使用新的编解码器</string>
     <string name="restart_the_app_to_start_using_the_new_codecs_cta">重启</string>
     <string name="codes_not_supported_warning_toast">不支持此音频格式</string>
+    <string name="bookmarks_create_bookmark">创建书签</string>
+    <string name="bookmarks_title">书签</string>
 </resources>

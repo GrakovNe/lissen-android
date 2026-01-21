@@ -102,14 +102,6 @@ data class BookChapterEntity(
 @Keep
 @Entity(
   tableName = "media_progress",
-  foreignKeys = [
-    ForeignKey(
-      entity = BookEntity::class,
-      parentColumns = ["id"],
-      childColumns = ["bookId"],
-      onDelete = ForeignKey.CASCADE,
-    ),
-  ],
   indices = [Index(value = ["bookId"])],
 )
 @JsonClass(generateAdapter = true)

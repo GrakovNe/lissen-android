@@ -171,6 +171,8 @@ class PlaybackService : MediaSessionService() {
               sharedPreferences = sharedPreferences,
               mediaProvider = mediaProvider,
             )
+          
+          val playingItemCover = fetchCover(book)
 
           val playingQueue =
             book
@@ -181,7 +183,7 @@ class PlaybackService : MediaSessionService() {
                     .Builder()
                     .setTitle(file.name)
                     .setArtist(book.title)
-                    .setArtworkUri(fetchCover(book))
+                    .setArtworkUri(playingItemCover)
 
                 val mediaItem =
                   MediaItem

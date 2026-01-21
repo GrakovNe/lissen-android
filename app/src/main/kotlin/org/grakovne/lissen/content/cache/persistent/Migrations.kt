@@ -288,3 +288,35 @@ val MIGRATION_15_16 =
       )
     }
   }
+
+val MIGRATION_16_17 =
+  object : Migration(16, 17) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+      db.execSQL(
+        """
+        CREATE TABLE media_progress_new (
+            bookId TEXT NOT NULL,
+            currentTime REAL NOT NULL,
+            isFinished INTEGER NOT NULL,
+            lastUpdate INTEGER NOT NULL,
+            PRIMARY KEY(bookId)
+        )
+        """.trimIndent(),
+      )
+
+      db.execSQL(
+        """
+        INSERT INTO media_progress_new (bookId, currentTime, isFinished, lastUpdate)
+        SELECT mp.bookId, mp.currentTime, mp.isFinished, mp.lastUpdate
+        FROM media_progress mp
+        WHERE EXISTS (
+          SELECT 1 FROM detailed_books b WHERE b.id = mp.bookId
+        )
+        """.trimIndent(),
+      )
+
+      db.execSQL("DROP TABLE media_progress")
+      db.execSQL("ALTER TABLE media_progress_new RENAME TO media_progress")
+      db.execSQL("CREATE INDEX IF NOT EXISTS index_media_progress_bookId ON media_progress(bookId)")
+    }
+  }

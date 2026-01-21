@@ -1,6 +1,5 @@
 package org.grakovne.lissen.content.cache.persistent.converter
 
-import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
 import org.grakovne.lissen.common.moshi
 import org.grakovne.lissen.content.cache.persistent.entity.BookSeriesDto
@@ -8,7 +7,6 @@ import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
 import org.grakovne.lissen.lib.domain.BookFile
 import org.grakovne.lissen.lib.domain.BookSeries
 import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.MediaProgress
 import org.grakovne.lissen.lib.domain.PlayingChapter
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,7 +14,9 @@ import javax.inject.Singleton
 @Singleton
 class CachedBookEntityDetailedConverter
   @Inject
-  constructor() {
+  constructor(
+    private val mediaProgressEntityConverter: MediaProgressEntityConverter,
+  ) {
     fun apply(entity: CachedBookEntity): DetailedItem =
       DetailedItem(
         id = entity.detailedBook.id,
@@ -66,13 +66,6 @@ class CachedBookEntityDetailedConverter
                 serialNumber = it.sequence,
               )
             } ?: emptyList(),
-        progress =
-          entity.progress?.let { progressEntity ->
-            MediaProgress(
-              currentTime = progressEntity.currentTime,
-              isFinished = progressEntity.isFinished,
-              lastUpdate = progressEntity.lastUpdate,
-            )
-          },
+        progress = entity.progress?.let { mediaProgressEntityConverter.apply(it) },
       )
   }
