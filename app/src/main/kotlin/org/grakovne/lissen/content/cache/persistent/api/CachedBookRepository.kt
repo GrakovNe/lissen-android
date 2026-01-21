@@ -47,7 +47,10 @@ class CachedBookRepository
     suspend fun removeBook(bookId: String) {
       bookDao
         .fetchBook(bookId)
-        ?.let { bookDao.deleteBook(it) }
+        ?.let {
+          bookDao.deleteMediaProgress(it.id)
+          bookDao.deleteBook(it)
+        }
     }
 
     suspend fun cacheBook(
