@@ -14,6 +14,7 @@ import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.PlaybackProgress
 import org.grakovne.lissen.lib.domain.PlaybackSession
+import org.grakovne.lissen.lib.domain.PlaybackSessionSource
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import timber.log.Timber
 import javax.inject.Inject
@@ -106,7 +107,11 @@ class PlaybackSynchronizationService
               ?.let { calculateChapterIndex(it, overallProgress.currentTotalTime) }
               ?: return@launch
 
-          if (playbackSession == null || playbackSession?.itemId != currentItem?.id || currentIndex != currentChapterIndex) {
+          if (playbackSession == null ||
+            playbackSession?.itemId != currentItem?.id ||
+            currentIndex != currentChapterIndex ||
+            playbackSession?.sessionSource == PlaybackSessionSource.LOCAL
+          ) {
             openPlaybackSession(overallProgress)
             currentChapterIndex = currentIndex
           }

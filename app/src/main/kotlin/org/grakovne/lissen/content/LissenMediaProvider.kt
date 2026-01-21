@@ -188,6 +188,13 @@ class LissenMediaProvider
         episodeId = chapterId,
         supportedMimeTypes = supportedMimeTypes,
         deviceId = deviceId,
+      ).foldAsync(
+        onSuccess = {
+          OperationResult.Success(it)
+        },
+        onFailure = {
+          OperationResult.Success(PlaybackSession.local(itemId))
+        },
       )
     }
 
