@@ -15,7 +15,10 @@ class OfflineBookStorageProperties
     private fun baseFolder(): File =
       context
         .getExternalFilesDir(MEDIA_CACHE_FOLDER)
-        ?.takeIf { it.exists() || it.mkdirs() && it.canWrite() }
+        ?.takeIf {
+          it.exists() ||
+            (it.mkdirs() && it.canWrite())
+        }
         ?: context
           .cacheDir
           .resolve(MEDIA_CACHE_FOLDER)

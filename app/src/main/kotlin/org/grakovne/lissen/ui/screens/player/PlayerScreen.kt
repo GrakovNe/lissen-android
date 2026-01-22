@@ -156,12 +156,13 @@ fun PlayerScreen(
               },
             ) { isSearchRequested ->
               when (isSearchRequested) {
-                true ->
+                true -> {
                   ChapterSearchActionComposable(
                     onSearchRequested = { playerViewModel.updateSearch(it) },
                   )
+                }
 
-                false ->
+                false -> {
                   Row {
                     IconButton(
                       onClick = { playerViewModel.requestSearch() },
@@ -173,6 +174,7 @@ fun PlayerScreen(
                       )
                     }
                   }
+                }
               }
             }
           } else {

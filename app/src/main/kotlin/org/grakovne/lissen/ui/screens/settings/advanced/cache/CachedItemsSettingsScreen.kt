@@ -152,8 +152,11 @@ fun CachedItemsSettingsScreen(
           .fillMaxSize(),
     ) {
       when (cachedItems.itemCount == 0) {
-        true -> CachedItemsFallbackComposable()
-        false ->
+        true -> {
+          CachedItemsFallbackComposable()
+        }
+
+        false -> {
           CachedItemsComposable(
             cachedItems = cachedItems,
             imageLoader = imageLoader,
@@ -161,6 +164,7 @@ fun CachedItemsSettingsScreen(
             playerViewModel = playerViewModel,
             onItemRemoved = { refreshContent(showPullRefreshing = false) },
           )
+        }
       }
 
       PullRefreshIndicator(

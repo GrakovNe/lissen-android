@@ -73,7 +73,9 @@ class MediaSessionProvider
                   return true
                 }
 
-                else -> return super.onMediaButtonEvent(session, controllerInfo, intent)
+                else -> {
+                  return super.onMediaButtonEvent(session, controllerInfo, intent)
+                }
               }
             }
 

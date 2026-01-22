@@ -74,19 +74,21 @@ class LissenMediaProvider
       Timber.d("Fetching File $libraryItemId and $chapterId URI")
 
       return when (preferences.isForceCache()) {
-        true ->
+        true -> {
           localCacheRepository
             .provideFileUri(libraryItemId, chapterId)
             ?.let { OperationResult.Success(it) }
             ?: OperationResult.Error(OperationError.InternalError)
+        }
 
-        false ->
+        false -> {
           localCacheRepository
             .provideFileUri(libraryItemId, chapterId)
             ?.let { OperationResult.Success(it) }
             ?: providePreferredChannel()
               .provideFileUri(libraryItemId, chapterId)
               .let { OperationResult.Success(it) }
+        }
       }
     }
 
@@ -115,13 +117,17 @@ class LissenMediaProvider
     ): OperationResult<File> {
       Timber.d("Fetching Cover stream for $bookId")
       return when (preferences.isForceCache()) {
-        true -> localCacheRepository.fetchBookCover(bookId)
-        false ->
+        true -> {
+          localCacheRepository.fetchBookCover(bookId)
+        }
+
+        false -> {
           cachedCoverProvider.provideCover(
             channel = providePreferredChannel(),
             itemId = bookId,
             width = width,
           )
+        }
       }
     }
 
@@ -133,14 +139,18 @@ class LissenMediaProvider
       Timber.d("Searching books with query $query of library: $libraryId")
 
       return when (preferences.isForceCache()) {
-        true -> localCacheRepository.searchBooks(libraryId = libraryId, query = query)
-        false ->
+        true -> {
+          localCacheRepository.searchBooks(libraryId = libraryId, query = query)
+        }
+
+        false -> {
           providePreferredChannel()
             .searchBooks(
               libraryId = libraryId,
               query = query,
               limit = limit,
             )
+        }
       }
     }
 
@@ -161,8 +171,11 @@ class LissenMediaProvider
       Timber.d("Fetching List of libraries")
 
       return when (preferences.isForceCache()) {
-        true -> localCacheRepository.fetchLibraries()
-        false ->
+        true -> {
+          localCacheRepository.fetchLibraries()
+        }
+
+        false -> {
           providePreferredChannel()
             .fetchLibraries()
             .also {
@@ -171,6 +184,7 @@ class LissenMediaProvider
                 onFailure = {},
               )
             }
+        }
       }
     }
 
@@ -202,11 +216,15 @@ class LissenMediaProvider
       Timber.d("Fetching Recent books of library $libraryId")
 
       return when (preferences.isForceCache()) {
-        true -> localCacheRepository.fetchRecentListenedBooks(libraryId)
-        false ->
+        true -> {
+          localCacheRepository.fetchRecentListenedBooks(libraryId)
+        }
+
+        false -> {
           providePreferredChannel()
             .fetchRecentListenedBooks(libraryId)
             .map { items -> syncFromLocalProgress(libraryId = libraryId, detailedItems = items) }
+        }
       }
     }
 
@@ -214,16 +232,18 @@ class LissenMediaProvider
       Timber.d("Fetching Detailed book info for $bookId")
 
       return when (preferences.isForceCache()) {
-        true ->
+        true -> {
           localCacheRepository
             .fetchBook(bookId)
             ?.let { OperationResult.Success(it) }
             ?: OperationResult.Error(OperationError.InternalError)
+        }
 
-        false ->
+        false -> {
           providePreferredChannel()
             .fetchBook(bookId)
             .map { syncFromLocalProgress(it) }
+        }
       }
     }
 

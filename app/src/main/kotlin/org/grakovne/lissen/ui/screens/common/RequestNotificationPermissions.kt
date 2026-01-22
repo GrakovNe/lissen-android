@@ -29,7 +29,10 @@ fun RequestNotificationPermissions() {
 
       when (permissionStatus == PackageManager.PERMISSION_GRANTED) {
         true -> {}
-        false -> permissionRequestLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+
+        false -> {
+          permissionRequestLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
       }
     }
   }

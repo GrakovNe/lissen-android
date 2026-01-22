@@ -12,18 +12,36 @@ suspend fun <T> safeApiCall(apiCall: suspend () -> Response<T>): OperationResult
     val response = apiCall.invoke()
 
     return when (response.code()) {
-      200 ->
+      200 -> {
         when (val body = response.body()) {
           null -> OperationResult.Error(OperationError.InternalError)
           else -> OperationResult.Success(body)
         }
+      }
 
-      400 -> OperationResult.Error(OperationError.InternalError)
-      401 -> OperationResult.Error(OperationError.Unauthorized)
-      403 -> OperationResult.Error(OperationError.Unauthorized)
-      404 -> OperationResult.Error(OperationError.NotFoundError)
-      500 -> OperationResult.Error(OperationError.InternalError)
-      else -> OperationResult.Error(OperationError.InternalError)
+      400 -> {
+        OperationResult.Error(OperationError.InternalError)
+      }
+
+      401 -> {
+        OperationResult.Error(OperationError.Unauthorized)
+      }
+
+      403 -> {
+        OperationResult.Error(OperationError.Unauthorized)
+      }
+
+      404 -> {
+        OperationResult.Error(OperationError.NotFoundError)
+      }
+
+      500 -> {
+        OperationResult.Error(OperationError.InternalError)
+      }
+
+      else -> {
+        OperationResult.Error(OperationError.InternalError)
+      }
     }
   } catch (e: IOException) {
     Timber.e("Unable to make network api call due to: $e")

@@ -135,20 +135,23 @@ fun DownloadsComposable(
                     Text(
                       text =
                         when (libraryType) {
-                          LibraryType.LIBRARY ->
+                          LibraryType.LIBRARY -> {
                             stringResource(
                               R.string.downloads_menu_download_option_clear_chapters,
                             )
+                          }
 
-                          LibraryType.PODCAST ->
+                          LibraryType.PODCAST -> {
                             stringResource(
                               R.string.downloads_menu_download_option_clear_episodes,
                             )
+                          }
 
-                          LibraryType.UNKNOWN ->
+                          LibraryType.UNKNOWN -> {
                             stringResource(
                               R.string.downloads_menu_download_option_clear_items,
                             )
+                          }
                         },
                       color = colorScheme.error,
                       style = typography.bodyMedium,

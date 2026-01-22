@@ -198,13 +198,14 @@ fun NavigationBarComposable(
               )
             }
 
-            null ->
+            null -> {
               Text(
                 text = stringResource(R.string.player_screen_timer_navigation),
                 style = labelStyle,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
               )
+            }
           }
         },
         enabled = hasEpisodes,

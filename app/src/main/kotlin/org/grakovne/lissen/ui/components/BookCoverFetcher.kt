@@ -39,7 +39,10 @@ class BookCoverFetcher(
       }
 
     return when (response) {
-      is OperationResult.Error -> null
+      is OperationResult.Error -> {
+        null
+      }
+
       is OperationResult.Success -> {
         val stream: File = response.data
         val imageSource =

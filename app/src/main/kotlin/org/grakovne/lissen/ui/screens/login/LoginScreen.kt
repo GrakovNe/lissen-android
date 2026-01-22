@@ -96,7 +96,10 @@ fun LoginScreen(
     }
 
     when (loginState) {
-      is LoginState.Success -> navController.showLibrary(clearHistory = true)
+      is LoginState.Success -> {
+        navController.showLibrary(clearHistory = true)
+      }
+
       is LoginState.Error -> {
         val message = (loginState as LoginState.Error).message
 

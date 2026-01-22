@@ -230,7 +230,9 @@ class MediaRepository
       _timerOption.postValue(timerOption)
 
       when (timerOption) {
-        is DurationTimerOption -> scheduleServiceTimer(timerOption.duration * 60.0, timerOption)
+        is DurationTimerOption -> {
+          scheduleServiceTimer(timerOption.duration * 60.0, timerOption)
+        }
 
         is CurrentEpisodeTimerOption -> {
           val playingBook = playingBook.value ?: return
@@ -254,7 +256,9 @@ class MediaRepository
           )
         }
 
-        null -> cancelServiceTimer()
+        null -> {
+          cancelServiceTimer()
+        }
       }
     }
 
@@ -318,7 +322,10 @@ class MediaRepository
 
     fun prepareAndPlay(book: DetailedItem) {
       when (isPlaybackReady.value) {
-        true -> play()
+        true -> {
+          play()
+        }
+
         else -> {
           _playAfterPrepare.postValue(true)
           startPreparingPlayback(book)
@@ -539,14 +546,20 @@ class MediaRepository
 
     private fun adjustTimer(position: Double) {
       when (_timerOption.value) {
-        is CurrentEpisodeTimerOption ->
+        is CurrentEpisodeTimerOption -> {
           updateTimer(
             timerOption = _timerOption.value,
             position = position,
           )
+        }
 
-        is DurationTimerOption -> Unit
-        null -> Unit
+        is DurationTimerOption -> {
+          Unit
+        }
+
+        null -> {
+          Unit
+        }
       }
     }
 

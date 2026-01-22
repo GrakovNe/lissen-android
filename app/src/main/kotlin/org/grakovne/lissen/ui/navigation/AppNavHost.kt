@@ -54,12 +54,21 @@ fun AppNavHost(
 
   val startDestination =
     when {
-      appLaunchAction == AppLaunchAction.MANAGE_DOWNLOADS -> "$ROUTE_SETTINGS/cached_items"
-      hasCredentials.not() -> ROUTE_LOGIN
-      appLaunchAction == AppLaunchAction.CONTINUE_PLAYBACK && book != null ->
-        "$ROUTE_PLAYER/${book.id}?bookTitle=${book.title}&bookSubtitle=${book.subtitle}&startInstantly=true"
+      appLaunchAction == AppLaunchAction.MANAGE_DOWNLOADS -> {
+        "$ROUTE_SETTINGS/cached_items"
+      }
 
-      else -> ROUTE_LIBRARY
+      hasCredentials.not() -> {
+        ROUTE_LOGIN
+      }
+
+      appLaunchAction == AppLaunchAction.CONTINUE_PLAYBACK && book != null -> {
+        "$ROUTE_PLAYER/${book.id}?bookTitle=${book.title}&bookSubtitle=${book.subtitle}&startInstantly=true"
+      }
+
+      else -> {
+        ROUTE_LIBRARY
+      }
     }
 
   val enterTransition: EnterTransition =

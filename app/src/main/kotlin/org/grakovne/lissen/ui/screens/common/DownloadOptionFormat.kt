@@ -14,7 +14,9 @@ fun DownloadOption?.makeText(
   libraryType: LibraryType,
 ): String =
   when (this) {
-    null -> context.getString(R.string.downloads_menu_download_option_disable)
+    null -> {
+      context.getString(R.string.downloads_menu_download_option_disable)
+    }
 
     CurrentItemDownloadOption -> {
       when (libraryType) {
@@ -42,23 +44,26 @@ fun DownloadOption?.makeText(
 
     is NumberItemDownloadOption -> {
       when (libraryType) {
-        LibraryType.LIBRARY ->
+        LibraryType.LIBRARY -> {
           context.getString(
             R.string.downloads_menu_download_option_next_chapters,
             itemsNumber,
           )
+        }
 
-        LibraryType.PODCAST ->
+        LibraryType.PODCAST -> {
           context.getString(
             R.string.downloads_menu_download_option_next_episodes,
             itemsNumber,
           )
+        }
 
-        LibraryType.UNKNOWN ->
+        LibraryType.UNKNOWN -> {
           context.getString(
             R.string.downloads_menu_download_option_next_items,
             itemsNumber,
           )
+        }
       }
     }
   }
