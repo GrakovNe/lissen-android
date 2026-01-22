@@ -53,8 +53,8 @@ android {
     applicationId = "org.surjit.kahani"
     minSdk = 28
     targetSdk = 36
-    versionCode = 10000
-    versionName = "1.0.0-${commitHash}"
+    versionCode = project.property("appVersionCode").toString().toInt()
+    versionName = project.property("appVersionName").toString()
     
     buildConfigField("String", "GIT_HASH", "\"$commitHash\"")
     
