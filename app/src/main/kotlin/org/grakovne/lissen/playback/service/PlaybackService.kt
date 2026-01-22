@@ -171,7 +171,7 @@ class PlaybackService : MediaSessionService() {
               sharedPreferences = sharedPreferences,
               mediaProvider = mediaProvider,
             )
-          
+
           val playingItemCover = fetchCover(book)
 
           val playingQueue =
