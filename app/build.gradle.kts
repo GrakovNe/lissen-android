@@ -1,12 +1,13 @@
 import java.util.Properties
 
 plugins {
+  kotlin("android")
+  
   alias(libs.plugins.android.application)
-  alias(libs.plugins.kotlin.android)
   alias(libs.plugins.compose.compiler)
   
   id("com.google.dagger.hilt.android")
-  id("org.jmailen.kotlinter") version "5.2.0"
+  id("org.jmailen.kotlinter") version "5.3.0"
   id("com.google.devtools.ksp")
 }
 
@@ -53,8 +54,8 @@ android {
     applicationId = "org.grakovne.lissen"
     minSdk = 28
     targetSdk = 36
-    versionCode = 10807
-    versionName = "1.8.7-$commitHash"
+    versionCode = 10808
+    versionName = "1.8.8-$commitHash"
     
     buildConfigField("String", "GIT_HASH", "\"$commitHash\"")
     

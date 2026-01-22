@@ -116,7 +116,10 @@ class SettingsViewModel
 
       viewModelScope.launch {
         when (val response = mediaChannel.fetchConnectionInfo()) {
-          is OperationResult.Error -> Unit
+          is OperationResult.Error -> {
+            Unit
+          }
+
           is OperationResult.Success -> {
             _username.postValue(response.data.username)
             _serverVersion.postValue(response.data.serverVersion)
@@ -272,7 +275,10 @@ class SettingsViewModel
     private fun fetchConnectionHost() {
       val host =
         when (val response = mediaChannel.fetchConnectionHost()) {
-          is OperationResult.Error -> preferences.getHost()?.let { Host.external(it) }
+          is OperationResult.Error -> {
+            preferences.getHost()?.let { Host.external(it) }
+          }
+
           is OperationResult.Success -> {
             response.data
           }

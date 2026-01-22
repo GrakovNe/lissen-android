@@ -25,7 +25,10 @@ class FetchRequestBuilder {
 
     val whereClause =
       when (val libraryId = libraryId) {
-        null -> "libraryId IS NULL"
+        null -> {
+          "libraryId IS NULL"
+        }
+
         else -> {
           args.add(libraryId)
           "(libraryId = ? OR libraryId IS NULL)"

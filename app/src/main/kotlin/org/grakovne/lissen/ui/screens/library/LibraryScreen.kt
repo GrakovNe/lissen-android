@@ -235,17 +235,21 @@ fun LibraryScreen(
     val type = libraryViewModel.fetchPreferredLibraryType()
 
     return when (type) {
-      LibraryType.LIBRARY ->
+      LibraryType.LIBRARY -> {
         libraryViewModel
           .fetchPreferredLibraryTitle()
           ?: context.getString(R.string.library_screen_library_title)
+      }
 
-      LibraryType.PODCAST ->
+      LibraryType.PODCAST -> {
         libraryViewModel
           .fetchPreferredLibraryTitle()
           ?: context.getString(R.string.library_screen_podcast_title)
+      }
 
-      LibraryType.UNKNOWN -> ""
+      LibraryType.UNKNOWN -> {
+        ""
+      }
     }
   }
 
@@ -278,13 +282,14 @@ fun LibraryScreen(
             },
           ) { isSearchRequested ->
             when (isSearchRequested) {
-              true ->
+              true -> {
                 LibrarySearchActionComposable(
                   onSearchDismissed = { libraryViewModel.dismissSearch() },
                   onSearchRequested = { libraryViewModel.updateSearch(it) },
                 )
+              }
 
-              false ->
+              false -> {
                 DefaultActionComposable(
                   navController = navController,
                   contentCachingModelView = cachingModelView,
@@ -292,6 +297,7 @@ fun LibraryScreen(
                   onContentRefreshing = { refreshContent(showPullRefreshing = false) },
                   onSearchRequested = { libraryViewModel.requestSearch() },
                 )
+              }
             }
           }
         },
@@ -300,15 +306,18 @@ fun LibraryScreen(
             Row(
               modifier =
                 when (navBarTitle) {
-                  provideLibraryTitle() ->
+                  provideLibraryTitle() -> {
                     Modifier
                       .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
                       ) { preferredLibraryExpanded = true }
                       .fillMaxWidth()
+                  }
 
-                  else -> Modifier.fillMaxWidth()
+                  else -> {
+                    Modifier.fillMaxWidth()
+                  }
                 },
             ) {
               Text(
@@ -406,13 +415,14 @@ fun LibraryScreen(
                 label = "library_header_fade",
               ) {
                 when {
-                  it == provideLibraryTitle() ->
+                  it == provideLibraryTitle() -> {
                     Spacer(
                       modifier =
                         Modifier
                           .fillMaxWidth()
                           .height(titleHeightDp),
                     )
+                  }
 
                   else -> {
                     if (isPlaceholderRequired.not()) {
@@ -443,7 +453,10 @@ fun LibraryScreen(
           }
 
           when {
-            isPlaceholderRequired -> item { LibraryPlaceholderComposable() }
+            isPlaceholderRequired -> {
+              item { LibraryPlaceholderComposable() }
+            }
+
             library.itemCount == 0 -> {
               item {
                 LibraryFallbackComposable(
@@ -455,7 +468,7 @@ fun LibraryScreen(
               }
             }
 
-            else ->
+            else -> {
               items(count = library.itemCount, key = { "library_item_$it" }) {
                 val book = library[it] ?: return@items
 
@@ -465,6 +478,7 @@ fun LibraryScreen(
                   navController = navController,
                 )
               }
+            }
           }
         }
 

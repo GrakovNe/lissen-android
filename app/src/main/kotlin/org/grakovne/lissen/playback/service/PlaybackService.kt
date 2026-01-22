@@ -171,7 +171,7 @@ class PlaybackService : MediaSessionService() {
               sharedPreferences = sharedPreferences,
               mediaProvider = mediaProvider,
             )
-          
+
           val playingItemCover = fetchCover(book)
 
           val playingQueue =
@@ -264,7 +264,10 @@ class PlaybackService : MediaSessionService() {
     }
 
     when (position) {
-      null -> exoPlayer.seekTo(0, 0)
+      null -> {
+        exoPlayer.seekTo(0, 0)
+      }
+
       else -> {
         val positionMs = (position * 1000).toLong()
 

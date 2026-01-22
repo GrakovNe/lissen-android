@@ -82,7 +82,7 @@ fun BookmarksComposable(
           val currentChapterTitle =
             currentPlayingItem
               ?.chapters
-              ?.get(currentTrackIndex)
+              ?.getOrNull(currentTrackIndex)
               ?.title
               ?: return@item
 

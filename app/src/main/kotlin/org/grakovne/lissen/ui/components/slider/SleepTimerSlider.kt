@@ -139,19 +139,24 @@ private fun Float.toLabelText(
   val value = roundToInt().coerceIn(INTERNAL_MIN_VALUE, INTERNAL_MAX_VALUE)
 
   return when (value) {
-    INTERNAL_DISABLED -> context.getString(R.string.timer_option_disabled)
-    INTERNAL_CHAPTER_END ->
+    INTERNAL_DISABLED -> {
+      context.getString(R.string.timer_option_disabled)
+    }
+
+    INTERNAL_CHAPTER_END -> {
       when (libraryType) {
         LIBRARY -> context.getString(R.string.timer_option_after_current_chapter)
         PODCAST, UNKNOWN -> context.getString(R.string.timer_option_after_current_episode)
       }
+    }
 
-    else ->
+    else -> {
       context.resources.getQuantityString(
         R.plurals.timer_option_after_time,
         value,
         value,
       )
+    }
   }
 }
 

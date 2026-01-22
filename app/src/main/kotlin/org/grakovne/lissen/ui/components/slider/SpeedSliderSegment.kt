@@ -67,18 +67,21 @@ fun SpeedSliderSegment(
         contentAlignment = Alignment.Center,
       ) {
         when (label) {
-          is String, is Int ->
+          is String, is Int -> {
             Text(
               text = label.toString(),
               fontSize = fontSize,
               lineHeight = fontSize,
             )
-          is ImageVector ->
+          }
+
+          is ImageVector -> {
             Icon(
               imageVector = label,
               contentDescription = null,
               modifier = Modifier.fillMaxHeight(),
             )
+          }
         }
       }
     }

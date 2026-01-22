@@ -78,6 +78,7 @@ fun MiniPlayerComposable(
             SwipeToDismissBoxValue.EndToStart,
             SwipeToDismissBoxValue.StartToEnd,
             -> true
+
             else -> false
           }
 

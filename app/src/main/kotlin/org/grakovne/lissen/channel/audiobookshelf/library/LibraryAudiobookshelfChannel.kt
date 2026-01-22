@@ -145,8 +145,14 @@ class LibraryAudiobookshelfChannel
           results
             .fold<OperationResult<List<Book>>, OperationResult<List<Book>>>(Success(emptyList())) { acc, res ->
               when {
-                acc is OperationResult.Error -> acc
-                res is OperationResult.Error -> res
+                acc is OperationResult.Error -> {
+                  acc
+                }
+
+                res is OperationResult.Error -> {
+                  res
+                }
+
                 else -> {
                   val combined = (acc as Success).data + (res as Success).data
                   Success(combined)

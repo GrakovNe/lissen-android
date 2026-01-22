@@ -70,7 +70,10 @@ class PlaybackEnhancerService
     private fun updateGain(value: PlaybackVolumeBoost) {
       try {
         when (value) {
-          PlaybackVolumeBoost.DISABLED -> enhancer?.enabled = false
+          PlaybackVolumeBoost.DISABLED -> {
+            enhancer?.enabled = false
+          }
+
           else -> {
             enhancer?.enabled = true
             enhancer?.setTargetGain(boostToMb(value))

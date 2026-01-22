@@ -113,13 +113,16 @@ class ContentCachingService : LifecycleService() {
             Timber.d("Caching progress updated: $progress")
 
             when (inProgress() && hasErrors().not()) {
-              true ->
+              true -> {
                 executionStatuses
                   .entries
                   .map { (item, status) -> item to status }
                   .let { notificationService.updateCachingNotification(it) }
+              }
 
-              false -> finish()
+              false -> {
+                finish()
+              }
             }
           }
       }

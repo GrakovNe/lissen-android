@@ -77,21 +77,25 @@ fun PlaylistItemComposable(
         ),
   ) {
     when {
-      isSelected ->
+      isSelected -> {
         Icon(
           imageVector = Icons.Outlined.Audiotrack,
           contentDescription = stringResource(R.string.player_screen_library_playing_title),
           modifier = Modifier.size(16.dp),
         )
+      }
 
-      track.podcastEpisodeState == BookChapterState.FINISHED ->
+      track.podcastEpisodeState == BookChapterState.FINISHED -> {
         Icon(
           imageVector = Icons.Outlined.Check,
           contentDescription = stringResource(R.string.player_screen_library_playing_title),
           modifier = Modifier.size(16.dp),
         )
+      }
 
-      else -> Spacer(modifier = Modifier.size(16.dp))
+      else -> {
+        Spacer(modifier = Modifier.size(16.dp))
+      }
     }
 
     Spacer(modifier = Modifier.width(8.dp))
