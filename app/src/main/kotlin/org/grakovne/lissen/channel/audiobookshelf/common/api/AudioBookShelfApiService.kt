@@ -44,7 +44,7 @@ class AudioBookShelfApiService
           ?: return OperationResult.Error(OperationError.NetworkError)
 
       return when (callResult) {
-        is OperationResult.Error<*> ->
+        is OperationResult.Error<*> -> {
           when (callResult.code) {
             OperationError.Unauthorized -> {
               refreshToken()
@@ -54,10 +54,15 @@ class AudioBookShelfApiService
                 ?: return OperationResult.Error(OperationError.NetworkError)
             }
 
-            else -> callResult
+            else -> {
+              callResult
+            }
           }
+        }
 
-        is OperationResult.Success<*> -> callResult
+        is OperationResult.Success<*> -> {
+          callResult
+        }
       }
     }
 
@@ -118,7 +123,9 @@ class AudioBookShelfApiService
           createClientInstance()?.also { clientCache = it }
         }
 
-        else -> current
+        else -> {
+          current
+        }
       }
     }
 

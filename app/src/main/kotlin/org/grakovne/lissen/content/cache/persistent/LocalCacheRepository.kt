@@ -149,9 +149,11 @@ class LocalCacheRepository
       val currentChapter = calculateChapterIndex(cachedBook, cachedPosition)
 
       return when (currentChapter in cachedBook.chapters.indices && cachedBook.chapters[currentChapter].available) {
-        true -> cachedBook
+        true -> {
+          cachedBook
+        }
 
-        false ->
+        false -> {
           cachedBook
             .copy(
               progress =
@@ -165,6 +167,7 @@ class LocalCacheRepository
                   lastUpdate = 946728000000, // 2000-01-01T12:00
                 ),
             )
+        }
       }
     }
 

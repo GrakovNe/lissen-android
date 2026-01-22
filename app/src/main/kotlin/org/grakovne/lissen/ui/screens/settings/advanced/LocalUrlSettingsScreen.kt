@@ -169,7 +169,9 @@ fun LocalUrlSettingsScreen(onBack: () -> Unit) {
           }
         }
 
-        false -> LocationPermissionBanner { hasPermission = it }
+        false -> {
+          LocationPermissionBanner { hasPermission = it }
+        }
       }
     },
   )

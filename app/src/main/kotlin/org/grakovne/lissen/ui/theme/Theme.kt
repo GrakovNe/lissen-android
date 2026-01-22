@@ -78,9 +78,17 @@ fun LissenTheme(
         }
       }
 
-      isDarkTheme && colorSchemePreference == ColorScheme.BLACK -> BlackColorScheme
-      isDarkTheme -> DarkColorScheme
-      else -> LightColorScheme
+      isDarkTheme && colorSchemePreference == ColorScheme.BLACK -> {
+        BlackColorScheme
+      }
+
+      isDarkTheme -> {
+        DarkColorScheme
+      }
+
+      else -> {
+        LightColorScheme
+      }
     }
 
   MaterialTheme(

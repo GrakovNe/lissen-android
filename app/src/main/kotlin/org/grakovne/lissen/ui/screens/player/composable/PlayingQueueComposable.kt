@@ -71,16 +71,18 @@ fun PlayingQueueComposable(
   val showingChapters by remember {
     derivedStateOf {
       when (searchToken.isEmpty()) {
-        true ->
+        true -> {
           book
             ?.chapters
             ?: emptyList()
+        }
 
-        false ->
+        false -> {
           book
             ?.chapters
             ?.filter { it.title.lowercase().contains(searchToken.lowercase()) }
             ?: emptyList()
+        }
       }
     }
   }
@@ -140,15 +142,18 @@ fun PlayingQueueComposable(
         .fillMaxSize()
         .let {
           when (playingQueueExpanded) {
-            true ->
+            true -> {
               it.withScrollbar(
                 state = listState,
                 color = colorScheme.onBackground.copy(alpha = scrollbarAlpha),
                 totalItems = showingChapters.size,
                 ignoreItems = emptyList(),
               )
+            }
 
-            false -> it
+            false -> {
+              it
+            }
           }
         }.padding(horizontal = 16.dp),
   ) {

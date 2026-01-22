@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright @alexstyl
  *
  * Licensed to the Apache Software Foundation (ASF) under one

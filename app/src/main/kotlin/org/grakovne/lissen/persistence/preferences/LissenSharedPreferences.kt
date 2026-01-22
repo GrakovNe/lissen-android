@@ -164,7 +164,10 @@ class LissenSharedPreferences
     fun getLibraryOrdering(): LibraryOrderingConfiguration {
       val json = sharedPreferences.getString(KEY_PREFERRED_LIBRARY_ORDERING, null)
       return when (json) {
-        null -> LibraryOrderingConfiguration.default
+        null -> {
+          LibraryOrderingConfiguration.default
+        }
+
         else -> {
           val adapter = moshi.adapter(LibraryOrderingConfiguration::class.java)
           adapter.fromJson(json) ?: LibraryOrderingConfiguration.default
@@ -207,7 +210,10 @@ class LissenSharedPreferences
       val json = sharedPreferences.getString(KEY_PREFERRED_AUTO_DOWNLOAD_LIBRARY_TYPE, null)
 
       return when (json) {
-        null -> LibraryType.meaningfulTypes
+        null -> {
+          LibraryType.meaningfulTypes
+        }
+
         else -> {
           val type = Types.newParameterizedType(List::class.java, LibraryType::class.java)
           val adapter = moshi.adapter<List<LibraryType>>(type)
@@ -356,7 +362,10 @@ class LissenSharedPreferences
       val json = sharedPreferences.getString(KEY_PLAYING_BOOK, null)
 
       return when (json) {
-        null -> null
+        null -> {
+          null
+        }
+
         else -> {
           val adapter = moshi.adapter(DetailedItem::class.java)
           adapter.fromJson(json)
@@ -374,7 +383,10 @@ class LissenSharedPreferences
     fun getSeekTime(): SeekTime {
       val json = sharedPreferences.getString(KEY_PREFERRED_SEEK_TIME, null)
       return when (json) {
-        null -> SeekTime.Default
+        null -> {
+          SeekTime.Default
+        }
+
         else -> {
           val adapter = moshi.adapter(SeekTime::class.java)
           adapter.fromJson(json) ?: SeekTime.Default
@@ -394,7 +406,10 @@ class LissenSharedPreferences
     fun getCustomHeaders(): List<ServerRequestHeader> {
       val json = sharedPreferences.getString(KEY_CUSTOM_HEADERS, null)
       return when (json) {
-        null -> emptyList()
+        null -> {
+          emptyList()
+        }
+
         else -> {
           val type = Types.newParameterizedType(List::class.java, ServerRequestHeader::class.java)
           val adapter = moshi.adapter<List<ServerRequestHeader>>(type)
@@ -415,7 +430,10 @@ class LissenSharedPreferences
     fun getLocalUrls(): List<LocalUrl> {
       val json = sharedPreferences.getString(KEY_LOCAL_URLS, null)
       return when (json) {
-        null -> emptyList()
+        null -> {
+          emptyList()
+        }
+
         else -> {
           val type = Types.newParameterizedType(List::class.java, LocalUrl::class.java)
           val adapter = moshi.adapter<List<LocalUrl>>(type)

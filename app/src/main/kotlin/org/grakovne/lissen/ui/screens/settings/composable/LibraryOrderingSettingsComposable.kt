@@ -122,16 +122,25 @@ private fun LibraryOrderingOption.toItem(context: Context): CommonSettingsItem {
 
   val name =
     when (this) {
-      LibraryOrderingOption.TITLE -> context.getString(R.string.settings_screen_library_ordering_title_option)
-      LibraryOrderingOption.AUTHOR -> context.getString(R.string.settings_screen_library_ordering_author_option)
-      LibraryOrderingOption.CREATED_AT ->
+      LibraryOrderingOption.TITLE -> {
+        context.getString(R.string.settings_screen_library_ordering_title_option)
+      }
+
+      LibraryOrderingOption.AUTHOR -> {
+        context.getString(R.string.settings_screen_library_ordering_author_option)
+      }
+
+      LibraryOrderingOption.CREATED_AT -> {
         context.getString(
           R.string.settings_screen_library_ordering_creation_date_option,
         )
-      LibraryOrderingOption.UPDATED_AT ->
+      }
+
+      LibraryOrderingOption.UPDATED_AT -> {
         context.getString(
           R.string.settings_screen_library_ordering_modification_date_option,
         )
+      }
     }
 
   return CommonSettingsItem(id, name, null)

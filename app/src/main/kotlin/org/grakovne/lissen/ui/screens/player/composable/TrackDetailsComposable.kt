@@ -139,24 +139,27 @@ private fun provideChapterNumberTitle(
   context: Context,
 ): String =
   when (libraryType) {
-    LibraryType.LIBRARY ->
+    LibraryType.LIBRARY -> {
       context.getString(
         R.string.player_screen_now_playing_title_chapter_of,
         currentTrackIndex + 1,
         book?.chapters?.size ?: "?",
       )
+    }
 
-    LibraryType.PODCAST ->
+    LibraryType.PODCAST -> {
       context.getString(
         R.string.player_screen_now_playing_title_podcast_of,
         currentTrackIndex + 1,
         book?.chapters?.size ?: "?",
       )
+    }
 
-    LibraryType.UNKNOWN ->
+    LibraryType.UNKNOWN -> {
       context.getString(
         R.string.player_screen_now_playing_title_item_of,
         currentTrackIndex + 1,
         book?.chapters?.size ?: "?",
       )
+    }
   }

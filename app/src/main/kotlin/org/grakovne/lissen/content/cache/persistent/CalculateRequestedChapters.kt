@@ -17,17 +17,26 @@ fun calculateRequestedChapters(
   val chapterIndex = calculateChapterIndex(book, currentTotalPosition)
 
   return when (option) {
-    AllItemsDownloadOption -> book.chapters
-    CurrentItemDownloadOption -> listOfNotNull(book.chapters.getOrNull(chapterIndex))
-    is NumberItemDownloadOption ->
+    AllItemsDownloadOption -> {
+      book.chapters
+    }
+
+    CurrentItemDownloadOption -> {
+      listOfNotNull(book.chapters.getOrNull(chapterIndex))
+    }
+
+    is NumberItemDownloadOption -> {
       book.chapters.subList(
         chapterIndex.coerceAtLeast(0),
         (chapterIndex + option.itemsNumber).coerceIn(chapterIndex..book.chapters.size),
       )
-    RemainingItemsDownloadOption ->
+    }
+
+    RemainingItemsDownloadOption -> {
       book.chapters.subList(
         chapterIndex.coerceIn(0, book.chapters.size),
         book.chapters.size,
       )
+    }
   }
 }

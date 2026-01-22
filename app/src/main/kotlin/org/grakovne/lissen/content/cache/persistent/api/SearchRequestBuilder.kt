@@ -23,7 +23,10 @@ class SearchRequestBuilder {
     val whereClause =
       buildString {
         when (val libraryId = libraryId) {
-          null -> append("(libraryId IS NULL)")
+          null -> {
+            append("(libraryId IS NULL)")
+          }
+
           else -> {
             append("(libraryId = ? OR libraryId IS NULL)")
             args.add(libraryId)
