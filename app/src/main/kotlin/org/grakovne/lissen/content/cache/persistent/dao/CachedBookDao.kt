@@ -13,6 +13,7 @@ import androidx.room.Update
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
+import kotlinx.coroutines.flow.Flow
 import org.grakovne.lissen.common.moshi
 import org.grakovne.lissen.content.cache.persistent.entity.BookChapterEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
@@ -137,20 +138,20 @@ interface CachedBookDao {
   suspend fun searchBooks(query: SupportSQLiteQuery): List<BookEntity>
 
   @Transaction
-  @RewriteQueriesToDropUnusedColumns
-  @Query(
-    """
-        SELECT * FROM detailed_books 
-        INNER JOIN media_progress ON detailed_books.id = media_progress.bookId WHERE (libraryId IS NULL OR libraryId = :libraryId) 
-        ORDER BY media_progress.lastUpdate DESC
-        LIMIT 10
-    """,
-  )
-  suspend fun fetchRecentlyListenedCachedBooks(libraryId: String?): List<BookEntity>
+  @RawQuery(observedEntities = [BookEntity::class, MediaProgressEntity::class])
+  fun fetchRecentlyListenedCachedBooksFlow(query: SupportSQLiteQuery): Flow<List<CachedBookEntity>>
+
+  @Transaction
+  @RawQuery
+  suspend fun fetchRecentlyListenedCachedBooks(query: SupportSQLiteQuery): List<BookEntity>
 
   @Transaction
   @Query("SELECT * FROM detailed_books WHERE id = :bookId")
   suspend fun fetchCachedBook(bookId: String): CachedBookEntity?
+
+  @Transaction
+  @Query("SELECT * FROM detailed_books WHERE id = :bookId")
+  fun fetchBookFlow(bookId: String): Flow<CachedBookEntity?>
 
   @Query("SELECT COUNT(*) > 0 FROM detailed_books WHERE id = :bookId")
   fun isBookCached(bookId: String): LiveData<Boolean>
@@ -188,6 +189,16 @@ interface CachedBookDao {
 
   @Query(
     """
+    SELECT COUNT(*) > 0
+    FROM book_chapters
+    WHERE bookId = :bookId
+      AND isCached = 1
+    """,
+  )
+  fun hasDownloadedChapters(bookId: String): LiveData<Boolean>
+
+  @Query(
+    """
         SELECT MAX(mp.lastUpdate)
         FROM detailed_books AS d
         INNER JOIN media_progress AS mp ON d.id = mp.bookId
@@ -202,6 +213,15 @@ interface CachedBookDao {
 
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   suspend fun upsertBook(book: BookEntity)
+
+  @Insert(onConflict = OnConflictStrategy.REPLACE)
+  suspend fun upsertBooks(books: List<BookEntity>)
+
+  @Query("SELECT * FROM detailed_books WHERE id IN (:bookIds)")
+  suspend fun fetchBooks(bookIds: List<String>): List<BookEntity>
+
+  @Update
+  suspend fun updateBook(book: BookEntity)
 
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   suspend fun upsertBookFiles(files: List<BookFileEntity>)

@@ -7,7 +7,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.PlayingChapter
 import org.grakovne.lissen.lib.domain.TimerOption
@@ -22,7 +25,18 @@ class PlayerViewModel
   constructor(
     private val mediaRepository: MediaRepository,
     private val preferences: LissenSharedPreferences,
+    private val networkService: NetworkService,
   ) : ViewModel() {
+    val isOnline: Flow<Boolean> =
+      combine(
+        networkService.isServerAvailable,
+        preferences.forceCacheFlow,
+      ) { isServerAvailable, isForceCache ->
+        isServerAvailable && !isForceCache
+      }
+
+    fun getBookFlow(bookId: String): Flow<DetailedItem?> = mediaRepository.getBookFlow(bookId)
+
     val book: LiveData<DetailedItem?> = mediaRepository.playingBook
 
     val currentChapterIndex: LiveData<Int> = mediaRepository.currentChapterIndex
@@ -40,6 +54,7 @@ class PlayerViewModel
     val isPlaybackReady: LiveData<Boolean> = mediaRepository.isPlaybackReady
     val playbackSpeed: LiveData<Float> = mediaRepository.playbackSpeed
     val preparingError: LiveData<Boolean> = mediaRepository.mediaPreparingError
+    val preparingBookId: LiveData<String?> = mediaRepository.preparingBookId
 
     private val _searchRequested = MutableLiveData(false)
     val searchRequested: LiveData<Boolean> = _searchRequested
@@ -111,6 +126,7 @@ class PlayerViewModel
       if (chapter.available) {
         val index = book.value?.chapters?.indexOf(chapter) ?: -1
         mediaRepository.setChapter(index)
+        mediaRepository.play()
       }
     }
 
@@ -127,6 +143,19 @@ class PlayerViewModel
     fun prepareAndPlay() {
       val playingBook = preferences.getPlayingBook() ?: return
       mediaRepository.prepareAndPlay(playingBook)
+    }
+
+    fun playBook(
+      book: DetailedItem,
+      chapterIndex: Int? = null,
+    ) {
+      mediaRepository.prepareAndPlay(book, chapterIndex)
+    }
+
+    fun fetchBook(bookId: String) {
+      viewModelScope.launch {
+        mediaRepository.fetchBook(bookId)
+      }
     }
 
     companion object {

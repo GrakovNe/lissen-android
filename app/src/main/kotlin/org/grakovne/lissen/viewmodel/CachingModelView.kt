@@ -149,6 +149,8 @@ class CachingModelView
       chapterId: String,
     ): LiveData<Boolean> = contentCachingManager.hasMetadataCached(bookId, chapterId)
 
+    fun hasDownloadedChapters(bookId: String): LiveData<Boolean> = contentCachingManager.hasDownloadedChapters(bookId)
+
     fun fetchCachedItems() {
       viewModelScope.launch {
         withContext(Dispatchers.IO) {

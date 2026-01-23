@@ -1,11 +1,13 @@
 package org.grakovne.lissen.playback.service
 
 import android.content.Context
+import android.net.Uri
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.datasource.TransferListener
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSink
 import androidx.media3.datasource.cache.CacheDataSource
@@ -56,12 +58,20 @@ class LissenDataSourceFactory(
   }
 
   override fun createDataSource(): DataSource {
-    val actualDataSource = defaultFactory.createDataSource()
-		
-    return object : DataSource by actualDataSource {
+    val cacheDataSource = defaultFactory.createDataSource()
+    val defaultDataSource = DefaultDataSource(baseContext, false)
+
+    return object : DataSource {
+      private var currentDataSource: DataSource? = null
+
+      override fun addTransferListener(transferListener: TransferListener) {
+        cacheDataSource.addTransferListener(transferListener)
+        defaultDataSource.addTransferListener(transferListener)
+      }
+
       override fun open(dataSpec: DataSpec): Long {
         val (itemId, fileId) = unapply(dataSpec.uri) ?: return 0
-				
+
         val resolvedUri =
           mediaProvider
             .provideFileUri(itemId, fileId)
@@ -71,12 +81,40 @@ class LissenDataSourceFactory(
             )
 
         Timber.d("Resolved Uri: $resolvedUri for itemId = $itemId and fileId = $fileId")
-				
-        return dataSpec
-          .buildUpon()
-          .setUri(resolvedUri)
-          .build()
-          .let { actualDataSource.open(it) }
+
+        val newSpec =
+          dataSpec
+            .buildUpon()
+            .setUri(resolvedUri)
+            .build()
+
+        val source =
+          when (resolvedUri.scheme) {
+            "file" -> defaultDataSource
+            else -> cacheDataSource
+          }
+
+        currentDataSource = source
+        return source.open(newSpec)
+      }
+
+      override fun read(
+        buffer: ByteArray,
+        offset: Int,
+        length: Int,
+      ): Int {
+        val dataSource =
+          currentDataSource
+            ?: throw IllegalStateException("DataSource is not open. Call open() first.")
+
+        return dataSource.read(buffer, offset, length)
+      }
+
+      override fun getUri(): Uri? = currentDataSource?.uri
+
+      override fun close() {
+        currentDataSource?.close()
+        currentDataSource = null
       }
     }
   }

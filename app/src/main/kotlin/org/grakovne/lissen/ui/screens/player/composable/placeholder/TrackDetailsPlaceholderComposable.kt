@@ -48,7 +48,7 @@ fun TrackDetailsPlaceholderComposable(
           .aspectRatio(1f)
           .clip(RoundedCornerShape(8.dp))
           .shimmer()
-          .background(Color.Gray),
+          .background(colorScheme.surfaceVariant),
     )
 
     Spacer(modifier = Modifier.height(12.dp))

@@ -32,6 +32,7 @@ import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.lib.domain.DurationTimerOption
 import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.TimerOption
+import org.grakovne.lissen.ui.effects.WindowBlurEffect
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,8 +44,11 @@ fun TimerComposable(
 ) {
   val context = LocalContext.current
 
+  WindowBlurEffect()
+
   ModalBottomSheet(
     containerColor = colorScheme.background,
+    scrimColor = colorScheme.scrim.copy(alpha = 0.65f),
     onDismissRequest = onDismissRequest,
     content = {
       Column(

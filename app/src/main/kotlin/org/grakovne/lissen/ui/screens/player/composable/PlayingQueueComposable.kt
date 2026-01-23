@@ -24,6 +24,7 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -61,6 +62,7 @@ fun PlayingQueueComposable(
 ) {
   val context = LocalContext.current
   val coroutineScope = rememberCoroutineScope()
+  val isOnline by viewModel.isOnline.collectAsState(initial = false)
 
   val book by viewModel.book.observeAsState()
   val searchToken by viewModel.searchToken.observeAsState("")
@@ -149,11 +151,7 @@ fun PlayingQueueComposable(
       modifier =
         Modifier
           .fillMaxHeight()
-          .scrollable(
-            state = rememberScrollState(),
-            orientation = Orientation.Vertical,
-            enabled = playingQueueExpanded,
-          ).onGloballyPositioned {
+          .onGloballyPositioned {
             if (collapsedPlayingQueueHeight == 0) {
               collapsedPlayingQueueHeight = it.size.height
             }
@@ -184,13 +182,27 @@ fun PlayingQueueComposable(
                   return available
                 }
 
-                if (available.y > collapseFlingThreshold && playingQueueExpanded) {
+                if (available.y > collapseFlingThreshold && playingQueueExpanded && listState.firstVisibleItemIndex == 0 &&
+                  listState.firstVisibleItemScrollOffset == 0
+                ) {
                   isFlinging.value = true
                   viewModel.collapsePlayingQueue()
                   return available
                 }
                 isFlinging.value = false
                 return available
+              }
+
+              override fun onPostScroll(
+                consumed: Offset,
+                available: Offset,
+                source: NestedScrollSource,
+              ): Offset {
+                if (playingQueueExpanded && available.y > 0) {
+                  viewModel.collapsePlayingQueue()
+                  return available
+                }
+                return super.onPostScroll(consumed, available, source)
               }
             },
           ),
@@ -212,6 +224,7 @@ fun PlayingQueueComposable(
           modifier = Modifier.wrapContentWidth(),
           maxDuration = maxDuration,
           isCached = isCached,
+          canPlay = isCached || isOnline,
         )
 
         if (index < showingChapters.size - 1) {

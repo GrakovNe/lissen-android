@@ -10,7 +10,10 @@ import javax.inject.Singleton
 class LibraryPageResponseConverter
   @Inject
   constructor() {
-    fun apply(response: LibraryItemsResponse): PagedItems<Book> =
+    fun apply(
+      response: LibraryItemsResponse,
+      libraryId: String,
+    ): PagedItems<Book> =
       response
         .results
         .mapNotNull {
@@ -22,6 +25,8 @@ class LibraryPageResponseConverter
             series = it.media.metadata.seriesName,
             subtitle = it.media.metadata.subtitle,
             author = it.media.metadata.authorName,
+            duration = 0.0,
+            libraryId = libraryId,
           )
         }.let {
           PagedItems(

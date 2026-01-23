@@ -20,13 +20,15 @@ private val LightColorScheme =
     tertiaryContainer = LightBackground,
     background = LightBackground,
     surface = LightBackground,
-    surfaceContainer = Color(0xFFEEEEEE),
+    surfaceContainer = SurfaceContainerLight,
+    onPrimary = Color.White,
   )
 
 private val DarkColorScheme =
   darkColorScheme(
     primary = FoxOrangeDimmed,
-    tertiaryContainer = Color(0xFF1A1A1A),
+    tertiaryContainer = TertiaryContainerDark,
+    onPrimary = Color.White,
   )
 
 private val BlackColorScheme =
@@ -35,6 +37,7 @@ private val BlackColorScheme =
     background = Black,
     surface = Black,
     tertiaryContainer = Black,
+    onPrimary = Color.White,
   )
 
 @Composable

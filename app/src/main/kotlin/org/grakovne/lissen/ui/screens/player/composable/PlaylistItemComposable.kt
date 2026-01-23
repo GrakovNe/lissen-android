@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Audiotrack
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -41,6 +42,8 @@ fun PlaylistItemComposable(
   modifier: Modifier,
   maxDuration: Double,
   isCached: Boolean,
+  canPlay: Boolean = true,
+  progress: Float = 0f,
 ) {
   val fontScale = LocalDensity.current.fontScale
   val textMeasurer = rememberTextMeasurer()
@@ -71,27 +74,36 @@ fun PlaylistItemComposable(
         .padding(end = 4.dp)
         .padding(vertical = 2.dp)
         .clickable(
+          enabled = canPlay,
           onClick = onClick,
           indication = null,
           interactionSource = remember { MutableInteractionSource() },
         ),
   ) {
-    when {
-      isSelected ->
-        Icon(
-          imageVector = Icons.Outlined.Audiotrack,
-          contentDescription = stringResource(R.string.player_screen_library_playing_title),
-          modifier = Modifier.size(16.dp),
-        )
-
-      track.podcastEpisodeState == BookChapterState.FINISHED ->
-        Icon(
-          imageVector = Icons.Outlined.Check,
-          contentDescription = stringResource(R.string.player_screen_library_playing_title),
-          modifier = Modifier.size(16.dp),
-        )
-
-      else -> Spacer(modifier = Modifier.size(16.dp))
+    if (isSelected) {
+      Icon(
+        imageVector = Icons.Outlined.Audiotrack,
+        contentDescription = stringResource(R.string.player_screen_library_playing_title),
+        modifier = Modifier.size(16.dp),
+        tint = if (canPlay) colorScheme.primary else colorScheme.onBackground.copy(alpha = 0.4f),
+      )
+    } else if (track.podcastEpisodeState == BookChapterState.FINISHED || progress >= 1f) {
+      Icon(
+        imageVector = Icons.Outlined.CheckCircle,
+        contentDescription = stringResource(R.string.player_screen_library_playing_title),
+        modifier = Modifier.size(16.dp),
+        tint = if (canPlay) colorScheme.onBackground.copy(alpha = 0.4f) else colorScheme.onBackground.copy(alpha = 0.2f),
+      )
+    } else if (progress > 0f) {
+      androidx.compose.material3.CircularProgressIndicator(
+        progress = { progress },
+        modifier = Modifier.size(16.dp),
+        color = if (canPlay) colorScheme.onSurface else colorScheme.onSurface.copy(alpha = 0.4f),
+        strokeWidth = 2.dp,
+        trackColor = colorScheme.onSurface.copy(alpha = 0.2f),
+      )
+    } else {
+      Spacer(modifier = Modifier.size(16.dp))
     }
 
     Spacer(modifier = Modifier.width(8.dp))
@@ -100,7 +112,7 @@ fun PlaylistItemComposable(
       text = track.title,
       style = MaterialTheme.typography.titleSmall,
       color =
-        when (track.available) {
+        when (canPlay) {
           true -> colorScheme.onBackground
           false -> colorScheme.onBackground.copy(alpha = 0.4f)
         },
@@ -133,8 +145,9 @@ fun PlaylistItemComposable(
       modifier = Modifier.width(durationColumnWidth),
       textAlign = TextAlign.End,
       fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+      maxLines = 1,
       color =
-        when (track.available) {
+        when (canPlay) {
           true -> colorScheme.onBackground.copy(alpha = 0.6f)
           false -> colorScheme.onBackground.copy(alpha = 0.4f)
         },

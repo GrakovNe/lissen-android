@@ -8,3 +8,6 @@ val Dark = Color(0xFF1C1B1F)
 val Black = Color(0xFF000000)
 val LightBackground = Color(0xFFFAFAFA)
 val MediumBackground = Color(0xFFDADADA)
+
+val SurfaceContainerLight = Color(0xFFEEEEEE)
+val TertiaryContainerDark = Color(0xFF1A1A1A)

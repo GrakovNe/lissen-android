@@ -9,17 +9,21 @@ import javax.inject.Singleton
 class LibrarySearchItemsConverter
   @Inject
   constructor() {
-    fun apply(response: List<LibraryItem>) =
-      response
-        .mapNotNull {
-          val title = it.media.metadata.title ?: return@mapNotNull null
+    fun apply(
+      response: List<LibraryItem>,
+      libraryId: String,
+    ) = response
+      .mapNotNull {
+        val title = it.media.metadata.title ?: return@mapNotNull null
 
-          Book(
-            id = it.id,
-            title = title,
-            series = it.media.metadata.seriesName,
-            subtitle = it.media.metadata.subtitle,
-            author = it.media.metadata.authorName,
-          )
-        }
+        Book(
+          id = it.id,
+          title = title,
+          series = it.media.metadata.seriesName,
+          subtitle = it.media.metadata.subtitle,
+          author = it.media.metadata.authorName,
+          duration = 0.0,
+          libraryId = libraryId,
+        )
+      }
   }

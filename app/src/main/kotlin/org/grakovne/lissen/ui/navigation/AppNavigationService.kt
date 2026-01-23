@@ -16,6 +16,8 @@ class AppNavigationService(
     }
   }
 
+  fun back() = host.popBackStack()
+
   fun showPlayer(
     bookId: String,
     bookTitle: String,
@@ -40,9 +42,13 @@ class AppNavigationService(
 
   fun showSeekSettings() = host.navigate("$ROUTE_SETTINGS/seek_settings")
 
+  fun showSmartRewindSettings() = host.navigate("$ROUTE_SETTINGS/smart_rewind_settings")
+
   fun showCachedItemsSettings() = host.navigate("$ROUTE_SETTINGS/cached_items")
 
   fun showCacheSettings() = host.navigate("$ROUTE_SETTINGS/cache_settings")
+
+  fun showPlaybackSettings() = host.navigate("$ROUTE_SETTINGS/playback_settings")
 
   fun showAdvancedSettings() = host.navigate("$ROUTE_SETTINGS/advanced_settings")
 

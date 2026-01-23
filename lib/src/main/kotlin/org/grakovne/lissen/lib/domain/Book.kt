@@ -9,4 +9,6 @@ data class Book(
   val series: String?,
   val title: String,
   val author: String?,
+  val duration: Double = 0.0,
+  val libraryId: String = "",
 )

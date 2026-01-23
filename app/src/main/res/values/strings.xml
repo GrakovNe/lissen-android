@@ -1,5 +1,6 @@
 <resources>
-    <string name="app_name" translatable="false">Lissen</string>
+    <string name="app_name" translatable="false">Kahani</string>
+    <string name="branding_name" translatable="false">Kahani</string>
     <string name="library_screen_library_title">Library</string>
     <string name="library_screen_continue_listening_title">Continue listening</string>
     <string name="library_screen_preferences_menu_item">Preferences</string>
@@ -10,9 +11,7 @@
     <string name="login_screen_password_input">Password</string>
     <string name="login_screen_connect_button_text">Connect</string>
     <string name="player_screen_playback_speed_navigation">Speed</string>
-    <string name="player_screen_chapter_list_navigation_library">Chapters</string>
-    <string name="player_screen_chapter_list_navigation_podcast">Episodes</string>
-    <string name="player_screen_chapter_list_navigation_items">Items</string>
+    <string name="player_screen_chapter_list_title">Chapters</string>
     <string name="player_screen_library_playing_title">Playing chapters</string>
     <string name="player_screen_podcast_playing_title">Playing episodes</string>
     <string name="player_screen_items_playing_title">Playing items</string>
@@ -128,7 +127,7 @@
     <string name="volume_boost_medium">Medium</string>
     <string name="volume_boost_high">High</string>
     <string name="volume_boost_max">Maximum</string>
-    <string name="volume_boost_title">Boosted volume</string>
+    <string name="volume_boost_title">Boost volume</string>
     <string name="playing_item_details_time_remaining">Time remaining</string>
     <string name="settings_screen_advanced_preferences_title">Advanced preferences</string>
     <string name="settings_screen_advanced_preferences_description">Control seeking, proxy headers, or sound</string>
@@ -157,5 +156,54 @@
     <string name="settings_screen_delay_autodownload_description">Wait a short time before starting download</string>
     <string name="settings_screen_bypass_ssl_title">Disable SSL verification</string>
     <string name="settings_screen_bypass_ssl_hint">Connect to servers with any certificate</string>
-
+    <string name="book_detail_author_pattern">By %1$s</string>
+    <string name="book_detail_narrator_pattern">Narrated by %1$s</string>
+    <string name="smart_rewind_title">Smart Rewind</string>
+    <string name="smart_rewind_subtitle">Rewind slightly when resuming after a break</string>
+    <string name="smart_rewind_threshold_title">If inactive for</string>
+    <string name="smart_rewind_duration_title">Rewind by</string>
+    <string name="smart_rewind_threshold_30_min">30 minutes</string>
+    <string name="smart_rewind_threshold_1_hour">1 hour</string>
+    <string name="smart_rewind_threshold_1_day">1 day</string>
+    <string name="smart_rewind_duration_30_sec">30 seconds</string>
+    <string name="smart_rewind_duration_1_min">1 minute</string>
+    <string name="smart_rewind_duration_5_min">5 minutes</string>
+    <string name="book_detail_action_pause">Pause</string>
+    <string name="book_detail_action_listen_again">Listen Again</string>
+    <string name="book_detail_action_resume">Resume</string>
+    <string name="book_detail_action_start">Start Listening</string>
+    <!-- Missing strings required for release build lint check -->
+    <string name="player_screen_chapter_list_navigation_library">Chapters</string>
+    <string name="player_screen_chapter_list_navigation_items">Items</string>
+    <string name="player_screen_chapter_list_navigation_podcast">Episodes</string>
+    <string name="book_detail_published">Published</string>
+    <string name="book_detail_length">Length</string>
+    <string name="book_detail_remaining">Remaining</string>
+    <string name="book_detail_unknown_publisher">Unknown</string>
+    <string name="book_detail_unknown_year">Unknown</string>
+    <string name="book_detail_read_more">Read more</string>
+    <string name="book_detail_see_less">See less</string>
+    <plurals name="duration_hours">
+        <item quantity="one">%1$d hr</item>
+        <item quantity="other">%1$d hrs</item>
+    </plurals>
+    <plurals name="duration_minutes">
+        <item quantity="one">%1$d min</item>
+        <item quantity="other">%1$d mins</item>
+    </plurals>
+    <string name="download_progress_description">Download progress: %1$d percent</string>
+    <string name="seek_forward_description">Forward %1$d seconds</string>
+    <string name="seek_rewind_description">Rewind %1$d seconds</string>
+    <string name="playback_settings_title">Playback preferences</string>
+    <string name="playback_settings_description">Player controls and sleep timer settings</string>
+    <string name="back">Back</string>
+    <string name="playback_next_previous_title">Next/previous buttons</string>
+    <string name="playback_next_previous_description">Show next and previous track buttons in the player</string>
+    <string name="playback_shake_reset_title">Shake to reset sleep timer</string>
+    <string name="playback_shake_reset_description">Shake device to reset the sleep timer</string>
+    <string name="playback_preferences">Playback preferences</string>
+    <string name="settings_screen_footer_app_name_pattern">%1$s %2$s</string>
+    <string name="settings_screen_footer_copyright_original">© 2024–2026 Max Grakov</string>
+    <string name="settings_screen_footer_copyright_fork">© 2026 Surjit Sahoo</string>
+    <string name="settings_screen_footer_license">MIT License</string>
 </resources>

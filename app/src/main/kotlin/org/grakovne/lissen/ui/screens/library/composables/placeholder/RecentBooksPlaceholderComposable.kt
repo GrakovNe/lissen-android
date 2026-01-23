@@ -70,7 +70,7 @@ fun RecentBookItemComposable(
           .aspectRatio(1f)
           .clip(RoundedCornerShape(8.dp))
           .shimmer()
-          .background(Color.Gray),
+          .background(MaterialTheme.colorScheme.surfaceVariant),
     )
 
     Spacer(modifier = Modifier.height(14.dp))
@@ -85,7 +85,7 @@ fun RecentBookItemComposable(
           Modifier
             .clip(RoundedCornerShape(4.dp))
             .shimmer()
-            .background(Color.Gray),
+            .background(MaterialTheme.colorScheme.surfaceVariant),
       )
 
       Spacer(modifier = Modifier.height(8.dp))
@@ -99,7 +99,7 @@ fun RecentBookItemComposable(
           Modifier
             .clip(RoundedCornerShape(4.dp))
             .shimmer()
-            .background(Color.Gray),
+            .background(MaterialTheme.colorScheme.surfaceVariant),
       )
     }
   }

@@ -1,4 +1,4 @@
-name: Build Lissen App
+name: Build Kahani App
 
 env:
   # The name of the main module repository
@@ -6,15 +6,14 @@ env:
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ['main']
   pull_request:
-    branches: [ "main" ]
+    branches: ['main']
 
   workflow_dispatch:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -37,6 +36,9 @@ jobs:
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
 
+      - name: Create Schemas Directory
+        run: mkdir -p app/schemas
+
       # Run Build Project
       - name: Build gradle project
-        run: ./gradlew build -Proom.schemaLocation=$GITHUB_WORKSPACE/app/schemas
+        run: ./gradlew build

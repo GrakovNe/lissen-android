@@ -3,6 +3,7 @@ package org.grakovne.lissen.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -17,6 +18,8 @@ import org.grakovne.lissen.lib.domain.DownloadOption
 import org.grakovne.lissen.lib.domain.Library
 import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.SeekTimeOption
+import org.grakovne.lissen.lib.domain.SmartRewindDuration
+import org.grakovne.lissen.lib.domain.SmartRewindInactivityThreshold
 import org.grakovne.lissen.lib.domain.connection.LocalUrl
 import org.grakovne.lissen.lib.domain.connection.LocalUrl.Companion.clean
 import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
@@ -82,6 +85,14 @@ class SettingsViewModel
     private val _autoDownloadDelayed = MutableLiveData(preferences.getAutoDownloadDelayed())
     val autoDownloadDelayed = _autoDownloadDelayed
 
+    val showPlayerNavButtons = preferences.showPlayerNavButtonsFlow.asLiveData()
+
+    val shakeToResetTimer = preferences.shakeToResetTimerFlow.asLiveData()
+
+    val smartRewindEnabled = preferences.smartRewindEnabledFlow.asLiveData()
+    val smartRewindThreshold = preferences.smartRewindThresholdFlow.asLiveData()
+    val smartRewindDuration = preferences.smartRewindDurationFlow.asLiveData()
+
     fun preferCrashReporting(value: Boolean) {
       _crashReporting.postValue(value)
       preferences.saveAcraEnabled(value)
@@ -95,6 +106,26 @@ class SettingsViewModel
     fun preferAutoDownloadDelayed(value: Boolean) {
       _autoDownloadDelayed.postValue(value)
       preferences.saveAutoDownloadDelayed(value)
+    }
+
+    fun preferShowPlayerNavButtons(value: Boolean) {
+      preferences.saveShowPlayerNavButtons(value)
+    }
+
+    fun preferShakeToResetTimer(value: Boolean) {
+      preferences.saveShakeToResetTimer(value)
+    }
+
+    fun preferSmartRewindEnabled(value: Boolean) {
+      preferences.saveSmartRewindEnabled(value)
+    }
+
+    fun preferSmartRewindThreshold(value: SmartRewindInactivityThreshold) {
+      preferences.saveSmartRewindThreshold(value)
+    }
+
+    fun preferSmartRewindDuration(value: SmartRewindDuration) {
+      preferences.saveSmartRewindDuration(value)
     }
 
     fun logout() {

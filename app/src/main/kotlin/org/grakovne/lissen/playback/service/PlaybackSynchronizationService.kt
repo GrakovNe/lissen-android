@@ -56,6 +56,7 @@ class PlaybackSynchronizationService
 
     fun cancelSynchronization() {
       syncJob?.cancel()
+      runSync()
     }
 
     private fun handleSyncEvent() {
@@ -111,6 +112,7 @@ class PlaybackSynchronizationService
             currentChapterIndex = currentIndex
           }
 
+          mediaChannel.syncLocalProgress(currentItem?.id ?: return@launch, overallProgress)
           playbackSession?.let { requestSync(it, overallProgress) }
         } catch (e: Exception) {
           Timber.e(e, "Error during sync")
@@ -180,7 +182,7 @@ class PlaybackSynchronizationService
     }
 
     companion object {
-      private const val SYNC_INTERVAL_LONG = 30_000L
+      private const val SYNC_INTERVAL_LONG = 10_000L
       private const val SHORT_SYNC_WINDOW = SYNC_INTERVAL_LONG * 2 - 1
 
       private const val SYNC_INTERVAL_SHORT = 5_000L
@@ -190,6 +192,7 @@ class PlaybackSynchronizationService
           Player.EVENT_MEDIA_ITEM_TRANSITION,
           Player.EVENT_PLAYBACK_STATE_CHANGED,
           Player.EVENT_IS_PLAYING_CHANGED,
+          Player.EVENT_POSITION_DISCONTINUITY,
         )
     }
   }

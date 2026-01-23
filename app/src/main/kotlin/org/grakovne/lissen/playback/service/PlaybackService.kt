@@ -63,6 +63,8 @@ class PlaybackService : MediaSessionService() {
 
   private var session: MediaSession? = null
 
+  private var smartRewindApplied = false
+
   private val playerServiceScope = MainScope()
 
   override fun onCreate() {
@@ -99,6 +101,7 @@ class PlaybackService : MediaSessionService() {
       ACTION_PLAY -> {
         playerServiceScope
           .launch {
+            checkAndApplySmartRewind()
             exoPlayer.prepare()
             exoPlayer.setPlaybackSpeed(sharedPreferences.getPlaybackSpeed())
             exoPlayer.playWhenReady = true
@@ -157,6 +160,7 @@ class PlaybackService : MediaSessionService() {
   @OptIn(UnstableApi::class)
   private suspend fun preparePlayback(book: DetailedItem) {
     exoPlayer.playWhenReady = false
+    smartRewindApplied = false
 
     withContext(Dispatchers.IO) {
       val prepareQueue =
@@ -199,7 +203,15 @@ class PlaybackService : MediaSessionService() {
             exoPlayer.setMediaSources(playingQueue)
             exoPlayer.prepare()
 
-            setPlaybackProgress(book.files, book.progress)
+            val startPosition = calculateSmartRewindPosition(book)
+            val currentPosition = book.progress?.currentTime ?: 0.0
+
+            if (startPosition < currentPosition) {
+              Timber.d("Smart rewind applied. Seeking to $startPosition from $currentPosition")
+              smartRewindApplied = true
+            }
+
+            seek(book.files, startPosition)
           }
         }
 
@@ -220,6 +232,55 @@ class PlaybackService : MediaSessionService() {
         .sendBroadcast(intent)
     }
   }
+
+  private suspend fun checkAndApplySmartRewind() {
+    if (smartRewindApplied) {
+      return
+    }
+
+    val item = exoPlayer.currentMediaItem?.localConfiguration?.tag as? DetailedItem ?: return
+
+    withContext(Dispatchers.IO) {
+      val book =
+        mediaProvider
+          .fetchBook(item.id)
+          .fold(
+            onSuccess = { it },
+            onFailure = { item },
+          )
+
+      withContext(Dispatchers.Main) {
+        val startPosition = calculateSmartRewindPosition(book)
+        val currentPosition = book.progress?.currentTime ?: 0.0
+
+        if (startPosition < currentPosition) {
+          Timber.d("Smart rewind applied (on resume). Seeking to $startPosition from $currentPosition")
+          seek(book.files, startPosition)
+          smartRewindApplied = true
+        }
+      }
+    }
+  }
+
+  private fun calculateSmartRewindPosition(book: DetailedItem): Double =
+    when (sharedPreferences.getSmartRewindEnabled()) {
+      true -> {
+        val lastUpdate = book.progress?.lastUpdate ?: 0L
+        val currentTime = System.currentTimeMillis()
+        val threshold = sharedPreferences.getSmartRewindThreshold().durationMillis
+        val rewindDuration = sharedPreferences.getSmartRewindDuration().durationSeconds.toDouble()
+
+        val currentPosition = book.progress?.currentTime ?: 0.0
+
+        if (currentTime - lastUpdate > threshold) {
+          (currentPosition - rewindDuration).coerceAtLeast(0.0)
+        } else {
+          currentPosition
+        }
+      }
+
+      false -> book.progress?.currentTime ?: 0.0
+    }
 
   private suspend fun fetchCover(book: DetailedItem) =
     mediaProvider
@@ -244,6 +305,7 @@ class PlaybackService : MediaSessionService() {
   }
 
   private fun pause() {
+    smartRewindApplied = false
     playerServiceScope
       .launch {
         exoPlayer.playWhenReady = false

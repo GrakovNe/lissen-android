@@ -18,11 +18,16 @@ import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.common.PlaybackVolumeBoost
 import org.grakovne.lissen.common.moshi
+import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.DownloadOption
+import org.grakovne.lissen.lib.domain.DurationTimerOption
 import org.grakovne.lissen.lib.domain.Library
 import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.SeekTime
+import org.grakovne.lissen.lib.domain.SmartRewindDuration
+import org.grakovne.lissen.lib.domain.SmartRewindInactivityThreshold
+import org.grakovne.lissen.lib.domain.TimerOption
 import org.grakovne.lissen.lib.domain.connection.LocalUrl
 import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.lib.domain.makeDownloadOption
@@ -430,6 +435,163 @@ class LissenSharedPreferences
       }
     }
 
+    fun saveShowPlayerNavButtons(show: Boolean) =
+      sharedPreferences.edit {
+        putBoolean(KEY_SHOW_PLAYER_NAV_BUTTONS, show)
+      }
+
+    fun getShowPlayerNavButtons(): Boolean = sharedPreferences.getBoolean(KEY_SHOW_PLAYER_NAV_BUTTONS, false)
+
+    fun saveShakeToResetTimer(enabled: Boolean) =
+      sharedPreferences.edit {
+        putBoolean(KEY_SHAKE_TO_RESET_TIMER, enabled)
+      }
+
+    fun getShakeToResetTimer(): Boolean = sharedPreferences.getBoolean(KEY_SHAKE_TO_RESET_TIMER, true)
+
+    fun saveSmartRewindEnabled(enabled: Boolean) =
+      sharedPreferences.edit {
+        putBoolean(KEY_SMART_REWIND_ENABLED, enabled)
+      }
+
+    fun getSmartRewindEnabled(): Boolean = sharedPreferences.getBoolean(KEY_SMART_REWIND_ENABLED, false)
+
+    fun saveSmartRewindThreshold(threshold: SmartRewindInactivityThreshold) =
+      sharedPreferences.edit {
+        putString(KEY_SMART_REWIND_THRESHOLD, threshold.name)
+      }
+
+    fun getSmartRewindThreshold(): SmartRewindInactivityThreshold =
+      sharedPreferences
+        .getString(KEY_SMART_REWIND_THRESHOLD, SmartRewindInactivityThreshold.Default.name)
+        .let { safeEnumValueOf<SmartRewindInactivityThreshold>(it, SmartRewindInactivityThreshold.Default) }
+
+    fun saveSmartRewindDuration(duration: SmartRewindDuration) =
+      sharedPreferences.edit {
+        putString(KEY_SMART_REWIND_DURATION, duration.name)
+      }
+
+    fun getSmartRewindDuration(): SmartRewindDuration =
+      sharedPreferences
+        .getString(KEY_SMART_REWIND_DURATION, SmartRewindDuration.Default.name)
+        .let { safeEnumValueOf<SmartRewindDuration>(it, SmartRewindDuration.Default) }
+
+    private inline fun <reified T : Enum<T>> safeEnumValueOf(
+      value: String?,
+      default: T,
+    ): T {
+      if (value == null) return default
+      return try {
+        enumValueOf<T>(value)
+      } catch (e: Exception) {
+        default
+      }
+    }
+
+    val showPlayerNavButtonsFlow: Flow<Boolean> =
+      callbackFlow {
+        val listener =
+          SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == KEY_SHOW_PLAYER_NAV_BUTTONS) {
+              trySend(getShowPlayerNavButtons())
+            }
+          }
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+        trySend(getShowPlayerNavButtons())
+        awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
+      }.distinctUntilChanged()
+
+    val shakeToResetTimerFlow: Flow<Boolean> =
+      callbackFlow {
+        val listener =
+          SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == KEY_SHAKE_TO_RESET_TIMER) {
+              trySend(getShakeToResetTimer())
+            }
+          }
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+        trySend(getShakeToResetTimer())
+        awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
+      }.distinctUntilChanged()
+
+    val smartRewindEnabledFlow: Flow<Boolean> =
+      callbackFlow {
+        val listener =
+          SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == KEY_SMART_REWIND_ENABLED) {
+              trySend(getSmartRewindEnabled())
+            }
+          }
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+        trySend(getSmartRewindEnabled())
+        awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
+      }.distinctUntilChanged()
+
+    val smartRewindThresholdFlow: Flow<SmartRewindInactivityThreshold> =
+      callbackFlow {
+        val listener =
+          SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == KEY_SMART_REWIND_THRESHOLD) {
+              trySend(getSmartRewindThreshold())
+            }
+          }
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+        trySend(getSmartRewindThreshold())
+        awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
+      }.distinctUntilChanged()
+
+    val forceCacheFlow: Flow<Boolean> =
+      callbackFlow {
+        val listener =
+          SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == CACHE_FORCE_ENABLED) {
+              trySend(isForceCache())
+            }
+          }
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+        trySend(isForceCache())
+        awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
+      }.distinctUntilChanged()
+
+    val smartRewindDurationFlow: Flow<SmartRewindDuration> =
+      callbackFlow {
+        val listener =
+          SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == KEY_SMART_REWIND_DURATION) {
+              trySend(getSmartRewindDuration())
+            }
+          }
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+        trySend(getSmartRewindDuration())
+        awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
+      }.distinctUntilChanged()
+
+    val preferredLibraryIdFlow: Flow<String?> =
+      callbackFlow {
+        val listener =
+          SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == KEY_PREFERRED_LIBRARY_ID) {
+              trySend(getPreferredLibraryId())
+            }
+          }
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+        trySend(getPreferredLibraryId())
+        awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
+      }.distinctUntilChanged()
+
+    val hostFlow: Flow<String?> =
+      callbackFlow {
+        val listener =
+          SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == KEY_HOST) {
+              trySend(getHost())
+            }
+          }
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+        trySend(getHost())
+        awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
+      }.distinctUntilChanged()
+
     companion object {
       private const val KEY_ALIAS = "secure_key_alias"
       private const val KEY_HOST = "host"
@@ -438,6 +600,10 @@ class LissenSharedPreferences
       private const val KEY_REFRESH_TOKEN = "refresh_token"
       private const val KEY_TOKEN = "token"
       private const val CACHE_FORCE_ENABLED = "cache_force_enabled"
+
+      private const val KEY_SMART_REWIND_ENABLED = "smart_rewind_enabled"
+      private const val KEY_SMART_REWIND_THRESHOLD = "smart_rewind_threshold"
+      private const val KEY_SMART_REWIND_DURATION = "smart_rewind_duration"
 
       private const val KEY_SERVER_VERSION = "server_version"
 
@@ -460,6 +626,9 @@ class LissenSharedPreferences
       private const val KEY_CUSTOM_HEADERS = "custom_headers"
       private const val KEY_BYPASS_SSL = "bypass_ssl"
       private const val KEY_LOCAL_URLS = "local_urls"
+
+      private const val KEY_SHOW_PLAYER_NAV_BUTTONS = "show_player_nav_buttons"
+      private const val KEY_SHAKE_TO_RESET_TIMER = "shake_to_reset_timer"
 
       private const val KEY_PLAYING_BOOK = "playing_book"
       private const val KEY_VOLUME_BOOST = "volume_boost"

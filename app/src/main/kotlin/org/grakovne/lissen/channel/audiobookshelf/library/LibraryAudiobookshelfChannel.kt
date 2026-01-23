@@ -71,7 +71,7 @@ class LibraryAudiobookshelfChannel
           pageNumber = pageNumber,
           sort = option,
           direction = direction,
-        ).map { libraryPageResponseConverter.apply(it) }
+        ).map { libraryPageResponseConverter.apply(it, libraryId) }
     }
 
     override suspend fun searchBooks(
@@ -87,7 +87,7 @@ class LibraryAudiobookshelfChannel
             searchResult
               .map { it.book }
               .map { it.map { response -> response.libraryItem } }
-              .map { librarySearchItemsConverter.apply(it) }
+              .map { librarySearchItemsConverter.apply(it, libraryId) }
           }
 
         val byAuthor =
@@ -106,7 +106,7 @@ class LibraryAudiobookshelfChannel
                         onFailure = { emptyList() },
                       )
                   }
-              }.map { librarySearchItemsConverter.apply(it) }
+              }.map { librarySearchItemsConverter.apply(it, libraryId) }
           }
 
         val bySeries: Deferred<OperationResult<List<Book>>> =
@@ -125,7 +125,7 @@ class LibraryAudiobookshelfChannel
                   )
                 }
               }.map { result -> result.map { it.libraryItem } }
-              .map { result -> result.let { librarySearchItemsConverter.apply(it) } }
+              .map { result -> result.let { librarySearchItemsConverter.apply(it, libraryId) } }
           }
 
         mergeBooks(byTitle, byAuthor, bySeries)

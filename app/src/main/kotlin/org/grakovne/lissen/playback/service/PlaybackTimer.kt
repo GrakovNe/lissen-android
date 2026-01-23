@@ -30,11 +30,9 @@ class PlaybackTimer
         override fun onIsPlayingChanged(isPlaying: Boolean) {
           val currentTimer = timer ?: return
 
-          if (option == CurrentEpisodeTimerOption) {
-            when (isPlaying) {
-              true -> timer = currentTimer.resume()
-              false -> currentTimer.pause()
-            }
+          when (isPlaying) {
+            true -> timer = currentTimer.resume()
+            false -> currentTimer.pause()
           }
         }
       }
@@ -45,6 +43,7 @@ class PlaybackTimer
       option: TimerOption,
     ) {
       stopTimer()
+      exoPlayer.volume = 1f
 
       val totalMillis = (delayInSeconds * 1000).toLong()
       if (totalMillis <= 0L) return
@@ -55,7 +54,10 @@ class PlaybackTimer
         SuspendableCountDownTimer(
           totalMillis = totalMillis,
           intervalMillis = 500L,
-          onTickSeconds = { seconds -> broadcastRemaining(seconds) },
+          onTickSeconds = { seconds ->
+            broadcastRemaining(seconds)
+            handleVolumeFade(seconds, delayInSeconds)
+          },
           onFinished = {
             localBroadcastManager.sendBroadcast(Intent(PlaybackService.TIMER_EXPIRED))
             stopTimer()
@@ -66,7 +68,7 @@ class PlaybackTimer
       exoPlayer.addListener(playerListener)
 
       this.option = option
-      if (exoPlayer.isPlaying.not() && option == CurrentEpisodeTimerOption) {
+      if (exoPlayer.isPlaying.not()) {
         timer?.pause()
       }
     }
@@ -82,7 +84,30 @@ class PlaybackTimer
     fun stopTimer() {
       timer?.cancel()
       timer = null
+      exoPlayer.volume = 1f
 
       exoPlayer.removeListener(playerListener)
+    }
+
+    private fun handleVolumeFade(
+      remainingSeconds: Long,
+      totalSeconds: Double,
+    ) {
+      val fadeWindow = 60.0 // Fade out over last 60 seconds
+
+      // If remaining is large, max volume
+      if (remainingSeconds > fadeWindow) {
+        if (exoPlayer.volume != 1f) exoPlayer.volume = 1f
+        return
+      }
+
+      // Calculate progress 0.0 (end) to 1.0 (start of fade)
+      // If total duration is very short (e.g. 30s), fade over the whole duration?
+      // Let's stick to max 60s fade.
+
+      val progress = (remainingSeconds / fadeWindow).toFloat().coerceIn(0f, 1f)
+
+      // Use a simple linear fade or squared for smoother perception
+      exoPlayer.volume = progress
     }
   }
