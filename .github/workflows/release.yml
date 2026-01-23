@@ -23,6 +23,9 @@ jobs:
           java-version: '21'
           cache: 'gradle'
 
+      - name: Create Schemas Directory
+        run: mkdir -p app/schemas
+
       - name: Decode Keystore
         run: |
           echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 --decode > app/kahani-release.jks

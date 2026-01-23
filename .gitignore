@@ -34,5 +34,4 @@ google-services.json
 *.hprof
 
 # Schemas
-app/schemas
 .DS_Store
