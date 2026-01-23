@@ -26,6 +26,12 @@ jobs:
       - name: Create Schemas Directory
         run: mkdir -p app/schemas
 
+      - name: Get Version
+        id: get_version
+        run: |
+          VERSION=$(grep 'appVersionName=' gradle.properties | cut -d'=' -f2)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Decode Keystore
         run: |
           echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 --decode > app/kahani-release.jks
@@ -42,8 +48,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: app/build/outputs/apk/release/app-release.apk
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
+          tag_name: v${{ steps.get_version.outputs.version }}
+          name: Kahani v${{ steps.get_version.outputs.version }}
           body: |
             Automated Release for Kahani.
             Commit: ${{ github.sha }}
