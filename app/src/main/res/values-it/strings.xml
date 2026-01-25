@@ -170,4 +170,6 @@
     <string name="restart_the_app_to_start_using_the_new_codecs_title">Riavvia l\'app per iniziare ad utilizzare i nuovi codec</string>
     <string name="restart_the_app_to_start_using_the_new_codecs_cta">Riavvia</string>
     <string name="codes_not_supported_warning_toast">Formato audio non supportato</string>
+    <string name="bookmarks_create_bookmark">Crea segnalibro</string>
+    <string name="bookmarks_title">Segnalibri</string>
 </resources>
