@@ -9,6 +9,7 @@ import org.grakovne.lissen.lib.domain.Bookmark
 import org.grakovne.lissen.lib.domain.BookmarkSyncState
 import org.grakovne.lissen.lib.domain.CreateBookmarkRequest
 import org.grakovne.lissen.lib.domain.isSame
+import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 
 @Singleton
 class CachedBookmarkProvider
@@ -16,19 +17,24 @@ class CachedBookmarkProvider
   constructor(
     private val channelProvider: AudiobookshelfChannelProvider,
     private val localCacheRepository: LocalCacheRepository,
+    private val preferences: LissenSharedPreferences,
   ) {
     suspend fun provideBookmarks(libraryItemId: String): List<Bookmark> =
       localCacheRepository
         .fetchBookmarks(libraryItemId)
         .filter { it.syncState != BookmarkSyncState.PENDING_DELETE }
         .sortedByDescending { it.createdAt }
-        .fold(mutableListOf<Bookmark>()) { acc, b ->
+        .fold(mutableListOf()) { acc, b ->
           if (acc.none { it.isSame(b) }) acc.add(b)
           acc
         }
 
     suspend fun fetchBookmarks(libraryItemId: String): List<Bookmark> {
       val local = localCacheRepository.fetchBookmarks(libraryItemId)
+
+      if (preferences.isForceCache()) {
+        return local
+      }
 
       local
         .asSequence()
@@ -107,6 +113,10 @@ class CachedBookmarkProvider
 
       localCacheRepository.upsertBookmark(localDraft)
 
+      if (preferences.isForceCache()) {
+        return localDraft
+      }
+
       return channelProvider
         .provideMediaChannel()
         .createBookmark(
@@ -120,9 +130,7 @@ class CachedBookmarkProvider
             localCacheRepository.upsertBookmark(remote.copy(syncState = BookmarkSyncState.SYNCED))
             remote.copy(syncState = BookmarkSyncState.SYNCED)
           },
-          onFailure = {
-            localDraft
-          },
+          onFailure = { localDraft },
         )
     }
 
@@ -130,6 +138,10 @@ class CachedBookmarkProvider
       localCacheRepository.upsertBookmark(
         bookmark.copy(syncState = BookmarkSyncState.PENDING_DELETE),
       )
+
+      if (preferences.isForceCache()) {
+        return
+      }
 
       channelProvider
         .provideMediaChannel()
