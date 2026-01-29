@@ -2,6 +2,11 @@ package org.grakovne.lissen.content.cache.temporary
 
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfChannelProvider
 import org.grakovne.lissen.common.buildBookmarkTitle
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
@@ -9,6 +14,7 @@ import org.grakovne.lissen.lib.domain.Bookmark
 import org.grakovne.lissen.lib.domain.BookmarkSyncState
 import org.grakovne.lissen.lib.domain.CreateBookmarkRequest
 import org.grakovne.lissen.lib.domain.isSame
+import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 
 @Singleton
 class CachedBookmarkProvider
@@ -16,13 +22,16 @@ class CachedBookmarkProvider
   constructor(
     private val channelProvider: AudiobookshelfChannelProvider,
     private val localCacheRepository: LocalCacheRepository,
+    private val preferences: LissenSharedPreferences,
   ) {
+    val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     suspend fun provideBookmarks(libraryItemId: String): List<Bookmark> =
       localCacheRepository
         .fetchBookmarks(libraryItemId)
         .filter { it.syncState != BookmarkSyncState.PENDING_DELETE }
         .sortedByDescending { it.createdAt }
-        .fold(mutableListOf<Bookmark>()) { acc, b ->
+        .fold(mutableListOf()) { acc, b ->
           if (acc.none { it.isSame(b) }) acc.add(b)
           acc
         }
@@ -107,23 +116,24 @@ class CachedBookmarkProvider
 
       localCacheRepository.upsertBookmark(localDraft)
 
-      return channelProvider
-        .provideMediaChannel()
-        .createBookmark(
-          CreateBookmarkRequest(
-            title = localDraft.title,
-            time = totalTime.toInt(),
-            libraryItemId = libraryItemId,
-          ),
-        ).foldAsync(
-          onSuccess = { remote ->
-            localCacheRepository.upsertBookmark(remote.copy(syncState = BookmarkSyncState.SYNCED))
-            remote.copy(syncState = BookmarkSyncState.SYNCED)
-          },
-          onFailure = {
-            localDraft
-          },
-        )
+      scope.launch {
+        channelProvider
+          .provideMediaChannel()
+          .createBookmark(
+            CreateBookmarkRequest(
+              title = localDraft.title,
+              time = totalTime.toInt(),
+              libraryItemId = libraryItemId,
+            ),
+          ).foldAsync(
+            onSuccess = { remote ->
+              localCacheRepository.upsertBookmark(remote.copy(syncState = BookmarkSyncState.SYNCED))
+            },
+            onFailure = { /* keep localDraft as-is */ },
+          )
+      }
+
+      return localDraft
     }
 
     suspend fun dropBookmark(bookmark: Bookmark) {
@@ -131,12 +141,14 @@ class CachedBookmarkProvider
         bookmark.copy(syncState = BookmarkSyncState.PENDING_DELETE),
       )
 
-      channelProvider
-        .provideMediaChannel()
-        .dropBookmark(bookmark)
-        .foldAsync(
-          onSuccess = { localCacheRepository.deleteBookmark(bookmark.libraryItemId, bookmark.totalPosition) },
-          onFailure = { Unit },
-        )
+      scope.launch {
+        channelProvider
+          .provideMediaChannel()
+          .dropBookmark(bookmark)
+          .foldAsync(
+            onSuccess = { localCacheRepository.deleteBookmark(bookmark.libraryItemId, bookmark.totalPosition) },
+            onFailure = { Unit },
+          )
+      }
     }
   }
