@@ -2,6 +2,11 @@ package org.grakovne.lissen.content.cache.temporary
 
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfChannelProvider
 import org.grakovne.lissen.common.buildBookmarkTitle
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
@@ -19,6 +24,8 @@ class CachedBookmarkProvider
     private val localCacheRepository: LocalCacheRepository,
     private val preferences: LissenSharedPreferences,
   ) {
+    val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     suspend fun provideBookmarks(libraryItemId: String): List<Bookmark> =
       localCacheRepository
         .fetchBookmarks(libraryItemId)
@@ -31,10 +38,6 @@ class CachedBookmarkProvider
 
     suspend fun fetchBookmarks(libraryItemId: String): List<Bookmark> {
       val local = localCacheRepository.fetchBookmarks(libraryItemId)
-
-      if (preferences.isForceCache()) {
-        return local
-      }
 
       local
         .asSequence()
@@ -113,25 +116,24 @@ class CachedBookmarkProvider
 
       localCacheRepository.upsertBookmark(localDraft)
 
-      if (preferences.isForceCache()) {
-        return localDraft
+      scope.launch {
+        channelProvider
+          .provideMediaChannel()
+          .createBookmark(
+            CreateBookmarkRequest(
+              title = localDraft.title,
+              time = totalTime.toInt(),
+              libraryItemId = libraryItemId,
+            ),
+          ).foldAsync(
+            onSuccess = { remote ->
+              localCacheRepository.upsertBookmark(remote.copy(syncState = BookmarkSyncState.SYNCED))
+            },
+            onFailure = { /* keep localDraft as-is */ },
+          )
       }
 
-      return channelProvider
-        .provideMediaChannel()
-        .createBookmark(
-          CreateBookmarkRequest(
-            title = localDraft.title,
-            time = totalTime.toInt(),
-            libraryItemId = libraryItemId,
-          ),
-        ).foldAsync(
-          onSuccess = { remote ->
-            localCacheRepository.upsertBookmark(remote.copy(syncState = BookmarkSyncState.SYNCED))
-            remote.copy(syncState = BookmarkSyncState.SYNCED)
-          },
-          onFailure = { localDraft },
-        )
+      return localDraft
     }
 
     suspend fun dropBookmark(bookmark: Bookmark) {
@@ -139,16 +141,14 @@ class CachedBookmarkProvider
         bookmark.copy(syncState = BookmarkSyncState.PENDING_DELETE),
       )
 
-      if (preferences.isForceCache()) {
-        return
+      scope.launch {
+        channelProvider
+          .provideMediaChannel()
+          .dropBookmark(bookmark)
+          .foldAsync(
+            onSuccess = { localCacheRepository.deleteBookmark(bookmark.libraryItemId, bookmark.totalPosition) },
+            onFailure = { Unit },
+          )
       }
-
-      channelProvider
-        .provideMediaChannel()
-        .dropBookmark(bookmark)
-        .foldAsync(
-          onSuccess = { localCacheRepository.deleteBookmark(bookmark.libraryItemId, bookmark.totalPosition) },
-          onFailure = { Unit },
-        )
     }
   }
