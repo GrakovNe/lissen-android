@@ -141,14 +141,12 @@ class CachedBookmarkProvider
         bookmark.copy(syncState = BookmarkSyncState.PENDING_DELETE),
       )
 
-      scope.launch {
-        channelProvider
-          .provideMediaChannel()
-          .dropBookmark(bookmark)
-          .foldAsync(
-            onSuccess = { localCacheRepository.deleteBookmark(bookmark.libraryItemId, bookmark.totalPosition) },
-            onFailure = { Unit },
-          )
-      }
+      channelProvider
+        .provideMediaChannel()
+        .dropBookmark(bookmark)
+        .foldAsync(
+          onSuccess = { localCacheRepository.deleteBookmark(bookmark.libraryItemId, bookmark.totalPosition) },
+          onFailure = { Unit },
+        )
     }
   }
