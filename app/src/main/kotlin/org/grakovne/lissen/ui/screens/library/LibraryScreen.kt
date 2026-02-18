@@ -511,6 +511,7 @@ fun LibraryScreen(
 
   if (preferencesExpanded) {
     LibrarySettingsComposable(
+      navController = navController,
       onDismissRequest = { preferencesExpanded = false },
       onForceLocalToggled = {
         cachingModelView.toggleCacheForce()

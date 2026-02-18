@@ -2,7 +2,6 @@
 <resources>
     <string name="downloads_menu_download_option_clear_chapters">பதிவிறக்கம் செய்யப்பட்ட அத்தியாயங்களை அழி</string>
     <string name="library_screen_library_title">நூலகம்</string>
-    <string name="disable_offline">அனைத்து உள்ளடக்கம்</string>
     <string name="enable_offline">பதிவிறக்கப்பட்டவை மட்டும்</string>
     <string name="library_screen_continue_listening_title">தொடர்ந்து கேட்பது</string>
     <string name="library_screen_preferences_menu_item">விருப்பத்தேர்வுகள்</string>

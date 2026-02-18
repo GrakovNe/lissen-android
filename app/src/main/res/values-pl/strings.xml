@@ -32,7 +32,6 @@
     <string name="login_error_credentials_are_invalid">Dane logowania są nieprawidłowe</string>
     <string name="login_error_host_url_shall_be_https_or_http">Adres URL powinien zawierać https:// lub http://</string>
     <string name="login_error_connection_error">Błąd połączenia</string>
-    <string name="disable_offline">Wszystkie pozycje</string>
     <string name="enable_offline">Tylko pobrane</string>
     <string name="the_library_is_empty">Biblioteka jest pusta</string>
     <string name="the_offline_library_is_empty">Brak pobranych książek</string>

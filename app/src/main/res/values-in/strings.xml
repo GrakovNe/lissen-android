@@ -32,7 +32,6 @@
     <string name="login_error_credentials_are_invalid">Kredensial tidak valid</string>
     <string name="login_error_host_url_shall_be_https_or_http">URL Host harus berupa https:// atau http://</string>
     <string name="login_error_connection_error">Kesalahan koneksi</string>
-    <string name="disable_offline">Semua item</string>
     <string name="enable_offline">Hanya diunduh</string>
     <string name="the_library_is_empty">Koleksi kosong</string>
     <string name="the_offline_library_is_empty">Belum ada buku tersimpan</string>

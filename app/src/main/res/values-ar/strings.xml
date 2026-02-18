@@ -36,7 +36,6 @@
     <string name="login_error_host_is_down">الخادم غير متوفر</string>
     <string name="login_error_username_is_missing">اسم المستخدم مفقود</string>
     <string name="login_error_password_is_missing">كلمة المرور مفقودة</string>
-    <string name="disable_offline">جميع العناصر</string>
     <string name="playback_speed_title">سرعة التشغيل</string>
     <string name="color_scheme_follow_system">النظام</string>
     <string name="color_scheme_light">فاتح</string>

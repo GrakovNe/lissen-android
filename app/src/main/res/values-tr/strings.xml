@@ -15,7 +15,6 @@
     <string name="player_screen_library_playing_title">Çalınan bölümler</string>
     <string name="player_screen_podcast_playing_title">Çalınan bölümler</string>
     <string name="player_screen_items_playing_title">Çalınan öğeler</string>
-    <string name="disable_offline">Tüm içerik</string>
     <string name="enable_offline">Yalnızca indirilenler</string>
     <string name="player_screen_now_playing_title_chapter_of">%2$s\'nin %1$d. bölümü</string>
     <string name="player_screen_now_playing_title_podcast_of">%2$s\'nin %1$d. bölümü</string>

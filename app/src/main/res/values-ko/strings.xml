@@ -79,7 +79,6 @@
     <string name="source_code_on_github_title">GitHub 페이지</string>
     <string name="source_code_on_github_subtitle">오류 보고 또는 기능 개선 제안</string>
     <string name="player_screen_now_playing_title_item_of">아이템 %1$d/%2$s</string>
-    <string name="disable_offline">모든 아이템</string>
     <string name="enable_offline">다운로드만 보기</string>
     <string name="settings_screen_server_version">서버 버전</string>
     <string name="downloads_menu_download_option_current_item">현재 아이템</string>
