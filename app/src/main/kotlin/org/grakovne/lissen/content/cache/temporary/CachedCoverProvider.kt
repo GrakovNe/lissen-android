@@ -58,9 +58,10 @@ class CachedCoverProvider
 
       return withContext(Dispatchers.IO) {
         channel
-          .fetchBookCover(itemId)
+          .fetchBookCover(itemId, width)
           .fold(
             onSuccess = { source ->
+              // TODO: Why twice?
               source.withBlur(context)
 
               val blurred = source.withBlur(context)
@@ -69,7 +70,7 @@ class CachedCoverProvider
               blurred.writeToFile(dest)
               OperationResult.Success(dest)
             },
-            onFailure = { return@fold OperationResult.Error<File>(OperationError.InternalError, it.message) },
+            onFailure = { OperationResult.Error(OperationError.InternalError, it.message) },
           )
       }
     }
