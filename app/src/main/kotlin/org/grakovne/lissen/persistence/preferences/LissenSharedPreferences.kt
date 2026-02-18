@@ -280,6 +280,8 @@ class LissenSharedPreferences
 
     val collapseOnFlingFlow = asFlow(KEY_COLLAPSE_ON_FLING, ::getCollapseOnFling)
 
+    val forceCacheFlow = asFlow(CACHE_FORCE_ENABLED, ::isForceCache)
+
     private fun saveActiveLibraryId(host: String) = sharedPreferences.edit { putString(KEY_PREFERRED_LIBRARY_ID, host) }
 
     private fun getPreferredLibraryId(): String? = sharedPreferences.getString(KEY_PREFERRED_LIBRARY_ID, null)

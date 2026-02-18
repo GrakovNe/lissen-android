@@ -1,37 +1,41 @@
-package org.grakovne.lissen.ui.screens.settings.composable
+package org.grakovne.lissen.ui.screens.library.composables
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import org.grakovne.lissen.R
+import org.grakovne.lissen.viewmodel.CachingModelView
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CommonSettingsMultiItemComposable(
-  items: List<Pair<CommonSettingsItem, Boolean>>,
+fun LibrarySettingsComposable(
+  cachingModelView: CachingModelView = hiltViewModel(),
   onDismissRequest: () -> Unit,
-  onItemChanged: (String, Boolean) -> Unit,
+  onForceLocalToggled: () -> Unit,
 ) {
+  val forceCache by cachingModelView.forceCache.collectAsState(false)
+  val context = LocalContext.current
+
   ModalBottomSheet(
     containerColor = colorScheme.background,
     onDismissRequest = onDismissRequest,
@@ -46,20 +50,19 @@ fun CommonSettingsMultiItemComposable(
         Spacer(modifier = Modifier.height(8.dp))
 
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
-          itemsIndexed(items) { index, item ->
-            var isChecked by remember { mutableStateOf(item.second) }
-
+          item {
             ListItem(
-              headlineContent = {
-                Row { Text(item.first.name) }
+              headlineContent = { Text(context.getString(R.string.enable_offline)) },
+              leadingContent = {
+                Icon(
+                  imageVector = ImageVector.vectorResource(id = R.drawable.available_offline_outline),
+                  contentDescription = null,
+                )
               },
               trailingContent = {
                 Switch(
-                  checked = isChecked,
-                  onCheckedChange = {
-                    isChecked = it
-                    onItemChanged(item.first.id, it)
-                  },
+                  checked = forceCache,
+                  onCheckedChange = { onForceLocalToggled() },
                   colors =
                     SwitchDefaults.colors(
                       uncheckedTrackColor = colorScheme.background,
@@ -70,9 +73,6 @@ fun CommonSettingsMultiItemComposable(
                 )
               },
             )
-            if (index < items.lastIndex) {
-              HorizontalDivider()
-            }
           }
         }
       }
