@@ -36,6 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -73,14 +74,14 @@ fun LibrarySettingsComposable(
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
           item {
             LibrarySettingsComposableItem(
-              title = context.getString(R.string.enable_offline),
+              title = context.getString(R.string.show_downloaded_content_only),
               icon = ImageVector.vectorResource(id = R.drawable.available_offline_outline),
               state = forceCache,
               onStateChange = { onForceLocalToggled() },
             )
 
             LibrarySettingsComposableItem(
-              title = "Скрывать прослушанные",
+              title = stringResource(R.string.hide_completed_items),
               icon = Icons.Outlined.VisibilityOff,
               state = forceCache,
               onStateChange = { onForceLocalToggled() },

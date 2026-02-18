@@ -27,7 +27,7 @@
     <string name="login_error_credentials_are_invalid">მონაცემები არასწორია</string>
     <string name="login_error_host_url_shall_be_https_or_http">ჰოსტის URL მისამართი უნდა იყოს https:// ან http://</string>
     <string name="login_error_connection_error">დაკავშირების შეცდომა</string>
-    <string name="enable_offline">მხოლოდ ჩამოტვირთული</string>
+    <string name="show_downloaded_content_only">მხოლოდ ჩამოტვირთული</string>
     <string name="the_library_is_empty">ბიბლიოთეკა ცარიელია</string>
     <string name="the_offline_library_is_empty">შენახული წიგნები ჯერ-ჯერობით არ არის</string>
     <string name="audiobookshelf_server_is_required">საჭიროა Audiobookshelf სერვერი</string>

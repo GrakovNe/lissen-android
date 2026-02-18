@@ -61,7 +61,7 @@
     <string name="color_scheme_follow_system">System</string>
     <string name="color_scheme_light">Hell</string>
     <string name="login_error_host_url_is_missing">Server Adresse fehlt</string>
-    <string name="enable_offline">Nur heruntergeladene</string>
+    <string name="show_downloaded_content_only">Nur heruntergeladene</string>
     <string name="the_offline_library_is_empty">Keine Bücher vorhanden</string>
     <string name="color_scheme_dark">Dunkel</string>
     <string name="player_screen_chapter_list_navigation_library">Kapitel</string>

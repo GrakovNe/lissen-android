@@ -3,7 +3,7 @@
     <string name="login_screen_login_input">Logga in</string>
     <string name="login_error_username_is_missing">Användarnamn saknas</string>
     <string name="login_error_connection_error">Anslutningsfel</string>
-    <string name="enable_offline">Endast nedladdade</string>
+    <string name="show_downloaded_content_only">Endast nedladdade</string>
     <string name="login_screen_title">Anslut till server</string>
     <string name="player_screen_podcast_playing_title">Spelar upp avsnitt</string>
     <string name="library_screen_library_title">Bibliotek</string>

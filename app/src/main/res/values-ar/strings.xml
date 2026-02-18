@@ -103,7 +103,7 @@
     <string name="player_screen_items_playing_title">تشغيل العناصر</string>
     <string name="player_screen_now_playing_title_chapter_of">الفصل %1$d من %2$s</string>
     <string name="login_error_connection_error">خطأ في الاتصال</string>
-    <string name="enable_offline">التي تم تنزيلها فقط</string>
+    <string name="show_downloaded_content_only">التي تم تنزيلها فقط</string>
     <string name="the_library_is_empty">المكتبة فارغة</string>
     <string name="the_offline_library_is_empty">لم يتم حفظ أي كتب بعد</string>
     <string name="audiobookshelf_server_is_required">خادم Audiobookshelf مطلوب</string>

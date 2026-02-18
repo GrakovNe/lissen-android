@@ -31,7 +31,7 @@
     <string name="login_error_credentials_are_invalid">Loginoplysninger er ugyldige</string>
     <string name="login_error_host_url_shall_be_https_or_http">Serverens URL skal starte med https:// eller http://</string>
     <string name="login_error_connection_error">Forbindelsesfejl</string>
-    <string name="enable_offline">Kun lokalt indhold</string>
+    <string name="show_downloaded_content_only">Kun lokalt indhold</string>
     <string name="the_library_is_empty">Biblioteket er tomt</string>
     <string name="the_offline_library_is_empty">Ingen hentede bøger</string>
     <string name="audiobookshelf_server_is_required">Audiobookshelf-server er påkrævet</string>
