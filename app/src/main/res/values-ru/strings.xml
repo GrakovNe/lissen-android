@@ -174,4 +174,5 @@
     <string name="bookmarks_create_bookmark">Новая закладка</string>
     <string name="bookmarks_title">Закладки</string>
     <string name="hide_completed_items">Скрывать прослушанные</string>
+    <string name="application_settings">Настройки приложения</string>
 </resources>

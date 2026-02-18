@@ -144,7 +144,7 @@ fun ApplicationSettingsItemComposable(onClicked: () -> Unit) {
     },
     headlineContent = {
       Text(
-        text = "Настройки приложения",
+        text = stringResource(R.string.application_settings),
         style = typography.bodyLarge,
       )
     },
