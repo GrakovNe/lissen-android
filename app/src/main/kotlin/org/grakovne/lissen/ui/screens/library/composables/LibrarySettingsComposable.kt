@@ -30,8 +30,10 @@ import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
+import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.CachingModelView
+import org.grakovne.lissen.viewmodel.LibraryViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,6 +42,7 @@ fun LibrarySettingsComposable(
   onDismissRequest: () -> Unit,
   onForceLocalToggled: () -> Unit,
   navController: AppNavigationService,
+  settingsModelView: LibraryViewModel = hiltViewModel(),
 ) {
   val forceCache by cachingModelView.forceCache.collectAsState(false)
   val context = LocalContext.current
@@ -64,12 +67,14 @@ fun LibrarySettingsComposable(
               onStateChange = { onForceLocalToggled() },
             )
 
-            LibrarySettingsComposableItem(
-              title = stringResource(R.string.hide_completed_items),
-              icon = Icons.Outlined.VisibilityOff,
-              state = forceCache,
-              onStateChange = { onForceLocalToggled() },
-            )
+            if (settingsModelView.fetchPreferredLibraryType() == LibraryType.LIBRARY) {
+              LibrarySettingsComposableItem(
+                title = stringResource(R.string.hide_completed_items),
+                icon = Icons.Outlined.VisibilityOff,
+                state = forceCache,
+                onStateChange = { onForceLocalToggled() },
+              )
+            }
 
             HorizontalDivider()
 
