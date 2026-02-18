@@ -281,6 +281,7 @@ class LissenSharedPreferences
     val collapseOnFlingFlow = asFlow(KEY_COLLAPSE_ON_FLING, ::getCollapseOnFling)
 
     val forceCacheFlow = asFlow(CACHE_FORCE_ENABLED, ::isForceCache)
+    val hideCompletedFlow = asFlow(KEY_HIDE_COMPLETED, ::getHideCompleted)
 
     private fun saveActiveLibraryId(host: String) = sharedPreferences.edit { putString(KEY_PREFERRED_LIBRARY_ID, host) }
 
@@ -458,6 +459,13 @@ class LissenSharedPreferences
         putBoolean(KEY_SOFTWARE_CODECS, value)
       }
 
+    fun getHideCompleted(): Boolean = sharedPreferences.getBoolean(KEY_HIDE_COMPLETED, false)
+
+    fun saveHideCompleted(value: Boolean) =
+      sharedPreferences.edit {
+        putBoolean(KEY_HIDE_COMPLETED, value)
+      }
+
     companion object {
       private const val KEY_ALIAS = "secure_key_alias"
       private const val KEY_HOST = "host"
@@ -487,6 +495,7 @@ class LissenSharedPreferences
       private const val KEY_PREFERRED_LIBRARY_ORDERING = "preferred_library_ordering"
       private const val KEY_COLLAPSE_ON_FLING = "collapse_on_fling"
       private const val KEY_SOFTWARE_CODECS = "software_codecs"
+      private const val KEY_HIDE_COMPLETED = "hide_completed"
 
       private const val KEY_CUSTOM_HEADERS = "custom_headers"
       private const val KEY_BYPASS_SSL = "bypass_ssl"

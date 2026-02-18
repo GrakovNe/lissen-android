@@ -34,6 +34,7 @@ import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.LibraryViewModel
+import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,10 +42,14 @@ fun LibrarySettingsComposable(
   cachingModelView: CachingModelView = hiltViewModel(),
   onDismissRequest: () -> Unit,
   onForceLocalToggled: () -> Unit,
+  onHideCompletedToggled: () -> Unit,
   navController: AppNavigationService,
-  settingsModelView: LibraryViewModel = hiltViewModel(),
+  settingsModelView: SettingsViewModel = hiltViewModel(),
+  libraryViewModel: LibraryViewModel = hiltViewModel(),
 ) {
   val forceCache by cachingModelView.forceCache.collectAsState(false)
+  val hideCompleted by settingsModelView.hideCompleted.collectAsState(false)
+
   val context = LocalContext.current
 
   ModalBottomSheet(
@@ -67,12 +72,12 @@ fun LibrarySettingsComposable(
               onStateChange = { onForceLocalToggled() },
             )
 
-            if (settingsModelView.fetchPreferredLibraryType() == LibraryType.LIBRARY) {
+            if (libraryViewModel.fetchPreferredLibraryType() == LibraryType.LIBRARY) {
               LibrarySettingsComposableItem(
                 title = stringResource(R.string.hide_completed_items),
                 icon = Icons.Outlined.VisibilityOff,
-                state = forceCache,
-                onStateChange = { onForceLocalToggled() },
+                state = hideCompleted,
+                onStateChange = { onHideCompletedToggled() },
               )
             }
 
