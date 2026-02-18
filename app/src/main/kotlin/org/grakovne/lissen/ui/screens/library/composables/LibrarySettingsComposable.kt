@@ -51,31 +51,48 @@ fun LibrarySettingsComposable(
 
         LazyColumn(modifier = Modifier.fillMaxWidth()) {
           item {
-            ListItem(
-              headlineContent = { Text(context.getString(R.string.enable_offline)) },
-              leadingContent = {
-                Icon(
-                  imageVector = ImageVector.vectorResource(id = R.drawable.available_offline_outline),
-                  contentDescription = null,
-                )
-              },
-              trailingContent = {
-                Switch(
-                  checked = forceCache,
-                  onCheckedChange = { onForceLocalToggled() },
-                  colors =
-                    SwitchDefaults.colors(
-                      uncheckedTrackColor = colorScheme.background,
-                      checkedBorderColor = colorScheme.onSurface,
-                      checkedThumbColor = colorScheme.onSurface,
-                      checkedTrackColor = colorScheme.background,
-                    ),
-                )
-              },
+            LibrarySettingsComposableItem(
+              title = context.getString(R.string.enable_offline),
+              icon = ImageVector.vectorResource(id = R.drawable.available_offline_outline),
+              state = forceCache,
+              onStateChange = { onForceLocalToggled() },
             )
           }
         }
       }
+    },
+  )
+}
+
+@Composable
+fun LibrarySettingsComposableItem(
+  title: String,
+  icon: ImageVector,
+  state: Boolean,
+  onStateChange: (Boolean) -> Unit,
+) {
+  ListItem(
+    modifier = Modifier,
+    headlineContent = { Text(text = title) },
+    leadingContent = {
+      Icon(
+        imageVector = icon,
+        contentDescription = null,
+      )
+    },
+    trailingContent = {
+      Switch(
+        checked = state,
+        onCheckedChange = onStateChange,
+        enabled = true,
+        colors =
+          SwitchDefaults.colors(
+            uncheckedTrackColor = colorScheme.background,
+            checkedBorderColor = colorScheme.onSurface,
+            checkedThumbColor = colorScheme.onSurface,
+            checkedTrackColor = colorScheme.background,
+          ),
+      )
     },
   )
 }
