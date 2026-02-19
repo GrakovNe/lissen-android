@@ -10,8 +10,8 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.source.ProgressiveMediaSource
+import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
-import androidx.media3.session.MediaSessionService
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -27,18 +27,18 @@ import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.MediaProgress
 import org.grakovne.lissen.lib.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
-import org.grakovne.lissen.playback.MediaSessionProvider
+import org.grakovne.lissen.playback.MediaLibrarySessionProvider
 import timber.log.Timber
 import javax.inject.Inject
 
 @UnstableApi
 @AndroidEntryPoint
-class PlaybackService : MediaSessionService() {
+class PlaybackService : MediaLibraryService() {
   @Inject
   lateinit var exoPlayer: ExoPlayer
 
   @Inject
-  lateinit var mediaSessionProvider: MediaSessionProvider
+  lateinit var mediaLibrarySessionProvider: MediaLibrarySessionProvider
 
   @Inject
   lateinit var mediaProvider: LissenMediaProvider
@@ -61,7 +61,7 @@ class PlaybackService : MediaSessionService() {
   @Inject
   lateinit var mediaCache: Cache
 
-  private var session: MediaSession? = null
+  private var session: MediaLibrarySession? = null
 
   private val playerServiceScope = MainScope()
 
@@ -137,9 +137,9 @@ class PlaybackService : MediaSessionService() {
 
   override fun onGetSession(controllerInfo: MediaSession.ControllerInfo) = getSession()
 
-  private fun getSession(): MediaSession =
+  private fun getSession(): MediaLibrarySession =
     when (val currentSession = session) {
-      null -> mediaSessionProvider.provideMediaSession().also { session = it }
+      null -> mediaLibrarySessionProvider.provideMediaLibrarySession(this).also { session = it }
       else -> currentSession
     }
 
