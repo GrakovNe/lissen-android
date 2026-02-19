@@ -1,0 +1,450 @@
+package org.grakovne.lissen.playback
+
+import android.content.Context
+import android.net.Uri
+import androidx.annotation.OptIn
+import androidx.core.content.FileProvider
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaItem.SubtitleConfiguration
+import androidx.media3.common.MediaMetadata
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.LibraryResult
+import androidx.media3.session.SessionError
+import com.google.common.collect.ImmutableList
+import com.google.common.util.concurrent.Futures
+import com.google.common.util.concurrent.ListenableFuture
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.future.future
+import org.grakovne.lissen.BuildConfig
+import org.grakovne.lissen.content.LissenMediaProvider
+import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
+import org.grakovne.lissen.lib.domain.Book
+import org.grakovne.lissen.lib.domain.DetailedItem
+import org.grakovne.lissen.lib.domain.LibraryType
+import org.grakovne.lissen.lib.domain.RecentBook
+import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.util.asListenableFuture
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class MediaLibraryTree
+  @Inject
+  @OptIn(UnstableApi::class)
+  constructor(
+    @ApplicationContext private val context: Context,
+    private val preferences: LissenSharedPreferences,
+    private val localCacheRepository: LocalCacheRepository,
+    private val lissenMediaProvider: LissenMediaProvider,
+  ) {
+    private var treeNodes: MutableMap<String, MediaItemNode> = mutableMapOf()
+
+    // Root
+    companion object {
+      private val ROOT_ID = "[rootID]"
+
+      // First level
+      private val CONTINUE_ID = "[continueID]"
+      private val RECENT_ID = "[recentID]"
+      private val LIBRARY_ID = "[libraryID]"
+      private val DOWNLOADS_ID = "[downloadsID]"
+      private val BOOK_ID = "[bookID]"
+    }
+
+    class MediaItemNode(
+      val item: MediaItem,
+      val tree: MediaLibraryTree,
+    ) {
+      private val children: MutableList<MediaItem> = ArrayList()
+
+      fun addChild(childID: String) = children.add(tree.treeNodes[childID]!!.item)
+
+      fun getChildren(): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> =
+        Futures.immediateFuture(LibraryResult.ofItemList(children, null))
+    }
+
+    private suspend fun bookToMediaItem(book: Book) =
+      buildMediaItem(
+        title = book.title,
+        artist = book.author,
+        mediaId = "$BOOK_ID${book.id}",
+        isPlayable = true,
+        isBrowsable = true,
+        mediaType = MediaMetadata.MEDIA_TYPE_AUDIO_BOOK,
+        imageUri = externalCoverUri(book.id),
+      )
+
+    private suspend fun bookToMediaItem(book: DetailedItem) =
+      buildMediaItem(
+        title = book.title,
+        artist = book.author,
+        mediaId = "$BOOK_ID${book.id}",
+        isPlayable = true,
+        isBrowsable = true,
+        mediaType = MediaMetadata.MEDIA_TYPE_AUDIO_BOOK,
+        imageUri = externalCoverUri(book.id),
+      )
+
+    private suspend fun bookToMediaItem(book: RecentBook) =
+      buildMediaItem(
+        title = book.title,
+        artist = book.author,
+        mediaId = "$BOOK_ID${book.id}",
+        isPlayable = true,
+        isBrowsable = true,
+        mediaType = MediaMetadata.MEDIA_TYPE_AUDIO_BOOK,
+        imageUri = externalCoverUri(book.id),
+      )
+
+    private fun buildMediaItem(
+      title: String,
+      mediaId: String,
+      isPlayable: Boolean,
+      isBrowsable: Boolean,
+      mediaType: @MediaMetadata.MediaType Int,
+      subtitleConfigurations: List<SubtitleConfiguration> = mutableListOf(),
+      album: String? = null,
+      artist: String? = null,
+      genre: String? = null,
+      sourceUri: Uri? = null,
+      imageUri: Uri? = null,
+    ): MediaItem {
+      val metadata =
+        MediaMetadata
+          .Builder()
+          .setAlbumTitle(album)
+          .setTitle(title)
+          .setArtist(artist)
+          .setGenre(genre)
+          .setIsBrowsable(isBrowsable)
+          .setIsPlayable(isPlayable)
+          .setArtworkUri(imageUri)
+          .setMediaType(mediaType)
+          .build()
+
+      return MediaItem
+        .Builder()
+        .setMediaId(mediaId)
+        .setSubtitleConfigurations(subtitleConfigurations)
+        .setMediaMetadata(metadata)
+        .setUri(sourceUri)
+        .build()
+    }
+
+    init {
+      // Root node
+
+      treeNodes[ROOT_ID] =
+        MediaItemNode(
+          buildMediaItem(
+            title = "Root",
+            mediaId = ROOT_ID,
+            isPlayable = false,
+            isBrowsable = true,
+            mediaType = MediaMetadata.MEDIA_TYPE_FOLDER_MIXED,
+          ),
+          this,
+        )
+
+      // Main menu
+
+      treeNodes[CONTINUE_ID] =
+        MediaItemNode(
+          buildMediaItem(
+            title = "Continue",
+            mediaId = CONTINUE_ID,
+            isPlayable = false,
+            isBrowsable = true,
+            mediaType = MediaMetadata.MEDIA_TYPE_FOLDER_MIXED,
+          ),
+          this,
+        )
+
+      treeNodes[RECENT_ID] =
+        MediaItemNode(
+          buildMediaItem(
+            title = "Recent",
+            mediaId = RECENT_ID,
+            isPlayable = false,
+            isBrowsable = true,
+            mediaType = MediaMetadata.MEDIA_TYPE_FOLDER_MIXED,
+          ),
+          this,
+        )
+
+      treeNodes[LIBRARY_ID] =
+        MediaItemNode(
+          buildMediaItem(
+            title = "Library",
+            mediaId = LIBRARY_ID,
+            isPlayable = false,
+            isBrowsable = true,
+            mediaType = MediaMetadata.MEDIA_TYPE_FOLDER_MIXED,
+          ),
+          this,
+        )
+
+      treeNodes[DOWNLOADS_ID] =
+        MediaItemNode(
+          buildMediaItem(
+            title = "Downloads",
+            mediaId = DOWNLOADS_ID,
+            isPlayable = false,
+            isBrowsable = true,
+            mediaType = MediaMetadata.MEDIA_TYPE_FOLDER_MIXED,
+          ),
+          this,
+        )
+
+      treeNodes[ROOT_ID]!!.addChild(CONTINUE_ID)
+      treeNodes[ROOT_ID]!!.addChild(RECENT_ID)
+      treeNodes[ROOT_ID]!!.addChild(LIBRARY_ID)
+      treeNodes[ROOT_ID]!!.addChild(DOWNLOADS_ID)
+    }
+
+    fun getRootItem(): ListenableFuture<LibraryResult<MediaItem>> =
+      Futures.immediateFuture(LibraryResult.ofItem(treeNodes[ROOT_ID]!!.item, null))
+
+    val futureScope = CoroutineScope(Dispatchers.Default)
+
+    @OptIn(UnstableApi::class)
+    fun getLibraries() =
+      futureScope
+        .future {
+          val libraries =
+            lissenMediaProvider
+              .fetchLibraries()
+              .fold(
+                onSuccess = { libs ->
+                  libs.map { lib ->
+                    buildMediaItem(
+                      title = lib.title,
+                      mediaId = "$LIBRARY_ID${lib.id}",
+                      isPlayable = false,
+                      isBrowsable = true,
+                      mediaType =
+                        when (lib.type) {
+                          LibraryType.LIBRARY -> MediaMetadata.MEDIA_TYPE_FOLDER_AUDIO_BOOKS
+                          LibraryType.PODCAST -> MediaMetadata.MEDIA_TYPE_FOLDER_PODCASTS
+                          LibraryType.UNKNOWN -> MediaMetadata.MEDIA_TYPE_FOLDER_MIXED
+                        },
+                    )
+                  }
+                },
+                onFailure = { listOf() },
+              )
+          LibraryResult.ofItemList(libraries, null)
+        }.asListenableFuture()
+
+    fun getBooksFromLibrary(
+      libId: String,
+      pageSize: Int,
+      pageNumber: Int,
+    ) = futureScope
+      .future {
+        lissenMediaProvider
+          .fetchBooks(
+            libId,
+            pageSize,
+            pageNumber,
+          ).foldAsync(
+            onSuccess = {
+              it.items
+                .map {
+                  async(Dispatchers.IO) { bookToMediaItem(it) }
+                }.awaitAll()
+            },
+            onFailure = { listOf() },
+          ).let { LibraryResult.ofItemList(it, null) }
+      }.asListenableFuture()
+
+    private suspend fun getBookItem(bookId: String) =
+      lissenMediaProvider
+        .fetchBook(
+          bookId,
+        ).foldAsync(
+          onSuccess = { bookToMediaItem(it) },
+          onFailure = { null },
+        )
+
+    private suspend fun externalCoverUri(bookId: String) =
+      lissenMediaProvider
+        .fetchBookCover(
+          bookId = bookId,
+          width = 300,
+        ).fold(
+          onSuccess = {
+            FileProvider.getUriForFile(
+              context,
+              "${BuildConfig.APPLICATION_ID}.cover",
+              it,
+            )
+          },
+          onFailure = { null },
+        )
+
+    // TODO: return chapters, not a single book
+    @OptIn(UnstableApi::class)
+    fun getBook(bookId: String) =
+      futureScope
+        .future {
+          getBookItem(bookId)?.let {
+            LibraryResult.ofItemList(listOf(it), null)
+          } ?: LibraryResult.ofError(SessionError.INFO_CANCELLED)
+        }.asListenableFuture()
+
+    @OptIn(UnstableApi::class)
+    fun getBookSingle(bookId: String) =
+      futureScope
+        .future {
+          getBookItem(bookId)?.let {
+            LibraryResult.ofItem(it, null)
+          } ?: LibraryResult.ofError(SessionError.INFO_CANCELLED)
+        }.asListenableFuture()
+
+    private fun getContinueListening(): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> =
+      futureScope
+        .future {
+          preferences
+            .getPlayingBook()
+            ?.let {
+              LibraryResult.ofItemList(listOf(bookToMediaItem(it)), null)
+            }
+            ?: LibraryResult.ofItemList(emptyList(), null)
+        }.asListenableFuture()
+
+    private fun getRecentBooks(): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> =
+      futureScope
+        .future {
+          preferences.getPreferredLibrary()?.id?.let { libraryId ->
+            lissenMediaProvider
+              .fetchRecentListenedBooks(libraryId)
+              .foldAsync(
+                onSuccess = {
+                  it
+                    .map {
+                      async(Dispatchers.IO) { bookToMediaItem(it) }
+                    }.awaitAll()
+                },
+                onFailure = { emptyList() },
+              ).let { LibraryResult.ofItemList(it, null) }
+          } ?: LibraryResult.ofItemList(emptyList<MediaItem>(), null)
+        }.asListenableFuture()
+
+    private fun getDownloadedBooks(): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> =
+      futureScope
+        .future {
+          localCacheRepository
+            .fetchDetailedItems(pageSize = 100, pageNumber = 0)
+            .foldAsync(
+              onSuccess = {
+                it.items
+                  .map {
+                    async(Dispatchers.IO) { bookToMediaItem(it) }
+                  }.awaitAll()
+              },
+              onFailure = { emptyList() },
+            ).let {
+              LibraryResult.ofItemList(it, null)
+            }
+        }.asListenableFuture()
+
+    fun searchBooks(query: String): ListenableFuture<List<MediaItem>> =
+      futureScope
+        .future {
+          preferences.getPreferredLibrary()?.id?.let { libraryId ->
+            lissenMediaProvider
+              .searchBooks(libraryId, query, limit = 20)
+              .foldAsync(
+                onSuccess = {
+                  it
+                    .map {
+                      async(Dispatchers.IO) { bookToMediaItem(it) }
+                    }.awaitAll()
+                },
+                onFailure = { emptyList() },
+              )
+          } ?: emptyList()
+        }.asListenableFuture()
+
+    @OptIn(UnstableApi::class)
+    fun getChildren(
+      id: String,
+      pageSize: Int,
+      pageNumber: Int,
+    ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> =
+      when (id) {
+        ROOT_ID -> {
+          treeNodes[ROOT_ID]!!.getChildren()
+        }
+
+        CONTINUE_ID -> {
+          getContinueListening()
+        }
+
+        RECENT_ID -> {
+          getRecentBooks()
+        }
+
+        LIBRARY_ID -> {
+          getLibraries()
+        }
+
+        DOWNLOADS_ID -> {
+          getDownloadedBooks()
+        }
+
+        else -> {
+          if (id.startsWith(LIBRARY_ID)) {
+            getBooksFromLibrary(id.removePrefix(LIBRARY_ID), pageNumber, pageSize)
+          } else if (id.startsWith(BOOK_ID)) {
+            getBook(id.removePrefix(BOOK_ID))
+          } else {
+            Futures.immediateFuture(LibraryResult.ofError(SessionError.INFO_CANCELLED))
+          }
+        }
+      }
+
+    @OptIn(UnstableApi::class)
+    fun getItem(mediaId: String): ListenableFuture<LibraryResult<MediaItem>> {
+      if (mediaId in treeNodes) {
+        return Futures.immediateFuture(LibraryResult.ofItem(treeNodes[mediaId]!!.item, null))
+      } else if (mediaId.startsWith(LIBRARY_ID)) {
+        val libId = mediaId.removePrefix(LIBRARY_ID)
+        return futureScope
+          .future {
+            lissenMediaProvider
+              .fetchLibraries()
+              .fold(
+                onSuccess = { it.find { it.id == libId } },
+                onFailure = { null },
+              )?.let {
+                buildMediaItem(
+                  title = it.title,
+                  mediaId = mediaId,
+                  isPlayable = false,
+                  isBrowsable = true,
+                  mediaType =
+                    if (it.type ==
+                      LibraryType.LIBRARY
+                    ) {
+                      MediaMetadata.MEDIA_TYPE_FOLDER_AUDIO_BOOKS
+                    } else {
+                      MediaMetadata.MEDIA_TYPE_FOLDER_PODCASTS
+                    },
+                ).let { LibraryResult.ofItem(it, null) }
+              }
+              ?: LibraryResult.ofError(SessionError.INFO_CANCELLED)
+          }.asListenableFuture()
+      } else if (mediaId.startsWith(BOOK_ID)) {
+        val bookId = mediaId.removePrefix(BOOK_ID)
+        return getBookSingle(bookId)
+      } else {
+        return Futures.immediateFuture(LibraryResult.ofError(SessionError.INFO_CANCELLED))
+      }
+    }
+  }
