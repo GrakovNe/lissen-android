@@ -53,7 +53,7 @@ class MediaLibrarySessionProvider
     private val exoPlayer: ExoPlayer,
     private val libraryTree: MediaLibraryTree,
   ) {
-    @OptIn(UnstableApi::class, DelicateCoroutinesApi::class, DelicateCoroutinesApi::class, DelicateCoroutinesApi::class)
+    @OptIn(UnstableApi::class, DelicateCoroutinesApi::class)
     fun provideMediaLibrarySession(mediaLibraryService: MediaLibraryService): MediaLibraryService.MediaLibrarySession {
       val knownPackages =
         listOf(
