@@ -47,6 +47,9 @@ class CachingModelView
   ) : ViewModel() {
     private val _totalCount = MutableLiveData<Int>()
     val totalCount: LiveData<Int> = _totalCount
+
+    val forceCache = preferences.forceCacheFlow
+
     private val _bookCachingProgress = mutableMapOf<String, MutableStateFlow<CacheState>>()
 
     private val pageConfig =

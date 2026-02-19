@@ -34,8 +34,7 @@
     <string name="login_error_credentials_are_invalid">Chybné přihlašovací údaje</string>
     <string name="login_error_host_url_shall_be_https_or_http">URL adresa hostu by měla vypadat jako https:// nebo http://</string>
     <string name="login_error_connection_error">Chyba připojení</string>
-    <string name="disable_offline">Všechny položky</string>
-    <string name="enable_offline">Pouze stažené</string>
+    <string name="show_downloaded_content_only">Pouze stažené</string>
     <string name="the_library_is_empty">Knihovna je prázdná</string>
     <string name="the_offline_library_is_empty">Zatím žádné uložené knihy</string>
     <string name="audiobookshelf_server_is_required">Je vyžadován Audiobookshelf server</string>

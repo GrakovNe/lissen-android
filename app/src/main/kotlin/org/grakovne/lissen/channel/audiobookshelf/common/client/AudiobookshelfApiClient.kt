@@ -75,6 +75,7 @@ interface AudiobookshelfApiClient {
     @Query("sort") sort: String,
     @Query("desc") desc: String,
     @Query("minified") minified: String = "1",
+    @Query("filter") filter: String?,
   ): Response<LibraryItemsResponse>
 
   @GET("api/libraries/{libraryId}/items")

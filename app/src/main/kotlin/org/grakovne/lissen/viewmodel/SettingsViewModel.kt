@@ -87,6 +87,9 @@ class SettingsViewModel
     val softwareCodecsEnabled: LiveData<Boolean> = _softwareCodecsEnabled
     val softwareCodecsEnabledOnStart: Boolean = preferences.getSoftwareCodecsEnabled()
 
+    private val _hideCompleted = preferences.hideCompletedFlow
+    val hideCompleted = _hideCompleted
+
     val collapseOnFling = MutableLiveData(preferences.getCollapseOnFling())
 
     private val _autoDownloadDelayed = MutableLiveData(preferences.getAutoDownloadDelayed())
@@ -105,6 +108,13 @@ class SettingsViewModel
     fun preferAutoDownloadDelayed(value: Boolean) {
       _autoDownloadDelayed.postValue(value)
       preferences.saveAutoDownloadDelayed(value)
+    }
+
+    fun toggleHideCompleted() {
+      when (preferences.getHideCompleted()) {
+        true -> preferences.saveHideCompleted(false)
+        false -> preferences.saveHideCompleted(true)
+      }
     }
 
     fun logout() {

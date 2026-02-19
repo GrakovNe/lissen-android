@@ -37,7 +37,7 @@ class LocalCacheRepository
         .takeIf { it.toFile().exists() }
 
     /**
-     * For the local cache we avoiding to create intermediary entity like Session and using BookId
+     * For the local cache we're avoiding to create intermediary entity like Session and using BookId
      * as a Playback Session Key
      */
     suspend fun syncProgress(

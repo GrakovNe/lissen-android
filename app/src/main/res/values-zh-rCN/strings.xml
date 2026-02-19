@@ -55,8 +55,7 @@
     <string name="login_error_password_is_missing">密码缺失</string>
     <string name="login_error_credentials_are_invalid">登录凭据无效</string>
     <string name="login_error_host_url_shall_be_https_or_http">服务器 URL 应该以 https:// 或 http:// 开头</string>
-    <string name="disable_offline">所有项目</string>
-    <string name="enable_offline">查看已下载内容</string>
+    <string name="show_downloaded_content_only">查看已下载内容</string>
     <string name="the_library_is_empty">空媒体库</string>
     <string name="audiobookshelf_server_is_required">需要 Audiobookshelf 服务器</string>
     <string name="app_crach_toast">应用意外退出，我们深表歉意\n日志已发送，用于问题分析</string>
