@@ -13,7 +13,6 @@ import androidx.media3.session.SessionError
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
-import com.google.common.util.concurrent.SettableFuture
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -62,18 +61,10 @@ class MediaLibraryTree
     ) {
       private val children: MutableList<MediaItem> = ArrayList()
 
-      fun addChild(childID: String) {
-        this.children.add(tree.treeNodes[childID]!!.item)
-      }
+      fun addChild(childID: String) = children.add(tree.treeNodes[childID]!!.item)
 
-      fun getChildren(): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
-        val listenableFuture = SettableFuture.create<LibraryResult<ImmutableList<MediaItem>>>()
-        val libraryResult = LibraryResult.ofItemList(children, null)
-
-        listenableFuture.set(libraryResult)
-
-        return listenableFuture
-      }
+      fun getChildren(): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> =
+        Futures.immediateFuture(LibraryResult.ofItemList(children, null))
     }
 
     private suspend fun bookToMediaItem(book: Book) =

@@ -61,9 +61,6 @@ class CachedCoverProvider
           .fetchBookCover(itemId, width)
           .fold(
             onSuccess = { source ->
-              // TODO: Why twice?
-              source.withBlur(context)
-
               val blurred = source.withBlur(context)
               dest.parentFile?.mkdirs()
 
