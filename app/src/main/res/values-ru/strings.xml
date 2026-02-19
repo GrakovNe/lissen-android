@@ -25,8 +25,7 @@
     <string name="login_error_lissen_not_found">URL не найден. Проверьте настройки сервера</string>
     <string name="login_error_host_url_shall_be_https_or_http">URL должен начинаться с http:// или https://</string>
     <string name="login_error_connection_error">Ошибка подключения</string>
-    <string name="disable_offline">Весь контент</string>
-    <string name="enable_offline">Только загруженные</string>
+    <string name="show_downloaded_content_only">Только загруженные</string>
     <string name="the_library_is_empty">Библиотека пуста</string>
     <string name="the_offline_library_is_empty">Загруженных книг нет</string>
     <string name="audiobookshelf_server_is_required">Для работы приложения необходим сервер Audiobookshelf</string>
@@ -174,4 +173,6 @@
     <string name="codes_not_supported_warning_toast">Аудиоформат не поддерживается</string>
     <string name="bookmarks_create_bookmark">Новая закладка</string>
     <string name="bookmarks_title">Закладки</string>
+    <string name="hide_completed_items">Скрывать прослушанные</string>
+    <string name="application_settings">Настройки приложения</string>
 </resources>

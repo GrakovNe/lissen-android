@@ -93,6 +93,7 @@ class CachedBookRepository
           .pageSize(pageSize)
           .orderField(option)
           .orderDirection(direction)
+          .hideCompleted(preferences.getHideCompleted())
           .build()
 
       return bookDao

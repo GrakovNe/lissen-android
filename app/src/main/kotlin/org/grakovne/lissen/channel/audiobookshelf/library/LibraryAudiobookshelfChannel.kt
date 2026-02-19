@@ -18,6 +18,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeni
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.DeviceInfo
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.BookResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibraryFilteringRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibraryOrderingRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibrarySearchItemsConverter
 import org.grakovne.lissen.channel.common.OperationResult
@@ -46,6 +47,7 @@ class LibraryAudiobookshelfChannel
     bookmarksResponseConverter: BookmarksResponseConverter,
     bookmarkItemResponseConverter: BookmarkItemResponseConverter,
     private val libraryOrderingRequestConverter: LibraryOrderingRequestConverter,
+    private val libraryFilteringRequestConverter: LibraryFilteringRequestConverter,
     private val libraryPageResponseConverter: LibraryPageResponseConverter,
     private val bookResponseConverter: BookResponseConverter,
     private val librarySearchItemsConverter: LibrarySearchItemsConverter,
@@ -69,6 +71,7 @@ class LibraryAudiobookshelfChannel
       pageNumber: Int,
     ): OperationResult<PagedItems<Book>> {
       val (option, direction) = libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering())
+      val filter = libraryFilteringRequestConverter.apply(preferences)
 
       return dataRepository
         .fetchLibraryItems(
@@ -77,6 +80,7 @@ class LibraryAudiobookshelfChannel
           pageNumber = pageNumber,
           sort = option,
           direction = direction,
+          filter = filter,
         ).map { libraryPageResponseConverter.apply(it) }
     }
 

@@ -79,6 +79,7 @@ class AudioBookshelfRepository
       pageNumber: Int,
       sort: String,
       direction: String,
+      filter: String?,
     ): OperationResult<LibraryItemsResponse> =
       audioBookShelfApiService.makeRequest {
         it.fetchLibraryItems(
@@ -87,6 +88,7 @@ class AudioBookshelfRepository
           pageNumber = pageNumber,
           sort = sort,
           desc = direction,
+          filter = filter,
         )
       }
 

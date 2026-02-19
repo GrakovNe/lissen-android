@@ -72,6 +72,7 @@ import org.grakovne.lissen.ui.screens.common.RequestNotificationPermissions
 import org.grakovne.lissen.ui.screens.library.composables.BookComposable
 import org.grakovne.lissen.ui.screens.library.composables.DefaultActionComposable
 import org.grakovne.lissen.ui.screens.library.composables.LibrarySearchActionComposable
+import org.grakovne.lissen.ui.screens.library.composables.LibrarySettingsComposable
 import org.grakovne.lissen.ui.screens.library.composables.LibrarySwitchComposable
 import org.grakovne.lissen.ui.screens.library.composables.MiniPlayerComposable
 import org.grakovne.lissen.ui.screens.library.composables.RecentBooksComposable
@@ -114,7 +115,9 @@ fun LibraryScreen(
 
   val preferredLibrary by settingsViewModel.preferredLibrary.observeAsState()
   val libraries by settingsViewModel.libraries.observeAsState(emptyList())
+
   var preferredLibraryExpanded by remember { mutableStateOf(false) }
+  var preferencesExpanded by remember { mutableStateOf(false) }
 
   val library = libraryViewModel.getPager(searchRequested).collectAsLazyPagingItems()
   val libraryCount by libraryViewModel.totalCount.observeAsState()
@@ -291,11 +294,8 @@ fun LibraryScreen(
 
               false -> {
                 DefaultActionComposable(
-                  navController = navController,
-                  contentCachingModelView = cachingModelView,
-                  playerViewModel = playerViewModel,
-                  onContentRefreshing = { refreshContent(showPullRefreshing = false) },
                   onSearchRequested = { libraryViewModel.requestSearch() },
+                  onPreferencesRequested = { preferencesExpanded = true },
                 )
               }
             }
@@ -505,6 +505,23 @@ fun LibraryScreen(
         refreshContent(false)
         playerViewModel.clearPlayingBook()
         preferredLibraryExpanded = false
+      },
+    )
+  }
+
+  if (preferencesExpanded) {
+    LibrarySettingsComposable(
+      navController = navController,
+      onDismissRequest = { preferencesExpanded = false },
+      onForceLocalToggled = {
+        cachingModelView.toggleCacheForce()
+        playerViewModel.book.value?.let { playerViewModel.preparePlayback(it.id) }
+        refreshContent(showPullRefreshing = false)
+      },
+      onHideCompletedToggled = {
+        settingsViewModel.toggleHideCompleted()
+        playerViewModel.book.value?.let { playerViewModel.preparePlayback(it.id) }
+        refreshContent(showPullRefreshing = false)
       },
     )
   }
