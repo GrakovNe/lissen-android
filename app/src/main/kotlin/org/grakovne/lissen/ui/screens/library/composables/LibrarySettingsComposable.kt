@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
-import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -23,10 +21,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
@@ -67,7 +63,6 @@ fun LibrarySettingsComposable(
           item {
             LibrarySettingsComposableItem(
               title = context.getString(R.string.show_downloaded_content_only),
-              icon = ImageVector.vectorResource(id = R.drawable.available_offline_outline),
               state = forceCache,
               onStateChange = { onForceLocalToggled() },
             )
@@ -75,7 +70,6 @@ fun LibrarySettingsComposable(
             if (libraryViewModel.fetchPreferredLibraryType() == LibraryType.LIBRARY) {
               LibrarySettingsComposableItem(
                 title = stringResource(R.string.hide_completed_items),
-                icon = Icons.Outlined.VisibilityOff,
                 state = hideCompleted,
                 onStateChange = { onHideCompletedToggled() },
               )
@@ -99,19 +93,12 @@ fun LibrarySettingsComposable(
 @Composable
 fun LibrarySettingsComposableItem(
   title: String,
-  icon: ImageVector,
   state: Boolean,
   onStateChange: (Boolean) -> Unit,
 ) {
   ListItem(
     modifier = Modifier,
     headlineContent = { Text(text = title) },
-    leadingContent = {
-      Icon(
-        imageVector = icon,
-        contentDescription = null,
-      )
-    },
     trailingContent = {
       Switch(
         checked = state,
@@ -136,12 +123,6 @@ fun ApplicationSettingsItemComposable(onClicked: () -> Unit) {
       Modifier
         .fillMaxWidth()
         .clickable { onClicked() },
-    leadingContent = {
-      Icon(
-        imageVector = Icons.Outlined.Settings,
-        contentDescription = null,
-      )
-    },
     headlineContent = {
       Text(
         text = stringResource(R.string.application_settings),
