@@ -171,4 +171,6 @@
     <string name="codes_not_supported_warning_toast">不支持此音频格式</string>
     <string name="bookmarks_create_bookmark">创建书签</string>
     <string name="bookmarks_title">书签</string>
+    <string name="application_settings">应用程序设置</string>
+    <string name="hide_completed_items">隐藏已听完</string>
 </resources>
