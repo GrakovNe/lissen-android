@@ -3,7 +3,6 @@ package org.grakovne.lissen.playback
 import android.content.Context
 import android.net.Uri
 import androidx.annotation.OptIn
-import androidx.core.content.FileProvider
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaItem.SubtitleConfiguration
 import androidx.media3.common.MediaMetadata
@@ -16,10 +15,8 @@ import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.future.future
-import org.grakovne.lissen.BuildConfig
+import org.grakovne.lissen.content.ExternalCoverProvider
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.lib.domain.Book
@@ -67,38 +64,44 @@ class MediaLibraryTree
         Futures.immediateFuture(LibraryResult.ofItemList(children, null))
     }
 
-    private suspend fun bookToMediaItem(book: Book) =
-      buildMediaItem(
-        title = book.title,
-        artist = book.author,
-        mediaId = "$BOOK_ID${book.id}",
-        isPlayable = true,
-        isBrowsable = true,
-        mediaType = MediaMetadata.MEDIA_TYPE_AUDIO_BOOK,
-        imageUri = externalCoverUri(book.id),
-      )
+    private fun bookToMediaItem(
+      book: Book,
+      width: Int?,
+    ) = buildMediaItem(
+      title = book.title,
+      artist = book.author,
+      mediaId = "$BOOK_ID${book.id}",
+      isPlayable = true,
+      isBrowsable = true,
+      mediaType = MediaMetadata.MEDIA_TYPE_AUDIO_BOOK,
+      imageUri = ExternalCoverProvider.coverUri(book.id, width),
+    )
 
-    private suspend fun bookToMediaItem(book: DetailedItem) =
-      buildMediaItem(
-        title = book.title,
-        artist = book.author,
-        mediaId = "$BOOK_ID${book.id}",
-        isPlayable = true,
-        isBrowsable = true,
-        mediaType = MediaMetadata.MEDIA_TYPE_AUDIO_BOOK,
-        imageUri = externalCoverUri(book.id),
-      )
+    private fun bookToMediaItem(
+      book: DetailedItem,
+      width: Int?,
+    ) = buildMediaItem(
+      title = book.title,
+      artist = book.author,
+      mediaId = "$BOOK_ID${book.id}",
+      isPlayable = true,
+      isBrowsable = true,
+      mediaType = MediaMetadata.MEDIA_TYPE_AUDIO_BOOK,
+      imageUri = ExternalCoverProvider.coverUri(book.id, width),
+    )
 
-    private suspend fun bookToMediaItem(book: RecentBook) =
-      buildMediaItem(
-        title = book.title,
-        artist = book.author,
-        mediaId = "$BOOK_ID${book.id}",
-        isPlayable = true,
-        isBrowsable = true,
-        mediaType = MediaMetadata.MEDIA_TYPE_AUDIO_BOOK,
-        imageUri = externalCoverUri(book.id),
-      )
+    private fun bookToMediaItem(
+      book: RecentBook,
+      width: Int?,
+    ) = buildMediaItem(
+      title = book.title,
+      artist = book.author,
+      mediaId = "$BOOK_ID${book.id}",
+      isPlayable = true,
+      isBrowsable = true,
+      mediaType = MediaMetadata.MEDIA_TYPE_AUDIO_BOOK,
+      imageUri = ExternalCoverProvider.coverUri(book.id, width),
+    )
 
     private fun buildMediaItem(
       title: String,
@@ -251,12 +254,12 @@ class MediaLibraryTree
             libId,
             pageSize,
             pageNumber,
-          ).foldAsync(
+          ).fold(
             onSuccess = {
               it.items
                 .map {
-                  async(Dispatchers.IO) { bookToMediaItem(it) }
-                }.awaitAll()
+                  bookToMediaItem(it, 300)
+                }
             },
             onFailure = { listOf() },
           ).let { LibraryResult.ofItemList(it, null) }
@@ -266,24 +269,8 @@ class MediaLibraryTree
       lissenMediaProvider
         .fetchBook(
           bookId,
-        ).foldAsync(
-          onSuccess = { bookToMediaItem(it) },
-          onFailure = { null },
-        )
-
-    private suspend fun externalCoverUri(bookId: String) =
-      lissenMediaProvider
-        .fetchBookCover(
-          bookId = bookId,
-          width = 300,
         ).fold(
-          onSuccess = {
-            FileProvider.getUriForFile(
-              context,
-              "${BuildConfig.APPLICATION_ID}.cover",
-              it,
-            )
-          },
+          onSuccess = { bookToMediaItem(it, 300) },
           onFailure = { null },
         )
 
@@ -312,7 +299,7 @@ class MediaLibraryTree
           preferences
             .getPlayingBook()
             ?.let {
-              LibraryResult.ofItemList(listOf(bookToMediaItem(it)), null)
+              LibraryResult.ofItemList(listOf(bookToMediaItem(it, 300)), null)
             }
             ?: LibraryResult.ofItemList(emptyList(), null)
         }.asListenableFuture()
@@ -323,12 +310,12 @@ class MediaLibraryTree
           preferences.getPreferredLibrary()?.id?.let { libraryId ->
             lissenMediaProvider
               .fetchRecentListenedBooks(libraryId)
-              .foldAsync(
+              .fold(
                 onSuccess = {
                   it
                     .map {
-                      async(Dispatchers.IO) { bookToMediaItem(it) }
-                    }.awaitAll()
+                      bookToMediaItem(it, 300)
+                    }
                 },
                 onFailure = { emptyList() },
               ).let { LibraryResult.ofItemList(it, null) }
@@ -340,12 +327,12 @@ class MediaLibraryTree
         .future {
           localCacheRepository
             .fetchDetailedItems(pageSize = 100, pageNumber = 0)
-            .foldAsync(
+            .fold(
               onSuccess = {
                 it.items
                   .map {
-                    async(Dispatchers.IO) { bookToMediaItem(it) }
-                  }.awaitAll()
+                    bookToMediaItem(it, 300)
+                  }
               },
               onFailure = { emptyList() },
             ).let {
@@ -359,12 +346,12 @@ class MediaLibraryTree
           preferences.getPreferredLibrary()?.id?.let { libraryId ->
             lissenMediaProvider
               .searchBooks(libraryId, query, limit = 20)
-              .foldAsync(
+              .fold(
                 onSuccess = {
                   it
                     .map {
-                      async(Dispatchers.IO) { bookToMediaItem(it) }
-                    }.awaitAll()
+                      bookToMediaItem(it, 300)
+                    }
                 },
                 onFailure = { emptyList() },
               )
