@@ -41,11 +41,9 @@ class MediaLibraryTree
   ) {
     private var treeNodes: MutableMap<String, MediaItemNode> = mutableMapOf()
 
-    // Root
     companion object {
       private val ROOT_ID = "[rootID]"
 
-      // First level
       private val CONTINUE_ID = "[continueID]"
       private val RECENT_ID = "[recentID]"
       private val LIBRARY_ID = "[libraryID]"
