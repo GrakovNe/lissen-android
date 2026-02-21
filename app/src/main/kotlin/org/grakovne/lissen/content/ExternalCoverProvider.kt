@@ -33,7 +33,7 @@ private fun String.parseCoverUri(): CoverMetadata? =
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface LissenMediaProviderEntryPoint {
-  fun getLissenMediaProvider(): LissenMediaProvider // Replace with your actual dependency
+  fun getLissenMediaProvider(): LissenMediaProvider
 }
 
 class ExternalCoverProvider : FileProvider() {
