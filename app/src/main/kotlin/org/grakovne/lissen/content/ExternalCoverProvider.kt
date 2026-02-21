@@ -33,12 +33,19 @@ private fun String.parseCoverUri(): CoverMetadata? =
 @EntryPoint
 @InstallIn(SingletonComponent::class)
 interface LissenMediaProviderEntryPoint {
-  fun getLissenMediaProvider(): LissenMediaProvider
+  fun getLissenMediaProvider(): LissenMediaProvider // Replace with your actual dependency
 }
 
 class ExternalCoverProvider : FileProvider() {
   companion object {
-    fun coverUri(bookId: String) = "content://${BuildConfig.APPLICATION_ID}.cover/cover/raw/$bookId".toUri()
+    fun coverUri(
+      bookId: String,
+      width: Int?,
+    ) = (
+      width?.let {
+        "content://${BuildConfig.APPLICATION_ID}.cover/cover/crop_$width/$bookId"
+      } ?: "content://${BuildConfig.APPLICATION_ID}.cover/cover/raw/$bookId"
+    ).toUri()
   }
 
   private val lissenMediaProvider by lazy {
