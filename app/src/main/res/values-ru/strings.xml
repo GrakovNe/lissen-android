@@ -175,4 +175,7 @@
     <string name="bookmarks_title">Закладки</string>
     <string name="hide_completed_items">Скрывать прослушанные</string>
     <string name="application_settings">Настройки приложения</string>
+    <string name="tree_node_recent">Недавнее</string>
+    <string name="tree_node_library">Библиотека</string>
+    <string name="tree_node_downloads">Загруженное</string>
 </resources>

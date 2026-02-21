@@ -173,4 +173,7 @@
     <string name="bookmarks_title">Bookmarks</string>
     <string name="hide_completed_items">Hide finished</string>
     <string name="application_settings">Application settings</string>
+    <string name="tree_node_recent">Recent</string>
+    <string name="tree_node_library">Library</string>
+    <string name="tree_node_downloads">Downloads</string>
 </resources>

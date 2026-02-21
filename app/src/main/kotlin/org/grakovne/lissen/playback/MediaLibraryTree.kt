@@ -16,6 +16,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.future.future
+import org.grakovne.lissen.R
 import org.grakovne.lissen.content.ExternalCoverProvider
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
@@ -64,44 +65,38 @@ class MediaLibraryTree
         Futures.immediateFuture(LibraryResult.ofItemList(children, null))
     }
 
-    private fun bookToMediaItem(
-      book: Book,
-      width: Int?,
-    ) = buildMediaItem(
-      title = book.title,
-      artist = book.author,
-      mediaId = "$BOOK_ID${book.id}",
-      isPlayable = true,
-      isBrowsable = true,
-      mediaType = MediaMetadata.MEDIA_TYPE_AUDIO_BOOK,
-      imageUri = ExternalCoverProvider.coverUri(book.id, width),
-    )
+    private fun bookToMediaItem(book: Book) =
+      buildMediaItem(
+        title = book.title,
+        artist = book.author,
+        mediaId = "$BOOK_ID${book.id}",
+        isPlayable = true,
+        isBrowsable = true,
+        mediaType = MediaMetadata.MEDIA_TYPE_AUDIO_BOOK,
+        imageUri = ExternalCoverProvider.coverUri(book.id),
+      )
 
-    private fun bookToMediaItem(
-      book: DetailedItem,
-      width: Int?,
-    ) = buildMediaItem(
-      title = book.title,
-      artist = book.author,
-      mediaId = "$BOOK_ID${book.id}",
-      isPlayable = true,
-      isBrowsable = true,
-      mediaType = MediaMetadata.MEDIA_TYPE_AUDIO_BOOK,
-      imageUri = ExternalCoverProvider.coverUri(book.id, width),
-    )
+    private fun bookToMediaItem(book: DetailedItem) =
+      buildMediaItem(
+        title = book.title,
+        artist = book.author,
+        mediaId = "$BOOK_ID${book.id}",
+        isPlayable = true,
+        isBrowsable = true,
+        mediaType = MediaMetadata.MEDIA_TYPE_AUDIO_BOOK,
+        imageUri = ExternalCoverProvider.coverUri(book.id),
+      )
 
-    private fun bookToMediaItem(
-      book: RecentBook,
-      width: Int?,
-    ) = buildMediaItem(
-      title = book.title,
-      artist = book.author,
-      mediaId = "$BOOK_ID${book.id}",
-      isPlayable = true,
-      isBrowsable = true,
-      mediaType = MediaMetadata.MEDIA_TYPE_AUDIO_BOOK,
-      imageUri = ExternalCoverProvider.coverUri(book.id, width),
-    )
+    private fun bookToMediaItem(book: RecentBook) =
+      buildMediaItem(
+        title = book.title,
+        artist = book.author,
+        mediaId = "$BOOK_ID${book.id}",
+        isPlayable = true,
+        isBrowsable = true,
+        mediaType = MediaMetadata.MEDIA_TYPE_AUDIO_BOOK,
+        imageUri = ExternalCoverProvider.coverUri(book.id),
+      )
 
     private fun buildMediaItem(
       title: String,
@@ -139,8 +134,6 @@ class MediaLibraryTree
     }
 
     init {
-      // Root node
-
       treeNodes[ROOT_ID] =
         MediaItemNode(
           buildMediaItem(
@@ -152,9 +145,6 @@ class MediaLibraryTree
           ),
           this,
         )
-
-      // Main menu
-
       treeNodes[CONTINUE_ID] =
         MediaItemNode(
           buildMediaItem(
@@ -170,7 +160,7 @@ class MediaLibraryTree
       treeNodes[RECENT_ID] =
         MediaItemNode(
           buildMediaItem(
-            title = "Recent",
+            title = context.getString(R.string.tree_node_recent),
             mediaId = RECENT_ID,
             isPlayable = false,
             isBrowsable = true,
@@ -182,7 +172,7 @@ class MediaLibraryTree
       treeNodes[LIBRARY_ID] =
         MediaItemNode(
           buildMediaItem(
-            title = "Library",
+            title = context.getString(R.string.tree_node_library),
             mediaId = LIBRARY_ID,
             isPlayable = false,
             isBrowsable = true,
@@ -194,7 +184,7 @@ class MediaLibraryTree
       treeNodes[DOWNLOADS_ID] =
         MediaItemNode(
           buildMediaItem(
-            title = "Downloads",
+            title = context.getString(R.string.tree_node_downloads),
             mediaId = DOWNLOADS_ID,
             isPlayable = false,
             isBrowsable = true,
@@ -203,10 +193,12 @@ class MediaLibraryTree
           this,
         )
 
-      treeNodes[ROOT_ID]!!.addChild(CONTINUE_ID)
-      treeNodes[ROOT_ID]!!.addChild(RECENT_ID)
-      treeNodes[ROOT_ID]!!.addChild(LIBRARY_ID)
-      treeNodes[ROOT_ID]!!.addChild(DOWNLOADS_ID)
+      val root = requireNotNull(treeNodes[ROOT_ID])
+
+      root.addChild(CONTINUE_ID)
+      root.addChild(RECENT_ID)
+      root.addChild(LIBRARY_ID)
+      root.addChild(DOWNLOADS_ID)
     }
 
     fun getRootItem(): ListenableFuture<LibraryResult<MediaItem>> =
@@ -258,7 +250,7 @@ class MediaLibraryTree
             onSuccess = {
               it.items
                 .map {
-                  bookToMediaItem(it, 300)
+                  bookToMediaItem(it)
                 }
             },
             onFailure = { listOf() },
@@ -270,7 +262,7 @@ class MediaLibraryTree
         .fetchBook(
           bookId,
         ).fold(
-          onSuccess = { bookToMediaItem(it, 300) },
+          onSuccess = { bookToMediaItem(it) },
           onFailure = { null },
         )
 
@@ -299,7 +291,7 @@ class MediaLibraryTree
           preferences
             .getPlayingBook()
             ?.let {
-              LibraryResult.ofItemList(listOf(bookToMediaItem(it, 300)), null)
+              LibraryResult.ofItemList(listOf(bookToMediaItem(it)), null)
             }
             ?: LibraryResult.ofItemList(emptyList(), null)
         }.asListenableFuture()
@@ -314,7 +306,7 @@ class MediaLibraryTree
                 onSuccess = {
                   it
                     .map {
-                      bookToMediaItem(it, 300)
+                      bookToMediaItem(it)
                     }
                 },
                 onFailure = { emptyList() },
@@ -326,12 +318,12 @@ class MediaLibraryTree
       futureScope
         .future {
           localCacheRepository
-            .fetchDetailedItems(pageSize = 100, pageNumber = 0)
+            .fetchDetailedItems()
             .fold(
               onSuccess = {
                 it.items
                   .map {
-                    bookToMediaItem(it, 300)
+                    bookToMediaItem(it)
                   }
               },
               onFailure = { emptyList() },
@@ -350,7 +342,7 @@ class MediaLibraryTree
                 onSuccess = {
                   it
                     .map {
-                      bookToMediaItem(it, 300)
+                      bookToMediaItem(it)
                     }
                 },
                 onFailure = { emptyList() },

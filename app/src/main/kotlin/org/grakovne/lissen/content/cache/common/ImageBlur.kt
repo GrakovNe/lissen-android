@@ -8,7 +8,7 @@ import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
 import com.hoko.blur.HokoBlur
 import com.hoko.blur.HokoBlur.MODE_GAUSSIAN
-import com.hoko.blur.HokoBlur.SCHEME_OPENGL
+import com.hoko.blur.HokoBlur.SCHEME_NATIVE
 import okio.Buffer
 import okio.BufferedSource
 
@@ -41,7 +41,7 @@ private fun sourceWithBackdropBlur(
   val blurredPadded =
     HokoBlur
       .with(context)
-      .scheme(SCHEME_OPENGL)
+      .scheme(SCHEME_NATIVE)
       .mode(MODE_GAUSSIAN)
       .radius(radius)
       .forceCopy(true)

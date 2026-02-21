@@ -167,6 +167,15 @@ interface CachedBookDao {
     pageNumber: Int,
   ): List<CachedBookEntity>
 
+  @Transaction
+  @Query(
+    """
+    SELECT * FROM detailed_books
+    ORDER BY title ASC, libraryId ASC
+    """,
+  )
+  suspend fun fetchCachedItems(): List<CachedBookEntity>
+
   @Query("SELECT COUNT(*) FROM detailed_books")
   suspend fun fetchCachedItemsCount(): Int
 

@@ -65,6 +65,19 @@ class LocalCacheRepository
         .searchBooks(libraryId = libraryId, query = query)
         .let { OperationResult.Success(it) }
 
+    suspend fun fetchDetailedItems(): OperationResult<PagedItems<DetailedItem>> {
+      val items = cachedBookRepository.fetchCachedItems()
+
+      return OperationResult
+        .Success(
+          PagedItems(
+            items = items,
+            currentPage = 0,
+            totalItems = cachedBookRepository.countCachedItems(),
+          ),
+        )
+    }
+
     suspend fun fetchDetailedItems(
       pageSize: Int,
       pageNumber: Int,
