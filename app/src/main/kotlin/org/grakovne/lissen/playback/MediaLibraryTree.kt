@@ -234,16 +234,16 @@ class MediaLibraryTree
         }.asListenableFuture()
 
     fun getBooksFromLibrary(
-      libId: String,
+      libraryId: String,
       pageSize: Int,
       pageNumber: Int,
     ) = futureScope
       .future {
         lissenMediaProvider
           .fetchBooks(
-            libId,
-            pageSize,
-            pageNumber,
+            libraryId = libraryId,
+            pageSize = pageSize,
+            pageNumber = pageNumber,
           ).fold(
             onSuccess = {
               it.items
@@ -377,7 +377,11 @@ class MediaLibraryTree
 
         else -> {
           if (id.startsWith(LIBRARY_ID)) {
-            getBooksFromLibrary(id.removePrefix(LIBRARY_ID), pageNumber, pageSize)
+            getBooksFromLibrary(
+              libraryId = id.removePrefix(LIBRARY_ID),
+              pageSize = pageSize,
+              pageNumber = pageNumber
+            )
           } else if (id.startsWith(BOOK_ID)) {
             getBook(id.removePrefix(BOOK_ID))
           } else {
