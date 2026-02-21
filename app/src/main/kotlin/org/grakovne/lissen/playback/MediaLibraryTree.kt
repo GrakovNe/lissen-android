@@ -137,7 +137,7 @@ class MediaLibraryTree
       treeNodes[ROOT_ID] =
         MediaItemNode(
           buildMediaItem(
-            title = "Root",
+            title = context.getString(R.string.tree_node_root),
             mediaId = ROOT_ID,
             isPlayable = false,
             isBrowsable = true,
@@ -148,7 +148,7 @@ class MediaLibraryTree
       treeNodes[CONTINUE_ID] =
         MediaItemNode(
           buildMediaItem(
-            title = "Continue",
+            title = context.getString(R.string.tree_node_continue),
             mediaId = CONTINUE_ID,
             isPlayable = false,
             isBrowsable = true,

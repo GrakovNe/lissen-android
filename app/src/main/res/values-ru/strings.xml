@@ -178,4 +178,6 @@
     <string name="tree_node_recent">Недавнее</string>
     <string name="tree_node_library">Библиотека</string>
     <string name="tree_node_downloads">Загруженное</string>
+    <string name="tree_node_root">Начало</string>
+    <string name="tree_node_continue">Продолжить</string>
 </resources>
