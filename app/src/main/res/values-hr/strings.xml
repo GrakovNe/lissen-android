@@ -171,4 +171,13 @@
     <string name="restart_the_app_to_start_using_the_new_codecs_cta">Ponovno pokretanje</string>
     <string name="codes_not_supported_warning_toast">Audio format nije podržan</string>
     <string name="settings_screen_material_you_title">Boja aplikacije</string>
+    <string name="bookmarks_create_bookmark">Izradi oznaku</string>
+    <string name="bookmarks_title">Oznake</string>
+    <string name="hide_completed_items">Sakrij odslušano</string>
+    <string name="application_settings">Postavke aplikacije</string>
+    <string name="tree_node_recent">Nedavno</string>
+    <string name="tree_node_library">Knjižnica</string>
+    <string name="tree_node_downloads">Preuzimanja</string>
+    <string name="tree_node_root">Root</string>
+    <string name="tree_node_continue">Nastavi</string>
 </resources>
