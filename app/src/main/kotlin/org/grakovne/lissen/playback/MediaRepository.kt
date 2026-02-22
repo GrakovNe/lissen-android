@@ -473,7 +473,7 @@ class MediaRepository
     private fun updateProgress(detailedItem: DetailedItem): Deferred<Unit> =
       CoroutineScope(Dispatchers.Main).async {
         val currentIndex = mediaController.currentMediaItemIndex
-        val accumulated = detailedItem.files.take(currentIndex).sumOf { it.duration }
+        val accumulated = detailedItem.chapters.take(currentIndex).sumOf { it.duration }
         val currentFilePosition = mediaController.currentPosition / 1000.0
 
         _totalPosition.postValue(accumulated + currentFilePosition)

@@ -40,7 +40,7 @@ class ExternalCoverProvider : FileProvider() {
   companion object {
     fun coverUri(
       bookId: String,
-      width: Int?,
+      width: Int? = null,
     ) = (
       width?.let {
         "content://${BuildConfig.APPLICATION_ID}.cover/cover/crop_$width/$bookId"

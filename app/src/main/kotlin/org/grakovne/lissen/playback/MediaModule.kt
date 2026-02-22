@@ -1,28 +1,23 @@
 package org.grakovne.lissen.playback
 
 import android.content.Context
-import android.os.Looper
 import android.widget.Toast
 import android.widget.Toast.LENGTH_SHORT
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
-import androidx.media3.common.Format
+import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
-import androidx.media3.exoplayer.DecoderCounters
-import androidx.media3.exoplayer.DecoderReuseEvaluation
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.analytics.AnalyticsCollector
 import androidx.media3.exoplayer.analytics.AnalyticsListener
-import androidx.media3.exoplayer.audio.AudioSink
-import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
-import androidx.media3.exoplayer.source.MediaSource
+import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -33,6 +28,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvi
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.service.LissenDataSourceFactory
+import org.grakovne.lissen.playback.service.LissenMediaSourceFactory
 import timber.log.Timber
 import java.io.File
 import java.lang.Exception
@@ -88,20 +84,23 @@ object MediaModule {
             .setContentType(C.AUDIO_CONTENT_TYPE_SPEECH)
             .build(),
           true,
-        ).setMediaSourceFactory(
-          DefaultMediaSourceFactory(context).setDataSourceFactory(
-            LissenDataSourceFactory(
-              baseContext = context,
-              mediaCache = mediaCache,
-              requestHeadersProvider = requestHeadersProvider,
-              sharedPreferences = sharedPreferences,
-              mediaProvider = mediaProvider,
-            ),
+        ).setRenderersFactory(renderersFactory)
+        .setMediaSourceFactory(
+          LissenMediaSourceFactory(
+            progressiveMediaSourceFactory =
+              ProgressiveMediaSource.Factory(
+                LissenDataSourceFactory(
+                  baseContext = context,
+                  mediaCache = mediaCache,
+                  requestHeadersProvider = requestHeadersProvider,
+                  sharedPreferences = sharedPreferences,
+                  mediaProvider = mediaProvider,
+                ),
+              ),
           ),
         ).build()
 
     player.addAnalyticsListener(mediaCodecListener(context))
-
     return player
   }
 

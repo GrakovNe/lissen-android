@@ -9,6 +9,7 @@ plugins {
   id("com.google.dagger.hilt.android")
   id("org.jmailen.kotlinter") version "5.3.0"
   id("com.google.devtools.ksp")
+  id("kotlin-parcelize")
 }
 
 kotlinter {
@@ -118,7 +119,12 @@ android {
     }
   }
   buildToolsVersion = "36.0.0"
-  
+
+  testOptions {
+    unitTests.all {
+      it.useJUnitPlatform()
+    }
+  }
 }
 
 dependencies {
@@ -190,4 +196,7 @@ dependencies {
   
   debugImplementation(libs.androidx.ui.tooling)
   debugImplementation(libs.androidx.ui.test.manifest)
+
+  testImplementation(libs.junit.jupiter)
+  testRuntimeOnly(libs.junit.platform.launcher)
 }

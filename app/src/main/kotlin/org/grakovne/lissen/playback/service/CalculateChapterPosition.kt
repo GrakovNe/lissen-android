@@ -5,16 +5,9 @@ import org.grakovne.lissen.lib.domain.DetailedItem
 fun calculateChapterPosition(
   book: DetailedItem,
   overallPosition: Double,
-): Double {
-  var accumulatedDuration = 0.0
-
-  for (chapter in book.chapters) {
-    val chapterEnd = accumulatedDuration + chapter.duration
-    if (overallPosition < chapterEnd - 0.1) {
-      return (overallPosition - accumulatedDuration)
-    }
-    accumulatedDuration = chapterEnd
-  }
-
-  return 0.0
-}
+): Double =
+  book.chapters
+    .firstOrNull { overallPosition < it.end - 0.1 }
+    ?.let {
+      overallPosition - it.start
+    } ?: 0.0
