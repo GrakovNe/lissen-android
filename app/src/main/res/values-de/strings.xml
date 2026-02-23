@@ -100,7 +100,7 @@
     <string name="login_error_lissen_auth_scheme_must_be_whitelisted">Das Schema %1$s://%2$s ist in den Weiterleitungs-URI-Einstellungen des Servers nicht erlaubt</string>
     <string name="playing_item_details_narrator">Erzähler</string>
     <string name="playing_item_details_duration">Dauer</string>
-    <string name="settings_screen_seek_time_title">Spuleinstellungen</string>
+    <string name="settings_screen_seek_time_title">Einstellungen zum Spulen</string>
     <string name="settings_screen_seek_time_hint">Spulsteuerungen definieren</string>
     <string name="rewind_interval">Rückspulintervall</string>
     <string name="continue_playback_shortcut_title">Weiter</string>
@@ -171,4 +171,11 @@
     <string name="timer_option_disabled">Ausgeschaltet</string>
     <string name="bookmarks_create_bookmark">Lesezeichen erstellen</string>
     <string name="bookmarks_title">Lesezeichen</string>
+    <string name="tree_node_continue">Weiter</string>
+    <string name="hide_completed_items">Abgeschlossene ausblenden</string>
+    <string name="application_settings">Anwendungseinstellungen</string>
+    <string name="tree_node_recent">Kürzlich</string>
+    <string name="tree_node_library">Bibliothek</string>
+    <string name="tree_node_downloads">Downloads</string>
+    <string name="tree_node_root">Wurzel</string>
 </resources>
