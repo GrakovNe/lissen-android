@@ -7,7 +7,7 @@ plugins {
   alias(libs.plugins.compose.compiler)
   
   id("com.google.dagger.hilt.android")
-  id("org.jmailen.kotlinter") version "5.3.0"
+  id("org.jmailen.kotlinter") version "5.4.2"
   id("com.google.devtools.ksp")
 }
 
