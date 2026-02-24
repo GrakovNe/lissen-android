@@ -71,7 +71,7 @@ class MediaLibraryTree
         isPlayable = true,
         isBrowsable = true,
         mediaType = MediaMetadata.MEDIA_TYPE_AUDIO_BOOK,
-        imageUri = ExternalCoverProvider.coverUri(book.id, 900),
+        imageUri = ExternalCoverProvider.coverUri(book.id),
       )
 
     private fun bookToMediaItem(book: DetailedItem) =
@@ -82,7 +82,7 @@ class MediaLibraryTree
         isPlayable = true,
         isBrowsable = true,
         mediaType = MediaMetadata.MEDIA_TYPE_AUDIO_BOOK,
-        imageUri = ExternalCoverProvider.coverUri(book.id, 900),
+        imageUri = ExternalCoverProvider.coverUri(book.id),
       )
 
     private fun bookToMediaItem(book: RecentBook) =
@@ -93,7 +93,7 @@ class MediaLibraryTree
         isPlayable = true,
         isBrowsable = true,
         mediaType = MediaMetadata.MEDIA_TYPE_AUDIO_BOOK,
-        imageUri = ExternalCoverProvider.coverUri(book.id, 900),
+        imageUri = ExternalCoverProvider.coverUri(book.id),
       )
 
     private fun buildMediaItem(
@@ -380,7 +380,7 @@ class MediaLibraryTree
             getBooksFromLibrary(
               libraryId = id.removePrefix(LIBRARY_ID),
               pageSize = pageSize,
-              pageNumber = pageNumber
+              pageNumber = pageNumber,
             )
           } else if (id.startsWith(BOOK_ID)) {
             getBook(id.removePrefix(BOOK_ID))

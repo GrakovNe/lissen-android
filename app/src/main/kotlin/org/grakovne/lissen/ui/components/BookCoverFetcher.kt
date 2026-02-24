@@ -9,7 +9,6 @@ import coil3.fetch.FetchResult
 import coil3.fetch.Fetcher
 import coil3.fetch.SourceFetchResult
 import coil3.request.Options
-import coil3.size.Dimension
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -35,7 +34,7 @@ class BookCoverFetcher(
     val response =
       when (localOnly) {
         true -> localCacheRepository.fetchBookCover(uri)
-        false -> mediaChannel.fetchBookCover(uri, options.size.width.pxOrNull())
+        false -> mediaChannel.fetchBookCover(uri)
       }
 
     return when (response) {
@@ -97,5 +96,3 @@ object ImageLoaderModule {
       .components { add(bookCoverFetcherFactory) }
       .build()
 }
-
-private fun Dimension.pxOrNull(): Int? = (this as? Dimension.Pixels)?.px

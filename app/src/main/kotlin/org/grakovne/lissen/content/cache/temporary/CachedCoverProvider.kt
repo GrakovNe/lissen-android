@@ -24,11 +24,10 @@ class CachedCoverProvider
     suspend fun provideCover(
       channel: MediaChannel,
       itemId: String,
-      width: Int?,
     ): OperationResult<File> =
-      when (val cover = fetchCachedCover(itemId, width)) {
-        null -> cacheCover(channel, itemId, width).also { Timber.d("Caching cover $itemId with width: $width") }
-        else -> cover.let { OperationResult.Success(it) }.also { Timber.d("Fetched cached $itemId with width: $width") }
+      when (val cover = fetchCachedCover(itemId)) {
+        null -> cacheCover(channel, itemId).also { Timber.d("Caching cover $itemId") }
+        else -> cover.let { OperationResult.Success(it) }.also { Timber.d("Fetched cached $itemId") }
       }
 
     fun clearCache() =
@@ -37,11 +36,8 @@ class CachedCoverProvider
         .deleteRecursively()
         .also { Timber.d("Clear cover short-term cache") }
 
-    private fun fetchCachedCover(
-      itemId: String,
-      width: Int?,
-    ): File? {
-      val file = properties.provideCoverPath(itemId, width)
+    private fun fetchCachedCover(itemId: String): File? {
+      val file = properties.provideCoverPath(itemId)
 
       return when (file.exists()) {
         true -> file
@@ -52,13 +48,12 @@ class CachedCoverProvider
     private suspend fun cacheCover(
       channel: MediaChannel,
       itemId: String,
-      width: Int?,
     ): OperationResult<File> {
-      val dest = properties.provideCoverPath(itemId, width)
+      val dest = properties.provideCoverPath(itemId)
 
       return withContext(Dispatchers.IO) {
         channel
-          .fetchBookCover(itemId, width)
+          .fetchBookCover(itemId)
           .fold(
             onSuccess = { source ->
               val blurred = source.withBlur(context)
