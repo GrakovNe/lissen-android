@@ -4,6 +4,4 @@ interface ChannelProvider {
   fun provideMediaChannel(): MediaChannel
 
   fun provideChannelAuth(): ChannelAuthService
-
-  fun getChannelCode(): ChannelCode
 }

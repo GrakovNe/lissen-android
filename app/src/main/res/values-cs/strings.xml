@@ -173,4 +173,11 @@
     <string name="codes_not_supported_warning_toast">Nepodporovaný formát zvuku</string>
     <string name="bookmarks_create_bookmark">Vytvořit záložku</string>
     <string name="bookmarks_title">Záložky</string>
+    <string name="hide_completed_items">Schovat dokončené</string>
+    <string name="application_settings">Nastavení aplikace</string>
+    <string name="tree_node_recent">Nedávné</string>
+    <string name="tree_node_library">Knihovna</string>
+    <string name="tree_node_downloads">Stažené</string>
+    <string name="tree_node_root">Kořenový adresář</string>
+    <string name="tree_node_continue">Pokračovat</string>
 </resources>

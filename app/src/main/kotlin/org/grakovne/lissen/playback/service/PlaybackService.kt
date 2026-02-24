@@ -328,10 +328,7 @@ class PlaybackService : MediaLibraryService() {
     }
 
     @UnstableApi
-    fun bookToChapterMediaItems(
-      book: DetailedItem,
-      width: Int? = null,
-    ): MediaItemsWithStartPosition {
+    fun bookToChapterMediaItems(book: DetailedItem): MediaItemsWithStartPosition {
       // TODO: This part should be refactored to a "seekPosition" together with the current seek method
       // But I'm not entirely sure why seek does what it does, so I'll leave it for now.
       var chapterIndex = 0
@@ -350,7 +347,7 @@ class PlaybackService : MediaLibraryService() {
         book.chapters.zip(mappings).mapIndexed { index, (chapter, resolvedFiles) ->
           MediaItem
             .Builder()
-            .setMediaId(LissenMediaSourceFactory.getMediaId(book.id, index))
+            .setMediaId(LissenMediaSourceFactory.MediaId(book.id, index).toString())
             .setRequestMetadata(
               MediaItem.RequestMetadata
                 .Builder()
@@ -364,7 +361,7 @@ class PlaybackService : MediaLibraryService() {
                 .setArtist(book.title) // looks nicer this way
                 .setIsBrowsable(false)
                 .setIsPlayable(true)
-                .setArtworkUri(ExternalCoverProvider.coverUri(book.id, width))
+                .setArtworkUri(ExternalCoverProvider.coverUri(book.id))
                 .setMediaType(MediaMetadata.MEDIA_TYPE_AUDIO_BOOK_CHAPTER)
                 .setExtras(
                   bundleOf(

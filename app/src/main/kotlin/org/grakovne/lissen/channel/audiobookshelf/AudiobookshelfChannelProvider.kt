@@ -4,7 +4,6 @@ import org.grakovne.lissen.channel.audiobookshelf.common.api.AudiobookshelfAuthS
 import org.grakovne.lissen.channel.audiobookshelf.library.LibraryAudiobookshelfChannel
 import org.grakovne.lissen.channel.audiobookshelf.podcast.PodcastAudiobookshelfChannel
 import org.grakovne.lissen.channel.common.ChannelAuthService
-import org.grakovne.lissen.channel.common.ChannelCode
 import org.grakovne.lissen.channel.common.ChannelProvider
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.lib.domain.LibraryType
@@ -36,6 +35,4 @@ class AudiobookshelfChannelProvider
     }
 
     override fun provideChannelAuth(): ChannelAuthService = audiobookshelfAuthService
-
-    override fun getChannelCode(): ChannelCode = ChannelCode.AUDIOBOOKSHELF
   }

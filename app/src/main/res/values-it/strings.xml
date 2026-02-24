@@ -171,4 +171,11 @@
     <string name="codes_not_supported_warning_toast">Formato audio non supportato</string>
     <string name="bookmarks_create_bookmark">Crea segnalibro</string>
     <string name="bookmarks_title">Segnalibri</string>
+    <string name="hide_completed_items">Nascondi i completati</string>
+    <string name="application_settings">Impostazioni applicazione</string>
+    <string name="tree_node_recent">Recenti</string>
+    <string name="tree_node_library">Libreria</string>
+    <string name="tree_node_downloads">Download</string>
+    <string name="tree_node_root">Root</string>
+    <string name="tree_node_continue">Continua</string>
 </resources>

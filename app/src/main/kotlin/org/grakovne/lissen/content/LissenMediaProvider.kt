@@ -97,7 +97,7 @@ class LissenMediaProvider
       detailedItem: DetailedItem,
       progress: PlaybackProgress,
     ): OperationResult<Unit> {
-      Timber.d("Syncing Progress for $detailedItem. $progress")
+      Timber.d("Syncing Progress for ${detailedItem.id}. $progress")
 
       localCacheRepository.syncProgress(detailedItem, progress)
 
@@ -111,10 +111,7 @@ class LissenMediaProvider
       }
     }
 
-    suspend fun fetchBookCover(
-      bookId: String,
-      width: Int? = null,
-    ): OperationResult<File> {
+    suspend fun fetchBookCover(bookId: String): OperationResult<File> {
       Timber.d("Fetching Cover stream for $bookId")
       return when (preferences.isForceCache()) {
         true -> {
@@ -125,7 +122,6 @@ class LissenMediaProvider
           cachedCoverProvider.provideCover(
             channel = providePreferredChannel(),
             itemId = bookId,
-            width = width,
           )
         }
       }

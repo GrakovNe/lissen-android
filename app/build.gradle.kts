@@ -7,7 +7,7 @@ plugins {
   alias(libs.plugins.compose.compiler)
   
   id("com.google.dagger.hilt.android")
-  id("org.jmailen.kotlinter") version "5.3.0"
+  id("org.jmailen.kotlinter") version "5.4.2"
   id("com.google.devtools.ksp")
   id("kotlin-parcelize")
 }
@@ -55,15 +55,15 @@ android {
     applicationId = "org.grakovne.lissen"
     minSdk = 28
     targetSdk = 36
-    versionCode = 10811
-    versionName = "1.8.11-$commitHash"
+    versionCode = 10813
+    versionName = "1.8.13-$commitHash"
     
     buildConfigField("String", "GIT_HASH", "\"$commitHash\"")
     
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     
-    val acraReportLogin = "8yJ59n0UToCja8LR"
-    val acraReportPassword = "kuW9TV7BbJByuIAc"
+    val acraReportLogin = "M44DCNA0c1ikg3PA"
+    val acraReportPassword = "AbEG6y3mIwp5Yn9K"
     
     buildConfigField("String", "ACRA_REPORT_LOGIN", "\"$acraReportLogin\"")
     buildConfigField("String", "ACRA_REPORT_PASSWORD", "\"$acraReportPassword\"")

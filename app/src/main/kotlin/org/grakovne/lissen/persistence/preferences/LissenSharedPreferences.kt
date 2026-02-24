@@ -12,7 +12,6 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import org.grakovne.lissen.channel.common.ChannelCode
 import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.NetworkTypeAutoCache
@@ -129,9 +128,6 @@ class LissenSharedPreferences
         .toString()
         .also { sharedPreferences.edit { putString(KEY_DEVICE_ID, it) } }
     }
-
-    // Once the different channel will supported, this shall be extended
-    fun getChannel() = ChannelCode.AUDIOBOOKSHELF
 
     fun getPreferredLibrary(): Library? {
       val id = getPreferredLibraryId() ?: return null

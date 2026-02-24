@@ -6,9 +6,6 @@ import android.widget.Toast.LENGTH_SHORT
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
-import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
-import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.cache.Cache
@@ -17,7 +14,7 @@ import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.analytics.AnalyticsListener
-import androidx.media3.exoplayer.source.ProgressiveMediaSource
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -31,7 +28,6 @@ import org.grakovne.lissen.playback.service.LissenDataSourceFactory
 import org.grakovne.lissen.playback.service.LissenMediaSourceFactory
 import timber.log.Timber
 import java.io.File
-import java.lang.Exception
 import javax.inject.Singleton
 
 @UnstableApi
@@ -87,8 +83,8 @@ object MediaModule {
         ).setRenderersFactory(renderersFactory)
         .setMediaSourceFactory(
           LissenMediaSourceFactory(
-            progressiveMediaSourceFactory =
-              ProgressiveMediaSource.Factory(
+            mediaSourceFactory =
+              DefaultMediaSourceFactory(
                 LissenDataSourceFactory(
                   baseContext = context,
                   mediaCache = mediaCache,

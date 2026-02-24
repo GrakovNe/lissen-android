@@ -133,7 +133,7 @@ class MediaLibrarySessionProvider
 
                 val rewindButton =
                   CommandButton
-                    .Builder(provideRewindCommand(seekTime.rewind))
+                    .Builder(Companion.rewindCommand)
                     .setSessionCommand(rewindCommand)
                     .setDisplayName("Rewind")
                     .setEnabled(true)
@@ -141,7 +141,7 @@ class MediaLibrarySessionProvider
 
                 val forwardButton =
                   CommandButton
-                    .Builder(provideForwardCommand(seekTime.forward))
+                    .Builder(Companion.forwardCommand)
                     .setSessionCommand(forwardCommand)
                     .setDisplayName("Forward")
                     .setEnabled(true)
@@ -213,7 +213,7 @@ class MediaLibrarySessionProvider
                           async {
                             playbackSynchronizationService.startPlaybackSynchronization(it)
                           }
-                          PlaybackService.bookToChapterMediaItems(it, 500)
+                          PlaybackService.bookToChapterMediaItems(it)
                         },
                         onFailure = { MediaItemsWithStartPosition(emptyList(), 0, 0) },
                       )
@@ -276,9 +276,10 @@ class MediaLibrarySessionProvider
     }
 
     companion object {
-      private fun provideRewindCommand(seekTime: SeekTimeOption) = CommandButton.ICON_SKIP_BACK
+      private const val rewindCommand = CommandButton.ICON_SKIP_BACK
 
-      private fun provideForwardCommand(seekTime: SeekTimeOption) = CommandButton.ICON_SKIP_FORWARD
+      private val forwardCommand = CommandButton.ICON_SKIP_FORWARD
+        get() = field
 
       private const val REWIND_COMMAND = "notification_rewind"
       private const val FORWARD_COMMAND = "notification_forward"
