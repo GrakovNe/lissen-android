@@ -329,15 +329,10 @@ class PlaybackService : MediaLibraryService() {
 
     @UnstableApi
     fun bookToChapterMediaItems(book: DetailedItem): MediaItemsWithStartPosition {
-      // TODO: This part should be refactored to a "seekPosition" together with the current seek method
-      // But I'm not entirely sure why seek does what it does, so I'll leave it for now.
-      var chapterIndex = 0
-      var chapterOffset = 0.0
-      book.progress?.currentTime?.let { position ->
-        chapterIndex = book.chapters.indexOfLast { it.start <= position }.coerceAtLeast(0)
-        chapterOffset = position - book.chapters[chapterIndex].start
-      }
-      if (chapterIndex == book.chapters.lastIndex && (book.chapters.last().end - 5) < chapterOffset) {
+      var (chapterIndex, chapterOffset) = book.progress?.currentTime?.let {
+        calculateChapterIndexAndPosition(book, it)
+      } ?: ChapterPosition(0, 0.0)
+      if (chapterIndex < 0 || (chapterIndex == book.chapters.lastIndex && (book.chapters.last().end - 5) < chapterOffset)) {
         chapterIndex = 0
         chapterOffset = 0.0
       }
