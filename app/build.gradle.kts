@@ -1,8 +1,6 @@
 import java.util.Properties
 
 plugins {
-  kotlin("android")
-  
   alias(libs.plugins.android.application)
   alias(libs.plugins.compose.compiler)
   
@@ -55,8 +53,8 @@ android {
     applicationId = "org.grakovne.lissen"
     minSdk = 28
     targetSdk = 36
-    versionCode = 10813
-    versionName = "1.8.13-$commitHash"
+    versionCode = 10814
+    versionName = "1.8.14-$commitHash"
     
     buildConfigField("String", "GIT_HASH", "\"$commitHash\"")
     
@@ -100,9 +98,7 @@ android {
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
   }
-  kotlin {
-    jvmToolchain(21)
-  }
+  
   buildFeatures {
     buildConfig = true
     compose = true
