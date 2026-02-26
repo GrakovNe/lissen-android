@@ -58,7 +58,13 @@ class MediaLibrarySessionProvider
     fun provideMediaLibrarySession(mediaLibraryService: MediaLibraryService): MediaLibraryService.MediaLibrarySession {
       val knownPackages =
         listOf(
-          "com.google.android.projection.gearhead", // Android Auto
+          // by https://github.com/PaulWoitaschek/Voice/blob/main/core/playback/src/main/kotlin/voice/core/playback/session/ImageFileProvider.kt
+          "com.android.systemui",
+          "com.google.android.autosimulator",
+          "com.google.android.carassistant",
+          "com.google.android.googlequicksearchbox",
+          "com.google.android.projection.gearhead",
+          "com.google.android.wearable.app",
           "androidx.media3.testapp.controller", // Media3 controller test app
         )
       for (pkg in knownPackages) {
