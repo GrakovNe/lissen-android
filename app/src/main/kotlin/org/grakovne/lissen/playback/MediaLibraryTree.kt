@@ -69,7 +69,7 @@ class MediaLibraryTree
         artist = book.author,
         mediaId = "$BOOK_ID${book.id}",
         isPlayable = true,
-        isBrowsable = true,
+        isBrowsable = false,
         mediaType = MediaMetadata.MEDIA_TYPE_AUDIO_BOOK,
         imageUri = ExternalCoverProvider.coverUri(book.id),
       )
@@ -80,7 +80,7 @@ class MediaLibraryTree
         artist = book.author,
         mediaId = "$BOOK_ID${book.id}",
         isPlayable = true,
-        isBrowsable = true,
+        isBrowsable = false,
         mediaType = MediaMetadata.MEDIA_TYPE_AUDIO_BOOK,
         imageUri = ExternalCoverProvider.coverUri(book.id),
       )
@@ -91,7 +91,7 @@ class MediaLibraryTree
         artist = book.author,
         mediaId = "$BOOK_ID${book.id}",
         isPlayable = true,
-        isBrowsable = true,
+        isBrowsable = false,
         mediaType = MediaMetadata.MEDIA_TYPE_AUDIO_BOOK,
         imageUri = ExternalCoverProvider.coverUri(book.id),
       )
@@ -264,7 +264,6 @@ class MediaLibraryTree
           onFailure = { null },
         )
 
-    // TODO: return chapters, not a single book
     @OptIn(UnstableApi::class)
     fun getBook(bookId: String) =
       futureScope

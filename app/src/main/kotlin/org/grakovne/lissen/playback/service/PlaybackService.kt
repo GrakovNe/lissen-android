@@ -3,15 +3,16 @@ package org.grakovne.lissen.playback.service
 import android.content.Intent
 import androidx.annotation.OptIn
 import androidx.core.net.toUri
+import androidx.core.os.bundleOf
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
+import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -21,17 +22,17 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
+import org.grakovne.lissen.content.ExternalCoverProvider
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.lib.domain.BookFile
 import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.MediaProgress
+import org.grakovne.lissen.lib.domain.PlayingChapter
 import org.grakovne.lissen.lib.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.MediaLibrarySessionProvider
 import timber.log.Timber
 import javax.inject.Inject
 
-@UnstableApi
 @AndroidEntryPoint
 class PlaybackService : MediaLibraryService() {
   @Inject
@@ -59,6 +60,7 @@ class PlaybackService : MediaLibraryService() {
   lateinit var playbackTimer: PlaybackTimer
 
   @Inject
+  @UnstableApi
   lateinit var mediaCache: Cache
 
   private var session: MediaLibrarySession? = null
@@ -125,7 +127,7 @@ class PlaybackService : MediaLibraryService() {
         val book = sharedPreferences.getPlayingBook()
 
         val position = intent.getDoubleExtra(POSITION, 0.0)
-        book?.let { seek(it.files, position) }
+        book?.let { seek(it.chapters, position) }
         return START_NOT_STICKY
       }
 
@@ -163,47 +165,11 @@ class PlaybackService : MediaLibraryService() {
     withContext(Dispatchers.IO) {
       val prepareQueue =
         async {
-          val sourceFactory =
-            LissenDataSourceFactory(
-              baseContext = baseContext,
-              mediaCache = mediaCache,
-              requestHeadersProvider = requestHeadersProvider,
-              sharedPreferences = sharedPreferences,
-              mediaProvider = mediaProvider,
-            )
-
-          val playingItemCover = fetchCover(book)
-
-          val playingQueue =
-            book
-              .files
-              .map { file ->
-                val mediaData =
-                  MediaMetadata
-                    .Builder()
-                    .setTitle(file.name)
-                    .setArtist(book.title)
-                    .setArtworkUri(playingItemCover)
-
-                val mediaItem =
-                  MediaItem
-                    .Builder()
-                    .setMediaId(file.id)
-                    .setUri(apply(book.id, file.id))
-                    .setTag(book)
-                    .setMediaMetadata(mediaData.build())
-                    .build()
-
-                ProgressiveMediaSource
-                  .Factory(sourceFactory)
-                  .createMediaSource(mediaItem)
-              }
-
+          val itemsWithPosition = bookToChapterMediaItems(book)
           withContext(Dispatchers.Main) {
-            exoPlayer.setMediaSources(playingQueue)
+            exoPlayer.setMediaItems(itemsWithPosition.mediaItems)
             exoPlayer.prepare()
-
-            setPlaybackProgress(book.files, book.progress)
+            exoPlayer.seekTo(itemsWithPosition.startIndex, itemsWithPosition.startPositionMs)
           }
         }
 
@@ -255,7 +221,7 @@ class PlaybackService : MediaLibraryService() {
   }
 
   private fun seek(
-    items: List<BookFile>,
+    items: List<PlayingChapter>,
     position: Double?,
   ) {
     if (items.isEmpty()) {
@@ -293,11 +259,6 @@ class PlaybackService : MediaLibraryService() {
     }
   }
 
-  private fun setPlaybackProgress(
-    chapters: List<BookFile>,
-    progress: MediaProgress?,
-  ) = seek(chapters, progress?.currentTime)
-
   companion object {
     const val ACTION_PLAY = "org.grakovne.lissen.player.service.PLAY"
     const val ACTION_PAUSE = "org.grakovne.lissen.player.service.PAUSE"
@@ -314,5 +275,104 @@ class PlaybackService : MediaLibraryService() {
     const val TIMER_REMAINING = "org.grakovne.lissen.player.service.TIMER_REMAINING"
     const val PLAYBACK_READY = "org.grakovne.lissen.player.service.PLAYBACK_READY"
     const val POSITION = "org.grakovne.lissen.player.service.POSITION"
+
+    const val FILE_SEGMENTS = "org.grakovne.lissen.player.service.FILE_SEGMENTS"
+    const val CHAPTER_START_MS = "org.grakovne.lissen.player.service.CHAPTER_START_MS"
+
+    internal fun resolveChapterToFiles(
+      chapters: List<PlayingChapter>,
+      files: List<BookFile>,
+    ): List<ArrayList<FileClip>> = resolveChapterToFiles(chapters, files) { index, chapter, resolvedFiles -> resolvedFiles }
+
+    internal fun <T> resolveChapterToFiles(
+      chapters: List<PlayingChapter>,
+      files: List<BookFile>,
+      resolvedFilesConsumer: (Int, PlayingChapter, ArrayList<FileClip>) -> T,
+    ): List<T> {
+      if (files.isEmpty() || chapters.isEmpty()) return emptyList()
+
+      val result = ArrayList<T>(chapters.size)
+
+      val filesIterator = files.iterator()
+      var currentFile = filesIterator.next()
+
+      var allocatedFilesEnd = 0.0
+      val epsilon = 0.01
+
+      chapters.forEachIndexed { index, chapter ->
+        val chapterClips = ArrayList<FileClip>(1) // We usually don't expect more than one clip.
+        var outstandingPartStart = chapter.start
+
+        while (outstandingPartStart < chapter.end - epsilon) {
+          val currentFileEnd = allocatedFilesEnd + currentFile.duration
+          val overlapEnd = minOf(chapter.end, currentFileEnd)
+
+          // Add to the clips only if long enough
+          if (epsilon < overlapEnd - outstandingPartStart) {
+            chapterClips.add(
+              FileClip(
+                fileId = currentFile.id,
+                clipStart = outstandingPartStart - allocatedFilesEnd,
+                clipEnd = overlapEnd - allocatedFilesEnd,
+              ),
+            )
+          }
+
+          if (currentFileEnd < chapter.end && filesIterator.hasNext()) {
+            allocatedFilesEnd += currentFile.duration
+            currentFile = filesIterator.next()
+          } else {
+            break
+          }
+
+          outstandingPartStart = overlapEnd
+        }
+        result.add(resolvedFilesConsumer(index, chapter, chapterClips))
+      }
+
+      return result
+    }
+
+    @UnstableApi
+    fun bookToChapterMediaItems(book: DetailedItem): MediaItemsWithStartPosition {
+      var (chapterIndex, chapterOffset) =
+        book.progress?.currentTime?.let {
+          calculateChapterIndexAndPosition(book, it)
+        } ?: ChapterPosition(0, 0.0)
+      if (chapterIndex < 0 || (chapterIndex == book.chapters.lastIndex && (book.chapters.last().end - 5) < chapterOffset)) {
+        chapterIndex = 0
+        chapterOffset = 0.0
+      }
+
+      val chapterMediaItems =
+        resolveChapterToFiles(chapters = book.chapters, files = book.files) { index, chapter, resolvedFiles ->
+          MediaItem
+            .Builder()
+            .setMediaId(LissenMediaSourceFactory.MediaId(book.id, index).toString())
+            .setRequestMetadata(
+              MediaItem.RequestMetadata
+                .Builder()
+                .setExtras(bundleOf(FILE_SEGMENTS to resolvedFiles))
+                .build(),
+            ).setMediaMetadata(
+              MediaMetadata
+                .Builder()
+                .setAlbumTitle(book.title)
+                .setTitle(chapter.title)
+                .setArtist(book.title) // looks nicer this way
+                .setIsBrowsable(false)
+                .setIsPlayable(true)
+                .setArtworkUri(ExternalCoverProvider.coverUri(book.id))
+                .setMediaType(MediaMetadata.MEDIA_TYPE_AUDIO_BOOK_CHAPTER)
+                .setExtras(
+                  bundleOf(
+                    CHAPTER_START_MS to (chapter.start * 1000).toLong(),
+                  ),
+                ).build(),
+            ).setTag(book)
+            .build()
+        }
+      return MediaItemsWithStartPosition(chapterMediaItems, chapterIndex, (chapterOffset * 1000).toLong())
+    }
   }
 }

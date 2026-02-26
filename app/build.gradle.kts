@@ -9,6 +9,7 @@ plugins {
   id("com.google.dagger.hilt.android")
   id("org.jmailen.kotlinter") version "5.4.2"
   id("com.google.devtools.ksp")
+  id("kotlin-parcelize")
 }
 
 kotlinter {

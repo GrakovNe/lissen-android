@@ -3,7 +3,6 @@ package org.grakovne.lissen.playback
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.util.LruCache
 import android.view.KeyEvent
@@ -11,9 +10,8 @@ import android.view.KeyEvent.KEYCODE_MEDIA_NEXT
 import android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS
 import androidx.annotation.OptIn
 import androidx.core.net.toUri
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaItem.SubtitleConfiguration
-import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.CommandButton
@@ -30,11 +28,14 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.future.future
 import org.grakovne.lissen.BuildConfig
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.lib.domain.SeekTimeOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.playback.service.PlaybackService
+import org.grakovne.lissen.playback.service.PlaybackSynchronizationService
 import org.grakovne.lissen.ui.activity.AppActivity
 import org.grakovne.lissen.util.asListenableFuture
 import timber.log.Timber
@@ -52,12 +53,19 @@ class MediaLibrarySessionProvider
     private val lissenMediaProvider: LissenMediaProvider,
     private val exoPlayer: ExoPlayer,
     private val libraryTree: MediaLibraryTree,
+    private val playbackSynchronizationService: PlaybackSynchronizationService,
   ) {
     @OptIn(UnstableApi::class, DelicateCoroutinesApi::class)
     fun provideMediaLibrarySession(mediaLibraryService: MediaLibraryService): MediaLibraryService.MediaLibrarySession {
       val knownPackages =
         listOf(
-          "com.google.android.projection.gearhead", // Android Auto
+          // by https://github.com/PaulWoitaschek/Voice/blob/main/core/playback/src/main/kotlin/voice/core/playback/session/ImageFileProvider.kt
+          "com.android.systemui",
+          "com.google.android.autosimulator",
+          "com.google.android.carassistant",
+          "com.google.android.googlequicksearchbox",
+          "com.google.android.projection.gearhead",
+          "com.google.android.wearable.app",
           "androidx.media3.testapp.controller", // Media3 controller test app
         )
       for (pkg in knownPackages) {
@@ -173,41 +181,6 @@ class MediaLibrarySessionProvider
               return super.onCustomCommand(session, controller, customCommand, args)
             }
 
-            private fun buildMediaItem(
-              title: String,
-              mediaId: String,
-              isPlayable: Boolean,
-              isBrowsable: Boolean,
-              mediaType: @MediaMetadata.MediaType Int,
-              subtitleConfigurations: List<SubtitleConfiguration> = mutableListOf(),
-              album: String? = null,
-              artist: String? = null,
-              genre: String? = null,
-              sourceUri: Uri? = null,
-              imageUri: Uri? = null,
-            ): MediaItem {
-              val metadata =
-                MediaMetadata
-                  .Builder()
-                  .setAlbumTitle(album)
-                  .setTitle(title)
-                  .setArtist(artist)
-                  .setGenre(genre)
-                  .setIsBrowsable(isBrowsable)
-                  .setIsPlayable(isPlayable)
-                  .setArtworkUri(imageUri)
-                  .setMediaType(mediaType)
-                  .build()
-
-              return MediaItem
-                .Builder()
-                .setMediaId(mediaId)
-                .setSubtitleConfigurations(subtitleConfigurations)
-                .setMediaMetadata(metadata)
-                .setUri(sourceUri)
-                .build()
-            }
-
             override fun onGetLibraryRoot(
               session: MediaLibraryService.MediaLibrarySession,
               browser: MediaSession.ControllerInfo,
@@ -235,35 +208,28 @@ class MediaLibrarySessionProvider
               mediaItems: List<MediaItem>,
               startIndex: Int,
               startPositionMs: Long,
-            ): ListenableFuture<MediaItemsWithStartPosition> {
-              if (mediaItems.size == 1 && mediaItems[0].mediaId.startsWith("[bookID]")) {
-                return futureScope
-                  .future {
-                    val bookId = mediaItems[0].mediaId.removePrefix("[bookID]")
-                    val book = lissenMediaProvider.fetchBook(bookId)
-
-                    val files =
-                      book
-                        .map {
-                          mediaRepository.prepareAndPlay(it)
-                          it.files.map { file ->
-                            buildMediaItem(
-                              title = file.name,
-                              mediaId = file.id,
-                              isPlayable = true,
-                              isBrowsable = false,
-                              mediaType = MediaMetadata.MEDIA_TYPE_AUDIO_BOOK_CHAPTER,
-                              sourceUri =
-                                org.grakovne.lissen.playback.service
-                                  .apply(bookId, file.id),
-                            )
-                          }
-                        }.fold({ it }, { emptyList() })
-                    MediaItemsWithStartPosition(files, 0, 0)
-                  }.asListenableFuture()
-              }
-              return super.onSetMediaItems(mediaSession, controller, mediaItems, startIndex, startPositionMs)
-            }
+            ): ListenableFuture<MediaItemsWithStartPosition> =
+              mediaItems.singleOrNull()?.let { mediaItem ->
+                if (mediaItem.mediaId.startsWith("[bookID]") && startIndex == C.INDEX_UNSET && startPositionMs == C.TIME_UNSET) {
+                  futureScope
+                    .future {
+                      val bookId = mediaItem.mediaId.removePrefix("[bookID]")
+                      lissenMediaProvider
+                        .fetchBook(bookId)
+                        .foldAsync(
+                          onSuccess = {
+                            async {
+                              playbackSynchronizationService.startPlaybackSynchronization(it)
+                            }
+                            PlaybackService.bookToChapterMediaItems(it)
+                          },
+                          onFailure = { MediaItemsWithStartPosition(emptyList(), 0, 0) },
+                        )
+                    }.asListenableFuture()
+                } else {
+                  null
+                }
+              } ?: super.onSetMediaItems(mediaSession, controller, mediaItems, startIndex, startPositionMs)
 
             var searchCache = LruCache<String, ListenableFuture<List<MediaItem>>>(3)
 

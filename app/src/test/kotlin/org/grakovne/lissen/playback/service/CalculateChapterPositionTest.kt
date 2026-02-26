@@ -1,7 +1,8 @@
+package org.grakovne.lissen.playback.service
+
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.PlayingChapter
-import org.grakovne.lissen.playback.service.calculateChapterIndexAndPosition
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
@@ -53,8 +54,13 @@ class CalculateChapterPositionTest {
     tolerance: Double = 0.001,
   ) {
     val (index, position) = calculateChapterIndexAndPosition(book, overallPosition)
-    assertEquals(expectedIndex, index, "Wrong chapter index for pos=$overallPosition")
-    assertEquals(expectedPosition, position, tolerance, "Wrong chapter position for pos=$overallPosition")
+    Assertions.assertEquals(expectedIndex, index, "Wrong chapter index for pos=$overallPosition")
+    Assertions.assertEquals(
+      expectedPosition,
+      position,
+      tolerance,
+      "Wrong chapter position for pos=$overallPosition",
+    )
   }
 
   @Nested
@@ -200,8 +206,8 @@ class CalculateChapterPositionTest {
     fun `very small chapter durations`() {
       val book = createBook(0.05, 0.05, 100.0)
       val (newIndex, newPosition) = calculateChapterIndexAndPosition(book, 0.0)
-      assertEquals(2, newIndex)
-      assertEquals(-0.1, newPosition, 0.001)
+      Assertions.assertEquals(2, newIndex)
+      Assertions.assertEquals(-0.1, newPosition, 0.001)
     }
 
     @Test
@@ -223,8 +229,8 @@ class CalculateChapterPositionTest {
       // Just verify consistency
       val pos = -5.0
       val (index, position) = calculateChapterIndexAndPosition(book, pos)
-      assertEquals(0, index)
-      assertEquals(-5.0, position, 0.001)
+      Assertions.assertEquals(0, index)
+      Assertions.assertEquals(-5.0, position, 0.001)
     }
   }
 }
