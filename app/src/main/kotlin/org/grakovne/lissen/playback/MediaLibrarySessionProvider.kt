@@ -10,6 +10,7 @@ import android.view.KeyEvent.KEYCODE_MEDIA_NEXT
 import android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS
 import androidx.annotation.OptIn
 import androidx.core.net.toUri
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
@@ -207,26 +208,28 @@ class MediaLibrarySessionProvider
               mediaItems: List<MediaItem>,
               startIndex: Int,
               startPositionMs: Long,
-            ): ListenableFuture<MediaItemsWithStartPosition> {
-              if (mediaItems.size == 1 && mediaItems[0].mediaId.startsWith("[bookID]")) {
-                return futureScope
-                  .future {
-                    val bookId = mediaItems[0].mediaId.removePrefix("[bookID]")
-                    lissenMediaProvider
-                      .fetchBook(bookId)
-                      .foldAsync(
-                        onSuccess = {
-                          async {
-                            playbackSynchronizationService.startPlaybackSynchronization(it)
-                          }
-                          PlaybackService.bookToChapterMediaItems(it)
-                        },
-                        onFailure = { MediaItemsWithStartPosition(emptyList(), 0, 0) },
-                      )
-                  }.asListenableFuture()
-              }
-              return super.onSetMediaItems(mediaSession, controller, mediaItems, startIndex, startPositionMs)
-            }
+            ): ListenableFuture<MediaItemsWithStartPosition> =
+              mediaItems.singleOrNull()?.let { mediaItem ->
+                if (mediaItem.mediaId.startsWith("[bookID]") && startIndex == C.INDEX_UNSET && startPositionMs == C.TIME_UNSET) {
+                  futureScope
+                    .future {
+                      val bookId = mediaItem.mediaId.removePrefix("[bookID]")
+                      lissenMediaProvider
+                        .fetchBook(bookId)
+                        .foldAsync(
+                          onSuccess = {
+                            async {
+                              playbackSynchronizationService.startPlaybackSynchronization(it)
+                            }
+                            PlaybackService.bookToChapterMediaItems(it)
+                          },
+                          onFailure = { MediaItemsWithStartPosition(emptyList(), 0, 0) },
+                        )
+                    }.asListenableFuture()
+                } else {
+                  null
+                }
+              } ?: super.onSetMediaItems(mediaSession, controller, mediaItems, startIndex, startPositionMs)
 
             var searchCache = LruCache<String, ListenableFuture<List<MediaItem>>>(3)
 
