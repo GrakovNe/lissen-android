@@ -47,6 +47,7 @@ import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_REMA
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_TICK
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_VALUE_EXTRA
 import org.grakovne.lissen.playback.service.calculateChapterIndex
+import org.grakovne.lissen.playback.service.calculateChapterIndexAndPosition
 import org.grakovne.lissen.playback.service.calculateChapterPosition
 import timber.log.Timber
 import javax.inject.Inject
@@ -238,17 +239,12 @@ class MediaRepository
           val playingBook = playingBook.value ?: return
           val currentPosition = position ?: totalPosition.value ?: return
 
+          val (chapterIndex, chapterPosition) = calculateChapterIndexAndPosition(playingBook, currentPosition)
           val chapterDuration =
-            calculateChapterIndex(playingBook, currentPosition)
+            chapterIndex
               .takeIf { it in playingBook.chapters.indices }
               ?.let { playingBook.chapters[it].duration }
               ?: return
-
-          val chapterPosition =
-            calculateChapterPosition(
-              book = playingBook,
-              overallPosition = currentPosition,
-            )
 
           scheduleServiceTimer(
             delay = (chapterDuration - chapterPosition) / preferences.getPlaybackSpeed(),
@@ -389,12 +385,7 @@ class MediaRepository
       val book = playingBook.value ?: return
       val overallPosition = totalPosition.value ?: return
 
-      val currentIndex = calculateChapterIndex(book, overallPosition)
-      val chapterPosition =
-        calculateChapterPosition(
-          book = book,
-          overallPosition = overallPosition,
-        )
+      val (currentIndex, chapterPosition) = calculateChapterIndexAndPosition(book, overallPosition)
 
       val currentIndexReplay = (chapterPosition > CURRENT_TRACK_REPLAY_THRESHOLD || currentIndex == 0)
 
