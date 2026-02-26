@@ -282,10 +282,16 @@ class PlaybackService : MediaLibraryService() {
     internal fun resolveChapterToFiles(
       chapters: List<PlayingChapter>,
       files: List<BookFile>,
-    ): List<ArrayList<FileClip>> {
+    ): List<ArrayList<FileClip>> = resolveChapterToFiles(chapters, files) { index, chapter, resolvedFiles -> resolvedFiles }
+
+    internal fun <T> resolveChapterToFiles(
+      chapters: List<PlayingChapter>,
+      files: List<BookFile>,
+      resolvedFilesConsumer: (Int, PlayingChapter, ArrayList<FileClip>) -> T,
+    ): List<T> {
       if (files.isEmpty() || chapters.isEmpty()) return emptyList()
 
-      val result = ArrayList<ArrayList<FileClip>>(chapters.size)
+      val result = ArrayList<T>(chapters.size)
 
       val filesIterator = files.iterator()
       var currentFile = filesIterator.next()
@@ -293,7 +299,7 @@ class PlaybackService : MediaLibraryService() {
       var allocatedFilesEnd = 0.0
       val epsilon = 0.01
 
-      for (chapter in chapters) {
+      chapters.forEachIndexed { index, chapter ->
         val chapterClips = ArrayList<FileClip>(1) // We usually don't expect more than one clip.
         var outstandingPartStart = chapter.start
 
@@ -321,7 +327,7 @@ class PlaybackService : MediaLibraryService() {
 
           outstandingPartStart = overlapEnd
         }
-        result.add(chapterClips)
+        result.add(resolvedFilesConsumer(index, chapter, chapterClips))
       }
 
       return result
@@ -329,17 +335,17 @@ class PlaybackService : MediaLibraryService() {
 
     @UnstableApi
     fun bookToChapterMediaItems(book: DetailedItem): MediaItemsWithStartPosition {
-      var (chapterIndex, chapterOffset) = book.progress?.currentTime?.let {
-        calculateChapterIndexAndPosition(book, it)
-      } ?: ChapterPosition(0, 0.0)
+      var (chapterIndex, chapterOffset) =
+        book.progress?.currentTime?.let {
+          calculateChapterIndexAndPosition(book, it)
+        } ?: ChapterPosition(0, 0.0)
       if (chapterIndex < 0 || (chapterIndex == book.chapters.lastIndex && (book.chapters.last().end - 5) < chapterOffset)) {
         chapterIndex = 0
         chapterOffset = 0.0
       }
 
-      val mappings = resolveChapterToFiles(chapters = book.chapters, files = book.files)
       val chapterMediaItems =
-        book.chapters.zip(mappings).mapIndexed { index, (chapter, resolvedFiles) ->
+        resolveChapterToFiles(chapters = book.chapters, files = book.files) { index, chapter, resolvedFiles ->
           MediaItem
             .Builder()
             .setMediaId(LissenMediaSourceFactory.MediaId(book.id, index).toString())
