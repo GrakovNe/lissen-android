@@ -62,12 +62,6 @@ android {
     
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     
-    val acraReportLogin = "M44DCNA0c1ikg3PA"
-    val acraReportPassword = "AbEG6y3mIwp5Yn9K"
-    
-    buildConfigField("String", "ACRA_REPORT_LOGIN", "\"$acraReportLogin\"")
-    buildConfigField("String", "ACRA_REPORT_PASSWORD", "\"$acraReportPassword\"")
-    
     if (project.hasProperty("RELEASE_STORE_FILE")) {
       signingConfigs {
         create("release") {
