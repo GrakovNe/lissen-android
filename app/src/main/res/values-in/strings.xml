@@ -171,4 +171,11 @@
     <string name="codes_not_supported_warning_toast">Format audio tidak didukung</string>
     <string name="bookmarks_create_bookmark">Buat markah</string>
     <string name="bookmarks_title">Markah</string>
+    <string name="hide_completed_items">Sembunyikan selesai</string>
+    <string name="application_settings">Setelan aplikasi</string>
+    <string name="tree_node_recent">Baru saja</string>
+    <string name="tree_node_library">Pustaka</string>
+    <string name="tree_node_downloads">Unduhan</string>
+    <string name="tree_node_root">Root</string>
+    <string name="tree_node_continue">Lanjutkan</string>
 </resources>
