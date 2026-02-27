@@ -173,4 +173,9 @@
     <string name="bookmarks_title">书签</string>
     <string name="application_settings">应用程序设置</string>
     <string name="hide_completed_items">隐藏已听完</string>
+    <string name="tree_node_recent">最近收听</string>
+    <string name="tree_node_library">媒体库</string>
+    <string name="tree_node_downloads">已下载</string>
+    <string name="tree_node_root">根目录</string>
+    <string name="tree_node_continue">继续收听</string>
 </resources>
