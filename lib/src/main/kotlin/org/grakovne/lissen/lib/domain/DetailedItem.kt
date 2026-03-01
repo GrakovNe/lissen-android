@@ -31,6 +31,7 @@ data class BookFile(
   val id: String,
   val name: String,
   val duration: Double,
+  val size: Long?,
   val mimeType: String,
 ) : Serializable
 

@@ -66,6 +66,7 @@ interface CachedBookDao {
             duration = file.duration,
             mimeType = file.mimeType,
             bookId = book.id,
+            size = file.size ?: 0,
           )
         }
 

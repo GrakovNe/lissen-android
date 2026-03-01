@@ -174,6 +174,7 @@ class ResolveChapterToFilesTest {
         name = "F$index",
         duration = duration.toDouble(),
         mimeType = "audio/mpeg",
+        size = 0L,
       )
     }
 }

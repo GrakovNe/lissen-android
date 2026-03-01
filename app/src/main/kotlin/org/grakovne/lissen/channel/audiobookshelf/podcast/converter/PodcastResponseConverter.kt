@@ -85,6 +85,7 @@ class PodcastResponseConverter
                 name = it.title,
                 duration = it.audioFile.duration,
                 mimeType = it.audioFile.mimeType,
+                size = it.audioFile.metadata.size,
               )
             }
             ?: emptyList(),
