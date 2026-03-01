@@ -31,7 +31,7 @@ class CachedBookEntityDetailedConverter
             BookFile(
               id = fileEntity.bookFileId,
               name = fileEntity.name,
-              size = 0,
+              size = fileEntity.size,
               duration = fileEntity.duration,
               mimeType = fileEntity.mimeType,
             )

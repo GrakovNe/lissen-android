@@ -69,6 +69,7 @@ data class BookFileEntity(
   @PrimaryKey(autoGenerate = true) val id: Long = 0L,
   val bookFileId: String,
   val name: String,
+  val size: Long,
   val duration: Double,
   val mimeType: String,
   val bookId: String,
