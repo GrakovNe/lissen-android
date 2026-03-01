@@ -90,8 +90,6 @@ class SettingsViewModel
     private val _hideCompleted = preferences.hideCompletedFlow
     val hideCompleted = _hideCompleted
 
-    val collapseOnFling = MutableLiveData(preferences.getCollapseOnFling())
-
     private val _autoDownloadDelayed = MutableLiveData(preferences.getAutoDownloadDelayed())
     val autoDownloadDelayed = _autoDownloadDelayed
 
@@ -216,11 +214,6 @@ class SettingsViewModel
     fun preferMaterialYouColors(value: Boolean) {
       _materialYouEnabled.postValue(value)
       preferences.saveMaterialYouColors(value)
-    }
-
-    fun preferCollapseOnFling(value: Boolean) {
-      collapseOnFling.postValue(value)
-      preferences.saveCollapseOnFling(value)
     }
 
     fun preferSoftwareCodecsEnabled(value: Boolean) {

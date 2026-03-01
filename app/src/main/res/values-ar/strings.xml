@@ -167,8 +167,6 @@
     <string name="codes_not_supported_warning_toast">صيغة الملف الصوتي غير مدعومه</string>
     <string name="bookmarks_create_bookmark">إنشاء إشارة مرجعية</string>
     <string name="bookmarks_title">إشارات مرجعية</string>
-    <string name="settings_screen_collapse_on_fling_title">طيّ قائمة التشغيل عند السحب السريع</string>
-    <string name="settings_screen_collapse_on_fling_description">اسحب لطي قائمة الفصول</string>
     <string name="settings_screen_material_you_title">ألوان Material You</string>
     <string name="settings_screen_material_you_description">مطابقة ألوان التطبيق لخلفية الشاشة</string>
     <string name="restart_the_app_to_start_using_the_new_codecs_cta">إعادة التشغيل</string>
