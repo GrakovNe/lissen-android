@@ -2,6 +2,8 @@ package org.grakovne.lissen.channel.audiobookshelf.podcast.model
 
 import androidx.annotation.Keep
 import com.squareup.moshi.JsonClass
+import org.grakovne.lissen.channel.audiobookshelf.library.model.AudioFileMetadata
+import org.grakovne.lissen.channel.audiobookshelf.library.model.AudioFileTag
 
 @Keep
 @JsonClass(generateAdapter = true)
@@ -47,4 +49,5 @@ data class PodcastAudioFileResponse(
   val ino: String,
   val duration: Double,
   val mimeType: String,
+  val metadata: AudioFileMetadata,
 )
