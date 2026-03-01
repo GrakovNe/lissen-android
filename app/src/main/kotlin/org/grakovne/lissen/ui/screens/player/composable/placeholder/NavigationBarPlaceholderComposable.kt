@@ -33,7 +33,7 @@ fun NavigationBarPlaceholderComposable(
 ) {
   Surface(
     shadowElevation = 4.dp,
-    modifier = modifier.height(64.dp),
+    modifier = modifier,
   ) {
     NavigationBar(
       containerColor = Color.Transparent,
