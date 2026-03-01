@@ -151,6 +151,7 @@ class ContentCachingManager
           )
 
         val totalFileSize = files.mapNotNull { it.size }.sum()
+        val reportingSizeThreshold = totalFileSize / 100.0
         var fetchedFileSize = 0.0
 
         files.forEach { file ->
@@ -174,8 +175,6 @@ class ContentCachingManager
             dest.outputStream().use { output ->
               body.byteStream().use { input ->
                 var lastReportedSize = 0.0
-                val reportingSizeThreshold = totalFileSize / 100
-
                 input.copyTo(output) {
                   fetchedFileSize += it
 
