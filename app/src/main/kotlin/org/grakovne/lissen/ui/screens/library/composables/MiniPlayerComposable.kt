@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -100,6 +101,7 @@ fun MiniPlayerComposable(
         modifier =
           Modifier
             .fillMaxSize()
+            .navigationBarsPadding()
             .padding(horizontal = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
@@ -130,6 +132,7 @@ fun MiniPlayerComposable(
             .fillMaxWidth()
             .background(colorScheme.background)
             .clickable { navController.showPlayer(book.id, book.title, book.subtitle) }
+            .navigationBarsPadding()
             .padding(horizontal = 20.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
       ) {
