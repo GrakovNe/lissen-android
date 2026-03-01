@@ -49,7 +49,6 @@ class PlayerViewModel
     val searchToken: LiveData<String> = _searchToken
 
     val isPlaying: LiveData<Boolean> = mediaRepository.isPlaying
-    val collapseOnFling = preferences.collapseOnFlingFlow
 
     val bookmarks = mediaRepository.bookmarks
 

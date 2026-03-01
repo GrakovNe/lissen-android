@@ -25,8 +25,6 @@
     <string name="settings_screen_connection_type">Typ připojení</string>
     <string name="settings_screen_connection_local">Lokální síť</string>
     <string name="settings_screen_connection_external">Vnější síť</string>
-    <string name="settings_screen_collapse_on_fling_title">Sbalit frontu gestem</string>
-    <string name="settings_screen_collapse_on_fling_description">Sbalit seznam kapitol přejetím prstem</string>
     <string name="login_error_host_is_down">Host je mimo provoz</string>
     <string name="login_error_host_url_is_missing">Chybí URL adresa hostu</string>
     <string name="login_error_username_is_missing">Chybí přihlašovací jméno</string>

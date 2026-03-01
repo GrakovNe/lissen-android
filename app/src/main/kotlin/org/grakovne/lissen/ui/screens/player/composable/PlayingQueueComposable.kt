@@ -25,6 +25,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -76,7 +77,6 @@ fun PlayingQueueComposable(
 
   val book by viewModel.book.observeAsState()
   val searchToken by viewModel.searchToken.observeAsState("")
-  val collapseOnFling by viewModel.collapseOnFling.collectAsState(false)
 
   val showingChapters by remember {
     derivedStateOf {
@@ -257,11 +257,6 @@ fun PlayingQueueComposable(
                     return available
                   }
 
-                  if (available.y > collapseFlingThreshold && playingQueueExpanded && collapseOnFling) {
-                    viewModel.collapsePlayingQueue()
-                    return available
-                  }
-
                   return Velocity.Zero
                 }
               },
@@ -312,6 +307,7 @@ fun PlayingQueueComposable(
         onClick = { viewModel.collapsePlayingQueue() },
         containerColor = colorScheme.surfaceContainer,
         contentColor = colorScheme.primary,
+        elevation = FloatingActionButtonDefaults.loweredElevation(),
       ) {
         Icon(
           imageVector = Icons.Filled.ExpandMore,
