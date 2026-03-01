@@ -22,19 +22,18 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -145,20 +144,41 @@ fun PlayingQueueComposable(
   }
 
   val fabScrollConnection =
-    remember(playingQueueExpanded, collapseFlingThreshold) {
+    remember(playingQueueExpanded, density) {
+      val slopPx = with(density) { 4.dp.toPx() }
+
       object : NestedScrollConnection {
+        override fun onPreScroll(
+          available: Offset,
+          source: NestedScrollSource,
+        ): Offset {
+          if (!playingQueueExpanded) return Offset.Zero
+
+          when {
+            available.y > slopPx -> {
+              if (!showCollapseFab) {
+                showCollapseFab = true
+              }
+            }
+
+            available.y < -slopPx -> {
+              if (showCollapseFab) {
+                showCollapseFab = false
+              }
+            }
+          }
+
+          return Offset.Zero
+        }
+
         override suspend fun onPreFling(available: Velocity): Velocity {
           if (!playingQueueExpanded) return Velocity.Zero
 
-          if (available.y > collapseFlingThreshold) {
-            showCollapseFab = true
-            return Velocity.Zero
+          when {
+            available.y > 0f -> showCollapseFab = true
+            available.y < 0f -> showCollapseFab = false
           }
 
-          if (available.y < -collapseFlingThreshold) {
-            showCollapseFab = false
-            return Velocity.Zero
-          }
           return Velocity.Zero
         }
       }
@@ -300,18 +320,19 @@ fun PlayingQueueComposable(
       exit = fadeOut(),
       modifier =
         Modifier
-          .align(Alignment.TopCenter)
-          .padding(top = 8.dp),
+          .align(Alignment.BottomCenter)
+          .padding(bottom = 16.dp),
     ) {
       FloatingActionButton(
+        shape = CircleShape,
         onClick = { viewModel.collapsePlayingQueue() },
         containerColor = colorScheme.surfaceContainer,
-        contentColor = colorScheme.primary,
         elevation = FloatingActionButtonDefaults.loweredElevation(),
       ) {
         Icon(
-          imageVector = Icons.Filled.ExpandMore,
+          imageVector = Icons.Filled.KeyboardArrowDown,
           contentDescription = "Collapse queue",
+          tint = colorScheme.onBackground,
         )
       }
     }
