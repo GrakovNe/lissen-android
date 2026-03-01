@@ -367,12 +367,13 @@ fun LibraryScreen(
                 totalItems = libraryCount,
                 ignoreItems = listOf("recent_books", "library_title"),
               ),
-          contentPadding = PaddingValues(
-            start = 16.dp,
-            end = 16.dp,
-            top = innerPadding.calculateTopPadding(),
-            bottom = innerPadding.calculateBottomPadding()
-          ),
+          contentPadding =
+            PaddingValues(
+              start = 16.dp,
+              end = 16.dp,
+              top = innerPadding.calculateTopPadding(),
+              bottom = innerPadding.calculateBottomPadding(),
+            ),
         ) {
           item(key = "recent_books") {
             val showRecent = isRecentVisible()
@@ -488,9 +489,10 @@ fun LibraryScreen(
             refreshing = pullRefreshing,
             state = pullRefreshState,
             contentColor = colorScheme.primary,
-            modifier = Modifier
-              .align(Alignment.TopCenter)
-              .padding(top = innerPadding.calculateTopPadding()),
+            modifier =
+              Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = innerPadding.calculateTopPadding()),
           )
         }
       }
