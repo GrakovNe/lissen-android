@@ -94,13 +94,6 @@ class PlaybackSynchronizationService
       val overallProgress = getProgress(exoPlayer) ?: return
       val currentItem = currentItem ?: return
 
-      currentChapterIndex?.let { currentChapterIndex ->
-        if (currentChapterIndex > 1 && overallProgress.currentTotalTime == 0.0) {
-          Timber.d("Don't sync currentTotalTime of 0.0 if chapter is not first")
-          return
-        }
-      }
-
       Timber.d("Trying to sync $overallProgress for ${currentItem.id}")
 
       serviceScope.launch(Dispatchers.IO) {
@@ -111,6 +104,11 @@ class PlaybackSynchronizationService
 
         try {
           val currentIndex = calculateChapterIndex(currentItem, overallProgress.currentTotalTime)
+
+          if (currentIndex > FIRST_CHAPTER && overallProgress.currentTotalTime == NO_PROGRESS) {
+            Timber.d("Don't sync currentTotalTime of 0.0 if chapter is not first")
+            return@launch
+          }
 
           if (playbackSession == null ||
             playbackSession?.itemId != currentItem.id ||
@@ -190,6 +188,8 @@ class PlaybackSynchronizationService
       private const val SHORT_SYNC_WINDOW = SYNC_INTERVAL_LONG * 2 - 1
 
       private const val SYNC_INTERVAL_SHORT = 5_000L
+      private const val FIRST_CHAPTER = 0
+      private const val NO_PROGRESS = 0.0
 
       private val syncEvents =
         listOf(
