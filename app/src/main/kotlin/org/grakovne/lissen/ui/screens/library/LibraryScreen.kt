@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.ExperimentalMaterialApi
@@ -331,6 +332,7 @@ fun LibraryScreen(
             }
           }
         },
+        modifier = Modifier.systemBarsPadding(),
       )
     },
     bottomBar = {
@@ -347,11 +349,13 @@ fun LibraryScreen(
     },
     modifier =
       Modifier
+        .systemBarsPadding()
         .fillMaxSize(),
     content = { innerPadding ->
       Box(
         modifier =
           Modifier
+            .padding(innerPadding)
             .pullRefresh(pullRefreshState)
             .fillMaxSize(),
       ) {
@@ -367,13 +371,7 @@ fun LibraryScreen(
                 totalItems = libraryCount,
                 ignoreItems = listOf("recent_books", "library_title"),
               ),
-          contentPadding =
-            PaddingValues(
-              start = 16.dp,
-              end = 16.dp,
-              top = innerPadding.calculateTopPadding(),
-              bottom = innerPadding.calculateBottomPadding(),
-            ),
+          contentPadding = PaddingValues(horizontal = 16.dp),
         ) {
           item(key = "recent_books") {
             val showRecent = isRecentVisible()
@@ -490,10 +488,7 @@ fun LibraryScreen(
             state = pullRefreshState,
             contentColor = colorScheme.primary,
             backgroundColor = colorScheme.surfaceContainer,
-            modifier =
-              Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = innerPadding.calculateTopPadding()),
+            modifier = Modifier.align(Alignment.TopCenter),
           )
         }
       }

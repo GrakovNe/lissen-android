@@ -60,9 +60,7 @@ fun LissenTheme(
 
   SideEffect {
     window?.let {
-      val insetsController = WindowCompat.getInsetsController(it, view)
-      insetsController.isAppearanceLightStatusBars = !isDarkTheme
-      insetsController.isAppearanceLightNavigationBars = !isDarkTheme
+      WindowCompat.getInsetsController(it, view).isAppearanceLightStatusBars = !isDarkTheme
     }
   }
 
