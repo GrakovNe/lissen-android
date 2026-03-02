@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -112,28 +111,16 @@ fun LoginScreen(
   }
 
   LaunchedEffect(Unit) {
-    snapshotFlow { host }
-      .debounce(150)
-      .collect { viewModel.updateAuthData() }
+    snapshotFlow { host }.debounce(150).collect { viewModel.updateAuthData() }
   }
   Scaffold(
-    modifier =
-      Modifier
-        .systemBarsPadding()
-        .fillMaxSize(),
+    modifier = Modifier.fillMaxSize(),
     content = { innerPadding ->
       Box(
-        modifier =
-          Modifier
-            .padding(innerPadding)
-            .fillMaxSize(),
+        modifier = Modifier.padding(innerPadding).fillMaxSize(),
       ) {
         Column(
-          modifier =
-            Modifier
-              .align(Alignment.Center)
-              .fillMaxWidth(0.8f)
-              .imePadding(),
+          modifier = Modifier.align(Alignment.Center).fillMaxWidth(0.8f).imePadding(),
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
           Text(
@@ -177,15 +164,28 @@ fun LoginScreen(
 
           OutlinedTextField(
             value = password,
-            visualTransformation = if (!showPassword) PasswordVisualTransformation() else VisualTransformation.None,
+            visualTransformation =
+              if (!showPassword) {
+                PasswordVisualTransformation()
+              } else {
+                VisualTransformation.None
+              },
             onValueChange = { viewModel.setPassword(it) },
             trailingIcon = {
               IconButton(
                 onClick = { showPassword = !showPassword },
               ) {
                 Icon(
-                  imageVector = if (showPassword) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                  contentDescription = stringResource(R.string.login_screen_show_password_hint),
+                  imageVector =
+                    if (showPassword) {
+                      Icons.Filled.VisibilityOff
+                    } else {
+                      Icons.Filled.Visibility
+                    },
+                  contentDescription =
+                    stringResource(
+                      R.string.login_screen_show_password_hint,
+                    ),
                 )
               }
             },
@@ -201,17 +201,11 @@ fun LoginScreen(
           )
 
           Row(
-            modifier =
-              Modifier
-                .fillMaxWidth()
-                .padding(top = 32.dp),
+            modifier = Modifier.fillMaxWidth().padding(top = 32.dp),
           ) {
             Button(
               onClick = { viewModel.login() },
-              modifier =
-                Modifier
-                  .weight(1f)
-                  .testTag("loginButton"),
+              modifier = Modifier.weight(1f).testTag("loginButton"),
               shape =
                 RoundedCornerShape(
                   topStart = 16.dp,
@@ -235,9 +229,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.width(1.dp))
 
             Button(
-              onClick = {
-                navController.showSettings()
-              },
+              onClick = { navController.showSettings() },
               modifier = Modifier.width(56.dp),
               shape =
                 RoundedCornerShape(
@@ -267,14 +259,16 @@ fun LoginScreen(
           TextButton(
             onClick = { viewModel.startOAuth() },
             enabled = isEnabled,
-            colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.onSurface),
-            modifier =
-              Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp),
+            colors =
+              ButtonDefaults.textButtonColors(
+                contentColor = colorScheme.onSurface,
+              ),
+            modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
           ) {
             Text(
-              text = oAuthButtonText ?: stringResource(R.string.login_screen_open_id_button),
+              text =
+                oAuthButtonText
+                  ?: stringResource(R.string.login_screen_open_id_button),
               maxLines = 1,
               overflow = TextOverflow.Ellipsis,
               style =

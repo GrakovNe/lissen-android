@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -51,9 +50,7 @@ fun SettingsScreen(
 
   val materialYouColorsEnabled by viewModel.materialYouEnabled.observeAsState(false)
 
-  LaunchedEffect(Unit) {
-    viewModel.refreshConnectionInfo()
-  }
+  LaunchedEffect(Unit) { viewModel.refreshConnectionInfo() }
 
   Scaffold(
     topBar = {
@@ -76,24 +73,15 @@ fun SettingsScreen(
         },
       )
     },
-    modifier =
-      Modifier
-        .systemBarsPadding()
-        .fillMaxHeight(),
+    modifier = Modifier.fillMaxHeight(),
     content = { innerPadding ->
       Column(
-        modifier =
-          Modifier
-            .fillMaxSize()
-            .padding(innerPadding),
+        modifier = Modifier.fillMaxSize().padding(innerPadding),
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally,
       ) {
         Column(
-          modifier =
-            Modifier
-              .fillMaxWidth()
-              .verticalScroll(rememberScrollState()),
+          modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
           if (host?.url?.isNotEmpty() == true) {
@@ -107,9 +95,7 @@ fun SettingsScreen(
               stringResource(R.string.settings_screen_material_you_title),
               stringResource(R.string.settings_screen_material_you_description),
               materialYouColorsEnabled,
-            ) {
-              viewModel.preferMaterialYouColors(it)
-            }
+            ) { viewModel.preferMaterialYouColors(it) }
           }
 
           LibraryOrderingSettingsComposable(viewModel)
@@ -122,7 +108,10 @@ fun SettingsScreen(
 
           AdvancedSettingsNavigationItemComposable(
             title = stringResource(R.string.settings_screen_advanced_preferences_title),
-            description = stringResource(R.string.settings_screen_advanced_preferences_description),
+            description =
+              stringResource(
+                R.string.settings_screen_advanced_preferences_description,
+              ),
             onclick = { navController.showAdvancedSettings() },
           )
 

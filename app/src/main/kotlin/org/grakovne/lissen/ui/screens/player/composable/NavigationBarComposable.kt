@@ -1,7 +1,6 @@
 package org.grakovne.lissen.ui.screens.player.composable
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
@@ -75,7 +74,7 @@ fun NavigationBarComposable(
 
   Surface(
     shadowElevation = 4.dp,
-    modifier = modifier.height(64.dp),
+    modifier = modifier,
   ) {
     NavigationBar(
       containerColor = Color.Transparent,
@@ -92,9 +91,26 @@ fun NavigationBarComposable(
             Icons.AutoMirrored.Rounded.QueueMusic,
             contentDescription =
               when (libraryType) {
-                LibraryType.LIBRARY -> stringResource(R.string.player_screen_chapter_list_navigation_library)
-                LibraryType.PODCAST -> stringResource(R.string.player_screen_chapter_list_navigation_podcast)
-                LibraryType.UNKNOWN -> stringResource(R.string.player_screen_chapter_list_navigation_items)
+                LibraryType.LIBRARY -> {
+                  stringResource(
+                    R.string
+                      .player_screen_chapter_list_navigation_library,
+                  )
+                }
+
+                LibraryType.PODCAST -> {
+                  stringResource(
+                    R.string
+                      .player_screen_chapter_list_navigation_podcast,
+                  )
+                }
+
+                LibraryType.UNKNOWN -> {
+                  stringResource(
+                    R.string
+                      .player_screen_chapter_list_navigation_items,
+                  )
+                }
               },
             modifier = Modifier.size(iconSize),
           )
@@ -103,9 +119,26 @@ fun NavigationBarComposable(
           Text(
             text =
               when (libraryType) {
-                LibraryType.LIBRARY -> stringResource(R.string.player_screen_chapter_list_navigation_library)
-                LibraryType.PODCAST -> stringResource(R.string.player_screen_chapter_list_navigation_podcast)
-                LibraryType.UNKNOWN -> stringResource(R.string.player_screen_chapter_list_navigation_items)
+                LibraryType.LIBRARY -> {
+                  stringResource(
+                    R.string
+                      .player_screen_chapter_list_navigation_library,
+                  )
+                }
+
+                LibraryType.PODCAST -> {
+                  stringResource(
+                    R.string
+                      .player_screen_chapter_list_navigation_podcast,
+                  )
+                }
+
+                LibraryType.UNKNOWN -> {
+                  stringResource(
+                    R.string
+                      .player_screen_chapter_list_navigation_items,
+                  )
+                }
               },
             style = labelStyle,
             maxLines = 1,
@@ -151,7 +184,8 @@ fun NavigationBarComposable(
         icon = {
           Icon(
             Icons.Outlined.SlowMotionVideo,
-            contentDescription = stringResource(R.string.player_screen_playback_speed_navigation),
+            contentDescription =
+              stringResource(R.string.player_screen_playback_speed_navigation),
             modifier = Modifier.size(iconSize),
           )
         },
@@ -179,7 +213,8 @@ fun NavigationBarComposable(
               null -> Icons.Outlined.Timer
               else -> TimerPlay
             },
-            contentDescription = stringResource(R.string.player_screen_timer_navigation),
+            contentDescription =
+              stringResource(R.string.player_screen_timer_navigation),
             modifier = Modifier.size(iconSize),
           )
         },
@@ -188,10 +223,10 @@ fun NavigationBarComposable(
             is DurationTimerOption, CurrentEpisodeTimerOption -> {
               Text(
                 text =
-                  timerRemaining
-                    ?.toInt()
-                    ?.formatTime(false)
-                    ?: stringResource(R.string.player_screen_timer_navigation),
+                  timerRemaining?.toInt()?.formatTime(false)
+                    ?: stringResource(
+                      R.string.player_screen_timer_navigation,
+                    ),
                 style = labelStyle,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -243,36 +278,27 @@ fun NavigationBarComposable(
           cachingInProgress = cacheProgress.status is CacheStatus.Caching,
           onRequestedDownload = { option ->
             playerViewModel.book.value?.let {
-              contentCachingModelView
-                .cache(
-                  mediaItem = it,
-                  currentPosition = playerViewModel.totalPosition.value ?: 0.0,
-                  option = option,
-                )
+              contentCachingModelView.cache(
+                mediaItem = it,
+                currentPosition = playerViewModel.totalPosition.value ?: 0.0,
+                option = option,
+              )
             }
           },
           onRequestedDrop = {
-            playerViewModel
-              .book
-              .value
-              ?.let {
-                scope.launch {
-                  contentCachingModelView.dropCache(it.id)
+            playerViewModel.book.value?.let {
+              scope.launch {
+                contentCachingModelView.dropCache(it.id)
 
-                  playerViewModel.clearPlayingBook()
-                  navController.showLibrary(true)
-                }
+                playerViewModel.clearPlayingBook()
+                navController.showLibrary(true)
               }
+            }
           },
           onRequestedStop = {
-            playerViewModel
-              .book
-              .value
-              ?.let {
-                scope.launch {
-                  contentCachingModelView.stopCaching(it)
-                }
-              }
+            playerViewModel.book.value?.let {
+              scope.launch { contentCachingModelView.stopCaching(it) }
+            }
           },
           onDismissRequest = { downloadsExpanded = false },
         )
