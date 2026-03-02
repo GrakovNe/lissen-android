@@ -327,7 +327,7 @@ fun PlayingQueueComposable(
         shape = CircleShape,
         onClick = { viewModel.collapsePlayingQueue() },
         containerColor = colorScheme.surfaceContainer,
-        elevation = FloatingActionButtonDefaults.loweredElevation(),
+        elevation = FloatingActionButtonDefaults.loweredElevation(0.dp),
       ) {
         Icon(
           imageVector = Icons.Filled.KeyboardArrowDown,
