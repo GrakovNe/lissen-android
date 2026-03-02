@@ -1,0 +1,323 @@
+commit d1cec349ea7a733796af262d8b5d5e2ba85b3951
+Author: BAGHDAD Mohamed <123114744+MohamedMBG@users.noreply.github.com>
+Date:   Sun Mar 1 16:34:14 2026 +0000
+
+    feat(ui): implement proper edge-to-edge support (Android 15 / targetSdk 35) (#357)
+    
+    * feat(ui): implement proper edge-to-edge support (Android 15 / targetSdk 35)
+    
+    Enable and refine full edge-to-edge rendering across the app in line with
+    Android 15 behavior (targetSdk >= 35). Ensures immersive layouts while
+    preserving correct system bar insets and visual consistency.
+    
+    Changes:
+    - Synchronized light/dark system bar appearance with LissenTheme
+    - Removed hardcoded Modifier.systemBarsPadding() from Scaffolds to allow
+      backgrounds to render edge-to-edge
+    - Applied correct insets handling within LazyColumn content to prevent
+      overlap with status and navigation bars (e.g., LibraryScreen)
+    - Updated custom bottom components (MiniPlayer, NavigationBar) to use
+      proper navigationBarsPadding() instead of fixed height constraints
+    - Adjusted PullRefreshIndicator positioning to avoid overlap with
+      translucent TopAppBars
+    
+    All screens verified for correct inset handling and immersive scroll behavior.
+    
+    Closes #356
+    
+    * chore: fix typo overriding package declaration breaking ktlint format worker
+    
+    ---------
+    
+    Co-authored-by: MohamedMBG <mohamedbaghdad.me@gmail.com>
+
+diff --git a/app/src/main/kotlin/org/grakovne/lissen/ui/screens/library/LibraryScreen.kt b/app/src/main/kotlin/org/grakovne/lissen/ui/screens/library/LibraryScreen.kt
+index 96e916a7..47a4f640 100644
+--- a/app/src/main/kotlin/org/grakovne/lissen/ui/screens/library/LibraryScreen.kt
++++ b/app/src/main/kotlin/org/grakovne/lissen/ui/screens/library/LibraryScreen.kt
+@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
+ import androidx.compose.foundation.layout.height
+ import androidx.compose.foundation.layout.imePadding
+ import androidx.compose.foundation.layout.padding
+-import androidx.compose.foundation.layout.systemBarsPadding
+ import androidx.compose.foundation.lazy.LazyColumn
+ import androidx.compose.foundation.lazy.rememberLazyListState
+ import androidx.compose.material.ExperimentalMaterialApi
+@@ -332,7 +331,6 @@ fun LibraryScreen(
+             }
+           }
+         },
+-        modifier = Modifier.systemBarsPadding(),
+       )
+     },
+     bottomBar = {
+@@ -349,13 +347,11 @@ fun LibraryScreen(
+     },
+     modifier =
+       Modifier
+-        .systemBarsPadding()
+         .fillMaxSize(),
+     content = { innerPadding ->
+       Box(
+         modifier =
+           Modifier
+-            .padding(innerPadding)
+             .pullRefresh(pullRefreshState)
+             .fillMaxSize(),
+       ) {
+@@ -371,7 +367,13 @@ fun LibraryScreen(
+                 totalItems = libraryCount,
+                 ignoreItems = listOf("recent_books", "library_title"),
+               ),
+-          contentPadding = PaddingValues(horizontal = 16.dp),
++          contentPadding =
++            PaddingValues(
++              start = 16.dp,
++              end = 16.dp,
++              top = innerPadding.calculateTopPadding(),
++              bottom = innerPadding.calculateBottomPadding(),
++            ),
+         ) {
+           item(key = "recent_books") {
+             val showRecent = isRecentVisible()
+@@ -487,7 +489,10 @@ fun LibraryScreen(
+             refreshing = pullRefreshing,
+             state = pullRefreshState,
+             contentColor = colorScheme.primary,
+-            modifier = Modifier.align(Alignment.TopCenter),
++            modifier =
++              Modifier
++                .align(Alignment.TopCenter)
++                .padding(top = innerPadding.calculateTopPadding()),
+           )
+         }
+       }
+diff --git a/app/src/main/kotlin/org/grakovne/lissen/ui/screens/library/composables/MiniPlayerComposable.kt b/app/src/main/kotlin/org/grakovne/lissen/ui/screens/library/composables/MiniPlayerComposable.kt
+index 5a9d3512..a3f377b2 100644
+--- a/app/src/main/kotlin/org/grakovne/lissen/ui/screens/library/composables/MiniPlayerComposable.kt
++++ b/app/src/main/kotlin/org/grakovne/lissen/ui/screens/library/composables/MiniPlayerComposable.kt
+@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.aspectRatio
+ import androidx.compose.foundation.layout.fillMaxSize
+ import androidx.compose.foundation.layout.fillMaxWidth
+ import androidx.compose.foundation.layout.height
++import androidx.compose.foundation.layout.navigationBarsPadding
+ import androidx.compose.foundation.layout.padding
+ import androidx.compose.foundation.layout.size
+ import androidx.compose.foundation.layout.width
+@@ -100,6 +101,7 @@ fun MiniPlayerComposable(
+         modifier =
+           Modifier
+             .fillMaxSize()
++            .navigationBarsPadding()
+             .padding(horizontal = 12.dp),
+         horizontalArrangement = Arrangement.SpaceBetween,
+         verticalAlignment = Alignment.CenterVertically,
+@@ -130,6 +132,7 @@ fun MiniPlayerComposable(
+             .fillMaxWidth()
+             .background(colorScheme.background)
+             .clickable { navController.showPlayer(book.id, book.title, book.subtitle) }
++            .navigationBarsPadding()
+             .padding(horizontal = 20.dp, vertical = 8.dp),
+         verticalAlignment = Alignment.CenterVertically,
+       ) {
+diff --git a/app/src/main/kotlin/org/grakovne/lissen/ui/screens/login/LoginScreen.kt b/app/src/main/kotlin/org/grakovne/lissen/ui/screens/login/LoginScreen.kt
+index 5b0f8274..a7eecf28 100644
+--- a/app/src/main/kotlin/org/grakovne/lissen/ui/screens/login/LoginScreen.kt
++++ b/app/src/main/kotlin/org/grakovne/lissen/ui/screens/login/LoginScreen.kt
+@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
+ import androidx.compose.foundation.layout.imePadding
+ import androidx.compose.foundation.layout.padding
+ import androidx.compose.foundation.layout.size
+-import androidx.compose.foundation.layout.systemBarsPadding
+ import androidx.compose.foundation.layout.width
+ import androidx.compose.foundation.shape.RoundedCornerShape
+ import androidx.compose.foundation.text.KeyboardOptions
+@@ -119,7 +118,6 @@ fun LoginScreen(
+   Scaffold(
+     modifier =
+       Modifier
+-        .systemBarsPadding()
+         .fillMaxSize(),
+     content = { innerPadding ->
+       Box(
+diff --git a/app/src/main/kotlin/org/grakovne/lissen/ui/screens/player/PlayerScreen.kt b/app/src/main/kotlin/org/grakovne/lissen/ui/screens/player/PlayerScreen.kt
+index 76292f87..533d33c5 100644
+--- a/app/src/main/kotlin/org/grakovne/lissen/ui/screens/player/PlayerScreen.kt
++++ b/app/src/main/kotlin/org/grakovne/lissen/ui/screens/player/PlayerScreen.kt
+@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
+ import androidx.compose.foundation.layout.height
+ import androidx.compose.foundation.layout.padding
+ import androidx.compose.foundation.layout.size
+-import androidx.compose.foundation.layout.systemBarsPadding
+ import androidx.compose.foundation.layout.width
+ import androidx.compose.material.icons.Icons
+ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+@@ -242,7 +241,6 @@ fun PlayerScreen(
+           }
+       }
+     },
+-    modifier = Modifier.systemBarsPadding(),
+     content = { innerPadding ->
+       Column(
+         modifier =
+diff --git a/app/src/main/kotlin/org/grakovne/lissen/ui/screens/player/composable/NavigationBarComposable.kt b/app/src/main/kotlin/org/grakovne/lissen/ui/screens/player/composable/NavigationBarComposable.kt
+index c5e4d637..2ff0710c 100644
+--- a/app/src/main/kotlin/org/grakovne/lissen/ui/screens/player/composable/NavigationBarComposable.kt
++++ b/app/src/main/kotlin/org/grakovne/lissen/ui/screens/player/composable/NavigationBarComposable.kt
+@@ -75,7 +75,7 @@ fun NavigationBarComposable(
+ 
+   Surface(
+     shadowElevation = 4.dp,
+-    modifier = modifier.height(64.dp),
++    modifier = modifier,
+   ) {
+     NavigationBar(
+       containerColor = Color.Transparent,
+diff --git a/app/src/main/kotlin/org/grakovne/lissen/ui/screens/player/composable/placeholder/NavigationBarPlaceholderComposable.kt b/app/src/main/kotlin/org/grakovne/lissen/ui/screens/player/composable/placeholder/NavigationBarPlaceholderComposable.kt
+index f03e9484..93f75645 100644
+--- a/app/src/main/kotlin/org/grakovne/lissen/ui/screens/player/composable/placeholder/NavigationBarPlaceholderComposable.kt
++++ b/app/src/main/kotlin/org/grakovne/lissen/ui/screens/player/composable/placeholder/NavigationBarPlaceholderComposable.kt
+@@ -33,7 +33,7 @@ fun NavigationBarPlaceholderComposable(
+ ) {
+   Surface(
+     shadowElevation = 4.dp,
+-    modifier = modifier.height(64.dp),
++    modifier = modifier,
+   ) {
+     NavigationBar(
+       containerColor = Color.Transparent,
+diff --git a/app/src/main/kotlin/org/grakovne/lissen/ui/screens/settings/SettingsScreen.kt b/app/src/main/kotlin/org/grakovne/lissen/ui/screens/settings/SettingsScreen.kt
+index 3bc9e670..7a295d29 100644
+--- a/app/src/main/kotlin/org/grakovne/lissen/ui/screens/settings/SettingsScreen.kt
++++ b/app/src/main/kotlin/org/grakovne/lissen/ui/screens/settings/SettingsScreen.kt
+@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
+ import androidx.compose.foundation.layout.fillMaxSize
+ import androidx.compose.foundation.layout.fillMaxWidth
+ import androidx.compose.foundation.layout.padding
+-import androidx.compose.foundation.layout.systemBarsPadding
+ import androidx.compose.foundation.rememberScrollState
+ import androidx.compose.foundation.verticalScroll
+ import androidx.compose.material.icons.Icons
+@@ -78,7 +77,6 @@ fun SettingsScreen(
+     },
+     modifier =
+       Modifier
+-        .systemBarsPadding()
+         .fillMaxHeight(),
+     content = { innerPadding ->
+       Column(
+diff --git a/app/src/main/kotlin/org/grakovne/lissen/ui/screens/settings/advanced/AdvancedSettingsComposable.kt b/app/src/main/kotlin/org/grakovne/lissen/ui/screens/settings/advanced/AdvancedSettingsComposable.kt
+index c39da5bf..b6621380 100644
+--- a/app/src/main/kotlin/org/grakovne/lissen/ui/screens/settings/advanced/AdvancedSettingsComposable.kt
++++ b/app/src/main/kotlin/org/grakovne/lissen/ui/screens/settings/advanced/AdvancedSettingsComposable.kt
+@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
+ import androidx.compose.foundation.layout.fillMaxSize
+ import androidx.compose.foundation.layout.fillMaxWidth
+ import androidx.compose.foundation.layout.padding
+-import androidx.compose.foundation.layout.systemBarsPadding
+ import androidx.compose.foundation.rememberScrollState
+ import androidx.compose.foundation.verticalScroll
+ import androidx.compose.material.icons.Icons
+@@ -85,7 +84,6 @@ fun AdvancedSettingsComposable(
+     },
+     modifier =
+       Modifier
+-        .systemBarsPadding()
+         .fillMaxHeight(),
+     content = { innerPadding ->
+       Column(
+diff --git a/app/src/main/kotlin/org/grakovne/lissen/ui/screens/settings/advanced/CustomHeadersSettingsScreen.kt b/app/src/main/kotlin/org/grakovne/lissen/ui/screens/settings/advanced/CustomHeadersSettingsScreen.kt
+index bf976fce..b203bfa4 100644
+--- a/app/src/main/kotlin/org/grakovne/lissen/ui/screens/settings/advanced/CustomHeadersSettingsScreen.kt
++++ b/app/src/main/kotlin/org/grakovne/lissen/ui/screens/settings/advanced/CustomHeadersSettingsScreen.kt
+@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
+ import androidx.compose.foundation.layout.fillMaxSize
+ import androidx.compose.foundation.layout.height
+ import androidx.compose.foundation.layout.padding
+-import androidx.compose.foundation.layout.systemBarsPadding
+ import androidx.compose.foundation.lazy.LazyColumn
+ import androidx.compose.foundation.lazy.itemsIndexed
+ import androidx.compose.foundation.lazy.rememberLazyListState
+@@ -76,7 +75,6 @@ fun CustomHeadersSettingsScreen(onBack: () -> Unit) {
+     },
+     modifier =
+       Modifier
+-        .systemBarsPadding()
+         .fillMaxHeight(),
+     content = { innerPadding ->
+       LazyColumn(
+diff --git a/app/src/main/kotlin/org/grakovne/lissen/ui/screens/settings/advanced/LocalUrlSettingsScreen.kt b/app/src/main/kotlin/org/grakovne/lissen/ui/screens/settings/advanced/LocalUrlSettingsScreen.kt
+index 5589793b..a8336b28 100644
+--- a/app/src/main/kotlin/org/grakovne/lissen/ui/screens/settings/advanced/LocalUrlSettingsScreen.kt
++++ b/app/src/main/kotlin/org/grakovne/lissen/ui/screens/settings/advanced/LocalUrlSettingsScreen.kt
+@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
+ import androidx.compose.foundation.layout.fillMaxWidth
+ import androidx.compose.foundation.layout.height
+ import androidx.compose.foundation.layout.padding
+-import androidx.compose.foundation.layout.systemBarsPadding
+ import androidx.compose.foundation.lazy.LazyColumn
+ import androidx.compose.foundation.lazy.itemsIndexed
+ import androidx.compose.foundation.lazy.rememberLazyListState
+@@ -93,7 +92,6 @@ fun LocalUrlSettingsScreen(onBack: () -> Unit) {
+     },
+     modifier =
+       Modifier
+-        .systemBarsPadding()
+         .fillMaxHeight(),
+     content = { innerPadding ->
+       LazyColumn(
+diff --git a/app/src/main/kotlin/org/grakovne/lissen/ui/screens/settings/advanced/SeekSettingsScreen.kt b/app/src/main/kotlin/org/grakovne/lissen/ui/screens/settings/advanced/SeekSettingsScreen.kt
+index b208529d..505aa5de 100644
+--- a/app/src/main/kotlin/org/grakovne/lissen/ui/screens/settings/advanced/SeekSettingsScreen.kt
++++ b/app/src/main/kotlin/org/grakovne/lissen/ui/screens/settings/advanced/SeekSettingsScreen.kt
+@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
+ import androidx.compose.foundation.layout.fillMaxSize
+ import androidx.compose.foundation.layout.fillMaxWidth
+ import androidx.compose.foundation.layout.padding
+-import androidx.compose.foundation.layout.systemBarsPadding
+ import androidx.compose.foundation.rememberScrollState
+ import androidx.compose.foundation.verticalScroll
+ import androidx.compose.material.icons.Icons
+@@ -73,7 +72,6 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
+     },
+     modifier =
+       Modifier
+-        .systemBarsPadding()
+         .fillMaxHeight(),
+     content = { innerPadding ->
+       Column(
+diff --git a/app/src/main/kotlin/org/grakovne/lissen/ui/screens/settings/advanced/cache/CacheSettingsScreen.kt b/app/src/main/kotlin/org/grakovne/lissen/ui/screens/settings/advanced/cache/CacheSettingsScreen.kt
+index cc24a0f4..0ade7434 100644
+--- a/app/src/main/kotlin/org/grakovne/lissen/ui/screens/settings/advanced/cache/CacheSettingsScreen.kt
++++ b/app/src/main/kotlin/org/grakovne/lissen/ui/screens/settings/advanced/cache/CacheSettingsScreen.kt
+@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
+ import androidx.compose.foundation.layout.fillMaxSize
+ import androidx.compose.foundation.layout.fillMaxWidth
+ import androidx.compose.foundation.layout.padding
+-import androidx.compose.foundation.layout.systemBarsPadding
+ import androidx.compose.foundation.rememberScrollState
+ import androidx.compose.foundation.verticalScroll
+ import androidx.compose.material.icons.Icons
+@@ -66,7 +65,6 @@ fun CacheSettingsScreen(
+     },
+     modifier =
+       Modifier
+-        .systemBarsPadding()
+         .fillMaxHeight(),
+     content = { innerPadding ->
+       Column(
+diff --git a/app/src/main/kotlin/org/grakovne/lissen/ui/theme/Theme.kt b/app/src/main/kotlin/org/grakovne/lissen/ui/theme/Theme.kt
+index 3779b9ea..fe13277a 100644
+--- a/app/src/main/kotlin/org/grakovne/lissen/ui/theme/Theme.kt
++++ b/app/src/main/kotlin/org/grakovne/lissen/ui/theme/Theme.kt
+@@ -60,7 +60,9 @@ fun LissenTheme(
+ 
+   SideEffect {
+     window?.let {
+-      WindowCompat.getInsetsController(it, view).isAppearanceLightStatusBars = !isDarkTheme
++      val insetsController = WindowCompat.getInsetsController(it, view)
++      insetsController.isAppearanceLightStatusBars = !isDarkTheme
++      insetsController.isAppearanceLightNavigationBars = !isDarkTheme
+     }
+   }
+ 
