@@ -166,6 +166,12 @@ class PlaybackService : MediaLibraryService() {
       val prepareQueue =
         async {
           val itemsWithPosition = bookToChapterMediaItems(book)
+
+          if (itemsWithPosition.mediaItems.isEmpty()) {
+            Timber.w("Can't build playing queue from empty list")
+            return@async
+          }
+
           withContext(Dispatchers.Main) {
             exoPlayer.setMediaItems(itemsWithPosition.mediaItems)
             exoPlayer.prepare()
@@ -300,14 +306,13 @@ class PlaybackService : MediaLibraryService() {
       val epsilon = 0.01
 
       chapters.forEachIndexed { index, chapter ->
-        val chapterClips = ArrayList<FileClip>(1) // We usually don't expect more than one clip.
+        val chapterClips = ArrayList<FileClip>(1)
         var outstandingPartStart = chapter.start
 
         while (outstandingPartStart < chapter.end - epsilon) {
           val currentFileEnd = allocatedFilesEnd + currentFile.duration
           val overlapEnd = minOf(chapter.end, currentFileEnd)
 
-          // Add to the clips only if long enough
           if (epsilon < overlapEnd - outstandingPartStart) {
             chapterClips.add(
               FileClip(
@@ -336,10 +341,16 @@ class PlaybackService : MediaLibraryService() {
     @UnstableApi
     fun bookToChapterMediaItems(book: DetailedItem): MediaItemsWithStartPosition {
       var (chapterIndex, chapterOffset) =
-        book.progress?.currentTime?.let {
-          calculateChapterIndexAndPosition(book, it)
-        } ?: ChapterPosition(0, 0.0)
-      if (chapterIndex < 0 || (chapterIndex == book.chapters.lastIndex && (book.chapters.last().end - 5) < chapterOffset)) {
+        book
+          .progress
+          ?.currentTime
+          ?.let { calculateChapterIndexAndPosition(book, it) }
+          ?: ChapterPosition(0, 0.0)
+
+      val negativeChapter = chapterIndex < 0
+      val lastMoments = chapterIndex == book.chapters.lastIndex && (book.chapters.last().end - 5) < chapterOffset
+
+      if (negativeChapter || lastMoments) {
         chapterIndex = 0
         chapterOffset = 0.0
       }
@@ -359,16 +370,13 @@ class PlaybackService : MediaLibraryService() {
                 .Builder()
                 .setAlbumTitle(book.title)
                 .setTitle(chapter.title)
-                .setArtist(book.title) // looks nicer this way
+                .setArtist(book.title)
                 .setIsBrowsable(false)
                 .setIsPlayable(true)
                 .setArtworkUri(ExternalCoverProvider.coverUri(book.id))
                 .setMediaType(MediaMetadata.MEDIA_TYPE_AUDIO_BOOK_CHAPTER)
-                .setExtras(
-                  bundleOf(
-                    CHAPTER_START_MS to (chapter.start * 1000).toLong(),
-                  ),
-                ).build(),
+                .setExtras(bundleOf(CHAPTER_START_MS to (chapter.start * 1000).toLong()))
+                .build(),
             ).setTag(book)
             .build()
         }
