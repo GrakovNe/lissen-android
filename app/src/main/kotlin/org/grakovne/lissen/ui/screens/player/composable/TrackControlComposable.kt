@@ -10,9 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.Slider
-//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.SliderDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.PauseCircleFilled
