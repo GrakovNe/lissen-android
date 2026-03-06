@@ -4,12 +4,12 @@ import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
 
 class SearchRequestBuilder {
-  private var libraryId: String? = null
+  private var libraryId: String = ""
   private var searchQuery: String = ""
   private var orderField: String = "title"
   private var orderDirection: String = "ASC"
 
-  fun libraryId(id: String?) = apply { this.libraryId = id }
+  fun libraryId(id: String) = apply { this.libraryId = id }
 
   fun searchQuery(query: String) = apply { this.searchQuery = query }
 
@@ -22,16 +22,9 @@ class SearchRequestBuilder {
 
     val whereClause =
       buildString {
-        when (val libraryId = libraryId) {
-          null -> {
-            append("(libraryId IS NULL)")
-          }
+        append("(libraryId = ?)")
+        args.add(libraryId)
 
-          else -> {
-            append("(libraryId = ? OR libraryId IS NULL)")
-            args.add(libraryId)
-          }
-        }
         append(" AND (title LIKE ? OR author LIKE ? OR seriesNames LIKE ?)")
         val pattern = "%$searchQuery%"
         args.add(pattern)

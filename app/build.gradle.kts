@@ -182,7 +182,6 @@ dependencies {
   
   implementation(libs.converter.moshi)
   implementation(libs.moshi)
-  implementation(libs.moshi.kotlin)
   
   debugImplementation(libs.androidx.ui.tooling)
   debugImplementation(libs.androidx.ui.test.manifest)
