@@ -22,7 +22,10 @@ class LissenApplication : Application() {
 
   override fun attachBaseContext(base: Context) {
     super.attachBaseContext(base)
-    initCrashReporting()
+    
+    if (BuildConfig.DEBUG.not()) {
+      initCrashReporting()
+    }
   }
 
   override fun onCreate() {
@@ -69,8 +72,7 @@ class LissenApplication : Application() {
           ReportField.APP_VERSION_CODE,
           ReportField.ANDROID_VERSION,
           ReportField.PHONE_MODEL,
-          ReportField.STACK_TRACE,
-          ReportField.ENVIRONMENT,
+          ReportField.STACK_TRACE
         )
     }
   }
