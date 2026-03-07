@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -111,14 +110,14 @@ fun PlayerScreen(
     }
   }
 
-  BackHandler(enabled = searchRequested || playingQueueExpanded || playInstantly) {
-    stepBack()
-  }
+  BackHandler(enabled = searchRequested || playingQueueExpanded || playInstantly) { stepBack() }
 
   LaunchedEffect(Unit) {
     bookId
-      .takeIf { playingItemChanged(it, playingBook) || cachePolicyChanged(cachingModelView, playingBook) }
-      ?.let {
+      .takeIf {
+        playingItemChanged(it, playingBook) ||
+          cachePolicyChanged(cachingModelView, playingBook)
+      }?.let {
         if (settingsViewModel.hasCredentials().not()) {
           navController.showLogin()
           return@LaunchedEffect
@@ -138,9 +137,7 @@ fun PlayerScreen(
     }
   }
 
-  LaunchedEffect(playingBook) {
-    playerViewModel.updateBookmarks()
-  }
+  LaunchedEffect(playingBook) { playerViewModel.updateBookmarks() }
 
   Scaffold(
     topBar = {
@@ -151,8 +148,12 @@ fun PlayerScreen(
               targetState = searchRequested,
               label = "library_action_animation",
               transitionSpec = {
-                fadeIn(animationSpec = keyframes { durationMillis = 150 }) togetherWith
-                  fadeOut(animationSpec = keyframes { durationMillis = 150 })
+                fadeIn(
+                  animationSpec = keyframes { durationMillis = 150 },
+                ) togetherWith
+                  fadeOut(
+                    animationSpec = keyframes { durationMillis = 150 },
+                  )
               },
             ) { isSearchRequested ->
               when (isSearchRequested) {
@@ -228,27 +229,25 @@ fun PlayerScreen(
     },
     bottomBar = {
       if (playingBook == null || isPlaybackReady.not()) {
-        NavigationBarPlaceholderComposable(libraryType = libraryViewModel.fetchPreferredLibraryType())
+        NavigationBarPlaceholderComposable(
+          libraryType = libraryViewModel.fetchPreferredLibraryType(),
+        )
       } else {
-        playingBook
-          ?.let {
-            NavigationBarComposable(
-              book = it,
-              playerViewModel = playerViewModel,
-              contentCachingModelView = cachingModelView,
-              navController = navController,
-              libraryType = libraryViewModel.fetchPreferredLibraryType(),
-            )
-          }
+        playingBook?.let {
+          NavigationBarComposable(
+            book = it,
+            playerViewModel = playerViewModel,
+            contentCachingModelView = cachingModelView,
+            navController = navController,
+            libraryType = libraryViewModel.fetchPreferredLibraryType(),
+          )
+        }
       }
     },
-    modifier = Modifier.systemBarsPadding(),
+    modifier = Modifier,
     content = { innerPadding ->
       Column(
-        modifier =
-          Modifier
-            .testTag("playerScreen")
-            .padding(innerPadding),
+        modifier = Modifier.testTag("playerScreen").padding(innerPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
       ) {
         AnimatedVisibility(

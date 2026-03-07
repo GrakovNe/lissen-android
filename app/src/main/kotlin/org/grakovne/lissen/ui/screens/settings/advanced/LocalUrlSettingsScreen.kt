@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -73,15 +72,16 @@ fun LocalUrlSettingsScreen(onBack: () -> Unit) {
       TopAppBar(
         title = {
           Text(
-            text = stringResource(R.string.settings_screen_internal_connection_url_title),
+            text =
+              stringResource(
+                R.string.settings_screen_internal_connection_url_title,
+              ),
             style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
             color = colorScheme.onSurface,
           )
         },
         navigationIcon = {
-          IconButton(onClick = {
-            onBack()
-          }) {
+          IconButton(onClick = { onBack() }) {
             Icon(
               imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
               contentDescription = "Back",
@@ -91,17 +91,17 @@ fun LocalUrlSettingsScreen(onBack: () -> Unit) {
         },
       )
     },
-    modifier =
-      Modifier
-        .systemBarsPadding()
-        .fillMaxHeight(),
+    modifier = Modifier.fillMaxHeight(),
     content = { innerPadding ->
       LazyColumn(
         state = state,
         contentPadding =
           PaddingValues(
             top = innerPadding.calculateTopPadding(),
-            bottom = innerPadding.calculateBottomPadding() + fabHeight + additionalPadding,
+            bottom =
+              innerPadding.calculateBottomPadding() +
+                fabHeight +
+                additionalPadding,
           ),
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -136,10 +136,7 @@ fun LocalUrlSettingsScreen(onBack: () -> Unit) {
 
           if (index < customHeaders.size - 1) {
             HorizontalDivider(
-              modifier =
-                Modifier
-                  .height(1.dp)
-                  .padding(horizontal = 24.dp),
+              modifier = Modifier.height(1.dp).padding(horizontal = 24.dp),
             )
           }
         }
@@ -157,9 +154,7 @@ fun LocalUrlSettingsScreen(onBack: () -> Unit) {
               updatedList.add(LocalUrl.empty())
               settingsViewModel.updateLocalUrls(updatedList)
 
-              coroutineScope.launch {
-                state.scrollToItem(max(0, updatedList.size - 1))
-              }
+              coroutineScope.launch { state.scrollToItem(max(0, updatedList.size - 1)) }
             },
           ) {
             Icon(
@@ -183,10 +178,7 @@ fun LocationPermissionBanner(
   onResult: (Boolean) -> Unit,
 ) {
   Row(
-    modifier =
-      modifier
-        .fillMaxWidth()
-        .padding(horizontal = 20.dp, vertical = 14.dp),
+    modifier = modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 14.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {
     Icon(
@@ -212,7 +204,9 @@ fun LocationPermissionBanner(
     )
 
     TextButton(
-      onClick = { permissionRequestLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
+      onClick = {
+        permissionRequestLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+      },
     ) {
       Text(
         text = stringResource(R.string.permission_request_grant_button),

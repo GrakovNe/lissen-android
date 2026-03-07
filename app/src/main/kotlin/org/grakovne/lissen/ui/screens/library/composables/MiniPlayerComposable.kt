@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -100,6 +101,7 @@ fun MiniPlayerComposable(
         modifier =
           Modifier
             .fillMaxSize()
+            .navigationBarsPadding()
             .padding(horizontal = 12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
@@ -107,16 +109,12 @@ fun MiniPlayerComposable(
         AnimatedVisibility(
           visible = backgroundVisible,
           exit = fadeOut(animationSpec = tween(300)),
-        ) {
-          CloseActionBackground()
-        }
+        ) { CloseActionBackground() }
 
         AnimatedVisibility(
           visible = backgroundVisible,
           exit = fadeOut(animationSpec = tween(300)),
-        ) {
-          CloseActionBackground()
-        }
+        ) { CloseActionBackground() }
       }
     },
   ) {
@@ -129,29 +127,21 @@ fun MiniPlayerComposable(
           Modifier
             .fillMaxWidth()
             .background(colorScheme.background)
-            .clickable { navController.showPlayer(book.id, book.title, book.subtitle) }
+            .clickable {
+              navController.showPlayer(book.id, book.title, book.subtitle)
+            }.navigationBarsPadding()
             .padding(horizontal = 20.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
       ) {
         val context = LocalContext.current
-        val imageRequest =
-          remember(book.id) {
-            ImageRequest
-              .Builder(context)
-              .data(book.id)
-              .build()
-          }
+        val imageRequest = remember(book.id) { ImageRequest.Builder(context).data(book.id).build() }
 
         AsyncShimmeringImage(
           imageRequest = imageRequest,
           imageLoader = imageLoader,
           contentDescription = "${book.title} cover",
           contentScale = ContentScale.FillBounds,
-          modifier =
-            Modifier
-              .size(48.dp)
-              .aspectRatio(1f)
-              .clip(RoundedCornerShape(4.dp)),
+          modifier = Modifier.size(48.dp).aspectRatio(1f).clip(RoundedCornerShape(4.dp)),
           error = painterResource(R.drawable.cover_fallback),
         )
 
@@ -193,7 +183,12 @@ fun MiniPlayerComposable(
               onClick = { withHaptic(view) { playerViewModel.togglePlayPause() } },
             ) {
               Icon(
-                imageVector = if (isPlaying) Icons.Outlined.PauseCircleOutline else Icons.Outlined.PlayCircle,
+                imageVector =
+                  if (isPlaying) {
+                    Icons.Outlined.PauseCircleOutline
+                  } else {
+                    Icons.Outlined.PlayCircle
+                  },
                 contentDescription = if (isPlaying) "Pause" else "Play",
                 modifier = Modifier.size(34.dp),
               )
@@ -209,10 +204,7 @@ fun MiniPlayerComposable(
 fun CloseActionBackground() {
   Column(
     horizontalAlignment = Alignment.CenterHorizontally,
-    modifier =
-      Modifier
-        .width(80.dp)
-        .padding(vertical = 8.dp),
+    modifier = Modifier.width(80.dp).padding(vertical = 8.dp),
   ) {
     Icon(
       imageVector = Icons.Outlined.Close,

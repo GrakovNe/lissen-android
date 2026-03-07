@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -64,24 +63,15 @@ fun CacheSettingsScreen(
         },
       )
     },
-    modifier =
-      Modifier
-        .systemBarsPadding()
-        .fillMaxHeight(),
+    modifier = Modifier.fillMaxHeight(),
     content = { innerPadding ->
       Column(
-        modifier =
-          Modifier
-            .fillMaxSize()
-            .padding(innerPadding),
+        modifier = Modifier.fillMaxSize().padding(innerPadding),
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally,
       ) {
         Column(
-          modifier =
-            Modifier
-              .fillMaxWidth()
-              .verticalScroll(rememberScrollState()),
+          modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
           AutoCacheSettingsComposable(viewModel)
@@ -93,7 +83,10 @@ fun CacheSettingsScreen(
           SettingsToggleItem(
             enabled = preferredDownloadOption != null,
             title = stringResource(R.string.settings_screen_delay_autodownload_title),
-            description = stringResource(R.string.settings_screen_delay_autodownload_description),
+            description =
+              stringResource(
+                R.string.settings_screen_delay_autodownload_description,
+              ),
             initialState = autoDownloadDelayed,
           ) { viewModel.preferAutoDownloadDelayed(it) }
 

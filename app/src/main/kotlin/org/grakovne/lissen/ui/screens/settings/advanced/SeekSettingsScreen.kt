@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -71,24 +70,15 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
         },
       )
     },
-    modifier =
-      Modifier
-        .systemBarsPadding()
-        .fillMaxHeight(),
+    modifier = Modifier.fillMaxHeight(),
     content = { innerPadding ->
       Column(
-        modifier =
-          Modifier
-            .fillMaxSize()
-            .padding(innerPadding),
+        modifier = Modifier.fillMaxSize().padding(innerPadding),
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally,
       ) {
         Column(
-          modifier =
-            Modifier
-              .fillMaxWidth()
-              .verticalScroll(rememberScrollState()),
+          modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
           SeekTimeOptionComposable(
@@ -111,10 +101,9 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
       selectedItem = preferredSeekTime?.rewind?.toSettingsItem(context),
       onDismissRequest = { rewindTimeExpanded = false },
       onItemSelected = { item ->
-        SeekTimeOption
-          .entries
-          .find { it.name == item.id }
-          ?.let { viewModel.preferRewindRewind(it) }
+        SeekTimeOption.entries.find { it.name == item.id }?.let {
+          viewModel.preferRewindRewind(it)
+        }
       },
     )
   }
@@ -125,10 +114,9 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
       selectedItem = preferredSeekTime?.forward?.toSettingsItem(context),
       onDismissRequest = { forwardTimeExpanded = false },
       onItemSelected = { item ->
-        SeekTimeOption
-          .entries
-          .find { it.name == item.id }
-          ?.let { viewModel.preferForwardRewind(it) }
+        SeekTimeOption.entries.find { it.name == item.id }?.let {
+          viewModel.preferForwardRewind(it)
+        }
       },
     )
   }
