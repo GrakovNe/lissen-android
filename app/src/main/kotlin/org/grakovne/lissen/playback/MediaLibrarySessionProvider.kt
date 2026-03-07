@@ -24,6 +24,7 @@ import androidx.media3.session.SessionResult
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.SettableFuture
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -115,6 +116,24 @@ class MediaLibrarySessionProvider
                   return super.onMediaButtonEvent(session, controllerInfo, intent)
                 }
               }
+            }
+
+            @OptIn(UnstableApi::class)
+            override fun onPlaybackResumption(
+              mediaSession: MediaSession,
+              controller: MediaSession.ControllerInfo,
+              isForPlayback: Boolean,
+            ): ListenableFuture<MediaItemsWithStartPosition> {
+              val settable = SettableFuture.create<MediaItemsWithStartPosition>()
+              val book = preferences.getPlayingBook()
+
+              if (book != null) {
+                settable.set(PlaybackService.bookToChapterMediaItems(book))
+              } else {
+                settable.set(MediaItemsWithStartPosition(emptyList(), 0, 0))
+              }
+
+              return settable
             }
 
             @OptIn(UnstableApi::class)
