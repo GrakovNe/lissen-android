@@ -118,6 +118,35 @@ class MediaLibrarySessionProvider
             }
 
             @OptIn(UnstableApi::class)
+            override fun onPlaybackResumption(
+              mediaSession: MediaSession,
+              controller: MediaSession.ControllerInfo,
+              isForPlayback: Boolean,
+            ): ListenableFuture<MediaItemsWithStartPosition> {
+              val bookId = preferences.getPlayingBook()?.id
+                ?: return Futures.immediateFuture(
+                  MediaItemsWithStartPosition(emptyList(), 0, 0),
+                )
+
+              return futureScope
+                .future {
+                  lissenMediaProvider
+                    .fetchBook(bookId)
+                    .foldAsync(
+                      onSuccess = {
+                        if (isForPlayback) {
+                          async {
+                            playbackSynchronizationService.startPlaybackSynchronization(it)
+                          }
+                        }
+                        PlaybackService.bookToChapterMediaItems(it)
+                      },
+                      onFailure = { MediaItemsWithStartPosition(emptyList(), 0, 0) },
+                    )
+                }.asListenableFuture()
+            }
+
+            @OptIn(UnstableApi::class)
             override fun onConnect(
               session: MediaSession,
               controller: MediaSession.ControllerInfo,
