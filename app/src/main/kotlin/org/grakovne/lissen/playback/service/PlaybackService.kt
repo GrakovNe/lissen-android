@@ -221,9 +221,15 @@ class PlaybackService : MediaLibraryService() {
     playerServiceScope
       .launch {
         exoPlayer.playWhenReady = false
-        stopForeground(STOP_FOREGROUND_REMOVE)
-        stopSelf()
+        stopForeground(STOP_FOREGROUND_DETACH)
       }
+  }
+
+  override fun onTaskRemoved(rootIntent: Intent?) {
+    if (!exoPlayer.playWhenReady) {
+      stopSelf()
+    }
+    super.onTaskRemoved(rootIntent)
   }
 
   private fun seek(
