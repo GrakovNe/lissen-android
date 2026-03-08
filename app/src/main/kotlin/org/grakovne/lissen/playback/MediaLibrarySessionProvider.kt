@@ -29,15 +29,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.future.future
 import org.grakovne.lissen.BuildConfig
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.lib.domain.SeekTimeOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.playback.service.PlaybackSynchronizationService
 import org.grakovne.lissen.ui.activity.AppActivity
-import org.grakovne.lissen.util.asListenableFuture
+import org.grakovne.lissen.util.listenableFuture
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -210,10 +208,10 @@ class MediaLibrarySessionProvider
               startPositionMs: Long,
             ): ListenableFuture<MediaItemsWithStartPosition> =
               mediaItems.singleOrNull()?.let { mediaItem ->
-                if (mediaItem.mediaId.startsWith("[bookID]") && startIndex == C.INDEX_UNSET && startPositionMs == C.TIME_UNSET) {
+                if (MediaLibraryTree.isBookPath(mediaItem.mediaId) && startIndex == C.INDEX_UNSET && startPositionMs == C.TIME_UNSET) {
                   futureScope
-                    .future {
-                      val bookId = mediaItem.mediaId.removePrefix("[bookID]")
+                    .listenableFuture {
+                      val bookId = MediaLibraryTree.parseBookId(mediaItem.mediaId)
                       lissenMediaProvider
                         .fetchBook(bookId)
                         .foldAsync(
@@ -225,7 +223,7 @@ class MediaLibrarySessionProvider
                           },
                           onFailure = { MediaItemsWithStartPosition(emptyList(), 0, 0) },
                         )
-                    }.asListenableFuture()
+                    }
                 } else {
                   null
                 }
