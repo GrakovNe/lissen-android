@@ -109,7 +109,7 @@ class MediaLibraryTree
 
     private val scope = CoroutineScope(Dispatchers.Default)
 
-    private val root: MediaTreeNode = buildTree()
+    private val root: MediaTreeNode by lazy { buildTree() }
 
     @OptIn(UnstableApi::class)
     private fun buildTree(): MediaTreeNode =
