@@ -63,11 +63,11 @@ class MediaTreeBuilder {
     children += this
   }
 
-  fun dynamic(resolver: suspend (String) -> MediaTreeNode?) {
+  fun resolveChild(resolver: suspend (String) -> MediaTreeNode?) {
     dynamicResolver = resolver
   }
 
-  fun children(provider: suspend (Int, Int) -> List<MediaItem>) {
+  fun pagedChildren(provider: suspend (Int, Int) -> List<MediaItem>) {
     childrenProvider = provider
   }
 
@@ -115,26 +115,26 @@ class MediaLibraryTree
     private fun buildTree(): MediaTreeNode =
       mediaTreeNode(folderItem(ROOT, context.getString(R.string.tree_node_root))) {
         +mediaTreeNode(folderItem("$ROOT/$CONTINUE", context.getString(R.string.tree_node_continue))) {
-          children { _, _ -> continueListeningItems() }
+          pagedChildren { _, _ -> continueListeningItems() }
         }
 
         +mediaTreeNode(folderItem("$ROOT/$RECENT", context.getString(R.string.tree_node_recent))) {
-          children { _, _ -> recentBooksItems() }
+          pagedChildren { _, _ -> recentBooksItems() }
         }
 
         +mediaTreeNode(folderItem("$ROOT/$LIBRARY", context.getString(R.string.tree_node_library))) {
-          children { _, _ -> libraryItems() }
-          dynamic { libId ->
+          pagedChildren { _, _ -> libraryItems() }
+          resolveChild { libId ->
             resolveLibrary(libId)?.let { lib ->
               mediaTreeNode(libraryFolderItem("$ROOT/$LIBRARY/$libId", lib)) {
-                children { page, pageSize -> booksFromLibraryItems(libId, page, pageSize) }
+                pagedChildren { page, pageSize -> booksFromLibraryItems(libId, page, pageSize) }
               }
             }
           }
         }
 
         +mediaTreeNode(folderItem("$ROOT/$DOWNLOADS", context.getString(R.string.tree_node_downloads))) {
-          children { _, _ -> downloadedBooksItems() }
+          pagedChildren { _, _ -> downloadedBooksItems() }
         }
       }
 
