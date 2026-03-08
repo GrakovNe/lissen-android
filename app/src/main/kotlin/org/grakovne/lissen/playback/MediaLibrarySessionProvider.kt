@@ -141,7 +141,7 @@ class MediaLibrarySessionProvider
                         }
                         PlaybackService.bookToChapterMediaItems(it)
                       },
-                      onFailure = { MediaItemsWithStartPosition(emptyList(), 0, 0) },
+                      onFailure = { error("Unable to fetch book: ${it.code}") },
                     )
                 }.asListenableFuture()
             }
