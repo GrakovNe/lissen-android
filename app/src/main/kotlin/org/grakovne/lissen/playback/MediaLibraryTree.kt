@@ -37,28 +37,30 @@ annotation class MediaTreeDsl
 
 class MediaTreeNode(
   val item: MediaItem,
-  private val staticChildren: Map<String, MediaTreeNode>,
+  private val staticChildren: List<MediaTreeNode>,
   private val dynamicResolver: (suspend (String) -> MediaTreeNode?)?,
   private val childrenProvider: (suspend (Int, Int) -> List<MediaItem>)?,
 ) {
-  suspend fun child(segment: String): MediaTreeNode? = staticChildren[segment] ?: dynamicResolver?.invoke(segment)
+  suspend fun child(segment: String): MediaTreeNode? =
+    staticChildren.find { it.item.mediaId.substringAfterLast('/') == segment }
+      ?: dynamicResolver?.invoke(segment)
 
   suspend fun listChildren(
     page: Int,
     pageSize: Int,
   ): List<MediaItem> =
     childrenProvider?.invoke(page, pageSize)
-      ?: staticChildren.values.map { it.item }
+      ?: staticChildren.map { it.item }
 }
 
 @MediaTreeDsl
 class MediaTreeBuilder {
-  private val children = linkedMapOf<String, MediaTreeNode>()
+  private val children = mutableListOf<MediaTreeNode>()
   private var dynamicResolver: (suspend (String) -> MediaTreeNode?)? = null
   private var childrenProvider: (suspend (Int, Int) -> List<MediaItem>)? = null
 
   operator fun MediaTreeNode.unaryPlus() {
-    children[item.mediaId.substringAfterLast('/')] = this
+    children += this
   }
 
   fun dynamic(resolver: suspend (String) -> MediaTreeNode?) {
@@ -69,7 +71,7 @@ class MediaTreeBuilder {
     childrenProvider = provider
   }
 
-  fun build(item: MediaItem): MediaTreeNode = MediaTreeNode(item, children.toMap(), dynamicResolver, childrenProvider)
+  fun build(item: MediaItem): MediaTreeNode = MediaTreeNode(item, children.toList(), dynamicResolver, childrenProvider)
 }
 
 fun mediaTreeNode(
