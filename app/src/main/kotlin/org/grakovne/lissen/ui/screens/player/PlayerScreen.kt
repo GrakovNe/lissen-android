@@ -219,7 +219,7 @@ fun PlayerScreen(
           IconButton(onClick = { stepBack() }) {
             Icon(
               imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-              contentDescription = "Back",
+              contentDescription = null,
               tint = colorScheme.onSurface,
             )
           }
