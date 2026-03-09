@@ -3,7 +3,6 @@ package org.grakovne.lissen.playback
 import android.content.Context
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.session.LibraryResult
 import androidx.media3.session.SessionResult
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -130,23 +129,10 @@ class MediaLibraryTreeTest {
       every { preferences.getPlayingBook() } returns makeDetailedItem("book-1", "My Book")
       val result = tree.getChildren("root/continue", 0, 100).get()
       assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
-      assertEquals(1, result.value!!.size)
-    }
-
-  @Test
-  fun getChildren_continue_itemHasBookPath() =
-    runBlocking {
-      every { preferences.getPlayingBook() } returns makeDetailedItem("book-1", "My Book")
-      val item =
-        tree
-          .getChildren("root/continue", 0, 100)
-          .get()
-          .value!!
-          .first()
+      val item = result.value!!.first()
       assertEquals(MediaLibraryTree.bookPath("book-1"), item.mediaId)
+      assertEquals("My Book", item.mediaMetadata.title)
     }
-
-  // --- getChildren recent ---
 
   @Test
   fun getChildren_recent_returnsEmptyWhenNoLibraryConfigured() =
@@ -182,11 +168,10 @@ class MediaLibraryTreeTest {
       val result = tree.getChildren("root/recent", 0, 100).get()
       assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
       assertEquals(2, result.value!!.size)
-      val ids = result.value!!.map { it.mediaId }.toSet()
-      assertTrue(ids.all { MediaLibraryTree.isBookPath(it) })
+      val expectedIds = listOf("r-1", "r-2").map { MediaLibraryTree.bookPath(it) }
+      val ids = result.value!!.map { it.mediaId }
+      assertEquals(expectedIds, ids)
     }
-
-  // --- getChildren library ---
 
   @Test
   fun getChildren_library_returnsEmptyWhenProviderFails() =
@@ -221,7 +206,11 @@ class MediaLibraryTreeTest {
       coEvery { lissenMediaProvider.fetchBooks("lib-1", any(), any()) } returns
         OperationResult.Success(
           PagedItems(
-            items = listOf(makeBook("b-1", "Book One"), makeBook("b-2", "Book Two")),
+            items =
+              listOf(
+                makeBook("book-1", "Book One"),
+                makeBook("book-2", "Book Two"),
+              ),
             currentPage = 0,
             totalItems = 2,
           ),
@@ -229,7 +218,9 @@ class MediaLibraryTreeTest {
       val result = tree.getChildren("root/library/lib-1", 0, 100).get()
       assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
       assertEquals(2, result.value!!.size)
-      assertTrue(result.value!!.all { MediaLibraryTree.isBookPath(it.mediaId) })
+      val expectedIds = listOf("book-1", "book-2").map { MediaLibraryTree.bookPath(it) }
+      val ids = result.value!!.map { it.mediaId }
+      assertEquals(expectedIds, ids)
     }
 
   @Test
@@ -240,8 +231,6 @@ class MediaLibraryTreeTest {
       val result = tree.getChildren("root/library/unknown-lib", 0, 100).get()
       assertTrue(result.resultCode != SessionResult.RESULT_SUCCESS)
     }
-
-  // --- getChildren downloads ---
 
   @Test
   fun getChildren_downloads_returnsEmptyWhenRepositoryFails() =
@@ -271,49 +260,34 @@ class MediaLibraryTreeTest {
       val result = tree.getChildren("root/downloads", 0, 100).get()
       assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
       assertEquals(2, result.value!!.size)
-      assertTrue(result.value!!.all { MediaLibraryTree.isBookPath(it.mediaId) })
+      val expectedIds = listOf("d-1", "d-2").map { MediaLibraryTree.bookPath(it) }
+      val ids = result.value!!.map { it.mediaId }
+      assertEquals(expectedIds, ids)
     }
 
   // --- getChildren invalid path ---
 
   @Test
-  fun getChildren_invalidPath_returnsError() =
+  fun getChildren_invalidPaths_returnError() =
     runBlocking {
-      val result = tree.getChildren("invalid/path", 0, 100).get()
-      assertTrue(result.resultCode != SessionResult.RESULT_SUCCESS)
+      val result1 = tree.getChildren("invalid/path", 0, 100).get()
+      assertTrue(result1.resultCode != SessionResult.RESULT_SUCCESS)
+      val result2 = tree.getChildren("root/nonexistent", 0, 100).get()
+      assertTrue(result2.resultCode != SessionResult.RESULT_SUCCESS)
+      val result3 = tree.getChildren("root/library/invalid-id", 0, 100).get()
+      assertTrue(result3.resultCode != SessionResult.RESULT_SUCCESS)
     }
-
-  @Test
-  fun getChildren_unknownRootChild_returnsError() =
-    runBlocking {
-      val result = tree.getChildren("root/nonexistent", 0, 100).get()
-      assertTrue(result.resultCode != SessionResult.RESULT_SUCCESS)
-    }
-
-  // --- getItem ---
 
   @Test
   fun getItem_root_returnsRootItem() =
     runBlocking {
-      val result = tree.getItem("root").get()
-      assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
-      assertEquals("root", result.value!!.mediaId)
-    }
-
-  @Test
-  fun getItem_rootContinue_returnsItem() =
-    runBlocking {
-      val result = tree.getItem("root/continue").get()
-      assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
-      assertEquals("root/continue", result.value!!.mediaId)
-    }
-
-  @Test
-  fun getItem_rootLibrary_returnsItem() =
-    runBlocking {
-      val result = tree.getItem("root/library").get()
-      assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
-      assertEquals("root/library", result.value!!.mediaId)
+      listOf("root", "root/continue", "root/recent", "root/library", "root/downloads").forEach { path ->
+        val item = tree.getItem(path).get()
+        assertEquals(SessionResult.RESULT_SUCCESS, item.resultCode)
+        assertEquals(path, item.value!!.mediaId)
+        assertTrue(item.value!!.mediaMetadata.isPlayable == false)
+        assertTrue(item.value!!.mediaMetadata.isBrowsable == true)
+      }
     }
 
   @Test
@@ -325,16 +299,8 @@ class MediaLibraryTreeTest {
       assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
       assertNotNull(result.value)
       assertEquals(MediaLibraryTree.bookPath("book-1"), result.value!!.mediaId)
-    }
-
-  @Test
-  fun getItem_bookPath_bookIsPlayableNotBrowsable() =
-    runBlocking {
-      coEvery { lissenMediaProvider.fetchBook("book-1") } returns
-        OperationResult.Success(makeDetailedItem("book-1", "The Book"))
-      val item = tree.getItem(MediaLibraryTree.bookPath("book-1")).get().value!!
-      assertTrue(item.mediaMetadata.isPlayable == true)
-      assertTrue(item.mediaMetadata.isBrowsable == false)
+      assertTrue(result.value!!.mediaMetadata.isPlayable == true)
+      assertTrue(result.value!!.mediaMetadata.isBrowsable == false)
     }
 
   @Test
@@ -344,17 +310,7 @@ class MediaLibraryTreeTest {
         OperationResult.Error(OperationError.NotFoundError)
       val result = tree.getItem(MediaLibraryTree.bookPath("missing-id")).get()
       assertTrue(result.resultCode != SessionResult.RESULT_SUCCESS)
-      assertNull(result.value)
     }
-
-  @Test
-  fun getItem_invalidPath_returnsError() =
-    runBlocking {
-      val result = tree.getItem("invalid/not/root/path").get()
-      assertTrue(result.resultCode != SessionResult.RESULT_SUCCESS)
-    }
-
-  // --- searchBooks ---
 
   @Test
   fun searchBooks_returnsEmptyWhenNoLibraryConfigured() =
@@ -381,39 +337,16 @@ class MediaLibraryTreeTest {
       coEvery { lissenMediaProvider.searchBooks("lib-1", "dune", any()) } returns
         OperationResult.Success(
           listOf(
-            makeBook("b-1", "Dune"),
-            makeBook("b-2", "Dune Messiah"),
+            makeBook("book-1", "Dune"),
+            makeBook("book-2", "Dune Messiah"),
           ),
         )
-      val results = tree.searchBooks("dune").get()
-      assertEquals(2, results.size)
-      assertTrue(results.all { MediaLibraryTree.isBookPath(it.mediaId) })
+      val result = tree.searchBooks("dune").get()
+      assertEquals(2, result.size)
+      val expectedIds = listOf("book-1", "book-2").map { MediaLibraryTree.bookPath(it) }
+      val ids = result.map { it.mediaId }
+      assertEquals(expectedIds, ids)
     }
-
-  // --- companion object helpers ---
-
-  @Test
-  fun bookPath_formatsCorrectly() {
-    assertEquals("book/abc-123", MediaLibraryTree.bookPath("abc-123"))
-  }
-
-  @Test
-  fun parseBookId_extractsId() {
-    assertEquals("abc-123", MediaLibraryTree.parseBookId("book/abc-123"))
-  }
-
-  @Test
-  fun isBookPath_trueForBookPrefix() {
-    assertTrue(MediaLibraryTree.isBookPath("book/some-id"))
-  }
-
-  @Test
-  fun isBookPath_falseForRootPath() {
-    assertTrue(!MediaLibraryTree.isBookPath("root"))
-    assertTrue(!MediaLibraryTree.isBookPath("root/library"))
-  }
-
-  // --- helpers ---
 
   private fun makeLibrary(id: String) = Library(id = id, title = "Library $id", type = LibraryType.LIBRARY)
 

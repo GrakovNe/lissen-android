@@ -162,7 +162,7 @@ class MediaLibraryTree
       scope
         .listenableFuture {
           when {
-            path == ROOT || path.startsWith("$ROOT/") -> {
+            path.startsWith(ROOT) -> {
               navigateTo(path)?.item?.let { LibraryResult.ofItem(it, null) }
                 ?: LibraryResult.ofError(SessionError.INFO_CANCELLED)
             }

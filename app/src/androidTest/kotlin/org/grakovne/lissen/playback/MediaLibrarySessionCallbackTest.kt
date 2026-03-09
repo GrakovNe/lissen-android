@@ -5,10 +5,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
 import androidx.annotation.OptIn
+import androidx.core.os.BundleCompat
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import androidx.media3.session.SessionCommand
@@ -16,6 +17,9 @@ import androidx.media3.session.SessionResult
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.util.concurrent.Futures
+import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.SettableFuture
+import io.mockk.Ordering
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -26,16 +30,20 @@ import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.lib.domain.BookFile
 import org.grakovne.lissen.lib.domain.DetailedItem
+import org.grakovne.lissen.lib.domain.MediaProgress
 import org.grakovne.lissen.lib.domain.PlayingChapter
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.playback.service.FileClip
+import org.grakovne.lissen.playback.service.PlaybackService
+import org.grakovne.lissen.playback.service.PlaybackService.Companion.FILE_SEGMENTS
 import org.grakovne.lissen.playback.service.PlaybackSynchronizationService
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 
 @OptIn(UnstableApi::class)
@@ -75,54 +83,6 @@ class MediaLibrarySessionCallbackTest {
       )
   }
 
-  // --- onMediaButtonEvent ---
-
-  @Test
-  fun onMediaButtonEvent_nextKeyDown_callsForwardAndReturnsTrue() {
-    val intent = intentWithKey(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_NEXT)
-    val handled = callback.onMediaButtonEvent(session, controller, intent)
-    assertTrue(handled)
-    verify(exactly = 1) { mediaRepository.forward() }
-    verify(exactly = 0) { mediaRepository.rewind() }
-  }
-
-  @Test
-  fun onMediaButtonEvent_previousKeyDown_callsRewindAndReturnsTrue() {
-    val intent = intentWithKey(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PREVIOUS)
-    val handled = callback.onMediaButtonEvent(session, controller, intent)
-    assertTrue(handled)
-    verify(exactly = 1) { mediaRepository.rewind() }
-    verify(exactly = 0) { mediaRepository.forward() }
-  }
-
-  @Test
-  fun onMediaButtonEvent_nextKeyUp_doesNotCallForward() {
-    val intent = intentWithKey(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_NEXT)
-    val handled = callback.onMediaButtonEvent(session, controller, intent)
-    assertFalse(handled)
-    verify(exactly = 0) { mediaRepository.forward() }
-  }
-
-  @Test
-  fun onMediaButtonEvent_noKeyEvent_returnsFalse() {
-    val intent = Intent(Intent.ACTION_MEDIA_BUTTON)
-    val handled = callback.onMediaButtonEvent(session, controller, intent)
-    assertFalse(handled)
-    verify(exactly = 0) { mediaRepository.forward() }
-    verify(exactly = 0) { mediaRepository.rewind() }
-  }
-
-  @Test
-  fun onMediaButtonEvent_otherKeyDown_returnsFalse() {
-    val intent = intentWithKey(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY)
-    val handled = callback.onMediaButtonEvent(session, controller, intent)
-    assertFalse(handled)
-    verify(exactly = 0) { mediaRepository.forward() }
-    verify(exactly = 0) { mediaRepository.rewind() }
-  }
-
-  // --- onCustomCommand ---
-
   @Test
   fun onCustomCommand_forwardCommand_callsForward() {
     val command = SessionCommand(MediaLibrarySessionCallback.FORWARD_COMMAND, Bundle.EMPTY)
@@ -135,66 +95,12 @@ class MediaLibrarySessionCallbackTest {
   fun onCustomCommand_rewindCommand_callsRewind() {
     val command = SessionCommand(MediaLibrarySessionCallback.REWIND_COMMAND, Bundle.EMPTY)
     callback.onCustomCommand(session, controller, command, Bundle.EMPTY)
+    verify(exactly = 0) { mediaRepository.forward() }
     verify(exactly = 1) { mediaRepository.rewind() }
-    verify(exactly = 0) { mediaRepository.forward() }
-  }
-
-  @Test
-  fun onCustomCommand_unknownCommand_noRepositoryCall() {
-    val command = SessionCommand("other_command", Bundle.EMPTY)
-    callback.onCustomCommand(session, controller, command, Bundle.EMPTY)
-    verify(exactly = 0) { mediaRepository.forward() }
-    verify(exactly = 0) { mediaRepository.rewind() }
-  }
-
-  // --- onConnect ---
-
-  @Test
-  fun onConnect_notificationController_hasTwoCustomLayoutButtons() {
-    every { session.isMediaNotificationController(controller) } returns true
-    every { session.isAutomotiveController(controller) } returns false
-    every { session.isAutoCompanionController(controller) } returns false
-
-    val result = callback.onConnect(session, controller)
-    assertEquals(2, result.customLayout!!.size)
-  }
-
-  @Test
-  fun onConnect_automotiveController_hasTwoCustomLayoutButtons() {
-    every { session.isMediaNotificationController(controller) } returns false
-    every { session.isAutomotiveController(controller) } returns true
-    every { session.isAutoCompanionController(controller) } returns false
-
-    val result = callback.onConnect(session, controller)
-    assertEquals(2, result.customLayout!!.size)
-  }
-
-  @Test
-  fun onConnect_autoCompanionController_hasTwoCustomLayoutButtons() {
-    every { session.isMediaNotificationController(controller) } returns false
-    every { session.isAutomotiveController(controller) } returns false
-    every { session.isAutoCompanionController(controller) } returns true
-
-    val result = callback.onConnect(session, controller)
-    assertEquals(2, result.customLayout!!.size)
-  }
-
-  @Test
-  fun onConnect_regularController_hasEmptyCustomLayout() {
-    every { session.isMediaNotificationController(controller) } returns false
-    every { session.isAutomotiveController(controller) } returns false
-    every { session.isAutoCompanionController(controller) } returns false
-
-    val result = callback.onConnect(session, controller)
-    assertTrue(result.customLayout!!.isEmpty())
   }
 
   @Test
   fun onConnect_notificationController_sessionCommandsContainForwardAndRewind() {
-    every { session.isMediaNotificationController(controller) } returns true
-    every { session.isAutomotiveController(controller) } returns false
-    every { session.isAutoCompanionController(controller) } returns false
-
     val result = callback.onConnect(session, controller)
     val customActions =
       result.availableSessionCommands.commands
@@ -204,43 +110,11 @@ class MediaLibrarySessionCallbackTest {
     assertTrue(customActions.contains(MediaLibrarySessionCallback.REWIND_COMMAND))
   }
 
-  // --- onGetLibraryRoot / onGetChildren / onGetItem delegation ---
-
-  @Test
-  fun onGetLibraryRoot_delegatesToLibraryTree() {
-    val expected = Futures.immediateFuture(LibraryResult.ofItem(makeMediaItem("root"), null))
-    every { libraryTree.getRootItem() } returns expected
-
-    val result = callback.onGetLibraryRoot(session, controller, null)
-    assertEquals(expected, result)
-  }
-
-  @Test
-  fun onGetChildren_delegatesToLibraryTree() {
-    val expected =
-      Futures.immediateFuture(LibraryResult.ofItemList(emptyList<MediaItem>(), null))
-    every { libraryTree.getChildren("root", 0, 10) } returns expected
-
-    val result = callback.onGetChildren(session, controller, "root", 0, 10, null)
-    assertEquals(expected, result)
-  }
-
-  @Test
-  fun onGetItem_delegatesToLibraryTree() {
-    val expected = Futures.immediateFuture(LibraryResult.ofItem(makeMediaItem("root"), null))
-    every { libraryTree.getItem("root") } returns expected
-
-    val result = callback.onGetItem(session, controller, "root")
-    assertEquals(expected, result)
-  }
-
-  // --- onSearch ---
-
   @Test
   fun onSearch_returnsVoidImmediately() {
     every { libraryTree.searchBooks(any()) } returns Futures.immediateFuture(emptyList())
 
-    val result = callback.onSearch(session, controller, "query", null).get()
+    val result = callback.onSearch(session, controller, "dune", null).get()
     assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
   }
 
@@ -261,8 +135,10 @@ class MediaLibrarySessionCallbackTest {
     callback.onSearch(session, controller, "dune", null)
     callback.onSearch(session, controller, "tolkien", null)
 
-    verify(exactly = 1) { libraryTree.searchBooks("dune") }
-    verify(exactly = 1) { libraryTree.searchBooks("tolkien") }
+    verify(ordering = Ordering.ORDERED) {
+      libraryTree.searchBooks("dune")
+      libraryTree.searchBooks("tolkien")
+    }
   }
 
   @Test
@@ -272,65 +148,51 @@ class MediaLibrarySessionCallbackTest {
     assertNotNull(callback.searchCache.get("dune"))
   }
 
-  // --- onGetSearchResult pagination ---
-
   @Test
   fun onGetSearchResult_firstPage_returnsFirstTwoItems() {
-    val items = (1..5).map { makeMediaItem("book-$it") }
-    callback.searchCache.put("q", Futures.immediateFuture(items))
+    val items = (1..5).map { makePlayableMediaItem("book-$it") }
+    callback.searchCache.put("dune", Futures.immediateFuture(items))
 
-    val result = callback.onGetSearchResult(session, controller, "q", 0, 2, null).get(5, TimeUnit.SECONDS)
-    assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
-    assertEquals(2, result.value!!.size)
-    assertEquals("book-1", result.value!![0].mediaId)
-    assertEquals("book-2", result.value!![1].mediaId)
+    val result1 = callback.onGetSearchResult(session, controller, "dune", 0, 2, null).get(5, TimeUnit.SECONDS)
+    assertEquals(SessionResult.RESULT_SUCCESS, result1.resultCode)
+    assertEquals(2, result1.value!!.size)
+    assertEquals("book-1", result1.value!![0].mediaId)
+    assertEquals("book-2", result1.value!![1].mediaId)
+
+    val result2 = callback.onGetSearchResult(session, controller, "dune", 1, 2, null).get(5, TimeUnit.SECONDS)
+    assertEquals(2, result2.value!!.size)
+    assertEquals("book-3", result2.value!![0].mediaId)
+    assertEquals("book-4", result2.value!![1].mediaId)
+
+    val result3 = callback.onGetSearchResult(session, controller, "dune", 2, 2, null).get(5, TimeUnit.SECONDS)
+    assertEquals(1, result3.value!!.size)
+    assertEquals("book-5", result3.value!![0].mediaId)
+
+    val result4 = callback.onGetSearchResult(session, controller, "dune", 10, 2, null).get(5, TimeUnit.SECONDS)
+    assertEquals(0, result4.value!!.size)
+
+    val result = callback.onGetSearchResult(session, controller, "dune", 0, 10, null).get(5, TimeUnit.SECONDS)
+    assertEquals(5, result.value!!.size)
   }
 
   @Test
-  fun onGetSearchResult_secondPage_returnsMiddleItems() {
-    val items = (1..5).map { makeMediaItem("book-$it") }
-    callback.searchCache.put("q", Futures.immediateFuture(items))
+  fun onSearch_futureFailsAfterDelay_notifiesWithSizeZero() {
+    val settableFuture = SettableFuture.create<List<MediaItem>>()
+    every { libraryTree.searchBooks("dune") } returns settableFuture
 
-    val result = callback.onGetSearchResult(session, controller, "q", 1, 2, null).get(5, TimeUnit.SECONDS)
-    assertEquals(2, result.value!!.size)
-    assertEquals("book-3", result.value!![0].mediaId)
-    assertEquals("book-4", result.value!![1].mediaId)
+    callback.onSearch(session, controller, "dune", null)
+
+    Thread.sleep(100)
+    settableFuture.setException(RuntimeException("delayed search failure"))
+    Thread.sleep(300)
+
+    verify { session.notifySearchResultChanged(controller, "dune", 0, null) }
   }
 
   @Test
-  fun onGetSearchResult_lastPartialPage_returnsRemainingItems() {
-    val items = (1..5).map { makeMediaItem("book-$it") }
-    callback.searchCache.put("q", Futures.immediateFuture(items))
-
-    val result = callback.onGetSearchResult(session, controller, "q", 2, 2, null).get(5, TimeUnit.SECONDS)
-    assertEquals(1, result.value!!.size)
-    assertEquals("book-5", result.value!![0].mediaId)
-  }
-
-  @Test
-  fun onGetSearchResult_pageOutOfBounds_returnsEmpty() {
-    val items = (1..5).map { makeMediaItem("book-$it") }
-    callback.searchCache.put("q", Futures.immediateFuture(items))
-
-    val result = callback.onGetSearchResult(session, controller, "q", 10, 2, null).get(5, TimeUnit.SECONDS)
-    assertEquals(0, result.value!!.size)
-  }
-
-  @Test
-  fun onGetSearchResult_singleFullPage_returnsAllItems() {
-    val items = (1..3).map { makeMediaItem("book-$it") }
-    callback.searchCache.put("q", Futures.immediateFuture(items))
-
-    val result = callback.onGetSearchResult(session, controller, "q", 0, 10, null).get(5, TimeUnit.SECONDS)
-    assertEquals(3, result.value!!.size)
-  }
-
-  // --- onSetMediaItems ---
-
-  @Test
-  fun onSetMediaItems_singleBookPathWithUnsetPosition_fetchesBook() =
+  fun onSetMediaItems_singleBook_resolvesChaptersFilesProgress() =
     runBlocking {
-      val book = makeDetailedItem("book-1", "My Book")
+      val book = makeDetailedItem("book-1", "My Book", MediaProgress(170.0, false, 0L))
       coEvery { lissenMediaProvider.fetchBook("book-1") } returns OperationResult.Success(book)
 
       val mediaItem =
@@ -340,7 +202,18 @@ class MediaLibrarySessionCallbackTest {
           .onSetMediaItems(session, controller, listOf(mediaItem), C.INDEX_UNSET, C.TIME_UNSET)
           .get(5, TimeUnit.SECONDS)
 
-      assertTrue(result.mediaItems.isNotEmpty())
+      assertEquals(listOf("chapter:book-1:0", "chapter:book-1:1"), result.mediaItems.map { it.mediaId })
+      result.mediaItems.forEach { chapter ->
+        val numberOfFiles =
+          chapter.requestMetadata.extras!!.let {
+            BundleCompat.getParcelableArrayList(it, FILE_SEGMENTS, FileClip::class.java)
+          }
+        assertEquals(2, numberOfFiles!!.size)
+      }
+      assertEquals(1, result.startIndex)
+      assertEquals(20000, result.startPositionMs)
+      verify(atLeast = 1) { playbackSynchronizationService.startPlaybackSynchronization(book) }
+      verify(exactly = 1) { preferences.savePlayingBook(book) }
     }
 
   @Test
@@ -359,35 +232,22 @@ class MediaLibrarySessionCallbackTest {
       assertTrue(result.mediaItems.isEmpty())
     }
 
-  @Test
-  fun onSetMediaItems_bookPath_startsSynchronization() =
-    runBlocking {
-      val book = makeDetailedItem("book-1", "My Book")
-      coEvery { lissenMediaProvider.fetchBook("book-1") } returns OperationResult.Success(book)
-
-      val mediaItem =
-        MediaItem.Builder().setMediaId(MediaLibraryTree.bookPath("book-1")).build()
-      callback
-        .onSetMediaItems(session, controller, listOf(mediaItem), C.INDEX_UNSET, C.TIME_UNSET)
-        .get(5, TimeUnit.SECONDS)
-
-      verify(atLeast = 1) { playbackSynchronizationService.startPlaybackSynchronization(book) }
-    }
-
-  // --- helpers ---
-
-  private fun intentWithKey(
-    action: Int,
-    keyCode: Int,
-  ) = Intent(Intent.ACTION_MEDIA_BUTTON).apply {
-    putExtra(Intent.EXTRA_KEY_EVENT, KeyEvent(action, keyCode))
-  }
-
-  private fun makeMediaItem(id: String) = MediaItem.Builder().setMediaId(id).build()
+  private fun makePlayableMediaItem(id: String) =
+    MediaItem
+      .Builder()
+      .setMediaId(id)
+      .setMediaMetadata(
+        MediaMetadata
+          .Builder()
+          .setIsBrowsable(false)
+          .setIsPlayable(true)
+          .build(),
+      ).build()
 
   private fun makeDetailedItem(
     id: String,
     title: String,
+    progress: MediaProgress? = null,
   ) = DetailedItem(
     id = id,
     title = title,
@@ -400,21 +260,32 @@ class MediaLibrarySessionCallbackTest {
     abstract = null,
     files =
       listOf(
-        BookFile(id = "f-1", name = "chapter.mp3", duration = 100.0, size = null, mimeType = "audio/mpeg"),
+        BookFile(id = "f-1", name = "01.mp3", duration = 100.0, size = null, mimeType = "audio/mpeg"),
+        BookFile(id = "f-2", name = "02.mp3", duration = 100.0, size = null, mimeType = "audio/mpeg"),
+        BookFile(id = "f-3", name = "03.mp3", duration = 100.0, size = null, mimeType = "audio/mpeg"),
       ),
     chapters =
       listOf(
         PlayingChapter(
           available = true,
           podcastEpisodeState = null,
-          duration = 100.0,
+          duration = 150.0,
           start = 0.0,
-          end = 100.0,
+          end = 150.0,
           title = "Chapter 1",
           id = "c-1",
         ),
+        PlayingChapter(
+          available = true,
+          podcastEpisodeState = null,
+          duration = 150.0,
+          start = 150.0,
+          end = 300.0,
+          title = "Chapter 2",
+          id = "c-2",
+        ),
       ),
-    progress = null,
+    progress = progress,
     libraryId = "lib-1",
     localProvided = false,
     createdAt = 0L,

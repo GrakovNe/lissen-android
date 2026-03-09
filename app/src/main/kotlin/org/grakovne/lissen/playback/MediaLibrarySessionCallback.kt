@@ -91,48 +91,39 @@ class MediaLibrarySessionCallback
       session: MediaSession,
       controller: MediaSession.ControllerInfo,
     ): MediaSession.ConnectionResult {
-      if (
-        session.isMediaNotificationController(controller) ||
-        session.isAutomotiveController(controller) ||
-        session.isAutoCompanionController(controller)
-      ) {
-        val rewindCommand = SessionCommand(REWIND_COMMAND, Bundle.EMPTY)
-        val forwardCommand = SessionCommand(FORWARD_COMMAND, Bundle.EMPTY)
+      val rewindCommand = SessionCommand(REWIND_COMMAND, Bundle.EMPTY)
+      val forwardCommand = SessionCommand(FORWARD_COMMAND, Bundle.EMPTY)
 
-        @Suppress("UNUSED_VARIABLE")
-        val seekTime = preferences.getSeekTime()
-
-        val sessionCommands =
-          MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS
-            .buildUpon()
-            .add(rewindCommand)
-            .add(forwardCommand)
-            .build()
-
-        val rewindButton =
-          CommandButton
-            .Builder(rewindIcon)
-            .setSessionCommand(rewindCommand)
-            .setDisplayName("Rewind")
-            .setEnabled(true)
-            .build()
-
-        val forwardButton =
-          CommandButton
-            .Builder(forwardIcon)
-            .setSessionCommand(forwardCommand)
-            .setDisplayName("Forward")
-            .setEnabled(true)
-            .build()
-
-        return MediaSession
-          .ConnectionResult
-          .AcceptedResultBuilder(session)
-          .setAvailableSessionCommands(sessionCommands)
-          .setCustomLayout(listOf(rewindButton, forwardButton))
+      val sessionCommands =
+        MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS
+          .buildUpon()
+          .add(rewindCommand)
+          .add(forwardCommand)
           .build()
-      }
-      return MediaSession.ConnectionResult.AcceptedResultBuilder(session).build()
+
+      val rewindButton =
+        CommandButton
+          .Builder(rewindIcon)
+          .setSessionCommand(rewindCommand)
+          .setDisplayName("Rewind")
+          .setEnabled(true)
+          .build()
+
+      val forwardButton =
+        CommandButton
+          .Builder(forwardIcon)
+          .setSessionCommand(forwardCommand)
+          .setDisplayName("Forward")
+          .setEnabled(true)
+          .build()
+
+      return MediaSession
+        .ConnectionResult
+        .AcceptedResultBuilder(session)
+        .setAvailableSessionCommands(sessionCommands)
+        .setCustomLayout(listOf(rewindButton, forwardButton))
+        .setMediaButtonPreferences(listOf(rewindButton, forwardButton))
+        .build()
     }
 
     override fun onCustomCommand(
@@ -189,6 +180,7 @@ class MediaLibrarySessionCallback
                 .foldAsync(
                   onSuccess = {
                     async {
+                      preferences.savePlayingBook(it)
                       playbackSynchronizationService.startPlaybackSynchronization(it)
                     }
                     PlaybackService.bookToChapterMediaItems(it)
@@ -215,8 +207,13 @@ class MediaLibrarySessionCallback
         }
 
       searchFuture.addListener({
-        val results = searchFuture.get()
-        session.notifySearchResultChanged(browser, query, results.size, params)
+        val resultSetSize =
+          try {
+            searchFuture.get().size
+          } catch (_: Exception) {
+            0
+          }
+        session.notifySearchResultChanged(browser, query, resultSetSize, params)
       }, context.mainExecutor)
 
       return Futures.immediateFuture(LibraryResult.ofVoid())
@@ -247,6 +244,6 @@ class MediaLibrarySessionCallback
       internal const val FORWARD_COMMAND = "notification_forward"
 
       private const val rewindIcon = CommandButton.ICON_SKIP_BACK
-      private val forwardIcon = CommandButton.ICON_SKIP_FORWARD
+      private const val forwardIcon = CommandButton.ICON_SKIP_FORWARD
     }
   }
