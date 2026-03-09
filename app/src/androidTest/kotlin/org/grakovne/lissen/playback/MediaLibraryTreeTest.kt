@@ -62,8 +62,6 @@ class MediaLibraryTreeTest {
     tree = MediaLibraryTree(context, preferences, localCacheRepository, lissenMediaProvider)
   }
 
-  // --- getRootItem ---
-
   @Test
   fun getRootItem_hasRootMediaId() {
     val result = tree.getRootItem().get()
@@ -77,8 +75,6 @@ class MediaLibraryTreeTest {
     assertTrue(item.mediaMetadata.isBrowsable == true)
     assertTrue(item.mediaMetadata.isPlayable == false)
   }
-
-  // --- getChildren root ---
 
   @Test
   fun getChildren_root_returnsFourChildren() =
@@ -111,8 +107,6 @@ class MediaLibraryTreeTest {
       assertTrue(children.all { it.mediaMetadata.isBrowsable == true })
       assertTrue(children.all { it.mediaMetadata.isPlayable == false })
     }
-
-  // --- getChildren continue ---
 
   @Test
   fun getChildren_continue_returnsEmptyWhenNoPlayingBook() =

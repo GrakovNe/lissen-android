@@ -10,7 +10,6 @@ import android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS
 import androidx.annotation.OptIn
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
-import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.CommandButton
 import androidx.media3.session.LibraryResult
@@ -92,51 +91,60 @@ class MediaLibrarySessionCallback
       session: MediaSession,
       controller: MediaSession.ControllerInfo,
     ): MediaSession.ConnectionResult {
+      val prevChapterCommand = SessionCommand(PREV_CHAPTER_COMMAND, Bundle.EMPTY)
       val rewindCommand = SessionCommand(REWIND_COMMAND, Bundle.EMPTY)
       val forwardCommand = SessionCommand(FORWARD_COMMAND, Bundle.EMPTY)
+      val nextChapterCommand = SessionCommand(NEXT_CHAPTER_COMMAND, Bundle.EMPTY)
 
       val sessionCommands =
         MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS
           .buildUpon()
+          .add(prevChapterCommand)
           .add(rewindCommand)
           .add(forwardCommand)
+          .add(nextChapterCommand)
           .build()
 
       val previousChapterButton =
         CommandButton
           .Builder(CommandButton.ICON_PREVIOUS)
-          .setPlayerCommand(Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM)
+          .setSessionCommand(prevChapterCommand)
           .setDisplayName("Previous Chapter")
-          .build()
-
-      val rewindButton =
-        CommandButton
-          .Builder(rewindIcon)
-          .setSessionCommand(rewindCommand)
-          .setDisplayName("Rewind")
           .setEnabled(true)
-          .build()
-
-      val forwardButton =
-        CommandButton
-          .Builder(forwardIcon)
-          .setSessionCommand(forwardCommand)
-          .setDisplayName("Forward")
-          .setEnabled(true)
+          .setSlots(CommandButton.SLOT_BACK)
           .build()
 
       val nextChapterButton =
         CommandButton
           .Builder(CommandButton.ICON_NEXT)
-          .setPlayerCommand(Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM)
+          .setSessionCommand(nextChapterCommand)
           .setDisplayName("Next Chapter")
+          .setSlots(CommandButton.SLOT_FORWARD)
+          .setEnabled(true)
+          .build()
+
+      val rewindButton =
+        CommandButton
+          .Builder(CommandButton.ICON_SKIP_BACK)
+          .setSessionCommand(rewindCommand)
+          .setDisplayName("Rewind")
+          .setEnabled(true)
+          .setSlots(CommandButton.SLOT_OVERFLOW)
+          .build()
+
+      val forwardButton =
+        CommandButton
+          .Builder(CommandButton.ICON_SKIP_FORWARD)
+          .setSessionCommand(forwardCommand)
+          .setDisplayName("Forward")
+          .setSlots(CommandButton.SLOT_OVERFLOW)
+          .setEnabled(true)
           .build()
 
       return MediaSession
         .ConnectionResult
         .AcceptedResultBuilder(session)
         .setAvailableSessionCommands(sessionCommands)
-        .setCustomLayout(listOf(rewindButton, forwardButton))
         .setMediaButtonPreferences(listOf(previousChapterButton, rewindButton, forwardButton, nextChapterButton))
         .build()
     }
@@ -150,8 +158,10 @@ class MediaLibrarySessionCallback
       Timber.d("Executing: ${customCommand.customAction}")
 
       when (customCommand.customAction) {
-        FORWARD_COMMAND -> mediaRepository.forward()
+        PREV_CHAPTER_COMMAND -> mediaRepository.previousTrack(rewindRequired = true)
         REWIND_COMMAND -> mediaRepository.rewind()
+        FORWARD_COMMAND -> mediaRepository.forward()
+        NEXT_CHAPTER_COMMAND -> mediaRepository.nextTrack()
       }
 
       return super.onCustomCommand(session, controller, customCommand, args)
@@ -255,10 +265,9 @@ class MediaLibrarySessionCallback
     }
 
     companion object {
+      internal const val PREV_CHAPTER_COMMAND = "notification_prev_chapter"
       internal const val REWIND_COMMAND = "notification_rewind"
       internal const val FORWARD_COMMAND = "notification_forward"
-
-      private const val rewindIcon = CommandButton.ICON_SKIP_BACK
-      private const val forwardIcon = CommandButton.ICON_SKIP_FORWARD
+      internal const val NEXT_CHAPTER_COMMAND = "notification_next_chapter"
     }
   }
