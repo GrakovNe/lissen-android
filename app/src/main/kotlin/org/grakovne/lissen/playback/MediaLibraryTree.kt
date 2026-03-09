@@ -14,7 +14,6 @@ import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.future.future
 import org.grakovne.lissen.R
 import org.grakovne.lissen.content.ExternalCoverProvider
 import org.grakovne.lissen.content.LissenMediaProvider
@@ -25,7 +24,6 @@ import org.grakovne.lissen.lib.domain.Library
 import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
-import org.grakovne.lissen.util.asListenableFuture
 import org.grakovne.lissen.util.listenableFuture
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -56,22 +54,22 @@ class MediaTreeNode(
 @MediaTreeDsl
 class MediaTreeBuilder {
   private val children = mutableListOf<MediaTreeNode>()
-  private var dynamicResolver: (suspend (String) -> MediaTreeNode?)? = null
-  private var childrenProvider: (suspend (Int, Int) -> List<MediaItem>)? = null
+  private var resolveChild: (suspend (String) -> MediaTreeNode?)? = null
+  private var pagedChildren: (suspend (Int, Int) -> List<MediaItem>)? = null
 
   operator fun MediaTreeNode.unaryPlus() {
     children += this
   }
 
   fun resolveChild(resolver: suspend (String) -> MediaTreeNode?) {
-    dynamicResolver = resolver
+    resolveChild = resolver
   }
 
   fun pagedChildren(provider: suspend (Int, Int) -> List<MediaItem>) {
-    childrenProvider = provider
+    pagedChildren = provider
   }
 
-  fun build(item: MediaItem): MediaTreeNode = MediaTreeNode(item, children.toList(), dynamicResolver, childrenProvider)
+  fun build(item: MediaItem): MediaTreeNode = MediaTreeNode(item, children.toList(), resolveChild, pagedChildren)
 }
 
 fun mediaTreeNode(

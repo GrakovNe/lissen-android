@@ -9,6 +9,7 @@ import androidx.core.os.BundleCompat
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
@@ -100,7 +101,7 @@ class MediaLibrarySessionCallbackTest {
   }
 
   @Test
-  fun onConnect_notificationController_sessionCommandsContainForwardAndRewind() {
+  fun onConnect_sessionCommandsContainForwardAndRewind() {
     val result = callback.onConnect(session, controller)
     val customActions =
       result.availableSessionCommands.commands
@@ -108,6 +109,42 @@ class MediaLibrarySessionCallbackTest {
         .map { it.customAction }
     assertTrue(customActions.contains(MediaLibrarySessionCallback.FORWARD_COMMAND))
     assertTrue(customActions.contains(MediaLibrarySessionCallback.REWIND_COMMAND))
+  }
+
+  @Test
+  fun onConnect_mediaButtonPreferencesContainAllFourActions() {
+    val result = callback.onConnect(session, controller)
+    val prefs = result.mediaButtonPreferences
+    assertEquals(4, prefs.size)
+
+    // Player-command buttons (chapter nav)
+    assertTrue(prefs.any { it.playerCommand == Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM })
+    assertTrue(prefs.any { it.playerCommand == Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM })
+
+    // Custom session-command buttons (skip seconds)
+    val customActions = prefs.mapNotNull { it.sessionCommand?.customAction }
+    assertTrue(customActions.contains(MediaLibrarySessionCallback.REWIND_COMMAND))
+    assertTrue(customActions.contains(MediaLibrarySessionCallback.FORWARD_COMMAND))
+  }
+
+  @Test
+  fun onConnect_customLayoutContainsOnlyRewindAndForward() {
+    val result = callback.onConnect(session, controller)
+    val customActions = result.customLayout.mapNotNull { it.sessionCommand?.customAction }
+    assertEquals(2, customActions.size)
+    assertTrue(customActions.contains(MediaLibrarySessionCallback.REWIND_COMMAND))
+    assertTrue(customActions.contains(MediaLibrarySessionCallback.FORWARD_COMMAND))
+  }
+
+  @Test
+  fun onConnect_mediaButtonPreferencesOrderIsCorrect() {
+    val result = callback.onConnect(session, controller)
+    val prefs = result.mediaButtonPreferences
+    // Expected order: prev-chapter, rewind, forward, next-chapter
+    assertEquals(Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM, prefs[0].playerCommand)
+    assertEquals(MediaLibrarySessionCallback.REWIND_COMMAND, prefs[1].sessionCommand?.customAction)
+    assertEquals(MediaLibrarySessionCallback.FORWARD_COMMAND, prefs[2].sessionCommand?.customAction)
+    assertEquals(Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM, prefs[3].playerCommand)
   }
 
   @Test

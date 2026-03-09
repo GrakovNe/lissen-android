@@ -10,6 +10,7 @@ import android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS
 import androidx.annotation.OptIn
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.CommandButton
 import androidx.media3.session.LibraryResult
@@ -101,6 +102,13 @@ class MediaLibrarySessionCallback
           .add(forwardCommand)
           .build()
 
+      val previousChapterButton =
+        CommandButton
+          .Builder(CommandButton.ICON_PREVIOUS)
+          .setPlayerCommand(Player.COMMAND_SEEK_TO_PREVIOUS_MEDIA_ITEM)
+          .setDisplayName("Previous Chapter")
+          .build()
+
       val rewindButton =
         CommandButton
           .Builder(rewindIcon)
@@ -117,12 +125,19 @@ class MediaLibrarySessionCallback
           .setEnabled(true)
           .build()
 
+      val nextChapterButton =
+        CommandButton
+          .Builder(CommandButton.ICON_NEXT)
+          .setPlayerCommand(Player.COMMAND_SEEK_TO_NEXT_MEDIA_ITEM)
+          .setDisplayName("Next Chapter")
+          .build()
+
       return MediaSession
         .ConnectionResult
         .AcceptedResultBuilder(session)
         .setAvailableSessionCommands(sessionCommands)
         .setCustomLayout(listOf(rewindButton, forwardButton))
-        .setMediaButtonPreferences(listOf(rewindButton, forwardButton))
+        .setMediaButtonPreferences(listOf(previousChapterButton, rewindButton, forwardButton, nextChapterButton))
         .build()
     }
 
