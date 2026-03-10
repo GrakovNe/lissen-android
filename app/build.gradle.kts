@@ -91,6 +91,8 @@ android {
       versionNameSuffix = " (DEBUG)"
       matchingFallbacks.add("release")
       isDebuggable = true
+      enableUnitTestCoverage = true
+      enableAndroidTestCoverage = true
     }
   }
   
@@ -106,6 +108,14 @@ android {
   packaging {
     resources {
       excludes += "/META-INF/{AL2.0,LGPL2.1,MIT}"
+    }
+  }
+  testOptions {
+    packaging {
+      resources {
+        excludes += "META-INF/LICENSE.md"
+        excludes += "META-INF/LICENSE-notice.md"
+      }
     }
   }
   buildToolsVersion = "36.0.0"
@@ -188,4 +198,8 @@ dependencies {
 
   testImplementation(libs.junit.jupiter)
   testRuntimeOnly(libs.junit.platform.launcher)
+
+  androidTestImplementation(libs.androidx.test.ext.junit)
+  androidTestImplementation(libs.androidx.test.runner)
+  androidTestImplementation(libs.mockk.android)
 }

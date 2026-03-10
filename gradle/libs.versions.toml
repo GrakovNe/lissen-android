@@ -35,6 +35,8 @@ converterMoshi = "3.0.0"
 media3Ffmpeg = "1.9.0+1"
 processPhoenix = "3.0.0"
 junitJupiter = "6.0.3"
+mockk = "1.13.14"
+androidxTestExtJunit = "1.2.1"
 
 [libraries]
 acra-core = { module = "ch.acra:acra-core", version.ref = "acraCore" }
@@ -91,6 +93,9 @@ androidx-media3-ffmpeg-decoder = { module = "org.jellyfin.media3:media3-ffmpeg-d
 process-phoenix = { module = "com.jakewharton:process-phoenix", version.ref = "processPhoenix" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junitJupiter" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version = "junitJupiter" }
+mockk-android = { module = "io.mockk:mockk-android", version.ref = "mockk" }
+androidx-test-ext-junit = { module = "androidx.test.ext:junit", version.ref = "androidxTestExtJunit" }
+androidx-test-runner = { module = "androidx.test:runner", version = "1.6.2" }
 
 [plugins]
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
