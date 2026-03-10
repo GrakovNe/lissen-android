@@ -176,4 +176,6 @@
     <string name="tree_node_downloads">Downloads</string>
     <string name="tree_node_root">Root</string>
     <string name="tree_node_continue">Continue</string>
+    <string name="connection_settings_title">Connection preferences</string>
+    <string name="connection_settings_description">Control cache, proxy, and SSL settings</string>
 </resources>

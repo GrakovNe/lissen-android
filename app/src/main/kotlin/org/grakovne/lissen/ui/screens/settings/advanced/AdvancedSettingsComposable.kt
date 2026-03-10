@@ -53,7 +53,6 @@ fun AdvancedSettingsComposable(
   val viewModel: SettingsViewModel = hiltViewModel()
 
   val crashReporting by viewModel.crashReporting.observeAsState(true)
-  val bypassSsl by viewModel.bypassSsl.observeAsState(false)
 
   val softwareCodecsEnabled by viewModel.softwareCodecsEnabled.observeAsState(false)
   val softwareCodecsEnabledOnStart = viewModel.softwareCodecsEnabledOnStart
@@ -108,24 +107,6 @@ fun AdvancedSettingsComposable(
             title = stringResource(R.string.settings_screen_seek_time_title),
             description = stringResource(R.string.settings_screen_seek_time_hint),
             onclick = { navController.showSeekSettings() },
-          )
-
-          AdvancedSettingsNavigationItemComposable(
-            title = stringResource(R.string.settings_screen_custom_headers_title),
-            description = stringResource(R.string.settings_screen_custom_header_hint),
-            onclick = { navController.showCustomHeadersSettings() },
-          )
-
-          SettingsToggleItem(
-            title = stringResource(R.string.settings_screen_bypass_ssl_title),
-            description = stringResource(R.string.settings_screen_bypass_ssl_hint),
-            initialState = bypassSsl,
-          ) { viewModel.preferBypassSsl(it) }
-
-          AdvancedSettingsNavigationItemComposable(
-            title = stringResource(R.string.settings_screen_internal_connection_url_title),
-            description = stringResource(R.string.settings_screen_internal_connection_url_description),
-            onclick = { navController.showLocalUrlSettings() },
           )
 
           SettingsToggleItem(

@@ -1,6 +1,5 @@
-package org.grakovne.lissen.ui.screens.settings
+package org.grakovne.lissen.ui.screens.settings.advanced
 
-import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -15,54 +14,43 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.navigation.AppNavigationService
-import org.grakovne.lissen.ui.screens.settings.advanced.AdvancedSettingsNavigationItemComposable
-import org.grakovne.lissen.ui.screens.settings.composable.ColorSchemeSettingsComposable
-import org.grakovne.lissen.ui.screens.settings.composable.GitHubLinkComposable
-import org.grakovne.lissen.ui.screens.settings.composable.LibraryOrderingSettingsComposable
-import org.grakovne.lissen.ui.screens.settings.composable.LicenseFooterComposable
 import org.grakovne.lissen.ui.screens.settings.composable.ServerSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun SettingsScreen(
+fun ConnectionSettingsScreen(
   onBack: () -> Unit,
   navController: AppNavigationService,
 ) {
+  val context = LocalContext.current
   val viewModel: SettingsViewModel = hiltViewModel()
-  val host by viewModel.host.observeAsState()
 
-  val materialYouColorsEnabled by viewModel.materialYouEnabled.observeAsState(false)
-
-  LaunchedEffect(Unit) {
-    viewModel.refreshConnectionInfo()
-  }
+  val bypassSsl by viewModel.bypassSsl.observeAsState(false)
 
   Scaffold(
     topBar = {
       TopAppBar(
         title = {
           Text(
-            text = stringResource(R.string.settings_screen_title),
+            text = stringResource(R.string.settings_screen_seek_time_title),
             style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-            color = colorScheme.onSurface,
           )
         },
         navigationIcon = {
@@ -70,7 +58,6 @@ fun SettingsScreen(
             Icon(
               imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
               contentDescription = "Back",
-              tint = colorScheme.onSurface,
             )
           }
         },
@@ -96,44 +83,26 @@ fun SettingsScreen(
               .verticalScroll(rememberScrollState()),
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-          if (host?.url?.isNotEmpty() == true) {
-            AdvancedSettingsNavigationItemComposable(
-              title = stringResource(R.string.connection_settings_title),
-              description = stringResource(R.string.connection_settings_description),
-              onclick = { navController.showConnectionSettings() },
-            )
-          }
-
-          ColorSchemeSettingsComposable(viewModel)
-
-          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            SettingsToggleItem(
-              stringResource(R.string.settings_screen_material_you_title),
-              stringResource(R.string.settings_screen_material_you_description),
-              materialYouColorsEnabled,
-            ) {
-              viewModel.preferMaterialYouColors(it)
-            }
-          }
-
-          LibraryOrderingSettingsComposable(viewModel)
+          ServerSettingsComposable(navController, viewModel)
 
           AdvancedSettingsNavigationItemComposable(
-            title = stringResource(R.string.download_settings_title),
-            description = stringResource(R.string.download_settings_description),
-            onclick = { navController.showCacheSettings() },
+            title = stringResource(R.string.settings_screen_custom_headers_title),
+            description = stringResource(R.string.settings_screen_custom_header_hint),
+            onclick = { navController.showCustomHeadersSettings() },
           )
+
+          SettingsToggleItem(
+            title = stringResource(R.string.settings_screen_bypass_ssl_title),
+            description = stringResource(R.string.settings_screen_bypass_ssl_hint),
+            initialState = bypassSsl,
+          ) { viewModel.preferBypassSsl(it) }
 
           AdvancedSettingsNavigationItemComposable(
-            title = stringResource(R.string.settings_screen_advanced_preferences_title),
-            description = stringResource(R.string.settings_screen_advanced_preferences_description),
-            onclick = { navController.showAdvancedSettings() },
+            title = stringResource(R.string.settings_screen_internal_connection_url_title),
+            description = stringResource(R.string.settings_screen_internal_connection_url_description),
+            onclick = { navController.showLocalUrlSettings() },
           )
-
-          GitHubLinkComposable()
         }
-
-        LicenseFooterComposable()
       }
     },
   )
