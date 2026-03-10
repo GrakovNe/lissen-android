@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -62,9 +61,7 @@ fun CustomHeadersSettingsScreen(onBack: () -> Unit) {
           )
         },
         navigationIcon = {
-          IconButton(onClick = {
-            onBack()
-          }) {
+          IconButton(onClick = { onBack() }) {
             Icon(
               imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
               contentDescription = "Back",
@@ -74,17 +71,17 @@ fun CustomHeadersSettingsScreen(onBack: () -> Unit) {
         },
       )
     },
-    modifier =
-      Modifier
-        .systemBarsPadding()
-        .fillMaxHeight(),
+    modifier = Modifier.fillMaxHeight(),
     content = { innerPadding ->
       LazyColumn(
         state = state,
         contentPadding =
           PaddingValues(
             top = innerPadding.calculateTopPadding(),
-            bottom = innerPadding.calculateBottomPadding() + fabHeight + additionalPadding,
+            bottom =
+              innerPadding.calculateBottomPadding() +
+                fabHeight +
+                additionalPadding,
           ),
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -118,10 +115,7 @@ fun CustomHeadersSettingsScreen(onBack: () -> Unit) {
 
           if (index < customHeaders.size - 1) {
             HorizontalDivider(
-              modifier =
-                Modifier
-                  .height(1.dp)
-                  .padding(horizontal = 24.dp),
+              modifier = Modifier.height(1.dp).padding(horizontal = 24.dp),
             )
           }
         }
@@ -137,9 +131,7 @@ fun CustomHeadersSettingsScreen(onBack: () -> Unit) {
           updatedList.add(ServerRequestHeader.empty())
           settingsViewModel.updateCustomHeaders(updatedList)
 
-          coroutineScope.launch {
-            state.scrollToItem(max(0, updatedList.size - 1))
-          }
+          coroutineScope.launch { state.scrollToItem(max(0, updatedList.size - 1)) }
         },
       ) {
         Icon(

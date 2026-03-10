@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.ExperimentalMaterialApi
@@ -105,9 +104,10 @@ fun LibraryScreen(
 
   var currentLibraryId by rememberSaveable { mutableStateOf("") }
   var localCacheUpdatedAt by rememberSaveable { mutableStateOf(0L) }
-  var currentOrdering by rememberSaveable(stateSaver = LibraryOrderingConfiguration.saver) {
-    mutableStateOf(LibraryOrderingConfiguration.default)
-  }
+  var currentOrdering by
+    rememberSaveable(stateSaver = LibraryOrderingConfiguration.saver) {
+      mutableStateOf(LibraryOrderingConfiguration.default)
+    }
   var pullRefreshing by remember { mutableStateOf(false) }
   val recentBookRefreshing by libraryViewModel.recentBookUpdating.observeAsState(false)
   val searchRequested by libraryViewModel.searchRequested.observeAsState(false)
@@ -179,9 +179,7 @@ fun LibraryScreen(
   val pullRefreshState =
     rememberPullRefreshState(
       refreshing = pullRefreshing,
-      onRefresh = {
-        withHaptic(view) { refreshContent(showPullRefreshing = true) }
-      },
+      onRefresh = { withHaptic(view) { refreshContent(showPullRefreshing = true) } },
     )
 
   val titleTextStyle = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
@@ -199,15 +197,18 @@ fun LibraryScreen(
 
   val showScrollbar by remember {
     derivedStateOf {
-      val scrolledDown = libraryListState.firstVisibleItemIndex > 0 || libraryListState.firstVisibleItemScrollOffset > 0
+      val scrolledDown =
+        libraryListState.firstVisibleItemIndex > 0 ||
+          libraryListState.firstVisibleItemScrollOffset > 0
       libraryListState.isScrollInProgress && scrolledDown
     }
   }
 
-  val scrollbarAlpha by animateFloatAsState(
-    targetValue = if (showScrollbar) 1f else 0f,
-    animationSpec = tween(durationMillis = 300),
-  )
+  val scrollbarAlpha by
+    animateFloatAsState(
+      targetValue = if (showScrollbar) 1f else 0f,
+      animationSpec = tween(durationMillis = 300),
+    )
 
   LaunchedEffect(Unit) {
     val emptyContent = library.itemCount == 0
@@ -215,7 +216,9 @@ fun LibraryScreen(
     val orderingChanged = currentOrdering != settingsViewModel.fetchLibraryOrdering()
 
     val localCacheUsing = cachingModelView.localCacheUsing()
-    val localCacheUpdated = cachingModelView.fetchLatestUpdate(currentLibraryId)?.let { it > localCacheUpdatedAt } ?: true
+    val localCacheUpdated =
+      cachingModelView.fetchLatestUpdate(currentLibraryId)?.let { it > localCacheUpdatedAt }
+        ?: true
 
     if (emptyContent || libraryChanged || orderingChanged || (localCacheUsing && localCacheUpdated)) {
       libraryViewModel.refreshRecentListening()
@@ -239,14 +242,12 @@ fun LibraryScreen(
 
     return when (type) {
       LibraryType.LIBRARY -> {
-        libraryViewModel
-          .fetchPreferredLibraryTitle()
+        libraryViewModel.fetchPreferredLibraryTitle()
           ?: context.getString(R.string.library_screen_library_title)
       }
 
       LibraryType.PODCAST -> {
-        libraryViewModel
-          .fetchPreferredLibraryTitle()
+        libraryViewModel.fetchPreferredLibraryTitle()
           ?: context.getString(R.string.library_screen_podcast_title)
       }
 
@@ -265,9 +266,17 @@ fun LibraryScreen(
           ?.key == "recent_books"
 
       when {
-        isPlaceholderRequired -> context.getString(R.string.library_screen_continue_listening_title)
-        showRecent && recentBlockVisible -> context.getString(R.string.library_screen_continue_listening_title)
-        else -> provideLibraryTitle()
+        isPlaceholderRequired -> {
+          context.getString(R.string.library_screen_continue_listening_title)
+        }
+
+        showRecent && recentBlockVisible -> {
+          context.getString(R.string.library_screen_continue_listening_title)
+        }
+
+        else -> {
+          provideLibraryTitle()
+        }
       }
     }
   }
@@ -280,7 +289,9 @@ fun LibraryScreen(
             targetState = searchRequested,
             label = "library_action_animation",
             transitionSpec = {
-              fadeIn(animationSpec = keyframes { durationMillis = 150 }) togetherWith
+              fadeIn(
+                animationSpec = keyframes { durationMillis = 150 },
+              ) togetherWith
                 fadeOut(animationSpec = keyframes { durationMillis = 150 })
             },
           ) { isSearchRequested ->
@@ -309,7 +320,10 @@ fun LibraryScreen(
                   provideLibraryTitle() -> {
                     Modifier
                       .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
+                        interactionSource =
+                          remember {
+                            MutableInteractionSource()
+                          },
                         indication = null,
                       ) { preferredLibraryExpanded = true }
                       .fillMaxWidth()
@@ -332,7 +346,7 @@ fun LibraryScreen(
             }
           }
         },
-        modifier = Modifier.systemBarsPadding(),
+        modifier = Modifier,
       )
     },
     bottomBar = {
@@ -347,17 +361,10 @@ fun LibraryScreen(
         }
       }
     },
-    modifier =
-      Modifier
-        .systemBarsPadding()
-        .fillMaxSize(),
+    modifier = Modifier.fillMaxSize(),
     content = { innerPadding ->
       Box(
-        modifier =
-          Modifier
-            .padding(innerPadding)
-            .pullRefresh(pullRefreshState)
-            .fillMaxSize(),
+        modifier = Modifier.pullRefresh(pullRefreshState).fillMaxSize(),
       ) {
         LazyColumn(
           state = libraryListState,
@@ -367,11 +374,20 @@ fun LibraryScreen(
               .imePadding()
               .withScrollbar(
                 state = libraryListState,
-                color = colorScheme.onBackground.copy(alpha = scrollbarAlpha),
+                color =
+                  colorScheme.onBackground.copy(
+                    alpha = scrollbarAlpha,
+                  ),
                 totalItems = libraryCount,
                 ignoreItems = listOf("recent_books", "library_title"),
               ),
-          contentPadding = PaddingValues(horizontal = 16.dp),
+          contentPadding =
+            PaddingValues(
+              start = 16.dp,
+              end = 16.dp,
+              top = innerPadding.calculateTopPadding(),
+              bottom = innerPadding.calculateBottomPadding(),
+            ),
         ) {
           item(key = "recent_books") {
             val showRecent = isRecentVisible()
@@ -402,8 +418,7 @@ fun LibraryScreen(
                 targetState = navBarTitle,
                 transitionSpec = {
                   fadeIn(
-                    animationSpec =
-                      tween(300),
+                    animationSpec = tween(300),
                   ) togetherWith
                     fadeOut(
                       animationSpec =
@@ -417,10 +432,7 @@ fun LibraryScreen(
                 when {
                   it == provideLibraryTitle() -> {
                     Spacer(
-                      modifier =
-                        Modifier
-                          .fillMaxWidth()
-                          .height(titleHeightDp),
+                      modifier = Modifier.fillMaxWidth().height(titleHeightDp),
                     )
                   }
 
@@ -431,7 +443,10 @@ fun LibraryScreen(
                         modifier =
                           Modifier
                             .clickable(
-                              interactionSource = remember { MutableInteractionSource() },
+                              interactionSource =
+                                remember {
+                                  MutableInteractionSource()
+                                },
                               indication = null,
                             ) { preferredLibraryExpanded = true }
                             .fillMaxWidth(),
@@ -488,7 +503,10 @@ fun LibraryScreen(
             state = pullRefreshState,
             contentColor = colorScheme.primary,
             backgroundColor = colorScheme.surfaceContainer,
-            modifier = Modifier.align(Alignment.TopCenter),
+            modifier =
+              Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = innerPadding.calculateTopPadding()),
           )
         }
       }

@@ -28,6 +28,10 @@
 package org.grakovne.lissen.ui.components
 
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -41,6 +45,7 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -56,7 +61,7 @@ fun Modifier.withScrollbar(
   ignoreItems: List<String> = emptyList(),
 ): Modifier {
   try {
-    return baseScrollbar { atEnd ->
+    return baseScrollbar { atEnd, systemTopInset, systemBottomInset ->
       val layoutInfo = state.layoutInfo
       val viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
 
@@ -87,7 +92,14 @@ fun Modifier.withScrollbar(
             ?.let { (itemSize * it.index - it.offset) / totalSize * canvasSize }
             ?: 0f
 
-        drawScrollbarThumb(atEnd, thumbSize, startOffset, color)
+        drawScrollbarThumb(
+          atEnd = atEnd,
+          thumbSize = thumbSize,
+          startOffset = startOffset,
+          color = color,
+          systemTopInset = systemTopInset,
+          systemBottomInset = systemBottomInset,
+        )
       }
     }
   } catch (ex: Exception) {
@@ -102,19 +114,22 @@ private fun DrawScope.drawScrollbarThumb(
   thumbSize: Float,
   startOffset: Float,
   color: Color,
+  systemTopInset: Float,
+  systemBottomInset: Float,
 ) {
   val thickness = 3.dp.toPx()
   val radius = 3.dp.toPx()
   val horizontalPadding = 6.dp.toPx()
   val verticalPadding = 4.dp.toPx()
 
-  val availableHeight = (size.height - 2 * verticalPadding).coerceAtLeast(0f)
+  val availableHeight =
+    (size.height - systemTopInset - systemBottomInset - 2 * verticalPadding).coerceAtLeast(0f)
   val maxY = (availableHeight - thumbSize).coerceAtLeast(0f)
 
   val topLeft =
     Offset(
       x = if (atEnd) size.width - thickness - horizontalPadding else horizontalPadding,
-      y = verticalPadding + startOffset.coerceIn(0f, maxY),
+      y = systemTopInset + verticalPadding + startOffset.coerceIn(0f, maxY),
     )
 
   drawRoundRect(
@@ -125,8 +140,14 @@ private fun DrawScope.drawScrollbarThumb(
   )
 }
 
-private fun Modifier.baseScrollbar(onDraw: DrawScope.(atEnd: Boolean) -> Unit): Modifier =
+private fun Modifier.baseScrollbar(onDraw: DrawScope.(atEnd: Boolean, systemTopInset: Float, systemBottomInset: Float) -> Unit): Modifier =
   composed {
+    val density = LocalDensity.current
+    val statusBarsInsets = WindowInsets.statusBars.asPaddingValues()
+    val navigationBarsInsets = WindowInsets.navigationBars.asPaddingValues()
+    val systemTopInset = with(density) { statusBarsInsets.calculateTopPadding().toPx() }
+    val systemBottomInset = with(density) { navigationBarsInsets.calculateBottomPadding().toPx() }
+
     val scrolled =
       remember {
         MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
@@ -150,6 +171,6 @@ private fun Modifier.baseScrollbar(onDraw: DrawScope.(atEnd: Boolean) -> Unit): 
 
     nestedScroll(nestedScrollConnection).drawWithContent {
       drawContent()
-      onDraw(reachedEnd)
+      onDraw(reachedEnd, systemTopInset, systemBottomInset)
     }
   }

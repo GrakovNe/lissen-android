@@ -1,7 +1,6 @@
 package org.grakovne.lissen.ui.screens.player.composable.placeholder
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
@@ -33,7 +32,7 @@ fun NavigationBarPlaceholderComposable(
 ) {
   Surface(
     shadowElevation = 4.dp,
-    modifier = modifier.height(64.dp),
+    modifier = modifier,
   ) {
     NavigationBar(
       containerColor = Color.Transparent,
@@ -49,9 +48,26 @@ fun NavigationBarPlaceholderComposable(
             Icons.AutoMirrored.Rounded.QueueMusic,
             contentDescription =
               when (libraryType) {
-                LibraryType.LIBRARY -> stringResource(R.string.player_screen_chapter_list_navigation_library)
-                LibraryType.PODCAST -> stringResource(R.string.player_screen_chapter_list_navigation_podcast)
-                LibraryType.UNKNOWN -> stringResource(R.string.player_screen_chapter_list_navigation_items)
+                LibraryType.LIBRARY -> {
+                  stringResource(
+                    R.string
+                      .player_screen_chapter_list_navigation_library,
+                  )
+                }
+
+                LibraryType.PODCAST -> {
+                  stringResource(
+                    R.string
+                      .player_screen_chapter_list_navigation_podcast,
+                  )
+                }
+
+                LibraryType.UNKNOWN -> {
+                  stringResource(
+                    R.string
+                      .player_screen_chapter_list_navigation_items,
+                  )
+                }
               },
             modifier = Modifier.size(iconSize),
           )
@@ -60,9 +76,26 @@ fun NavigationBarPlaceholderComposable(
           Text(
             text =
               when (libraryType) {
-                LibraryType.LIBRARY -> stringResource(R.string.player_screen_chapter_list_navigation_library)
-                LibraryType.PODCAST -> stringResource(R.string.player_screen_chapter_list_navigation_podcast)
-                LibraryType.UNKNOWN -> stringResource(R.string.player_screen_chapter_list_navigation_items)
+                LibraryType.LIBRARY -> {
+                  stringResource(
+                    R.string
+                      .player_screen_chapter_list_navigation_library,
+                  )
+                }
+
+                LibraryType.PODCAST -> {
+                  stringResource(
+                    R.string
+                      .player_screen_chapter_list_navigation_podcast,
+                  )
+                }
+
+                LibraryType.UNKNOWN -> {
+                  stringResource(
+                    R.string
+                      .player_screen_chapter_list_navigation_items,
+                  )
+                }
               },
             style = labelStyle,
             maxLines = 1,
@@ -70,7 +103,7 @@ fun NavigationBarPlaceholderComposable(
           )
         },
         selected = false,
-        onClick = { },
+        onClick = {},
         colors =
           NavigationBarItemDefaults.colors(
             selectedIconColor = colorScheme.primary,
@@ -82,7 +115,8 @@ fun NavigationBarPlaceholderComposable(
         icon = {
           Icon(
             imageVector = Icons.Outlined.CloudDownload,
-            contentDescription = stringResource(R.string.player_screen_downloads_navigation),
+            contentDescription =
+              stringResource(R.string.player_screen_downloads_navigation),
             modifier = Modifier.size(iconSize),
           )
         },
@@ -107,7 +141,8 @@ fun NavigationBarPlaceholderComposable(
         icon = {
           Icon(
             Icons.Outlined.SlowMotionVideo,
-            contentDescription = stringResource(R.string.player_screen_playback_speed_navigation),
+            contentDescription =
+              stringResource(R.string.player_screen_playback_speed_navigation),
             modifier = Modifier.size(iconSize),
           )
         },
@@ -120,7 +155,7 @@ fun NavigationBarPlaceholderComposable(
           )
         },
         selected = false,
-        onClick = { },
+        onClick = {},
         enabled = true,
         colors =
           NavigationBarItemDefaults.colors(
@@ -133,7 +168,8 @@ fun NavigationBarPlaceholderComposable(
         icon = {
           Icon(
             TimerPlay,
-            contentDescription = stringResource(R.string.player_screen_timer_navigation),
+            contentDescription =
+              stringResource(R.string.player_screen_timer_navigation),
             modifier = Modifier.size(iconSize),
           )
         },
@@ -146,7 +182,7 @@ fun NavigationBarPlaceholderComposable(
           )
         },
         selected = false,
-        onClick = { },
+        onClick = {},
         colors =
           NavigationBarItemDefaults.colors(
             selectedIconColor = colorScheme.primary,

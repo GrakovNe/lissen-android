@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -66,7 +65,10 @@ fun AdvancedSettingsComposable(
       TopAppBar(
         title = {
           Text(
-            text = stringResource(R.string.settings_screen_advanced_preferences_title),
+            text =
+              stringResource(
+                R.string.settings_screen_advanced_preferences_title,
+              ),
             style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
             color = colorScheme.onSurface,
           )
@@ -82,24 +84,15 @@ fun AdvancedSettingsComposable(
         },
       )
     },
-    modifier =
-      Modifier
-        .systemBarsPadding()
-        .fillMaxHeight(),
+    modifier = Modifier.fillMaxHeight(),
     content = { innerPadding ->
       Column(
-        modifier =
-          Modifier
-            .fillMaxSize()
-            .padding(innerPadding),
+        modifier = Modifier.fillMaxSize().padding(innerPadding),
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally,
       ) {
         Column(
-          modifier =
-            Modifier
-              .fillMaxWidth()
-              .verticalScroll(rememberScrollState()),
+          modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
           PlaybackVolumeBoostSettingsComposable(viewModel)
@@ -123,32 +116,52 @@ fun AdvancedSettingsComposable(
           ) { viewModel.preferBypassSsl(it) }
 
           AdvancedSettingsNavigationItemComposable(
-            title = stringResource(R.string.settings_screen_internal_connection_url_title),
-            description = stringResource(R.string.settings_screen_internal_connection_url_description),
+            title =
+              stringResource(
+                R.string.settings_screen_internal_connection_url_title,
+              ),
+            description =
+              stringResource(
+                R.string.settings_screen_internal_connection_url_description,
+              ),
             onclick = { navController.showLocalUrlSettings() },
           )
 
           SettingsToggleItem(
-            title = stringResource(R.string.settings_screen_software_codecs_enabled_title),
-            description = stringResource(R.string.settings_screen_software_codecs_enabled_description),
+            title =
+              stringResource(
+                R.string.settings_screen_software_codecs_enabled_title,
+              ),
+            description =
+              stringResource(
+                R.string.settings_screen_software_codecs_enabled_description,
+              ),
             initialState = softwareCodecsEnabled,
           ) { viewModel.preferSoftwareCodecsEnabled(it) }
 
           SettingsToggleItem(
             title = stringResource(R.string.settings_screen_crash_report_title),
-            description = stringResource(R.string.settings_screen_crash_report_description),
+            description =
+              stringResource(R.string.settings_screen_crash_report_description),
             initialState = crashReporting,
           ) { viewModel.preferCrashReporting(it) }
 
           AdvancedSettingsSimpleItemComposable(
-            title = stringResource(R.string.settings_screen_clear_thumbnail_cache_title),
-            description = stringResource(R.string.settings_screen_clear_thumbnail_cache_hint),
+            title =
+              stringResource(
+                R.string.settings_screen_clear_thumbnail_cache_title,
+              ),
+            description =
+              stringResource(R.string.settings_screen_clear_thumbnail_cache_hint),
             onclick = {
               scope.launch { cachingModelView.clearShortTermCache() }
               Toast
                 .makeText(
                   context,
-                  context.getString(R.string.settings_screen_clear_thumbnail_cache_success_toast),
+                  context.getString(
+                    R.string
+                      .settings_screen_clear_thumbnail_cache_success_toast,
+                  ),
                   Toast.LENGTH_SHORT,
                 ).show()
             },
@@ -168,10 +181,7 @@ fun SoftwareCodecsPreferenceBanner(modifier: Modifier = Modifier) {
   val context = LocalContext.current
 
   Row(
-    modifier =
-      modifier
-        .fillMaxWidth()
-        .padding(horizontal = 20.dp, vertical = 14.dp),
+    modifier = modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 14.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {
     Icon(
