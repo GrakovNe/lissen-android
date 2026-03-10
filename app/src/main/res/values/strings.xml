@@ -177,5 +177,5 @@
     <string name="tree_node_root">Root</string>
     <string name="tree_node_continue">Continue</string>
     <string name="connection_settings_title">Connection preferences</string>
-    <string name="connection_settings_description">Control cache, proxy, and SSL settings</string>
+    <string name="connection_settings_description">Control server address, proxy, and SSL settings</string>
 </resources>
