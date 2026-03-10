@@ -11,7 +11,7 @@ import org.grakovne.lissen.playback.service.FileClip
 import org.grakovne.lissen.playback.service.LissenMediaSourceFactory
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.CHAPTER_START_MS
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.FILE_SEGMENTS
-import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -29,7 +29,7 @@ class LissenMediaSourceFactoryTest {
   }
 
   @Test
-  fun no_exception_thrown() {
+  fun no_exception_thrown_if_no_files() {
     val mediaSource =
       lissenMediaSourceFactory.createMediaSource(
         MediaItem
@@ -54,6 +54,6 @@ class LissenMediaSourceFactoryTest {
               .build(),
           ).build(),
       )
-    assertEquals(mediaSource, null)
+    assertNotNull(mediaSource)
   }
 }
