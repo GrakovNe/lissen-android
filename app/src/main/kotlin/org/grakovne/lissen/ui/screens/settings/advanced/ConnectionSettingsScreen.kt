@@ -23,13 +23,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.navigation.AppNavigationService
-import org.grakovne.lissen.ui.screens.settings.composable.ServerSettingsComposable
+import org.grakovne.lissen.ui.screens.settings.composable.DisconnectServerComposable
+import org.grakovne.lissen.ui.screens.settings.composable.ServerInfoComposable
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
@@ -39,7 +39,6 @@ fun ConnectionSettingsScreen(
   onBack: () -> Unit,
   navController: AppNavigationService,
 ) {
-  val context = LocalContext.current
   val viewModel: SettingsViewModel = hiltViewModel()
 
   val bypassSsl by viewModel.bypassSsl.observeAsState(false)
@@ -67,43 +66,45 @@ fun ConnectionSettingsScreen(
       Modifier
         .systemBarsPadding()
         .fillMaxHeight(),
-    content = { innerPadding ->
+  ) { innerPadding ->
+    Column(
+      modifier =
+        Modifier
+          .fillMaxSize()
+          .padding(innerPadding),
+      verticalArrangement = Arrangement.SpaceBetween,
+      horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
       Column(
         modifier =
           Modifier
-            .fillMaxSize()
-            .padding(innerPadding),
-        verticalArrangement = Arrangement.SpaceBetween,
+            .fillMaxWidth()
+            .weight(1f)
+            .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
       ) {
-        Column(
-          modifier =
-            Modifier
-              .fillMaxWidth()
-              .verticalScroll(rememberScrollState()),
-          horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-          ServerSettingsComposable(navController, viewModel)
+        ServerInfoComposable(navController, viewModel)
 
-          AdvancedSettingsNavigationItemComposable(
-            title = stringResource(R.string.settings_screen_custom_headers_title),
-            description = stringResource(R.string.settings_screen_custom_header_hint),
-            onclick = { navController.showCustomHeadersSettings() },
-          )
+        AdvancedSettingsNavigationItemComposable(
+          title = stringResource(R.string.settings_screen_custom_headers_title),
+          description = stringResource(R.string.settings_screen_custom_header_hint),
+          onclick = { navController.showCustomHeadersSettings() },
+        )
 
-          SettingsToggleItem(
-            title = stringResource(R.string.settings_screen_bypass_ssl_title),
-            description = stringResource(R.string.settings_screen_bypass_ssl_hint),
-            initialState = bypassSsl,
-          ) { viewModel.preferBypassSsl(it) }
+        SettingsToggleItem(
+          title = stringResource(R.string.settings_screen_bypass_ssl_title),
+          description = stringResource(R.string.settings_screen_bypass_ssl_hint),
+          initialState = bypassSsl,
+        ) { viewModel.preferBypassSsl(it) }
 
-          AdvancedSettingsNavigationItemComposable(
-            title = stringResource(R.string.settings_screen_internal_connection_url_title),
-            description = stringResource(R.string.settings_screen_internal_connection_url_description),
-            onclick = { navController.showLocalUrlSettings() },
-          )
-        }
+        AdvancedSettingsNavigationItemComposable(
+          title = stringResource(R.string.settings_screen_internal_connection_url_title),
+          description = stringResource(R.string.settings_screen_internal_connection_url_description),
+          onclick = { navController.showLocalUrlSettings() },
+        )
       }
-    },
-  )
+
+      DisconnectServerComposable(navController, viewModel)
+    }
+  }
 }
