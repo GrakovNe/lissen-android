@@ -54,7 +54,7 @@ fun AdvancedSettingsComposable(
   val viewModel: SettingsViewModel = hiltViewModel()
 
   val crashReporting by viewModel.crashReporting.observeAsState(true)
-  
+
   val materialYouColorsEnabled by viewModel.materialYouEnabled.observeAsState(false)
   val softwareCodecsEnabled by viewModel.softwareCodecsEnabled.observeAsState(false)
   val softwareCodecsEnabledOnStart = viewModel.softwareCodecsEnabledOnStart
@@ -110,8 +110,7 @@ fun AdvancedSettingsComposable(
             description = stringResource(R.string.settings_screen_seek_time_hint),
             onclick = { navController.showSeekSettings() },
           )
-          
-          
+
           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             SettingsToggleItem(
               stringResource(R.string.settings_screen_material_you_title),
