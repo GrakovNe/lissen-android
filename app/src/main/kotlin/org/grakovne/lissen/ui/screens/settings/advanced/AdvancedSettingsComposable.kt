@@ -1,5 +1,6 @@
 package org.grakovne.lissen.ui.screens.settings.advanced
 
+import android.os.Build
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -53,8 +54,8 @@ fun AdvancedSettingsComposable(
   val viewModel: SettingsViewModel = hiltViewModel()
 
   val crashReporting by viewModel.crashReporting.observeAsState(true)
-  val bypassSsl by viewModel.bypassSsl.observeAsState(false)
 
+  val materialYouColorsEnabled by viewModel.materialYouEnabled.observeAsState(false)
   val softwareCodecsEnabled by viewModel.softwareCodecsEnabled.observeAsState(false)
   val softwareCodecsEnabledOnStart = viewModel.softwareCodecsEnabledOnStart
 
@@ -110,23 +111,15 @@ fun AdvancedSettingsComposable(
             onclick = { navController.showSeekSettings() },
           )
 
-          AdvancedSettingsNavigationItemComposable(
-            title = stringResource(R.string.settings_screen_custom_headers_title),
-            description = stringResource(R.string.settings_screen_custom_header_hint),
-            onclick = { navController.showCustomHeadersSettings() },
-          )
-
-          SettingsToggleItem(
-            title = stringResource(R.string.settings_screen_bypass_ssl_title),
-            description = stringResource(R.string.settings_screen_bypass_ssl_hint),
-            initialState = bypassSsl,
-          ) { viewModel.preferBypassSsl(it) }
-
-          AdvancedSettingsNavigationItemComposable(
-            title = stringResource(R.string.settings_screen_internal_connection_url_title),
-            description = stringResource(R.string.settings_screen_internal_connection_url_description),
-            onclick = { navController.showLocalUrlSettings() },
-          )
+          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            SettingsToggleItem(
+              stringResource(R.string.settings_screen_material_you_title),
+              stringResource(R.string.settings_screen_material_you_description),
+              materialYouColorsEnabled,
+            ) {
+              viewModel.preferMaterialYouColors(it)
+            }
+          }
 
           SettingsToggleItem(
             title = stringResource(R.string.settings_screen_software_codecs_enabled_title),

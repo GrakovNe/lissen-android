@@ -1,6 +1,5 @@
 package org.grakovne.lissen.ui.screens.settings
 
-import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -36,8 +35,6 @@ import org.grakovne.lissen.ui.screens.settings.composable.ColorSchemeSettingsCom
 import org.grakovne.lissen.ui.screens.settings.composable.GitHubLinkComposable
 import org.grakovne.lissen.ui.screens.settings.composable.LibraryOrderingSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.LicenseFooterComposable
-import org.grakovne.lissen.ui.screens.settings.composable.ServerSettingsComposable
-import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
@@ -48,8 +45,6 @@ fun SettingsScreen(
 ) {
   val viewModel: SettingsViewModel = hiltViewModel()
   val host by viewModel.host.observeAsState()
-
-  val materialYouColorsEnabled by viewModel.materialYouEnabled.observeAsState(false)
 
   LaunchedEffect(Unit) {
     viewModel.refreshConnectionInfo()
@@ -97,20 +92,14 @@ fun SettingsScreen(
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
           if (host?.url?.isNotEmpty() == true) {
-            ServerSettingsComposable(navController, viewModel)
+            AdvancedSettingsNavigationItemComposable(
+              title = stringResource(R.string.connection_settings_title),
+              description = stringResource(R.string.connection_settings_description),
+              onclick = { navController.showConnectionSettings() },
+            )
           }
 
           ColorSchemeSettingsComposable(viewModel)
-
-          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            SettingsToggleItem(
-              stringResource(R.string.settings_screen_material_you_title),
-              stringResource(R.string.settings_screen_material_you_description),
-              materialYouColorsEnabled,
-            ) {
-              viewModel.preferMaterialYouColors(it)
-            }
-          }
 
           LibraryOrderingSettingsComposable(viewModel)
 

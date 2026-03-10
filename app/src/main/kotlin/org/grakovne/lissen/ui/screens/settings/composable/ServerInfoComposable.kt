@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -37,7 +38,7 @@ import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ServerSettingsComposable(
+fun ServerInfoComposable(
   navController: AppNavigationService,
   viewModel: SettingsViewModel,
 ) {
@@ -76,13 +77,14 @@ fun ServerSettingsComposable(
     }
     IconButton(
       onClick = {
-        navController.showLogin()
-        viewModel.logout()
+        connectionInfoExpanded = true
+        // navController.showLogin()
+        // viewModel.logout()
       },
     ) {
       Icon(
-        imageVector = Icons.Outlined.Delete,
-        contentDescription = "Logout",
+        imageVector = Icons.Outlined.Info,
+        contentDescription = null,
       )
     }
   }
