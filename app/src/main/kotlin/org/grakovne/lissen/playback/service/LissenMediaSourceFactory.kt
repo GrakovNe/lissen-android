@@ -10,6 +10,7 @@ import androidx.media3.exoplayer.source.ClippingMediaSource
 import androidx.media3.exoplayer.source.ConcatenatingMediaSource2
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import androidx.media3.exoplayer.source.MediaSource
+import androidx.media3.exoplayer.source.SilenceMediaSource
 import androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy
 import kotlinx.parcelize.Parcelize
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.FILE_SEGMENTS
@@ -82,19 +83,30 @@ class LissenMediaSourceFactory(
     return MediaId.fromString(mediaItem.mediaId)?.let { (bookId, chapterId) ->
       mediaItem.requestMetadata.extras?.let { extras ->
         BundleCompat.getParcelableArrayList(extras, FILE_SEGMENTS, FileClip::class.java)?.let { segments ->
-          segments.singleOrNull()?.toMediaSource(bookId, mediaItem.mediaMetadata)
-            ?: ConcatenatingMediaSource2
-              .Builder()
-              .apply {
-                segments.forEach {
-                  add(it.toMediaSource(bookId), ((it.clipEnd - it.clipStart) * 1000).toLong())
-                }
-              }.setMediaItem(
-                MediaItem
-                  .Builder()
-                  .setMediaMetadata(mediaItem.mediaMetadata)
-                  .build(),
-              ).build()
+          when (segments.size) {
+            0 -> {
+              SilenceMediaSource(1L)
+            }
+
+            1 -> {
+              segments.first().toMediaSource(bookId, mediaItem.mediaMetadata)
+            }
+
+            else -> {
+              ConcatenatingMediaSource2
+                .Builder()
+                .apply {
+                  segments.forEach {
+                    add(it.toMediaSource(bookId), ((it.clipEnd - it.clipStart) * 1000).toLong())
+                  }
+                }.setMediaItem(
+                  MediaItem
+                    .Builder()
+                    .setMediaMetadata(mediaItem.mediaMetadata)
+                    .build(),
+                ).build()
+            }
+          }
         }
       }
     } ?: mediaSourceFactory.createMediaSource(mediaItem)
