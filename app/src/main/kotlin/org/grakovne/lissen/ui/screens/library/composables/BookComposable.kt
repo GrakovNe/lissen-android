@@ -3,6 +3,7 @@ package org.grakovne.lissen.ui.screens.library.composables
 import android.view.View
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,13 +13,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.DoNotDisturbOnTotalSilence
 import androidx.compose.material.icons.outlined.DoneAll
+import androidx.compose.material.icons.outlined.Restore
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
@@ -122,6 +126,8 @@ fun BookComposable(
   if (isPlayingItemOptionsExpanded) {
     PlayingItemOptionsComposable(
       item = book,
+      onMarkFinished = {},
+      onResetProgress = {},
       onDismissRequest = { isPlayingItemOptionsExpanded = false },
     )
   }
@@ -156,51 +162,4 @@ fun BookMetadataComposable(book: Book) {
       overflow = TextOverflow.Ellipsis,
     )
   }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun PlayingItemOptionsComposable(
-  item: Book,
-  onDismissRequest: () -> Unit,
-) {
-  ModalBottomSheet(
-    containerColor = colorScheme.background,
-    onDismissRequest = onDismissRequest,
-    content = {
-      Column(
-        modifier =
-          Modifier
-            .fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-      ) {
-        Text(
-          text = item.title,
-          style = typography.bodyLarge,
-          maxLines = 1,
-          overflow = TextOverflow.Ellipsis,
-        )
-
-        ListItem(
-          modifier =
-            Modifier
-              .fillMaxWidth()
-              .clickable { },
-          headlineContent = {
-            Text(
-              text = "Отметить прослушанной",
-              style = typography.bodyMedium,
-            )
-          },
-          trailingContent = {},
-          leadingContent = {
-//            Icon(
-//              imageVector = Icons.Outlined.DoNotDisturbOnTotalSilence,
-//              contentDescription = null,
-//            )
-          },
-        )
-      }
-    },
-  )
 }

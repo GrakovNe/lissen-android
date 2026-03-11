@@ -180,4 +180,6 @@
     <string name="tree_node_continue">Продолжить</string>
     <string name="connection_settings_title">Настройки подклочения</string>
     <string name="connection_settings_description">Настройте адрес сервера, прокси-заголовки и SSL</string>
+    <string name="playing_item_menu_mark_as_finished">Отметить прослушанной</string>
+    <string name="playing_item_menu_reset_progress">Сбросить прогресс</string>
 </resources>
