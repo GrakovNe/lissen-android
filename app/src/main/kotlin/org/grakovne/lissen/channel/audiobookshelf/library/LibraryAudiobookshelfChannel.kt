@@ -23,11 +23,11 @@ import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibraryOrder
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibrarySearchItemsConverter
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.channel.common.OperationResult.Success
-import org.grakovne.lissen.lib.domain.Book
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.PagedItems
 import org.grakovne.lissen.lib.domain.PlaybackSession
+import org.grakovne.lissen.lib.domain.PlayingItem
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -69,7 +69,7 @@ class LibraryAudiobookshelfChannel
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
-    ): OperationResult<PagedItems<Book>> {
+    ): OperationResult<PagedItems<PlayingItem>> {
       val (option, direction) = libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering())
       val filter = libraryFilteringRequestConverter.apply(preferences)
 
@@ -88,7 +88,7 @@ class LibraryAudiobookshelfChannel
       libraryId: String,
       query: String,
       limit: Int,
-    ): OperationResult<List<Book>> =
+    ): OperationResult<List<PlayingItem>> =
       coroutineScope {
         val searchResult = dataRepository.searchBooks(libraryId, query, limit)
 
@@ -119,7 +119,7 @@ class LibraryAudiobookshelfChannel
               }.map { librarySearchItemsConverter.apply(it) }
           }
 
-        val bySeries: Deferred<OperationResult<List<Book>>> =
+        val bySeries: Deferred<OperationResult<List<PlayingItem>>> =
           async {
             searchResult
               .map { result -> result.series }
@@ -141,13 +141,13 @@ class LibraryAudiobookshelfChannel
         mergeBooks(byTitle, byAuthor, bySeries)
       }
 
-    private suspend fun mergeBooks(vararg queries: Deferred<OperationResult<List<Book>>>): OperationResult<List<Book>> =
+    private suspend fun mergeBooks(vararg queries: Deferred<OperationResult<List<PlayingItem>>>): OperationResult<List<PlayingItem>> =
       coroutineScope {
-        val results: List<OperationResult<List<Book>>> = awaitAll(*queries)
+        val results: List<OperationResult<List<PlayingItem>>> = awaitAll(*queries)
 
-        val merged: OperationResult<List<Book>> =
+        val merged: OperationResult<List<PlayingItem>> =
           results
-            .fold<OperationResult<List<Book>>, OperationResult<List<Book>>>(Success(emptyList())) { acc, res ->
+            .fold<OperationResult<List<PlayingItem>>, OperationResult<List<PlayingItem>>>(Success(emptyList())) { acc, res ->
               when {
                 acc is OperationResult.Error -> {
                   acc

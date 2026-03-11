@@ -3,7 +3,7 @@ package org.grakovne.lissen.lib.domain
 import androidx.annotation.Keep
 
 @Keep
-data class Book(
+data class PlayingItem(
   val id: String,
   val subtitle: String?,
   val series: String?,

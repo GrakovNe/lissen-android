@@ -1,7 +1,7 @@
 package org.grakovne.lissen.channel.audiobookshelf.podcast.converter
 
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastItem
-import org.grakovne.lissen.lib.domain.Book
+import org.grakovne.lissen.lib.domain.PlayingItem
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -9,12 +9,12 @@ import javax.inject.Singleton
 class PodcastSearchItemsConverter
   @Inject
   constructor() {
-    fun apply(response: List<PodcastItem>): List<Book> {
+    fun apply(response: List<PodcastItem>): List<PlayingItem> {
       return response
         .mapNotNull {
           val title = it.media.metadata.title ?: return@mapNotNull null
 
-          Book(
+          PlayingItem(
             id = it.id,
             title = title,
             subtitle = null,

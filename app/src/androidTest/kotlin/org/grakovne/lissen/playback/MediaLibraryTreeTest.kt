@@ -14,18 +14,17 @@ import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
-import org.grakovne.lissen.lib.domain.Book
 import org.grakovne.lissen.lib.domain.BookFile
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.Library
 import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.PagedItems
 import org.grakovne.lissen.lib.domain.PlayingChapter
+import org.grakovne.lissen.lib.domain.PlayingItem
 import org.grakovne.lissen.lib.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -359,7 +358,7 @@ class MediaLibraryTreeTest {
   private fun makeBook(
     id: String,
     title: String,
-  ) = Book(
+  ) = PlayingItem(
     id = id,
     title = title,
     subtitle = null,

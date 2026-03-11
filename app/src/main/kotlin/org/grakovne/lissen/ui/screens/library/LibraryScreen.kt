@@ -473,9 +473,11 @@ fun LibraryScreen(
                 val book = library[it] ?: return@items
 
                 BookComposable(
-                  book = book,
+                  playingItem = book,
                   imageLoader = imageLoader,
                   navController = navController,
+                  libraryViewModel = libraryViewModel,
+                  onContentRefresh = { refreshContent(false) },
                 )
               }
             }

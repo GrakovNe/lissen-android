@@ -20,8 +20,8 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.lib.domain.Book
 import org.grakovne.lissen.lib.domain.LibraryType
+import org.grakovne.lissen.lib.domain.PlayingItem
 import org.grakovne.lissen.lib.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.screens.library.paging.LibraryDefaultPagingSource
@@ -47,8 +47,8 @@ class LibraryViewModel
 
     private val _searchToken = MutableStateFlow(EMPTY_SEARCH)
 
-    private var defaultPagingSource: PagingSource<Int, Book>? = null
-    private var searchPagingSource: PagingSource<Int, Book>? = null
+    private var defaultPagingSource: PagingSource<Int, PlayingItem>? = null
+    private var searchPagingSource: PagingSource<Int, PlayingItem>? = null
 
     private val _totalCount = MutableLiveData<Int>()
     val totalCount: LiveData<Int> = _totalCount
@@ -66,7 +66,7 @@ class LibraryViewModel
         false -> libraryPager
       }
 
-    private val searchPager: Flow<PagingData<Book>> =
+    private val searchPager: Flow<PagingData<PlayingItem>> =
       combine(
         _searchToken,
         searchRequested.asFlow(),
@@ -90,7 +90,7 @@ class LibraryViewModel
         ).flow
       }.cachedIn(viewModelScope)
 
-    private val libraryPager: Flow<PagingData<Book>> by lazy {
+    private val libraryPager: Flow<PagingData<PlayingItem>> by lazy {
       Pager(
         config = pageConfig,
         pagingSourceFactory = {
@@ -167,6 +167,12 @@ class LibraryViewModel
             },
           )
       }
+    }
+
+    fun markPlayingItemsListened(playingItem: PlayingItem) {
+    }
+
+    fun resetPlayingItemProgress(playingItem: PlayingItem) {
     }
 
     companion object {

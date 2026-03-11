@@ -4,7 +4,7 @@ import com.squareup.moshi.Types
 import org.grakovne.lissen.common.moshi
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookSeriesDto
-import org.grakovne.lissen.lib.domain.Book
+import org.grakovne.lissen.lib.domain.PlayingItem
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -12,8 +12,8 @@ import javax.inject.Singleton
 class CachedBookEntityConverter
   @Inject
   constructor() {
-    fun apply(entity: BookEntity): Book =
-      Book(
+    fun apply(entity: BookEntity): PlayingItem =
+      PlayingItem(
         id = entity.id,
         title = entity.title,
         subtitle = entity.subtitle,

@@ -3,7 +3,6 @@ package org.grakovne.lissen.channel.common
 import android.net.Uri
 import okio.Buffer
 import org.grakovne.lissen.channel.audiobookshelf.Host
-import org.grakovne.lissen.lib.domain.Book
 import org.grakovne.lissen.lib.domain.Bookmark
 import org.grakovne.lissen.lib.domain.CreateBookmarkRequest
 import org.grakovne.lissen.lib.domain.DetailedItem
@@ -12,6 +11,7 @@ import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.PagedItems
 import org.grakovne.lissen.lib.domain.PlaybackProgress
 import org.grakovne.lissen.lib.domain.PlaybackSession
+import org.grakovne.lissen.lib.domain.PlayingItem
 import org.grakovne.lissen.lib.domain.RecentBook
 
 interface MediaChannel {
@@ -36,13 +36,13 @@ interface MediaChannel {
     libraryId: String,
     pageSize: Int,
     pageNumber: Int,
-  ): OperationResult<PagedItems<Book>>
+  ): OperationResult<PagedItems<PlayingItem>>
 
   suspend fun searchBooks(
     libraryId: String,
     query: String,
     limit: Int,
-  ): OperationResult<List<Book>>
+  ): OperationResult<List<PlayingItem>>
 
   suspend fun fetchLibraries(): OperationResult<List<Library>>
 

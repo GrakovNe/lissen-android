@@ -7,13 +7,13 @@ import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookmarkRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedLibraryRepository
-import org.grakovne.lissen.lib.domain.Book
 import org.grakovne.lissen.lib.domain.Bookmark
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.Library
 import org.grakovne.lissen.lib.domain.MediaProgress
 import org.grakovne.lissen.lib.domain.PagedItems
 import org.grakovne.lissen.lib.domain.PlaybackProgress
+import org.grakovne.lissen.lib.domain.PlayingItem
 import org.grakovne.lissen.lib.domain.RecentBook
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import java.io.File
@@ -60,7 +60,7 @@ class LocalCacheRepository
     suspend fun searchBooks(
       libraryId: String,
       query: String,
-    ): OperationResult<List<Book>> =
+    ): OperationResult<List<PlayingItem>> =
       cachedBookRepository
         .searchBooks(libraryId = libraryId, query = query)
         .let { OperationResult.Success(it) }
@@ -100,7 +100,7 @@ class LocalCacheRepository
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
-    ): OperationResult<PagedItems<Book>> {
+    ): OperationResult<PagedItems<PlayingItem>> {
       val books =
         cachedBookRepository
           .fetchBooks(pageNumber = pageNumber, pageSize = pageSize, libraryId = libraryId)

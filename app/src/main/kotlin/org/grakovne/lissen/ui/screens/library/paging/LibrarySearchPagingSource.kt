@@ -3,7 +3,7 @@ package org.grakovne.lissen.ui.screens.library.paging
 import androidx.paging.PagingState
 import org.grakovne.lissen.common.LibraryPagingSource
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.lib.domain.Book
+import org.grakovne.lissen.lib.domain.PlayingItem
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 
 class LibrarySearchPagingSource(
@@ -12,10 +12,10 @@ class LibrarySearchPagingSource(
   private val searchToken: String,
   private val limit: Int,
   onTotalCountChanged: (Int) -> Unit,
-) : LibraryPagingSource<Book>(onTotalCountChanged) {
-  override fun getRefreshKey(state: PagingState<Int, Book>) = null
+) : LibraryPagingSource<PlayingItem>(onTotalCountChanged) {
+  override fun getRefreshKey(state: PagingState<Int, PlayingItem>) = null
 
-  override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Book> {
+  override suspend fun load(params: LoadParams<Int>): LoadResult<Int, PlayingItem> {
     val libraryId =
       preferences
         .getPreferredLibrary()

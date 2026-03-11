@@ -11,10 +11,10 @@ import org.grakovne.lissen.content.cache.persistent.converter.CachedBookEntityRe
 import org.grakovne.lissen.content.cache.persistent.converter.MediaProgressEntityConverter
 import org.grakovne.lissen.content.cache.persistent.dao.CachedBookDao
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
-import org.grakovne.lissen.lib.domain.Book
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.PlaybackProgress
 import org.grakovne.lissen.lib.domain.PlayingChapter
+import org.grakovne.lissen.lib.domain.PlayingItem
 import org.grakovne.lissen.lib.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import java.io.File
@@ -88,7 +88,7 @@ class CachedBookRepository
       libraryId: String,
       pageNumber: Int,
       pageSize: Int,
-    ): List<Book> {
+    ): List<PlayingItem> {
       val (option, direction) = buildOrdering()
 
       val request =
@@ -111,7 +111,7 @@ class CachedBookRepository
     suspend fun searchBooks(
       libraryId: String,
       query: String,
-    ): List<Book> {
+    ): List<PlayingItem> {
       val (option, direction) = buildOrdering()
 
       val request =

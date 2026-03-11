@@ -1,8 +1,8 @@
 package org.grakovne.lissen.channel.audiobookshelf.podcast.converter
 
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastItemsResponse
-import org.grakovne.lissen.lib.domain.Book
 import org.grakovne.lissen.lib.domain.PagedItems
+import org.grakovne.lissen.lib.domain.PlayingItem
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -10,13 +10,13 @@ import javax.inject.Singleton
 class PodcastPageResponseConverter
   @Inject
   constructor() {
-    fun apply(response: PodcastItemsResponse): PagedItems<Book> =
+    fun apply(response: PodcastItemsResponse): PagedItems<PlayingItem> =
       response
         .results
         .mapNotNull {
           val title = it.media.metadata.title ?: return@mapNotNull null
 
-          Book(
+          PlayingItem(
             id = it.id,
             title = title,
             subtitle = null,

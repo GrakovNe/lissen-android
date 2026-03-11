@@ -1,9 +1,6 @@
 package org.grakovne.lissen.ui.screens.library.composables
 
-import android.view.View
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,22 +10,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
-import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.DoNotDisturbOnTotalSilence
-import androidx.compose.material.icons.outlined.DoneAll
-import androidx.compose.material.icons.outlined.Restore
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -40,36 +23,36 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
 import coil3.request.ImageRequest
 import org.grakovne.lissen.R
-import org.grakovne.lissen.common.withHaptic
-import org.grakovne.lissen.lib.domain.Book
+import org.grakovne.lissen.lib.domain.PlayingItem
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.navigation.AppNavigationService
+import org.grakovne.lissen.viewmodel.LibraryViewModel
 
 @Composable
 fun BookComposable(
-  book: Book,
+  playingItem: PlayingItem,
   imageLoader: ImageLoader,
   navController: AppNavigationService,
+  libraryViewModel: LibraryViewModel,
+  onContentRefresh: () -> Unit,
 ) {
   val context = LocalContext.current
 
   var isPlayingItemOptionsExpanded by remember { mutableStateOf(false) }
 
   val imageRequest =
-    remember(book.id) {
+    remember(playingItem.id) {
       ImageRequest
         .Builder(context)
-        .data(book.id)
+        .data(playingItem.id)
         .build()
     }
 
@@ -78,17 +61,17 @@ fun BookComposable(
       Modifier
         .fillMaxWidth()
         .combinedClickable(
-          onClick = { navController.showPlayer(book.id, book.title, book.subtitle) },
+          onClick = { navController.showPlayer(playingItem.id, playingItem.title, playingItem.subtitle) },
           hapticFeedbackEnabled = true,
           onLongClick = { isPlayingItemOptionsExpanded = true },
-        ).testTag("bookItem_${book.id}")
+        ).testTag("bookItem_${playingItem.id}")
         .padding(horizontal = 4.dp, vertical = 8.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {
     AsyncShimmeringImage(
       imageRequest = imageRequest,
       imageLoader = imageLoader,
-      contentDescription = "${book.title} cover",
+      contentDescription = "${playingItem.title} cover",
       contentScale = ContentScale.FillBounds,
       modifier =
         Modifier
@@ -106,7 +89,7 @@ fun BookComposable(
     ) {
       Column {
         Text(
-          text = book.title,
+          text = playingItem.title,
           style =
             MaterialTheme.typography.bodyMedium.copy(
               fontWeight = FontWeight.SemiBold,
@@ -117,7 +100,7 @@ fun BookComposable(
         )
       }
 
-      BookMetadataComposable(book)
+      BookMetadataComposable(playingItem)
     }
 
     Spacer(Modifier.width(16.dp))
@@ -125,21 +108,25 @@ fun BookComposable(
 
   if (isPlayingItemOptionsExpanded) {
     PlayingItemOptionsComposable(
-      item = book,
-      onMarkFinished = {},
-      onResetProgress = {},
+      item = playingItem,
+      onMarkFinished = {
+        libraryViewModel.markPlayingItemsListened(playingItem)
+      },
+      onResetProgress = {
+        libraryViewModel.resetPlayingItemProgress(playingItem)
+      },
       onDismissRequest = { isPlayingItemOptionsExpanded = false },
     )
   }
 }
 
 @Composable
-fun BookMetadataComposable(book: Book) {
-  if ((book.series?.isNotBlank() == true) || (book.author != null)) {
+fun BookMetadataComposable(playingItem: PlayingItem) {
+  if ((playingItem.series?.isNotBlank() == true) || (playingItem.author != null)) {
     Spacer(modifier = Modifier.height(2.dp))
   }
 
-  book.author?.takeIf { it.isNotBlank() }?.let {
+  playingItem.author?.takeIf { it.isNotBlank() }?.let {
     Text(
       text = it,
       style =
@@ -151,7 +138,7 @@ fun BookMetadataComposable(book: Book) {
     )
   }
 
-  book.series?.takeIf { it.isNotBlank() }?.let {
+  playingItem.series?.takeIf { it.isNotBlank() }?.let {
     Text(
       text = it,
       style =

@@ -1,7 +1,7 @@
 package org.grakovne.lissen.channel.audiobookshelf.library.converter
 
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItem
-import org.grakovne.lissen.lib.domain.Book
+import org.grakovne.lissen.lib.domain.PlayingItem
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -14,7 +14,7 @@ class LibrarySearchItemsConverter
         .mapNotNull {
           val title = it.media.metadata.title ?: return@mapNotNull null
 
-          Book(
+          PlayingItem(
             id = it.id,
             title = title,
             series = it.media.metadata.seriesName,

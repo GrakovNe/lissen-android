@@ -19,11 +19,11 @@ import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastPageR
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastSearchItemsConverter
 import org.grakovne.lissen.channel.common.OperationResult
-import org.grakovne.lissen.lib.domain.Book
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.LibraryType
 import org.grakovne.lissen.lib.domain.PagedItems
 import org.grakovne.lissen.lib.domain.PlaybackSession
+import org.grakovne.lissen.lib.domain.PlayingItem
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -64,7 +64,7 @@ class PodcastAudiobookshelfChannel
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
-    ): OperationResult<PagedItems<Book>> {
+    ): OperationResult<PagedItems<PlayingItem>> {
       val (option, direction) = podcastOrderingRequestConverter.apply(preferences.getLibraryOrdering())
 
       return dataRepository
@@ -81,7 +81,7 @@ class PodcastAudiobookshelfChannel
       libraryId: String,
       query: String,
       limit: Int,
-    ): OperationResult<List<Book>> =
+    ): OperationResult<List<PlayingItem>> =
       coroutineScope {
         val byTitle =
           async {

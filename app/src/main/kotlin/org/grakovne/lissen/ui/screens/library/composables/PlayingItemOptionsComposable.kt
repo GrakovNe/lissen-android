@@ -24,12 +24,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
-import org.grakovne.lissen.lib.domain.Book
+import org.grakovne.lissen.lib.domain.PlayingItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayingItemOptionsComposable(
-  item: Book,
+  item: PlayingItem,
   onDismissRequest: () -> Unit,
   onMarkFinished: () -> Unit,
   onResetProgress: () -> Unit,

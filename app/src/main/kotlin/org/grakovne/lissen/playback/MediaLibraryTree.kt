@@ -18,10 +18,10 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.content.ExternalCoverProvider
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
-import org.grakovne.lissen.lib.domain.Book
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.Library
 import org.grakovne.lissen.lib.domain.LibraryType
+import org.grakovne.lissen.lib.domain.PlayingItem
 import org.grakovne.lissen.lib.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.util.listenableFuture
@@ -239,7 +239,7 @@ class MediaLibraryTree
         imageUri = ExternalCoverProvider.coverUri(id),
       )
 
-    private fun bookItem(book: Book) = bookItem(book.id, book.title, book.author)
+    private fun bookItem(playingItem: PlayingItem) = bookItem(playingItem.id, playingItem.title, playingItem.author)
 
     private fun bookItem(book: DetailedItem) = bookItem(book.id, book.title, book.author)
 
