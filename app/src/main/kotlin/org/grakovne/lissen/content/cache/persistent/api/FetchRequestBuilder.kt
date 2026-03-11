@@ -38,7 +38,7 @@ class FetchRequestBuilder {
 
         else -> {
           args.add(id)
-          "(b.libraryId = ? OR b.libraryId IS NULL)"
+          "(b.libraryId = ?)"
         }
       }
 

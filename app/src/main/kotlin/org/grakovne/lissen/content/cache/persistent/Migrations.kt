@@ -320,3 +320,10 @@ val MIGRATION_16_17 =
       db.execSQL("CREATE INDEX IF NOT EXISTS index_media_progress_bookId ON media_progress(bookId)")
     }
   }
+
+val MIGRATION_17_18 =
+  object : Migration(17, 18) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+      db.execSQL("ALTER TABLE book_files ADD COLUMN size INTEGER NOT NULL DEFAULT 0")
+    }
+  }

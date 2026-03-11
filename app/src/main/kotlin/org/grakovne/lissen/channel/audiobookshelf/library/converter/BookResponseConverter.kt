@@ -82,6 +82,7 @@ class BookResponseConverter
                     ?: (it.metadata.filename.removeSuffix(it.metadata.ext)),
                 duration = it.duration,
                 mimeType = it.mimeType,
+                size = it.metadata.size,
               )
             }
             ?: emptyList(),

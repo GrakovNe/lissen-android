@@ -64,6 +64,14 @@ To contribute:
 2. Sign up or log in to Weblate.
 3. Start translating or reviewing existing translations for your preferred language.
 
+### AI-Assisted Contributions
+
+AI-assisted development is welcome in this project and can be very useful when applied thoughtfully.
+
+However, any AI-generated changes that are not properly reviewed or tested will be discarded without hesitation.
+
+AI is a great tool, but until it can reliably understand the code it produces and the consequences of its changes, all AI-generated contributions must remain under strict human review.
+
 ### Demo Environment
 
 You can connect to a demo [Audiobookshelf](https://github.com/advplyr/audiobookshelf) instance through the Lissen app:

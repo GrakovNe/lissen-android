@@ -1,7 +1,6 @@
 package org.grakovne.lissen.channel.common
 
 import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.lib.domain.fixUriScheme
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
@@ -29,7 +28,6 @@ class ApiClient(
     private val moshi: Moshi =
       Moshi
         .Builder()
-        .add(KotlinJsonAdapterFactory())
         .build()
   }
 }

@@ -274,8 +274,6 @@ class LissenSharedPreferences
 
     val materialYouFlow = asFlow(KEY_MATERIAL_YOU_ENABLED, ::getMaterialYouColors)
 
-    val collapseOnFlingFlow = asFlow(KEY_COLLAPSE_ON_FLING, ::getCollapseOnFling)
-
     val forceCacheFlow = asFlow(CACHE_FORCE_ENABLED, ::isForceCache)
     val hideCompletedFlow = asFlow(KEY_HIDE_COMPLETED, ::getHideCompleted)
 
@@ -441,13 +439,6 @@ class LissenSharedPreferences
       }
     }
 
-    fun getCollapseOnFling(): Boolean = sharedPreferences.getBoolean(KEY_COLLAPSE_ON_FLING, true)
-
-    fun saveCollapseOnFling(value: Boolean) =
-      sharedPreferences.edit {
-        putBoolean(KEY_COLLAPSE_ON_FLING, value)
-      }
-
     fun getSoftwareCodecsEnabled(): Boolean = sharedPreferences.getBoolean(KEY_SOFTWARE_CODECS, false)
 
     fun saveSoftwareCodecsEnabled(value: Boolean) =
@@ -489,7 +480,6 @@ class LissenSharedPreferences
       private const val KEY_PREFERRED_AUTO_DOWNLOAD_LIBRARY_TYPE = "preferred_auto_download_library_type"
       private const val KEY_AUTO_DOWNLOAD_DELAYED = "auto_download_delayed"
       private const val KEY_PREFERRED_LIBRARY_ORDERING = "preferred_library_ordering"
-      private const val KEY_COLLAPSE_ON_FLING = "collapse_on_fling"
       private const val KEY_SOFTWARE_CODECS = "software_codecs"
       private const val KEY_HIDE_COMPLETED = "hide_completed"
 

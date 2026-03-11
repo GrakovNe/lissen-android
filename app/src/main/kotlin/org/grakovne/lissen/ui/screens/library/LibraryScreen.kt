@@ -487,6 +487,7 @@ fun LibraryScreen(
             refreshing = pullRefreshing,
             state = pullRefreshState,
             contentColor = colorScheme.primary,
+            backgroundColor = colorScheme.surfaceContainer,
             modifier = Modifier.align(Alignment.TopCenter),
           )
         }

@@ -1,7 +1,4 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
-	kotlin("android")
 	alias(libs.plugins.android.library)
 	
 	id("com.google.devtools.ksp")
@@ -31,11 +28,6 @@ android {
 		sourceCompatibility = JavaVersion.VERSION_21
 		targetCompatibility = JavaVersion.VERSION_21
 	}
-	kotlin {
-		compilerOptions {
-			jvmTarget.set(JvmTarget.JVM_21)
-		}
-	}
 }
 
 dependencies {
@@ -44,7 +36,6 @@ dependencies {
 	
 	implementation(libs.converter.moshi)
 	implementation(libs.moshi)
-	implementation(libs.moshi.kotlin)
 	
 	ksp(libs.moshi.kotlin.codegen)
 }

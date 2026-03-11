@@ -66,6 +66,7 @@ interface CachedBookDao {
             duration = file.duration,
             mimeType = file.mimeType,
             bookId = book.id,
+            size = file.size ?: 0,
           )
         }
 
@@ -124,8 +125,7 @@ interface CachedBookDao {
   @Query(
     """
     SELECT COUNT(*) FROM detailed_books
-    WHERE (:libraryId IS NULL AND libraryId IS NULL)
-       OR (libraryId = :libraryId)
+    WHERE (libraryId = :libraryId)
     """,
   )
   suspend fun countCachedBooks(libraryId: String?): Int
@@ -198,7 +198,7 @@ interface CachedBookDao {
         SELECT MAX(mp.lastUpdate)
         FROM detailed_books AS d
         INNER JOIN media_progress AS mp ON d.id = mp.bookId
-        WHERE (d.libraryId IS NULL OR d.libraryId = :libraryId)
+        WHERE (d.libraryId = :libraryId)
         """,
   )
   suspend fun fetchLatestUpdate(libraryId: String): Long?

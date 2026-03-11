@@ -97,7 +97,7 @@ class LissenMediaProvider
       detailedItem: DetailedItem,
       progress: PlaybackProgress,
     ): OperationResult<Unit> {
-      Timber.d("Syncing Progress for $detailedItem. $progress")
+      Timber.d("Syncing Progress for ${detailedItem.id}. $progress")
 
       localCacheRepository.syncProgress(detailedItem, progress)
 

@@ -3,6 +3,7 @@ package org.grakovne.lissen
 import android.app.Application
 import android.content.Context
 import dagger.hilt.android.HiltAndroidApp
+import org.acra.ACRA
 import org.acra.ReportField
 import org.acra.config.httpSender
 import org.acra.config.toast
@@ -21,7 +22,10 @@ class LissenApplication : Application() {
 
   override fun attachBaseContext(base: Context) {
     super.attachBaseContext(base)
-    initCrashReporting()
+
+    if (BuildConfig.DEBUG.not()) {
+      initCrashReporting()
+    }
   }
 
   override fun onCreate() {
@@ -43,6 +47,7 @@ class LissenApplication : Application() {
 
   private fun initCrashReporting() {
     initAcra {
+      ACRA.DEV_LOGGING = true
       sharedPreferencesName = "secure_prefs"
 
       buildConfigClass = BuildConfig::class.java
@@ -50,8 +55,8 @@ class LissenApplication : Application() {
 
       httpSender {
         uri = "https://acrarium.grakovne.org/report"
-        basicAuthLogin = BuildConfig.ACRA_REPORT_LOGIN
-        basicAuthPassword = BuildConfig.ACRA_REPORT_PASSWORD
+        basicAuthLogin = "M44DCNA0c1ikg3PA"
+        basicAuthPassword = "AbEG6y3mIwp5Yn9K"
         httpMethod = HttpSender.Method.POST
         dropReportsOnTimeout = false
         tlsProtocols = listOf(TLS.V1_3, TLS.V1_2)
@@ -68,7 +73,6 @@ class LissenApplication : Application() {
           ReportField.ANDROID_VERSION,
           ReportField.PHONE_MODEL,
           ReportField.STACK_TRACE,
-          ReportField.ENVIRONMENT,
         )
     }
   }

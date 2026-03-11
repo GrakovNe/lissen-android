@@ -1,14 +1,13 @@
 import java.util.Properties
 
 plugins {
-  kotlin("android")
-  
   alias(libs.plugins.android.application)
   alias(libs.plugins.compose.compiler)
   
   id("com.google.dagger.hilt.android")
   id("org.jmailen.kotlinter") version "5.4.2"
   id("com.google.devtools.ksp")
+  id("kotlin-parcelize")
 }
 
 kotlinter {
@@ -54,18 +53,12 @@ android {
     applicationId = "org.grakovne.lissen"
     minSdk = 28
     targetSdk = 36
-    versionCode = 10813
-    versionName = "1.8.13-$commitHash"
+    versionCode = 10817
+    versionName = "1.8.17-$commitHash"
     
     buildConfigField("String", "GIT_HASH", "\"$commitHash\"")
     
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    
-    val acraReportLogin = "M44DCNA0c1ikg3PA"
-    val acraReportPassword = "AbEG6y3mIwp5Yn9K"
-    
-    buildConfigField("String", "ACRA_REPORT_LOGIN", "\"$acraReportLogin\"")
-    buildConfigField("String", "ACRA_REPORT_PASSWORD", "\"$acraReportPassword\"")
     
     if (project.hasProperty("RELEASE_STORE_FILE")) {
       signingConfigs {
@@ -98,6 +91,8 @@ android {
       versionNameSuffix = " (DEBUG)"
       matchingFallbacks.add("release")
       isDebuggable = true
+      enableUnitTestCoverage = true
+      enableAndroidTestCoverage = true
     }
   }
   
@@ -105,9 +100,7 @@ android {
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
   }
-  kotlin {
-    jvmToolchain(21)
-  }
+  
   buildFeatures {
     buildConfig = true
     compose = true
@@ -117,8 +110,21 @@ android {
       excludes += "/META-INF/{AL2.0,LGPL2.1,MIT}"
     }
   }
+  testOptions {
+    packaging {
+      resources {
+        excludes += "META-INF/LICENSE.md"
+        excludes += "META-INF/LICENSE-notice.md"
+      }
+    }
+  }
   buildToolsVersion = "36.0.0"
-  
+
+  testOptions {
+    unitTests.all {
+      it.useJUnitPlatform()
+    }
+  }
 }
 
 dependencies {
@@ -186,8 +192,14 @@ dependencies {
   
   implementation(libs.converter.moshi)
   implementation(libs.moshi)
-  implementation(libs.moshi.kotlin)
   
   debugImplementation(libs.androidx.ui.tooling)
   debugImplementation(libs.androidx.ui.test.manifest)
+
+  testImplementation(libs.junit.jupiter)
+  testRuntimeOnly(libs.junit.platform.launcher)
+
+  androidTestImplementation(libs.androidx.test.ext.junit)
+  androidTestImplementation(libs.androidx.test.runner)
+  androidTestImplementation(libs.mockk.android)
 }

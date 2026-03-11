@@ -25,6 +25,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvi
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.service.LissenDataSourceFactory
+import org.grakovne.lissen.playback.service.LissenMediaSourceFactory
 import timber.log.Timber
 import java.io.File
 import javax.inject.Singleton
@@ -79,20 +80,23 @@ object MediaModule {
             .setContentType(C.AUDIO_CONTENT_TYPE_SPEECH)
             .build(),
           true,
-        ).setMediaSourceFactory(
-          DefaultMediaSourceFactory(context).setDataSourceFactory(
-            LissenDataSourceFactory(
-              baseContext = context,
-              mediaCache = mediaCache,
-              requestHeadersProvider = requestHeadersProvider,
-              sharedPreferences = sharedPreferences,
-              mediaProvider = mediaProvider,
-            ),
+        ).setRenderersFactory(renderersFactory)
+        .setMediaSourceFactory(
+          LissenMediaSourceFactory(
+            mediaSourceFactory =
+              DefaultMediaSourceFactory(
+                LissenDataSourceFactory(
+                  baseContext = context,
+                  mediaCache = mediaCache,
+                  requestHeadersProvider = requestHeadersProvider,
+                  sharedPreferences = sharedPreferences,
+                  mediaProvider = mediaProvider,
+                ),
+              ),
           ),
         ).build()
 
     player.addAnalyticsListener(mediaCodecListener(context))
-
     return player
   }
 

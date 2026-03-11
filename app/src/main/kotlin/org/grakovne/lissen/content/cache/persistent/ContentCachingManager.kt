@@ -9,6 +9,7 @@ import okhttp3.Request
 import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.createOkHttpClient
+import org.grakovne.lissen.common.copyTo
 import org.grakovne.lissen.content.cache.common.findRelatedFiles
 import org.grakovne.lissen.content.cache.common.withBlur
 import org.grakovne.lissen.content.cache.common.writeToFile
@@ -149,7 +150,11 @@ class ContentCachingManager
             preferences = preferences,
           )
 
-        files.mapIndexed { index, file ->
+        val totalFileSize = files.mapNotNull { it.size }.sum()
+        val reportingSizeThreshold = totalFileSize / 100.0
+        var fetchedFileSize = 0.0
+
+        files.forEach { file ->
           val uri = channel.provideFileUri(bookId, file.id)
           val requestBuilder = Request.Builder().url(uri.toString())
           headers.forEach { requestBuilder.addHeader(it.name, it.value) }
@@ -169,14 +174,20 @@ class ContentCachingManager
           try {
             dest.outputStream().use { output ->
               body.byteStream().use { input ->
-                input.copyTo(output)
+                var lastReportedSize = 0.0
+                input.copyTo(output) {
+                  fetchedFileSize += it
+
+                  if (totalFileSize > 0 && fetchedFileSize - lastReportedSize >= reportingSizeThreshold) {
+                    lastReportedSize = fetchedFileSize
+                    onProgress(fetchedFileSize / totalFileSize.toDouble())
+                  }
+                }
               }
             }
           } catch (ex: Exception) {
             return@withContext CacheState(CacheStatus.Error)
           }
-
-          onProgress(files.size.takeIf { it != 0 }?.let { index / it.toDouble() } ?: 0.0)
         }
 
         CacheState(CacheStatus.Completed)

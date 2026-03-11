@@ -167,12 +167,17 @@
     <string name="codes_not_supported_warning_toast">صيغة الملف الصوتي غير مدعومه</string>
     <string name="bookmarks_create_bookmark">إنشاء إشارة مرجعية</string>
     <string name="bookmarks_title">إشارات مرجعية</string>
-    <string name="settings_screen_collapse_on_fling_title">طيّ قائمة التشغيل عند السحب السريع</string>
-    <string name="settings_screen_collapse_on_fling_description">اسحب لطي قائمة الفصول</string>
     <string name="settings_screen_material_you_title">ألوان Material You</string>
     <string name="settings_screen_material_you_description">مطابقة ألوان التطبيق لخلفية الشاشة</string>
     <string name="restart_the_app_to_start_using_the_new_codecs_cta">إعادة التشغيل</string>
     <string name="settings_screen_software_codecs_enabled_title">فرض فك الترميز البرمجي</string>
     <string name="settings_screen_software_codecs_enabled_description">استخدام الترميز البرمجي لتشغيل الصوت</string>
     <string name="restart_the_app_to_start_using_the_new_codecs_title">أعد تشغيل التطبيق لاستخدام الترميز الجديد</string>
+    <string name="hide_completed_items">إخفاء المكتمل</string>
+    <string name="application_settings">إعدادات التطبيق</string>
+    <string name="tree_node_recent">الحديثة</string>
+    <string name="tree_node_library">المكتبة</string>
+    <string name="tree_node_downloads">التنزيلات</string>
+    <string name="tree_node_root">الج‬ذر</string>
+    <string name="tree_node_continue">استمرار</string>
 </resources>

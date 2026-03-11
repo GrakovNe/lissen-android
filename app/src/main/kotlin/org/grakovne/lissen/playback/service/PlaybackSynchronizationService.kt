@@ -16,6 +16,7 @@ import org.grakovne.lissen.lib.domain.PlaybackProgress
 import org.grakovne.lissen.lib.domain.PlaybackSession
 import org.grakovne.lissen.lib.domain.PlaybackSessionSource
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.playback.service.PlaybackService.Companion.CHAPTER_START_MS
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -90,8 +91,7 @@ class PlaybackSynchronizationService
     }
 
     private fun runSync() {
-      val elapsedMs = exoPlayer.currentPosition
-      val overallProgress = getProgress(elapsedMs) ?: return
+      val overallProgress = getProgress(exoPlayer) ?: return
       val currentItem = currentItem ?: return
 
       Timber.d("Trying to sync $overallProgress for ${currentItem.id}")
@@ -165,29 +165,18 @@ class PlaybackSynchronizationService
             )
         }
 
-    private fun getProgress(currentElapsedMs: Long): PlaybackProgress? {
-      val currentItem =
-        exoPlayer
-          .currentMediaItem
-          ?.localConfiguration
-          ?.tag as? DetailedItem
-          ?: return null
-
-      val currentIndex = exoPlayer.currentMediaItemIndex
-
-      val previousDuration =
-        currentItem.files
-          .take(currentIndex)
-          .sumOf { it.duration * 1000 }
-
-      val currentTotalTime = (previousDuration + currentElapsedMs) / 1000.0
-      val currentChapterTime = calculateChapterPosition(currentItem, currentTotalTime)
-
-      return PlaybackProgress(
-        currentTotalTime = currentTotalTime,
-        currentChapterTime = currentChapterTime,
-      )
-    }
+    private fun getProgress(exoPlayer: ExoPlayer): PlaybackProgress? =
+      exoPlayer.currentMediaItem
+        ?.mediaMetadata
+        ?.extras
+        ?.getLong(CHAPTER_START_MS, -1)
+        ?.takeIf { it >= 0 }
+        ?.let { currentChapterOffsetMs ->
+          PlaybackProgress(
+            currentTotalTime = (currentChapterOffsetMs + exoPlayer.currentPosition) / 1000.0,
+            currentChapterTime = exoPlayer.currentPosition / 1000.0,
+          )
+        }
 
     companion object {
       private const val SYNC_INTERVAL_LONG = 30_000L

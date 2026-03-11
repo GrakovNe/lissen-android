@@ -161,8 +161,6 @@
     <string name="volume_boost_max">最大</string>
     <string name="settings_screen_material_you_description">根据当前壁纸自动调整应用的颜色主题</string>
     <string name="settings_screen_material_you_title">Material You 动态配色</string>
-    <string name="settings_screen_collapse_on_fling_title">快速滑动收起播放列表</string>
-    <string name="settings_screen_collapse_on_fling_description">向下滑动即可收起章节列表</string>
     <string name="timer_option_disabled">禁用</string>
     <string name="settings_screen_software_codecs_enabled_title">强制使用软件解码</string>
     <string name="settings_screen_software_codecs_enabled_description">使用软件解码器播放音频</string>
@@ -173,4 +171,9 @@
     <string name="bookmarks_title">书签</string>
     <string name="application_settings">应用程序设置</string>
     <string name="hide_completed_items">隐藏已听完</string>
+    <string name="tree_node_recent">最近收听</string>
+    <string name="tree_node_library">媒体库</string>
+    <string name="tree_node_downloads">已下载</string>
+    <string name="tree_node_root">根目录</string>
+    <string name="tree_node_continue">继续收听</string>
 </resources>
