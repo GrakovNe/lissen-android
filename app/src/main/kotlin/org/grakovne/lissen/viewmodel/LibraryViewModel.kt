@@ -10,6 +10,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.cachedIn
+import androidx.paging.filter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.LissenMediaProvider
@@ -52,6 +54,9 @@ class LibraryViewModel
 
     private val _totalCount = MutableLiveData<Int>()
     val totalCount: LiveData<Int> = _totalCount
+
+    private val _hiddenIds = MutableStateFlow<Set<String>>(emptySet())
+    private val hiddenIds = _hiddenIds
 
     private val pageConfig =
       PagingConfig(
@@ -91,15 +96,20 @@ class LibraryViewModel
       }.cachedIn(viewModelScope)
 
     private val libraryPager: Flow<PagingData<PlayingItem>> by lazy {
-      Pager(
-        config = pageConfig,
-        pagingSourceFactory = {
-          val source = LibraryDefaultPagingSource(preferences, mediaChannel) { _totalCount.postValue(it) }
-          defaultPagingSource = source
-
-          source
-        },
-      ).flow.cachedIn(viewModelScope)
+      hiddenIds
+        .flatMapLatest { hidden ->
+          Pager(
+            config = pageConfig,
+            pagingSourceFactory = {
+              val source =
+                LibraryDefaultPagingSource(preferences, mediaChannel) { _totalCount.postValue(it) }
+              defaultPagingSource = source
+              source
+            },
+          ).flow.map { pagingData ->
+            pagingData.filter { it.id !in hidden }
+          }
+        }.cachedIn(viewModelScope)
     }
 
     fun requestSearch() {
@@ -169,7 +179,13 @@ class LibraryViewModel
       }
     }
 
-    fun markPlayingItemsListened(playingItem: PlayingItem) {
+    fun completeProgress(playingItem: PlayingItem) {
+      viewModelScope
+        .launch {
+          mediaChannel
+            .completeProgress(playingItem.id)
+            .map { _hiddenIds.value += playingItem.id }
+        }
     }
 
     fun resetPlayingItemProgress(playingItem: PlayingItem) {

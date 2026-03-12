@@ -27,6 +27,8 @@ interface MediaChannel {
     progress: PlaybackProgress,
   ): OperationResult<Unit>
 
+  suspend fun completeProgress(itemId: String): OperationResult<Unit>
+
   suspend fun fetchBookCover(
     bookId: String,
     width: Int? = null,

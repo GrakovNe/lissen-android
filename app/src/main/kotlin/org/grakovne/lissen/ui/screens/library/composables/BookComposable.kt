@@ -110,7 +110,7 @@ fun BookComposable(
     PlayingItemOptionsComposable(
       item = playingItem,
       onMarkFinished = {
-        libraryViewModel.markPlayingItemsListened(playingItem)
+        libraryViewModel.completeProgress(playingItem)
       },
       onResetProgress = {
         libraryViewModel.resetPlayingItemProgress(playingItem)

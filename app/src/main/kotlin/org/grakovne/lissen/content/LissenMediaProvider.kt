@@ -55,6 +55,8 @@ class LissenMediaProvider
         )
     }
 
+    suspend fun completeProgress(itemId: String): OperationResult<Unit> = providePreferredChannel().completeProgress(itemId)
+
     suspend fun provideBookmarks(playingItemId: String): List<Bookmark> =
       cachedBookmarkProvider
         .provideBookmarks(playingItemId)

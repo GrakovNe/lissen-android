@@ -162,11 +162,12 @@ fun LibraryScreen(
 
   val isPlaceholderRequired by remember {
     derivedStateOf {
-      if (searchRequested) {
-        return@derivedStateOf false
-      }
+      if (searchRequested) return@derivedStateOf false
 
-      pullRefreshing || recentBookRefreshing || library.loadState.refresh is LoadState.Loading
+      val noItemsYet = library.itemCount == 0
+      val loadingNow = pullRefreshing || recentBookRefreshing
+
+      noItemsYet && loadingNow
     }
   }
 
@@ -477,7 +478,7 @@ fun LibraryScreen(
                   imageLoader = imageLoader,
                   navController = navController,
                   libraryViewModel = libraryViewModel,
-                  onContentRefresh = { refreshContent(false) },
+                  onContentRefresh = { },
                 )
               }
             }

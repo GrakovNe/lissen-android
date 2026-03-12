@@ -38,6 +38,8 @@ abstract class AudiobookshelfChannel(
   private val bookmarksResponseConverter: BookmarksResponseConverter,
   private val bookmarkItemResponseConverter: BookmarkItemResponseConverter,
 ) : MediaChannel {
+  override suspend fun completeProgress(itemId: String) = dataRepository.completeProgress(itemId)
+
   override fun provideFileUri(
     libraryItemId: String,
     fileId: String,
