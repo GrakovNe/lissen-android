@@ -2,7 +2,6 @@ package org.grakovne.lissen.playback.service
 
 import android.content.Intent
 import androidx.annotation.OptIn
-import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.media3.common.MediaItem
@@ -165,12 +164,13 @@ class PlaybackService : MediaLibraryService() {
     withContext(Dispatchers.IO) {
       val prepareQueue =
         async {
-          val itemsWithPosition = bookToChapterMediaItems(book)
+          if (book.chapters.isEmpty()) {
+            Timber.w("Can't build playing queue: book has no chapters (bookId=${book.id})")
 
-          if (itemsWithPosition.mediaItems.isEmpty()) {
-            Timber.w("Can't build playing queue from empty list")
             return@async
           }
+
+          val itemsWithPosition = bookToChapterMediaItems(book)
 
           withContext(Dispatchers.Main) {
             exoPlayer.setMediaItems(itemsWithPosition.mediaItems)
@@ -194,15 +194,6 @@ class PlaybackService : MediaLibraryService() {
         .sendBroadcast(intent)
     }
   }
-
-  private suspend fun fetchCover(book: DetailedItem) =
-    mediaProvider
-      .fetchBookCover(
-        bookId = book.id,
-      ).fold(
-        onSuccess = { it.toUri() },
-        onFailure = { null },
-      )
 
   private fun setTimer(
     delay: Double,
