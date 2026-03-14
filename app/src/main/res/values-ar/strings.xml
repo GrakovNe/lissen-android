@@ -180,4 +180,6 @@
     <string name="tree_node_downloads">التنزيلات</string>
     <string name="tree_node_root">الج‬ذر</string>
     <string name="tree_node_continue">استمرار</string>
+    <string name="connection_settings_title">تفضيلات الاتصال</string>
+    <string name="connection_settings_description">تحكم في عنوان الخادم، البروكسي، وإعدادات SSL</string>
 </resources>
