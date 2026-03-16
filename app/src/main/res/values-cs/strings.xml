@@ -178,4 +178,6 @@
     <string name="tree_node_downloads">Stažené</string>
     <string name="tree_node_root">Kořenový adresář</string>
     <string name="tree_node_continue">Pokračovat</string>
+    <string name="connection_settings_title">Nastavení připojení</string>
+    <string name="connection_settings_description">Konfigurace serveru, proxy a nastavení SSL</string>
 </resources>
