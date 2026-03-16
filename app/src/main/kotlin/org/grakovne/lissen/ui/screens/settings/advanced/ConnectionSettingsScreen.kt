@@ -48,7 +48,7 @@ fun ConnectionSettingsScreen(
       TopAppBar(
         title = {
           Text(
-            text = stringResource(R.string.settings_screen_seek_time_title),
+            text = stringResource(R.string.connection_settings_title),
             style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
           )
         },
