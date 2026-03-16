@@ -176,4 +176,6 @@
     <string name="tree_node_downloads">Unduhan</string>
     <string name="tree_node_root">Root</string>
     <string name="tree_node_continue">Lanjutkan</string>
+    <string name="connection_settings_description">Kelola alamat server, proksi, dan pengaturan SSL</string>
+    <string name="connection_settings_title">Preferensi koneksi</string>
 </resources>
