@@ -176,4 +176,6 @@
     <string name="tree_node_library">Bibliothek</string>
     <string name="tree_node_downloads">Downloads</string>
     <string name="tree_node_root">Wurzel</string>
+    <string name="connection_settings_title">Verbindungseinstellungen</string>
+    <string name="connection_settings_description">Adressen des Kontrollservers, Proxy- und SSL-Einstellungen</string>
 </resources>
