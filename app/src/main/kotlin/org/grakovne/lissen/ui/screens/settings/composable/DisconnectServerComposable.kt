@@ -60,7 +60,7 @@ fun DisconnectServerComposable(
   ) {
     Column {
       Text(
-        text = "Отключиться от сервера",
+        text = stringResource(R.string.disconnect_from_server_title),
         style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
         color = colorScheme.error,
       )

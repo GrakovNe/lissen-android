@@ -53,8 +53,8 @@ android {
     applicationId = "org.grakovne.lissen"
     minSdk = 28
     targetSdk = 36
-    versionCode = 10819
-    versionName = "1.8.19-$commitHash"
+    versionCode = 10820
+    versionName = "1.8.20-$commitHash"
     
     buildConfigField("String", "GIT_HASH", "\"$commitHash\"")
     
