@@ -178,4 +178,6 @@
     <string name="tree_node_downloads">Preuzimanja</string>
     <string name="tree_node_root">Root</string>
     <string name="tree_node_continue">Nastavi</string>
+    <string name="connection_settings_title">Postavke veze</string>
+    <string name="connection_settings_description">Postavke poslužitelja, proxyja i SSL-a</string>
 </resources>
