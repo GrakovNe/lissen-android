@@ -180,4 +180,5 @@
     <string name="tree_node_continue">Nastavi</string>
     <string name="connection_settings_title">Postavke veze</string>
     <string name="connection_settings_description">Postavke poslužitelja, proxyja i SSL-a</string>
+    <string name="disconnect_from_server_title">Prekinite vezu s poslužiteljem</string>
 </resources>
