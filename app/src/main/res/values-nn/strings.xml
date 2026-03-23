@@ -1,3 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="library_screen_library_title">Bibliotek</string>
+    <string name="library_screen_continue_listening_title">Fortsett å lytte</string>
+    <string name="library_screen_preferences_menu_item">Innstillinger</string>
+    <string name="hint_server_url_input">Server URL</string>
+    <string name="login_screen_login_input">Logg inn</string>
+    <string name="login_screen_show_password_hint">Vis passord</string>
+    <string name="login_screen_password_input">Passord</string>
+    <string name="login_screen_connect_button_text">Koble til</string>
+    <string name="player_screen_playback_speed_navigation">Kobler til server</string>
+    <string name="player_screen_chapter_list_navigation_library">Kapitler</string>
+    <string name="player_screen_chapter_list_navigation_podcast">Episoder</string>
+    <string name="player_screen_chapter_list_navigation_items">Varer</string>
+    <string name="player_screen_library_playing_title">Liste over episoder</string>
+    <string name="player_screen_podcast_playing_title">Liste over episoder</string>
+    <string name="player_screen_items_playing_title">Liste over elementer</string>
+    <string name="player_screen_now_playing_title_chapter_of">Kapittel %1$d av %2$s</string>
+    <string name="player_screen_now_playing_title_podcast_of">Episode %1$d av %2$s</string>
+    <string name="player_screen_now_playing_title_item_of">Element %1$d av %2$s</string>
+    <string name="settings_screen_title">Innstillinger</string>
+    <string name="settings_screen_connected_as_title">Tilkoblet som</string>
+    <string name="settings_screen_server_connection">Serverforbindelse</string>
+    <string name="settings_screen_connection_type">Tilkoblingstype</string>
+    <string name="settings_screen_connection_local">Lokalt nettverk</string>
+    <string name="login_screen_title">Koble til serveren</string>
+    <string name="settings_screen_connection_external">Eksternt nettverk</string>
+    <string name="login_error_host_is_down">Serveren er nede</string>
+    <string name="login_error_host_url_is_missing">Vert-URL mangler</string>
+    <string name="login_error_username_is_missing">Brukernavn mangler</string>
+    <string name="login_error_password_is_missing">Passord mangler</string>
+    <string name="login_error_credentials_are_invalid">Ugyldig påloggingsinformasjon</string>
+    <string name="login_error_host_url_shall_be_https_or_http">Serveradressen må starte med https:// eller http://</string>
+    <string name="login_error_connection_error">Tilkoblingsfeil</string>
+    <string name="show_downloaded_content_only">Kun lastet ned</string>
+    <string name="the_library_is_empty">Biblioteket er tomt</string>
+    <string name="the_offline_library_is_empty">Ingen lagrede bøker ennå</string>
+    <string name="audiobookshelf_server_is_required">Det kreves en Audiobookshelf-server</string>
+    <string name="no_internet_connection">Ingen internettilkobling</string>
+    <string name="library_screen_podcast_title">Podcaster</string>
 </resources>
