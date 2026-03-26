@@ -156,4 +156,9 @@
     <string name="settings_screen_delay_autodownload_title">Udskyd automatisk hentning</string>
     <string name="settings_screen_delay_autodownload_description">Vent et kort stykke tid, før hentningen påbegyndes</string>
     <string name="login_error_host_is_down">Serveren er utilgængelig</string>
+    <string name="settings_screen_material_you_title">Farverne i Material You</string>
+    <string name="settings_screen_material_you_description">Tilpas appens farver til din baggrund</string>
+    <string name="timer_option_disabled">Deaktiveret</string>
+    <string name="volume_boost_max">Maksimum</string>
+    <string name="settings_screen_software_codecs_enabled_title">Tving softwaredekodning</string>
 </resources>
