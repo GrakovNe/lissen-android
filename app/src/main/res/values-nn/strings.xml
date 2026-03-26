@@ -38,4 +38,19 @@
     <string name="audiobookshelf_server_is_required">Det kreves en Audiobookshelf-server</string>
     <string name="no_internet_connection">Ingen internettilkobling</string>
     <string name="library_screen_podcast_title">Podcaster</string>
+    <string name="playback_speed_title">Avspillingshastighet</string>
+    <string name="color_scheme_follow_system">System</string>
+    <string name="color_scheme_light">Lys</string>
+    <string name="color_scheme_dark">Mørk</string>
+    <string name="settings_screen_color_scheme_title">Fargetema</string>
+    <string name="settings_screen_material_you_title">Material You-farger</string>
+    <string name="settings_screen_material_you_description">Tilpass appens farger til bakgrunnsbildet ditt</string>
+    <string name="library_search_hint">Søk etter tittel, forfatter eller serie</string>
+    <string name="player_screen_title">Hører på nå</string>
+    <string name="settings_screen_custom_headers_title">Tilpassede overskrifter</string>
+    <string name="settings_screen_custom_header_hint">Angi overskrifter for serverforbindelser</string>
+    <string name="custom_header_hint_name">Nøkkel</string>
+    <string name="custom_header_hint_value">Verdi</string>
+    <string name="custom_headers_title">Tilpassede overskrifter</string>
+    <string name="settings_screen_server_version">Serverversjon</string>
 </resources>
