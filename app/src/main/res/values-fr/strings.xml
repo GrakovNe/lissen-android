@@ -159,4 +159,24 @@
     <string name="volume_boost_max">Maximum</string>
     <string name="settings_screen_bypass_ssl_title">Désactiver la vérification SSL</string>
     <string name="settings_screen_bypass_ssl_hint">Se connecter aux serveurs avec tout certificat</string>
+    <string name="settings_screen_material_you_title">Couleurs Material You</string>
+    <string name="settings_screen_material_you_description">Assortissez les couleurs de l\'application à votre fond d\'écran</string>
+    <string name="timer_option_disabled">Désactivé</string>
+    <string name="settings_screen_software_codecs_enabled_title">Forcer le décodage logiciel</string>
+    <string name="settings_screen_software_codecs_enabled_description">Utiliser des codecs logiciels pour la lecture audio</string>
+    <string name="restart_the_app_to_start_using_the_new_codecs_title">Redémarrez l\'application pour commencer à utiliser les nouveaux codecs</string>
+    <string name="restart_the_app_to_start_using_the_new_codecs_cta">Réinitialisation</string>
+    <string name="codes_not_supported_warning_toast">Format audio non pris en charge</string>
+    <string name="bookmarks_create_bookmark">Ajouter aux favoris</string>
+    <string name="bookmarks_title">Signets</string>
+    <string name="hide_completed_items">Masquer les éléments terminés</string>
+    <string name="application_settings">Paramètres de l\'application</string>
+    <string name="tree_node_recent">Récents</string>
+    <string name="tree_node_library">Bibliothèque</string>
+    <string name="tree_node_downloads">Téléchargements</string>
+    <string name="tree_node_root">Root</string>
+    <string name="tree_node_continue">Continuer</string>
+    <string name="connection_settings_title">Préférences de connexion</string>
+    <string name="connection_settings_description">Paramètres relatifs à l\'adresse du serveur de contrôle, au proxy et au protocole SSL</string>
+    <string name="disconnect_from_server_title">Se déconnecter du serveur</string>
 </resources>
