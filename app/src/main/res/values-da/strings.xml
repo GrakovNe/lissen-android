@@ -161,4 +161,22 @@
     <string name="timer_option_disabled">Deaktiveret</string>
     <string name="volume_boost_max">Maksimum</string>
     <string name="settings_screen_software_codecs_enabled_title">Tving softwaredekodning</string>
+    <string name="settings_screen_software_codecs_enabled_description">Brug softwarekodeker til afspilning af lyd</string>
+    <string name="settings_screen_bypass_ssl_title">Deaktiver SSL-verifikation</string>
+    <string name="settings_screen_bypass_ssl_hint">Opret forbindelse til servere med ethvert certifikat</string>
+    <string name="restart_the_app_to_start_using_the_new_codecs_title">Genstart appen for at begynde at bruge de nye codecs</string>
+    <string name="restart_the_app_to_start_using_the_new_codecs_cta">Genstart</string>
+    <string name="codes_not_supported_warning_toast">Dette lydformat understøttes ikke</string>
+    <string name="bookmarks_create_bookmark">Opret bogmærke</string>
+    <string name="bookmarks_title">Bogmærker</string>
+    <string name="hide_completed_items">Skjul færdig</string>
+    <string name="application_settings">Programindstillinger</string>
+    <string name="tree_node_recent">Seneste</string>
+    <string name="tree_node_library">Bibliotek</string>
+    <string name="tree_node_downloads">Downloads</string>
+    <string name="tree_node_root">Rod</string>
+    <string name="tree_node_continue">Fortsæt</string>
+    <string name="connection_settings_title">Indstillinger for forbindelse</string>
+    <string name="connection_settings_description">Indstillinger for kontrolserveradresse, proxy og SSL</string>
+    <string name="disconnect_from_server_title">Afbryd forbindelsen til serveren</string>
 </resources>
