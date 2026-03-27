@@ -91,13 +91,11 @@ fun SettingsScreen(
               .verticalScroll(rememberScrollState()),
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-          if (host?.url?.isNotEmpty() == true) {
-            AdvancedSettingsNavigationItemComposable(
-              title = stringResource(R.string.connection_settings_title),
-              description = stringResource(R.string.connection_settings_description),
-              onclick = { navController.showConnectionSettings() },
-            )
-          }
+          AdvancedSettingsNavigationItemComposable(
+            title = stringResource(R.string.connection_settings_title),
+            description = stringResource(R.string.connection_settings_description),
+            onclick = { navController.showConnectionSettings() },
+          )
 
           ColorSchemeSettingsComposable(viewModel)
 
