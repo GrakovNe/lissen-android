@@ -51,6 +51,7 @@
     <string name="timer_option_after_current_chapter">À la fin du chapitre</string>
     <plurals name="timer_option_after_time">
         <item quantity="one">%d minute</item>
+        <item quantity="many">%d minutes</item>
         <item quantity="other">%d minutes</item>
     </plurals>
     <string name="timer_option_disable_timer">Désactiver le Timer</string>
