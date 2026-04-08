@@ -51,7 +51,7 @@ fun AppNavHost(
     )
   }
 
-  val book = preferences.getPlayingBook()
+  val book = preferences.getPlayingItem()
 
   val startDestination =
     when {

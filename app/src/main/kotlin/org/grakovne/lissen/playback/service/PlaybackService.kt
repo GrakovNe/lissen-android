@@ -113,7 +113,7 @@ class PlaybackService : MediaLibraryService() {
       }
 
       ACTION_SET_PLAYBACK -> {
-        val book = sharedPreferences.getPlayingBook()
+        val book = sharedPreferences.getPlayingItem()
 
         book?.let {
           playerServiceScope
@@ -123,7 +123,7 @@ class PlaybackService : MediaLibraryService() {
       }
 
       ACTION_SEEK_TO -> {
-        val book = sharedPreferences.getPlayingBook()
+        val book = sharedPreferences.getPlayingItem()
 
         val position = intent.getDoubleExtra(POSITION, 0.0)
         book?.let { seek(it.chapters, position) }

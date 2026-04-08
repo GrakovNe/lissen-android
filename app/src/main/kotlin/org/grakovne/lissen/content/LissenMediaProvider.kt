@@ -44,7 +44,7 @@ class LissenMediaProvider
       chapterPosition: Double,
       totalPosition: Double,
     ): Bookmark? {
-      val playingItem = preferences.getPlayingBook() ?: return null
+      val playingItem = preferences.getPlayingItem() ?: return null
 
       return cachedBookmarkProvider
         .createBookmark(

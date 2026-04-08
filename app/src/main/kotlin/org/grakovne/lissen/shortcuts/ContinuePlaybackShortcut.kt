@@ -34,7 +34,7 @@ class ContinuePlaybackShortcut
 
       scope.launch {
         sharedPreferences
-          .playingBookFlow
+          .playingItemFlow
           .collect { updateShortcut(it) }
       }
     }

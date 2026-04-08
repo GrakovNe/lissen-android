@@ -186,7 +186,7 @@ class MediaLibrarySessionCallbackTest {
       assertEquals(1, result.startIndex)
       assertEquals(20000, result.startPositionMs)
       verify(atLeast = 1) { playbackSynchronizationService.startPlaybackSynchronization(book) }
-      verify(exactly = 1) { preferences.savePlayingBook(book) }
+      verify(exactly = 1) { preferences.savePlayingItem(book) }
     }
 
   @Test

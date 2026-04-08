@@ -84,7 +84,7 @@ class LissenSharedPreferences
         remove(KEY_BYPASS_SSL)
         remove(KEY_LOCAL_URLS)
 
-        remove(KEY_PLAYING_BOOK)
+        remove(KEY_PLAYING_ITEM)
       }
     }
 
@@ -266,7 +266,7 @@ class LissenSharedPreferences
         awaitClose { sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener) }
       }.distinctUntilChanged()
 
-    val playingBookFlow = asFlow(KEY_PLAYING_BOOK, ::getPlayingBook)
+    val playingItemFlow = asFlow(KEY_PLAYING_ITEM, ::getPlayingItem)
 
     val playbackVolumeBoostFlow = asFlow(KEY_VOLUME_BOOST, ::getPlaybackVolumeBoost)
 
@@ -340,34 +340,74 @@ class LissenSharedPreferences
       return decrypt(encrypted)
     }
 
-    fun savePlayingBook(book: DetailedItem?) {
-      if (book == null) {
-        sharedPreferences.edit {
-          remove(KEY_PLAYING_BOOK)
+    private val playingItemsType =
+      Types.newParameterizedType(
+        Map::class.java,
+        String::class.java,
+        DetailedItem::class.java,
+      )
+
+    fun savePlayingItem(item: DetailedItem) {
+      savePlayingItemInternal(
+        libraryId = item.libraryId ?: return,
+        item = item,
+      )
+    }
+
+    fun clearPlayingItem() {
+      val libraryId = getPreferredLibraryId() ?: return
+
+      savePlayingItemInternal(
+        libraryId = libraryId,
+        item = null,
+      )
+    }
+
+    private fun savePlayingItemInternal(
+      libraryId: String,
+      item: DetailedItem?,
+    ) {
+      val adapter = moshi.adapter<Map<String, DetailedItem>>(playingItemsType)
+
+      val current =
+        try {
+          sharedPreferences
+            .getString(KEY_PLAYING_ITEM, null)
+            ?.let { adapter.fromJson(it) }
+            ?.toMutableMap()
+            ?: mutableMapOf()
+        } catch (t: Throwable) {
+          mutableMapOf()
         }
-        return
+
+      if (item == null) {
+        current.remove(libraryId)
+      } else {
+        current[libraryId] = item
       }
 
-      val adapter = moshi.adapter(DetailedItem::class.java)
-      val json = adapter.toJson(book)
-      sharedPreferences.edit {
-        putString(KEY_PLAYING_BOOK, json)
+      try {
+        sharedPreferences.edit { putString(KEY_PLAYING_ITEM, adapter.toJson(current)) }
+      } catch (_: Throwable) {
       }
     }
 
-    fun getPlayingBook(): DetailedItem? {
-      val json = sharedPreferences.getString(KEY_PLAYING_BOOK, null)
+    fun getPlayingItem(): DetailedItem? {
+      val libraryId = getPreferredLibraryId() ?: return null
 
-      return when (json) {
-        null -> {
-          null
+      val adapter = moshi.adapter<Map<String, DetailedItem>>(playingItemsType)
+
+      val items =
+        try {
+          sharedPreferences
+            .getString(KEY_PLAYING_ITEM, null)
+            ?.let { adapter.fromJson(it) }
+            ?: emptyMap()
+        } catch (t: Throwable) {
+          emptyMap()
         }
 
-        else -> {
-          val adapter = moshi.adapter(DetailedItem::class.java)
-          adapter.fromJson(json)
-        }
-      }
+      return items[libraryId]
     }
 
     fun saveSeekTime(seekTime: SeekTime) {
@@ -487,7 +527,7 @@ class LissenSharedPreferences
       private const val KEY_BYPASS_SSL = "bypass_ssl"
       private const val KEY_LOCAL_URLS = "local_urls"
 
-      private const val KEY_PLAYING_BOOK = "playing_book"
+      private const val KEY_PLAYING_ITEM = "playing_item"
       private const val KEY_VOLUME_BOOST = "volume_boost"
 
       private const val ANDROID_KEYSTORE = "AndroidKeyStore"

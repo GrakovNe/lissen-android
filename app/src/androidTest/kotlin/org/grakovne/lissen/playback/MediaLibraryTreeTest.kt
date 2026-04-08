@@ -47,7 +47,7 @@ class MediaLibraryTreeTest {
     localCacheRepository = mockk(relaxed = true)
     lissenMediaProvider = mockk(relaxed = true)
 
-    every { preferences.getPlayingBook() } returns null
+    every { preferences.getPlayingItem() } returns null
     every { preferences.getPreferredLibrary() } returns null
 
     coEvery { lissenMediaProvider.fetchLibraries() } returns
@@ -111,7 +111,7 @@ class MediaLibraryTreeTest {
   @Test
   fun getChildren_continue_returnsEmptyWhenNoPlayingBook() =
     runBlocking {
-      every { preferences.getPlayingBook() } returns null
+      every { preferences.getPlayingItem() } returns null
       val result = tree.getChildren("root/continue", 0, 100).get()
       assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
       assertTrue(result.value!!.isEmpty())
@@ -120,7 +120,7 @@ class MediaLibraryTreeTest {
   @Test
   fun getChildren_continue_returnsOneItemWhenPlayingBookSet() =
     runBlocking {
-      every { preferences.getPlayingBook() } returns makeDetailedItem("book-1", "My Book")
+      every { preferences.getPlayingItem() } returns makeDetailedItem("book-1", "My Book")
       val result = tree.getChildren("root/continue", 0, 100).get()
       assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
       val item = result.value!!.first()

@@ -64,8 +64,6 @@ class MediaRepository
   ) {
     private lateinit var mediaController: MediaController
 
-    private val repositoryScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
-
     private val token =
       SessionToken(
         context,
@@ -180,7 +178,7 @@ class MediaRepository
           intent: Intent?,
         ) {
           if (intent?.action == PLAYBACK_READY) {
-            val book = preferences.getPlayingBook()
+            val book = preferences.getPlayingItem()
 
             book?.let {
               CoroutineScope(Dispatchers.Main).launch {
@@ -286,8 +284,9 @@ class MediaRepository
 
     fun clearPlayingBook() {
       pause()
+
       _playingBook.postValue(null)
-      preferences.savePlayingBook(null)
+      preferences.clearPlayingItem()
     }
 
     fun setTotalPosition(totalPosition: Double) {
@@ -447,7 +446,7 @@ class MediaRepository
         _isPlaying.postValue(false)
 
         _playingBook.postValue(book)
-        preferences.savePlayingBook(book)
+        preferences.savePlayingItem(book)
 
         val intent =
           Intent(context, PlaybackService::class.java).apply {
