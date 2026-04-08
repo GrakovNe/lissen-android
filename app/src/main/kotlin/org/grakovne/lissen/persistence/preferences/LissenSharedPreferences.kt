@@ -340,13 +340,6 @@ class LissenSharedPreferences
       return decrypt(encrypted)
     }
 
-    private val playingItemsType =
-      Types.newParameterizedType(
-        Map::class.java,
-        String::class.java,
-        DetailedItem::class.java,
-      )
-
     fun savePlayingItem(item: DetailedItem) {
       savePlayingItemInternal(
         libraryId = item.libraryId ?: return,
@@ -580,5 +573,12 @@ class LissenSharedPreferences
           null
         }
       }
+
+      private val playingItemsType =
+        Types.newParameterizedType(
+          Map::class.java,
+          String::class.java,
+          DetailedItem::class.java,
+        )
     }
   }
