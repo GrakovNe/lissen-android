@@ -9,8 +9,8 @@ import org.grakovne.lissen.common.RunningComponent
 
 @Module
 @InstallIn(SingletonComponent::class)
-interface PlaybackNotificationModule {
+interface PlaybackNavigationModule {
   @Binds
   @IntoSet
-  fun bindPlaybackNotificationService(service: PlaybackNotificationService): RunningComponent
+  fun bindPlaybackNavigationService(service: PlaybackNavigationService): RunningComponent
 }
