@@ -239,6 +239,7 @@ class LissenMediaProvider
           providePreferredChannel()
             .fetchBook(bookId)
             .map { syncFromLocalProgress(it) }
+            .map { trimProgress(it) }
         }
       }
     }
@@ -345,6 +346,17 @@ class LissenMediaProvider
             ?.let { local -> item.copy(listenedPercentage = local.listenedPercentage) }
             ?: item
         }
+    }
+
+    private fun trimProgress(detailedItem: DetailedItem): DetailedItem {
+      val totalDuration = detailedItem.chapters.sumOf { it.duration }
+      val progress = detailedItem.progress?.currentTime ?: return detailedItem
+
+      return when {
+        progress <= 0 -> detailedItem.copy(progress = null)
+        progress >= totalDuration -> detailedItem.copy(progress = null)
+        else -> detailedItem
+      }
     }
 
     private suspend fun syncFromLocalProgress(detailedItem: DetailedItem): DetailedItem {
