@@ -5,7 +5,7 @@ private const val HTTPS_SCHEME = "https://"
 
 fun String.fixUriScheme(): String {
   val normalized = when {
-    startsWith(HTTP_SCHEME) || startsWith(HTTPS_SCHEME) -> this
+    startsWith(HTTP_SCHEME, true) || startsWith(HTTPS_SCHEME, true) -> this
     else -> HTTP_SCHEME + this
   }
   
