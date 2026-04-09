@@ -40,7 +40,7 @@ fun ConnectionSettingsScreen(
   navController: AppNavigationService,
 ) {
   val viewModel: SettingsViewModel = hiltViewModel()
-
+  val host by viewModel.host.observeAsState()
   val bypassSsl by viewModel.bypassSsl.observeAsState(false)
 
   Scaffold(
@@ -48,7 +48,7 @@ fun ConnectionSettingsScreen(
       TopAppBar(
         title = {
           Text(
-            text = stringResource(R.string.settings_screen_seek_time_title),
+            text = stringResource(R.string.connection_settings_title),
             style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
           )
         },
@@ -83,7 +83,9 @@ fun ConnectionSettingsScreen(
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
       ) {
-        ServerInfoComposable(navController, viewModel)
+        if (host?.url?.isNotEmpty() == true) {
+          ServerInfoComposable(navController, viewModel)
+        }
 
         AdvancedSettingsNavigationItemComposable(
           title = stringResource(R.string.settings_screen_custom_headers_title),

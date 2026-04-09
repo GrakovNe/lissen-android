@@ -167,4 +167,15 @@
     <string name="restart_the_app_to_start_using_the_new_codecs_title">Indítsd újra az alkalmazást az új kodekek használatához</string>
     <string name="restart_the_app_to_start_using_the_new_codecs_cta">Újraindítás</string>
     <string name="codes_not_supported_warning_toast">A hangformátum nem támogatott</string>
+    <string name="connection_settings_description">Vezérlőszerver címe, proxy és SSL beállítások</string>
+    <string name="bookmarks_create_bookmark">Könyvjelző készítése</string>
+    <string name="bookmarks_title">Könyvjelzők</string>
+    <string name="hide_completed_items">Befejezett(ek) elrejtése</string>
+    <string name="application_settings">Alkalmazás beállításai</string>
+    <string name="tree_node_recent">Legutóbbi</string>
+    <string name="tree_node_library">Könyvtár</string>
+    <string name="tree_node_downloads">Letöltések</string>
+    <string name="tree_node_root">Root</string>
+    <string name="tree_node_continue">Folytatás</string>
+    <string name="connection_settings_title">Kapcsolat beállításai</string>
 </resources>

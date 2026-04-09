@@ -35,38 +35,38 @@ import retrofit2.http.Query
 import retrofit2.http.Streaming
 
 interface AudiobookshelfApiClient {
-  @GET("/api/libraries")
+  @GET("api/libraries")
   suspend fun fetchLibraries(): Response<LibraryResponse>
 
-  @GET("/api/libraries/{libraryId}/personalized")
+  @GET("api/libraries/{libraryId}/personalized")
   suspend fun fetchPersonalizedFeed(
     @Path("libraryId") libraryId: String,
   ): Response<List<PersonalizedFeedResponse>>
 
-  @GET("/api/me/progress/{itemId}")
+  @GET("api/me/progress/{itemId}")
   suspend fun fetchLibraryItemProgress(
     @Path("itemId") itemId: String,
   ): Response<MediaProgressResponse>
 
-  @POST("/api/authorize")
+  @POST("api/authorize")
   suspend fun fetchConnectionInfo(): Response<ConnectionInfoResponse>
 
-  @GET("/api/me")
+  @GET("api/me")
   suspend fun fetchBookmarks(): Response<BookmarksResponse>
 
-  @POST("/api/me/item/{libraryItemId}/bookmark")
+  @POST("api/me/item/{libraryItemId}/bookmark")
   suspend fun createBookmarks(
     @Path("libraryItemId") libraryItemId: String,
     @Body request: BookmarkRequest,
   ): Response<BookmarksItemResponse>
 
-  @DELETE("/api/me/item/{libraryItemId}/bookmark/{totalTime}")
+  @DELETE("api/me/item/{libraryItemId}/bookmark/{totalTime}")
   suspend fun dropBookmarks(
     @Path("libraryItemId") libraryItemId: String,
     @Path("totalTime") totalTime: Int,
   ): Response<Unit>
 
-  @GET("/api/me")
+  @GET("api/me")
   suspend fun fetchUserInfo(): Response<UserResponse>
 
   @GET("api/libraries/{libraryId}/items")
@@ -104,35 +104,35 @@ interface AudiobookshelfApiClient {
     @Query("limit") limit: Int,
   ): Response<PodcastSearchResponse>
 
-  @GET("/api/items/{itemId}")
+  @GET("api/items/{itemId}")
   suspend fun fetchLibraryItem(
     @Path("itemId") itemId: String,
   ): Response<BookResponse>
 
-  @GET("/api/items/{itemId}")
+  @GET("api/items/{itemId}")
   suspend fun fetchPodcastEpisode(
     @Path("itemId") itemId: String,
   ): Response<PodcastResponse>
 
-  @GET("/api/authors/{authorId}?include=items")
+  @GET("api/authors/{authorId}?include=items")
   suspend fun fetchAuthorLibraryItems(
     @Path("authorId") authorId: String,
   ): Response<AuthorItemsResponse>
 
-  @POST("/api/session/{itemId}/sync")
+  @POST("api/session/{itemId}/sync")
   suspend fun publishLibraryItemProgress(
     @Path("itemId") itemId: String,
     @Body syncProgressRequest: ProgressSyncRequest,
   ): Response<Unit>
 
-  @POST("/api/items/{itemId}/play/{episodeId}")
+  @POST("api/items/{itemId}/play/{episodeId}")
   suspend fun startPodcastPlayback(
     @Path("itemId") itemId: String,
     @Path("episodeId") episodeId: String,
     @Body syncProgressRequest: PlaybackStartRequest,
   ): Response<PlaybackSessionResponse>
 
-  @POST("/api/items/{itemId}/play")
+  @POST("api/items/{itemId}/play")
   suspend fun startLibraryPlayback(
     @Path("itemId") itemId: String,
     @Body syncProgressRequest: PlaybackStartRequest,
@@ -150,13 +150,13 @@ interface AudiobookshelfApiClient {
     @Header("x-refresh-token") refreshToken: String,
   ): Response<LoggedUserResponse>
 
-  @GET("/api/items/{itemId}/cover?raw=1")
+  @GET("api/items/{itemId}/cover?raw=1")
   @Streaming
   suspend fun getItemCover(
     @Path("itemId") itemId: String,
   ): Response<ResponseBody>
 
-  @GET("/api/items/{itemId}/cover")
+  @GET("api/items/{itemId}/cover")
   @Streaming
   suspend fun getItemCover(
     @Path("itemId") itemId: String,

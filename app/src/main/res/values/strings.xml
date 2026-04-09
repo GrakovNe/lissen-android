@@ -178,6 +178,5 @@
     <string name="tree_node_continue">Continue</string>
     <string name="connection_settings_title">Connection preferences</string>
     <string name="connection_settings_description">Control server address, proxy, and SSL settings</string>
-    <string name="playing_item_menu_mark_as_finished">Mark as finished</string>
-    <string name="playing_item_menu_reset_progress">Reset progress</string>
+    <string name="disconnect_from_server_title">Disconnect from the server</string>
 </resources>

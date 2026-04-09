@@ -205,7 +205,7 @@ class MediaLibrarySessionCallback
                 .foldAsync(
                   onSuccess = {
                     async {
-                      preferences.savePlayingBook(it)
+                      preferences.savePlayingItem(it)
                       playbackSynchronizationService.startPlaybackSynchronization(it)
                     }
                     PlaybackService.bookToChapterMediaItems(it)

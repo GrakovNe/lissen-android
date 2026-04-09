@@ -248,7 +248,7 @@ class MediaLibraryTree
     // --- Data fetchers ---
 
     private suspend fun continueListeningItems(): List<MediaItem> =
-      preferences.getPlayingBook()?.let { listOf(bookItem(it)) } ?: emptyList()
+      preferences.getPlayingItem()?.let { listOf(bookItem(it)) } ?: emptyList()
 
     private suspend fun recentBooksItems(): List<MediaItem> =
       preferences.getPreferredLibrary()?.id?.let { libraryId ->

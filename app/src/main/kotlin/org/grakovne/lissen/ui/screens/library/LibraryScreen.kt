@@ -227,7 +227,7 @@ fun LibraryScreen(
       localCacheUpdatedAt = cachingModelView.fetchLatestUpdate(currentLibraryId) ?: 0L
     }
 
-    playerViewModel.recoverMiniPlayer()
+    playerViewModel.updatePlayingItem()
     settingsViewModel.fetchLibraries()
 
     if (settingsViewModel.hasCredentials().not()) {
@@ -507,7 +507,8 @@ fun LibraryScreen(
         settingsViewModel.preferLibrary(it)
         currentLibraryId = settingsViewModel.fetchPreferredLibraryId()
         refreshContent(false)
-        playerViewModel.clearPlayingBook()
+
+        playerViewModel.updatePlayingItem()
         preferredLibraryExpanded = false
       },
     )

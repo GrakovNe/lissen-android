@@ -176,4 +176,7 @@
     <string name="tree_node_downloads">Download</string>
     <string name="tree_node_root">Root</string>
     <string name="tree_node_continue">Continua</string>
+    <string name="connection_settings_title">Preferenze di connessione</string>
+    <string name="connection_settings_description">Controlla l\'indirizzo del server, il proxy e le impostazioni SSL</string>
+    <string name="disconnect_from_server_title">Disconnettere dal server</string>
 </resources>
