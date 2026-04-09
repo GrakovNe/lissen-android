@@ -65,8 +65,7 @@ class PlaybackNotificationService
                   false -> Direction.BACKWARD
                 }
 
-              val nextTrack =
-                findAvailableTrackIndex(exoPlayer.currentMediaItemIndex, direction, exoPlayer, 0)
+              val nextTrack = findAvailableTrackIndex(exoPlayer.currentMediaItemIndex, direction, exoPlayer, 0)
               nextTrack?.let { exoPlayer.seekTo(it, 0) }
 
               if (nextTrack == null || nextTrack < currentIndex) {
