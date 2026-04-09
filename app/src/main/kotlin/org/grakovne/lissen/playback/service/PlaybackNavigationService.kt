@@ -13,12 +13,13 @@ import javax.inject.Singleton
 
 @Singleton
 @OptIn(UnstableApi::class)
-class PlaybackNotificationService
+class PlaybackNavigationService
   @Inject
   constructor(
     private val exoPlayer: ExoPlayer,
     private val sharedPreferences: LissenSharedPreferences,
     private val mediaProvider: LissenMediaProvider,
+    private val playbackSynchronizationService: PlaybackSynchronizationService,
   ) : RunningComponent {
     override fun onCreate() {
       exoPlayer.addListener(
@@ -70,6 +71,7 @@ class PlaybackNotificationService
 
               if (nextTrack == null || nextTrack < currentIndex) {
                 exoPlayer.pause()
+                playbackSynchronizationService.cancelSynchronization()
               }
             }
           }
