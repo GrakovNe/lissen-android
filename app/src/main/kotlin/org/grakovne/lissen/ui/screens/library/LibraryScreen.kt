@@ -477,8 +477,6 @@ fun LibraryScreen(
                   playingItem = book,
                   imageLoader = imageLoader,
                   navController = navController,
-                  libraryViewModel = libraryViewModel,
-                  onContentRefresh = { },
                 )
               }
             }

@@ -41,12 +41,8 @@ fun BookComposable(
   playingItem: PlayingItem,
   imageLoader: ImageLoader,
   navController: AppNavigationService,
-  libraryViewModel: LibraryViewModel,
-  onContentRefresh: () -> Unit,
 ) {
   val context = LocalContext.current
-
-  var isPlayingItemOptionsExpanded by remember { mutableStateOf(false) }
 
   val imageRequest =
     remember(playingItem.id) {
@@ -62,8 +58,6 @@ fun BookComposable(
         .fillMaxWidth()
         .combinedClickable(
           onClick = { navController.showPlayer(playingItem.id, playingItem.title, playingItem.subtitle) },
-          hapticFeedbackEnabled = true,
-          onLongClick = { isPlayingItemOptionsExpanded = true },
         ).testTag("bookItem_${playingItem.id}")
         .padding(horizontal = 4.dp, vertical = 8.dp),
     verticalAlignment = Alignment.CenterVertically,
@@ -104,19 +98,6 @@ fun BookComposable(
     }
 
     Spacer(Modifier.width(16.dp))
-  }
-
-  if (isPlayingItemOptionsExpanded) {
-    PlayingItemOptionsComposable(
-      item = playingItem,
-      onMarkFinished = {
-        libraryViewModel.completeProgress(playingItem)
-      },
-      onResetProgress = {
-        libraryViewModel.resetPlayingItemProgress(playingItem)
-      },
-      onDismissRequest = { isPlayingItemOptionsExpanded = false },
-    )
   }
 }
 

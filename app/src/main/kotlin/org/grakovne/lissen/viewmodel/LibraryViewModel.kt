@@ -179,18 +179,6 @@ class LibraryViewModel
       }
     }
 
-    fun completeProgress(playingItem: PlayingItem) {
-      viewModelScope
-        .launch {
-          mediaChannel
-            .completeProgress(playingItem.id)
-            .map { _hiddenIds.value += playingItem.id }
-        }
-    }
-
-    fun resetPlayingItemProgress(playingItem: PlayingItem) {
-    }
-
     companion object {
       private const val EMPTY_SEARCH = ""
       private const val PAGE_SIZE = 20
