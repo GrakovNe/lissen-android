@@ -96,6 +96,11 @@ class PlaybackSynchronizationService
 
       Timber.d("Trying to sync $overallProgress for ${currentItem.id}")
 
+      if (overallProgress.currentTotalTime == 0.0) {
+        Timber.d("Skipping sync for ${currentItem.id} due to playing doesn't started ")
+        return
+      }
+
       serviceScope.launch(Dispatchers.IO) {
         if (syncMutex.tryLock().not()) {
           Timber.d("Sync is already running")
