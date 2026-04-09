@@ -51,7 +51,7 @@ class AudioBookshelfRepository
         .makeRequest {
           it.changeListenedState(
             itemId = itemId,
-            request = ChangeListenedStateRequest(isFinished = true),
+            request = ChangeListenedStateRequest(isFinished = false),
           )
         }
 
