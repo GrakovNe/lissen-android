@@ -13,9 +13,11 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.content.LissenMediaProvider
+import org.grakovne.lissen.content.cache.common.round
 import org.grakovne.lissen.lib.domain.DetailedItem
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.roundToInt
 
 @Singleton
 @OptIn(UnstableApi::class)
@@ -54,8 +56,12 @@ class CompletePlayingItemService
 
     private fun completePlayingItem(state: TrackChangedState): Job =
       scope.launch {
-        val latestTrack = state.currentTrackIndex == state.item.chapters.size
-        val completedPlaying = mediaRepository.totalPosition.value == state.item.chapters.sumOf { it.duration }
+        val latestTrack = state.currentTrackIndex == state.item.chapters.size - 1
+        val completedPlaying =
+          mediaRepository.totalPosition.value?.roundToInt() ==
+            state.item.chapters
+              .sumOf { it.duration }
+              .roundToInt()
 
         if (latestTrack && completedPlaying) {
           mediaProvider.completeProgress(state.item.id)

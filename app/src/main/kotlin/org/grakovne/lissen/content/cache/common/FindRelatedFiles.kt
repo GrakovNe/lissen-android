@@ -28,4 +28,4 @@ fun findRelatedFiles(
 
 private const val PRECISION = 0.01
 
-private fun Double.round(): Double = kotlin.math.round(this / PRECISION) * PRECISION
+fun Double.round(): Double = kotlin.math.round(this / PRECISION) * PRECISION
