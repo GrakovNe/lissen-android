@@ -38,7 +38,7 @@ class WidgetPlaybackController
           intent: Intent?,
         ) {
           if (intent?.action == PLAYBACK_READY) {
-            val book = sharedPreferences.getPlayingBook()
+            val book = sharedPreferences.getPlayingItem()
 
             book?.let {
               CoroutineScope(Dispatchers.Main).launch {

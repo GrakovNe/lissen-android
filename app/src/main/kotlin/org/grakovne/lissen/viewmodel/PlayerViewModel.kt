@@ -68,13 +68,12 @@ class PlayerViewModel
       viewModelScope.launch { mediaRepository.updateBookmarks() }
     }
 
-    fun recoverMiniPlayer() {
-      val playingBook = preferences.getPlayingBook()
+    fun updatePlayingItem() {
+      val playingItem = preferences.getPlayingItem()
 
-      if (playingBook?.id != null && book.value == null) {
-        viewModelScope.launch {
-          mediaRepository.preparePlayback(playingBook.id)
-        }
+      when (playingItem?.id) {
+        null -> viewModelScope.launch { mediaRepository.clearPlayingBook() }
+        else -> viewModelScope.launch { mediaRepository.preparePlayback(playingItem.id) }
       }
     }
 
@@ -148,7 +147,7 @@ class PlayerViewModel
     fun togglePlayPause() = mediaRepository.togglePlayPause()
 
     fun prepareAndPlay() {
-      val playingBook = preferences.getPlayingBook() ?: return
+      val playingBook = preferences.getPlayingItem() ?: return
       mediaRepository.prepareAndPlay(playingBook)
     }
 
