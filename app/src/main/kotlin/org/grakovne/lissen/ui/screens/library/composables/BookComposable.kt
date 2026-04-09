@@ -1,5 +1,6 @@
 package org.grakovne.lissen.ui.screens.library.composables
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,7 +35,6 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.lib.domain.PlayingItem
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.navigation.AppNavigationService
-import org.grakovne.lissen.viewmodel.LibraryViewModel
 
 @Composable
 fun BookComposable(
@@ -56,9 +56,8 @@ fun BookComposable(
     modifier =
       Modifier
         .fillMaxWidth()
-        .combinedClickable(
-          onClick = { navController.showPlayer(playingItem.id, playingItem.title, playingItem.subtitle) },
-        ).testTag("bookItem_${playingItem.id}")
+        .clickable { navController.showPlayer(playingItem.id, playingItem.title, playingItem.subtitle) }
+        .testTag("bookItem_${playingItem.id}")
         .padding(horizontal = 4.dp, vertical = 8.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {

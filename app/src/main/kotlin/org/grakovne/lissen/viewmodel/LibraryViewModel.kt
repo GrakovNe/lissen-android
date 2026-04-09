@@ -55,9 +55,6 @@ class LibraryViewModel
     private val _totalCount = MutableLiveData<Int>()
     val totalCount: LiveData<Int> = _totalCount
 
-    private val _hiddenIds = MutableStateFlow<Set<String>>(emptySet())
-    private val hiddenIds = _hiddenIds
-
     private val pageConfig =
       PagingConfig(
         pageSize = PAGE_SIZE,
@@ -96,20 +93,15 @@ class LibraryViewModel
       }.cachedIn(viewModelScope)
 
     private val libraryPager: Flow<PagingData<PlayingItem>> by lazy {
-      hiddenIds
-        .flatMapLatest { hidden ->
-          Pager(
-            config = pageConfig,
-            pagingSourceFactory = {
-              val source =
-                LibraryDefaultPagingSource(preferences, mediaChannel) { _totalCount.postValue(it) }
-              defaultPagingSource = source
-              source
-            },
-          ).flow.map { pagingData ->
-            pagingData.filter { it.id !in hidden }
-          }
-        }.cachedIn(viewModelScope)
+      Pager(
+        config = pageConfig,
+        pagingSourceFactory = {
+          val source = LibraryDefaultPagingSource(preferences, mediaChannel) { _totalCount.postValue(it) }
+          defaultPagingSource = source
+
+          source
+        },
+      ).flow.cachedIn(viewModelScope)
     }
 
     fun requestSearch() {

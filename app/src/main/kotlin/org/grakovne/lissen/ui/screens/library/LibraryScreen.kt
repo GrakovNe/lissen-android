@@ -164,10 +164,7 @@ fun LibraryScreen(
     derivedStateOf {
       if (searchRequested) return@derivedStateOf false
 
-      val noItemsYet = library.itemCount == 0
-      val loadingNow = pullRefreshing || recentBookRefreshing
-
-      noItemsYet && loadingNow
+      pullRefreshing || recentBookRefreshing || library.loadState.refresh is LoadState.Loading
     }
   }
 
