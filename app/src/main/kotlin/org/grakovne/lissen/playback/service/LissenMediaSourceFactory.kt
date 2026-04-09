@@ -14,7 +14,6 @@ import androidx.media3.exoplayer.source.SilenceMediaSource
 import androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy
 import kotlinx.parcelize.Parcelize
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.FILE_SEGMENTS
-import timber.log.Timber
 
 @Parcelize
 data class FileClip(
