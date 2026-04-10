@@ -1,9 +1,6 @@
 package org.grakovne.lissen.playback
 
 import android.content.Context
-import android.content.Intent
-import android.os.Bundle
-import android.view.KeyEvent
 import androidx.annotation.OptIn
 import androidx.core.os.BundleCompat
 import androidx.media3.common.C
@@ -12,12 +9,10 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
-import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionResult
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.util.concurrent.Futures
-import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
 import io.mockk.Ordering
 import io.mockk.coEvery
@@ -34,7 +29,6 @@ import org.grakovne.lissen.lib.domain.MediaProgress
 import org.grakovne.lissen.lib.domain.PlayingChapter
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.service.FileClip
-import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.FILE_SEGMENTS
 import org.grakovne.lissen.playback.service.PlaybackSynchronizationService
 import org.junit.Assert.assertEquals
@@ -43,7 +37,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 
 @OptIn(UnstableApi::class)

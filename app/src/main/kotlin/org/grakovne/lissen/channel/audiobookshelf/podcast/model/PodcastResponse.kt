@@ -3,7 +3,6 @@ package org.grakovne.lissen.channel.audiobookshelf.podcast.model
 import androidx.annotation.Keep
 import com.squareup.moshi.JsonClass
 import org.grakovne.lissen.channel.audiobookshelf.library.model.AudioFileMetadata
-import org.grakovne.lissen.channel.audiobookshelf.library.model.AudioFileTag
 
 @Keep
 @JsonClass(generateAdapter = true)
