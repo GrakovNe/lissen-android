@@ -82,6 +82,9 @@ class SettingsViewModel
     private val _bypassSsl = MutableLiveData(preferences.getSslBypass())
     val bypassSsl = _bypassSsl
 
+    private val _clientCertAlias = MutableLiveData(preferences.getClientCertAlias())
+    val clientCertAlias: LiveData<String?> = _clientCertAlias
+
     private val _softwareCodecsEnabled = MutableLiveData(preferences.getSoftwareCodecsEnabled())
 
     val softwareCodecsEnabled: LiveData<Boolean> = _softwareCodecsEnabled
@@ -101,6 +104,16 @@ class SettingsViewModel
     fun preferBypassSsl(value: Boolean) {
       _bypassSsl.postValue(value)
       preferences.saveSslBypass(value)
+    }
+
+    fun saveClientCertAlias(alias: String?) {
+      _clientCertAlias.postValue(alias)
+      preferences.saveClientCertAlias(alias)
+    }
+
+    fun clearClientCertAlias() {
+      _clientCertAlias.postValue(null)
+      preferences.clearClientCertAlias()
     }
 
     fun preferAutoDownloadDelayed(value: Boolean) {

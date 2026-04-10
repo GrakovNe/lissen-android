@@ -1,5 +1,7 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.api
 
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfHostProvider
@@ -21,6 +23,7 @@ import javax.inject.Singleton
 class AudioBookShelfApiService
   @Inject
   constructor(
+    @ApplicationContext private val context: Context,
     private val hostProvider: AudiobookshelfHostProvider,
     private val preferences: LissenSharedPreferences,
     private val requestHeadersProvider: RequestHeadersProvider,
@@ -32,6 +35,7 @@ class AudioBookShelfApiService
     private var cachedRefreshToken: String? = null
     private var cachedHeaders: List<ServerRequestHeader> = emptyList()
     private var cachedBypassSsl: Boolean = false
+    private var cachedClientCertAlias: String? = null
 
     private var clientCache: AudiobookshelfApiClient? = null
 
@@ -107,8 +111,9 @@ class AudioBookShelfApiService
       val refreshToken = preferences.getRefreshToken()
       val headers = requestHeadersProvider.fetchRequestHeaders()
       val bypassSsl = preferences.getSslBypass()
+      val clientCertAlias = preferences.getClientCertAlias()
 
-      val clientChanged = isClientChanged(host, token, headers, accessToken, bypassSsl)
+      val clientChanged = isClientChanged(host, token, headers, accessToken, bypassSsl, clientCertAlias)
       val current = clientCache
 
       return when {
@@ -119,6 +124,7 @@ class AudioBookShelfApiService
           cachedRefreshToken = refreshToken
           cachedHeaders = headers
           cachedBypassSsl = bypassSsl
+          cachedClientCertAlias = clientCertAlias
 
           createClientInstance()?.also { clientCache = it }
         }
@@ -142,6 +148,7 @@ class AudioBookShelfApiService
           host = host,
           preferences = preferences,
           requestHeaders = headers,
+          context = context,
         )
 
       return client
@@ -155,9 +162,11 @@ class AudioBookShelfApiService
       headers: List<ServerRequestHeader>,
       accessToken: String?,
       bypassSsl: Boolean,
+      clientCertAlias: String?,
     ) = host != cachedHost ||
       token != cachedToken ||
       headers != cachedHeaders ||
       accessToken != cachedAccessToken ||
-      bypassSsl != cachedBypassSsl
+      bypassSsl != cachedBypassSsl ||
+      clientCertAlias != cachedClientCertAlias
   }

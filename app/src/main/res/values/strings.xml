@@ -164,6 +164,12 @@
     <string name="settings_screen_delay_autodownload_description">Wait a short time before starting download</string>
     <string name="settings_screen_bypass_ssl_title">Disable SSL verification</string>
     <string name="settings_screen_bypass_ssl_hint">Connect to servers with any certificate</string>
+    <string name="settings_screen_client_cert_title">Client certificate</string>
+    <string name="settings_screen_client_cert_not_configured">Not configured</string>
+    <string name="settings_screen_client_cert_configured">Certificate: %1$s</string>
+    <string name="settings_screen_client_cert_select_action">Select certificate</string>
+    <string name="settings_screen_client_cert_clear_action">Clear certificate</string>
+    <string name="login_error_client_cert_error">Client certificate rejected by server</string>
     <string name="restart_the_app_to_start_using_the_new_codecs_title">Restart the app to start using the new codecs</string>
     <string name="restart_the_app_to_start_using_the_new_codecs_cta">Restart</string>
     <string name="codes_not_supported_warning_toast">Audio format not supported</string>

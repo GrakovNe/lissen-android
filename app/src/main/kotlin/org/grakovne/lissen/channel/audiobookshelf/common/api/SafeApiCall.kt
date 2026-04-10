@@ -5,6 +5,8 @@ import org.grakovne.lissen.channel.common.OperationResult
 import retrofit2.Response
 import timber.log.Timber
 import java.io.IOException
+import javax.net.ssl.SSLHandshakeException
+import javax.net.ssl.SSLPeerUnverifiedException
 import kotlin.coroutines.cancellation.CancellationException
 
 suspend fun <T> safeApiCall(apiCall: suspend () -> Response<T>): OperationResult<T> {
@@ -43,6 +45,12 @@ suspend fun <T> safeApiCall(apiCall: suspend () -> Response<T>): OperationResult
         OperationResult.Error(OperationError.InternalError)
       }
     }
+  } catch (e: SSLHandshakeException) {
+    Timber.e("SSL handshake failed (possible client cert issue): $e")
+    OperationResult.Error(OperationError.ClientCertificateError)
+  } catch (e: SSLPeerUnverifiedException) {
+    Timber.e("SSL peer unverified (possible client cert issue): $e")
+    OperationResult.Error(OperationError.ClientCertificateError)
   } catch (e: IOException) {
     Timber.e("Unable to make network api call due to: $e")
     OperationResult.Error(OperationError.NetworkError)

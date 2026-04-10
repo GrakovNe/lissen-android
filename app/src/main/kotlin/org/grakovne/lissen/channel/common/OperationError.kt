@@ -27,6 +27,8 @@ sealed class OperationError {
   data object OAuthFlowFailed : OperationError()
 
   data object UnsupportedError : OperationError()
+
+  data object ClientCertificateError : OperationError()
 }
 
 fun OperationError.makeText(context: Context) =
@@ -77,5 +79,9 @@ fun OperationError.makeText(context: Context) =
 
     OperationError.NotFoundError -> {
       context.getString(R.string.login_error_lissen_not_found)
+    }
+
+    OperationError.ClientCertificateError -> {
+      context.getString(R.string.login_error_client_cert_error)
     }
   }

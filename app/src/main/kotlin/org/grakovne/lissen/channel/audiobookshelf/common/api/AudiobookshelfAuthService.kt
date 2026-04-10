@@ -51,7 +51,7 @@ class AudiobookshelfAuthService
     private val authMethodResponseConverter: AuthMethodResponseConverter,
   ) : ChannelAuthService(preferences) {
     private val client =
-      createOkHttpClient(requestHeaders = preferences.getCustomHeaders(), preferences = preferences)
+      createOkHttpClient(requestHeaders = preferences.getCustomHeaders(), preferences = preferences, context = context)
         .newBuilder()
         .followRedirects(false)
         .build()
@@ -74,6 +74,7 @@ class AudiobookshelfAuthService
             host = host,
             preferences = preferences,
             requestHeaders = requestHeadersProvider.fetchRequestHeaders(),
+            context = context,
           )
 
         apiService = apiClient.retrofit
@@ -108,7 +109,7 @@ class AudiobookshelfAuthService
               .appendEncodedPath("status")
               .build()
 
-          val client = createOkHttpClient(requestHeaders = preferences.getCustomHeaders(), preferences = preferences)
+          val client = createOkHttpClient(requestHeaders = preferences.getCustomHeaders(), preferences = preferences, context = context)
           val request =
             Request
               .Builder()
@@ -242,7 +243,7 @@ class AudiobookshelfAuthService
           .appendQueryParameter("code_verifier", pkce.verifier)
           .build()
 
-      val client = createOkHttpClient(requestHeaders = preferences.getCustomHeaders(), preferences = preferences)
+      val client = createOkHttpClient(requestHeaders = preferences.getCustomHeaders(), preferences = preferences, context = context)
 
       val request =
         Request

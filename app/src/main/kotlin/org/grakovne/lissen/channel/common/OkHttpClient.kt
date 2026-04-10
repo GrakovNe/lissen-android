@@ -1,5 +1,6 @@
 package org.grakovne.lissen.channel.common
 
+import android.content.Context
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -14,13 +15,16 @@ import java.util.concurrent.TimeUnit
 fun createOkHttpClient(
   requestHeaders: List<ServerRequestHeader>?,
   preferences: LissenSharedPreferences,
+  context: Context? = null,
 ): OkHttpClient {
+  val clientCertAlias = preferences.getClientCertAlias()
+
   var builder = OkHttpClient.Builder()
 
   builder =
     when (preferences.getSslBypass()) {
-      true -> builder.withSslBypass()
-      false -> builder.withTrustedCertificates()
+      true -> builder.withSslBypass(context, clientCertAlias)
+      false -> builder.withTrustedCertificates(context, clientCertAlias)
     }
 
   return builder

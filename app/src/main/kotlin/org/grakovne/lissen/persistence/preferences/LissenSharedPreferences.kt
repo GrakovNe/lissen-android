@@ -83,6 +83,7 @@ class LissenSharedPreferences
         remove(KEY_CUSTOM_HEADERS)
         remove(KEY_BYPASS_SSL)
         remove(KEY_LOCAL_URLS)
+        remove(KEY_CLIENT_CERT_ALIAS)
 
         remove(KEY_PLAYING_ITEM)
       }
@@ -109,6 +110,24 @@ class LissenSharedPreferences
     fun saveSslBypass(enabled: Boolean) {
       sharedPreferences.edit {
         putBoolean(KEY_BYPASS_SSL, enabled)
+      }
+    }
+
+    fun getClientCertAlias(): String? = sharedPreferences.getString(KEY_CLIENT_CERT_ALIAS, null)
+
+    fun saveClientCertAlias(alias: String?) {
+      sharedPreferences.edit {
+        if (alias == null) {
+          remove(KEY_CLIENT_CERT_ALIAS)
+        } else {
+          putString(KEY_CLIENT_CERT_ALIAS, alias)
+        }
+      }
+    }
+
+    fun clearClientCertAlias() {
+      sharedPreferences.edit {
+        remove(KEY_CLIENT_CERT_ALIAS)
       }
     }
 
@@ -519,6 +538,7 @@ class LissenSharedPreferences
       private const val KEY_CUSTOM_HEADERS = "custom_headers"
       private const val KEY_BYPASS_SSL = "bypass_ssl"
       private const val KEY_LOCAL_URLS = "local_urls"
+      private const val KEY_CLIENT_CERT_ALIAS = "client_cert_alias"
 
       private const val KEY_PLAYING_ITEM = "playing_item"
       private const val KEY_VOLUME_BOOST = "volume_boost"

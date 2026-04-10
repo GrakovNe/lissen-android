@@ -1,5 +1,6 @@
 package org.grakovne.lissen.channel.common
 
+import android.content.Context
 import com.squareup.moshi.Moshi
 import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.lib.domain.fixUriScheme
@@ -11,8 +12,9 @@ class ApiClient(
   host: String,
   requestHeaders: List<ServerRequestHeader>?,
   preferences: LissenSharedPreferences,
+  context: Context? = null,
 ) {
-  private val httpClient = createOkHttpClient(requestHeaders, preferences = preferences)
+  private val httpClient = createOkHttpClient(requestHeaders, preferences = preferences, context = context)
 
   val retrofit: Retrofit? =
     runCatching {
