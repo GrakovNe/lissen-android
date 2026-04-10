@@ -1,3 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="login_screen_login_input">Вход</string>
+    <string name="login_screen_show_password_hint">Виж парола</string>
+    <string name="login_screen_password_input">Парола</string>
+    <string name="player_screen_now_playing_title_chapter_of">Глава %1$d от %2$s</string>
 </resources>
