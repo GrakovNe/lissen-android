@@ -7,62 +7,66 @@ import java.io.Serializable
 @Keep
 @JsonClass(generateAdapter = true)
 data class DetailedItem(
-  val id: String,
-  val title: String,
-  val subtitle: String?,
-  val author: String?,
-  val narrator: String?,
-  val publisher: String?,
-  val series: List<BookSeries>,
-  val year: String?,
-  val abstract: String?,
-  val files: List<BookFile>,
-  val chapters: List<PlayingChapter>,
-  val progress: MediaProgress?,
-  val libraryId: String?,
-  val localProvided: Boolean,
-  val createdAt: Long,
-  val updatedAt: Long,
-) : Serializable
+	val id: String,
+	val title: String,
+	val subtitle: String?,
+	val author: String?,
+	val narrator: String?,
+	val publisher: String?,
+	val series: List<BookSeries>,
+	val year: String?,
+	val abstract: String?,
+	val files: List<BookFile>,
+	val chapters: List<PlayingChapter>,
+	val progress: MediaProgress?,
+	val libraryId: String?,
+	val localProvided: Boolean,
+	val createdAt: Long,
+	val updatedAt: Long,
+) : Serializable {
+	companion object {
+		fun DetailedItem.same(other: DetailedItem) = this.copy(progress = null) == other.copy(progress = null)
+	}
+}
 
 @Keep
 @JsonClass(generateAdapter = true)
 data class BookFile(
-  val id: String,
-  val name: String,
-  val duration: Double,
-  val size: Long?,
-  val mimeType: String,
+	val id: String,
+	val name: String,
+	val duration: Double,
+	val size: Long?,
+	val mimeType: String,
 ) : Serializable
 
 @Keep
 @JsonClass(generateAdapter = true)
 data class MediaProgress(
-  val currentTime: Double,
-  val isFinished: Boolean,
-  val lastUpdate: Long,
+	val currentTime: Double,
+	val isFinished: Boolean,
+	val lastUpdate: Long,
 ) : Serializable
 
 @Keep
 @JsonClass(generateAdapter = true)
 data class PlayingChapter(
-  val available: Boolean,
-  val podcastEpisodeState: BookChapterState?,
-  val duration: Double,
-  val start: Double,
-  val end: Double,
-  val title: String,
-  val id: String,
+	val available: Boolean,
+	val podcastEpisodeState: BookChapterState?,
+	val duration: Double,
+	val start: Double,
+	val end: Double,
+	val title: String,
+	val id: String,
 ) : Serializable
 
 @Keep
 @JsonClass(generateAdapter = true)
 data class BookSeries(
-  val serialNumber: String?,
-  val name: String,
+	val serialNumber: String?,
+	val name: String,
 ) : Serializable
 
 @Keep
 enum class BookChapterState {
-  FINISHED,
+	FINISHED,
 }
