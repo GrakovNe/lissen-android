@@ -60,11 +60,11 @@ fun ClientCertificateSettingsScreen(onBack: () -> Unit) {
             }
           }
         },
-        null,
-        null,
-        null,
-        -1,
-        clientCertAlias,
+        null, // keyTypes — no filter
+        null, // issuers — no filter
+        null, // host — no server hint
+        -1, // port — no server hint
+        clientCertAlias, // current alias to highlight in the picker
       )
     }
   }
