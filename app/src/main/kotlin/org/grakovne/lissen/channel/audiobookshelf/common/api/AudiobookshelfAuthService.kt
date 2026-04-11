@@ -50,12 +50,6 @@ class AudiobookshelfAuthService
     private val contextCache: OAuthContextCache,
     private val authMethodResponseConverter: AuthMethodResponseConverter,
   ) : ChannelAuthService(preferences) {
-    private fun createNonRedirectingClient() =
-      createOkHttpClient(requestHeaders = preferences.getCustomHeaders(), preferences = preferences, context = context)
-        .newBuilder()
-        .followRedirects(false)
-        .build()
-
     override suspend fun authorize(
       host: String,
       username: String,
@@ -170,7 +164,10 @@ class AudiobookshelfAuthService
           .get()
           .build()
 
-      createNonRedirectingClient()
+      createOkHttpClient(requestHeaders = preferences.getCustomHeaders(), preferences = preferences, context = context)
+        .newBuilder()
+        .followRedirects(false)
+        .build()
         .newCall(request)
         .enqueue(
           object : Callback {

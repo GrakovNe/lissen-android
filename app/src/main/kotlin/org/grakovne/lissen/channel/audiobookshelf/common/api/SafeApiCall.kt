@@ -51,10 +51,18 @@ suspend fun <T> safeApiCall(
     }
   } catch (e: SSLHandshakeException) {
     Timber.e("SSL handshake failed: $e")
-    OperationResult.Error(sslErrorFor(preferences))
+    if (preferences.getClientCertAlias() != null) {
+      OperationResult.Error(OperationError.ClientCertificateError)
+    } else {
+      OperationResult.Error(OperationError.NetworkError)
+    }
   } catch (e: SSLPeerUnverifiedException) {
     Timber.e("SSL peer unverified: $e")
-    OperationResult.Error(sslErrorFor(preferences))
+    if (preferences.getClientCertAlias() != null) {
+      OperationResult.Error(OperationError.ClientCertificateError)
+    } else {
+      OperationResult.Error(OperationError.NetworkError)
+    }
   } catch (e: IOException) {
     Timber.e("Unable to make network api call due to: $e")
     OperationResult.Error(OperationError.NetworkError)
@@ -67,10 +75,3 @@ suspend fun <T> safeApiCall(
     OperationResult.Error(OperationError.InternalError)
   }
 }
-
-private fun sslErrorFor(preferences: LissenSharedPreferences): OperationError =
-  if (preferences.getClientCertAlias() != null) {
-    OperationError.ClientCertificateError
-  } else {
-    OperationError.NetworkError
-  }

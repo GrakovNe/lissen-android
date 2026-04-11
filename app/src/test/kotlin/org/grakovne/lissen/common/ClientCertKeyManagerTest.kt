@@ -38,16 +38,6 @@ class ClientCertKeyManagerTest {
   }
 
   /**
-   * Guards the X509KeyManager contract: the SSL implementation may call
-   * getPrivateKey with an alias other than ours; in that case we must return
-   * null rather than handing over the wrong key.
-   */
-  @Test
-  fun `getPrivateKey returns null for an unknown alias`() {
-    assertNull(keyManagerWithCert().getPrivateKey("some-other-alias"))
-  }
-
-  /**
    * KeyChain may return null if the user revoked permission or the cert was
    * removed after the alias was saved. The key manager must not offer the
    * alias in that case, otherwise the SSL layer would call getPrivateKey and

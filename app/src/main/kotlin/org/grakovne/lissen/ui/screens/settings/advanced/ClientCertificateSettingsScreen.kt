@@ -1,7 +1,5 @@
 package org.grakovne.lissen.ui.screens.settings.advanced
 
-import android.os.Handler
-import android.os.Looper
 import android.security.KeyChain
 import android.widget.Toast
 import androidx.activity.compose.LocalActivity
@@ -33,7 +31,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -47,7 +44,6 @@ fun ClientCertificateSettingsScreen(onBack: () -> Unit) {
   val viewModel: SettingsViewModel = hiltViewModel()
   val clientCertAlias by viewModel.clientCertAlias.collectAsState(initial = null)
   val activity = LocalActivity.current
-  val applicationContext = LocalContext.current.applicationContext
 
   val cancelledToast = stringResource(R.string.settings_screen_client_cert_picker_cancelled_toast)
 
@@ -59,8 +55,8 @@ fun ClientCertificateSettingsScreen(onBack: () -> Unit) {
           if (selectedAlias != null) {
             viewModel.saveClientCertAlias(selectedAlias)
           } else {
-            Handler(Looper.getMainLooper()).post {
-              Toast.makeText(applicationContext, cancelledToast, Toast.LENGTH_SHORT).show()
+            act.runOnUiThread {
+              Toast.makeText(act, cancelledToast, Toast.LENGTH_SHORT).show()
             }
           }
         },
@@ -107,8 +103,41 @@ fun ClientCertificateSettingsScreen(onBack: () -> Unit) {
       verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
       when (val alias = clientCertAlias) {
-        null -> EmptyStateContent()
-        else -> SelectedCertificateContent(alias = alias)
+        null -> {
+          Text(
+            text = stringResource(R.string.settings_screen_client_cert_empty_state_title),
+            style = typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+          )
+          Text(
+            text = stringResource(R.string.settings_screen_client_cert_empty_state_description),
+            style = typography.bodyMedium,
+            color = colorScheme.onSurfaceVariant,
+          )
+          Text(
+            text = stringResource(R.string.settings_screen_client_cert_install_help_title),
+            style = typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+            modifier = Modifier.padding(top = 8.dp),
+          )
+          Text(
+            text = stringResource(R.string.settings_screen_client_cert_install_help_description),
+            style = typography.bodyMedium,
+            color = colorScheme.onSurfaceVariant,
+          )
+        }
+
+        else -> {
+          Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+              text = stringResource(R.string.settings_screen_client_cert_selected_label),
+              style = typography.labelMedium,
+              color = colorScheme.onSurfaceVariant,
+            )
+            Text(
+              text = alias,
+              style = typography.titleMedium,
+            )
+          }
+        }
       }
 
       Spacer(modifier = Modifier.height(8.dp))
@@ -130,43 +159,5 @@ fun ClientCertificateSettingsScreen(onBack: () -> Unit) {
         Text(text = stringResource(R.string.settings_screen_client_cert_remove_action))
       }
     }
-  }
-}
-
-@Composable
-private fun EmptyStateContent() {
-  Text(
-    text = stringResource(R.string.settings_screen_client_cert_empty_state_title),
-    style = typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-  )
-  Text(
-    text = stringResource(R.string.settings_screen_client_cert_empty_state_description),
-    style = typography.bodyMedium,
-    color = colorScheme.onSurfaceVariant,
-  )
-  Text(
-    text = stringResource(R.string.settings_screen_client_cert_install_help_title),
-    style = typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-    modifier = Modifier.padding(top = 8.dp),
-  )
-  Text(
-    text = stringResource(R.string.settings_screen_client_cert_install_help_description),
-    style = typography.bodyMedium,
-    color = colorScheme.onSurfaceVariant,
-  )
-}
-
-@Composable
-private fun SelectedCertificateContent(alias: String) {
-  Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-    Text(
-      text = stringResource(R.string.settings_screen_client_cert_selected_label),
-      style = typography.labelMedium,
-      color = colorScheme.onSurfaceVariant,
-    )
-    Text(
-      text = alias,
-      style = typography.titleMedium,
-    )
   }
 }
