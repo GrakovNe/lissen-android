@@ -167,8 +167,14 @@
     <string name="settings_screen_client_cert_title">Client certificate</string>
     <string name="settings_screen_client_cert_not_configured">Not configured</string>
     <string name="settings_screen_client_cert_configured">Certificate: %1$s</string>
-    <string name="settings_screen_client_cert_select_action">Select certificate</string>
-    <string name="settings_screen_client_cert_clear_action">Clear certificate</string>
+    <string name="settings_screen_client_cert_empty_state_title">No client certificate selected.</string>
+    <string name="settings_screen_client_cert_empty_state_description">Lissen reads client certificates from Android\'s system credential storage. If your server requires mutual TLS, install the certificate first, then choose it here.</string>
+    <string name="settings_screen_client_cert_install_help_title">Where do I get this?</string>
+    <string name="settings_screen_client_cert_install_help_description">To install a client certificate, open the system Settings, then Security &amp; privacy → Encryption &amp; credentials → Install a certificate → VPN &amp; app user certificate, and import the .p12 or .pfx file provided by your server administrator.</string>
+    <string name="settings_screen_client_cert_selected_label">Selected certificate</string>
+    <string name="settings_screen_client_cert_choose_action">Choose certificate</string>
+    <string name="settings_screen_client_cert_remove_action">Remove certificate</string>
+    <string name="settings_screen_client_cert_picker_cancelled_toast">Client certificate not selected</string>
     <string name="login_error_client_cert_error">Client certificate rejected by server</string>
     <string name="restart_the_app_to_start_using_the_new_codecs_title">Restart the app to start using the new codecs</string>
     <string name="restart_the_app_to_start_using_the_new_codecs_cta">Restart</string>

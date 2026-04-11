@@ -40,6 +40,8 @@ class AppNavigationService(
 
   fun showLocalUrlSettings() = host.navigate("$ROUTE_SETTINGS/local_url")
 
+  fun showClientCertificateSettings() = host.navigate("$ROUTE_SETTINGS/client_certificate")
+
   fun showSeekSettings() = host.navigate("$ROUTE_SETTINGS/seek_settings")
 
   fun showCachedItemsSettings() = host.navigate("$ROUTE_SETTINGS/cached_items")

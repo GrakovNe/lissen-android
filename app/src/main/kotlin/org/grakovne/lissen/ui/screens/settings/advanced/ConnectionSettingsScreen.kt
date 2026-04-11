@@ -1,7 +1,5 @@
 package org.grakovne.lissen.ui.screens.settings.advanced
 
-import android.security.KeyChain
-import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -45,7 +43,10 @@ fun ConnectionSettingsScreen(
   val host by viewModel.host.observeAsState()
   val bypassSsl by viewModel.bypassSsl.observeAsState(false)
   val clientCertAlias by viewModel.clientCertAlias.observeAsState(null)
-  val activity = LocalActivity.current
+
+  val clientCertDescription =
+    clientCertAlias?.let { stringResource(R.string.settings_screen_client_cert_configured, it) }
+      ?: stringResource(R.string.settings_screen_client_cert_not_configured)
 
   Scaffold(
     topBar = {
@@ -103,22 +104,10 @@ fun ConnectionSettingsScreen(
           initialState = bypassSsl,
         ) { viewModel.preferBypassSsl(it) }
 
-        ClientCertificateSettingItemComposable(
-          alias = clientCertAlias,
-          onSelect = {
-            activity?.let { act ->
-              KeyChain.choosePrivateKeyAlias(
-                act,
-                { alias -> viewModel.saveClientCertAlias(alias) },
-                null,
-                null,
-                null,
-                -1,
-                clientCertAlias,
-              )
-            }
-          },
-          onClear = { viewModel.clearClientCertAlias() },
+        AdvancedSettingsNavigationItemComposable(
+          title = stringResource(R.string.settings_screen_client_cert_title),
+          description = clientCertDescription,
+          onclick = { navController.showClientCertificateSettings() },
         )
 
         AdvancedSettingsNavigationItemComposable(
