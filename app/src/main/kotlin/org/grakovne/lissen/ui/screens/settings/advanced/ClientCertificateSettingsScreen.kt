@@ -1,5 +1,7 @@
 package org.grakovne.lissen.ui.screens.settings.advanced
 
+import android.os.Handler
+import android.os.Looper
 import android.security.KeyChain
 import android.widget.Toast
 import androidx.activity.compose.LocalActivity
@@ -45,7 +47,7 @@ fun ClientCertificateSettingsScreen(onBack: () -> Unit) {
   val viewModel: SettingsViewModel = hiltViewModel()
   val clientCertAlias by viewModel.clientCertAlias.collectAsState(initial = null)
   val activity = LocalActivity.current
-  val context = LocalContext.current
+  val applicationContext = LocalContext.current.applicationContext
 
   val cancelledToast = stringResource(R.string.settings_screen_client_cert_picker_cancelled_toast)
 
@@ -57,8 +59,8 @@ fun ClientCertificateSettingsScreen(onBack: () -> Unit) {
           if (selectedAlias != null) {
             viewModel.saveClientCertAlias(selectedAlias)
           } else {
-            act.runOnUiThread {
-              Toast.makeText(context, cancelledToast, Toast.LENGTH_SHORT).show()
+            Handler(Looper.getMainLooper()).post {
+              Toast.makeText(applicationContext, cancelledToast, Toast.LENGTH_SHORT).show()
             }
           }
         },

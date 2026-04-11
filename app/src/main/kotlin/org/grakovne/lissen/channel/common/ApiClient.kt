@@ -12,7 +12,7 @@ class ApiClient(
   host: String,
   requestHeaders: List<ServerRequestHeader>?,
   preferences: LissenSharedPreferences,
-  context: Context? = null,
+  context: Context,
 ) {
   private val httpClient = createOkHttpClient(requestHeaders, preferences = preferences, context = context)
 

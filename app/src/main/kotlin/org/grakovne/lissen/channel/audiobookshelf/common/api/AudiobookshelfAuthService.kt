@@ -50,7 +50,7 @@ class AudiobookshelfAuthService
     private val contextCache: OAuthContextCache,
     private val authMethodResponseConverter: AuthMethodResponseConverter,
   ) : ChannelAuthService(preferences) {
-    private val client =
+    private fun createNonRedirectingClient() =
       createOkHttpClient(requestHeaders = preferences.getCustomHeaders(), preferences = preferences, context = context)
         .newBuilder()
         .followRedirects(false)
@@ -85,7 +85,7 @@ class AudiobookshelfAuthService
       }
 
       val response: OperationResult<LoggedUserResponse> =
-        safeApiCall { apiService.login(CredentialsLoginRequest(username, password)) }
+        safeApiCall(preferences) { apiService.login(CredentialsLoginRequest(username, password)) }
 
       return response
         .foldAsync(
@@ -170,7 +170,7 @@ class AudiobookshelfAuthService
           .get()
           .build()
 
-      client
+      createNonRedirectingClient()
         .newCall(request)
         .enqueue(
           object : Callback {

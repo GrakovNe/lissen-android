@@ -39,8 +39,8 @@ private val systemSSLContext: SSLContext by lazy {
 }
 
 fun OkHttpClient.Builder.withTrustedCertificates(
-  context: Context? = null,
-  clientCertAlias: String? = null,
+  context: Context,
+  clientCertAlias: String?,
 ): OkHttpClient.Builder =
   try {
     val keyManagers = buildKeyManagers(context, clientCertAlias)
@@ -60,8 +60,8 @@ fun OkHttpClient.Builder.withTrustedCertificates(
 
 @SuppressLint("TrustAllX509TrustManager", "CustomX509TrustManager")
 fun OkHttpClient.Builder.withSslBypass(
-  context: Context? = null,
-  clientCertAlias: String? = null,
+  context: Context,
+  clientCertAlias: String?,
 ): OkHttpClient.Builder {
   val trustAll =
     object : X509TrustManager {
@@ -91,23 +91,17 @@ fun OkHttpClient.Builder.withSslBypass(
 }
 
 private fun buildKeyManagers(
-  context: Context?,
+  context: Context,
   alias: String?,
 ): Array<KeyManager>? {
-  if (context == null || alias == null) return null
+  if (alias == null) return null
   val appContext = context.applicationContext
   return arrayOf(
     ClientCertKeyManager(
       alias = alias,
       privateKeyLoader = {
         try {
-          KeyChain.getPrivateKey(appContext, alias).also { key ->
-            if (key == null) {
-              Timber.w("KeyChain.getPrivateKey returned null for alias: $alias")
-            } else {
-              Timber.d("Loaded private key for alias: $alias")
-            }
-          }
+          KeyChain.getPrivateKey(appContext, alias)
         } catch (ex: Exception) {
           Timber.e(ex, "Failed to load private key for alias: $alias")
           null
@@ -115,13 +109,7 @@ private fun buildKeyManagers(
       },
       certChainLoader = {
         try {
-          KeyChain.getCertificateChain(appContext, alias).also { chain ->
-            if (chain == null) {
-              Timber.w("KeyChain.getCertificateChain returned null for alias: $alias")
-            } else {
-              Timber.d("Loaded cert chain (${chain.size} cert(s)) for alias: $alias")
-            }
-          }
+          KeyChain.getCertificateChain(appContext, alias)
         } catch (ex: Exception) {
           Timber.e(ex, "Failed to load cert chain for alias: $alias")
           null

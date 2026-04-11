@@ -2,6 +2,7 @@ package org.grakovne.lissen.channel.audiobookshelf.common.api
 
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
+import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import retrofit2.Response
 import timber.log.Timber
 import java.io.IOException
@@ -9,7 +10,10 @@ import javax.net.ssl.SSLHandshakeException
 import javax.net.ssl.SSLPeerUnverifiedException
 import kotlin.coroutines.cancellation.CancellationException
 
-suspend fun <T> safeApiCall(apiCall: suspend () -> Response<T>): OperationResult<T> {
+suspend fun <T> safeApiCall(
+  preferences: LissenSharedPreferences,
+  apiCall: suspend () -> Response<T>,
+): OperationResult<T> {
   return try {
     val response = apiCall.invoke()
 
@@ -46,11 +50,11 @@ suspend fun <T> safeApiCall(apiCall: suspend () -> Response<T>): OperationResult
       }
     }
   } catch (e: SSLHandshakeException) {
-    Timber.e("SSL handshake failed (possible client cert issue): $e")
-    OperationResult.Error(OperationError.ClientCertificateError)
+    Timber.e("SSL handshake failed: $e")
+    OperationResult.Error(sslErrorFor(preferences))
   } catch (e: SSLPeerUnverifiedException) {
-    Timber.e("SSL peer unverified (possible client cert issue): $e")
-    OperationResult.Error(OperationError.ClientCertificateError)
+    Timber.e("SSL peer unverified: $e")
+    OperationResult.Error(sslErrorFor(preferences))
   } catch (e: IOException) {
     Timber.e("Unable to make network api call due to: $e")
     OperationResult.Error(OperationError.NetworkError)
@@ -63,3 +67,10 @@ suspend fun <T> safeApiCall(apiCall: suspend () -> Response<T>): OperationResult
     OperationResult.Error(OperationError.InternalError)
   }
 }
+
+private fun sslErrorFor(preferences: LissenSharedPreferences): OperationError =
+  if (preferences.getClientCertAlias() != null) {
+    OperationError.ClientCertificateError
+  } else {
+    OperationError.NetworkError
+  }

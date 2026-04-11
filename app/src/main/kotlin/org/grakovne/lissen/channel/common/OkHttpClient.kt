@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit
 fun createOkHttpClient(
   requestHeaders: List<ServerRequestHeader>?,
   preferences: LissenSharedPreferences,
-  context: Context? = null,
+  context: Context,
 ): OkHttpClient {
   val clientCertAlias = preferences.getClientCertAlias()
 

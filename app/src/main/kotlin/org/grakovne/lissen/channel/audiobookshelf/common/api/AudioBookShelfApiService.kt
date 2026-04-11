@@ -44,7 +44,7 @@ class AudioBookShelfApiService
     suspend fun <T> makeRequest(apiCall: suspend (client: AudiobookshelfApiClient) -> Response<T>): OperationResult<T> {
       val callResult =
         getClientInstance()
-          ?.let { safeApiCall { apiCall.invoke(it) } }
+          ?.let { safeApiCall(preferences) { apiCall.invoke(it) } }
           ?: return OperationResult.Error(OperationError.NetworkError)
 
       return when (callResult) {
@@ -54,7 +54,7 @@ class AudioBookShelfApiService
               refreshToken()
 
               getClientInstance()
-                ?.let { safeApiCall { apiCall.invoke(it) } }
+                ?.let { safeApiCall(preferences) { apiCall.invoke(it) } }
                 ?: return OperationResult.Error(OperationError.NetworkError)
             }
 
@@ -76,7 +76,7 @@ class AudioBookShelfApiService
 
         val refreshResult =
           getClientInstance()
-            ?.let { safeApiCall { it.refreshToken(currentToken) } }
+            ?.let { safeApiCall(preferences) { it.refreshToken(currentToken) } }
             ?.map { loginResponseConverter.apply(it) }
             ?: return
 
