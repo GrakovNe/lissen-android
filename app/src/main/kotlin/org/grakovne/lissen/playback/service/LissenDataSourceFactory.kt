@@ -35,6 +35,7 @@ class LissenDataSourceFactory(
         createOkHttpClient(
           requestHeaders = requestHeadersProvider.fetchRequestHeaders(),
           preferences = sharedPreferences,
+          context = baseContext,
         ),
       ).setDefaultRequestProperties(requestHeaders)
   }
