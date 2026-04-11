@@ -1,7 +1,5 @@
 package org.grakovne.lissen.ui.screens.settings.advanced
 
-import android.os.Handler
-import android.os.Looper
 import android.security.KeyChain
 import android.widget.Toast
 import androidx.activity.compose.LocalActivity
@@ -60,7 +58,7 @@ fun ClientCertificateSettingsScreen(onBack: () -> Unit) {
           if (selectedAlias != null) {
             viewModel.saveClientCertAlias(selectedAlias)
           } else {
-            Handler(Looper.getMainLooper()).post {
+            act.runOnUiThread {
               Toast.makeText(context, cancelledToast, Toast.LENGTH_SHORT).show()
             }
           }
