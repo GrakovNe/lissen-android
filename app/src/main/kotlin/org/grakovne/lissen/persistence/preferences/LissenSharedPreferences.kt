@@ -295,6 +295,7 @@ class LissenSharedPreferences
 
     val forceCacheFlow = asFlow(CACHE_FORCE_ENABLED, ::isForceCache)
     val hideCompletedFlow = asFlow(KEY_HIDE_COMPLETED, ::getHideCompleted)
+    val clientCertAliasFlow = asFlow(KEY_CLIENT_CERT_ALIAS, ::getClientCertAlias)
 
     private fun saveActiveLibraryId(host: String) = sharedPreferences.edit { putString(KEY_PREFERRED_LIBRARY_ID, host) }
 

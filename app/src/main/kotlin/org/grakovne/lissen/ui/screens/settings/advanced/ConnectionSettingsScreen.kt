@@ -19,6 +19,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -42,7 +43,7 @@ fun ConnectionSettingsScreen(
   val viewModel: SettingsViewModel = hiltViewModel()
   val host by viewModel.host.observeAsState()
   val bypassSsl by viewModel.bypassSsl.observeAsState(false)
-  val clientCertAlias by viewModel.clientCertAlias.observeAsState(null)
+  val clientCertAlias by viewModel.clientCertAlias.collectAsState(initial = null)
 
   val clientCertDescription =
     clientCertAlias?.let { stringResource(R.string.settings_screen_client_cert_configured, it) }
