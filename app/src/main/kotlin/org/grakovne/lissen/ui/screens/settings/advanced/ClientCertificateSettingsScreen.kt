@@ -24,7 +24,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -157,12 +156,15 @@ private fun EmptyStateContent() {
 
 @Composable
 private fun SelectedCertificateContent(alias: String) {
-  OutlinedTextField(
-    value = alias,
-    onValueChange = {},
-    readOnly = true,
-    label = { Text(text = stringResource(R.string.settings_screen_client_cert_selected_label)) },
-    shape = RoundedCornerShape(16.dp),
-    modifier = Modifier.fillMaxWidth(),
-  )
+  Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Text(
+      text = stringResource(R.string.settings_screen_client_cert_selected_label),
+      style = typography.labelMedium,
+      color = colorScheme.onSurfaceVariant,
+    )
+    Text(
+      text = alias,
+      style = typography.titleMedium,
+    )
+  }
 }
