@@ -71,7 +71,7 @@ android {
           enableV2Signing = true
         }
       }
-    }s
+    }
   }
 
   
