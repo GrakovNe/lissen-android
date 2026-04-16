@@ -179,4 +179,13 @@
     <string name="connection_settings_description">管理服务器地址、代理及 SSL 设置</string>
     <string name="connection_settings_title">连接偏好设置</string>
     <string name="disconnect_from_server_title">断开服务器连接</string>
+    <string name="player_screen_chapter_skip_navigation">跳过</string>
+    <string name="chapter_skip_title">章节跳过设置</string>
+    <string name="chapter_skip_enabled">启用自动跳过</string>
+    <string name="chapter_skip_intro">片头跳过</string>
+    <string name="chapter_skip_outro">片尾跳过</string>
+    <string name="chapter_skip_current_value">当前：%d秒</string>
+    <string name="chapter_skip_set_from_position">从当前位置设置</string>
+    <string name="chapter_skip_manual_input">自定义（秒）</string>
+    <string name="chapter_skip_disabled">已禁用</string>
 </resources>

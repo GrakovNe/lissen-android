@@ -9,6 +9,7 @@ import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.lib.domain.Bookmark
+import org.grakovne.lissen.lib.domain.ChapterSkipConfig
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.PlayingChapter
 import org.grakovne.lissen.lib.domain.TimerOption
@@ -49,6 +50,8 @@ class PlayerViewModel
     val searchToken: LiveData<String> = _searchToken
 
     val isPlaying: LiveData<Boolean> = mediaRepository.isPlaying
+
+    val chapterSkipConfig: LiveData<ChapterSkipConfig> = mediaRepository.chapterSkipConfig
 
     val bookmarks = mediaRepository.bookmarks
 
@@ -145,6 +148,11 @@ class PlayerViewModel
     fun previousTrack() = mediaRepository.previousTrack()
 
     fun togglePlayPause() = mediaRepository.togglePlayPause()
+
+    fun updateChapterSkipConfig(config: ChapterSkipConfig) {
+      val bookId = book.value?.id ?: return
+      mediaRepository.updateChapterSkipConfig(bookId, config)
+    }
 
     fun prepareAndPlay() {
       val playingBook = preferences.getPlayingItem() ?: return
