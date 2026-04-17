@@ -50,12 +50,6 @@ class AudiobookshelfAuthService
     private val contextCache: OAuthContextCache,
     private val authMethodResponseConverter: AuthMethodResponseConverter,
   ) : ChannelAuthService(preferences) {
-    private val client =
-      createOkHttpClient(requestHeaders = preferences.getCustomHeaders(), preferences = preferences)
-        .newBuilder()
-        .followRedirects(false)
-        .build()
-
     override suspend fun authorize(
       host: String,
       username: String,
@@ -74,6 +68,7 @@ class AudiobookshelfAuthService
             host = host,
             preferences = preferences,
             requestHeaders = requestHeadersProvider.fetchRequestHeaders(),
+            context = context,
           )
 
         apiService = apiClient.retrofit
@@ -84,7 +79,7 @@ class AudiobookshelfAuthService
       }
 
       val response: OperationResult<LoggedUserResponse> =
-        safeApiCall { apiService.login(CredentialsLoginRequest(username, password)) }
+        safeApiCall(preferences) { apiService.login(CredentialsLoginRequest(username, password)) }
 
       return response
         .foldAsync(
@@ -108,7 +103,7 @@ class AudiobookshelfAuthService
               .appendEncodedPath("status")
               .build()
 
-          val client = createOkHttpClient(requestHeaders = preferences.getCustomHeaders(), preferences = preferences)
+          val client = createOkHttpClient(requestHeaders = preferences.getCustomHeaders(), preferences = preferences, context = context)
           val request =
             Request
               .Builder()
@@ -169,7 +164,10 @@ class AudiobookshelfAuthService
           .get()
           .build()
 
-      client
+      createOkHttpClient(requestHeaders = preferences.getCustomHeaders(), preferences = preferences, context = context)
+        .newBuilder()
+        .followRedirects(false)
+        .build()
         .newCall(request)
         .enqueue(
           object : Callback {
@@ -242,7 +240,7 @@ class AudiobookshelfAuthService
           .appendQueryParameter("code_verifier", pkce.verifier)
           .build()
 
-      val client = createOkHttpClient(requestHeaders = preferences.getCustomHeaders(), preferences = preferences)
+      val client = createOkHttpClient(requestHeaders = preferences.getCustomHeaders(), preferences = preferences, context = context)
 
       val request =
         Request

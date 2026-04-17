@@ -148,6 +148,7 @@ class ContentCachingManager
           createOkHttpClient(
             requestHeaders = headers,
             preferences = preferences,
+            context = context,
           )
 
         val totalFileSize = files.mapNotNull { it.size }.sum()
