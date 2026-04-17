@@ -17,6 +17,7 @@ import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.common.PlaybackVolumeBoost
 import org.grakovne.lissen.common.moshi
+import org.grakovne.lissen.lib.domain.ChapterSkipConfig
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.DownloadOption
 import org.grakovne.lissen.lib.domain.Library
@@ -486,6 +487,31 @@ class LissenSharedPreferences
         putBoolean(KEY_HIDE_COMPLETED, value)
       }
 
+    fun saveChapterSkipConfig(
+      bookId: String,
+      config: ChapterSkipConfig,
+    ) {
+      val adapter = moshi.adapter(ChapterSkipConfig::class.java)
+      val json = adapter.toJson(config)
+      sharedPreferences.edit {
+        putString("${KEY_CHAPTER_SKIP_PREFIX}$bookId", json)
+      }
+    }
+
+    fun getChapterSkipConfig(bookId: String): ChapterSkipConfig {
+      val json = sharedPreferences.getString("${KEY_CHAPTER_SKIP_PREFIX}$bookId", null)
+      return when (json) {
+        null -> {
+          ChapterSkipConfig()
+        }
+
+        else -> {
+          val adapter = moshi.adapter(ChapterSkipConfig::class.java)
+          adapter.fromJson(json) ?: ChapterSkipConfig()
+        }
+      }
+    }
+
     companion object {
       private const val KEY_ALIAS = "secure_key_alias"
       private const val KEY_HOST = "host"
@@ -515,6 +541,7 @@ class LissenSharedPreferences
       private const val KEY_PREFERRED_LIBRARY_ORDERING = "preferred_library_ordering"
       private const val KEY_SOFTWARE_CODECS = "software_codecs"
       private const val KEY_HIDE_COMPLETED = "hide_completed"
+      private const val KEY_CHAPTER_SKIP_PREFIX = "chapter_skip_"
 
       private const val KEY_CUSTOM_HEADERS = "custom_headers"
       private const val KEY_BYPASS_SSL = "bypass_ssl"
