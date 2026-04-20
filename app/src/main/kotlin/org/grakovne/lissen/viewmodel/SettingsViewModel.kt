@@ -245,14 +245,14 @@ class SettingsViewModel
     fun updateLocalUrls(urls: List<LocalUrl>) {
       _localUrls.postValue(urls)
 
-      val meaningfulHeaders =
+      val meaningfulRoutes =
         urls
           .map { it.clean() }
           .distinctBy { it.ssid }
           .filterNot { it.ssid.isEmpty() }
           .filterNot { it.route.isEmpty() }
 
-      preferences.saveLocalUrls(meaningfulHeaders)
+      preferences.saveLocalUrls(meaningfulRoutes)
     }
 
     fun updateCustomHeaders(headers: List<ServerRequestHeader>) {

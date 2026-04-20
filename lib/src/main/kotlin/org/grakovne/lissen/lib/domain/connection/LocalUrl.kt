@@ -23,12 +23,7 @@ data class LocalUrl(
 			return this.copy(ssid = name, route = value)
 		}
 		
-		private fun String.cleanSsid(): String {
-			val validCharacters = Regex("[\\x20-\\x7E]")
-			return this
-				.filter { validCharacters.matches(it.toString()) }
-				.trim()
-		}
+		private fun String.cleanSsid() = this.trim()
 		
 		private fun String.cleanUrl(): String {
 			val validCharacters = Regex("[\\x20-\\x7E]")
