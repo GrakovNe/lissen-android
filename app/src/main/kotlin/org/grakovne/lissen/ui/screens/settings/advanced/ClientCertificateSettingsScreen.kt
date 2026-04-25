@@ -165,17 +165,34 @@ fun ClientCertificateSettingsScreen(onBack: () -> Unit) {
             ) {
               Column(
                 modifier = Modifier.padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp),
               ) {
-                Text(
-                  text = stringResource(R.string.settings_screen_client_cert_selected_label),
-                  style = typography.labelMedium,
-                  color = colorScheme.onSurfaceVariant,
-                )
-                Text(
-                  text = alias,
-                  style = typography.titleMedium,
-                )
+                Row(
+                  horizontalArrangement = Arrangement.spacedBy(12.dp),
+                  verticalAlignment = Alignment.Top,
+                ) {
+                  Icon(
+                    imageVector = Icons.Outlined.Security,
+                    contentDescription = null,
+                    tint = colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 2.dp),
+                  )
+
+                  Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.weight(1f),
+                  ) {
+                    Text(
+                      text = stringResource(R.string.settings_screen_client_cert_selected_label),
+                      style = typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                    )
+                    Text(
+                      text = alias,
+                      style = typography.bodyMedium,
+                      color = colorScheme.onSurfaceVariant,
+                    )
+                  }
+                }
               }
             }
           }
