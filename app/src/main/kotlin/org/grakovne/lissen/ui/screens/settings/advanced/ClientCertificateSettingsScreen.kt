@@ -13,16 +13,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Security
+import androidx.compose.material.icons.outlined.VpnKey
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -30,6 +36,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -111,61 +118,112 @@ fun ClientCertificateSettingsScreen(onBack: () -> Unit) {
       ) {
         when (val alias = clientCertAlias) {
           null -> {
-            Text(
-              text = stringResource(R.string.settings_screen_client_cert_empty_state_title),
-              style = typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-            )
-            Text(
-              text = stringResource(R.string.settings_screen_client_cert_empty_state_description),
-              style = typography.bodyMedium,
-              color = colorScheme.onSurfaceVariant,
-            )
-            Text(
-              text = stringResource(R.string.settings_screen_client_cert_install_help_title),
-              style = typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-              modifier = Modifier.padding(top = 8.dp),
-            )
-            Text(
-              text = stringResource(R.string.settings_screen_client_cert_install_help_description),
-              style = typography.bodyMedium,
-              color = colorScheme.onSurfaceVariant,
-            )
+            Surface(
+              modifier = Modifier.fillMaxWidth(),
+              shape = RoundedCornerShape(24.dp),
+              color = colorScheme.surfaceContainer,
+            ) {
+              Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp),
+              ) {
+                Row(
+                  horizontalArrangement = Arrangement.spacedBy(12.dp),
+                  verticalAlignment = Alignment.Top,
+                ) {
+                  Icon(
+                    imageVector = Icons.Outlined.Security,
+                    contentDescription = null,
+                    tint = colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 2.dp),
+                  )
+
+                  Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.weight(1f),
+                  ) {
+                    Text(
+                      text = stringResource(R.string.settings_screen_client_cert_empty_state_title),
+                      style = typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                    )
+                    Text(
+                      text = stringResource(R.string.settings_screen_client_cert_hint),
+                      style = typography.bodyMedium,
+                      color = colorScheme.onSurfaceVariant,
+                    )
+                  }
+                }
+
+                HorizontalDivider(color = colorScheme.outlineVariant)
+
+                InfoRow(
+                  icon = Icons.Outlined.VpnKey,
+                  title = stringResource(R.string.settings_screen_client_cert_install_help_title),
+                  text = stringResource(R.string.settings_screen_client_cert_empty_state_description),
+                )
+
+                HorizontalDivider(color = colorScheme.outlineVariant)
+
+                InfoRow(
+                  icon = Icons.Outlined.Info,
+                  title = "How to install",
+                  text = stringResource(R.string.settings_screen_client_cert_install_help_description),
+                )
+              }
+            }
           }
 
           else -> {
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-              Text(
-                text = stringResource(R.string.settings_screen_client_cert_selected_label),
-                style = typography.labelMedium,
-                color = colorScheme.onSurfaceVariant,
-              )
-              Text(
-                text = alias,
-                style = typography.titleMedium,
-              )
+            Surface(
+              modifier = Modifier.fillMaxWidth(),
+              shape = RoundedCornerShape(24.dp),
+              color = colorScheme.surfaceContainer,
+            ) {
+              Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+              ) {
+                Text(
+                  text = stringResource(R.string.settings_screen_client_cert_selected_label),
+                  style = typography.labelMedium,
+                  color = colorScheme.onSurfaceVariant,
+                )
+                Text(
+                  text = alias,
+                  style = typography.titleMedium,
+                )
+              }
             }
           }
         }
+      }
 
+      Column(
+        modifier =
+          Modifier
+            .fillMaxWidth()
+            .padding(start = 24.dp, end = 24.dp, top = 12.dp, bottom = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+      ) {
         Button(
           onClick = onChooseCertificate,
           modifier = Modifier.fillMaxWidth(),
+          shape = RoundedCornerShape(16.dp),
         ) {
           Text(text = stringResource(R.string.settings_screen_client_cert_choose_action))
         }
-      }
 
-      if (clientCertAlias != null) {
-        Row(
-          modifier =
-            Modifier
-              .fillMaxWidth()
-              .clickable { viewModel.clearClientCertAlias() }
-              .padding(start = 24.dp, end = 24.dp, top = 12.dp, bottom = 12.dp),
-          horizontalArrangement = Arrangement.Center,
-          verticalAlignment = Alignment.CenterVertically,
-        ) {
-          Column {
+        if (clientCertAlias != null) {
+          Row(
+            modifier =
+              Modifier
+                .fillMaxWidth()
+                .clickable { viewModel.clearClientCertAlias() }
+                .padding(vertical = 12.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+          ) {
             Text(
               text = stringResource(R.string.settings_screen_client_cert_remove_action),
               style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
@@ -174,6 +232,41 @@ fun ClientCertificateSettingsScreen(onBack: () -> Unit) {
           }
         }
       }
+    }
+  }
+}
+
+@Composable
+private fun InfoRow(
+  icon: ImageVector,
+  title: String,
+  text: String,
+) {
+  Row(
+    horizontalArrangement = Arrangement.spacedBy(12.dp),
+    verticalAlignment = Alignment.Top,
+    modifier = Modifier.fillMaxWidth(),
+  ) {
+    Icon(
+      imageVector = icon,
+      contentDescription = null,
+      tint = colorScheme.onSurfaceVariant,
+      modifier = Modifier.padding(top = 2.dp),
+    )
+
+    Column(
+      modifier = Modifier.weight(1f),
+      verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+      Text(
+        text = title,
+        style = typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+      )
+      Text(
+        text = text,
+        style = typography.bodyMedium,
+        color = colorScheme.onSurfaceVariant,
+      )
     }
   }
 }
