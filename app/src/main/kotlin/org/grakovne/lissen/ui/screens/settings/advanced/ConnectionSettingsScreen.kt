@@ -43,11 +43,6 @@ fun ConnectionSettingsScreen(
   val viewModel: SettingsViewModel = hiltViewModel()
   val host by viewModel.host.observeAsState()
   val bypassSsl by viewModel.bypassSsl.observeAsState(false)
-  val clientCertAlias by viewModel.clientCertAlias.collectAsState(initial = null)
-
-  val clientCertDescription =
-    clientCertAlias?.let { stringResource(R.string.settings_screen_client_cert_configured, it) }
-      ?: stringResource(R.string.settings_screen_client_cert_not_configured)
 
   Scaffold(
     topBar = {
@@ -107,7 +102,7 @@ fun ConnectionSettingsScreen(
 
         AdvancedSettingsNavigationItemComposable(
           title = stringResource(R.string.settings_screen_client_cert_title),
-          description = clientCertDescription,
+          description = stringResource(R.string.settings_screen_client_cert_hint),
           onclick = { navController.showClientCertificateSettings() },
         )
 

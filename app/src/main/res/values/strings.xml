@@ -165,8 +165,7 @@
     <string name="settings_screen_bypass_ssl_title">Disable SSL verification</string>
     <string name="settings_screen_bypass_ssl_hint">Connect to servers with any certificate</string>
     <string name="settings_screen_client_cert_title">Client certificate</string>
-    <string name="settings_screen_client_cert_not_configured">Not configured</string>
-    <string name="settings_screen_client_cert_configured">Certificate: %1$s</string>
+    <string name="settings_screen_client_cert_hint">Use a client certificate for mTLS</string>
     <string name="settings_screen_client_cert_empty_state_title">No client certificate selected.</string>
     <string name="settings_screen_client_cert_empty_state_description">Lissen reads client certificates from Android\'s system credential storage. If your server requires mutual TLS, install the certificate first, then choose it here.</string>
     <string name="settings_screen_client_cert_install_help_title">Where do I get this?</string>
