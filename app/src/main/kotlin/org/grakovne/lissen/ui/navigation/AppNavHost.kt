@@ -28,6 +28,7 @@ import org.grakovne.lissen.ui.screens.login.LoginScreen
 import org.grakovne.lissen.ui.screens.player.PlayerScreen
 import org.grakovne.lissen.ui.screens.settings.SettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.AdvancedSettingsComposable
+import org.grakovne.lissen.ui.screens.settings.advanced.ClientCertificateSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.ConnectionSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.CustomHeadersSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.LocalUrlSettingsScreen
@@ -236,6 +237,22 @@ fun AppNavHost(
         popExitTransition = { popExitTransition },
       ) {
         CustomHeadersSettingsScreen(
+          onBack = {
+            if (navController.previousBackStackEntry != null) {
+              navController.popBackStack()
+            }
+          },
+        )
+      }
+
+      composable(
+        route = "settings_screen/client_certificate",
+        enterTransition = { enterTransition },
+        exitTransition = { exitTransition },
+        popEnterTransition = { popEnterTransition },
+        popExitTransition = { popExitTransition },
+      ) {
+        ClientCertificateSettingsScreen(
           onBack = {
             if (navController.previousBackStackEntry != null) {
               navController.popBackStack()
