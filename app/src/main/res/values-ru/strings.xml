@@ -181,4 +181,13 @@
     <string name="connection_settings_title">Настройки подклочения</string>
     <string name="connection_settings_description">Настройте адрес сервера, прокси-заголовки и SSL</string>
     <string name="disconnect_from_server_title">Отключиться от сервера</string>
+    <string name="settings_screen_client_cert_title">Клиентский сертификат</string>
+    <string name="settings_screen_client_cert_hint">Укажите mTLS сертификат для подключения</string>
+    <string name="settings_screen_client_cert_empty_state_title">Сертификат не указан</string>
+    `<string name="settings_screen_client_cert_install_help_description">Импортируйте файл сертификата в разделе "Защита и безопасность" вашего Android</string>`
+    <string name="settings_screen_client_cert_selected_label">Используемый сертификат</string>
+    <string name="settings_screen_client_cert_choose_action">Привязать сертификат</string>
+    <string name="settings_screen_client_cert_remove_action">Отвязать сертификат</string>
+    <string name="settings_screen_client_cert_picker_cancelled_toast">mTLS не найден</string>
+    <string name="login_error_client_cert_error">mTLS не прошел проверку на сервере</string>
 </resources>
