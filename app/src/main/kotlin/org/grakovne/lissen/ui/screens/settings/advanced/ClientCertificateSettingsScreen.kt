@@ -147,20 +147,12 @@ fun ClientCertificateSettingsScreen(onBack: () -> Unit) {
                       style = typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                     )
                     Text(
-                      text = stringResource(R.string.settings_screen_client_cert_hint),
+                      text = stringResource(R.string.settings_screen_client_cert_install_help_description),
                       style = typography.bodyMedium,
                       color = colorScheme.onSurfaceVariant,
                     )
                   }
                 }
-
-                HorizontalDivider(color = colorScheme.outlineVariant)
-
-                InfoRow(
-                  icon = Icons.Outlined.Info,
-                  title = stringResource(R.string.settings_screen_client_cert_how_to_install),
-                  text = stringResource(R.string.settings_screen_client_cert_install_help_description),
-                )
               }
             }
           }
@@ -224,41 +216,6 @@ fun ClientCertificateSettingsScreen(onBack: () -> Unit) {
           }
         }
       }
-    }
-  }
-}
-
-@Composable
-private fun InfoRow(
-  icon: ImageVector,
-  title: String,
-  text: String,
-) {
-  Row(
-    horizontalArrangement = Arrangement.spacedBy(12.dp),
-    verticalAlignment = Alignment.Top,
-    modifier = Modifier.fillMaxWidth(),
-  ) {
-    Icon(
-      imageVector = icon,
-      contentDescription = null,
-      tint = colorScheme.onSurfaceVariant,
-      modifier = Modifier.padding(top = 2.dp),
-    )
-
-    Column(
-      modifier = Modifier.weight(1f),
-      verticalArrangement = Arrangement.spacedBy(4.dp),
-    ) {
-      Text(
-        text = title,
-        style = typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-      )
-      Text(
-        text = text,
-        style = typography.bodyMedium,
-        color = colorScheme.onSurfaceVariant,
-      )
     }
   }
 }
