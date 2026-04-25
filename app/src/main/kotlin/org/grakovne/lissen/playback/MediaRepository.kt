@@ -30,6 +30,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.lib.domain.Bookmark
+import org.grakovne.lissen.lib.domain.ChapterSkipConfig
 import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.DetailedItem.Companion.same
@@ -94,6 +95,13 @@ class MediaRepository
 
     private val _playbackSpeed = MutableLiveData(preferences.getPlaybackSpeed())
     val playbackSpeed: LiveData<Float> = _playbackSpeed
+
+    private val _chapterSkipConfig = MutableLiveData(ChapterSkipConfig())
+    val chapterSkipConfig: LiveData<ChapterSkipConfig> = _chapterSkipConfig
+
+    private var _lastSkippedIntroChapterIndex = -1
+    private var _lastSkippedOutroChapterIndex = -1
+    private var _userSeekedManually = false
 
     private val _currentChapterIndex =
       MediatorLiveData<Int>().apply {
@@ -294,6 +302,7 @@ class MediaRepository
     }
 
     fun setChapterPosition(chapterPosition: Double) {
+      _userSeekedManually = true
       val book = playingBook.value ?: return
       val overallPosition = totalPosition.value ?: return
 
@@ -377,6 +386,7 @@ class MediaRepository
       val currentIndex = calculateChapterIndex(book, overallPosition)
 
       val nextChapterIndex = currentIndex + 1
+      _userSeekedManually = false
       setChapter(nextChapterIndex)
     }
 
@@ -449,6 +459,11 @@ class MediaRepository
 
         _playingBook.postValue(book)
         preferences.savePlayingItem(book)
+
+        _chapterSkipConfig.postValue(preferences.getChapterSkipConfig(book.id))
+        _lastSkippedIntroChapterIndex = -1
+        _lastSkippedOutroChapterIndex = -1
+        _userSeekedManually = false
 
         val intent =
           Intent(context, PlaybackService::class.java).apply {
@@ -562,15 +577,58 @@ class MediaRepository
       val trackIndex = calculateChapterIndex(book, totalPosition)
       val trackPosition = calculateChapterPosition(book, totalPosition)
 
+      val previousIndex = _currentChapterIndex.value ?: -1
+
       _currentChapterIndex.postValue(trackIndex)
       _currentChapterPosition.postValue(trackPosition)
-      _currentChapterDuration.postValue(
+
+      val chapterDuration =
         book
           .chapters
           .getOrNull(trackIndex)
           ?.duration
-          ?: 0.0,
-      )
+          ?: 0.0
+
+      _currentChapterDuration.postValue(chapterDuration)
+
+      val skipConfig = _chapterSkipConfig.value ?: return
+      if (!skipConfig.enabled) return
+      if (_userSeekedManually) {
+        if (trackIndex != previousIndex) {
+          _userSeekedManually = false
+        } else {
+          return
+        }
+      }
+
+      // Intro skip: when entering a new chapter
+      if (skipConfig.introSeconds > 0 &&
+        trackIndex != _lastSkippedIntroChapterIndex &&
+        trackIndex != previousIndex &&
+        previousIndex >= 0
+      ) {
+        val introTarget = skipConfig.introSeconds.toDouble()
+        if (introTarget < chapterDuration) {
+          _lastSkippedIntroChapterIndex = trackIndex
+          val chapterStart = book.chapters[trackIndex].start
+          seekTo(chapterStart + introTarget)
+          return
+        }
+      }
+
+      // Outro skip: when approaching chapter end (not last chapter)
+      if (skipConfig.outroSeconds > 0 &&
+        trackIndex != _lastSkippedOutroChapterIndex &&
+        trackIndex < book.chapters.size - 1
+      ) {
+        val outroThreshold = skipConfig.outroSeconds.toDouble()
+        val remaining = chapterDuration - trackPosition
+        if (remaining in 0.0..outroThreshold) {
+          _lastSkippedOutroChapterIndex = trackIndex
+          nextTrack()
+          return
+        }
+      }
     }
 
     suspend fun createBookmark() {
@@ -622,6 +680,14 @@ class MediaRepository
           .isAtMost(Lifecycle.State.STARTED)
 
       private fun Lifecycle.State.isAtMost(state: Lifecycle.State) = this <= state
+    }
+
+    fun updateChapterSkipConfig(
+      bookId: String,
+      config: ChapterSkipConfig,
+    ) {
+      preferences.saveChapterSkipConfig(bookId, config)
+      _chapterSkipConfig.postValue(config)
     }
   }
 

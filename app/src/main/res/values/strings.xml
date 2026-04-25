@@ -188,4 +188,13 @@
     <string name="connection_settings_title">Connection preferences</string>
     <string name="connection_settings_description">Control server address, proxy, and SSL settings</string>
     <string name="disconnect_from_server_title">Disconnect from the server</string>
+    <string name="player_screen_chapter_skip_navigation">Skip</string>
+    <string name="chapter_skip_title">Chapter Skip</string>
+    <string name="chapter_skip_enabled">Enable auto-skip</string>
+    <string name="chapter_skip_intro">Intro Skip</string>
+    <string name="chapter_skip_outro">Outro Skip</string>
+    <string name="chapter_skip_current_value">Current: %ds</string>
+    <string name="chapter_skip_set_from_position">Set from current position</string>
+    <string name="chapter_skip_manual_input">Custom (seconds)</string>
+    <string name="chapter_skip_disabled">Disabled</string>
 </resources>
