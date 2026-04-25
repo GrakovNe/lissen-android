@@ -157,16 +157,8 @@ fun ClientCertificateSettingsScreen(onBack: () -> Unit) {
                 HorizontalDivider(color = colorScheme.outlineVariant)
 
                 InfoRow(
-                  icon = Icons.Outlined.VpnKey,
-                  title = stringResource(R.string.settings_screen_client_cert_install_help_title),
-                  text = stringResource(R.string.settings_screen_client_cert_empty_state_description),
-                )
-
-                HorizontalDivider(color = colorScheme.outlineVariant)
-
-                InfoRow(
                   icon = Icons.Outlined.Info,
-                  title = "How to install",
+                  title = stringResource(R.string.settings_screen_client_cert_how_to_install),
                   text = stringResource(R.string.settings_screen_client_cert_install_help_description),
                 )
               }
