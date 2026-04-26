@@ -146,9 +146,9 @@
     <string name="local_url_hint_ssid_name">Nome rete WiFi</string>
     <string name="location_permission_request_hint">L\'app necessita dell\'accesso alla posizione per rilevare il nome del Wi-Fi</string>
     <string name="permission_request_grant_button">Consenti</string>
-    <string name="settings_screen_clear_thumbnail_cache_title">Pulisci cache delle miniature</string>
-    <string name="settings_screen_clear_thumbnail_cache_hint">Rimuovi le miniature in cache per liberare spazio.</string>
-    <string name="settings_screen_clear_thumbnail_cache_success_toast">Cache delle miniature pulita</string>
+    <string name="settings_screen_clear_thumbnail_cache_title">Pulisci cache anteprime</string>
+    <string name="settings_screen_clear_thumbnail_cache_hint">Rimuovi le anteprime in cache per liberare spazio</string>
+    <string name="settings_screen_clear_thumbnail_cache_success_toast">Cache delle anteprime pulita</string>
     <string name="settings_screen_connection_type">Tipo di connessione</string>
     <string name="settings_screen_connection_local">Rete locale</string>
     <string name="settings_screen_connection_external">Rete esterna</string>
@@ -179,4 +179,13 @@
     <string name="connection_settings_title">Preferenze di connessione</string>
     <string name="connection_settings_description">Controlla l\'indirizzo del server, il proxy e le impostazioni SSL</string>
     <string name="disconnect_from_server_title">Disconnettere dal server</string>
+    <string name="settings_screen_client_cert_title">Certificato client</string>
+    <string name="settings_screen_client_cert_hint">Usa un certificato client per mTLS</string>
+    <string name="settings_screen_client_cert_empty_state_title">Nessun certificato client selezionato</string>
+    `<string name="settings_screen_client_cert_install_help_description">Importa il file del certificato dalla sezione sicurezza o VPN nelle impostazioni di sistema del dispositivo</string>`
+    <string name="settings_screen_client_cert_selected_label">Certificato selezionato</string>
+    <string name="settings_screen_client_cert_choose_action">Scegli certificato</string>
+    <string name="settings_screen_client_cert_remove_action">Rimuovi certificato</string>
+    <string name="settings_screen_client_cert_picker_cancelled_toast">mTLS non trovato</string>
+    <string name="login_error_client_cert_error">mTLS rifiutato dal server</string>
 </resources>
