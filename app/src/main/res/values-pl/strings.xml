@@ -155,7 +155,7 @@
     <string name="location_permission_request_hint">Aplikacja potrzebuje dostępu do lokalizacji aby wykryć nazwę WiFi</string>
     <string name="permission_request_grant_button">Zezwól</string>
     <string name="settings_screen_clear_thumbnail_cache_title">Usuń pamięć podręczną miniatur</string>
-    <string name="settings_screen_clear_thumbnail_cache_hint">Usuń pamięć podręczną miniatur aby zwolnić miejsce.</string>
+    <string name="settings_screen_clear_thumbnail_cache_hint">Usuń pamięć podręczną miniatur aby zwolnić miejsce</string>
     <string name="settings_screen_clear_thumbnail_cache_success_toast">Usunięto pamięć podręczną miniatur</string>
     <string name="settings_screen_delay_autodownload_title">Opóźnij automatyczne pobieranie</string>
     <string name="settings_screen_delay_autodownload_description">Zaczekaj krótki czas przed pobraniem</string>
@@ -181,4 +181,13 @@
     <string name="connection_settings_title">Preferencje połączenia</string>
     <string name="connection_settings_description">Zmień adres serwera, proxy i ustawienia SSL</string>
     <string name="disconnect_from_server_title">Odłącz się od serwera</string>
+    <string name="settings_screen_client_cert_title">Certyfikat klienta</string>
+    <string name="settings_screen_client_cert_hint">Użyj certyfikatu klienta dla mTLS</string>
+    <string name="settings_screen_client_cert_empty_state_title">Nie wybrano certyfikatu klienta</string>
+    `<string name="settings_screen_client_cert_install_help_description">Importuj plik certyfikatu za pomocą sekcji zabezpieczeń lub VPN w ustawieniach systemu urządzenia</string>`
+    <string name="settings_screen_client_cert_selected_label">Wybrany certyfikat</string>
+    <string name="settings_screen_client_cert_choose_action">Wybierz certyfikat</string>
+    <string name="settings_screen_client_cert_remove_action">Usuń certyfikat</string>
+    <string name="settings_screen_client_cert_picker_cancelled_toast">mTLS nie znaleziono</string>
+    <string name="login_error_client_cert_error">mTLS odrzucony przez serwer</string>
 </resources>
