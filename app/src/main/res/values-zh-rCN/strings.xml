@@ -148,7 +148,7 @@
     <string name="location_permission_request_hint">该应用需要访问位置权限以检测 Wi-Fi 名称</string>
     <string name="permission_request_grant_button">允许</string>
     <string name="settings_screen_clear_thumbnail_cache_title">清除缩略图缓存</string>
-    <string name="settings_screen_clear_thumbnail_cache_hint">清除缓存的缩略图以释放空间。</string>
+    <string name="settings_screen_clear_thumbnail_cache_hint">清除缓存的缩略图以释放空间</string>
     <string name="settings_screen_clear_thumbnail_cache_success_toast">缩略图缓存已清除</string>
     <string name="downloads_menu_download_option_stop_downloads">停止下载</string>
     <string name="settings_screen_delay_autodownload_title">延迟自动下载</string>
@@ -179,4 +179,13 @@
     <string name="connection_settings_description">管理服务器地址、代理及 SSL 设置</string>
     <string name="connection_settings_title">连接偏好设置</string>
     <string name="disconnect_from_server_title">断开服务器连接</string>
+    <string name="settings_screen_client_cert_title">客户端证书</string>
+    <string name="settings_screen_client_cert_hint">使用客户端证书进行 mTLS 认证</string>
+    <string name="settings_screen_client_cert_empty_state_title">未选择客户端证书</string>
+    `<string name="settings_screen_client_cert_install_help_description">请通过设备系统设置中的“安全”或“VPN”选项导入证书文件</string>`
+    <string name="settings_screen_client_cert_selected_label">已选择的证书</string>
+    <string name="settings_screen_client_cert_choose_action">选择证书</string>
+    <string name="settings_screen_client_cert_remove_action">移除证书</string>
+    <string name="settings_screen_client_cert_picker_cancelled_toast">未找到 mTLS</string>
+    <string name="login_error_client_cert_error">服务器拒绝 mTLS 认证</string>
 </resources>
