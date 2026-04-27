@@ -28,8 +28,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.lib.domain.SeekTime
 import org.grakovne.lissen.ui.extensions.formatTime
-import org.grakovne.lissen.ui.screens.player.composable.common.provideForwardIcon
-import org.grakovne.lissen.ui.screens.player.composable.common.provideReplayIcon
+import org.grakovne.lissen.ui.screens.player.composable.common.SeekButtonComposable
+import org.grakovne.lissen.ui.screens.player.composable.common.SeekButtonDirection
+import org.grakovne.lissen.ui.screens.player.composable.common.seconds
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
@@ -109,9 +110,10 @@ fun TrackControlPlaceholderComposable(
         }
 
         IconButton(onClick = {}) {
-          Icon(
-            imageVector = provideReplayIcon(seekTime),
-            contentDescription = "Rewind",
+          SeekButtonComposable(
+            option = seekTime.rewind,
+            direction = SeekButtonDirection.REWIND,
+            contentDescription = "Rewind ${seekTime.rewind.seconds()} seconds",
             tint = colorScheme.onBackground,
             modifier = Modifier.size(48.dp),
           )
@@ -130,9 +132,10 @@ fun TrackControlPlaceholderComposable(
         }
 
         IconButton(onClick = {}) {
-          Icon(
-            imageVector = provideForwardIcon(seekTime),
-            contentDescription = "Forward",
+          SeekButtonComposable(
+            option = seekTime.forward,
+            direction = SeekButtonDirection.FORWARD,
+            contentDescription = "Forward ${seekTime.forward.seconds()} seconds",
             tint = colorScheme.onBackground,
             modifier = Modifier.size(48.dp),
           )
