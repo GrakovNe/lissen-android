@@ -3,6 +3,7 @@ package org.grakovne.lissen.ui.screens.player
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
@@ -10,6 +11,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -41,7 +43,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -69,6 +74,7 @@ import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 import org.grakovne.lissen.viewmodel.SettingsViewModel
+import kotlin.math.abs
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -93,9 +99,20 @@ fun PlayerScreen(
   val isPlaybackReady by playerViewModel.isPlaybackReady.observeAsState(false)
   val playingQueueExpanded by playerViewModel.playingQueueExpanded.observeAsState(false)
   val searchRequested by playerViewModel.searchRequested.observeAsState(false)
+  val density = LocalDensity.current
 
   var itemDetailsSelected by remember { mutableStateOf(false) }
   var bookmarksSelected by remember { mutableStateOf(false) }
+  var playerDragOffset by remember { mutableStateOf(0f) }
+  var playerSwipeHandled by remember { mutableStateOf(false) }
+
+  val playerSwipeThreshold = with(density) { 48.dp.toPx() }
+  val maxPlayerDrag = with(density) { 64.dp.toPx() }
+  val animatedPlayerDragOffset by animateFloatAsState(
+    targetValue = playerDragOffset,
+    animationSpec = tween(durationMillis = 180),
+    label = "player_screen_vertical_drag",
+  )
 
   val screenTitle =
     when (playingQueueExpanded) {
@@ -108,6 +125,32 @@ fun PlayerScreen(
       searchRequested -> playerViewModel.dismissSearch()
       playingQueueExpanded -> playerViewModel.collapsePlayingQueue()
       else -> navController.showLibrary(clearHistory = true)
+    }
+  }
+
+  fun handlePlayerVerticalSwipe() {
+    if (playerSwipeHandled) {
+      playerDragOffset = 0f
+      return
+    }
+
+    val hasChapters = playingBook?.chapters?.isNotEmpty() == true
+    val dragOffset = playerDragOffset
+
+    playerDragOffset = 0f
+
+    when {
+      abs(dragOffset) < playerSwipeThreshold -> {
+        Unit
+      }
+
+      dragOffset < 0 && hasChapters && isPlaybackReady && !playingQueueExpanded -> {
+        playerViewModel.expandPlayingQueue()
+      }
+
+      dragOffset > 0 -> {
+        stepBack()
+      }
     }
   }
 
@@ -251,63 +294,104 @@ fun PlayerScreen(
             .padding(innerPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
       ) {
-        AnimatedVisibility(
-          visible = playingQueueExpanded.not(),
-          enter = expandVertically(animationSpec = tween(400)),
-          exit = shrinkVertically(animationSpec = tween(400)),
+        Column(
+          modifier =
+            Modifier
+              .graphicsLayer {
+                translationY = animatedPlayerDragOffset
+              }.pointerInput(playingQueueExpanded, isPlaybackReady, playingBook?.id) {
+                detectVerticalDragGestures(
+                  onVerticalDrag = { change, dragAmount ->
+                    if (playingQueueExpanded) return@detectVerticalDragGestures
+                    if (playerSwipeHandled) return@detectVerticalDragGestures
+
+                    change.consume()
+                    playerDragOffset = (playerDragOffset + dragAmount).coerceIn(-maxPlayerDrag, maxPlayerDrag)
+
+                    if (
+                      playerDragOffset <= -playerSwipeThreshold &&
+                      playingBook?.chapters?.isNotEmpty() == true &&
+                      isPlaybackReady
+                    ) {
+                      playerSwipeHandled = true
+                      playerViewModel.expandPlayingQueue()
+                      playerDragOffset = 0f
+                    } else if (playerDragOffset >= playerSwipeThreshold) {
+                      playerSwipeHandled = true
+                      stepBack()
+                      playerDragOffset = 0f
+                    }
+                  },
+                  onDragEnd = {
+                    handlePlayerVerticalSwipe()
+                    playerSwipeHandled = false
+                  },
+                  onDragCancel = {
+                    playerDragOffset = 0f
+                    playerSwipeHandled = false
+                  },
+                )
+              },
+          horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-          Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
+          AnimatedVisibility(
+            visible = playingQueueExpanded.not(),
+            enter = expandVertically(animationSpec = tween(400)),
+            exit = shrinkVertically(animationSpec = tween(400)),
           ) {
-            if (!isPlaybackReady) {
-              TrackDetailsPlaceholderComposable(bookTitle, bookSubtitle)
-            } else {
-              TrackDetailsComposable(
-                viewModel = playerViewModel,
-                imageLoader = imageLoader,
+            Column(
+              horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+              if (!isPlaybackReady) {
+                TrackDetailsPlaceholderComposable(bookTitle, bookSubtitle)
+              } else {
+                TrackDetailsComposable(
+                  viewModel = playerViewModel,
+                  imageLoader = imageLoader,
+                  libraryViewModel = libraryViewModel,
+                )
+              }
+
+              if (!isPlaybackReady) {
+                TrackControlPlaceholderComposable(
+                  modifier = Modifier,
+                  settingsViewModel = settingsViewModel,
+                )
+              } else {
+                TrackControlComposable(
+                  viewModel = playerViewModel,
+                  modifier = Modifier,
+                  settingsViewModel = settingsViewModel,
+                )
+              }
+            }
+          }
+
+          Spacer(modifier = Modifier.height(6.dp))
+
+          when {
+            isPlaybackReady.not() -> {
+              PlayingQueuePlaceholderComposable(
                 libraryViewModel = libraryViewModel,
+                modifier = Modifier,
               )
             }
 
-            if (!isPlaybackReady) {
-              TrackControlPlaceholderComposable(
+            playingBook?.chapters.isNullOrEmpty() -> {
+              PlayingQueueFallbackComposable(
+                libraryViewModel = libraryViewModel,
                 modifier = Modifier,
-                settingsViewModel = settingsViewModel,
               )
-            } else {
-              TrackControlComposable(
+            }
+
+            else -> {
+              PlayingQueueComposable(
+                libraryViewModel = libraryViewModel,
+                cachingModelView = cachingModelView,
                 viewModel = playerViewModel,
                 modifier = Modifier,
-                settingsViewModel = settingsViewModel,
               )
             }
-          }
-        }
-
-        Spacer(modifier = Modifier.height(6.dp))
-
-        when {
-          isPlaybackReady.not() -> {
-            PlayingQueuePlaceholderComposable(
-              libraryViewModel = libraryViewModel,
-              modifier = Modifier,
-            )
-          }
-
-          playingBook?.chapters.isNullOrEmpty() -> {
-            PlayingQueueFallbackComposable(
-              libraryViewModel = libraryViewModel,
-              modifier = Modifier,
-            )
-          }
-
-          else -> {
-            PlayingQueueComposable(
-              libraryViewModel = libraryViewModel,
-              cachingModelView = cachingModelView,
-              viewModel = playerViewModel,
-              modifier = Modifier,
-            )
           }
         }
       }
