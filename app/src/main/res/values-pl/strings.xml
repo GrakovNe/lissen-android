@@ -45,11 +45,11 @@
     <string name="settings_screen_color_scheme_title">Wygląd aplikacji</string>
     <string name="library_search_hint">Szukaj po tytule, autorze lub nazwie cyklu</string>
     <string name="player_screen_title">Teraz słuchane</string>
-    <string name="settings_screen_custom_headers_title">Niestandardowe Nagłówki</string>
+    <string name="settings_screen_custom_headers_title">Niestandardowe nagłówki</string>
     <string name="settings_screen_custom_header_hint">Ustaw nagłówki dla połączeń serwera</string>
     <string name="custom_header_hint_name">Klucz</string>
     <string name="custom_header_hint_value">Wartość</string>
-    <string name="custom_headers_title">Niestandardowe Nagłówki</string>
+    <string name="custom_headers_title">Niestandardowe nagłówki</string>
     <string name="library_screen_podcast_title">Podcasty</string>
     <string name="settings_screen_server_version">Wersja Serwera</string>
     <string name="timer_option_after_current_chapter">Kiedy rozdział się skonczy</string>
