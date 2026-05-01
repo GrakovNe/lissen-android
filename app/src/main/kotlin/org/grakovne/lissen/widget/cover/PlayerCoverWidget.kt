@@ -34,8 +34,12 @@ import androidx.glance.layout.ContentScale
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.size
 import androidx.glance.state.PreferencesGlanceStateDefinition
+import androidx.media3.session.R.drawable.media3_icon_pause
+import androidx.media3.session.R.drawable.media3_icon_play
 import dagger.hilt.android.EntryPointAccessors
 import org.grakovne.lissen.R
+import org.grakovne.lissen.ui.theme.WidgetBackgroundDark
+import org.grakovne.lissen.ui.theme.WidgetBackgroundLight
 import org.grakovne.lissen.widget.WidgetPlaybackControllerEntryPoint
 import timber.log.Timber
 import java.io.File
@@ -43,29 +47,29 @@ import java.io.File
 class PlayerCoverWidget : GlanceAppWidget() {
   override val stateDefinition = PreferencesGlanceStateDefinition
   override val sizeMode = SizeMode.Single
-
+  
   override suspend fun provideGlance(
     context: Context,
     id: GlanceId,
   ) {
     provideContent {
       val state = currentState<Preferences>()
-
+      
       val coverFile =
         state[coverPath]
           ?.takeIf { it.isNotBlank() }
           ?.let(::File)
           ?.takeIf { it.exists() }
-
+      
       val playingItemId = state[bookId] ?: ""
       val bookTitle = state[title] ?: ""
       val isPlayingNow = state[isPlaying] ?: false
-
+      
       val original =
         coverFile
           ?.let { BitmapFactory.decodeFile(it.absolutePath) }
           ?: BitmapFactory.decodeResource(context.resources, R.drawable.cover_fallback_png)
-
+      
       val widgetBitmap =
         try {
           original.toSafeWidgetBitmap()
@@ -75,9 +79,9 @@ class PlayerCoverWidget : GlanceAppWidget() {
             .decodeResource(context.resources, R.drawable.cover_fallback_png)
             .toSafeWidgetBitmap()
         }
-
+      
       val launchIntent = providePlayerCoverLaunchIntent(context)
-
+      
       Box(
         modifier =
           GlanceModifier
@@ -94,14 +98,11 @@ class PlayerCoverWidget : GlanceAppWidget() {
       ) {
         Image(
           provider = ImageProvider(widgetBitmap),
-          contentDescription = when {
-            bookTitle.isBlank() -> { null }
-            else -> { bookTitle }
-          },
+          contentDescription = null,
           contentScale = ContentScale.Crop,
           modifier = GlanceModifier.fillMaxSize(),
         )
-
+        
         Column(
           modifier = GlanceModifier.fillMaxSize(),
           verticalAlignment = Alignment.Vertical.CenterVertically,
@@ -113,8 +114,8 @@ class PlayerCoverWidget : GlanceAppWidget() {
                 .size(88.dp)
                 .cornerRadius(44.dp)
                 .background(
-                  day = Color(0x52000000),
-                  night = Color(0x7A000000),
+                  day = WidgetBackgroundLight,
+                  night = WidgetBackgroundDark,
                 ).clickable(
                   onClick =
                     actionRunCallback<PlayerCoverTogglePlaybackAction>(
@@ -125,12 +126,11 @@ class PlayerCoverWidget : GlanceAppWidget() {
           ) {
             Image(
               provider =
-                if (isPlayingNow) {
-                  ImageProvider(androidx.media3.session.R.drawable.media3_icon_pause)
-                } else {
-                  ImageProvider(androidx.media3.session.R.drawable.media3_icon_play)
+                when (isPlayingNow) {
+                  true -> ImageProvider(media3_icon_pause)
+                  false -> ImageProvider(media3_icon_play)
                 },
-              contentDescription = if (isPlayingNow) "Pause" else "Play",
+              contentDescription = null,
               modifier = GlanceModifier.size(40.dp),
             )
           }
@@ -138,10 +138,10 @@ class PlayerCoverWidget : GlanceAppWidget() {
       }
     }
   }
-
+  
   companion object {
     val bookIdActionKey = ActionParameters.Key<String>("player_cover_book_id")
-
+    
     val coverPath = stringPreferencesKey("player_widget_key_cover")
     val bookId = stringPreferencesKey("player_widget_key_id")
     val title = stringPreferencesKey("player_widget_key_title")
@@ -156,7 +156,7 @@ class PlayerCoverTogglePlaybackAction : ActionCallback {
     parameters: ActionParameters,
   ) {
     val playingItemId = parameters[PlayerCoverWidget.bookIdActionKey] ?: return
-
+    
     try {
       val playbackController =
         EntryPointAccessors
@@ -164,7 +164,7 @@ class PlayerCoverTogglePlaybackAction : ActionCallback {
             context = context.applicationContext,
             entryPoint = WidgetPlaybackControllerEntryPoint::class.java,
           ).widgetPlaybackController()
-
+      
       if (playbackController.providePlayingItem() == null) {
         playbackController.prepareAndRun(playingItemId) {
           playbackController.togglePlayPause()
@@ -181,9 +181,7 @@ class PlayerCoverTogglePlaybackAction : ActionCallback {
 private fun providePlayerCoverLaunchIntent(context: Context): Intent? =
   context.packageManager
     .getLaunchIntentForPackage(context.packageName)
-    ?.apply {
-      flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
-    }
+    ?.apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP }
 
 private fun Bitmap.toSafeWidgetBitmap(): Bitmap {
   val safeBitmap = createBitmap(width, height, Bitmap.Config.RGB_565)
