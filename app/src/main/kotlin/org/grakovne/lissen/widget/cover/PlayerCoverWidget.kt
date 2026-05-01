@@ -38,6 +38,8 @@ import org.grakovne.lissen.R.drawable
 import org.grakovne.lissen.ui.theme.WidgetBackgroundDark
 import org.grakovne.lissen.ui.theme.WidgetBackgroundLight
 import org.grakovne.lissen.widget.WidgetPlaybackControllerEntryPoint
+import org.grakovne.lissen.widget.calculateInSampleSize
+import org.grakovne.lissen.widget.decodeSampledBitmapFromResource
 import org.grakovne.lissen.widget.state.PlayerStateWidget
 import timber.log.Timber
 import java.io.File
@@ -67,26 +69,10 @@ class PlayerCoverWidget : GlanceAppWidget() {
         try {
           maybeCoverFile
             ?.takeIf { it.exists() }
-            ?.let {
-              decodeSampledBitmapFromFile(
-                path = it.absolutePath,
-                reqWidthPx = targetWidthPx,
-                reqHeightPx = targetHeightPx,
-              )
-            }
-            ?: decodeSampledBitmapFromResource(
-              context = context,
-              resId = drawable.cover_fallback_png,
-              reqWidthPx = targetWidthPx,
-              reqHeightPx = targetHeightPx,
-            )
+            ?.let { decodeSampledBitmapFromFile(it.absolutePath, targetWidthPx, targetHeightPx) }
+            ?: decodeSampledBitmapFromResource(context, drawable.cover_fallback_png, targetWidthPx, targetHeightPx)
         } catch (e: Exception) {
-          decodeSampledBitmapFromResource(
-            context = context,
-            resId = drawable.cover_fallback_png,
-            reqWidthPx = targetWidthPx,
-            reqHeightPx = targetHeightPx,
-          )
+          decodeSampledBitmapFromResource(context, drawable.cover_fallback_png, targetWidthPx, targetHeightPx)
         }
 
       val coverImageProvider = ImageProvider(coverBitmap)
@@ -202,50 +188,4 @@ private fun decodeSampledBitmapFromFile(
     }
 
   return BitmapFactory.decodeFile(path, options)
-}
-
-private fun decodeSampledBitmapFromResource(
-  context: Context,
-  resId: Int,
-  reqWidthPx: Int,
-  reqHeightPx: Int,
-): Bitmap {
-  val bounds =
-    BitmapFactory.Options().apply {
-      inJustDecodeBounds = true
-    }
-  BitmapFactory.decodeResource(context.resources, resId, bounds)
-
-  val options =
-    BitmapFactory.Options().apply {
-      inSampleSize = calculateInSampleSize(bounds, reqWidthPx, reqHeightPx)
-      inPreferredConfig = Bitmap.Config.RGB_565
-      inDither = true
-    }
-
-  return BitmapFactory.decodeResource(context.resources, resId, options)
-}
-
-private fun calculateInSampleSize(
-  options: BitmapFactory.Options,
-  reqWidthPx: Int,
-  reqHeightPx: Int,
-): Int {
-  val srcWidth = options.outWidth
-  val srcHeight = options.outHeight
-  var inSampleSize = 1
-
-  if (srcHeight > reqHeightPx || srcWidth > reqWidthPx) {
-    var halfHeight = srcHeight / 2
-    var halfWidth = srcWidth / 2
-
-    while (
-      halfHeight / inSampleSize >= reqHeightPx &&
-      halfWidth / inSampleSize >= reqWidthPx
-    ) {
-      inSampleSize *= 2
-    }
-  }
-
-  return inSampleSize.coerceAtLeast(1)
 }
