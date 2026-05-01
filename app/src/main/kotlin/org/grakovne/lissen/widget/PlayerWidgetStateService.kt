@@ -19,6 +19,8 @@ import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.playback.MediaRepository
+import org.grakovne.lissen.widget.cover.PlayerCoverWidget
+import org.grakovne.lissen.widget.state.PlayerStateWidget
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -84,8 +86,8 @@ class PlayerWidgetStateService
 
     private suspend fun updatePlayingItem(state: PlayingItemState) {
       updateWidgets(
-        widget = PlayerWidget(),
-        glanceIds = GlanceAppWidgetManager(context).getGlanceIds(PlayerWidget::class.java),
+        widget = PlayerStateWidget(),
+        glanceIds = GlanceAppWidgetManager(context).getGlanceIds(PlayerStateWidget::class.java),
         state = state,
       )
 
@@ -104,12 +106,12 @@ class PlayerWidgetStateService
       glanceIds.forEach { glanceId ->
         updateAppWidgetState(context, glanceId) { prefs ->
           when (widget) {
-            is PlayerWidget -> {
-              prefs[PlayerWidget.bookId] = state.id
-              prefs[PlayerWidget.coverPath] = state.coverFile?.absolutePath ?: ""
-              prefs[PlayerWidget.title] = state.title
-              prefs[PlayerWidget.chapterTitle] = state.chapterTitle ?: ""
-              prefs[PlayerWidget.isPlaying] = state.isPlaying
+            is PlayerStateWidget -> {
+              prefs[PlayerStateWidget.bookId] = state.id
+              prefs[PlayerStateWidget.coverPath] = state.coverFile?.absolutePath ?: ""
+              prefs[PlayerStateWidget.title] = state.title
+              prefs[PlayerStateWidget.chapterTitle] = state.chapterTitle ?: ""
+              prefs[PlayerStateWidget.isPlaying] = state.isPlaying
             }
 
             is PlayerCoverWidget -> {

@@ -1,4 +1,4 @@
-package org.grakovne.lissen.widget
+package org.grakovne.lissen.widget.state
 
 import android.content.Context
 import android.content.Intent
@@ -50,11 +50,11 @@ import dagger.hilt.android.EntryPointAccessors
 import org.grakovne.lissen.R.drawable
 import org.grakovne.lissen.ui.theme.LightBackground
 import org.grakovne.lissen.ui.theme.MediumBackground
-import org.grakovne.lissen.widget.PlayerWidget.Companion.bookIdKey
+import org.grakovne.lissen.widget.state.PlayerStateWidget.Companion.bookIdKey
 import timber.log.Timber
 import java.io.File
 
-class PlayerWidget : GlanceAppWidget() {
+class PlayerStateWidget : GlanceAppWidget() {
   override val stateDefinition: GlanceStateDefinition<*> = PreferencesGlanceStateDefinition
 
   override suspend fun provideGlance(
@@ -173,7 +173,7 @@ class PlayerWidget : GlanceAppWidget() {
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
           ) {
-            WidgetControlButton(
+            StateWidgetControlButton(
               size = 36.dp,
               icon = ImageProvider(R.drawable.media3_icon_previous),
               contentColor = GlanceTheme.colors.onBackground,
@@ -183,8 +183,8 @@ class PlayerWidget : GlanceAppWidget() {
                 ),
               modifier = GlanceModifier.defaultWeight(),
             )
-
-            WidgetControlButton(
+            
+            StateWidgetControlButton(
               size = 36.dp,
               icon = ImageProvider(rewindIcon),
               contentColor = GlanceTheme.colors.onBackground,
@@ -194,8 +194,8 @@ class PlayerWidget : GlanceAppWidget() {
                 ),
               modifier = GlanceModifier.defaultWeight(),
             )
-
-            WidgetControlButton(
+            
+            StateWidgetControlButton(
               icon =
                 if (isPlaying) {
                   ImageProvider(R.drawable.media3_icon_pause)
@@ -211,7 +211,7 @@ class PlayerWidget : GlanceAppWidget() {
               modifier = GlanceModifier.defaultWeight(),
             )
 
-            WidgetControlButton(
+            StateWidgetControlButton(
               icon = ImageProvider(forwardIcon),
               size = 36.dp,
               contentColor = GlanceTheme.colors.onBackground,
@@ -222,7 +222,7 @@ class PlayerWidget : GlanceAppWidget() {
               modifier = GlanceModifier.defaultWeight(),
             )
 
-            WidgetControlButton(
+            StateWidgetControlButton(
               icon = ImageProvider(R.drawable.media3_icon_next),
               size = 36.dp,
               contentColor = GlanceTheme.colors.onBackground,
@@ -332,14 +332,14 @@ private fun provideAppLaunchIntent(context: Context): Intent? =
 private suspend fun safelyRun(
   playingItemId: String,
   context: Context,
-  action: (WidgetPlaybackController) -> Unit,
+  action: (org.grakovne.lissen.widget.WidgetPlaybackController) -> Unit,
 ) {
   try {
     val playbackController =
       EntryPointAccessors
         .fromApplication(
           context = context.applicationContext,
-          entryPoint = WidgetPlaybackControllerEntryPoint::class.java,
+          entryPoint = _root_ide_package_.org.grakovne.lissen.widget.WidgetPlaybackControllerEntryPoint::class.java,
         ).widgetPlaybackController()
 
     when (playbackController.providePlayingItem()) {

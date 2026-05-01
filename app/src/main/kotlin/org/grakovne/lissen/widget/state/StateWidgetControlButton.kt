@@ -1,4 +1,4 @@
-package org.grakovne.lissen.widget
+package org.grakovne.lissen.widget.state
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.Dp
@@ -16,7 +16,7 @@ import androidx.glance.layout.size
 import androidx.glance.unit.ColorProvider
 
 @Composable
-fun WidgetControlButton(
+fun StateWidgetControlButton(
   icon: ImageProvider,
   contentColor: ColorProvider,
   onClick: Action,

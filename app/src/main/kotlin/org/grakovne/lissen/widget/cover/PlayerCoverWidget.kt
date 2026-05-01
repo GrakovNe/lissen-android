@@ -1,4 +1,4 @@
-package org.grakovne.lissen.widget
+package org.grakovne.lissen.widget.cover
 
 import android.content.Context
 import android.content.Intent
@@ -39,6 +39,7 @@ import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import dagger.hilt.android.EntryPointAccessors
 import org.grakovne.lissen.R
+import org.grakovne.lissen.widget.WidgetPlaybackControllerEntryPoint
 import timber.log.Timber
 import java.io.File
 

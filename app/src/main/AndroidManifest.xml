@@ -93,7 +93,7 @@
             android:permission="android.permission.FOREGROUND_SERVICE" />
 
         <receiver
-            android:name=".widget.PlayerWidgetReceiver"
+            android:name=".widget.state.PlayerStateWidgetReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -101,11 +101,11 @@
 
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/mini_player_widget_info" />
+                android:resource="@xml/player_state_widget_info" />
         </receiver>
 
         <receiver
-            android:name=".widget.PlayerCoverWidgetReceiver"
+            android:name=".widget.cover.PlayerCoverWidgetReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
