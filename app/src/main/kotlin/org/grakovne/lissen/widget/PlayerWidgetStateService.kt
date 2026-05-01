@@ -2,6 +2,8 @@ package org.grakovne.lissen.widget
 
 import android.content.Context
 import androidx.annotation.OptIn
+import androidx.glance.GlanceId
+import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.lifecycle.asFlow
@@ -70,7 +72,7 @@ class PlayerWidgetStateService
       item: DetailedItem?,
       chapterIndex: Int?,
     ): String? {
-      if (null == item || null == chapterIndex) {
+      if (item == null || chapterIndex == null) {
         return null
       }
 
@@ -81,20 +83,46 @@ class PlayerWidgetStateService
     }
 
     private suspend fun updatePlayingItem(state: PlayingItemState) {
-      val manager = GlanceAppWidgetManager(context)
-      val glanceIds = manager.getGlanceIds(PlayerWidget::class.java)
+      updateWidgets(
+        widget = PlayerWidget(),
+        glanceIds = GlanceAppWidgetManager(context).getGlanceIds(PlayerWidget::class.java),
+        state = state,
+      )
 
-      glanceIds
-        .forEach { glanceId ->
-          updateAppWidgetState(context, glanceId) { prefs ->
-            prefs[PlayerWidget.bookId] = state.id
-            prefs[PlayerWidget.coverPath] = state.coverFile?.absolutePath ?: ""
-            prefs[PlayerWidget.title] = state.title
-            prefs[PlayerWidget.chapterTitle] = state.chapterTitle ?: ""
-            prefs[PlayerWidget.isPlaying] = state.isPlaying
+      updateWidgets(
+        widget = PlayerCoverWidget(),
+        glanceIds = GlanceAppWidgetManager(context).getGlanceIds(PlayerCoverWidget::class.java),
+        state = state,
+      )
+    }
+
+    private suspend fun updateWidgets(
+      widget: GlanceAppWidget,
+      glanceIds: List<GlanceId>,
+      state: PlayingItemState,
+    ) {
+      glanceIds.forEach { glanceId ->
+        updateAppWidgetState(context, glanceId) { prefs ->
+          when (widget) {
+            is PlayerWidget -> {
+              prefs[PlayerWidget.bookId] = state.id
+              prefs[PlayerWidget.coverPath] = state.coverFile?.absolutePath ?: ""
+              prefs[PlayerWidget.title] = state.title
+              prefs[PlayerWidget.chapterTitle] = state.chapterTitle ?: ""
+              prefs[PlayerWidget.isPlaying] = state.isPlaying
+            }
+
+            is PlayerCoverWidget -> {
+              prefs[PlayerCoverWidget.bookId] = state.id
+              prefs[PlayerCoverWidget.coverPath] = state.coverFile?.absolutePath ?: ""
+              prefs[PlayerCoverWidget.title] = state.title
+              prefs[PlayerCoverWidget.isPlaying] = state.isPlaying
+            }
           }
-          PlayerWidget().update(context, glanceId)
         }
+
+        widget.update(context, glanceId)
+      }
     }
   }
 
