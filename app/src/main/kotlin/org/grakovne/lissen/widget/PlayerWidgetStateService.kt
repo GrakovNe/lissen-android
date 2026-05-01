@@ -117,7 +117,6 @@ class PlayerWidgetStateService
             is PlayerCoverWidget -> {
               prefs[PlayerCoverWidget.bookId] = state.id
               prefs[PlayerCoverWidget.coverPath] = state.coverFile?.absolutePath ?: ""
-              prefs[PlayerCoverWidget.title] = state.title
               prefs[PlayerCoverWidget.isPlaying] = state.isPlaying
             }
           }

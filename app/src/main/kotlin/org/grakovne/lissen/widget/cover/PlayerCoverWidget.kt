@@ -4,8 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.BitmapFactory.decodeResource
 import android.graphics.Canvas
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
 import androidx.datastore.preferences.core.Preferences
@@ -15,6 +15,7 @@ import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
+import androidx.glance.LocalSize
 import androidx.glance.action.ActionParameters
 import androidx.glance.action.actionParametersOf
 import androidx.glance.action.clickable
@@ -29,7 +30,6 @@ import androidx.glance.appwidget.provideContent
 import androidx.glance.currentState
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
-import androidx.glance.layout.Column
 import androidx.glance.layout.ContentScale
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.size
@@ -38,113 +38,104 @@ import androidx.media3.session.R.drawable.media3_icon_pause
 import androidx.media3.session.R.drawable.media3_icon_play
 import dagger.hilt.android.EntryPointAccessors
 import org.grakovne.lissen.R
+import org.grakovne.lissen.R.drawable
 import org.grakovne.lissen.ui.theme.WidgetBackgroundDark
 import org.grakovne.lissen.ui.theme.WidgetBackgroundLight
 import org.grakovne.lissen.widget.WidgetPlaybackControllerEntryPoint
+import org.grakovne.lissen.widget.state.PlayerStateWidget
 import timber.log.Timber
 import java.io.File
 
 class PlayerCoverWidget : GlanceAppWidget() {
   override val stateDefinition = PreferencesGlanceStateDefinition
-  override val sizeMode = SizeMode.Single
-  
+  override val sizeMode = SizeMode.Exact
+
   override suspend fun provideGlance(
     context: Context,
     id: GlanceId,
   ) {
     provideContent {
       val state = currentState<Preferences>()
-      
-      val coverFile =
-        state[coverPath]
-          ?.takeIf { it.isNotBlank() }
-          ?.let(::File)
-          ?.takeIf { it.exists() }
-      
+
+      val maybeCoverFile = state[PlayerStateWidget.coverPath]?.takeIf { it.isNotBlank() }?.let { File(it) }
+
       val playingItemId = state[bookId] ?: ""
-      val bookTitle = state[title] ?: ""
       val isPlayingNow = state[isPlaying] ?: false
-      
+
       val original =
-        coverFile
+        maybeCoverFile
           ?.let { BitmapFactory.decodeFile(it.absolutePath) }
-          ?: BitmapFactory.decodeResource(context.resources, R.drawable.cover_fallback_png)
-      
-      val widgetBitmap =
+          ?: decodeResource(context.resources, drawable.cover_fallback_png)
+
+      val coverImageProvider =
         try {
-          original.toSafeWidgetBitmap()
-        } catch (ex: Exception) {
-          Timber.w(ex, "Unable to prepare widget bitmap")
-          BitmapFactory
-            .decodeResource(context.resources, R.drawable.cover_fallback_png)
-            .toSafeWidgetBitmap()
+          val safeBitmap = createBitmap(original.width, original.height, Bitmap.Config.RGB_565)
+          val canvas = Canvas(safeBitmap)
+          canvas.drawBitmap(original, 0f, 0f, null)
+          ImageProvider(safeBitmap)
+        } catch (e: Exception) {
+          ImageProvider(drawable.cover_fallback_png)
         }
-      
-      val launchIntent = providePlayerCoverLaunchIntent(context)
-      
+
+      val size = LocalSize.current
+      val minSide = minOf(size.width, size.height)
+      val playButtonSize = minSide * 0.5f
+      val playIconSize = playButtonSize * 0.46f
+
       Box(
         modifier =
           GlanceModifier
             .fillMaxSize()
             .cornerRadius(28.dp)
             .run {
-              if (launchIntent != null) {
-                clickable(onClick = actionStartActivity(launchIntent))
-              } else {
-                this
-              }
+              providePlayerCoverLaunchIntent(context)
+                ?.let { clickable(onClick = actionStartActivity(it)) }
+                ?: this
             },
         contentAlignment = Alignment.Center,
       ) {
         Image(
-          provider = ImageProvider(widgetBitmap),
+          provider = coverImageProvider,
           contentDescription = null,
           contentScale = ContentScale.Crop,
           modifier = GlanceModifier.fillMaxSize(),
         )
-        
-        Column(
-          modifier = GlanceModifier.fillMaxSize(),
-          verticalAlignment = Alignment.Vertical.CenterVertically,
-          horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
+
+        Box(
+          modifier =
+            GlanceModifier
+              .size(playButtonSize)
+              .cornerRadius(playButtonSize / 2)
+              .background(
+                day = WidgetBackgroundLight,
+                night = WidgetBackgroundDark,
+              ).clickable(
+                onClick =
+                  actionRunCallback<PlayerCoverTogglePlaybackAction>(
+                    actionParametersOf(bookIdActionKey to playingItemId),
+                  ),
+              ),
+          contentAlignment = Alignment.Center,
         ) {
-          Box(
-            modifier =
-              GlanceModifier
-                .size(88.dp)
-                .cornerRadius(44.dp)
-                .background(
-                  day = WidgetBackgroundLight,
-                  night = WidgetBackgroundDark,
-                ).clickable(
-                  onClick =
-                    actionRunCallback<PlayerCoverTogglePlaybackAction>(
-                      actionParametersOf(bookIdActionKey to playingItemId),
-                    ),
-                ),
-            contentAlignment = Alignment.Center,
-          ) {
-            Image(
-              provider =
-                when (isPlayingNow) {
-                  true -> ImageProvider(media3_icon_pause)
-                  false -> ImageProvider(media3_icon_play)
-                },
-              contentDescription = null,
-              modifier = GlanceModifier.size(40.dp),
-            )
-          }
+          Image(
+            provider =
+              when (isPlayingNow) {
+                true -> ImageProvider(media3_icon_pause)
+                false -> ImageProvider(media3_icon_play)
+              },
+            contentDescription = null,
+            modifier = GlanceModifier.size(playIconSize),
+          )
         }
       }
     }
   }
-  
+
   companion object {
     val bookIdActionKey = ActionParameters.Key<String>("player_cover_book_id")
-    
+
     val coverPath = stringPreferencesKey("player_widget_key_cover")
     val bookId = stringPreferencesKey("player_widget_key_id")
-    val title = stringPreferencesKey("player_widget_key_title")
     val isPlaying = booleanPreferencesKey("player_widget_key_is_playing")
   }
 }
@@ -156,7 +147,7 @@ class PlayerCoverTogglePlaybackAction : ActionCallback {
     parameters: ActionParameters,
   ) {
     val playingItemId = parameters[PlayerCoverWidget.bookIdActionKey] ?: return
-    
+
     try {
       val playbackController =
         EntryPointAccessors
@@ -164,13 +155,10 @@ class PlayerCoverTogglePlaybackAction : ActionCallback {
             context = context.applicationContext,
             entryPoint = WidgetPlaybackControllerEntryPoint::class.java,
           ).widgetPlaybackController()
-      
-      if (playbackController.providePlayingItem() == null) {
-        playbackController.prepareAndRun(playingItemId) {
-          playbackController.togglePlayPause()
-        }
-      } else {
-        playbackController.togglePlayPause()
+
+      when (playbackController.providePlayingItem()) {
+        null -> playbackController.prepareAndRun(playingItemId) { playbackController.togglePlayPause() }
+        else -> playbackController.togglePlayPause()
       }
     } catch (ex: Exception) {
       Timber.w(ex, "Unable to toggle playback from PlayerCoverWidget for %s", playingItemId)

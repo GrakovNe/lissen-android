@@ -50,6 +50,7 @@ import dagger.hilt.android.EntryPointAccessors
 import org.grakovne.lissen.R.drawable
 import org.grakovne.lissen.ui.theme.LightBackground
 import org.grakovne.lissen.ui.theme.MediumBackground
+import org.grakovne.lissen.widget.WidgetPlaybackControllerEntryPoint
 import org.grakovne.lissen.widget.state.PlayerStateWidget.Companion.bookIdKey
 import timber.log.Timber
 import java.io.File
@@ -339,7 +340,7 @@ private suspend fun safelyRun(
       EntryPointAccessors
         .fromApplication(
           context = context.applicationContext,
-          entryPoint = _root_ide_package_.org.grakovne.lissen.widget.WidgetPlaybackControllerEntryPoint::class.java,
+          entryPoint = WidgetPlaybackControllerEntryPoint::class.java,
         ).widgetPlaybackController()
 
     when (playbackController.providePlayingItem()) {
