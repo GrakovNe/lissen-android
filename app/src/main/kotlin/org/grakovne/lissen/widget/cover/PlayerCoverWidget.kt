@@ -170,10 +170,3 @@ private fun providePlayerCoverLaunchIntent(context: Context): Intent? =
   context.packageManager
     .getLaunchIntentForPackage(context.packageName)
     ?.apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP }
-
-private fun Bitmap.toSafeWidgetBitmap(): Bitmap {
-  val safeBitmap = createBitmap(width, height, Bitmap.Config.RGB_565)
-  val canvas = Canvas(safeBitmap)
-  canvas.drawBitmap(this, 0f, 0f, null)
-  return safeBitmap
-}
