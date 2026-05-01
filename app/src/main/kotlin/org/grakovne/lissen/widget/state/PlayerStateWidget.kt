@@ -4,13 +4,10 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.BitmapFactory.decodeResource
-import android.graphics.Canvas
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.createBitmap
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -103,20 +100,35 @@ class PlayerStateWidget : GlanceAppWidget() {
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
           ) {
-            val original =
-              maybeCoverFile
-                ?.let { BitmapFactory.decodeFile(it.absolutePath) }
-                ?: decodeResource(context.resources, drawable.cover_fallback_png)
+            val targetSizePx = (80f * context.resources.displayMetrics.density).toInt().coerceAtLeast(1)
 
-            val coverImageProvider =
+            val coverBitmap =
               try {
-                val safeBitmap = createBitmap(original.width, original.height, Bitmap.Config.RGB_565)
-                val canvas = Canvas(safeBitmap)
-                canvas.drawBitmap(original, 0f, 0f, null)
-                ImageProvider(safeBitmap)
+                maybeCoverFile
+                  ?.takeIf { it.exists() }
+                  ?.let {
+                    decodeSampledBitmapFromFile(
+                      path = it.absolutePath,
+                      reqWidthPx = targetSizePx,
+                      reqHeightPx = targetSizePx,
+                    )
+                  }
+                  ?: decodeSampledBitmapFromResource(
+                    context = context,
+                    resId = drawable.cover_fallback_png,
+                    reqWidthPx = targetSizePx,
+                    reqHeightPx = targetSizePx,
+                  )
               } catch (e: Exception) {
-                ImageProvider(drawable.cover_fallback_png)
+                decodeSampledBitmapFromResource(
+                  context = context,
+                  resId = drawable.cover_fallback_png,
+                  reqWidthPx = targetSizePx,
+                  reqHeightPx = targetSizePx,
+                )
               }
+
+            val coverImageProvider = ImageProvider(coverBitmap)
 
             Image(
               contentScale = ContentScale.FillBounds,
@@ -350,4 +362,71 @@ private suspend fun safelyRun(
   } catch (ex: Exception) {
     Timber.w("Unable to run $action on $playingItemId due to $ex")
   }
+}
+
+private fun decodeSampledBitmapFromFile(
+  path: String,
+  reqWidthPx: Int,
+  reqHeightPx: Int,
+): Bitmap {
+  val bounds =
+    BitmapFactory.Options().apply {
+      inJustDecodeBounds = true
+    }
+  BitmapFactory.decodeFile(path, bounds)
+
+  val options =
+    BitmapFactory.Options().apply {
+      inSampleSize = calculateInSampleSize(bounds, reqWidthPx, reqHeightPx)
+      inPreferredConfig = Bitmap.Config.RGB_565
+      inDither = true
+    }
+
+  return BitmapFactory.decodeFile(path, options)
+}
+
+private fun decodeSampledBitmapFromResource(
+  context: Context,
+  resId: Int,
+  reqWidthPx: Int,
+  reqHeightPx: Int,
+): Bitmap {
+  val bounds =
+    BitmapFactory.Options().apply {
+      inJustDecodeBounds = true
+    }
+  BitmapFactory.decodeResource(context.resources, resId, bounds)
+
+  val options =
+    BitmapFactory.Options().apply {
+      inSampleSize = calculateInSampleSize(bounds, reqWidthPx, reqHeightPx)
+      inPreferredConfig = Bitmap.Config.RGB_565
+      inDither = true
+    }
+
+  return BitmapFactory.decodeResource(context.resources, resId, options)
+}
+
+private fun calculateInSampleSize(
+  options: BitmapFactory.Options,
+  reqWidthPx: Int,
+  reqHeightPx: Int,
+): Int {
+  val srcWidth = options.outWidth
+  val srcHeight = options.outHeight
+  var inSampleSize = 1
+
+  if (srcHeight > reqHeightPx || srcWidth > reqWidthPx) {
+    val halfHeight = srcHeight / 2
+    val halfWidth = srcWidth / 2
+
+    while (
+      halfHeight / inSampleSize >= reqHeightPx &&
+      halfWidth / inSampleSize >= reqWidthPx
+    ) {
+      inSampleSize *= 2
+    }
+  }
+
+  return inSampleSize.coerceAtLeast(1)
 }

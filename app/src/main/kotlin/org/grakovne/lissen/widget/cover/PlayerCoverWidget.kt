@@ -4,10 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.BitmapFactory.decodeResource
-import android.graphics.Canvas
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.createBitmap
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -37,7 +34,6 @@ import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.media3.session.R.drawable.media3_icon_pause
 import androidx.media3.session.R.drawable.media3_icon_play
 import dagger.hilt.android.EntryPointAccessors
-import org.grakovne.lissen.R
 import org.grakovne.lissen.R.drawable
 import org.grakovne.lissen.ui.theme.WidgetBackgroundDark
 import org.grakovne.lissen.ui.theme.WidgetBackgroundLight
@@ -62,22 +58,39 @@ class PlayerCoverWidget : GlanceAppWidget() {
       val playingItemId = state[bookId] ?: ""
       val isPlayingNow = state[isPlaying] ?: false
 
-      val original =
-        maybeCoverFile
-          ?.let { BitmapFactory.decodeFile(it.absolutePath) }
-          ?: decodeResource(context.resources, drawable.cover_fallback_png)
+      val size = LocalSize.current
+      val density = context.resources.displayMetrics.density
+      val targetWidthPx = (size.width.value * density).toInt().coerceAtLeast(1)
+      val targetHeightPx = (size.height.value * density).toInt().coerceAtLeast(1)
 
-      val coverImageProvider =
+      val coverBitmap =
         try {
-          val safeBitmap = createBitmap(original.width, original.height, Bitmap.Config.RGB_565)
-          val canvas = Canvas(safeBitmap)
-          canvas.drawBitmap(original, 0f, 0f, null)
-          ImageProvider(safeBitmap)
+          maybeCoverFile
+            ?.takeIf { it.exists() }
+            ?.let {
+              decodeSampledBitmapFromFile(
+                path = it.absolutePath,
+                reqWidthPx = targetWidthPx,
+                reqHeightPx = targetHeightPx,
+              )
+            }
+            ?: decodeSampledBitmapFromResource(
+              context = context,
+              resId = drawable.cover_fallback_png,
+              reqWidthPx = targetWidthPx,
+              reqHeightPx = targetHeightPx,
+            )
         } catch (e: Exception) {
-          ImageProvider(drawable.cover_fallback_png)
+          decodeSampledBitmapFromResource(
+            context = context,
+            resId = drawable.cover_fallback_png,
+            reqWidthPx = targetWidthPx,
+            reqHeightPx = targetHeightPx,
+          )
         }
 
-      val size = LocalSize.current
+      val coverImageProvider = ImageProvider(coverBitmap)
+
       val minSide = minOf(size.width, size.height)
       val playButtonSize = minSide * 0.5f
       val playIconSize = playButtonSize * 0.46f
@@ -86,7 +99,6 @@ class PlayerCoverWidget : GlanceAppWidget() {
         modifier =
           GlanceModifier
             .fillMaxSize()
-            .cornerRadius(28.dp)
             .run {
               providePlayerCoverLaunchIntent(context)
                 ?.let { clickable(onClick = actionStartActivity(it)) }
@@ -170,3 +182,70 @@ private fun providePlayerCoverLaunchIntent(context: Context): Intent? =
   context.packageManager
     .getLaunchIntentForPackage(context.packageName)
     ?.apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP }
+
+private fun decodeSampledBitmapFromFile(
+  path: String,
+  reqWidthPx: Int,
+  reqHeightPx: Int,
+): Bitmap {
+  val bounds =
+    BitmapFactory.Options().apply {
+      inJustDecodeBounds = true
+    }
+  BitmapFactory.decodeFile(path, bounds)
+
+  val options =
+    BitmapFactory.Options().apply {
+      inSampleSize = calculateInSampleSize(bounds, reqWidthPx, reqHeightPx)
+      inPreferredConfig = Bitmap.Config.RGB_565
+      inDither = true
+    }
+
+  return BitmapFactory.decodeFile(path, options)
+}
+
+private fun decodeSampledBitmapFromResource(
+  context: Context,
+  resId: Int,
+  reqWidthPx: Int,
+  reqHeightPx: Int,
+): Bitmap {
+  val bounds =
+    BitmapFactory.Options().apply {
+      inJustDecodeBounds = true
+    }
+  BitmapFactory.decodeResource(context.resources, resId, bounds)
+
+  val options =
+    BitmapFactory.Options().apply {
+      inSampleSize = calculateInSampleSize(bounds, reqWidthPx, reqHeightPx)
+      inPreferredConfig = Bitmap.Config.RGB_565
+      inDither = true
+    }
+
+  return BitmapFactory.decodeResource(context.resources, resId, options)
+}
+
+private fun calculateInSampleSize(
+  options: BitmapFactory.Options,
+  reqWidthPx: Int,
+  reqHeightPx: Int,
+): Int {
+  val srcWidth = options.outWidth
+  val srcHeight = options.outHeight
+  var inSampleSize = 1
+
+  if (srcHeight > reqHeightPx || srcWidth > reqWidthPx) {
+    var halfHeight = srcHeight / 2
+    var halfWidth = srcWidth / 2
+
+    while (
+      halfHeight / inSampleSize >= reqHeightPx &&
+      halfWidth / inSampleSize >= reqWidthPx
+    ) {
+      inSampleSize *= 2
+    }
+  }
+
+  return inSampleSize.coerceAtLeast(1)
+}
