@@ -183,7 +183,7 @@ class PlayerStateWidget : GlanceAppWidget() {
                 ),
               modifier = GlanceModifier.defaultWeight(),
             )
-            
+
             StateWidgetControlButton(
               size = 36.dp,
               icon = ImageProvider(rewindIcon),
@@ -194,7 +194,7 @@ class PlayerStateWidget : GlanceAppWidget() {
                 ),
               modifier = GlanceModifier.defaultWeight(),
             )
-            
+
             StateWidgetControlButton(
               icon =
                 if (isPlaying) {

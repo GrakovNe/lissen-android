@@ -5,8 +5,8 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.graphics.createBitmap
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -23,6 +23,7 @@ import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.action.actionRunCallback
 import androidx.glance.appwidget.action.actionStartActivity
+import androidx.glance.appwidget.background
 import androidx.glance.appwidget.cornerRadius
 import androidx.glance.appwidget.provideContent
 import androidx.glance.currentState
@@ -31,12 +32,8 @@ import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.ContentScale
 import androidx.glance.layout.fillMaxSize
-import androidx.glance.layout.fillMaxWidth
-import androidx.glance.layout.padding
 import androidx.glance.layout.size
 import androidx.glance.state.PreferencesGlanceStateDefinition
-import androidx.glance.text.Text
-import androidx.glance.text.TextStyle
 import dagger.hilt.android.EntryPointAccessors
 import org.grakovne.lissen.R
 import org.grakovne.lissen.widget.WidgetPlaybackControllerEntryPoint
@@ -97,7 +94,10 @@ class PlayerCoverWidget : GlanceAppWidget() {
       ) {
         Image(
           provider = ImageProvider(widgetBitmap),
-          contentDescription = if (bookTitle.isBlank()) null else bookTitle,
+          contentDescription = when {
+            bookTitle.isBlank() -> { null }
+            else -> { bookTitle }
+          },
           contentScale = ContentScale.Crop,
           modifier = GlanceModifier.fillMaxSize(),
         )
@@ -112,7 +112,10 @@ class PlayerCoverWidget : GlanceAppWidget() {
               GlanceModifier
                 .size(88.dp)
                 .cornerRadius(44.dp)
-                .clickable(
+                .background(
+                  day = Color(0x52000000),
+                  night = Color(0x7A000000),
+                ).clickable(
                   onClick =
                     actionRunCallback<PlayerCoverTogglePlaybackAction>(
                       actionParametersOf(bookIdActionKey to playingItemId),
@@ -128,29 +131,8 @@ class PlayerCoverWidget : GlanceAppWidget() {
                   ImageProvider(androidx.media3.session.R.drawable.media3_icon_play)
                 },
               contentDescription = if (isPlayingNow) "Pause" else "Play",
-              modifier = GlanceModifier.size(36.dp),
+              modifier = GlanceModifier.size(40.dp),
             )
-          }
-        }
-
-        Column(
-          modifier = GlanceModifier.fillMaxSize(),
-          verticalAlignment = Alignment.Vertical.Bottom,
-          horizontalAlignment = Alignment.Horizontal.Start,
-        ) {
-          if (bookTitle.isNotBlank()) {
-            Box(
-              modifier =
-                GlanceModifier
-                  .fillMaxWidth()
-                  .padding(horizontal = 12.dp, vertical = 10.dp),
-            ) {
-              Text(
-                text = bookTitle,
-                maxLines = 2,
-                style = TextStyle(fontSize = 14.sp),
-              )
-            }
           }
         }
       }
