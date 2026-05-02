@@ -4,63 +4,58 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 
-fun decodeSampledBitmapFromResource(
+fun bitmapFromResource(
   context: Context,
-  resId: Int,
-  reqWidthPx: Int,
-  reqHeightPx: Int,
+  resourceId: Int,
+  widthPx: Int,
+  heightPx: Int,
 ): Bitmap {
-  val bounds =
-    BitmapFactory.Options().apply {
-      inJustDecodeBounds = true
-    }
-  BitmapFactory.decodeResource(context.resources, resId, bounds)
+  val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+
+  BitmapFactory.decodeResource(context.resources, resourceId, bounds)
 
   val options =
     BitmapFactory.Options().apply {
-      inSampleSize = calculateInSampleSize(bounds, reqWidthPx, reqHeightPx)
+      inSampleSize = calculateInSampleSize(bounds, widthPx, heightPx)
       inPreferredConfig = Bitmap.Config.RGB_565
     }
 
-  return BitmapFactory.decodeResource(context.resources, resId, options)
+  return BitmapFactory.decodeResource(context.resources, resourceId, options)
 }
 
-fun decodeSampledBitmapFromFile(
+fun bitmapFromFile(
   path: String,
-  reqWidthPx: Int,
-  reqHeightPx: Int,
+  widthPx: Int,
+  heightPx: Int,
 ): Bitmap {
-  val bounds =
-    BitmapFactory.Options().apply {
-      inJustDecodeBounds = true
-    }
+  val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
   BitmapFactory.decodeFile(path, bounds)
-  
+
   val options =
     BitmapFactory.Options().apply {
-      inSampleSize = calculateInSampleSize(bounds, reqWidthPx, reqHeightPx)
+      inSampleSize = calculateInSampleSize(bounds, widthPx, heightPx)
       inPreferredConfig = Bitmap.Config.RGB_565
     }
-  
+
   return BitmapFactory.decodeFile(path, options)
 }
 
-fun calculateInSampleSize(
+private fun calculateInSampleSize(
   options: BitmapFactory.Options,
-  reqWidthPx: Int,
-  reqHeightPx: Int,
+  widthPx: Int,
+  heightPx: Int,
 ): Int {
   val srcWidth = options.outWidth
   val srcHeight = options.outHeight
   var inSampleSize = 1
 
-  if (srcHeight > reqHeightPx || srcWidth > reqWidthPx) {
+  if (srcHeight > heightPx || srcWidth > widthPx) {
     val halfHeight = srcHeight / 2
     val halfWidth = srcWidth / 2
 
     while (
-      halfHeight / inSampleSize >= reqHeightPx &&
-      halfWidth / inSampleSize >= reqWidthPx
+      halfHeight / inSampleSize >= heightPx &&
+      halfWidth / inSampleSize >= widthPx
     ) {
       inSampleSize *= 2
     }

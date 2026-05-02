@@ -46,8 +46,8 @@ import org.grakovne.lissen.R.drawable
 import org.grakovne.lissen.ui.theme.LightBackground
 import org.grakovne.lissen.ui.theme.MediumBackground
 import org.grakovne.lissen.widget.WidgetPlaybackControllerEntryPoint
-import org.grakovne.lissen.widget.decodeSampledBitmapFromFile
-import org.grakovne.lissen.widget.decodeSampledBitmapFromResource
+import org.grakovne.lissen.widget.bitmapFromFile
+import org.grakovne.lissen.widget.bitmapFromResource
 import org.grakovne.lissen.widget.state.PlayerStateWidget.Companion.bookIdKey
 import timber.log.Timber
 import java.io.File
@@ -106,10 +106,10 @@ class PlayerStateWidget : GlanceAppWidget() {
               try {
                 maybeCoverFile
                   ?.takeIf { it.exists() }
-                  ?.let { decodeSampledBitmapFromFile(it.absolutePath, targetSizePx, targetSizePx) }
-                  ?: decodeSampledBitmapFromResource(context, drawable.cover_fallback_png, targetSizePx, targetSizePx)
+                  ?.let { bitmapFromFile(it.absolutePath, targetSizePx, targetSizePx) }
+                  ?: bitmapFromResource(context, drawable.cover_fallback_png, targetSizePx, targetSizePx)
               } catch (e: Exception) {
-                decodeSampledBitmapFromResource(context, drawable.cover_fallback_png, targetSizePx, targetSizePx)
+                bitmapFromResource(context, drawable.cover_fallback_png, targetSizePx, targetSizePx)
               }
 
             val coverImageProvider = ImageProvider(coverBitmap)
