@@ -2,8 +2,6 @@ package org.grakovne.lissen.widget.state
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.unit.dp
@@ -48,7 +46,7 @@ import org.grakovne.lissen.R.drawable
 import org.grakovne.lissen.ui.theme.LightBackground
 import org.grakovne.lissen.ui.theme.MediumBackground
 import org.grakovne.lissen.widget.WidgetPlaybackControllerEntryPoint
-import org.grakovne.lissen.widget.calculateInSampleSize
+import org.grakovne.lissen.widget.decodeSampledBitmapFromFile
 import org.grakovne.lissen.widget.decodeSampledBitmapFromResource
 import org.grakovne.lissen.widget.state.PlayerStateWidget.Companion.bookIdKey
 import timber.log.Timber
@@ -348,25 +346,4 @@ private suspend fun safelyRun(
   } catch (ex: Exception) {
     Timber.w("Unable to run $action on $playingItemId due to $ex")
   }
-}
-
-private fun decodeSampledBitmapFromFile(
-  path: String,
-  reqWidthPx: Int,
-  reqHeightPx: Int,
-): Bitmap {
-  val bounds =
-    BitmapFactory.Options().apply {
-      inJustDecodeBounds = true
-    }
-  BitmapFactory.decodeFile(path, bounds)
-
-  val options =
-    BitmapFactory.Options().apply {
-      inSampleSize = calculateInSampleSize(bounds, reqWidthPx, reqHeightPx)
-      inPreferredConfig = Bitmap.Config.RGB_565
-      inDither = true
-    }
-
-  return BitmapFactory.decodeFile(path, options)
 }

@@ -1,14 +1,9 @@
-<!-- res/xml/player_cover_widget_info.xml -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:initialLayout="@layout/glance_default_loading_layout"
     android:targetCellWidth="2"
     android:targetCellHeight="2"
     android:minWidth="130dp"
     android:minHeight="130dp"
-    android:minResizeWidth="130dp"
-    android:minResizeHeight="130dp"
-    android:maxResizeWidth="130dp"
-    android:maxResizeHeight="130dp"
-    android:resizeMode="none"
     android:updatePeriodMillis="0"
+    android:resizeMode="none"
     android:widgetCategory="home_screen" />

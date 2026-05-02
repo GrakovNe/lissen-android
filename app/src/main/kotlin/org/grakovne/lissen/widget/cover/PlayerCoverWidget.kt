@@ -2,9 +2,6 @@ package org.grakovne.lissen.widget.cover
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -38,7 +35,7 @@ import org.grakovne.lissen.R.drawable
 import org.grakovne.lissen.ui.theme.WidgetBackgroundDark
 import org.grakovne.lissen.ui.theme.WidgetBackgroundLight
 import org.grakovne.lissen.widget.WidgetPlaybackControllerEntryPoint
-import org.grakovne.lissen.widget.calculateInSampleSize
+import org.grakovne.lissen.widget.decodeSampledBitmapFromFile
 import org.grakovne.lissen.widget.decodeSampledBitmapFromResource
 import org.grakovne.lissen.widget.state.PlayerStateWidget
 import timber.log.Timber
@@ -168,24 +165,3 @@ private fun providePlayerCoverLaunchIntent(context: Context): Intent? =
   context.packageManager
     .getLaunchIntentForPackage(context.packageName)
     ?.apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP }
-
-private fun decodeSampledBitmapFromFile(
-  path: String,
-  reqWidthPx: Int,
-  reqHeightPx: Int,
-): Bitmap {
-  val bounds =
-    BitmapFactory.Options().apply {
-      inJustDecodeBounds = true
-    }
-  BitmapFactory.decodeFile(path, bounds)
-
-  val options =
-    BitmapFactory.Options().apply {
-      inSampleSize = calculateInSampleSize(bounds, reqWidthPx, reqHeightPx)
-      inPreferredConfig = Bitmap.Config.RGB_565
-      inDither = true
-    }
-
-  return BitmapFactory.decodeFile(path, options)
-}

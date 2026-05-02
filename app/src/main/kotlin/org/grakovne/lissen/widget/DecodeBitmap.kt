@@ -20,10 +20,29 @@ fun decodeSampledBitmapFromResource(
     BitmapFactory.Options().apply {
       inSampleSize = calculateInSampleSize(bounds, reqWidthPx, reqHeightPx)
       inPreferredConfig = Bitmap.Config.RGB_565
-      inDither = true
     }
 
   return BitmapFactory.decodeResource(context.resources, resId, options)
+}
+
+fun decodeSampledBitmapFromFile(
+  path: String,
+  reqWidthPx: Int,
+  reqHeightPx: Int,
+): Bitmap {
+  val bounds =
+    BitmapFactory.Options().apply {
+      inJustDecodeBounds = true
+    }
+  BitmapFactory.decodeFile(path, bounds)
+  
+  val options =
+    BitmapFactory.Options().apply {
+      inSampleSize = calculateInSampleSize(bounds, reqWidthPx, reqHeightPx)
+      inPreferredConfig = Bitmap.Config.RGB_565
+    }
+  
+  return BitmapFactory.decodeFile(path, options)
 }
 
 fun calculateInSampleSize(
