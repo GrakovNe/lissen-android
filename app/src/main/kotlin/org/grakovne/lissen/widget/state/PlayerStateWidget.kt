@@ -1,16 +1,11 @@
-package org.grakovne.lissen.widget
+package org.grakovne.lissen.widget.state
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.BitmapFactory.decodeResource
-import android.graphics.Canvas
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.graphics.createBitmap
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -50,11 +45,14 @@ import dagger.hilt.android.EntryPointAccessors
 import org.grakovne.lissen.R.drawable
 import org.grakovne.lissen.ui.theme.LightBackground
 import org.grakovne.lissen.ui.theme.MediumBackground
-import org.grakovne.lissen.widget.PlayerWidget.Companion.bookIdKey
+import org.grakovne.lissen.widget.WidgetPlaybackControllerEntryPoint
+import org.grakovne.lissen.widget.bitmapFromFile
+import org.grakovne.lissen.widget.bitmapFromResource
+import org.grakovne.lissen.widget.state.PlayerStateWidget.Companion.bookIdKey
 import timber.log.Timber
 import java.io.File
 
-class PlayerWidget : GlanceAppWidget() {
+class PlayerStateWidget : GlanceAppWidget() {
   override val stateDefinition: GlanceStateDefinition<*> = PreferencesGlanceStateDefinition
 
   override suspend fun provideGlance(
@@ -102,20 +100,19 @@ class PlayerWidget : GlanceAppWidget() {
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
           ) {
-            val original =
-              maybeCoverFile
-                ?.let { BitmapFactory.decodeFile(it.absolutePath) }
-                ?: decodeResource(context.resources, drawable.cover_fallback_png)
+            val targetSizePx = (80f * context.resources.displayMetrics.density).toInt().coerceAtLeast(1)
 
-            val coverImageProvider =
+            val coverBitmap =
               try {
-                val safeBitmap = createBitmap(original.width, original.height, Bitmap.Config.RGB_565)
-                val canvas = Canvas(safeBitmap)
-                canvas.drawBitmap(original, 0f, 0f, null)
-                ImageProvider(safeBitmap)
+                maybeCoverFile
+                  ?.takeIf { it.exists() }
+                  ?.let { bitmapFromFile(it.absolutePath, targetSizePx, targetSizePx) }
+                  ?: bitmapFromResource(context, drawable.cover_fallback_png, targetSizePx, targetSizePx)
               } catch (e: Exception) {
-                ImageProvider(drawable.cover_fallback_png)
+                bitmapFromResource(context, drawable.cover_fallback_png, targetSizePx, targetSizePx)
               }
+
+            val coverImageProvider = ImageProvider(coverBitmap)
 
             Image(
               contentScale = ContentScale.FillBounds,
@@ -173,7 +170,7 @@ class PlayerWidget : GlanceAppWidget() {
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
           ) {
-            WidgetControlButton(
+            StateWidgetControlButton(
               size = 36.dp,
               icon = ImageProvider(R.drawable.media3_icon_previous),
               contentColor = GlanceTheme.colors.onBackground,
@@ -184,7 +181,7 @@ class PlayerWidget : GlanceAppWidget() {
               modifier = GlanceModifier.defaultWeight(),
             )
 
-            WidgetControlButton(
+            StateWidgetControlButton(
               size = 36.dp,
               icon = ImageProvider(rewindIcon),
               contentColor = GlanceTheme.colors.onBackground,
@@ -195,7 +192,7 @@ class PlayerWidget : GlanceAppWidget() {
               modifier = GlanceModifier.defaultWeight(),
             )
 
-            WidgetControlButton(
+            StateWidgetControlButton(
               icon =
                 if (isPlaying) {
                   ImageProvider(R.drawable.media3_icon_pause)
@@ -211,7 +208,7 @@ class PlayerWidget : GlanceAppWidget() {
               modifier = GlanceModifier.defaultWeight(),
             )
 
-            WidgetControlButton(
+            StateWidgetControlButton(
               icon = ImageProvider(forwardIcon),
               size = 36.dp,
               contentColor = GlanceTheme.colors.onBackground,
@@ -222,7 +219,7 @@ class PlayerWidget : GlanceAppWidget() {
               modifier = GlanceModifier.defaultWeight(),
             )
 
-            WidgetControlButton(
+            StateWidgetControlButton(
               icon = ImageProvider(R.drawable.media3_icon_next),
               size = 36.dp,
               contentColor = GlanceTheme.colors.onBackground,
@@ -332,7 +329,7 @@ private fun provideAppLaunchIntent(context: Context): Intent? =
 private suspend fun safelyRun(
   playingItemId: String,
   context: Context,
-  action: (WidgetPlaybackController) -> Unit,
+  action: (org.grakovne.lissen.widget.WidgetPlaybackController) -> Unit,
 ) {
   try {
     val playbackController =
