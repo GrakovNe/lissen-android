@@ -151,7 +151,7 @@
     <string name="location_permission_request_hint">التطبيق يحتاج صلاحيات الموقع للتعرف على اسم شبكة الـWiFi</string>
     <string name="permission_request_grant_button">السماح</string>
     <string name="settings_screen_clear_thumbnail_cache_title">مسح ذاكرة التخزين المؤقتة للصور المصغرة</string>
-    <string name="settings_screen_clear_thumbnail_cache_hint">إزالة الصور المصغّرة المخزنة لتحرير المساحة.</string>
+    <string name="settings_screen_clear_thumbnail_cache_hint">إزالة الصور المصغّرة المخزّنة مؤقتاً لتحرير المساحة.</string>
     <string name="settings_screen_clear_thumbnail_cache_success_toast">تم مسح ذاكرة الصور المصغّرة</string>
     <string name="settings_screen_delay_autodownload_title">تأخير التنزيل التلقائي</string>
     <string name="settings_screen_delay_autodownload_description">انتظر وقتاً قصيراً قبل البدء بالتنزيل</string>
@@ -183,4 +183,13 @@
     <string name="connection_settings_title">تفضيلات الاتصال</string>
     <string name="connection_settings_description">تحكم في عنوان الخادم، البروكسي، وإعدادات SSL</string>
     <string name="disconnect_from_server_title">قطع الاتصال عن الخادم</string>
+    <string name="settings_screen_client_cert_title">شهادة العميل</string>
+    <string name="settings_screen_client_cert_hint">استخدم شهادة العميل ل mTLS</string>
+    <string name="settings_screen_client_cert_empty_state_title">لم يتم تحديد شهادة العميل</string>
+    `<string name="settings_screen_client_cert_install_help_description">قم باستيراد ملف الشهادة عبر قسم الأمان أو VPN في إعدادات نظام جهازك</string>`
+    <string name="settings_screen_client_cert_selected_label">الشهادة المختارة</string>
+    <string name="settings_screen_client_cert_choose_action">اختر شهادة</string>
+    <string name="settings_screen_client_cert_remove_action">إزالة الشهادة</string>
+    <string name="settings_screen_client_cert_picker_cancelled_toast">mTLS غير موجود</string>
+    <string name="login_error_client_cert_error">تم رفض mTLS من قِبَل الخادم</string>
 </resources>
