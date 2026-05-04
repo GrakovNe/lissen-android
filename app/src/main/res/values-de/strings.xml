@@ -149,7 +149,7 @@
     <string name="location_permission_request_hint">Die App benötigt Zugriff auf den Standort, um den WLAN-Namen zu erkennen</string>
     <string name="permission_request_grant_button">Erlauben</string>
     <string name="settings_screen_clear_thumbnail_cache_title">Vorschaubild-Cache löschen</string>
-    <string name="settings_screen_clear_thumbnail_cache_hint">Vorschaubild-Cache löschen, um Speicherplatz freizugeben.</string>
+    <string name="settings_screen_clear_thumbnail_cache_hint">Vorschaubild-Cache löschen, um Speicherplatz freizugeben</string>
     <string name="settings_screen_delay_autodownload_title">Verzögere automatisches Herunterladen</string>
     <string name="settings_screen_delay_autodownload_description">Warte eine kurze Zeit bevor der Download startet</string>
     <string name="settings_screen_connection_type">Verbindungstyp</string>
