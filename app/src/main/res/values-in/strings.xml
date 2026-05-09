@@ -153,7 +153,7 @@
     <string name="location_permission_request_hint">Akses lokasi diperlukan agar dapat mendeteksi nama Wi-Fi</string>
     <string name="permission_request_grant_button">Izinkan</string>
     <string name="settings_screen_clear_thumbnail_cache_title">Hapus cache thumbnail</string>
-    <string name="settings_screen_clear_thumbnail_cache_hint">Hapus cache thumbnail untuk membebaskan ruang.</string>
+    <string name="settings_screen_clear_thumbnail_cache_hint">Hapus cache thumbnail untuk membebaskan ruang</string>
     <string name="settings_screen_clear_thumbnail_cache_success_toast">Cache thumbnail berhasil dibersihkan</string>
     <string name="settings_screen_delay_autodownload_title">Tunda unduhan otomatis</string>
     <string name="settings_screen_delay_autodownload_description">Jeda singkat sebelum memulai unduhan</string>
@@ -179,4 +179,13 @@
     <string name="connection_settings_description">Kelola alamat server, proksi, dan pengaturan SSL</string>
     <string name="connection_settings_title">Preferensi koneksi</string>
     <string name="disconnect_from_server_title">Putus koneksi server</string>
+    <string name="settings_screen_client_cert_hint">Gunakan sertifikat klien untuk mTLS</string>
+    <string name="settings_screen_client_cert_empty_state_title">Tidak ada sertifikat klien yang dipilih</string>
+    `<string name="settings_screen_client_cert_install_help_description">Impor file sertifikat melalui bagian keamanan atau VPN di pengaturan sistem perangkat kamu</string>`
+    <string name="settings_screen_client_cert_selected_label">Sertifikat terpilih</string>
+    <string name="settings_screen_client_cert_choose_action">Pilih sertifikat</string>
+    <string name="settings_screen_client_cert_remove_action">Hapus sertifikat</string>
+    <string name="settings_screen_client_cert_picker_cancelled_toast">mTLS tidak ditemukan</string>
+    <string name="login_error_client_cert_error">mTLS ditolak oleh server</string>
+    <string name="settings_screen_client_cert_title">Sertifikat klien</string>
 </resources>
