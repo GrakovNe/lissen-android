@@ -28,17 +28,6 @@ ksp {
   arg("room.schemaLocation", "$projectDir/schemas")
 }
 
-fun gitCommitHash(): String {
-  return try {
-    val process = ProcessBuilder("git", "rev-parse", "--short", "HEAD")
-      .redirectErrorStream(true)
-      .start()
-    process.inputStream.bufferedReader().use { it.readText().trim() }
-  } catch (e: Exception) {
-    "stable"
-  }
-}
-
 android {
   namespace = "org.grakovne.lissen"
   compileSdk = 36
@@ -48,15 +37,11 @@ android {
   }
   
   defaultConfig {
-    val commitHash = gitCommitHash()
-    
     applicationId = "org.grakovne.lissen"
     minSdk = 28
     targetSdk = 36
-    versionCode = 10911
-    versionName = "1.9.11-$commitHash"
-    
-    buildConfigField("String", "GIT_HASH", "\"$commitHash\"")
+    versionCode = 10912
+    versionName = "1.9.12-release"
     
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     
