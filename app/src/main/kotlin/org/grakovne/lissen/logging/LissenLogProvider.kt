@@ -21,6 +21,6 @@ class LissenLogProvider
     fun provideLoggingTree(): FileLoggingTree = tree
 
     companion object {
-      private const val FILE_LOG_NAME = "app.log"
+      private const val FILE_LOG_NAME = "lissen_log.txt"
     }
   }
