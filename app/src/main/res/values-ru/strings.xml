@@ -190,4 +190,7 @@
     <string name="settings_screen_client_cert_remove_action">Отвязать сертификат</string>
     <string name="settings_screen_client_cert_picker_cancelled_toast">mTLS не найден</string>
     <string name="login_error_client_cert_error">mTLS не прошел проверку на сервере</string>
+    <string name="export_logs_title">Выгрузить логи</string>
+    <string name="export_logs_description">Поделиться данными приложения для отладки</string>
+    <string name="export_logs_no_logs">Файл с логами не найден</string>
 </resources>
