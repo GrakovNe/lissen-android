@@ -188,4 +188,7 @@
     <string name="settings_screen_client_cert_remove_action">移除证书</string>
     <string name="settings_screen_client_cert_picker_cancelled_toast">未找到 mTLS</string>
     <string name="login_error_client_cert_error">服务器拒绝 mTLS 认证</string>
+    <string name="export_logs_title">导出日志</string>
+    <string name="export_logs_description">分享诊断数据以便进行故障排查</string>
+    <string name="export_logs_no_logs">没有可用日志</string>
 </resources>
