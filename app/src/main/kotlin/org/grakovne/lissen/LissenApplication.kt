@@ -12,6 +12,7 @@ import org.acra.ktx.initAcra
 import org.acra.security.TLS
 import org.acra.sender.HttpSender
 import org.grakovne.lissen.common.RunningComponent
+import org.grakovne.lissen.logging.LissenLogProvider
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -19,6 +20,9 @@ import javax.inject.Inject
 class LissenApplication : Application() {
   @Inject
   lateinit var runningComponents: Set<@JvmSuppressWildcards RunningComponent>
+
+  @Inject
+  lateinit var lissenLogProvider: LissenLogProvider
 
   override fun attachBaseContext(base: Context) {
     super.attachBaseContext(base)
@@ -32,16 +36,28 @@ class LissenApplication : Application() {
     super.onCreate()
     appContext = applicationContext
 
-    if (BuildConfig.DEBUG) {
-      Timber.plant(Timber.DebugTree())
-    }
+    initLogging()
+    initRunningComponents()
+  }
 
+  private fun initRunningComponents() {
     runningComponents.forEach {
       try {
         it.onCreate()
       } catch (ex: Exception) {
         Timber.e("Unable to register Running component due to: ${ex.message}")
       }
+    }
+  }
+
+  private fun initLogging() {
+    if (BuildConfig.DEBUG) {
+      Timber.plant(Timber.DebugTree())
+    }
+
+    try {
+      Timber.plant(lissenLogProvider.provideLoggingTree())
+    } catch (_: Exception) {
     }
   }
 

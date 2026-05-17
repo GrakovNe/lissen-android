@@ -21,7 +21,9 @@ import org.grakovne.lissen.lib.domain.connection.LocalUrl
 import org.grakovne.lissen.lib.domain.connection.LocalUrl.Companion.clean
 import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader.Companion.clean
+import org.grakovne.lissen.logging.LissenLogProvider
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import java.io.File
 import javax.inject.Inject
 
 @HiltViewModel
@@ -30,6 +32,7 @@ class SettingsViewModel
   constructor(
     private val mediaChannel: LissenMediaProvider,
     private val preferences: LissenSharedPreferences,
+    private val logProvider: LissenLogProvider,
   ) : ViewModel() {
     private val _host: MutableLiveData<Host> = MutableLiveData(preferences.getHost()?.let { Host.external(it) })
     val host = _host
@@ -94,6 +97,12 @@ class SettingsViewModel
 
     private val _autoDownloadDelayed = MutableLiveData(preferences.getAutoDownloadDelayed())
     val autoDownloadDelayed = _autoDownloadDelayed
+
+    fun provideLogFileOrNull(): File? {
+      val logFile = logProvider.profileLogFile()
+
+      return logFile.takeIf { it.exists() && it.length() > 0L }
+    }
 
     fun preferCrashReporting(value: Boolean) {
       _crashReporting.postValue(value)
