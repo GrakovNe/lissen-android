@@ -35,15 +35,12 @@ class LissenApplication : Application() {
   override fun onCreate() {
     super.onCreate()
     appContext = applicationContext
-
-    try {
-      Timber.plant(lissenLogProvider.provideLoggingTree())
-    } catch (ex: Exception) {
-      Timber.plant(Timber.DebugTree())
-
-      Timber.w("Unable provide file-based logger, using debug logged instead: $ex")
-    }
-
+    
+    initLogging()
+    initRunningComponents()
+  }
+  
+  private fun initRunningComponents() {
     runningComponents.forEach {
       try {
         it.onCreate()
@@ -52,7 +49,21 @@ class LissenApplication : Application() {
       }
     }
   }
-
+  
+  private fun initLogging() {
+    if (BuildConfig.DEBUG) {
+      Timber.plant(Timber.DebugTree())
+    } else {
+      try {
+        Timber.plant(lissenLogProvider.provideLoggingTree())
+      } catch (ex: Exception) {
+        Timber.plant(Timber.DebugTree())
+        
+        Timber.w("Unable provide file-based logger, using debug logged instead: $ex")
+      }
+    }
+  }
+  
   private fun initCrashReporting() {
     initAcra {
       ACRA.DEV_LOGGING = true

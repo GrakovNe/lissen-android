@@ -1,5 +1,6 @@
 package org.grakovne.lissen.ui.screens.settings.advanced
 
+import android.content.Intent
 import android.os.Build
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
@@ -34,6 +35,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
@@ -144,6 +146,38 @@ fun AdvancedSettingsComposable(
                   context.getString(R.string.settings_screen_clear_thumbnail_cache_success_toast),
                   Toast.LENGTH_SHORT,
                 ).show()
+            },
+          )
+
+          AdvancedSettingsSimpleItemComposable(
+            title = "Export logs",
+            description = "Share diagnostic data for troubleshooting",
+            onclick = {
+              val logFile = viewModel.provideLogFileOrNull()
+
+              if (logFile == null) {
+                Toast
+                  .makeText(context, "No logs available", Toast.LENGTH_SHORT)
+                  .show()
+                return@AdvancedSettingsSimpleItemComposable
+              }
+
+              val uri =
+                FileProvider.getUriForFile(
+                  context,
+                  "${context.packageName}.fileprovider",
+                  logFile,
+                )
+
+              val shareIntent =
+                Intent(Intent.ACTION_SEND).apply {
+                  type = "text/plain"
+                  putExtra(Intent.EXTRA_STREAM, uri)
+                  putExtra(Intent.EXTRA_SUBJECT, "Application logs")
+                  addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+
+              context.startActivity(Intent.createChooser(shareIntent, "Export logs"))
             },
           )
         }
