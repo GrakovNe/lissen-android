@@ -190,4 +190,7 @@
     <string name="settings_screen_client_cert_remove_action">Usuń certyfikat</string>
     <string name="settings_screen_client_cert_picker_cancelled_toast">mTLS nie znaleziono</string>
     <string name="login_error_client_cert_error">mTLS odrzucony przez serwer</string>
+    <string name="export_logs_no_logs">Brak logów</string>
+    <string name="export_logs_title">Eksportuj logi</string>
+    <string name="export_logs_description">Udostępnij dane diagnostyczne dla łatwiejszej naprawy błędów</string>
 </resources>
