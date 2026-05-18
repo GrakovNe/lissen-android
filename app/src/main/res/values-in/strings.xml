@@ -188,4 +188,7 @@
     <string name="settings_screen_client_cert_picker_cancelled_toast">mTLS tidak ditemukan</string>
     <string name="login_error_client_cert_error">mTLS ditolak oleh server</string>
     <string name="settings_screen_client_cert_title">Sertifikat klien</string>
+    <string name="export_logs_no_logs">Tidak ada log yang tersedia</string>
+    <string name="export_logs_title">Ekspor log</string>
+    <string name="export_logs_description">Bagikan data diagnostik untuk perbaikan</string>
 </resources>
