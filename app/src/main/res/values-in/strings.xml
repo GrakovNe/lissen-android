@@ -55,7 +55,6 @@
     <string name="timer_option_after_current_chapter">Saat segmen berakhir</string>
     <string name="timer_option_after_current_episode">Saat episode berakhir</string>
     <plurals name="timer_option_after_time">
-        <item quantity="one">%d menit</item>
         <item quantity="other">%d menit</item>
     </plurals>
     <string name="timer_option_disable_timer">Nonaktifkan Timer</string>
@@ -191,4 +190,5 @@
     <string name="export_logs_no_logs">Tidak ada log yang tersedia</string>
     <string name="export_logs_title">Ekspor log</string>
     <string name="export_logs_description">Bagikan data diagnostik untuk perbaikan</string>
+    <string name="app_name" translatable="false"></string>
 </resources>
