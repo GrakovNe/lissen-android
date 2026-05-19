@@ -191,4 +191,5 @@
     <string name="export_logs_title">Esporta log</string>
     <string name="export_logs_description">Condividi dati diagnostici per la risoluzione dei problemi</string>
     <string name="export_logs_no_logs">Nessun log disponibile</string>
+    <string name="app_name" translatable="false"></string>
 </resources>
