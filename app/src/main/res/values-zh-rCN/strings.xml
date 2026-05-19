@@ -28,7 +28,6 @@
     <string name="timer_option_disable_timer">关闭定时</string>
     <string name="timer_title">睡眠定时</string>
     <plurals name="timer_option_after_time">
-        <item quantity="one">%d 分钟</item>
         <item quantity="other">%d 分钟</item>
     </plurals>
     <string name="chapter_search_hint">按章节搜索</string>
@@ -191,4 +190,5 @@
     <string name="export_logs_title">导出日志</string>
     <string name="export_logs_description">分享诊断数据以便进行故障排查</string>
     <string name="export_logs_no_logs">没有可用日志</string>
+    <string name="app_name" translatable="false"></string>
 </resources>
