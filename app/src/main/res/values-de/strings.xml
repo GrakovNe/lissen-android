@@ -191,4 +191,5 @@
     <string name="export_logs_no_logs">Keine Logs verfügbar</string>
     <string name="export_logs_title">Protokolle exportieren</string>
     <string name="export_logs_description">Diagnosedaten zur Fehlerbehebung freigeben</string>
+    <string name="app_name" translatable="false"></string>
 </resources>
