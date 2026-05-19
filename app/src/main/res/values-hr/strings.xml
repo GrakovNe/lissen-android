@@ -190,4 +190,7 @@
     <string name="settings_screen_client_cert_remove_action">Ukloni certifikat</string>
     <string name="settings_screen_client_cert_picker_cancelled_toast">mTLS nije pronađen</string>
     <string name="login_error_client_cert_error">poslužitelj je odbio mTLS</string>
+    <string name="export_logs_description"></string>
+    <string name="export_logs_title"></string>
+    <string name="export_logs_no_logs"></string>
 </resources>
