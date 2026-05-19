@@ -125,15 +125,13 @@ fun ClientCertificateSettingsScreen(onBack: () -> Unit) {
               ) {
                 Row(
                   horizontalArrangement = Arrangement.spacedBy(12.dp),
-                  verticalAlignment = Alignment.Top,
+                  verticalAlignment = Alignment.CenterVertically,
                 ) {
                   Icon(
                     imageVector = Icons.Outlined.Security,
                     contentDescription = null,
                     tint = colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp),
                   )
-
                   Column(
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                     modifier = Modifier.weight(1f),
