@@ -51,7 +51,7 @@
         <item quantity="one">%d минута</item>
         <item quantity="few">%d минуты</item>
         <item quantity="many">%d минут</item>
-        <item quantity="other">%d мин</item>
+        <item quantity="other">%d минут</item>
     </plurals>
     <string name="timer_option_disabled">Выключен</string>
     <string name="timer_option_disable_timer">Отключить таймер</string>
@@ -184,7 +184,7 @@
     <string name="settings_screen_client_cert_title">Клиентский сертификат</string>
     <string name="settings_screen_client_cert_hint">Укажите mTLS сертификат для подключения</string>
     <string name="settings_screen_client_cert_empty_state_title">Сертификат не указан</string>
-    `<string name="settings_screen_client_cert_install_help_description">Импортируйте файл сертификата в разделе "Защита и безопасность" вашего Android</string>`
+    `<string name="settings_screen_client_cert_install_help_description">Импортируйте файл сертификата в разделе Защита и безопасность вашего Android</string>`
     <string name="settings_screen_client_cert_selected_label">Используемый сертификат</string>
     <string name="settings_screen_client_cert_choose_action">Привязать сертификат</string>
     <string name="settings_screen_client_cert_remove_action">Отвязать сертификат</string>
@@ -193,4 +193,5 @@
     <string name="export_logs_title">Экспортировать логи</string>
     <string name="export_logs_description">Выгрузить данные приложения для отладки</string>
     <string name="export_logs_no_logs">Файл с логами не найден</string>
+    <string name="app_name" translatable="false"></string>
 </resources>
