@@ -193,5 +193,4 @@
     <string name="export_logs_title">Экспортировать логи</string>
     <string name="export_logs_description">Выгрузить данные приложения для отладки</string>
     <string name="export_logs_no_logs">Файл с логами не найден</string>
-    <string name="app_name" translatable="false"></string>
 </resources>

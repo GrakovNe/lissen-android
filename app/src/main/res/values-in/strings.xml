@@ -190,5 +190,4 @@
     <string name="export_logs_no_logs">Tidak ada log yang tersedia</string>
     <string name="export_logs_title">Ekspor log</string>
     <string name="export_logs_description">Bagikan data diagnostik untuk perbaikan</string>
-    <string name="app_name" translatable="false"></string>
 </resources>
