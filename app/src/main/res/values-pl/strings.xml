@@ -193,5 +193,4 @@
     <string name="export_logs_no_logs">Brak logów</string>
     <string name="export_logs_title">Eksportuj logi</string>
     <string name="export_logs_description">Udostępnij dane diagnostyczne dla łatwiejszej naprawy błędów</string>
-    <string name="app_name" translatable="false"></string>
 </resources>

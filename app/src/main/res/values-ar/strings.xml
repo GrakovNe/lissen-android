@@ -192,8 +192,4 @@
     <string name="settings_screen_client_cert_remove_action">إزالة الشهادة</string>
     <string name="settings_screen_client_cert_picker_cancelled_toast">mTLS غير موجود</string>
     <string name="login_error_client_cert_error">تم رفض mTLS من قِبَل الخادم</string>
-    <string name="export_logs_description"></string>
-    <string name="export_logs_title"></string>
-    <string name="app_name" translatable="false"></string>
-    <string name="export_logs_no_logs"></string>
 </resources>
