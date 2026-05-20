@@ -46,14 +46,14 @@ class BookResponseConverter
               PlayingChapter(
                 available = true,
                 start = accDuration,
-                end = accDuration + file.duration,
+                end = accDuration + (file.duration ?: 0.0),
                 title = file.metaTags?.tagTitle ?: file.metadata.filename.removeSuffix(file.metadata.ext),
-                duration = file.duration,
+                duration = file.duration ?: 0.0,
                 id = file.ino,
                 podcastEpisodeState = null,
               ),
             )
-            accDuration + file.duration to chapters
+            accDuration + (file.duration ?: 0.0) to chapters
           }?.second
           ?: emptyList()
       }
@@ -80,7 +80,7 @@ class BookResponseConverter
                   it.metaTags
                     ?.tagTitle
                     ?: (it.metadata.filename.removeSuffix(it.metadata.ext)),
-                duration = it.duration,
+                duration = it.duration ?: 0.0,
                 mimeType = it.mimeType,
                 size = it.metadata.size,
               )

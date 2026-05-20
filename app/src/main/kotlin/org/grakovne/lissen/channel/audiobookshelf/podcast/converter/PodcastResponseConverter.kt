@@ -33,7 +33,7 @@ class PodcastResponseConverter
           ?.let { progress ->
             orderedEpisodes
               ?.takeWhile { it.id != progress.episodeId }
-              ?.sumOf { it.audioFile.duration }
+              ?.sumOf { it.audioFile.duration ?: 0.0 }
               ?.plus(progress.currentTime)
           }
 
@@ -54,9 +54,9 @@ class PodcastResponseConverter
             chapters.add(
               PlayingChapter(
                 start = accDuration,
-                end = accDuration + episode.audioFile.duration,
+                end = accDuration + (episode.audioFile.duration ?: 0.0),
                 title = episode.title,
-                duration = episode.audioFile.duration,
+                duration = episode.audioFile.duration ?: 0.0,
                 id = episode.id,
                 available = true,
                 podcastEpisodeState =
@@ -65,7 +65,7 @@ class PodcastResponseConverter
                     ?.let { hasFinished(it) },
               ),
             )
-            accDuration + episode.audioFile.duration to chapters
+            accDuration + (episode.audioFile.duration ?: 0.0) to chapters
           }?.second
           ?: emptyList()
 
@@ -83,7 +83,7 @@ class PodcastResponseConverter
               BookFile(
                 id = it.audioFile.ino,
                 name = it.title,
-                duration = it.audioFile.duration,
+                duration = it.audioFile.duration ?: 0.0,
                 mimeType = it.audioFile.mimeType,
                 size = it.audioFile.metadata.size,
               )
