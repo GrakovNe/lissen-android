@@ -5,7 +5,7 @@ plugins {
   alias(libs.plugins.compose.compiler)
   
   id("com.google.dagger.hilt.android")
-  id("org.jmailen.kotlinter") version "5.4.2"
+  id("org.jmailen.kotlinter") version "5.5.0"
   id("com.google.devtools.ksp")
   id("kotlin-parcelize")
 }
@@ -30,7 +30,7 @@ ksp {
 
 android {
   namespace = "org.grakovne.lissen"
-  compileSdk = 36
+  compileSdk = 37
   
   lint {
     disable.add("MissingTranslation")
@@ -39,9 +39,9 @@ android {
   defaultConfig {
     applicationId = "org.grakovne.lissen"
     minSdk = 28
-    targetSdk = 36
-    versionCode = 10913
-    versionName = "1.9.13-release"
+    targetSdk = 37
+    versionCode = 10914
+    versionName = "1.9.14-release"
     
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     
