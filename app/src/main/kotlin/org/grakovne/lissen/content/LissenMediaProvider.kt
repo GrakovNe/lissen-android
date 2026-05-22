@@ -40,20 +40,16 @@ class LissenMediaProvider
     suspend fun dropBookmark(bookmark: Bookmark) = cachedBookmarkProvider.dropBookmark(bookmark = bookmark)
 
     suspend fun createBookmark(
+      title: String,
       libraryItemId: String,
-      chapterPosition: Double,
       totalPosition: Double,
-    ): Bookmark? {
-      val playingItem = preferences.getPlayingItem() ?: return null
-
-      return cachedBookmarkProvider
+    ): Bookmark =
+      cachedBookmarkProvider
         .createBookmark(
-          chapterTime = chapterPosition,
+          title = title,
           libraryItemId = libraryItemId,
           totalTime = totalPosition,
-          currentChapter = playingItem.chapters[calculateChapterIndex(playingItem, totalPosition)].title,
         )
-    }
 
     suspend fun provideBookmarks(playingItemId: String): List<Bookmark> =
       cachedBookmarkProvider

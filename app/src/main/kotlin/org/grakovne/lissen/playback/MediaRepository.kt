@@ -28,6 +28,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.grakovne.lissen.common.buildBookmarkTitle
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.lib.domain.Bookmark
 import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
@@ -573,16 +574,24 @@ class MediaRepository
       )
     }
 
-    suspend fun createBookmark() {
+    suspend fun createBookmark(title: String? = null) {
       val playingBook = _playingBook.value ?: return
-      val chapterPosition = _currentChapterPosition.value ?: return
       val totalPosition = _totalPosition.value ?: return
+
+      val currentChapter = playingBook.chapters[calculateChapterIndex(playingBook, totalPosition)].title
+      val chapterPosition = _currentChapterPosition.value ?: return
+
+      val bookmarkTitle =
+        when (title) {
+          null -> buildBookmarkTitle(currentChapter, chapterPosition)
+          else -> title
+        }
 
       mediaChannel
         .createBookmark(
           libraryItemId = playingBook.id,
-          chapterPosition = chapterPosition,
           totalPosition = totalPosition,
+          title = bookmarkTitle,
         )
 
       _bookmarks.value = mediaChannel.provideBookmarks(playingBook.id)
