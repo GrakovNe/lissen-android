@@ -153,6 +153,7 @@ fun BookmarksComposable(
             editableTimeFocusRequester = createBookmarkFocusRequester,
             onEditableTimeValueChange = { createBookmarkField = it },
             onEditableTimeSubmit = { submitBookmark() },
+            showRipple = false,
             onClick = { withHaptic(view = view) { startEditing() } },
             trailing = {
               IconButton(onClick = { withHaptic(view = view) { submitBookmark() } }) {
@@ -212,11 +213,12 @@ private fun BookmarkRow(
   editableTimeFocusRequester: FocusRequester? = null,
   onEditableTimeValueChange: (TextFieldValue) -> Unit = {},
   onEditableTimeSubmit: () -> Unit = {},
+  showRipple: Boolean = true,
 ) {
   val view: View = LocalView.current
   val enabled = onClick != null
   val interactionSource = remember { MutableInteractionSource() }
-  val indication = if (enabled) LocalIndication.current else null
+  val indication = if (enabled && showRipple) LocalIndication.current else null
 
   Row(
     modifier =
