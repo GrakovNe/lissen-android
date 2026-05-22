@@ -148,7 +148,7 @@
     <string name="local_url_hint_ssid_name">Naziv WiFi mreže</string>
     <string name="permission_request_grant_button">Dozvoli</string>
     <string name="settings_screen_clear_thumbnail_cache_title">Izbriši predmemoriju sličica</string>
-    <string name="settings_screen_clear_thumbnail_cache_hint">Uklonite predmemorirane sličice kako biste oslobodili prostor.</string>
+    <string name="settings_screen_clear_thumbnail_cache_hint">Uklonite predmemorirane sličice kako biste oslobodili prostor</string>
     <string name="settings_screen_clear_thumbnail_cache_success_toast">Predmemorija sličica izbrisana</string>
     <string name="settings_screen_delay_autodownload_title">Odgodi automatsko preuzimanje</string>
     <string name="settings_screen_delay_autodownload_description">Kratko pričekaj prije početka preuzimanja</string>
@@ -190,4 +190,7 @@
     <string name="settings_screen_client_cert_remove_action">Ukloni certifikat</string>
     <string name="settings_screen_client_cert_picker_cancelled_toast">mTLS nije pronađen</string>
     <string name="login_error_client_cert_error">poslužitelj je odbio mTLS</string>
+    <string name="export_logs_title">Izvoz zapisnika</string>
+    <string name="export_logs_description">Dijeljenje dijagnostičkih podataka za rješavanje problema</string>
+    <string name="export_logs_no_logs">Nema dostupnih zapisnika</string>
 </resources>
