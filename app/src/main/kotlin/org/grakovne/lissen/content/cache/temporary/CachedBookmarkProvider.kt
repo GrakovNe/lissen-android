@@ -99,15 +99,14 @@ class CachedBookmarkProvider
     }
 
     suspend fun createBookmark(
-      chapterTime: Double,
       totalTime: Double,
       libraryItemId: String,
-      currentChapter: String,
+      title: String,
     ): Bookmark {
       val localDraft =
         Bookmark(
           libraryItemId = libraryItemId,
-          title = buildBookmarkTitle(currentChapter, chapterTime),
+          title = title,
           totalPosition = totalTime,
           createdAt = System.currentTimeMillis(),
           syncState = BookmarkSyncState.PENDING_CREATE,

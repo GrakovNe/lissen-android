@@ -52,9 +52,9 @@ class PlayerViewModel
 
     val bookmarks = mediaRepository.bookmarks
 
-    fun createBookmark() {
+    fun createBookmark(title: String? = null) {
       viewModelScope.launch {
-        mediaRepository.createBookmark()
+        mediaRepository.createBookmark(title)
       }
     }
 
