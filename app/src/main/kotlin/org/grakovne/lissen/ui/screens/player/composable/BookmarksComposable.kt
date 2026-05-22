@@ -81,20 +81,6 @@ fun BookmarksComposable(
       ?.getOrNull(currentTrackIndex)
       ?.title
 
-  val defaultBookmarkTitle =
-    remember(currentChapterTitle, currentPosition) {
-      val chapterPosition = currentPosition
-
-      if (currentChapterTitle != null && chapterPosition != null) {
-        buildBookmarkTitle(
-          currentChapterTitle = currentChapterTitle,
-          currentChapterPosition = chapterPosition,
-        )
-      } else {
-        ""
-      }
-    }
-
   LaunchedEffect(isEditingCreateBookmark) {
     if (isEditingCreateBookmark) {
       createBookmarkFocusRequester.requestFocus()
@@ -103,11 +89,7 @@ fun BookmarksComposable(
   }
 
   fun startEditing() {
-    createBookmarkField =
-      TextFieldValue(
-        text = defaultBookmarkTitle,
-        selection = TextRange(defaultBookmarkTitle.length),
-      )
+    createBookmarkField = TextFieldValue(text = "", selection = TextRange(0))
     isEditingCreateBookmark = true
   }
 
@@ -171,11 +153,9 @@ fun BookmarksComposable(
             editableTimeFocusRequester = createBookmarkFocusRequester,
             onEditableTimeValueChange = { createBookmarkField = it },
             onEditableTimeSubmit = { submitBookmark() },
-            onClick = {
-              withHaptic(view = view) { startEditing() }
-            },
+            onClick = { withHaptic(view = view) { startEditing() } },
             trailing = {
-              IconButton(onClick = { withHaptic(view = view) { startEditing() } }) {
+              IconButton(onClick = { withHaptic(view = view) { submitBookmark() } }) {
                 Icon(
                   imageVector = Icons.Outlined.BookmarkAdd,
                   contentDescription = null,
