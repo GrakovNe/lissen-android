@@ -43,7 +43,7 @@ import javax.inject.Singleton
 class AudiobookshelfAuthService
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val loginResponseConverter: LoginResponseConverter,
     private val requestHeadersProvider: RequestHeadersProvider,
     private val preferences: LissenSharedPreferences,

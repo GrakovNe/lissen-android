@@ -39,7 +39,7 @@ import javax.inject.Inject
 class CachingModelView
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val localCacheRepository: LocalCacheRepository,
     private val contentCachingProgress: ContentCachingProgress,
     private val contentCachingManager: ContentCachingManager,

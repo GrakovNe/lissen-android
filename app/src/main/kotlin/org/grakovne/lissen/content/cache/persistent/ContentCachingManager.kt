@@ -31,7 +31,7 @@ import kotlin.coroutines.coroutineContext
 class ContentCachingManager
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val bookRepository: CachedBookRepository,
     private val libraryRepository: CachedLibraryRepository,
     private val properties: OfflineBookStorageProperties,

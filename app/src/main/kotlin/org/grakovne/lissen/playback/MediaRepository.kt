@@ -50,7 +50,7 @@ import javax.inject.Singleton
 class MediaRepository
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val preferences: LissenSharedPreferences,
     private val mediaChannel: LissenMediaProvider,
     private val eventBus: PlaybackEventBus,

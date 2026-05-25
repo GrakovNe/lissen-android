@@ -84,7 +84,7 @@ class MediaLibraryTree
   @Inject
   @OptIn(UnstableApi::class)
   constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val preferences: LissenSharedPreferences,
     private val localCacheRepository: LocalCacheRepository,
     private val lissenMediaProvider: LissenMediaProvider,

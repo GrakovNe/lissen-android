@@ -16,7 +16,7 @@ import kotlin.math.roundToInt
 class ContentCachingNotificationService
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
   ) {
     private val service = context.getSystemService(NotificationManager::class.java)
 

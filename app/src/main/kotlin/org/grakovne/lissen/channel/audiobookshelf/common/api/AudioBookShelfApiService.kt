@@ -23,7 +23,7 @@ import javax.inject.Singleton
 class AudioBookShelfApiService
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val hostProvider: AudiobookshelfHostProvider,
     private val preferences: LissenSharedPreferences,
     private val requestHeadersProvider: RequestHeadersProvider,

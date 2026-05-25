@@ -34,7 +34,7 @@ import javax.inject.Singleton
 class ContentAutoCachingService
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val mediaRepository: MediaRepository,
     private val mediaProvider: LissenMediaProvider,
     private val sharedPreferences: LissenSharedPreferences,
