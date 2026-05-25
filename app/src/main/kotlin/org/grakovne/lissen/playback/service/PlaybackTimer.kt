@@ -10,6 +10,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.lib.domain.TimerOption
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -44,6 +45,7 @@ class PlaybackTimer
       delayInSeconds: Double,
       option: TimerOption,
     ) {
+      Timber.d("Starting timer: ${delayInSeconds.toInt()}s, option=$option")
       stopTimer()
 
       val totalMillis = (delayInSeconds * 1000).toLong()
@@ -57,6 +59,7 @@ class PlaybackTimer
           intervalMillis = 500L,
           onTickSeconds = { seconds -> broadcastRemaining(seconds) },
           onFinished = {
+            Timber.d("Timer expired, broadcasting")
             localBroadcastManager.sendBroadcast(Intent(PlaybackService.TIMER_EXPIRED))
             stopTimer()
           },
@@ -80,6 +83,7 @@ class PlaybackTimer
     }
 
     fun stopTimer() {
+      Timber.d("Stopping timer")
       timer?.cancel()
       timer = null
 

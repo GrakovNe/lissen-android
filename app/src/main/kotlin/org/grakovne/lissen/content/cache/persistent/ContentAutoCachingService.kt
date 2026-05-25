@@ -24,6 +24,7 @@ import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.NetworkType
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.MediaRepository
+import timber.log.Timber
 import java.io.Serializable
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -112,10 +113,12 @@ class ContentAutoCachingService
             putExtra(ContentCachingService.CACHING_TASK_EXTRA, task as Serializable)
           }
 
+        Timber.d("Auto-cache triggered for ${playingMediaItem.id}: option=$playbackCacheOption, position=${currentTotalPosition.toInt()}s")
         context.startForegroundService(intent)
         return null
       }
 
+      Timber.d("Auto-cache delayed for ${playingMediaItem.id}: will retry in ${DELAY_TIME}ms")
       return scope.launch {
         val originalBookId = playingMediaItem.id
         delay(DELAY_TIME)

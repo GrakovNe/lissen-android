@@ -18,6 +18,7 @@ import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.navigation.CONTINUE_PLAYBACK
 import org.grakovne.lissen.ui.navigation.SHOW_DOWNLOADS
 import org.grakovne.lissen.ui.theme.LissenTheme
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -62,10 +63,14 @@ class AppActivity : ComponentActivity() {
     }
   }
 
-  private fun getLaunchAction(intent: Intent?) =
-    when (intent?.action) {
-      CONTINUE_PLAYBACK -> AppLaunchAction.CONTINUE_PLAYBACK
-      SHOW_DOWNLOADS -> AppLaunchAction.MANAGE_DOWNLOADS
-      else -> AppLaunchAction.DEFAULT
-    }
+  private fun getLaunchAction(intent: Intent?): AppLaunchAction {
+    val action =
+      when (intent?.action) {
+        CONTINUE_PLAYBACK -> AppLaunchAction.CONTINUE_PLAYBACK
+        SHOW_DOWNLOADS -> AppLaunchAction.MANAGE_DOWNLOADS
+        else -> AppLaunchAction.DEFAULT
+      }
+    Timber.d("App launched: action=$action (intent=${intent?.action})")
+    return action
+  }
 }
