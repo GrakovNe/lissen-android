@@ -372,6 +372,15 @@ class LissenMediaProvider
           .maxByOrNull { it.lastUpdate }
           ?: return detailedItem
 
+      Timber.d(
+        """
+        Merging local playback progress into channel-fetched:
+            Channel Progress: $channelProgress
+            Cached Progress: $cachedProgress
+            Final Progress: $updatedProgress
+        """.trimIndent(),
+      )
+
       return detailedItem.copy(progress = updatedProgress)
     }
 

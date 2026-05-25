@@ -24,6 +24,15 @@ tasks.named("preBuild") {
   dependsOn("formatKotlin")
 }
 
+tasks.withType<JavaCompile>().configureEach {
+  if (name.startsWith("hiltJavaCompile")) {
+    doFirst {
+      val original = options.annotationProcessorPath ?: return@doFirst
+      options.annotationProcessorPath = original.filter { !it.name.contains("moshi-kotlin-codegen") }
+    }
+  }
+}
+
 ksp {
   arg("room.schemaLocation", "$projectDir/schemas")
 }
