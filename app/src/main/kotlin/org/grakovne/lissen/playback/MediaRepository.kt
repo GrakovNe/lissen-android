@@ -36,11 +36,8 @@ import org.grakovne.lissen.lib.domain.DurationTimerOption
 import org.grakovne.lissen.lib.domain.SeekTimeOption
 import org.grakovne.lissen.lib.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.playback.PlaybackCommand
 import org.grakovne.lissen.playback.service.PlaybackService
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.ACTION_SEEK_TO
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.POSITION
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_OPTION_EXTRA
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_VALUE_EXTRA
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.playback.service.calculateChapterIndexAndPosition
 import org.grakovne.lissen.playback.service.calculateChapterPosition
@@ -365,23 +362,11 @@ class MediaRepository
       delay: Double,
       option: TimerOption,
     ) {
-      val intent =
-        Intent(context, PlaybackService::class.java).apply {
-          action = PlaybackService.ACTION_SET_TIMER
-          putExtra(TIMER_VALUE_EXTRA, delay)
-          putExtra(TIMER_OPTION_EXTRA, option)
-        }
-
-      context.startService(intent)
+      eventBus.send(PlaybackCommand.SetTimer(delay, option))
     }
 
     private fun cancelServiceTimer() {
-      val intent =
-        Intent(context, PlaybackService::class.java).apply {
-          action = PlaybackService.ACTION_CANCEL_TIMER
-        }
-
-      context.startService(intent)
+      eventBus.send(PlaybackCommand.CancelTimer)
     }
 
     private fun startUpdatingProgress(detailedItem: DetailedItem) {
@@ -417,15 +402,13 @@ class MediaRepository
         _playingBook.postValue(book)
         preferences.savePlayingItem(book)
 
-        val intent =
-          Intent(context, PlaybackService::class.java).apply {
-            action = PlaybackService.ACTION_SET_PLAYBACK
-          }
-
+        val intent = Intent(context, PlaybackService::class.java)
         when (inBackground()) {
           true -> context.startForegroundService(intent)
           false -> context.startService(intent)
         }
+
+        eventBus.send(PlaybackCommand.PreparePlayback)
       }
     }
 
@@ -439,21 +422,12 @@ class MediaRepository
       }
 
     private fun play() {
-      val intent =
-        Intent(context, PlaybackService::class.java).apply {
-          action = PlaybackService.ACTION_PLAY
-        }
-
-      context.startForegroundService(intent)
+      context.startForegroundService(Intent(context, PlaybackService::class.java))
+      eventBus.send(PlaybackCommand.Play)
     }
 
     private fun pause() {
-      val intent =
-        Intent(context, PlaybackService::class.java).apply {
-          action = PlaybackService.ACTION_PAUSE
-        }
-
-      context.startService(intent)
+      eventBus.send(PlaybackCommand.Pause)
     }
 
     private fun seekTo(position: Double) {
@@ -493,13 +467,7 @@ class MediaRepository
           }
       }
 
-      val intent =
-        Intent(context, PlaybackService::class.java).apply {
-          action = ACTION_SEEK_TO
-          putExtra(POSITION, safePosition)
-        }
-
-      context.startService(intent)
+      eventBus.send(PlaybackCommand.SeekTo(safePosition))
       adjustTimer(safePosition)
     }
 
