@@ -1,21 +1,15 @@
-@file:Suppress("DEPRECATION")
-
 package org.grakovne.lissen.widget
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import androidx.annotation.OptIn
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.media3.common.util.UnstableApi
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.MediaRepository
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.PLAYBACK_READY
+import org.grakovne.lissen.playback.PlaybackEvent
+import org.grakovne.lissen.playback.PlaybackEventBus
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -24,37 +18,27 @@ import javax.inject.Singleton
 class WidgetPlaybackController
   @Inject
   constructor(
-    @ApplicationContext context: Context,
     private val mediaRepository: MediaRepository,
     private val sharedPreferences: LissenSharedPreferences,
+    private val playbackEventBus: PlaybackEventBus,
   ) {
     private var playbackReadyAction: () -> Unit = {}
 
-    private val bookDetailsReadyReceiver =
-      object : BroadcastReceiver() {
-        @Suppress("DEPRECATION")
-        override fun onReceive(
-          context: Context?,
-          intent: Intent?,
-        ) {
-          if (intent?.action == PLAYBACK_READY) {
-            val book = sharedPreferences.getPlayingItem()
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
+    init {
+      scope.launch {
+        playbackEventBus.events.collect { event ->
+          if (event is PlaybackEvent.PlaybackReady) {
+            val book = sharedPreferences.getPlayingItem()
             book?.let {
-              CoroutineScope(Dispatchers.Main).launch {
-                playbackReadyAction
-                  .invoke()
-                  .also { playbackReadyAction = { } }
-              }
+              playbackReadyAction
+                .invoke()
+                .also { playbackReadyAction = { } }
             }
           }
         }
       }
-
-    init {
-      LocalBroadcastManager
-        .getInstance(context)
-        .registerReceiver(bookDetailsReadyReceiver, IntentFilter(PLAYBACK_READY))
     }
 
     fun providePlayingItem() = mediaRepository.playingBook.value

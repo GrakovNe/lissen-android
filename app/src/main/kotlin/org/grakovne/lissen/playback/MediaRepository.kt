@@ -1,10 +1,8 @@
 package org.grakovne.lissen.playback
 
-import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.Lifecycle
@@ -12,7 +10,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ProcessLifecycleOwner
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
@@ -24,6 +21,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -40,12 +38,8 @@ import org.grakovne.lissen.lib.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.ACTION_SEEK_TO
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.PLAYBACK_READY
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.POSITION
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_EXPIRED
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_OPTION_EXTRA
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_REMAINING
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_TICK
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_VALUE_EXTRA
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.playback.service.calculateChapterIndexAndPosition
@@ -62,7 +56,9 @@ class MediaRepository
     @ApplicationContext private val context: Context,
     private val preferences: LissenSharedPreferences,
     private val mediaChannel: LissenMediaProvider,
+    private val eventBus: PlaybackEventBus,
   ) {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private lateinit var mediaController: MediaController
 
     private val token =
@@ -135,17 +131,34 @@ class MediaRepository
           override fun onSuccess(controller: MediaController) {
             mediaController = controller
 
-            LocalBroadcastManager
-              .getInstance(context)
-              .registerReceiver(playbackReadyReceiver, IntentFilter(PLAYBACK_READY))
+            scope.launch {
+              eventBus.events.collect { event ->
+                when (event) {
+                  is PlaybackEvent.PlaybackReady -> {
+                    val book = preferences.getPlayingItem()
+                    book?.let {
+                      updateProgress(book).await()
+                      startUpdatingProgress(book)
+                      _isPlaybackReady.postValue(true)
 
-            LocalBroadcastManager
-              .getInstance(context)
-              .registerReceiver(timerExpiredReceiver, IntentFilter(TIMER_EXPIRED))
+                      if (_playAfterPrepare.value == true) {
+                        _playAfterPrepare.postValue(false)
+                        play()
+                      }
+                    }
+                  }
 
-            LocalBroadcastManager
-              .getInstance(context)
-              .registerReceiver(timerTickReceiver, IntentFilter(TIMER_TICK))
+                  is PlaybackEvent.TimerExpired -> {
+                    _timerOption.postValue(null)
+                    pause()
+                  }
+
+                  is PlaybackEvent.TimerTick -> {
+                    _timerRemaining.postValue(event.remainingSeconds)
+                  }
+                }
+              }
+            }
 
             mediaController.addListener(
               object : Player.Listener {
@@ -170,58 +183,6 @@ class MediaRepository
         MoreExecutors.directExecutor(),
       )
     }
-
-    private val playbackReadyReceiver =
-      object : BroadcastReceiver() {
-        @Suppress("DEPRECATION")
-        override fun onReceive(
-          context: Context?,
-          intent: Intent?,
-        ) {
-          if (intent?.action == PLAYBACK_READY) {
-            val book = preferences.getPlayingItem()
-
-            book?.let {
-              CoroutineScope(Dispatchers.Main).launch {
-                updateProgress(book).await()
-                startUpdatingProgress(book)
-                _isPlaybackReady.postValue(true)
-
-                if (_playAfterPrepare.value == true) {
-                  _playAfterPrepare.postValue(false)
-                  play()
-                }
-              }
-            }
-          }
-        }
-      }
-
-    private val timerExpiredReceiver =
-      object : BroadcastReceiver() {
-        override fun onReceive(
-          context: Context?,
-          intent: Intent?,
-        ) {
-          if (intent?.action == TIMER_EXPIRED) {
-            _timerOption.postValue(null)
-            pause()
-          }
-        }
-      }
-
-    private val timerTickReceiver =
-      object : BroadcastReceiver() {
-        override fun onReceive(
-          context: Context?,
-          intent: Intent?,
-        ) {
-          if (intent?.action == TIMER_TICK) {
-            val remaining = intent.getLongExtra(TIMER_REMAINING, 0L)
-            _timerRemaining.postValue(remaining)
-          }
-        }
-      }
 
     fun updateTimer(
       timerOption: TimerOption?,

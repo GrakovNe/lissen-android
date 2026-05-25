@@ -3,7 +3,6 @@ package org.grakovne.lissen.playback.service
 import android.content.Intent
 import androidx.annotation.OptIn
 import androidx.core.os.bundleOf
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
@@ -29,6 +28,8 @@ import org.grakovne.lissen.lib.domain.PlayingChapter
 import org.grakovne.lissen.lib.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.MediaLibrarySessionProvider
+import org.grakovne.lissen.playback.PlaybackEvent
+import org.grakovne.lissen.playback.PlaybackEventBus
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -57,6 +58,9 @@ class PlaybackService : MediaLibraryService() {
 
   @Inject
   lateinit var playbackTimer: PlaybackTimer
+
+  @Inject
+  lateinit var playbackEventBus: PlaybackEventBus
 
   @Inject
   @UnstableApi
@@ -192,12 +196,7 @@ class PlaybackService : MediaLibraryService() {
 
       awaitAll(prepareSession, prepareQueue)
 
-      val intent =
-        Intent(PLAYBACK_READY)
-
-      LocalBroadcastManager
-        .getInstance(baseContext)
-        .sendBroadcast(intent)
+      playbackEventBus.emit(PlaybackEvent.PlaybackReady)
     }
   }
 
@@ -272,11 +271,6 @@ class PlaybackService : MediaLibraryService() {
 
     const val TIMER_VALUE_EXTRA = "org.grakovne.lissen.player.service.TIMER_VALUE"
     const val TIMER_OPTION_EXTRA = "org.grakovne.lissen.player.service.TIMER_OPTION"
-    const val TIMER_EXPIRED = "org.grakovne.lissen.player.service.TIMER_EXPIRED"
-    const val TIMER_TICK = "org.grakovne.lissen.player.service.TIMER_TICK"
-
-    const val TIMER_REMAINING = "org.grakovne.lissen.player.service.TIMER_REMAINING"
-    const val PLAYBACK_READY = "org.grakovne.lissen.player.service.PLAYBACK_READY"
     const val POSITION = "org.grakovne.lissen.player.service.POSITION"
 
     const val FILE_SEGMENTS = "org.grakovne.lissen.player.service.FILE_SEGMENTS"
