@@ -24,7 +24,7 @@ import javax.inject.Singleton
 class ContinuePlaybackShortcut
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val sharedPreferences: LissenSharedPreferences,
   ) : RunningComponent {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)

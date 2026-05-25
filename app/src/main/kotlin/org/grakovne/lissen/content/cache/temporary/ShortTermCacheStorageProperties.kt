@@ -10,7 +10,7 @@ import javax.inject.Singleton
 class ShortTermCacheStorageProperties
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
   ) {
     fun provideCoverCacheFolder(): File {
       val baseFolder =

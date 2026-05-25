@@ -1,5 +1,8 @@
 package org.grakovne.lissen.lib.domain
 
+import androidx.annotation.Keep
+
+@Keep
 enum class SeekTimeOption {
   SEEK_5,
   SEEK_10,

@@ -15,6 +15,7 @@ import org.grakovne.lissen.lib.domain.CacheStatus
 import org.grakovne.lissen.lib.domain.ContentCachingTask
 import org.grakovne.lissen.lib.domain.DetailedItem
 import timber.log.Timber
+import java.io.Serializable
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -52,9 +53,9 @@ class ContentCachingService : LifecycleService() {
     return super.onStartCommand(intent, flags, startId)
   }
 
-  @Suppress("DEPRECATION")
   private fun stopCaching(intent: Intent) {
-    val cachingItem = intent.getSerializableExtra(CACHING_PLAYING_ITEM) as? DetailedItem ?: return
+    val cachingItem = intent.getSerializableExtraCompat<DetailedItem>(CACHING_PLAYING_ITEM) ?: return
+    Timber.d("Stopping caching for ${cachingItem.id}")
 
     val executingJob = executingCaching[cachingItem] ?: return
 
@@ -66,10 +67,10 @@ class ContentCachingService : LifecycleService() {
     }
   }
 
-  @Suppress("DEPRECATION")
   private fun cacheItem(intent: Intent): Pair<DetailedItem, Job>? {
-    val task = intent.getSerializableExtra(CACHING_TASK_EXTRA) as? ContentCachingTask ?: return null
+    val task = intent.getSerializableExtraCompat<ContentCachingTask>(CACHING_TASK_EXTRA) ?: return null
     val item = task.item
+    Timber.d("Starting caching for ${item.id}: option=${task.options}, chapters=${item.chapters.size}")
 
     executingCaching[item]?.cancel()
 
@@ -163,3 +164,11 @@ class ContentCachingService : LifecycleService() {
     const val CACHING_PLAYING_ITEM = "CACHING_PLAYING_ITEM"
   }
 }
+
+@Suppress("DEPRECATION")
+private inline fun <reified T : Serializable> Intent.getSerializableExtraCompat(key: String): T? =
+  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+    getSerializableExtra(key, T::class.java)
+  } else {
+    getSerializableExtra(key) as? T
+  }

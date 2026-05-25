@@ -2,7 +2,9 @@ package org.grakovne.lissen.playback
 
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.os.Parcelable
 import android.util.LruCache
 import android.view.KeyEvent
 import android.view.KeyEvent.KEYCODE_MEDIA_NEXT
@@ -40,7 +42,7 @@ import javax.inject.Singleton
 class MediaLibrarySessionCallback
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val preferences: LissenSharedPreferences,
     private val mediaRepository: MediaRepository,
     private val lissenMediaProvider: LissenMediaProvider,
@@ -61,7 +63,7 @@ class MediaLibrarySessionCallback
 
       val keyEvent =
         intent
-          .getParcelableExtra<KeyEvent>(Intent.EXTRA_KEY_EVENT)
+          .getParcelable<KeyEvent>(Intent.EXTRA_KEY_EVENT)
           ?: return super.onMediaButtonEvent(session, controllerInfo, intent)
 
       Timber.d("Got media key event: $keyEvent")
@@ -270,4 +272,12 @@ class MediaLibrarySessionCallback
       internal const val FORWARD_COMMAND = "notification_forward"
       internal const val NEXT_CHAPTER_COMMAND = "notification_next_chapter"
     }
+  }
+
+@Suppress("DEPRECATION")
+private inline fun <reified T : Parcelable> Intent.getParcelable(key: String): T? =
+  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+    getParcelableExtra(key, T::class.java)
+  } else {
+    getParcelableExtra(key)
   }

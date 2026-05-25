@@ -1,5 +1,6 @@
 package org.grakovne.lissen.channel.audiobookshelf
 
+import androidx.annotation.Keep
 import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.lib.domain.NetworkType
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
@@ -46,6 +47,7 @@ class AudiobookshelfHostProvider
     }
   }
 
+@Keep
 enum class HostType {
   INTERNAL,
   EXTERNAL,

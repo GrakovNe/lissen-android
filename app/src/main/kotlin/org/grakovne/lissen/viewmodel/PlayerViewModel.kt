@@ -14,6 +14,7 @@ import org.grakovne.lissen.lib.domain.PlayingChapter
 import org.grakovne.lissen.lib.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.MediaRepository
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -53,12 +54,14 @@ class PlayerViewModel
     val bookmarks = mediaRepository.bookmarks
 
     fun createBookmark(title: String? = null) {
+      Timber.d("User action: createBookmark at position=${totalPosition.value?.toInt()}s")
       viewModelScope.launch {
         mediaRepository.createBookmark(title)
       }
     }
 
     fun dropBookmark(bookmark: Bookmark) {
+      Timber.d("User action: dropBookmark at position=${bookmark.totalPosition.toInt()}s")
       viewModelScope.launch {
         mediaRepository.dropBookmark(bookmark = bookmark)
       }
@@ -82,6 +85,7 @@ class PlayerViewModel
     }
 
     fun setTimer(option: TimerOption?) {
+      Timber.d("User action: setTimer option=$option")
       mediaRepository.updateTimer(option)
     }
 
@@ -114,37 +118,57 @@ class PlayerViewModel
     }
 
     fun rewind() {
+      Timber.d("User action: rewind at position=${totalPosition.value?.toInt()}s")
       mediaRepository.rewind()
     }
 
     fun forward() {
+      Timber.d("User action: forward at position=${totalPosition.value?.toInt()}s")
       mediaRepository.forward()
     }
 
     fun seekTo(chapterPosition: Double) {
+      Timber.d("User action: seekTo chapterPosition=${chapterPosition.toInt()}s")
       mediaRepository.setChapterPosition(chapterPosition)
     }
 
     fun setTotalPosition(totalPosition: Double) {
+      Timber.d("User action: setTotalPosition ${totalPosition.toInt()}s")
       mediaRepository.setTotalPosition(totalPosition)
     }
 
     fun setChapter(chapter: PlayingChapter) {
       if (chapter.available) {
         val index = book.value?.chapters?.indexOf(chapter) ?: -1
+        Timber.d("User action: setChapter '${chapter.title}' index=$index")
         mediaRepository.setChapter(index)
       }
     }
 
-    fun clearPlayingBook() = mediaRepository.clearPlayingBook()
+    fun clearPlayingBook() {
+      Timber.d("User action: clearPlayingBook bookId=${book.value?.id}")
+      mediaRepository.clearPlayingBook()
+    }
 
-    fun setPlaybackSpeed(factor: Float) = mediaRepository.setPlaybackSpeed(factor)
+    fun setPlaybackSpeed(factor: Float) {
+      Timber.d("User action: setPlaybackSpeed $factor")
+      mediaRepository.setPlaybackSpeed(factor)
+    }
 
-    fun nextTrack() = mediaRepository.nextTrack()
+    fun nextTrack() {
+      Timber.d("User action: nextTrack")
+      mediaRepository.nextTrack()
+    }
 
-    fun previousTrack() = mediaRepository.previousTrack()
+    fun previousTrack() {
+      Timber.d("User action: previousTrack")
+      mediaRepository.previousTrack()
+    }
 
-    fun togglePlayPause() = mediaRepository.togglePlayPause()
+    fun togglePlayPause() {
+      Timber.d("User action: togglePlayPause (isPlaying=${isPlaying.value})")
+      mediaRepository.togglePlayPause()
+    }
 
     fun prepareAndPlay() {
       val playingBook = preferences.getPlayingItem() ?: return

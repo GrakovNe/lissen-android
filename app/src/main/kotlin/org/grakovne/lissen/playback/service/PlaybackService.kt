@@ -3,7 +3,6 @@ package org.grakovne.lissen.playback.service
 import android.content.Intent
 import androidx.annotation.OptIn
 import androidx.core.os.bundleOf
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
@@ -29,6 +28,9 @@ import org.grakovne.lissen.lib.domain.PlayingChapter
 import org.grakovne.lissen.lib.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.MediaLibrarySessionProvider
+import org.grakovne.lissen.playback.PlaybackCommand
+import org.grakovne.lissen.playback.PlaybackEvent
+import org.grakovne.lissen.playback.PlaybackEventBus
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -59,6 +61,9 @@ class PlaybackService : MediaLibraryService() {
   lateinit var playbackTimer: PlaybackTimer
 
   @Inject
+  lateinit var playbackEventBus: PlaybackEventBus
+
+  @Inject
   @UnstableApi
   lateinit var mediaCache: Cache
 
@@ -68,72 +73,58 @@ class PlaybackService : MediaLibraryService() {
 
   override fun onCreate() {
     super.onCreate()
+    Timber.d("PlaybackService created")
 
     session = getSession()
+
+    playerServiceScope.launch {
+      playbackEventBus.commands.collect { command ->
+        when (command) {
+          PlaybackCommand.Play -> {
+            Timber.d("Command received: PLAY")
+            exoPlayer.prepare()
+            exoPlayer.setPlaybackSpeed(sharedPreferences.getPlaybackSpeed())
+            exoPlayer.playWhenReady = true
+          }
+
+          PlaybackCommand.Pause -> {
+            Timber.d("Command received: PAUSE")
+            pause()
+          }
+
+          PlaybackCommand.PreparePlayback -> {
+            Timber.d("Command received: PREPARE_PLAYBACK")
+            val book = sharedPreferences.getPlayingItem()
+            book?.let { launch { preparePlayback(it) } }
+          }
+
+          is PlaybackCommand.SeekTo -> {
+            Timber.d("Command received: SEEK_TO position=${command.position}")
+            val book = sharedPreferences.getPlayingItem()
+            book?.let { seek(it.chapters, command.position) }
+          }
+
+          is PlaybackCommand.SetTimer -> {
+            Timber.d("Command received: SET_TIMER delay=${command.delay}")
+            setTimer(command.delay, command.option)
+          }
+
+          PlaybackCommand.CancelTimer -> {
+            Timber.d("Command received: CANCEL_TIMER")
+            cancelTimer()
+          }
+        }
+      }
+    }
   }
 
-  @Suppress("DEPRECATION")
   override fun onStartCommand(
     intent: Intent?,
     flags: Int,
     startId: Int,
   ): Int {
     super.onStartCommand(intent, flags, startId)
-
-    when (intent?.action) {
-      ACTION_SET_TIMER -> {
-        val delay = intent.getDoubleExtra(TIMER_VALUE_EXTRA, 0.0)
-        val option = intent.getSerializableExtra(TIMER_OPTION_EXTRA) as? TimerOption
-
-        if (delay > 0 && option != null) {
-          setTimer(delay, option)
-        }
-
-        return START_NOT_STICKY
-      }
-
-      ACTION_CANCEL_TIMER -> {
-        cancelTimer()
-        return START_NOT_STICKY
-      }
-
-      ACTION_PLAY -> {
-        playerServiceScope
-          .launch {
-            exoPlayer.prepare()
-            exoPlayer.setPlaybackSpeed(sharedPreferences.getPlaybackSpeed())
-            exoPlayer.playWhenReady = true
-          }
-        return START_STICKY
-      }
-
-      ACTION_PAUSE -> {
-        pause()
-        return START_NOT_STICKY
-      }
-
-      ACTION_SET_PLAYBACK -> {
-        val book = sharedPreferences.getPlayingItem()
-
-        book?.let {
-          playerServiceScope
-            .launch { preparePlayback(it) }
-        }
-        return START_NOT_STICKY
-      }
-
-      ACTION_SEEK_TO -> {
-        val book = sharedPreferences.getPlayingItem()
-
-        val position = intent.getDoubleExtra(POSITION, 0.0)
-        book?.let { seek(it.chapters, position) }
-        return START_NOT_STICKY
-      }
-
-      else -> {
-        return START_NOT_STICKY
-      }
-    }
+    return START_STICKY
   }
 
   override fun onGetSession(controllerInfo: MediaSession.ControllerInfo) = getSession()
@@ -145,6 +136,7 @@ class PlaybackService : MediaLibraryService() {
     }
 
   override fun onDestroy() {
+    Timber.d("PlaybackService destroyed")
     playbackSynchronizationService.cancelSynchronization()
     playerServiceScope.cancel()
 
@@ -186,12 +178,7 @@ class PlaybackService : MediaLibraryService() {
 
       awaitAll(prepareSession, prepareQueue)
 
-      val intent =
-        Intent(PLAYBACK_READY)
-
-      LocalBroadcastManager
-        .getInstance(baseContext)
-        .sendBroadcast(intent)
+      playbackEventBus.emit(PlaybackEvent.PlaybackReady)
     }
   }
 
@@ -257,22 +244,6 @@ class PlaybackService : MediaLibraryService() {
   }
 
   companion object {
-    const val ACTION_PLAY = "org.grakovne.lissen.player.service.PLAY"
-    const val ACTION_PAUSE = "org.grakovne.lissen.player.service.PAUSE"
-    const val ACTION_SET_PLAYBACK = "org.grakovne.lissen.player.service.SET_PLAYBACK"
-    const val ACTION_SEEK_TO = "org.grakovne.lissen.player.service.ACTION_SEEK_TO"
-    const val ACTION_SET_TIMER = "org.grakovne.lissen.player.service.ACTION_SET_TIMER"
-    const val ACTION_CANCEL_TIMER = "org.grakovne.lissen.player.service.CANCEL_TIMER"
-
-    const val TIMER_VALUE_EXTRA = "org.grakovne.lissen.player.service.TIMER_VALUE"
-    const val TIMER_OPTION_EXTRA = "org.grakovne.lissen.player.service.TIMER_OPTION"
-    const val TIMER_EXPIRED = "org.grakovne.lissen.player.service.TIMER_EXPIRED"
-    const val TIMER_TICK = "org.grakovne.lissen.player.service.TIMER_TICK"
-
-    const val TIMER_REMAINING = "org.grakovne.lissen.player.service.TIMER_REMAINING"
-    const val PLAYBACK_READY = "org.grakovne.lissen.player.service.PLAYBACK_READY"
-    const val POSITION = "org.grakovne.lissen.player.service.POSITION"
-
     const val FILE_SEGMENTS = "org.grakovne.lissen.player.service.FILE_SEGMENTS"
     const val CHAPTER_START_MS = "org.grakovne.lissen.player.service.CHAPTER_START_MS"
 

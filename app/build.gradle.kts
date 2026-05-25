@@ -24,6 +24,15 @@ tasks.named("preBuild") {
   dependsOn("formatKotlin")
 }
 
+tasks.withType<JavaCompile>().configureEach {
+  if (name.startsWith("hiltJavaCompile")) {
+    doFirst {
+      val original = options.annotationProcessorPath ?: return@doFirst
+      options.annotationProcessorPath = original.filter { !it.name.contains("moshi-kotlin-codegen") }
+    }
+  }
+}
+
 ksp {
   arg("room.schemaLocation", "$projectDir/schemas")
 }
@@ -40,8 +49,8 @@ android {
     applicationId = "org.grakovne.lissen"
     minSdk = 28
     targetSdk = 37
-    versionCode = 10915
-    versionName = "1.9.15-release"
+    versionCode = 10916
+    versionName = "1.9.16-release"
     
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     
@@ -161,7 +170,6 @@ dependencies {
   implementation(libs.androidx.media3.datasource)
   implementation(libs.androidx.media3.database)
   
-  implementation(libs.androidx.localbroadcastmanager)
   implementation(libs.timber)
   
   implementation(libs.androidx.glance)

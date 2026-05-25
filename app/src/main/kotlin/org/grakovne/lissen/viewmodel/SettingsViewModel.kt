@@ -23,6 +23,7 @@ import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader.Companion.clean
 import org.grakovne.lissen.logging.LissenLogProvider
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 
@@ -105,11 +106,13 @@ class SettingsViewModel
     }
 
     fun preferCrashReporting(value: Boolean) {
+      Timber.d("User action: preferCrashReporting $value")
       _crashReporting.postValue(value)
       preferences.saveAcraEnabled(value)
     }
 
     fun preferBypassSsl(value: Boolean) {
+      Timber.d("User action: preferBypassSsl $value")
       _bypassSsl.postValue(value)
       preferences.saveSslBypass(value)
     }
@@ -119,11 +122,13 @@ class SettingsViewModel
     fun clearClientCertAlias() = preferences.clearClientCertAlias()
 
     fun preferAutoDownloadDelayed(value: Boolean) {
+      Timber.d("User action: preferAutoDownloadDelayed $value")
       _autoDownloadDelayed.postValue(value)
       preferences.saveAutoDownloadDelayed(value)
     }
 
     fun toggleHideCompleted() {
+      Timber.d("User action: toggleHideCompleted (current=${preferences.getHideCompleted()})")
       when (preferences.getHideCompleted()) {
         true -> preferences.saveHideCompleted(false)
         false -> preferences.saveHideCompleted(true)
@@ -131,6 +136,7 @@ class SettingsViewModel
     }
 
     fun logout() {
+      Timber.d("User action: logout")
       preferences.clearPreferences()
     }
 
@@ -182,11 +188,13 @@ class SettingsViewModel
     fun fetchLibraryOrdering(): LibraryOrderingConfiguration = preferences.getLibraryOrdering()
 
     fun preferLibrary(library: Library) {
+      Timber.d("User action: preferLibrary ${library.id} '${library.title}'")
       _preferredLibrary.postValue(library)
       preferences.savePreferredLibrary(library)
     }
 
     fun preferAutoDownloadNetworkType(type: NetworkTypeAutoCache) {
+      Timber.d("User action: preferAutoDownloadNetworkType $type")
       _preferredAutoDownloadNetworkType.postValue(type)
       preferences.saveAutoDownloadNetworkType(type)
     }
@@ -212,36 +220,43 @@ class SettingsViewModel
     }
 
     fun preferLibraryOrdering(configuration: LibraryOrderingConfiguration) {
+      Timber.d("User action: preferLibraryOrdering $configuration")
       _preferredLibraryOrdering.postValue(configuration)
       preferences.saveLibraryOrdering(configuration)
     }
 
     fun preferPlaybackVolumeBoost(playbackVolumeBoost: PlaybackVolumeBoost) {
+      Timber.d("User action: preferPlaybackVolumeBoost $playbackVolumeBoost")
       _preferredPlaybackVolumeBoost.postValue(playbackVolumeBoost)
       preferences.savePlaybackVolumeBoost(playbackVolumeBoost)
     }
 
     fun preferColorScheme(colorScheme: ColorScheme) {
+      Timber.d("User action: preferColorScheme $colorScheme")
       _preferredColorScheme.postValue(colorScheme)
       preferences.saveColorScheme(colorScheme)
     }
 
     fun preferMaterialYouColors(value: Boolean) {
+      Timber.d("User action: preferMaterialYouColors $value")
       _materialYouEnabled.postValue(value)
       preferences.saveMaterialYouColors(value)
     }
 
     fun preferSoftwareCodecsEnabled(value: Boolean) {
+      Timber.d("User action: preferSoftwareCodecsEnabled $value")
       _softwareCodecsEnabled.postValue(value)
       preferences.saveSoftwareCodecsEnabled(value)
     }
 
     fun preferAutoDownloadOption(option: DownloadOption?) {
+      Timber.d("User action: preferAutoDownloadOption $option")
       _preferredAutoDownloadOption.postValue(option)
       preferences.saveAutoDownloadOption(option)
     }
 
     fun preferForwardRewind(option: SeekTimeOption) {
+      Timber.d("User action: preferForwardSkip $option")
       val current = _seekTime.value ?: return
       val updated = current.copy(forward = option)
 
@@ -250,6 +265,7 @@ class SettingsViewModel
     }
 
     fun preferRewindRewind(option: SeekTimeOption) {
+      Timber.d("User action: preferRewindSkip $option")
       val current = _seekTime.value ?: return
       val updated = current.copy(rewind = option)
 

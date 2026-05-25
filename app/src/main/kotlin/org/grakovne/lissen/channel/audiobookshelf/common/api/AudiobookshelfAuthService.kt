@@ -43,7 +43,7 @@ import javax.inject.Singleton
 class AudiobookshelfAuthService
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val loginResponseConverter: LoginResponseConverter,
     private val requestHeadersProvider: RequestHeadersProvider,
     private val preferences: LissenSharedPreferences,
@@ -56,6 +56,7 @@ class AudiobookshelfAuthService
       password: String,
       onSuccess: suspend (UserAccount) -> Unit,
     ): OperationResult<UserAccount> {
+      Timber.d("Authorizing with credentials for $host")
       if (host.isBlank() || !urlPattern.matches(host)) {
         return OperationResult.Error(OperationError.InvalidCredentialsHost)
       }
@@ -94,6 +95,7 @@ class AudiobookshelfAuthService
     }
 
     override suspend fun fetchAuthMethods(host: String): OperationResult<AuthData> {
+      Timber.d("Fetching auth methods for $host")
       return withContext(Dispatchers.IO) {
         try {
           val url =
@@ -175,7 +177,7 @@ class AudiobookshelfAuthService
               call: Call,
               e: IOException,
             ) {
-              Timber.e("Failed OAuth flow due to: $e")
+              Timber.e(e, "OAuth flow failed for $host")
               onFailure(examineError(e.message ?: ""))
             }
 
@@ -183,7 +185,7 @@ class AudiobookshelfAuthService
               call: Call,
               response: Response,
             ) {
-              Timber.d("Got Redirect from ABS")
+              Timber.d("OAuth redirect received from ABS: status=${response.code}")
 
               if (response.code != 302) {
                 onFailure(examineError(response.body.string()))
@@ -257,7 +259,7 @@ class AudiobookshelfAuthService
               call: Call,
               e: IOException,
             ) {
-              Timber.e("Callback request failed: $e")
+              Timber.e(e, "OAuth callback request failed for $host")
               onFailure(e.message ?: "")
             }
 

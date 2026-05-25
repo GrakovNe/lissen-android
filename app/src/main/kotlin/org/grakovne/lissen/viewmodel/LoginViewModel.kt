@@ -15,6 +15,7 @@ import org.grakovne.lissen.channel.common.OperationError.MissingCredentialsPassw
 import org.grakovne.lissen.channel.common.OperationError.MissingCredentialsUsername
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -43,6 +44,7 @@ class LoginViewModel
     val customOAuthLoginButtonText = _customOAuthLoginButtonText
 
     fun updateAuthData() {
+      Timber.d("User action: updateAuthData for host=${host.value}")
       viewModelScope
         .launch {
           val value = host.value ?: return@launch
@@ -80,6 +82,7 @@ class LoginViewModel
     }
 
     fun startOAuth() {
+      Timber.d("User action: startOAuth for host=${host.value}")
       viewModelScope.launch {
         _loginState.value = LoginState.Loading
 
@@ -98,6 +101,7 @@ class LoginViewModel
     }
 
     fun login() {
+      Timber.d("User action: login for host=${host.value}")
       viewModelScope.launch {
         _loginState.value = LoginState.Loading
 

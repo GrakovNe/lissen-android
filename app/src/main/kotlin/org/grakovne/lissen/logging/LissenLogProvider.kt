@@ -10,7 +10,7 @@ import javax.inject.Singleton
 class LissenLogProvider
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
   ) {
     private val tree: FileLoggingTree by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
       FileLoggingTree(profileLogFile())

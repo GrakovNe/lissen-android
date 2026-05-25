@@ -14,6 +14,7 @@ import org.grakovne.lissen.lib.domain.BookmarkSyncState
 import org.grakovne.lissen.lib.domain.CreateBookmarkRequest
 import org.grakovne.lissen.lib.domain.isSame
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import timber.log.Timber
 
 @Singleton
 class CachedBookmarkProvider
@@ -65,6 +66,7 @@ class CachedBookmarkProvider
         .filter { it.libraryItemId == libraryItemId }
         .filter { it.syncState == BookmarkSyncState.PENDING_DELETE }
         .forEach { pendingDelete ->
+          Timber.d("Uploading pending bookmark delete for $libraryItemId at position=${pendingDelete.totalPosition.toInt()}s")
           channelProvider
             .provideMediaChannel()
             .dropBookmark(pendingDelete)
@@ -103,6 +105,7 @@ class CachedBookmarkProvider
       libraryItemId: String,
       title: String,
     ): Bookmark {
+      Timber.d("Creating bookmark (local-first) for $libraryItemId at position=${totalTime.toInt()}s")
       val localDraft =
         Bookmark(
           libraryItemId = libraryItemId,
@@ -135,6 +138,7 @@ class CachedBookmarkProvider
     }
 
     suspend fun dropBookmark(bookmark: Bookmark) {
+      Timber.d("Dropping bookmark (local-first) for ${bookmark.libraryItemId} at position=${bookmark.totalPosition.toInt()}s")
       localCacheRepository.upsertBookmark(
         bookmark.copy(syncState = BookmarkSyncState.PENDING_DELETE),
       )

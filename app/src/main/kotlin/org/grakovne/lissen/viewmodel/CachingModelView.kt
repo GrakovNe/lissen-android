@@ -31,6 +31,7 @@ import org.grakovne.lissen.lib.domain.DownloadOption
 import org.grakovne.lissen.lib.domain.PlayingChapter
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.screens.settings.advanced.cache.CachedItemsPageSource
+import timber.log.Timber
 import java.io.Serializable
 import javax.inject.Inject
 
@@ -38,7 +39,7 @@ import javax.inject.Inject
 class CachingModelView
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val localCacheRepository: LocalCacheRepository,
     private val contentCachingProgress: ContentCachingProgress,
     private val contentCachingManager: ContentCachingManager,
@@ -95,6 +96,7 @@ class CachingModelView
       currentPosition: Double,
       option: DownloadOption,
     ) {
+      Timber.d("User action: cache ${mediaItem.id}, option=$option, position=${currentPosition.toInt()}s")
       val task =
         ContentCachingTask(
           item = mediaItem,
@@ -116,10 +118,12 @@ class CachingModelView
         .getOrPut(bookId) { MutableStateFlow(CacheState(CacheStatus.Idle)) }
 
     suspend fun dropCache(bookId: String) {
+      Timber.d("User action: dropCache $bookId")
       contentCachingManager.dropCache(bookId)
     }
 
     fun stopCaching(item: DetailedItem) {
+      Timber.d("User action: stopCaching ${item.id}")
       val intent =
         Intent(context, ContentCachingService::class.java).apply {
           action = ContentCachingService.STOP_CACHING_ACTION
@@ -133,10 +137,12 @@ class CachingModelView
       item: DetailedItem,
       chapter: PlayingChapter,
     ) {
+      Timber.d("User action: dropCache ${item.id}, chapter=${chapter.id}")
       contentCachingManager.dropCache(item, chapter)
     }
 
     fun toggleCacheForce() {
+      Timber.d("User action: toggleCacheForce (current=${localCacheUsing()})")
       when (localCacheUsing()) {
         true -> preferences.disableForceCache()
         false -> preferences.enableForceCache()
