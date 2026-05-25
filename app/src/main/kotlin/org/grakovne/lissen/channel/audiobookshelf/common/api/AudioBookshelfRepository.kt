@@ -1,5 +1,7 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.api
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okio.Buffer
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarkRequest
@@ -30,7 +32,6 @@ class AudioBookshelfRepository
   @Inject
   constructor(
     private val audioBookShelfApiService: AudioBookShelfApiService,
-    private val audiobookshelfCoverProvider: AudiobookshelfCoverProvider,
   ) {
     suspend fun fetchLibraries(): OperationResult<LibraryResponse> =
       audioBookShelfApiService
@@ -213,5 +214,18 @@ class AudioBookshelfRepository
     suspend fun fetchBookCover(
       itemId: String,
       width: Int?,
-    ): OperationResult<Buffer> = audiobookshelfCoverProvider.fetchCover(itemId, width)
+    ): OperationResult<Buffer> =
+      audioBookShelfApiService
+        .makeRequest {
+          when (width == null) {
+            true -> it.getItemCover(itemId = itemId)
+            false -> it.getItemCover(itemId = itemId, width)
+          }
+        }.map { response ->
+          withContext(Dispatchers.IO) {
+            response.use {
+              Buffer().apply { writeAll(it.source()) }
+            }
+          }
+        }
   }
