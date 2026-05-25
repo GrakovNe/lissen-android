@@ -3,6 +3,7 @@ package org.grakovne.lissen.lib.domain
 import androidx.annotation.Keep
 import java.util.UUID
 
+@Keep
 enum class PlaybackSessionSource {
     LOCAL,
     REMOTE,
