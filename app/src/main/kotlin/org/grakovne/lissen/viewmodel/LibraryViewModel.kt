@@ -26,6 +26,7 @@ import org.grakovne.lissen.lib.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.screens.library.paging.LibraryDefaultPagingSource
 import org.grakovne.lissen.ui.screens.library.paging.LibrarySearchPagingSource
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -103,10 +104,12 @@ class LibraryViewModel
     }
 
     fun requestSearch() {
+      Timber.d("User action: requestSearch")
       _searchRequested.postValue(true)
     }
 
     fun dismissSearch() {
+      Timber.d("User action: dismissSearch")
       _searchRequested.postValue(false)
       _searchToken.value = EMPTY_SEARCH
     }
@@ -127,6 +130,7 @@ class LibraryViewModel
         ?: LibraryType.UNKNOWN
 
     fun refreshRecentListening() {
+      Timber.d("User action: refreshRecentListening")
       viewModelScope.launch {
         withContext(Dispatchers.IO) {
           fetchRecentListening()
@@ -135,6 +139,7 @@ class LibraryViewModel
     }
 
     fun refreshLibrary() {
+      Timber.d("User action: refreshLibrary")
       viewModelScope.launch {
         withContext(Dispatchers.IO) {
           when (searchRequested.value) {
