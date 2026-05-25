@@ -36,3 +36,13 @@
     java.lang.Object writeReplace();
     java.lang.Object readResolve();
 }
+
+# Glance AppWidget — class identity used by getGlanceIds() and provideGlance() dispatch
+-keep class * extends androidx.glance.appwidget.GlanceAppWidget { *; }
+-keep class * extends androidx.glance.appwidget.GlanceAppWidgetReceiver { *; }
+
+# Glance ActionCallback — class name is serialized into RemoteViews and instantiated via Class.forName() on click
+-keep class * extends androidx.glance.appwidget.action.ActionCallback { *; }
+
+# Hilt entry points — looked up by interface class name via EntryPointAccessors.fromApplication()
+-keep @dagger.hilt.EntryPoint interface * { *; }
