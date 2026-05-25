@@ -176,7 +176,8 @@ class AudiobookshelfAuthService
             override fun onFailure(
               call: Call,
               e: IOException,
-            ) { Timber.e(e, "OAuth flow failed for $host")
+            ) {
+              Timber.e(e, "OAuth flow failed for $host")
               onFailure(examineError(e.message ?: ""))
             }
 

@@ -90,7 +90,9 @@ class AudioBookShelfApiService
           }
 
           is OperationResult.Success<UserAccount> -> {
-            Timber.d("Refresh token updated: hasAccessToken=${refreshResult.data.accessToken != null}, hasRefreshToken=${refreshResult.data.refreshToken != null}")
+            Timber.d(
+              "Refresh token updated: hasAccessToken=${refreshResult.data.accessToken != null}, hasRefreshToken=${refreshResult.data.refreshToken != null}",
+            )
 
             refreshResult.data.refreshToken?.let {
               cachedRefreshToken = it

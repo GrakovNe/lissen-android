@@ -98,7 +98,9 @@ class LissenMediaProvider
       detailedItem: DetailedItem,
       progress: PlaybackProgress,
     ): OperationResult<Unit> {
-      Timber.d("Syncing progress: bookId=${detailedItem.id}, totalTime=${progress.currentTotalTime.toInt()}s, chapterTime=${progress.currentChapterTime.toInt()}s")
+      Timber.d(
+        "Syncing progress: bookId=${detailedItem.id}, totalTime=${progress.currentTotalTime.toInt()}s, chapterTime=${progress.currentChapterTime.toInt()}s",
+      )
 
       localCacheRepository.syncProgress(detailedItem, progress)
 
@@ -369,7 +371,7 @@ class LissenMediaProvider
         listOfNotNull(cachedProgress, channelProgress)
           .maxByOrNull { it.lastUpdate }
           ?: return detailedItem
-      
+
       return detailedItem.copy(progress = updatedProgress)
     }
 
