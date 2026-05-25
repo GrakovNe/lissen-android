@@ -37,19 +37,24 @@ class LissenMediaProvider
     private val cachedCoverProvider: CachedCoverProvider,
     private val cachedBookmarkProvider: CachedBookmarkProvider,
   ) {
-    suspend fun dropBookmark(bookmark: Bookmark) = cachedBookmarkProvider.dropBookmark(bookmark = bookmark)
+    suspend fun dropBookmark(bookmark: Bookmark) {
+      Timber.d("Dropping bookmark for ${bookmark.libraryItemId} at position=${bookmark.totalPosition.toInt()}s")
+      cachedBookmarkProvider.dropBookmark(bookmark = bookmark)
+    }
 
     suspend fun createBookmark(
       title: String,
       libraryItemId: String,
       totalPosition: Double,
-    ): Bookmark =
-      cachedBookmarkProvider
+    ): Bookmark {
+      Timber.d("Creating bookmark for $libraryItemId at position=${totalPosition.toInt()}s")
+      return cachedBookmarkProvider
         .createBookmark(
           title = title,
           libraryItemId = libraryItemId,
           totalTime = totalPosition,
         )
+    }
 
     suspend fun provideBookmarks(playingItemId: String): List<Bookmark> =
       cachedBookmarkProvider
@@ -67,7 +72,7 @@ class LissenMediaProvider
       libraryItemId: String,
       chapterId: String,
     ): OperationResult<Uri> {
-      Timber.d("Fetching File $libraryItemId and $chapterId URI")
+      Timber.d("Resolving file URI: bookId=$libraryItemId, chapterId=$chapterId")
 
       return when (preferences.isForceCache()) {
         true -> {
@@ -93,7 +98,9 @@ class LissenMediaProvider
       detailedItem: DetailedItem,
       progress: PlaybackProgress,
     ): OperationResult<Unit> {
-      Timber.d("Syncing Progress for ${detailedItem.id}. $progress")
+      Timber.d(
+        "Syncing progress: bookId=${detailedItem.id}, totalTime=${progress.currentTotalTime.toInt()}s, chapterTime=${progress.currentChapterTime.toInt()}s",
+      )
 
       localCacheRepository.syncProgress(detailedItem, progress)
 
@@ -108,7 +115,7 @@ class LissenMediaProvider
     }
 
     suspend fun fetchBookCover(bookId: String): OperationResult<File> {
-      Timber.d("Fetching Cover stream for $bookId")
+      Timber.d("Fetching book cover: bookId=$bookId")
       return when (preferences.isForceCache()) {
         true -> {
           localCacheRepository.fetchBookCover(bookId)
@@ -128,7 +135,7 @@ class LissenMediaProvider
       query: String,
       limit: Int,
     ): OperationResult<List<Book>> {
-      Timber.d("Searching books with query $query of library: $libraryId")
+      Timber.d("Searching books: libraryId=$libraryId, query='$query'")
 
       return when (preferences.isForceCache()) {
         true -> {
@@ -151,7 +158,7 @@ class LissenMediaProvider
       pageSize: Int,
       pageNumber: Int,
     ): OperationResult<PagedItems<Book>> {
-      Timber.d("Fetching page $pageNumber of library: $libraryId")
+      Timber.d("Fetching books: libraryId=$libraryId, page=$pageNumber, pageSize=$pageSize")
 
       return when (preferences.isForceCache()) {
         true -> localCacheRepository.fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
@@ -160,7 +167,7 @@ class LissenMediaProvider
     }
 
     suspend fun fetchLibraries(): OperationResult<List<Library>> {
-      Timber.d("Fetching List of libraries")
+      Timber.d("Fetching libraries: source=${if (preferences.isForceCache()) "cache" else "network"}")
 
       return when (preferences.isForceCache()) {
         true -> {
@@ -186,7 +193,7 @@ class LissenMediaProvider
       supportedMimeTypes: List<String>,
       deviceId: String,
     ): OperationResult<PlaybackSession> {
-      Timber.d("Starting Playback for $itemId. $supportedMimeTypes are supported")
+      Timber.d("Starting playback: itemId=$itemId, chapterId=$chapterId, mimeTypes=$supportedMimeTypes")
 
       return providePreferredChannel()
         .startPlayback(
@@ -205,7 +212,7 @@ class LissenMediaProvider
     }
 
     suspend fun fetchRecentListenedBooks(libraryId: String): OperationResult<List<RecentBook>> {
-      Timber.d("Fetching Recent books of library $libraryId")
+      Timber.d("Fetching recent books: libraryId=$libraryId")
 
       return when (preferences.isForceCache()) {
         true -> {
@@ -221,7 +228,7 @@ class LissenMediaProvider
     }
 
     suspend fun fetchBook(bookId: String): OperationResult<DetailedItem> {
-      Timber.d("Fetching Detailed book info for $bookId")
+      Timber.d("Fetching book: bookId=$bookId")
 
       return when (preferences.isForceCache()) {
         true -> {
@@ -245,7 +252,7 @@ class LissenMediaProvider
       username: String,
       password: String,
     ): OperationResult<UserAccount> {
-      Timber.d("Authorizing for $username@$host")
+      Timber.d("Authorizing for $host")
       return provideAuthService().authorize(host, username, password) { onPostLogin(host, it) }
     }
 
@@ -268,6 +275,7 @@ class LissenMediaProvider
       host: String,
       account: UserAccount,
     ) {
+      Timber.d("Post-login setup for $host")
       provideAuthService()
         .persistCredentials(
           host = host,

@@ -1,15 +1,14 @@
 package org.grakovne.lissen.playback.service
 
-import android.content.Context
-import android.content.Intent
 import androidx.annotation.OptIn
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
-import dagger.hilt.android.qualifiers.ApplicationContext
 import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.lib.domain.TimerOption
+import org.grakovne.lissen.playback.PlaybackEvent
+import org.grakovne.lissen.playback.PlaybackEventBus
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,11 +16,9 @@ import javax.inject.Singleton
 class PlaybackTimer
   @Inject
   constructor(
-    @ApplicationContext private val applicationContext: Context,
+    private val playbackEventBus: PlaybackEventBus,
     private val exoPlayer: ExoPlayer,
   ) {
-    private val localBroadcastManager = LocalBroadcastManager.getInstance(applicationContext)
-
     private var option: TimerOption? = null
     private var timer: SuspendableCountDownTimer? = null
 
@@ -44,6 +41,7 @@ class PlaybackTimer
       delayInSeconds: Double,
       option: TimerOption,
     ) {
+      Timber.d("Starting timer: ${delayInSeconds.toInt()}s, option=$option")
       stopTimer()
 
       val totalMillis = (delayInSeconds * 1000).toLong()
@@ -57,7 +55,8 @@ class PlaybackTimer
           intervalMillis = 500L,
           onTickSeconds = { seconds -> broadcastRemaining(seconds) },
           onFinished = {
-            localBroadcastManager.sendBroadcast(Intent(PlaybackService.TIMER_EXPIRED))
+            Timber.d("Timer expired, broadcasting")
+            playbackEventBus.emit(PlaybackEvent.TimerExpired)
             stopTimer()
           },
         ).also { it.start() }
@@ -71,15 +70,12 @@ class PlaybackTimer
       }
     }
 
-    @OptIn(UnstableApi::class)
     private fun broadcastRemaining(seconds: Long) {
-      localBroadcastManager.sendBroadcast(
-        Intent(PlaybackService.TIMER_TICK)
-          .putExtra(PlaybackService.TIMER_REMAINING, seconds),
-      )
+      playbackEventBus.emit(PlaybackEvent.TimerTick(seconds))
     }
 
     fun stopTimer() {
+      Timber.d("Stopping timer")
       timer?.cancel()
       timer = null
 

@@ -10,7 +10,7 @@ import javax.inject.Singleton
 class OfflineBookStorageProperties
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
   ) {
     private fun baseFolder(): File =
       context

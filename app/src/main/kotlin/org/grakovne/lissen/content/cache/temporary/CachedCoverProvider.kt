@@ -18,7 +18,7 @@ import javax.inject.Singleton
 class CachedCoverProvider
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val properties: ShortTermCacheStorageProperties,
   ) {
     suspend fun provideCover(

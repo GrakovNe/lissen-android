@@ -19,7 +19,7 @@ class MediaLibrarySessionProvider
   @OptIn(UnstableApi::class)
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val exoPlayer: ExoPlayer,
     private val callback: MediaLibrarySessionCallback,
   ) {

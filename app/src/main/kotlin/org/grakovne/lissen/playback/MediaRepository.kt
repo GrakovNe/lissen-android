@@ -1,10 +1,8 @@
 package org.grakovne.lissen.playback
 
-import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.Lifecycle
@@ -12,7 +10,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ProcessLifecycleOwner
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
@@ -24,6 +21,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -38,15 +36,8 @@ import org.grakovne.lissen.lib.domain.DurationTimerOption
 import org.grakovne.lissen.lib.domain.SeekTimeOption
 import org.grakovne.lissen.lib.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.playback.PlaybackCommand
 import org.grakovne.lissen.playback.service.PlaybackService
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.ACTION_SEEK_TO
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.PLAYBACK_READY
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.POSITION
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_EXPIRED
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_OPTION_EXTRA
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_REMAINING
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_TICK
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_VALUE_EXTRA
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.playback.service.calculateChapterIndexAndPosition
 import org.grakovne.lissen.playback.service.calculateChapterPosition
@@ -59,10 +50,12 @@ import javax.inject.Singleton
 class MediaRepository
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val preferences: LissenSharedPreferences,
     private val mediaChannel: LissenMediaProvider,
+    private val eventBus: PlaybackEventBus,
   ) {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private lateinit var mediaController: MediaController
 
     private val token =
@@ -135,17 +128,34 @@ class MediaRepository
           override fun onSuccess(controller: MediaController) {
             mediaController = controller
 
-            LocalBroadcastManager
-              .getInstance(context)
-              .registerReceiver(playbackReadyReceiver, IntentFilter(PLAYBACK_READY))
+            scope.launch {
+              eventBus.events.collect { event ->
+                when (event) {
+                  is PlaybackEvent.PlaybackReady -> {
+                    val book = preferences.getPlayingItem()
+                    book?.let {
+                      updateProgress(book).await()
+                      startUpdatingProgress(book)
+                      _isPlaybackReady.postValue(true)
 
-            LocalBroadcastManager
-              .getInstance(context)
-              .registerReceiver(timerExpiredReceiver, IntentFilter(TIMER_EXPIRED))
+                      if (_playAfterPrepare.value == true) {
+                        _playAfterPrepare.postValue(false)
+                        play()
+                      }
+                    }
+                  }
 
-            LocalBroadcastManager
-              .getInstance(context)
-              .registerReceiver(timerTickReceiver, IntentFilter(TIMER_TICK))
+                  is PlaybackEvent.TimerExpired -> {
+                    _timerOption.postValue(null)
+                    pause()
+                  }
+
+                  is PlaybackEvent.TimerTick -> {
+                    _timerRemaining.postValue(event.remainingSeconds)
+                  }
+                }
+              }
+            }
 
             mediaController.addListener(
               object : Player.Listener {
@@ -170,58 +180,6 @@ class MediaRepository
         MoreExecutors.directExecutor(),
       )
     }
-
-    private val playbackReadyReceiver =
-      object : BroadcastReceiver() {
-        @Suppress("DEPRECATION")
-        override fun onReceive(
-          context: Context?,
-          intent: Intent?,
-        ) {
-          if (intent?.action == PLAYBACK_READY) {
-            val book = preferences.getPlayingItem()
-
-            book?.let {
-              CoroutineScope(Dispatchers.Main).launch {
-                updateProgress(book).await()
-                startUpdatingProgress(book)
-                _isPlaybackReady.postValue(true)
-
-                if (_playAfterPrepare.value == true) {
-                  _playAfterPrepare.postValue(false)
-                  play()
-                }
-              }
-            }
-          }
-        }
-      }
-
-    private val timerExpiredReceiver =
-      object : BroadcastReceiver() {
-        override fun onReceive(
-          context: Context?,
-          intent: Intent?,
-        ) {
-          if (intent?.action == TIMER_EXPIRED) {
-            _timerOption.postValue(null)
-            pause()
-          }
-        }
-      }
-
-    private val timerTickReceiver =
-      object : BroadcastReceiver() {
-        override fun onReceive(
-          context: Context?,
-          intent: Intent?,
-        ) {
-          if (intent?.action == TIMER_TICK) {
-            val remaining = intent.getLongExtra(TIMER_REMAINING, 0L)
-            _timerRemaining.postValue(remaining)
-          }
-        }
-      }
 
     fun updateTimer(
       timerOption: TimerOption?,
@@ -284,6 +242,7 @@ class MediaRepository
     }
 
     fun clearPlayingBook() {
+      Timber.d("Clearing playing book: ${_playingBook.value?.id}")
       pause()
 
       _playingBook.postValue(null)
@@ -317,6 +276,7 @@ class MediaRepository
     }
 
     fun prepareAndPlay(book: DetailedItem) {
+      Timber.d("prepareAndPlay: bookId=${book.id}, alreadyReady=${isPlaybackReady.value}")
       when (isPlaybackReady.value) {
         true -> {
           play()
@@ -342,6 +302,7 @@ class MediaRepository
     }
 
     fun setPlaybackSpeed(factor: Float) {
+      Timber.d("Setting playback speed to $factor")
       val speed =
         when {
           factor < 0.5f -> 0.5f
@@ -376,6 +337,7 @@ class MediaRepository
       val book = playingBook.value ?: return
       val overallPosition = totalPosition.value ?: return
       val currentIndex = calculateChapterIndex(book, overallPosition)
+      Timber.d("Next track: bookId=${book.id}, currentChapter=$currentIndex -> ${currentIndex + 1}")
 
       val nextChapterIndex = currentIndex + 1
       setChapter(nextChapterIndex)
@@ -386,6 +348,7 @@ class MediaRepository
       val overallPosition = totalPosition.value ?: return
 
       val (currentIndex, chapterPosition) = calculateChapterIndexAndPosition(book, overallPosition)
+      Timber.d("Previous track: bookId=${book.id}, currentChapter=$currentIndex, chapterPosition=${chapterPosition.toInt()}s")
 
       val currentIndexReplay = (chapterPosition > CURRENT_TRACK_REPLAY_THRESHOLD || currentIndex == 0)
 
@@ -399,23 +362,11 @@ class MediaRepository
       delay: Double,
       option: TimerOption,
     ) {
-      val intent =
-        Intent(context, PlaybackService::class.java).apply {
-          action = PlaybackService.ACTION_SET_TIMER
-          putExtra(TIMER_VALUE_EXTRA, delay)
-          putExtra(TIMER_OPTION_EXTRA, option)
-        }
-
-      context.startService(intent)
+      eventBus.send(PlaybackCommand.SetTimer(delay, option))
     }
 
     private fun cancelServiceTimer() {
-      val intent =
-        Intent(context, PlaybackService::class.java).apply {
-          action = PlaybackService.ACTION_CANCEL_TIMER
-        }
-
-      context.startService(intent)
+      eventBus.send(PlaybackCommand.CancelTimer)
     }
 
     private fun startUpdatingProgress(detailedItem: DetailedItem) {
@@ -451,15 +402,13 @@ class MediaRepository
         _playingBook.postValue(book)
         preferences.savePlayingItem(book)
 
-        val intent =
-          Intent(context, PlaybackService::class.java).apply {
-            action = PlaybackService.ACTION_SET_PLAYBACK
-          }
-
+        val intent = Intent(context, PlaybackService::class.java)
         when (inBackground()) {
           true -> context.startForegroundService(intent)
           false -> context.startService(intent)
         }
+
+        eventBus.send(PlaybackCommand.PreparePlayback)
       }
     }
 
@@ -473,21 +422,12 @@ class MediaRepository
       }
 
     private fun play() {
-      val intent =
-        Intent(context, PlaybackService::class.java).apply {
-          action = PlaybackService.ACTION_PLAY
-        }
-
-      context.startForegroundService(intent)
+      context.startForegroundService(Intent(context, PlaybackService::class.java))
+      eventBus.send(PlaybackCommand.Play)
     }
 
     private fun pause() {
-      val intent =
-        Intent(context, PlaybackService::class.java).apply {
-          action = PlaybackService.ACTION_PAUSE
-        }
-
-      context.startService(intent)
+      eventBus.send(PlaybackCommand.Pause)
     }
 
     private fun seekTo(position: Double) {
@@ -527,13 +467,7 @@ class MediaRepository
           }
       }
 
-      val intent =
-        Intent(context, PlaybackService::class.java).apply {
-          action = ACTION_SEEK_TO
-          putExtra(POSITION, safePosition)
-        }
-
-      context.startService(intent)
+      eventBus.send(PlaybackCommand.SeekTo(safePosition))
       adjustTimer(safePosition)
     }
 
@@ -575,6 +509,7 @@ class MediaRepository
     }
 
     suspend fun createBookmark(title: String? = null) {
+      Timber.d("Creating bookmark for ${_playingBook.value?.id} at position=${_totalPosition.value?.toInt()}s")
       val playingBook = _playingBook.value ?: return
       val totalPosition = _totalPosition.value ?: return
 
@@ -598,6 +533,7 @@ class MediaRepository
     }
 
     suspend fun dropBookmark(bookmark: Bookmark) {
+      Timber.d("Dropping bookmark for ${bookmark.libraryItemId} at position=${bookmark.totalPosition.toInt()}s")
       mediaChannel.dropBookmark(bookmark = bookmark)
 
       _bookmarks.value = mediaChannel.provideBookmarks(bookmark.libraryItemId)

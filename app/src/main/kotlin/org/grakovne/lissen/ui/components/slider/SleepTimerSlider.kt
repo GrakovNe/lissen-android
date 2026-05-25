@@ -1,23 +1,11 @@
 package org.grakovne.lissen.ui.components.slider
 
 import android.content.Context
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.MusicNote
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.Dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.lib.domain.DurationTimerOption
@@ -36,83 +24,17 @@ fun SleepTimerSlider(
   modifier: Modifier = Modifier,
   onUpdate: (TimerOption?) -> Unit,
 ) {
-  val sliderRange = INTERNAL_MIN_VALUE..INTERNAL_MAX_VALUE
-  val floatRange = sliderRange.first.toFloat()..sliderRange.last.toFloat()
+  val floatRange = INTERNAL_MIN_VALUE.toFloat()..INTERNAL_MAX_VALUE.toFloat()
 
-  val onValueUpdate: (Float) -> Unit = { value ->
-    onUpdate(value.coerceIn(floatRange).toTimerOption())
-  }
-
-  val sliderState =
-    rememberSaveable(saver = SliderState.saver(onValueUpdate)) {
-      SliderState(
-        current = option.toInternalValue(),
-        bounds = sliderRange,
-        onUpdate = onValueUpdate,
-      )
-    }
-
-  LaunchedEffect(Unit) {
-    sliderState.snapTo(sliderState.current)
-  }
-
-  LaunchedEffect(option) {
-    sliderState.animateDecayTo(option.toInternalValue().toFloat().coerceIn(floatRange))
-  }
-
-  val clampedCurrent = sliderState.current.coerceIn(floatRange)
-
-  Column(
+  CommonSlider(
+    internalValue = option.toInternalValue(),
+    range = INTERNAL_MIN_VALUE..INTERNAL_MAX_VALUE,
+    formatHeader = { it.coerceIn(floatRange).toLabelText(libraryType, context) },
+    formatIndex = { it.toLabelIcon() },
     modifier = modifier,
-    horizontalAlignment = Alignment.CenterHorizontally,
-  ) {
-    Text(
-      text = clampedCurrent.toLabelText(libraryType, context),
-      style = typography.headlineSmall,
-    )
-
-    Icon(
-      imageVector = Icons.Filled.ArrowDropDown,
-      contentDescription = null,
-    )
-
-    BoxWithConstraints(
-      modifier =
-        Modifier
-          .fillMaxWidth()
-          .sliderDrag(sliderState, visibleSegments),
-      contentAlignment = Alignment.TopCenter,
-    ) {
-      val segmentWidth: Dp = maxWidth / visibleSegments
-      val segmentPixelWidth = constraints.maxWidth.toFloat() / visibleSegments
-      val visibleSegmentCount = (visibleSegments + 1) / 2
-
-      val minIndex =
-        (clampedCurrent - visibleSegmentCount)
-          .roundToInt()
-          .coerceAtLeast(sliderRange.first)
-
-      val maxIndex =
-        (clampedCurrent + visibleSegmentCount)
-          .roundToInt()
-          .coerceAtMost(sliderRange.last)
-
-      val centerPixel = constraints.maxWidth / 2f
-
-      for (index in minIndex..maxIndex) {
-        SpeedSliderSegment(
-          index = index,
-          currentValue = clampedCurrent,
-          segmentWidth = segmentWidth,
-          segmentPixelWidth = segmentPixelWidth,
-          centerPixel = centerPixel,
-          barColor = colorScheme.onSurface,
-          formatIndex = { index.toLabelIcon() },
-          labeledIndexes = labeledIndexes,
-        )
-      }
-    }
-  }
+    labeledIndexes = labeledIndexes,
+    onUpdate = { sliderValue -> onUpdate(sliderValue.coerceIn(floatRange).toTimerOption()) },
+  )
 }
 
 private fun TimerOption?.toInternalValue(): Int =
@@ -151,11 +73,7 @@ private fun Float.toLabelText(
     }
 
     else -> {
-      context.resources.getQuantityString(
-        R.plurals.timer_option_after_time,
-        value,
-        value,
-      )
+      context.resources.getQuantityString(R.plurals.timer_option_after_time, value, value)
     }
   }
 }
@@ -169,14 +87,8 @@ private fun Int.toLabelIcon(): Any =
 
 private const val INTERNAL_MIN_VALUE = -1
 private const val INTERNAL_MAX_VALUE = 120
-
 private const val INTERNAL_DISABLED = 0
 private const val INTERNAL_CHAPTER_END = -1
 
-private const val visibleSegments = 12
-
 private val labeledIndexes =
-  listOf(
-    INTERNAL_CHAPTER_END,
-    INTERNAL_DISABLED,
-  ) + (5..INTERNAL_MAX_VALUE step 5)
+  listOf(INTERNAL_CHAPTER_END, INTERNAL_DISABLED) + (5..INTERNAL_MAX_VALUE step 5)
