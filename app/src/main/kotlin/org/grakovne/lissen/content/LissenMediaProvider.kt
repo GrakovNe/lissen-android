@@ -37,19 +37,24 @@ class LissenMediaProvider
     private val cachedCoverProvider: CachedCoverProvider,
     private val cachedBookmarkProvider: CachedBookmarkProvider,
   ) {
-    suspend fun dropBookmark(bookmark: Bookmark) = cachedBookmarkProvider.dropBookmark(bookmark = bookmark)
+    suspend fun dropBookmark(bookmark: Bookmark) {
+      Timber.d("Dropping bookmark for ${bookmark.libraryItemId} at position=${bookmark.totalPosition.toInt()}s")
+      cachedBookmarkProvider.dropBookmark(bookmark = bookmark)
+    }
 
     suspend fun createBookmark(
       title: String,
       libraryItemId: String,
       totalPosition: Double,
-    ): Bookmark =
-      cachedBookmarkProvider
+    ): Bookmark {
+      Timber.d("Creating bookmark for $libraryItemId at position=${totalPosition.toInt()}s")
+      return cachedBookmarkProvider
         .createBookmark(
           title = title,
           libraryItemId = libraryItemId,
           totalTime = totalPosition,
         )
+    }
 
     suspend fun provideBookmarks(playingItemId: String): List<Bookmark> =
       cachedBookmarkProvider
@@ -268,6 +273,7 @@ class LissenMediaProvider
       host: String,
       account: UserAccount,
     ) {
+      Timber.d("Post-login setup for $host: username=${account.username}")
       provideAuthService()
         .persistCredentials(
           host = host,

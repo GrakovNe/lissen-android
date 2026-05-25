@@ -55,6 +55,7 @@ class ContentCachingService : LifecycleService() {
   @Suppress("DEPRECATION")
   private fun stopCaching(intent: Intent) {
     val cachingItem = intent.getSerializableExtra(CACHING_PLAYING_ITEM) as? DetailedItem ?: return
+    Timber.d("Stopping caching for ${cachingItem.id}")
 
     val executingJob = executingCaching[cachingItem] ?: return
 
@@ -70,6 +71,7 @@ class ContentCachingService : LifecycleService() {
   private fun cacheItem(intent: Intent): Pair<DetailedItem, Job>? {
     val task = intent.getSerializableExtra(CACHING_TASK_EXTRA) as? ContentCachingTask ?: return null
     val item = task.item
+    Timber.d("Starting caching for ${item.id}: option=${task.options}, chapters=${item.chapters.size}")
 
     executingCaching[item]?.cancel()
 

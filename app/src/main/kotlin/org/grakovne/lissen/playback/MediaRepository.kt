@@ -284,6 +284,7 @@ class MediaRepository
     }
 
     fun clearPlayingBook() {
+      Timber.d("Clearing playing book: ${_playingBook.value?.id}")
       pause()
 
       _playingBook.postValue(null)
@@ -317,6 +318,7 @@ class MediaRepository
     }
 
     fun prepareAndPlay(book: DetailedItem) {
+      Timber.d("prepareAndPlay: bookId=${book.id}, alreadyReady=${isPlaybackReady.value}")
       when (isPlaybackReady.value) {
         true -> {
           play()
@@ -342,6 +344,7 @@ class MediaRepository
     }
 
     fun setPlaybackSpeed(factor: Float) {
+      Timber.d("Setting playback speed to $factor")
       val speed =
         when {
           factor < 0.5f -> 0.5f
@@ -376,6 +379,7 @@ class MediaRepository
       val book = playingBook.value ?: return
       val overallPosition = totalPosition.value ?: return
       val currentIndex = calculateChapterIndex(book, overallPosition)
+      Timber.d("Next track: bookId=${book.id}, currentChapter=$currentIndex -> ${currentIndex + 1}")
 
       val nextChapterIndex = currentIndex + 1
       setChapter(nextChapterIndex)
@@ -386,6 +390,7 @@ class MediaRepository
       val overallPosition = totalPosition.value ?: return
 
       val (currentIndex, chapterPosition) = calculateChapterIndexAndPosition(book, overallPosition)
+      Timber.d("Previous track: bookId=${book.id}, currentChapter=$currentIndex, chapterPosition=${chapterPosition.toInt()}s")
 
       val currentIndexReplay = (chapterPosition > CURRENT_TRACK_REPLAY_THRESHOLD || currentIndex == 0)
 
@@ -575,6 +580,7 @@ class MediaRepository
     }
 
     suspend fun createBookmark(title: String? = null) {
+      Timber.d("Creating bookmark for ${_playingBook.value?.id} at position=${_totalPosition.value?.toInt()}s")
       val playingBook = _playingBook.value ?: return
       val totalPosition = _totalPosition.value ?: return
 
@@ -598,6 +604,7 @@ class MediaRepository
     }
 
     suspend fun dropBookmark(bookmark: Bookmark) {
+      Timber.d("Dropping bookmark for ${bookmark.libraryItemId} at position=${bookmark.totalPosition.toInt()}s")
       mediaChannel.dropBookmark(bookmark = bookmark)
 
       _bookmarks.value = mediaChannel.provideBookmarks(bookmark.libraryItemId)

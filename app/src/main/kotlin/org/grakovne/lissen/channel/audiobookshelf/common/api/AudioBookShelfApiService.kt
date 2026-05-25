@@ -51,6 +51,7 @@ class AudioBookShelfApiService
         is OperationResult.Error<*> -> {
           when (callResult.code) {
             OperationError.Unauthorized -> {
+              Timber.d("Request returned 401, refreshing token and retrying")
               refreshToken()
 
               getClientInstance()
@@ -82,14 +83,14 @@ class AudioBookShelfApiService
 
         when (refreshResult) {
           is OperationResult.Error<*> -> {
-            Timber.d("Refresh token update has been failed due to: $refreshResult")
+            Timber.d("Refresh token update failed: code=${refreshResult.code}")
             if (refreshResult.code == OperationError.Unauthorized) {
               preferences.clearCredentials()
             }
           }
 
           is OperationResult.Success<UserAccount> -> {
-            Timber.d("Refresh token has been updated")
+            Timber.d("Refresh token updated: hasAccessToken=${refreshResult.data.accessToken != null}, hasRefreshToken=${refreshResult.data.refreshToken != null}")
 
             refreshResult.data.refreshToken?.let {
               cachedRefreshToken = it

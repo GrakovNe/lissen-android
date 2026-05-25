@@ -44,6 +44,7 @@ class ContentCachingManager
       channel: MediaChannel,
       currentTotalPosition: Double,
     ) = flow {
+      Timber.d("Caching media item ${mediaItem.id}: option=$option, position=${currentTotalPosition.toInt()}s")
       val context = coroutineContext
 
       val requestedChapters =
@@ -102,6 +103,7 @@ class ContentCachingManager
       item: DetailedItem,
       chapter: PlayingChapter,
     ) {
+      Timber.d("Dropping cache for ${item.id}, chapter=${chapter.id}")
       bookRepository
         .cacheBook(
           book = item,
@@ -120,6 +122,7 @@ class ContentCachingManager
     }
 
     suspend fun dropCache(itemId: String) {
+      Timber.d("Dropping full cache for $itemId")
       bookRepository.removeBook(itemId)
 
       val cachedContent: File = properties.provideBookCache(itemId)

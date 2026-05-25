@@ -68,6 +68,7 @@ class PlaybackService : MediaLibraryService() {
 
   override fun onCreate() {
     super.onCreate()
+    Timber.d("PlaybackService created")
 
     session = getSession()
   }
@@ -98,6 +99,7 @@ class PlaybackService : MediaLibraryService() {
       }
 
       ACTION_PLAY -> {
+        Timber.d("Action received: PLAY")
         playerServiceScope
           .launch {
             exoPlayer.prepare()
@@ -108,11 +110,13 @@ class PlaybackService : MediaLibraryService() {
       }
 
       ACTION_PAUSE -> {
+        Timber.d("Action received: PAUSE")
         pause()
         return START_NOT_STICKY
       }
 
       ACTION_SET_PLAYBACK -> {
+        Timber.d("Action received: SET_PLAYBACK")
         val book = sharedPreferences.getPlayingItem()
 
         book?.let {
@@ -123,6 +127,7 @@ class PlaybackService : MediaLibraryService() {
       }
 
       ACTION_SEEK_TO -> {
+        Timber.d("Action received: SEEK_TO position=${intent.getDoubleExtra(POSITION, 0.0)}")
         val book = sharedPreferences.getPlayingItem()
 
         val position = intent.getDoubleExtra(POSITION, 0.0)
@@ -145,6 +150,7 @@ class PlaybackService : MediaLibraryService() {
     }
 
   override fun onDestroy() {
+    Timber.d("PlaybackService destroyed")
     playbackSynchronizationService.cancelSynchronization()
     playerServiceScope.cancel()
 

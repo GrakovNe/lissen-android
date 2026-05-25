@@ -52,11 +52,13 @@ class PlaybackSynchronizationService
     }
 
     fun startPlaybackSynchronization(item: DetailedItem) {
+      Timber.d("Starting playback synchronization for ${item.id}")
       serviceScope.coroutineContext.cancelChildren()
       currentItem = item
     }
 
     fun cancelSynchronization() {
+      Timber.d("Cancelling playback synchronization for ${currentItem?.id}")
       syncJob?.cancel()
     }
 
@@ -157,6 +159,7 @@ class PlaybackSynchronizationService
     private suspend fun openPlaybackSession(overallProgress: PlaybackProgress) =
       currentItem
         ?.let { item ->
+          Timber.d("Opening new playback session for ${item.id} at position=${overallProgress.currentTotalTime.toInt()}s")
           val chapterIndex = calculateChapterIndex(item, overallProgress.currentTotalTime)
           mediaChannel
             .startPlayback(
