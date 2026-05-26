@@ -2,19 +2,40 @@ package org.grakovne.lissen.logging
 
 import android.util.Log
 import timber.log.Timber
+import java.io.BufferedOutputStream
+import java.io.Closeable
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
+import java.io.OutputStreamWriter
 import java.io.RandomAccessFile
+import java.io.Writer
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.Executors
 
 class FileLoggingTree(
   private val logFile: File,
   private val maxSizeBytes: Int = 1024 * 1024,
   private val trimThresholdBytes: Int = 1280 * 1024,
-) : Timber.DebugTree() {
-  private val lock = Any()
+) : Timber.DebugTree(),
+  Closeable {
+  private val executor =
+    Executors.newSingleThreadExecutor { r ->
+      Thread(r, "file-logging").apply { isDaemon = true }
+    }
+
+  private val writer: Writer
+
+  init {
+    logFile.parentFile?.mkdirs()
+    writer =
+      OutputStreamWriter(
+        BufferedOutputStream(FileOutputStream(logFile, true), BUFFER_SIZE),
+        StandardCharsets.UTF_8,
+      )
+  }
 
   override fun log(
     priority: Int,
@@ -23,18 +44,21 @@ class FileLoggingTree(
     t: Throwable?,
   ) {
     val line = buildLogLine(priority, tag, message, t)
-
-    synchronized(lock) {
+    executor.execute {
       try {
-        logFile.parentFile?.mkdirs()
-        appendLine(line)
-
+        writer.write(line)
+        writer.flush()
         if (logFile.length() > trimThresholdBytes) {
-          trimToLastMegabyte()
+          trimFile()
         }
       } catch (_: IOException) {
       }
     }
+  }
+
+  override fun close() {
+    executor.execute { writer.close() }
+    executor.shutdown()
   }
 
   private fun buildLogLine(
@@ -54,23 +78,16 @@ class FileLoggingTree(
       append(tag ?: DEFAULT_TAG)
       append(": ")
       append(message)
-
       if (t != null) {
         append('\n')
         append(Log.getStackTraceString(t))
       }
-
       append('\n')
     }
   }
 
   @Throws(IOException::class)
-  private fun appendLine(line: String) {
-    logFile.appendText(line, StandardCharsets.UTF_8)
-  }
-
-  @Throws(IOException::class)
-  private fun trimToLastMegabyte() {
+  private fun trimFile() {
     val fileLength = logFile.length()
     if (fileLength <= maxSizeBytes) return
 
@@ -82,7 +99,7 @@ class FileLoggingTree(
       val bytesRead = raf.read(buffer)
       if (bytesRead <= 0) return
 
-      val writeOffset = findTrimStartOffset(buffer, bytesRead)
+      val writeOffset = findLineStart(buffer, bytesRead)
 
       raf.seek(0)
       raf.write(buffer, writeOffset, bytesRead - writeOffset)
@@ -90,7 +107,7 @@ class FileLoggingTree(
     }
   }
 
-  private fun findTrimStartOffset(
+  private fun findLineStart(
     buffer: ByteArray,
     bytesRead: Int,
   ): Int {
@@ -101,7 +118,6 @@ class FileLoggingTree(
         break
       }
     }
-
     return 0
   }
 
@@ -118,7 +134,7 @@ class FileLoggingTree(
 
   private companion object {
     const val DEFAULT_TAG = "TAG"
-    val TIMESTAMP_FORMATTER: DateTimeFormatter =
-      DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
+    const val BUFFER_SIZE = 8 * 1024
+    val TIMESTAMP_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
   }
 }
