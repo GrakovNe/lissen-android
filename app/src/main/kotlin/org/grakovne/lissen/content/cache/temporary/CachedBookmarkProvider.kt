@@ -19,7 +19,7 @@ class CachedBookmarkProvider
   @Inject
   constructor(
     private val channelProvider: AudiobookshelfChannelProvider,
-    private val localCacheRepository: LocalCacheRepository
+    private val localCacheRepository: LocalCacheRepository,
   ) {
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 

@@ -13,6 +13,7 @@ import org.acra.security.TLS
 import org.acra.sender.HttpSender
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.logging.LissenLogProvider
+import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -23,6 +24,9 @@ class LissenApplication : Application() {
 
   @Inject
   lateinit var lissenLogProvider: LissenLogProvider
+
+  @Inject
+  lateinit var preferences: LissenSharedPreferences
 
   override fun attachBaseContext(base: Context) {
     super.attachBaseContext(base)
@@ -55,9 +59,11 @@ class LissenApplication : Application() {
       Timber.plant(Timber.DebugTree())
     }
 
-    try {
-      Timber.plant(lissenLogProvider.provideLoggingTree())
-    } catch (_: Exception) {
+    if (preferences.isActivityLoggingEnabled()) {
+      try {
+        Timber.plant(lissenLogProvider.provideLoggingTree())
+      } catch (_: Exception) {
+      }
     }
   }
 

@@ -499,6 +499,13 @@ class LissenSharedPreferences
         putBoolean(KEY_SOFTWARE_CODECS, value)
       }
 
+    fun isActivityLoggingEnabled(): Boolean = sharedPreferences.getBoolean(KEY_ACTIVITY_LOGGING, true)
+
+    fun saveActivityLoggingEnabled(value: Boolean) =
+      sharedPreferences.edit {
+        putBoolean(KEY_ACTIVITY_LOGGING, value)
+      }
+
     fun getHideCompleted(): Boolean = sharedPreferences.getBoolean(KEY_HIDE_COMPLETED, false)
 
     fun saveHideCompleted(value: Boolean) =
@@ -534,6 +541,7 @@ class LissenSharedPreferences
       private const val KEY_AUTO_DOWNLOAD_DELAYED = "auto_download_delayed"
       private const val KEY_PREFERRED_LIBRARY_ORDERING = "preferred_library_ordering"
       private const val KEY_SOFTWARE_CODECS = "software_codecs"
+      private const val KEY_ACTIVITY_LOGGING = "activity_logging_enabled"
       private const val KEY_HIDE_COMPLETED = "hide_completed"
 
       private const val KEY_CUSTOM_HEADERS = "custom_headers"

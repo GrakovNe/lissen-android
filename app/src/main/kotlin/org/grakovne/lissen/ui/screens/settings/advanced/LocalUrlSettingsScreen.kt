@@ -49,6 +49,7 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.lib.domain.connection.LocalUrl
 import org.grakovne.lissen.ui.screens.common.hasLocationPermission
+import org.grakovne.lissen.ui.screens.settings.composable.SettingsInfoBanner
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 import kotlin.math.max
 
@@ -182,46 +183,17 @@ fun LocationPermissionBanner(
   modifier: Modifier = Modifier,
   onResult: (Boolean) -> Unit,
 ) {
-  Row(
-    modifier =
-      modifier
-        .fillMaxWidth()
-        .padding(horizontal = 20.dp, vertical = 14.dp),
-    verticalAlignment = Alignment.CenterVertically,
-  ) {
-    Icon(
-      imageVector = Icons.Default.LocationOn,
-      contentDescription = null,
-      tint = colorScheme.primary,
-      modifier = Modifier.padding(end = 12.dp),
+  val permissionRequestLauncher =
+    rememberLauncherForActivityResult(
+      contract = ActivityResultContracts.RequestPermission(),
+      onResult = onResult,
     )
 
-    val permissionRequestLauncher =
-      rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-        onResult = onResult,
-      )
-
-    Text(
-      text = stringResource(R.string.location_permission_request_hint),
-      style =
-        typography.bodyMedium.copy(
-          color = colorScheme.onSurface,
-        ),
-      modifier = Modifier.weight(1f),
-    )
-
-    TextButton(
-      onClick = { permissionRequestLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
-    ) {
-      Text(
-        text = stringResource(R.string.permission_request_grant_button),
-        style =
-          typography.bodyMedium.copy(
-            color = colorScheme.primary,
-            fontWeight = FontWeight.SemiBold,
-          ),
-      )
-    }
-  }
+  SettingsInfoBanner(
+    icon = Icons.Default.LocationOn,
+    text = stringResource(R.string.location_permission_request_hint),
+    ctaText = stringResource(R.string.permission_request_grant_button),
+    onAction = { permissionRequestLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
+    modifier = modifier,
+  )
 }

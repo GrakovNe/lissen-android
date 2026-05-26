@@ -93,17 +93,18 @@ class SettingsViewModel
     val softwareCodecsEnabled: LiveData<Boolean> = _softwareCodecsEnabled
     val softwareCodecsEnabledOnStart: Boolean = preferences.getSoftwareCodecsEnabled()
 
+    private val _activityLoggingEnabled = MutableLiveData(preferences.isActivityLoggingEnabled())
+
+    val activityLoggingEnabled: LiveData<Boolean> = _activityLoggingEnabled
+    val activityLoggingEnabledOnStart: Boolean = preferences.isActivityLoggingEnabled()
+
     private val _hideCompleted = preferences.hideCompletedFlow
     val hideCompleted = _hideCompleted
 
     private val _autoDownloadDelayed = MutableLiveData(preferences.getAutoDownloadDelayed())
     val autoDownloadDelayed = _autoDownloadDelayed
 
-    fun provideLogFileOrNull(): File? {
-      val logFile = logProvider.profileLogFile()
-
-      return logFile.takeIf { it.exists() && it.length() > 0L }
-    }
+    fun provideLogArchiveOrNull(): File? = logProvider.archiveLogFile()
 
     fun preferCrashReporting(value: Boolean) {
       Timber.d("User action: preferCrashReporting $value")
@@ -247,6 +248,12 @@ class SettingsViewModel
       Timber.d("User action: preferSoftwareCodecsEnabled $value")
       _softwareCodecsEnabled.postValue(value)
       preferences.saveSoftwareCodecsEnabled(value)
+    }
+
+    fun preferActivityLoggingEnabled(value: Boolean) {
+      Timber.d("User action: preferActivityLoggingEnabled $value")
+      _activityLoggingEnabled.postValue(value)
+      if (value) logProvider.enableLogging() else logProvider.disableLogging()
     }
 
     fun preferAutoDownloadOption(option: DownloadOption?) {
