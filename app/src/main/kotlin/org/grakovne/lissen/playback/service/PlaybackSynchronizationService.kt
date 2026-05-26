@@ -186,7 +186,7 @@ class PlaybackSynchronizationService
         }
 
     companion object {
-      private const val SYNC_INTERVAL_LONG = 30_000L
+      private const val SYNC_INTERVAL_LONG = 45_000L
       private const val SHORT_SYNC_WINDOW = SYNC_INTERVAL_LONG * 2 - 1
 
       private const val SYNC_INTERVAL_SHORT = 5_000L
