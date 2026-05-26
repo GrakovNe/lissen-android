@@ -12,32 +12,20 @@ class ShortTermCacheStorageProperties
   constructor(
     @param:ApplicationContext private val context: Context,
   ) {
-    fun provideCoverCacheFolder(): File {
-      val baseFolder =
-        context
-          .externalCacheDir
-          ?.takeIf { it.exists() && it.canWrite() }
-          ?: context.cacheDir
+    fun provideCoverCacheFolder(): File = coverCacheFolder()
 
-      return baseFolder
-        ?.resolve(SHORT_TERM_CACHE_FOLDER)
-        ?.resolve(COVER_CACHE_FOLDER_NAME)
-        ?: throw IllegalStateException("Unable to resole cache cover path. Seems like there is no externalCacheDir")
-    }
+    fun provideCoverPath(itemId: String): File = coverCacheFolder().resolve(itemId)
 
-    fun provideCoverPath(itemId: String): File {
-      val baseFolder =
-        context
-          .externalCacheDir
-          ?.takeIf { it.exists() && it.canWrite() }
-          ?: context.cacheDir
+    private fun coverCacheFolder(): File =
+      baseFolder()
+        .resolve(SHORT_TERM_CACHE_FOLDER)
+        .resolve(COVER_CACHE_FOLDER_NAME)
 
-      return baseFolder
-        ?.resolve(SHORT_TERM_CACHE_FOLDER)
-        ?.resolve(COVER_CACHE_FOLDER_NAME)
-        ?.resolve(itemId)
-        ?: throw IllegalStateException("Unable to resole cache cover path. Seems like there is no externalCacheDir")
-    }
+    private fun baseFolder(): File =
+      context
+        .externalCacheDir
+        ?.takeIf { it.exists() && it.canWrite() }
+        ?: context.cacheDir
 
     companion object {
       const val SHORT_TERM_CACHE_FOLDER = "short_term_cache"

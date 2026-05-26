@@ -3,6 +3,8 @@ package org.grakovne.lissen.content.cache.temporary
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
@@ -11,6 +13,7 @@ import org.grakovne.lissen.content.cache.common.withBlur
 import org.grakovne.lissen.content.cache.common.writeToFile
 import timber.log.Timber
 import java.io.File
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -21,14 +24,20 @@ class CachedCoverProvider
     @param:ApplicationContext private val context: Context,
     private val properties: ShortTermCacheStorageProperties,
   ) {
+    private val locks = ConcurrentHashMap<String, Mutex>()
+
     suspend fun provideCover(
       channel: MediaChannel,
       itemId: String,
-    ): OperationResult<File> =
-      when (val cover = fetchCachedCover(itemId)) {
-        null -> cacheCover(channel, itemId).also { Timber.d("Caching cover $itemId") }
-        else -> cover.let { OperationResult.Success(it) }.also { Timber.d("Fetched cached $itemId") }
+    ): OperationResult<File> {
+      val lock = locks.computeIfAbsent(itemId) { Mutex() }
+      return lock.withLock {
+        when (val cover = fetchCachedCover(itemId)) {
+          null -> cacheCover(channel, itemId).also { Timber.d("Caching cover $itemId") }
+          else -> OperationResult.Success(cover).also { Timber.d("Fetched cached $itemId") }
+        }
       }
+    }
 
     fun clearCache() =
       properties
@@ -36,14 +45,10 @@ class CachedCoverProvider
         .deleteRecursively()
         .also { Timber.d("Clear cover short-term cache") }
 
-    private fun fetchCachedCover(itemId: String): File? {
-      val file = properties.provideCoverPath(itemId)
-
-      return when (file.exists()) {
-        true -> file
-        else -> null
+    private suspend fun fetchCachedCover(itemId: String): File? =
+      withContext(Dispatchers.IO) {
+        properties.provideCoverPath(itemId).takeIf { it.exists() }
       }
-    }
 
     private suspend fun cacheCover(
       channel: MediaChannel,

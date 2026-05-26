@@ -7,13 +7,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfChannelProvider
-import org.grakovne.lissen.common.buildBookmarkTitle
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.lib.domain.Bookmark
 import org.grakovne.lissen.lib.domain.BookmarkSyncState
 import org.grakovne.lissen.lib.domain.CreateBookmarkRequest
 import org.grakovne.lissen.lib.domain.isSame
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import timber.log.Timber
 
 @Singleton
@@ -21,8 +19,7 @@ class CachedBookmarkProvider
   @Inject
   constructor(
     private val channelProvider: AudiobookshelfChannelProvider,
-    private val localCacheRepository: LocalCacheRepository,
-    private val preferences: LissenSharedPreferences,
+    private val localCacheRepository: LocalCacheRepository
   ) {
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
