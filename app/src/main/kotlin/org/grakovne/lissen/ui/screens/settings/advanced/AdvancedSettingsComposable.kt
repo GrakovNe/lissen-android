@@ -163,6 +163,7 @@ fun AdvancedSettingsComposable(
           AdvancedSettingsSimpleItemComposable(
             title = stringResource(R.string.export_logs_title),
             description = stringResource(R.string.export_logs_description),
+            enabled = activityLoggingEnabledOnStart,
             onclick = { shareLogs(context, viewModel) },
           )
         }

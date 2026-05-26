@@ -32,7 +32,6 @@ class LissenLogProvider
 
     fun disableLogging() {
       preferences.saveActivityLoggingEnabled(false)
-      profileLogFile().delete()
     }
 
     fun archiveLogFile(): File? {

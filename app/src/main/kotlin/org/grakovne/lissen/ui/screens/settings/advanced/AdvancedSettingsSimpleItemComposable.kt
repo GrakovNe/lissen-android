@@ -19,13 +19,14 @@ import androidx.compose.ui.unit.dp
 fun AdvancedSettingsSimpleItemComposable(
   title: String,
   description: String,
+  enabled: Boolean = true,
   onclick: () -> Unit,
 ) {
   Row(
     modifier =
       Modifier
         .fillMaxWidth()
-        .clickable { onclick() }
+        .let { if (enabled) it.clickable { onclick() } else it }
         .padding(start = 24.dp, end = 12.dp, top = 12.dp, bottom = 12.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {
@@ -38,11 +39,12 @@ fun AdvancedSettingsSimpleItemComposable(
         modifier = Modifier.padding(bottom = 4.dp),
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
+        color = if (enabled) colorScheme.onBackground else colorScheme.onBackground.copy(alpha = 0.4f),
       )
       Text(
         text = description,
         style = typography.bodyMedium,
-        color = colorScheme.onSurfaceVariant,
+        color = if (enabled) colorScheme.onSurfaceVariant else colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
         maxLines = 1,
         overflow = TextOverflow.Ellipsis,
       )
