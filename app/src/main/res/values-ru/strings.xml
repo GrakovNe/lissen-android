@@ -190,6 +190,10 @@
     <string name="settings_screen_client_cert_remove_action">Отвязать сертификат</string>
     <string name="settings_screen_client_cert_picker_cancelled_toast">mTLS не найден</string>
     <string name="login_error_client_cert_error">mTLS не прошел проверку на сервере</string>
+    <string name="settings_screen_activity_logging_title">Записывать логи</string>
+    <string name="settings_screen_activity_logging_description">Сохранять диагностические данные в файл</string>
+    <string name="restart_the_app_to_apply_logging_changes_title">Перезапустите приложение, чтобы применить настройки логирования</string>
+    <string name="restart_the_app_to_apply_logging_changes_cta">Перезапустить</string>
     <string name="export_logs_title">Экспортировать логи</string>
     <string name="export_logs_description">Выгрузить данные приложения для отладки</string>
     <string name="export_logs_no_logs">Файл с логами не найден</string>

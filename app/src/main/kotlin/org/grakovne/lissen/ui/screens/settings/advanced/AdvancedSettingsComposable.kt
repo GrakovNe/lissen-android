@@ -6,7 +6,6 @@ import android.os.Build
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Memory
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -24,7 +24,6 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -43,6 +42,7 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.common.restartApplication
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.settings.composable.PlaybackVolumeBoostSettingsComposable
+import org.grakovne.lissen.ui.screens.settings.composable.SettingsInfoBanner
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
 import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.SettingsViewModel
@@ -63,6 +63,8 @@ fun AdvancedSettingsComposable(
   val materialYouColorsEnabled by viewModel.materialYouEnabled.observeAsState(false)
   val softwareCodecsEnabled by viewModel.softwareCodecsEnabled.observeAsState(false)
   val softwareCodecsEnabledOnStart = viewModel.softwareCodecsEnabledOnStart
+  val activityLoggingEnabled by viewModel.activityLoggingEnabled.observeAsState(true)
+  val activityLoggingEnabledOnStart = viewModel.activityLoggingEnabledOnStart
 
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
@@ -152,15 +154,26 @@ fun AdvancedSettingsComposable(
             },
           )
 
+          SettingsToggleItem(
+            title = stringResource(R.string.settings_screen_activity_logging_title),
+            description = stringResource(R.string.settings_screen_activity_logging_description),
+            initialState = activityLoggingEnabled,
+          ) { viewModel.preferActivityLoggingEnabled(it) }
+
           AdvancedSettingsSimpleItemComposable(
             title = stringResource(R.string.export_logs_title),
             description = stringResource(R.string.export_logs_description),
+            enabled = activityLoggingEnabledOnStart,
             onclick = { shareLogs(context, viewModel) },
           )
         }
 
         if (softwareCodecsEnabledOnStart != softwareCodecsEnabled) {
           SoftwareCodecsPreferenceBanner()
+        }
+
+        if (activityLoggingEnabledOnStart != activityLoggingEnabled) {
+          ActivityLoggingPreferenceBanner()
         }
       }
     },
@@ -170,52 +183,34 @@ fun AdvancedSettingsComposable(
 @Composable
 fun SoftwareCodecsPreferenceBanner(modifier: Modifier = Modifier) {
   val context = LocalContext.current
+  SettingsInfoBanner(
+    icon = Icons.Outlined.Memory,
+    text = stringResource(R.string.restart_the_app_to_start_using_the_new_codecs_title),
+    ctaText = stringResource(R.string.restart_the_app_to_start_using_the_new_codecs_cta),
+    onAction = { context.restartApplication() },
+    modifier = modifier,
+  )
+}
 
-  Row(
-    modifier =
-      modifier
-        .fillMaxWidth()
-        .padding(horizontal = 20.dp, vertical = 14.dp),
-    verticalAlignment = Alignment.CenterVertically,
-  ) {
-    Icon(
-      imageVector = Icons.Outlined.Memory,
-      contentDescription = null,
-      tint = colorScheme.primary,
-      modifier = Modifier.padding(end = 12.dp),
-    )
-
-    Text(
-      text = stringResource(R.string.restart_the_app_to_start_using_the_new_codecs_title),
-      style =
-        typography.bodyMedium.copy(
-          color = colorScheme.onSurface,
-        ),
-      modifier = Modifier.weight(1f),
-    )
-
-    TextButton(
-      onClick = { context.restartApplication() },
-    ) {
-      Text(
-        text = stringResource(R.string.restart_the_app_to_start_using_the_new_codecs_cta),
-        style =
-          typography.bodyMedium.copy(
-            color = colorScheme.primary,
-            fontWeight = FontWeight.SemiBold,
-          ),
-      )
-    }
-  }
+@Composable
+fun ActivityLoggingPreferenceBanner(modifier: Modifier = Modifier) {
+  val context = LocalContext.current
+  SettingsInfoBanner(
+    icon = Icons.Outlined.Description,
+    text = stringResource(R.string.restart_the_app_to_apply_logging_changes_title),
+    ctaText = stringResource(R.string.restart_the_app_to_apply_logging_changes_cta),
+    onAction = { context.restartApplication() },
+    modifier = modifier,
+  )
 }
 
 private fun shareLogs(
   context: Context,
   viewModel: SettingsViewModel,
 ) {
-  val logFile = viewModel.provideLogFileOrNull()
+  val archiveFile = viewModel.provideLogArchiveOrNull()
 
-  if (logFile == null) {
+  if (archiveFile == null) {
     Toast.makeText(context, context.getString(R.string.export_logs_no_logs), Toast.LENGTH_SHORT).show()
     return
   }
@@ -224,7 +219,7 @@ private fun shareLogs(
     FileProvider.getUriForFile(
       context,
       "${context.packageName}.fileprovider",
-      logFile,
+      archiveFile,
     )
 
   val exportTimestamp = OffsetDateTime.now()
@@ -232,7 +227,7 @@ private fun shareLogs(
 
   val formattedTimestamp = exportTimestamp.format(formatter)
 
-  val sizeKb = logFile.length() / 1024
+  val sizeKb = archiveFile.length() / 1024
 
   val subject =
     "${context.getString(R.string.app_name)} logs • $formattedTimestamp • $sizeKb KB"
@@ -246,13 +241,12 @@ private fun shareLogs(
 
   val shareIntent =
     Intent(Intent.ACTION_SEND).apply {
-      type = "text/plain"
+      type = "application/zip"
 
       putExtra(Intent.EXTRA_STREAM, uri)
       putExtra(Intent.EXTRA_SUBJECT, subject)
       putExtra(Intent.EXTRA_TEXT, details)
 
-      addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
       addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
 

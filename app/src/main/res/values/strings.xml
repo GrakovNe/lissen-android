@@ -188,6 +188,10 @@
     <string name="connection_settings_title">Connection preferences</string>
     <string name="connection_settings_description">Control server address, proxy, and SSL settings</string>
     <string name="disconnect_from_server_title">Disconnect from the server</string>
+    <string name="settings_screen_activity_logging_title">Activity Logging</string>
+    <string name="settings_screen_activity_logging_description">Record diagnostic events to a local file</string>
+    <string name="restart_the_app_to_apply_logging_changes_title">Restart the app to apply logging changes</string>
+    <string name="restart_the_app_to_apply_logging_changes_cta">Restart</string>
     <string name="export_logs_title">Export logs</string>
     <string name="export_logs_description">Share diagnostic data for troubleshooting</string>
     <string name="export_logs_no_logs">No logs available</string>

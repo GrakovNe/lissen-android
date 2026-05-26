@@ -185,11 +185,13 @@ dependencies {
   
   implementation(libs.converter.moshi)
   implementation(libs.moshi)
+  implementation(libs.zip4j)
   
   debugImplementation(libs.androidx.ui.tooling)
   debugImplementation(libs.androidx.ui.test.manifest)
 
   testImplementation(libs.junit.jupiter)
+  testImplementation(libs.mockk)
   testRuntimeOnly(libs.junit.platform.launcher)
 
   androidTestImplementation(libs.androidx.test.ext.junit)
