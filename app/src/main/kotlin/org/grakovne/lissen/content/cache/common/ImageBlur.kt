@@ -46,18 +46,26 @@ private fun sourceWithBackdropBlur(
       .radius(radius)
       .forceCopy(true)
       .blur(scaled)
+  
+  scaled.recycle()
 
   val backdrop = Bitmap.createBitmap(blurredPadded, padding / 2, padding / 2, size, size)
+  blurredPadded.recycle()
 
   val result = createBitmap(size, size, Bitmap.Config.RGB_565)
 
   val canvas = Canvas(result)
   canvas.drawBitmap(backdrop, 0f, 0f, null)
+  backdrop.recycle()
 
   val left = ((size - width) / 2f)
   val top = ((size - height) / 2f)
 
   canvas.drawBitmap(original, left, top, null)
+  original.recycle()
 
-  return Buffer().apply { result.compress(Bitmap.CompressFormat.JPEG, 90, this.outputStream()) }
+  return Buffer().also { buffer ->
+    result.compress(Bitmap.CompressFormat.JPEG, 90, buffer.outputStream())
+    result.recycle()
+  }
 }
