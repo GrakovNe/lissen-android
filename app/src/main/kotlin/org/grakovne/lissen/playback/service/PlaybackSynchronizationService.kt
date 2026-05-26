@@ -7,8 +7,10 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.withContext
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.lib.domain.DetailedItem
@@ -54,16 +56,18 @@ class PlaybackSynchronizationService
     fun startPlaybackSynchronization(item: DetailedItem) {
       Timber.d("Starting playback synchronization for ${item.id}")
       serviceScope.coroutineContext.cancelChildren()
+      syncJob = null
       currentItem = item
     }
 
     fun cancelSynchronization() {
       Timber.d("Cancelling playback synchronization for ${currentItem?.id}")
-      syncJob?.cancel()
+      serviceScope.coroutineContext.cancelChildren()
+      syncJob = null
     }
 
     private fun handleSyncEvent() {
-      runSync()
+      serviceScope.launch { runSync() }
 
       if (syncJob?.isActive == true) return
 
@@ -71,28 +75,23 @@ class PlaybackSynchronizationService
         serviceScope
           .launch {
             while (
-              syncJob?.isActive == true &&
+              isActive &&
               exoPlayer.playWhenReady &&
               exoPlayer.playbackState != Player.STATE_ENDED
             ) {
               val nearStart = exoPlayer.duration - exoPlayer.currentPosition < SHORT_SYNC_WINDOW
               val nearEnd = exoPlayer.currentPosition < SHORT_SYNC_WINDOW
 
-              when (nearEnd || nearStart) {
-                true -> delay(SYNC_INTERVAL_SHORT)
-                false -> delay(SYNC_INTERVAL_LONG)
-              }
+              delay(if (nearEnd || nearStart) SYNC_INTERVAL_SHORT else SYNC_INTERVAL_LONG)
 
               runSync()
             }
           }.also { job ->
-            job.invokeOnCompletion {
-              syncJob = null
-            }
+            job.invokeOnCompletion { syncJob = null }
           }
     }
 
-    private fun runSync() {
+    private suspend fun runSync() {
       val overallProgress = getProgress(exoPlayer) ?: return
       val currentItem = currentItem ?: return
 
@@ -103,10 +102,10 @@ class PlaybackSynchronizationService
         return
       }
 
-      serviceScope.launch(Dispatchers.IO) {
+      withContext(Dispatchers.IO) {
         if (syncMutex.tryLock().not()) {
           Timber.d("Sync is already running")
-          return@launch
+          return@withContext
         }
 
         try {
