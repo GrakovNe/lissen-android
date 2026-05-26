@@ -46,6 +46,8 @@ private fun sourceWithBackdropBlur(
       .radius(radius)
       .forceCopy(true)
       .blur(scaled)
+  
+  scaled.recycle()
 
   scaled.recycle()
 
