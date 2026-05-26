@@ -191,4 +191,8 @@
     <string name="export_logs_title">Esporta log</string>
     <string name="export_logs_description">Condividi dati diagnostici per la risoluzione dei problemi</string>
     <string name="export_logs_no_logs">Nessun log disponibile</string>
+    <string name="settings_screen_activity_logging_title">Registrazione attività</string>
+    <string name="settings_screen_activity_logging_description">Registra gli eventi diagnostici in un file locale</string>
+    <string name="restart_the_app_to_apply_logging_changes_title">Riavvia l\'app per applicare i cambiamenti</string>
+    <string name="restart_the_app_to_apply_logging_changes_cta">Riavvia</string>
 </resources>
