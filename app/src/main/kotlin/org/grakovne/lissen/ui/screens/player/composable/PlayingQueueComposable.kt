@@ -52,6 +52,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
@@ -198,6 +199,7 @@ fun PlayingQueueComposable(
   Box(
     modifier =
       modifier
+        .testTag("chapterList")
         .fillMaxSize()
         .nestedScroll(fabScrollConnection),
   ) {

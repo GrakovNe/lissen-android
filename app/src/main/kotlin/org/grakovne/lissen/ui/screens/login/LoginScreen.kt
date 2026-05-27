@@ -119,6 +119,7 @@ fun LoginScreen(
   Scaffold(
     modifier =
       Modifier
+        .testTag("loginScreen")
         .systemBarsPadding()
         .fillMaxSize(),
     content = { innerPadding ->

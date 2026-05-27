@@ -19,7 +19,7 @@ fun DefaultActionComposable(
     ) {
       Icon(
         imageVector = Search,
-        contentDescription = null,
+        contentDescription = "Search",
       )
     }
     IconButton(onClick = { onPreferencesRequested() }) {
