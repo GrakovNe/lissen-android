@@ -190,4 +190,8 @@
     <string name="export_logs_title">导出日志</string>
     <string name="export_logs_description">分享诊断数据以便进行故障排查</string>
     <string name="export_logs_no_logs">没有可用日志</string>
+    <string name="settings_screen_activity_logging_title">活动日志</string>
+    <string name="settings_screen_activity_logging_description">将诊断事件记录到本地文件</string>
+    <string name="restart_the_app_to_apply_logging_changes_title">重启应用以使日志更改生效</string>
+    <string name="restart_the_app_to_apply_logging_changes_cta">重启</string>
 </resources>
