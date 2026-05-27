@@ -23,7 +23,6 @@ import org.junit.rules.ExternalResource
 import org.junit.runner.RunWith
 import javax.inject.Inject
 
-
 @OptIn(ExperimentalTestApi::class)
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
