@@ -6,7 +6,7 @@ plugins {
 
 android {
 	namespace = "org.grakovne.lissen.lib"
-	compileSdk = 36
+	compileSdk = 37
 	
 	defaultConfig {
 		minSdk = 28
