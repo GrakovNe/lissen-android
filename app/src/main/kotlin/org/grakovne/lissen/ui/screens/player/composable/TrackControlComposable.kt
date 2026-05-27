@@ -33,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.domain.SeekTime
@@ -72,6 +73,7 @@ fun TrackControlComposable(
   Column(
     modifier =
       modifier
+        .testTag("trackControls")
         .fillMaxWidth()
         .padding(horizontal = 12.dp),
   ) {
@@ -166,7 +168,7 @@ fun TrackControlComposable(
         ) {
           Icon(
             imageVector = if (isPlaying) Icons.Rounded.PauseCircleFilled else Icons.Rounded.PlayCircleFilled,
-            contentDescription = "Play / Pause",
+            contentDescription = if (isPlaying) "Pause" else "Play",
             tint = colorScheme.primary,
             modifier = Modifier.fillMaxSize(),
           )

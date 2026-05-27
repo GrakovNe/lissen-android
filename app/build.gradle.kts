@@ -52,7 +52,7 @@ android {
     versionCode = 10917
     versionName = "1.9.17-release"
     
-    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    testInstrumentationRunner = "org.grakovne.lissen.HiltTestRunner"
     
     if (project.hasProperty("RELEASE_STORE_FILE")) {
       signingConfigs {
@@ -196,5 +196,10 @@ dependencies {
 
   androidTestImplementation(libs.androidx.test.ext.junit)
   androidTestImplementation(libs.androidx.test.runner)
+  androidTestImplementation(libs.androidx.test.rules)
   androidTestImplementation(libs.mockk.android)
+  androidTestImplementation(platform(libs.androidx.compose.bom))
+  androidTestImplementation(libs.androidx.ui.test.junit4)
+  androidTestImplementation(libs.hilt.android.testing)
+  kspAndroidTest(libs.hilt.android.compiler)
 }

@@ -216,7 +216,10 @@ fun PlayerScreen(
           )
         },
         navigationIcon = {
-          IconButton(onClick = { stepBack() }) {
+          IconButton(
+            onClick = { stepBack() },
+            modifier = Modifier.testTag("playerBackButton"),
+          ) {
             Icon(
               imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
               contentDescription = null,

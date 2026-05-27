@@ -123,7 +123,7 @@ fun TrackControlPlaceholderComposable(
         ) {
           Icon(
             imageVector = Icons.Rounded.PlayCircleFilled,
-            contentDescription = "Play / Pause",
+            contentDescription = "Play",
             tint = colorScheme.primary,
             modifier = Modifier.fillMaxSize(),
           )
