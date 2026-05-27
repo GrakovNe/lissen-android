@@ -195,4 +195,6 @@
     <string name="settings_screen_activity_logging_description">Registra gli eventi diagnostici in un file locale</string>
     <string name="restart_the_app_to_apply_logging_changes_title">Riavvia l\'app per applicare i cambiamenti</string>
     <string name="restart_the_app_to_apply_logging_changes_cta">Riavvia</string>
+    <string name="restart_the_app_to_apply_settings_title">Riavvia l\'app per applicare le impostazioni</string>
+    <string name="restart_the_app_to_apply_settings_cta">Riavvia</string>
 </resources>
