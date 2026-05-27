@@ -11,3 +11,5 @@ fun hasLocationPermission(context: Context): Boolean =
     true -> ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
     false -> true
   }
+
+fun locationPermission(): String = Manifest.permission.ACCESS_FINE_LOCATION
