@@ -23,10 +23,6 @@ import org.junit.rules.ExternalResource
 import org.junit.runner.RunWith
 import javax.inject.Inject
 
-private const val DEMO_HOST = "https://demo.lissenapp.org"
-private const val DEMO_USERNAME = "demo"
-private const val DEMO_PASSWORD = "demo"
-private const val TIMEOUT_MS = 30_000L
 
 @OptIn(ExperimentalTestApi::class)
 @HiltAndroidTest
