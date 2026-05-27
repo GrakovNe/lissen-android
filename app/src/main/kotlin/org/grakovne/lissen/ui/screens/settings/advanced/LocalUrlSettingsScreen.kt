@@ -1,6 +1,5 @@
 package org.grakovne.lissen.ui.screens.settings.advanced
 
-import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.PaddingValues
@@ -49,6 +48,7 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.lib.domain.connection.LocalUrl
 import org.grakovne.lissen.ui.screens.common.hasLocationPermission
+import org.grakovne.lissen.ui.screens.common.locationPermission
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsInfoBanner
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 import kotlin.math.max
@@ -193,7 +193,7 @@ fun LocationPermissionBanner(
     icon = Icons.Default.LocationOn,
     text = stringResource(R.string.location_permission_request_hint),
     ctaText = stringResource(R.string.permission_request_grant_button),
-    onAction = { permissionRequestLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
+    onAction = { permissionRequestLauncher.launch(locationPermission()) },
     modifier = modifier,
   )
 }

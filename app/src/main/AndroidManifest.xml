@@ -10,8 +10,9 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES" android:usesPermissionFlags="neverForLocation" tools:targetApi="33" />
 
     <application
         android:name=".LissenApplication"
@@ -89,8 +90,7 @@
             android:name=".content.cache.persistent.ContentCachingService"
             android:exported="false"
             android:foregroundServiceType="dataSync"
-            android:enabled="true"
-            android:permission="android.permission.FOREGROUND_SERVICE" />
+            android:enabled="true" />
 
         <receiver
             android:name=".widget.state.PlayerStateWidgetReceiver"
