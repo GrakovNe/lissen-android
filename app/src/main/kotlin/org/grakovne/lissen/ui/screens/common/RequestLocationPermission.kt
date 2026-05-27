@@ -7,22 +7,9 @@ import android.os.Build
 import androidx.core.content.ContextCompat
 
 fun hasLocationPermission(context: Context): Boolean =
-  when {
-    Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
-      ContextCompat.checkSelfPermission(context, Manifest.permission.NEARBY_WIFI_DEVICES) == PackageManager.PERMISSION_GRANTED
-    }
-
-    Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
-      ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-    }
-
-    else -> {
-      true
-    }
+  when (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+    true -> ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    false -> true
   }
 
-fun locationPermission(): String =
-  when {
-    Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> Manifest.permission.NEARBY_WIFI_DEVICES
-    else -> Manifest.permission.ACCESS_FINE_LOCATION
-  }
+fun locationPermission(): String = Manifest.permission.ACCESS_FINE_LOCATION
