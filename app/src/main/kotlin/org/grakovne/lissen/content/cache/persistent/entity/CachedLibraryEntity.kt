@@ -4,7 +4,7 @@ import androidx.annotation.Keep
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.squareup.moshi.JsonClass
-import org.grakovne.lissen.lib.domain.LibraryType
+import org.grakovne.lissen.domain.LibraryType
 import java.io.Serializable
 
 @Keep

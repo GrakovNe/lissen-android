@@ -19,9 +19,9 @@ import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.lib.domain.ContentCachingTask
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.NetworkType
+import org.grakovne.lissen.domain.ContentCachingTask
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.NetworkType
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.MediaRepository
 import timber.log.Timber

@@ -7,7 +7,7 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import dagger.hilt.android.qualifiers.ApplicationContext
-import org.grakovne.lissen.lib.domain.NetworkType
+import org.grakovne.lissen.domain.NetworkType
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton

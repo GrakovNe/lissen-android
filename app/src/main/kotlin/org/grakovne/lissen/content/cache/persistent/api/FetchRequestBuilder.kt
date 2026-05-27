@@ -2,7 +2,7 @@ package org.grakovne.lissen.content.cache.persistent.api
 
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
-import org.grakovne.lissen.lib.domain.LibraryType
+import org.grakovne.lissen.domain.LibraryType
 
 class FetchRequestBuilder {
   private var libraryId: String? = null

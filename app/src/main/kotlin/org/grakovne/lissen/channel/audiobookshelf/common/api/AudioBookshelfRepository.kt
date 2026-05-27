@@ -22,8 +22,8 @@ import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastItemsResp
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastSearchResponse
 import org.grakovne.lissen.channel.common.OperationResult
-import org.grakovne.lissen.lib.domain.Bookmark
-import org.grakovne.lissen.lib.domain.CreateBookmarkRequest
+import org.grakovne.lissen.domain.Bookmark
+import org.grakovne.lissen.domain.CreateBookmarkRequest
 import javax.inject.Inject
 import javax.inject.Singleton
 

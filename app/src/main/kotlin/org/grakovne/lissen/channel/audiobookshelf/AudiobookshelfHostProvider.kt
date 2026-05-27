@@ -2,7 +2,7 @@ package org.grakovne.lissen.channel.audiobookshelf
 
 import androidx.annotation.Keep
 import org.grakovne.lissen.common.NetworkService
-import org.grakovne.lissen.lib.domain.NetworkType
+import org.grakovne.lissen.domain.NetworkType
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import timber.log.Timber
 import javax.inject.Inject

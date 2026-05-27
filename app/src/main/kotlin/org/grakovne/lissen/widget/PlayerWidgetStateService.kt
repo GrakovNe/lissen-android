@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.lib.domain.DetailedItem
+import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.playback.MediaRepository
 import org.grakovne.lissen.widget.cover.PlayerCoverWidget
 import org.grakovne.lissen.widget.state.PlayerStateWidget

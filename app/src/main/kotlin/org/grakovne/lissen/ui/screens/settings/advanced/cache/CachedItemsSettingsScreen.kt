@@ -68,8 +68,8 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.PlayingChapter
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.components.BookCoverFetcher.Companion.LocalOnlyKey
 import org.grakovne.lissen.ui.components.withScrollbar

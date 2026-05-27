@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
 import coil3.request.ImageRequest
 import org.grakovne.lissen.R
-import org.grakovne.lissen.lib.domain.Book
+import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 

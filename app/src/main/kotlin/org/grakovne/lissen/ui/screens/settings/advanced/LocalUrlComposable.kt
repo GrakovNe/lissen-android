@@ -23,7 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
-import org.grakovne.lissen.lib.domain.connection.LocalUrl
+import org.grakovne.lissen.domain.connection.LocalUrl
 
 @Composable
 fun LocalUrlComposable(

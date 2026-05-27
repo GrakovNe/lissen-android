@@ -16,7 +16,7 @@ import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.lib.domain.UserAccount
+import org.grakovne.lissen.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals

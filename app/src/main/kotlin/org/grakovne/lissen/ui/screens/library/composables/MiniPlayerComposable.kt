@@ -51,7 +51,7 @@ import coil3.ImageLoader
 import coil3.request.ImageRequest
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
-import org.grakovne.lissen.lib.domain.DetailedItem
+import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.PlayerViewModel

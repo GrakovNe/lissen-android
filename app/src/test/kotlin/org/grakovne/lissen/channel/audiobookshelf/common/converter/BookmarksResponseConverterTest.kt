@@ -2,7 +2,7 @@ package org.grakovne.lissen.channel.audiobookshelf.common.converter
 
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarksItemResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarksResponse
-import org.grakovne.lissen.lib.domain.BookmarkSyncState
+import org.grakovne.lissen.domain.BookmarkSyncState
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test

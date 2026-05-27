@@ -30,10 +30,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
-import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
-import org.grakovne.lissen.lib.domain.DurationTimerOption
-import org.grakovne.lissen.lib.domain.LibraryType
-import org.grakovne.lissen.lib.domain.TimerOption
+import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
+import org.grakovne.lissen.domain.DurationTimerOption
+import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.ui.components.slider.SleepTimerSlider
 
 @OptIn(ExperimentalMaterial3Api::class)

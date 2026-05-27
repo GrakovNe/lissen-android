@@ -1,8 +1,8 @@
 package org.grakovne.lissen.content.cache.persistent.converter
 
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookmarkEntity
-import org.grakovne.lissen.lib.domain.Bookmark
-import org.grakovne.lissen.lib.domain.BookmarkSyncState
+import org.grakovne.lissen.domain.Bookmark
+import org.grakovne.lissen.domain.BookmarkSyncState
 import javax.inject.Inject
 import javax.inject.Singleton
 

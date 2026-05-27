@@ -18,12 +18,12 @@ import org.grakovne.lissen.channel.common.ConnectionInfo
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
-import org.grakovne.lissen.lib.domain.Bookmark
-import org.grakovne.lissen.lib.domain.BookmarkSyncState
-import org.grakovne.lissen.lib.domain.CreateBookmarkRequest
-import org.grakovne.lissen.lib.domain.Library
-import org.grakovne.lissen.lib.domain.PlaybackProgress
-import org.grakovne.lissen.lib.domain.RecentBook
+import org.grakovne.lissen.domain.Bookmark
+import org.grakovne.lissen.domain.BookmarkSyncState
+import org.grakovne.lissen.domain.CreateBookmarkRequest
+import org.grakovne.lissen.domain.Library
+import org.grakovne.lissen.domain.PlaybackProgress
+import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 
 abstract class AudiobookshelfChannel(

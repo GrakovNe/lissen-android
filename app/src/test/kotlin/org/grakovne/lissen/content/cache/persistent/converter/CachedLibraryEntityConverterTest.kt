@@ -1,7 +1,7 @@
 package org.grakovne.lissen.content.cache.persistent.converter
 
 import org.grakovne.lissen.content.cache.persistent.entity.CachedLibraryEntity
-import org.grakovne.lissen.lib.domain.LibraryType
+import org.grakovne.lissen.domain.LibraryType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

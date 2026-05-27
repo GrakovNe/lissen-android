@@ -46,7 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
-import org.grakovne.lissen.lib.domain.connection.LocalUrl
+import org.grakovne.lissen.domain.connection.LocalUrl
 import org.grakovne.lissen.ui.screens.common.hasLocationPermission
 import org.grakovne.lissen.ui.screens.common.locationPermission
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsInfoBanner

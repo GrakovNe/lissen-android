@@ -11,9 +11,9 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.cache.persistent.ContentCachingNotificationService.Companion.NOTIFICATION_ID
-import org.grakovne.lissen.lib.domain.CacheStatus
-import org.grakovne.lissen.lib.domain.ContentCachingTask
-import org.grakovne.lissen.lib.domain.DetailedItem
+import org.grakovne.lissen.domain.CacheStatus
+import org.grakovne.lissen.domain.ContentCachingTask
+import org.grakovne.lissen.domain.DetailedItem
 import timber.log.Timber
 import java.io.Serializable
 import javax.inject.Inject

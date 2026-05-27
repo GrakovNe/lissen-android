@@ -1,7 +1,7 @@
 package org.grakovne.lissen.content.cache.persistent
 
 import androidx.annotation.Keep
-import org.grakovne.lissen.lib.domain.CacheStatus
+import org.grakovne.lissen.domain.CacheStatus
 
 @Keep
 data class CacheState(

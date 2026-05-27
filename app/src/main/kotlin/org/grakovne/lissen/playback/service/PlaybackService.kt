@@ -22,10 +22,10 @@ import kotlinx.coroutines.withContext
 import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
 import org.grakovne.lissen.content.ExternalCoverProvider
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.lib.domain.BookFile
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.PlayingChapter
-import org.grakovne.lissen.lib.domain.TimerOption
+import org.grakovne.lissen.domain.BookFile
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.PlayingChapter
+import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.MediaLibrarySessionProvider
 import org.grakovne.lissen.playback.PlaybackCommand

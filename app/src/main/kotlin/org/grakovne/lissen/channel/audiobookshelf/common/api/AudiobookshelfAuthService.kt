@@ -32,7 +32,7 @@ import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.channel.common.createOkHttpClient
 import org.grakovne.lissen.channel.common.randomPkce
 import org.grakovne.lissen.common.moshi
-import org.grakovne.lissen.lib.domain.UserAccount
+import org.grakovne.lissen.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import timber.log.Timber
 import java.io.IOException

@@ -1,6 +1,6 @@
 package org.grakovne.lissen.playback.service
 
-import org.grakovne.lissen.lib.domain.DetailedItem
+import org.grakovne.lissen.domain.DetailedItem
 
 fun calculateChapterPosition(
   book: DetailedItem,

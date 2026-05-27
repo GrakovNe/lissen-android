@@ -11,8 +11,8 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.LoginResponse
 import org.grakovne.lissen.channel.common.ApiClient
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
-import org.grakovne.lissen.lib.domain.UserAccount
-import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
+import org.grakovne.lissen.domain.UserAccount
+import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import retrofit2.Response
 import timber.log.Timber

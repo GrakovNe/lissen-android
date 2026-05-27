@@ -12,9 +12,9 @@ import kotlinx.coroutines.test.setMain
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.lib.domain.Library
-import org.grakovne.lissen.lib.domain.LibraryType
-import org.grakovne.lissen.lib.domain.RecentBook
+import org.grakovne.lissen.domain.Library
+import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals

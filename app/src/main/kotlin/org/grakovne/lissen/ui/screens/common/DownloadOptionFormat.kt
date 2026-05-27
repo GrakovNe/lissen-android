@@ -2,12 +2,12 @@ package org.grakovne.lissen.ui.screens.common
 
 import android.content.Context
 import org.grakovne.lissen.R
-import org.grakovne.lissen.lib.domain.AllItemsDownloadOption
-import org.grakovne.lissen.lib.domain.CurrentItemDownloadOption
-import org.grakovne.lissen.lib.domain.DownloadOption
-import org.grakovne.lissen.lib.domain.LibraryType
-import org.grakovne.lissen.lib.domain.NumberItemDownloadOption
-import org.grakovne.lissen.lib.domain.RemainingItemsDownloadOption
+import org.grakovne.lissen.domain.AllItemsDownloadOption
+import org.grakovne.lissen.domain.CurrentItemDownloadOption
+import org.grakovne.lissen.domain.DownloadOption
+import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.NumberItemDownloadOption
+import org.grakovne.lissen.domain.RemainingItemsDownloadOption
 
 fun DownloadOption?.makeText(
   context: Context,

@@ -63,8 +63,8 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.common.withHaptic
-import org.grakovne.lissen.lib.domain.LibraryType
-import org.grakovne.lissen.lib.domain.RecentBook
+import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.ui.components.withScrollbar
 import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.ui.navigation.AppNavigationService

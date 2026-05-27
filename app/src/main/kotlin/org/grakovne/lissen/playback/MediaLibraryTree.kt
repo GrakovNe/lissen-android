@@ -18,11 +18,11 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.content.ExternalCoverProvider
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
-import org.grakovne.lissen.lib.domain.Book
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.Library
-import org.grakovne.lissen.lib.domain.LibraryType
-import org.grakovne.lissen.lib.domain.RecentBook
+import org.grakovne.lissen.domain.Book
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.Library
+import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.util.listenableFuture
 import javax.inject.Inject

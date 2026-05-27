@@ -14,17 +14,17 @@ import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.content.cache.temporary.CachedBookmarkProvider
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
-import org.grakovne.lissen.lib.domain.Book
-import org.grakovne.lissen.lib.domain.BookChapterState
-import org.grakovne.lissen.lib.domain.Bookmark
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.Library
-import org.grakovne.lissen.lib.domain.LibraryType
-import org.grakovne.lissen.lib.domain.PagedItems
-import org.grakovne.lissen.lib.domain.PlaybackProgress
-import org.grakovne.lissen.lib.domain.PlaybackSession
-import org.grakovne.lissen.lib.domain.PlayingChapter
-import org.grakovne.lissen.lib.domain.RecentBook
+import org.grakovne.lissen.domain.Book
+import org.grakovne.lissen.domain.BookChapterState
+import org.grakovne.lissen.domain.Bookmark
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.Library
+import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.PagedItems
+import org.grakovne.lissen.domain.PlaybackProgress
+import org.grakovne.lissen.domain.PlaybackSession
+import org.grakovne.lissen.domain.PlayingChapter
+import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
@@ -291,7 +291,7 @@ class LissenMediaProviderTest {
         assertInstanceOf(OperationResult.Success::class.java, result)
         val session = (result as OperationResult.Success).data
         assertEquals("book-1", session.itemId)
-        assertEquals(org.grakovne.lissen.lib.domain.PlaybackSessionSource.LOCAL, session.sessionSource)
+        assertEquals(org.grakovne.lissen.domain.PlaybackSessionSource.LOCAL, session.sessionSource)
       }
   }
 
@@ -447,6 +447,6 @@ class LissenMediaProviderTest {
     title = "Bookmark",
     totalPosition = totalPosition,
     createdAt = createdAt,
-    syncState = org.grakovne.lissen.lib.domain.BookmarkSyncState.SYNCED,
+    syncState = org.grakovne.lissen.domain.BookmarkSyncState.SYNCED,
   )
 }

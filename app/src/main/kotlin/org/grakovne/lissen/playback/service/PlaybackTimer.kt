@@ -4,8 +4,8 @@ import androidx.annotation.OptIn
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
-import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
-import org.grakovne.lissen.lib.domain.TimerOption
+import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
+import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.playback.PlaybackEvent
 import org.grakovne.lissen.playback.PlaybackEventBus
 import timber.log.Timber

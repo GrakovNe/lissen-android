@@ -1,12 +1,12 @@
 package org.grakovne.lissen.content.cache.persistent
 
-import org.grakovne.lissen.lib.domain.AllItemsDownloadOption
-import org.grakovne.lissen.lib.domain.BookChapterState
-import org.grakovne.lissen.lib.domain.CurrentItemDownloadOption
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.NumberItemDownloadOption
-import org.grakovne.lissen.lib.domain.PlayingChapter
-import org.grakovne.lissen.lib.domain.RemainingItemsDownloadOption
+import org.grakovne.lissen.domain.AllItemsDownloadOption
+import org.grakovne.lissen.domain.BookChapterState
+import org.grakovne.lissen.domain.CurrentItemDownloadOption
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.NumberItemDownloadOption
+import org.grakovne.lissen.domain.PlayingChapter
+import org.grakovne.lissen.domain.RemainingItemsDownloadOption
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test

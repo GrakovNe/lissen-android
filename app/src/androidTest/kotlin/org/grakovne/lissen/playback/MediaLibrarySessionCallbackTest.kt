@@ -23,10 +23,10 @@ import kotlinx.coroutines.runBlocking
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.lib.domain.BookFile
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.MediaProgress
-import org.grakovne.lissen.lib.domain.PlayingChapter
+import org.grakovne.lissen.domain.BookFile
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.MediaProgress
+import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.service.FileClip
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.FILE_SEGMENTS

@@ -38,11 +38,11 @@ import androidx.lifecycle.map
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.content.cache.persistent.CacheState
-import org.grakovne.lissen.lib.domain.CacheStatus
-import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.DurationTimerOption
-import org.grakovne.lissen.lib.domain.LibraryType
+import org.grakovne.lissen.domain.CacheStatus
+import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.DurationTimerOption
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.extensions.formatTime
 import org.grakovne.lissen.ui.icons.TimerPlay
 import org.grakovne.lissen.ui.navigation.AppNavigationService

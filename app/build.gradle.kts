@@ -122,8 +122,6 @@ android {
 }
 
 dependencies {
-  implementation(project(":lib"))
-  
   implementation(libs.androidx.navigation.compose)
   implementation(libs.material)
   implementation(libs.material3)

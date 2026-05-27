@@ -2,8 +2,8 @@ package org.grakovne.lissen.channel.common
 
 import android.content.Context
 import com.squareup.moshi.Moshi
-import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
-import org.grakovne.lissen.lib.domain.fixUriScheme
+import org.grakovne.lissen.domain.connection.ServerRequestHeader
+import org.grakovne.lissen.domain.fixUriScheme
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory

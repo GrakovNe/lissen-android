@@ -3,16 +3,16 @@ package org.grakovne.lissen.channel.common
 import android.net.Uri
 import okio.Buffer
 import org.grakovne.lissen.channel.audiobookshelf.Host
-import org.grakovne.lissen.lib.domain.Book
-import org.grakovne.lissen.lib.domain.Bookmark
-import org.grakovne.lissen.lib.domain.CreateBookmarkRequest
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.Library
-import org.grakovne.lissen.lib.domain.LibraryType
-import org.grakovne.lissen.lib.domain.PagedItems
-import org.grakovne.lissen.lib.domain.PlaybackProgress
-import org.grakovne.lissen.lib.domain.PlaybackSession
-import org.grakovne.lissen.lib.domain.RecentBook
+import org.grakovne.lissen.domain.Book
+import org.grakovne.lissen.domain.Bookmark
+import org.grakovne.lissen.domain.CreateBookmarkRequest
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.Library
+import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.PagedItems
+import org.grakovne.lissen.domain.PlaybackProgress
+import org.grakovne.lissen.domain.PlaybackSession
+import org.grakovne.lissen.domain.RecentBook
 
 interface MediaChannel {
   fun getLibraryType(): LibraryType

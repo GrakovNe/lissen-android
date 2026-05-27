@@ -18,8 +18,8 @@ import org.grakovne.lissen.content.cache.persistent.entity.BookFileEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookSeriesDto
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.PlayingChapter
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.PlayingChapter
 
 @Dao
 interface CachedBookDao {

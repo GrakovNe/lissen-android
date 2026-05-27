@@ -13,10 +13,10 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.PlaybackProgress
-import org.grakovne.lissen.lib.domain.PlaybackSession
-import org.grakovne.lissen.lib.domain.PlaybackSessionSource
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.PlaybackProgress
+import org.grakovne.lissen.domain.PlaybackSession
+import org.grakovne.lissen.domain.PlaybackSessionSource
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.CHAPTER_START_MS
 import timber.log.Timber

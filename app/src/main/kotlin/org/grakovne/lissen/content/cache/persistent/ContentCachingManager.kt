@@ -15,11 +15,11 @@ import org.grakovne.lissen.content.cache.common.withBlur
 import org.grakovne.lissen.content.cache.common.writeToFile
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedLibraryRepository
-import org.grakovne.lissen.lib.domain.BookFile
-import org.grakovne.lissen.lib.domain.CacheStatus
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.DownloadOption
-import org.grakovne.lissen.lib.domain.PlayingChapter
+import org.grakovne.lissen.domain.BookFile
+import org.grakovne.lissen.domain.CacheStatus
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.DownloadOption
+import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import timber.log.Timber
 import java.io.File

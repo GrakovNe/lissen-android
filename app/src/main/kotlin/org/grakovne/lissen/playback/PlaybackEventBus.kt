@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.receiveAsFlow
-import org.grakovne.lissen.lib.domain.TimerOption
+import org.grakovne.lissen.domain.TimerOption
 import javax.inject.Inject
 import javax.inject.Singleton
 

@@ -23,12 +23,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
-import org.grakovne.lissen.lib.domain.AllItemsDownloadOption
-import org.grakovne.lissen.lib.domain.CurrentItemDownloadOption
-import org.grakovne.lissen.lib.domain.DownloadOption
-import org.grakovne.lissen.lib.domain.LibraryType
-import org.grakovne.lissen.lib.domain.NumberItemDownloadOption
-import org.grakovne.lissen.lib.domain.RemainingItemsDownloadOption
+import org.grakovne.lissen.domain.AllItemsDownloadOption
+import org.grakovne.lissen.domain.CurrentItemDownloadOption
+import org.grakovne.lissen.domain.DownloadOption
+import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.NumberItemDownloadOption
+import org.grakovne.lissen.domain.RemainingItemsDownloadOption
 import org.grakovne.lissen.ui.screens.common.makeText
 
 @OptIn(ExperimentalMaterial3Api::class)

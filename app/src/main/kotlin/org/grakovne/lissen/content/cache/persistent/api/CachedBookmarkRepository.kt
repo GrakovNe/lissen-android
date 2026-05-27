@@ -3,9 +3,9 @@ package org.grakovne.lissen.content.cache.persistent.api
 import org.grakovne.lissen.content.cache.persistent.converter.CachedBookmarkEntityConverter
 import org.grakovne.lissen.content.cache.persistent.dao.CachedBookmarkDao
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookmarkEntity
-import org.grakovne.lissen.lib.domain.Bookmark
-import org.grakovne.lissen.lib.domain.asBookmarkSyncState
-import org.grakovne.lissen.lib.domain.asInteger
+import org.grakovne.lissen.domain.Bookmark
+import org.grakovne.lissen.domain.asBookmarkSyncState
+import org.grakovne.lissen.domain.asInteger
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton

@@ -7,13 +7,13 @@ import androidx.compose.material.icons.outlined.MusicNote
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import org.grakovne.lissen.R
-import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
-import org.grakovne.lissen.lib.domain.DurationTimerOption
-import org.grakovne.lissen.lib.domain.LibraryType
-import org.grakovne.lissen.lib.domain.LibraryType.LIBRARY
-import org.grakovne.lissen.lib.domain.LibraryType.PODCAST
-import org.grakovne.lissen.lib.domain.LibraryType.UNKNOWN
-import org.grakovne.lissen.lib.domain.TimerOption
+import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
+import org.grakovne.lissen.domain.DurationTimerOption
+import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.LibraryType.LIBRARY
+import org.grakovne.lissen.domain.LibraryType.PODCAST
+import org.grakovne.lissen.domain.LibraryType.UNKNOWN
+import org.grakovne.lissen.domain.TimerOption
 import kotlin.math.roundToInt
 
 @Composable
