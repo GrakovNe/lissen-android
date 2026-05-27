@@ -46,9 +46,7 @@ private fun sourceWithBackdropBlur(
       .radius(radius)
       .forceCopy(true)
       .blur(scaled)
-
-  scaled.recycle()
-
+  
   scaled.recycle()
 
   val backdrop = Bitmap.createBitmap(blurredPadded, padding / 2, padding / 2, size, size)
