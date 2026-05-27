@@ -37,7 +37,7 @@ junitJupiter = "6.1.0"
 mockk = "1.14.9"
 androidxTestExtJunit = "1.3.0"
 androidxTestRunner = "1.7.0"
-zip4j = "2.11.5"
+zip4j = "2.11.6"
 
 [libraries]
 acra-core = { module = "ch.acra:acra-core", version.ref = "acraCore" }
