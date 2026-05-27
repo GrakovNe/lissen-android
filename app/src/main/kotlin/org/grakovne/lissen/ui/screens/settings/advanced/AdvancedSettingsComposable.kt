@@ -17,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Memory
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -168,15 +169,28 @@ fun AdvancedSettingsComposable(
           )
         }
 
-        if (softwareCodecsEnabledOnStart != softwareCodecsEnabled) {
-          SoftwareCodecsPreferenceBanner()
-        }
+        val codecsChanged = softwareCodecsEnabledOnStart != softwareCodecsEnabled
+        val loggingChanged = activityLoggingEnabledOnStart != activityLoggingEnabled
 
-        if (activityLoggingEnabledOnStart != activityLoggingEnabled) {
-          ActivityLoggingPreferenceBanner()
+        when {
+          codecsChanged && loggingChanged -> RestartRequiredPreferenceBanner()
+          codecsChanged -> SoftwareCodecsPreferenceBanner()
+          loggingChanged -> ActivityLoggingPreferenceBanner()
         }
       }
     },
+  )
+}
+
+@Composable
+fun RestartRequiredPreferenceBanner(modifier: Modifier = Modifier) {
+  val context = LocalContext.current
+  SettingsInfoBanner(
+    icon = Icons.Outlined.Settings,
+    text = stringResource(R.string.restart_the_app_to_apply_settings_title),
+    ctaText = stringResource(R.string.restart_the_app_to_apply_settings_cta),
+    onAction = { context.restartApplication() },
+    modifier = modifier,
   )
 }
 

@@ -192,6 +192,8 @@
     <string name="settings_screen_activity_logging_description">Record diagnostic events to a local file</string>
     <string name="restart_the_app_to_apply_logging_changes_title">Restart the app to apply logging changes</string>
     <string name="restart_the_app_to_apply_logging_changes_cta">Restart</string>
+    <string name="restart_the_app_to_apply_settings_title">Restart the app to apply settings</string>
+    <string name="restart_the_app_to_apply_settings_cta">Restart</string>
     <string name="export_logs_title">Export logs</string>
     <string name="export_logs_description">Share diagnostic data for troubleshooting</string>
     <string name="export_logs_no_logs">No logs available</string>
