@@ -41,6 +41,7 @@ import coil3.ImageLoader
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import org.grakovne.lissen.R
+import org.grakovne.lissen.common.snapProgress
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
@@ -214,4 +215,7 @@ fun RecentBookItemComposable(
   }
 }
 
-private fun calculateProgress(book: RecentBook): Float = book.listenedPercentage?.div(100.0f) ?: 0.0f
+private fun calculateProgress(book: RecentBook): Float {
+  val progress = (book.listenedPercentage?.div(100.0f) ?: 0.0f).coerceIn(0.0f, 1.0f)
+  return progress.snapProgress()
+}

@@ -4,7 +4,6 @@ import android.view.View
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -41,11 +40,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -58,9 +52,10 @@ import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
 import coil3.request.ImageRequest
 import org.grakovne.lissen.R
-import org.grakovne.lissen.common.ColorScheme
+import org.grakovne.lissen.common.snapProgress
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.components.ArcProgressIndicator
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.navigation.AppNavigationService
@@ -73,6 +68,7 @@ fun MiniPlayerComposable(
   book: DetailedItem,
   imageLoader: ImageLoader,
   playerViewModel: PlayerViewModel,
+  libraryType: LibraryType?,
 ) {
   val view: View = LocalView.current
 
@@ -201,13 +197,12 @@ fun MiniPlayerComposable(
           horizontalAlignment = Alignment.CenterHorizontally,
           verticalArrangement = Arrangement.Center,
         ) {
-          val totalDuration = book.chapters.sumOf { it.duration }
-
           val progress =
-            when (totalDuration > 0) {
-              true -> (totalPosition / totalDuration).toFloat().coerceIn(0f, 1f)
-              false -> 0f
-            }
+            calculateProgress(
+              item = book,
+              libraryType = libraryType,
+              totalPosition = totalPosition,
+            )
 
           PlaybackButton(
             isPlaying = isPlaying,
@@ -218,6 +213,19 @@ fun MiniPlayerComposable(
       }
     }
   }
+}
+
+private fun calculateProgress(
+  item: DetailedItem,
+  libraryType: LibraryType?,
+  totalPosition: Double,
+): Float {
+  val totalDuration = item.chapters.sumOf { it.duration }
+
+  if (totalDuration <= 0 || libraryType != LibraryType.LIBRARY) return 0f
+
+  val progress = (totalPosition / totalDuration).toFloat().coerceIn(0f, 1f)
+  return progress.snapProgress()
 }
 
 @Composable
