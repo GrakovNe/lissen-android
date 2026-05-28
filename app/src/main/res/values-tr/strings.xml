@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">Lissen</string>
     <string name="library_screen_library_title">Kütüphane</string>
     <string name="library_screen_continue_listening_title">Dinlemeye devam et</string>
     <string name="library_screen_preferences_menu_item">Tercihler</string>
