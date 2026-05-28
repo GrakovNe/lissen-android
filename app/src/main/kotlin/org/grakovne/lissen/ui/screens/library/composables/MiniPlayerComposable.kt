@@ -222,10 +222,10 @@ private fun calculateProgress(
 ): Float {
   val totalDuration = item.chapters.sumOf { it.duration }
 
-  if (totalDuration <= 0 || libraryType != LibraryType.LIBRARY) return 0f
-
-  val progress = (totalPosition / totalDuration).toFloat().coerceIn(0f, 1f)
-  return progress.snapProgress()
+  return when (totalDuration > 0 && libraryType == LibraryType.LIBRARY) {
+    true -> (totalPosition / totalDuration).toFloat().coerceIn(0f, 1f).snapProgress()
+    false -> 0f
+  }
 }
 
 @Composable
