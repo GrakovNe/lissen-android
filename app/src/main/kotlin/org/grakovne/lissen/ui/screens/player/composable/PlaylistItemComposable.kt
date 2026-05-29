@@ -55,15 +55,15 @@ fun PlaylistItemComposable(
   val durationColumnWidth =
     remember(maxDurationText, density, bodySmallStyle) {
       with(density) {
-        ceil(
+        val measureResult =
           textMeasurer
             .measure(
               text = AnnotatedString(maxDurationText),
               style = bodySmallStyle,
-            ).size
-            .width
-            .toFloat(),
-        ).toInt().toDp()
+            )
+
+        val rawWidth = measureResult.size.width.toFloat()
+        ceil(rawWidth).toInt().toDp()
       }
     }
 
