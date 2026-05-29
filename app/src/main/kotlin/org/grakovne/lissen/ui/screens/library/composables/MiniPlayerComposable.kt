@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -40,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -56,7 +58,6 @@ import org.grakovne.lissen.common.snapProgress
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
-import org.grakovne.lissen.ui.components.ArcProgressIndicator
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.theme.FoxOrange
@@ -239,11 +240,14 @@ private fun PlaybackButton(
       contentAlignment = Alignment.Center,
       modifier = Modifier.size(34.dp),
     ) {
-      ArcProgressIndicator(
-        progress = progress,
+      CircularProgressIndicator(
+        progress = { progress },
+        modifier = Modifier.size(28.dp),
+        strokeWidth = 28.dp * 0.1f,
+        color = FoxOrange,
         trackColor = colorScheme.onBackground,
-        progressColor = FoxOrange,
-        modifier = Modifier.size(28.5.dp),
+        strokeCap = StrokeCap.Butt,
+        gapSize = 2.dp,
       )
       Icon(
         imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
