@@ -170,6 +170,12 @@ fun AdvancedSettingsComposable(
             },
           )
 
+          AdvancedSettingsSimpleItemComposable(
+            title = stringResource(R.string.settings_screen_user_agent_title),
+            description = stringResource(R.string.settings_screen_user_agent_hint),
+            onclick = { showUserAgentSheet = true },
+          )
+
           SettingsToggleItem(
             title = stringResource(R.string.settings_screen_activity_logging_title),
             description = stringResource(R.string.settings_screen_activity_logging_description),
@@ -181,12 +187,6 @@ fun AdvancedSettingsComposable(
             description = stringResource(R.string.export_logs_description),
             enabled = activityLoggingEnabledOnStart,
             onclick = { shareLogs(context, viewModel) },
-          )
-
-          AdvancedSettingsSimpleItemComposable(
-            title = stringResource(R.string.settings_screen_user_agent_title),
-            description = stringResource(R.string.settings_screen_user_agent_hint),
-            onclick = { showUserAgentSheet = true },
           )
         }
 
