@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,9 +20,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.PauseCircleOutline
-import androidx.compose.material.icons.outlined.PlayCircle
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -39,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -51,10 +54,13 @@ import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
 import coil3.request.ImageRequest
 import org.grakovne.lissen.R
+import org.grakovne.lissen.common.snapProgress
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.navigation.AppNavigationService
+import org.grakovne.lissen.ui.theme.FoxOrange
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
@@ -63,10 +69,12 @@ fun MiniPlayerComposable(
   book: DetailedItem,
   imageLoader: ImageLoader,
   playerViewModel: PlayerViewModel,
+  libraryType: LibraryType?,
 ) {
   val view: View = LocalView.current
 
   val isPlaying: Boolean by playerViewModel.isPlaying.observeAsState(false)
+  val totalPosition by playerViewModel.totalPosition.observeAsState(0.0)
   var backgroundVisible by remember { mutableStateOf(true) }
 
   val dismissState =
@@ -190,19 +198,63 @@ fun MiniPlayerComposable(
           horizontalAlignment = Alignment.CenterHorizontally,
           verticalArrangement = Arrangement.Center,
         ) {
-          Row {
-            IconButton(
-              onClick = { withHaptic(view) { playerViewModel.togglePlayPause() } },
-            ) {
-              Icon(
-                imageVector = if (isPlaying) Icons.Outlined.PauseCircleOutline else Icons.Outlined.PlayCircle,
-                contentDescription = if (isPlaying) "Pause" else "Play",
-                modifier = Modifier.size(34.dp),
-              )
-            }
-          }
+          val progress =
+            calculateProgress(
+              item = book,
+              libraryType = libraryType,
+              totalPosition = totalPosition,
+            )
+
+          PlaybackButton(
+            isPlaying = isPlaying,
+            progress = progress,
+            onClick = { withHaptic(view) { playerViewModel.togglePlayPause() } },
+          )
         }
       }
+    }
+  }
+}
+
+private fun calculateProgress(
+  item: DetailedItem,
+  libraryType: LibraryType?,
+  totalPosition: Double,
+): Float {
+  val totalDuration = item.chapters.sumOf { it.duration }
+
+  return when (totalDuration > 0 && libraryType == LibraryType.LIBRARY) {
+    true -> (totalPosition / totalDuration).toFloat().coerceIn(0f, 1f).snapProgress()
+    false -> 0f
+  }
+}
+
+@Composable
+private fun PlaybackButton(
+  isPlaying: Boolean,
+  progress: Float,
+  onClick: () -> Unit,
+) {
+  IconButton(onClick = onClick) {
+    Box(
+      contentAlignment = Alignment.Center,
+      modifier = Modifier.size(34.dp),
+    ) {
+      CircularProgressIndicator(
+        progress = { progress },
+        modifier = Modifier.size(28.dp),
+        strokeWidth = 28.dp * 0.1f,
+        color = FoxOrange,
+        trackColor = colorScheme.onBackground,
+        strokeCap = StrokeCap.Butt,
+        gapSize = 2.dp,
+      )
+      Icon(
+        imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+        contentDescription = if (isPlaying) "Pause" else "Play",
+        tint = colorScheme.onBackground,
+        modifier = Modifier.size(20.dp),
+      )
     }
   }
 }

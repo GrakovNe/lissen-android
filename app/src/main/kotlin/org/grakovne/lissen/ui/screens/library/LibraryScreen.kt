@@ -345,6 +345,7 @@ fun LibraryScreen(
             book = it,
             imageLoader = imageLoader,
             playerViewModel = playerViewModel,
+            libraryType = preferredLibrary?.type,
           )
         }
       }
