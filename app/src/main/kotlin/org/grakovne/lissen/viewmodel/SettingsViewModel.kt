@@ -108,7 +108,7 @@ class SettingsViewModel
     private val _userAgent = MutableLiveData(preferences.getUserAgent())
     val userAgent: LiveData<String> = _userAgent
 
-    fun provideLogArchiveOrNull(): File? = logProvider.archiveLogFile()
+    fun provideLogArchive(): File? = logProvider.archiveLogFile()
 
     fun preferCrashReporting(value: Boolean) {
       Timber.d("User action: preferCrashReporting $value")

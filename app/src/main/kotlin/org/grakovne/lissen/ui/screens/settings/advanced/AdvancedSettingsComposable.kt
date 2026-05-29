@@ -23,7 +23,6 @@ import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Memory
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -253,7 +252,7 @@ private fun shareLogs(
   context: Context,
   viewModel: SettingsViewModel,
 ) {
-  val archiveFile = viewModel.provideLogArchiveOrNull()
+  val archiveFile = viewModel.provideLogArchive()
 
   if (archiveFile == null) {
     Toast.makeText(context, context.getString(R.string.export_logs_no_logs), Toast.LENGTH_SHORT).show()
