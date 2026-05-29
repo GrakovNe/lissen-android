@@ -32,10 +32,9 @@ timber = "5.0.1"
 moshi = "1.15.2"
 converterMoshi = "3.0.0"
 media3Ffmpeg = "1.9.0+1"
-processPhoenix = "3.0.0"
 junitJupiter = "6.1.0"
-mockk = "1.14.9"
-coroutinesTest = "1.9.0"
+mockk = "1.14.11"
+coroutinesTest = "1.11.0"
 archCoreTesting = "2.2.0"
 androidxTestExtJunit = "1.3.0"
 androidxTestRunner = "1.7.0"
@@ -86,13 +85,11 @@ androidx-media3-session = { group = "androidx.media3", name = "media3-session", 
 androidx-media3-datasource-okhttp = { group = "androidx.media3", name = "media3-datasource-okhttp", version.ref = "media3DatasourceOkhttp" }
 androidx-lifecycle-service = { group = "androidx.lifecycle", name = "lifecycle-service", version.ref = "lifecycleService" }
 androidx-lifecycle-process = { group = "androidx.lifecycle", name = "lifecycle-process", version.ref = "lifecycleProcess" }
-androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 converter-moshi = { module = "com.squareup.retrofit2:converter-moshi", version.ref = "converterMoshi" }
 moshi = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
 moshi-kotlin-codegen = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "moshi" }
 androidx-media3-ffmpeg-decoder = { module = "org.jellyfin.media3:media3-ffmpeg-decoder", version.ref = "media3Ffmpeg" }
-process-phoenix = { module = "com.jakewharton:process-phoenix", version.ref = "processPhoenix" }
 zip4j = { module = "net.lingala.zip4j:zip4j", version.ref = "zip4j" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junitJupiter" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junitJupiter" }

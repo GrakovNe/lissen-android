@@ -49,8 +49,8 @@ android {
     applicationId = "org.grakovne.lissen"
     minSdk = 28
     targetSdk = 37
-    versionCode = 10920
-    versionName = "1.9.20-release"
+    versionCode = 10921
+    versionName = "1.9.21-release"
     
     testInstrumentationRunner = "org.grakovne.lissen.HiltTestRunner"
     
@@ -127,7 +127,6 @@ dependencies {
   implementation(libs.material3)
   
   implementation(libs.androidx.media3.ffmpeg.decoder)
-  implementation(libs.process.phoenix)
   implementation(libs.androidx.material)
   implementation(libs.compose.shimmer.android)
   

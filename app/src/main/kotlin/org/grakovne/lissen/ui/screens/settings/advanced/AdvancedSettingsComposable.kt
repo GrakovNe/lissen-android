@@ -79,7 +79,7 @@ fun AdvancedSettingsComposable(
 
   val userAgent by viewModel.userAgent.observeAsState("")
 
-  var showUserAgentSheet by remember { mutableStateOf(false) }
+  var userAgentExpanded by remember { mutableStateOf(false) }
 
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
@@ -178,7 +178,7 @@ fun AdvancedSettingsComposable(
           AdvancedSettingsSimpleItemComposable(
             title = stringResource(R.string.settings_screen_user_agent_title),
             description = stringResource(R.string.settings_screen_user_agent_hint),
-            onclick = { showUserAgentSheet = true },
+            onclick = { userAgentExpanded = true },
           )
 
           AdvancedSettingsSimpleItemComposable(
@@ -189,13 +189,13 @@ fun AdvancedSettingsComposable(
           )
         }
 
-        if (showUserAgentSheet) {
+        if (userAgentExpanded) {
           UserAgentBottomSheet(
             initialValue = userAgent,
             defaultValue = DEFAULT_USER_AGENT,
             onValueChange = { viewModel.updateUserAgent(it) },
             onRestoreDefault = { viewModel.resetUserAgent() },
-            onDismiss = { showUserAgentSheet = false },
+            onDismiss = { userAgentExpanded = false },
           )
         }
 
