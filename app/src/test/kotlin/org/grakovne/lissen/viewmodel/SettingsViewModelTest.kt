@@ -75,7 +75,6 @@ class SettingsViewModelTest {
     every { preferences.isActivityLoggingEnabled() } returns true
     every { preferences.getAutoDownloadDelayed() } returns false
     every { preferences.getUserAgent() } returns DEFAULT_USER_AGENT
-    every { preferences.isUserAgentCustomized() } returns false
     every { preferences.clientCertAliasFlow } returns flowOf(null)
     every { preferences.hideCompletedFlow } returns flowOf(false)
     every { mediaChannel.fetchConnectionHost() } returns

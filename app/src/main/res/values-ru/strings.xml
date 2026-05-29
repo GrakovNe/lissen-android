@@ -200,6 +200,6 @@
     <string name="export_logs_description">Выгрузить данные приложения для отладки</string>
     <string name="export_logs_no_logs">Файл с логами не найден</string>
     <string name="settings_screen_user_agent_title">Сменить User Agent</string>
-    <string name="settings_screen_user_agent_hint">Настройте HTTP-заголовок User-Agent</string>
+    <string name="settings_screen_user_agent_hint">Настройте User-Agent приложения</string>
     <string name="settings_screen_user_agent_restore_default">Вернуть по умолчанию</string>
 </resources>

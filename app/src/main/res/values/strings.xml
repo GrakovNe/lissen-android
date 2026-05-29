@@ -198,6 +198,6 @@
     <string name="export_logs_description">Share diagnostic data for troubleshooting</string>
     <string name="export_logs_no_logs">No logs available</string>
     <string name="settings_screen_user_agent_title">Change User Agent</string>
-    <string name="settings_screen_user_agent_hint">Customize the HTTP User-Agent header</string>
+    <string name="settings_screen_user_agent_hint">Customize the application User-Agent header</string>
     <string name="settings_screen_user_agent_restore_default">Restore Default</string>
 </resources>

@@ -505,8 +505,6 @@ class LissenSharedPreferences
         remove(KEY_USER_AGENT)
       }
 
-    fun isUserAgentCustomized(): Boolean = sharedPreferences.contains(KEY_USER_AGENT)
-
     fun getSoftwareCodecsEnabled(): Boolean = sharedPreferences.getBoolean(KEY_SOFTWARE_CODECS, false)
 
     fun saveSoftwareCodecsEnabled(value: Boolean) =

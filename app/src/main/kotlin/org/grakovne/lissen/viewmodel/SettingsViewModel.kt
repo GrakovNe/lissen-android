@@ -108,9 +108,6 @@ class SettingsViewModel
     private val _userAgent = MutableLiveData(preferences.getUserAgent())
     val userAgent: LiveData<String> = _userAgent
 
-    private val _userAgentCustomized = MutableLiveData(preferences.isUserAgentCustomized())
-    val userAgentCustomized: LiveData<Boolean> = _userAgentCustomized
-
     fun provideLogArchiveOrNull(): File? = logProvider.archiveLogFile()
 
     fun preferCrashReporting(value: Boolean) {
@@ -304,13 +301,11 @@ class SettingsViewModel
       val sanitized = value.replace(Regex("[\\x00-\\x08\\x0A-\\x1F\\x7F]"), "").trim()
       preferences.saveUserAgent(sanitized)
       _userAgent.postValue(sanitized)
-      _userAgentCustomized.postValue(true)
     }
 
     fun resetUserAgent() {
       preferences.clearUserAgent()
       _userAgent.postValue(DEFAULT_USER_AGENT)
-      _userAgentCustomized.postValue(false)
     }
 
     fun updateCustomHeaders(headers: List<ServerRequestHeader>) {
