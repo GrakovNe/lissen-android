@@ -301,8 +301,9 @@ class SettingsViewModel
     }
 
     fun updateUserAgent(value: String) {
-      preferences.saveUserAgent(value)
-      _userAgent.postValue(value)
+      val sanitized = value.replace(Regex("[\\x00-\\x08\\x0A-\\x1F\\x7F]"), "").trim()
+      preferences.saveUserAgent(sanitized)
+      _userAgent.postValue(sanitized)
       _userAgentCustomized.postValue(true)
     }
 

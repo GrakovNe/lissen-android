@@ -402,6 +402,24 @@ class SettingsViewModelTest {
       viewModel = SettingsViewModel(mediaChannel, preferences, logProvider)
       assertEquals("StoredAgent/3.0", viewModel.userAgent.value)
     }
+
+    @Test
+    fun `updateUserAgent strips newline characters`() {
+      viewModel.updateUserAgent("Custom\nAgent/1.0")
+      verify { preferences.saveUserAgent("CustomAgent/1.0") }
+    }
+
+    @Test
+    fun `updateUserAgent strips carriage return characters`() {
+      viewModel.updateUserAgent("Custom\rAgent/1.0")
+      verify { preferences.saveUserAgent("CustomAgent/1.0") }
+    }
+
+    @Test
+    fun `updateUserAgent trims surrounding whitespace after stripping`() {
+      viewModel.updateUserAgent("  Agent/1.0\n  ")
+      verify { preferences.saveUserAgent("Agent/1.0") }
+    }
   }
 
   @Nested
