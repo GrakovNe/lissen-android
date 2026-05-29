@@ -155,12 +155,6 @@ fun AdvancedSettingsComposable(
             description = stringResource(R.string.settings_screen_crash_report_description),
             initialState = crashReporting,
           ) { viewModel.preferCrashReporting(it) }
-          
-          AdvancedSettingsSimpleItemComposable(
-            title = stringResource(R.string.settings_screen_user_agent_title),
-            description = stringResource(R.string.settings_screen_user_agent_hint),
-            onclick = { showUserAgentSheet = true },
-          )
 
           AdvancedSettingsSimpleItemComposable(
             title = stringResource(R.string.settings_screen_clear_thumbnail_cache_title),
@@ -181,6 +175,12 @@ fun AdvancedSettingsComposable(
             description = stringResource(R.string.settings_screen_activity_logging_description),
             initialState = activityLoggingEnabled,
           ) { viewModel.preferActivityLoggingEnabled(it) }
+
+          AdvancedSettingsSimpleItemComposable(
+            title = stringResource(R.string.settings_screen_user_agent_title),
+            description = stringResource(R.string.settings_screen_user_agent_hint),
+            onclick = { showUserAgentSheet = true },
+          )
 
           AdvancedSettingsSimpleItemComposable(
             title = stringResource(R.string.export_logs_title),
