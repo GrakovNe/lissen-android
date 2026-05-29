@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,6 +23,7 @@ import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Memory
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -337,19 +339,23 @@ private fun UserAgentBottomSheet(
           maxLines = 5,
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Text(
-          text = stringResource(R.string.settings_screen_user_agent_restore_default),
-          style = typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-          color = colorScheme.error,
+        Row(
           modifier =
             Modifier
+              .fillMaxWidth()
+              .padding(top = 16.dp)
               .clickable {
                 text = defaultValue
                 onRestoreDefault()
-              }.padding(vertical = 4.dp),
-        )
+              },
+          horizontalArrangement = Arrangement.Center,
+        ) {
+          Text(
+            text = stringResource(R.string.settings_screen_user_agent_restore_default),
+            style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+            color = colorScheme.error,
+          )
+        }
       }
     },
   )
