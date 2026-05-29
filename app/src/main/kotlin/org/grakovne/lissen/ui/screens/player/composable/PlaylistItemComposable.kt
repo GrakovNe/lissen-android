@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Audiotrack
 import androidx.compose.material.icons.outlined.Check
@@ -32,6 +33,7 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.BookChapterState
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.ui.extensions.formatTime
+import kotlin.math.ceil
 
 @Composable
 fun PlaylistItemComposable(
@@ -53,13 +55,15 @@ fun PlaylistItemComposable(
   val durationColumnWidth =
     remember(maxDurationText, density, bodySmallStyle) {
       with(density) {
-        textMeasurer
-          .measure(
-            text = AnnotatedString(maxDurationText),
-            style = bodySmallStyle,
-          ).size
-          .width
-          .toDp()
+        ceil(
+          textMeasurer
+            .measure(
+              text = AnnotatedString(maxDurationText),
+              style = bodySmallStyle,
+            ).size
+            .width
+            .toFloat(),
+        ).toInt().toDp()
       }
     }
 
@@ -134,7 +138,7 @@ fun PlaylistItemComposable(
     Text(
       text = track.duration.toInt().formatTime(forceLeadingHours),
       style = MaterialTheme.typography.bodySmall,
-      modifier = Modifier.width(durationColumnWidth),
+      modifier = Modifier.widthIn(min = durationColumnWidth),
       textAlign = TextAlign.End,
       fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
       color =
