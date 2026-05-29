@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
+import org.grakovne.lissen.channel.common.DEFAULT_USER_AGENT
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
@@ -73,6 +74,8 @@ class SettingsViewModelTest {
     every { preferences.getSoftwareCodecsEnabled() } returns false
     every { preferences.isActivityLoggingEnabled() } returns true
     every { preferences.getAutoDownloadDelayed() } returns false
+    every { preferences.getUserAgent() } returns DEFAULT_USER_AGENT
+    every { preferences.isUserAgentCustomized() } returns false
     every { preferences.clientCertAliasFlow } returns flowOf(null)
     every { preferences.hideCompletedFlow } returns flowOf(false)
     every { mediaChannel.fetchConnectionHost() } returns
@@ -363,6 +366,41 @@ class SettingsViewModelTest {
       verify {
         preferences.saveCustomHeaders(match { it.size == 1 })
       }
+    }
+  }
+
+  @Nested
+  inner class UserAgentPreference {
+    @Test
+    fun `updateUserAgent updates LiveData`() {
+      viewModel.updateUserAgent("CustomAgent/1.0")
+      assertEquals("CustomAgent/1.0", viewModel.userAgent.value)
+    }
+
+    @Test
+    fun `updateUserAgent saves to preferences`() {
+      viewModel.updateUserAgent("CustomAgent/1.0")
+      verify { preferences.saveUserAgent("CustomAgent/1.0") }
+    }
+
+    @Test
+    fun `resetUserAgent calls clearUserAgent on preferences`() {
+      viewModel.resetUserAgent()
+      verify { preferences.clearUserAgent() }
+    }
+
+    @Test
+    fun `resetUserAgent restores LiveData to DEFAULT_USER_AGENT`() {
+      viewModel.updateUserAgent("CustomAgent/1.0")
+      viewModel.resetUserAgent()
+      assertEquals(DEFAULT_USER_AGENT, viewModel.userAgent.value)
+    }
+
+    @Test
+    fun `userAgent LiveData is initialized from preferences`() {
+      every { preferences.getUserAgent() } returns "StoredAgent/3.0"
+      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider)
+      assertEquals("StoredAgent/3.0", viewModel.userAgent.value)
     }
   }
 

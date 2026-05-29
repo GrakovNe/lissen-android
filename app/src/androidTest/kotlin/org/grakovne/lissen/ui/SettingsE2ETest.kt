@@ -5,6 +5,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -83,6 +84,38 @@ class SettingsE2ETest {
     )
 
     composeRule.onNodeWithTag("settingsScreen").assertIsDisplayed()
+  }
+
+  private fun navigateToAdvancedSettings() {
+    login()
+    composeRule.onNodeWithContentDescription("Menu").performClick()
+    composeRule.onNodeWithText("Application settings").performClick()
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = hasTestTag("settingsScreen"),
+      timeoutMillis = TIMEOUT_MS,
+    )
+    composeRule.onNodeWithText("Advanced preferences").performClick()
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = hasText("Change User Agent"),
+      timeoutMillis = TIMEOUT_MS,
+    )
+  }
+
+  @Test
+  fun advancedSettings_userAgentItemIsVisible() {
+    navigateToAdvancedSettings()
+    composeRule.onNodeWithText("Change User Agent").assertIsDisplayed()
+  }
+
+  @Test
+  fun advancedSettings_userAgentSheetOpensOnClick() {
+    navigateToAdvancedSettings()
+    composeRule.onAllNodesWithText("Change User Agent")[0].performClick()
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = hasText("Restore Default"),
+      timeoutMillis = TIMEOUT_MS,
+    )
+    composeRule.onNodeWithText("Restore Default").assertIsDisplayed()
   }
 
   @Test
