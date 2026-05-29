@@ -4,11 +4,15 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
@@ -19,17 +23,23 @@ import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Memory
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -40,6 +50,7 @@ import androidx.core.content.FileProvider
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
+import org.grakovne.lissen.channel.common.DEFAULT_USER_AGENT
 import org.grakovne.lissen.common.restartApplication
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.settings.composable.PlaybackVolumeBoostSettingsComposable
@@ -66,6 +77,10 @@ fun AdvancedSettingsComposable(
   val softwareCodecsEnabledOnStart = viewModel.softwareCodecsEnabledOnStart
   val activityLoggingEnabled by viewModel.activityLoggingEnabled.observeAsState(true)
   val activityLoggingEnabledOnStart = viewModel.activityLoggingEnabledOnStart
+
+  val userAgent by viewModel.userAgent.observeAsState("")
+
+  var showUserAgentSheet by remember { mutableStateOf(false) }
 
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
@@ -140,6 +155,12 @@ fun AdvancedSettingsComposable(
             description = stringResource(R.string.settings_screen_crash_report_description),
             initialState = crashReporting,
           ) { viewModel.preferCrashReporting(it) }
+          
+          AdvancedSettingsSimpleItemComposable(
+            title = stringResource(R.string.settings_screen_user_agent_title),
+            description = stringResource(R.string.settings_screen_user_agent_hint),
+            onclick = { showUserAgentSheet = true },
+          )
 
           AdvancedSettingsSimpleItemComposable(
             title = stringResource(R.string.settings_screen_clear_thumbnail_cache_title),
@@ -166,6 +187,16 @@ fun AdvancedSettingsComposable(
             description = stringResource(R.string.export_logs_description),
             enabled = activityLoggingEnabledOnStart,
             onclick = { shareLogs(context, viewModel) },
+          )
+        }
+
+        if (showUserAgentSheet) {
+          UserAgentBottomSheet(
+            initialValue = userAgent,
+            defaultValue = DEFAULT_USER_AGENT,
+            onValueChange = { viewModel.updateUserAgent(it) },
+            onRestoreDefault = { viewModel.resetUserAgent() },
+            onDismiss = { showUserAgentSheet = false },
           )
         }
 
@@ -265,4 +296,67 @@ private fun shareLogs(
     }
 
   context.startActivity(Intent.createChooser(shareIntent, "Export logs"))
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun UserAgentBottomSheet(
+  initialValue: String,
+  defaultValue: String,
+  onValueChange: (String) -> Unit,
+  onRestoreDefault: () -> Unit,
+  onDismiss: () -> Unit,
+) {
+  var text by remember { mutableStateOf(initialValue) }
+
+  ModalBottomSheet(
+    containerColor = colorScheme.background,
+    onDismissRequest = onDismiss,
+    content = {
+      Column(
+        modifier =
+          Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp)
+            .padding(horizontal = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+      ) {
+        Text(
+          text = stringResource(R.string.settings_screen_user_agent_title),
+          style = typography.bodyLarge,
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OutlinedTextField(
+          value = text,
+          onValueChange = {
+            text = it
+            onValueChange(it)
+          },
+          modifier = Modifier.fillMaxWidth(),
+          minLines = 3,
+          maxLines = 5,
+        )
+
+        Row(
+          modifier =
+            Modifier
+              .fillMaxWidth()
+              .padding(top = 16.dp)
+              .clickable {
+                text = defaultValue
+                onRestoreDefault()
+              },
+          horizontalArrangement = Arrangement.Center,
+        ) {
+          Text(
+            text = stringResource(R.string.settings_screen_user_agent_restore_default),
+            style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+            color = colorScheme.error,
+          )
+        }
+      }
+    },
+  )
 }

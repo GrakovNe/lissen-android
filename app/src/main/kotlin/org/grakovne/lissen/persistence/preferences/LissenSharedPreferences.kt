@@ -12,6 +12,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import org.grakovne.lissen.channel.common.DEFAULT_USER_AGENT
 import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.NetworkTypeAutoCache
@@ -492,6 +493,18 @@ class LissenSharedPreferences
       }
     }
 
+    fun getUserAgent(): String = sharedPreferences.getString(KEY_USER_AGENT, null) ?: DEFAULT_USER_AGENT
+
+    fun saveUserAgent(value: String) =
+      sharedPreferences.edit {
+        putString(KEY_USER_AGENT, value)
+      }
+
+    fun clearUserAgent() =
+      sharedPreferences.edit {
+        remove(KEY_USER_AGENT)
+      }
+
     fun getSoftwareCodecsEnabled(): Boolean = sharedPreferences.getBoolean(KEY_SOFTWARE_CODECS, false)
 
     fun saveSoftwareCodecsEnabled(value: Boolean) =
@@ -548,6 +561,7 @@ class LissenSharedPreferences
       private const val KEY_BYPASS_SSL = "bypass_ssl"
       private const val KEY_LOCAL_URLS = "local_urls"
       private const val KEY_CLIENT_CERT_ALIAS = "client_cert_alias"
+      private const val KEY_USER_AGENT = "user_agent"
 
       private const val KEY_PLAYING_ITEM = "playing_item"
       private const val KEY_VOLUME_BOOST = "volume_boost"

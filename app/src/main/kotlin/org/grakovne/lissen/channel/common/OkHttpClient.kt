@@ -10,6 +10,7 @@ import org.grakovne.lissen.common.withSslBypass
 import org.grakovne.lissen.common.withTrustedCertificates
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 fun createOkHttpClient(
@@ -49,12 +50,22 @@ private fun authInterceptor(
   val requestBuilder: Request.Builder = original.newBuilder()
 
   val bearer = preferences.getAccessToken() ?: preferences.getToken()
-  bearer?.let { requestBuilder.header("Authorization", "Bearer $it") }
+  try {
+    bearer?.let { requestBuilder.header("Authorization", "Bearer $it") }
+  } catch (e: IllegalArgumentException) {
+    Timber.w("Skipping invalid Authorization header: ${e.message}")
+  }
 
   requestHeaders
     ?.filter { it.name.isNotEmpty() }
     ?.filter { it.value.isNotEmpty() }
-    ?.forEach { requestBuilder.header(it.name, it.value) }
+    ?.forEach { header ->
+      try {
+        requestBuilder.header(header.name, header.value)
+      } catch (e: IllegalArgumentException) {
+        Timber.w("Skipping invalid header '${header.name}': ${e.message}")
+      }
+    }
 
   return chain.proceed(requestBuilder.build())
 }

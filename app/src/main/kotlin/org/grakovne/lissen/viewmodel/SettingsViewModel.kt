@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.channel.audiobookshelf.Host
+import org.grakovne.lissen.channel.common.DEFAULT_USER_AGENT
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
@@ -103,6 +104,9 @@ class SettingsViewModel
 
     private val _autoDownloadDelayed = MutableLiveData(preferences.getAutoDownloadDelayed())
     val autoDownloadDelayed = _autoDownloadDelayed
+
+    private val _userAgent = MutableLiveData(preferences.getUserAgent())
+    val userAgent: LiveData<String> = _userAgent
 
     fun provideLogArchiveOrNull(): File? = logProvider.archiveLogFile()
 
@@ -291,6 +295,17 @@ class SettingsViewModel
           .filterNot { it.route.isEmpty() }
 
       preferences.saveLocalUrls(meaningfulRoutes)
+    }
+
+    fun updateUserAgent(value: String) {
+      val sanitized = value.replace(Regex("[\\x00-\\x08\\x0A-\\x1F\\x7F]"), "").trim()
+      preferences.saveUserAgent(sanitized)
+      _userAgent.postValue(sanitized)
+    }
+
+    fun resetUserAgent() {
+      preferences.clearUserAgent()
+      _userAgent.postValue(DEFAULT_USER_AGENT)
     }
 
     fun updateCustomHeaders(headers: List<ServerRequestHeader>) {
