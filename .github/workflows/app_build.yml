@@ -1,4 +1,4 @@
-name: Build Lissen App
+name: App Building
 
 env:
   # The name of the main module repository
