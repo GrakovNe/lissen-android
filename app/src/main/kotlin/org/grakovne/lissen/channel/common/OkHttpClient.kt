@@ -50,7 +50,11 @@ private fun authInterceptor(
   val requestBuilder: Request.Builder = original.newBuilder()
 
   val bearer = preferences.getAccessToken() ?: preferences.getToken()
-  bearer?.let { requestBuilder.header("Authorization", "Bearer $it") }
+  try {
+    bearer?.let { requestBuilder.header("Authorization", "Bearer $it") }
+  } catch (e: IllegalArgumentException) {
+    Timber.w("Skipping invalid Authorization header: ${e.message}")
+  }
 
   requestHeaders
     ?.filter { it.name.isNotEmpty() }
