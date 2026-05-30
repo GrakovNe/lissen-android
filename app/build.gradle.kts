@@ -1,3 +1,4 @@
+import com.project.starter.easylauncher.filter.ColorRibbonFilter
 import java.util.Properties
 
 plugins {
@@ -9,6 +10,14 @@ plugins {
   id("com.google.devtools.ksp")
   id("kotlin-parcelize")
   id("com.starter.easylauncher") version "6.4.1"
+}
+
+easylauncher {
+  buildTypes {
+    register("debug") {
+      filters(customRibbon(label = "DEBUG", ribbonColor = "#B71C1C", labelColor = "#FFFFFF", gravity = ColorRibbonFilter.Gravity.TOPLEFT))
+    }
+  }
 }
 
 kotlinter {
