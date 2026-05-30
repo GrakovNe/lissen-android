@@ -23,6 +23,7 @@ import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.SeekTime
+import org.grakovne.lissen.domain.SeekTimeOption
 import org.grakovne.lissen.domain.connection.LocalUrl
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.domain.makeDownloadOption
@@ -526,6 +527,24 @@ class LissenSharedPreferences
         putBoolean(KEY_HIDE_COMPLETED, value)
       }
 
+    fun getRewindOnResumeEnabled(): Boolean = sharedPreferences.getBoolean(KEY_REWIND_ON_RESUME, false)
+
+    fun saveRewindOnResumeEnabled(value: Boolean) =
+      sharedPreferences.edit {
+        putBoolean(KEY_REWIND_ON_RESUME, value)
+      }
+
+    fun getRewindOnResumeDuration(): SeekTimeOption =
+      sharedPreferences
+        .getString(KEY_REWIND_ON_RESUME_DURATION, null)
+        ?.let { runCatching { SeekTimeOption.valueOf(it) }.getOrNull() }
+        ?: SeekTimeOption.SEEK_10
+
+    fun saveRewindOnResumeDuration(option: SeekTimeOption) =
+      sharedPreferences.edit {
+        putString(KEY_REWIND_ON_RESUME_DURATION, option.name)
+      }
+
     companion object {
       private const val KEY_ALIAS = "secure_key_alias"
       private const val KEY_HOST = "host"
@@ -556,6 +575,8 @@ class LissenSharedPreferences
       private const val KEY_SOFTWARE_CODECS = "software_codecs"
       private const val KEY_ACTIVITY_LOGGING = "activity_logging_enabled"
       private const val KEY_HIDE_COMPLETED = "hide_completed"
+      private const val KEY_REWIND_ON_RESUME = "rewind_on_resume_enabled"
+      private const val KEY_REWIND_ON_RESUME_DURATION = "rewind_on_resume_duration"
 
       private const val KEY_CUSTOM_HEADERS = "custom_headers"
       private const val KEY_BYPASS_SSL = "bypass_ssl"

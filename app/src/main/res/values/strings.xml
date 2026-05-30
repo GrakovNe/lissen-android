@@ -118,6 +118,9 @@
     <string name="settings_screen_seek_time_hint">Define seek controls</string>
     <string name="rewind_interval">Rewind interval</string>
     <string name="forward_interval">Forward interval</string>
+    <string name="rewind_on_resume_title">Rewind on resume</string>
+    <string name="rewind_on_resume_description">Rewind when resuming after a pause longer than 5 seconds</string>
+    <string name="rewind_on_resume_duration_title">Rewind on resume duration</string>
     <string name="seek_interval_5_seconds">5 seconds</string>
     <string name="seek_interval_10_seconds">10 seconds</string>
     <string name="seek_interval_15_seconds">15 seconds</string>

@@ -108,6 +108,12 @@ class SettingsViewModel
     private val _userAgent = MutableLiveData(preferences.getUserAgent())
     val userAgent: LiveData<String> = _userAgent
 
+    private val _rewindOnResume = MutableLiveData(preferences.getRewindOnResumeEnabled())
+    val rewindOnResume: LiveData<Boolean> = _rewindOnResume
+
+    private val _rewindOnResumeDuration = MutableLiveData<SeekTimeOption>(preferences.getRewindOnResumeDuration())
+    val rewindOnResumeDuration: LiveData<SeekTimeOption> = _rewindOnResumeDuration
+
     fun provideLogArchive(): File? = logProvider.archiveLogFile()
 
     fun preferCrashReporting(value: Boolean) {
@@ -130,6 +136,18 @@ class SettingsViewModel
       Timber.d("User action: preferAutoDownloadDelayed $value")
       _autoDownloadDelayed.postValue(value)
       preferences.saveAutoDownloadDelayed(value)
+    }
+
+    fun preferRewindOnResume(enabled: Boolean) {
+      Timber.d("User action: preferRewindOnResume $enabled")
+      _rewindOnResume.postValue(enabled)
+      preferences.saveRewindOnResumeEnabled(enabled)
+    }
+
+    fun preferRewindOnResumeDuration(option: SeekTimeOption) {
+      Timber.d("User action: preferRewindOnResumeDuration $option")
+      _rewindOnResumeDuration.postValue(option)
+      preferences.saveRewindOnResumeDuration(option)
     }
 
     fun toggleHideCompleted() {

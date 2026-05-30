@@ -17,6 +17,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -39,6 +40,7 @@ import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.domain.SeekTimeOption
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItem
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItemComposable
+import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
@@ -48,9 +50,12 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
   val viewModel: SettingsViewModel = hiltViewModel()
 
   val preferredSeekTime by viewModel.seekTime.observeAsState()
+  val rewindOnResume by viewModel.rewindOnResume.observeAsState(false)
+  val rewindOnResumeDuration by viewModel.rewindOnResumeDuration.observeAsState(SeekTimeOption.SEEK_10)
 
   var rewindTimeExpanded by remember { mutableStateOf(false) }
   var forwardTimeExpanded by remember { mutableStateOf(false) }
+  var rewindOnResumeDurationExpanded by remember { mutableStateOf(false) }
 
   Scaffold(
     topBar = {
@@ -100,6 +105,19 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
             title = stringResource(R.string.forward_interval),
             currentOption = preferredSeekTime?.forward ?: SeekTime.Default.forward,
           ) { forwardTimeExpanded = true }
+
+          SettingsToggleItem(
+            title = stringResource(R.string.rewind_on_resume_title),
+            description = stringResource(R.string.rewind_on_resume_description),
+            initialState = rewindOnResume,
+            onCheckedChange = { viewModel.preferRewindOnResume(it) },
+          )
+
+          SeekTimeOptionComposable(
+            title = stringResource(R.string.rewind_on_resume_duration_title),
+            currentOption = rewindOnResumeDuration,
+            enabled = rewindOnResume,
+          ) { if (rewindOnResume) rewindOnResumeDurationExpanded = true }
         }
       }
     },
@@ -132,12 +150,27 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
       },
     )
   }
+
+  if (rewindOnResumeDurationExpanded) {
+    CommonSettingsItemComposable(
+      items = SeekTimeOption.entries.map { it.toSettingsItem(context) },
+      selectedItem = rewindOnResumeDuration.toSettingsItem(context),
+      onDismissRequest = { rewindOnResumeDurationExpanded = false },
+      onItemSelected = { item ->
+        SeekTimeOption
+          .entries
+          .find { it.name == item.id }
+          ?.let { viewModel.preferRewindOnResumeDuration(it) }
+      },
+    )
+  }
 }
 
 @Composable
 fun SeekTimeOptionComposable(
   title: String,
   currentOption: SeekTimeOption,
+  enabled: Boolean = true,
   onClicked: () -> Unit,
 ) {
   val context = LocalContext.current
@@ -146,7 +179,7 @@ fun SeekTimeOptionComposable(
     modifier =
       Modifier
         .fillMaxWidth()
-        .clickable { onClicked() }
+        .let { if (enabled) it.clickable { onClicked() } else it }
         .padding(horizontal = 24.dp, vertical = 12.dp),
   ) {
     Column(
@@ -154,15 +187,14 @@ fun SeekTimeOptionComposable(
     ) {
       Text(
         text = title,
-        style =
-          typography.bodyLarge.copy(
-            fontWeight = FontWeight.SemiBold,
-          ),
+        style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
         modifier = Modifier.padding(bottom = 4.dp),
+        color = if (enabled) colorScheme.onBackground else colorScheme.onBackground.copy(alpha = 0.4f),
       )
       Text(
         text = currentOption.toItem(context),
         style = typography.bodyMedium,
+        color = if (enabled) colorScheme.onSurfaceVariant else colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
       )
     }
   }

@@ -117,6 +117,7 @@ class MediaRepository
     val currentChapterDuration: LiveData<Double> = _currentChapterDuration
 
     private val handler = Handler(Looper.getMainLooper())
+    private var pausedAt: Long? = null
 
     init {
       val controllerBuilder = MediaController.Builder(context, token)
@@ -161,6 +162,18 @@ class MediaRepository
               object : Player.Listener {
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
                   _isPlaying.value = isPlaying
+                  if (isPlaying) {
+                    pausedAt?.let { pauseTime ->
+                      val pausedMs = System.currentTimeMillis() - pauseTime
+                      if (preferences.getRewindOnResumeEnabled() && pausedMs >= REWIND_ON_RESUME_THRESHOLD_MS) {
+                        val rewindSeconds = getSeekTime(preferences.getRewindOnResumeDuration()).toDouble()
+                        totalPosition.value?.let { seekTo(it - rewindSeconds) }
+                      }
+                    }
+                    pausedAt = null
+                  } else {
+                    pausedAt = System.currentTimeMillis()
+                  }
                 }
 
                 override fun onPlaybackStateChanged(playbackState: Int) {
@@ -548,6 +561,7 @@ class MediaRepository
 
     private companion object {
       private const val CURRENT_TRACK_REPLAY_THRESHOLD = 5
+      private const val REWIND_ON_RESUME_THRESHOLD_MS = 5_000L
 
       private fun getSeekTime(option: SeekTimeOption?): Long =
         when (option) {
