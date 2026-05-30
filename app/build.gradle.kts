@@ -4,7 +4,7 @@ import java.util.Properties
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.compose.compiler)
-
+  
   id("com.google.dagger.hilt.android")
   id("org.jmailen.kotlinter") version "5.5.0"
   id("com.google.devtools.ksp")
@@ -15,7 +15,7 @@ plugins {
 easylauncher {
   buildTypes {
     register("debug") {
-      filters(customRibbon(label = "DEBUG", ribbonColor = "#B71C1C", labelColor = "#FFFFFF", gravity = ColorRibbonFilter.Gravity.TOPLEFT))
+      filters(chromeLike(label = "DEBUG", ribbonColor = "#FF6F3F", labelColor = "#FFFFFF", labelPadding = 15))
     }
   }
 }
@@ -77,7 +77,7 @@ android {
       }
     }
   }
-
+  
   
   buildTypes {
     release {
@@ -123,7 +123,7 @@ android {
     }
   }
   buildToolsVersion = "36.0.0"
-
+  
   testOptions {
     unitTests.all {
       it.useJUnitPlatform()
@@ -196,13 +196,13 @@ dependencies {
   
   debugImplementation(libs.androidx.ui.tooling)
   debugImplementation(libs.androidx.ui.test.manifest)
-
+  
   testImplementation(libs.junit.jupiter)
   testImplementation(libs.mockk)
   testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.androidx.arch.core.testing)
   testRuntimeOnly(libs.junit.platform.launcher)
-
+  
   androidTestImplementation(libs.androidx.test.ext.junit)
   androidTestImplementation(libs.androidx.test.runner)
   androidTestImplementation(libs.androidx.test.rules)
