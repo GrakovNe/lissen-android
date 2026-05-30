@@ -1,3 +1,4 @@
+import com.project.starter.easylauncher.filter.ColorRibbonFilter
 import java.util.Properties
 
 plugins {
@@ -8,6 +9,15 @@ plugins {
   id("org.jmailen.kotlinter") version "5.5.0"
   id("com.google.devtools.ksp")
   id("kotlin-parcelize")
+  id("com.starter.easylauncher") version "6.4.1"
+}
+
+easylauncher {
+  buildTypes {
+    register("debug") {
+      filters(chromeLike(label = "DEBUG", ribbonColor = "#FF6F3F", labelColor = "#FFFFFF", labelPadding = 15))
+    }
+  }
 }
 
 kotlinter {
@@ -67,7 +77,7 @@ android {
       }
     }
   }
-
+  
   
   buildTypes {
     release {
@@ -113,7 +123,7 @@ android {
     }
   }
   buildToolsVersion = "36.0.0"
-
+  
   testOptions {
     unitTests.all {
       it.useJUnitPlatform()
@@ -186,13 +196,13 @@ dependencies {
   
   debugImplementation(libs.androidx.ui.tooling)
   debugImplementation(libs.androidx.ui.test.manifest)
-
+  
   testImplementation(libs.junit.jupiter)
   testImplementation(libs.mockk)
   testImplementation(libs.kotlinx.coroutines.test)
   testImplementation(libs.androidx.arch.core.testing)
   testRuntimeOnly(libs.junit.platform.launcher)
-
+  
   androidTestImplementation(libs.androidx.test.ext.junit)
   androidTestImplementation(libs.androidx.test.runner)
   androidTestImplementation(libs.androidx.test.rules)
