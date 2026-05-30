@@ -3,11 +3,12 @@ import java.util.Properties
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.compose.compiler)
-  
+
   id("com.google.dagger.hilt.android")
   id("org.jmailen.kotlinter") version "5.5.0"
   id("com.google.devtools.ksp")
   id("kotlin-parcelize")
+  id("com.starter.easylauncher") version "6.4.1"
 }
 
 kotlinter {
