@@ -192,4 +192,13 @@
     <string name="export_logs_title">Izvoz zapisnika</string>
     <string name="export_logs_description">Dijeljenje dijagnostičkih podataka za rješavanje problema</string>
     <string name="export_logs_no_logs">Nema dostupnih zapisnika</string>
+    <string name="settings_screen_activity_logging_title">Zapisivanje aktivnosti</string>
+    <string name="settings_screen_activity_logging_description">Zabilježi dijagnostičke događaje u lokalnu datoteku</string>
+    <string name="restart_the_app_to_apply_logging_changes_title">Ponovno pokrenite aplikaciju da biste primijenili promjene u zapisivanju</string>
+    <string name="restart_the_app_to_apply_logging_changes_cta">Ponovno pokretanje</string>
+    <string name="restart_the_app_to_apply_settings_title">Ponovno pokrenite aplikaciju da biste primijenili postavke</string>
+    <string name="restart_the_app_to_apply_settings_cta">Ponovno pokretanje</string>
+    <string name="settings_screen_user_agent_title">Promjena korisničkog agenta</string>
+    <string name="settings_screen_user_agent_hint">Prilagodite zaglavlje korisničkog agenta aplikacije</string>
+    <string name="settings_screen_user_agent_restore_default">Vrati zadano</string>
 </resources>
