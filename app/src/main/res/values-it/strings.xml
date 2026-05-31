@@ -197,4 +197,7 @@
     <string name="restart_the_app_to_apply_logging_changes_cta">Riavvia</string>
     <string name="restart_the_app_to_apply_settings_title">Riavvia l\'app per applicare le impostazioni</string>
     <string name="restart_the_app_to_apply_settings_cta">Riavvia</string>
+    <string name="settings_screen_user_agent_title">Cambia user agent</string>
+    <string name="settings_screen_user_agent_hint">Personalizza l\'intestazione User-Agent dell\'applicazione</string>
+    <string name="settings_screen_user_agent_restore_default">Ripristina predefinito</string>
 </resources>
