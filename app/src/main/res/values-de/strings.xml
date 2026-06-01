@@ -191,4 +191,13 @@
     <string name="export_logs_no_logs">Keine Logs verfügbar</string>
     <string name="export_logs_title">Protokolle exportieren</string>
     <string name="export_logs_description">Diagnosedaten zur Fehlerbehebung freigeben</string>
+    <string name="settings_screen_activity_logging_title">Protokollierung von Aktivitäten</string>
+    <string name="settings_screen_activity_logging_description">Diagnoseereignisse in einer lokalen Datei protokollieren</string>
+    <string name="restart_the_app_to_apply_logging_changes_title">Starten Sie die App neu, um die Änderungen an der Protokollierung zu übernehmen</string>
+    <string name="restart_the_app_to_apply_logging_changes_cta">Neustart</string>
+    <string name="restart_the_app_to_apply_settings_title">Starte die App neu, um die Einstellungen zu übernehmen</string>
+    <string name="restart_the_app_to_apply_settings_cta">Neustart</string>
+    <string name="settings_screen_user_agent_title">User Agent ändern</string>
+    <string name="settings_screen_user_agent_hint">Den User-Agent-Header der Anwendung anpassen</string>
+    <string name="settings_screen_user_agent_restore_default">Auf Standard zurücksetzen</string>
 </resources>
