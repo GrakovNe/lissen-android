@@ -67,6 +67,8 @@ class MediaRepository
     private val _isPlaying = MutableLiveData(false)
     val isPlaying: LiveData<Boolean> = _isPlaying
 
+    private var defaultTimerPending = true
+
     private val _timerOption = MutableLiveData<TimerOption?>()
     val timerOption = _timerOption
 
@@ -146,6 +148,7 @@ class MediaRepository
                   }
 
                   is PlaybackEvent.TimerExpired -> {
+                    defaultTimerPending = true
                     _timerOption.postValue(null)
                     pause()
                   }
@@ -161,6 +164,14 @@ class MediaRepository
               object : Player.Listener {
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
                   _isPlaying.value = isPlaying
+                  if (isPlaying && defaultTimerPending) {
+                    val defaultOption = preferences.getDefaultTimerOption()
+                    if (defaultOption != null) {
+                      updateTimer(defaultOption)
+                    } else {
+                      defaultTimerPending = false
+                    }
+                  }
                 }
 
                 override fun onPlaybackStateChanged(playbackState: Int) {
@@ -185,6 +196,7 @@ class MediaRepository
       timerOption: TimerOption?,
       position: Double? = null,
     ) {
+      defaultTimerPending = false
       _timerOption.postValue(timerOption)
 
       when (timerOption) {
@@ -384,10 +396,12 @@ class MediaRepository
     }
 
     fun clearPreparedItem() {
-      timerOption
-        .value
-        ?.let { updateTimer(timerOption = null) }
+      if (timerOption.value != null) {
+        _timerOption.postValue(null)
+        cancelServiceTimer()
+      }
 
+      defaultTimerPending = true
       _mediaPreparingError.postValue(false)
       _isPlaybackReady.postValue(false)
     }

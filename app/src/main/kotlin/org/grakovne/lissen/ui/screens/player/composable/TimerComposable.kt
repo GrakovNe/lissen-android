@@ -43,6 +43,7 @@ fun TimerComposable(
   libraryType: LibraryType,
   onOptionSelected: (TimerOption?) -> Unit,
   onDismissRequest: () -> Unit,
+  title: String? = null,
 ) {
   val view = LocalView.current
   val context = LocalContext.current
@@ -60,7 +61,7 @@ fun TimerComposable(
         horizontalAlignment = Alignment.CenterHorizontally,
       ) {
         Text(
-          text = stringResource(R.string.timer_title),
+          text = title ?: stringResource(R.string.timer_title),
           style = typography.bodyLarge,
         )
 

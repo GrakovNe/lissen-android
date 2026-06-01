@@ -18,11 +18,14 @@ import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.common.PlaybackVolumeBoost
 import org.grakovne.lissen.common.moshi
+import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DownloadOption
+import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.SeekTime
+import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.domain.connection.LocalUrl
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.domain.makeDownloadOption
@@ -526,6 +529,25 @@ class LissenSharedPreferences
         putBoolean(KEY_HIDE_COMPLETED, value)
       }
 
+    fun getDefaultTimerOption(): TimerOption? =
+      when (val raw = sharedPreferences.getInt(KEY_DEFAULT_SLEEP_TIMER, 0)) {
+        -1 -> CurrentEpisodeTimerOption
+        0 -> null
+        else -> if (raw > 0) DurationTimerOption(raw) else null
+      }
+
+    fun saveDefaultTimerOption(option: TimerOption?) =
+      sharedPreferences.edit {
+        putInt(
+          KEY_DEFAULT_SLEEP_TIMER,
+          when (option) {
+            null -> 0
+            CurrentEpisodeTimerOption -> -1
+            is DurationTimerOption -> option.duration
+          },
+        )
+      }
+
     companion object {
       private const val KEY_ALIAS = "secure_key_alias"
       private const val KEY_HOST = "host"
@@ -565,6 +587,7 @@ class LissenSharedPreferences
 
       private const val KEY_PLAYING_ITEM = "playing_item"
       private const val KEY_VOLUME_BOOST = "volume_boost"
+      private const val KEY_DEFAULT_SLEEP_TIMER = "default_sleep_timer"
 
       private const val ANDROID_KEYSTORE = "AndroidKeyStore"
       private const val TRANSFORMATION = "AES/GCM/NoPadding"

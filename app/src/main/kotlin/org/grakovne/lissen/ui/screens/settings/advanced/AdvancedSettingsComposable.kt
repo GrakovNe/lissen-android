@@ -51,7 +51,11 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.channel.common.DEFAULT_USER_AGENT
 import org.grakovne.lissen.common.restartApplication
+import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
+import org.grakovne.lissen.domain.DurationTimerOption
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.navigation.AppNavigationService
+import org.grakovne.lissen.ui.screens.player.composable.TimerComposable
 import org.grakovne.lissen.ui.screens.settings.composable.PlaybackVolumeBoostSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsInfoBanner
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
@@ -78,8 +82,11 @@ fun AdvancedSettingsComposable(
   val activityLoggingEnabledOnStart = viewModel.activityLoggingEnabledOnStart
 
   val userAgent by viewModel.userAgent.observeAsState("")
+  val defaultTimerOption by viewModel.defaultTimerOption.observeAsState()
+  val preferredLibrary by viewModel.preferredLibrary.observeAsState()
 
   var userAgentExpanded by remember { mutableStateOf(false) }
+  var defaultTimerExpanded by remember { mutableStateOf(false) }
 
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
@@ -132,6 +139,50 @@ fun AdvancedSettingsComposable(
             description = stringResource(R.string.settings_screen_seek_time_hint),
             onclick = { navController.showSeekSettings() },
           )
+
+          val libraryType = preferredLibrary?.type ?: LibraryType.LIBRARY
+          val timerDescription =
+            when (val opt = defaultTimerOption) {
+              null -> {
+                stringResource(R.string.timer_option_disabled)
+              }
+
+              CurrentEpisodeTimerOption -> {
+                when (libraryType) {
+                  LibraryType.PODCAST -> stringResource(R.string.timer_option_after_current_episode)
+                  else -> stringResource(R.string.timer_option_after_current_chapter)
+                }
+              }
+
+              is DurationTimerOption -> {
+                context.resources.getQuantityString(
+                  R.plurals.timer_option_after_time,
+                  opt.duration,
+                  opt.duration,
+                )
+              }
+            }
+
+          Row(
+            modifier =
+              Modifier
+                .fillMaxWidth()
+                .clickable { defaultTimerExpanded = true }
+                .padding(horizontal = 24.dp, vertical = 12.dp),
+          ) {
+            Column(modifier = Modifier.weight(1f)) {
+              Text(
+                text = stringResource(R.string.settings_screen_default_sleep_timer_title),
+                style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                modifier = Modifier.padding(bottom = 4.dp),
+              )
+              Text(
+                text = timerDescription,
+                style = typography.bodyMedium,
+                color = colorScheme.onSurfaceVariant,
+              )
+            }
+          }
 
           if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             SettingsToggleItem(
@@ -196,6 +247,16 @@ fun AdvancedSettingsComposable(
             onValueChange = { viewModel.updateUserAgent(it) },
             onRestoreDefault = { viewModel.resetUserAgent() },
             onDismiss = { userAgentExpanded = false },
+          )
+        }
+
+        if (defaultTimerExpanded) {
+          TimerComposable(
+            currentOption = defaultTimerOption,
+            libraryType = preferredLibrary?.type ?: LibraryType.LIBRARY,
+            onOptionSelected = { viewModel.saveDefaultTimerOption(it) },
+            onDismissRequest = { defaultTimerExpanded = false },
+            title = stringResource(R.string.settings_screen_default_sleep_timer_title),
           )
         }
 
