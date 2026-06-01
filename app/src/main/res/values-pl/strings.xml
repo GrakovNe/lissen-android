@@ -193,4 +193,13 @@
     <string name="export_logs_no_logs">Brak logów</string>
     <string name="export_logs_title">Eksportuj logi</string>
     <string name="export_logs_description">Udostępnij dane diagnostyczne dla łatwiejszej naprawy błędów</string>
+    <string name="settings_screen_activity_logging_title">Logowanie aktywności</string>
+    <string name="settings_screen_activity_logging_description">Rejestruj zdarzenia diagnostyczne do pliku lokalnego</string>
+    <string name="restart_the_app_to_apply_logging_changes_title">Uruchom ponownie aplikację, aby zastosować zmiany w logowaniu</string>
+    <string name="restart_the_app_to_apply_logging_changes_cta">Uruchom ponownie</string>
+    <string name="restart_the_app_to_apply_settings_title">Uruchom ponownie aplikację, aby zastosować ustawienia</string>
+    <string name="restart_the_app_to_apply_settings_cta">Uruchom ponownie</string>
+    <string name="settings_screen_user_agent_restore_default">Przywróć domyślne</string>
+    <string name="settings_screen_user_agent_hint">Dostosuj nagłówek User-Agent aplikacji</string>
+    <string name="settings_screen_user_agent_title">Zmień nagłówek User-Agent</string>
 </resources>
