@@ -43,6 +43,10 @@ tasks.withType<JavaCompile>().configureEach {
   }
 }
 
+configurations.all {
+  resolutionStrategy.force("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
+}
+
 ksp {
   arg("room.schemaLocation", "$projectDir/schemas")
 }
