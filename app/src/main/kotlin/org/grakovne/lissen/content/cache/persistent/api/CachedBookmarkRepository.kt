@@ -6,7 +6,6 @@ import org.grakovne.lissen.content.cache.persistent.entity.CachedBookmarkEntity
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.asBookmarkSyncState
 import org.grakovne.lissen.domain.asInteger
-import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -25,7 +24,7 @@ class CachedBookmarkRepository
     suspend fun upsertBookmark(bookmark: Bookmark) {
       dao.upsert(
         CachedBookmarkEntity(
-          id = UUID.randomUUID().toString(),
+          id = "${bookmark.libraryItemId}:${bookmark.totalPosition.toLong()}",
           title = bookmark.title,
           libraryItemId = bookmark.libraryItemId,
           createdAt = bookmark.createdAt,
