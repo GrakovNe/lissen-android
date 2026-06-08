@@ -43,6 +43,10 @@ tasks.withType<JavaCompile>().configureEach {
   }
 }
 
+configurations.all {
+  resolutionStrategy.force("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
+}
+
 ksp {
   arg("room.schemaLocation", "$projectDir/schemas")
 }
@@ -59,8 +63,8 @@ android {
     applicationId = "org.grakovne.lissen"
     minSdk = 28
     targetSdk = 37
-    versionCode = 11000
-    versionName = "1.10.0-release"
+    versionCode = 11002
+    versionName = "1.10.2-release"
     
     testInstrumentationRunner = "org.grakovne.lissen.HiltTestRunner"
     

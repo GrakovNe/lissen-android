@@ -195,4 +195,13 @@
     <string name="export_logs_title">تصدير السجلات</string>
     <string name="export_logs_description">مشاركة بيانات التشخيص</string>
     <string name="export_logs_no_logs">لا توجد سجلات</string>
+    <string name="settings_screen_activity_logging_title">سجل النشاط</string>
+    <string name="settings_screen_activity_logging_description">احفظ بيانات التشخيص محلياً في ملف</string>
+    <string name="restart_the_app_to_apply_logging_changes_title">أعد تشغيل التطبيق لتطبيق تغييرات التسجيل</string>
+    <string name="restart_the_app_to_apply_logging_changes_cta">إعادة التشغيل</string>
+    <string name="restart_the_app_to_apply_settings_title">إعادة تشغيل التطبيق لتعين الاعدادات الجديدة</string>
+    <string name="restart_the_app_to_apply_settings_cta">إعادة التشغيل</string>
+    <string name="settings_screen_user_agent_title">تغيير هوية العميل</string>
+    <string name="settings_screen_user_agent_restore_default">إعادة الضبط الافتراضي</string>
+    <string name="settings_screen_user_agent_hint">تخصص هوية العميل في ترويسة التطبيق</string>
 </resources>
