@@ -190,4 +190,7 @@
     <string name="settings_screen_user_agent_title">修改 User Agent</string>
     <string name="settings_screen_user_agent_hint">自定义应用 User-Agent 请求头</string>
     <string name="settings_screen_user_agent_restore_default">恢复默认值</string>
+    <plurals name="seek_interval_seconds">
+        <item quantity="other">%d 秒</item>
+    </plurals>
 </resources>
