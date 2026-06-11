@@ -29,7 +29,7 @@ class LissenDataSourceFactory(
       requestHeadersProvider
         .fetchRequestHeaders()
         .associate { it.name to it.value }
-		
+
     OkHttpDataSource
       .Factory(
         createOkHttpClient(
@@ -39,7 +39,7 @@ class LissenDataSourceFactory(
         ),
       ).setDefaultRequestProperties(requestHeaders)
   }
-	
+
   private val defaultFactory by lazy {
     CacheDataSource
       .Factory()
@@ -58,11 +58,11 @@ class LissenDataSourceFactory(
 
   override fun createDataSource(): DataSource {
     val actualDataSource = defaultFactory.createDataSource()
-		
+
     return object : DataSource by actualDataSource {
       override fun open(dataSpec: DataSpec): Long {
         val (itemId, fileId) = unapply(dataSpec.uri) ?: return 0
-				
+
         val resolvedUri =
           mediaProvider
             .provideFileUri(itemId, fileId)
@@ -72,7 +72,7 @@ class LissenDataSourceFactory(
             )
 
         Timber.d("Resolved Uri: $resolvedUri for itemId = $itemId and fileId = $fileId")
-				
+
         return dataSpec
           .buildUpon()
           .setUri(resolvedUri)

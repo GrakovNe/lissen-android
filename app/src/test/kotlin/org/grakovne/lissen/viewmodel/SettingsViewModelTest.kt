@@ -17,12 +17,10 @@ import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.common.LibraryOrderingOption
 import org.grakovne.lissen.common.NetworkTypeAutoCache
-import org.grakovne.lissen.common.PlaybackVolumeBoost
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.SeekTime
-import org.grakovne.lissen.domain.SeekTimeOption
 import org.grakovne.lissen.domain.connection.LocalUrl
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.logging.LissenLogProvider
@@ -64,7 +62,7 @@ class SettingsViewModelTest {
     every { preferences.getAutoDownloadNetworkType() } returns NetworkTypeAutoCache.WIFI_ONLY
     every { preferences.getAutoDownloadLibraryTypes() } returns LibraryType.meaningfulTypes
     every { preferences.getAutoDownloadOption() } returns null
-    every { preferences.getPlaybackVolumeBoost() } returns PlaybackVolumeBoost.DISABLED
+    every { preferences.getPlaybackVolumeBoost() } returns 0
     every { preferences.getLibraryOrdering() } returns LibraryOrderingConfiguration.default
     every { preferences.getCustomHeaders() } returns emptyList()
     every { preferences.getLocalUrls() } returns emptyList()
@@ -210,14 +208,14 @@ class SettingsViewModelTest {
   inner class VolumeBoost {
     @Test
     fun `preferPlaybackVolumeBoost updates LiveData`() {
-      viewModel.preferPlaybackVolumeBoost(PlaybackVolumeBoost.HIGH)
-      assertEquals(PlaybackVolumeBoost.HIGH, viewModel.preferredPlaybackVolumeBoost.value)
+      viewModel.preferPlaybackVolumeBoost(12)
+      assertEquals(12, viewModel.preferredPlaybackVolumeBoost.value)
     }
 
     @Test
     fun `preferPlaybackVolumeBoost saves to preferences`() {
-      viewModel.preferPlaybackVolumeBoost(PlaybackVolumeBoost.MEDIUM)
-      verify { preferences.savePlaybackVolumeBoost(PlaybackVolumeBoost.MEDIUM) }
+      viewModel.preferPlaybackVolumeBoost(6)
+      verify { preferences.savePlaybackVolumeBoost(6) }
     }
   }
 
@@ -255,25 +253,25 @@ class SettingsViewModelTest {
   inner class SeekTimePreference {
     @Test
     fun `preferForwardRewind updates seek forward`() {
-      viewModel.preferForwardRewind(SeekTimeOption.SEEK_60)
-      assertEquals(SeekTimeOption.SEEK_60, viewModel.seekTime.value?.forward)
+      viewModel.preferForwardRewind(60)
+      assertEquals(60, viewModel.seekTime.value?.forward)
     }
 
     @Test
     fun `preferRewindRewind updates seek rewind`() {
-      viewModel.preferRewindRewind(SeekTimeOption.SEEK_30)
-      assertEquals(SeekTimeOption.SEEK_30, viewModel.seekTime.value?.rewind)
+      viewModel.preferRewindRewind(30)
+      assertEquals(30, viewModel.seekTime.value?.rewind)
     }
 
     @Test
     fun `preferForwardRewind preserves rewind value`() {
-      viewModel.preferForwardRewind(SeekTimeOption.SEEK_60)
+      viewModel.preferForwardRewind(60)
       assertEquals(SeekTime.Default.rewind, viewModel.seekTime.value?.rewind)
     }
 
     @Test
     fun `preferRewindRewind preserves forward value`() {
-      viewModel.preferRewindRewind(SeekTimeOption.SEEK_10)
+      viewModel.preferRewindRewind(10)
       assertEquals(SeekTime.Default.forward, viewModel.seekTime.value?.forward)
     }
   }

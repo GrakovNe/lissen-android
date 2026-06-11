@@ -3,7 +3,6 @@ package org.grakovne.lissen.domain.connection
 import androidx.annotation.Keep
 import com.squareup.moshi.JsonClass
 import org.grakovne.lissen.domain.fixUriScheme
-import java.net.URI
 import java.util.UUID
 
 @Keep

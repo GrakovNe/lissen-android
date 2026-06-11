@@ -6,14 +6,10 @@ import com.squareup.moshi.JsonClass
 @Keep
 @JsonClass(generateAdapter = true)
 data class SeekTime(
-  val rewind: SeekTimeOption,
-  val forward: SeekTimeOption,
+  val rewind: Int,
+  val forward: Int,
 ) {
   companion object {
-    val Default =
-      SeekTime(
-        rewind = SeekTimeOption.SEEK_10,
-        forward = SeekTimeOption.SEEK_30,
-      )
+    val Default = SeekTime(rewind = 10, forward = 30)
   }
 }

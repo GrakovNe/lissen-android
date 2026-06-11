@@ -103,19 +103,11 @@
     <string name="forward_interval">Avanzar</string>
     <string name="settings_screen_seek_time_title">Ajustes de desplazamiento</string>
     <string name="settings_screen_seek_time_hint">Configurar los controles de desplazamiento</string>
-    <string name="seek_interval_5_seconds">5 segundos</string>
-    <string name="seek_interval_10_seconds">10 segundos</string>
-    <string name="seek_interval_15_seconds">15 segundos</string>
-    <string name="seek_interval_30_seconds">30 segundos</string>
-    <string name="seek_interval_60_seconds">60 segundos</string>
     <string name="rewind_interval">Rebobinar</string>
     <string name="settings_screen_library_ordering_creation_date_option">Fecha de creación</string>
     <string name="settings_screen_library_ordering_modification_date_option">Fecha de actualización</string>
     <string name="settings_screen_library_ordering_title">Ordenar biblioteca</string>
     <string name="settings_screen_cached_items_title">Descargas</string>
-    <string name="volume_boost_low">Bajo</string>
-    <string name="volume_boost_medium">Medio</string>
-    <string name="volume_boost_high">Alto</string>
     <string name="settings_screen_advanced_preferences_title">Preferencias avanzadas</string>
     <string name="player_screen_chapter_list_navigation_podcast">Episodios</string>
     <string name="settings_screen_connection_type">Tipo de conexión</string>
@@ -131,7 +123,6 @@
     <string name="offline_cache_is_empty">Aún no hay contenido guardado</string>
     <string name="settings_screen_cached_items_hint">Administrar contenido guardado</string>
     <string name="volume_boost_disabled">Deshabilitado</string>
-    <string name="volume_boost_max">Máximo</string>
     <string name="volume_boost_title">Volúmen potenciado</string>
     <string name="playing_item_details_time_remaining">Tiempo restante</string>
     <string name="settings_screen_crash_report_title">Informe de fallos</string>

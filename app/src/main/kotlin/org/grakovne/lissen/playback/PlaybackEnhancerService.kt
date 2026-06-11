@@ -11,7 +11,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import org.grakovne.lissen.common.PlaybackVolumeBoost
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import timber.log.Timber
@@ -52,7 +51,7 @@ class PlaybackEnhancerService
     @OptIn(UnstableApi::class)
     private fun attachEnhancer(
       sessionId: Int,
-      boost: PlaybackVolumeBoost,
+      db: Int,
     ) {
       enhancer?.release()
       enhancer = null
@@ -61,37 +60,24 @@ class PlaybackEnhancerService
 
       try {
         enhancer = LoudnessEnhancer(sessionId)
-        updateGain(boost)
+        updateGain(db)
       } catch (ex: Exception) {
         Timber.e("Unable to attach LoudnessEnhancer due to ${ex.message}")
       }
     }
 
-    private fun updateGain(value: PlaybackVolumeBoost) {
+    private fun updateGain(db: Int) {
       try {
-        when (value) {
-          PlaybackVolumeBoost.DISABLED -> {
-            enhancer?.enabled = false
-          }
-
-          else -> {
-            enhancer?.enabled = true
-            enhancer?.setTargetGain(boostToMb(value))
-          }
+        if (db <= 0) {
+          enhancer?.enabled = false
+        } else {
+          enhancer?.enabled = true
+          enhancer?.setTargetGain(dbToMb(db.toFloat()))
         }
       } catch (ex: Exception) {
-        Timber.e("Unable update volume gain with $value due to: $ex")
+        Timber.e("Unable update volume gain with $db dB due to: $ex")
       }
     }
-
-    private fun boostToMb(value: PlaybackVolumeBoost): Int =
-      when (value) {
-        PlaybackVolumeBoost.DISABLED -> 0
-        PlaybackVolumeBoost.LOW -> dbToMb(3f)
-        PlaybackVolumeBoost.MEDIUM -> dbToMb(6f)
-        PlaybackVolumeBoost.HIGH -> dbToMb(12f)
-        PlaybackVolumeBoost.MAX -> dbToMb(20f)
-      }
 
     private fun dbToMb(db: Float): Int = (db * 100f).roundToInt()
   }

@@ -76,8 +76,6 @@
     <string name="settings_screen_library_ordering_creation_date_option">Luontipäivä</string>
     <string name="settings_screen_seek_time_title">Kelausasetukset</string>
     <string name="rewind_interval">Pikakelaus taaksepäin</string>
-    <string name="seek_interval_5_seconds">5 sekuntia</string>
-    <string name="seek_interval_10_seconds">10 sekuntia</string>
     <string name="continue_playback_shortcut_title">Jatka</string>
     <string name="continue_playback_shortcut_description">Jatka kuuntelua</string>
     <string name="login_screen_connect_button_text">Yhdistä</string>
@@ -105,12 +103,9 @@
     <string name="login_error_lissen_auth_scheme_must_be_whitelisted">Skeema %1$s://%2$s ei ole sallittu palvelimen URI-uudelleenohjausasetuksissa</string>
     <string name="login_error_lissen_auth_failed">Tunnistautuminen ei onnistunut. Ole hyvä, ja tarkista palvelimen asetukset</string>
     <string name="settings_screen_library_ordering_author_option">Kirjailija</string>
-    <string name="seek_interval_60_seconds">60 sekuntia</string>
     <string name="settings_screen_library_ordering_modification_date_option">Muokkauspäivä</string>
-    <string name="seek_interval_15_seconds">15 sekuntia</string>
     <string name="settings_screen_seek_time_hint">Määrittele kelauksen valinnat</string>
     <string name="forward_interval">Pikakelaus eteenpäin</string>
-    <string name="seek_interval_30_seconds">30 sekuntia</string>
     <string name="player_screen_chapter_list_navigation_podcast">Jaksot</string>
     <string name="player_screen_chapter_list_navigation_items">Kohteet</string>
     <string name="settings_screen_connection_type">Yhteyden tyyppi</string>
@@ -129,10 +124,6 @@
     <string name="settings_screen_cached_items_title">Lataukset</string>
     <string name="settings_screen_cached_items_hint">Hallitse ladattua sisältöä</string>
     <string name="volume_boost_disabled">Pois</string>
-    <string name="volume_boost_low">Matala</string>
-    <string name="volume_boost_medium">Keskitaso</string>
-    <string name="volume_boost_high">Korkea</string>
-    <string name="volume_boost_max">Maksimi</string>
     <string name="volume_boost_title">Tehosta voimakkuutta</string>
     <string name="playing_item_details_time_remaining">Aikaa jäljellä</string>
     <string name="settings_screen_advanced_preferences_title">Lisäasetukset</string>

@@ -107,19 +107,11 @@
     <string name="settings_screen_seek_time_hint">გადახვევის კონტროლის განსაზღვრა</string>
     <string name="rewind_interval">უკან გადახვევის ინტერვალი</string>
     <string name="forward_interval">წინ გადახვევის ინტერვალი</string>
-    <string name="seek_interval_5_seconds">5 წამი</string>
-    <string name="seek_interval_10_seconds">10 წამი</string>
-    <string name="seek_interval_15_seconds">15 წამი</string>
-    <string name="seek_interval_30_seconds">30 წამი</string>
-    <string name="seek_interval_60_seconds">60 წამი</string>
     <string name="continue_playback_shortcut_title">გაგრძელება</string>
     <string name="continue_playback_shortcut_description">მოსმენის გაგრძელება</string>
     <string name="offline_cache_is_empty">შენახული კონტენტი არ არის</string>
     <string name="settings_screen_cached_items_title">ჩამოტვირთვები</string>
     <string name="settings_screen_cached_items_hint">შენახული კონტენტის მართვა</string>
     <string name="volume_boost_disabled">გათიშულია</string>
-    <string name="volume_boost_low">დაბალი</string>
-    <string name="volume_boost_medium">საშუალო</string>
-    <string name="volume_boost_high">მაღალი</string>
     <string name="volume_boost_title">აწეული ხმა</string>
 </resources>

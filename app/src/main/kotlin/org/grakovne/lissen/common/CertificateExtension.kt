@@ -68,12 +68,14 @@ fun OkHttpClient.Builder.withSslBypass(
       override fun checkClientTrusted(
         chain: Array<X509Certificate>,
         authType: String,
-      ) {}
+      ) {
+      }
 
       override fun checkServerTrusted(
         chain: Array<X509Certificate>,
         authType: String,
-      ) {}
+      ) {
+      }
 
       override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
     }
