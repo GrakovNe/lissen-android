@@ -99,11 +99,6 @@
     <string name="settings_screen_seek_time_hint">Keresésvezérlés meghatározása</string>
     <string name="rewind_interval">Visszatekerés időköze</string>
     <string name="forward_interval">Előretekerés időköze</string>
-    <string name="seek_interval_5_seconds">5 másodperc</string>
-    <string name="seek_interval_10_seconds">10 másodperc</string>
-    <string name="seek_interval_15_seconds">15 másodperc</string>
-    <string name="seek_interval_30_seconds">30 másodperc</string>
-    <string name="seek_interval_60_seconds">60 másodperc</string>
     <string name="continue_playback_shortcut_title">Folytatás</string>
     <string name="continue_playback_shortcut_description">Hallgatás folytatása</string>
     <string name="downloads_menu_download_unknown">Letöltések</string>
@@ -117,10 +112,7 @@
     <string name="settings_screen_cached_items_title">Letöltések</string>
     <string name="settings_screen_cached_items_hint">Mentett tartalom kezelése</string>
     <string name="downloads_menu_download_option_remaining_chapters">Hátralévő fejezetek</string>
-    <string name="volume_boost_disabled">Letiltva</string>
-    <string name="volume_boost_low">Alacsony</string>
-    <string name="volume_boost_medium">Közepes</string>
-    <string name="volume_boost_high">Magas</string>
+        <string name="volume_boost_disabled">Letiltva</string>
     <string name="volume_boost_title">Megnövelt hangerő</string>
     <string name="login_error_lissen_not_found">A hivatkozás nem található. Kérlek ellenőrizd a kiszolgáló beállításait</string>
     <string name="playing_item_details_time_remaining">Hátralevő idő</string>
@@ -158,7 +150,6 @@
     <string name="settings_screen_delay_autodownload_description">Várjon egy kicsit, mielőtt elkezdené a letöltést</string>
     <string name="settings_screen_bypass_ssl_title">SSL-ellenőrzés letiltása</string>
     <string name="settings_screen_bypass_ssl_hint">Csatlakozás bármilyen tanúsítvánnyal rendelkező kiszolgálókhoz</string>
-    <string name="volume_boost_max">Maximum</string>
     <string name="settings_screen_material_you_title">Material You színek</string>
     <string name="settings_screen_material_you_description">Az alkalmazás színeinek illesztése a háttérképhez</string>
     <string name="timer_option_disabled">Letiltva</string>

@@ -16,7 +16,6 @@ import org.grakovne.lissen.channel.common.DEFAULT_USER_AGENT
 import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.NetworkTypeAutoCache
-import org.grakovne.lissen.common.PlaybackVolumeBoost
 import org.grakovne.lissen.common.moshi
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DownloadOption
@@ -191,16 +190,18 @@ class LissenSharedPreferences
       }
     }
 
-    fun savePlaybackVolumeBoost(playbackVolumeBoost: PlaybackVolumeBoost) =
+    fun savePlaybackVolumeBoost(db: Int) =
       sharedPreferences.edit {
-        putString(KEY_VOLUME_BOOST, playbackVolumeBoost.name)
+        putInt(KEY_VOLUME_BOOST, db)
       }
 
-    fun getPlaybackVolumeBoost(): PlaybackVolumeBoost =
-      sharedPreferences
-        .getString(KEY_VOLUME_BOOST, PlaybackVolumeBoost.DISABLED.name)
-        ?.let { PlaybackVolumeBoost.valueOf(it) }
-        ?: PlaybackVolumeBoost.DISABLED
+    fun getPlaybackVolumeBoost(): Int =
+      try {
+        sharedPreferences.getInt(KEY_VOLUME_BOOST, 0)
+      } catch (e: ClassCastException) {
+        sharedPreferences.edit { remove(KEY_VOLUME_BOOST) }
+        0
+      }
 
     fun saveAutoDownloadNetworkType(networkTypeAutoCache: NetworkTypeAutoCache) =
       sharedPreferences.edit {

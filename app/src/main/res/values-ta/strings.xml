@@ -101,8 +101,6 @@
     <string name="episodes_list_empty">எந்த போட்காச்டுக்கும் அத்தியாயங்கள் இல்லை</string>
     <string name="notification_content_caching_channel">உள்ளடக்க கேச்சிங்</string>
     <string name="forward_interval">முன்னோக்கி இடைவெளி</string>
-    <string name="seek_interval_5_seconds">5 விநாடிகள்</string>
-    <string name="seek_interval_10_seconds">10 வினாடிகள்</string>
     <string name="downloads_menu_download_option_remaining_chapters">மீதமுள்ள பாடங்கள்</string>
     <string name="chapters_list_empty">புத்தகத்தில் அத்தியாயங்கள் இல்லை</string>
     <string name="items_list_empty">கிடைக்கக்கூடிய உருப்படிகள் இல்லை</string>
@@ -113,9 +111,6 @@
     <string name="settings_screen_library_ordering_author_option">நூலாசிரியர்</string>
     <string name="settings_screen_library_ordering_creation_date_option">உருவாக்கிய தேதி</string>
     <string name="settings_screen_seek_time_title">அமைப்புகளைத் தேடுங்கள்</string>
-    <string name="seek_interval_15_seconds">15 வினாடிகள்</string>
-    <string name="seek_interval_30_seconds">30 வினாடிகள்</string>
-    <string name="seek_interval_60_seconds">60 வினாடிகள்</string>
     <string name="settings_screen_cached_items_hint">சேமித்த உள்ளடக்கத்தை நிர்வகிக்கவும்</string>
     <string name="player_screen_chapter_list_navigation_podcast">அத்தியாயங்கள்</string>
     <string name="player_screen_chapter_list_navigation_items">பொருட்கள்</string>
@@ -128,11 +123,7 @@
     <string name="downloads_menu_download_option_disable">முடக்கப்பட்டது</string>
     <string name="downloads_menu_download_option_stop_downloads">பதிவிறக்குவதை நிறுத்து</string>
     <string name="login_error_lissen_not_found">முகவரி கிடைக்கவில்லை. உங்கள் சர்வர் அமைப்புகளைச் சரிபார்க்கவும்</string>
-    <string name="volume_boost_disabled">முடக்கப்பட்டது</string>
-    <string name="volume_boost_low">குறைந்த</string>
-    <string name="volume_boost_medium">சராசரி</string>
-    <string name="volume_boost_high">உயர்</string>
-    <string name="volume_boost_max">பெருமம்</string>
+        <string name="volume_boost_disabled">முடக்கப்பட்டது</string>
     <string name="volume_boost_title">அதிகரித்த ஒலி</string>
     <string name="playing_item_details_time_remaining">மீதமுள்ள நேரம்</string>
     <string name="settings_screen_advanced_preferences_title">மேம்பட்ட விருப்பத்தேர்வுகள்</string>

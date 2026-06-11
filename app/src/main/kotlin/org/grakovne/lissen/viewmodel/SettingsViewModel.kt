@@ -12,12 +12,10 @@ import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.NetworkTypeAutoCache
-import org.grakovne.lissen.common.PlaybackVolumeBoost
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryType
-import org.grakovne.lissen.domain.SeekTimeOption
 import org.grakovne.lissen.domain.connection.LocalUrl
 import org.grakovne.lissen.domain.connection.LocalUrl.Companion.clean
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
@@ -230,10 +228,10 @@ class SettingsViewModel
       preferences.saveLibraryOrdering(configuration)
     }
 
-    fun preferPlaybackVolumeBoost(playbackVolumeBoost: PlaybackVolumeBoost) {
-      Timber.d("User action: preferPlaybackVolumeBoost $playbackVolumeBoost")
-      _preferredPlaybackVolumeBoost.postValue(playbackVolumeBoost)
-      preferences.savePlaybackVolumeBoost(playbackVolumeBoost)
+    fun preferPlaybackVolumeBoost(db: Int) {
+      Timber.d("User action: preferPlaybackVolumeBoost $db dB")
+      _preferredPlaybackVolumeBoost.postValue(db)
+      preferences.savePlaybackVolumeBoost(db)
     }
 
     fun preferColorScheme(colorScheme: ColorScheme) {
@@ -266,19 +264,19 @@ class SettingsViewModel
       preferences.saveAutoDownloadOption(option)
     }
 
-    fun preferForwardRewind(option: SeekTimeOption) {
-      Timber.d("User action: preferForwardSkip $option")
+    fun preferForwardRewind(seconds: Int) {
+      Timber.d("User action: preferForwardSkip $seconds")
       val current = _seekTime.value ?: return
-      val updated = current.copy(forward = option)
+      val updated = current.copy(forward = seconds)
 
       preferences.saveSeekTime(updated)
       _seekTime.postValue(updated)
     }
 
-    fun preferRewindRewind(option: SeekTimeOption) {
-      Timber.d("User action: preferRewindSkip $option")
+    fun preferRewindRewind(seconds: Int) {
+      Timber.d("User action: preferRewindSkip $seconds")
       val current = _seekTime.value ?: return
-      val updated = current.copy(rewind = option)
+      val updated = current.copy(rewind = seconds)
 
       preferences.saveSeekTime(updated)
       _seekTime.postValue(updated)

@@ -108,11 +108,6 @@
     <string name="settings_screen_seek_time_hint">Definirajte kontrole premotavanja</string>
     <string name="rewind_interval">Interval premotavanja unatrag</string>
     <string name="forward_interval">Interval premotavanja unaprijed</string>
-    <string name="seek_interval_5_seconds">5 sekundi</string>
-    <string name="seek_interval_10_seconds">10 sekundi</string>
-    <string name="seek_interval_15_seconds">15 sekundi</string>
-    <string name="seek_interval_30_seconds">30 sekundi</string>
-    <string name="seek_interval_60_seconds">60 sekundi</string>
     <string name="continue_playback_shortcut_title">Nastavi</string>
     <string name="continue_playback_shortcut_description">Nastavi slušati</string>
     <string name="offline_cache_is_empty">Nema spremljenog sadržaja</string>
@@ -124,8 +119,7 @@
     <string name="settings_screen_connection_external">Vanjska mreža</string>
     <string name="downloads_menu_download_option_disable">Onemogućeno</string>
     <string name="downloads_menu_download_option_stop_downloads">Zaustavi preuzimanje</string>
-    <string name="volume_boost_disabled">Onemogućeno</string>
-    <string name="volume_boost_max">Maksimum</string>
+        <string name="volume_boost_disabled">Onemogućeno</string>
     <string name="volume_boost_title">Pojačana glasnoća</string>
     <string name="playing_item_details_time_remaining">Preostalo vrijeme</string>
     <string name="settings_screen_advanced_preferences_title">Napredne postavke</string>
@@ -155,9 +149,6 @@
     <string name="settings_screen_bypass_ssl_hint">Poveži se s poslužiteljima s bilo kojim certifikatom</string>
     <string name="player_screen_chapter_list_navigation_podcast">Epizode</string>
     <string name="login_error_lissen_not_found">URL nije pronađen. Provjerite postavke poslužitelja</string>
-    <string name="volume_boost_low">Nisko</string>
-    <string name="volume_boost_medium">Srednje</string>
-    <string name="volume_boost_high">Visoko</string>
     <string name="download_settings_description">Definiranje preuzimanja i upravljanje sadržajem</string>
     <string name="settings_screen_advanced_preferences_description">Kontrola pretraživanja, proxy zaglavlje ili zvuk</string>
     <string name="settings_screen_material_you_description">Uskladi boje aplikacije s pozadinom</string>

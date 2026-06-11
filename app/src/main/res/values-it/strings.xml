@@ -98,15 +98,10 @@
     <string name="settings_screen_library_ordering_author_option">Autore</string>
     <string name="settings_screen_library_ordering_title">Ordinamento della libreria</string>
     <string name="settings_screen_library_ordering_modification_date_option">Data di aggiornamento</string>
-    <string name="seek_interval_30_seconds">30 secondi</string>
     <string name="settings_screen_seek_time_title">Impostazioni di avanzamento</string>
     <string name="forward_interval">Intervallo di avanzamento</string>
     <string name="settings_screen_seek_time_hint">Definisci i controlli di avanzamento</string>
     <string name="rewind_interval">Intervallo di riavvolgimento</string>
-    <string name="seek_interval_5_seconds">5 secondi</string>
-    <string name="seek_interval_10_seconds">10 secondi</string>
-    <string name="seek_interval_15_seconds">15 secondi</string>
-    <string name="seek_interval_60_seconds">60 secondi</string>
     <string name="continue_playback_shortcut_title">Continua</string>
     <string name="continue_playback_shortcut_description">Continua ad ascoltare</string>
     <string name="playing_item_details_narrator">Narratore</string>
@@ -118,10 +113,7 @@
     <string name="downloads_menu_download_option_remaining_chapters">Capitoli rimanenti</string>
     <string name="downloads_menu_download_option_remaining_items">Elementi rimanenti</string>
     <string name="login_error_lissen_not_found">URL non trovato. Controlla le impostazioni del server</string>
-    <string name="volume_boost_disabled">Disabilitato</string>
-    <string name="volume_boost_low">Basso</string>
-    <string name="volume_boost_medium">Medio</string>
-    <string name="volume_boost_high">Alto</string>
+        <string name="volume_boost_disabled">Disabilitato</string>
     <string name="volume_boost_title">Volume aumentato</string>
     <string name="playing_item_details_time_remaining">Tempo rimanente</string>
     <string name="settings_screen_advanced_preferences_title">Preferenze avanzate</string>
@@ -156,7 +148,6 @@
     <string name="settings_screen_internal_connection_url_description">Definisci l\'accesso al server per WiFi casalingo</string>
     <string name="settings_screen_delay_autodownload_title">Ritarda download automatico</string>
     <string name="settings_screen_delay_autodownload_description">Attendi un attimo prima di iniziare lo scaricamento</string>
-    <string name="volume_boost_max">Massimo</string>
     <string name="settings_screen_bypass_ssl_title">Disabilita verifica SSL</string>
     <string name="settings_screen_bypass_ssl_hint">Connetti ai server senza alcun certificato</string>
     <string name="settings_screen_material_you_title">Colori Material You</string>

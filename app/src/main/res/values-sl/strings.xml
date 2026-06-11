@@ -103,13 +103,8 @@
     <string name="settings_screen_seek_time_title">Nastavitve preskoka</string>
     <string name="rewind_interval">Interval previjanja nazaj</string>
     <string name="forward_interval">Intervaj previjanja naprej</string>
-    <string name="seek_interval_10_seconds">10 sekund</string>
     <string name="settings_screen_seek_time_hint">Nastavi možnosti preskoka</string>
-    <string name="seek_interval_5_seconds">5 sekund</string>
-    <string name="seek_interval_30_seconds">30 sekund</string>
     <string name="continue_playback_shortcut_description">Nadaljuj poslušanje</string>
-    <string name="seek_interval_15_seconds">15 sekund</string>
-    <string name="seek_interval_60_seconds">60 sekund</string>
     <string name="continue_playback_shortcut_title">Nadaljuj</string>
     <string name="playing_item_details_narrator">Pripovedovalec</string>
     <string name="playing_item_details_duration">Trajanje</string>
@@ -119,10 +114,7 @@
     <string name="downloads_menu_download_option_remaining_chapters">Preostala poglavja</string>
     <string name="downloads_menu_download_option_remaining_episodes">Preostale epizode</string>
     <string name="downloads_menu_download_option_remaining_items">Preostali elementi</string>
-    <string name="volume_boost_disabled">Onemogočeno</string>
-    <string name="volume_boost_low">Nizko</string>
-    <string name="volume_boost_medium">Srednje</string>
-    <string name="volume_boost_high">Visoko</string>
+        <string name="volume_boost_disabled">Onemogočeno</string>
     <string name="volume_boost_title">Povečanje glasnosti</string>
     <string name="player_screen_chapter_list_navigation_podcast">Epizode</string>
     <string name="player_screen_chapter_list_navigation_items">Elementi</string>
@@ -132,7 +124,6 @@
     <string name="downloads_menu_download_option_disable">Onemogočeno</string>
     <string name="downloads_menu_download_option_stop_downloads">Ustavi prenos</string>
     <string name="login_error_lissen_not_found">URL-ja ni mogoče najti. Preveri nastavitve strežnika</string>
-    <string name="volume_boost_max">Maksimum</string>
     <string name="playing_item_details_time_remaining">Preostali čas</string>
     <string name="settings_screen_advanced_preferences_title">Napredne nastavitve</string>
     <string name="settings_screen_advanced_preferences_description">Nadzor iskanja, posredniških glav ali zvoka</string>

@@ -105,11 +105,6 @@
     <string name="rewind_interval">Rückspulintervall</string>
     <string name="continue_playback_shortcut_title">Weiter</string>
     <string name="forward_interval">Vorwärtsspulintervall</string>
-    <string name="seek_interval_5_seconds">5 Sekunden</string>
-    <string name="seek_interval_10_seconds">10 Sekunden</string>
-    <string name="seek_interval_15_seconds">15 Sekunden</string>
-    <string name="seek_interval_30_seconds">30 Sekunden</string>
-    <string name="seek_interval_60_seconds">60 Sekunden</string>
     <string name="continue_playback_shortcut_description">Weiterhören</string>
     <string name="settings_screen_cached_items_hint">Verwalte heruntergeladene Inhalte</string>
     <string name="offline_cache_is_empty">Keine heruntergeladenen Inhalte vorhanden</string>
@@ -121,10 +116,7 @@
     <string name="player_screen_chapter_list_navigation_items">Elemente</string>
     <string name="downloads_menu_download_option_disable">Deaktiviert</string>
     <string name="login_error_lissen_not_found">URL nicht gefunden. Prüfe die Server Einstellungen</string>
-    <string name="volume_boost_disabled">Deaktiviert</string>
-    <string name="volume_boost_low">Wenig</string>
-    <string name="volume_boost_medium">Mittel</string>
-    <string name="volume_boost_high">Viel</string>
+        <string name="volume_boost_disabled">Deaktiviert</string>
     <string name="volume_boost_title">Lautstärke erhöhen</string>
     <string name="playing_item_details_time_remaining">Zeit verbleibend</string>
     <string name="settings_screen_advanced_preferences_title">Erweiterte Einstellungen</string>
@@ -158,7 +150,6 @@
     <string name="downloads_menu_download_option_stop_downloads">Download stoppen</string>
     <string name="settings_screen_bypass_ssl_title">SSL Zertifikatprüfung deaktivieren</string>
     <string name="settings_screen_bypass_ssl_hint">Verbindung zum Server mit jedem Zertifikat</string>
-    <string name="volume_boost_max">Maximum</string>
     <string name="settings_screen_material_you_title">Material You Farben</string>
     <string name="settings_screen_material_you_description">Passe die Farben der App an dein Hintergrundbild an</string>
     <string name="settings_screen_software_codecs_enabled_title">Software-Decodierung erzwingen</string>

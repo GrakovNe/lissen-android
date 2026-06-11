@@ -100,11 +100,6 @@
     <string name="settings_screen_seek_time_hint">设置快进/快退选项</string>
     <string name="rewind_interval">快退间隔</string>
     <string name="forward_interval">快进间隔</string>
-    <string name="seek_interval_5_seconds">5 秒</string>
-    <string name="seek_interval_10_seconds">10 秒</string>
-    <string name="seek_interval_15_seconds">15 秒</string>
-    <string name="seek_interval_30_seconds">30 秒</string>
-    <string name="seek_interval_60_seconds">60 秒</string>
     <string name="offline_cache_is_empty">暂无离线内容</string>
     <string name="settings_screen_cached_items_title">下载</string>
     <string name="settings_screen_cached_items_hint">管理保存的内容</string>
@@ -116,10 +111,7 @@
     <string name="continue_playback_shortcut_description">继续播放上次收听的内容</string>
     <string name="settings_screen_connected_as_title">当前用户</string>
     <string name="continue_playback_shortcut_title">继续播放</string>
-    <string name="volume_boost_disabled">禁用</string>
-    <string name="volume_boost_low">低</string>
-    <string name="volume_boost_medium">中</string>
-    <string name="volume_boost_high">高</string>
+        <string name="volume_boost_disabled">禁用</string>
     <string name="volume_boost_title">音量增强</string>
     <string name="playing_item_details_time_remaining">剩余时间</string>
     <string name="settings_screen_advanced_preferences_title">高级选项</string>
@@ -157,7 +149,6 @@
     <string name="settings_screen_connection_external">外部网络</string>
     <string name="settings_screen_bypass_ssl_hint">连接到任何证书的服务器</string>
     <string name="settings_screen_bypass_ssl_title">禁用 SSL 验证</string>
-    <string name="volume_boost_max">最大</string>
     <string name="settings_screen_material_you_description">根据当前壁纸自动调整应用的颜色主题</string>
     <string name="settings_screen_material_you_title">Material You 动态配色</string>
     <string name="timer_option_disabled">禁用</string>

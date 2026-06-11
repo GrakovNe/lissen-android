@@ -88,9 +88,7 @@
     <string name="playing_item_details_duration">Durée</string>
     <string name="settings_screen_seek_time_title">Rechercher les paramètres</string>
     <string name="settings_screen_seek_time_hint">Définir les contrôles de recherche</string>
-    <string name="seek_interval_5_seconds">5 secondes</string>
     <string name="forward_interval">Intervalle avant</string>
-    <string name="seek_interval_10_seconds">10 secondes</string>
     <string name="chapters_list_empty">Ce livre n\'a pas de chapitres</string>
     <string name="continue_playback_shortcut_description">Continuer à écouter</string>
     <string name="episodes_list_empty">Il n\'y a pas d\'épisodes dans les podcasts</string>
@@ -99,9 +97,6 @@
     <string name="source_code_on_github_title">Code source sur GitHub</string>
     <string name="source_code_on_github_subtitle">Signaler des problèmes ou suggérer des améliorations</string>
     <string name="rewind_interval">Intervalle de rembobinage</string>
-    <string name="seek_interval_15_seconds">15 secondes</string>
-    <string name="seek_interval_30_seconds">30 secondes</string>
-    <string name="seek_interval_60_seconds">60 secondes</string>
     <string name="continue_playback_shortcut_title">Continuer</string>
     <string name="settings_screen_library_ordering_author_option">Auteur</string>
     <string name="settings_screen_library_ordering_creation_date_option">Date de création</string>
@@ -126,10 +121,7 @@
     <string name="offline_cache_is_empty">Aucun contenu enregistré pour le moment</string>
     <string name="settings_screen_cached_items_title">Téléchargements</string>
     <string name="settings_screen_cached_items_hint">Gérer le contenu enregistré</string>
-    <string name="volume_boost_disabled">Désactiver</string>
-    <string name="volume_boost_low">Faible</string>
-    <string name="volume_boost_medium">Moyen</string>
-    <string name="volume_boost_high">Fort</string>
+        <string name="volume_boost_disabled">Désactiver</string>
     <string name="volume_boost_title">Volume boosté</string>
     <string name="playing_item_details_time_remaining">Temps restant</string>
     <string name="settings_screen_advanced_preferences_title">Préférences avancées</string>
@@ -157,7 +149,6 @@
     <string name="settings_screen_clear_thumbnail_cache_success_toast">Cache des miniatures nettoyé</string>
     <string name="settings_screen_delay_autodownload_title">Reporter le téléchargement automatique</string>
     <string name="settings_screen_delay_autodownload_description">Attendre un peu avant que le téléchargement ne commence</string>
-    <string name="volume_boost_max">Maximum</string>
     <string name="settings_screen_bypass_ssl_title">Désactiver la vérification SSL</string>
     <string name="settings_screen_bypass_ssl_hint">Se connecter aux serveurs avec tout certificat</string>
     <string name="settings_screen_material_you_title">Couleurs Material You</string>

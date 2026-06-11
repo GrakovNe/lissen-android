@@ -112,11 +112,6 @@
     <string name="settings_screen_seek_time_hint">Настройте управление перемоткой</string>
     <string name="rewind_interval">Интервал перемотки назад</string>
     <string name="forward_interval">Интервал перемотки вперёд</string>
-    <string name="seek_interval_5_seconds">5 секунд</string>
-    <string name="seek_interval_10_seconds">10 секунд</string>
-    <string name="seek_interval_15_seconds">15 секунд</string>
-    <string name="seek_interval_30_seconds">30 секунд</string>
-    <string name="seek_interval_60_seconds">60 секунд</string>
     <string name="continue_playback_shortcut_title">Продолжить</string>
     <string name="continue_playback_shortcut_description">Продолжить слушать</string>
     <string name="playing_item_details_narrator">Чтец</string>
@@ -124,11 +119,7 @@
     <string name="offline_cache_is_empty">Загруженного контента нет</string>
     <string name="settings_screen_cached_items_title">Загруженный контент</string>
     <string name="settings_screen_cached_items_hint">Управляйте скачанными книгами и подкастами</string>
-    <string name="volume_boost_disabled">Отключено</string>
-    <string name="volume_boost_low">Небольшое увеличение</string>
-    <string name="volume_boost_medium">Среднее увеличение</string>
-    <string name="volume_boost_high">Значительное увеличение</string>
-    <string name="volume_boost_max">Максимальное увеличение</string>
+        <string name="volume_boost_disabled">Отключено</string>
     <string name="volume_boost_title">Усиление громкости</string>
     <string name="playing_item_details_time_remaining">Оставшееся время</string>
     <string name="settings_screen_advanced_preferences_title">Расширенные настройки</string>
