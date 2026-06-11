@@ -114,7 +114,7 @@
     <string name="downloads_menu_download_option_remaining_chapters">Preostala poglavja</string>
     <string name="downloads_menu_download_option_remaining_episodes">Preostale epizode</string>
     <string name="downloads_menu_download_option_remaining_items">Preostali elementi</string>
-        <string name="volume_boost_disabled">Onemogočeno</string>
+    <string name="volume_boost_disabled">Onemogočeno</string>
     <string name="volume_boost_title">Povečanje glasnosti</string>
     <string name="player_screen_chapter_list_navigation_podcast">Epizode</string>
     <string name="player_screen_chapter_list_navigation_items">Elementi</string>

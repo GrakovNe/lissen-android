@@ -119,7 +119,7 @@
     <string name="offline_cache_is_empty">Belum ada konten tersimpan</string>
     <string name="settings_screen_cached_items_title">Unduhan</string>
     <string name="settings_screen_cached_items_hint">Kelola konten tersimpan</string>
-        <string name="volume_boost_disabled">Dinonaktifkan</string>
+    <string name="volume_boost_disabled">Dinonaktifkan</string>
     <string name="volume_boost_title">Peningkatan volume</string>
     <string name="playing_item_details_time_remaining">Sisa waktu</string>
     <string name="settings_screen_advanced_preferences_title">Preferensi lanjutan</string>

@@ -112,7 +112,7 @@
     <string name="settings_screen_cached_items_title">Letöltések</string>
     <string name="settings_screen_cached_items_hint">Mentett tartalom kezelése</string>
     <string name="downloads_menu_download_option_remaining_chapters">Hátralévő fejezetek</string>
-        <string name="volume_boost_disabled">Letiltva</string>
+    <string name="volume_boost_disabled">Letiltva</string>
     <string name="volume_boost_title">Megnövelt hangerő</string>
     <string name="login_error_lissen_not_found">A hivatkozás nem található. Kérlek ellenőrizd a kiszolgáló beállításait</string>
     <string name="playing_item_details_time_remaining">Hátralevő idő</string>

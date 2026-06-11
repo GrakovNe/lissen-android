@@ -123,7 +123,7 @@
     <string name="offline_cache_is_empty">Ei vielä tallennettuja sisältöjä</string>
     <string name="settings_screen_cached_items_title">Lataukset</string>
     <string name="settings_screen_cached_items_hint">Hallitse ladattua sisältöä</string>
-        <string name="volume_boost_disabled">Pois</string>
+    <string name="volume_boost_disabled">Pois</string>
     <string name="volume_boost_title">Tehosta voimakkuutta</string>
     <string name="playing_item_details_time_remaining">Aikaa jäljellä</string>
     <string name="settings_screen_advanced_preferences_title">Lisäasetukset</string>

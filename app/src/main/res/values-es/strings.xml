@@ -122,7 +122,7 @@
     <string name="login_error_lissen_not_found">No se encontró la URL. Verifica la configuración de tu servidor</string>
     <string name="offline_cache_is_empty">Aún no hay contenido guardado</string>
     <string name="settings_screen_cached_items_hint">Administrar contenido guardado</string>
-        <string name="volume_boost_disabled">Deshabilitado</string>
+    <string name="volume_boost_disabled">Deshabilitado</string>
     <string name="volume_boost_title">Volúmen potenciado</string>
     <string name="playing_item_details_time_remaining">Tiempo restante</string>
     <string name="settings_screen_crash_report_title">Informe de fallos</string>

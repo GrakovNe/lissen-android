@@ -119,7 +119,7 @@
     <string name="settings_screen_connection_external">Vanjska mreža</string>
     <string name="downloads_menu_download_option_disable">Onemogućeno</string>
     <string name="downloads_menu_download_option_stop_downloads">Zaustavi preuzimanje</string>
-        <string name="volume_boost_disabled">Onemogućeno</string>
+    <string name="volume_boost_disabled">Onemogućeno</string>
     <string name="volume_boost_title">Pojačana glasnoća</string>
     <string name="playing_item_details_time_remaining">Preostalo vrijeme</string>
     <string name="settings_screen_advanced_preferences_title">Napredne postavke</string>

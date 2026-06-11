@@ -35,7 +35,6 @@ import org.grakovne.lissen.domain.DetailedItem.Companion.same
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
-import org.grakovne.lissen.playback.PlaybackCommand
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.playback.service.calculateChapterIndexAndPosition

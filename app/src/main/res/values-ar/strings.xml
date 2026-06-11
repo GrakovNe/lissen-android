@@ -123,7 +123,7 @@
     <string name="settings_screen_crash_report_description">ارسال تقارير الاعطال</string>
     <string name="login_error_lissen_not_found">رابط URL غير موجود. تأكد من إعدادات الخادم</string>
     <string name="settings_screen_crash_report_title">إبلاغ التعطل</string>
-        <string name="volume_boost_disabled">معطل</string>
+    <string name="volume_boost_disabled">معطل</string>
     <string name="volume_boost_title">الصوت المُعزَّز</string>
     <string name="settings_screen_connection_type">نوع الإتصال</string>
     <string name="settings_screen_connection_local">الشبكة المحلية</string>

@@ -119,7 +119,7 @@
     <string name="offline_cache_is_empty">Hələ ki, yadda saxlanılan məzmun yoxdur</string>
     <string name="settings_screen_cached_items_title">Yüklənənlər</string>
     <string name="settings_screen_cached_items_hint">Saxlanılan məzmunu idarə edin</string>
-        <string name="volume_boost_disabled">Deaktivdir</string>
+    <string name="volume_boost_disabled">Deaktivdir</string>
     <string name="volume_boost_title">Gücləndirilmiş səs</string>
     <string name="playing_item_details_time_remaining">Qalan vaxt</string>
     <string name="settings_screen_advanced_preferences_title">Qabaqcıl seçimlər</string>

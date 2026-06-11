@@ -124,7 +124,7 @@
     <string name="offline_cache_is_empty">Nenhum conteúdo salvo</string>
     <string name="settings_screen_cached_items_title">Downloads</string>
     <string name="settings_screen_cached_items_hint">Gerenciar conteúdo salvo</string>
-        <string name="volume_boost_disabled">Desativado</string>
+    <string name="volume_boost_disabled">Desativado</string>
     <string name="volume_boost_title">Ganho de volume</string>
     <string name="playing_item_details_time_remaining">Tempo restante</string>
     <string name="settings_screen_advanced_preferences_title">Preferências avançadas</string>

@@ -123,7 +123,7 @@
     <string name="downloads_menu_download_option_disable">முடக்கப்பட்டது</string>
     <string name="downloads_menu_download_option_stop_downloads">பதிவிறக்குவதை நிறுத்து</string>
     <string name="login_error_lissen_not_found">முகவரி கிடைக்கவில்லை. உங்கள் சர்வர் அமைப்புகளைச் சரிபார்க்கவும்</string>
-        <string name="volume_boost_disabled">முடக்கப்பட்டது</string>
+    <string name="volume_boost_disabled">முடக்கப்பட்டது</string>
     <string name="volume_boost_title">அதிகரித்த ஒலி</string>
     <string name="playing_item_details_time_remaining">மீதமுள்ள நேரம்</string>
     <string name="settings_screen_advanced_preferences_title">மேம்பட்ட விருப்பத்தேர்வுகள்</string>

@@ -2,7 +2,8 @@ package org.grakovne.lissen.channel.common
 
 import androidx.annotation.Keep
 
-@Keep data class AuthData(
+@Keep
+data class AuthData(
   val methods: List<AuthMethod>,
   val oauthLoginText: String?,
 ) {

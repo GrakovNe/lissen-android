@@ -112,6 +112,6 @@
     <string name="offline_cache_is_empty">შენახული კონტენტი არ არის</string>
     <string name="settings_screen_cached_items_title">ჩამოტვირთვები</string>
     <string name="settings_screen_cached_items_hint">შენახული კონტენტის მართვა</string>
-        <string name="volume_boost_disabled">გათიშულია</string>
+    <string name="volume_boost_disabled">გათიშულია</string>
     <string name="volume_boost_title">აწეული ხმა</string>
 </resources>

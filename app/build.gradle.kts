@@ -1,4 +1,3 @@
-import com.project.starter.easylauncher.filter.ColorRibbonFilter
 import java.util.Properties
 
 plugins {

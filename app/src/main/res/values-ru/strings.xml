@@ -119,7 +119,7 @@
     <string name="offline_cache_is_empty">Загруженного контента нет</string>
     <string name="settings_screen_cached_items_title">Загруженный контент</string>
     <string name="settings_screen_cached_items_hint">Управляйте скачанными книгами и подкастами</string>
-        <string name="volume_boost_disabled">Отключено</string>
+    <string name="volume_boost_disabled">Отключено</string>
     <string name="volume_boost_title">Усиление громкости</string>
     <string name="playing_item_details_time_remaining">Оставшееся время</string>
     <string name="settings_screen_advanced_preferences_title">Расширенные настройки</string>

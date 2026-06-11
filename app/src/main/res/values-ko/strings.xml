@@ -119,7 +119,7 @@
     <string name="downloads_menu_download_option_disable">비활성</string>
     <string name="downloads_menu_download_option_stop_downloads">다운로드 중지</string>
     <string name="login_error_lissen_not_found">URL을 찾을 수 없습니다. 서버 설정을 확인하세요.</string>
-        <string name="volume_boost_disabled">비활성</string>
+    <string name="volume_boost_disabled">비활성</string>
     <string name="volume_boost_title">사운드 증폭</string>
     <string name="playing_item_details_time_remaining">남은 시간</string>
     <string name="settings_screen_advanced_preferences_title">고급 설정</string>

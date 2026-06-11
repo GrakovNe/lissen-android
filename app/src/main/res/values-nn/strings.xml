@@ -123,7 +123,7 @@
     <string name="downloads_menu_download_book">Last ned boken</string>
     <string name="downloads_menu_download_podcast">Last ned podcast</string>
     <string name="downloads_menu_download_unknown">Nedlastinger</string>
-        <string name="volume_boost_disabled">Funksjonshemmet</string>
+    <string name="volume_boost_disabled">Funksjonshemmet</string>
     <string name="volume_boost_title">Økt volum</string>
     <string name="playing_item_details_time_remaining">Gjenværende tid</string>
     <string name="settings_screen_advanced_preferences_title">Avanserte innstillinger</string>

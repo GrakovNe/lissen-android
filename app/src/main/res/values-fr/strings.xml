@@ -121,7 +121,7 @@
     <string name="offline_cache_is_empty">Aucun contenu enregistré pour le moment</string>
     <string name="settings_screen_cached_items_title">Téléchargements</string>
     <string name="settings_screen_cached_items_hint">Gérer le contenu enregistré</string>
-        <string name="volume_boost_disabled">Désactiver</string>
+    <string name="volume_boost_disabled">Désactiver</string>
     <string name="volume_boost_title">Volume boosté</string>
     <string name="playing_item_details_time_remaining">Temps restant</string>
     <string name="settings_screen_advanced_preferences_title">Préférences avancées</string>

@@ -113,7 +113,7 @@
     <string name="downloads_menu_download_option_remaining_chapters">Capitoli rimanenti</string>
     <string name="downloads_menu_download_option_remaining_items">Elementi rimanenti</string>
     <string name="login_error_lissen_not_found">URL non trovato. Controlla le impostazioni del server</string>
-        <string name="volume_boost_disabled">Disabilitato</string>
+    <string name="volume_boost_disabled">Disabilitato</string>
     <string name="volume_boost_title">Volume aumentato</string>
     <string name="playing_item_details_time_remaining">Tempo rimanente</string>
     <string name="settings_screen_advanced_preferences_title">Preferenze avanzate</string>

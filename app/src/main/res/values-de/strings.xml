@@ -116,7 +116,7 @@
     <string name="player_screen_chapter_list_navigation_items">Elemente</string>
     <string name="downloads_menu_download_option_disable">Deaktiviert</string>
     <string name="login_error_lissen_not_found">URL nicht gefunden. Prüfe die Server Einstellungen</string>
-        <string name="volume_boost_disabled">Deaktiviert</string>
+    <string name="volume_boost_disabled">Deaktiviert</string>
     <string name="volume_boost_title">Lautstärke erhöhen</string>
     <string name="playing_item_details_time_remaining">Zeit verbleibend</string>
     <string name="settings_screen_advanced_preferences_title">Erweiterte Einstellungen</string>

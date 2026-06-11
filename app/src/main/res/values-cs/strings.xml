@@ -125,7 +125,7 @@
     <string name="offline_cache_is_empty">Zatím žádný uložený obsah</string>
     <string name="settings_screen_cached_items_title">Stažené</string>
     <string name="settings_screen_cached_items_hint">Spravovat uložený obsah</string>
-        <string name="volume_boost_disabled">Zakázáno</string>
+    <string name="volume_boost_disabled">Zakázáno</string>
     <string name="volume_boost_title">Zvýšená hlasitost</string>
     <string name="playing_item_details_time_remaining">Zbývající čas</string>
     <string name="settings_screen_advanced_preferences_title">Pokročilé nastavení</string>
