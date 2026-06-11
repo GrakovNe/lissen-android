@@ -440,8 +440,13 @@ class LissenSharedPreferences
         }
 
         else -> {
-          val adapter = moshi.adapter(SeekTime::class.java)
-          adapter.fromJson(json) ?: SeekTime.Default
+          try {
+            val adapter = moshi.adapter(SeekTime::class.java)
+            adapter.fromJson(json) ?: SeekTime.Default
+          } catch (e: com.squareup.moshi.JsonDataException) {
+            sharedPreferences.edit(commit = true) { remove(KEY_PREFERRED_SEEK_TIME) }
+            SeekTime.Default
+          }
         }
       }
     }
