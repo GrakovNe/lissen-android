@@ -191,4 +191,9 @@
     <string name="settings_screen_user_agent_title">Cambia user agent</string>
     <string name="settings_screen_user_agent_hint">Personalizza l\'intestazione User-Agent dell\'applicazione</string>
     <string name="settings_screen_user_agent_restore_default">Ripristina predefinito</string>
+    <plurals name="seek_interval_seconds">
+        <item quantity="one">%d secondo</item>
+        <item quantity="many">%d secondi</item>
+        <item quantity="other">%d secondi</item>
+    </plurals>
 </resources>
