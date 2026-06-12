@@ -35,6 +35,7 @@ import org.grakovne.lissen.domain.DetailedItem.Companion.same
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.playback.service.DefaultTimerActivator
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.playback.service.calculateChapterIndexAndPosition
@@ -52,6 +53,7 @@ class MediaRepository
     private val preferences: LissenSharedPreferences,
     private val mediaChannel: LissenMediaProvider,
     private val eventBus: PlaybackEventBus,
+    private val defaultTimerActivator: DefaultTimerActivator,
   ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private lateinit var mediaController: MediaController
@@ -64,8 +66,6 @@ class MediaRepository
 
     private val _isPlaying = MutableLiveData(false)
     val isPlaying: LiveData<Boolean> = _isPlaying
-
-    private var defaultTimerPending = true
 
     private val _timerOption = MutableLiveData<TimerOption?>()
     val timerOption = _timerOption
@@ -146,7 +146,7 @@ class MediaRepository
                   }
 
                   is PlaybackEvent.TimerExpired -> {
-                    defaultTimerPending = true
+                    defaultTimerActivator.onTimerExpired()
                     _timerOption.postValue(null)
                     pause()
                   }
@@ -162,13 +162,8 @@ class MediaRepository
               object : Player.Listener {
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
                   _isPlaying.value = isPlaying
-                  if (isPlaying && defaultTimerPending) {
-                    val defaultOption = preferences.getDefaultTimerOption()
-                    if (defaultOption != null) {
-                      updateTimer(defaultOption)
-                    } else {
-                      defaultTimerPending = false
-                    }
+                  if (isPlaying) {
+                    defaultTimerActivator.onPlaybackStarted { updateTimer(it) }
                   }
                 }
 
@@ -194,7 +189,7 @@ class MediaRepository
       timerOption: TimerOption?,
       position: Double? = null,
     ) {
-      defaultTimerPending = false
+      defaultTimerActivator.onTimerManuallySet()
       _timerOption.postValue(timerOption)
 
       when (timerOption) {
@@ -399,7 +394,7 @@ class MediaRepository
         cancelServiceTimer()
       }
 
-      defaultTimerPending = true
+      defaultTimerActivator.onNewBookPrepared()
       _mediaPreparingError.postValue(false)
       _isPlaybackReady.postValue(false)
     }

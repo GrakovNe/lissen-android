@@ -6,6 +6,7 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
 import androidx.core.content.edit
+import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Types
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.awaitClose
@@ -535,23 +536,42 @@ class LissenSharedPreferences
         putBoolean(KEY_HIDE_COMPLETED, value)
       }
 
-    fun getDefaultTimerOption(): TimerOption? =
-      when (val raw = sharedPreferences.getInt(KEY_DEFAULT_SLEEP_TIMER, 0)) {
-        -1 -> CurrentEpisodeTimerOption
-        0 -> null
-        else -> if (raw > 0) DurationTimerOption(raw) else null
+    fun getDefaultTimerOption(): TimerOption? {
+      val json = sharedPreferences.getString(KEY_DEFAULT_SLEEP_TIMER, null) ?: return null
+      return try {
+        moshi.adapter(TimerOptionDto::class.java).fromJson(json)?.toTimerOption()
+      } catch (_: Throwable) {
+        null
       }
+    }
 
     fun saveDefaultTimerOption(option: TimerOption?) =
       sharedPreferences.edit {
-        putInt(
-          KEY_DEFAULT_SLEEP_TIMER,
-          when (option) {
-            null -> 0
-            CurrentEpisodeTimerOption -> -1
-            is DurationTimerOption -> option.duration
-          },
-        )
+        when (option) {
+          null -> {
+            remove(KEY_DEFAULT_SLEEP_TIMER)
+          }
+
+          else -> {
+            putString(
+              KEY_DEFAULT_SLEEP_TIMER,
+              moshi.adapter(TimerOptionDto::class.java).toJson(option.toDto()),
+            )
+          }
+        }
+      }
+
+    private fun TimerOption.toDto() =
+      when (this) {
+        CurrentEpisodeTimerOption -> TimerOptionDto(type = "episode")
+        is DurationTimerOption -> TimerOptionDto(type = "duration", minutes = duration)
+      }
+
+    private fun TimerOptionDto.toTimerOption(): TimerOption? =
+      when (type) {
+        "episode" -> CurrentEpisodeTimerOption
+        "duration" -> minutes?.let { DurationTimerOption(it) }
+        else -> null
       }
 
     companion object {
@@ -654,3 +674,9 @@ class LissenSharedPreferences
         )
     }
   }
+
+@JsonClass(generateAdapter = true)
+internal data class TimerOptionDto(
+  val type: String,
+  val minutes: Int? = null,
+)
