@@ -28,10 +28,12 @@ import org.grakovne.lissen.ui.screens.login.LoginScreen
 import org.grakovne.lissen.ui.screens.player.PlayerScreen
 import org.grakovne.lissen.ui.screens.settings.SettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.AdvancedSettingsComposable
+import org.grakovne.lissen.ui.screens.settings.advanced.AppearancePreferencesScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.ClientCertificateSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.ConnectionSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.CustomHeadersSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.LocalUrlSettingsScreen
+import org.grakovne.lissen.ui.screens.settings.advanced.PlaybackPreferencesScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.SeekSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.cache.CacheSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.cache.CachedItemsSettingsScreen
@@ -286,7 +288,6 @@ fun AppNavHost(
         popExitTransition = { popExitTransition },
       ) {
         AdvancedSettingsComposable(
-          navController = navigationService,
           onBack = {
             if (navController.previousBackStackEntry != null) {
               navController.popBackStack()
@@ -303,6 +304,39 @@ fun AppNavHost(
         popExitTransition = { popExitTransition },
       ) {
         SeekSettingsScreen(
+          onBack = {
+            if (navController.previousBackStackEntry != null) {
+              navController.popBackStack()
+            }
+          },
+        )
+      }
+
+      composable(
+        route = "settings_screen/playback_preferences",
+        enterTransition = { enterTransition },
+        exitTransition = { exitTransition },
+        popEnterTransition = { popEnterTransition },
+        popExitTransition = { popExitTransition },
+      ) {
+        PlaybackPreferencesScreen(
+          navController = navigationService,
+          onBack = {
+            if (navController.previousBackStackEntry != null) {
+              navController.popBackStack()
+            }
+          },
+        )
+      }
+
+      composable(
+        route = "settings_screen/appearance_preferences",
+        enterTransition = { enterTransition },
+        exitTransition = { exitTransition },
+        popEnterTransition = { popEnterTransition },
+        popExitTransition = { popExitTransition },
+      ) {
+        AppearancePreferencesScreen(
           onBack = {
             if (navController.previousBackStackEntry != null) {
               navController.popBackStack()

@@ -131,8 +131,12 @@
     <string name="volume_boost_disabled">Disabled</string>
     <string name="volume_boost_title">Boosted volume</string>
     <string name="playing_item_details_time_remaining">Time remaining</string>
+    <string name="playback_preferences_title">Playback preferences</string>
+    <string name="playback_preferences_description">Volume, seek controls, and audio</string>
+    <string name="appearance_preferences_title">Appearance preferences</string>
+    <string name="appearance_preferences_description">Color scheme, sorting, and theme</string>
     <string name="settings_screen_advanced_preferences_title">Advanced preferences</string>
-    <string name="settings_screen_advanced_preferences_description">Control seeking, proxy headers, or sound</string>
+    <string name="settings_screen_advanced_preferences_description">Diagnostics, logging, and other options</string>
     <string name="settings_screen_crash_report_title">Crash reporting</string>
     <string name="settings_screen_crash_report_description">Send reports if the app crashes</string>
     <string name="settings_screen_software_codecs_enabled_title">Force software decoding</string>
