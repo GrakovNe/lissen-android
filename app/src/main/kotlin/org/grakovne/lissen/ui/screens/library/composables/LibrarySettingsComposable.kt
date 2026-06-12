@@ -149,7 +149,7 @@ fun LibrarySettingsComposable(
 private fun SectionHeader(title: String) {
   Text(
     text = title,
-    style = typography.labelSmall,
+    style = typography.labelMedium,
     color = colorScheme.onSurfaceVariant,
     modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp),
   )
@@ -179,7 +179,7 @@ private fun ToggleRow(
     Spacer(modifier = Modifier.width(12.dp))
     Text(
       text = title,
-      style = typography.bodyMedium,
+      style = typography.bodyLarge,
       color = colorScheme.onSurface,
       modifier = Modifier.weight(1f),
     )
@@ -222,7 +222,7 @@ private fun SortOptionRow(
     Spacer(modifier = Modifier.width(12.dp))
     Text(
       text = title,
-      style = typography.bodyMedium,
+      style = typography.bodyLarge,
       color = if (isSelected) colorScheme.onSurface else colorScheme.onSurfaceVariant,
       modifier = Modifier.weight(1f),
     )
@@ -260,7 +260,7 @@ fun ApplicationSettingsItemComposable(onClicked: () -> Unit) {
     Spacer(modifier = Modifier.width(12.dp))
     Text(
       text = stringResource(R.string.application_settings),
-      style = typography.bodyMedium,
+      style = typography.bodyLarge,
       color = colorScheme.onSurface,
       modifier = Modifier.weight(1f),
     )
