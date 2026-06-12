@@ -15,23 +15,21 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material.icons.outlined.CalendarToday
-import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.SortByAlpha
 import androidx.compose.material.icons.outlined.Update
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -83,8 +81,7 @@ fun LibrarySettingsComposable(
       modifier =
         Modifier
           .testTag("librarySettingsSheet")
-          .fillMaxWidth()
-          .padding(bottom = 0.dp),
+          .fillMaxWidth(),
     ) {
       SectionHeader(stringResource(R.string.library_quick_settings_filters_title))
 
@@ -98,7 +95,7 @@ fun LibrarySettingsComposable(
       if (libraryViewModel.fetchPreferredLibraryType() == LibraryType.LIBRARY) {
         ToggleRow(
           title = stringResource(R.string.hide_completed_items),
-          icon = Icons.Outlined.CheckCircle,
+          icon = Icons.Outlined.VisibilityOff,
           checked = hideCompleted,
           onClick = { onHideCompletedToggled() },
         )
@@ -170,7 +167,7 @@ private fun ToggleRow(
       Modifier
         .fillMaxWidth()
         .clickable { onClick() }
-        .padding(horizontal = 16.dp, vertical = 12.dp),
+        .padding(horizontal = 16.dp, vertical = 10.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {
     Icon(
@@ -213,7 +210,7 @@ private fun SortOptionRow(
       Modifier
         .fillMaxWidth()
         .clickable { onClick() }
-        .padding(horizontal = 16.dp, vertical = 12.dp),
+        .padding(horizontal = 16.dp, vertical = 16.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {
     Icon(
