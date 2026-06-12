@@ -122,13 +122,13 @@
     <string name="volume_boost_disabled">Deaktiveret</string>
     <string name="volume_boost_title">Forstærket lydstyrke</string>
     <string name="playing_item_details_time_remaining">Resterende tid</string>
-    <string name="settings_screen_advanced_preferences_title">Avancerede indstillinger</string>
-    <string name="settings_screen_advanced_preferences_description">Administrer tidshop, proxy-headers og lyd</string>
+    <string name="settings_screen_advanced_preferences_title">Avanceret</string>
+    <string name="settings_screen_advanced_preferences_description">Diagnostik, logfiler og andre indstillinger</string>
     <string name="settings_screen_crash_report_title">Nedbrudsrapportering</string>
     <string name="settings_screen_crash_report_description">Indsend rapporter ved app-nedbrud</string>
     <string name="settings_download_automatically_title">Hent automatisk</string>
-    <string name="download_settings_title">Hentningsindstillinger</string>
-    <string name="download_settings_description">Konfigurer hentnings-indstillinger og håndter lokalt indhold</string>
+    <string name="download_settings_title">Hentninger</string>
+    <string name="download_settings_description">Hentninger og indholdsstyring</string>
     <string name="download_settings_network_type_title">Brug til automatisk hentnin</string>
     <string name="download_settings_library_type_title">Hent automatisk</string>
     <string name="download_settings_library_type_no_items_selected">Ingen typer defineret</string>
@@ -167,7 +167,11 @@
     <string name="tree_node_downloads">Downloads</string>
     <string name="tree_node_root">Rod</string>
     <string name="tree_node_continue">Fortsæt</string>
-    <string name="connection_settings_title">Indstillinger for forbindelse</string>
-    <string name="connection_settings_description">Indstillinger for kontrolserveradresse, proxy og SSL</string>
+    <string name="connection_settings_title">Forbindelse</string>
+    <string name="connection_settings_description">Serveradresse, proxy og SSL</string>
+    <string name="playback_preferences_title">Afspilning</string>
+    <string name="playback_preferences_description">Lydstyrke, søgekontroller og lyd</string>
+    <string name="appearance_preferences_title">Udseende</string>
+    <string name="appearance_preferences_description">Farveskema, sortering og tema</string>
     <string name="disconnect_from_server_title">Afbryd forbindelsen til serveren</string>
 </resources>

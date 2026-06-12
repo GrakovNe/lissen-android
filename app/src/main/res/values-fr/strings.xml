@@ -124,13 +124,13 @@
     <string name="volume_boost_disabled">Désactiver</string>
     <string name="volume_boost_title">Volume boosté</string>
     <string name="playing_item_details_time_remaining">Temps restant</string>
-    <string name="settings_screen_advanced_preferences_title">Préférences avancées</string>
-    <string name="settings_screen_advanced_preferences_description">Recherche de contrôle, en-têtes proxy ou son</string>
+    <string name="settings_screen_advanced_preferences_title">Avancé</string>
+    <string name="settings_screen_advanced_preferences_description">Diagnostics, journaux et autres options</string>
     <string name="settings_screen_crash_report_title">Rapport d\'incident</string>
     <string name="settings_screen_crash_report_description">Envoyer des rapports si l\'application plante</string>
     <string name="settings_download_automatically_title">Télécharger automatiquement</string>
-    <string name="download_settings_title">Préférences de téléchargement</string>
-    <string name="download_settings_description">Définir les téléchargements et gérer le contenu</string>
+    <string name="download_settings_title">Téléchargements</string>
+    <string name="download_settings_description">Téléchargements et gestion du contenu</string>
     <string name="download_settings_network_type_title">Utilisation pour les téléchargements automatiques</string>
     <string name="download_settings_library_type_title">Télécharger automatiquement</string>
     <string name="download_settings_library_type_no_items_selected">Aucun type défini</string>
@@ -168,7 +168,11 @@
     <string name="tree_node_downloads">Téléchargements</string>
     <string name="tree_node_root">Root</string>
     <string name="tree_node_continue">Continuer</string>
-    <string name="connection_settings_title">Préférences de connexion</string>
-    <string name="connection_settings_description">Paramètres relatifs à l\'adresse du serveur de contrôle, au proxy et au protocole SSL</string>
+    <string name="connection_settings_title">Connexion</string>
+    <string name="connection_settings_description">Adresse du serveur, proxy et SSL</string>
+    <string name="playback_preferences_title">Lecture</string>
+    <string name="playback_preferences_description">Volume, contrôles de navigation et audio</string>
+    <string name="appearance_preferences_title">Apparence</string>
+    <string name="appearance_preferences_description">Jeu de couleurs, tri et thème</string>
     <string name="disconnect_from_server_title">Se déconnecter du serveur</string>
 </resources>

@@ -118,4 +118,14 @@
     <string name="settings_screen_connection_external">Extern netwerk</string>
     <string name="downloads_menu_download_option_stop_downloads">Stop downloaden</string>
     <string name="playing_item_details_time_remaining">Tijd resterend</string>
+    <string name="connection_settings_title">Verbinding</string>
+    <string name="connection_settings_description">Serveradres, proxy en SSL</string>
+    <string name="download_settings_title">Downloads</string>
+    <string name="download_settings_description">Downloads en inhoudsbeheer</string>
+    <string name="settings_screen_advanced_preferences_title">Geavanceerd</string>
+    <string name="settings_screen_advanced_preferences_description">Diagnostiek, logboeken en andere opties</string>
+    <string name="playback_preferences_title">Afspelen</string>
+    <string name="playback_preferences_description">Volume, zoekbediening en audio</string>
+    <string name="appearance_preferences_title">Uiterlijk</string>
+    <string name="appearance_preferences_description">Kleurenschema, sortering en thema</string>
 </resources>

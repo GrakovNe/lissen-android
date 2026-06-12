@@ -126,15 +126,15 @@
     <string name="volume_boost_disabled">Funksjonshemmet</string>
     <string name="volume_boost_title">Økt volum</string>
     <string name="playing_item_details_time_remaining">Gjenværende tid</string>
-    <string name="settings_screen_advanced_preferences_title">Avanserte innstillinger</string>
-    <string name="settings_screen_advanced_preferences_description">Kontrollsøking, proxy-overskrifter eller lyd</string>
+    <string name="settings_screen_advanced_preferences_title">Avansert</string>
+    <string name="settings_screen_advanced_preferences_description">Diagnostikk, logger og andre alternativer</string>
     <string name="settings_screen_crash_report_title">Feilrapportering</string>
     <string name="settings_screen_crash_report_description">Send rapporter hvis appen krasjer</string>
     <string name="settings_screen_software_codecs_enabled_title">Tving programvaren til å dekode</string>
     <string name="settings_screen_software_codecs_enabled_description">Bruk programvarekodeker for lydavspilling</string>
     <string name="settings_download_automatically_title">Last ned automatisk</string>
-    <string name="download_settings_title">Last ned innstillinger</string>
-    <string name="download_settings_description">Definer nedlastinger og administrer innhold</string>
+    <string name="download_settings_title">Nedlastingar</string>
+    <string name="download_settings_description">Nedlastingar og innhaldsadministrasjon</string>
     <string name="download_settings_network_type_title">Bruk for automatiske nedlastinger</string>
     <string name="download_settings_library_type_title">Last ned automatisk</string>
     <string name="download_settings_library_type_no_items_selected">Ingen typer definert</string>
@@ -167,7 +167,11 @@
     <string name="tree_node_downloads">Nedlastinger</string>
     <string name="tree_node_root">Rot</string>
     <string name="tree_node_continue">Fortsett</string>
-    <string name="connection_settings_title">Innstillinger for tilkobling</string>
-    <string name="connection_settings_description">Kontroller serveradresse, proxy og SSL-innstillinger</string>
+    <string name="connection_settings_title">Tilkobling</string>
+    <string name="connection_settings_description">Serveradresse, proxy og SSL</string>
+    <string name="playback_preferences_title">Avspeling</string>
+    <string name="playback_preferences_description">Volum, søkekontrollar og lyd</string>
+    <string name="appearance_preferences_title">Utsjånad</string>
+    <string name="appearance_preferences_description">Fargeordning, sortering og tema</string>
     <string name="disconnect_from_server_title">Koble fra serveren</string>
 </resources>

@@ -88,4 +88,14 @@
     <string name="notification_content_caching_error_description">Några få filer sparades inte</string>
     <string name="playing_item_details_narrator">Berättare</string>
     <string name="playing_item_details_duration">Längd</string>
+    <string name="connection_settings_title">Anslutning</string>
+    <string name="connection_settings_description">Serveradress, proxy och SSL</string>
+    <string name="download_settings_title">Nedladdningar</string>
+    <string name="download_settings_description">Nedladdningar och innehållshantering</string>
+    <string name="settings_screen_advanced_preferences_title">Avancerat</string>
+    <string name="settings_screen_advanced_preferences_description">Diagnostik, loggar och andra alternativ</string>
+    <string name="playback_preferences_title">Uppspelning</string>
+    <string name="playback_preferences_description">Volym, sökningskontroller och ljud</string>
+    <string name="appearance_preferences_title">Utseende</string>
+    <string name="appearance_preferences_description">Färgschema, sortering och tema</string>
 </resources>
