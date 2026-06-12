@@ -128,15 +128,15 @@
     <string name="volume_boost_disabled">Zakázáno</string>
     <string name="volume_boost_title">Zvýšená hlasitost</string>
     <string name="playing_item_details_time_remaining">Zbývající čas</string>
-    <string name="settings_screen_advanced_preferences_title">Pokročilé nastavení</string>
-    <string name="settings_screen_advanced_preferences_description">Nastavení přeskakování, proxy hlaviček nebo zvuku</string>
+    <string name="settings_screen_advanced_preferences_title">Pokročilé</string>
+    <string name="settings_screen_advanced_preferences_description">Diagnostika, protokoly a další možnosti</string>
     <string name="settings_screen_crash_report_title">Hlášení pádů</string>
     <string name="settings_screen_crash_report_description">Odesílat hlášení při pádu aplikace</string>
     <string name="settings_screen_software_codecs_enabled_title">Vynutit softwarové dekódování</string>
     <string name="settings_screen_software_codecs_enabled_description">Použít softwarové kodeky pro audio</string>
     <string name="settings_download_automatically_title">Stahovat automaticky</string>
-    <string name="download_settings_title">Nastavení stahování</string>
-    <string name="download_settings_description">Nastavení stahování a správa obsahu</string>
+    <string name="download_settings_title">Stahování</string>
+    <string name="download_settings_description">Stahování a správa obsahu</string>
     <string name="download_settings_network_type_title">Použít pro automatické stahování</string>
     <string name="download_settings_library_type_title">Stahovat automaticky</string>
     <string name="download_settings_library_type_no_items_selected">Nebyly definovány žádné typy</string>
@@ -169,7 +169,11 @@
     <string name="tree_node_downloads">Stažené</string>
     <string name="tree_node_root">Kořenový adresář</string>
     <string name="tree_node_continue">Pokračovat</string>
-    <string name="connection_settings_title">Nastavení připojení</string>
-    <string name="connection_settings_description">Konfigurace serveru, proxy a nastavení SSL</string>
+    <string name="connection_settings_title">Připojení</string>
+    <string name="connection_settings_description">Adresa serveru, proxy a SSL</string>
+    <string name="playback_preferences_title">Přehrávání</string>
+    <string name="playback_preferences_description">Hlasitost, ovládání přetáčení a zvuk</string>
+    <string name="appearance_preferences_title">Vzhled</string>
+    <string name="appearance_preferences_description">Barevné schéma, řazení a motiv</string>
     <string name="disconnect_from_server_title">Odpojit se od serveru</string>
 </resources>

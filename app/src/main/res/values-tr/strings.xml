@@ -93,4 +93,14 @@
     <string name="login_screen_open_id_button">OpenID ile Bağlan</string>
     <string name="playing_item_details_narrator">Anlatıcı</string>
     <string name="playing_item_details_duration">Süre</string>
+    <string name="connection_settings_title">Bağlantı</string>
+    <string name="connection_settings_description">Sunucu adresi, proxy ve SSL</string>
+    <string name="download_settings_title">İndirilenler</string>
+    <string name="download_settings_description">İndirmeler ve içerik yönetimi</string>
+    <string name="settings_screen_advanced_preferences_title">Gelişmiş</string>
+    <string name="settings_screen_advanced_preferences_description">Tanılama, günlükler ve diğer seçenekler</string>
+    <string name="playback_preferences_title">Oynatma</string>
+    <string name="playback_preferences_description">Ses seviyesi, arama kontrolleri ve ses</string>
+    <string name="appearance_preferences_title">Görünüm</string>
+    <string name="appearance_preferences_description">Renk düzeni, sıralama ve tema</string>
 </resources>
