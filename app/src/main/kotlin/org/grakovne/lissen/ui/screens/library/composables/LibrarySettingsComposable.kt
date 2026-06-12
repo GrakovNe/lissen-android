@@ -2,7 +2,6 @@ package org.grakovne.lissen.ui.screens.library.composables
 
 import android.content.Context
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,17 +11,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.SortByAlpha
 import androidx.compose.material.icons.outlined.Update
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.ModalBottomSheet
@@ -30,6 +32,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -74,13 +77,14 @@ fun LibrarySettingsComposable(
   ModalBottomSheet(
     containerColor = colorScheme.surface,
     onDismissRequest = onDismissRequest,
+    sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
   ) {
     Column(
       modifier =
         Modifier
           .testTag("librarySettingsSheet")
           .fillMaxWidth()
-          .padding(bottom = 24.dp),
+          .padding(bottom = 0.dp),
     ) {
       SectionHeader(stringResource(R.string.library_quick_settings_filters_title))
 
@@ -104,7 +108,7 @@ fun LibrarySettingsComposable(
       HorizontalDivider()
       Spacer(modifier = Modifier.height(4.dp))
 
-      SectionHeader(stringResource(R.string.settings_screen_library_ordering_title))
+      SectionHeader(stringResource(R.string.library_quick_settings_sort_title))
 
       LibraryOrderingOption.entries.forEach { option ->
         val isSelected = ordering.option == option
@@ -134,21 +138,12 @@ fun LibrarySettingsComposable(
       Spacer(modifier = Modifier.height(8.dp))
       HorizontalDivider()
 
-      TextButton(
-        onClick = {
+      ApplicationSettingsItemComposable(
+        onClicked = {
           onDismissRequest()
           navController.showSettings()
         },
-        modifier =
-          Modifier
-            .align(Alignment.CenterHorizontally)
-            .padding(top = 4.dp, bottom = 8.dp),
-      ) {
-        Text(
-          text = stringResource(R.string.application_settings),
-          style = typography.bodyMedium,
-        )
-      }
+      )
     }
   }
 }
@@ -246,6 +241,38 @@ private fun SortOptionRow(
         tint = colorScheme.onSurface,
       )
     }
+  }
+}
+
+@Composable
+fun ApplicationSettingsItemComposable(onClicked: () -> Unit) {
+  Row(
+    modifier =
+      Modifier
+        .fillMaxWidth()
+        .clickable { onClicked() }
+        .padding(horizontal = 16.dp, vertical = 16.dp),
+    verticalAlignment = Alignment.CenterVertically,
+  ) {
+    Icon(
+      imageVector = Icons.Outlined.Settings,
+      contentDescription = null,
+      modifier = Modifier.size(20.dp),
+      tint = colorScheme.onSurface,
+    )
+    Spacer(modifier = Modifier.width(12.dp))
+    Text(
+      text = stringResource(R.string.application_settings),
+      style = typography.bodyMedium,
+      color = colorScheme.onSurface,
+      modifier = Modifier.weight(1f),
+    )
+    Icon(
+      imageVector = Icons.AutoMirrored.Outlined.ArrowForwardIos,
+      contentDescription = null,
+      modifier = Modifier.size(16.dp),
+      tint = colorScheme.onSurfaceVariant,
+    )
   }
 }
 
