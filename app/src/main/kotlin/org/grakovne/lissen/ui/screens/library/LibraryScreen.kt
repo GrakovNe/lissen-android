@@ -529,6 +529,9 @@ fun LibraryScreen(
         playerViewModel.book.value?.let { playerViewModel.preparePlayback(it.id) }
         refreshContent(showPullRefreshing = false)
       },
+      onSortingChanged = {
+        refreshContent(showPullRefreshing = false)
+      },
     )
   }
 }
