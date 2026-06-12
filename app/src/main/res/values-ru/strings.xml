@@ -165,6 +165,9 @@
     <string name="restart_the_app_to_start_using_the_new_codecs_cta">Перезапустить</string>
     <string name="settings_screen_software_codecs_enabled_title">Отключить аппаратное декодирование</string>
     <string name="settings_screen_software_codecs_enabled_description">Декодировать аудио программно</string>
+    <string name="settings_screen_audio_focus_loss_policy_title">Воспроизведение при уведомлениях</string>
+    <string name="settings_screen_audio_focus_loss_policy_option_pause">Приостанавливать</string>
+    <string name="settings_screen_audio_focus_loss_policy_option_lower_volume">Приглушать</string>
     <string name="codes_not_supported_warning_toast">Аудиоформат не поддерживается</string>
     <string name="bookmarks_create_bookmark">Новая закладка</string>
     <string name="bookmarks_title">Закладки</string>

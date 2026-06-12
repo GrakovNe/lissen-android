@@ -76,6 +76,7 @@ fun AdvancedSettingsComposable(
   val softwareCodecsEnabledOnStart = viewModel.softwareCodecsEnabledOnStart
   val activityLoggingEnabled by viewModel.activityLoggingEnabled.observeAsState(true)
   val activityLoggingEnabledOnStart = viewModel.activityLoggingEnabledOnStart
+  val audioFocusLossPolicy by viewModel.audioFocusLossPolicy.observeAsState()
 
   val userAgent by viewModel.userAgent.observeAsState("")
 
@@ -149,6 +150,8 @@ fun AdvancedSettingsComposable(
             initialState = softwareCodecsEnabled,
           ) { viewModel.preferSoftwareCodecsEnabled(it) }
 
+          AudioFocusLossPolicyComposable(viewModel)
+
           SettingsToggleItem(
             title = stringResource(R.string.settings_screen_crash_report_title),
             description = stringResource(R.string.settings_screen_crash_report_description),
@@ -202,8 +205,10 @@ fun AdvancedSettingsComposable(
         val codecsChanged = softwareCodecsEnabledOnStart != softwareCodecsEnabled
         val loggingChanged = activityLoggingEnabledOnStart != activityLoggingEnabled
 
+        val multipleChanged = codecsChanged && loggingChanged
+
         when {
-          codecsChanged && loggingChanged -> RestartRequiredPreferenceBanner()
+          multipleChanged -> RestartRequiredPreferenceBanner()
           codecsChanged -> SoftwareCodecsPreferenceBanner()
           loggingChanged -> ActivityLoggingPreferenceBanner()
         }

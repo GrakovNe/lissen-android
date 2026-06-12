@@ -137,6 +137,9 @@
     <string name="settings_screen_crash_report_description">Send reports if the app crashes</string>
     <string name="settings_screen_software_codecs_enabled_title">Force software decoding</string>
     <string name="settings_screen_software_codecs_enabled_description">Use software codecs for audio playback</string>
+    <string name="settings_screen_audio_focus_loss_policy_title">Playback on notification</string>
+    <string name="settings_screen_audio_focus_loss_policy_option_pause">Pause</string>
+    <string name="settings_screen_audio_focus_loss_policy_option_lower_volume">Lower volume</string>
     <string name="settings_download_automatically_title">Download automatically</string>
     <string name="download_settings_title">Download preferences</string>
     <string name="download_settings_description">Define downloads and manage content</string>
