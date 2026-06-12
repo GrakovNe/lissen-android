@@ -22,6 +22,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import org.grakovne.lissen.R
 import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
+import org.grakovne.lissen.common.AudioFocusLossPolicy
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.service.LissenDataSourceFactory
@@ -77,8 +78,12 @@ object MediaModule {
           AudioAttributes
             .Builder()
             .setUsage(C.USAGE_MEDIA)
-            .setContentType(C.AUDIO_CONTENT_TYPE_SPEECH)
-            .build(),
+            .setContentType(
+              when (sharedPreferences.getAudioFocusLossPolicy()) {
+                AudioFocusLossPolicy.LOWER_VOLUME -> C.AUDIO_CONTENT_TYPE_MUSIC
+                AudioFocusLossPolicy.PAUSE -> C.AUDIO_CONTENT_TYPE_SPEECH
+              },
+            ).build(),
           true,
         ).setRenderersFactory(renderersFactory)
         .setMediaSourceFactory(

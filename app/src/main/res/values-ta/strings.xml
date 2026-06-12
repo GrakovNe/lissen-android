@@ -126,15 +126,15 @@
     <string name="volume_boost_disabled">முடக்கப்பட்டது</string>
     <string name="volume_boost_title">அதிகரித்த ஒலி</string>
     <string name="playing_item_details_time_remaining">மீதமுள்ள நேரம்</string>
-    <string name="settings_screen_advanced_preferences_title">மேம்பட்ட விருப்பத்தேர்வுகள்</string>
-    <string name="settings_screen_advanced_preferences_description">தேடுதல், பதிலாள் தலைப்புகள் அல்லது ஒலியைக் கட்டுப்படுத்தவும்</string>
+    <string name="settings_screen_advanced_preferences_title">மேம்பட்டது</string>
+    <string name="settings_screen_advanced_preferences_description">கண்டறிதல், பதிவுகள் மற்றும் பிற விருப்பங்கள்</string>
     <string name="settings_screen_crash_report_title">செயலிழப்பு அறிக்கை</string>
     <string name="settings_screen_crash_report_description">பயன்பாடு செயலிழந்தால் அறிக்கைகளை அனுப்பவும்</string>
     <string name="settings_screen_software_codecs_enabled_title">மென்பொருள் டிகோடிங்கை கட்டாயப்படுத்தவும்</string>
     <string name="settings_screen_software_codecs_enabled_description">ஆடியோ பிளேபேக்கிற்கு மென்பொருள் கோடெக்குகளைப் பயன்படுத்தவும்</string>
     <string name="settings_download_automatically_title">தானாக பதிவிறக்கவும்</string>
-    <string name="download_settings_title">விருப்பங்களைப் பதிவிறக்கவும்</string>
-    <string name="download_settings_description">பதிவிறக்கங்களை வரையறுத்து உள்ளடக்கத்தை நிர்வகிக்கவும்</string>
+    <string name="download_settings_title">பதிவிறக்கங்கள்</string>
+    <string name="download_settings_description">பதிவிறக்கங்கள் மற்றும் உள்ளடக்க மேலாண்மை</string>
     <string name="download_settings_network_type_title">தானியங்கி பதிவிறக்கங்களுக்கு பயன்படுத்தவும்</string>
     <string name="download_settings_library_type_title">தானாக பதிவிறக்கவும்</string>
     <string name="download_settings_library_type_no_items_selected">வகைகள் வரையறுக்கப்படவில்லை</string>
@@ -167,7 +167,11 @@
     <string name="tree_node_downloads">பதிவிறக்கங்கள்</string>
     <string name="tree_node_root">மூலம்</string>
     <string name="tree_node_continue">தொடரவும்</string>
-    <string name="connection_settings_title">இணைப்பு விருப்பத்தேர்வுகள்</string>
-    <string name="connection_settings_description">சர்வர் முகவரி, பதிலாள் மற்றும் SSL அமைப்புகளைக் கட்டுப்படுத்தவும்</string>
+    <string name="connection_settings_title">இணைப்பு</string>
+    <string name="connection_settings_description">சேவையக முகவரி, பதிலாள் மற்றும் SSL</string>
+    <string name="playback_preferences_title">இயக்கம்</string>
+    <string name="playback_preferences_description">ஒலியளவு, தேடல் கட்டுப்பாடுகள் மற்றும் ஆடியோ</string>
+    <string name="appearance_preferences_title">தோற்றம்</string>
+    <string name="appearance_preferences_description">வண்ணத் திட்டம், வரிசையாக்கம் மற்றும் தீம்</string>
     <string name="disconnect_from_server_title">சேவையகத்திலிருந்து துண்டிக்கவும்</string>
 </resources>
