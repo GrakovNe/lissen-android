@@ -93,7 +93,7 @@ class SettingsE2ETest {
       matcher = hasTestTag("settingsScreen"),
       timeoutMillis = TIMEOUT_MS,
     )
-    composeRule.onNodeWithText("Advanced preferences").performClick()
+    composeRule.onNodeWithText("Advanced").performClick()
     composeRule.waitUntilAtLeastOneExists(
       matcher = hasText("Change User Agent"),
       timeoutMillis = TIMEOUT_MS,
@@ -129,7 +129,7 @@ class SettingsE2ETest {
       timeoutMillis = TIMEOUT_MS,
     )
 
-    composeRule.onNodeWithText("Connection preferences").performClick()
+    composeRule.onNodeWithText("Connection").performClick()
 
     composeRule.waitUntilAtLeastOneExists(
       matcher = hasText("Disconnect from the server"),
