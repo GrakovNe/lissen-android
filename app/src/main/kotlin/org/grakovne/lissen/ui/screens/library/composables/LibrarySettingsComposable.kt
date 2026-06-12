@@ -10,10 +10,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
+import androidx.compose.material.icons.outlined.CalendarToday
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.SortByAlpha
+import androidx.compose.material.icons.outlined.Update
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -30,6 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -37,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
+import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.common.LibraryOrderingDirection.ASCENDING
 import org.grakovne.lissen.common.LibraryOrderingDirection.DESCENDING
 import org.grakovne.lissen.common.LibraryOrderingOption
@@ -64,7 +72,7 @@ fun LibrarySettingsComposable(
   val context = LocalContext.current
 
   ModalBottomSheet(
-    containerColor = colorScheme.background,
+    containerColor = colorScheme.surface,
     onDismissRequest = onDismissRequest,
   ) {
     Column(
@@ -76,54 +84,35 @@ fun LibrarySettingsComposable(
     ) {
       SectionHeader(stringResource(R.string.library_quick_settings_filters_title))
 
-      SheetRow(
+      ToggleRow(
         title = stringResource(R.string.show_downloaded_content_only),
+        icon = Icons.Outlined.Download,
+        checked = forceCache,
         onClick = { onForceLocalToggled() },
-        trailingContent = {
-          Switch(
-            checked = forceCache,
-            onCheckedChange = null,
-            colors =
-              SwitchDefaults.colors(
-                uncheckedTrackColor = colorScheme.background,
-                checkedBorderColor = colorScheme.onSurface,
-                checkedThumbColor = colorScheme.onSurface,
-                checkedTrackColor = colorScheme.background,
-              ),
-          )
-        },
       )
 
       if (libraryViewModel.fetchPreferredLibraryType() == LibraryType.LIBRARY) {
-        SheetRow(
+        ToggleRow(
           title = stringResource(R.string.hide_completed_items),
+          icon = Icons.Outlined.CheckCircle,
+          checked = hideCompleted,
           onClick = { onHideCompletedToggled() },
-          trailingContent = {
-            Switch(
-              checked = hideCompleted,
-              onCheckedChange = null,
-              colors =
-                SwitchDefaults.colors(
-                  uncheckedTrackColor = colorScheme.background,
-                  checkedBorderColor = colorScheme.onSurface,
-                  checkedThumbColor = colorScheme.onSurface,
-                  checkedTrackColor = colorScheme.background,
-                ),
-            )
-          },
         )
       }
 
       Spacer(modifier = Modifier.height(8.dp))
       HorizontalDivider()
-      Spacer(modifier = Modifier.height(8.dp))
+      Spacer(modifier = Modifier.height(4.dp))
 
       SectionHeader(stringResource(R.string.settings_screen_library_ordering_title))
 
       LibraryOrderingOption.entries.forEach { option ->
         val isSelected = ordering.option == option
-        SheetRow(
+        SortOptionRow(
           title = option.toLocalizedName(context),
+          icon = option.icon(),
+          isSelected = isSelected,
+          direction = if (isSelected) ordering.direction else null,
           onClick = {
             val newDirection =
               if (isSelected) {
@@ -139,24 +128,6 @@ fun LibrarySettingsComposable(
             )
             onSortingChanged()
           },
-          titleColor = if (isSelected) colorScheme.onSurface else colorScheme.onSurfaceVariant,
-          trailingContent =
-            if (isSelected) {
-              {
-                Icon(
-                  imageVector =
-                    when (ordering.direction) {
-                      ASCENDING -> Icons.Outlined.ArrowUpward
-                      DESCENDING -> Icons.Outlined.ArrowDownward
-                    },
-                  contentDescription = null,
-                  modifier = Modifier.size(16.dp),
-                  tint = colorScheme.onSurface,
-                )
-              }
-            } else {
-              null
-            },
         )
       }
 
@@ -171,16 +142,11 @@ fun LibrarySettingsComposable(
         modifier =
           Modifier
             .align(Alignment.CenterHorizontally)
-            .padding(top = 4.dp),
+            .padding(top = 4.dp, bottom = 8.dp),
       ) {
         Text(
           text = stringResource(R.string.application_settings),
-          style = typography.labelLarge,
-        )
-        Icon(
-          imageVector = Icons.AutoMirrored.Outlined.ArrowForwardIos,
-          contentDescription = null,
-          modifier = Modifier.padding(start = 4.dp).size(12.dp),
+          style = typography.bodyMedium,
         )
       }
     }
@@ -193,16 +159,16 @@ private fun SectionHeader(title: String) {
     text = title,
     style = typography.labelSmall,
     color = colorScheme.onSurfaceVariant,
-    modifier = Modifier.padding(start = 16.dp, bottom = 4.dp),
+    modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp),
   )
 }
 
 @Composable
-private fun SheetRow(
+private fun ToggleRow(
   title: String,
+  icon: ImageVector,
+  checked: Boolean,
   onClick: () -> Unit,
-  titleColor: androidx.compose.ui.graphics.Color = colorScheme.onSurface,
-  trailingContent: (@Composable () -> Unit)? = null,
 ) {
   Row(
     modifier =
@@ -211,16 +177,85 @@ private fun SheetRow(
         .clickable { onClick() }
         .padding(horizontal = 16.dp, vertical = 12.dp),
     verticalAlignment = Alignment.CenterVertically,
-    horizontalArrangement = Arrangement.SpaceBetween,
   ) {
+    Icon(
+      imageVector = icon,
+      contentDescription = null,
+      modifier = Modifier.size(20.dp),
+      tint = colorScheme.onSurface,
+    )
+    Spacer(modifier = Modifier.width(12.dp))
     Text(
       text = title,
       style = typography.bodyMedium,
-      color = titleColor,
+      color = colorScheme.onSurface,
+      modifier = Modifier.weight(1f),
     )
-    trailingContent?.invoke()
+    Switch(
+      checked = checked,
+      onCheckedChange = null,
+      colors =
+        SwitchDefaults.colors(
+          uncheckedTrackColor = colorScheme.surface,
+          checkedBorderColor = colorScheme.onSurface,
+          checkedThumbColor = colorScheme.onSurface,
+          checkedTrackColor = colorScheme.surface,
+        ),
+    )
   }
 }
+
+@Composable
+private fun SortOptionRow(
+  title: String,
+  icon: ImageVector,
+  isSelected: Boolean,
+  direction: LibraryOrderingDirection?,
+  onClick: () -> Unit,
+) {
+  Row(
+    modifier =
+      Modifier
+        .fillMaxWidth()
+        .clickable { onClick() }
+        .padding(horizontal = 16.dp, vertical = 12.dp),
+    verticalAlignment = Alignment.CenterVertically,
+  ) {
+    Icon(
+      imageVector = icon,
+      contentDescription = null,
+      modifier = Modifier.size(20.dp),
+      tint = if (isSelected) colorScheme.onSurface else colorScheme.onSurfaceVariant,
+    )
+    Spacer(modifier = Modifier.width(12.dp))
+    Text(
+      text = title,
+      style = typography.bodyMedium,
+      color = if (isSelected) colorScheme.onSurface else colorScheme.onSurfaceVariant,
+      modifier = Modifier.weight(1f),
+    )
+    if (direction != null) {
+      Icon(
+        imageVector =
+          when (direction) {
+            ASCENDING -> Icons.Outlined.ArrowUpward
+            DESCENDING -> Icons.Outlined.ArrowDownward
+          },
+        contentDescription = null,
+        modifier = Modifier.size(16.dp),
+        tint = colorScheme.onSurface,
+      )
+    }
+  }
+}
+
+private fun LibraryOrderingOption.icon(): ImageVector =
+  when (this) {
+    LibraryOrderingOption.TITLE -> Icons.Outlined.SortByAlpha
+    LibraryOrderingOption.AUTHOR -> Icons.Outlined.Person
+    LibraryOrderingOption.CREATED_AT -> Icons.Outlined.CalendarToday
+    LibraryOrderingOption.UPDATED_AT -> Icons.Outlined.Update
+  }
 
 private fun LibraryOrderingOption.toLocalizedName(context: Context): String =
   when (this) {
