@@ -11,7 +11,9 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" android:maxSdkVersion="32" />
+    <uses-permission
+        android:name="android.permission.ACCESS_COARSE_LOCATION"
+        android:maxSdkVersion="32" />
 
     <application
         android:name=".LissenApplication"
@@ -80,8 +82,8 @@
             <intent-filter>
                 <action android:name="androidx.media3.session.MediaSessionService" />
                 <action android:name="androidx.media3.session.MediaLibraryService" />
-                <action android:name="android.media.browse.MediaBrowserService"/>
-                <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH"/>
+                <action android:name="android.media.browse.MediaBrowserService" />
+                <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH" />
             </intent-filter>
         </service>
 

@@ -33,6 +33,7 @@ import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -81,26 +82,25 @@ fun MiniPlayerComposable(
     rememberSwipeToDismissBoxState(
       initialValue = SwipeToDismissBoxValue.Settled,
       positionalThreshold = { it * 0.2f },
-      confirmValueChange = { newValue: SwipeToDismissBoxValue ->
-        val dismissing =
-          when (newValue) {
-            SwipeToDismissBoxValue.EndToStart,
-            SwipeToDismissBoxValue.StartToEnd,
-            -> true
-
-            else -> false
-          }
-
-        if (dismissing) {
-          withHaptic(view) {
-            backgroundVisible = false
-            playerViewModel.clearPlayingBook()
-          }
-        }
-
-        dismissing
-      },
     )
+
+  LaunchedEffect(dismissState.currentValue) {
+    val dismissed =
+      when (dismissState.currentValue) {
+        SwipeToDismissBoxValue.EndToStart,
+        SwipeToDismissBoxValue.StartToEnd,
+        -> true
+
+        else -> false
+      }
+
+    if (dismissed) {
+      withHaptic(view) {
+        backgroundVisible = false
+        playerViewModel.clearPlayingBook()
+      }
+    }
+  }
 
   SwipeToDismissBox(
     state = dismissState,

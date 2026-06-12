@@ -5,7 +5,6 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfChannelProvider
 import org.grakovne.lissen.channel.common.MediaChannel
@@ -15,7 +14,6 @@ import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.content.cache.temporary.CachedBookmarkProvider
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
 import org.grakovne.lissen.domain.Book
-import org.grakovne.lissen.domain.BookChapterState
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library

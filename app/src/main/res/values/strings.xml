@@ -62,6 +62,10 @@
         <item quantity="one">%d minute</item>
         <item quantity="other">%d minutes</item>
     </plurals>
+    <plurals name="seek_interval_seconds">
+        <item quantity="one">%d second</item>
+        <item quantity="other">%d seconds</item>
+    </plurals>
     <string name="timer_option_disable_timer">Disable Timer</string>
     <string name="timer_title">Sleep Timer</string>
     <string name="player_screen_timer_navigation">Timer</string>
@@ -120,21 +124,12 @@
     <string name="settings_screen_default_sleep_timer_title">Default sleep timer</string>
     <string name="rewind_interval">Rewind interval</string>
     <string name="forward_interval">Forward interval</string>
-    <string name="seek_interval_5_seconds">5 seconds</string>
-    <string name="seek_interval_10_seconds">10 seconds</string>
-    <string name="seek_interval_15_seconds">15 seconds</string>
-    <string name="seek_interval_30_seconds">30 seconds</string>
-    <string name="seek_interval_60_seconds">60 seconds</string>
     <string name="continue_playback_shortcut_title">Continue</string>
     <string name="continue_playback_shortcut_description">Continue listening</string>
     <string name="offline_cache_is_empty">No saved content yet</string>
     <string name="settings_screen_cached_items_title">Downloads</string>
     <string name="settings_screen_cached_items_hint">Manage saved content</string>
     <string name="volume_boost_disabled">Disabled</string>
-    <string name="volume_boost_low">Low</string>
-    <string name="volume_boost_medium">Medium</string>
-    <string name="volume_boost_high">High</string>
-    <string name="volume_boost_max">Maximum</string>
     <string name="volume_boost_title">Boosted volume</string>
     <string name="playing_item_details_time_remaining">Time remaining</string>
     <string name="settings_screen_advanced_preferences_title">Advanced preferences</string>

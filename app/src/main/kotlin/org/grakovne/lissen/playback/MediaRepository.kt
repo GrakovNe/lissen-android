@@ -33,10 +33,8 @@ import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DetailedItem.Companion.same
 import org.grakovne.lissen.domain.DurationTimerOption
-import org.grakovne.lissen.domain.SeekTimeOption
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
-import org.grakovne.lissen.playback.PlaybackCommand
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.playback.service.calculateChapterIndexAndPosition
@@ -563,15 +561,7 @@ class MediaRepository
     private companion object {
       private const val CURRENT_TRACK_REPLAY_THRESHOLD = 5
 
-      private fun getSeekTime(option: SeekTimeOption?): Long =
-        when (option) {
-          SeekTimeOption.SEEK_5 -> 5L
-          SeekTimeOption.SEEK_10 -> 10L
-          SeekTimeOption.SEEK_15 -> 15L
-          SeekTimeOption.SEEK_30 -> 30L
-          SeekTimeOption.SEEK_60 -> 60L
-          else -> 30L
-        }
+      private fun getSeekTime(seconds: Int?): Long = seconds?.toLong() ?: 30L
 
       private fun inBackground(): Boolean =
         ProcessLifecycleOwner

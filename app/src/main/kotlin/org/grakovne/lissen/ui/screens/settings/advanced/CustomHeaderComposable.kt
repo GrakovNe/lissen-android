@@ -53,7 +53,10 @@ fun CustomHeaderComposable(
           label = { Text(stringResource(R.string.custom_header_hint_name)) },
           singleLine = true,
           shape = RoundedCornerShape(16.dp),
-          modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+          modifier =
+            Modifier
+              .fillMaxWidth()
+              .padding(bottom = 12.dp),
         )
 
         OutlinedTextField(
