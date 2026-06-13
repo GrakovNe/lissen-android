@@ -57,7 +57,7 @@ import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LibrarySettingsComposable(
+fun QuickSettingsComposable(
   cachingModelView: CachingModelView = hiltViewModel(),
   onDismissRequest: () -> Unit,
   onForceLocalToggled: () -> Unit,
