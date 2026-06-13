@@ -91,7 +91,7 @@ fun DisconnectServerComposable(
                 showConfirmation = false
                 navController.showLogin()
                 viewModel.logout()
-              }
+              },
         )
       }
     }
