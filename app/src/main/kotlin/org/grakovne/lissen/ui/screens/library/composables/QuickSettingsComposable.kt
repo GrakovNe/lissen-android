@@ -104,7 +104,12 @@ fun QuickSettingsComposable(
       }
 
       Spacer(modifier = Modifier.height(8.dp))
-      HorizontalDivider()
+
+      HorizontalDivider(
+        thickness = 1.dp,
+        modifier = Modifier.padding(horizontal = 8.dp),
+      )
+
       Spacer(modifier = Modifier.height(4.dp))
 
       SectionHeader(stringResource(R.string.library_quick_settings_sort_title))
@@ -114,7 +119,6 @@ fun QuickSettingsComposable(
         SortOptionRow(
           title = option.toLocalizedName(context),
           icon = option.icon(),
-          isSelected = isSelected,
           direction = if (isSelected) ordering.direction else null,
           onClick = {
             val newDirection =
@@ -135,7 +139,11 @@ fun QuickSettingsComposable(
       }
 
       Spacer(modifier = Modifier.height(8.dp))
-      HorizontalDivider()
+
+      HorizontalDivider(
+        thickness = 1.dp,
+        modifier = Modifier.padding(horizontal = 8.dp),
+      )
 
       ApplicationSettingsItemComposable(
         onClicked = {
@@ -204,7 +212,6 @@ private fun ToggleRow(
 private fun SortOptionRow(
   title: String,
   icon: ImageVector,
-  isSelected: Boolean,
   direction: LibraryOrderingDirection?,
   onClick: () -> Unit,
 ) {
@@ -221,13 +228,13 @@ private fun SortOptionRow(
       imageVector = icon,
       contentDescription = null,
       modifier = Modifier.size(20.dp),
-      tint = if (isSelected) colorScheme.onSurface else colorScheme.onSurfaceVariant,
+      tint = colorScheme.onSurface,
     )
     Spacer(modifier = Modifier.width(12.dp))
     Text(
       text = title,
       style = typography.bodyLarge,
-      color = if (isSelected) colorScheme.onSurface else colorScheme.onSurfaceVariant,
+      color = colorScheme.onSurface,
       modifier = Modifier.weight(1f),
     )
     if (direction != null) {
