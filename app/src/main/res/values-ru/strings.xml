@@ -25,6 +25,8 @@
     <string name="login_error_lissen_not_found">URL не найден. Проверьте настройки сервера</string>
     <string name="login_error_host_url_shall_be_https_or_http">URL должен начинаться с http:// или https://</string>
     <string name="login_error_connection_error">Ошибка подключения</string>
+    <string name="library_quick_settings_filters_title">Фильтры</string>
+    <string name="library_quick_settings_sort_title">Сортировка</string>
     <string name="show_downloaded_content_only">Только загруженные</string>
     <string name="the_library_is_empty">Библиотека пуста</string>
     <string name="the_offline_library_is_empty">Загруженных книг нет</string>

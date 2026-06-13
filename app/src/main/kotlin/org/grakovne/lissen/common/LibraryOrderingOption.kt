@@ -6,6 +6,6 @@ import androidx.annotation.Keep
 enum class LibraryOrderingOption {
   TITLE,
   AUTHOR,
-  UPDATED_AT,
   CREATED_AT,
+  UPDATED_AT,
 }

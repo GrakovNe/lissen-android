@@ -30,7 +30,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.screens.settings.composable.ColorSchemeSettingsComposable
-import org.grakovne.lissen.ui.screens.settings.composable.LibraryOrderingSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
@@ -82,8 +81,6 @@ fun AppearancePreferencesScreen(onBack: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
       ) {
         ColorSchemeSettingsComposable(viewModel)
-
-        LibraryOrderingSettingsComposable(viewModel)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
           SettingsToggleItem(
