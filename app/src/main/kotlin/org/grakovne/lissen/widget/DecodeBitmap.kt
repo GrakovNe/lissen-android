@@ -54,7 +54,7 @@ private fun calculateInSampleSize(
     val halfWidth = srcWidth / 2
 
     while (
-      halfHeight / inSampleSize >= heightPx &&
+      halfHeight / inSampleSize >= heightPx ||
       halfWidth / inSampleSize >= widthPx
     ) {
       inSampleSize *= 2

@@ -2,6 +2,8 @@ package org.grakovne.lissen.widget.cover
 
 import android.content.Context
 import android.content.Intent
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -43,7 +45,14 @@ import java.io.File
 
 class PlayerCoverWidget : GlanceAppWidget() {
   override val stateDefinition = PreferencesGlanceStateDefinition
-  override val sizeMode = SizeMode.Exact
+  override val sizeMode =
+    SizeMode.Responsive(
+      setOf(
+        DpSize(80.dp, 80.dp),
+        DpSize(160.dp, 160.dp),
+        DpSize(250.dp, 250.dp),
+      ),
+    )
 
   override suspend fun provideGlance(
     context: Context,
@@ -59,8 +68,8 @@ class PlayerCoverWidget : GlanceAppWidget() {
 
       val size = LocalSize.current
       val density = context.resources.displayMetrics.density
-      val targetWidthPx = (size.width.value * density).toInt().coerceAtLeast(1)
-      val targetHeightPx = (size.height.value * density).toInt().coerceAtLeast(1)
+      val targetWidthPx = (size.width.value * density).toInt().coerceIn(1, 512)
+      val targetHeightPx = (size.height.value * density).toInt().coerceIn(1, 512)
 
       val coverBitmap =
         try {

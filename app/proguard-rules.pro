@@ -46,3 +46,10 @@
 
 # Hilt entry points — looked up by interface class name via EntryPointAccessors.fromApplication()
 -keep @dagger.hilt.EntryPoint interface * { *; }
+
+# Hilt modules and generated components — @Binds @IntoSet multi-bindings get stripped by R8
+-keep @dagger.Module class * { *; }
+-keep @dagger.hilt.InstallIn class * { *; }
+
+# RunningComponent multi-binding — Set<RunningComponent> resolved at runtime by Hilt
+-keep class * implements org.grakovne.lissen.common.RunningComponent { *; }
