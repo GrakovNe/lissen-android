@@ -125,13 +125,13 @@
     <string name="downloads_menu_download_option_stop_downloads">Ustavi prenos</string>
     <string name="login_error_lissen_not_found">URL-ja ni mogoče najti. Preveri nastavitve strežnika</string>
     <string name="playing_item_details_time_remaining">Preostali čas</string>
-    <string name="settings_screen_advanced_preferences_title">Napredne nastavitve</string>
-    <string name="settings_screen_advanced_preferences_description">Nadzor iskanja, posredniških glav ali zvoka</string>
+    <string name="settings_screen_advanced_preferences_title">Napredno</string>
+    <string name="settings_screen_advanced_preferences_description">Diagnostika, dnevniki in druge možnosti</string>
     <string name="settings_screen_crash_report_title">Poročanje o zrušitvah</string>
     <string name="settings_screen_crash_report_description">Pošlji poročila, če se aplikacija sesuje</string>
     <string name="settings_download_automatically_title">Samodejni prenos</string>
-    <string name="download_settings_title">Nastavitve prenosa</string>
-    <string name="download_settings_description">Določite prenose in upravljajte vsebino</string>
+    <string name="download_settings_title">Prenosi</string>
+    <string name="download_settings_description">Prenosi in upravljanje vsebine</string>
     <string name="download_settings_network_type_title">Uporabite za samodejne prenose</string>
     <string name="download_settings_library_type_title">Samodejni prenos</string>
     <string name="download_settings_library_type_no_items_selected">Ni definirane vrste</string>
@@ -152,4 +152,10 @@
     <string name="settings_screen_delay_autodownload_description">Preden začnete s prenosom, počakajte nekaj časa</string>
     <string name="settings_screen_bypass_ssl_title">Onemogoči preverjanje SSL</string>
     <string name="settings_screen_bypass_ssl_hint">Povežite se s strežniki s katerim koli potrdilom</string>
+    <string name="connection_settings_title">Povezava</string>
+    <string name="connection_settings_description">Naslov strežnika, posrednik in SSL</string>
+    <string name="playback_preferences_title">Predvajanje</string>
+    <string name="playback_preferences_description">Glasnost, kontrole iskanja in zvok</string>
+    <string name="appearance_preferences_title">Videz</string>
+    <string name="appearance_preferences_description">Barvna shema, razvrščanje in tema</string>
 </resources>

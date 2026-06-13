@@ -114,16 +114,16 @@
     <string name="volume_boost_disabled">禁用</string>
     <string name="volume_boost_title">音量增强</string>
     <string name="playing_item_details_time_remaining">剩余时间</string>
-    <string name="settings_screen_advanced_preferences_title">高级选项</string>
+    <string name="settings_screen_advanced_preferences_title">高级</string>
     <string name="settings_screen_crash_report_title">崩溃上报</string>
     <string name="settings_screen_crash_report_description">应用崩溃时发送报告</string>
-    <string name="settings_screen_advanced_preferences_description">控制播放进度、网络代理或声音</string>
+    <string name="settings_screen_advanced_preferences_description">诊断、日志及其他选项</string>
     <string name="login_error_lissen_not_found">未找到该 URL，请检查你的服务器设置</string>
     <string name="player_screen_chapter_list_navigation_podcast">剧集</string>
     <string name="player_screen_chapter_list_navigation_items">项目</string>
     <string name="settings_download_automatically_title">自动下载</string>
-    <string name="download_settings_title">下载首选项</string>
-    <string name="download_settings_description">定义下载并管理内容</string>
+    <string name="download_settings_title">下载</string>
+    <string name="download_settings_description">下载及内容管理</string>
     <string name="download_settings_network_type_title">用于自动下载</string>
     <string name="wifi_only_settings_option">仅限 Wi-Fi</string>
     <string name="wifi_or_cellular_settings_option">Wi-Fi 或蜂窝网络</string>
@@ -166,8 +166,12 @@
     <string name="tree_node_downloads">已下载</string>
     <string name="tree_node_root">根目录</string>
     <string name="tree_node_continue">继续收听</string>
-    <string name="connection_settings_description">管理服务器地址、代理及 SSL 设置</string>
-    <string name="connection_settings_title">连接偏好设置</string>
+    <string name="connection_settings_description">服务器地址、代理及 SSL</string>
+    <string name="connection_settings_title">连接</string>
+    <string name="playback_preferences_title">播放</string>
+    <string name="playback_preferences_description">音量、跳转控制及音频</string>
+    <string name="appearance_preferences_title">外观</string>
+    <string name="appearance_preferences_description">颜色主题、排序及主题</string>
     <string name="disconnect_from_server_title">断开服务器连接</string>
     <string name="settings_screen_client_cert_title">客户端证书</string>
     <string name="settings_screen_client_cert_hint">使用客户端证书进行 mTLS 认证</string>
@@ -190,4 +194,7 @@
     <string name="settings_screen_user_agent_title">修改 User Agent</string>
     <string name="settings_screen_user_agent_hint">自定义应用 User-Agent 请求头</string>
     <string name="settings_screen_user_agent_restore_default">恢复默认值</string>
+    <plurals name="seek_interval_seconds">
+        <item quantity="other">%d 秒</item>
+    </plurals>
 </resources>

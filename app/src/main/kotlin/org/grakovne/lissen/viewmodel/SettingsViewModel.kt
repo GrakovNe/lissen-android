@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.channel.audiobookshelf.Host
 import org.grakovne.lissen.channel.common.DEFAULT_USER_AGENT
 import org.grakovne.lissen.channel.common.OperationResult
+import org.grakovne.lissen.common.AudioFocusLossPolicy
 import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.NetworkTypeAutoCache
@@ -95,6 +96,10 @@ class SettingsViewModel
 
     val softwareCodecsEnabled: LiveData<Boolean> = _softwareCodecsEnabled
     val softwareCodecsEnabledOnStart: Boolean = preferences.getSoftwareCodecsEnabled()
+
+    private val _audioFocusLossPolicy = MutableLiveData(preferences.getAudioFocusLossPolicy())
+
+    val audioFocusLossPolicy: LiveData<AudioFocusLossPolicy> = _audioFocusLossPolicy
 
     private val _activityLoggingEnabled = MutableLiveData(preferences.isActivityLoggingEnabled())
 
@@ -254,6 +259,12 @@ class SettingsViewModel
       Timber.d("User action: preferMaterialYouColors $value")
       _materialYouEnabled.postValue(value)
       preferences.saveMaterialYouColors(value)
+    }
+
+    fun preferAudioFocusLossPolicy(policy: AudioFocusLossPolicy) {
+      Timber.d("User action: preferAudioFocusLossPolicy $policy")
+      _audioFocusLossPolicy.postValue(policy)
+      preferences.saveAudioFocusLossPolicy(policy)
     }
 
     fun preferSoftwareCodecsEnabled(value: Boolean) {

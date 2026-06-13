@@ -116,16 +116,16 @@
     <string name="volume_boost_title">Megnövelt hangerő</string>
     <string name="login_error_lissen_not_found">A hivatkozás nem található. Kérlek ellenőrizd a kiszolgáló beállításait</string>
     <string name="playing_item_details_time_remaining">Hátralevő idő</string>
-    <string name="settings_screen_advanced_preferences_title">Speciális beállítások</string>
-    <string name="settings_screen_advanced_preferences_description">Keresés, proxy fejlécek vagy hang vezérlése</string>
+    <string name="settings_screen_advanced_preferences_title">Speciális</string>
+    <string name="settings_screen_advanced_preferences_description">Diagnosztika, naplók és egyéb beállítások</string>
     <string name="settings_screen_crash_report_title">Összeomlási jelentések</string>
     <string name="settings_screen_crash_report_description">Jelentések küldése, ha az alkalmazás összeomlik</string>
     <string name="player_screen_chapter_list_navigation_podcast">Epizódok</string>
     <string name="player_screen_chapter_list_navigation_items">Elemek</string>
     <string name="downloads_menu_download_option_disable">Kikapcsolva</string>
     <string name="settings_download_automatically_title">Automatikus lrtöltés</string>
-    <string name="download_settings_title">Letöltési beállítások</string>
-    <string name="download_settings_description">A letöltések meghatározása és a tartalom kezelése</string>
+    <string name="download_settings_title">Letöltések</string>
+    <string name="download_settings_description">Letöltések és tartalomkezelés</string>
     <string name="download_settings_network_type_title">Használat automatikus letöltésekhez</string>
     <string name="download_settings_library_type_title">Automatikus letöltés</string>
     <string name="download_settings_library_type_no_items_selected">Nincs típus meghatározva</string>
@@ -158,7 +158,7 @@
     <string name="restart_the_app_to_start_using_the_new_codecs_title">Indítsd újra az alkalmazást az új kodekek használatához</string>
     <string name="restart_the_app_to_start_using_the_new_codecs_cta">Újraindítás</string>
     <string name="codes_not_supported_warning_toast">A hangformátum nem támogatott</string>
-    <string name="connection_settings_description">Vezérlőszerver címe, proxy és SSL beállítások</string>
+    <string name="connection_settings_description">Kiszolgáló címe, proxy és SSL</string>
     <string name="bookmarks_create_bookmark">Könyvjelző készítése</string>
     <string name="bookmarks_title">Könyvjelzők</string>
     <string name="hide_completed_items">Befejezett(ek) elrejtése</string>
@@ -168,5 +168,9 @@
     <string name="tree_node_downloads">Letöltések</string>
     <string name="tree_node_root">Root</string>
     <string name="tree_node_continue">Folytatás</string>
-    <string name="connection_settings_title">Kapcsolat beállításai</string>
+    <string name="connection_settings_title">Kapcsolat</string>
+    <string name="playback_preferences_title">Lejátszás</string>
+    <string name="playback_preferences_description">Hangerő, keresési vezérlők és hang</string>
+    <string name="appearance_preferences_title">Megjelenés</string>
+    <string name="appearance_preferences_description">Színösszeállítás, rendezés és téma</string>
 </resources>

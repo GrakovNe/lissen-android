@@ -2,6 +2,7 @@ package org.grakovne.lissen.playback
 
 import android.media.audiofx.LoudnessEnhancer
 import androidx.annotation.OptIn
+import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -11,6 +12,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.grakovne.lissen.common.AudioFocusLossPolicy
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import timber.log.Timber
@@ -45,6 +48,10 @@ class PlaybackEnhancerService
         sharedPreferences.playbackVolumeBoostFlow.collectLatest { updateGain(it) }
       }
 
+      scope.launch {
+        sharedPreferences.audioFocusLossPolicyFlow.collectLatest { applyAudioFocusLossPolicy(it) }
+      }
+
       updateGain(sharedPreferences.getPlaybackVolumeBoost())
     }
 
@@ -76,6 +83,25 @@ class PlaybackEnhancerService
         }
       } catch (ex: Exception) {
         Timber.e("Unable update volume gain with $db dB due to: $ex")
+      }
+    }
+
+    @OptIn(UnstableApi::class)
+    private suspend fun applyAudioFocusLossPolicy(policy: AudioFocusLossPolicy) {
+      val contentType =
+        when (policy) {
+          AudioFocusLossPolicy.LOWER_VOLUME -> C.AUDIO_CONTENT_TYPE_MUSIC
+          AudioFocusLossPolicy.PAUSE -> C.AUDIO_CONTENT_TYPE_SPEECH
+        }
+      withContext(Dispatchers.Main) {
+        player.setAudioAttributes(
+          AudioAttributes
+            .Builder()
+            .setUsage(C.USAGE_MEDIA)
+            .setContentType(contentType)
+            .build(),
+          true,
+        )
       }
     }
 

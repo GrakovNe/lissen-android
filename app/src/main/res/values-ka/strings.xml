@@ -114,4 +114,14 @@
     <string name="settings_screen_cached_items_hint">შენახული კონტენტის მართვა</string>
     <string name="volume_boost_disabled">გათიშულია</string>
     <string name="volume_boost_title">აწეული ხმა</string>
+    <string name="connection_settings_title">კავშირი</string>
+    <string name="connection_settings_description">სერვერის მისამართი, proxy და SSL</string>
+    <string name="download_settings_title">ჩამოტვირთვები</string>
+    <string name="download_settings_description">ჩამოტვირთვები და კონტენტის მართვა</string>
+    <string name="settings_screen_advanced_preferences_title">გაფართოებული</string>
+    <string name="settings_screen_advanced_preferences_description">დიაგნოსტიკა, ჟურნალები და სხვა პარამეტრები</string>
+    <string name="playback_preferences_title">დაკვრა</string>
+    <string name="playback_preferences_description">ხმა, ძებნის კონტროლი და აუდიო</string>
+    <string name="appearance_preferences_title">გარეგნობა</string>
+    <string name="appearance_preferences_description">ფერთა სქემა, დალაგება და თემა</string>
 </resources>

@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import org.grakovne.lissen.channel.common.DEFAULT_USER_AGENT
+import org.grakovne.lissen.common.AudioFocusLossPolicy
 import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.NetworkTypeAutoCache
@@ -295,6 +296,8 @@ class LissenSharedPreferences
 
     val playbackVolumeBoostFlow = asFlow(KEY_VOLUME_BOOST, ::getPlaybackVolumeBoost)
 
+    val audioFocusLossPolicyFlow = asFlow(KEY_AUDIO_FOCUS_LOSS_POLICY, ::getAudioFocusLossPolicy)
+
     val colorSchemeFlow = asFlow(KEY_PREFERRED_COLOR_SCHEME, ::getColorScheme)
 
     val materialYouFlow = asFlow(KEY_MATERIAL_YOU_ENABLED, ::getMaterialYouColors)
@@ -522,6 +525,17 @@ class LissenSharedPreferences
         putBoolean(KEY_SOFTWARE_CODECS, value)
       }
 
+    fun getAudioFocusLossPolicy(): AudioFocusLossPolicy =
+      sharedPreferences
+        .getString(KEY_AUDIO_FOCUS_LOSS_POLICY, null)
+        ?.let { runCatching { AudioFocusLossPolicy.valueOf(it) }.getOrNull() }
+        ?: AudioFocusLossPolicy.LOWER_VOLUME
+
+    fun saveAudioFocusLossPolicy(policy: AudioFocusLossPolicy) =
+      sharedPreferences.edit {
+        putString(KEY_AUDIO_FOCUS_LOSS_POLICY, policy.name)
+      }
+
     fun isActivityLoggingEnabled(): Boolean = sharedPreferences.getBoolean(KEY_ACTIVITY_LOGGING, true)
 
     fun saveActivityLoggingEnabled(value: Boolean) =
@@ -602,6 +616,7 @@ class LissenSharedPreferences
       private const val KEY_AUTO_DOWNLOAD_DELAYED = "auto_download_delayed"
       private const val KEY_PREFERRED_LIBRARY_ORDERING = "preferred_library_ordering"
       private const val KEY_SOFTWARE_CODECS = "software_codecs"
+      private const val KEY_AUDIO_FOCUS_LOSS_POLICY = "audio_focus_loss_policy"
       private const val KEY_ACTIVITY_LOGGING = "activity_logging_enabled"
       private const val KEY_HIDE_COMPLETED = "hide_completed"
 

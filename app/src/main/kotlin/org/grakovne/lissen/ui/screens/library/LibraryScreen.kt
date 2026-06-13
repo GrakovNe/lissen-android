@@ -73,9 +73,9 @@ import org.grakovne.lissen.ui.screens.common.RequestNotificationPermissions
 import org.grakovne.lissen.ui.screens.library.composables.BookComposable
 import org.grakovne.lissen.ui.screens.library.composables.DefaultActionComposable
 import org.grakovne.lissen.ui.screens.library.composables.LibrarySearchActionComposable
-import org.grakovne.lissen.ui.screens.library.composables.LibrarySettingsComposable
 import org.grakovne.lissen.ui.screens.library.composables.LibrarySwitchComposable
 import org.grakovne.lissen.ui.screens.library.composables.MiniPlayerComposable
+import org.grakovne.lissen.ui.screens.library.composables.QuickSettingsComposable
 import org.grakovne.lissen.ui.screens.library.composables.RecentBooksComposable
 import org.grakovne.lissen.ui.screens.library.composables.fallback.LibraryFallbackComposable
 import org.grakovne.lissen.ui.screens.library.composables.placeholder.LibraryPlaceholderComposable
@@ -516,7 +516,7 @@ fun LibraryScreen(
   }
 
   if (preferencesExpanded) {
-    LibrarySettingsComposable(
+    QuickSettingsComposable(
       navController = navController,
       onDismissRequest = { preferencesExpanded = false },
       onForceLocalToggled = {
@@ -527,6 +527,9 @@ fun LibraryScreen(
       onHideCompletedToggled = {
         settingsViewModel.toggleHideCompleted()
         playerViewModel.book.value?.let { playerViewModel.preparePlayback(it.id) }
+        refreshContent(showPullRefreshing = false)
+      },
+      onSortingChanged = {
         refreshContent(showPullRefreshing = false)
       },
     )

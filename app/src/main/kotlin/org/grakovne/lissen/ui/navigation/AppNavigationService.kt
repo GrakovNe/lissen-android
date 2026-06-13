@@ -52,6 +52,10 @@ class AppNavigationService(
 
   fun showAdvancedSettings() = host.navigate("$ROUTE_SETTINGS/advanced_settings")
 
+  fun showPlaybackPreferences() = host.navigate("$ROUTE_SETTINGS/playback_preferences")
+
+  fun showAppearancePreferences() = host.navigate("$ROUTE_SETTINGS/appearance_preferences")
+
   fun showLogin() {
     host.navigate(ROUTE_LOGIN) {
       val startId = host.graph.findStartDestination().id

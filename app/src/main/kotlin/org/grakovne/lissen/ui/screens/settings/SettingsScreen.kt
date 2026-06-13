@@ -32,9 +32,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.settings.advanced.AdvancedSettingsNavigationItemComposable
-import org.grakovne.lissen.ui.screens.settings.composable.ColorSchemeSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.GitHubLinkComposable
-import org.grakovne.lissen.ui.screens.settings.composable.LibraryOrderingSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.LicenseFooterComposable
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
@@ -99,9 +97,17 @@ fun SettingsScreen(
             onclick = { navController.showConnectionSettings() },
           )
 
-          ColorSchemeSettingsComposable(viewModel)
+          AdvancedSettingsNavigationItemComposable(
+            title = stringResource(R.string.playback_preferences_title),
+            description = stringResource(R.string.playback_preferences_description),
+            onclick = { navController.showPlaybackPreferences() },
+          )
 
-          LibraryOrderingSettingsComposable(viewModel)
+          AdvancedSettingsNavigationItemComposable(
+            title = stringResource(R.string.appearance_preferences_title),
+            description = stringResource(R.string.appearance_preferences_description),
+            onclick = { navController.showAppearancePreferences() },
+          )
 
           AdvancedSettingsNavigationItemComposable(
             title = stringResource(R.string.download_settings_title),

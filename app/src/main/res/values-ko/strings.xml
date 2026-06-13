@@ -122,13 +122,13 @@
     <string name="volume_boost_disabled">비활성</string>
     <string name="volume_boost_title">사운드 증폭</string>
     <string name="playing_item_details_time_remaining">남은 시간</string>
-    <string name="settings_screen_advanced_preferences_title">고급 설정</string>
-    <string name="settings_screen_advanced_preferences_description">탐색 제어, 프록시 헤더, 사운드 설정</string>
+    <string name="settings_screen_advanced_preferences_title">고급</string>
+    <string name="settings_screen_advanced_preferences_description">진단, 로그 및 기타 옵션</string>
     <string name="settings_screen_crash_report_title">오류 보고</string>
     <string name="settings_screen_crash_report_description">앱이 충돌하면 보고서 보내기</string>
     <string name="settings_download_automatically_title">자동 다운로드</string>
-    <string name="download_settings_title">다운로드 설정</string>
-    <string name="download_settings_description">다운로드 설정, 콘텐츠 관리</string>
+    <string name="download_settings_title">다운로드</string>
+    <string name="download_settings_description">다운로드 및 콘텐츠 관리</string>
     <string name="download_settings_network_type_title">자동 다운로드 연결 설정</string>
     <string name="download_settings_library_type_title">자동 다운로드</string>
     <string name="download_settings_library_type_no_items_selected">지정된 타입 없음</string>
@@ -149,4 +149,10 @@
     <string name="settings_screen_delay_autodownload_description">다운로드를 시작하기 전에 잠시 대기</string>
     <string name="settings_screen_bypass_ssl_title">SSL 인증 비활성화</string>
     <string name="settings_screen_bypass_ssl_hint">SSL 인증 없이 서버에 연결</string>
+    <string name="connection_settings_title">연결</string>
+    <string name="connection_settings_description">서버 주소, 프록시 및 SSL</string>
+    <string name="playback_preferences_title">재생</string>
+    <string name="playback_preferences_description">음량, 탐색 컨트롤 및 오디오</string>
+    <string name="appearance_preferences_title">외관</string>
+    <string name="appearance_preferences_description">색상 구성표, 정렬 및 테마</string>
 </resources>
