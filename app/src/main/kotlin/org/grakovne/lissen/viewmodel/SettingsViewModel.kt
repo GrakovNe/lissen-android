@@ -17,6 +17,7 @@ import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.domain.connection.LocalUrl
 import org.grakovne.lissen.domain.connection.LocalUrl.Companion.clean
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
@@ -80,6 +81,9 @@ class SettingsViewModel
     private val _seekTime = MutableLiveData(preferences.getSeekTime())
     val seekTime = _seekTime
 
+    private val _defaultTimerOption = MutableLiveData<TimerOption?>(preferences.getDefaultTimerOption())
+    val defaultTimerOption: LiveData<TimerOption?> = _defaultTimerOption
+
     private val _crashReporting = MutableLiveData(preferences.getAcraEnabled())
     val crashReporting = _crashReporting
 
@@ -112,6 +116,12 @@ class SettingsViewModel
     val userAgent: LiveData<String> = _userAgent
 
     fun provideLogArchive(): File? = logProvider.archiveLogFile()
+
+    fun saveDefaultTimerOption(option: TimerOption?) {
+      Timber.d("User action: saveDefaultTimerOption option=$option")
+      _defaultTimerOption.postValue(option)
+      preferences.saveDefaultTimerOption(option)
+    }
 
     fun preferCrashReporting(value: Boolean) {
       Timber.d("User action: preferCrashReporting $value")

@@ -32,6 +32,7 @@ import org.grakovne.lissen.ui.screens.settings.advanced.AppearancePreferencesScr
 import org.grakovne.lissen.ui.screens.settings.advanced.ClientCertificateSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.ConnectionSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.CustomHeadersSettingsScreen
+import org.grakovne.lissen.ui.screens.settings.advanced.DefaultTimerSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.LocalUrlSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.PlaybackPreferencesScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.SeekSettingsScreen
@@ -337,6 +338,22 @@ fun AppNavHost(
         popExitTransition = { popExitTransition },
       ) {
         AppearancePreferencesScreen(
+          onBack = {
+            if (navController.previousBackStackEntry != null) {
+              navController.popBackStack()
+            }
+          },
+        )
+      }
+
+      composable(
+        route = "settings_screen/default_timer_settings",
+        enterTransition = { enterTransition },
+        exitTransition = { exitTransition },
+        popEnterTransition = { popEnterTransition },
+        popExitTransition = { popExitTransition },
+      ) {
+        DefaultTimerSettingsScreen(
           onBack = {
             if (navController.previousBackStackEntry != null) {
               navController.popBackStack()

@@ -6,6 +6,7 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.util.Base64
 import androidx.core.content.edit
+import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Types
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.awaitClose
@@ -18,11 +19,14 @@ import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.common.moshi
+import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DownloadOption
+import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.SeekTime
+import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.domain.connection.LocalUrl
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.domain.makeDownloadOption
@@ -546,6 +550,44 @@ class LissenSharedPreferences
         putBoolean(KEY_HIDE_COMPLETED, value)
       }
 
+    fun getDefaultTimerOption(): TimerOption? {
+      val json = sharedPreferences.getString(KEY_DEFAULT_SLEEP_TIMER, null) ?: return null
+      return try {
+        moshi.adapter(TimerOptionDto::class.java).fromJson(json)?.toTimerOption()
+      } catch (_: Throwable) {
+        null
+      }
+    }
+
+    fun saveDefaultTimerOption(option: TimerOption?) =
+      sharedPreferences.edit {
+        when (option) {
+          null -> {
+            remove(KEY_DEFAULT_SLEEP_TIMER)
+          }
+
+          else -> {
+            putString(
+              KEY_DEFAULT_SLEEP_TIMER,
+              moshi.adapter(TimerOptionDto::class.java).toJson(option.toDto()),
+            )
+          }
+        }
+      }
+
+    private fun TimerOption.toDto() =
+      when (this) {
+        CurrentEpisodeTimerOption -> TimerOptionDto(type = "episode")
+        is DurationTimerOption -> TimerOptionDto(type = "duration", minutes = duration)
+      }
+
+    private fun TimerOptionDto.toTimerOption(): TimerOption? =
+      when (type) {
+        "episode" -> CurrentEpisodeTimerOption
+        "duration" -> minutes?.let { DurationTimerOption(it) }
+        else -> null
+      }
+
     companion object {
       private const val KEY_ALIAS = "secure_key_alias"
       private const val KEY_HOST = "host"
@@ -586,6 +628,7 @@ class LissenSharedPreferences
 
       private const val KEY_PLAYING_ITEM = "playing_item"
       private const val KEY_VOLUME_BOOST = "volume_boost"
+      private const val KEY_DEFAULT_SLEEP_TIMER = "default_sleep_timer"
 
       private const val ANDROID_KEYSTORE = "AndroidKeyStore"
       private const val TRANSFORMATION = "AES/GCM/NoPadding"
@@ -646,3 +689,9 @@ class LissenSharedPreferences
         )
     }
   }
+
+@JsonClass(generateAdapter = true)
+internal data class TimerOptionDto(
+  val type: String,
+  val minutes: Int? = null,
+)
