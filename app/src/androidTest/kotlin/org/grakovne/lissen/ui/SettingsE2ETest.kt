@@ -139,6 +139,13 @@ class SettingsE2ETest {
     composeRule.onNodeWithText("Disconnect from the server").performClick()
 
     composeRule.waitUntilAtLeastOneExists(
+      matcher = hasText("Disconnect"),
+      timeoutMillis = TIMEOUT_MS,
+    )
+
+    composeRule.onNodeWithText("Disconnect").performClick()
+
+    composeRule.waitUntilAtLeastOneExists(
       matcher = hasTestTag("loginScreen"),
       timeoutMillis = TIMEOUT_MS,
     )
