@@ -32,6 +32,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.restartApplication
 import org.grakovne.lissen.ui.navigation.AppNavigationService
+import org.grakovne.lissen.ui.screens.settings.composable.DefaultTimerSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.PlaybackVolumeBoostSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsInfoBanner
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
@@ -97,11 +98,7 @@ fun PlaybackPreferencesScreen(
           onclick = { navController.showSeekSettings() },
         )
 
-        AdvancedSettingsNavigationItemComposable(
-          title = stringResource(R.string.settings_screen_default_sleep_timer_title),
-          description = stringResource(R.string.settings_screen_default_sleep_timer_hint),
-          onclick = { navController.showDefaultTimerSettings() },
-        )
+        DefaultTimerSettingsComposable(viewModel)
 
         SettingsToggleItem(
           title = stringResource(R.string.settings_screen_software_codecs_enabled_title),
