@@ -35,6 +35,7 @@ import org.grakovne.lissen.domain.DetailedItem.Companion.same
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.playback.service.DefaultTimerActivator
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.playback.service.calculateChapterIndexAndPosition
@@ -52,6 +53,7 @@ class MediaRepository
     private val preferences: LissenSharedPreferences,
     private val mediaChannel: LissenMediaProvider,
     private val eventBus: PlaybackEventBus,
+    private val defaultTimerActivator: DefaultTimerActivator,
   ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private lateinit var mediaController: MediaController
@@ -144,6 +146,7 @@ class MediaRepository
                   }
 
                   is PlaybackEvent.TimerExpired -> {
+                    defaultTimerActivator.onTimerExpired()
                     _timerOption.postValue(null)
                     pause()
                   }
@@ -159,6 +162,9 @@ class MediaRepository
               object : Player.Listener {
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
                   _isPlaying.value = isPlaying
+                  if (isPlaying) {
+                    defaultTimerActivator.onPlaybackStarted { updateTimer(it) }
+                  }
                 }
 
                 override fun onPlaybackStateChanged(playbackState: Int) {
@@ -183,6 +189,7 @@ class MediaRepository
       timerOption: TimerOption?,
       position: Double? = null,
     ) {
+      defaultTimerActivator.onTimerManuallySet()
       _timerOption.postValue(timerOption)
 
       when (timerOption) {
@@ -382,10 +389,12 @@ class MediaRepository
     }
 
     fun clearPreparedItem() {
-      timerOption
-        .value
-        ?.let { updateTimer(timerOption = null) }
+      if (timerOption.value != null) {
+        _timerOption.postValue(null)
+        cancelServiceTimer()
+      }
 
+      defaultTimerActivator.onNewBookPrepared()
       _mediaPreparingError.postValue(false)
       _isPlaybackReady.postValue(false)
     }
