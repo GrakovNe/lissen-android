@@ -39,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -49,6 +50,7 @@ import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.common.LibraryOrderingDirection.ASCENDING
 import org.grakovne.lissen.common.LibraryOrderingDirection.DESCENDING
 import org.grakovne.lissen.common.LibraryOrderingOption
+import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.CachingModelView
@@ -162,11 +164,12 @@ private fun ToggleRow(
   checked: Boolean,
   onClick: () -> Unit,
 ) {
+  val view = LocalView.current
   Row(
     modifier =
       Modifier
         .fillMaxWidth()
-        .clickable { onClick() }
+        .clickable { withHaptic(view) { onClick() } }
         .padding(horizontal = 16.dp, vertical = 10.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {
@@ -205,11 +208,12 @@ private fun SortOptionRow(
   direction: LibraryOrderingDirection?,
   onClick: () -> Unit,
 ) {
+  val view = LocalView.current
   Row(
     modifier =
       Modifier
         .fillMaxWidth()
-        .clickable { onClick() }
+        .clickable { withHaptic(view) { onClick() } }
         .padding(horizontal = 16.dp, vertical = 16.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {

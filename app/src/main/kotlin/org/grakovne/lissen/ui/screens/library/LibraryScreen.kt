@@ -523,14 +523,17 @@ fun LibraryScreen(
         cachingModelView.toggleCacheForce()
         playerViewModel.book.value?.let { playerViewModel.preparePlayback(it.id) }
         refreshContent(showPullRefreshing = false)
+        coroutineScope.launch { libraryListState.scrollToItem(0) }
       },
       onHideCompletedToggled = {
         settingsViewModel.toggleHideCompleted()
         playerViewModel.book.value?.let { playerViewModel.preparePlayback(it.id) }
         refreshContent(showPullRefreshing = false)
+        coroutineScope.launch { libraryListState.scrollToItem(0) }
       },
       onSortingChanged = {
         refreshContent(showPullRefreshing = false)
+        coroutineScope.launch { libraryListState.scrollToItem(0) }
       },
     )
   }
