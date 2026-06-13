@@ -234,7 +234,7 @@ private fun SortOptionRow(
             DESCENDING -> Icons.Outlined.ArrowDownward
           },
         contentDescription = null,
-        modifier = Modifier.size(16.dp),
+        modifier = Modifier.size(20.dp),
         tint = colorScheme.onSurface,
       )
     }
