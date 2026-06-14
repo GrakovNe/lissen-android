@@ -15,6 +15,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material.icons.outlined.CalendarToday
+import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Settings
@@ -89,7 +90,7 @@ fun QuickSettingsComposable(
 
       ToggleRow(
         title = stringResource(R.string.show_downloaded_content_only),
-        icon = Icons.Outlined.Download,
+        icon = Icons.Outlined.CloudOff,
         checked = forceCache,
         onClick = { onForceLocalToggled() },
       )
