@@ -197,4 +197,12 @@
     <plurals name="seek_interval_seconds">
         <item quantity="other">%d 秒</item>
     </plurals>
+    <string name="library_quick_settings_filters_title">筛选</string>
+    <string name="library_quick_settings_sort_title">排序</string>
+    <string name="settings_screen_default_sleep_timer_title">播放时的默认睡眠定时</string>
+    <string name="settings_screen_audio_focus_loss_policy_option_pause">暂停播放</string>
+    <string name="disconnect_from_server_confirm">断开连接</string>
+    <string name="disconnect_from_server_confirmation_message">此设备将断开与服务器的连接，这不会影响您的数据</string>
+    <string name="settings_screen_audio_focus_loss_policy_option_lower_volume">降低音量</string>
+    <string name="settings_screen_audio_focus_loss_policy_title">收到通知时的播放行为</string>
 </resources>
