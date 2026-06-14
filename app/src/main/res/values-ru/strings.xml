@@ -159,6 +159,8 @@
     <string name="settings_screen_clear_thumbnail_cache_title">Очистить кеш обложек</string>
     <string name="settings_screen_clear_thumbnail_cache_hint">Удалить загруженные с сервера обложки</string>
     <string name="settings_screen_clear_thumbnail_cache_success_toast">Кеш обложек очищен</string>
+    <string name="clear_thumbnail_cache_confirmation_message">Обложки будут удалены с этого устройства. Данные на сервере останутся без изменений</string>
+    <string name="clear_thumbnail_cache_confirm">Очистить</string>
     <string name="settings_screen_delay_autodownload_title">Откладывать автоматическую загрузку</string>
     <string name="settings_screen_delay_autodownload_description">Ждать перед началом скачивания</string>
     <string name="settings_screen_connection_type">Тип подключения</string>

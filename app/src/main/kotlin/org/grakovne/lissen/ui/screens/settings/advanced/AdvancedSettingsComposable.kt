@@ -26,7 +26,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -34,7 +33,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.core.content.FileProvider
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.restartApplication
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsInfoBanner
@@ -55,7 +53,6 @@ fun AdvancedSettingsComposable(onBack: () -> Unit) {
   val activityLoggingEnabledOnStart = viewModel.activityLoggingEnabledOnStart
 
   val context = LocalContext.current
-  val scope = rememberCoroutineScope()
 
   Scaffold(
     topBar = {
@@ -117,19 +114,7 @@ fun AdvancedSettingsComposable(onBack: () -> Unit) {
             onclick = { shareLogs(context, viewModel) },
           )
 
-          AdvancedSettingsSimpleItemComposable(
-            title = stringResource(R.string.settings_screen_clear_thumbnail_cache_title),
-            description = stringResource(R.string.settings_screen_clear_thumbnail_cache_hint),
-            onclick = {
-              scope.launch { cachingModelView.clearShortTermCache() }
-              Toast
-                .makeText(
-                  context,
-                  context.getString(R.string.settings_screen_clear_thumbnail_cache_success_toast),
-                  Toast.LENGTH_SHORT,
-                ).show()
-            },
-          )
+          ClearThumbnailCacheComposable(cachingModelView = cachingModelView)
         }
 
         val loggingChanged = activityLoggingEnabledOnStart != activityLoggingEnabled

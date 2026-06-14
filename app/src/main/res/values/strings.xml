@@ -166,6 +166,8 @@
     <string name="settings_screen_clear_thumbnail_cache_title">Clear thumbnail cache</string>
     <string name="settings_screen_clear_thumbnail_cache_hint">Remove cached thumbnails to free up space</string>
     <string name="settings_screen_clear_thumbnail_cache_success_toast">Thumbnail cache cleared</string>
+    <string name="clear_thumbnail_cache_confirmation_message">Cached cover images will be removed from this device. Your server data will not be affected</string>
+    <string name="clear_thumbnail_cache_confirm">Clear</string>
     <string name="settings_screen_delay_autodownload_title">Delay automatic download</string>
     <string name="settings_screen_delay_autodownload_description">Wait a short time before starting download</string>
     <string name="settings_screen_bypass_ssl_title">Disable SSL verification</string>

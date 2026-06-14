@@ -100,6 +100,21 @@ class SettingsE2ETest {
     )
   }
 
+  private fun navigateToGeneralAdvancedSettings() {
+    login()
+    composeRule.onNodeWithContentDescription("Menu").performClick()
+    composeRule.onNodeWithText("Application settings").performClick()
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = hasTestTag("settingsScreen"),
+      timeoutMillis = TIMEOUT_MS,
+    )
+    composeRule.onNodeWithText("Advanced").performClick()
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = hasText("Clear thumbnail cache"),
+      timeoutMillis = TIMEOUT_MS,
+    )
+  }
+
   @Test
   fun advancedSettings_userAgentItemIsVisible() {
     navigateToAdvancedSettings()
@@ -115,6 +130,43 @@ class SettingsE2ETest {
       timeoutMillis = TIMEOUT_MS,
     )
     composeRule.onNodeWithText("Restore Default").assertIsDisplayed()
+  }
+
+  @Test
+  fun clearThumbnailCache_confirmationSheetOpensOnClick() {
+    navigateToGeneralAdvancedSettings()
+
+    composeRule.onNodeWithText("Clear thumbnail cache").performClick()
+
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = hasText("Cached cover images will be removed from this device. Your server data will not be affected"),
+      timeoutMillis = TIMEOUT_MS,
+    )
+
+    composeRule
+      .onNodeWithText("Cached cover images will be removed from this device. Your server data will not be affected")
+      .assertIsDisplayed()
+  }
+
+  @Test
+  fun clearThumbnailCache_confirmDismissesSheet() {
+    navigateToGeneralAdvancedSettings()
+
+    composeRule.onNodeWithText("Clear thumbnail cache").performClick()
+
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = hasText("Clear"),
+      timeoutMillis = TIMEOUT_MS,
+    )
+
+    composeRule.onNodeWithText("Clear").performClick()
+
+    composeRule.waitUntilDoesNotExist(
+      matcher = hasText("Cached cover images will be removed from this device. Your server data will not be affected"),
+      timeoutMillis = TIMEOUT_MS,
+    )
+
+    composeRule.onNodeWithText("Clear thumbnail cache").assertIsDisplayed()
   }
 
   @Test
