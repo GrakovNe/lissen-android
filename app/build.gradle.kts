@@ -62,8 +62,8 @@ android {
     applicationId = "org.grakovne.lissen"
     minSdk = 28
     targetSdk = 37
-    versionCode = 11007
-    versionName = "1.10.7-release"
+    versionCode = 11008
+    versionName = "1.10.8-release"
     
     testInstrumentationRunner = "org.grakovne.lissen.HiltTestRunner"
     
