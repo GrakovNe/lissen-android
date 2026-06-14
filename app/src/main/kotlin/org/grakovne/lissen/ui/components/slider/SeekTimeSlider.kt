@@ -30,4 +30,4 @@ fun SeekTimeSlider(
 private const val MIN_SECONDS = 1
 private const val MAX_SECONDS = 60
 
-private val labeledIndexes = listOf(1, 5, 10, 15, 20, 30, 45, 60)
+private val labeledIndexes = (5..MAX_SECONDS step 5).toList()
