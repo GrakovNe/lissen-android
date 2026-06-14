@@ -200,4 +200,7 @@
         <item quantity="many">%d secondi</item>
         <item quantity="other">%d secondi</item>
     </plurals>
+    <string name="library_quick_settings_filters_title">Filtri</string>
+    <string name="library_quick_settings_sort_title">Ordina per</string>
+    <string name="settings_screen_audio_focus_loss_policy_option_pause">Pausa</string>
 </resources>
