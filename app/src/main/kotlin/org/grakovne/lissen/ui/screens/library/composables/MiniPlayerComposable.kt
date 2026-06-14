@@ -55,13 +55,11 @@ import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
 import coil3.request.ImageRequest
 import org.grakovne.lissen.R
-import org.grakovne.lissen.common.snapProgress
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.navigation.AppNavigationService
-import org.grakovne.lissen.ui.theme.FoxOrange
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
@@ -224,7 +222,7 @@ private fun calculateProgress(
   val totalDuration = item.chapters.sumOf { it.duration }
 
   return when (totalDuration > 0 && libraryType == LibraryType.LIBRARY) {
-    true -> (totalPosition / totalDuration).toFloat().coerceIn(0f, 1f).snapProgress()
+    true -> (totalPosition / totalDuration).toFloat().coerceIn(0f, 1f)
     false -> 0f
   }
 }
@@ -244,7 +242,7 @@ private fun PlaybackButton(
         progress = { progress },
         modifier = Modifier.size(28.dp),
         strokeWidth = 28.dp * 0.1f,
-        color = FoxOrange,
+        color = colorScheme.primary,
         trackColor = colorScheme.onBackground,
         strokeCap = StrokeCap.Butt,
         gapSize = 2.dp,
