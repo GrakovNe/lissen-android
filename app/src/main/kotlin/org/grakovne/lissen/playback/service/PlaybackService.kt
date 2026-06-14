@@ -279,7 +279,7 @@ class PlaybackService : MediaLibraryService() {
             chapterClips.add(
               FileClip(
                 fileId = currentFile.id,
-                clipStart = outstandingPartStart - allocatedFilesEnd,
+                clipStart = maxOf(0.0, outstandingPartStart - allocatedFilesEnd),
                 clipEnd = overlapEnd - allocatedFilesEnd,
               ),
             )
