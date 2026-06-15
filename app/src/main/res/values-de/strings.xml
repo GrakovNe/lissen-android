@@ -195,4 +195,18 @@
     <string name="settings_screen_user_agent_title">User Agent ändern</string>
     <string name="settings_screen_user_agent_hint">Den User-Agent-Header der Anwendung anpassen</string>
     <string name="settings_screen_user_agent_restore_default">Auf Standard zurücksetzen</string>
+    <plurals name="seek_interval_seconds">
+        <item quantity="one">%d Sekunde</item>
+        <item quantity="other">%d Sekunden</item>
+    </plurals>
+    <string name="library_quick_settings_filters_title">Filter</string>
+    <string name="library_quick_settings_sort_title">Sortieren nach</string>
+    <string name="settings_screen_default_sleep_timer_title">Standard Sleep-Timer während der Wiedergabe</string>
+    <string name="settings_screen_audio_focus_loss_policy_title">Wiedergabe bei Benachrichtigung</string>
+    <string name="settings_screen_audio_focus_loss_policy_option_pause">Pause</string>
+    <string name="settings_screen_audio_focus_loss_policy_option_lower_volume">Lautstärke verringern</string>
+    <string name="clear_thumbnail_cache_confirmation_message">Zwischengespeicherte Titelbilder werden von diesem Gerät gelöscht. Ihre Serverdaten bleiben davon unberührt</string>
+    <string name="clear_thumbnail_cache_confirm">Löschen</string>
+    <string name="disconnect_from_server_confirmation_message">Die Verbindung zu diesem Server wird auf diesem Gerät getrennt. Ihre Daten bleiben davon unberührt</string>
+    <string name="disconnect_from_server_confirm">Trennen</string>
 </resources>
