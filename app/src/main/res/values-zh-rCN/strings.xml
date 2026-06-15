@@ -205,4 +205,6 @@
     <string name="disconnect_from_server_confirmation_message">此设备将断开与服务器的连接，这不会影响您的数据</string>
     <string name="settings_screen_audio_focus_loss_policy_option_lower_volume">降低音量</string>
     <string name="settings_screen_audio_focus_loss_policy_title">收到通知时的播放行为</string>
+    <string name="clear_thumbnail_cache_confirmation_message">缓存的封面图片将被从此设备上删除。服务器的数据不会受到影响</string>
+    <string name="clear_thumbnail_cache_confirm">清除</string>
 </resources>
