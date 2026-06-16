@@ -197,4 +197,20 @@
     <string name="settings_screen_user_agent_restore_default">Przywróć domyślne</string>
     <string name="settings_screen_user_agent_hint">Dostosuj nagłówek User-Agent aplikacji</string>
     <string name="settings_screen_user_agent_title">Zmień nagłówek User-Agent</string>
+    <string name="library_quick_settings_filters_title">Filtry</string>
+    <string name="library_quick_settings_sort_title">Sortuj</string>
+    <plurals name="seek_interval_seconds">
+        <item quantity="one">1 sekunda</item>
+        <item quantity="few">%d sekundy</item>
+        <item quantity="many">%d sekund</item>
+        <item quantity="other">%d sekund</item>
+    </plurals>
+    <string name="settings_screen_default_sleep_timer_title">Domyślny czas uśpienia podczas odtwarzania</string>
+    <string name="settings_screen_audio_focus_loss_policy_title">Odtwarzanie po powiadomieniu</string>
+    <string name="settings_screen_audio_focus_loss_policy_option_pause">Pauzuj</string>
+    <string name="settings_screen_audio_focus_loss_policy_option_lower_volume">Zmniejsz głośność</string>
+    <string name="clear_thumbnail_cache_confirmation_message">Obrazy okładek z pamięci podręcznej zostaną usunięte z tego urządzenia. Twoje dane na serwerze nie ulegną zmianie</string>
+    <string name="clear_thumbnail_cache_confirm">Wyczyść</string>
+    <string name="disconnect_from_server_confirmation_message">Zostaniesz rozłączony z serwerem na tym urządzeniu. Twoje dane nie ulegną zmianie</string>
+    <string name="disconnect_from_server_confirm">Rozłącz</string>
 </resources>
