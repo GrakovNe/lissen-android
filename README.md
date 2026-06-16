@@ -1,5 +1,5 @@
 # Lissen - Clean Audiobookshelf Player
-[![Build Lissen App](https://github.com/GrakovNe/lissen-android/actions/workflows/build_app.yml/badge.svg)](https://github.com/GrakovNe/lissen-android/actions/workflows/build_app.yml)
+[![Build Lissen App](https://github.com/GrakovNe/lissen-android/actions/workflows/app_build.yml/badge.svg)](https://github.com/GrakovNe/lissen-android/actions/workflows/app_build.yml)
 
 <p align="center"> 
   <a href="https://play.google.com/store/apps/details?id=org.grakovne.lissen"><img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" height="60"></a>&nbsp;&nbsp;&nbsp;<!--
