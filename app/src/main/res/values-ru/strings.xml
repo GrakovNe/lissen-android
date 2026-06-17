@@ -155,6 +155,7 @@
     <string name="settings_screen_internal_connection_url_description">Настройте доступ к серверу из домашней сети</string>
     <string name="local_url_hint_ssid_name">Имя WiFi сети</string>
     <string name="location_permission_request_hint">Для определения текущей Wi‑Fi сети приложению нужен доступ к местоположению</string>
+    <string name="local_network_permission_request_hint">Для подключения к локальному серверу приложению нужен доступ к локальной сети</string>
     <string name="permission_request_grant_button">Разрешить</string>
     <string name="settings_screen_clear_thumbnail_cache_title">Очистить кеш обложек</string>
     <string name="settings_screen_clear_thumbnail_cache_hint">Удалить загруженные с сервера обложки</string>
