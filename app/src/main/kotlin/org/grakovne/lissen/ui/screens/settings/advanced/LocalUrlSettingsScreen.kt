@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Router
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -44,7 +45,9 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.connection.LocalUrl
+import org.grakovne.lissen.ui.screens.common.hasLocalNetworkPermission
 import org.grakovne.lissen.ui.screens.common.hasLocationPermission
+import org.grakovne.lissen.ui.screens.common.localNetworkPermission
 import org.grakovne.lissen.ui.screens.common.locationPermission
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsInfoBanner
 import org.grakovne.lissen.viewmodel.SettingsViewModel
@@ -64,7 +67,10 @@ fun LocalUrlSettingsScreen(onBack: () -> Unit) {
   val state = rememberLazyListState()
   val coroutineScope = rememberCoroutineScope()
 
-  var hasPermission by remember { mutableStateOf(hasLocationPermission(context)) }
+  var hasLocationPermission by remember { mutableStateOf(hasLocationPermission(context)) }
+  var hasLocalNetworkPermission by remember { mutableStateOf(hasLocalNetworkPermission(context)) }
+
+  val hasPermissions = hasLocationPermission && hasLocalNetworkPermission
 
   Scaffold(
     topBar = {
@@ -112,7 +118,7 @@ fun LocalUrlSettingsScreen(onBack: () -> Unit) {
 
         itemsIndexed(customHeaders) { index, header ->
           LocalUrlComposable(
-            enabled = hasPermission,
+            enabled = hasPermissions,
             url = header,
             onChanged = { newPair ->
               val updatedList = customHeaders.toMutableList()
@@ -145,7 +151,7 @@ fun LocalUrlSettingsScreen(onBack: () -> Unit) {
     },
     floatingActionButtonPosition = FabPosition.Center,
     floatingActionButton = {
-      when (hasPermission) {
+      when (hasPermissions) {
         true -> {
           FloatingActionButton(
             containerColor = colorScheme.primary,
@@ -168,7 +174,10 @@ fun LocalUrlSettingsScreen(onBack: () -> Unit) {
         }
 
         false -> {
-          LocationPermissionBanner { hasPermission = it }
+          when (hasLocationPermission) {
+            false -> LocationPermissionBanner { hasLocationPermission = it }
+            true -> LocalNetworkPermissionBanner { hasLocalNetworkPermission = it }
+          }
         }
       }
     },
@@ -191,6 +200,26 @@ fun LocationPermissionBanner(
     text = stringResource(R.string.location_permission_request_hint),
     ctaText = stringResource(R.string.permission_request_grant_button),
     onAction = { permissionRequestLauncher.launch(locationPermission()) },
+    modifier = modifier,
+  )
+}
+
+@Composable
+fun LocalNetworkPermissionBanner(
+  modifier: Modifier = Modifier,
+  onResult: (Boolean) -> Unit,
+) {
+  val permissionRequestLauncher =
+    rememberLauncherForActivityResult(
+      contract = ActivityResultContracts.RequestPermission(),
+      onResult = onResult,
+    )
+
+  SettingsInfoBanner(
+    icon = Icons.Default.Router,
+    text = stringResource(R.string.local_network_permission_request_hint),
+    ctaText = stringResource(R.string.permission_request_grant_button),
+    onAction = { permissionRequestLauncher.launch(localNetworkPermission()) },
     modifier = modifier,
   )
 }

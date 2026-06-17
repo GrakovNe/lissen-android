@@ -69,6 +69,7 @@ import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.ui.components.withScrollbar
 import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.ui.navigation.AppNavigationService
+import org.grakovne.lissen.ui.screens.common.RequestLocalNetworkPermission
 import org.grakovne.lissen.ui.screens.common.RequestNotificationPermissions
 import org.grakovne.lissen.ui.screens.library.composables.BookComposable
 import org.grakovne.lissen.ui.screens.library.composables.DefaultActionComposable
@@ -96,7 +97,6 @@ fun LibraryScreen(
   imageLoader: ImageLoader,
   networkService: NetworkService,
 ) {
-  RequestNotificationPermissions()
 
   val view: View = LocalView.current
   val coroutineScope = rememberCoroutineScope()
@@ -160,6 +160,17 @@ fun LibraryScreen(
       pullRefreshing = false
     }
   }
+  
+  RequestNotificationPermissions()
+  
+  RequestLocalNetworkPermission(
+    host =
+      settingsViewModel.host
+        .observeAsState()
+        .value
+        ?.url,
+    onGranted = { refreshContent(showPullRefreshing = false) },
+  )
 
   val isPlaceholderRequired by remember {
     derivedStateOf {
