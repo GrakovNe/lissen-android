@@ -97,7 +97,6 @@ fun LibraryScreen(
   imageLoader: ImageLoader,
   networkService: NetworkService,
 ) {
-
   val view: View = LocalView.current
   val coroutineScope = rememberCoroutineScope()
 
@@ -160,9 +159,9 @@ fun LibraryScreen(
       pullRefreshing = false
     }
   }
-  
+
   RequestNotificationPermissions()
-  
+
   RequestLocalNetworkPermission(
     host =
       settingsViewModel.host
