@@ -1,9 +1,13 @@
 package org.grakovne.lissen.channel.audiobookshelf
 
+import android.content.Context
 import androidx.annotation.Keep
+import dagger.hilt.android.qualifiers.ApplicationContext
 import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.domain.NetworkType
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.ui.screens.common.hasLocalNetworkPermission
+import org.grakovne.lissen.ui.screens.common.isLocalNetworkHost
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -12,6 +16,7 @@ import javax.inject.Singleton
 class AudiobookshelfHostProvider
   @Inject
   constructor(
+    @ApplicationContext private val context: Context,
     private val sharedPreferences: LissenSharedPreferences,
     private val networkService: NetworkService,
   ) {
@@ -41,9 +46,17 @@ class AudiobookshelfHostProvider
         .getLocalUrls()
         .find { it.ssid.equals(currentNetwork, ignoreCase = true) }
         ?.route
+        ?.takeIf { localAccessGranted(context, it) }
         ?.let(Host.Companion::internal)
         ?.also { Timber.d("Using internal host: ${it.url}") }
         ?: externalHost.also { Timber.d("Using external host: ${it.url}, no internal matches") }
+    }
+
+    companion object {
+      private fun localAccessGranted(
+        context: Context,
+        url: String,
+      ): Boolean = hasLocalNetworkPermission(context)
     }
   }
 

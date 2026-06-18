@@ -2,6 +2,8 @@ package org.grakovne.lissen.ui.screens.login
 
 import android.widget.Toast
 import android.widget.Toast.LENGTH_SHORT
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -63,6 +65,9 @@ import org.grakovne.lissen.channel.common.AuthMethod
 import org.grakovne.lissen.channel.common.makeText
 import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.ui.navigation.AppNavigationService
+import org.grakovne.lissen.ui.screens.common.hasLocalNetworkPermission
+import org.grakovne.lissen.ui.screens.common.isLocalNetworkHost
+import org.grakovne.lissen.ui.screens.common.localNetworkPermission
 import org.grakovne.lissen.viewmodel.LoginViewModel
 import org.grakovne.lissen.viewmodel.LoginViewModel.LoginState
 import timber.log.Timber
@@ -85,6 +90,29 @@ fun LoginScreen(
   var showPassword by remember { mutableStateOf(false) }
 
   val context = LocalContext.current
+
+  val pendingAction = remember { mutableStateOf<(() -> Unit)?>(null) }
+
+  val permissionRequestLauncher =
+    rememberLauncherForActivityResult(
+      ActivityResultContracts.RequestPermission(),
+    ) { isGranted ->
+      if (isGranted) pendingAction.value?.invoke()
+      pendingAction.value = null
+    }
+
+  fun withNetworkPermission(action: () -> Unit) {
+    when (isLocalNetworkHost(host) && hasLocalNetworkPermission(context).not()) {
+      true -> {
+        pendingAction.value = action
+        permissionRequestLauncher.launch(localNetworkPermission())
+      }
+
+      false -> {
+        action()
+      }
+    }
+  }
 
   LaunchedEffect(loginState) {
     if (loginState is LoginState.Loading) {
@@ -208,7 +236,7 @@ fun LoginScreen(
                 .padding(top = 32.dp),
           ) {
             Button(
-              onClick = { viewModel.login() },
+              onClick = { withNetworkPermission { viewModel.login() } },
               modifier =
                 Modifier
                   .weight(1f)
@@ -266,7 +294,7 @@ fun LoginScreen(
             }
 
           TextButton(
-            onClick = { viewModel.startOAuth() },
+            onClick = { withNetworkPermission { viewModel.startOAuth() } },
             enabled = isEnabled,
             colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.onSurface),
             modifier =

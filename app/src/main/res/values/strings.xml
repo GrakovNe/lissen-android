@@ -162,6 +162,7 @@
     <string name="settings_screen_internal_connection_url_description">Define server access for home Wi‑Fi</string>
     <string name="local_url_hint_ssid_name">WiFi network name</string>
     <string name="location_permission_request_hint">The app needs location access to detect Wi‑Fi name</string>
+    <string name="local_network_permission_request_hint">The app needs local network access to connect to nearby servers</string>
     <string name="permission_request_grant_button">Allow</string>
     <string name="settings_screen_clear_thumbnail_cache_title">Clear thumbnail cache</string>
     <string name="settings_screen_clear_thumbnail_cache_hint">Remove cached thumbnails to free up space</string>
