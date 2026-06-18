@@ -2,7 +2,6 @@ package org.grakovne.lissen.ui.screens.common
 
 import android.content.Context
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -11,6 +10,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import java.net.InetAddress
+import java.net.URI
 
 fun hasLocalNetworkPermission(context: Context): Boolean =
   when (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CINNAMON_BUN) {
@@ -43,7 +43,7 @@ fun RequestLocalNetworkPermission(
 fun isLocalNetworkHost(url: String): Boolean {
   val host =
     try {
-      Uri.parse(url).host ?: url
+      URI(url).host ?: url
     } catch (_: Exception) {
       url
     }
