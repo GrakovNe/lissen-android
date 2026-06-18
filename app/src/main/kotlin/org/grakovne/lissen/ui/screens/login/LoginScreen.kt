@@ -101,12 +101,16 @@ fun LoginScreen(
       pendingAction.value = null
     }
 
-  fun withLocalNetwork(action: () -> Unit) {
-    if (isLocalNetworkHost(host) && !hasLocalNetworkPermission(context)) {
-      pendingAction.value = action
-      permissionRequestLauncher.launch(localNetworkPermission())
-    } else {
-      action()
+  fun withNetworkPermission(action: () -> Unit) {
+    when (isLocalNetworkHost(host) && hasLocalNetworkPermission(context).not()) {
+      true -> {
+        pendingAction.value = action
+        permissionRequestLauncher.launch(localNetworkPermission())
+      }
+
+      false -> {
+        action()
+      }
     }
   }
 
@@ -232,7 +236,7 @@ fun LoginScreen(
                 .padding(top = 32.dp),
           ) {
             Button(
-              onClick = { withLocalNetwork { viewModel.login() } },
+              onClick = { withNetworkPermission { viewModel.login() } },
               modifier =
                 Modifier
                   .weight(1f)
@@ -290,7 +294,7 @@ fun LoginScreen(
             }
 
           TextButton(
-            onClick = { withLocalNetwork { viewModel.startOAuth() } },
+            onClick = { withNetworkPermission { viewModel.startOAuth() } },
             enabled = isEnabled,
             colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.onSurface),
             modifier =
