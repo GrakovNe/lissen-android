@@ -63,7 +63,7 @@ android {
     minSdk = 28
     targetSdk = 37
     versionCode = 11011
-    versionName = "1.10.12-release"
+    versionName = "1.10.11-release"
     
     testInstrumentationRunner = "org.grakovne.lissen.HiltTestRunner"
     
