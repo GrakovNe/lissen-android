@@ -374,6 +374,65 @@ class LissenMediaProviderTest {
       assertInstanceOf(OperationResult.Success::class.java, result)
       assertEquals(channelUri, (result as OperationResult.Success).data)
     }
+
+    @Test
+    fun `prefers local cache URI over channel URI when both available`() {
+      val localUri = mockk<Uri>()
+      val channelUri = mockk<Uri>()
+      every { preferences.isForceCache() } returns false
+      every { localCacheRepository.provideFileUri("book-1", "file-1") } returns localUri
+      every { mediaChannel.provideFileUri("book-1", "file-1") } returns channelUri
+
+      val result = provider.provideFileUri("book-1", "file-1")
+
+      assertInstanceOf(OperationResult.Success::class.java, result)
+      assertEquals(localUri, (result as OperationResult.Success).data)
+    }
+
+    @Test
+    fun `force cache returns cached URI when available`() {
+      val localUri = mockk<Uri>()
+      every { preferences.isForceCache() } returns true
+      every { localCacheRepository.provideFileUri("book-1", "file-1") } returns localUri
+
+      val result = provider.provideFileUri("book-1", "file-1")
+
+      assertInstanceOf(OperationResult.Success::class.java, result)
+      assertEquals(localUri, (result as OperationResult.Success).data)
+    }
+
+    @Test
+    fun `channel fallback always succeeds when force cache disabled`() {
+      val channelUri = mockk<Uri>()
+      every { preferences.isForceCache() } returns false
+      every { localCacheRepository.provideFileUri(any(), any()) } returns null
+      every { mediaChannel.provideFileUri("book-1", "file-1") } returns channelUri
+
+      val result = provider.provideFileUri("book-1", "file-1")
+
+      assertInstanceOf(OperationResult.Success::class.java, result)
+    }
+
+    @Test
+    fun `does not call channel when force cache enabled`() {
+      every { preferences.isForceCache() } returns true
+      every { localCacheRepository.provideFileUri(any(), any()) } returns null
+
+      provider.provideFileUri("book-1", "file-1")
+
+      io.mockk.verify(exactly = 0) { mediaChannel.provideFileUri(any(), any()) }
+    }
+
+    @Test
+    fun `does not call channel when local cache has URI and force cache disabled`() {
+      val localUri = mockk<Uri>()
+      every { preferences.isForceCache() } returns false
+      every { localCacheRepository.provideFileUri("book-1", "file-1") } returns localUri
+
+      provider.provideFileUri("book-1", "file-1")
+
+      io.mockk.verify(exactly = 0) { mediaChannel.provideFileUri(any(), any()) }
+    }
   }
 
   @Nested
