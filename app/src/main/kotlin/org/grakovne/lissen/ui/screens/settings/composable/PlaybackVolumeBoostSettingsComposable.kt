@@ -18,8 +18,8 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,7 +39,7 @@ import org.grakovne.lissen.viewmodel.SettingsViewModel
 @Composable
 fun PlaybackVolumeBoostSettingsComposable(viewModel: SettingsViewModel) {
   var volumeBoostExpanded by remember { mutableStateOf(false) }
-  val preferredDb by viewModel.preferredPlaybackVolumeBoost.observeAsState(0)
+  val preferredDb by viewModel.preferredPlaybackVolumeBoost.collectAsState()
 
   Row(
     modifier =

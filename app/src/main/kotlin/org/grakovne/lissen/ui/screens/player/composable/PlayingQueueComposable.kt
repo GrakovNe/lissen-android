@@ -34,9 +34,9 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -75,8 +75,8 @@ fun PlayingQueueComposable(
   val context = LocalContext.current
   val coroutineScope = rememberCoroutineScope()
 
-  val book by viewModel.book.observeAsState()
-  val searchToken by viewModel.searchToken.observeAsState("")
+  val book by viewModel.book.collectAsState()
+  val searchToken by viewModel.searchToken.collectAsState()
 
   val showingChapters by remember {
     derivedStateOf {
@@ -97,15 +97,15 @@ fun PlayingQueueComposable(
     }
   }
 
-  val currentTrackIndex by viewModel.currentChapterIndex.observeAsState(0)
+  val currentTrackIndex by viewModel.currentChapterIndex.collectAsState()
   val currentTrackId by remember {
     derivedStateOf {
       book?.chapters?.getOrNull(currentTrackIndex)
     }
   }
 
-  val playbackReady by viewModel.isPlaybackReady.observeAsState(false)
-  val playingQueueExpanded by viewModel.playingQueueExpanded.observeAsState(false)
+  val playbackReady by viewModel.isPlaybackReady.collectAsState()
+  val playingQueueExpanded by viewModel.playingQueueExpanded.collectAsState()
 
   val density = LocalDensity.current
 
@@ -292,7 +292,7 @@ fun PlayingQueueComposable(
             .provideCacheState(
               bookId = book?.id ?: "",
               chapterId = chapter.id,
-            ).observeAsState(false)
+            ).collectAsState(initial = false)
 
           PlaylistItemComposable(
             track = chapter,

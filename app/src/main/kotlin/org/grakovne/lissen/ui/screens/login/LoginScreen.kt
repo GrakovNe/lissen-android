@@ -37,7 +37,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -80,12 +79,12 @@ fun LoginScreen(
 ) {
   val loginState by viewModel.loginState.collectAsState()
 
-  val host by viewModel.host.observeAsState("")
-  val username by viewModel.username.observeAsState("")
-  val password by viewModel.password.observeAsState("")
+  val host by viewModel.host.collectAsState()
+  val username by viewModel.username.collectAsState()
+  val password by viewModel.password.collectAsState()
 
-  val authMethods by viewModel.authMethods.observeAsState(emptyList())
-  val customOAuthLoginButton by viewModel.customOAuthLoginButtonText.observeAsState()
+  val authMethods by viewModel.authMethods.collectAsState()
+  val customOAuthLoginButton by viewModel.customOAuthLoginButtonText.collectAsState()
 
   var showPassword by remember { mutableStateOf(false) }
 

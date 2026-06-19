@@ -33,8 +33,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -89,10 +89,10 @@ fun PlayerScreen(
 
   val titleTextStyle = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
 
-  val playingBook by playerViewModel.book.observeAsState()
-  val isPlaybackReady by playerViewModel.isPlaybackReady.observeAsState(false)
-  val playingQueueExpanded by playerViewModel.playingQueueExpanded.observeAsState(false)
-  val searchRequested by playerViewModel.searchRequested.observeAsState(false)
+  val playingBook by playerViewModel.book.collectAsState()
+  val isPlaybackReady by playerViewModel.isPlaybackReady.collectAsState()
+  val playingQueueExpanded by playerViewModel.playingQueueExpanded.collectAsState()
+  val searchRequested by playerViewModel.searchRequested.collectAsState()
 
   var itemDetailsSelected by remember { mutableStateOf(false) }
   var bookmarksSelected by remember { mutableStateOf(false) }

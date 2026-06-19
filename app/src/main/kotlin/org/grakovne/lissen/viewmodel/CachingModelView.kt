@@ -2,8 +2,6 @@ package org.grakovne.lissen.viewmodel
 
 import android.content.Context
 import android.content.Intent
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -16,6 +14,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.cache.persistent.CacheState
@@ -46,8 +46,8 @@ class CachingModelView
     private val preferences: LissenSharedPreferences,
     private val cachedCoverProvider: CachedCoverProvider,
   ) : ViewModel() {
-    private val _totalCount = MutableLiveData<Int>()
-    val totalCount: LiveData<Int> = _totalCount
+    private val _totalCount = MutableStateFlow(0)
+    val totalCount: StateFlow<Int> = _totalCount.asStateFlow()
 
     val forceCache = preferences.forceCacheFlow
 
@@ -65,7 +65,7 @@ class CachingModelView
       Pager(
         config = pageConfig,
         pagingSourceFactory = {
-          val source = CachedItemsPageSource(localCacheRepository) { _totalCount.postValue(it) }
+          val source = CachedItemsPageSource(localCacheRepository) { _totalCount.value = it }
 
           pageSource = source
           source
@@ -151,12 +151,12 @@ class CachingModelView
 
     fun localCacheUsing() = preferences.isForceCache()
 
-    fun provideCacheState(bookId: String): LiveData<Boolean> = contentCachingManager.hasMetadataCached(bookId)
+    fun provideCacheState(bookId: String): Flow<Boolean> = contentCachingManager.hasMetadataCached(bookId)
 
     fun provideCacheState(
       bookId: String,
       chapterId: String,
-    ): LiveData<Boolean> = contentCachingManager.hasMetadataCached(bookId, chapterId)
+    ): Flow<Boolean> = contentCachingManager.hasMetadataCached(bookId, chapterId)
 
     fun fetchCachedItems() {
       viewModelScope.launch {

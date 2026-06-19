@@ -1,11 +1,10 @@
 package org.grakovne.lissen.viewmodel
 
-import androidx.arch.core.executor.ArchTaskExecutor
-import androidx.arch.core.executor.TaskExecutor
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -33,6 +32,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class SettingsViewModelTest {
   private val testDispatcher = UnconfinedTestDispatcher()
   private val preferences = mockk<LissenSharedPreferences>(relaxed = true)
@@ -42,15 +42,6 @@ class SettingsViewModelTest {
 
   @BeforeEach
   fun setup() {
-    ArchTaskExecutor.getInstance().setDelegate(
-      object : TaskExecutor() {
-        override fun executeOnDiskIO(runnable: Runnable) = runnable.run()
-
-        override fun postToMainThread(runnable: Runnable) = runnable.run()
-
-        override fun isMainThread() = true
-      },
-    )
     Dispatchers.setMain(testDispatcher)
 
     every { preferences.getHost() } returns "http://example.com"
@@ -86,13 +77,12 @@ class SettingsViewModelTest {
   @AfterEach
   fun teardown() {
     Dispatchers.resetMain()
-    ArchTaskExecutor.getInstance().setDelegate(null)
   }
 
   @Nested
   inner class LibraryPreference {
     @Test
-    fun `preferLibrary updates preferredLibrary LiveData`() {
+    fun `preferLibrary updates preferredLibrary StateFlow`() {
       val library = Library(id = "lib-1", title = "Books", type = LibraryType.LIBRARY)
       viewModel.preferLibrary(library)
       assertEquals(library, viewModel.preferredLibrary.value)
@@ -109,7 +99,7 @@ class SettingsViewModelTest {
   @Nested
   inner class ColorSchemePreference {
     @Test
-    fun `preferColorScheme updates LiveData`() {
+    fun `preferColorScheme updates StateFlow`() {
       viewModel.preferColorScheme(ColorScheme.DARK)
       assertEquals(ColorScheme.DARK, viewModel.preferredColorScheme.value)
     }
@@ -124,7 +114,7 @@ class SettingsViewModelTest {
   @Nested
   inner class MaterialYouPreference {
     @Test
-    fun `preferMaterialYouColors updates LiveData`() {
+    fun `preferMaterialYouColors updates StateFlow`() {
       viewModel.preferMaterialYouColors(true)
       assertTrue(viewModel.materialYouEnabled.value == true)
     }
@@ -139,7 +129,7 @@ class SettingsViewModelTest {
   @Nested
   inner class AutoDownloadNetworkType {
     @Test
-    fun `preferAutoDownloadNetworkType updates LiveData`() {
+    fun `preferAutoDownloadNetworkType updates StateFlow`() {
       viewModel.preferAutoDownloadNetworkType(NetworkTypeAutoCache.WIFI_OR_CELLULAR)
       assertEquals(
         NetworkTypeAutoCache.WIFI_OR_CELLULAR,
@@ -163,7 +153,7 @@ class SettingsViewModelTest {
 
       viewModel.changeAutoDownloadLibraryType(LibraryType.PODCAST, true)
 
-      assertTrue(viewModel.preferredAutoDownloadLibraryTypes.value?.contains(LibraryType.PODCAST) == true)
+      assertTrue(viewModel.preferredAutoDownloadLibraryTypes.value.contains(LibraryType.PODCAST))
     }
 
     @Test
@@ -173,7 +163,7 @@ class SettingsViewModelTest {
 
       viewModel.changeAutoDownloadLibraryType(LibraryType.PODCAST, false)
 
-      assertFalse(viewModel.preferredAutoDownloadLibraryTypes.value?.contains(LibraryType.PODCAST) == true)
+      assertFalse(viewModel.preferredAutoDownloadLibraryTypes.value.contains(LibraryType.PODCAST))
     }
 
     @Test
@@ -186,7 +176,7 @@ class SettingsViewModelTest {
   @Nested
   inner class LibraryOrdering {
     @Test
-    fun `preferLibraryOrdering updates LiveData`() {
+    fun `preferLibraryOrdering updates StateFlow`() {
       val config =
         LibraryOrderingConfiguration(
           option = LibraryOrderingOption.AUTHOR,
@@ -207,7 +197,7 @@ class SettingsViewModelTest {
   @Nested
   inner class VolumeBoost {
     @Test
-    fun `preferPlaybackVolumeBoost updates LiveData`() {
+    fun `preferPlaybackVolumeBoost updates StateFlow`() {
       viewModel.preferPlaybackVolumeBoost(12)
       assertEquals(12, viewModel.preferredPlaybackVolumeBoost.value)
     }
@@ -222,7 +212,7 @@ class SettingsViewModelTest {
   @Nested
   inner class CrashReporting {
     @Test
-    fun `preferCrashReporting updates LiveData`() {
+    fun `preferCrashReporting updates StateFlow`() {
       viewModel.preferCrashReporting(false)
       assertFalse(viewModel.crashReporting.value == true)
     }
@@ -237,7 +227,7 @@ class SettingsViewModelTest {
   @Nested
   inner class SslBypass {
     @Test
-    fun `preferBypassSsl updates LiveData`() {
+    fun `preferBypassSsl updates StateFlow`() {
       viewModel.preferBypassSsl(true)
       assertTrue(viewModel.bypassSsl.value == true)
     }
@@ -254,25 +244,25 @@ class SettingsViewModelTest {
     @Test
     fun `preferForwardRewind updates seek forward`() {
       viewModel.preferForwardRewind(60)
-      assertEquals(60, viewModel.seekTime.value?.forward)
+      assertEquals(60, viewModel.seekTime.value.forward)
     }
 
     @Test
     fun `preferRewindRewind updates seek rewind`() {
       viewModel.preferRewindRewind(30)
-      assertEquals(30, viewModel.seekTime.value?.rewind)
+      assertEquals(30, viewModel.seekTime.value.rewind)
     }
 
     @Test
     fun `preferForwardRewind preserves rewind value`() {
       viewModel.preferForwardRewind(60)
-      assertEquals(SeekTime.Default.rewind, viewModel.seekTime.value?.rewind)
+      assertEquals(SeekTime.Default.rewind, viewModel.seekTime.value.rewind)
     }
 
     @Test
     fun `preferRewindRewind preserves forward value`() {
       viewModel.preferRewindRewind(10)
-      assertEquals(SeekTime.Default.forward, viewModel.seekTime.value?.forward)
+      assertEquals(SeekTime.Default.forward, viewModel.seekTime.value.forward)
     }
   }
 
@@ -369,7 +359,7 @@ class SettingsViewModelTest {
   @Nested
   inner class UserAgentPreference {
     @Test
-    fun `updateUserAgent updates LiveData`() {
+    fun `updateUserAgent updates StateFlow`() {
       viewModel.updateUserAgent("CustomAgent/1.0")
       assertEquals("CustomAgent/1.0", viewModel.userAgent.value)
     }
@@ -387,14 +377,14 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun `resetUserAgent restores LiveData to DEFAULT_USER_AGENT`() {
+    fun `resetUserAgent restores StateFlow to DEFAULT_USER_AGENT`() {
       viewModel.updateUserAgent("CustomAgent/1.0")
       viewModel.resetUserAgent()
       assertEquals(DEFAULT_USER_AGENT, viewModel.userAgent.value)
     }
 
     @Test
-    fun `userAgent LiveData is initialized from preferences`() {
+    fun `userAgent StateFlow is initialized from preferences`() {
       every { preferences.getUserAgent() } returns "StoredAgent/3.0"
       viewModel = SettingsViewModel(mediaChannel, preferences, logProvider)
       assertEquals("StoredAgent/3.0", viewModel.userAgent.value)
@@ -431,7 +421,7 @@ class SettingsViewModelTest {
   @Nested
   inner class AutoDownloadDelayed {
     @Test
-    fun `preferAutoDownloadDelayed updates LiveData`() {
+    fun `preferAutoDownloadDelayed updates StateFlow`() {
       viewModel.preferAutoDownloadDelayed(true)
       assertTrue(viewModel.autoDownloadDelayed.value == true)
     }

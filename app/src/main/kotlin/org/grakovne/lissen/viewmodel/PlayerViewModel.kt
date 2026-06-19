@@ -1,12 +1,13 @@
 package org.grakovne.lissen.viewmodel
 
 import androidx.annotation.OptIn
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
@@ -25,36 +26,36 @@ class PlayerViewModel
     private val mediaRepository: MediaRepository,
     private val preferences: LissenSharedPreferences,
   ) : ViewModel() {
-    val book: LiveData<DetailedItem?> = mediaRepository.playingBook
+    val book: StateFlow<DetailedItem?> = mediaRepository.playingBook
 
-    val currentChapterIndex: LiveData<Int> = mediaRepository.currentChapterIndex
-    val currentChapterPosition: LiveData<Double> = mediaRepository.currentChapterPosition
+    val currentChapterIndex: StateFlow<Int> = mediaRepository.currentChapterIndex
+    val currentChapterPosition: StateFlow<Double> = mediaRepository.currentChapterPosition
 
-    val currentChapterDuration: LiveData<Double> = mediaRepository.currentChapterDuration
-    val totalPosition: LiveData<Double> = mediaRepository.totalPosition
+    val currentChapterDuration: StateFlow<Double> = mediaRepository.currentChapterDuration
+    val totalPosition: StateFlow<Double> = mediaRepository.totalPosition
 
-    val timerOption: LiveData<TimerOption?> = mediaRepository.timerOption
-    val timerRemaining: LiveData<Long?> = mediaRepository.timerRemaining
+    val timerOption: StateFlow<TimerOption?> = mediaRepository.timerOption
+    val timerRemaining: StateFlow<Long?> = mediaRepository.timerRemaining
 
-    private val _playingQueueExpanded = MutableLiveData(false)
-    val playingQueueExpanded: LiveData<Boolean> = _playingQueueExpanded
+    private val _playingQueueExpanded = MutableStateFlow(false)
+    val playingQueueExpanded: StateFlow<Boolean> = _playingQueueExpanded.asStateFlow()
 
-    val isPlaybackReady: LiveData<Boolean> = mediaRepository.isPlaybackReady
-    val playbackSpeed: LiveData<Float> = mediaRepository.playbackSpeed
-    val preparingError: LiveData<Boolean> = mediaRepository.mediaPreparingError
+    val isPlaybackReady: StateFlow<Boolean> = mediaRepository.isPlaybackReady
+    val playbackSpeed: StateFlow<Float> = mediaRepository.playbackSpeed
+    val preparingError: StateFlow<Boolean> = mediaRepository.mediaPreparingError
 
-    private val _searchRequested = MutableLiveData(false)
-    val searchRequested: LiveData<Boolean> = _searchRequested
+    private val _searchRequested = MutableStateFlow(false)
+    val searchRequested: StateFlow<Boolean> = _searchRequested.asStateFlow()
 
-    private val _searchToken = MutableLiveData(EMPTY_SEARCH)
-    val searchToken: LiveData<String> = _searchToken
+    private val _searchToken = MutableStateFlow(EMPTY_SEARCH)
+    val searchToken: StateFlow<String> = _searchToken.asStateFlow()
 
-    val isPlaying: LiveData<Boolean> = mediaRepository.isPlaying
+    val isPlaying: StateFlow<Boolean> = mediaRepository.isPlaying
 
-    val bookmarks = mediaRepository.bookmarks
+    val bookmarks: StateFlow<List<Bookmark>> = mediaRepository.bookmarks
 
     fun createBookmark(title: String? = null) {
-      Timber.d("User action: createBookmark at position=${totalPosition.value?.toInt()}s")
+      Timber.d("User action: createBookmark at position=${totalPosition.value.toInt()}s")
       viewModelScope.launch {
         mediaRepository.createBookmark(title)
       }
@@ -81,7 +82,7 @@ class PlayerViewModel
     }
 
     fun expandPlayingQueue() {
-      _playingQueueExpanded.postValue(true)
+      _playingQueueExpanded.value = true
     }
 
     fun setTimer(option: TimerOption?) {
@@ -90,24 +91,24 @@ class PlayerViewModel
     }
 
     fun collapsePlayingQueue() {
-      _playingQueueExpanded.postValue(false)
+      _playingQueueExpanded.value = false
     }
 
     fun togglePlayingQueue() {
-      _playingQueueExpanded.postValue(!(_playingQueueExpanded.value ?: false))
+      _playingQueueExpanded.value = !_playingQueueExpanded.value
     }
 
     fun requestSearch() {
-      _searchRequested.postValue(true)
+      _searchRequested.value = true
     }
 
     fun dismissSearch() {
-      _searchRequested.postValue(false)
-      _searchToken.postValue(EMPTY_SEARCH)
+      _searchRequested.value = false
+      _searchToken.value = EMPTY_SEARCH
     }
 
     fun updateSearch(token: String) {
-      _searchToken.postValue(token)
+      _searchToken.value = token
     }
 
     fun preparePlayback(bookId: String) {
@@ -118,12 +119,12 @@ class PlayerViewModel
     }
 
     fun rewind() {
-      Timber.d("User action: rewind at position=${totalPosition.value?.toInt()}s")
+      Timber.d("User action: rewind at position=${totalPosition.value.toInt()}s")
       mediaRepository.rewind()
     }
 
     fun forward() {
-      Timber.d("User action: forward at position=${totalPosition.value?.toInt()}s")
+      Timber.d("User action: forward at position=${totalPosition.value.toInt()}s")
       mediaRepository.forward()
     }
 

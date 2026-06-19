@@ -34,8 +34,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -72,8 +72,8 @@ fun MiniPlayerComposable(
 ) {
   val view: View = LocalView.current
 
-  val isPlaying: Boolean by playerViewModel.isPlaying.observeAsState(false)
-  val totalPosition by playerViewModel.totalPosition.observeAsState(0.0)
+  val isPlaying: Boolean by playerViewModel.isPlaying.collectAsState()
+  val totalPosition by playerViewModel.totalPosition.collectAsState()
   var backgroundVisible by remember { mutableStateOf(true) }
 
   val dismissState =

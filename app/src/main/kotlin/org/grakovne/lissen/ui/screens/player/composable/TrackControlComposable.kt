@@ -24,8 +24,8 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,14 +49,14 @@ fun TrackControlComposable(
   settingsViewModel: SettingsViewModel,
   modifier: Modifier = Modifier,
 ) {
-  val isPlaying by viewModel.isPlaying.observeAsState(false)
-  val currentTrackIndex by viewModel.currentChapterIndex.observeAsState(0)
-  val currentTrackPosition by viewModel.currentChapterPosition.observeAsState(0.0)
-  val currentTrackDuration by viewModel.currentChapterDuration.observeAsState(0.0)
+  val isPlaying by viewModel.isPlaying.collectAsState()
+  val currentTrackIndex by viewModel.currentChapterIndex.collectAsState()
+  val currentTrackPosition by viewModel.currentChapterPosition.collectAsState()
+  val currentTrackDuration by viewModel.currentChapterDuration.collectAsState()
 
-  val seekTime by settingsViewModel.seekTime.observeAsState(SeekTime.Default)
+  val seekTime by settingsViewModel.seekTime.collectAsState()
 
-  val book by viewModel.book.observeAsState()
+  val book by viewModel.book.collectAsState()
   val chapters = book?.chapters ?: emptyList()
 
   val view: View = LocalView.current

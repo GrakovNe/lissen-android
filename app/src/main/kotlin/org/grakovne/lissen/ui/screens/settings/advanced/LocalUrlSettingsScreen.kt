@@ -29,8 +29,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -57,7 +57,7 @@ import kotlin.math.max
 @Composable
 fun LocalUrlSettingsScreen(onBack: () -> Unit) {
   val settingsViewModel: SettingsViewModel = hiltViewModel()
-  val localUrls = settingsViewModel.localUrls.observeAsState(emptyList())
+  val localUrls = settingsViewModel.localUrls.collectAsState()
 
   val context = LocalContext.current
 

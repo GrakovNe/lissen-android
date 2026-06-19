@@ -1,6 +1,5 @@
 package org.grakovne.lissen.content.cache.persistent.dao
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -11,6 +10,7 @@ import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Transaction
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.squareup.moshi.Types
+import kotlinx.coroutines.flow.Flow
 import org.grakovne.lissen.common.moshi
 import org.grakovne.lissen.content.cache.persistent.entity.BookChapterEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
@@ -151,7 +151,7 @@ interface CachedBookDao {
   suspend fun fetchCachedBook(bookId: String): CachedBookEntity?
 
   @Query("SELECT COUNT(*) > 0 FROM detailed_books WHERE id = :bookId")
-  fun isBookCached(bookId: String): LiveData<Boolean>
+  fun isBookCached(bookId: String): Flow<Boolean>
 
   @Transaction
   @Query(
@@ -191,7 +191,7 @@ interface CachedBookDao {
   fun isBookChapterCached(
     bookId: String,
     chapterId: String,
-  ): LiveData<Boolean>
+  ): Flow<Boolean>
 
   @Query(
     """

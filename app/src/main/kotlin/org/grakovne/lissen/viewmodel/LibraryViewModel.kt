@@ -1,9 +1,6 @@
 package org.grakovne.lissen.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -15,6 +12,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
@@ -37,22 +36,22 @@ class LibraryViewModel
     private val mediaChannel: LissenMediaProvider,
     private val preferences: LissenSharedPreferences,
   ) : ViewModel() {
-    private val _recentBooks = MutableLiveData<List<RecentBook>>(emptyList())
-    val recentBooks: LiveData<List<RecentBook>> = _recentBooks
+    private val _recentBooks = MutableStateFlow<List<RecentBook>>(emptyList())
+    val recentBooks: StateFlow<List<RecentBook>> = _recentBooks.asStateFlow()
 
-    private val _recentBookUpdating = MutableLiveData(false)
-    val recentBookUpdating: LiveData<Boolean> = _recentBookUpdating
+    private val _recentBookUpdating = MutableStateFlow(false)
+    val recentBookUpdating: StateFlow<Boolean> = _recentBookUpdating.asStateFlow()
 
-    private val _searchRequested = MutableLiveData(false)
-    val searchRequested: LiveData<Boolean> = _searchRequested
+    private val _searchRequested = MutableStateFlow(false)
+    val searchRequested: StateFlow<Boolean> = _searchRequested.asStateFlow()
 
     private val _searchToken = MutableStateFlow(EMPTY_SEARCH)
 
     private var defaultPagingSource: PagingSource<Int, Book>? = null
     private var searchPagingSource: PagingSource<Int, Book>? = null
 
-    private val _totalCount = MutableLiveData<Int>()
-    val totalCount: LiveData<Int> = _totalCount
+    private val _totalCount = MutableStateFlow(0)
+    val totalCount: StateFlow<Int> = _totalCount.asStateFlow()
 
     private val pageConfig =
       PagingConfig(
@@ -70,7 +69,7 @@ class LibraryViewModel
     private val searchPager: Flow<PagingData<Book>> =
       combine(
         _searchToken,
-        searchRequested.asFlow(),
+        _searchRequested,
       ) { token, requested ->
         Pair(token, requested)
       }.flatMapLatest { (token, _) ->
@@ -83,7 +82,7 @@ class LibraryViewModel
                 mediaChannel = mediaChannel,
                 searchToken = token,
                 limit = PAGE_SEARCH_SIZE,
-              ) { _totalCount.postValue(it) }
+              ) { _totalCount.value = it }
 
             searchPagingSource = source
             source
@@ -95,7 +94,7 @@ class LibraryViewModel
       Pager(
         config = pageConfig,
         pagingSourceFactory = {
-          val source = LibraryDefaultPagingSource(preferences, mediaChannel) { _totalCount.postValue(it) }
+          val source = LibraryDefaultPagingSource(preferences, mediaChannel) { _totalCount.value = it }
           defaultPagingSource = source
 
           source
@@ -105,12 +104,12 @@ class LibraryViewModel
 
     fun requestSearch() {
       Timber.d("User action: requestSearch")
-      _searchRequested.postValue(true)
+      _searchRequested.value = true
     }
 
     fun dismissSearch() {
       Timber.d("User action: dismissSearch")
-      _searchRequested.postValue(false)
+      _searchRequested.value = false
       _searchToken.value = EMPTY_SEARCH
     }
 
@@ -151,11 +150,11 @@ class LibraryViewModel
     }
 
     fun fetchRecentListening() {
-      _recentBookUpdating.postValue(true)
+      _recentBookUpdating.value = true
 
       val preferredLibrary =
         preferences.getPreferredLibrary()?.id ?: run {
-          _recentBookUpdating.postValue(false)
+          _recentBookUpdating.value = false
           return
         }
 
@@ -164,11 +163,11 @@ class LibraryViewModel
           .fetchRecentListenedBooks(preferredLibrary)
           .fold(
             onSuccess = {
-              _recentBooks.postValue(it)
-              _recentBookUpdating.postValue(false)
+              _recentBooks.value = it
+              _recentBookUpdating.value = false
             },
             onFailure = {
-              _recentBookUpdating.postValue(false)
+              _recentBookUpdating.value = false
             },
           )
       }

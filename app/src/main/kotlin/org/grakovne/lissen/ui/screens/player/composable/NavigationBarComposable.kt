@@ -21,7 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -34,7 +33,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.map
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.content.cache.persistent.CacheState
@@ -59,13 +57,13 @@ fun NavigationBarComposable(
   libraryType: LibraryType,
 ) {
   val cacheProgress: CacheState by contentCachingModelView.getProgress(book.id).collectAsState()
-  val timerOption by playerViewModel.timerOption.observeAsState(null)
-  val timerRemaining by playerViewModel.timerRemaining.observeAsState(0)
-  val playbackSpeed by playerViewModel.playbackSpeed.observeAsState(1f)
-  val playingQueueExpanded by playerViewModel.playingQueueExpanded.observeAsState(false)
-  val hasEpisodes by playerViewModel.book.map { book.chapters.isNotEmpty() }.observeAsState(true)
+  val timerOption by playerViewModel.timerOption.collectAsState()
+  val timerRemaining by playerViewModel.timerRemaining.collectAsState()
+  val playbackSpeed by playerViewModel.playbackSpeed.collectAsState()
+  val playingQueueExpanded by playerViewModel.playingQueueExpanded.collectAsState()
+  val hasEpisodes = book.chapters.isNotEmpty()
 
-  val isMetadataCached by contentCachingModelView.provideCacheState(book.id).observeAsState(false)
+  val isMetadataCached by contentCachingModelView.provideCacheState(book.id).collectAsState(initial = false)
 
   var playbackSpeedExpanded by remember { mutableStateOf(false) }
   var timerExpanded by remember { mutableStateOf(false) }
@@ -246,7 +244,7 @@ fun NavigationBarComposable(
               contentCachingModelView
                 .cache(
                   mediaItem = it,
-                  currentPosition = playerViewModel.totalPosition.value ?: 0.0,
+                  currentPosition = playerViewModel.totalPosition.value,
                   option = option,
                 )
             }

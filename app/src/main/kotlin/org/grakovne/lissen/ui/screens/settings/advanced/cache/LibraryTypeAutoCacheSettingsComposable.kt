@@ -10,8 +10,8 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -33,8 +33,8 @@ fun LibraryTypeAutoCacheSettingsComposable(
 ) {
   val context = LocalContext.current
   var libraryTypeExpanded by remember { mutableStateOf(false) }
-  val preferredDownloadOption by viewModel.preferredAutoDownloadOption.observeAsState()
-  val preferredLibraryTypes by viewModel.preferredAutoDownloadLibraryTypes.observeAsState(LibraryType.meaningfulTypes)
+  val preferredDownloadOption by viewModel.preferredAutoDownloadOption.collectAsState()
+  val preferredLibraryTypes by viewModel.preferredAutoDownloadLibraryTypes.collectAsState()
   val libraryTypesState = LibraryType.meaningfulTypes.map { it to preferredLibraryTypes.contains(it) }
 
   Row(
@@ -60,8 +60,8 @@ fun LibraryTypeAutoCacheSettingsComposable(
       Text(
         text =
           preferredLibraryTypes
-            ?.map { it.toItem(context) }
-            ?.takeIf { it.isNotEmpty() }
+            .map { it.toItem(context) }
+            .takeIf { it.isNotEmpty() }
             ?.joinToString(", ") { it.name }
             ?.lowercase()
             ?.replaceFirstChar { it.uppercase() }

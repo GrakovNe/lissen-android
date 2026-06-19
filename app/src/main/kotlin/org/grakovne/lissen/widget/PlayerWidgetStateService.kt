@@ -6,14 +6,11 @@ import androidx.glance.GlanceId
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.updateAppWidgetState
-import androidx.lifecycle.asFlow
 import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.content.LissenMediaProvider
@@ -39,13 +36,10 @@ class PlayerWidgetStateService
     override fun onCreate() {
       scope.launch {
         combine(
-          mediaRepository.playingBook.asFlow().distinctUntilChanged(),
-          mediaRepository.isPlaying
-            .asFlow()
-            .filterNotNull()
-            .distinctUntilChanged(),
-          mediaRepository.currentChapterIndex.asFlow().distinctUntilChanged(),
-        ) { playingItem: DetailedItem?, isPlaying, chapterIndex: Int? ->
+          mediaRepository.playingBook,
+          mediaRepository.isPlaying,
+          mediaRepository.currentChapterIndex,
+        ) { playingItem: DetailedItem?, isPlaying, chapterIndex: Int ->
           val chapterTitle = provideChapterTitle(playingItem, chapterIndex)
 
           val maybeCover =

@@ -3,7 +3,6 @@ package org.grakovne.lissen.content.cache.persistent
 import android.content.Context
 import android.content.Intent
 import androidx.annotation.OptIn
-import androidx.lifecycle.asFlow
 import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -12,8 +11,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.common.NetworkTypeAutoCache
@@ -46,13 +43,10 @@ class ContentAutoCachingService
     override fun onCreate() {
       scope.launch {
         combine(
-          mediaRepository.playingBook.asFlow().distinctUntilChanged(),
-          mediaRepository.isPlaying
-            .asFlow()
-            .filterNotNull()
-            .distinctUntilChanged(),
-          mediaRepository.currentChapterIndex.asFlow().distinctUntilChanged(),
-        ) { playingItem: DetailedItem?, isPlaying: Boolean, _: Int? ->
+          mediaRepository.playingBook,
+          mediaRepository.isPlaying,
+          mediaRepository.currentChapterIndex,
+        ) { playingItem: DetailedItem?, isPlaying: Boolean, _: Int ->
           playingItem to isPlaying
         }.collectLatest { (playingItem, isPlaying) ->
           delayedJob?.cancel()
@@ -72,7 +66,7 @@ class ContentAutoCachingService
       val isNetworkAvailable = networkService.isNetworkAvailable()
       val currentNetwork = networkService.getCurrentNetworkType() ?: return null
       val preferredNetwork = sharedPreferences.getAutoDownloadNetworkType()
-      val currentTotalPosition = mediaRepository.totalPosition.value ?: return null
+      val currentTotalPosition = mediaRepository.totalPosition.value
 
       val playingItemLibraryType =
         mediaProvider
