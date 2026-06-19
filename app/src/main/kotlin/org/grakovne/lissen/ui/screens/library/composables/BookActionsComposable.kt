@@ -10,8 +10,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Done
-import androidx.compose.material.icons.outlined.RemoveDone
+import androidx.compose.material.icons.outlined.Archive
+import androidx.compose.material.icons.outlined.Unarchive
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -68,7 +68,7 @@ fun BookActionsComposable(
           false -> {
             BookActionRow(
               title = stringResource(R.string.library_book_action_mark_as_completed),
-              icon = Icons.Outlined.Done,
+              icon = Icons.Outlined.Archive,
               onClick = { withHaptic(view) { onMarkAsCompleted() } },
             )
           }
@@ -76,7 +76,7 @@ fun BookActionsComposable(
           true -> {
             BookActionRow(
               title = stringResource(R.string.library_book_action_mark_as_not_completed),
-              icon = Icons.Outlined.RemoveDone,
+              icon = Icons.Outlined.Unarchive,
               onClick = { withHaptic(view) { onMarkAsNotCompleted() } },
             )
           }
@@ -104,18 +104,18 @@ private fun BookActionRow(
         .padding(vertical = 16.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {
-    Icon(
-      imageVector = icon,
-      contentDescription = null,
-      modifier = Modifier.size(20.dp),
-      tint = colorScheme.onBackground,
-    )
-    Spacer(modifier = Modifier.width(12.dp))
     Text(
       text = title,
       style = typography.bodyMedium,
       color = colorScheme.onBackground,
       modifier = Modifier.weight(1f),
+    )
+    Spacer(modifier = Modifier.width(12.dp))
+    Icon(
+      imageVector = icon,
+      contentDescription = null,
+      modifier = Modifier.size(20.dp),
+      tint = colorScheme.onBackground,
     )
   }
 }
