@@ -13,6 +13,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryR
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackSessionResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.ProgressSyncRequest
+import org.grakovne.lissen.channel.audiobookshelf.common.model.user.ChangeListenedStateRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.PersonalizedFeedResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.UserResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.BookResponse
@@ -149,6 +150,24 @@ class AudioBookshelfRepository
           it.dropBookmarks(
             libraryItemId = bookmark.libraryItemId,
             totalTime = bookmark.totalPosition.toInt(),
+          )
+        }
+
+    suspend fun completeProgress(itemId: String): OperationResult<Unit> =
+      audioBookShelfApiService
+        .makeRequest {
+          it.changeListenedState(
+            itemId = itemId,
+            request = ChangeListenedStateRequest(isFinished = true),
+          )
+        }
+
+    suspend fun uncompleteProgress(itemId: String): OperationResult<Unit> =
+      audioBookShelfApiService
+        .makeRequest {
+          it.changeListenedState(
+            itemId = itemId,
+            request = ChangeListenedStateRequest(isFinished = false),
           )
         }
 

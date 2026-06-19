@@ -211,4 +211,6 @@
     <string name="settings_screen_user_agent_title">Change User Agent</string>
     <string name="settings_screen_user_agent_hint">Customize the application User-Agent header</string>
     <string name="settings_screen_user_agent_restore_default">Restore Default</string>
+    <string name="library_book_action_mark_as_completed">Mark as completed</string>
+    <string name="library_book_action_mark_as_not_completed">Mark as not completed</string>
 </resources>

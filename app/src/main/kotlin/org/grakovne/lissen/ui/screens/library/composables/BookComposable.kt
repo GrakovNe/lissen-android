@@ -1,6 +1,7 @@
 package org.grakovne.lissen.ui.screens.library.composables
 
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -28,17 +30,21 @@ import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
 import coil3.request.ImageRequest
 import org.grakovne.lissen.R
+import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BookComposable(
   book: Book,
   imageLoader: ImageLoader,
   navController: AppNavigationService,
+  onLongClick: () -> Unit = {},
 ) {
   val context = LocalContext.current
+  val view = LocalView.current
 
   val imageRequest =
     remember(book.id) {
@@ -52,8 +58,10 @@ fun BookComposable(
     modifier =
       Modifier
         .fillMaxWidth()
-        .clickable { navController.showPlayer(book.id, book.title, book.subtitle) }
-        .testTag("bookItem_${book.id}")
+        .combinedClickable(
+          onClick = { navController.showPlayer(book.id, book.title, book.subtitle) },
+          onLongClick = { withHaptic(view) { onLongClick() } },
+        ).testTag("bookItem_${book.id}")
         .padding(horizontal = 4.dp, vertical = 8.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {

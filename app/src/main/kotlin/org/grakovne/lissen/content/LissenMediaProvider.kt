@@ -55,6 +55,16 @@ class LissenMediaProvider
         )
     }
 
+    suspend fun completeProgress(itemId: String): OperationResult<Unit> {
+      Timber.d("Marking item as completed: $itemId")
+      return providePreferredChannel().completeProgress(itemId)
+    }
+
+    suspend fun uncompleteProgress(itemId: String): OperationResult<Unit> {
+      Timber.d("Marking item as not completed: $itemId")
+      return providePreferredChannel().uncompleteProgress(itemId)
+    }
+
     suspend fun provideBookmarks(playingItemId: String): List<Bookmark> =
       cachedBookmarkProvider
         .provideBookmarks(playingItemId)

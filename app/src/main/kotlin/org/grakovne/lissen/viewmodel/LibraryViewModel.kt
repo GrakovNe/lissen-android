@@ -7,6 +7,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.cachedIn
+import androidx.paging.filter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.LissenMediaProvider
@@ -53,6 +55,8 @@ class LibraryViewModel
     private val _totalCount = MutableStateFlow(0)
     val totalCount: StateFlow<Int> = _totalCount.asStateFlow()
 
+    private val _hiddenBookIds = MutableStateFlow<Set<String>>(emptySet())
+
     private val pageConfig =
       PagingConfig(
         pageSize = PAGE_SIZE,
@@ -89,6 +93,9 @@ class LibraryViewModel
           },
         ).flow
       }.cachedIn(viewModelScope)
+        .combine(_hiddenBookIds) { data, hidden ->
+          data.filter { it.id !in hidden }
+        }
 
     private val libraryPager: Flow<PagingData<Book>> by lazy {
       Pager(
@@ -99,8 +106,45 @@ class LibraryViewModel
 
           source
         },
-      ).flow.cachedIn(viewModelScope)
+      ).flow
+        .cachedIn(viewModelScope)
+        .combine(_hiddenBookIds) { data, hidden ->
+          data.filter { it.id !in hidden }
+        }
     }
+
+    fun hideBook(id: String) {
+      Timber.d("User action: hideBook $id")
+      _hiddenBookIds.update { it + id }
+    }
+
+    fun completeBook(id: String) {
+      Timber.d("User action: completeBook $id")
+
+      // Hide the item right away, but only when the user keeps completed items hidden.
+      if (preferences.getHideCompleted()) {
+        hideBook(id)
+      }
+
+      viewModelScope.launch {
+        mediaChannel.completeProgress(id)
+      }
+    }
+
+    fun uncompleteBook(id: String) {
+      Timber.d("User action: uncompleteBook $id")
+      viewModelScope.launch {
+        mediaChannel.uncompleteProgress(id)
+      }
+    }
+
+    suspend fun isBookFinished(id: String): Boolean =
+      mediaChannel
+        .fetchBook(id)
+        .fold(
+          onSuccess = { it.progress?.isFinished ?: false },
+          onFailure = { false },
+        )
 
     fun requestSearch() {
       Timber.d("User action: requestSearch")
@@ -139,6 +183,7 @@ class LibraryViewModel
 
     fun refreshLibrary() {
       Timber.d("User action: refreshLibrary")
+      _hiddenBookIds.value = emptySet()
       viewModelScope.launch {
         withContext(Dispatchers.IO) {
           when (searchRequested.value) {
