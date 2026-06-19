@@ -173,10 +173,11 @@ class ContentCachingManager
 
           val body = response.body
           val dest = properties.provideMediaCachePatch(bookId, file.id)
+          val tempDest = File(dest.parent, "${dest.name}.tmp")
           dest.parentFile?.mkdirs()
 
           try {
-            dest.outputStream().use { output ->
+            tempDest.outputStream().use { output ->
               body.byteStream().use { input ->
                 var lastReportedSize = 0.0
                 input.copyTo(output) {
@@ -189,7 +190,12 @@ class ContentCachingManager
                 }
               }
             }
+            if (!tempDest.renameTo(dest)) {
+              tempDest.delete()
+              return@withContext CacheState(CacheStatus.Error)
+            }
           } catch (ex: Exception) {
+            tempDest.delete()
             return@withContext CacheState(CacheStatus.Error)
           }
         }

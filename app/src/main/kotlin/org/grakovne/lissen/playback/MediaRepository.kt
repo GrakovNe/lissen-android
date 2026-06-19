@@ -7,6 +7,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
@@ -157,6 +158,12 @@ class MediaRepository
                     mediaController.seekTo(0, 0)
                     mediaController.pause()
                   }
+                }
+
+                override fun onPlayerError(error: PlaybackException) {
+                  Timber.e(error, "Playback error: ${error.errorCodeName}")
+                  _isPlaying.value = false
+                  _mediaPreparingError.value = true
                 }
               },
             )
