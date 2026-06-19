@@ -166,10 +166,10 @@ val MIGRATION_9_10 =
 
 val MIGRATION_10_11 =
   object : Migration(10, 11) {
-    override fun migrate(database: SupportSQLiteDatabase) {
+    override fun migrate(db: SupportSQLiteDatabase) {
       val now = System.currentTimeMillis() / 1000
 
-      database.execSQL(
+      db.execSQL(
         """
         CREATE TABLE detailed_books_new (
             id TEXT NOT NULL PRIMARY KEY,
@@ -187,7 +187,7 @@ val MIGRATION_10_11 =
         """.trimIndent(),
       )
 
-      database.execSQL(
+      db.execSQL(
         """
         INSERT INTO detailed_books_new (
             id, title, author, duration, abstract, subtitle, year, libraryId, publisher, seriesJson, createdAt
@@ -198,17 +198,17 @@ val MIGRATION_10_11 =
         """.trimIndent(),
       )
 
-      database.execSQL("DROP TABLE detailed_books")
-      database.execSQL("ALTER TABLE detailed_books_new RENAME TO detailed_books")
+      db.execSQL("DROP TABLE detailed_books")
+      db.execSQL("ALTER TABLE detailed_books_new RENAME TO detailed_books")
     }
   }
 
 val MIGRATION_11_12 =
   object : Migration(11, 12) {
-    override fun migrate(database: SupportSQLiteDatabase) {
+    override fun migrate(db: SupportSQLiteDatabase) {
       val now = System.currentTimeMillis() / 1000
 
-      database.execSQL(
+      db.execSQL(
         """
         CREATE TABLE detailed_books_new (
             id TEXT NOT NULL PRIMARY KEY,
@@ -227,7 +227,7 @@ val MIGRATION_11_12 =
         """.trimIndent(),
       )
 
-      database.execSQL(
+      db.execSQL(
         """
         INSERT INTO detailed_books_new (
             id, title, author, duration, abstract, subtitle, year, libraryId, publisher, seriesJson, createdAt, updatedAt
@@ -238,8 +238,8 @@ val MIGRATION_11_12 =
         """.trimIndent(),
       )
 
-      database.execSQL("DROP TABLE detailed_books")
-      database.execSQL("ALTER TABLE detailed_books_new RENAME TO detailed_books")
+      db.execSQL("DROP TABLE detailed_books")
+      db.execSQL("ALTER TABLE detailed_books_new RENAME TO detailed_books")
     }
   }
 
