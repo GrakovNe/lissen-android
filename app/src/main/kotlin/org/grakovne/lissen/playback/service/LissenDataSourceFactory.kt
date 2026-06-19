@@ -6,6 +6,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.datasource.FileDataSource
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.datasource.cache.CacheDataSink
 import androidx.media3.datasource.cache.CacheDataSource
@@ -51,15 +52,17 @@ class LissenDataSourceFactory(
           .setCache(mediaCache)
           .setFragmentSize(CacheDataSink.DEFAULT_FRAGMENT_SIZE),
       ).setFlags(
-        CacheDataSource.FLAG_BLOCK_ON_CACHE or
-          CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR,
+        CacheDataSource.FLAG_IGNORE_CACHE_ON_ERROR,
       )
   }
 
   override fun createDataSource(): DataSource {
-    val actualDataSource = defaultFactory.createDataSource()
+    val cacheDataSource = defaultFactory.createDataSource()
+    val fileDataSource = FileDataSource()
 
-    return object : DataSource by actualDataSource {
+    return object : DataSource by cacheDataSource {
+      private var activeDataSource: DataSource = cacheDataSource
+
       override fun open(dataSpec: DataSpec): Long {
         val (itemId, fileId) = unapply(dataSpec.uri) ?: return 0
 
@@ -73,12 +76,27 @@ class LissenDataSourceFactory(
 
         Timber.d("Resolved Uri: $resolvedUri for itemId = $itemId and fileId = $fileId")
 
-        return dataSpec
-          .buildUpon()
-          .setUri(resolvedUri)
-          .build()
-          .let { actualDataSource.open(it) }
+        val resolvedSpec =
+          dataSpec
+            .buildUpon()
+            .setUri(resolvedUri)
+            .build()
+
+        activeDataSource =
+          if (resolvedUri.scheme == "file") fileDataSource else cacheDataSource
+
+        return activeDataSource.open(resolvedSpec)
       }
+
+      override fun read(
+        buffer: ByteArray,
+        offset: Int,
+        length: Int,
+      ): Int = activeDataSource.read(buffer, offset, length)
+
+      override fun getUri() = activeDataSource.uri
+
+      override fun close() = activeDataSource.close()
     }
   }
 }
