@@ -24,8 +24,8 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
@@ -51,9 +51,9 @@ fun MediaDetailComposable(
   playingViewModel: PlayerViewModel,
   settingsViewModel: SettingsViewModel,
 ) {
-  val totalPosition by playingViewModel.totalPosition.observeAsState(0.0)
+  val totalPosition by playingViewModel.totalPosition.collectAsState()
   val totalDuration = playingBook?.chapters?.sumOf { it.duration }
-  val preferredLibrary by settingsViewModel.preferredLibrary.observeAsState()
+  val preferredLibrary by settingsViewModel.preferredLibrary.collectAsState()
 
   ModalBottomSheet(
     onDismissRequest = onDismissRequest,
@@ -216,7 +216,7 @@ fun MediaDetailComposable(
         ?.abstract
         ?.takeIf { it.isNotEmpty() }
         ?.let {
-          val html: String = playingBook.abstract?.replace("\n", "<br>").orEmpty()
+          val html: String = it.replace("\n", "<br>")
           val spanned = HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_LEGACY)
 
           Text(

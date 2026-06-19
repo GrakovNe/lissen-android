@@ -1,12 +1,11 @@
 package org.grakovne.lissen.viewmodel
 
-import androidx.arch.core.executor.ArchTaskExecutor
-import androidx.arch.core.executor.TaskExecutor
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
@@ -25,6 +24,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class LoginViewModelTest {
   private val testDispatcher = UnconfinedTestDispatcher()
   private val preferences = mockk<LissenSharedPreferences>(relaxed = true)
@@ -34,15 +34,6 @@ class LoginViewModelTest {
 
   @BeforeEach
   fun setup() {
-    ArchTaskExecutor.getInstance().setDelegate(
-      object : TaskExecutor() {
-        override fun executeOnDiskIO(runnable: Runnable) = runnable.run()
-
-        override fun postToMainThread(runnable: Runnable) = runnable.run()
-
-        override fun isMainThread() = true
-      },
-    )
     Dispatchers.setMain(testDispatcher)
     every { preferences.getHost() } returns "http://example.com"
     every { preferences.getUsername() } returns "testuser"
@@ -53,7 +44,6 @@ class LoginViewModelTest {
   @AfterEach
   fun teardown() {
     Dispatchers.resetMain()
-    ArchTaskExecutor.getInstance().setDelegate(null)
   }
 
   @Nested

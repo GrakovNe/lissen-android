@@ -29,8 +29,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,7 +54,7 @@ import org.grakovne.lissen.viewmodel.SettingsViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 fun SeekSettingsScreen(onBack: () -> Unit) {
   val viewModel: SettingsViewModel = hiltViewModel()
-  val preferredSeekTime by viewModel.seekTime.observeAsState()
+  val preferredSeekTime by viewModel.seekTime.collectAsState()
 
   var rewindExpanded by remember { mutableStateOf(false) }
   var forwardExpanded by remember { mutableStateOf(false) }
@@ -93,13 +93,13 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
       ) {
         SeekTimeRowComposable(
           title = stringResource(R.string.rewind_interval),
-          currentSeconds = preferredSeekTime?.rewind ?: SeekTime.Default.rewind,
+          currentSeconds = preferredSeekTime.rewind,
           onClicked = { rewindExpanded = true },
         )
 
         SeekTimeRowComposable(
           title = stringResource(R.string.forward_interval),
-          currentSeconds = preferredSeekTime?.forward ?: SeekTime.Default.forward,
+          currentSeconds = preferredSeekTime.forward,
           onClicked = { forwardExpanded = true },
         )
       }
@@ -109,7 +109,7 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
   if (rewindExpanded) {
     SeekTimeBottomSheet(
       title = stringResource(R.string.rewind_interval),
-      currentSeconds = preferredSeekTime?.rewind ?: SeekTime.Default.rewind,
+      currentSeconds = preferredSeekTime.rewind,
       onDismissRequest = { rewindExpanded = false },
       onUpdate = { viewModel.preferRewindRewind(it) },
     )
@@ -118,7 +118,7 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
   if (forwardExpanded) {
     SeekTimeBottomSheet(
       title = stringResource(R.string.forward_interval),
-      currentSeconds = preferredSeekTime?.forward ?: SeekTime.Default.forward,
+      currentSeconds = preferredSeekTime.forward,
       onDismissRequest = { forwardExpanded = false },
       onUpdate = { viewModel.preferForwardRewind(it) },
     )

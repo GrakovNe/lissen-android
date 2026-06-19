@@ -10,8 +10,8 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -28,7 +28,7 @@ import org.grakovne.lissen.viewmodel.SettingsViewModel
 fun ColorSchemeSettingsComposable(viewModel: SettingsViewModel) {
   val context = LocalContext.current
   var colorSchemeExpanded by remember { mutableStateOf(false) }
-  val preferredColorScheme by viewModel.preferredColorScheme.observeAsState()
+  val preferredColorScheme by viewModel.preferredColorScheme.collectAsState()
 
   Row(
     modifier =
@@ -46,7 +46,7 @@ fun ColorSchemeSettingsComposable(viewModel: SettingsViewModel) {
         modifier = Modifier.padding(bottom = 4.dp),
       )
       Text(
-        text = preferredColorScheme?.toItem(context)?.name ?: "",
+        text = preferredColorScheme.toItem(context).name,
         style = typography.bodyMedium,
         color = colorScheme.onSurfaceVariant,
       )
@@ -62,7 +62,7 @@ fun ColorSchemeSettingsComposable(viewModel: SettingsViewModel) {
           ColorScheme.DARK.toItem(context),
           ColorScheme.BLACK.toItem(context),
         ),
-      selectedItem = preferredColorScheme?.toItem(context),
+      selectedItem = preferredColorScheme.toItem(context),
       onDismissRequest = { colorSchemeExpanded = false },
       onItemSelected = { item ->
         ColorScheme

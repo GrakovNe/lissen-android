@@ -24,8 +24,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -48,8 +48,8 @@ fun AdvancedSettingsComposable(onBack: () -> Unit) {
   val cachingModelView: CachingModelView = hiltViewModel()
   val viewModel: SettingsViewModel = hiltViewModel()
 
-  val crashReporting by viewModel.crashReporting.observeAsState(true)
-  val activityLoggingEnabled by viewModel.activityLoggingEnabled.observeAsState(true)
+  val crashReporting by viewModel.crashReporting.collectAsState()
+  val activityLoggingEnabled by viewModel.activityLoggingEnabled.collectAsState()
   val activityLoggingEnabledOnStart = viewModel.activityLoggingEnabledOnStart
 
   val context = LocalContext.current

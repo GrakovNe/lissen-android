@@ -10,8 +10,8 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -30,7 +30,7 @@ import org.grakovne.lissen.viewmodel.SettingsViewModel
 fun AudioFocusLossPolicyComposable(viewModel: SettingsViewModel) {
   val context = LocalContext.current
   var expanded by remember { mutableStateOf(false) }
-  val policy by viewModel.audioFocusLossPolicy.observeAsState(AudioFocusLossPolicy.LOWER_VOLUME)
+  val policy by viewModel.audioFocusLossPolicy.collectAsState()
 
   Row(
     modifier =

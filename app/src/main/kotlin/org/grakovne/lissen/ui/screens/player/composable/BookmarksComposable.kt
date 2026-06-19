@@ -30,8 +30,8 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -67,10 +67,10 @@ fun BookmarksComposable(
   val focusManager = LocalFocusManager.current
   val createBookmarkFocusRequester = remember { FocusRequester() }
 
-  val currentPlayingItem by playerViewModel.book.observeAsState()
-  val currentPosition by playerViewModel.currentChapterPosition.observeAsState()
-  val currentTrackIndex by playerViewModel.currentChapterIndex.observeAsState(0)
-  val bookmarks by playerViewModel.bookmarks.observeAsState(emptyList())
+  val currentPlayingItem by playerViewModel.book.collectAsState()
+  val currentPosition by playerViewModel.currentChapterPosition.collectAsState()
+  val currentTrackIndex by playerViewModel.currentChapterIndex.collectAsState()
+  val bookmarks by playerViewModel.bookmarks.collectAsState()
 
   var isEditingCreateBookmark by remember { mutableStateOf(false) }
   var createBookmarkField by remember { mutableStateOf(TextFieldValue("")) }
@@ -137,7 +137,7 @@ fun BookmarksComposable(
       ) {
         item {
           val chapterTitle = currentChapterTitle ?: return@item
-          val position = currentPosition ?: return@item
+          val position = currentPosition
 
           BookmarkRow(
             title = stringResource(R.string.bookmarks_create_bookmark),

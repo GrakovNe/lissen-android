@@ -54,7 +54,7 @@ class CachedBookmarkProvider
                 localCacheRepository.deleteBookmark(pending.libraryItemId, pending.totalPosition)
                 localCacheRepository.upsertBookmark(remoteCreated.copy(syncState = BookmarkSyncState.SYNCED))
               },
-              onFailure = { Unit },
+              onFailure = {},
             )
         }
 
@@ -71,7 +71,7 @@ class CachedBookmarkProvider
               onSuccess = {
                 localCacheRepository.deleteBookmark(pendingDelete.libraryItemId, pendingDelete.totalPosition)
               },
-              onFailure = { Unit },
+              onFailure = {},
             )
         }
 

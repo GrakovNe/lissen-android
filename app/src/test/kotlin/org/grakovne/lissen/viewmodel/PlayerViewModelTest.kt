@@ -1,13 +1,11 @@
 package org.grakovne.lissen.viewmodel
 
-import androidx.arch.core.executor.ArchTaskExecutor
-import androidx.arch.core.executor.TaskExecutor
-import androidx.lifecycle.MutableLiveData
-import androidx.media3.common.util.UnstableApi
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
@@ -27,22 +25,22 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-@OptIn(UnstableApi::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class PlayerViewModelTest {
   private val testDispatcher = UnconfinedTestDispatcher()
 
-  private val playingBook = MutableLiveData<DetailedItem?>()
-  private val currentChapterIndex = MutableLiveData<Int>()
-  private val currentChapterPosition = MutableLiveData<Double>()
-  private val currentChapterDuration = MutableLiveData<Double>()
-  private val totalPosition = MutableLiveData<Double>()
-  private val isPlaybackReady = MutableLiveData<Boolean>()
-  private val playbackSpeed = MutableLiveData<Float>()
-  private val mediaPreparingError = MutableLiveData<Boolean>()
-  private val isPlaying = MutableLiveData<Boolean>()
-  private val bookmarks = MutableLiveData<List<Bookmark>>()
-  private val timerOption = MutableLiveData<TimerOption?>()
-  private val timerRemaining = MutableLiveData<Long>()
+  private val playingBook = MutableStateFlow<DetailedItem?>(null)
+  private val currentChapterIndex = MutableStateFlow(0)
+  private val currentChapterPosition = MutableStateFlow(0.0)
+  private val currentChapterDuration = MutableStateFlow(0.0)
+  private val totalPosition = MutableStateFlow(0.0)
+  private val isPlaybackReady = MutableStateFlow(false)
+  private val playbackSpeed = MutableStateFlow(1f)
+  private val mediaPreparingError = MutableStateFlow(false)
+  private val isPlaying = MutableStateFlow(false)
+  private val bookmarks = MutableStateFlow<List<Bookmark>>(emptyList())
+  private val timerOption = MutableStateFlow<TimerOption?>(null)
+  private val timerRemaining = MutableStateFlow<Long?>(null)
 
   private val mediaRepository = mockk<MediaRepository>(relaxed = true)
   private val preferences = mockk<LissenSharedPreferences>(relaxed = true)
@@ -50,15 +48,6 @@ class PlayerViewModelTest {
 
   @BeforeEach
   fun setup() {
-    ArchTaskExecutor.getInstance().setDelegate(
-      object : TaskExecutor() {
-        override fun executeOnDiskIO(runnable: Runnable) = runnable.run()
-
-        override fun postToMainThread(runnable: Runnable) = runnable.run()
-
-        override fun isMainThread() = true
-      },
-    )
     Dispatchers.setMain(testDispatcher)
 
     every { mediaRepository.playingBook } returns playingBook
@@ -80,7 +69,6 @@ class PlayerViewModelTest {
   @AfterEach
   fun teardown() {
     Dispatchers.resetMain()
-    ArchTaskExecutor.getInstance().setDelegate(null)
   }
 
   @Nested
@@ -88,32 +76,32 @@ class PlayerViewModelTest {
     @Test
     fun `expandPlayingQueue sets playingQueueExpanded to true`() {
       viewModel.expandPlayingQueue()
-      assertTrue(viewModel.playingQueueExpanded.value == true)
+      assertTrue(viewModel.playingQueueExpanded.value)
     }
 
     @Test
     fun `collapsePlayingQueue sets playingQueueExpanded to false`() {
       viewModel.expandPlayingQueue()
       viewModel.collapsePlayingQueue()
-      assertFalse(viewModel.playingQueueExpanded.value == true)
+      assertFalse(viewModel.playingQueueExpanded.value)
     }
 
     @Test
     fun `togglePlayingQueue expands when collapsed`() {
       viewModel.togglePlayingQueue()
-      assertTrue(viewModel.playingQueueExpanded.value == true)
+      assertTrue(viewModel.playingQueueExpanded.value)
     }
 
     @Test
     fun `togglePlayingQueue collapses when expanded`() {
       viewModel.expandPlayingQueue()
       viewModel.togglePlayingQueue()
-      assertFalse(viewModel.playingQueueExpanded.value == true)
+      assertFalse(viewModel.playingQueueExpanded.value)
     }
 
     @Test
     fun `playingQueueExpanded is initially false`() {
-      assertFalse(viewModel.playingQueueExpanded.value == true)
+      assertFalse(viewModel.playingQueueExpanded.value)
     }
   }
 
@@ -122,14 +110,14 @@ class PlayerViewModelTest {
     @Test
     fun `requestSearch sets searchRequested to true`() {
       viewModel.requestSearch()
-      assertTrue(viewModel.searchRequested.value == true)
+      assertTrue(viewModel.searchRequested.value)
     }
 
     @Test
     fun `dismissSearch sets searchRequested to false`() {
       viewModel.requestSearch()
       viewModel.dismissSearch()
-      assertFalse(viewModel.searchRequested.value == true)
+      assertFalse(viewModel.searchRequested.value)
     }
 
     @Test

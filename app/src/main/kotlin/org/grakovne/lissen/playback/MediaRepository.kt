@@ -6,9 +6,6 @@ import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -24,6 +21,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.common.buildBookmarkTitle
@@ -64,57 +64,42 @@ class MediaRepository
         ComponentName(context, PlaybackService::class.java),
       )
 
-    private val _isPlaying = MutableLiveData(false)
-    val isPlaying: LiveData<Boolean> = _isPlaying
+    private val _isPlaying = MutableStateFlow(false)
+    val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
 
-    private val _timerOption = MutableLiveData<TimerOption?>()
-    val timerOption = _timerOption
+    private val _timerOption = MutableStateFlow<TimerOption?>(null)
+    val timerOption: StateFlow<TimerOption?> = _timerOption.asStateFlow()
 
-    private val _timerRemaining = MutableLiveData<Long>()
-    val timerRemaining = _timerRemaining
+    private val _timerRemaining = MutableStateFlow<Long?>(null)
+    val timerRemaining: StateFlow<Long?> = _timerRemaining.asStateFlow()
 
-    private val _playAfterPrepare = MutableLiveData(false)
-    private val _isPlaybackReady = MutableLiveData(false)
-    val isPlaybackReady: LiveData<Boolean> = _isPlaybackReady
+    private val _playAfterPrepare = MutableStateFlow(false)
+    private val _isPlaybackReady = MutableStateFlow(false)
+    val isPlaybackReady: StateFlow<Boolean> = _isPlaybackReady.asStateFlow()
 
-    private val _totalPosition = MutableLiveData<Double>()
-    val totalPosition: LiveData<Double> = _totalPosition
+    private val _totalPosition = MutableStateFlow(0.0)
+    val totalPosition: StateFlow<Double> = _totalPosition.asStateFlow()
 
-    private val _playingBook = MutableLiveData<DetailedItem?>()
-    val playingBook: LiveData<DetailedItem?> = _playingBook
+    private val _playingBook = MutableStateFlow<DetailedItem?>(null)
+    val playingBook: StateFlow<DetailedItem?> = _playingBook.asStateFlow()
 
-    private val _mediaPreparingError = MutableLiveData<Boolean>()
-    val mediaPreparingError: LiveData<Boolean> = _mediaPreparingError
+    private val _mediaPreparingError = MutableStateFlow(false)
+    val mediaPreparingError: StateFlow<Boolean> = _mediaPreparingError.asStateFlow()
 
-    private val _playbackSpeed = MutableLiveData(preferences.getPlaybackSpeed())
-    val playbackSpeed: LiveData<Float> = _playbackSpeed
+    private val _playbackSpeed = MutableStateFlow(preferences.getPlaybackSpeed())
+    val playbackSpeed: StateFlow<Float> = _playbackSpeed.asStateFlow()
 
-    private val _currentChapterIndex =
-      MediatorLiveData<Int>().apply {
-        addSource(totalPosition) { updateCurrentTrackData() }
-        addSource(playingBook) { updateCurrentTrackData() }
-      }
+    private val _currentChapterIndex = MutableStateFlow(0)
+    val currentChapterIndex: StateFlow<Int> = _currentChapterIndex.asStateFlow()
 
-    val currentChapterIndex: LiveData<Int> = _currentChapterIndex
+    private val _currentChapterPosition = MutableStateFlow(0.0)
+    val currentChapterPosition: StateFlow<Double> = _currentChapterPosition.asStateFlow()
 
-    private val _currentChapterPosition =
-      MediatorLiveData<Double>().apply {
-        addSource(totalPosition) { updateCurrentTrackData() }
-        addSource(playingBook) { updateCurrentTrackData() }
-      }
+    private val _currentChapterDuration = MutableStateFlow(0.0)
+    val currentChapterDuration: StateFlow<Double> = _currentChapterDuration.asStateFlow()
 
-    val currentChapterPosition: LiveData<Double> = _currentChapterPosition
-
-    private val _currentChapterDuration =
-      MediatorLiveData<Double>().apply {
-        addSource(totalPosition) { updateCurrentTrackData() }
-        addSource(playingBook) { updateCurrentTrackData() }
-      }
-
-    private val _bookmarks = MutableLiveData<List<Bookmark>>()
-    val bookmarks: LiveData<List<Bookmark>> = _bookmarks
-
-    val currentChapterDuration: LiveData<Double> = _currentChapterDuration
+    private val _bookmarks = MutableStateFlow<List<Bookmark>>(emptyList())
+    val bookmarks: StateFlow<List<Bookmark>> = _bookmarks.asStateFlow()
 
     private val handler = Handler(Looper.getMainLooper())
 
@@ -136,10 +121,10 @@ class MediaRepository
                     book?.let {
                       updateProgress(book).await()
                       startUpdatingProgress(book)
-                      _isPlaybackReady.postValue(true)
+                      _isPlaybackReady.value = true
 
-                      if (_playAfterPrepare.value == true) {
-                        _playAfterPrepare.postValue(false)
+                      if (_playAfterPrepare.value) {
+                        _playAfterPrepare.value = false
                         play()
                       }
                     }
@@ -147,12 +132,12 @@ class MediaRepository
 
                   is PlaybackEvent.TimerExpired -> {
                     defaultTimerActivator.onTimerExpired()
-                    _timerOption.postValue(null)
+                    _timerOption.value = null
                     pause()
                   }
 
                   is PlaybackEvent.TimerTick -> {
-                    _timerRemaining.postValue(event.remainingSeconds)
+                    _timerRemaining.value = event.remainingSeconds
                   }
                 }
               }
@@ -190,7 +175,7 @@ class MediaRepository
       position: Double? = null,
     ) {
       defaultTimerActivator.onTimerManuallySet()
-      _timerOption.postValue(timerOption)
+      _timerOption.value = timerOption
 
       when (timerOption) {
         is DurationTimerOption -> {
@@ -199,7 +184,7 @@ class MediaRepository
 
         is CurrentEpisodeTimerOption -> {
           val playingBook = playingBook.value ?: return
-          val currentPosition = position ?: totalPosition.value ?: return
+          val currentPosition = position ?: totalPosition.value
 
           val (chapterIndex, chapterPosition) = calculateChapterIndexAndPosition(playingBook, currentPosition)
           val chapterDuration =
@@ -221,15 +206,11 @@ class MediaRepository
     }
 
     fun rewind() {
-      totalPosition
-        .value
-        ?.let { seekTo(it - getSeekTime(preferences.getSeekTime().rewind)) }
+      seekTo(totalPosition.value - getSeekTime(preferences.getSeekTime().rewind))
     }
 
     fun forward() {
-      totalPosition
-        .value
-        ?.let { seekTo(it + getSeekTime(preferences.getSeekTime().forward)) }
+      seekTo(totalPosition.value + getSeekTime(preferences.getSeekTime().forward))
     }
 
     fun setChapter(index: Int) {
@@ -250,7 +231,7 @@ class MediaRepository
       Timber.d("Clearing playing book: ${_playingBook.value?.id}")
       pause()
 
-      _playingBook.postValue(null)
+      _playingBook.value = null
       preferences.clearPlayingItem()
     }
 
@@ -260,7 +241,7 @@ class MediaRepository
 
     fun setChapterPosition(chapterPosition: Double) {
       val book = playingBook.value ?: return
-      val overallPosition = totalPosition.value ?: return
+      val overallPosition = totalPosition.value
 
       val currentIndex = calculateChapterIndex(book, overallPosition)
 
@@ -288,7 +269,7 @@ class MediaRepository
         }
 
         else -> {
-          _playAfterPrepare.postValue(true)
+          _playAfterPrepare.value = true
           startPreparingPlayback(book)
         }
       }
@@ -319,10 +300,10 @@ class MediaRepository
         mediaController.setPlaybackSpeed(speed)
       }
 
-      _playbackSpeed.postValue(speed)
+      _playbackSpeed.value = speed
       preferences.savePlaybackSpeed(speed)
 
-      _totalPosition.value?.let { adjustTimer(it) }
+      adjustTimer(totalPosition.value)
     }
 
     suspend fun preparePlayback(bookId: String) {
@@ -332,7 +313,7 @@ class MediaRepository
             .fetchBook(bookId)
             .foldAsync(
               onSuccess = { startPreparingPlayback(it) },
-              onFailure = { _mediaPreparingError.postValue(true) },
+              onFailure = { _mediaPreparingError.value = true },
             )
         }
       }
@@ -340,7 +321,7 @@ class MediaRepository
 
     fun nextTrack() {
       val book = playingBook.value ?: return
-      val overallPosition = totalPosition.value ?: return
+      val overallPosition = totalPosition.value
       val currentIndex = calculateChapterIndex(book, overallPosition)
       Timber.d("Next track: bookId=${book.id}, currentChapter=$currentIndex -> ${currentIndex + 1}")
 
@@ -350,7 +331,7 @@ class MediaRepository
 
     fun previousTrack(rewindRequired: Boolean = true) {
       val book = playingBook.value ?: return
-      val overallPosition = totalPosition.value ?: return
+      val overallPosition = totalPosition.value
 
       val (currentIndex, chapterPosition) = calculateChapterIndexAndPosition(book, overallPosition)
       Timber.d("Previous track: bookId=${book.id}, currentChapter=$currentIndex, chapterPosition=${chapterPosition.toInt()}s")
@@ -390,23 +371,23 @@ class MediaRepository
 
     fun clearPreparedItem() {
       if (timerOption.value != null) {
-        _timerOption.postValue(null)
+        _timerOption.value = null
         cancelServiceTimer()
       }
 
       defaultTimerActivator.onNewBookPrepared()
-      _mediaPreparingError.postValue(false)
-      _isPlaybackReady.postValue(false)
+      _mediaPreparingError.value = false
+      _isPlaybackReady.value = false
     }
 
     private fun startPreparingPlayback(book: DetailedItem) {
       val sameBook = _playingBook.value?.same(book) ?: false
 
       if (sameBook.not()) {
-        _totalPosition.postValue(0.0)
-        _isPlaying.postValue(false)
+        _totalPosition.value = 0.0
+        _isPlaying.value = false
 
-        _playingBook.postValue(book)
+        _playingBook.value = book
         preferences.savePlayingItem(book)
 
         val intent = Intent(context, PlaybackService::class.java)
@@ -425,7 +406,9 @@ class MediaRepository
         val accumulated = detailedItem.chapters.take(currentIndex).sumOf { it.duration }
         val currentFilePosition = mediaController.currentPosition / 1000.0
 
-        _totalPosition.postValue(accumulated + currentFilePosition)
+        val newPosition = accumulated + currentFilePosition
+        _totalPosition.value = newPosition
+        updateCurrentTrackData()
       }
 
     private fun play() {
@@ -450,7 +433,7 @@ class MediaRepository
           .chapters
           .sumOf { it.duration }
 
-      val current = totalPosition.value ?: 0.0
+      val current = totalPosition.value
 
       val direction =
         when (current > maxOf(0.0, position)) {
@@ -487,41 +470,36 @@ class MediaRepository
           )
         }
 
-        is DurationTimerOption -> {
-          Unit
-        }
+        is DurationTimerOption -> {}
 
-        null -> {
-          Unit
-        }
+        null -> {}
       }
     }
 
     private fun updateCurrentTrackData() {
       val book = playingBook.value ?: return
-      val totalPosition = totalPosition.value ?: return
+      val totalPosition = totalPosition.value
 
       val trackIndex = calculateChapterIndex(book, totalPosition)
       val trackPosition = calculateChapterPosition(book, totalPosition)
 
-      _currentChapterIndex.postValue(trackIndex)
-      _currentChapterPosition.postValue(trackPosition)
-      _currentChapterDuration.postValue(
+      _currentChapterIndex.value = trackIndex
+      _currentChapterPosition.value = trackPosition
+      _currentChapterDuration.value =
         book
           .chapters
           .getOrNull(trackIndex)
           ?.duration
-          ?: 0.0,
-      )
+          ?: 0.0
     }
 
     suspend fun createBookmark(title: String? = null) {
-      Timber.d("Creating bookmark for ${_playingBook.value?.id} at position=${_totalPosition.value?.toInt()}s")
+      Timber.d("Creating bookmark for ${_playingBook.value?.id} at position=${_totalPosition.value.toInt()}s")
       val playingBook = _playingBook.value ?: return
-      val totalPosition = _totalPosition.value ?: return
+      val totalPosition = _totalPosition.value
 
       val currentChapter = playingBook.chapters[calculateChapterIndex(playingBook, totalPosition)].title
-      val chapterPosition = _currentChapterPosition.value ?: return
+      val chapterPosition = _currentChapterPosition.value
 
       val bookmarkTitle =
         when (title) {

@@ -35,7 +35,6 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -72,7 +71,7 @@ fun QuickSettingsComposable(
 ) {
   val forceCache by cachingModelView.forceCache.collectAsState(false)
   val hideCompleted by settingsModelView.hideCompleted.collectAsState(false)
-  val ordering by settingsModelView.preferredLibraryOrdering.observeAsState(LibraryOrderingConfiguration.default)
+  val ordering by settingsModelView.preferredLibraryOrdering.collectAsState()
   val context = LocalContext.current
 
   ModalBottomSheet(

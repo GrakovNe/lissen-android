@@ -37,9 +37,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -101,7 +101,7 @@ fun LibraryScreen(
   val coroutineScope = rememberCoroutineScope()
 
   val activity = LocalActivity.current
-  val recentBooks: List<RecentBook> by libraryViewModel.recentBooks.observeAsState(emptyList())
+  val recentBooks: List<RecentBook> by libraryViewModel.recentBooks.collectAsState()
 
   var currentLibraryId by rememberSaveable { mutableStateOf("") }
   var localCacheUpdatedAt by rememberSaveable { mutableStateOf(0L) }
@@ -109,18 +109,18 @@ fun LibraryScreen(
     mutableStateOf(LibraryOrderingConfiguration.default)
   }
   var pullRefreshing by remember { mutableStateOf(false) }
-  val recentBookRefreshing by libraryViewModel.recentBookUpdating.observeAsState(false)
-  val searchRequested by libraryViewModel.searchRequested.observeAsState(false)
-  val preparingError by playerViewModel.preparingError.observeAsState(false)
+  val recentBookRefreshing by libraryViewModel.recentBookUpdating.collectAsState()
+  val searchRequested by libraryViewModel.searchRequested.collectAsState()
+  val preparingError by playerViewModel.preparingError.collectAsState()
 
-  val preferredLibrary by settingsViewModel.preferredLibrary.observeAsState()
-  val libraries by settingsViewModel.libraries.observeAsState(emptyList())
+  val preferredLibrary by settingsViewModel.preferredLibrary.collectAsState()
+  val libraries by settingsViewModel.libraries.collectAsState()
 
   var preferredLibraryExpanded by remember { mutableStateOf(false) }
   var preferencesExpanded by remember { mutableStateOf(false) }
 
   val library = libraryViewModel.getPager(searchRequested).collectAsLazyPagingItems()
-  val libraryCount by libraryViewModel.totalCount.observeAsState()
+  val libraryCount by libraryViewModel.totalCount.collectAsState()
 
   val libraryListState = rememberLazyListState()
 
@@ -165,7 +165,7 @@ fun LibraryScreen(
   RequestLocalNetworkPermission(
     host =
       settingsViewModel.host
-        .observeAsState()
+        .collectAsState()
         .value
         ?.url,
     onGranted = { refreshContent(showPullRefreshing = false) },
@@ -198,7 +198,7 @@ fun LibraryScreen(
   val titleTextStyle = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
   val titleHeightDp = with(LocalDensity.current) { titleTextStyle.lineHeight.toPx().toDp() }
 
-  val playingBook by playerViewModel.book.observeAsState()
+  val playingBook by playerViewModel.book.collectAsState()
   val context = LocalContext.current
 
   fun isRecentVisible(): Boolean {

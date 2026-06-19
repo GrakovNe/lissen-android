@@ -13,8 +13,8 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,8 +43,8 @@ fun TrackDetailsComposable(
   modifier: Modifier = Modifier,
   imageLoader: ImageLoader,
 ) {
-  val currentTrackIndex by viewModel.currentChapterIndex.observeAsState(0)
-  val book by viewModel.book.observeAsState()
+  val currentTrackIndex by viewModel.currentChapterIndex.collectAsState()
+  val book by viewModel.book.collectAsState()
 
   val context = LocalContext.current
 

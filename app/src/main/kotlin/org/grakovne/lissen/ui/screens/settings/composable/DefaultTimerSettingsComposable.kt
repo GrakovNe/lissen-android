@@ -9,8 +9,8 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -29,8 +29,8 @@ import org.grakovne.lissen.viewmodel.SettingsViewModel
 @Composable
 fun DefaultTimerSettingsComposable(viewModel: SettingsViewModel) {
   var timerExpanded by remember { mutableStateOf(false) }
-  val defaultTimerOption by viewModel.defaultTimerOption.observeAsState()
-  val preferredLibrary by viewModel.preferredLibrary.observeAsState()
+  val defaultTimerOption by viewModel.defaultTimerOption.collectAsState()
+  val preferredLibrary by viewModel.preferredLibrary.collectAsState()
 
   val context = LocalContext.current
   val libraryType = preferredLibrary?.type ?: LibraryType.LIBRARY

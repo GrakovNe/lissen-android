@@ -10,8 +10,8 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -20,7 +20,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.map
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.CurrentItemDownloadOption
 import org.grakovne.lissen.domain.DownloadOption
@@ -38,12 +37,10 @@ import org.grakovne.lissen.viewmodel.SettingsViewModel
 fun AutoCacheSettingsComposable(viewModel: SettingsViewModel) {
   val context = LocalContext.current
   var autoCacheExpanded by remember { mutableStateOf(false) }
-  val preferredDownloadOption by viewModel.preferredAutoDownloadOption.observeAsState()
+  val preferredDownloadOption by viewModel.preferredAutoDownloadOption.collectAsState()
 
-  val libraryType by viewModel
-    .preferredLibrary
-    .map { it?.type ?: LibraryType.LIBRARY }
-    .observeAsState(LibraryType.LIBRARY)
+  val preferredLibrary by viewModel.preferredLibrary.collectAsState()
+  val libraryType = preferredLibrary?.type ?: LibraryType.LIBRARY
 
   Row(
     modifier =
