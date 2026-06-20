@@ -42,6 +42,8 @@ class AudioBookShelfApiService
     private val mutex = Mutex()
 
     suspend fun <T> makeRequest(apiCall: suspend (client: AudiobookshelfApiClient) -> Response<T>): OperationResult<T> {
+      val accessTokenBeforeCall = preferences.getAccessToken()
+
       val callResult =
         getClientInstance()
           ?.let { safeApiCall(preferences) { apiCall.invoke(it) } }
@@ -52,7 +54,7 @@ class AudioBookShelfApiService
           when (callResult.code) {
             OperationError.Unauthorized -> {
               Timber.d("Request returned 401, refreshing token and retrying")
-              refreshToken()
+              refreshToken(accessTokenBeforeCall)
 
               getClientInstance()
                 ?.let { safeApiCall(preferences) { apiCall.invoke(it) } }
@@ -71,8 +73,17 @@ class AudioBookShelfApiService
       }
     }
 
-    private suspend fun refreshToken() {
+    private suspend fun refreshToken(accessTokenUsedForCall: String?) {
       mutex.withLock {
+        // A concurrent request may have already refreshed the token while we were
+        // waiting for the lock. If the current access token differs from the one our
+        // failed request used, the refresh is already done — skip to avoid rotating
+        // the refresh token again (Audiobookshelf rotates it, which could log us out).
+        if (preferences.getAccessToken() != accessTokenUsedForCall) {
+          Timber.d("Access token already refreshed by a concurrent request, skipping refresh")
+          return@withLock
+        }
+
         val currentToken = preferences.getRefreshToken() ?: return@withLock
 
         val refreshResult =

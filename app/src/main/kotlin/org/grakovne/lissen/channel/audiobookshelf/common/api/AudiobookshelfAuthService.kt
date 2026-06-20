@@ -281,7 +281,10 @@ class AudiobookshelfAuthService
                     .adapter(LoggedUserResponse::class.java)
                     .fromJson(raw)
                     ?.let { loginResponseConverter.apply(it) }
-                    ?: return
+                    ?: run {
+                      Timber.e("OAuth token exchange returned an empty or unparseable user payload for $host (status=${response.code})")
+                      return
+                    }
                 } catch (ex: Exception) {
                   Timber.e("Unable to get User data from response: $ex")
                   onFailure(ex.message ?: "")

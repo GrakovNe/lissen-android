@@ -17,14 +17,17 @@ suspend fun <T> safeApiCall(
   return try {
     val response = apiCall.invoke()
 
-    return when (response.code()) {
-      200 -> {
-        when (val body = response.body()) {
-          null -> OperationResult.Error(OperationError.InternalError)
-          else -> OperationResult.Success(body)
-        }
-      }
+    if (response.isSuccessful) {
+      @Suppress("UNCHECKED_CAST")
+      return when (val body = response.body()) {
+        // 204 No Content / empty body on success (e.g. Unit endpoints like progress sync or bookmark deletion)
+        null -> OperationResult.Success(Unit as T)
 
+        else -> OperationResult.Success(body)
+      }
+    }
+
+    return when (response.code()) {
       400 -> {
         OperationResult.Error(OperationError.InternalError)
       }
