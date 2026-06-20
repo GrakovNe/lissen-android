@@ -2,8 +2,8 @@
 [![Build Lissen App](https://github.com/GrakovNe/lissen-android/actions/workflows/app_build.yml/badge.svg)](https://github.com/GrakovNe/lissen-android/actions/workflows/app_build.yml)
 
 <p align="center"> 
-  <a href="https://play.google.com/store/apps/details?id=org.grakovne.lissen"><img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" width="200" height="60"></a>&nbsp;&nbsp;&nbsp;<!--
-  --><a href="https://f-droid.org/packages/org.grakovne.lissen"><img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" alt="Get it on F-Droid" width="200" height="60"></a>
+  <a href="https://play.google.com/store/apps/details?id=org.grakovne.lissen"><img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" height="60"></a>&nbsp;&nbsp;&nbsp;<!--
+  --><a href="https://f-droid.org/packages/org.grakovne.lissen"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a3/Get_it_on_F-Droid_%28material_design%29.svg" alt="Get it on F-Droid" height="60"></a>
 </p>
 
 ### Features
