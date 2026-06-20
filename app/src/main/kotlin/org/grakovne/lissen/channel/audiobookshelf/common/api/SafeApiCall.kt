@@ -20,7 +20,6 @@ suspend fun <T> safeApiCall(
     if (response.isSuccessful) {
       @Suppress("UNCHECKED_CAST")
       return when (val body = response.body()) {
-        // 204 No Content / empty body on success (e.g. Unit endpoints like progress sync or bookmark deletion)
         null -> OperationResult.Success(Unit as T)
 
         else -> OperationResult.Success(body)
