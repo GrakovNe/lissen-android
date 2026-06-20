@@ -62,7 +62,8 @@ class LissenApplication : Application() {
     if (preferences.isActivityLoggingEnabled()) {
       try {
         Timber.plant(lissenLogProvider.provideLoggingTree())
-      } catch (_: Exception) {
+      } catch (ex: Exception) {
+        Timber.e("Unable to plant file logging tree due to: ${ex.message}")
       }
     }
   }

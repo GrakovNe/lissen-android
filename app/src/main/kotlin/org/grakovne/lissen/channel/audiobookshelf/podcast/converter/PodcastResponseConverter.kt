@@ -8,6 +8,7 @@ import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PlayingChapter
+import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
@@ -116,6 +117,7 @@ class PodcastResponseConverter
             try {
               item.pubDate?.let { dateFormat.parse(it)?.time }
             } catch (e: Exception) {
+              Timber.w("Unable to parse episode pubDate '${item.pubDate}' due to: ${e.message}")
               null
             }
           }.thenBy { it.season.safeToInt() }
@@ -128,6 +130,7 @@ class PodcastResponseConverter
         return try {
           maybeNumber?.toInt()
         } catch (ex: Exception) {
+          Timber.w("Unable to parse '$maybeNumber' as season/episode number due to: ${ex.message}")
           null
         }
       }

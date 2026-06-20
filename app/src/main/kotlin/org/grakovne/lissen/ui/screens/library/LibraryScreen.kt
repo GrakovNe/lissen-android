@@ -267,9 +267,11 @@ fun LibraryScreen(
     }
   }
 
+  val libraryTitle = remember(preferredLibrary) { provideLibraryTitle() }
+  val recentVisible by remember { derivedStateOf { isRecentVisible() } }
+
   val navBarTitle by remember {
     derivedStateOf {
-      val showRecent = isRecentVisible()
       val recentBlockVisible =
         libraryListState.layoutInfo.visibleItemsInfo
           .firstOrNull()
@@ -277,8 +279,8 @@ fun LibraryScreen(
 
       when {
         isPlaceholderRequired -> context.getString(R.string.library_screen_continue_listening_title)
-        showRecent && recentBlockVisible -> context.getString(R.string.library_screen_continue_listening_title)
-        else -> provideLibraryTitle()
+        recentVisible && recentBlockVisible -> context.getString(R.string.library_screen_continue_listening_title)
+        else -> libraryTitle
       }
     }
   }
@@ -317,7 +319,7 @@ fun LibraryScreen(
             Row(
               modifier =
                 when (navBarTitle) {
-                  provideLibraryTitle() -> {
+                  libraryTitle -> {
                     Modifier
                       .clickable(
                         interactionSource = remember { MutableInteractionSource() },
@@ -338,7 +340,7 @@ fun LibraryScreen(
                 modifier = Modifier.testTag("libraryNavBarTitle"),
               )
 
-              if (navBarTitle == provideLibraryTitle()) {
+              if (navBarTitle == libraryTitle) {
                 LibrarySwitchComposable { preferredLibraryExpanded = true }
               }
             }
@@ -388,7 +390,7 @@ fun LibraryScreen(
           contentPadding = PaddingValues(horizontal = 16.dp),
         ) {
           item(key = "recent_books") {
-            val showRecent = isRecentVisible()
+            val showRecent = recentVisible
 
             when {
               isPlaceholderRequired -> {
@@ -411,7 +413,7 @@ fun LibraryScreen(
           }
 
           item(key = "library_title") {
-            if (!searchRequested && isRecentVisible()) {
+            if (!searchRequested && recentVisible) {
               AnimatedContent(
                 targetState = navBarTitle,
                 transitionSpec = {
@@ -429,7 +431,7 @@ fun LibraryScreen(
                 label = "library_header_fade",
               ) {
                 when {
-                  it == provideLibraryTitle() -> {
+                  it == libraryTitle -> {
                     Spacer(
                       modifier =
                         Modifier
@@ -452,7 +454,7 @@ fun LibraryScreen(
                       ) {
                         Text(
                           style = titleTextStyle,
-                          text = provideLibraryTitle(),
+                          text = libraryTitle,
                         )
 
                         LibrarySwitchComposable { preferredLibraryExpanded = true }

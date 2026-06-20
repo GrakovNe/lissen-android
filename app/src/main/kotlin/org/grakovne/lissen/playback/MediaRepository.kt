@@ -121,7 +121,6 @@ class MediaRepository
                     val book = preferences.getPlayingItem()
                     book?.let {
                       updateProgress(book).await()
-                      startUpdatingProgress(book)
                       _isPlaybackReady.value = true
 
                       if (_playAfterPrepare.value) {
@@ -150,6 +149,9 @@ class MediaRepository
                   _isPlaying.value = isPlaying
                   if (isPlaying) {
                     defaultTimerActivator.onPlaybackStarted { updateTimer(it) }
+                    _playingBook.value?.let { startUpdatingProgress(it) }
+                  } else {
+                    stopUpdatingProgress()
                   }
                 }
 
@@ -230,6 +232,7 @@ class MediaRepository
 
         seekTo(chapterStartsAt)
       } catch (ex: Exception) {
+        Timber.w("Unable to set chapter index=$index for ${book.id} due to: ${ex.message}")
         return
       }
     }
@@ -264,6 +267,7 @@ class MediaRepository
 
         seekTo(absolutePosition)
       } catch (ex: Exception) {
+        Timber.w("Unable to set chapter position=${chapterPosition.toInt()}s for ${book.id} due to: ${ex.message}")
         return
       }
     }
@@ -374,6 +378,10 @@ class MediaRepository
         },
         500,
       )
+    }
+
+    private fun stopUpdatingProgress() {
+      handler.removeCallbacksAndMessages(null)
     }
 
     fun clearPreparedItem() {
