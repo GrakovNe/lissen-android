@@ -267,12 +267,7 @@ fun LibraryScreen(
     }
   }
 
-  // Memoized so the preferred-library title (which reads SharedPreferences) is computed only
-  // when the library actually changes, not on every recomposition / scroll frame.
   val libraryTitle = remember(preferredLibrary) { provideLibraryTitle() }
-
-  // Derived from observable state only; avoids running isNetworkAvailable() (a Binder IPC)
-  // and SharedPreferences reads inside the per-scroll-frame navBarTitle computation below.
   val recentVisible by remember { derivedStateOf { isRecentVisible() } }
 
   val navBarTitle by remember {
