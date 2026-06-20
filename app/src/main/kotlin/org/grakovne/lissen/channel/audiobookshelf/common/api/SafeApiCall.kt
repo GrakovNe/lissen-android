@@ -21,7 +21,6 @@ suspend fun <T> safeApiCall(
       @Suppress("UNCHECKED_CAST")
       return when (val body = response.body()) {
         null -> OperationResult.Success(Unit as T)
-
         else -> OperationResult.Success(body)
       }
     }

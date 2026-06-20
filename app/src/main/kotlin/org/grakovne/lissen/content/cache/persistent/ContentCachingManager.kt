@@ -23,6 +23,7 @@ import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import timber.log.Timber
 import java.io.File
+import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.coroutineContext
@@ -164,7 +165,13 @@ class ContentCachingManager
           headers.forEach { requestBuilder.addHeader(it.name, it.value) }
 
           val request = requestBuilder.build()
-          val response = client.newCall(request).execute()
+          val response =
+            try {
+              client.newCall(request).execute()
+            } catch (ex: IOException) {
+              Timber.e("Unable to cache media content for $bookId due to: ${ex.message}")
+              return@withContext CacheState(CacheStatus.Error)
+            }
 
           if (!response.isSuccessful) {
             Timber.e("Unable to cache media content: $response")
