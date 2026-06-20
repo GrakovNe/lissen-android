@@ -237,7 +237,8 @@ class MediaLibrarySessionCallback
         val resultSetSize =
           try {
             searchFuture.get().size
-          } catch (_: Exception) {
+          } catch (ex: Exception) {
+            Timber.w("Unable to obtain search results for query '$query' due to: ${ex.message}")
             0
           }
         session.notifySearchResultChanged(browser, query, resultSetSize, params)

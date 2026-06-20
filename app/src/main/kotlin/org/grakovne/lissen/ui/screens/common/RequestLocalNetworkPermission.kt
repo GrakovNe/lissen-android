@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import timber.log.Timber
 import java.net.InetAddress
 import java.net.URI
 
@@ -44,7 +45,8 @@ fun isLocalNetworkHost(url: String): Boolean {
   val host =
     try {
       URI(url).host ?: url
-    } catch (_: Exception) {
+    } catch (ex: Exception) {
+      Timber.w("Unable to parse host from '$url' due to: ${ex.message}")
       url
     }
 
@@ -54,7 +56,8 @@ fun isLocalNetworkHost(url: String): Boolean {
     val host = InetAddress.getByName(host)
 
     host.isSiteLocalAddress || host.isLoopbackAddress || host.isLinkLocalAddress
-  } catch (_: Exception) {
+  } catch (ex: Exception) {
+    Timber.w("Unable to resolve host '$host' due to: ${ex.message}")
     false
   }
 }

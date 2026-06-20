@@ -78,6 +78,7 @@ class PlayerCoverWidget : GlanceAppWidget() {
             ?.let { bitmapFromFile(it.absolutePath, targetWidthPx, targetHeightPx) }
             ?: bitmapFromResource(context, drawable.cover_fallback_png, targetWidthPx, targetHeightPx)
         } catch (e: Exception) {
+          Timber.w("Unable to load cover bitmap for widget, using fallback due to: ${e.message}")
           bitmapFromResource(context, drawable.cover_fallback_png, targetWidthPx, targetHeightPx)
         }
 

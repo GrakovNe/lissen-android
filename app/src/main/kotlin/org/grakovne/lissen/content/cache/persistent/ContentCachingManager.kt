@@ -191,12 +191,13 @@ class ContentCachingManager
               }
             }
             if (!tempDest.renameTo(dest)) {
-              tempDest.delete()
               return@withContext CacheState(CacheStatus.Error)
             }
           } catch (ex: Exception) {
-            tempDest.delete()
+            Timber.e("Unable to cache media file ${file.id} for $bookId due to: ${ex.message}")
             return@withContext CacheState(CacheStatus.Error)
+          } finally {
+            tempDest.delete()
           }
         }
 
@@ -219,6 +220,7 @@ class ContentCachingManager
                   .withBlur(context)
                   .writeToFile(file)
               } catch (ex: Exception) {
+                Timber.e("Unable to cache cover for ${book.id} due to: ${ex.message}")
                 return@fold CacheState(CacheStatus.Error)
               }
             },
