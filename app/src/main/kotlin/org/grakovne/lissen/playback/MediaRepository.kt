@@ -121,6 +121,7 @@ class MediaRepository
                     val book = preferences.getPlayingItem()
                     book?.let {
                       updateProgress(book).await()
+                      startUpdatingProgress(book)
                       _isPlaybackReady.value = true
 
                       if (_playAfterPrepare.value) {
@@ -149,9 +150,6 @@ class MediaRepository
                   _isPlaying.value = isPlaying
                   if (isPlaying) {
                     defaultTimerActivator.onPlaybackStarted { updateTimer(it) }
-                    _playingBook.value?.let { startUpdatingProgress(it) }
-                  } else {
-                    stopUpdatingProgress()
                   }
                 }
 
@@ -378,10 +376,6 @@ class MediaRepository
         },
         500,
       )
-    }
-
-    private fun stopUpdatingProgress() {
-      handler.removeCallbacksAndMessages(null)
     }
 
     fun clearPreparedItem() {
