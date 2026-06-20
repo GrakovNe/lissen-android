@@ -292,8 +292,7 @@ fun PlayingQueueComposable(
           key = { _, chapter -> chapter.id },
         ) { index, chapter ->
           val bookId = book?.id ?: ""
-          // remember the Room-backed flow so scrolling/recomposition does not recreate it and
-          // re-run the DB query + re-register a table observer on every recomposition.
+
           val cacheStateFlow =
             remember(bookId, chapter.id) {
               cachingModelView.provideCacheState(bookId = bookId, chapterId = chapter.id)
