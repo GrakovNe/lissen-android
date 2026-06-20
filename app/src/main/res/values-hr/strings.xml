@@ -54,9 +54,9 @@
         <item quantity="few">%d minute</item>
         <item quantity="other">%d minuta</item>
     </plurals>
-    <string name="timer_option_disable_timer">Onemogući mjerač vremena</string>
-    <string name="timer_title">Mjerač uspavljivanja</string>
-    <string name="player_screen_timer_navigation">Timer</string>
+    <string name="timer_option_disable_timer">Onemogući automatsko isključivanje</string>
+    <string name="timer_title">Automatsko isključivanje</string>
+    <string name="player_screen_timer_navigation">Tajmer</string>
     <string name="chapter_search_hint">Pretraži po naslovu poglavlja</string>
     <string name="widget_placeholder_text">Klikni za otvaranje aplikacije</string>
     <string name="the_offline_podcasts_is_empty">Nema preuzetih podcasta</string>
@@ -196,4 +196,20 @@
     <string name="settings_screen_user_agent_title">Promjena korisničkog agenta</string>
     <string name="settings_screen_user_agent_hint">Prilagodite zaglavlje korisničkog agenta aplikacije</string>
     <string name="settings_screen_user_agent_restore_default">Vrati zadano</string>
+    <string name="library_quick_settings_filters_title">Filtri</string>
+    <string name="library_quick_settings_sort_title">Poredaj po</string>
+    <plurals name="seek_interval_seconds">
+        <item quantity="one">%d sekunda</item>
+        <item quantity="few">%d sekunde</item>
+        <item quantity="other">%d sekundi</item>
+    </plurals>
+    <string name="settings_screen_default_sleep_timer_title">Zadano automatsko isključivanje tijekom reprodukcije</string>
+    <string name="settings_screen_audio_focus_loss_policy_title">Reprodukcija nakon obavijesti</string>
+    <string name="clear_thumbnail_cache_confirm">Obriši</string>
+    <string name="disconnect_from_server_confirmation_message">Bit ćete isključeni s poslužitelja na ovom uređaju. To neće utjecati na vaše podatke</string>
+    <string name="disconnect_from_server_confirm">Prekini vezu</string>
+    <string name="settings_screen_audio_focus_loss_policy_option_pause">Pauza</string>
+    <string name="settings_screen_audio_focus_loss_policy_option_lower_volume">Niža glasnoća</string>
+    <string name="local_network_permission_request_hint">Aplikaciji je potreban pristup lokalnoj mreži za povezivanje s obližnjim poslužiteljima</string>
+    <string name="clear_thumbnail_cache_confirmation_message">Predmemorirane slike naslovnica bit će uklonjene s ovog uređaja. Podaci vašeg poslužitelja neće biti zahvaćeni</string>
 </resources>
