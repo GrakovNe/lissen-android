@@ -96,4 +96,4 @@ private fun buildBlurredBackdrop(
 }
 
 private const val BASE_RADIUS = 32
-private const val BACKDROP_WORK_SIZE = 256
+private const val BACKDROP_WORK_SIZE = 512

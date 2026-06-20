@@ -287,12 +287,18 @@ fun PlayingQueueComposable(
       ) {
         val maxDuration = showingChapters.maxOfOrNull { it.duration } ?: 0.0
 
-        itemsIndexed(showingChapters) { index, chapter ->
-          val isCached by cachingModelView
-            .provideCacheState(
-              bookId = book?.id ?: "",
-              chapterId = chapter.id,
-            ).collectAsState(initial = false)
+        itemsIndexed(
+          showingChapters,
+          key = { _, chapter -> chapter.id },
+        ) { index, chapter ->
+          val bookId = book?.id ?: ""
+          // remember the Room-backed flow so scrolling/recomposition does not recreate it and
+          // re-run the DB query + re-register a table observer on every recomposition.
+          val cacheStateFlow =
+            remember(bookId, chapter.id) {
+              cachingModelView.provideCacheState(bookId = bookId, chapterId = chapter.id)
+            }
+          val isCached by cacheStateFlow.collectAsState(initial = false)
 
           PlaylistItemComposable(
             track = chapter,
