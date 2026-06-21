@@ -279,6 +279,10 @@ class LissenSharedPreferences
 
     fun getPlaybackSpeed(): Float = sharedPreferences.getFloat(KEY_PREFERRED_PLAYBACK_SPEED, 1f)
 
+    fun saveDownloadChaptersCount(count: Int) = sharedPreferences.edit { putInt(KEY_DOWNLOAD_CHAPTERS_COUNT, count) }
+
+    fun getDownloadChaptersCount(): Int = sharedPreferences.getInt(KEY_DOWNLOAD_CHAPTERS_COUNT, DEFAULT_DOWNLOAD_CHAPTERS_COUNT)
+
     private fun <T> asFlow(
       key: String,
       getter: () -> T,
@@ -614,6 +618,8 @@ class LissenSharedPreferences
       private const val KEY_PREFERRED_LIBRARY_TYPE = "preferred_library_type"
 
       private const val KEY_PREFERRED_PLAYBACK_SPEED = "preferred_playback_speed"
+      private const val KEY_DOWNLOAD_CHAPTERS_COUNT = "download_chapters_count"
+      private const val DEFAULT_DOWNLOAD_CHAPTERS_COUNT = 5
       private const val KEY_PREFERRED_SEEK_TIME = "preferred_seek_time"
 
       private const val KEY_PREFERRED_COLOR_SCHEME = "preferred_color_scheme"

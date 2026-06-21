@@ -151,6 +151,10 @@ class CachingModelView
 
     fun localCacheUsing() = preferences.isForceCache()
 
+    fun getDownloadChaptersCount() = preferences.getDownloadChaptersCount()
+
+    fun saveDownloadChaptersCount(count: Int) = preferences.saveDownloadChaptersCount(count)
+
     fun provideCacheState(bookId: String): Flow<Boolean> = contentCachingManager.hasMetadataCached(bookId)
 
     fun provideCacheState(
