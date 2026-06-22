@@ -35,6 +35,7 @@ fun LibrarySearchActionComposable(
   currentSearchToken: String,
   onSearchDismissed: () -> Unit,
   onSearchRequested: (String) -> Unit,
+  autoFocus: Boolean = true,
 ) {
   val focusRequester = remember { FocusRequester() }
   val searchText = remember { mutableStateOf(currentSearchToken) }
@@ -44,8 +45,12 @@ fun LibrarySearchActionComposable(
     onSearchRequested(searchText.value)
   }
 
-  LaunchedEffect(Unit) {
-    focusRequester.requestFocus()
+  // Linked search arrives pre-filled, so the user is reading results, not typing — don't
+  // grab focus / pop the keyboard in that case. They can still tap the field to edit.
+  LaunchedEffect(autoFocus) {
+    if (autoFocus) {
+      focusRequester.requestFocus()
+    }
   }
 
   Row(

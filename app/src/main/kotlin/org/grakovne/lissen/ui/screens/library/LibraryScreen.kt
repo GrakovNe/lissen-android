@@ -318,6 +318,7 @@ fun LibraryScreen(
               true -> {
                 LibrarySearchActionComposable(
                   currentSearchToken = searchToken,
+                  autoFocus = linkedSearchToken == null,
                   onSearchDismissed = {
                     when (linkedSearchToken) {
                       null -> libraryViewModel.dismissSearch()
