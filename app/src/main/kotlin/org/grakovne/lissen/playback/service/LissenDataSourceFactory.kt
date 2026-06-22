@@ -65,7 +65,6 @@ class LissenDataSourceFactory(
     )
 }
 
-
 @OptIn(UnstableApi::class)
 internal class LocalFallbackDataSource(
   private val upstream: DataSource,
@@ -124,7 +123,7 @@ internal class LocalFallbackDataSource(
         throw networkError
       }
     }
-  
+
   private fun switchToLocalIfAvailable(): Boolean {
     if (usingLocal) return false
 
