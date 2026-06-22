@@ -10,14 +10,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Archive
-import androidx.compose.material.icons.outlined.Unarchive
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.RemoveDone
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,54 +41,52 @@ fun BookActionsComposable(
   onMarkAsCompleted: () -> Unit,
   onMarkAsNotCompleted: () -> Unit,
 ) {
-  val view = LocalView.current
-
   ModalBottomSheet(
-    containerColor = colorScheme.background,
+    containerColor = colorScheme.surface,
     onDismissRequest = onDismissRequest,
-    content = {
-      Column(
-        modifier =
-          Modifier
-            .testTag("bookActionsSheet")
-            .fillMaxWidth()
-            .padding(bottom = 16.dp)
-            .padding(horizontal = 16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-      ) {
-        Text(
-          text = book.title,
-          style = typography.bodyLarge,
-          maxLines = 2,
-          overflow = TextOverflow.Ellipsis,
-        )
+    sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+  ) {
+    Column(
+      modifier =
+        Modifier
+          .testTag("bookActionsSheet")
+          .fillMaxWidth(),
+      horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+      Text(
+        text = book.title,
+        style = typography.bodyLarge,
+        color = colorScheme.onSurface,
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis,
+        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+      )
 
-        Spacer(modifier = Modifier.height(8.dp))
+      Spacer(modifier = Modifier.height(4.dp))
 
-        when (isFinished) {
-          false -> {
-            BookActionRow(
-              title = stringResource(R.string.library_book_action_mark_as_completed),
-              icon = Icons.Outlined.Archive,
-              onClick = { withHaptic(view) { onMarkAsCompleted() } },
-            )
-          }
+      when (isFinished) {
+        false -> {
+          BookActionRow(
+            title = stringResource(R.string.library_book_action_mark_as_completed),
+            icon = Icons.Outlined.Check,
+            onClick = onMarkAsCompleted,
+          )
+        }
 
-          true -> {
-            BookActionRow(
-              title = stringResource(R.string.library_book_action_mark_as_not_completed),
-              icon = Icons.Outlined.Unarchive,
-              onClick = { withHaptic(view) { onMarkAsNotCompleted() } },
-            )
-          }
+        true -> {
+          BookActionRow(
+            title = stringResource(R.string.library_book_action_mark_as_not_completed),
+            icon = Icons.Outlined.RemoveDone,
+            onClick = onMarkAsNotCompleted,
+          )
+        }
 
-          null -> {
-            Unit
-          }
+        null -> {
+          Unit
         }
       }
-    },
-  )
+    }
+  }
 }
 
 @Composable
@@ -96,18 +95,19 @@ private fun BookActionRow(
   icon: ImageVector,
   onClick: () -> Unit,
 ) {
+  val view = LocalView.current
   Row(
     modifier =
       Modifier
         .fillMaxWidth()
-        .clickable { onClick() }
-        .padding(vertical = 16.dp),
+        .clickable { withHaptic(view) { onClick() } }
+        .padding(horizontal = 16.dp, vertical = 16.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {
     Text(
       text = title,
-      style = typography.bodyMedium,
-      color = colorScheme.onBackground,
+      style = typography.bodyLarge,
+      color = colorScheme.onSurface,
       modifier = Modifier.weight(1f),
     )
     Spacer(modifier = Modifier.width(12.dp))
@@ -115,7 +115,7 @@ private fun BookActionRow(
       imageVector = icon,
       contentDescription = null,
       modifier = Modifier.size(20.dp),
-      tint = colorScheme.onBackground,
+      tint = colorScheme.onSurface,
     )
   }
 }
