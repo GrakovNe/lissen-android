@@ -212,4 +212,5 @@
     <string name="settings_screen_user_agent_title">Gebruikersagent wijzigen</string>
     <string name="settings_screen_user_agent_hint">De User-Agent-header van de applicatie aanpassen</string>
     <string name="settings_screen_user_agent_restore_default">Standaardinstellingen herstellen</string>
+    <string name="local_network_permission_request_hint">De app heeft toegang tot het lokale netwerk nodig om verbinding te maken met servers in de buurt</string>
 </resources>
