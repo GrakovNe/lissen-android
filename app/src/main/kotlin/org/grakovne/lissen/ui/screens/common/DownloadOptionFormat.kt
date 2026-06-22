@@ -45,22 +45,25 @@ fun DownloadOption?.makeText(
     is NumberItemDownloadOption -> {
       when (libraryType) {
         LibraryType.LIBRARY -> {
-          context.getString(
-            R.string.downloads_menu_download_option_next_chapters,
+          context.resources.getQuantityString(
+            R.plurals.downloads_menu_download_option_next_chapters,
+            itemsNumber,
             itemsNumber,
           )
         }
 
         LibraryType.PODCAST -> {
-          context.getString(
-            R.string.downloads_menu_download_option_next_episodes,
+          context.resources.getQuantityString(
+            R.plurals.downloads_menu_download_option_next_episodes,
+            itemsNumber,
             itemsNumber,
           )
         }
 
         LibraryType.UNKNOWN -> {
-          context.getString(
-            R.string.downloads_menu_download_option_next_items,
+          context.resources.getQuantityString(
+            R.plurals.downloads_menu_download_option_next_items,
+            itemsNumber,
             itemsNumber,
           )
         }

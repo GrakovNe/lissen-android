@@ -74,9 +74,15 @@
     <string name="downloads_menu_download_option_remaining_chapters">פרקים שנותרו</string>
     <string name="downloads_menu_download_option_remaining_episodes">פרקים שנותרו</string>
     <string name="downloads_menu_download_option_remaining_items">פריטים שנותרו</string>
-    <string name="downloads_menu_download_option_next_chapters">%1$d הפרקים הבאים</string>
-    <string name="downloads_menu_download_option_next_episodes">%1$d הפרקים הבאים</string>
-    <string name="downloads_menu_download_option_next_items">%1$d הפריטים הבאים</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="other">%1$d הפרקים הבאים</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="other">%1$d הפרקים הבאים</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="other">%1$d הפריטים הבאים</item>
+    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">הפרקים הבאים</string>
     <string name="downloads_menu_download_option_next_episodes_label">הפרקים הבאים</string>
     <string name="downloads_menu_download_option_next_items_label">הפריטים הבאים</string>

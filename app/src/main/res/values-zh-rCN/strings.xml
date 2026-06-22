@@ -81,9 +81,15 @@
     <string name="downloads_menu_download_option_remaining_chapters">剩余章节</string>
     <string name="downloads_menu_download_option_remaining_episodes">剩余剧集</string>
     <string name="downloads_menu_download_option_remaining_items">剩余项目</string>
-    <string name="downloads_menu_download_option_next_chapters">后 %1$d 章</string>
-    <string name="downloads_menu_download_option_next_episodes">后 %1$d 集</string>
-    <string name="downloads_menu_download_option_next_items">后 %1$d 项</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="other">后 %1$d 章</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="other">后 %1$d 集</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="other">后 %1$d 项</item>
+    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">接下来的章节</string>
     <string name="downloads_menu_download_option_next_episodes_label">接下来的剧集</string>
     <string name="downloads_menu_download_option_next_items_label">接下来的项目</string>

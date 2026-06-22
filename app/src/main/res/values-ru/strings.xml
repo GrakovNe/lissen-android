@@ -82,9 +82,24 @@
     <string name="downloads_menu_download_option_remaining_chapters">Оставшиеся главы</string>
     <string name="downloads_menu_download_option_remaining_episodes">Оставшиеся выпуски</string>
     <string name="downloads_menu_download_option_remaining_items">Оставшиеся элементы</string>
-    <string name="downloads_menu_download_option_next_chapters">Следующие %1$d глав</string>
-    <string name="downloads_menu_download_option_next_episodes">Следующие %1$d выпусков</string>
-    <string name="downloads_menu_download_option_next_items">Следующие %1$d элементов</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="one">Следующую %d главу</item>
+        <item quantity="few">Следующие %d главы</item>
+        <item quantity="many">Следующие %d глав</item>
+        <item quantity="other">Следующие %d главы</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="one">Следующий %d выпуск</item>
+        <item quantity="few">Следующие %d выпуска</item>
+        <item quantity="many">Следующие %d выпусков</item>
+        <item quantity="other">Следующие %d выпуска</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="one">Следующий %d элемент</item>
+        <item quantity="few">Следующие %d элемента</item>
+        <item quantity="many">Следующие %d элементов</item>
+        <item quantity="other">Следующие %d элемента</item>
+    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Следующие главы</string>
     <string name="downloads_menu_download_option_next_episodes_label">Следующие выпуски</string>
     <string name="downloads_menu_download_option_next_items_label">Следующие элементы</string>

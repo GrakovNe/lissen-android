@@ -80,9 +80,15 @@
     <string name="downloads_menu_download_option_remaining_chapters">Pozostałe rozdziały</string>
     <string name="downloads_menu_download_option_remaining_episodes">Pozostałe odcinki</string>
     <string name="downloads_menu_download_option_remaining_items">Pozostałe pozycje</string>
-    <string name="downloads_menu_download_option_next_chapters">Następne %1$d rozdziałów</string>
-    <string name="downloads_menu_download_option_next_episodes">Następne %1$d odcinków</string>
-    <string name="downloads_menu_download_option_next_items">Następne %1$d pozycji</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="other">Następne %1$d rozdziałów</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="other">Następne %1$d odcinków</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="other">Następne %1$d pozycji</item>
+    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Następne rozdziały</string>
     <string name="downloads_menu_download_option_next_episodes_label">Następne odcinki</string>
     <string name="downloads_menu_download_option_next_items_label">Następne pozycje</string>

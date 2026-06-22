@@ -65,9 +65,15 @@
     <string name="downloads_menu_download_option_entire_book">Libro completo</string>
     <string name="downloads_menu_download_option_entire_podcast">Pódcast completo</string>
     <string name="downloads_menu_download_option_entire_item">Artículo completo</string>
-    <string name="downloads_menu_download_option_next_chapters">Siguientes %1$d capitulos</string>
-    <string name="downloads_menu_download_option_next_episodes">Siguientes %1$d episodios</string>
-    <string name="downloads_menu_download_option_next_items">Siguientes %1$d artículos</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="other">Siguientes %1$d capitulos</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="other">Siguientes %1$d episodios</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="other">Siguientes %1$d artículos</item>
+    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Siguientes capítulos</string>
     <string name="downloads_menu_download_option_next_episodes_label">Siguientes episodios</string>
     <string name="downloads_menu_download_option_next_items_label">Siguientes artículos</string>

@@ -88,9 +88,18 @@
     <string name="downloads_menu_download_option_remaining_chapters">Remaining chapters</string>
     <string name="downloads_menu_download_option_remaining_episodes">Remaining episodes</string>
     <string name="downloads_menu_download_option_remaining_items">Remaining items</string>
-    <string name="downloads_menu_download_option_next_chapters">Next %1$d chapters</string>
-    <string name="downloads_menu_download_option_next_episodes">Next %1$d episodes</string>
-    <string name="downloads_menu_download_option_next_items">Next %1$d items</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="one">Next %d chapter</item>
+        <item quantity="other">Next %d chapters</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="one">Next %d episode</item>
+        <item quantity="other">Next %d episodes</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="one">Next %d item</item>
+        <item quantity="other">Next %d items</item>
+    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Next chapters</string>
     <string name="downloads_menu_download_option_next_episodes_label">Next episodes</string>
     <string name="downloads_menu_download_option_next_items_label">Next items</string>

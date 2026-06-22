@@ -83,9 +83,15 @@
     <string name="downloads_menu_download_option_remaining_chapters">Zbývající kapitoly</string>
     <string name="downloads_menu_download_option_remaining_episodes">Zbývající epizody</string>
     <string name="downloads_menu_download_option_remaining_items">Zbývající položky</string>
-    <string name="downloads_menu_download_option_next_chapters">Dalších %1$d kapitol</string>
-    <string name="downloads_menu_download_option_next_episodes">Dalších %1$d epizod</string>
-    <string name="downloads_menu_download_option_next_items">Dalších %1$d položek</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="other">Dalších %1$d kapitol</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="other">Dalších %1$d epizod</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="other">Dalších %1$d položek</item>
+    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Další kapitoly</string>
     <string name="downloads_menu_download_option_next_episodes_label">Další epizody</string>
     <string name="downloads_menu_download_option_next_items_label">Další položky</string>

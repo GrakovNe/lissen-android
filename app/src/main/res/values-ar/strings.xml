@@ -59,7 +59,9 @@
     <string name="settings_screen_connected_as_title">متصل باسم</string>
     <string name="settings_screen_server_connection">اتصال الخادم</string>
     <string name="timer_option_after_current_chapter">عند انتهاء الفصل الحالي</string>
-    <string name="downloads_menu_download_option_next_chapters">الفصول %1$d التالية</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="other">الفصول %1$d التالية</item>
+    </plurals>
     <string name="timer_option_after_current_episode">عند انتهاء الحلقة الحالية</string>
     <plurals name="timer_option_after_time">
         <item quantity="zero">٠ دقيقة</item>
@@ -81,8 +83,12 @@
     <string name="downloads_menu_download_option_entire_book">الكتاب بأكمله</string>
     <string name="downloads_menu_download_option_entire_podcast">البودكاست بأكمله</string>
     <string name="downloads_menu_download_option_entire_item">العنصر بأكمله</string>
-    <string name="downloads_menu_download_option_next_episodes">الحلقات %1$d التالية</string>
-    <string name="downloads_menu_download_option_next_items">العناصر %1$d التالية</string>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="other">الحلقات %1$d التالية</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="other">العناصر %1$d التالية</item>
+    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">الفصول التالية</string>
     <string name="downloads_menu_download_option_next_episodes_label">الحلقات التالية</string>
     <string name="downloads_menu_download_option_next_items_label">العناصر التالية</string>

@@ -47,9 +47,15 @@
     <string name="downloads_menu_download_option_current_chapter">Aktuelles Kapitel</string>
     <string name="downloads_menu_download_option_current_episode">Aktuelle Episode</string>
     <string name="downloads_menu_download_option_entire_book">Ganzes Buch</string>
-    <string name="downloads_menu_download_option_next_chapters">Nächste %1$d Kapitel</string>
-    <string name="downloads_menu_download_option_next_episodes">Nächste %1$d Episoden</string>
-    <string name="downloads_menu_download_option_next_items">Nächste %1$d Elemente</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="other">Nächste %1$d Kapitel</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="other">Nächste %1$d Episoden</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="other">Nächste %1$d Elemente</item>
+    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Nächste Kapitel</string>
     <string name="downloads_menu_download_option_next_episodes_label">Nächste Episoden</string>
     <string name="downloads_menu_download_option_next_items_label">Nächste Elemente</string>

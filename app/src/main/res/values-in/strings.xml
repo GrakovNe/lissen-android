@@ -77,9 +77,15 @@
     <string name="downloads_menu_download_option_remaining_chapters">Segmen tersisa</string>
     <string name="downloads_menu_download_option_remaining_episodes">Episode tersisa</string>
     <string name="downloads_menu_download_option_remaining_items">Item tersisa</string>
-    <string name="downloads_menu_download_option_next_chapters">%1$d segmen berikutnya</string>
-    <string name="downloads_menu_download_option_next_episodes">%1$d episode berikutnya</string>
-    <string name="downloads_menu_download_option_next_items">%1$d item berikutnya</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="other">%1$d segmen berikutnya</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="other">%1$d episode berikutnya</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="other">%1$d item berikutnya</item>
+    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Segmen berikutnya</string>
     <string name="downloads_menu_download_option_next_episodes_label">Episode berikutnya</string>
     <string name="downloads_menu_download_option_next_items_label">Item berikutnya</string>

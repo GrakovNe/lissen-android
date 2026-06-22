@@ -72,9 +72,15 @@
     <string name="downloads_menu_download_option_remaining_chapters">დარჩენილი თავები</string>
     <string name="downloads_menu_download_option_remaining_episodes">დარჩენილი ეპიზოდები</string>
     <string name="downloads_menu_download_option_remaining_items">დარჩენილი ელემენტები</string>
-    <string name="downloads_menu_download_option_next_chapters">შემდეგი %1$d თავი</string>
-    <string name="downloads_menu_download_option_next_episodes">შემდეგი %1$d ეპიზოდი</string>
-    <string name="downloads_menu_download_option_next_items">შემდეგი %1$d ელემენტი</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="other">შემდეგი %1$d თავი</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="other">შემდეგი %1$d ეპიზოდი</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="other">შემდეგი %1$d ელემენტი</item>
+    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">შემდეგი თავები</string>
     <string name="downloads_menu_download_option_next_episodes_label">შემდეგი ეპიზოდები</string>
     <string name="downloads_menu_download_option_next_items_label">შემდეგი ელემენტები</string>

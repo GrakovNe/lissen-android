@@ -66,9 +66,15 @@
     <string name="downloads_menu_download_option_current_episode">Jelenlegi epizód</string>
     <string name="downloads_menu_download_option_current_item">Jelenlegi elem</string>
     <string name="downloads_menu_download_option_entire_book">Teljes könyv</string>
-    <string name="downloads_menu_download_option_next_chapters">Következő %1$d fejezet</string>
-    <string name="downloads_menu_download_option_next_episodes">Következő %1$d rész</string>
-    <string name="downloads_menu_download_option_next_items">Következő %1$d elem</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="other">Következő %1$d fejezet</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="other">Következő %1$d rész</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="other">Következő %1$d elem</item>
+    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Következő fejezetek</string>
     <string name="downloads_menu_download_option_next_episodes_label">Következő részek</string>
     <string name="downloads_menu_download_option_next_items_label">Következő elemek</string>

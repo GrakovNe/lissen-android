@@ -77,9 +77,15 @@
     <string name="downloads_menu_download_option_remaining_chapters">Qalan fəsillər</string>
     <string name="downloads_menu_download_option_remaining_episodes">Qalan epizodlar</string>
     <string name="downloads_menu_download_option_remaining_items">Qalan elementlər</string>
-    <string name="downloads_menu_download_option_next_chapters">Növbəti %1$d fəsil</string>
-    <string name="downloads_menu_download_option_next_episodes">Növbəti %1$d epizod</string>
-    <string name="downloads_menu_download_option_next_items">Növbəti %1$d element</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="other">Növbəti %1$d fəsil</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="other">Növbəti %1$d epizod</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="other">Növbəti %1$d element</item>
+    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Növbəti fəsillər</string>
     <string name="downloads_menu_download_option_next_episodes_label">Növbəti epizodlar</string>
     <string name="downloads_menu_download_option_next_items_label">Növbəti elementlər</string>

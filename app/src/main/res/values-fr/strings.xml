@@ -70,9 +70,15 @@
     <string name="downloads_menu_download_option_entire_book">Livre entier</string>
     <string name="downloads_menu_download_option_entire_podcast">Podcast entier</string>
     <string name="downloads_menu_download_option_entire_item">Objet entier</string>
-    <string name="downloads_menu_download_option_next_chapters">Prochains %1$d chapitres</string>
-    <string name="downloads_menu_download_option_next_episodes">Prochains %1$d épisodes</string>
-    <string name="downloads_menu_download_option_next_items">Prochains %1$d objets</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="other">Prochains %1$d chapitres</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="other">Prochains %1$d épisodes</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="other">Prochains %1$d objets</item>
+    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Prochains chapitres</string>
     <string name="downloads_menu_download_option_next_episodes_label">Prochains épisodes</string>
     <string name="downloads_menu_download_option_next_items_label">Prochains objets</string>

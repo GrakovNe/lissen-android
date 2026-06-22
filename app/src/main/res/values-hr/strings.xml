@@ -73,9 +73,15 @@
     <string name="downloads_menu_download_option_remaining_chapters">Preostala poglavlja</string>
     <string name="downloads_menu_download_option_remaining_episodes">Preostale epizode</string>
     <string name="downloads_menu_download_option_remaining_items">Preostali elementi</string>
-    <string name="downloads_menu_download_option_next_chapters">Sljedećih %1$d poglavlja</string>
-    <string name="downloads_menu_download_option_next_episodes">Sljedećih %1$d epizoda</string>
-    <string name="downloads_menu_download_option_next_items">Sljedećih %1$d stavki</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="other">Sljedećih %1$d poglavlja</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="other">Sljedećih %1$d epizoda</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="other">Sljedećih %1$d stavki</item>
+    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Sljedeća poglavlja</string>
     <string name="downloads_menu_download_option_next_episodes_label">Sljedeće epizode</string>
     <string name="downloads_menu_download_option_next_items_label">Sljedeće stavke</string>

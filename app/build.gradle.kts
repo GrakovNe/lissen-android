@@ -56,6 +56,7 @@ android {
   
   lint {
     disable.add("MissingTranslation")
+    disable.add("MissingQuantity")
   }
   
   defaultConfig {

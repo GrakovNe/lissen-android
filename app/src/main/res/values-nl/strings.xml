@@ -59,7 +59,9 @@
     <string name="downloads_menu_download_option_current_episode">Huidige aflevering</string>
     <string name="downloads_menu_download_option_current_item">Huidig item</string>
     <string name="downloads_menu_download_option_entire_podcast">Hele podcast</string>
-    <string name="downloads_menu_download_option_next_chapters">Volgende %1$d hoofdstukken</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="other">Volgende %1$d hoofdstukken</item>
+    </plurals>
     <string name="downloads_menu_download_option_clear_chapters">Wis gedownloade hoofdstukken</string>
     <string name="downloads_menu_download_option_clear_items">Wis gedownloade items</string>
     <string name="mini_player_action_close">Sluit</string>
@@ -76,8 +78,12 @@
     <string name="downloads_menu_download_book">Download boek</string>
     <string name="downloads_menu_download_option_clear_episodes">Wis gedownloade afleveringen</string>
     <string name="downloads_menu_download_option_entire_item">Hele item</string>
-    <string name="downloads_menu_download_option_next_episodes">Volgende %1$d afleveringen</string>
-    <string name="downloads_menu_download_option_next_items">Volgende %1$d items</string>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="other">Volgende %1$d afleveringen</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="other">Volgende %1$d items</item>
+    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Volgende hoofdstukken</string>
     <string name="downloads_menu_download_option_next_episodes_label">Volgende afleveringen</string>
     <string name="downloads_menu_download_option_next_items_label">Volgende items</string>

@@ -69,9 +69,15 @@
     <string name="downloads_menu_download_option_entire_book">Tüm kitap</string>
     <string name="downloads_menu_download_option_entire_podcast">Tüm podcast</string>
     <string name="downloads_menu_download_option_entire_item">Tüm öğe</string>
-    <string name="downloads_menu_download_option_next_chapters">Sonraki %1$d bölüm</string>
-    <string name="downloads_menu_download_option_next_episodes">Sonraki %1$d bölüm</string>
-    <string name="downloads_menu_download_option_next_items">Sonraki %1$d öğe</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="other">Sonraki %1$d bölüm</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="other">Sonraki %1$d bölüm</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="other">Sonraki %1$d öğe</item>
+    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Sonraki bölümler</string>
     <string name="downloads_menu_download_option_next_episodes_label">Sonraki bölümler</string>
     <string name="downloads_menu_download_option_next_items_label">Sonraki öğeler</string>

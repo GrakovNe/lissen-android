@@ -69,9 +69,15 @@
     <string name="downloads_menu_download_option_entire_book">Libro intero</string>
     <string name="downloads_menu_download_option_entire_podcast">Podcast intero</string>
     <string name="downloads_menu_download_option_entire_item">Elemento intero</string>
-    <string name="downloads_menu_download_option_next_chapters">Prossimi %1$d capitoli</string>
-    <string name="downloads_menu_download_option_next_episodes">Prossimi %1$d episodi</string>
-    <string name="downloads_menu_download_option_next_items">Prossimi %1$d elementi</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="other">Prossimi %1$d capitoli</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="other">Prossimi %1$d episodi</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="other">Prossimi %1$d elementi</item>
+    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Prossimi capitoli</string>
     <string name="downloads_menu_download_option_next_episodes_label">Prossimi episodi</string>
     <string name="downloads_menu_download_option_next_items_label">Prossimi elementi</string>

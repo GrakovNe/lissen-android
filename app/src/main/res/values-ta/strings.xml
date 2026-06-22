@@ -70,9 +70,15 @@
     <string name="downloads_menu_download_option_entire_book">முழு நூல்</string>
     <string name="downloads_menu_download_option_entire_podcast">முழு போட்காச்ட்</string>
     <string name="downloads_menu_download_option_entire_item">முழு உருப்படியும்</string>
-    <string name="downloads_menu_download_option_next_chapters">அடுத்த %1$d அத்தியாயங்கள்</string>
-    <string name="downloads_menu_download_option_next_episodes">அடுத்த %1$d அத்தியாயங்கள்</string>
-    <string name="downloads_menu_download_option_next_items">அடுத்த %1$d உருப்படிகள்</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="other">அடுத்த %1$d அத்தியாயங்கள்</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="other">அடுத்த %1$d அத்தியாயங்கள்</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="other">அடுத்த %1$d உருப்படிகள்</item>
+    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">அடுத்த அத்தியாயங்கள்</string>
     <string name="downloads_menu_download_option_next_episodes_label">அடுத்த அத்தியாயங்கள்</string>
     <string name="downloads_menu_download_option_next_items_label">அடுத்த உருப்படிகள்</string>

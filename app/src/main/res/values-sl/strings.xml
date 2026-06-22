@@ -71,9 +71,15 @@
     <string name="downloads_menu_download_option_entire_book">Celotna knjiga</string>
     <string name="downloads_menu_download_option_entire_podcast">Celoten podcast</string>
     <string name="downloads_menu_download_option_entire_item">Celoten element</string>
-    <string name="downloads_menu_download_option_next_chapters">Naslednjih %1$d poglavij</string>
-    <string name="downloads_menu_download_option_next_episodes">Naslednjih %1$d epizod</string>
-    <string name="downloads_menu_download_option_next_items">Naslednjih %1$d elementov</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="other">Naslednjih %1$d poglavij</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="other">Naslednjih %1$d epizod</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="other">Naslednjih %1$d elementov</item>
+    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Naslednja poglavja</string>
     <string name="downloads_menu_download_option_next_episodes_label">Naslednje epizode</string>
     <string name="downloads_menu_download_option_next_items_label">Naslednji elementi</string>

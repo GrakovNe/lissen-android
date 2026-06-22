@@ -64,8 +64,12 @@
     <string name="downloads_menu_download_option_entire_podcast">팟캐스트 전체</string>
     <string name="downloads_menu_download_option_remaining_chapters">남아있는 챕터</string>
     <string name="downloads_menu_download_option_remaining_episodes">남아있는 에피소드</string>
-    <string name="downloads_menu_download_option_next_chapters">다음 %1$d 챕터</string>
-    <string name="downloads_menu_download_option_next_episodes">다음 %1$d 에피소드</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="other">다음 %1$d 챕터</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="other">다음 %1$d 에피소드</item>
+    </plurals>
     <string name="downloads_menu_download_option_clear_chapters">다운로드 챕터 지우기</string>
     <string name="downloads_menu_download_option_clear_episodes">다운로드 에피소드 지우기</string>
     <string name="mini_player_action_close">닫기</string>
@@ -83,7 +87,9 @@
     <string name="downloads_menu_download_option_current_item">현재 아이템</string>
     <string name="downloads_menu_download_option_entire_item">아이템 전체</string>
     <string name="downloads_menu_download_option_remaining_items">남아있는 아이템</string>
-    <string name="downloads_menu_download_option_next_items">다음 %1$d 아이템</string>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="other">다음 %1$d 아이템</item>
+    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">다음 챕터</string>
     <string name="downloads_menu_download_option_next_episodes_label">다음 에피소드</string>
     <string name="downloads_menu_download_option_next_items_label">다음 아이템</string>

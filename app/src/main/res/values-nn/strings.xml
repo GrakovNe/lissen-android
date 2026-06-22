@@ -63,9 +63,15 @@
     <string name="downloads_menu_download_option_remaining_chapters">Gjenværende kapitler</string>
     <string name="downloads_menu_download_option_remaining_episodes">Gjenværende episoder</string>
     <string name="downloads_menu_download_option_remaining_items">Gjenværende varer</string>
-    <string name="downloads_menu_download_option_next_chapters">De neste %1$d kapitlene</string>
-    <string name="downloads_menu_download_option_next_episodes">Neste %1$d episoder</string>
-    <string name="downloads_menu_download_option_next_items">Neste %1$d varer</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="other">De neste %1$d kapitlene</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="other">Neste %1$d episoder</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="other">Neste %1$d varer</item>
+    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Neste kapittel</string>
     <string name="downloads_menu_download_option_next_episodes_label">Neste episoder</string>
     <string name="downloads_menu_download_option_next_items_label">Neste varer</string>
