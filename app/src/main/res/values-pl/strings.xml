@@ -83,6 +83,9 @@
     <string name="downloads_menu_download_option_next_chapters">Następne %1$d rozdziałów</string>
     <string name="downloads_menu_download_option_next_episodes">Następne %1$d odcinków</string>
     <string name="downloads_menu_download_option_next_items">Następne %1$d pozycji</string>
+    <string name="downloads_menu_download_option_next_chapters_label">Następne rozdziały</string>
+    <string name="downloads_menu_download_option_next_episodes_label">Następne odcinki</string>
+    <string name="downloads_menu_download_option_next_items_label">Następne pozycje</string>
     <string name="downloads_menu_download_option_clear_chapters">Usuń pobrane rozdziały</string>
     <string name="downloads_menu_download_option_clear_episodes">Usuń pobrane odcinki</string>
     <string name="downloads_menu_download_option_clear_items">Usuń pobrane pozycje</string>
@@ -213,4 +216,5 @@
     <string name="clear_thumbnail_cache_confirm">Wyczyść</string>
     <string name="disconnect_from_server_confirmation_message">Zostaniesz rozłączony z serwerem na tym urządzeniu. Twoje dane nie ulegną zmianie</string>
     <string name="disconnect_from_server_confirm">Rozłącz</string>
+    <string name="local_network_permission_request_hint">Aplikacja wymaga dostępu do sieci lokalnej, aby połączyć się z pobliskimi serwerami</string>
 </resources>

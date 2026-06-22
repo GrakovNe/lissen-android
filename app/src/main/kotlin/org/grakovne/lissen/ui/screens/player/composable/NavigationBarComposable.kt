@@ -41,6 +41,7 @@ import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.ui.extensions.formatTime
 import org.grakovne.lissen.ui.icons.TimerPlay
 import org.grakovne.lissen.ui.navigation.AppNavigationService
@@ -64,6 +65,8 @@ fun NavigationBarComposable(
   val hasEpisodes = book.chapters.isNotEmpty()
 
   val isMetadataCached by contentCachingModelView.provideCacheState(book.id).collectAsState(initial = false)
+  val totalPosition by playerViewModel.totalPosition.collectAsState()
+  val remainingChapters = (book.chapters.size - calculateChapterIndex(book, totalPosition)).coerceAtLeast(1)
 
   var playbackSpeedExpanded by remember { mutableStateOf(false) }
   var timerExpanded by remember { mutableStateOf(false) }
@@ -239,6 +242,9 @@ fun NavigationBarComposable(
           hasCachedEpisodes = isMetadataCached,
           isForceCache = contentCachingModelView.localCacheUsing(),
           cachingInProgress = cacheProgress.status is CacheStatus.Caching,
+          chaptersCount = contentCachingModelView.getDownloadChaptersCount(),
+          maxChaptersCount = remainingChapters,
+          onChaptersCountChanged = { contentCachingModelView.saveDownloadChaptersCount(it) },
           onRequestedDownload = { option ->
             playerViewModel.book.value?.let {
               contentCachingModelView

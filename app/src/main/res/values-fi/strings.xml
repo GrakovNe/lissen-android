@@ -56,6 +56,9 @@
     <string name="downloads_menu_download_option_next_chapters">Seuraavat %1$d lukua</string>
     <string name="downloads_menu_download_option_next_episodes">Seuraavat %1$d jaksoa</string>
     <string name="downloads_menu_download_option_next_items">Seuraavat %1$d kohdetta</string>
+    <string name="downloads_menu_download_option_next_chapters_label">Seuraavat luvut</string>
+    <string name="downloads_menu_download_option_next_episodes_label">Seuraavat jaksot</string>
+    <string name="downloads_menu_download_option_next_items_label">Seuraavat kohteet</string>
     <string name="downloads_menu_download_option_clear_episodes">Tyhjennä ladatut jaksot</string>
     <string name="downloads_menu_download_option_clear_items">Tyhjennä ladatut kohteet</string>
     <string name="playing_item_details_author">Kirjailija</string>

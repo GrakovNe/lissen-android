@@ -83,6 +83,9 @@
     <string name="downloads_menu_download_option_entire_item">العنصر بأكمله</string>
     <string name="downloads_menu_download_option_next_episodes">الحلقات %1$d التالية</string>
     <string name="downloads_menu_download_option_next_items">العناصر %1$d التالية</string>
+    <string name="downloads_menu_download_option_next_chapters_label">الفصول التالية</string>
+    <string name="downloads_menu_download_option_next_episodes_label">الحلقات التالية</string>
+    <string name="downloads_menu_download_option_next_items_label">العناصر التالية</string>
     <string name="playing_item_details_publisher">الناشر</string>
     <string name="playing_item_details_narrator">الراوي</string>
     <string name="playing_item_details_duration">المدة</string>

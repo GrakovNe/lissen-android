@@ -11,11 +11,13 @@ import androidx.paging.filter
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -31,7 +33,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class LibraryViewModel
   @Inject
   constructor(
@@ -72,7 +74,7 @@ class LibraryViewModel
 
     private val searchPager: Flow<PagingData<Book>> =
       combine(
-        _searchToken,
+        _searchToken.debounce(SEARCH_DEBOUNCE_MILLIS),
         _searchRequested,
       ) { token, requested ->
         Pair(token, requested)
@@ -222,5 +224,6 @@ class LibraryViewModel
       private const val EMPTY_SEARCH = ""
       private const val PAGE_SIZE = 20
       private const val PAGE_SEARCH_SIZE = 50
+      private const val SEARCH_DEBOUNCE_MILLIS = 300L
     }
   }

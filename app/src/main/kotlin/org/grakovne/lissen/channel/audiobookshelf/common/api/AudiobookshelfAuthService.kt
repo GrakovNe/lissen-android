@@ -76,6 +76,7 @@ class AudiobookshelfAuthService
           ?.create(AudiobookshelfApiClient::class.java)
           ?: return OperationResult.Error(OperationError.InternalError)
       } catch (e: Exception) {
+        Timber.e("Unable to build API client for $host due to: ${e.message}")
         return OperationResult.Error(OperationError.InternalError)
       }
 
@@ -129,6 +130,7 @@ class AudiobookshelfAuthService
           val converted = authMethodResponseConverter.apply(authMethod)
           OperationResult.Success(converted)
         } catch (e: Exception) {
+          Timber.w("Unable to fetch auth methods, falling back to empty due to: ${e.message}")
           OperationResult.Success(empty)
         }
       }
@@ -207,6 +209,7 @@ class AudiobookshelfAuthService
                 onSuccess()
                 forwardAuthRequest(location)
               } catch (ex: Exception) {
+                Timber.e("Unable to process OAuth redirect due to: ${ex.message}")
                 onFailure(examineError(ex.message ?: ""))
               }
             }
@@ -278,7 +281,10 @@ class AudiobookshelfAuthService
                     .adapter(LoggedUserResponse::class.java)
                     .fromJson(raw)
                     ?.let { loginResponseConverter.apply(it) }
-                    ?: return
+                    ?: run {
+                      Timber.e("OAuth token exchange returned an empty or unparseable user payload for $host (status=${response.code})")
+                      return
+                    }
                 } catch (ex: Exception) {
                   Timber.e("Unable to get User data from response: $ex")
                   onFailure(ex.message ?: "")

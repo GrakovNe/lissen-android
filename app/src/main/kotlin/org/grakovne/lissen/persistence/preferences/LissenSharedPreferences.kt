@@ -31,6 +31,7 @@ import org.grakovne.lissen.domain.connection.LocalUrl
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.domain.makeDownloadOption
 import org.grakovne.lissen.domain.makeId
+import timber.log.Timber
 import java.security.KeyStore
 import java.util.UUID
 import javax.crypto.Cipher
@@ -57,6 +58,7 @@ class LissenSharedPreferences
       return try {
         host != null && username != null && hasToken
       } catch (ex: Exception) {
+        Timber.w("Unable to resolve credentials state due to: ${ex.message}")
         false
       }
     }
@@ -204,6 +206,7 @@ class LissenSharedPreferences
       try {
         sharedPreferences.getInt(KEY_VOLUME_BOOST, 0)
       } catch (e: ClassCastException) {
+        Timber.w("Stored volume boost has wrong type, resetting due to: ${e.message}")
         sharedPreferences.edit { remove(KEY_VOLUME_BOOST) }
         0
       }
@@ -275,6 +278,10 @@ class LissenSharedPreferences
     fun savePlaybackSpeed(factor: Float) = sharedPreferences.edit { putFloat(KEY_PREFERRED_PLAYBACK_SPEED, factor) }
 
     fun getPlaybackSpeed(): Float = sharedPreferences.getFloat(KEY_PREFERRED_PLAYBACK_SPEED, 1f)
+
+    fun saveDownloadChaptersCount(count: Int) = sharedPreferences.edit { putInt(KEY_DOWNLOAD_CHAPTERS_COUNT, count) }
+
+    fun getDownloadChaptersCount(): Int = sharedPreferences.getInt(KEY_DOWNLOAD_CHAPTERS_COUNT, DEFAULT_DOWNLOAD_CHAPTERS_COUNT)
 
     private fun <T> asFlow(
       key: String,
@@ -399,6 +406,7 @@ class LissenSharedPreferences
             ?.toMutableMap()
             ?: mutableMapOf()
         } catch (t: Throwable) {
+          Timber.w("Unable to read stored playing items, starting empty due to: ${t.message}")
           mutableMapOf()
         }
 
@@ -410,7 +418,8 @@ class LissenSharedPreferences
 
       try {
         sharedPreferences.edit { putString(KEY_PLAYING_ITEM, adapter.toJson(current)) }
-      } catch (_: Throwable) {
+      } catch (t: Throwable) {
+        Timber.w("Unable to persist playing item for $libraryId due to: ${t.message}")
       }
     }
 
@@ -426,6 +435,7 @@ class LissenSharedPreferences
             ?.let { adapter.fromJson(it) }
             ?: emptyMap()
         } catch (t: Throwable) {
+          Timber.w("Unable to read stored playing item, returning empty due to: ${t.message}")
           emptyMap()
         }
 
@@ -451,6 +461,7 @@ class LissenSharedPreferences
             val adapter = moshi.adapter(SeekTime::class.java)
             adapter.fromJson(json) ?: SeekTime.Default
           } catch (e: com.squareup.moshi.JsonDataException) {
+            Timber.w("Stored seek time is malformed, resetting due to: ${e.message}")
             sharedPreferences.edit(commit = true) { remove(KEY_PREFERRED_SEEK_TIME) }
             SeekTime.Default
           }
@@ -554,7 +565,8 @@ class LissenSharedPreferences
       val json = sharedPreferences.getString(KEY_DEFAULT_SLEEP_TIMER, null) ?: return null
       return try {
         moshi.adapter(TimerOptionDto::class.java).fromJson(json)?.toTimerOption()
-      } catch (_: Throwable) {
+      } catch (t: Throwable) {
+        Timber.w("Unable to read default sleep timer due to: ${t.message}")
         null
       }
     }
@@ -606,6 +618,8 @@ class LissenSharedPreferences
       private const val KEY_PREFERRED_LIBRARY_TYPE = "preferred_library_type"
 
       private const val KEY_PREFERRED_PLAYBACK_SPEED = "preferred_playback_speed"
+      private const val KEY_DOWNLOAD_CHAPTERS_COUNT = "download_chapters_count"
+      private const val DEFAULT_DOWNLOAD_CHAPTERS_COUNT = 5
       private const val KEY_PREFERRED_SEEK_TIME = "preferred_seek_time"
 
       private const val KEY_PREFERRED_COLOR_SCHEME = "preferred_color_scheme"
@@ -633,7 +647,9 @@ class LissenSharedPreferences
       private const val ANDROID_KEYSTORE = "AndroidKeyStore"
       private const val TRANSFORMATION = "AES/GCM/NoPadding"
 
-      private fun getSecretKey(): SecretKey {
+      private val secretKey: SecretKey by lazy { loadOrGenerateSecretKey() }
+
+      private fun loadOrGenerateSecretKey(): SecretKey {
         val keyStore = KeyStore.getInstance(ANDROID_KEYSTORE)
         keyStore.load(null)
 
@@ -657,7 +673,7 @@ class LissenSharedPreferences
 
       private fun encrypt(data: String): String {
         val cipher = Cipher.getInstance(TRANSFORMATION)
-        cipher.init(Cipher.ENCRYPT_MODE, getSecretKey())
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey)
 
         val cipherText = cipher.doFinal(data.toByteArray())
         val ivAndCipherText = cipher.iv + cipherText
@@ -672,11 +688,13 @@ class LissenSharedPreferences
 
         val cipher = Cipher.getInstance(TRANSFORMATION)
         val spec = GCMParameterSpec(128, iv)
-        cipher.init(Cipher.DECRYPT_MODE, getSecretKey(), spec)
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, spec)
 
         return try {
           String(cipher.doFinal(cipherText))
         } catch (ex: Exception) {
+          // Do not log the ciphertext itself, only the failure reason.
+          Timber.w("Unable to decrypt stored value due to: ${ex.message}")
           null
         }
       }

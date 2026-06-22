@@ -17,8 +17,8 @@ import java.util.concurrent.Executors
 
 class FileLoggingTree(
   private val logFile: File,
-  private val maxSizeBytes: Int = 1024 * 1024,
-  private val trimThresholdBytes: Int = 1280 * 1024,
+  private val maxSizeBytes: Int = 10240 * 1024,
+  private val trimThresholdBytes: Int = 12800 * 1024,
 ) : Timber.DebugTree(),
   Closeable {
   private val executor =

@@ -5,9 +5,11 @@ import android.content.Intent
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -38,7 +40,13 @@ class ContentAutoCachingService
     private val networkService: NetworkService,
   ) : RunningComponent {
     private var delayedJob: Job? = null
-    private val scope = CoroutineScope(Dispatchers.IO)
+    private val scope =
+      CoroutineScope(
+        SupervisorJob() + Dispatchers.IO +
+          CoroutineExceptionHandler { _, throwable ->
+            Timber.e(throwable, "Auto-caching coroutine failed, ignoring")
+          },
+      )
 
     override fun onCreate() {
       scope.launch {

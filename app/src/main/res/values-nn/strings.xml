@@ -66,6 +66,9 @@
     <string name="downloads_menu_download_option_next_chapters">De neste %1$d kapitlene</string>
     <string name="downloads_menu_download_option_next_episodes">Neste %1$d episoder</string>
     <string name="downloads_menu_download_option_next_items">Neste %1$d varer</string>
+    <string name="downloads_menu_download_option_next_chapters_label">Neste kapittel</string>
+    <string name="downloads_menu_download_option_next_episodes_label">Neste episoder</string>
+    <string name="downloads_menu_download_option_next_items_label">Neste varer</string>
     <string name="downloads_menu_download_option_clear_chapters">Slett nedlastede kapitler</string>
     <string name="downloads_menu_download_option_clear_episodes">Slett nedlastede episoder</string>
     <string name="downloads_menu_download_option_clear_items">Slett nedlastede elementer</string>
@@ -209,4 +212,5 @@
     <string name="settings_screen_user_agent_title">Endre brukeragent</string>
     <string name="settings_screen_user_agent_hint">Tilpass applikasjonens User-Agent-overskrift</string>
     <string name="settings_screen_user_agent_restore_default">Gjenopprett standardinnstillinger</string>
+    <string name="local_network_permission_request_hint">Appen trenger tilgang til det lokale nettverket for å koble seg til servere i nærheten</string>
 </resources>

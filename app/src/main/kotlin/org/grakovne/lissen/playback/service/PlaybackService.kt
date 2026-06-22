@@ -1,8 +1,8 @@
 package org.grakovne.lissen.playback.service
 
 import android.content.Intent
+import android.os.Bundle
 import androidx.annotation.OptIn
-import androidx.core.os.bundleOf
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
@@ -325,7 +325,7 @@ class PlaybackService : MediaLibraryService() {
             .setRequestMetadata(
               MediaItem.RequestMetadata
                 .Builder()
-                .setExtras(bundleOf(FILE_SEGMENTS to resolvedFiles))
+                .setExtras(Bundle().apply { putParcelableArrayList(FILE_SEGMENTS, resolvedFiles) })
                 .build(),
             ).setMediaMetadata(
               MediaMetadata
@@ -337,7 +337,7 @@ class PlaybackService : MediaLibraryService() {
                 .setIsPlayable(true)
                 .setArtworkUri(ExternalCoverProvider.coverUri(book.id))
                 .setMediaType(MediaMetadata.MEDIA_TYPE_AUDIO_BOOK_CHAPTER)
-                .setExtras(bundleOf(CHAPTER_START_MS to (chapter.start * 1000).toLong()))
+                .setExtras(Bundle().apply { putLong(CHAPTER_START_MS, (chapter.start * 1000).toLong()) })
                 .build(),
             ).setTag(book)
             .build()

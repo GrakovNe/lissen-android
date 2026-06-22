@@ -7,6 +7,7 @@ import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.content.LissenMediaProvider
@@ -103,7 +104,10 @@ class ContentCachingService : LifecycleService() {
 
         executor
           .run(mediaProvider.providePreferredChannel())
-          .onCompletion {
+          .catch { error ->
+            Timber.e(error, "Caching failed for ${item.id}, emitting error state")
+            emit(CacheState(CacheStatus.Error))
+          }.onCompletion {
             if (executionStatuses.isEmpty()) {
               finish()
             }

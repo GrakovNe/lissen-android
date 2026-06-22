@@ -119,7 +119,7 @@ object MediaModule {
     return minOf(MAX_CACHE_BYTES, dynamicCap)
   }
 
-  private const val MAX_CACHE_BYTES = 512L * 1024 * 1024
+  private const val MAX_CACHE_BYTES = 128L * 1024 * 1024
   private const val KEEP_FREE_BYTES = 20L * 1024 * 1024
   private const val MIN_CACHE_BYTES = 10L * 1024 * 1024
 }

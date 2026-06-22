@@ -73,6 +73,9 @@
     <string name="downloads_menu_download_option_next_chapters">அடுத்த %1$d அத்தியாயங்கள்</string>
     <string name="downloads_menu_download_option_next_episodes">அடுத்த %1$d அத்தியாயங்கள்</string>
     <string name="downloads_menu_download_option_next_items">அடுத்த %1$d உருப்படிகள்</string>
+    <string name="downloads_menu_download_option_next_chapters_label">அடுத்த அத்தியாயங்கள்</string>
+    <string name="downloads_menu_download_option_next_episodes_label">அடுத்த அத்தியாயங்கள்</string>
+    <string name="downloads_menu_download_option_next_items_label">அடுத்த உருப்படிகள்</string>
     <string name="downloads_menu_download_option_clear_episodes">பதிவிறக்கம் செய்யப்பட்ட பாகங்களை அழி</string>
     <string name="downloads_menu_download_option_clear_items">பதிவிறக்கம் செய்யப்பட்ட உருப்படிகளை அழிக்கவும்</string>
     <string name="mini_player_action_close">மூடு</string>

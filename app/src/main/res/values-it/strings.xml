@@ -72,6 +72,9 @@
     <string name="downloads_menu_download_option_next_chapters">Prossimi %1$d capitoli</string>
     <string name="downloads_menu_download_option_next_episodes">Prossimi %1$d episodi</string>
     <string name="downloads_menu_download_option_next_items">Prossimi %1$d elementi</string>
+    <string name="downloads_menu_download_option_next_chapters_label">Prossimi capitoli</string>
+    <string name="downloads_menu_download_option_next_episodes_label">Prossimi episodi</string>
+    <string name="downloads_menu_download_option_next_items_label">Prossimi elementi</string>
     <string name="downloads_menu_download_option_clear_chapters">Cancella i capitoli scaricati</string>
     <string name="downloads_menu_download_option_clear_episodes">Cancella gli episodi scaricati</string>
     <string name="downloads_menu_download_option_clear_items">Cancella gli elementi scaricati</string>

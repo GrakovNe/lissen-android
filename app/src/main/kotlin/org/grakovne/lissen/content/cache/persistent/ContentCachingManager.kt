@@ -23,6 +23,7 @@ import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import timber.log.Timber
 import java.io.File
+import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.coroutineContext
@@ -164,7 +165,13 @@ class ContentCachingManager
           headers.forEach { requestBuilder.addHeader(it.name, it.value) }
 
           val request = requestBuilder.build()
-          val response = client.newCall(request).execute()
+          val response =
+            try {
+              client.newCall(request).execute()
+            } catch (ex: IOException) {
+              Timber.e("Unable to cache media content for $bookId due to: ${ex.message}")
+              return@withContext CacheState(CacheStatus.Error)
+            }
 
           if (!response.isSuccessful) {
             Timber.e("Unable to cache media content: $response")
@@ -173,10 +180,11 @@ class ContentCachingManager
 
           val body = response.body
           val dest = properties.provideMediaCachePatch(bookId, file.id)
+          val tempDest = File(dest.parent, "${dest.name}.tmp")
           dest.parentFile?.mkdirs()
 
           try {
-            dest.outputStream().use { output ->
+            tempDest.outputStream().use { output ->
               body.byteStream().use { input ->
                 var lastReportedSize = 0.0
                 input.copyTo(output) {
@@ -189,8 +197,14 @@ class ContentCachingManager
                 }
               }
             }
+            if (!tempDest.renameTo(dest)) {
+              return@withContext CacheState(CacheStatus.Error)
+            }
           } catch (ex: Exception) {
+            Timber.e("Unable to cache media file ${file.id} for $bookId due to: ${ex.message}")
             return@withContext CacheState(CacheStatus.Error)
+          } finally {
+            tempDest.delete()
           }
         }
 
@@ -213,6 +227,7 @@ class ContentCachingManager
                   .withBlur(context)
                   .writeToFile(file)
               } catch (ex: Exception) {
+                Timber.e("Unable to cache cover for ${book.id} due to: ${ex.message}")
                 return@fold CacheState(CacheStatus.Error)
               }
             },

@@ -78,6 +78,9 @@
     <string name="downloads_menu_download_option_entire_item">Hele item</string>
     <string name="downloads_menu_download_option_next_episodes">Volgende %1$d afleveringen</string>
     <string name="downloads_menu_download_option_next_items">Volgende %1$d items</string>
+    <string name="downloads_menu_download_option_next_chapters_label">Volgende hoofdstukken</string>
+    <string name="downloads_menu_download_option_next_episodes_label">Volgende afleveringen</string>
+    <string name="downloads_menu_download_option_next_items_label">Volgende items</string>
     <string name="playing_item_details_year">Jaar</string>
     <string name="playing_item_details_series">Serie</string>
     <string name="color_scheme_black">Zwart</string>
@@ -209,4 +212,5 @@
     <string name="settings_screen_user_agent_title">Gebruikersagent wijzigen</string>
     <string name="settings_screen_user_agent_hint">De User-Agent-header van de applicatie aanpassen</string>
     <string name="settings_screen_user_agent_restore_default">Standaardinstellingen herstellen</string>
+    <string name="local_network_permission_request_hint">De app heeft toegang tot het lokale netwerk nodig om verbinding te maken met servers in de buurt</string>
 </resources>

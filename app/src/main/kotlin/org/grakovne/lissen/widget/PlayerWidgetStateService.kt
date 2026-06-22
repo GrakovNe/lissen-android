@@ -8,8 +8,10 @@ import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.updateAppWidgetState
 import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.RunningComponent
@@ -18,6 +20,7 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.playback.MediaRepository
 import org.grakovne.lissen.widget.cover.PlayerCoverWidget
 import org.grakovne.lissen.widget.state.PlayerStateWidget
+import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -31,7 +34,13 @@ class PlayerWidgetStateService
     private val mediaRepository: MediaRepository,
     private val mediaProvider: LissenMediaProvider,
   ) : RunningComponent {
-    private val scope = CoroutineScope(Dispatchers.IO)
+    private val scope =
+      CoroutineScope(
+        SupervisorJob() + Dispatchers.IO +
+          CoroutineExceptionHandler { _, throwable ->
+            Timber.e(throwable, "Widget state coroutine failed, ignoring")
+          },
+      )
 
     override fun onCreate() {
       scope.launch {
