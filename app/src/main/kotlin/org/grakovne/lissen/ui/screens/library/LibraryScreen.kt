@@ -127,9 +127,14 @@ fun LibraryScreen(
   val libraryListState = rememberLazyListState()
 
   BackHandler {
-    when (searchRequested) {
-      true -> libraryViewModel.dismissSearch()
-      false -> activity?.moveTaskToBack(true)
+    when {
+      // A linked-search entry is a dedicated search view pushed on top of the player;
+      // leaving the search pops back to the player rather than revealing a library here.
+      searchRequested && linkedSearchToken != null -> navController.goBack()
+
+      searchRequested -> libraryViewModel.dismissSearch()
+
+      else -> activity?.moveTaskToBack(true)
     }
   }
 
@@ -313,7 +318,12 @@ fun LibraryScreen(
               true -> {
                 LibrarySearchActionComposable(
                   currentSearchToken = searchToken,
-                  onSearchDismissed = { libraryViewModel.dismissSearch() },
+                  onSearchDismissed = {
+                    when (linkedSearchToken) {
+                      null -> libraryViewModel.dismissSearch()
+                      else -> navController.goBack()
+                    }
+                  },
                   onSearchRequested = { libraryViewModel.updateSearch(it) },
                 )
               }

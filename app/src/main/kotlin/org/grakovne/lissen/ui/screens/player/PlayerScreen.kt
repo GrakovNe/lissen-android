@@ -199,7 +199,10 @@ fun PlayerScreen(
 
               IconButton(
                 onClick = { itemDetailsSelected = true },
-                modifier = Modifier.padding(end = 4.dp),
+                modifier =
+                  Modifier
+                    .padding(end = 4.dp)
+                    .testTag("playerInfoButton"),
               ) {
                 Icon(
                   imageVector = Icons.Outlined.Info,
@@ -344,24 +347,29 @@ fun InfoRow(
   label: String,
   textValue: String,
   onClick: (() -> Unit)? = null,
+  testTag: String? = null,
 ) {
   Spacer(modifier = Modifier.height(8.dp))
 
   Row(
     verticalAlignment = Alignment.CenterVertically,
     modifier =
-      when (onClick) {
-        null -> {
-          Modifier
-        }
+      Modifier
+        .let { if (testTag != null) it.testTag(testTag) else it }
+        .let { base ->
+          when (onClick) {
+            null -> {
+              base
+            }
 
-        else -> {
-          Modifier.clickable(
-            interactionSource = remember { MutableInteractionSource() },
-            indication = null,
-          ) { onClick() }
-        }
-      },
+            else -> {
+              base.clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+              ) { onClick() }
+            }
+          }
+        },
   ) {
     Icon(
       imageVector = icon,

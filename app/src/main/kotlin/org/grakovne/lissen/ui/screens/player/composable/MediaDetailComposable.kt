@@ -31,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -119,6 +120,7 @@ fun MediaDetailComposable(
             overflow = TextOverflow.Ellipsis,
             modifier =
               Modifier
+                .testTag("linkedSearchSeries")
                 .padding(vertical = 4.dp)
                 .clickable(
                   interactionSource = remember { MutableInteractionSource() },
@@ -142,6 +144,7 @@ fun MediaDetailComposable(
                 onDismissRequest()
                 navController.showLinkedSearch(it)
               },
+              testTag = "linkedSearchAuthor",
             )
           }
 

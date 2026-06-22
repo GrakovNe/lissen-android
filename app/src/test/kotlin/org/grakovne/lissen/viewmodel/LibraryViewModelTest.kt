@@ -64,6 +64,11 @@ class LibraryViewModelTest {
     }
 
     @Test
+    fun `searchToken is initially empty`() {
+      assertEquals("", viewModel.searchToken.value)
+    }
+
+    @Test
     fun `applyLinkedSearch enables search and sets token`() {
       viewModel.applyLinkedSearch("The Stormlight Archive")
 
