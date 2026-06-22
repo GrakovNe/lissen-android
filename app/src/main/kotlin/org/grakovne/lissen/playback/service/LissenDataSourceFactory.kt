@@ -16,6 +16,7 @@ import org.grakovne.lissen.channel.common.createOkHttpClient
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import timber.log.Timber
+import java.io.IOException
 
 @OptIn(UnstableApi::class)
 class LissenDataSourceFactory(
@@ -56,47 +57,111 @@ class LissenDataSourceFactory(
       )
   }
 
-  override fun createDataSource(): DataSource {
-    val cacheDataSource = defaultFactory.createDataSource()
-    val fileDataSource = FileDataSource()
+  override fun createDataSource(): DataSource =
+    LocalFallbackDataSource(
+      upstream = defaultFactory.createDataSource(),
+      local = FileDataSource(),
+      mediaProvider = mediaProvider,
+    )
+}
 
-    return object : DataSource by cacheDataSource {
-      private var activeDataSource: DataSource = cacheDataSource
 
-      override fun open(dataSpec: DataSpec): Long {
-        val (itemId, fileId) = unapply(dataSpec.uri) ?: return 0
+@OptIn(UnstableApi::class)
+internal class LocalFallbackDataSource(
+  private val upstream: DataSource,
+  private val local: DataSource,
+  private val mediaProvider: LissenMediaProvider,
+) : DataSource by upstream {
+  private var activeDataSource: DataSource = upstream
 
-        val resolvedUri =
-          mediaProvider
-            .provideFileUri(itemId, fileId)
-            .fold(
-              onSuccess = { it },
-              onFailure = { dataSpec.uri },
-            )
+  private var resolvedItemId: String? = null
+  private var resolvedFileId: String? = null
+  private var resolvedSpec: DataSpec? = null
+  private var bytesRead: Long = 0
+  private var usingLocal: Boolean = false
 
-        Timber.d("Resolved Uri: $resolvedUri for itemId = $itemId and fileId = $fileId")
+  override fun open(dataSpec: DataSpec): Long {
+    val (itemId, fileId) = unapply(dataSpec.uri) ?: return 0
 
-        val resolvedSpec =
-          dataSpec
-            .buildUpon()
-            .setUri(resolvedUri)
-            .build()
+    val resolvedUri =
+      mediaProvider
+        .provideFileUri(itemId, fileId)
+        .fold(
+          onSuccess = { it },
+          onFailure = { dataSpec.uri },
+        )
 
-        activeDataSource =
-          if (resolvedUri.scheme == "file") fileDataSource else cacheDataSource
+    Timber.d("Resolved Uri: $resolvedUri for itemId = $itemId and fileId = $fileId")
 
-        return activeDataSource.open(resolvedSpec)
+    val spec =
+      dataSpec
+        .buildUpon()
+        .setUri(resolvedUri)
+        .build()
+
+    usingLocal = resolvedUri.scheme == "file"
+    activeDataSource = if (usingLocal) local else upstream
+
+    resolvedItemId = itemId
+    resolvedFileId = fileId
+    resolvedSpec = spec
+    bytesRead = 0
+
+    return activeDataSource.open(spec)
+  }
+
+  override fun read(
+    buffer: ByteArray,
+    offset: Int,
+    length: Int,
+  ): Int =
+    try {
+      activeDataSource.read(buffer, offset, length).also { if (it > 0) bytesRead += it }
+    } catch (networkError: IOException) {
+      if (switchToLocalIfAvailable()) {
+        activeDataSource.read(buffer, offset, length).also { if (it > 0) bytesRead += it }
+      } else {
+        throw networkError
       }
+    }
+  
+  private fun switchToLocalIfAvailable(): Boolean {
+    if (usingLocal) return false
 
-      override fun read(
-        buffer: ByteArray,
-        offset: Int,
-        length: Int,
-      ): Int = activeDataSource.read(buffer, offset, length)
+    val itemId = resolvedItemId ?: return false
+    val fileId = resolvedFileId ?: return false
+    val spec = resolvedSpec ?: return false
 
-      override fun getUri() = activeDataSource.uri
+    val localUri =
+      mediaProvider
+        .provideFileUri(itemId, fileId)
+        .fold(onSuccess = { it }, onFailure = { null })
+        ?.takeIf { it.scheme == "file" }
+        ?: return false
 
-      override fun close() = activeDataSource.close()
+    return try {
+      runCatching { activeDataSource.close() }
+
+      val resumeSpec =
+        spec
+          .subrange(bytesRead)
+          .buildUpon()
+          .setUri(localUri)
+          .build()
+
+      local.open(resumeSpec)
+      activeDataSource = local
+      usingLocal = true
+
+      Timber.d("Seamlessly switched to local file $localUri at offset ${spec.position + bytesRead}")
+      true
+    } catch (localError: IOException) {
+      Timber.w(localError, "Failed to fall back to local file for itemId = $itemId, fileId = $fileId")
+      false
     }
   }
+
+  override fun getUri() = activeDataSource.uri
+
+  override fun close() = activeDataSource.close()
 }
