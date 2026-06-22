@@ -212,4 +212,5 @@
     <string name="settings_screen_user_agent_title">Skift brugeragent</string>
     <string name="settings_screen_user_agent_hint">Tilpas programmets User-Agent-header</string>
     <string name="settings_screen_user_agent_restore_default">Gendan standardindstillinger</string>
+    <string name="local_network_permission_request_hint">Appen skal have adgang til det lokale netværk for at kunne oprette forbindelse til servere i nærheden</string>
 </resources>
