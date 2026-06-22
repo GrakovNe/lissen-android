@@ -47,7 +47,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -387,10 +386,8 @@ fun InfoRow(
     )
     Text(
       text = textValue,
-      style =
-        typography.bodyMedium.copy(
-          textDecoration = if (onClick != null) TextDecoration.Underline else TextDecoration.None,
-        ),
+      style = typography.bodyMedium,
+      color = if (onClick != null) colorScheme.primary else Color.Unspecified,
       maxLines = 1,
       overflow = TextOverflow.Ellipsis,
     )

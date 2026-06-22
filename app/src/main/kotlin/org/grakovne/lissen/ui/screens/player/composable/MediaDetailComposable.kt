@@ -35,7 +35,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -114,8 +113,7 @@ fun MediaDetailComposable(
           Text(
             text = seriesLabel,
             style = typography.titleSmall,
-            color = colorScheme.onBackground.copy(alpha = 0.6f),
-            textDecoration = TextDecoration.Underline,
+            color = colorScheme.primary,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
             modifier =
