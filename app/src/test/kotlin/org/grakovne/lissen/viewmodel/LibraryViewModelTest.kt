@@ -62,6 +62,23 @@ class LibraryViewModelTest {
     fun `searchRequested is initially false`() {
       assertFalse(viewModel.searchRequested.value == true)
     }
+
+    @Test
+    fun `applyLinkedSearch enables search and sets token`() {
+      viewModel.applyLinkedSearch("The Stormlight Archive")
+
+      assertTrue(viewModel.searchRequested.value == true)
+      assertEquals("The Stormlight Archive", viewModel.searchToken.value)
+    }
+
+    @Test
+    fun `dismissSearch clears token applied by linked search`() {
+      viewModel.applyLinkedSearch("Mistborn")
+      viewModel.dismissSearch()
+
+      assertFalse(viewModel.searchRequested.value == true)
+      assertEquals("", viewModel.searchToken.value)
+    }
   }
 
   @Nested

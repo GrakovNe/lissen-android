@@ -32,11 +32,12 @@ import org.grakovne.lissen.R
 
 @Composable
 fun LibrarySearchActionComposable(
+  currentSearchToken: String,
   onSearchDismissed: () -> Unit,
   onSearchRequested: (String) -> Unit,
 ) {
   val focusRequester = remember { FocusRequester() }
-  val searchText = remember { mutableStateOf("") }
+  val searchText = remember { mutableStateOf(currentSearchToken) }
 
   fun updateSearchText(text: String) {
     searchText.value = text

@@ -96,6 +96,7 @@ fun LibraryScreen(
   cachingModelView: CachingModelView = hiltViewModel(),
   imageLoader: ImageLoader,
   networkService: NetworkService,
+  linkedSearchToken: String? = null,
 ) {
   val view: View = LocalView.current
   val coroutineScope = rememberCoroutineScope()
@@ -111,6 +112,7 @@ fun LibraryScreen(
   var pullRefreshing by remember { mutableStateOf(false) }
   val recentBookRefreshing by libraryViewModel.recentBookUpdating.collectAsState()
   val searchRequested by libraryViewModel.searchRequested.collectAsState()
+  val searchToken by libraryViewModel.searchToken.collectAsState()
   val preparingError by playerViewModel.preparingError.collectAsState()
 
   val preferredLibrary by settingsViewModel.preferredLibrary.collectAsState()
@@ -171,7 +173,11 @@ fun LibraryScreen(
     onGranted = { refreshContent(showPullRefreshing = false) },
   )
 
-  val isPlaceholderRequired by remember {
+  // Keyed on `library`: getPager() returns a different LazyPagingItems instance whenever the
+  // search mode toggles. Without the key the derivedState would keep observing the first
+  // instance's loadState, which freezes at Loading if it was disposed mid-load (e.g. linked
+  // search activates search before the default pager finished) — causing an eternal placeholder.
+  val isPlaceholderRequired by remember(library) {
     derivedStateOf {
       if (searchRequested) {
         return@derivedStateOf false
@@ -184,6 +190,12 @@ fun LibraryScreen(
   LaunchedEffect(preparingError) {
     if (preparingError) {
       playerViewModel.clearPlayingBook()
+    }
+  }
+
+  LaunchedEffect(Unit) {
+    if (linkedSearchToken != null) {
+      libraryViewModel.applyLinkedSearch(linkedSearchToken)
     }
   }
 
@@ -300,6 +312,7 @@ fun LibraryScreen(
             when (isSearchRequested) {
               true -> {
                 LibrarySearchActionComposable(
+                  currentSearchToken = searchToken,
                   onSearchDismissed = { libraryViewModel.dismissSearch() },
                   onSearchRequested = { libraryViewModel.updateSearch(it) },
                 )

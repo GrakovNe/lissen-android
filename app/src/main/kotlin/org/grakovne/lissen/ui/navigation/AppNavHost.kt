@@ -37,6 +37,8 @@ import org.grakovne.lissen.ui.screens.settings.advanced.PlaybackPreferencesScree
 import org.grakovne.lissen.ui.screens.settings.advanced.SeekSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.cache.CacheSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.cache.CachedItemsSettingsScreen
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 @Composable
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -137,16 +139,30 @@ fun AppNavHost(
         )
       }
       composable(
-        route = "library_screen",
+        route = "library_screen?linkedSearchToken={linkedSearchToken}",
+        arguments =
+          listOf(
+            navArgument("linkedSearchToken") {
+              type = NavType.StringType
+              nullable = true
+            },
+          ),
         enterTransition = { enterTransition },
         exitTransition = { exitTransition },
         popEnterTransition = { popEnterTransition },
         popExitTransition = { popExitTransition },
-      ) {
+      ) { backStackEntry ->
+        val linkedSearchToken =
+          backStackEntry
+            .arguments
+            ?.getString("linkedSearchToken")
+            ?.let { URLDecoder.decode(it, StandardCharsets.UTF_8.toString()) }
+
         LibraryScreen(
           navController = navigationService,
           imageLoader = imageLoader,
           networkService = networkService,
+          linkedSearchToken = linkedSearchToken,
         )
       }
 
