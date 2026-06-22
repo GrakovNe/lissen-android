@@ -129,7 +129,7 @@ fun DownloadsComposable(
                 Modifier
                   .fillMaxWidth()
                   .clickable(enabled = isForceCache.not()) {
-                    onRequestedDownload(NumberItemDownloadOption(count))
+                    onRequestedDownload(NumberItemDownloadOption(count.coerceAtMost(maxCount)))
                     onDismissRequest()
                   },
             )
