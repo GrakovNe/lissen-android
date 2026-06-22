@@ -50,6 +50,9 @@
     <string name="downloads_menu_download_option_next_chapters">Nächste %1$d Kapitel</string>
     <string name="downloads_menu_download_option_next_episodes">Nächste %1$d Episoden</string>
     <string name="downloads_menu_download_option_next_items">Nächste %1$d Elemente</string>
+    <string name="downloads_menu_download_option_next_chapters_label">Nächste Kapitel</string>
+    <string name="downloads_menu_download_option_next_episodes_label">Nächste Episoden</string>
+    <string name="downloads_menu_download_option_next_items_label">Nächste Elemente</string>
     <string name="downloads_menu_download_option_clear_episodes">Heruntergeladene Episoden löschen</string>
     <string name="downloads_menu_download_option_clear_items">Heruntergeladene Elemente löschen</string>
     <string name="mini_player_action_close">Schließen</string>

@@ -77,6 +77,9 @@
     <string name="downloads_menu_download_option_next_chapters">%1$d הפרקים הבאים</string>
     <string name="downloads_menu_download_option_next_episodes">%1$d הפרקים הבאים</string>
     <string name="downloads_menu_download_option_next_items">%1$d הפריטים הבאים</string>
+    <string name="downloads_menu_download_option_next_chapters_label">הפרקים הבאים</string>
+    <string name="downloads_menu_download_option_next_episodes_label">הפרקים הבאים</string>
+    <string name="downloads_menu_download_option_next_items_label">הפריטים הבאים</string>
     <string name="downloads_menu_download_option_clear_chapters">נקה פרקים שהורדת</string>
     <string name="downloads_menu_download_option_clear_episodes">נקה פרקים שהורדת</string>
     <string name="connection_settings_title">חיבור</string>

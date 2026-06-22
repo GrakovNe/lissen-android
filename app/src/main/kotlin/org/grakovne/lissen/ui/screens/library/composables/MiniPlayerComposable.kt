@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
 import coil3.request.ImageRequest
 import org.grakovne.lissen.R
+import org.grakovne.lissen.common.snapProgress
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
@@ -222,7 +223,7 @@ private fun calculateProgress(
   val totalDuration = item.chapters.sumOf { it.duration }
 
   return when (totalDuration > 0 && libraryType == LibraryType.LIBRARY) {
-    true -> (totalPosition / totalDuration).toFloat().coerceIn(0f, 1f)
+    true -> (totalPosition / totalDuration).toFloat().coerceIn(0f, 1f).snapProgress()
     false -> 0f
   }
 }

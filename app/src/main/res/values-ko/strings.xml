@@ -84,6 +84,9 @@
     <string name="downloads_menu_download_option_entire_item">아이템 전체</string>
     <string name="downloads_menu_download_option_remaining_items">남아있는 아이템</string>
     <string name="downloads_menu_download_option_next_items">다음 %1$d 아이템</string>
+    <string name="downloads_menu_download_option_next_chapters_label">다음 챕터</string>
+    <string name="downloads_menu_download_option_next_episodes_label">다음 에피소드</string>
+    <string name="downloads_menu_download_option_next_items_label">다음 아이템</string>
     <string name="downloads_menu_download_option_clear_items">다운로드 아이템 지우기</string>
     <string name="playing_item_details_publisher">출판사</string>
     <string name="playing_item_details_narrator">낭독</string>
