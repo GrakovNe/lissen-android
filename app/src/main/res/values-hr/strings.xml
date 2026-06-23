@@ -12,7 +12,7 @@
     <string name="player_screen_playback_speed_navigation">Brzina</string>
     <string name="player_screen_chapter_list_navigation_library">Poglavlja</string>
     <string name="player_screen_library_playing_title">Trenutna poglavlja</string>
-    <string name="player_screen_podcast_playing_title">Sljedeće epizode</string>
+    <string name="player_screen_podcast_playing_title">Reproduciranje epizoda</string>
     <string name="player_screen_items_playing_title">Sljedeći elementi</string>
     <string name="player_screen_now_playing_title_chapter_of">Poglavlje %1$d od %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">Epizoda %1$d od %2$s</string>
@@ -74,13 +74,19 @@
     <string name="downloads_menu_download_option_remaining_episodes">Preostale epizode</string>
     <string name="downloads_menu_download_option_remaining_items">Preostali elementi</string>
     <plurals name="downloads_menu_download_option_next_chapters">
-        <item quantity="other">Sljedećih %1$d poglavlja</item>
+        <item quantity="one">Sljedeće %d poglavlje</item>
+        <item quantity="few">Sljedećeih %d poglavlja</item>
+        <item quantity="other">Sljedećih %d poglavlja</item>
     </plurals>
     <plurals name="downloads_menu_download_option_next_episodes">
-        <item quantity="other">Sljedećih %1$d epizoda</item>
+        <item quantity="one">Sljedeća %d epizoda</item>
+        <item quantity="few">Sljedećih %d epizoda</item>
+        <item quantity="other">Sljedećih %d epizoda</item>
     </plurals>
     <plurals name="downloads_menu_download_option_next_items">
-        <item quantity="other">Sljedećih %1$d stavki</item>
+        <item quantity="one">Sljedeća %d stavka</item>
+        <item quantity="few">Sljedeće %d stavke</item>
+        <item quantity="other">Sljedećih %d stavki</item>
     </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Sljedeća poglavlja</string>
     <string name="downloads_menu_download_option_next_episodes_label">Sljedeće epizode</string>
@@ -221,4 +227,6 @@
     <string name="settings_screen_audio_focus_loss_policy_option_lower_volume">Niža glasnoća</string>
     <string name="local_network_permission_request_hint">Aplikaciji je potreban pristup lokalnoj mreži za povezivanje s obližnjim poslužiteljima</string>
     <string name="clear_thumbnail_cache_confirmation_message">Predmemorirane slike naslovnica bit će uklonjene s ovog uređaja. Podaci vašeg poslužitelja neće biti zahvaćeni</string>
+    <string name="downloads_menu_download_option_decrease">Smanji broj</string>
+    <string name="downloads_menu_download_option_increase">Povećaj broj</string>
 </resources>
