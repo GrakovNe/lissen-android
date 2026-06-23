@@ -121,21 +121,27 @@ class LibraryAudiobookshelfChannel
 
         val bySeries: Deferred<OperationResult<List<Book>>> =
           async {
+            // The matched series carry only stripped books in the search response (no author /
+            // series metadata), so resolve their full library items in a single batch request
+            // instead of re-running a per-title search for every book of every series.
             searchResult
-              .map { result -> result.series }
-              .map { result -> result.flatMap { it.books } }
-              .map { result -> result.mapNotNull { it.media.metadata.title } }
-              .map { result -> result.map { async { dataRepository.searchBooks(libraryId, it, limit) } } }
-              .map { result -> result.awaitAll() }
-              .map { result ->
-                result.flatMap {
-                  it.fold(
-                    onSuccess = { items -> items.book },
-                    onFailure = { emptyList() },
-                  )
+              .map { result -> result.series.flatMap { it.books }.map { book -> book.id } }
+              .map { ids ->
+                when {
+                  ids.isEmpty() -> {
+                    emptyList()
+                  }
+
+                  else -> {
+                    dataRepository
+                      .fetchLibraryItemsBatch(ids)
+                      .fold(
+                        onSuccess = { it.libraryItems },
+                        onFailure = { emptyList() },
+                      )
+                  }
                 }
-              }.map { result -> result.map { it.libraryItem } }
-              .map { result -> result.let { librarySearchItemsConverter.apply(it) } }
+              }.map { librarySearchItemsConverter.apply(it) }
           }
 
         mergeBooks(byTitle, byAuthor, bySeries)

@@ -16,6 +16,8 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.user.LoggedUserRe
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.PersonalizedFeedResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.UserResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.BookResponse
+import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsBatchRequest
+import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsBatchResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibrarySearchResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastItemsResponse
@@ -116,6 +118,11 @@ interface AudiobookshelfApiClient {
   suspend fun fetchAuthorLibraryItems(
     @Path("authorId") authorId: String,
   ): Response<AuthorItemsResponse>
+
+  @POST("api/items/batch/get")
+  suspend fun fetchLibraryItemsBatch(
+    @Body request: LibraryItemsBatchRequest,
+  ): Response<LibraryItemsBatchResponse>
 
   @POST("api/session/{itemId}/sync")
   suspend fun publishLibraryItemProgress(
