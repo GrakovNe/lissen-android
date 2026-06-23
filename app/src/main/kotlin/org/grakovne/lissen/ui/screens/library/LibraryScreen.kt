@@ -128,12 +128,8 @@ fun LibraryScreen(
 
   BackHandler {
     when {
-      // A linked-search entry is a dedicated search view pushed on top of the player;
-      // leaving the search pops back to the player rather than revealing a library here.
       searchRequested && linkedSearchToken != null -> navController.goBack()
-
       searchRequested -> libraryViewModel.dismissSearch()
-
       else -> activity?.moveTaskToBack(true)
     }
   }
@@ -178,10 +174,6 @@ fun LibraryScreen(
     onGranted = { refreshContent(showPullRefreshing = false) },
   )
 
-  // Keyed on `library`: getPager() returns a different LazyPagingItems instance whenever the
-  // search mode toggles. Without the key the derivedState would keep observing the first
-  // instance's loadState, which freezes at Loading if it was disposed mid-load (e.g. linked
-  // search activates search before the default pager finished) — causing an eternal placeholder.
   val isPlaceholderRequired by remember(library) {
     derivedStateOf {
       if (searchRequested) {

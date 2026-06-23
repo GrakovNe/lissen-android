@@ -121,9 +121,6 @@ class LibraryAudiobookshelfChannel
 
         val bySeries: Deferred<OperationResult<List<Book>>> =
           async {
-            // The matched series carry only stripped books in the search response (no author /
-            // series metadata), so resolve their full library items in a single batch request
-            // instead of re-running a per-title search for every book of every series.
             searchResult
               .map { result -> result.series.flatMap { it.books }.map { book -> book.id } }
               .map { ids ->

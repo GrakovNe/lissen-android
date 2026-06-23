@@ -77,10 +77,6 @@ class LinkedSearchE2ETest {
   @get:Rule(order = 3)
   val composeRule = createAndroidComposeRule<AppActivity>()
 
-  /**
-   * Logs in, opens the first book and reveals the book details bottom sheet,
-   * where the author (and series, if present) become tappable linked-search entries.
-   */
   private fun openBookDetails() {
     composeRule.onNodeWithTag("hostInput").performTextInput(DEMO_HOST)
     composeRule.onNodeWithTag("usernameInput").performTextInput(DEMO_USERNAME)
@@ -145,7 +141,6 @@ class LinkedSearchE2ETest {
       timeoutMillis = TIMEOUT_MS,
     )
 
-    // Leaving the linked search (search bar back arrow) returns to the player it was opened from.
     composeRule.onNodeWithContentDescription("Back").performClick()
 
     composeRule.waitUntilAtLeastOneExists(

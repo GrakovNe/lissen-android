@@ -17,9 +17,6 @@ class AppNavigationService(
   }
 
   fun showLinkedSearch(token: String) {
-    // Push a brand-new library entry on top of the current screen so the search is
-    // applied to a fresh destination (its arguments and LaunchedEffect fire reliably)
-    // and pressing back returns to where the search was triggered from.
     host.navigate("$ROUTE_LIBRARY?linkedSearchToken=${Uri.encode(token)}")
   }
 

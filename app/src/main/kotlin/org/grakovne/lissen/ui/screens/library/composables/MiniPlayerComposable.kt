@@ -214,9 +214,6 @@ private fun PlaybackProgressButton(
   libraryType: LibraryType?,
   onClick: () -> Unit,
 ) {
-  // Read the per-tick playback position in this leaf only, so a position tick recomposes
-  // just the progress button — not the whole mini player (cover, title, author). Keeps the
-  // linked-search push (which mounts a fresh library on top of a playing book) smooth.
   val isPlaying by playerViewModel.isPlaying.collectAsState()
   val totalPosition by playerViewModel.totalPosition.collectAsState()
 
