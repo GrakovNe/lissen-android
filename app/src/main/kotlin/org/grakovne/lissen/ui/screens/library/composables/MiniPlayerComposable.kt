@@ -73,8 +73,6 @@ fun MiniPlayerComposable(
 ) {
   val view: View = LocalView.current
 
-  val isPlaying: Boolean by playerViewModel.isPlaying.collectAsState()
-  val totalPosition by playerViewModel.totalPosition.collectAsState()
   var backgroundVisible by remember { mutableStateOf(true) }
 
   val dismissState =
@@ -197,22 +195,40 @@ fun MiniPlayerComposable(
           horizontalAlignment = Alignment.CenterHorizontally,
           verticalArrangement = Arrangement.Center,
         ) {
-          val progress =
-            calculateProgress(
-              item = book,
-              libraryType = libraryType,
-              totalPosition = totalPosition,
-            )
-
-          PlaybackButton(
-            isPlaying = isPlaying,
-            progress = progress,
+          PlaybackProgressButton(
+            playerViewModel = playerViewModel,
+            book = book,
+            libraryType = libraryType,
             onClick = { withHaptic(view) { playerViewModel.togglePlayPause() } },
           )
         }
       }
     }
   }
+}
+
+@Composable
+private fun PlaybackProgressButton(
+  playerViewModel: PlayerViewModel,
+  book: DetailedItem,
+  libraryType: LibraryType?,
+  onClick: () -> Unit,
+) {
+  val isPlaying by playerViewModel.isPlaying.collectAsState()
+  val totalPosition by playerViewModel.totalPosition.collectAsState()
+
+  val progress =
+    calculateProgress(
+      item = book,
+      libraryType = libraryType,
+      totalPosition = totalPosition,
+    )
+
+  PlaybackButton(
+    isPlaying = isPlaying,
+    progress = progress,
+    onClick = onClick,
+  )
 }
 
 private fun calculateProgress(

@@ -16,6 +16,14 @@ class AppNavigationService(
     }
   }
 
+  fun showLinkedSearch(token: String) {
+    host.navigate("$ROUTE_LIBRARY?linkedSearchToken=${Uri.encode(token)}")
+  }
+
+  fun goBack() {
+    host.popBackStack()
+  }
+
   fun showPlayer(
     bookId: String,
     bookTitle: String,

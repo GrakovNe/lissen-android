@@ -1,6 +1,8 @@
 package org.grakovne.lissen.ui.screens.player.composable
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -26,11 +28,14 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,6 +44,7 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.extensions.formatTime
+import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.player.InfoRow
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 import org.grakovne.lissen.viewmodel.SettingsViewModel
@@ -50,6 +56,7 @@ fun MediaDetailComposable(
   onDismissRequest: () -> Unit,
   playingViewModel: PlayerViewModel,
   settingsViewModel: SettingsViewModel,
+  navController: AppNavigationService,
 ) {
   val totalPosition by playingViewModel.totalPosition.collectAsState()
   val totalDuration = playingBook?.chapters?.sumOf { it.duration }
@@ -72,18 +79,7 @@ fun MediaDetailComposable(
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
       ) {
-        val seriesValue =
-          playingBook
-            ?.series
-            ?.takeIf { it.isNotEmpty() }
-            ?.joinToString(", ") { series ->
-              buildString {
-                append(series.name)
-                series.serialNumber
-                  ?.takeIf(String::isNotBlank)
-                  ?.let { append(" #$it") }
-              }
-            }
+        val seriesItems = playingBook?.series.orEmpty()
 
         playingBook
           ?.title
@@ -99,24 +95,42 @@ fun MediaDetailComposable(
               overflow = TextOverflow.Ellipsis,
               color = colorScheme.onSurface,
               modifier =
-                when (seriesValue?.isNotBlank()) {
+                when (seriesItems.isNotEmpty()) {
                   true -> Modifier
                   else -> Modifier.padding(bottom = 8.dp)
                 },
             )
           }
 
-        seriesValue
-          ?.let {
-            Text(
-              text = it,
-              style = typography.titleSmall,
-              color = colorScheme.onBackground.copy(alpha = 0.6f),
-              maxLines = 2,
-              overflow = TextOverflow.Ellipsis,
-              modifier = Modifier.padding(vertical = 4.dp),
-            )
-          }
+        seriesItems.forEach { series ->
+          val seriesLabel =
+            buildString {
+              append(series.name)
+              series.serialNumber
+                ?.takeIf(String::isNotBlank)
+                ?.let { append(" #$it") }
+            }
+
+          Text(
+            text = seriesLabel,
+            style = typography.titleSmall,
+            color = colorScheme.onBackground.copy(alpha = 0.6f),
+            textDecoration = TextDecoration.Underline,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier =
+              Modifier
+                .testTag("linkedSearchSeries")
+                .padding(vertical = 4.dp)
+                .clickable(
+                  interactionSource = remember { MutableInteractionSource() },
+                  indication = null,
+                ) {
+                  onDismissRequest()
+                  navController.showLinkedSearch(series.name)
+                },
+          )
+        }
 
         playingBook
           ?.author
@@ -126,6 +140,11 @@ fun MediaDetailComposable(
               icon = Icons.Outlined.Person,
               label = stringResource(R.string.playing_item_details_author),
               textValue = it,
+              onClick = {
+                onDismissRequest()
+                navController.showLinkedSearch(it)
+              },
+              testTag = "linkedSearchAuthor",
             )
           }
 

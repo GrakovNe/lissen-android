@@ -10,6 +10,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -45,6 +47,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -196,7 +199,10 @@ fun PlayerScreen(
 
               IconButton(
                 onClick = { itemDetailsSelected = true },
-                modifier = Modifier.padding(end = 4.dp),
+                modifier =
+                  Modifier
+                    .padding(end = 4.dp)
+                    .testTag("playerInfoButton"),
               ) {
                 Icon(
                   imageVector = Icons.Outlined.Info,
@@ -323,6 +329,7 @@ fun PlayerScreen(
       playingViewModel = playerViewModel,
       settingsViewModel = settingsViewModel,
       onDismissRequest = { itemDetailsSelected = false },
+      navController = navController,
     )
   }
 
@@ -339,10 +346,31 @@ fun InfoRow(
   icon: androidx.compose.ui.graphics.vector.ImageVector,
   label: String,
   textValue: String,
+  onClick: (() -> Unit)? = null,
+  testTag: String? = null,
 ) {
   Spacer(modifier = Modifier.height(8.dp))
 
-  Row(verticalAlignment = Alignment.CenterVertically) {
+  Row(
+    verticalAlignment = Alignment.CenterVertically,
+    modifier =
+      Modifier
+        .let { if (testTag != null) it.testTag(testTag) else it }
+        .let { base ->
+          when (onClick) {
+            null -> {
+              base
+            }
+
+            else -> {
+              base.clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+              ) { onClick() }
+            }
+          }
+        },
+  ) {
     Icon(
       imageVector = icon,
       contentDescription = null,
@@ -359,7 +387,10 @@ fun InfoRow(
     )
     Text(
       text = textValue,
-      style = typography.bodyMedium,
+      style =
+        typography.bodyMedium.copy(
+          textDecoration = if (onClick != null) TextDecoration.Underline else TextDecoration.None,
+        ),
       maxLines = 1,
       overflow = TextOverflow.Ellipsis,
     )

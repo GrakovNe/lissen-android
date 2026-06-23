@@ -96,6 +96,7 @@ fun LibraryScreen(
   cachingModelView: CachingModelView = hiltViewModel(),
   imageLoader: ImageLoader,
   networkService: NetworkService,
+  linkedSearchToken: String? = null,
 ) {
   val view: View = LocalView.current
   val coroutineScope = rememberCoroutineScope()
@@ -111,6 +112,7 @@ fun LibraryScreen(
   var pullRefreshing by remember { mutableStateOf(false) }
   val recentBookRefreshing by libraryViewModel.recentBookUpdating.collectAsState()
   val searchRequested by libraryViewModel.searchRequested.collectAsState()
+  val searchToken by libraryViewModel.searchToken.collectAsState()
   val preparingError by playerViewModel.preparingError.collectAsState()
 
   val preferredLibrary by settingsViewModel.preferredLibrary.collectAsState()
@@ -125,9 +127,10 @@ fun LibraryScreen(
   val libraryListState = rememberLazyListState()
 
   BackHandler {
-    when (searchRequested) {
-      true -> libraryViewModel.dismissSearch()
-      false -> activity?.moveTaskToBack(true)
+    when {
+      searchRequested && linkedSearchToken != null -> navController.goBack()
+      searchRequested -> libraryViewModel.dismissSearch()
+      else -> activity?.moveTaskToBack(true)
     }
   }
 
@@ -171,7 +174,7 @@ fun LibraryScreen(
     onGranted = { refreshContent(showPullRefreshing = false) },
   )
 
-  val isPlaceholderRequired by remember {
+  val isPlaceholderRequired by remember(library) {
     derivedStateOf {
       if (searchRequested) {
         return@derivedStateOf false
@@ -184,6 +187,12 @@ fun LibraryScreen(
   LaunchedEffect(preparingError) {
     if (preparingError) {
       playerViewModel.clearPlayingBook()
+    }
+  }
+
+  LaunchedEffect(Unit) {
+    if (linkedSearchToken != null) {
+      libraryViewModel.applyLinkedSearch(linkedSearchToken)
     }
   }
 
@@ -300,7 +309,14 @@ fun LibraryScreen(
             when (isSearchRequested) {
               true -> {
                 LibrarySearchActionComposable(
-                  onSearchDismissed = { libraryViewModel.dismissSearch() },
+                  currentSearchToken = searchToken,
+                  autoFocus = linkedSearchToken == null,
+                  onSearchDismissed = {
+                    when (linkedSearchToken) {
+                      null -> libraryViewModel.dismissSearch()
+                      else -> navController.goBack()
+                    }
+                  },
                   onSearchRequested = { libraryViewModel.updateSearch(it) },
                 )
               }

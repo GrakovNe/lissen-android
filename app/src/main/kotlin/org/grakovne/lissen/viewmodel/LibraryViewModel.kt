@@ -48,6 +48,7 @@ class LibraryViewModel
     val searchRequested: StateFlow<Boolean> = _searchRequested.asStateFlow()
 
     private val _searchToken = MutableStateFlow(EMPTY_SEARCH)
+    val searchToken: StateFlow<String> = _searchToken.asStateFlow()
 
     private var defaultPagingSource: PagingSource<Int, Book>? = null
     private var searchPagingSource: PagingSource<Int, Book>? = null
@@ -117,6 +118,12 @@ class LibraryViewModel
 
     fun updateSearch(token: String) {
       viewModelScope.launch { _searchToken.emit(token) }
+    }
+
+    fun applyLinkedSearch(token: String) {
+      Timber.d("User action: applyLinkedSearch")
+      _searchToken.value = token
+      _searchRequested.value = true
     }
 
     fun fetchPreferredLibraryTitle(): String? =

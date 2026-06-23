@@ -16,6 +16,8 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.Progress
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.PersonalizedFeedResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.UserResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.BookResponse
+import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsBatchRequest
+import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsBatchResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibrarySearchResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastItemsResponse
@@ -42,6 +44,14 @@ class AudioBookshelfRepository
         .makeRequest {
           it.fetchAuthorLibraryItems(
             authorId = authorId,
+          )
+        }
+
+    suspend fun fetchLibraryItemsBatch(itemIds: List<String>): OperationResult<LibraryItemsBatchResponse> =
+      audioBookShelfApiService
+        .makeRequest {
+          it.fetchLibraryItemsBatch(
+            LibraryItemsBatchRequest(libraryItemIds = itemIds),
           )
         }
 
