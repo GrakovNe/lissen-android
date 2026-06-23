@@ -36,9 +36,9 @@
     <string name="player_screen_downloads_navigation">下载</string>
     <string name="downloads_menu_download_book">下载书籍</string>
     <string name="downloads_menu_download_unknown">下载</string>
-    <string name="downloads_menu_download_option_clear_episodes">清除下载单集</string>
-    <string name="downloads_menu_download_option_clear_chapters">清除下载章节</string>
-    <string name="downloads_menu_download_option_clear_items">清除下载项目</string>
+    <string name="downloads_menu_download_option_clear_episodes">清除已下载剧集</string>
+    <string name="downloads_menu_download_option_clear_chapters">清除已下载章节</string>
+    <string name="downloads_menu_download_option_clear_items">清除已下载项目</string>
     <string name="mini_player_action_close">关闭</string>
     <string name="playing_item_details_publisher">出版社</string>
     <string name="playing_item_details_series">系列</string>
@@ -82,13 +82,13 @@
     <string name="downloads_menu_download_option_remaining_episodes">剩余剧集</string>
     <string name="downloads_menu_download_option_remaining_items">剩余项目</string>
     <plurals name="downloads_menu_download_option_next_chapters">
-        <item quantity="other">后 %1$d 章</item>
+        <item quantity="other">后 %d 章</item>
     </plurals>
     <plurals name="downloads_menu_download_option_next_episodes">
-        <item quantity="other">后 %1$d 集</item>
+        <item quantity="other">后 %d 集</item>
     </plurals>
     <plurals name="downloads_menu_download_option_next_items">
-        <item quantity="other">后 %1$d 项</item>
+        <item quantity="other">后 %d 项</item>
     </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">接下来的章节</string>
     <string name="downloads_menu_download_option_next_episodes_label">接下来的剧集</string>
@@ -133,7 +133,7 @@
     <string name="settings_download_automatically_title">自动下载</string>
     <string name="download_settings_title">下载</string>
     <string name="download_settings_description">下载及内容管理</string>
-    <string name="download_settings_network_type_title">用于自动下载</string>
+    <string name="download_settings_network_type_title">允许自动下载的网络</string>
     <string name="wifi_only_settings_option">仅限 Wi-Fi</string>
     <string name="wifi_or_cellular_settings_option">Wi-Fi 或蜂窝网络</string>
     <string name="downloads_menu_download_option_disable">禁用</string>
@@ -217,4 +217,6 @@
     <string name="clear_thumbnail_cache_confirmation_message">缓存的封面图片将被从此设备上删除。服务器的数据不会受到影响</string>
     <string name="clear_thumbnail_cache_confirm">清除</string>
     <string name="local_network_permission_request_hint">需要本地网络权限来连接附近的服务器</string>
+    <string name="downloads_menu_download_option_decrease">减少数量</string>
+    <string name="downloads_menu_download_option_increase">增加数量</string>
 </resources>
