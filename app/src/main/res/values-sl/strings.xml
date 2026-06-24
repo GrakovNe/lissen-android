@@ -167,4 +167,11 @@
     <string name="playback_preferences_description">Glasnost, kontrole iskanja in zvok</string>
     <string name="appearance_preferences_title">Videz</string>
     <string name="appearance_preferences_description">Barvna shema, razvrščanje in tema</string>
+    <string name="timer_option_disabled">Izklopljen</string>
+    <string name="settings_screen_material_you_description">Uskladi barve aplikacije z barvami slike ozadja</string>
+    <string name="library_quick_settings_filters_title">Filtri</string>
+    <string name="library_quick_settings_sort_title">Razvrsti po</string>
+    <string name="settings_screen_default_sleep_timer_title">Privzeti časovnik med predvajanjem</string>
+    <string name="settings_screen_software_codecs_enabled_title">Vsili programsko dekodiranje</string>
+    <string name="settings_screen_software_codecs_enabled_description">Uporabi programske kodeke za predvajanje</string>
 </resources>
