@@ -111,6 +111,10 @@ class PlayerViewModel
       _searchToken.value = token
     }
 
+    fun clearPrepared() {
+      mediaRepository.clearPreparedItem()
+    }
+
     fun preparePlayback(bookId: String) {
       viewModelScope.launch {
         mediaRepository.clearPreparedItem()

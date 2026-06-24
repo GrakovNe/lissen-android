@@ -102,6 +102,15 @@ android {
       enableUnitTestCoverage = true
       enableAndroidTestCoverage = true
     }
+    create("benchmark") {
+      initWith(getByName("release"))
+      applicationIdSuffix = ".benchmark"
+      versionNameSuffix = " (BENCHMARK)"
+      signingConfig = signingConfigs.getByName("debug")
+      isDebuggable = false
+      isProfileable = true
+      matchingFallbacks.add("release")
+    }
   }
   
   compileOptions {
@@ -196,7 +205,8 @@ dependencies {
   implementation(libs.converter.moshi)
   implementation(libs.moshi)
   implementation(libs.zip4j)
-  
+  implementation(libs.androidx.profileinstaller)
+
   debugImplementation(libs.androidx.ui.tooling)
   debugImplementation(libs.androidx.ui.test.manifest)
   

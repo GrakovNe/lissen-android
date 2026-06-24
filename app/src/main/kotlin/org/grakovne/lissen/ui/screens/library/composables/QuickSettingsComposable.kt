@@ -258,6 +258,7 @@ fun ApplicationSettingsItemComposable(onClicked: () -> Unit) {
     modifier =
       Modifier
         .fillMaxWidth()
+        .testTag("appSettingsItem")
         .clickable { onClicked() }
         .padding(horizontal = 16.dp, vertical = 16.dp),
     verticalAlignment = Alignment.CenterVertically,

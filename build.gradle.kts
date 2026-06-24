@@ -4,4 +4,5 @@ plugins {
     id("com.google.devtools.ksp") version "2.3.8" apply false
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.android.test) apply false
 }
