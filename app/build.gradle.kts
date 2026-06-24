@@ -1,3 +1,4 @@
+import com.project.starter.easylauncher.plugin.EasyLauncherExtension
 import java.util.Properties
 
 plugins {
@@ -8,14 +9,26 @@ plugins {
   id("org.jmailen.kotlinter") version "5.5.0"
   id("com.google.devtools.ksp")
   id("kotlin-parcelize")
-  id("com.starter.easylauncher") version "6.4.1"
 }
 
-easylauncher {
-  buildTypes {
-    register("debug") {
-      filters(chromeLike(label = "DEBUG", ribbonColor = "#FF6F3F", labelColor = "#FFFFFF", labelPadding = 15))
-    }
+// easylauncher is applied here (rather than via the plugins DSL) so it shares a classloader
+// with the webp-imageio reader declared in the root buildscript, letting it read the .webp
+// launcher icons from the command line. Because it is not on the plugins DSL, it is
+// configured through the typed extension instead of generated accessors.
+apply(plugin = "com.starter.easylauncher")
+
+configure<EasyLauncherExtension> {
+  buildTypes.register("debug") {
+    filters(
+      chromeLike(
+        mapOf(
+          "label" to "DEBUG",
+          "ribbonColor" to "#FF6F3F",
+          "labelColor" to "#FFFFFF",
+          "labelPadding" to 15,
+        ),
+      ),
+    )
   }
 }
 
@@ -196,7 +209,7 @@ dependencies {
   implementation(libs.converter.moshi)
   implementation(libs.moshi)
   implementation(libs.zip4j)
-
+  
   debugImplementation(libs.androidx.ui.tooling)
   debugImplementation(libs.androidx.ui.test.manifest)
   

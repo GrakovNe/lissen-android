@@ -196,4 +196,4 @@
     <string name="settings_screen_client_cert_hint">Utiliser un certificat client pour mTLS</string>
     <string name="settings_screen_client_cert_empty_state_title">Aucun certificat client n\'a été sélectionné</string>
     `<string name="settings_screen_client_cert_install_help_description">Importez le fichier de certificat via la section « Sécurité » ou « VPN » dans les paramètres système de votre appareil</string>`
-    </resources>
+</resources>
