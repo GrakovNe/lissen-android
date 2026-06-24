@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.navigation.compose.rememberNavController
 import coil3.ImageLoader
 import dagger.hilt.android.AndroidEntryPoint
@@ -49,7 +50,8 @@ class AppActivity : ComponentActivity() {
 
       LissenTheme(colorScheme, materialYou) {
         val navController = rememberNavController()
-        appNavigationService = AppNavigationService(navController)
+        appNavigationService =
+          remember(navController) { AppNavigationService(navController) }
 
         AppNavHost(
           navController = navController,
@@ -59,6 +61,38 @@ class AppActivity : ComponentActivity() {
           networkService = networkService,
           appLaunchAction = getLaunchAction(intent),
         )
+      }
+    }
+  }
+
+  override fun onNewIntent(intent: Intent) {
+    super.onNewIntent(intent)
+    // launchMode is singleTop, so a warm start delivers the new intent here instead of
+    // re-running onCreate. Act on it imperatively rather than relying on the start destination.
+    setIntent(intent)
+
+    if (!::appNavigationService.isInitialized) {
+      return
+    }
+
+    when (getLaunchAction(intent)) {
+      AppLaunchAction.CONTINUE_PLAYBACK -> {
+        preferences.getPlayingItem()?.let { book ->
+          appNavigationService.showPlayer(
+            bookId = book.id,
+            bookTitle = book.title,
+            bookSubtitle = book.subtitle,
+            startInstantly = true,
+          )
+        }
+      }
+
+      AppLaunchAction.MANAGE_DOWNLOADS -> {
+        appNavigationService.showCachedItemsSettings()
+      }
+
+      AppLaunchAction.DEFAULT -> {
+        Unit
       }
     }
   }
