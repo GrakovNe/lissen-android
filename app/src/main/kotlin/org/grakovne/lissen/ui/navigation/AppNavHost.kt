@@ -1,6 +1,5 @@
 package org.grakovne.lissen.ui.navigation
 
-import android.annotation.SuppressLint
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
@@ -9,10 +8,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -37,11 +33,24 @@ import org.grakovne.lissen.ui.screens.settings.advanced.PlaybackPreferencesScree
 import org.grakovne.lissen.ui.screens.settings.advanced.SeekSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.cache.CacheSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.cache.CachedItemsSettingsScreen
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
+
+private val enterTransition: EnterTransition =
+  slideInHorizontally(initialOffsetX = { it }, animationSpec = tween()) +
+    fadeIn(animationSpec = tween())
+
+private val exitTransition: ExitTransition =
+  slideOutHorizontally(targetOffsetX = { -it }, animationSpec = tween()) +
+    fadeOut(animationSpec = tween())
+
+private val popEnterTransition: EnterTransition =
+  slideInHorizontally(initialOffsetX = { -it }, animationSpec = tween()) +
+    fadeIn(animationSpec = tween())
+
+private val popExitTransition: ExitTransition =
+  slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween()) +
+    fadeOut(animationSpec = tween())
 
 @Composable
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 fun AppNavHost(
   navController: NavHostController,
   preferences: LissenSharedPreferences,
@@ -50,316 +59,156 @@ fun AppNavHost(
   imageLoader: ImageLoader,
   appLaunchAction: AppLaunchAction,
 ) {
-  val hasCredentials by remember {
-    mutableStateOf(
-      preferences.hasCredentials(),
-    )
-  }
-
-  val book = preferences.getPlayingItem()
-
+  // Only consumed once, when the graph is first laid out, so resolve it a single time rather
+  // than re-reading preferences on every recomposition.
   val startDestination =
-    when {
-      appLaunchAction == AppLaunchAction.MANAGE_DOWNLOADS -> {
-        "$ROUTE_SETTINGS/cached_items"
-      }
+    remember {
+      val book = preferences.getPlayingItem()
 
-      hasCredentials.not() -> {
-        ROUTE_LOGIN
-      }
+      when {
+        preferences.hasCredentials().not() -> {
+          ROUTE_LOGIN
+        }
 
-      appLaunchAction == AppLaunchAction.CONTINUE_PLAYBACK && book != null -> {
-        "$ROUTE_PLAYER/${book.id}?bookTitle=${book.title}&bookSubtitle=${book.subtitle}&startInstantly=true"
-      }
+        appLaunchAction == AppLaunchAction.MANAGE_DOWNLOADS -> {
+          ROUTE_SETTINGS_CACHED_ITEMS
+        }
 
-      else -> {
-        ROUTE_LIBRARY
+        appLaunchAction == AppLaunchAction.CONTINUE_PLAYBACK && book != null -> {
+          playerRoute(book.id, book.title, book.subtitle, startInstantly = true)
+        }
+
+        else -> {
+          ROUTE_LIBRARY
+        }
       }
     }
 
-  val enterTransition: EnterTransition =
-    slideInHorizontally(
-      initialOffsetX = { it },
-      animationSpec = tween(),
-    ) + fadeIn(animationSpec = tween())
+  NavHost(
+    navController = navController,
+    startDestination = startDestination,
+    modifier = Modifier.fillMaxSize(),
+    enterTransition = { enterTransition },
+    exitTransition = { exitTransition },
+    popEnterTransition = { popEnterTransition },
+    popExitTransition = { popExitTransition },
+  ) {
+    composable(route = ROUTE_SETTINGS_CACHED_ITEMS) {
+      CachedItemsSettingsScreen(
+        onBack = navigationService::goBack,
+        imageLoader = imageLoader,
+      )
+    }
 
-  val exitTransition: ExitTransition =
-    slideOutHorizontally(
-      targetOffsetX = { -it },
-      animationSpec = tween(),
-    ) + fadeOut(animationSpec = tween())
+    composable(route = ROUTE_SETTINGS_CACHE) {
+      CacheSettingsScreen(
+        navController = navigationService,
+        onBack = navigationService::goBack,
+      )
+    }
 
-  val popEnterTransition: EnterTransition =
-    slideInHorizontally(
-      initialOffsetX = { -it },
-      animationSpec = tween(),
-    ) + fadeIn(animationSpec = tween())
-
-  val popExitTransition: ExitTransition =
-    slideOutHorizontally(
-      targetOffsetX = { it },
-      animationSpec = tween(),
-    ) + fadeOut(animationSpec = tween())
-
-  Scaffold(modifier = Modifier.fillMaxSize()) { _ ->
-    NavHost(
-      navController = navController,
-      startDestination = startDestination,
-    ) {
-      composable(
-        route = "settings_screen/cached_items",
-        enterTransition = { enterTransition },
-        exitTransition = { exitTransition },
-        popEnterTransition = { popEnterTransition },
-        popExitTransition = { popExitTransition },
-      ) {
-        CachedItemsSettingsScreen(
-          onBack = {
-            if (navController.previousBackStackEntry != null) {
-              navController.popBackStack()
-            }
+    composable(
+      route = ROUTE_LIBRARY_PATTERN,
+      arguments =
+        listOf(
+          navArgument(ARG_LINKED_SEARCH_TOKEN) {
+            type = NavType.StringType
+            nullable = true
           },
-          imageLoader = imageLoader,
-        )
-      }
-      composable(
-        route = "settings_screen/cache_settings",
-        enterTransition = { enterTransition },
-        exitTransition = { exitTransition },
-        popEnterTransition = { popEnterTransition },
-        popExitTransition = { popExitTransition },
-      ) {
-        CacheSettingsScreen(
-          navController = navigationService,
-          onBack = {
-            if (navController.previousBackStackEntry != null) {
-              navController.popBackStack()
-            }
+        ),
+    ) { backStackEntry ->
+      // The Navigation component already URL-decodes argument values, so read them as-is.
+      val linkedSearchToken = backStackEntry.arguments?.getString(ARG_LINKED_SEARCH_TOKEN)
+
+      LibraryScreen(
+        navController = navigationService,
+        imageLoader = imageLoader,
+        networkService = networkService,
+        linkedSearchToken = linkedSearchToken,
+      )
+    }
+
+    composable(
+      route = ROUTE_PLAYER_PATTERN,
+      arguments =
+        listOf(
+          navArgument(ARG_BOOK_ID) { type = NavType.StringType },
+          navArgument(ARG_BOOK_TITLE) {
+            type = NavType.StringType
+            nullable = true
           },
-        )
-      }
-      composable(
-        route = "library_screen?linkedSearchToken={linkedSearchToken}",
-        arguments =
-          listOf(
-            navArgument("linkedSearchToken") {
-              type = NavType.StringType
-              nullable = true
-            },
-          ),
-        enterTransition = { enterTransition },
-        exitTransition = { exitTransition },
-        popEnterTransition = { popEnterTransition },
-        popExitTransition = { popExitTransition },
-      ) { backStackEntry ->
-        val linkedSearchToken =
-          backStackEntry
-            .arguments
-            ?.getString("linkedSearchToken")
-            ?.let { URLDecoder.decode(it, StandardCharsets.UTF_8.toString()) }
-
-        LibraryScreen(
-          navController = navigationService,
-          imageLoader = imageLoader,
-          networkService = networkService,
-          linkedSearchToken = linkedSearchToken,
-        )
-      }
-
-      composable(
-        route = "player_screen/{bookId}?bookTitle={bookTitle}&bookSubtitle={bookSubtitle}&startInstantly={startInstantly}",
-        arguments =
-          listOf(
-            navArgument("bookId") { type = NavType.StringType },
-            navArgument("bookTitle") {
-              type = NavType.StringType
-              nullable = true
-            },
-            navArgument("bookSubtitle") {
-              type = NavType.StringType
-              nullable = true
-            },
-            navArgument("startInstantly") {
-              type = NavType.BoolType
-              nullable = false
-            },
-          ),
-        enterTransition = { enterTransition },
-        exitTransition = { exitTransition },
-        popEnterTransition = { popEnterTransition },
-        popExitTransition = { popExitTransition },
-      ) { navigationStack ->
-        val bookId = navigationStack.arguments?.getString("bookId") ?: return@composable
-        val bookTitle = navigationStack.arguments?.getString("bookTitle") ?: ""
-        val bookSubtitle = navigationStack.arguments?.getString("bookSubtitle")
-        val startInstantly = navigationStack.arguments?.getBoolean("startInstantly")
-
-        PlayerScreen(
-          navController = navigationService,
-          imageLoader = imageLoader,
-          bookId = bookId,
-          bookTitle = bookTitle,
-          bookSubtitle = bookSubtitle,
-          playInstantly = startInstantly ?: false,
-        )
-      }
-
-      composable(
-        route = "login_screen",
-        enterTransition = { enterTransition },
-        exitTransition = { exitTransition },
-        popEnterTransition = { popEnterTransition },
-        popExitTransition = { popExitTransition },
-      ) {
-        LoginScreen(navigationService)
-      }
-
-      composable(
-        route = "settings_screen",
-        enterTransition = { enterTransition },
-        exitTransition = { exitTransition },
-        popEnterTransition = { popEnterTransition },
-        popExitTransition = { popExitTransition },
-      ) {
-        SettingsScreen(
-          onBack = {
-            if (navController.previousBackStackEntry != null) {
-              navController.popBackStack()
-            }
+          navArgument(ARG_BOOK_SUBTITLE) {
+            type = NavType.StringType
+            nullable = true
           },
-          navController = navigationService,
-        )
-      }
-
-      composable(
-        route = "settings_screen/local_url",
-        enterTransition = { enterTransition },
-        exitTransition = { exitTransition },
-        popEnterTransition = { popEnterTransition },
-        popExitTransition = { popExitTransition },
-      ) {
-        LocalUrlSettingsScreen(
-          onBack = {
-            if (navController.previousBackStackEntry != null) {
-              navController.popBackStack()
-            }
+          navArgument(ARG_START_INSTANTLY) {
+            type = NavType.BoolType
+            nullable = false
           },
-        )
-      }
+        ),
+    ) { navigationStack ->
+      val bookId = navigationStack.arguments?.getString(ARG_BOOK_ID) ?: return@composable
+      val bookTitle = navigationStack.arguments?.getString(ARG_BOOK_TITLE) ?: ""
+      val bookSubtitle = navigationStack.arguments?.getString(ARG_BOOK_SUBTITLE)
+      val startInstantly = navigationStack.arguments?.getBoolean(ARG_START_INSTANTLY) ?: false
 
-      composable(
-        route = "settings_screen/custom_headers",
-        enterTransition = { enterTransition },
-        exitTransition = { exitTransition },
-        popEnterTransition = { popEnterTransition },
-        popExitTransition = { popExitTransition },
-      ) {
-        CustomHeadersSettingsScreen(
-          onBack = {
-            if (navController.previousBackStackEntry != null) {
-              navController.popBackStack()
-            }
-          },
-        )
-      }
+      PlayerScreen(
+        navController = navigationService,
+        imageLoader = imageLoader,
+        bookId = bookId,
+        bookTitle = bookTitle,
+        bookSubtitle = bookSubtitle,
+        playInstantly = startInstantly,
+      )
+    }
 
-      composable(
-        route = "settings_screen/client_certificate",
-        enterTransition = { enterTransition },
-        exitTransition = { exitTransition },
-        popEnterTransition = { popEnterTransition },
-        popExitTransition = { popExitTransition },
-      ) {
-        ClientCertificateSettingsScreen(
-          onBack = {
-            if (navController.previousBackStackEntry != null) {
-              navController.popBackStack()
-            }
-          },
-        )
-      }
+    composable(route = ROUTE_LOGIN) {
+      LoginScreen(navigationService)
+    }
 
-      composable(
-        route = "settings_screen/connection_settings",
-        enterTransition = { enterTransition },
-        exitTransition = { exitTransition },
-        popEnterTransition = { popEnterTransition },
-        popExitTransition = { popExitTransition },
-      ) {
-        ConnectionSettingsScreen(
-          navController = navigationService,
-          onBack = {
-            if (navController.previousBackStackEntry != null) {
-              navController.popBackStack()
-            }
-          },
-        )
-      }
+    composable(route = ROUTE_SETTINGS) {
+      SettingsScreen(
+        onBack = navigationService::goBack,
+        navController = navigationService,
+      )
+    }
 
-      composable(
-        route = "settings_screen/advanced_settings",
-        enterTransition = { enterTransition },
-        exitTransition = { exitTransition },
-        popEnterTransition = { popEnterTransition },
-        popExitTransition = { popExitTransition },
-      ) {
-        AdvancedSettingsComposable(
-          onBack = {
-            if (navController.previousBackStackEntry != null) {
-              navController.popBackStack()
-            }
-          },
-        )
-      }
+    composable(route = ROUTE_SETTINGS_LOCAL_URL) {
+      LocalUrlSettingsScreen(onBack = navigationService::goBack)
+    }
 
-      composable(
-        route = "settings_screen/seek_settings",
-        enterTransition = { enterTransition },
-        exitTransition = { exitTransition },
-        popEnterTransition = { popEnterTransition },
-        popExitTransition = { popExitTransition },
-      ) {
-        SeekSettingsScreen(
-          onBack = {
-            if (navController.previousBackStackEntry != null) {
-              navController.popBackStack()
-            }
-          },
-        )
-      }
+    composable(route = ROUTE_SETTINGS_CUSTOM_HEADERS) {
+      CustomHeadersSettingsScreen(onBack = navigationService::goBack)
+    }
 
-      composable(
-        route = "settings_screen/playback_preferences",
-        enterTransition = { enterTransition },
-        exitTransition = { exitTransition },
-        popEnterTransition = { popEnterTransition },
-        popExitTransition = { popExitTransition },
-      ) {
-        PlaybackPreferencesScreen(
-          navController = navigationService,
-          onBack = {
-            if (navController.previousBackStackEntry != null) {
-              navController.popBackStack()
-            }
-          },
-        )
-      }
+    composable(route = ROUTE_SETTINGS_CLIENT_CERTIFICATE) {
+      ClientCertificateSettingsScreen(onBack = navigationService::goBack)
+    }
 
-      composable(
-        route = "settings_screen/appearance_preferences",
-        enterTransition = { enterTransition },
-        exitTransition = { exitTransition },
-        popEnterTransition = { popEnterTransition },
-        popExitTransition = { popExitTransition },
-      ) {
-        AppearancePreferencesScreen(
-          onBack = {
-            if (navController.previousBackStackEntry != null) {
-              navController.popBackStack()
-            }
-          },
-        )
-      }
+    composable(route = ROUTE_SETTINGS_CONNECTION) {
+      ConnectionSettingsScreen(
+        navController = navigationService,
+        onBack = navigationService::goBack,
+      )
+    }
+
+    composable(route = ROUTE_SETTINGS_ADVANCED) {
+      AdvancedSettingsComposable(onBack = navigationService::goBack)
+    }
+
+    composable(route = ROUTE_SETTINGS_SEEK) {
+      SeekSettingsScreen(onBack = navigationService::goBack)
+    }
+
+    composable(route = ROUTE_SETTINGS_PLAYBACK) {
+      PlaybackPreferencesScreen(
+        navController = navigationService,
+        onBack = navigationService::goBack,
+      )
+    }
+
+    composable(route = ROUTE_SETTINGS_APPEARANCE) {
+      AppearancePreferencesScreen(onBack = navigationService::goBack)
     }
   }
 }
