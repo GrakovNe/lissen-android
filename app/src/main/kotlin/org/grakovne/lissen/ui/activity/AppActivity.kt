@@ -1,8 +1,10 @@
 package org.grakovne.lissen.ui.activity
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.collectAsState
@@ -36,7 +38,13 @@ class AppActivity : ComponentActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    enableEdgeToEdge()
+    // Both bars must be fully transparent so the app background shows through identically. The
+    // default enableEdgeToEdge() leaves a contrast scrim on the navigation bar only, which makes
+    // the bottom bar a different shade from the (transparent) status bar.
+    enableEdgeToEdge(
+      statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
+      navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
+    )
 
     setContent {
       val colorScheme by preferences

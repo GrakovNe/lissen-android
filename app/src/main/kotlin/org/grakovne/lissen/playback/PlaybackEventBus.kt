@@ -41,10 +41,6 @@ sealed class PlaybackEvent {
 }
 
 sealed class PlaybackCommand {
-  data object Play : PlaybackCommand()
-
-  data object Pause : PlaybackCommand()
-
   data object PreparePlayback : PlaybackCommand()
 
   data class SeekTo(

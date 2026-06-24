@@ -2,11 +2,8 @@ package org.grakovne.lissen.playback
 
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
 import android.os.Handler
 import android.os.Looper
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -237,8 +234,16 @@ class MediaRepository
 
     fun clearPlayingBook() {
       Timber.d("Clearing playing book: ${_playingBook.value?.id}")
-      pause()
 
+      if (::mediaController.isInitialized) {
+        // Clearing the queue makes media3 tear down the notification and drop the service out of
+        // the foreground, which is what we want when there is no longer a book to play.
+        mediaController.stop()
+        mediaController.clearMediaItems()
+      }
+
+      _isPlaying.value = false
+      _isPlaybackReady.value = false
       _playingBook.value = null
       preferences.clearPlayingItem()
     }
@@ -399,12 +404,9 @@ class MediaRepository
         _playingBook.value = book
         preferences.savePlayingItem(book)
 
-        val intent = Intent(context, PlaybackService::class.java)
-        when (inBackground()) {
-          true -> context.startForegroundService(intent)
-          false -> context.startService(intent)
-        }
-
+        // The service is already bound through the MediaController, so it receives this command
+        // without a manual service start. Building the queue needs no foreground; media3 promotes
+        // the service to foreground later, when playback actually starts.
         eventBus.send(PlaybackCommand.PreparePlayback)
       }
     }
@@ -421,12 +423,23 @@ class MediaRepository
       }
 
     private fun play() {
-      context.startForegroundService(Intent(context, PlaybackService::class.java))
-      eventBus.send(PlaybackCommand.Play)
+      if (!::mediaController.isInitialized) {
+        Timber.w("play() requested before media controller connected; skipping")
+        return
+      }
+
+      // Driving playback through the MediaController lets media3's MediaLibraryService own the
+      // foreground-service lifecycle (it promotes itself when the player starts and handles the
+      // Android 12+ background-start restriction internally). No manual startForegroundService.
+      mediaController.prepare()
+      mediaController.setPlaybackSpeed(preferences.getPlaybackSpeed())
+      mediaController.play()
     }
 
     private fun pause() {
-      eventBus.send(PlaybackCommand.Pause)
+      if (::mediaController.isInitialized) {
+        mediaController.pause()
+      }
     }
 
     private fun seekTo(position: Double) {
@@ -544,15 +557,6 @@ class MediaRepository
       private const val CURRENT_TRACK_REPLAY_THRESHOLD = 5
 
       private fun getSeekTime(seconds: Int?): Long = seconds?.toLong() ?: 30L
-
-      private fun inBackground(): Boolean =
-        ProcessLifecycleOwner
-          .get()
-          .lifecycle
-          .currentState
-          .isAtMost(Lifecycle.State.STARTED)
-
-      private fun Lifecycle.State.isAtMost(state: Lifecycle.State) = this <= state
     }
   }
 
