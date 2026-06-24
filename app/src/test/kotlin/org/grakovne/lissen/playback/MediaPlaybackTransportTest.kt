@@ -10,23 +10,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-/**
- * Specifies the playback transport contract that [MediaRepository] follows after the move to the
- * media3 MediaController (Option C): play/pause/stop go through the connected controller and book
- * preparation goes through the command bus — never through a manual `startForegroundService`,
- * which is what previously crashed with `ForegroundServiceStartNotAllowedException` when the
- * process was in the background.
- *
- * [MediaRepository] depends on Android primitives (MediaController, Handler, Looper) and cannot be
- * instantiated in a JVM unit test, so the decisions under test are mirrored here verbatim from
- * production — the same convention used by [MediaRepositoryErrorHandlingTest] and
- * [MediaProgressUpdateLifecycleTest].
- */
 class MediaPlaybackTransportTest {
-  /**
-   * Stand-in for the media3 [androidx.media3.session.MediaController]. A `null` instance models
-   * the `::mediaController.isInitialized == false` case (controller not connected yet).
-   */
   private class FakeController {
     val calls = mutableListOf<String>()
     var speed: Float? = null
@@ -48,9 +32,6 @@ class MediaPlaybackTransportTest {
     fun clearMediaItems() = calls.add("clearMediaItems").let { }
   }
 
-  // region faithful copies of the fixed MediaRepository bodies
-
-  /** Mirrors `startPreparingPlayback`: no manual service start, only a PreparePlayback command. */
   private fun startPreparingPlayback(
     book: DetailedItem,
     playingBook: MutableStateFlow<DetailedItem?>,
@@ -72,7 +53,6 @@ class MediaPlaybackTransportTest {
     }
   }
 
-  /** Mirrors `play()`: controller-gated, prepare -> setPlaybackSpeed -> play, using saved speed. */
   private fun play(
     controller: FakeController?,
     playbackSpeed: Float,
@@ -84,14 +64,12 @@ class MediaPlaybackTransportTest {
     controller.play()
   }
 
-  /** Mirrors `pause()`: controller-gated pause. */
   private fun pause(controller: FakeController?) {
     if (controller != null) {
       controller.pause()
     }
   }
 
-  /** Mirrors `clearPlayingBook()`: controller-gated stop+clear, then unconditional state reset. */
   private fun clearPlayingBook(
     controller: FakeController?,
     isPlaying: MutableStateFlow<Boolean>,
@@ -109,8 +87,6 @@ class MediaPlaybackTransportTest {
     playingBook.value = null
     clearedItems.add(Unit)
   }
-
-  // endregion
 
   @Nested
   inner class StartPreparingPlayback {
@@ -141,7 +117,6 @@ class MediaPlaybackTransportTest {
       val saved = mutableListOf<DetailedItem>()
       val commands = mutableListOf<PlaybackCommand>()
 
-      // identical book, but with advanced progress — must be treated as the same book
       val reopened = detailedItem("book-1", progress = MediaProgress(99.0, false, 2))
       startPreparingPlayback(reopened, playingBook, totalPosition, isPlaying, saved, commands)
 
@@ -183,7 +158,6 @@ class MediaPlaybackTransportTest {
 
     @Test
     fun `play before the controller is connected is a safe no-op`() {
-      // null controller mirrors ::mediaController.isInitialized == false — must not throw
       play(controller = null, playbackSpeed = 1.0f)
     }
   }

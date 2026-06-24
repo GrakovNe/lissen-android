@@ -236,8 +236,6 @@ class MediaRepository
       Timber.d("Clearing playing book: ${_playingBook.value?.id}")
 
       if (::mediaController.isInitialized) {
-        // Clearing the queue makes media3 tear down the notification and drop the service out of
-        // the foreground, which is what we want when there is no longer a book to play.
         mediaController.stop()
         mediaController.clearMediaItems()
       }
@@ -404,9 +402,6 @@ class MediaRepository
         _playingBook.value = book
         preferences.savePlayingItem(book)
 
-        // The service is already bound through the MediaController, so it receives this command
-        // without a manual service start. Building the queue needs no foreground; media3 promotes
-        // the service to foreground later, when playback actually starts.
         eventBus.send(PlaybackCommand.PreparePlayback)
       }
     }
@@ -428,9 +423,6 @@ class MediaRepository
         return
       }
 
-      // Driving playback through the MediaController lets media3's MediaLibraryService own the
-      // foreground-service lifecycle (it promotes itself when the player starts and handles the
-      // Android 12+ background-start restriction internally). No manual startForegroundService.
       mediaController.prepare()
       mediaController.setPlaybackSpeed(preferences.getPlaybackSpeed())
       mediaController.play()
