@@ -26,4 +26,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "Lissen"
 include(":app")
-include(":macrobenchmark")
