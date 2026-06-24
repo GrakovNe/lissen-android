@@ -2,6 +2,7 @@ package org.grakovne.lissen.ui.activity
 
 import android.content.Intent
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -50,6 +51,7 @@ class AppActivity : ComponentActivity() {
       statusBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
       navigationBarStyle = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
     )
+    disableSystemBarContrast()
 
     setContent {
       val colorScheme by preferences
@@ -81,6 +83,18 @@ class AppActivity : ComponentActivity() {
           )
         }
       }
+    }
+  }
+
+  // On API 29+ the system enforces a contrast scrim behind transparent system bars, which tints
+  // them a different color than the content drawn edge-to-edge behind them. Disable it so the bars
+  // stay truly transparent; icon contrast is handled by LissenTheme. The setters are deprecated on
+  // API 35+ but remain the only way to control this on API 29-34 (minSdk is 28).
+  @Suppress("DEPRECATION")
+  private fun disableSystemBarContrast() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+      window.isStatusBarContrastEnforced = false
+      window.isNavigationBarContrastEnforced = false
     }
   }
 
