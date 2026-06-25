@@ -214,4 +214,24 @@
     <string name="disconnect_from_server_confirmation_message">Zostaniesz rozłączony z serwerem na tym urządzeniu. Twoje dane nie ulegną zmianie</string>
     <string name="disconnect_from_server_confirm">Rozłącz</string>
     <string name="local_network_permission_request_hint">Aplikacja wymaga dostępu do sieci lokalnej, aby połączyć się z pobliskimi serwerami</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="one">Następny rozdział</item>
+        <item quantity="few">Następne %d rozdziały</item>
+        <item quantity="many">Następnych %d rozdziałów</item>
+        <item quantity="other">Następnych %d rozdziałów</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="one">Następny odcinek</item>
+        <item quantity="few">Następne %d odcinki</item>
+        <item quantity="many">Następnych %d odcinków</item>
+        <item quantity="other">Następnych %d odcinków</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="one">Następny element</item>
+        <item quantity="few">Następne %d elementy</item>
+        <item quantity="many">Następnych %d elementów</item>
+        <item quantity="other">Następnych %d elementów</item>
+    </plurals>
+    <string name="downloads_menu_download_option_decrease">Zmniejsz liczbę</string>
+    <string name="downloads_menu_download_option_increase">Zwiększ liczbę</string>
 </resources>
