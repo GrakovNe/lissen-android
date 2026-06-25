@@ -78,13 +78,13 @@
     <string name="downloads_menu_download_option_remaining_episodes">Episode tersisa</string>
     <string name="downloads_menu_download_option_remaining_items">Item tersisa</string>
     <plurals name="downloads_menu_download_option_next_chapters">
-        <item quantity="other">%1$d segmen berikutnya</item>
+        <item quantity="other">%d segmen berikutnya</item>
     </plurals>
     <plurals name="downloads_menu_download_option_next_episodes">
-        <item quantity="other">%1$d episode berikutnya</item>
+        <item quantity="other">%d episode berikutnya</item>
     </plurals>
     <plurals name="downloads_menu_download_option_next_items">
-        <item quantity="other">%1$d item berikutnya</item>
+        <item quantity="other">%d item berikutnya</item>
     </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Segmen berikutnya</string>
     <string name="downloads_menu_download_option_next_episodes_label">Episode berikutnya</string>
@@ -194,4 +194,29 @@
     <string name="export_logs_no_logs">Tidak ada log yang tersedia</string>
     <string name="export_logs_title">Ekspor log</string>
     <string name="export_logs_description">Bagikan data diagnostik untuk perbaikan</string>
+    <string name="local_network_permission_request_hint">Aplikasi memerlukan akses jaringan lokal untuk terhubung ke server terdekat</string>
+    <string name="library_quick_settings_filters_title">Filter</string>
+    <string name="library_quick_settings_sort_title">Urutkan</string>
+    <plurals name="seek_interval_seconds">
+        <item quantity="other">%d detik</item>
+    </plurals>
+    <string name="downloads_menu_download_option_decrease">Kurangi jumlah</string>
+    <string name="downloads_menu_download_option_increase">Tambah jumlah</string>
+    <string name="settings_screen_default_sleep_timer_title">Timer tidur default saat memutar</string>
+    <string name="settings_screen_audio_focus_loss_policy_title">Kontrol pemutaran di notifikasi</string>
+    <string name="settings_screen_audio_focus_loss_policy_option_pause">Jeda</string>
+    <string name="settings_screen_audio_focus_loss_policy_option_lower_volume">Kurangi volume</string>
+    <string name="clear_thumbnail_cache_confirmation_message">Gambar sampul dalam cache akan dihapus dari perangkat ini. Data server kamu tidak akan terpengaruh</string>
+    <string name="clear_thumbnail_cache_confirm">Bersihkan</string>
+    <string name="disconnect_from_server_confirmation_message">Kamu akan diputuskan dari server pada perangkat ini. Data kamu tidak akan terpengaruh</string>
+    <string name="disconnect_from_server_confirm">Putuskan koneksi</string>
+    <string name="settings_screen_activity_logging_title">Log Aktivitas</string>
+    <string name="settings_screen_activity_logging_description">Rekam peristiwa diagnostik ke file lokal</string>
+    <string name="restart_the_app_to_apply_logging_changes_title">Mulai ulang aplikasi untuk menerapkan perubahan log</string>
+    <string name="restart_the_app_to_apply_logging_changes_cta">Mulai ulang</string>
+    <string name="restart_the_app_to_apply_settings_title">Mulai ulang aplikasi untuk menerapkan pengaturan</string>
+    <string name="restart_the_app_to_apply_settings_cta">Mulai ulang</string>
+    <string name="settings_screen_user_agent_title">Ubah User Agent</string>
+    <string name="settings_screen_user_agent_hint">Sesuaikan header User-Agent aplikasi</string>
+    <string name="settings_screen_user_agent_restore_default">Pulihkan Default</string>
 </resources>
