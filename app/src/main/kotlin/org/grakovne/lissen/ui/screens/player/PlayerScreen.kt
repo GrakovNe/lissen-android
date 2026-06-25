@@ -51,6 +51,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.withResumed
 import coil3.ImageLoader
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.DetailedItem
@@ -118,17 +120,26 @@ fun PlayerScreen(
     stepBack()
   }
 
-  LaunchedEffect(Unit) {
-    bookId
-      .takeIf { playingItemChanged(it, playingBook) || cachePolicyChanged(cachingModelView, playingBook) }
-      ?.let {
-        if (settingsViewModel.hasCredentials().not()) {
-          navController.showLogin()
-          return@LaunchedEffect
-        }
+  val lifecycle = LocalLifecycleOwner.current.lifecycle
 
-        playerViewModel.preparePlayback(it)
+  LaunchedEffect(Unit) {
+    val needsPreparation =
+      playingItemChanged(bookId, playingBook) || cachePolicyChanged(cachingModelView, playingBook)
+
+    if (needsPreparation) {
+      if (settingsViewModel.hasCredentials().not()) {
+        navController.showLogin()
+        return@LaunchedEffect
       }
+
+      playerViewModel.clearPrepared()
+    }
+
+    lifecycle.withResumed {}
+
+    if (needsPreparation) {
+      playerViewModel.preparePlayback(bookId)
+    }
 
     if (playInstantly) {
       playerViewModel.prepareAndPlay()

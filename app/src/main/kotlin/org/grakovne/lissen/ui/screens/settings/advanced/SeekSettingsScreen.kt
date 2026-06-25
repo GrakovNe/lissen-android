@@ -46,7 +46,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
-import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.ui.components.slider.SeekTimeSlider
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 

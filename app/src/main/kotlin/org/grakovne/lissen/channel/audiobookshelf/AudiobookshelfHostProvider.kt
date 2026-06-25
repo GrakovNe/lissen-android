@@ -7,7 +7,6 @@ import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.domain.NetworkType
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.screens.common.hasLocalNetworkPermission
-import org.grakovne.lissen.ui.screens.common.isLocalNetworkHost
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton

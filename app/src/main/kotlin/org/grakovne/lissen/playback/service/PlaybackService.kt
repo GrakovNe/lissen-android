@@ -80,18 +80,6 @@ class PlaybackService : MediaLibraryService() {
     playerServiceScope.launch {
       playbackEventBus.commands.collect { command ->
         when (command) {
-          PlaybackCommand.Play -> {
-            Timber.d("Command received: PLAY")
-            exoPlayer.prepare()
-            exoPlayer.setPlaybackSpeed(sharedPreferences.getPlaybackSpeed())
-            exoPlayer.playWhenReady = true
-          }
-
-          PlaybackCommand.Pause -> {
-            Timber.d("Command received: PAUSE")
-            pause()
-          }
-
           PlaybackCommand.PreparePlayback -> {
             Timber.d("Command received: PREPARE_PLAYBACK")
             val book = sharedPreferences.getPlayingItem()
@@ -193,15 +181,6 @@ class PlaybackService : MediaLibraryService() {
   private fun cancelTimer() {
     playbackTimer.stopTimer()
     Timber.d("Timer canceled.")
-  }
-
-  private fun pause() {
-    playerServiceScope
-      .launch {
-        exoPlayer.playWhenReady = false
-        stopForeground(STOP_FOREGROUND_REMOVE)
-        stopSelf()
-      }
   }
 
   private fun seek(

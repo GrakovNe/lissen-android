@@ -1,6 +1,5 @@
 package org.grakovne.lissen.playback
 
-import androidx.media3.common.PlaybackException
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
