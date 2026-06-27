@@ -27,9 +27,11 @@
  */
 package org.grakovne.lissen.ui.components
 
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawWithContent
@@ -38,75 +40,119 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collect
 import org.acra.ACRA
 import timber.log.Timber
 
+/**
+ * Draws a vertical scrollbar whose thumb size reflects the real content height.
+ *
+ * Item heights are remembered as they are measured, so a single very tall item (e.g. an expanded
+ * series rendering its books inline) contributes its true height instead of distorting an average.
+ * The thumb size therefore stays constant while scrolling and only changes when a row's height
+ * changes (a series being expanded or collapsed), which is the moment its height is re-measured.
+ */
 fun Modifier.withScrollbar(
   state: LazyListState,
   color: Color,
   totalItems: Int?,
   ignoreItems: List<String> = emptyList(),
-): Modifier {
-  try {
-    return baseScrollbar { atEnd ->
-      val layoutInfo = state.layoutInfo
-      val viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
+): Modifier =
+  composed {
+    // Absolute item index -> measured height in pixels.
+    val itemHeights = remember { mutableStateMapOf<Int, Int>() }
 
-      val items =
-        layoutInfo.visibleItemsInfo
-          .filterNot {
-            val key = it.key
-            key is String && ignoreItems.contains(key)
-          }
-
-      if (items.isEmpty()) {
-        return@baseScrollbar
-      }
-
-      val count = totalItems ?: layoutInfo.totalItemsCount
-      if (count <= 0) {
-        return@baseScrollbar
-      }
-
-      // The list also contains a few leading items (recent books, title) that are excluded from `count`.
-      // Account for them so absolute item indices line up with the total item count.
-      val fullCount = (count + ignoreItems.size).coerceAtLeast(1)
-
-      val first = items.first()
-      val last = items.last()
-
-      // Position and thumb size are measured in item units, where progress inside an item is taken from
-      // that item's own height. This keeps the scrollbar stable even when a single item (e.g. an expanded
-      // series rendering its books inline) is much taller than the rest.
-      val topPosition = first.index + (-first.offset.toFloat() / first.size.coerceAtLeast(1)).coerceIn(0f, 1f)
-      val bottomPosition =
-        last.index + ((viewportSize - last.offset).toFloat() / last.size.coerceAtLeast(1)).coerceIn(0f, 1f)
-
-      val visibleFraction = ((bottomPosition - topPosition) / fullCount).coerceIn(0f, 1f)
-
-      if (visibleFraction >= 0.95f) {
-        return@baseScrollbar
-      }
-
-      val canvasSize = size.height
-      val thumbSize = visibleFraction * canvasSize
-      val startOffset = (topPosition / fullCount) * canvasSize
-
-      drawScrollbarThumb(atEnd, thumbSize, startOffset, color)
+    // The total item count changes when the library, search results or grouping change; drop stale heights.
+    LaunchedEffect(totalItems) {
+      itemHeights.clear()
     }
-  } catch (ex: Exception) {
-    Timber.w("Unable to apply scrollbar due to ${ex.message}")
-    ACRA.errorReporter.handleSilentException(ex)
-    return this
+
+    LaunchedEffect(state) {
+      snapshotFlow { state.layoutInfo.visibleItemsInfo }
+        .collect { visible ->
+          visible.forEach { item ->
+            if (itemHeights[item.index] != item.size) {
+              itemHeights[item.index] = item.size
+            }
+          }
+        }
+    }
+
+    val reachedEnd = LocalLayoutDirection.current == LayoutDirection.Ltr
+
+    drawWithContent {
+      drawContent()
+
+      try {
+        drawScrollbar(
+          atEnd = reachedEnd,
+          state = state,
+          totalItems = totalItems,
+          headerCount = ignoreItems.size,
+          itemHeights = itemHeights,
+          color = color,
+        )
+      } catch (ex: Exception) {
+        Timber.w("Unable to apply scrollbar due to ${ex.message}")
+        ACRA.errorReporter.handleSilentException(ex)
+      }
+    }
   }
+
+private fun DrawScope.drawScrollbar(
+  atEnd: Boolean,
+  state: LazyListState,
+  totalItems: Int?,
+  headerCount: Int,
+  itemHeights: Map<Int, Int>,
+  color: Color,
+) {
+  val layoutInfo = state.layoutInfo
+  val viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
+  if (viewportSize <= 0) {
+    return
+  }
+
+  val visible = layoutInfo.visibleItemsInfo
+  if (visible.isEmpty()) {
+    return
+  }
+
+  // Fall back to the currently visible items until the remembered heights are populated.
+  val measured = itemHeights.takeIf { it.isNotEmpty() } ?: visible.associate { it.index to it.size }
+
+  val sortedHeights = measured.values.sorted()
+  val rowHeight = sortedHeights[sortedHeights.size / 2].coerceAtLeast(1).toFloat()
+
+  val itemCount =
+    when (totalItems) {
+      null -> layoutInfo.totalItemsCount
+      else -> totalItems + headerCount
+    }.coerceAtLeast(1)
+
+  val unknownCount = (itemCount - measured.size).coerceAtLeast(0)
+  val totalSize = measured.values.sum() + unknownCount * rowHeight
+  if (totalSize <= 0f) {
+    return
+  }
+
+  val canvasSize = size.height
+  val thumbSize = (viewportSize / totalSize) * canvasSize
+  if (thumbSize >= canvasSize * 0.95f) {
+    return
+  }
+
+  val first = visible.first()
+  val pixelsAbove =
+    (0 until first.index).sumOf { measured[it]?.toLong() ?: rowHeight.toLong() }.toFloat()
+  val scrolledPixels = pixelsAbove - first.offset
+
+  val startOffset = (scrolledPixels / totalSize) * canvasSize
+
+  drawScrollbarThumb(atEnd, thumbSize, startOffset, color)
 }
 
 private fun DrawScope.drawScrollbarThumb(
@@ -136,32 +182,3 @@ private fun DrawScope.drawScrollbarThumb(
     cornerRadius = CornerRadius(radius),
   )
 }
-
-private fun Modifier.baseScrollbar(onDraw: DrawScope.(atEnd: Boolean) -> Unit): Modifier =
-  composed {
-    val scrolled =
-      remember {
-        MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-      }
-
-    val nestedScrollConnection =
-      remember(Orientation.Vertical, scrolled) {
-        object : NestedScrollConnection {
-          override fun onPostScroll(
-            consumed: Offset,
-            available: Offset,
-            source: NestedScrollSource,
-          ) = Offset.Zero.also {
-            val delta = consumed.y
-            if (delta != 0f) scrolled.tryEmit(Unit)
-          }
-        }
-      }
-
-    val reachedEnd = LocalLayoutDirection.current == LayoutDirection.Ltr
-
-    nestedScroll(nestedScrollConnection).drawWithContent {
-      drawContent()
-      onDraw(reachedEnd)
-    }
-  }
