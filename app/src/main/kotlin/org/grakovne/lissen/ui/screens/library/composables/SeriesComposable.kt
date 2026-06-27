@@ -25,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
@@ -135,7 +136,7 @@ fun SeriesComposable(
     }
 
     AnimatedVisibility(visible = expanded) {
-      Column(modifier = Modifier.padding(start = 32.dp)) {
+      Column(modifier = Modifier.fillMaxWidth()) {
         when {
           loading && books.isEmpty() -> {
             Box(
@@ -154,17 +155,51 @@ fun SeriesComposable(
           }
 
           else -> {
-            books.forEach { book ->
+            val sequences = books.mapIndexed { index, book -> book.seriesSequence() ?: "${index + 1}" }
+            // Reserve the width of the longest number so every number is right-aligned under the same edge.
+            val widthReserve = "0".repeat(sequences.maxOfOrNull { it.length } ?: 1)
+
+            books.forEachIndexed { index, book ->
               BookComposable(
                 book = book,
                 imageLoader = imageLoader,
                 navController = navController,
+                showSeries = false,
+                leading = { SeriesSequenceLabel(number = sequences[index], widthReserve = widthReserve) },
               )
             }
           }
         }
       }
     }
+  }
+}
+
+/** The book's position in the series (e.g. "1", "2.5"), parsed from its formatted series string. */
+private fun Book.seriesSequence(): String? =
+  series
+    ?.substringAfterLast('#', "")
+    ?.trim()
+    ?.takeIf { it.isNotEmpty() }
+
+@Composable
+private fun SeriesSequenceLabel(
+  number: String,
+  widthReserve: String,
+) {
+  val style =
+    MaterialTheme.typography.bodyMedium.copy(
+      fontWeight = FontWeight.Medium,
+      color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+    )
+
+  Box(
+    modifier = Modifier.padding(end = 10.dp),
+    contentAlignment = Alignment.CenterEnd,
+  ) {
+    // Invisible widest number reserves the column width; the visible one is then right-aligned.
+    Text(text = widthReserve, style = style, maxLines = 1, modifier = Modifier.alpha(0f))
+    Text(text = number, style = style, maxLines = 1)
   }
 }
 

@@ -37,6 +37,8 @@ fun BookComposable(
   book: Book,
   imageLoader: ImageLoader,
   navController: AppNavigationService,
+  showSeries: Boolean = true,
+  leading: (@Composable () -> Unit)? = null,
 ) {
   val context = LocalContext.current
 
@@ -57,6 +59,8 @@ fun BookComposable(
         .padding(horizontal = 4.dp, vertical = 8.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {
+    leading?.invoke()
+
     AsyncShimmeringImage(
       imageRequest = imageRequest,
       imageLoader = imageLoader,
@@ -89,7 +93,7 @@ fun BookComposable(
         )
       }
 
-      BookMetadataComposable(book)
+      BookMetadataComposable(book, showSeries)
     }
 
     Spacer(Modifier.width(16.dp))
@@ -97,8 +101,13 @@ fun BookComposable(
 }
 
 @Composable
-fun BookMetadataComposable(book: Book) {
-  if ((book.series?.isNotBlank() == true) || (book.author != null)) {
+fun BookMetadataComposable(
+  book: Book,
+  showSeries: Boolean = true,
+) {
+  val series = book.series?.takeIf { it.isNotBlank() && showSeries }
+
+  if (series != null || book.author != null) {
     Spacer(modifier = Modifier.height(2.dp))
   }
 
@@ -114,7 +123,7 @@ fun BookMetadataComposable(book: Book) {
     )
   }
 
-  book.series?.takeIf { it.isNotBlank() }?.let {
+  series?.let {
     Text(
       text = it,
       style =
