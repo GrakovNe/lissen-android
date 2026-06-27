@@ -35,7 +35,10 @@
     <string name="login_error_connection_error">Connection error</string>
     <string name="show_downloaded_content_only">Downloaded only</string>
     <string name="group_by_series">Group by series</string>
-    <string name="series_books_count">%1$d books</string>
+    <plurals name="series_books_count">
+        <item quantity="one">%d book</item>
+        <item quantity="other">%d books</item>
+    </plurals>
     <string name="library_quick_settings_filters_title">Filters</string>
     <string name="library_quick_settings_sort_title">Sort by</string>
     <string name="the_library_is_empty">The library is empty</string>

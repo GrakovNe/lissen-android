@@ -5,6 +5,7 @@ import androidx.core.net.toUri
 import com.squareup.moshi.Types
 import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.common.LibraryOrderingOption
+import org.grakovne.lissen.common.combineAuthors
 import org.grakovne.lissen.common.moshi
 import org.grakovne.lissen.content.cache.persistent.OfflineBookStorageProperties
 import org.grakovne.lissen.content.cache.persistent.converter.CachedBookEntityConverter
@@ -136,6 +137,7 @@ class CachedBookRepository
                 LibraryEntry.SeriesEntry(
                   id = seriesId,
                   title = entity.primarySeriesName() ?: seriesId,
+                  author = combineAuthors(books.map { it.author }),
                   bookCount = books.size,
                   coverItemIds = books.take(SERIES_COVERS_LIMIT).map { it.id },
                 )

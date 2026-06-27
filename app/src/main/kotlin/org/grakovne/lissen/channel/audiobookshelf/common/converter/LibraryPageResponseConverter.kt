@@ -2,6 +2,7 @@ package org.grakovne.lissen.channel.audiobookshelf.common.converter
 
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItem
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsResponse
+import org.grakovne.lissen.common.combineAuthors
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.PagedItems
@@ -39,6 +40,7 @@ class LibraryPageResponseConverter
               LibraryEntry.SeriesEntry(
                 id = collapsed.id,
                 title = collapsed.name,
+                author = combineAuthors(listOf(item.media.metadata.authorName)),
                 bookCount = collapsed.numBooks ?: 0,
                 coverItemIds =
                   collapsed

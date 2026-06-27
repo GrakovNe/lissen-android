@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -29,7 +30,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -55,6 +55,8 @@ fun SeriesComposable(
   navController: AppNavigationService,
   onToggle: () -> Unit,
 ) {
+  val context = LocalContext.current
+
   Column(modifier = Modifier.fillMaxWidth()) {
     Row(
       modifier =
@@ -85,8 +87,24 @@ fun SeriesComposable(
           overflow = TextOverflow.Ellipsis,
         )
 
+        Spacer(modifier = Modifier.height(2.dp))
+
+        series.author
+          ?.takeIf { it.isNotBlank() }
+          ?.let {
+            Text(
+              text = it,
+              style =
+                MaterialTheme.typography.bodyMedium.copy(
+                  color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                ),
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis,
+            )
+          }
+
         Text(
-          text = stringResource(R.string.series_books_count, series.bookCount),
+          text = context.resources.getQuantityString(R.plurals.series_books_count, series.bookCount, series.bookCount),
           style =
             MaterialTheme.typography.bodyMedium.copy(
               color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
