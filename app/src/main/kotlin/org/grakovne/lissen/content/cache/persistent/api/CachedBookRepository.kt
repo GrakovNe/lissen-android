@@ -119,7 +119,7 @@ class CachedBookRepository
      */
     suspend fun fetchLibraryGrouped(libraryId: String): List<LibraryEntry> {
       val entities = fetchAllEntities(libraryId)
-      val seriesSizes = entities.groupingBy { it.seriesId }.eachCount()
+      val seriesBooks = entities.groupBy { it.seriesId }
       val collapsedSeries = mutableSetOf<String>()
 
       return entities.mapNotNull { entity ->
@@ -131,11 +131,13 @@ class CachedBookRepository
           else -> {
             when (collapsedSeries.add(seriesId)) {
               true -> {
+                val books = seriesBooks[seriesId].orEmpty()
+
                 LibraryEntry.SeriesEntry(
                   id = seriesId,
                   title = entity.primarySeriesName() ?: seriesId,
-                  bookCount = seriesSizes[seriesId] ?: 0,
-                  coverItemId = entity.id,
+                  bookCount = books.size,
+                  coverItemIds = books.take(SERIES_COVERS_LIMIT).map { it.id },
                 )
               }
 
@@ -261,5 +263,9 @@ class CachedBookRepository
         }
 
       return option to direction
+    }
+
+    companion object {
+      private const val SERIES_COVERS_LIMIT = 3
     }
   }

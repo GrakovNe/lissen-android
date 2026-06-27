@@ -40,7 +40,12 @@ class LibraryPageResponseConverter
                 id = collapsed.id,
                 title = collapsed.name,
                 bookCount = collapsed.numBooks ?: 0,
-                coverItemId = item.id,
+                coverItemIds =
+                  collapsed
+                    .libraryItemIds
+                    ?.takeIf { it.isNotEmpty() }
+                    ?.take(SERIES_COVERS_LIMIT)
+                    ?: listOf(item.id),
               )
             }
           }
@@ -62,5 +67,9 @@ class LibraryPageResponseConverter
         subtitle = media.metadata.subtitle,
         author = media.metadata.authorName,
       )
+    }
+
+    companion object {
+      private const val SERIES_COVERS_LIMIT = 3
     }
   }

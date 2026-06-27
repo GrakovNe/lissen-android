@@ -25,6 +25,7 @@ data class CollapsedSeries(
   val id: String,
   val name: String,
   val numBooks: Int?,
+  val libraryItemIds: List<String>? = null,
 )
 
 @Keep
