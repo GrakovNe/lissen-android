@@ -41,9 +41,12 @@ import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 
-private val SERIES_COVER_SIZE = 64.dp
-private val SERIES_COVER_STACK_SPAN = 12.dp
 private const val SERIES_COVER_COUNT = 3
+private val SERIES_COVER_SIZE = 64.dp
+private val SERIES_COVER_STEP = 6.dp
+
+// A single card is shrunk so that the full stack of [SERIES_COVER_COUNT] cards still fits [SERIES_COVER_SIZE].
+private val SERIES_COVER_CARD_SIZE = SERIES_COVER_SIZE - SERIES_COVER_STEP * (SERIES_COVER_COUNT - 1)
 
 @Composable
 fun SeriesComposable(
@@ -170,23 +173,17 @@ private fun SeriesCoverStack(
   val context = LocalContext.current
   val covers = coverItemIds.take(SERIES_COVER_COUNT)
 
-  val cardSize =
-    when (covers.size) {
-      1 -> SERIES_COVER_SIZE
-      else -> SERIES_COVER_SIZE - SERIES_COVER_STACK_SPAN
-    }
-
-  val step =
-    when (covers.size) {
-      1 -> 0.dp
-      else -> SERIES_COVER_STACK_SPAN / (covers.size - 1)
-    }
+  // The card size and the step are constant regardless of how many covers we have, so a stack of
+  // two looks like a stack of three with one card missing. The cards are centered within the box.
+  val fullSpan = SERIES_COVER_STEP * (SERIES_COVER_COUNT - 1)
+  val usedSpan = SERIES_COVER_STEP * (covers.size - 1).coerceAtLeast(0)
+  val leadingOffset = (fullSpan - usedSpan) / 2
 
   Box(modifier = Modifier.size(SERIES_COVER_SIZE)) {
     covers
       .asReversed()
       .forEachIndexed { index, coverId ->
-        val offset = step * index
+        val offset = leadingOffset + SERIES_COVER_STEP * index
         val imageRequest =
           remember(coverId) {
             ImageRequest
@@ -203,7 +200,7 @@ private fun SeriesCoverStack(
           modifier =
             Modifier
               .offset(x = offset, y = offset)
-              .size(cardSize)
+              .size(SERIES_COVER_CARD_SIZE)
               .shadow(2.dp, RoundedCornerShape(4.dp))
               .clip(RoundedCornerShape(4.dp)),
           error = painterResource(R.drawable.cover_fallback),

@@ -67,11 +67,17 @@ fun Modifier.withScrollbar(
             key is String && ignoreItems.contains(key)
           }
 
+      if (items.isEmpty()) {
+        return@baseScrollbar
+      }
+
       val itemsSize = items.sumOf { it.size }
       val count = totalItems ?: layoutInfo.totalItemsCount
 
       if (items.size < count || itemsSize > viewportSize) {
-        val itemSize = itemsSize.toFloat() / items.size
+        // Use the median instead of the mean so a single very tall item (e.g. an expanded series with
+        // its books rendered inline) does not distort the estimated row height and make the thumb jump.
+        val itemSize = items.map { it.size }.sorted()[items.size / 2].toFloat()
 
         val totalSize = itemSize * count
         val canvasSize = size.height
