@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import org.grakovne.lissen.channel.common.DEFAULT_USER_AGENT
 import org.grakovne.lissen.common.AudioFocusLossPolicy
 import org.grakovne.lissen.common.ColorScheme
+import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.common.moshi
@@ -311,7 +312,7 @@ class LissenSharedPreferences
 
     val forceCacheFlow = asFlow(CACHE_FORCE_ENABLED, ::isForceCache)
     val hideCompletedFlow = asFlow(KEY_HIDE_COMPLETED, ::getHideCompleted)
-    val groupBySeriesFlow = asFlow(KEY_GROUP_BY_SERIES, ::getGroupBySeries)
+    val libraryGroupingFlow = asFlow(KEY_LIBRARY_GROUPING, ::getLibraryGrouping)
     val clientCertAliasFlow = asFlow(KEY_CLIENT_CERT_ALIAS, ::getClientCertAlias)
 
     private fun saveActiveLibraryId(host: String) = sharedPreferences.edit { putString(KEY_PREFERRED_LIBRARY_ID, host) }
@@ -562,11 +563,15 @@ class LissenSharedPreferences
         putBoolean(KEY_HIDE_COMPLETED, value)
       }
 
-    fun getGroupBySeries(): Boolean = sharedPreferences.getBoolean(KEY_GROUP_BY_SERIES, false)
+    fun getLibraryGrouping(): LibraryGrouping =
+      sharedPreferences
+        .getString(KEY_LIBRARY_GROUPING, null)
+        ?.let { runCatching { LibraryGrouping.valueOf(it) }.getOrNull() }
+        ?: LibraryGrouping.NONE
 
-    fun saveGroupBySeries(value: Boolean) =
+    fun saveLibraryGrouping(value: LibraryGrouping) =
       sharedPreferences.edit {
-        putBoolean(KEY_GROUP_BY_SERIES, value)
+        putString(KEY_LIBRARY_GROUPING, value.name)
       }
 
     fun getDefaultTimerOption(): TimerOption? {
@@ -641,7 +646,7 @@ class LissenSharedPreferences
       private const val KEY_AUDIO_FOCUS_LOSS_POLICY = "audio_focus_loss_policy"
       private const val KEY_ACTIVITY_LOGGING = "activity_logging_enabled"
       private const val KEY_HIDE_COMPLETED = "hide_completed"
-      private const val KEY_GROUP_BY_SERIES = "group_by_series"
+      private const val KEY_LIBRARY_GROUPING = "library_grouping"
 
       private const val KEY_CUSTOM_HEADERS = "custom_headers"
       private const val KEY_BYPASS_SSL = "bypass_ssl"

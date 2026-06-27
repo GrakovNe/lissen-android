@@ -578,8 +578,8 @@ fun LibraryScreen(
         refreshContent(showPullRefreshing = false)
         coroutineScope.launch { libraryListState.scrollToItem(0) }
       },
-      onGroupBySeriesToggled = {
-        settingsViewModel.toggleGroupBySeries()
+      onGroupingSelected = { grouping ->
+        settingsViewModel.preferLibraryGrouping(grouping)
         libraryViewModel.resetSeriesExpansion()
         refreshContent(showPullRefreshing = false)
         coroutineScope.launch { libraryListState.scrollToItem(0) }

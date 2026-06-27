@@ -10,13 +10,17 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material.icons.outlined.CalendarToday
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.CloudOff
-import androidx.compose.material.icons.outlined.Layers
+import androidx.compose.material.icons.outlined.CollectionsBookmark
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.SortByAlpha
@@ -45,6 +49,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
+import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.common.LibraryOrderingDirection.ASCENDING
@@ -64,7 +69,7 @@ fun QuickSettingsComposable(
   onDismissRequest: () -> Unit,
   onForceLocalToggled: () -> Unit,
   onHideCompletedToggled: () -> Unit,
-  onGroupBySeriesToggled: () -> Unit,
+  onGroupingSelected: (LibraryGrouping) -> Unit,
   onSortingChanged: () -> Unit,
   navController: AppNavigationService,
   settingsModelView: SettingsViewModel = hiltViewModel(),
@@ -72,9 +77,10 @@ fun QuickSettingsComposable(
 ) {
   val forceCache by cachingModelView.forceCache.collectAsState(false)
   val hideCompleted by settingsModelView.hideCompleted.collectAsState(false)
-  val groupBySeries by settingsModelView.groupBySeries.collectAsState(false)
+  val grouping by settingsModelView.libraryGrouping.collectAsState(LibraryGrouping.NONE)
   val ordering by settingsModelView.preferredLibraryOrdering.collectAsState()
   val context = LocalContext.current
+  val isLibrary = libraryViewModel.fetchPreferredLibraryType() == LibraryType.LIBRARY
 
   ModalBottomSheet(
     containerColor = colorScheme.surface,
@@ -85,7 +91,8 @@ fun QuickSettingsComposable(
       modifier =
         Modifier
           .testTag("librarySettingsSheet")
-          .fillMaxWidth(),
+          .fillMaxWidth()
+          .verticalScroll(rememberScrollState()),
     ) {
       SectionHeader(stringResource(R.string.library_quick_settings_filters_title))
 
@@ -96,20 +103,35 @@ fun QuickSettingsComposable(
         onClick = { onForceLocalToggled() },
       )
 
-      if (libraryViewModel.fetchPreferredLibraryType() == LibraryType.LIBRARY) {
+      if (isLibrary) {
         ToggleRow(
           title = stringResource(R.string.hide_completed_items),
           icon = Icons.Outlined.VisibilityOff,
           checked = hideCompleted,
           onClick = { onHideCompletedToggled() },
         )
+      }
 
-        ToggleRow(
-          title = stringResource(R.string.group_by_series),
-          icon = Icons.Outlined.Layers,
-          checked = groupBySeries,
-          onClick = { onGroupBySeriesToggled() },
+      if (isLibrary) {
+        Spacer(modifier = Modifier.height(8.dp))
+
+        HorizontalDivider(
+          thickness = 1.dp,
+          modifier = Modifier.padding(horizontal = 8.dp),
         )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        SectionHeader(stringResource(R.string.library_quick_settings_grouping_title))
+
+        LibraryGrouping.entries.forEach { option ->
+          GroupingOptionRow(
+            title = option.toLocalizedName(context),
+            icon = option.icon(),
+            selected = grouping == option,
+            onClick = { onGroupingSelected(option) },
+          )
+        }
       }
 
       Spacer(modifier = Modifier.height(8.dp))
@@ -262,6 +284,46 @@ private fun SortOptionRow(
 }
 
 @Composable
+private fun GroupingOptionRow(
+  title: String,
+  icon: ImageVector,
+  selected: Boolean,
+  onClick: () -> Unit,
+) {
+  val view = LocalView.current
+  Row(
+    modifier =
+      Modifier
+        .fillMaxWidth()
+        .clickable { withHaptic(view) { onClick() } }
+        .padding(horizontal = 16.dp, vertical = 16.dp),
+    verticalAlignment = Alignment.CenterVertically,
+  ) {
+    Icon(
+      imageVector = icon,
+      contentDescription = null,
+      modifier = Modifier.size(20.dp),
+      tint = colorScheme.onSurface,
+    )
+    Spacer(modifier = Modifier.width(12.dp))
+    Text(
+      text = title,
+      style = typography.bodyLarge,
+      color = colorScheme.onSurface,
+      modifier = Modifier.weight(1f),
+    )
+    if (selected) {
+      Icon(
+        imageVector = Icons.Outlined.Check,
+        contentDescription = null,
+        modifier = Modifier.size(20.dp),
+        tint = colorScheme.onSurface,
+      )
+    }
+  }
+}
+
+@Composable
 fun ApplicationSettingsItemComposable(onClicked: () -> Unit) {
   Row(
     modifier =
@@ -308,4 +370,16 @@ private fun LibraryOrderingOption.toLocalizedName(context: Context): String =
     LibraryOrderingOption.AUTHOR -> context.getString(R.string.settings_screen_library_ordering_author_option)
     LibraryOrderingOption.CREATED_AT -> context.getString(R.string.settings_screen_library_ordering_creation_date_option)
     LibraryOrderingOption.UPDATED_AT -> context.getString(R.string.settings_screen_library_ordering_modification_date_option)
+  }
+
+private fun LibraryGrouping.icon(): ImageVector =
+  when (this) {
+    LibraryGrouping.NONE -> Icons.AutoMirrored.Outlined.List
+    LibraryGrouping.SERIES -> Icons.Outlined.CollectionsBookmark
+  }
+
+private fun LibraryGrouping.toLocalizedName(context: Context): String =
+  when (this) {
+    LibraryGrouping.NONE -> context.getString(R.string.library_grouping_disabled)
+    LibraryGrouping.SERIES -> context.getString(R.string.library_grouping_series)
   }

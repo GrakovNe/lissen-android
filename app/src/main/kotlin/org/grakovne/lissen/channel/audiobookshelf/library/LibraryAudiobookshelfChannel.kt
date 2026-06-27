@@ -23,6 +23,7 @@ import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibraryOrder
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibrarySearchItemsConverter
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.channel.common.OperationResult.Success
+import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryEntry
@@ -101,7 +102,7 @@ class LibraryAudiobookshelfChannel
           sort = option,
           direction = direction,
           filter = filter,
-          collapseSeries = preferences.getGroupBySeries(),
+          collapseSeries = preferences.getLibraryGrouping() == LibraryGrouping.SERIES,
         ).map { libraryPageResponseConverter.applyEntries(it) }
     }
 

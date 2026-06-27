@@ -6,6 +6,7 @@ import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
+import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.content.cache.temporary.CachedBookmarkProvider
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
@@ -179,7 +180,7 @@ class LissenMediaProvider
             libraryId = libraryId,
             pageSize = pageSize,
             pageNumber = pageNumber,
-            groupBySeries = preferences.getGroupBySeries(),
+            groupBySeries = preferences.getLibraryGrouping() == LibraryGrouping.SERIES,
           )
         }
 

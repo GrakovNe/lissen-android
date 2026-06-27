@@ -12,6 +12,7 @@ import org.grakovne.lissen.channel.common.DEFAULT_USER_AGENT
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.common.AudioFocusLossPolicy
 import org.grakovne.lissen.common.ColorScheme
+import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.content.LissenMediaProvider
@@ -110,7 +111,7 @@ class SettingsViewModel
     private val _hideCompleted = preferences.hideCompletedFlow
     val hideCompleted = _hideCompleted
 
-    val groupBySeries = preferences.groupBySeriesFlow
+    val libraryGrouping = preferences.libraryGroupingFlow
 
     private val _autoDownloadDelayed = MutableStateFlow(preferences.getAutoDownloadDelayed())
     val autoDownloadDelayed: StateFlow<Boolean> = _autoDownloadDelayed.asStateFlow()
@@ -156,9 +157,9 @@ class SettingsViewModel
       }
     }
 
-    fun toggleGroupBySeries() {
-      Timber.d("User action: toggleGroupBySeries (current=${preferences.getGroupBySeries()})")
-      preferences.saveGroupBySeries(!preferences.getGroupBySeries())
+    fun preferLibraryGrouping(grouping: LibraryGrouping) {
+      Timber.d("User action: preferLibraryGrouping $grouping")
+      preferences.saveLibraryGrouping(grouping)
     }
 
     fun logout() {
