@@ -144,16 +144,11 @@ class LibraryViewModel
 
         false -> {
           _expandedSeries.value = _expandedSeries.value + series.id
-          // The user's expand fetches immediately, bypassing the prefetch concurrency limit.
           viewModelScope.launch { fetchSeriesBooks(series) }
         }
       }
     }
 
-    /**
-     * Warms the books of a series before it is expanded. Triggered once a series row has dwelled on
-     * screen; throttled by [prefetchSemaphore] so fast scrolling cannot flood the network.
-     */
     fun prefetchSeries(series: LibraryEntry.SeriesEntry) {
       if (alreadyResolved(series.id)) {
         return

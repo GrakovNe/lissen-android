@@ -114,10 +114,6 @@ class CachedBookRepository
 
     suspend fun countBooks(libraryId: String): Int = bookDao.countCachedBooks(libraryId = libraryId)
 
-    /**
-     * Builds the full library list with books of the same series collapsed into a single entry.
-     * Offline we only hold downloaded books, so the collection is small enough to group in memory.
-     */
     suspend fun fetchLibraryGrouped(libraryId: String): List<LibraryEntry> {
       val entities = fetchAllEntities(libraryId)
       val seriesBooks = entities.groupBy { it.seriesId }

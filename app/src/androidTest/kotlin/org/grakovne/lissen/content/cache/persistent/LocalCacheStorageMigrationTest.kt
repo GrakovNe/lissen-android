@@ -29,7 +29,6 @@ class LocalCacheStorageMigrationTest {
       )
     }
 
-    // runMigrationsAndValidate also validates that the resulting schema matches the exported v19 schema.
     val db = helper.runMigrationsAndValidate(TEST_DB, 19, true, MIGRATION_18_19)
 
     db.query("SELECT id, seriesId FROM detailed_books WHERE id = 'book-1'").use { cursor ->

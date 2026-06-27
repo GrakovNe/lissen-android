@@ -47,14 +47,6 @@ import kotlinx.coroutines.flow.collect
 import org.acra.ACRA
 import timber.log.Timber
 
-/**
- * Draws a vertical scrollbar whose thumb size reflects the real content height.
- *
- * Item heights are remembered as they are measured, so a single very tall item (e.g. an expanded
- * series rendering its books inline) contributes its true height instead of distorting an average.
- * The thumb size therefore stays constant while scrolling and only changes when a row's height
- * changes (a series being expanded or collapsed), which is the moment its height is re-measured.
- */
 fun Modifier.withScrollbar(
   state: LazyListState,
   color: Color,
@@ -62,10 +54,8 @@ fun Modifier.withScrollbar(
   ignoreItems: List<String> = emptyList(),
 ): Modifier =
   composed {
-    // Absolute item index -> measured height in pixels.
     val itemHeights = remember { mutableStateMapOf<Int, Int>() }
 
-    // The total item count changes when the library, search results or grouping change; drop stale heights.
     LaunchedEffect(totalItems) {
       itemHeights.clear()
     }
@@ -121,7 +111,6 @@ private fun DrawScope.drawScrollbar(
     return
   }
 
-  // Fall back to the currently visible items until the remembered heights are populated.
   val measured = itemHeights.takeIf { it.isNotEmpty() } ?: visible.associate { it.index to it.size }
 
   val sortedHeights = measured.values.sorted()

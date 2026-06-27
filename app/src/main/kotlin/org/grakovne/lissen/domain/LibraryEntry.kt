@@ -2,10 +2,6 @@ package org.grakovne.lissen.domain
 
 import androidx.annotation.Keep
 
-/**
- * An item shown in the library list. When series grouping is enabled the list mixes
- * standalone [BookEntry] rows with collapsed [SeriesEntry] rows; otherwise every row is a [BookEntry].
- */
 @Keep
 sealed interface LibraryEntry {
   @Keep
@@ -22,7 +18,6 @@ sealed interface LibraryEntry {
     val coverItemIds: List<String>,
   ) : LibraryEntry {
     companion object {
-      /** Maximum number of book covers kept and rendered in a series' cover stack. */
       const val MAX_COVERS = 3
     }
   }

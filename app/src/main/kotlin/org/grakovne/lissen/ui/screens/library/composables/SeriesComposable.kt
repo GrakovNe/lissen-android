@@ -47,7 +47,6 @@ import org.grakovne.lissen.ui.navigation.AppNavigationService
 private val SERIES_COVER_SIZE = 64.dp
 private val SERIES_COVER_STEP = 6.dp
 
-// How long a series row must stay on screen before its books are prefetched.
 private const val SERIES_PREFETCH_DWELL_MS = 200L
 
 @Composable
@@ -63,7 +62,6 @@ fun SeriesComposable(
 ) {
   val context = LocalContext.current
 
-  // The effect lives only while the row is composed, so scrolling past before the dwell cancels it.
   LaunchedEffect(series.id) {
     delay(SERIES_PREFETCH_DWELL_MS)
     onPrefetch()
@@ -156,7 +154,6 @@ fun SeriesComposable(
 
           else -> {
             val sequences = books.mapIndexed { index, book -> book.seriesSequence() ?: "${index + 1}" }
-            // Reserve the width of the longest number so every number is right-aligned under the same edge.
             val widthReserve = "0".repeat(sequences.maxOfOrNull { it.length } ?: 1)
 
             books.forEachIndexed { index, book ->
@@ -175,7 +172,6 @@ fun SeriesComposable(
   }
 }
 
-/** The book's position in the series (e.g. "1", "2.5"), parsed from its formatted series string. */
 private fun Book.seriesSequence(): String? =
   series
     ?.substringAfterLast('#', "")
@@ -197,16 +193,11 @@ private fun SeriesSequenceLabel(
     modifier = Modifier.padding(end = 10.dp),
     contentAlignment = Alignment.CenterEnd,
   ) {
-    // Invisible widest number reserves the column width; the visible one is then right-aligned.
     Text(text = widthReserve, style = style, maxLines = 1, modifier = Modifier.alpha(0f))
     Text(text = number, style = style, maxLines = 1)
   }
 }
 
-/**
- * Renders up to [LibraryEntry.SeriesEntry.MAX_COVERS] covers as an overlapping stack so the row reads
- * as a series, while keeping the same footprint as a regular book cover.
- */
 @Composable
 private fun SeriesCoverStack(
   coverItemIds: List<String>,
@@ -216,8 +207,6 @@ private fun SeriesCoverStack(
   val context = LocalContext.current
   val covers = coverItemIds.take(LibraryEntry.SeriesEntry.MAX_COVERS)
 
-  // The step between cards is constant, while the card size grows as covers get fewer so the stack
-  // always fills the whole box (1 cover -> a full-size cover, no padding; 2 -> 58dp; 3 -> 52dp).
   val cardSize = SERIES_COVER_SIZE - SERIES_COVER_STEP * (covers.size - 1).coerceAtLeast(0)
 
   Box(modifier = Modifier.size(SERIES_COVER_SIZE)) {

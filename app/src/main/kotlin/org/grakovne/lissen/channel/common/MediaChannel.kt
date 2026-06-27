@@ -39,11 +39,6 @@ interface MediaChannel {
     pageNumber: Int,
   ): OperationResult<PagedItems<Book>>
 
-  /**
-   * Library browsing entry point. When series grouping is enabled the result mixes standalone books
-   * with collapsed series entries. The default implementation simply wraps [fetchBooks] so channels
-   * without series support (e.g. podcasts) keep returning plain book entries.
-   */
   suspend fun fetchLibrary(
     libraryId: String,
     pageSize: Int,
@@ -58,9 +53,6 @@ interface MediaChannel {
         )
       }
 
-  /**
-   * Returns the books belonging to a collapsed series, used to expand it in the library list.
-   */
   suspend fun fetchSeriesItems(
     libraryId: String,
     seriesId: String,
