@@ -21,6 +21,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +36,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
 import coil3.request.ImageRequest
+import kotlinx.coroutines.delay
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.LibraryEntry
@@ -43,6 +45,9 @@ import org.grakovne.lissen.ui.navigation.AppNavigationService
 
 private val SERIES_COVER_SIZE = 64.dp
 private val SERIES_COVER_STEP = 6.dp
+
+// How long a series row must stay on screen before its books are prefetched.
+private const val SERIES_PREFETCH_DWELL_MS = 200L
 
 @Composable
 fun SeriesComposable(
@@ -53,8 +58,15 @@ fun SeriesComposable(
   imageLoader: ImageLoader,
   navController: AppNavigationService,
   onToggle: () -> Unit,
+  onPrefetch: () -> Unit,
 ) {
   val context = LocalContext.current
+
+  // The effect lives only while the row is composed, so scrolling past before the dwell cancels it.
+  LaunchedEffect(series.id) {
+    delay(SERIES_PREFETCH_DWELL_MS)
+    onPrefetch()
+  }
 
   Column(modifier = Modifier.fillMaxWidth()) {
     Row(

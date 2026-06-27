@@ -525,6 +525,7 @@ fun LibraryScreen(
                       imageLoader = imageLoader,
                       navController = navController,
                       onToggle = { libraryViewModel.toggleSeries(entry) },
+                      onPrefetch = { libraryViewModel.prefetchSeries(entry) },
                     )
                   }
                 }

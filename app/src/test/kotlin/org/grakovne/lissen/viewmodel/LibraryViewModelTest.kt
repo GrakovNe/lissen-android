@@ -243,6 +243,40 @@ class LibraryViewModelTest {
     }
 
     @Test
+    fun `prefetchSeries loads books into cache without expanding the row`() {
+      every { preferences.getPreferredLibrary() } returns library
+      coEvery { mediaChannel.fetchSeriesItems("lib-1", "ser-1") } returns
+        OperationResult.Success(listOf(book("b1"), book("b2")))
+
+      viewModel.prefetchSeries(series())
+
+      assertEquals(listOf("b1", "b2"), viewModel.seriesBooks.value["ser-1"]?.map { it.id })
+      assertFalse("ser-1" in viewModel.expandedSeries.value)
+    }
+
+    @Test
+    fun `expanding a prefetched series does not trigger a second fetch`() {
+      every { preferences.getPreferredLibrary() } returns library
+      coEvery { mediaChannel.fetchSeriesItems("lib-1", "ser-1") } returns
+        OperationResult.Success(listOf(book("b1")))
+
+      viewModel.prefetchSeries(series())
+      viewModel.toggleSeries(series())
+
+      assertTrue("ser-1" in viewModel.expandedSeries.value)
+      coVerify(exactly = 1) { mediaChannel.fetchSeriesItems("lib-1", "ser-1") }
+    }
+
+    @Test
+    fun `prefetchSeries does not fetch when no preferred library`() {
+      every { preferences.getPreferredLibrary() } returns null
+
+      viewModel.prefetchSeries(series())
+
+      coVerify(exactly = 0) { mediaChannel.fetchSeriesItems(any(), any()) }
+    }
+
+    @Test
     fun `resetSeriesExpansion clears expansion state`() {
       every { preferences.getPreferredLibrary() } returns library
       coEvery { mediaChannel.fetchSeriesItems("lib-1", "ser-1") } returns

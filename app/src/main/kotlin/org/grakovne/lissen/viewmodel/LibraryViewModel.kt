@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Book
@@ -65,6 +67,8 @@ class LibraryViewModel
 
     private val _seriesLoading = MutableStateFlow<Set<String>>(emptySet())
     val seriesLoading: StateFlow<Set<String>> = _seriesLoading.asStateFlow()
+
+    private val prefetchSemaphore = Semaphore(MAX_CONCURRENT_PREFETCH)
 
     private val pageConfig =
       PagingConfig(
@@ -134,8 +138,31 @@ class LibraryViewModel
       Timber.d("User action: toggleSeries ${series.id}")
 
       when (series.id in _expandedSeries.value) {
-        true -> _expandedSeries.value = _expandedSeries.value - series.id
-        false -> expandSeries(series)
+        true -> {
+          _expandedSeries.value = _expandedSeries.value - series.id
+        }
+
+        false -> {
+          _expandedSeries.value = _expandedSeries.value + series.id
+          // The user's expand fetches immediately, bypassing the prefetch concurrency limit.
+          viewModelScope.launch { fetchSeriesBooks(series) }
+        }
+      }
+    }
+
+    /**
+     * Warms the books of a series before it is expanded. Triggered once a series row has dwelled on
+     * screen; throttled by [prefetchSemaphore] so fast scrolling cannot flood the network.
+     */
+    fun prefetchSeries(series: LibraryEntry.SeriesEntry) {
+      if (alreadyResolved(series.id)) {
+        return
+      }
+
+      viewModelScope.launch {
+        prefetchSemaphore.withPermit {
+          fetchSeriesBooks(series)
+        }
       }
     }
 
@@ -145,29 +172,23 @@ class LibraryViewModel
       _seriesLoading.value = emptySet()
     }
 
-    private fun expandSeries(series: LibraryEntry.SeriesEntry) {
-      _expandedSeries.value = _expandedSeries.value + series.id
+    private fun alreadyResolved(seriesId: String): Boolean = _seriesBooks.value.containsKey(seriesId) || seriesId in _seriesLoading.value
 
-      if (_seriesBooks.value.containsKey(series.id)) {
+    private suspend fun fetchSeriesBooks(series: LibraryEntry.SeriesEntry) {
+      if (alreadyResolved(series.id)) {
         return
       }
 
       val libraryId = preferences.getPreferredLibrary()?.id ?: return
 
       _seriesLoading.value = _seriesLoading.value + series.id
-      viewModelScope.launch {
-        mediaChannel
-          .fetchSeriesItems(libraryId = libraryId, seriesId = series.id)
-          .fold(
-            onSuccess = { books ->
-              _seriesBooks.value = _seriesBooks.value + (series.id to books)
-              _seriesLoading.value = _seriesLoading.value - series.id
-            },
-            onFailure = {
-              _seriesLoading.value = _seriesLoading.value - series.id
-            },
-          )
-      }
+      mediaChannel
+        .fetchSeriesItems(libraryId = libraryId, seriesId = series.id)
+        .fold(
+          onSuccess = { books -> _seriesBooks.value = _seriesBooks.value + (series.id to books) },
+          onFailure = { },
+        )
+      _seriesLoading.value = _seriesLoading.value - series.id
     }
 
     fun applyLinkedSearch(token: String) {
@@ -237,5 +258,6 @@ class LibraryViewModel
       private const val PAGE_SIZE = 20
       private const val PAGE_SEARCH_SIZE = 50
       private const val SEARCH_DEBOUNCE_MILLIS = 300L
+      private const val MAX_CONCURRENT_PREFETCH = 3
     }
   }
