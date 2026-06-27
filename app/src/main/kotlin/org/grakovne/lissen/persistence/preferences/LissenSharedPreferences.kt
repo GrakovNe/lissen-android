@@ -311,6 +311,7 @@ class LissenSharedPreferences
 
     val forceCacheFlow = asFlow(CACHE_FORCE_ENABLED, ::isForceCache)
     val hideCompletedFlow = asFlow(KEY_HIDE_COMPLETED, ::getHideCompleted)
+    val groupBySeriesFlow = asFlow(KEY_GROUP_BY_SERIES, ::getGroupBySeries)
     val clientCertAliasFlow = asFlow(KEY_CLIENT_CERT_ALIAS, ::getClientCertAlias)
 
     private fun saveActiveLibraryId(host: String) = sharedPreferences.edit { putString(KEY_PREFERRED_LIBRARY_ID, host) }
@@ -561,6 +562,13 @@ class LissenSharedPreferences
         putBoolean(KEY_HIDE_COMPLETED, value)
       }
 
+    fun getGroupBySeries(): Boolean = sharedPreferences.getBoolean(KEY_GROUP_BY_SERIES, false)
+
+    fun saveGroupBySeries(value: Boolean) =
+      sharedPreferences.edit {
+        putBoolean(KEY_GROUP_BY_SERIES, value)
+      }
+
     fun getDefaultTimerOption(): TimerOption? {
       val json = sharedPreferences.getString(KEY_DEFAULT_SLEEP_TIMER, null) ?: return null
       return try {
@@ -633,6 +641,7 @@ class LissenSharedPreferences
       private const val KEY_AUDIO_FOCUS_LOSS_POLICY = "audio_focus_loss_policy"
       private const val KEY_ACTIVITY_LOGGING = "activity_logging_enabled"
       private const val KEY_HIDE_COMPLETED = "hide_completed"
+      private const val KEY_GROUP_BY_SERIES = "group_by_series"
 
       private const val KEY_CUSTOM_HEADERS = "custom_headers"
       private const val KEY_BYPASS_SSL = "bypass_ssl"

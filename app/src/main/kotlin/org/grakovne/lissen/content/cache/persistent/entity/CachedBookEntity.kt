@@ -47,6 +47,7 @@ data class BookEntity(
   val libraryId: String?,
   val seriesJson: String?, // List<BookSeriesDto> Json
   val seriesNames: String?,
+  val seriesId: String?, // primary series id, used to group the library by series
   val createdAt: Long,
   val updatedAt: Long,
 ) : Serializable
@@ -118,4 +119,5 @@ data class MediaProgressEntity(
 data class BookSeriesDto(
   val title: String,
   val sequence: String?,
+  val id: String? = null,
 )

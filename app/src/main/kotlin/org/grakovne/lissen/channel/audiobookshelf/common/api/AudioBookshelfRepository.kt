@@ -1,5 +1,6 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.api
 
+import android.util.Base64
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okio.Buffer
@@ -90,6 +91,7 @@ class AudioBookshelfRepository
       sort: String,
       direction: String,
       filter: String?,
+      collapseSeries: Boolean = false,
     ): OperationResult<LibraryItemsResponse> =
       audioBookShelfApiService.makeRequest {
         it.fetchLibraryItems(
@@ -99,8 +101,26 @@ class AudioBookshelfRepository
           sort = sort,
           desc = direction,
           filter = filter,
+          collapseSeries = if (collapseSeries) "1" else "0",
         )
       }
+
+    suspend fun fetchSeriesItems(
+      libraryId: String,
+      seriesId: String,
+    ): OperationResult<LibraryItemsResponse> =
+      audioBookShelfApiService.makeRequest {
+        it.fetchLibraryItems(
+          libraryId = libraryId,
+          pageSize = SERIES_ITEMS_LIMIT,
+          pageNumber = 0,
+          sort = "sequence",
+          desc = "0",
+          filter = "series." + seriesId.encodeSeriesFilter(),
+        )
+      }
+
+    private fun String.encodeSeriesFilter(): String = Base64.encodeToString(toByteArray(Charsets.UTF_8), Base64.NO_WRAP)
 
     suspend fun fetchPodcastItems(
       libraryId: String,
@@ -238,4 +258,8 @@ class AudioBookshelfRepository
             }
           }
         }
+
+    companion object {
+      private const val SERIES_ITEMS_LIMIT = 500
+    }
   }

@@ -16,6 +16,7 @@ import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.CloudOff
+import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.SortByAlpha
@@ -63,6 +64,7 @@ fun QuickSettingsComposable(
   onDismissRequest: () -> Unit,
   onForceLocalToggled: () -> Unit,
   onHideCompletedToggled: () -> Unit,
+  onGroupBySeriesToggled: () -> Unit,
   onSortingChanged: () -> Unit,
   navController: AppNavigationService,
   settingsModelView: SettingsViewModel = hiltViewModel(),
@@ -70,6 +72,7 @@ fun QuickSettingsComposable(
 ) {
   val forceCache by cachingModelView.forceCache.collectAsState(false)
   val hideCompleted by settingsModelView.hideCompleted.collectAsState(false)
+  val groupBySeries by settingsModelView.groupBySeries.collectAsState(false)
   val ordering by settingsModelView.preferredLibraryOrdering.collectAsState()
   val context = LocalContext.current
 
@@ -99,6 +102,13 @@ fun QuickSettingsComposable(
           icon = Icons.Outlined.VisibilityOff,
           checked = hideCompleted,
           onClick = { onHideCompletedToggled() },
+        )
+
+        ToggleRow(
+          title = stringResource(R.string.group_by_series),
+          icon = Icons.Outlined.Layers,
+          checked = groupBySeries,
+          onClick = { onGroupBySeriesToggled() },
         )
       }
 

@@ -25,6 +25,7 @@ import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.channel.common.OperationResult.Success
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackSession
@@ -83,6 +84,34 @@ class LibraryAudiobookshelfChannel
           filter = filter,
         ).map { libraryPageResponseConverter.apply(it) }
     }
+
+    override suspend fun fetchLibrary(
+      libraryId: String,
+      pageSize: Int,
+      pageNumber: Int,
+    ): OperationResult<PagedItems<LibraryEntry>> {
+      val (option, direction) = libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering())
+      val filter = libraryFilteringRequestConverter.apply(preferences)
+
+      return dataRepository
+        .fetchLibraryItems(
+          libraryId = libraryId,
+          pageSize = pageSize,
+          pageNumber = pageNumber,
+          sort = option,
+          direction = direction,
+          filter = filter,
+          collapseSeries = preferences.getGroupBySeries(),
+        ).map { libraryPageResponseConverter.applyEntries(it) }
+    }
+
+    override suspend fun fetchSeriesItems(
+      libraryId: String,
+      seriesId: String,
+    ): OperationResult<List<Book>> =
+      dataRepository
+        .fetchSeriesItems(libraryId = libraryId, seriesId = seriesId)
+        .map { librarySearchItemsConverter.apply(it.results) }
 
     override suspend fun searchBooks(
       libraryId: String,

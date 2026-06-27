@@ -47,10 +47,15 @@ interface CachedBookDao {
           book
             .series
             .joinToString(" ") { it.name },
+        seriesId =
+          book
+            .series
+            .firstOrNull()
+            ?.id,
         seriesJson =
           book
             .series
-            .map { BookSeriesDto(title = it.name, sequence = it.serialNumber) }
+            .map { BookSeriesDto(title = it.name, sequence = it.serialNumber, id = it.id) }
             .let {
               adapter.toJson(it)
             },

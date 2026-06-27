@@ -2,17 +2,22 @@ package org.grakovne.lissen.content.cache.persistent.api
 
 import android.net.Uri
 import androidx.core.net.toUri
+import com.squareup.moshi.Types
 import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.common.LibraryOrderingOption
+import org.grakovne.lissen.common.moshi
 import org.grakovne.lissen.content.cache.persistent.OfflineBookStorageProperties
 import org.grakovne.lissen.content.cache.persistent.converter.CachedBookEntityConverter
 import org.grakovne.lissen.content.cache.persistent.converter.CachedBookEntityDetailedConverter
 import org.grakovne.lissen.content.cache.persistent.converter.CachedBookEntityRecentConverter
 import org.grakovne.lissen.content.cache.persistent.converter.MediaProgressEntityConverter
 import org.grakovne.lissen.content.cache.persistent.dao.CachedBookDao
+import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
+import org.grakovne.lissen.content.cache.persistent.entity.BookSeriesDto
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.RecentBook
@@ -107,6 +112,78 @@ class CachedBookRepository
     }
 
     suspend fun countBooks(libraryId: String): Int = bookDao.countCachedBooks(libraryId = libraryId)
+
+    /**
+     * Builds the full library list with books of the same series collapsed into a single entry.
+     * Offline we only hold downloaded books, so the collection is small enough to group in memory.
+     */
+    suspend fun fetchLibraryGrouped(libraryId: String): List<LibraryEntry> {
+      val entities = fetchAllEntities(libraryId)
+      val seriesSizes = entities.groupingBy { it.seriesId }.eachCount()
+      val collapsedSeries = mutableSetOf<String>()
+
+      return entities.mapNotNull { entity ->
+        when (val seriesId = entity.seriesId) {
+          null -> {
+            LibraryEntry.BookEntry(cachedBookEntityConverter.apply(entity))
+          }
+
+          else -> {
+            when (collapsedSeries.add(seriesId)) {
+              true -> {
+                LibraryEntry.SeriesEntry(
+                  id = seriesId,
+                  title = entity.primarySeriesName() ?: seriesId,
+                  bookCount = seriesSizes[seriesId] ?: 0,
+                  coverItemId = entity.id,
+                )
+              }
+
+              false -> {
+                null
+              }
+            }
+          }
+        }
+      }
+    }
+
+    suspend fun fetchSeriesItems(
+      libraryId: String,
+      seriesId: String,
+    ): List<Book> =
+      fetchAllEntities(libraryId)
+        .filter { it.seriesId == seriesId }
+        .map { cachedBookEntityConverter.apply(it) }
+
+    private suspend fun fetchAllEntities(libraryId: String): List<BookEntity> {
+      val (option, direction) = buildOrdering()
+      val total = countBooks(libraryId)
+
+      if (total == 0) {
+        return emptyList()
+      }
+
+      val request =
+        FetchRequestBuilder()
+          .libraryId(libraryId)
+          .pageNumber(0)
+          .pageSize(total)
+          .orderField(option)
+          .orderDirection(direction)
+          .hideCompleted(preferences.getHideCompleted())
+          .build()
+
+      return bookDao.fetchCachedBooks(request)
+    }
+
+    private fun BookEntity.primarySeriesName(): String? =
+      seriesJson
+        ?.let {
+          val type = Types.newParameterizedType(List::class.java, BookSeriesDto::class.java)
+          moshi.adapter<List<BookSeriesDto>>(type).fromJson(it)
+        }?.firstOrNull()
+        ?.title
 
     suspend fun searchBooks(
       libraryId: String,

@@ -8,6 +8,7 @@ import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.CreateBookmarkRequest
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
+import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
@@ -37,6 +38,33 @@ interface MediaChannel {
     pageSize: Int,
     pageNumber: Int,
   ): OperationResult<PagedItems<Book>>
+
+  /**
+   * Library browsing entry point. When series grouping is enabled the result mixes standalone books
+   * with collapsed series entries. The default implementation simply wraps [fetchBooks] so channels
+   * without series support (e.g. podcasts) keep returning plain book entries.
+   */
+  suspend fun fetchLibrary(
+    libraryId: String,
+    pageSize: Int,
+    pageNumber: Int,
+  ): OperationResult<PagedItems<LibraryEntry>> =
+    fetchBooks(libraryId, pageSize, pageNumber)
+      .map { paged ->
+        PagedItems(
+          items = paged.items.map { LibraryEntry.BookEntry(it) },
+          currentPage = paged.currentPage,
+          totalItems = paged.totalItems,
+        )
+      }
+
+  /**
+   * Returns the books belonging to a collapsed series, used to expand it in the library list.
+   */
+  suspend fun fetchSeriesItems(
+    libraryId: String,
+    seriesId: String,
+  ): OperationResult<List<Book>> = OperationResult.Success(emptyList())
 
   suspend fun searchBooks(
     libraryId: String,

@@ -16,6 +16,15 @@ data class LibraryItemsResponse(
 data class LibraryItem(
   val id: String,
   val media: Media,
+  val collapsedSeries: CollapsedSeries? = null,
+)
+
+@Keep
+@JsonClass(generateAdapter = true)
+data class CollapsedSeries(
+  val id: String,
+  val name: String,
+  val numBooks: Int?,
 )
 
 @Keep

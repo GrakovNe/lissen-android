@@ -11,6 +11,7 @@ import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
+import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
@@ -114,6 +115,44 @@ class LocalCacheRepository
           ),
         )
     }
+
+    suspend fun fetchLibrary(
+      libraryId: String,
+      pageSize: Int,
+      pageNumber: Int,
+      groupBySeries: Boolean,
+    ): OperationResult<PagedItems<LibraryEntry>> {
+      if (!groupBySeries) {
+        return fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
+          .map { paged ->
+            PagedItems(
+              items = paged.items.map { LibraryEntry.BookEntry(it) },
+              currentPage = paged.currentPage,
+              totalItems = paged.totalItems,
+            )
+          }
+      }
+
+      val entries = cachedBookRepository.fetchLibraryGrouped(libraryId)
+      val fromIndex = (pageNumber * pageSize).coerceIn(0, entries.size)
+      val toIndex = (fromIndex + pageSize).coerceIn(0, entries.size)
+
+      return OperationResult.Success(
+        PagedItems(
+          items = entries.subList(fromIndex, toIndex),
+          currentPage = pageNumber,
+          totalItems = entries.size,
+        ),
+      )
+    }
+
+    suspend fun fetchSeriesItems(
+      libraryId: String,
+      seriesId: String,
+    ): OperationResult<List<Book>> =
+      cachedBookRepository
+        .fetchSeriesItems(libraryId = libraryId, seriesId = seriesId)
+        .let { OperationResult.Success(it) }
 
     suspend fun fetchLibraries(): OperationResult<List<Library>> =
       cachedLibraryRepository

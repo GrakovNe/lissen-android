@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Book
+import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
@@ -50,11 +51,20 @@ class LibraryViewModel
     private val _searchToken = MutableStateFlow(EMPTY_SEARCH)
     val searchToken: StateFlow<String> = _searchToken.asStateFlow()
 
-    private var defaultPagingSource: PagingSource<Int, Book>? = null
-    private var searchPagingSource: PagingSource<Int, Book>? = null
+    private var defaultPagingSource: PagingSource<Int, LibraryEntry>? = null
+    private var searchPagingSource: PagingSource<Int, LibraryEntry>? = null
 
     private val _totalCount = MutableStateFlow(0)
     val totalCount: StateFlow<Int> = _totalCount.asStateFlow()
+
+    private val _expandedSeries = MutableStateFlow<Set<String>>(emptySet())
+    val expandedSeries: StateFlow<Set<String>> = _expandedSeries.asStateFlow()
+
+    private val _seriesBooks = MutableStateFlow<Map<String, List<Book>>>(emptyMap())
+    val seriesBooks: StateFlow<Map<String, List<Book>>> = _seriesBooks.asStateFlow()
+
+    private val _seriesLoading = MutableStateFlow<Set<String>>(emptySet())
+    val seriesLoading: StateFlow<Set<String>> = _seriesLoading.asStateFlow()
 
     private val pageConfig =
       PagingConfig(
@@ -69,7 +79,7 @@ class LibraryViewModel
         false -> libraryPager
       }
 
-    private val searchPager: Flow<PagingData<Book>> =
+    private val searchPager: Flow<PagingData<LibraryEntry>> =
       combine(
         _searchToken.debounce(SEARCH_DEBOUNCE_MILLIS),
         _searchRequested,
@@ -93,7 +103,7 @@ class LibraryViewModel
         ).flow
       }.cachedIn(viewModelScope)
 
-    private val libraryPager: Flow<PagingData<Book>> by lazy {
+    private val libraryPager: Flow<PagingData<LibraryEntry>> by lazy {
       Pager(
         config = pageConfig,
         pagingSourceFactory = {
@@ -118,6 +128,46 @@ class LibraryViewModel
 
     fun updateSearch(token: String) {
       viewModelScope.launch { _searchToken.emit(token) }
+    }
+
+    fun toggleSeries(series: LibraryEntry.SeriesEntry) {
+      Timber.d("User action: toggleSeries ${series.id}")
+
+      when (series.id in _expandedSeries.value) {
+        true -> _expandedSeries.value = _expandedSeries.value - series.id
+        false -> expandSeries(series)
+      }
+    }
+
+    fun resetSeriesExpansion() {
+      _expandedSeries.value = emptySet()
+      _seriesBooks.value = emptyMap()
+      _seriesLoading.value = emptySet()
+    }
+
+    private fun expandSeries(series: LibraryEntry.SeriesEntry) {
+      _expandedSeries.value = _expandedSeries.value + series.id
+
+      if (_seriesBooks.value.containsKey(series.id)) {
+        return
+      }
+
+      val libraryId = preferences.getPreferredLibrary()?.id ?: return
+
+      _seriesLoading.value = _seriesLoading.value + series.id
+      viewModelScope.launch {
+        mediaChannel
+          .fetchSeriesItems(libraryId = libraryId, seriesId = series.id)
+          .fold(
+            onSuccess = { books ->
+              _seriesBooks.value = _seriesBooks.value + (series.id to books)
+              _seriesLoading.value = _seriesLoading.value - series.id
+            },
+            onFailure = {
+              _seriesLoading.value = _seriesLoading.value - series.id
+            },
+          )
+      }
     }
 
     fun applyLinkedSearch(token: String) {

@@ -63,6 +63,7 @@ class CachedBookEntityDetailedConverter
               adapter.fromJson(it)
             }?.map {
               BookSeries(
+                id = it.id,
                 name = it.title,
                 serialNumber = it.sequence,
               )

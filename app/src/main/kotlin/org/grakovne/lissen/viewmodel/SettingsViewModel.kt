@@ -110,6 +110,8 @@ class SettingsViewModel
     private val _hideCompleted = preferences.hideCompletedFlow
     val hideCompleted = _hideCompleted
 
+    val groupBySeries = preferences.groupBySeriesFlow
+
     private val _autoDownloadDelayed = MutableStateFlow(preferences.getAutoDownloadDelayed())
     val autoDownloadDelayed: StateFlow<Boolean> = _autoDownloadDelayed.asStateFlow()
 
@@ -152,6 +154,11 @@ class SettingsViewModel
         true -> preferences.saveHideCompleted(false)
         false -> preferences.saveHideCompleted(true)
       }
+    }
+
+    fun toggleGroupBySeries() {
+      Timber.d("User action: toggleGroupBySeries (current=${preferences.getGroupBySeries()})")
+      preferences.saveGroupBySeries(!preferences.getGroupBySeries())
     }
 
     fun logout() {

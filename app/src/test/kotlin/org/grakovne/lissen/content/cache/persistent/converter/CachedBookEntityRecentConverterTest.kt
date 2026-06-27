@@ -25,6 +25,7 @@ class CachedBookEntityRecentConverterTest {
     libraryId = "lib-1",
     seriesJson = null,
     seriesNames = null,
+    seriesId = null,
     createdAt = 0L,
     updatedAt = 0L,
   )
