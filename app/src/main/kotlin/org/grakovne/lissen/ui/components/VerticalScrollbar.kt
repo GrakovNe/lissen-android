@@ -71,30 +71,36 @@ fun Modifier.withScrollbar(
         return@baseScrollbar
       }
 
-      val itemsSize = items.sumOf { it.size }
       val count = totalItems ?: layoutInfo.totalItemsCount
-
-      if (items.size < count || itemsSize > viewportSize) {
-        // Use the median instead of the mean so a single very tall item (e.g. an expanded series with
-        // its books rendered inline) does not distort the estimated row height and make the thumb jump.
-        val itemSize = items.map { it.size }.sorted()[items.size / 2].toFloat()
-
-        val totalSize = itemSize * count
-        val canvasSize = size.height
-        val thumbSize = (viewportSize / totalSize) * canvasSize
-
-        if (thumbSize > canvasSize * 0.95) {
-          return@baseScrollbar
-        }
-
-        val startOffset =
-          items
-            .firstOrNull()
-            ?.let { (itemSize * it.index - it.offset) / totalSize * canvasSize }
-            ?: 0f
-
-        drawScrollbarThumb(atEnd, thumbSize, startOffset, color)
+      if (count <= 0) {
+        return@baseScrollbar
       }
+
+      // The list also contains a few leading items (recent books, title) that are excluded from `count`.
+      // Account for them so absolute item indices line up with the total item count.
+      val fullCount = (count + ignoreItems.size).coerceAtLeast(1)
+
+      val first = items.first()
+      val last = items.last()
+
+      // Position and thumb size are measured in item units, where progress inside an item is taken from
+      // that item's own height. This keeps the scrollbar stable even when a single item (e.g. an expanded
+      // series rendering its books inline) is much taller than the rest.
+      val topPosition = first.index + (-first.offset.toFloat() / first.size.coerceAtLeast(1)).coerceIn(0f, 1f)
+      val bottomPosition =
+        last.index + ((viewportSize - last.offset).toFloat() / last.size.coerceAtLeast(1)).coerceIn(0f, 1f)
+
+      val visibleFraction = ((bottomPosition - topPosition) / fullCount).coerceIn(0f, 1f)
+
+      if (visibleFraction >= 0.95f) {
+        return@baseScrollbar
+      }
+
+      val canvasSize = size.height
+      val thumbSize = visibleFraction * canvasSize
+      val startOffset = (topPosition / fullCount) * canvasSize
+
+      drawScrollbarThumb(atEnd, thumbSize, startOffset, color)
     }
   } catch (ex: Exception) {
     Timber.w("Unable to apply scrollbar due to ${ex.message}")

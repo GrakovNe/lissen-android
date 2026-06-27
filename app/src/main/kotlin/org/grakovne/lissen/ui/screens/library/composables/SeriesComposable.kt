@@ -45,9 +45,6 @@ private const val SERIES_COVER_COUNT = 3
 private val SERIES_COVER_SIZE = 64.dp
 private val SERIES_COVER_STEP = 6.dp
 
-// A single card is shrunk so that the full stack of [SERIES_COVER_COUNT] cards still fits [SERIES_COVER_SIZE].
-private val SERIES_COVER_CARD_SIZE = SERIES_COVER_SIZE - SERIES_COVER_STEP * (SERIES_COVER_COUNT - 1)
-
 @Composable
 fun SeriesComposable(
   series: LibraryEntry.SeriesEntry,
@@ -173,17 +170,15 @@ private fun SeriesCoverStack(
   val context = LocalContext.current
   val covers = coverItemIds.take(SERIES_COVER_COUNT)
 
-  // The card size and the step are constant regardless of how many covers we have, so a stack of
-  // two looks like a stack of three with one card missing. The cards are centered within the box.
-  val fullSpan = SERIES_COVER_STEP * (SERIES_COVER_COUNT - 1)
-  val usedSpan = SERIES_COVER_STEP * (covers.size - 1).coerceAtLeast(0)
-  val leadingOffset = (fullSpan - usedSpan) / 2
+  // The step between cards is constant, while the card size grows as covers get fewer so the stack
+  // always fills the whole box (1 cover -> a full-size cover, no padding; 2 -> 58dp; 3 -> 52dp).
+  val cardSize = SERIES_COVER_SIZE - SERIES_COVER_STEP * (covers.size - 1).coerceAtLeast(0)
 
   Box(modifier = Modifier.size(SERIES_COVER_SIZE)) {
     covers
       .asReversed()
       .forEachIndexed { index, coverId ->
-        val offset = leadingOffset + SERIES_COVER_STEP * index
+        val offset = SERIES_COVER_STEP * index
         val imageRequest =
           remember(coverId) {
             ImageRequest
@@ -200,7 +195,7 @@ private fun SeriesCoverStack(
           modifier =
             Modifier
               .offset(x = offset, y = offset)
-              .size(SERIES_COVER_CARD_SIZE)
+              .size(cardSize)
               .shadow(2.dp, RoundedCornerShape(4.dp))
               .clip(RoundedCornerShape(4.dp)),
           error = painterResource(R.drawable.cover_fallback),
