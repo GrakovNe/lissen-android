@@ -20,5 +20,10 @@ sealed interface LibraryEntry {
     val author: String?,
     val bookCount: Int,
     val coverItemIds: List<String>,
-  ) : LibraryEntry
+  ) : LibraryEntry {
+    companion object {
+      /** Maximum number of book covers kept and rendered in a series' cover stack. */
+      const val MAX_COVERS = 3
+    }
+  }
 }

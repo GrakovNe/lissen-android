@@ -41,7 +41,6 @@ import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 
-private const val SERIES_COVER_COUNT = 3
 private val SERIES_COVER_SIZE = 64.dp
 private val SERIES_COVER_STEP = 6.dp
 
@@ -158,8 +157,8 @@ fun SeriesComposable(
 }
 
 /**
- * Renders up to [SERIES_COVER_COUNT] covers as an overlapping stack so the row reads as a series,
- * while keeping the same footprint as a regular book cover.
+ * Renders up to [LibraryEntry.SeriesEntry.MAX_COVERS] covers as an overlapping stack so the row reads
+ * as a series, while keeping the same footprint as a regular book cover.
  */
 @Composable
 private fun SeriesCoverStack(
@@ -168,7 +167,7 @@ private fun SeriesCoverStack(
   imageLoader: ImageLoader,
 ) {
   val context = LocalContext.current
-  val covers = coverItemIds.take(SERIES_COVER_COUNT)
+  val covers = coverItemIds.take(LibraryEntry.SeriesEntry.MAX_COVERS)
 
   // The step between cards is constant, while the card size grows as covers get fewer so the stack
   // always fills the whole box (1 cover -> a full-size cover, no padding; 2 -> 58dp; 3 -> 52dp).

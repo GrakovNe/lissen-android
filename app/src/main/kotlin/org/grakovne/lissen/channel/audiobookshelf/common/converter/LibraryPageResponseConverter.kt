@@ -46,7 +46,7 @@ class LibraryPageResponseConverter
                   collapsed
                     .libraryItemIds
                     ?.takeIf { it.isNotEmpty() }
-                    ?.take(SERIES_COVERS_LIMIT)
+                    ?.take(LibraryEntry.SeriesEntry.MAX_COVERS)
                     ?: listOf(item.id),
               )
             }
@@ -69,9 +69,5 @@ class LibraryPageResponseConverter
         subtitle = media.metadata.subtitle,
         author = media.metadata.authorName,
       )
-    }
-
-    companion object {
-      private const val SERIES_COVERS_LIMIT = 3
     }
   }
