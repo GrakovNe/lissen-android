@@ -37,7 +37,6 @@ class SeriesCoverComposer
       val canvasSize = (SIZE_DP * density).roundToInt()
       val step = STEP_DP * density
       val corner = CORNER_DP * density
-      val shadowRadius = SHADOW_DP * density
       val cardSize = canvasSize - step * (bitmaps.size - 1)
 
       val result = createBitmap(canvasSize, canvasSize)
@@ -48,13 +47,6 @@ class SeriesCoverComposer
         .forEachIndexed { index, bitmap ->
           val origin = step * index
           val rect = RectF(origin, origin, origin + cardSize, origin + cardSize)
-
-          val shadowPaint =
-            Paint(Paint.ANTI_ALIAS_FLAG).apply {
-              color = CARD_COLOR
-              setShadowLayer(shadowRadius, 0f, shadowRadius / 2, SHADOW_COLOR)
-            }
-          canvas.drawRoundRect(rect, corner, corner, shadowPaint)
 
           val matrix =
             Matrix().apply {
@@ -85,8 +77,5 @@ class SeriesCoverComposer
       private const val SIZE_DP = 64f
       private const val STEP_DP = 6f
       private const val CORNER_DP = 4f
-      private const val SHADOW_DP = 2f
-      private const val CARD_COLOR = 0xFFFFFFFF.toInt()
-      private const val SHADOW_COLOR = 0x40000000
     }
   }
