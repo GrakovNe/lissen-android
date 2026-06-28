@@ -3,10 +3,12 @@ package org.grakovne.lissen.content.cache.common
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.BitmapShader
 import android.graphics.Canvas
+import android.graphics.Matrix
 import android.graphics.Paint
-import android.graphics.Path
 import android.graphics.RectF
+import android.graphics.Shader
 import androidx.core.graphics.createBitmap
 import dagger.hilt.android.qualifiers.ApplicationContext
 import okio.Buffer
@@ -54,10 +56,19 @@ class SeriesCoverComposer
             }
           canvas.drawRoundRect(rect, corner, corner, shadowPaint)
 
-          canvas.save()
-          canvas.clipPath(Path().apply { addRoundRect(rect, corner, corner, Path.Direction.CW) })
-          canvas.drawBitmap(bitmap, null, rect, Paint(Paint.FILTER_BITMAP_FLAG))
-          canvas.restore()
+          val matrix =
+            Matrix().apply {
+              setScale(cardSize / bitmap.width, cardSize / bitmap.height)
+              postTranslate(origin, origin)
+            }
+          val imagePaint =
+            Paint(Paint.ANTI_ALIAS_FLAG).apply {
+              isFilterBitmap = true
+              shader =
+                BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+                  .apply { setLocalMatrix(matrix) }
+            }
+          canvas.drawRoundRect(rect, corner, corner, imagePaint)
         }
 
       bitmaps.forEach { it.recycle() }
