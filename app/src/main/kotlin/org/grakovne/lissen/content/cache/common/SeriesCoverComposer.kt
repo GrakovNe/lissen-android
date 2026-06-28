@@ -42,26 +42,25 @@ class SeriesCoverComposer
       val result = createBitmap(canvasSize, canvasSize)
       val canvas = Canvas(result)
 
-      bitmaps
-        .asReversed()
-        .forEachIndexed { index, bitmap ->
-          val origin = step * index
-          val rect = RectF(origin, origin, origin + cardSize, origin + cardSize)
+      bitmaps.indices.reversed().forEach { index ->
+        val bitmap = bitmaps[index]
+        val origin = step * index
+        val rect = RectF(origin, origin, origin + cardSize, origin + cardSize)
 
-          val matrix =
-            Matrix().apply {
-              setScale(cardSize / bitmap.width, cardSize / bitmap.height)
-              postTranslate(origin, origin)
-            }
-          val imagePaint =
-            Paint(Paint.ANTI_ALIAS_FLAG).apply {
-              isFilterBitmap = true
-              shader =
-                BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
-                  .apply { setLocalMatrix(matrix) }
-            }
-          canvas.drawRoundRect(rect, corner, corner, imagePaint)
-        }
+        val matrix =
+          Matrix().apply {
+            setScale(cardSize / bitmap.width, cardSize / bitmap.height)
+            postTranslate(origin, origin)
+          }
+        val imagePaint =
+          Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            isFilterBitmap = true
+            shader =
+              BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+                .apply { setLocalMatrix(matrix) }
+          }
+        canvas.drawRoundRect(rect, corner, corner, imagePaint)
+      }
 
       bitmaps.forEach { it.recycle() }
 
