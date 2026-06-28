@@ -13,8 +13,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.grakovne.lissen.ui.components.LissenToggle
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,19 +52,12 @@ fun CommonSettingsMultiItemComposable(
                 Row { Text(item.first.name) }
               },
               trailingContent = {
-                Switch(
+                LissenToggle(
                   checked = isChecked,
                   onCheckedChange = {
                     isChecked = it
                     onItemChanged(item.first.id, it)
                   },
-                  colors =
-                    SwitchDefaults.colors(
-                      uncheckedTrackColor = colorScheme.background,
-                      checkedBorderColor = colorScheme.onSurface,
-                      checkedThumbColor = colorScheme.onSurface,
-                      checkedTrackColor = colorScheme.background,
-                    ),
                 )
               },
             )
