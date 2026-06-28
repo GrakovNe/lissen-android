@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme.colorScheme
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -47,27 +48,39 @@ fun LissenToggle(
     label = "toggleThumbColor",
   )
 
+  val interaction =
+    when {
+      onCheckedChange != null && enabled -> {
+        Modifier
+          .minimumInteractiveComponentSize()
+          .clickable { withHaptic(view) { onCheckedChange(!checked) } }
+      }
+
+      else -> {
+        Modifier
+      }
+    }
+
   Box(
-    modifier =
-      modifier
-        .alpha(if (enabled) 1f else 0.4f)
-        .size(width = trackWidth, height = trackHeight)
-        .clip(CircleShape)
-        .let {
-          when {
-            onCheckedChange != null && enabled -> it.clickable { withHaptic(view) { onCheckedChange(!checked) } }
-            else -> it
-          }
-        }.background(trackColor),
+    modifier = modifier.alpha(if (enabled) 1f else 0.4f).then(interaction),
+    contentAlignment = Alignment.Center,
   ) {
     Box(
       modifier =
         Modifier
-          .align(Alignment.CenterStart)
-          .offset { IntOffset(x = thumbOffset.roundToPx(), y = 0) }
-          .size(thumbSize)
+          .size(width = trackWidth, height = trackHeight)
           .clip(CircleShape)
-          .background(thumbColor),
-    )
+          .background(trackColor),
+    ) {
+      Box(
+        modifier =
+          Modifier
+            .align(Alignment.CenterStart)
+            .offset { IntOffset(x = thumbOffset.roundToPx(), y = 0) }
+            .size(thumbSize)
+            .clip(CircleShape)
+            .background(thumbColor),
+      )
+    }
   }
 }
