@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
@@ -24,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -212,7 +214,10 @@ private fun SeriesCoverStack(
     imageLoader = imageLoader,
     contentDescription = contentDescription,
     contentScale = ContentScale.Fit,
-    modifier = Modifier.size(LibraryItemCoverSize),
+    modifier =
+      Modifier
+        .size(LibraryItemCoverSize)
+        .clip(RoundedCornerShape(4.dp)),
     error = painterResource(R.drawable.cover_fallback),
   )
 }
