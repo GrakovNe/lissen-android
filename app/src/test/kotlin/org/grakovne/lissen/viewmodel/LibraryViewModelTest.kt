@@ -194,6 +194,20 @@ class LibraryViewModelTest {
 
     private fun book(id: String) = Book(id = id, subtitle = null, series = "Dune", title = "Title $id", author = "Frank Herbert")
 
+    private fun seqBook(sequence: String) =
+      Book(id = sequence, subtitle = null, series = "Dune #$sequence", title = "Title $sequence", author = "Frank Herbert")
+
+    @Test
+    fun `series books are exposed sorted by ascending series index`() {
+      every { preferences.getPreferredLibrary() } returns library
+      coEvery { mediaChannel.fetchSeriesItems("lib-1", "ser-1") } returns
+        OperationResult.Success(listOf(seqBook("22"), seqBook("2"), seqBook("1")))
+
+      viewModel.toggleSeries(series())
+
+      assertEquals(listOf("1", "2", "22"), viewModel.seriesBooks.value["ser-1"]?.map { it.id })
+    }
+
     @Test
     fun `toggleSeries expands and loads the series books`() {
       every { preferences.getPreferredLibrary() } returns library

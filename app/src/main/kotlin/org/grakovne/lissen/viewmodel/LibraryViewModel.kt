@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.grakovne.lissen.common.sortedBySeriesPosition
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.LibraryEntry
@@ -172,7 +173,7 @@ class LibraryViewModel
       mediaChannel
         .fetchSeriesItems(libraryId = libraryId, seriesId = series.id)
         .fold(
-          onSuccess = { books -> _seriesBooks.value = _seriesBooks.value + (series.id to books) },
+          onSuccess = { books -> _seriesBooks.value = _seriesBooks.value + (series.id to books.sortedBySeriesPosition()) },
           onFailure = { },
         )
       _seriesLoading.value = _seriesLoading.value - series.id

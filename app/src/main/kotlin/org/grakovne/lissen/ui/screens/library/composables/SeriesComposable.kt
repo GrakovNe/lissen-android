@@ -40,6 +40,7 @@ import coil3.request.ImageRequest
 import kotlinx.coroutines.delay
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.LibraryGrouping
+import org.grakovne.lissen.common.seriesSequence
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
@@ -173,12 +174,6 @@ fun SeriesComposable(
     }
   }
 }
-
-private fun Book.seriesSequence(): String? =
-  series
-    ?.substringAfterLast('#', "")
-    ?.trim()
-    ?.takeIf { it.isNotEmpty() }
 
 @Composable
 private fun SeriesSequenceLabel(
