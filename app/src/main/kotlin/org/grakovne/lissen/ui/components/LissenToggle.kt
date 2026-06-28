@@ -3,6 +3,7 @@ package org.grakovne.lissen.ui.components
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
@@ -16,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -39,12 +41,16 @@ fun LissenToggle(
     targetValue = if (checked) trackWidth - thumbSize - gap else gap,
     label = "toggleThumbOffset",
   )
-  val trackColor by animateColorAsState(
-    targetValue = if (checked) colorScheme.onSurface else colorScheme.onSurface.copy(alpha = 0.15f),
-    label = "toggleTrackColor",
+  val trackFill by animateColorAsState(
+    targetValue = if (checked) colorScheme.onSurface else Color.Transparent,
+    label = "toggleTrackFill",
+  )
+  val borderColor by animateColorAsState(
+    targetValue = if (checked) Color.Transparent else colorScheme.onSurface.copy(alpha = 0.30f),
+    label = "toggleBorderColor",
   )
   val thumbColor by animateColorAsState(
-    targetValue = if (checked) colorScheme.surface else colorScheme.onSurface.copy(alpha = 0.55f),
+    targetValue = if (checked) colorScheme.surface else colorScheme.onSurface.copy(alpha = 0.45f),
     label = "toggleThumbColor",
   )
 
@@ -70,7 +76,8 @@ fun LissenToggle(
         Modifier
           .size(width = trackWidth, height = trackHeight)
           .clip(CircleShape)
-          .background(trackColor),
+          .background(trackFill)
+          .border(width = 1.5.dp, color = borderColor, shape = CircleShape),
     ) {
       Box(
         modifier =
