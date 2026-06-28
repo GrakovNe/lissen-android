@@ -4,10 +4,10 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.minimumInteractiveComponentSize
@@ -19,6 +19,9 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.common.withHaptic
@@ -55,15 +58,20 @@ fun LissenToggle(
   )
 
   val interaction =
-    when {
-      onCheckedChange != null && enabled -> {
-        Modifier
-          .minimumInteractiveComponentSize()
-          .clickable { withHaptic(view) { onCheckedChange(!checked) } }
+    when (onCheckedChange) {
+      null -> {
+        Modifier.semantics { role = Role.Switch }
       }
 
       else -> {
         Modifier
+          .minimumInteractiveComponentSize()
+          .toggleable(
+            value = checked,
+            enabled = enabled,
+            role = Role.Switch,
+            onValueChange = { withHaptic(view) { onCheckedChange(it) } },
+          )
       }
     }
 
