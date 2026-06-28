@@ -57,9 +57,6 @@ tasks.withType<JavaCompile>().configureEach {
 
 configurations.all {
   resolutionStrategy.force("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
-  // room-testing pulls kotlinx-serialization-json 1.8.1 onto the androidTest classpath, while consistent
-  // resolution otherwise pins -core to 1.7.3 (transitive on the main classpath). Keep core and json aligned
-  // to avoid AbstractMethodError (GeneratedSerializer.typeParametersSerializers) in Room's MigrationTestHelper.
   resolutionStrategy.force("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.1")
 }
 

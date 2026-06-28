@@ -106,7 +106,6 @@ fun BookMetadataComposable(
   book: Book,
   grouping: LibraryGrouping = LibraryGrouping.NONE,
 ) {
-  // In series grouping the series is already conveyed by the group header, so don't repeat it on the row.
   val series = book.series?.takeIf { it.isNotBlank() && grouping != LibraryGrouping.SERIES }
 
   if (series != null || book.author != null) {

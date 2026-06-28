@@ -109,9 +109,6 @@ class LocalCacheStorageMigrationTest {
 
   @Test
   fun migrate16To17_dropsOrphanMediaProgress_andKeepsLinkedOne() {
-    // Validating against schema 17 is skipped on purpose: the exported 17.json is stale (it already
-    // carries book_files.size, which is only added by MIGRATION_17_18), so runMigrationsAndValidate(17)
-    // cannot reproduce a real v17 database. We assert the migration's data behaviour directly instead.
     helper.createDatabase(TEST_DB, 16).use { db ->
       db.execSQL(
         """

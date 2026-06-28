@@ -330,7 +330,7 @@ private fun OptionRow(
       imageVector = icon,
       contentDescription = null,
       modifier = Modifier.size(20.dp),
-      tint = if (selected) colorScheme.primary else colorScheme.onSurfaceVariant,
+      tint = colorScheme.onSurfaceVariant,
     )
     Spacer(modifier = Modifier.width(12.dp))
     Text(

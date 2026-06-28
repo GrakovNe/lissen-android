@@ -67,7 +67,7 @@ class LibraryAudiobookshelfChannel
       bookmarksResponseConverter = bookmarksResponseConverter,
       bookmarkItemResponseConverter = bookmarkItemResponseConverter,
     ) {
-    private val seriesFetchSemaphore = Semaphore(MAX_CONCURRENT_SERIES_FETCH)
+    private val concurrentFetchSemaphore = Semaphore(MAX_CONCURRENT_FETCH)
 
     override fun getLibraryType() = LibraryType.LIBRARY
 
@@ -114,7 +114,7 @@ class LibraryAudiobookshelfChannel
       libraryId: String,
       seriesId: String,
     ): OperationResult<List<Book>> =
-      seriesFetchSemaphore.withPermit {
+      concurrentFetchSemaphore.withPermit {
         fetchAllSeriesItems(libraryId = libraryId, seriesId = seriesId)
       }
 
@@ -283,6 +283,6 @@ class LibraryAudiobookshelfChannel
 
     companion object {
       private const val SERIES_PAGE_SIZE = 20
-      private const val MAX_CONCURRENT_SERIES_FETCH = 3
+      private const val MAX_CONCURRENT_FETCH = 3
     }
   }
