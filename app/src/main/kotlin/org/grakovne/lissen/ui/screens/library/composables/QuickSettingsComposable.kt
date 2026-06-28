@@ -105,8 +105,6 @@ fun QuickSettingsComposable(
           .fillMaxWidth()
           .verticalScroll(rememberScrollState()),
     ) {
-      SectionHeader(stringResource(R.string.library_quick_settings_filters_title))
-
       ToggleRow(
         title = stringResource(R.string.show_downloaded_content_only),
         icon = Icons.Outlined.CloudOff,
