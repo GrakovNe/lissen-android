@@ -1,6 +1,7 @@
 package org.grakovne.lissen.viewmodel
 
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
@@ -11,7 +12,9 @@ import kotlinx.coroutines.test.setMain
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
+import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.Library
+import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
@@ -173,6 +176,132 @@ class LibraryViewModelTest {
       viewModel.refreshRecentListening()
 
       assertNotNull(viewModel.recentBooks.value)
+    }
+  }
+
+  @Nested
+  inner class SeriesExpansion {
+    private val library = Library(id = "lib-1", title = "Books", type = LibraryType.LIBRARY)
+
+    private fun series(id: String = "ser-1") =
+      LibraryEntry.SeriesEntry(
+        id = id,
+        title = "Dune",
+        author = "Frank Herbert",
+        bookCount = 3,
+        coverItemIds = listOf("b1", "b2", "b3"),
+      )
+
+    private fun book(id: String) = Book(id = id, subtitle = null, series = "Dune", title = "Title $id", author = "Frank Herbert")
+
+    private fun seqBook(sequence: String) =
+      Book(id = sequence, subtitle = null, series = "Dune #$sequence", title = "Title $sequence", author = "Frank Herbert")
+
+    @Test
+    fun `series books are exposed sorted by ascending series index`() {
+      every { preferences.getPreferredLibrary() } returns library
+      coEvery { mediaChannel.fetchSeriesItems("lib-1", "ser-1") } returns
+        OperationResult.Success(listOf(seqBook("22"), seqBook("2"), seqBook("1")))
+
+      viewModel.toggleSeries(series())
+
+      assertEquals(listOf("1", "2", "22"), viewModel.seriesBooks.value["ser-1"]?.map { it.id })
+    }
+
+    @Test
+    fun `toggleSeries expands and loads the series books`() {
+      every { preferences.getPreferredLibrary() } returns library
+      coEvery { mediaChannel.fetchSeriesItems("lib-1", "ser-1") } returns
+        OperationResult.Success(listOf(book("b1"), book("b2")))
+
+      viewModel.toggleSeries(series())
+
+      assertTrue("ser-1" in viewModel.expandedSeries.value)
+      assertEquals(listOf("b1", "b2"), viewModel.seriesBooks.value["ser-1"]?.map { it.id })
+      assertTrue(viewModel.seriesLoading.value.isEmpty())
+    }
+
+    @Test
+    fun `toggleSeries collapses on the second call`() {
+      every { preferences.getPreferredLibrary() } returns library
+      coEvery { mediaChannel.fetchSeriesItems("lib-1", "ser-1") } returns
+        OperationResult.Success(listOf(book("b1")))
+
+      viewModel.toggleSeries(series())
+      viewModel.toggleSeries(series())
+
+      assertFalse("ser-1" in viewModel.expandedSeries.value)
+    }
+
+    @Test
+    fun `re-expanding a series reuses cached books without refetching`() {
+      every { preferences.getPreferredLibrary() } returns library
+      coEvery { mediaChannel.fetchSeriesItems("lib-1", "ser-1") } returns
+        OperationResult.Success(listOf(book("b1")))
+
+      viewModel.toggleSeries(series())
+      viewModel.toggleSeries(series())
+      viewModel.toggleSeries(series())
+
+      assertTrue("ser-1" in viewModel.expandedSeries.value)
+      coVerify(exactly = 1) { mediaChannel.fetchSeriesItems("lib-1", "ser-1") }
+    }
+
+    @Test
+    fun `toggleSeries does not fetch when no preferred library`() {
+      every { preferences.getPreferredLibrary() } returns null
+
+      viewModel.toggleSeries(series())
+
+      coVerify(exactly = 0) { mediaChannel.fetchSeriesItems(any(), any()) }
+    }
+
+    @Test
+    fun `prefetchSeries loads books into cache without expanding the row`() {
+      every { preferences.getPreferredLibrary() } returns library
+      coEvery { mediaChannel.fetchSeriesItems("lib-1", "ser-1") } returns
+        OperationResult.Success(listOf(book("b1"), book("b2")))
+
+      viewModel.prefetchSeries(series())
+
+      assertEquals(listOf("b1", "b2"), viewModel.seriesBooks.value["ser-1"]?.map { it.id })
+      assertFalse("ser-1" in viewModel.expandedSeries.value)
+    }
+
+    @Test
+    fun `expanding a prefetched series does not trigger a second fetch`() {
+      every { preferences.getPreferredLibrary() } returns library
+      coEvery { mediaChannel.fetchSeriesItems("lib-1", "ser-1") } returns
+        OperationResult.Success(listOf(book("b1")))
+
+      viewModel.prefetchSeries(series())
+      viewModel.toggleSeries(series())
+
+      assertTrue("ser-1" in viewModel.expandedSeries.value)
+      coVerify(exactly = 1) { mediaChannel.fetchSeriesItems("lib-1", "ser-1") }
+    }
+
+    @Test
+    fun `prefetchSeries does not fetch when no preferred library`() {
+      every { preferences.getPreferredLibrary() } returns null
+
+      viewModel.prefetchSeries(series())
+
+      coVerify(exactly = 0) { mediaChannel.fetchSeriesItems(any(), any()) }
+    }
+
+    @Test
+    fun `resetSeriesExpansion clears expansion state`() {
+      every { preferences.getPreferredLibrary() } returns library
+      coEvery { mediaChannel.fetchSeriesItems("lib-1", "ser-1") } returns
+        OperationResult.Success(listOf(book("b1")))
+
+      viewModel.toggleSeries(series())
+      viewModel.resetSeriesExpansion()
+
+      assertTrue(viewModel.expandedSeries.value.isEmpty())
+      assertTrue(viewModel.seriesBooks.value.isEmpty())
+      assertTrue(viewModel.seriesLoading.value.isEmpty())
     }
   }
 }

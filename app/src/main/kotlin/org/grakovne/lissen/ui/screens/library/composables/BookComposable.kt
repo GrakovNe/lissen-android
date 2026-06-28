@@ -28,15 +28,20 @@ import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
 import coil3.request.ImageRequest
 import org.grakovne.lissen.R
+import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.navigation.AppNavigationService
+
+val LibraryItemCoverSize = 64.dp
 
 @Composable
 fun BookComposable(
   book: Book,
   imageLoader: ImageLoader,
   navController: AppNavigationService,
+  grouping: LibraryGrouping = LibraryGrouping.NONE,
+  leading: (@Composable () -> Unit)? = null,
 ) {
   val context = LocalContext.current
 
@@ -57,6 +62,8 @@ fun BookComposable(
         .padding(horizontal = 4.dp, vertical = 8.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {
+    leading?.invoke()
+
     AsyncShimmeringImage(
       imageRequest = imageRequest,
       imageLoader = imageLoader,
@@ -64,7 +71,7 @@ fun BookComposable(
       contentScale = ContentScale.FillBounds,
       modifier =
         Modifier
-          .size(64.dp)
+          .size(LibraryItemCoverSize)
           .aspectRatio(1f)
           .clip(RoundedCornerShape(4.dp)),
       error = painterResource(R.drawable.cover_fallback),
@@ -89,7 +96,7 @@ fun BookComposable(
         )
       }
 
-      BookMetadataComposable(book)
+      BookMetadataComposable(book, grouping)
     }
 
     Spacer(Modifier.width(16.dp))
@@ -97,8 +104,13 @@ fun BookComposable(
 }
 
 @Composable
-fun BookMetadataComposable(book: Book) {
-  if ((book.series?.isNotBlank() == true) || (book.author != null)) {
+fun BookMetadataComposable(
+  book: Book,
+  grouping: LibraryGrouping = LibraryGrouping.NONE,
+) {
+  val series = book.series?.takeIf { it.isNotBlank() && grouping != LibraryGrouping.SERIES }
+
+  if (series != null || book.author != null) {
     Spacer(modifier = Modifier.height(2.dp))
   }
 
@@ -114,7 +126,7 @@ fun BookMetadataComposable(book: Book) {
     )
   }
 
-  book.series?.takeIf { it.isNotBlank() }?.let {
+  series?.let {
     Text(
       text = it,
       style =

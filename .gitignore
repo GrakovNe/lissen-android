@@ -32,6 +32,3 @@ google-services.json
 
 # Android Profiling
 *.hprof
-
-# Schemas
-app/schemas

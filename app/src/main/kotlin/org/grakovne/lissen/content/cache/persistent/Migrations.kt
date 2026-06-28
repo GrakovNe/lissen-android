@@ -327,3 +327,10 @@ val MIGRATION_17_18 =
       db.execSQL("ALTER TABLE book_files ADD COLUMN size INTEGER NOT NULL DEFAULT 0")
     }
   }
+
+val MIGRATION_18_19 =
+  object : Migration(18, 19) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+      db.execSQL("ALTER TABLE detailed_books ADD COLUMN seriesId TEXT")
+    }
+  }

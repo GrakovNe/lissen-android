@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.core.net.toFile
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
+import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookmarkRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedLibraryRepository
@@ -11,10 +12,12 @@ import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
+import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.RecentBook
+import org.grakovne.lissen.domain.asLibraryEntries
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import java.io.File
 import javax.inject.Inject
@@ -114,6 +117,33 @@ class LocalCacheRepository
           ),
         )
     }
+
+    suspend fun fetchLibrary(
+      libraryId: String,
+      pageSize: Int,
+      pageNumber: Int,
+      libraryGrouping: LibraryGrouping,
+    ): OperationResult<PagedItems<LibraryEntry>> =
+      when (libraryGrouping) {
+        LibraryGrouping.NONE -> {
+          fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
+            .map { it.asLibraryEntries() }
+        }
+
+        LibraryGrouping.SERIES -> {
+          cachedBookRepository
+            .fetchLibraryGrouped(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
+            .let { OperationResult.Success(it) }
+        }
+      }
+
+    suspend fun fetchSeriesItems(
+      libraryId: String,
+      seriesId: String,
+    ): OperationResult<List<Book>> =
+      cachedBookRepository
+        .fetchSeriesItems(libraryId = libraryId, seriesId = seriesId)
+        .let { OperationResult.Success(it) }
 
     suspend fun fetchLibraries(): OperationResult<List<Library>> =
       cachedLibraryRepository

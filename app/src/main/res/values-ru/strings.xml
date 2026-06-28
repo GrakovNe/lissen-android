@@ -61,6 +61,15 @@
         <item quantity="many">%d секунд</item>
         <item quantity="other">%d секунды</item>
     </plurals>
+    <plurals name="series_books_count">
+        <item quantity="one">%d книга</item>
+        <item quantity="few">%d книги</item>
+        <item quantity="many">%d книг</item>
+        <item quantity="other">%d книги</item>
+    </plurals>
+    <string name="library_quick_settings_grouping_title">Группировка</string>
+    <string name="library_grouping_disabled">Отключено</string>
+    <string name="library_grouping_series">По сериям</string>
     <string name="timer_option_disabled">Выключен</string>
     <string name="timer_option_disable_timer">Отключить таймер</string>
     <string name="timer_title">Таймер</string>

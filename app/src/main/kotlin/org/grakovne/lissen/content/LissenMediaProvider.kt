@@ -6,6 +6,7 @@ import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
+import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.content.cache.temporary.CachedBookmarkProvider
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
@@ -13,6 +14,7 @@ import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
+import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
@@ -162,6 +164,47 @@ class LissenMediaProvider
       return when (preferences.isForceCache()) {
         true -> localCacheRepository.fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
         false -> providePreferredChannel().fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
+      }
+    }
+
+    suspend fun fetchLibrary(
+      libraryId: String,
+      pageSize: Int,
+      pageNumber: Int,
+    ): OperationResult<PagedItems<LibraryEntry>> {
+      Timber.d("Fetching library: libraryId=$libraryId, page=$pageNumber, pageSize=$pageSize")
+
+      return when (preferences.isForceCache()) {
+        true -> {
+          localCacheRepository.fetchLibrary(
+            libraryId = libraryId,
+            pageSize = pageSize,
+            pageNumber = pageNumber,
+            libraryGrouping = preferences.getLibraryGrouping(),
+          )
+        }
+
+        false -> {
+          providePreferredChannel()
+            .fetchLibrary(
+              libraryId = libraryId,
+              pageSize = pageSize,
+              pageNumber = pageNumber,
+              libraryGrouping = preferences.getLibraryGrouping(),
+            )
+        }
+      }
+    }
+
+    suspend fun fetchSeriesItems(
+      libraryId: String,
+      seriesId: String,
+    ): OperationResult<List<Book>> {
+      Timber.d("Fetching series items: libraryId=$libraryId, seriesId=$seriesId")
+
+      return when (preferences.isForceCache()) {
+        true -> localCacheRepository.fetchSeriesItems(libraryId = libraryId, seriesId = seriesId)
+        false -> providePreferredChannel().fetchSeriesItems(libraryId = libraryId, seriesId = seriesId)
       }
     }
 

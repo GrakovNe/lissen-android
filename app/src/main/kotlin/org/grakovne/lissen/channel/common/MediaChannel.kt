@@ -3,16 +3,19 @@ package org.grakovne.lissen.channel.common
 import android.net.Uri
 import okio.Buffer
 import org.grakovne.lissen.channel.audiobookshelf.Host
+import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.CreateBookmarkRequest
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
+import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.RecentBook
+import org.grakovne.lissen.domain.asLibraryEntries
 
 interface MediaChannel {
   fun getLibraryType(): LibraryType
@@ -37,6 +40,26 @@ interface MediaChannel {
     pageSize: Int,
     pageNumber: Int,
   ): OperationResult<PagedItems<Book>>
+
+  suspend fun fetchLibrary(
+    libraryId: String,
+    pageSize: Int,
+    pageNumber: Int,
+    libraryGrouping: LibraryGrouping,
+  ): OperationResult<PagedItems<LibraryEntry>> =
+    fetchBooks(libraryId, pageSize, pageNumber)
+      .map { paged ->
+        PagedItems(
+          items = paged.items.map { LibraryEntry.BookEntry(it) },
+          currentPage = paged.currentPage,
+          totalItems = paged.totalItems,
+        )
+      }
+
+  suspend fun fetchSeriesItems(
+    libraryId: String,
+    seriesId: String,
+  ): OperationResult<List<Book>> = OperationResult.Success(emptyList())
 
   suspend fun searchBooks(
     libraryId: String,

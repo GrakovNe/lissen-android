@@ -19,6 +19,7 @@ import okio.Path.Companion.toOkioPath
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
+import org.grakovne.lissen.content.cache.temporary.SeriesCoverProvider
 import java.io.File
 import javax.inject.Singleton
 
@@ -87,12 +88,21 @@ object ImageLoaderModule {
 
   @Singleton
   @Provides
+  fun provideSeriesCoverFetcherFactory(seriesCoverProvider: SeriesCoverProvider): SeriesCoverFetcherFactory =
+    SeriesCoverFetcherFactory(seriesCoverProvider)
+
+  @Singleton
+  @Provides
   fun provideCustomImageLoader(
     @ApplicationContext context: Context,
     bookCoverFetcherFactory: BookCoverFetcherFactory,
+    seriesCoverFetcherFactory: SeriesCoverFetcherFactory,
   ): ImageLoader =
     ImageLoader
       .Builder(context)
-      .components { add(bookCoverFetcherFactory) }
-      .build()
+      .components {
+        add(bookCoverFetcherFactory)
+        add(seriesCoverFetcherFactory)
+        add(SeriesCoverKeyer(), SeriesCoverKey::class)
+      }.build()
 }

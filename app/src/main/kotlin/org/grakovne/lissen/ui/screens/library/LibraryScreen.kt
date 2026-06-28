@@ -61,9 +61,11 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
+import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.common.withHaptic
+import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.ui.components.withScrollbar
@@ -78,6 +80,7 @@ import org.grakovne.lissen.ui.screens.library.composables.LibrarySwitchComposabl
 import org.grakovne.lissen.ui.screens.library.composables.MiniPlayerComposable
 import org.grakovne.lissen.ui.screens.library.composables.QuickSettingsComposable
 import org.grakovne.lissen.ui.screens.library.composables.RecentBooksComposable
+import org.grakovne.lissen.ui.screens.library.composables.SeriesComposable
 import org.grakovne.lissen.ui.screens.library.composables.fallback.LibraryFallbackComposable
 import org.grakovne.lissen.ui.screens.library.composables.placeholder.LibraryPlaceholderComposable
 import org.grakovne.lissen.ui.screens.library.composables.placeholder.RecentBooksPlaceholderComposable
@@ -123,6 +126,10 @@ fun LibraryScreen(
 
   val library = libraryViewModel.getPager(searchRequested).collectAsLazyPagingItems()
   val libraryCount by libraryViewModel.totalCount.collectAsState()
+  val expandedSeries by libraryViewModel.expandedSeries.collectAsState()
+  val seriesBooks by libraryViewModel.seriesBooks.collectAsState()
+  val seriesLoading by libraryViewModel.seriesLoading.collectAsState()
+  val libraryGrouping by settingsViewModel.libraryGrouping.collectAsState(LibraryGrouping.NONE)
 
   val libraryListState = rememberLazyListState()
 
@@ -502,13 +509,29 @@ fun LibraryScreen(
 
             else -> {
               items(count = library.itemCount, key = { "library_item_$it" }) {
-                val book = library[it] ?: return@items
+                when (val entry = library[it] ?: return@items) {
+                  is LibraryEntry.BookEntry -> {
+                    BookComposable(
+                      book = entry.book,
+                      imageLoader = imageLoader,
+                      navController = navController,
+                      grouping = libraryGrouping,
+                    )
+                  }
 
-                BookComposable(
-                  book = book,
-                  imageLoader = imageLoader,
-                  navController = navController,
-                )
+                  is LibraryEntry.SeriesEntry -> {
+                    SeriesComposable(
+                      series = entry,
+                      expanded = entry.id in expandedSeries,
+                      loading = entry.id in seriesLoading,
+                      books = seriesBooks[entry.id].orEmpty(),
+                      imageLoader = imageLoader,
+                      navController = navController,
+                      onToggle = { libraryViewModel.toggleSeries(entry) },
+                      onPrefetch = { libraryViewModel.prefetchSeries(entry) },
+                    )
+                  }
+                }
               }
             }
           }
@@ -556,6 +579,12 @@ fun LibraryScreen(
       onHideCompletedToggled = {
         settingsViewModel.toggleHideCompleted()
         playerViewModel.book.value?.let { playerViewModel.preparePlayback(it.id) }
+        refreshContent(showPullRefreshing = false)
+        coroutineScope.launch { libraryListState.scrollToItem(0) }
+      },
+      onGroupingSelected = { grouping ->
+        settingsViewModel.preferLibraryGrouping(grouping)
+        libraryViewModel.resetSeriesExpansion()
         refreshContent(showPullRefreshing = false)
         coroutineScope.launch { libraryListState.scrollToItem(0) }
       },

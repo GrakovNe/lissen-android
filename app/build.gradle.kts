@@ -5,7 +5,7 @@ plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.compose.compiler)
   
-  id("com.google.dagger.hilt.android")
+  alias(libs.plugins.hilt.android)
   id("org.jmailen.kotlinter") version "5.5.0"
   id("com.google.devtools.ksp")
   id("kotlin-parcelize")
@@ -57,6 +57,7 @@ tasks.withType<JavaCompile>().configureEach {
 
 configurations.all {
   resolutionStrategy.force("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
+  resolutionStrategy.force("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.1")
 }
 
 ksp {
@@ -66,7 +67,14 @@ ksp {
 android {
   namespace = "org.grakovne.lissen"
   compileSdk = 37
-  
+
+  // Bundle the exported Room schemas into the androidTest APK so MigrationTestHelper can load them.
+  sourceSets {
+    getByName("androidTest") {
+      assets.srcDirs(files("$projectDir/schemas"))
+    }
+  }
+
   lint {
     disable.add("MissingTranslation")
     disable.add("MissingQuantity")
@@ -218,6 +226,7 @@ dependencies {
   testImplementation(libs.kotlinx.coroutines.test)
   testRuntimeOnly(libs.junit.platform.launcher)
   
+  androidTestImplementation(libs.androidx.room.testing)
   androidTestImplementation(libs.androidx.test.ext.junit)
   androidTestImplementation(libs.androidx.test.runner)
   androidTestImplementation(libs.androidx.test.rules)

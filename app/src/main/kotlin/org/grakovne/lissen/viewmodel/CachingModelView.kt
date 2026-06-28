@@ -24,6 +24,7 @@ import org.grakovne.lissen.content.cache.persistent.ContentCachingProgress
 import org.grakovne.lissen.content.cache.persistent.ContentCachingService
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
+import org.grakovne.lissen.content.cache.temporary.SeriesCoverProvider
 import org.grakovne.lissen.domain.CacheStatus
 import org.grakovne.lissen.domain.ContentCachingTask
 import org.grakovne.lissen.domain.DetailedItem
@@ -45,6 +46,7 @@ class CachingModelView
     private val contentCachingManager: ContentCachingManager,
     private val preferences: LissenSharedPreferences,
     private val cachedCoverProvider: CachedCoverProvider,
+    private val seriesCoverProvider: SeriesCoverProvider,
   ) : ViewModel() {
     private val _totalCount = MutableStateFlow(0)
     val totalCount: StateFlow<Int> = _totalCount.asStateFlow()
@@ -88,6 +90,7 @@ class CachingModelView
     suspend fun clearShortTermCache() {
       withContext(Dispatchers.IO) {
         cachedCoverProvider.clearCache()
+        seriesCoverProvider.clearCache()
       }
     }
 

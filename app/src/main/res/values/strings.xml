@@ -34,6 +34,13 @@
     <string name="login_error_host_url_shall_be_https_or_http">Host URL shall be https:// or http://</string>
     <string name="login_error_connection_error">Connection error</string>
     <string name="show_downloaded_content_only">Downloaded only</string>
+    <string name="library_quick_settings_grouping_title">Grouping</string>
+    <string name="library_grouping_disabled">Disabled</string>
+    <string name="library_grouping_series">By Series</string>
+    <plurals name="series_books_count">
+        <item quantity="one">%d book</item>
+        <item quantity="other">%d books</item>
+    </plurals>
     <string name="library_quick_settings_filters_title">Filters</string>
     <string name="library_quick_settings_sort_title">Sort by</string>
     <string name="the_library_is_empty">The library is empty</string>
