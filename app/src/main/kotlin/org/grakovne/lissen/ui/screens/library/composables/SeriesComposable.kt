@@ -8,11 +8,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
@@ -26,8 +24,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -44,10 +40,10 @@ import org.grakovne.lissen.common.seriesSequence
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
+import org.grakovne.lissen.ui.components.SeriesCoverKey
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 
 private val SERIES_COVER_SIZE = 64.dp
-private val SERIES_COVER_STEP = 6.dp
 
 private const val MAX_SERIES_COVERS = 3
 private const val SERIES_PREFETCH_DWELL_MS = 200L
@@ -81,6 +77,7 @@ fun SeriesComposable(
       verticalAlignment = Alignment.CenterVertically,
     ) {
       SeriesCoverStack(
+        seriesId = series.id,
         coverItemIds = series.coverItemIds,
         contentDescription = "${series.title} cover",
         imageLoader = imageLoader,
@@ -197,41 +194,27 @@ private fun SeriesSequenceLabel(
 
 @Composable
 private fun SeriesCoverStack(
+  seriesId: String,
   coverItemIds: List<String>,
   contentDescription: String,
   imageLoader: ImageLoader,
 ) {
   val context = LocalContext.current
-  val covers = coverItemIds.take(MAX_SERIES_COVERS)
 
-  val cardSize = SERIES_COVER_SIZE - SERIES_COVER_STEP * (covers.size - 1).coerceAtLeast(0)
+  val imageRequest =
+    remember(seriesId, coverItemIds) {
+      ImageRequest
+        .Builder(context)
+        .data(SeriesCoverKey(seriesId, coverItemIds.take(MAX_SERIES_COVERS)))
+        .build()
+    }
 
-  Box(modifier = Modifier.size(SERIES_COVER_SIZE)) {
-    covers
-      .asReversed()
-      .forEachIndexed { index, coverId ->
-        val offset = SERIES_COVER_STEP * index
-        val imageRequest =
-          remember(coverId) {
-            ImageRequest
-              .Builder(context)
-              .data(coverId)
-              .build()
-          }
-
-        AsyncShimmeringImage(
-          imageRequest = imageRequest,
-          imageLoader = imageLoader,
-          contentDescription = contentDescription,
-          contentScale = ContentScale.FillBounds,
-          modifier =
-            Modifier
-              .offset(x = offset, y = offset)
-              .size(cardSize)
-              .shadow(2.dp, RoundedCornerShape(4.dp))
-              .clip(RoundedCornerShape(4.dp)),
-          error = painterResource(R.drawable.cover_fallback),
-        )
-      }
-  }
+  AsyncShimmeringImage(
+    imageRequest = imageRequest,
+    imageLoader = imageLoader,
+    contentDescription = contentDescription,
+    contentScale = ContentScale.Fit,
+    modifier = Modifier.size(SERIES_COVER_SIZE),
+    error = painterResource(R.drawable.cover_fallback),
+  )
 }
