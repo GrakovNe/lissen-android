@@ -57,6 +57,116 @@ class LocalCacheStorageMigrationTest {
     }
   }
 
+  @Test
+  fun migrate14To15_createsCachedBookmarkTable_andKeepsBooks() {
+    helper.createDatabase(TEST_DB, 14).use { db ->
+      db.execSQL(
+        """
+        INSERT INTO detailed_books (id, title, duration, createdAt, updatedAt)
+        VALUES ('book-1', 'Dune', 0, 0, 0)
+        """.trimIndent(),
+      )
+    }
+
+    val db = helper.runMigrationsAndValidate(TEST_DB, 15, true, MIGRATION_14_15)
+
+    db.query("SELECT id FROM detailed_books WHERE id = 'book-1'").use { cursor ->
+      assertTrue(cursor.moveToFirst())
+    }
+
+    // The new table is present and usable.
+    db.execSQL(
+      """
+      INSERT INTO cached_bookmark (id, title, libraryItemId, createdAt, totalPosition)
+      VALUES ('bm-1', 'Chapter 1', 'book-1', 0, 42)
+      """.trimIndent(),
+    )
+
+    db.query("SELECT totalPosition FROM cached_bookmark WHERE id = 'bm-1'").use { cursor ->
+      assertTrue(cursor.moveToFirst())
+      assertEquals(42, cursor.getInt(cursor.getColumnIndexOrThrow("totalPosition")))
+    }
+  }
+
+  @Test
+  fun migrate15To16_addsSyncStateDefaultingToZero() {
+    helper.createDatabase(TEST_DB, 15).use { db ->
+      db.execSQL(
+        """
+        INSERT INTO cached_bookmark (id, title, libraryItemId, createdAt, totalPosition)
+        VALUES ('bm-1', 'Chapter 1', 'book-1', 0, 42)
+        """.trimIndent(),
+      )
+    }
+
+    val db = helper.runMigrationsAndValidate(TEST_DB, 16, true, MIGRATION_15_16)
+
+    db.query("SELECT syncState FROM cached_bookmark WHERE id = 'bm-1'").use { cursor ->
+      assertTrue(cursor.moveToFirst())
+      assertEquals(0, cursor.getInt(cursor.getColumnIndexOrThrow("syncState")))
+    }
+  }
+
+  @Test
+  fun migrate16To17_dropsOrphanMediaProgress_andKeepsLinkedOne() {
+    // Validating against schema 17 is skipped on purpose: the exported 17.json is stale (it already
+    // carries book_files.size, which is only added by MIGRATION_17_18), so runMigrationsAndValidate(17)
+    // cannot reproduce a real v17 database. We assert the migration's data behaviour directly instead.
+    helper.createDatabase(TEST_DB, 16).use { db ->
+      db.execSQL(
+        """
+        INSERT INTO detailed_books (id, title, duration, createdAt, updatedAt)
+        VALUES ('book-1', 'Dune', 0, 0, 0)
+        """.trimIndent(),
+      )
+      db.execSQL(
+        """
+        INSERT INTO media_progress (bookId, currentTime, isFinished, lastUpdate)
+        VALUES ('book-1', 12.0, 0, 0), ('ghost', 5.0, 0, 0)
+        """.trimIndent(),
+      )
+
+      MIGRATION_16_17.migrate(db)
+
+      val survivors = mutableListOf<String>()
+      db.query("SELECT bookId FROM media_progress ORDER BY bookId").use { cursor ->
+        while (cursor.moveToNext()) {
+          survivors += cursor.getString(0)
+        }
+      }
+      assertEquals(listOf("book-1"), survivors)
+    }
+  }
+
+  @Test
+  fun migrateFrom14To19_appliesEveryMigrationInChain() {
+    helper.createDatabase(TEST_DB, 14).use { db ->
+      db.execSQL(
+        """
+        INSERT INTO detailed_books (id, title, duration, createdAt, updatedAt)
+        VALUES ('book-1', 'Dune', 0, 0, 0)
+        """.trimIndent(),
+      )
+    }
+
+    val db =
+      helper.runMigrationsAndValidate(
+        TEST_DB,
+        19,
+        true,
+        MIGRATION_14_15,
+        MIGRATION_15_16,
+        MIGRATION_16_17,
+        MIGRATION_17_18,
+        MIGRATION_18_19,
+      )
+
+    db.query("SELECT seriesId FROM detailed_books WHERE id = 'book-1'").use { cursor ->
+      assertTrue(cursor.moveToFirst())
+      assertTrue(cursor.isNull(cursor.getColumnIndexOrThrow("seriesId")))
+    }
+  }
+
   companion object {
     private const val TEST_DB = "local-cache-migration-test"
   }
