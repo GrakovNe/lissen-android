@@ -108,12 +108,14 @@ class AudioBookshelfRepository
     suspend fun fetchSeriesItems(
       libraryId: String,
       seriesId: String,
+      pageSize: Int,
+      pageNumber: Int,
     ): OperationResult<LibraryItemsResponse> =
       audioBookShelfApiService.makeRequest {
         it.fetchLibraryItems(
           libraryId = libraryId,
-          pageSize = SERIES_ITEMS_LIMIT,
-          pageNumber = 0,
+          pageSize = pageSize,
+          pageNumber = pageNumber,
           sort = "sequence",
           desc = "0",
           filter = "series." + seriesId.encodeSeriesFilter(),
@@ -258,8 +260,4 @@ class AudioBookshelfRepository
             }
           }
         }
-
-    companion object {
-      private const val SERIES_ITEMS_LIMIT = 500
-    }
   }

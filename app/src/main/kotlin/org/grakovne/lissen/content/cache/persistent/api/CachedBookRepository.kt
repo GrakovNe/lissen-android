@@ -135,7 +135,7 @@ class CachedBookRepository
                   title = entity.primarySeriesName() ?: seriesId,
                   author = combineAuthors(books.map { it.author }),
                   bookCount = books.size,
-                  coverItemIds = books.take(LibraryEntry.SeriesEntry.MAX_COVERS).map { it.id },
+                  coverItemIds = books.map { it.id },
                 )
               }
 

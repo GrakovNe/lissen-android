@@ -16,9 +16,5 @@ sealed interface LibraryEntry {
     val author: String?,
     val bookCount: Int,
     val coverItemIds: List<String>,
-  ) : LibraryEntry {
-    companion object {
-      const val MAX_COVERS = 3
-    }
-  }
+  ) : LibraryEntry
 }

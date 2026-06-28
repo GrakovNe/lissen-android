@@ -19,8 +19,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Book
@@ -67,8 +65,6 @@ class LibraryViewModel
 
     private val _seriesLoading = MutableStateFlow<Set<String>>(emptySet())
     val seriesLoading: StateFlow<Set<String>> = _seriesLoading.asStateFlow()
-
-    private val prefetchSemaphore = Semaphore(MAX_CONCURRENT_PREFETCH)
 
     private val pageConfig =
       PagingConfig(
@@ -154,11 +150,7 @@ class LibraryViewModel
         return
       }
 
-      viewModelScope.launch {
-        prefetchSemaphore.withPermit {
-          fetchSeriesBooks(series)
-        }
-      }
+      viewModelScope.launch { fetchSeriesBooks(series) }
     }
 
     fun resetSeriesExpansion() {
@@ -253,6 +245,5 @@ class LibraryViewModel
       private const val PAGE_SIZE = 20
       private const val PAGE_SEARCH_SIZE = 50
       private const val SEARCH_DEBOUNCE_MILLIS = 300L
-      private const val MAX_CONCURRENT_PREFETCH = 3
     }
   }

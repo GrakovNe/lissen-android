@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
 import coil3.request.ImageRequest
 import org.grakovne.lissen.R
+import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.navigation.AppNavigationService
@@ -37,7 +38,7 @@ fun BookComposable(
   book: Book,
   imageLoader: ImageLoader,
   navController: AppNavigationService,
-  showSeries: Boolean = true,
+  grouping: LibraryGrouping = LibraryGrouping.NONE,
   leading: (@Composable () -> Unit)? = null,
 ) {
   val context = LocalContext.current
@@ -93,7 +94,7 @@ fun BookComposable(
         )
       }
 
-      BookMetadataComposable(book, showSeries)
+      BookMetadataComposable(book, grouping)
     }
 
     Spacer(Modifier.width(16.dp))
@@ -103,9 +104,10 @@ fun BookComposable(
 @Composable
 fun BookMetadataComposable(
   book: Book,
-  showSeries: Boolean = true,
+  grouping: LibraryGrouping = LibraryGrouping.NONE,
 ) {
-  val series = book.series?.takeIf { it.isNotBlank() && showSeries }
+  // In series grouping the series is already conveyed by the group header, so don't repeat it on the row.
+  val series = book.series?.takeIf { it.isNotBlank() && grouping != LibraryGrouping.SERIES }
 
   if (series != null || book.author != null) {
     Spacer(modifier = Modifier.height(2.dp))

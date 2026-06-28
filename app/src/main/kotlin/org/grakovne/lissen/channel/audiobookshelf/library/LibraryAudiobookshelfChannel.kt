@@ -4,6 +4,8 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfHostProvider
 import org.grakovne.lissen.channel.audiobookshelf.common.AudiobookshelfChannel
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfRepository
@@ -65,6 +67,8 @@ class LibraryAudiobookshelfChannel
       bookmarksResponseConverter = bookmarksResponseConverter,
       bookmarkItemResponseConverter = bookmarkItemResponseConverter,
     ) {
+    private val seriesFetchSemaphore = Semaphore(MAX_CONCURRENT_SERIES_FETCH)
+
     override fun getLibraryType() = LibraryType.LIBRARY
 
     override suspend fun fetchBooks(
@@ -110,9 +114,43 @@ class LibraryAudiobookshelfChannel
       libraryId: String,
       seriesId: String,
     ): OperationResult<List<Book>> =
-      dataRepository
-        .fetchSeriesItems(libraryId = libraryId, seriesId = seriesId)
-        .map { librarySearchItemsConverter.apply(it.results) }
+      seriesFetchSemaphore.withPermit {
+        fetchAllSeriesItems(libraryId = libraryId, seriesId = seriesId)
+      }
+
+    private suspend fun fetchAllSeriesItems(
+      libraryId: String,
+      seriesId: String,
+    ): OperationResult<List<Book>> {
+      val books = mutableListOf<Book>()
+      var page = 0
+
+      while (true) {
+        val result =
+          dataRepository.fetchSeriesItems(
+            libraryId = libraryId,
+            seriesId = seriesId,
+            pageSize = SERIES_PAGE_SIZE,
+            pageNumber = page,
+          )
+
+        when (result) {
+          is OperationResult.Error -> {
+            return OperationResult.Error(result.code, result.message)
+          }
+
+          is Success -> {
+            books += librarySearchItemsConverter.apply(result.data.results)
+
+            if (result.data.results.isEmpty() || books.size >= result.data.total) {
+              return Success(books)
+            }
+
+            page++
+          }
+        }
+      }
+    }
 
     override suspend fun searchBooks(
       libraryId: String,
@@ -255,4 +293,9 @@ class LibraryAudiobookshelfChannel
           onFailure = { OperationResult.Error(it.code) },
         )
       }
+
+    companion object {
+      private const val SERIES_PAGE_SIZE = 20
+      private const val MAX_CONCURRENT_SERIES_FETCH = 3
+    }
   }

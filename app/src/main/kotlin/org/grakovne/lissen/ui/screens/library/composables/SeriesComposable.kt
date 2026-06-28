@@ -39,6 +39,7 @@ import coil3.ImageLoader
 import coil3.request.ImageRequest
 import kotlinx.coroutines.delay
 import org.grakovne.lissen.R
+import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
@@ -47,6 +48,7 @@ import org.grakovne.lissen.ui.navigation.AppNavigationService
 private val SERIES_COVER_SIZE = 64.dp
 private val SERIES_COVER_STEP = 6.dp
 
+private const val MAX_SERIES_COVERS = 3
 private const val SERIES_PREFETCH_DWELL_MS = 200L
 
 @Composable
@@ -161,7 +163,7 @@ fun SeriesComposable(
                 book = book,
                 imageLoader = imageLoader,
                 navController = navController,
-                showSeries = false,
+                grouping = LibraryGrouping.SERIES,
                 leading = { SeriesSequenceLabel(number = sequences[index], widthReserve = widthReserve) },
               )
             }
@@ -205,7 +207,7 @@ private fun SeriesCoverStack(
   imageLoader: ImageLoader,
 ) {
   val context = LocalContext.current
-  val covers = coverItemIds.take(LibraryEntry.SeriesEntry.MAX_COVERS)
+  val covers = coverItemIds.take(MAX_SERIES_COVERS)
 
   val cardSize = SERIES_COVER_SIZE - SERIES_COVER_STEP * (covers.size - 1).coerceAtLeast(0)
 

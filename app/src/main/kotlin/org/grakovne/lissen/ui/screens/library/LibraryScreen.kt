@@ -61,6 +61,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
+import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.common.withHaptic
@@ -128,6 +129,7 @@ fun LibraryScreen(
   val expandedSeries by libraryViewModel.expandedSeries.collectAsState()
   val seriesBooks by libraryViewModel.seriesBooks.collectAsState()
   val seriesLoading by libraryViewModel.seriesLoading.collectAsState()
+  val libraryGrouping by settingsViewModel.libraryGrouping.collectAsState(LibraryGrouping.NONE)
 
   val libraryListState = rememberLazyListState()
 
@@ -513,6 +515,7 @@ fun LibraryScreen(
                       book = entry.book,
                       imageLoader = imageLoader,
                       navController = navController,
+                      grouping = libraryGrouping,
                     )
                   }
 

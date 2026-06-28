@@ -46,7 +46,6 @@ class LibraryPageResponseConverter
                   collapsed
                     .libraryItemIds
                     ?.takeIf { it.isNotEmpty() }
-                    ?.take(LibraryEntry.SeriesEntry.MAX_COVERS)
                     ?: listOf(item.id),
               )
             }

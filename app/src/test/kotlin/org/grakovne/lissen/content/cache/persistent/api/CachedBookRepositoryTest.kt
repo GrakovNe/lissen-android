@@ -111,7 +111,7 @@ class CachedBookRepositoryTest {
       assertEquals("Dune", series.title)
       assertEquals("Frank Herbert, Brian Herbert, Kevin Anderson", series.author)
       assertEquals(4, series.bookCount)
-      assertEquals(listOf("b1", "b2", "b3"), series.coverItemIds)
+      assertEquals(listOf("b1", "b2", "b3", "b4"), series.coverItemIds)
 
       val standalone = entries[1] as LibraryEntry.BookEntry
       assertEquals("s1", standalone.book.id)
@@ -155,7 +155,7 @@ class CachedBookRepositoryTest {
     }
 
   @Test
-  fun `series cover ids are capped at three`() =
+  fun `series carries all cover ids and leaves capping to the view`() =
     runBlocking {
       stubBooks(
         (1..5).map { entity("b$it", seriesId = "ser", seriesJson = seriesJson("Series", "$it", "ser")) },
@@ -163,7 +163,7 @@ class CachedBookRepositoryTest {
 
       val series = repository.fetchLibraryGrouped(LIBRARY_ID).single()
       assertInstanceOf(LibraryEntry.SeriesEntry::class.java, series)
-      assertEquals(3, (series as LibraryEntry.SeriesEntry).coverItemIds.size)
+      assertEquals(listOf("b1", "b2", "b3", "b4", "b5"), (series as LibraryEntry.SeriesEntry).coverItemIds)
       assertEquals(5, series.bookCount)
     }
 
