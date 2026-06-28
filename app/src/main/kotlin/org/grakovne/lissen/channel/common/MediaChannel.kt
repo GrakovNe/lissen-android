@@ -15,6 +15,7 @@ import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.RecentBook
+import org.grakovne.lissen.domain.asLibraryEntries
 
 interface MediaChannel {
   fun getLibraryType(): LibraryType

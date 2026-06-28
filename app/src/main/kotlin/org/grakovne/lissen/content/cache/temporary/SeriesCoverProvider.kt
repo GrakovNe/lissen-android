@@ -1,6 +1,9 @@
 package org.grakovne.lissen.content.cache.temporary
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -57,10 +60,16 @@ class SeriesCoverProvider
       coverItemIds: List<String>,
     ): OperationResult<File> {
       val covers =
-        coverItemIds.mapNotNull { itemId ->
-          mediaProvider
-            .fetchBookCover(itemId)
-            .fold(onSuccess = { it }, onFailure = { null })
+        coroutineScope {
+          coverItemIds
+            .map { itemId ->
+              async {
+                mediaProvider
+                  .fetchBookCover(itemId)
+                  .fold(onSuccess = { it }, onFailure = { null })
+              }
+            }.awaitAll()
+            .filterNotNull()
         }
 
       return when (val composed = composer.compose(covers)) {

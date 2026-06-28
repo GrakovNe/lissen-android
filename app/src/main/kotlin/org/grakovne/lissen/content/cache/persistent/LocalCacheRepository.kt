@@ -17,6 +17,7 @@ import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.RecentBook
+import org.grakovne.lissen.domain.asLibraryEntries
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import java.io.File
 import javax.inject.Inject
@@ -126,27 +127,13 @@ class LocalCacheRepository
       when (libraryGrouping) {
         LibraryGrouping.NONE -> {
           fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
-            .map { paged ->
-              PagedItems(
-                items = paged.items.map { LibraryEntry.BookEntry(it) },
-                currentPage = paged.currentPage,
-                totalItems = paged.totalItems,
-              )
-            }
+            .map { it.asLibraryEntries() }
         }
 
         LibraryGrouping.SERIES -> {
-          val entries = cachedBookRepository.fetchLibraryGrouped(libraryId)
-          val fromIndex = (pageNumber * pageSize).coerceIn(0, entries.size)
-          val toIndex = (fromIndex + pageSize).coerceIn(0, entries.size)
-
-          OperationResult.Success(
-            PagedItems(
-              items = entries.subList(fromIndex, toIndex),
-              currentPage = pageNumber,
-              totalItems = entries.size,
-            ),
-          )
+          cachedBookRepository
+            .fetchLibraryGrouped(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
+            .let { OperationResult.Success(it) }
         }
       }
 

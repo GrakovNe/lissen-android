@@ -17,6 +17,7 @@ import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookFileEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookSeriesDto
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
+import org.grakovne.lissen.content.cache.persistent.entity.GroupedEntry
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PlayingChapter
@@ -126,6 +127,23 @@ interface CachedBookDao {
   @Transaction
   @RawQuery
   suspend fun fetchCachedBooks(query: SupportSQLiteQuery): List<BookEntity>
+
+  @RawQuery
+  suspend fun fetchGroupedEntries(query: SupportSQLiteQuery): List<GroupedEntry>
+
+  @Query(
+    """
+    SELECT COUNT(DISTINCT COALESCE(seriesId, id)) FROM detailed_books
+    WHERE libraryId = :libraryId
+    """,
+  )
+  suspend fun countGroupedEntries(libraryId: String): Int
+
+  @Query("SELECT * FROM detailed_books WHERE id IN (:ids)")
+  suspend fun fetchBooksByIds(ids: List<String>): List<BookEntity>
+
+  @Query("SELECT * FROM detailed_books WHERE seriesId IN (:seriesIds)")
+  suspend fun fetchBooksBySeriesIds(seriesIds: List<String>): List<BookEntity>
 
   @Query(
     """

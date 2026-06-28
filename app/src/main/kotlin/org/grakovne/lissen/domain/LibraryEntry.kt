@@ -18,3 +18,10 @@ sealed interface LibraryEntry {
     val coverItemIds: List<String>,
   ) : LibraryEntry
 }
+
+fun PagedItems<Book>.asLibraryEntries(): PagedItems<LibraryEntry> =
+  PagedItems(
+    items = items.map { LibraryEntry.BookEntry(it) },
+    currentPage = currentPage,
+    totalItems = totalItems,
+  )

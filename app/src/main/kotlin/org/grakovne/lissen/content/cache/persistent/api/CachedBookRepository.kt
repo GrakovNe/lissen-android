@@ -2,6 +2,8 @@ package org.grakovne.lissen.content.cache.persistent.api
 
 import android.net.Uri
 import androidx.core.net.toUri
+import androidx.sqlite.db.SimpleSQLiteQuery
+import androidx.sqlite.db.SupportSQLiteQuery
 import com.squareup.moshi.Types
 import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.common.LibraryOrderingOption
@@ -19,6 +21,7 @@ import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryEntry
+import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.RecentBook
@@ -114,66 +117,96 @@ class CachedBookRepository
 
     suspend fun countBooks(libraryId: String): Int = bookDao.countCachedBooks(libraryId = libraryId)
 
-    suspend fun fetchLibraryGrouped(libraryId: String): List<LibraryEntry> {
-      val entities = fetchAllEntities(libraryId)
-      val seriesBooks = entities.groupBy { it.seriesId }
+    suspend fun fetchLibraryGrouped(
+      libraryId: String,
+      pageSize: Int,
+      pageNumber: Int,
+    ): PagedItems<LibraryEntry> {
+      val total = bookDao.countGroupedEntries(libraryId)
 
-      return entities.mapNotNull { entity ->
-        when (val seriesId = entity.seriesId) {
-          null -> {
-            LibraryEntry.BookEntry(cachedBookEntityConverter.apply(entity))
-          }
+      if (total == 0) {
+        return PagedItems(items = emptyList(), currentPage = pageNumber, totalItems = 0)
+      }
 
-          else -> {
-            val books = seriesBooks[seriesId] ?: emptyList()
+      val headers = bookDao.fetchGroupedEntries(buildGroupedPageQuery(libraryId, pageSize, pageNumber))
 
-            when (entity.id == books.first().id) {
-              true -> {
-                LibraryEntry.SeriesEntry(
-                  id = seriesId,
-                  title = entity.primarySeriesName() ?: seriesId,
-                  author = mergeAuthorNames(books.map { it.author }),
-                  bookCount = books.size,
-                  coverItemIds = books.map { it.id },
-                )
-              }
+      val standaloneBooks =
+        headers
+          .filter { it.seriesId == null }
+          .map { it.groupKey }
+          .takeIf { it.isNotEmpty() }
+          ?.let { ids -> bookDao.fetchBooksByIds(ids).associateBy { it.id } }
+          .orEmpty()
 
-              false -> {
-                null
-              }
+      val seriesMembers =
+        headers
+          .mapNotNull { it.seriesId }
+          .takeIf { it.isNotEmpty() }
+          ?.let { ids -> bookDao.fetchBooksBySeriesIds(ids).groupBy { it.seriesId } }
+          .orEmpty()
+
+      val items =
+        headers.mapNotNull { header ->
+          when (val seriesId = header.seriesId) {
+            null -> {
+              standaloneBooks[header.groupKey]
+                ?.let { LibraryEntry.BookEntry(cachedBookEntityConverter.apply(it)) }
+            }
+
+            else -> {
+              val members = seriesMembers[seriesId].orEmpty().sortedBy { it.id }
+
+              LibraryEntry.SeriesEntry(
+                id = seriesId,
+                title = members.firstNotNullOfOrNull { it.primarySeriesName() } ?: seriesId,
+                author = mergeAuthorNames(members.map { it.author }),
+                bookCount = header.bookCount,
+                coverItemIds = members.map { it.id },
+              )
             }
           }
         }
-      }
+
+      return PagedItems(items = items, currentPage = pageNumber, totalItems = total)
     }
 
     suspend fun fetchSeriesItems(
       libraryId: String,
       seriesId: String,
     ): List<Book> =
-      fetchAllEntities(libraryId)
-        .filter { it.seriesId == seriesId }
+      bookDao
+        .fetchBooksBySeriesIds(listOf(seriesId))
         .map { cachedBookEntityConverter.apply(it) }
 
-    private suspend fun fetchAllEntities(libraryId: String): List<BookEntity> {
+    private fun buildGroupedPageQuery(
+      libraryId: String,
+      pageSize: Int,
+      pageNumber: Int,
+    ): SupportSQLiteQuery {
       val (option, direction) = buildOrdering()
-      val total = countBooks(libraryId)
 
-      if (total == 0) {
-        return emptyList()
-      }
+      val field =
+        when (option) {
+          "author" -> "author"
+          "duration" -> "duration"
+          else -> "title"
+        }
 
-      val request =
-        FetchRequestBuilder()
-          .libraryId(libraryId)
-          .pageNumber(0)
-          .pageSize(total)
-          .orderField(option)
-          .orderDirection(direction)
-          .hideCompleted(preferences.getHideCompleted())
-          .build()
+      val descending = direction.equals("desc", ignoreCase = true)
+      val aggregate = if (descending) "MAX" else "MIN"
+      val sortDirection = if (descending) "DESC" else "ASC"
 
-      return bookDao.fetchCachedBooks(request)
+      val sql =
+        """
+        SELECT COALESCE(seriesId, id) AS groupKey, seriesId AS seriesId, COUNT(*) AS bookCount
+        FROM detailed_books
+        WHERE libraryId = ?
+        GROUP BY COALESCE(seriesId, id)
+        ORDER BY $aggregate($field) $sortDirection
+        LIMIT ? OFFSET ?
+        """.trimIndent()
+
+      return SimpleSQLiteQuery(sql, arrayOf<Any>(libraryId, pageSize, pageNumber * pageSize))
     }
 
     private fun BookEntity.primarySeriesName(): String? =
