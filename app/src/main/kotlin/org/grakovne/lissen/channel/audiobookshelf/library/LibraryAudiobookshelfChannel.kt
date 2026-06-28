@@ -121,36 +121,23 @@ class LibraryAudiobookshelfChannel
     private suspend fun fetchAllSeriesItems(
       libraryId: String,
       seriesId: String,
-    ): OperationResult<List<Book>> {
-      val books = mutableListOf<Book>()
-      var page = 0
+      page: Int = 0,
+      acc: List<Book> = emptyList(),
+    ): OperationResult<List<Book>> =
+      dataRepository
+        .fetchSeriesItems(
+          libraryId = libraryId,
+          seriesId = seriesId,
+          pageSize = SERIES_PAGE_SIZE,
+          pageNumber = page,
+        ).flatMap { response ->
+          val books = acc + librarySearchItemsConverter.apply(response.results)
 
-      while (true) {
-        val result =
-          dataRepository.fetchSeriesItems(
-            libraryId = libraryId,
-            seriesId = seriesId,
-            pageSize = SERIES_PAGE_SIZE,
-            pageNumber = page,
-          )
-
-        when (result) {
-          is OperationResult.Error -> {
-            return OperationResult.Error(result.code, result.message)
-          }
-
-          is Success -> {
-            books += librarySearchItemsConverter.apply(result.data.results)
-
-            if (result.data.results.isEmpty() || books.size >= result.data.total) {
-              return Success(books)
-            }
-
-            page++
+          when {
+            response.results.isEmpty() || books.size >= response.total -> Success(books)
+            else -> fetchAllSeriesItems(libraryId, seriesId, page + 1, books)
           }
         }
-      }
-    }
 
     override suspend fun searchBooks(
       libraryId: String,

@@ -133,7 +133,7 @@ class LibraryPageResponseConverterTest {
     assertEquals("Dune Chronicles", entry.title)
     assertEquals("Frank Herbert", entry.author)
     assertEquals(5, entry.bookCount)
-    assertEquals(listOf("rep", "b2", "b3"), entry.coverItemIds)
+    assertEquals(listOf("rep", "b2", "b3", "b4"), entry.coverItemIds)
   }
 
   @Test
