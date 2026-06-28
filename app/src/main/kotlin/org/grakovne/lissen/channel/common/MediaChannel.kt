@@ -3,6 +3,7 @@ package org.grakovne.lissen.channel.common
 import android.net.Uri
 import okio.Buffer
 import org.grakovne.lissen.channel.audiobookshelf.Host
+import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.CreateBookmarkRequest
@@ -43,6 +44,7 @@ interface MediaChannel {
     libraryId: String,
     pageSize: Int,
     pageNumber: Int,
+    libraryGrouping: LibraryGrouping,
   ): OperationResult<PagedItems<LibraryEntry>> =
     fetchBooks(libraryId, pageSize, pageNumber)
       .map { paged ->

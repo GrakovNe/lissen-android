@@ -5,7 +5,7 @@ import androidx.core.net.toUri
 import com.squareup.moshi.Types
 import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.common.LibraryOrderingOption
-import org.grakovne.lissen.common.combineAuthors
+import org.grakovne.lissen.common.mergeAuthorNames
 import org.grakovne.lissen.common.moshi
 import org.grakovne.lissen.content.cache.persistent.OfflineBookStorageProperties
 import org.grakovne.lissen.content.cache.persistent.converter.CachedBookEntityConverter
@@ -125,14 +125,14 @@ class CachedBookRepository
           }
 
           else -> {
-            val books = seriesBooks.getValue(seriesId)
+            val books = seriesBooks[seriesId] ?: emptyList()
 
             when (entity.id == books.first().id) {
               true -> {
                 LibraryEntry.SeriesEntry(
                   id = seriesId,
                   title = entity.primarySeriesName() ?: seriesId,
-                  author = combineAuthors(books.map { it.author }),
+                  author = mergeAuthorNames(books.map { it.author }),
                   bookCount = books.size,
                   coverItemIds = books.map { it.id },
                 )

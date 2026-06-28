@@ -33,6 +33,8 @@ import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 
+val LibraryItemCoverSize = 64.dp
+
 @Composable
 fun BookComposable(
   book: Book,
@@ -69,7 +71,7 @@ fun BookComposable(
       contentScale = ContentScale.FillBounds,
       modifier =
         Modifier
-          .size(64.dp)
+          .size(LibraryItemCoverSize)
           .aspectRatio(1f)
           .clip(RoundedCornerShape(4.dp)),
       error = painterResource(R.drawable.cover_fallback),

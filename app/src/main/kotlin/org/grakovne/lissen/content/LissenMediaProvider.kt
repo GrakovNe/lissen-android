@@ -180,12 +180,18 @@ class LissenMediaProvider
             libraryId = libraryId,
             pageSize = pageSize,
             pageNumber = pageNumber,
-            groupBySeries = preferences.getLibraryGrouping() == LibraryGrouping.SERIES,
+            libraryGrouping = preferences.getLibraryGrouping(),
           )
         }
 
         false -> {
-          providePreferredChannel().fetchLibrary(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
+          providePreferredChannel()
+            .fetchLibrary(
+              libraryId = libraryId,
+              pageSize = pageSize,
+              pageNumber = pageNumber,
+              libraryGrouping = preferences.getLibraryGrouping(),
+            )
         }
       }
     }

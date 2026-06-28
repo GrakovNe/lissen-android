@@ -1,6 +1,6 @@
 package org.grakovne.lissen.common
 
-fun combineAuthors(authors: List<String?>): String? =
+fun mergeAuthorNames(authors: List<String?>): String? =
   authors
     .asSequence()
     .filterNotNull()

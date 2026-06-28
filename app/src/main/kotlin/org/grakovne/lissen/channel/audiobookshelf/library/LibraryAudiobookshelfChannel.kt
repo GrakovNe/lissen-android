@@ -94,6 +94,7 @@ class LibraryAudiobookshelfChannel
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
+      libraryGrouping: LibraryGrouping,
     ): OperationResult<PagedItems<LibraryEntry>> {
       val (option, direction) = libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering())
       val filter = libraryFilteringRequestConverter.apply(preferences)
@@ -106,7 +107,11 @@ class LibraryAudiobookshelfChannel
           sort = option,
           direction = direction,
           filter = filter,
-          collapseSeries = preferences.getLibraryGrouping() == LibraryGrouping.SERIES,
+          collapseSeries =
+            when (libraryGrouping) {
+              LibraryGrouping.NONE -> false
+              LibraryGrouping.SERIES -> true
+            },
         ).map { libraryPageResponseConverter.applyEntries(it) }
     }
 

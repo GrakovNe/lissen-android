@@ -43,8 +43,6 @@ import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.components.SeriesCoverKey
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 
-private val SERIES_COVER_SIZE = 64.dp
-
 private const val MAX_SERIES_COVERS = 3
 private const val SERIES_PREFETCH_DWELL_MS = 200L
 
@@ -214,7 +212,7 @@ private fun SeriesCoverStack(
     imageLoader = imageLoader,
     contentDescription = contentDescription,
     contentScale = ContentScale.Fit,
-    modifier = Modifier.size(SERIES_COVER_SIZE),
+    modifier = Modifier.size(LibraryItemCoverSize),
     error = painterResource(R.drawable.cover_fallback),
   )
 }

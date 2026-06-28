@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.core.net.toFile
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
+import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookmarkRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedLibraryRepository
@@ -120,31 +121,34 @@ class LocalCacheRepository
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
-      groupBySeries: Boolean,
-    ): OperationResult<PagedItems<LibraryEntry>> {
-      if (!groupBySeries) {
-        return fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
-          .map { paged ->
+      libraryGrouping: LibraryGrouping,
+    ): OperationResult<PagedItems<LibraryEntry>> =
+      when (libraryGrouping) {
+        LibraryGrouping.NONE -> {
+          fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
+            .map { paged ->
+              PagedItems(
+                items = paged.items.map { LibraryEntry.BookEntry(it) },
+                currentPage = paged.currentPage,
+                totalItems = paged.totalItems,
+              )
+            }
+        }
+
+        LibraryGrouping.SERIES -> {
+          val entries = cachedBookRepository.fetchLibraryGrouped(libraryId)
+          val fromIndex = (pageNumber * pageSize).coerceIn(0, entries.size)
+          val toIndex = (fromIndex + pageSize).coerceIn(0, entries.size)
+
+          OperationResult.Success(
             PagedItems(
-              items = paged.items.map { LibraryEntry.BookEntry(it) },
-              currentPage = paged.currentPage,
-              totalItems = paged.totalItems,
-            )
-          }
+              items = entries.subList(fromIndex, toIndex),
+              currentPage = pageNumber,
+              totalItems = entries.size,
+            ),
+          )
+        }
       }
-
-      val entries = cachedBookRepository.fetchLibraryGrouped(libraryId)
-      val fromIndex = (pageNumber * pageSize).coerceIn(0, entries.size)
-      val toIndex = (fromIndex + pageSize).coerceIn(0, entries.size)
-
-      return OperationResult.Success(
-        PagedItems(
-          items = entries.subList(fromIndex, toIndex),
-          currentPage = pageNumber,
-          totalItems = entries.size,
-        ),
-      )
-    }
 
     suspend fun fetchSeriesItems(
       libraryId: String,
