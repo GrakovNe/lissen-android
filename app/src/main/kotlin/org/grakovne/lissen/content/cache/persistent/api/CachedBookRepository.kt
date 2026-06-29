@@ -209,6 +209,71 @@ class CachedBookRepository
       return SimpleSQLiteQuery(sql, arrayOf<Any>(libraryId, pageSize, pageNumber * pageSize))
     }
 
+    suspend fun fetchAuthorsGrouped(libraryId: String): List<LibraryEntry> {
+      val entities = fetchAllEntities(libraryId)
+      val sizes = entities.groupingBy { it.primaryAuthor() }.eachCount()
+      val collapsedAuthors = mutableSetOf<String>()
+
+      return entities.mapNotNull { entity ->
+        when (val author = entity.primaryAuthor()) {
+          null -> {
+            null
+          }
+
+          else -> {
+            when (collapsedAuthors.add(author)) {
+              true -> {
+                LibraryEntry.AuthorEntry(
+                  id = author,
+                  name = author,
+                  bookCount = sizes[author] ?: 0,
+                )
+              }
+
+              false -> {
+                null
+              }
+            }
+          }
+        }
+      }
+    }
+
+    suspend fun fetchAuthorItems(
+      libraryId: String,
+      authorId: String,
+    ): List<Book> =
+      fetchAllEntities(libraryId)
+        .filter { it.primaryAuthor() == authorId }
+        .map { cachedBookEntityConverter.apply(it) }
+
+    private fun BookEntity.primaryAuthor(): String? =
+      author
+        ?.substringBefore(",")
+        ?.trim()
+        ?.takeIf { it.isNotEmpty() }
+
+    private suspend fun fetchAllEntities(libraryId: String): List<BookEntity> {
+      val (option, direction) = buildOrdering()
+      val total = countBooks(libraryId)
+
+      if (total == 0) {
+        return emptyList()
+      }
+
+      val request =
+        FetchRequestBuilder()
+          .libraryId(libraryId)
+          .pageNumber(0)
+          .pageSize(total)
+          .orderField(option)
+          .orderDirection(direction)
+          .hideCompleted(preferences.getHideCompleted())
+          .build()
+
+      return bookDao.fetchCachedBooks(request)
+    }
+
     private fun BookEntity.primarySeriesName(): String? =
       seriesJson
         ?.let {

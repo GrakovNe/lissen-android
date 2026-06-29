@@ -398,10 +398,12 @@ private fun LibraryGrouping.icon(): ImageVector =
   when (this) {
     LibraryGrouping.NONE -> Icons.AutoMirrored.Outlined.List
     LibraryGrouping.SERIES -> Icons.Outlined.CollectionsBookmark
+    LibraryGrouping.AUTHOR -> Icons.Outlined.Person
   }
 
 private fun LibraryGrouping.toLocalizedName(context: Context): String =
   when (this) {
     LibraryGrouping.NONE -> context.getString(R.string.library_grouping_disabled)
     LibraryGrouping.SERIES -> context.getString(R.string.library_grouping_series)
+    LibraryGrouping.AUTHOR -> context.getString(R.string.library_grouping_author)
   }

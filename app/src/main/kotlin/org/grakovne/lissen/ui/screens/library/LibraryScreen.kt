@@ -73,6 +73,7 @@ import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.common.RequestLocalNetworkPermission
 import org.grakovne.lissen.ui.screens.common.RequestNotificationPermissions
+import org.grakovne.lissen.ui.screens.library.composables.AuthorComposable
 import org.grakovne.lissen.ui.screens.library.composables.BookComposable
 import org.grakovne.lissen.ui.screens.library.composables.DefaultActionComposable
 import org.grakovne.lissen.ui.screens.library.composables.LibrarySearchActionComposable
@@ -126,9 +127,9 @@ fun LibraryScreen(
 
   val library = libraryViewModel.getPager(searchRequested).collectAsLazyPagingItems()
   val libraryCount by libraryViewModel.totalCount.collectAsState()
-  val expandedSeries by libraryViewModel.expandedSeries.collectAsState()
-  val seriesBooks by libraryViewModel.seriesBooks.collectAsState()
-  val seriesLoading by libraryViewModel.seriesLoading.collectAsState()
+  val expandedGroups by libraryViewModel.expandedGroups.collectAsState()
+  val groupBooks by libraryViewModel.groupBooks.collectAsState()
+  val groupLoading by libraryViewModel.groupLoading.collectAsState()
   val libraryGrouping by settingsViewModel.libraryGrouping.collectAsState(LibraryGrouping.NONE)
 
   val libraryListState = rememberLazyListState()
@@ -522,13 +523,26 @@ fun LibraryScreen(
                   is LibraryEntry.SeriesEntry -> {
                     SeriesComposable(
                       series = entry,
-                      expanded = entry.id in expandedSeries,
-                      loading = entry.id in seriesLoading,
-                      books = seriesBooks[entry.id].orEmpty(),
+                      expanded = entry.id in expandedGroups,
+                      loading = entry.id in groupLoading,
+                      books = groupBooks[entry.id].orEmpty(),
                       imageLoader = imageLoader,
                       navController = navController,
-                      onToggle = { libraryViewModel.toggleSeries(entry) },
-                      onPrefetch = { libraryViewModel.prefetchSeries(entry) },
+                      onToggle = { libraryViewModel.toggleGroup(entry) },
+                      onPrefetch = { libraryViewModel.prefetchGroup(entry) },
+                    )
+                  }
+
+                  is LibraryEntry.AuthorEntry -> {
+                    AuthorComposable(
+                      author = entry,
+                      expanded = entry.id in expandedGroups,
+                      loading = entry.id in groupLoading,
+                      books = groupBooks[entry.id].orEmpty(),
+                      imageLoader = imageLoader,
+                      navController = navController,
+                      onToggle = { libraryViewModel.toggleGroup(entry) },
+                      onPrefetch = { libraryViewModel.prefetchGroup(entry) },
                     )
                   }
                 }
@@ -573,20 +587,20 @@ fun LibraryScreen(
       onForceLocalToggled = {
         cachingModelView.toggleCacheForce()
         playerViewModel.book.value?.let { playerViewModel.preparePlayback(it.id) }
-        libraryViewModel.resetSeriesExpansion()
+        libraryViewModel.resetGroupExpansion()
         refreshContent(showPullRefreshing = false)
         coroutineScope.launch { libraryListState.scrollToItem(0) }
       },
       onHideCompletedToggled = {
         settingsViewModel.toggleHideCompleted()
         playerViewModel.book.value?.let { playerViewModel.preparePlayback(it.id) }
-        libraryViewModel.resetSeriesExpansion()
+        libraryViewModel.resetGroupExpansion()
         refreshContent(showPullRefreshing = false)
         coroutineScope.launch { libraryListState.scrollToItem(0) }
       },
       onGroupingSelected = { grouping ->
         settingsViewModel.preferLibraryGrouping(grouping)
-        libraryViewModel.resetSeriesExpansion()
+        libraryViewModel.resetGroupExpansion()
         refreshContent(showPullRefreshing = false)
         coroutineScope.launch { libraryListState.scrollToItem(0) }
       },

@@ -34,6 +34,7 @@ class LibraryAudiobookshelfChannelTest {
       libraryOrderingRequestConverter = mockk(relaxed = true),
       libraryFilteringRequestConverter = mockk(relaxed = true),
       libraryPageResponseConverter = mockk(relaxed = true),
+      libraryAuthorsResponseConverter = mockk(relaxed = true),
       bookResponseConverter = mockk(relaxed = true),
       librarySearchItemsConverter = LibrarySearchItemsConverter(),
     )

@@ -90,6 +90,11 @@ class CachedBookRepositoryTest {
     coEvery { bookDao.fetchBooksBySeriesIds(any()) } answers { firstArg<List<String>>().flatMap { bySeries[it].orEmpty() } }
   }
 
+  private fun stubBooks(books: List<BookEntity>) {
+    coEvery { bookDao.countCachedBooks(libraryId = any()) } returns books.size
+    coEvery { bookDao.fetchCachedBooks(any()) } returns books
+  }
+
   @Test
   fun `empty library produces no entries`() =
     runBlocking {
@@ -202,6 +207,45 @@ class CachedBookRepositoryTest {
       assertInstanceOf(LibraryEntry.SeriesEntry::class.java, series)
       assertEquals(listOf("b1", "b2", "b3", "b4", "b5"), (series as LibraryEntry.SeriesEntry).coverItemIds)
       assertEquals(5, series.bookCount)
+    }
+
+  @Test
+  fun `groups cached books by primary author and skips authorless books`() =
+    runBlocking {
+      stubBooks(
+        listOf(
+          entity("b1", author = "Frank Herbert"),
+          entity("b2", author = "Frank Herbert, Brian Herbert"),
+          entity("b3", author = "Andy Weir"),
+          entity("b4", author = null),
+        ),
+      )
+
+      val entries = repository.fetchAuthorsGrouped(LIBRARY_ID)
+      assertEquals(2, entries.size)
+
+      val first = entries[0] as LibraryEntry.AuthorEntry
+      assertEquals("Frank Herbert", first.id)
+      assertEquals(2, first.bookCount)
+
+      val second = entries[1] as LibraryEntry.AuthorEntry
+      assertEquals("Andy Weir", second.id)
+      assertEquals(1, second.bookCount)
+    }
+
+  @Test
+  fun `fetchAuthorItems returns only the requested author's books`() =
+    runBlocking {
+      stubBooks(
+        listOf(
+          entity("b1", author = "Frank Herbert"),
+          entity("b2", author = "Andy Weir"),
+          entity("b3", author = "Frank Herbert, Brian Herbert"),
+        ),
+      )
+
+      val books = repository.fetchAuthorItems(LIBRARY_ID, "Frank Herbert")
+      assertEquals(listOf("b1", "b3"), books.map { it.id })
     }
 
   companion object {

@@ -192,6 +192,8 @@ class LibraryViewModelTest {
         coverItemIds = listOf("b1", "b2", "b3"),
       )
 
+    private fun author(id: String = "aut-1") = LibraryEntry.AuthorEntry(id = id, name = "Frank Herbert", bookCount = 6)
+
     private fun book(id: String) = Book(id = id, subtitle = null, series = "Dune", title = "Title $id", author = "Frank Herbert")
 
     private fun seqBook(sequence: String) =
@@ -203,34 +205,47 @@ class LibraryViewModelTest {
       coEvery { mediaChannel.fetchSeriesItems("lib-1", "ser-1") } returns
         OperationResult.Success(listOf(seqBook("22"), seqBook("2"), seqBook("1")))
 
-      viewModel.toggleSeries(series())
+      viewModel.toggleGroup(series())
 
-      assertEquals(listOf("1", "2", "22"), viewModel.seriesBooks.value["ser-1"]?.map { it.id })
+      assertEquals(listOf("1", "2", "22"), viewModel.groupBooks.value["ser-1"]?.map { it.id })
     }
 
     @Test
-    fun `toggleSeries expands and loads the series books`() {
+    fun `toggleGroup expands an author and loads via fetchAuthorBooks`() {
+      every { preferences.getPreferredLibrary() } returns library
+      coEvery { mediaChannel.fetchAuthorBooks("lib-1", "aut-1") } returns
+        OperationResult.Success(listOf(book("b1")))
+
+      viewModel.toggleGroup(author())
+
+      assertTrue("aut-1" in viewModel.expandedGroups.value)
+      assertEquals(listOf("b1"), viewModel.groupBooks.value["aut-1"]?.map { it.id })
+      coVerify(exactly = 1) { mediaChannel.fetchAuthorBooks("lib-1", "aut-1") }
+    }
+
+    @Test
+    fun `toggleGroup expands and loads the series books`() {
       every { preferences.getPreferredLibrary() } returns library
       coEvery { mediaChannel.fetchSeriesItems("lib-1", "ser-1") } returns
         OperationResult.Success(listOf(book("b1"), book("b2")))
 
-      viewModel.toggleSeries(series())
+      viewModel.toggleGroup(series())
 
-      assertTrue("ser-1" in viewModel.expandedSeries.value)
-      assertEquals(listOf("b1", "b2"), viewModel.seriesBooks.value["ser-1"]?.map { it.id })
-      assertTrue(viewModel.seriesLoading.value.isEmpty())
+      assertTrue("ser-1" in viewModel.expandedGroups.value)
+      assertEquals(listOf("b1", "b2"), viewModel.groupBooks.value["ser-1"]?.map { it.id })
+      assertTrue(viewModel.groupLoading.value.isEmpty())
     }
 
     @Test
-    fun `toggleSeries collapses on the second call`() {
+    fun `toggleGroup collapses on the second call`() {
       every { preferences.getPreferredLibrary() } returns library
       coEvery { mediaChannel.fetchSeriesItems("lib-1", "ser-1") } returns
         OperationResult.Success(listOf(book("b1")))
 
-      viewModel.toggleSeries(series())
-      viewModel.toggleSeries(series())
+      viewModel.toggleGroup(series())
+      viewModel.toggleGroup(series())
 
-      assertFalse("ser-1" in viewModel.expandedSeries.value)
+      assertFalse("ser-1" in viewModel.expandedGroups.value)
     }
 
     @Test
@@ -239,33 +254,33 @@ class LibraryViewModelTest {
       coEvery { mediaChannel.fetchSeriesItems("lib-1", "ser-1") } returns
         OperationResult.Success(listOf(book("b1")))
 
-      viewModel.toggleSeries(series())
-      viewModel.toggleSeries(series())
-      viewModel.toggleSeries(series())
+      viewModel.toggleGroup(series())
+      viewModel.toggleGroup(series())
+      viewModel.toggleGroup(series())
 
-      assertTrue("ser-1" in viewModel.expandedSeries.value)
+      assertTrue("ser-1" in viewModel.expandedGroups.value)
       coVerify(exactly = 1) { mediaChannel.fetchSeriesItems("lib-1", "ser-1") }
     }
 
     @Test
-    fun `toggleSeries does not fetch when no preferred library`() {
+    fun `toggleGroup does not fetch when no preferred library`() {
       every { preferences.getPreferredLibrary() } returns null
 
-      viewModel.toggleSeries(series())
+      viewModel.toggleGroup(series())
 
       coVerify(exactly = 0) { mediaChannel.fetchSeriesItems(any(), any()) }
     }
 
     @Test
-    fun `prefetchSeries loads books into cache without expanding the row`() {
+    fun `prefetchGroup loads books into cache without expanding the row`() {
       every { preferences.getPreferredLibrary() } returns library
       coEvery { mediaChannel.fetchSeriesItems("lib-1", "ser-1") } returns
         OperationResult.Success(listOf(book("b1"), book("b2")))
 
-      viewModel.prefetchSeries(series())
+      viewModel.prefetchGroup(series())
 
-      assertEquals(listOf("b1", "b2"), viewModel.seriesBooks.value["ser-1"]?.map { it.id })
-      assertFalse("ser-1" in viewModel.expandedSeries.value)
+      assertEquals(listOf("b1", "b2"), viewModel.groupBooks.value["ser-1"]?.map { it.id })
+      assertFalse("ser-1" in viewModel.expandedGroups.value)
     }
 
     @Test
@@ -274,34 +289,34 @@ class LibraryViewModelTest {
       coEvery { mediaChannel.fetchSeriesItems("lib-1", "ser-1") } returns
         OperationResult.Success(listOf(book("b1")))
 
-      viewModel.prefetchSeries(series())
-      viewModel.toggleSeries(series())
+      viewModel.prefetchGroup(series())
+      viewModel.toggleGroup(series())
 
-      assertTrue("ser-1" in viewModel.expandedSeries.value)
+      assertTrue("ser-1" in viewModel.expandedGroups.value)
       coVerify(exactly = 1) { mediaChannel.fetchSeriesItems("lib-1", "ser-1") }
     }
 
     @Test
-    fun `prefetchSeries does not fetch when no preferred library`() {
+    fun `prefetchGroup does not fetch when no preferred library`() {
       every { preferences.getPreferredLibrary() } returns null
 
-      viewModel.prefetchSeries(series())
+      viewModel.prefetchGroup(series())
 
       coVerify(exactly = 0) { mediaChannel.fetchSeriesItems(any(), any()) }
     }
 
     @Test
-    fun `resetSeriesExpansion clears expansion state`() {
+    fun `resetGroupExpansion clears expansion state`() {
       every { preferences.getPreferredLibrary() } returns library
       coEvery { mediaChannel.fetchSeriesItems("lib-1", "ser-1") } returns
         OperationResult.Success(listOf(book("b1")))
 
-      viewModel.toggleSeries(series())
-      viewModel.resetSeriesExpansion()
+      viewModel.toggleGroup(series())
+      viewModel.resetGroupExpansion()
 
-      assertTrue(viewModel.expandedSeries.value.isEmpty())
-      assertTrue(viewModel.seriesBooks.value.isEmpty())
-      assertTrue(viewModel.seriesLoading.value.isEmpty())
+      assertTrue(viewModel.expandedGroups.value.isEmpty())
+      assertTrue(viewModel.groupBooks.value.isEmpty())
+      assertTrue(viewModel.groupLoading.value.isEmpty())
     }
   }
 }

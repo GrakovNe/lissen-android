@@ -16,6 +16,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.user.LoggedUserRe
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.PersonalizedFeedResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.UserResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.BookResponse
+import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryAuthorsResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsBatchRequest
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsBatchResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsResponse
@@ -90,6 +91,13 @@ interface AudiobookshelfApiClient {
     @Query("desc") desc: String,
     @Query("minified") minified: String = "1",
   ): Response<PodcastItemsResponse>
+
+  @GET("api/libraries/{libraryId}/authors")
+  suspend fun fetchLibraryAuthors(
+    @Path("libraryId") libraryId: String,
+    @Query("limit") limit: Int,
+    @Query("page") page: Int,
+  ): Response<LibraryAuthorsResponse>
 
   @GET("api/libraries/{libraryId}/search")
   suspend fun searchLibraryItems(
@@ -166,6 +174,13 @@ interface AudiobookshelfApiClient {
   @Streaming
   suspend fun getItemCover(
     @Path("itemId") itemId: String,
+    @Query("width") width: Int?,
+  ): Response<ResponseBody>
+
+  @GET("api/authors/{authorId}/image")
+  @Streaming
+  suspend fun getAuthorImage(
+    @Path("authorId") authorId: String,
     @Query("width") width: Int?,
   ): Response<ResponseBody>
 }

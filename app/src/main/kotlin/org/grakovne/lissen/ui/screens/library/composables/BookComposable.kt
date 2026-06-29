@@ -109,12 +109,13 @@ fun BookMetadataComposable(
   grouping: LibraryGrouping = LibraryGrouping.NONE,
 ) {
   val series = book.series?.takeIf { it.isNotBlank() && grouping != LibraryGrouping.SERIES }
+  val author = book.author?.takeIf { it.isNotBlank() && grouping != LibraryGrouping.AUTHOR }
 
-  if (series != null || book.author != null) {
+  if (series != null || author != null) {
     Spacer(modifier = Modifier.height(2.dp))
   }
 
-  book.author?.takeIf { it.isNotBlank() }?.let {
+  author?.let {
     Text(
       text = it,
       style =

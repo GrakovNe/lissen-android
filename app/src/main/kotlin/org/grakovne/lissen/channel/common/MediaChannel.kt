@@ -35,6 +35,11 @@ interface MediaChannel {
     width: Int? = null,
   ): OperationResult<Buffer>
 
+  suspend fun fetchAuthorCover(
+    authorId: String,
+    width: Int? = null,
+  ): OperationResult<Buffer> = OperationResult.Error(OperationError.InternalError)
+
   suspend fun fetchBooks(
     libraryId: String,
     pageSize: Int,
@@ -59,6 +64,11 @@ interface MediaChannel {
   suspend fun fetchSeriesItems(
     libraryId: String,
     seriesId: String,
+  ): OperationResult<List<Book>> = OperationResult.Success(emptyList())
+
+  suspend fun fetchAuthorBooks(
+    libraryId: String,
+    authorId: String,
   ): OperationResult<List<Book>> = OperationResult.Success(emptyList())
 
   suspend fun searchBooks(

@@ -33,9 +33,10 @@ class BookCoverFetcher(
     val localOnly = options.extras[LocalOnlyKey] ?: false
 
     val response =
-      when (localOnly) {
-        true -> localCacheRepository.fetchBookCover(uri)
-        false -> mediaChannel.fetchBookCover(uri)
+      when {
+        uri.startsWith(AUTHOR_PREFIX) && !localOnly -> mediaChannel.fetchAuthorCover(uri.removePrefix(AUTHOR_PREFIX))
+        localOnly -> localCacheRepository.fetchBookCover(uri)
+        else -> mediaChannel.fetchBookCover(uri)
       }
 
     return when (response) {
@@ -62,6 +63,8 @@ class BookCoverFetcher(
 
   companion object {
     val LocalOnlyKey = Extras.Key(false)
+
+    const val AUTHOR_PREFIX = "author:"
   }
 }
 

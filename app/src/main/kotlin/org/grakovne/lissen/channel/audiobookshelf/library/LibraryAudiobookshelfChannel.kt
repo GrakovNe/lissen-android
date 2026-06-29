@@ -13,6 +13,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.api.library.AudioBooksh
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarkItemResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarksResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryAuthorsResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryPageResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
@@ -53,6 +54,7 @@ class LibraryAudiobookshelfChannel
     private val libraryOrderingRequestConverter: LibraryOrderingRequestConverter,
     private val libraryFilteringRequestConverter: LibraryFilteringRequestConverter,
     private val libraryPageResponseConverter: LibraryPageResponseConverter,
+    private val libraryAuthorsResponseConverter: LibraryAuthorsResponseConverter,
     private val bookResponseConverter: BookResponseConverter,
     private val librarySearchItemsConverter: LibrarySearchItemsConverter,
   ) : AudiobookshelfChannel(
@@ -95,25 +97,30 @@ class LibraryAudiobookshelfChannel
       pageSize: Int,
       pageNumber: Int,
       libraryGrouping: LibraryGrouping,
-    ): OperationResult<PagedItems<LibraryEntry>> {
-      val (option, direction) = libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering())
-      val filter = libraryFilteringRequestConverter.apply(preferences)
+    ): OperationResult<PagedItems<LibraryEntry>> =
+      when (libraryGrouping) {
+        LibraryGrouping.AUTHOR -> {
+          dataRepository
+            .fetchLibraryAuthors(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
+            .map { libraryAuthorsResponseConverter.apply(it) }
+        }
 
-      return dataRepository
-        .fetchLibraryItems(
-          libraryId = libraryId,
-          pageSize = pageSize,
-          pageNumber = pageNumber,
-          sort = option,
-          direction = direction,
-          filter = filter,
-          collapseSeries =
-            when (libraryGrouping) {
-              LibraryGrouping.NONE -> false
-              LibraryGrouping.SERIES -> true
-            },
-        ).map { libraryPageResponseConverter.applyEntries(it) }
-    }
+        else -> {
+          val (option, direction) = libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering())
+          val filter = libraryFilteringRequestConverter.apply(preferences)
+
+          dataRepository
+            .fetchLibraryItems(
+              libraryId = libraryId,
+              pageSize = pageSize,
+              pageNumber = pageNumber,
+              sort = option,
+              direction = direction,
+              filter = filter,
+              collapseSeries = libraryGrouping == LibraryGrouping.SERIES,
+            ).map { libraryPageResponseConverter.applyEntries(it) }
+        }
+      }
 
     override suspend fun fetchSeriesItems(
       libraryId: String,
@@ -143,6 +150,14 @@ class LibraryAudiobookshelfChannel
             else -> fetchAllSeriesItems(libraryId, seriesId, page + 1, books)
           }
         }
+
+    override suspend fun fetchAuthorBooks(
+      libraryId: String,
+      authorId: String,
+    ): OperationResult<List<Book>> =
+      dataRepository
+        .fetchAuthorItems(authorId)
+        .map { librarySearchItemsConverter.apply(it.libraryItems) }
 
     override suspend fun searchBooks(
       libraryId: String,

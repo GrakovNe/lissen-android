@@ -37,6 +37,7 @@
     <string name="library_quick_settings_grouping_title">Grouping</string>
     <string name="library_grouping_disabled">Disabled</string>
     <string name="library_grouping_series">By Series</string>
+    <string name="library_grouping_author">By Author</string>
     <plurals name="series_books_count">
         <item quantity="one">%d book</item>
         <item quantity="other">%d books</item>
