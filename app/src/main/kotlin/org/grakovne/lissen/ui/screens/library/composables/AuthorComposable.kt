@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
@@ -92,8 +92,8 @@ fun AuthorComposable(
           Modifier
             .size(LibraryItemCoverSize)
             .aspectRatio(1f)
-            .clip(CircleShape),
-        error = painterResource(R.drawable.cover_fallback),
+            .clip(RoundedCornerShape(4.dp)),
+        error = painterResource(R.drawable.author_fallback),
       )
 
       Spacer(Modifier.width(16.dp))

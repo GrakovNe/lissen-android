@@ -211,35 +211,13 @@ class CachedBookRepository
       return SimpleSQLiteQuery(sql, arrayOf<Any>(libraryId, pageSize, pageNumber * pageSize))
     }
 
-    suspend fun fetchAuthorsGrouped(libraryId: String): List<LibraryEntry> {
-      val entities = fetchAllEntities(libraryId)
-      val sizes = entities.groupingBy { it.primaryAuthor() }.eachCount()
-      val collapsedAuthors = mutableSetOf<String>()
-
-      return entities.mapNotNull { entity ->
-        when (val author = entity.primaryAuthor()) {
-          null -> {
-            null
-          }
-
-          else -> {
-            when (collapsedAuthors.add(author)) {
-              true -> {
-                LibraryEntry.AuthorEntry(
-                  id = author,
-                  name = author,
-                  bookCount = sizes[author] ?: 0,
-                )
-              }
-
-              false -> {
-                null
-              }
-            }
-          }
-        }
-      }
-    }
+    suspend fun fetchAuthorsGrouped(libraryId: String): List<LibraryEntry> =
+      fetchAllEntities(libraryId)
+        .groupingBy { it.primaryAuthor() }
+        .eachCount()
+        .mapNotNull { (author, count) ->
+          author?.let { LibraryEntry.AuthorEntry(id = it, name = it, bookCount = count) }
+        }.sortedBy { it.name.lowercase() }
 
     suspend fun fetchAuthorItems(
       libraryId: String,

@@ -97,6 +97,8 @@ interface AudiobookshelfApiClient {
     @Path("libraryId") libraryId: String,
     @Query("limit") limit: Int,
     @Query("page") page: Int,
+    @Query("sort") sort: String,
+    @Query("desc") desc: String,
   ): Response<LibraryAuthorsResponse>
 
   @GET("api/libraries/{libraryId}/search")

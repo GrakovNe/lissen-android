@@ -210,7 +210,7 @@ class CachedBookRepositoryTest {
     }
 
   @Test
-  fun `groups cached books by primary author and skips authorless books`() =
+  fun `groups cached books by primary author sorted by name and skips authorless books`() =
     runBlocking {
       stubBooks(
         listOf(
@@ -225,12 +225,12 @@ class CachedBookRepositoryTest {
       assertEquals(2, entries.size)
 
       val first = entries[0] as LibraryEntry.AuthorEntry
-      assertEquals("Frank Herbert", first.id)
-      assertEquals(2, first.bookCount)
+      assertEquals("Andy Weir", first.id)
+      assertEquals(1, first.bookCount)
 
       val second = entries[1] as LibraryEntry.AuthorEntry
-      assertEquals("Andy Weir", second.id)
-      assertEquals(1, second.bookCount)
+      assertEquals("Frank Herbert", second.id)
+      assertEquals(2, second.bookCount)
     }
 
   @Test

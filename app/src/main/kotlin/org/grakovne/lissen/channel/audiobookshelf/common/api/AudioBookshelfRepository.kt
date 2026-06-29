@@ -116,6 +116,8 @@ class AudioBookshelfRepository
           libraryId = libraryId,
           limit = pageSize,
           page = pageNumber,
+          sort = "name",
+          desc = "0",
         )
       }
 
