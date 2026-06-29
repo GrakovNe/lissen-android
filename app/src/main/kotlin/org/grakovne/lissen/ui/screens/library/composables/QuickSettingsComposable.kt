@@ -136,26 +136,27 @@ fun QuickSettingsComposable(
 
       Spacer(modifier = Modifier.height(4.dp))
 
-      if (isLibrary) {
-        PickerHeaderRow(
-          label = stringResource(R.string.library_quick_settings_grouping_title),
-          icon = Icons.Outlined.Workspaces,
-          value = grouping.toLocalizedName(context),
-          expanded = groupingExpanded,
-          onClick = { withHaptic(view) { groupingExpanded = !groupingExpanded } },
-        )
+      val displayedGrouping = if (isLibrary) grouping else LibraryGrouping.NONE
 
-        AnimatedVisibility(visible = groupingExpanded) {
-          Column {
-            LibraryGrouping.entries.forEach { option ->
-              OptionRow(
-                title = option.toLocalizedName(context),
-                icon = option.icon(),
-                selected = grouping == option,
-                trailing = Icons.Outlined.Check,
-                onClick = { onGroupingSelected(option) },
-              )
-            }
+      PickerHeaderRow(
+        label = stringResource(R.string.library_quick_settings_grouping_title),
+        icon = Icons.Outlined.Workspaces,
+        value = displayedGrouping.toLocalizedName(context),
+        expanded = groupingExpanded,
+        enabled = isLibrary,
+        onClick = { withHaptic(view) { groupingExpanded = !groupingExpanded } },
+      )
+
+      AnimatedVisibility(visible = groupingExpanded && isLibrary) {
+        Column {
+          LibraryGrouping.entries.forEach { option ->
+            OptionRow(
+              title = option.toLocalizedName(context),
+              icon = option.icon(),
+              selected = grouping == option,
+              trailing = Icons.Outlined.Check,
+              onClick = { onGroupingSelected(option) },
+            )
           }
         }
       }
