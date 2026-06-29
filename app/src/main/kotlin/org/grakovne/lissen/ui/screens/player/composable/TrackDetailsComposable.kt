@@ -33,6 +33,7 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
+import org.grakovne.lissen.ui.components.BookCoverKey
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
@@ -52,7 +53,7 @@ fun TrackDetailsComposable(
     remember(book?.id) {
       ImageRequest
         .Builder(context)
-        .data(book?.id)
+        .data(book?.let { BookCoverKey(it.id) })
         .size(coil3.size.Size.ORIGINAL)
         .build()
     }

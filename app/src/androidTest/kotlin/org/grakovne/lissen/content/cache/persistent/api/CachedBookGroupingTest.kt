@@ -125,6 +125,7 @@ class CachedBookGroupingTest {
     when (this) {
       is LibraryEntry.BookEntry -> book.id
       is LibraryEntry.SeriesEntry -> id
+      is LibraryEntry.AuthorEntry -> id
     }
 
   companion object {

@@ -17,6 +17,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.Progress
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.PersonalizedFeedResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.UserResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.BookResponse
+import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryAuthorsResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsBatchRequest
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsBatchResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsResponse
@@ -104,6 +105,33 @@ class AudioBookshelfRepository
           collapseSeries = if (collapseSeries) "1" else "0",
         )
       }
+
+    suspend fun fetchLibraryAuthors(
+      libraryId: String,
+      pageSize: Int,
+      pageNumber: Int,
+    ): OperationResult<LibraryAuthorsResponse> =
+      audioBookShelfApiService.makeRequest {
+        it.fetchLibraryAuthors(
+          libraryId = libraryId,
+          limit = pageSize,
+          page = pageNumber,
+        )
+      }
+
+    suspend fun fetchAuthorImage(
+      authorId: String,
+      width: Int?,
+    ): OperationResult<Buffer> =
+      audioBookShelfApiService
+        .makeRequest { it.getAuthorImage(authorId = authorId, width = width) }
+        .map { response ->
+          withContext(Dispatchers.IO) {
+            response.use {
+              Buffer().apply { writeAll(it.source()) }
+            }
+          }
+        }
 
     suspend fun fetchSeriesItems(
       libraryId: String,

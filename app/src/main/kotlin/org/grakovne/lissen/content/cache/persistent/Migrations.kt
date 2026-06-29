@@ -2,6 +2,9 @@ package org.grakovne.lissen.content.cache.persistent
 
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.squareup.moshi.Types
+import org.grakovne.lissen.common.moshi
+import org.grakovne.lissen.content.cache.persistent.entity.BookAuthorDto
 import org.grakovne.lissen.domain.LibraryType
 
 val MIGRATION_1_2 =
@@ -332,5 +335,39 @@ val MIGRATION_18_19 =
   object : Migration(18, 19) {
     override fun migrate(db: SupportSQLiteDatabase) {
       db.execSQL("ALTER TABLE detailed_books ADD COLUMN seriesId TEXT")
+    }
+  }
+
+val MIGRATION_19_20 =
+  object : Migration(19, 20) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+      db.execSQL("ALTER TABLE detailed_books ADD COLUMN authorsJson TEXT")
+
+      val type = Types.newParameterizedType(List::class.java, BookAuthorDto::class.java)
+      val adapter = moshi.adapter<List<BookAuthorDto>>(type)
+
+      db.query("SELECT id, author FROM detailed_books WHERE author IS NOT NULL AND author <> ''").use { cursor ->
+        val idIndex = cursor.getColumnIndexOrThrow("id")
+        val authorIndex = cursor.getColumnIndexOrThrow("author")
+
+        while (cursor.moveToNext()) {
+          val authors =
+            cursor
+              .getString(authorIndex)
+              .split(",")
+              .map { it.trim() }
+              .filter { it.isNotEmpty() }
+              .map { BookAuthorDto(id = "", name = it) }
+
+          if (authors.isEmpty()) {
+            continue
+          }
+
+          db.execSQL(
+            "UPDATE detailed_books SET authorsJson = ? WHERE id = ?",
+            arrayOf(adapter.toJson(authors), cursor.getString(idIndex)),
+          )
+        }
+      }
     }
   }

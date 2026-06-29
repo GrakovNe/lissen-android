@@ -131,6 +131,22 @@ class LissenMediaProvider
       }
     }
 
+    suspend fun fetchAuthorCover(authorId: String): OperationResult<File> {
+      Timber.d("Fetching author cover: authorId=$authorId")
+      return when (preferences.isForceCache()) {
+        true -> {
+          localCacheRepository.fetchAuthorCover(authorId)
+        }
+
+        false -> {
+          cachedCoverProvider.provideAuthorCover(
+            channel = providePreferredChannel(),
+            authorId = authorId,
+          )
+        }
+      }
+    }
+
     suspend fun searchBooks(
       libraryId: String,
       query: String,
@@ -205,6 +221,18 @@ class LissenMediaProvider
       return when (preferences.isForceCache()) {
         true -> localCacheRepository.fetchSeriesItems(libraryId = libraryId, seriesId = seriesId)
         false -> providePreferredChannel().fetchSeriesItems(libraryId = libraryId, seriesId = seriesId)
+      }
+    }
+
+    suspend fun fetchAuthorBooks(
+      libraryId: String,
+      authorId: String,
+    ): OperationResult<List<Book>> {
+      Timber.d("Fetching author books: libraryId=$libraryId, authorId=$authorId")
+
+      return when (preferences.isForceCache()) {
+        true -> localCacheRepository.fetchAuthorItems(libraryId = libraryId, authorId = authorId)
+        false -> providePreferredChannel().fetchAuthorBooks(libraryId = libraryId, authorId = authorId)
       }
     }
 

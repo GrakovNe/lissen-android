@@ -60,6 +60,15 @@ class LocalCacheRepository
       }
     }
 
+    fun fetchAuthorCover(authorName: String): OperationResult<File> {
+      val coverFile = cachedBookRepository.provideAuthorCover(authorName)
+
+      return when (coverFile.exists()) {
+        true -> OperationResult.Success(coverFile)
+        false -> OperationResult.Error(OperationError.InternalError)
+      }
+    }
+
     suspend fun searchBooks(
       libraryId: String,
       query: String,
@@ -135,6 +144,20 @@ class LocalCacheRepository
             .fetchLibraryGrouped(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
             .let { OperationResult.Success(it) }
         }
+
+        LibraryGrouping.AUTHOR -> {
+          val entries = cachedBookRepository.fetchAuthorsGrouped(libraryId)
+          val fromIndex = (pageNumber * pageSize).coerceIn(0, entries.size)
+          val toIndex = (fromIndex + pageSize).coerceIn(0, entries.size)
+
+          OperationResult.Success(
+            PagedItems(
+              items = entries.subList(fromIndex, toIndex),
+              currentPage = pageNumber,
+              totalItems = entries.size,
+            ),
+          )
+        }
       }
 
     suspend fun fetchSeriesItems(
@@ -143,6 +166,14 @@ class LocalCacheRepository
     ): OperationResult<List<Book>> =
       cachedBookRepository
         .fetchSeriesItems(libraryId = libraryId, seriesId = seriesId)
+        .let { OperationResult.Success(it) }
+
+    suspend fun fetchAuthorItems(
+      libraryId: String,
+      authorId: String,
+    ): OperationResult<List<Book>> =
+      cachedBookRepository
+        .fetchAuthorItems(libraryId = libraryId, authorId = authorId)
         .let { OperationResult.Success(it) }
 
     suspend fun fetchLibraries(): OperationResult<List<Library>> =

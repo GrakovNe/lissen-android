@@ -48,6 +48,7 @@ data class BookEntity(
   val seriesJson: String?, // List<BookSeriesDto> Json
   val seriesNames: String?,
   val seriesId: String?, // primary series id, used to group the library by series
+  val authorsJson: String? = null,
   val createdAt: Long,
   val updatedAt: Long,
 ) : Serializable
@@ -120,4 +121,11 @@ data class BookSeriesDto(
   val title: String,
   val sequence: String?,
   val id: String? = null,
+)
+
+@Keep
+@JsonClass(generateAdapter = true)
+data class BookAuthorDto(
+  val id: String,
+  val name: String,
 )

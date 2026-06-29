@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.common.sortedBySeriesPosition
 import org.grakovne.lissen.content.LissenMediaProvider
@@ -58,14 +60,16 @@ class LibraryViewModel
     private val _totalCount = MutableStateFlow(0)
     val totalCount: StateFlow<Int> = _totalCount.asStateFlow()
 
-    private val _expandedSeries = MutableStateFlow<Set<String>>(emptySet())
-    val expandedSeries: StateFlow<Set<String>> = _expandedSeries.asStateFlow()
+    private val _expandedGroups = MutableStateFlow<Set<String>>(emptySet())
+    val expandedGroups: StateFlow<Set<String>> = _expandedGroups.asStateFlow()
 
-    private val _seriesBooks = MutableStateFlow<Map<String, List<Book>>>(emptyMap())
-    val seriesBooks: StateFlow<Map<String, List<Book>>> = _seriesBooks.asStateFlow()
+    private val _groupBooks = MutableStateFlow<Map<String, List<Book>>>(emptyMap())
+    val groupBooks: StateFlow<Map<String, List<Book>>> = _groupBooks.asStateFlow()
 
-    private val _seriesLoading = MutableStateFlow<Set<String>>(emptySet())
-    val seriesLoading: StateFlow<Set<String>> = _seriesLoading.asStateFlow()
+    private val _groupLoading = MutableStateFlow<Set<String>>(emptySet())
+    val groupLoading: StateFlow<Set<String>> = _groupLoading.asStateFlow()
+
+    private val prefetchSemaphore = Semaphore(MAX_CONCURRENT_PREFETCH)
 
     private val pageConfig =
       PagingConfig(
@@ -131,52 +135,78 @@ class LibraryViewModel
       viewModelScope.launch { _searchToken.emit(token) }
     }
 
-    fun toggleSeries(series: LibraryEntry.SeriesEntry) {
-      Timber.d("User action: toggleSeries ${series.id}")
+    fun toggleGroup(entry: LibraryEntry) {
+      val groupId = entry.groupId() ?: return
+      Timber.d("User action: toggleGroup $groupId")
 
-      when (series.id in _expandedSeries.value) {
+      when (groupId in _expandedGroups.value) {
         true -> {
-          _expandedSeries.value = _expandedSeries.value - series.id
+          _expandedGroups.value = _expandedGroups.value - groupId
         }
 
         false -> {
-          _expandedSeries.value = _expandedSeries.value + series.id
-          viewModelScope.launch { fetchSeriesBooks(series) }
+          _expandedGroups.value = _expandedGroups.value + groupId
+          viewModelScope.launch { fetchGroupBooks(entry) }
         }
       }
     }
 
-    fun prefetchSeries(series: LibraryEntry.SeriesEntry) {
-      if (alreadyResolved(series.id)) {
+    fun prefetchGroup(entry: LibraryEntry) {
+      val groupId = entry.groupId() ?: return
+      if (alreadyResolved(groupId)) {
         return
       }
 
-      viewModelScope.launch { fetchSeriesBooks(series) }
+      viewModelScope.launch {
+        prefetchSemaphore.withPermit {
+          fetchGroupBooks(entry)
+        }
+      }
     }
 
-    fun resetSeriesExpansion() {
-      _expandedSeries.value = emptySet()
-      _seriesBooks.value = emptyMap()
-      _seriesLoading.value = emptySet()
+    fun resetGroupExpansion() {
+      _expandedGroups.value = emptySet()
+      _groupBooks.value = emptyMap()
+      _groupLoading.value = emptySet()
     }
 
-    private fun alreadyResolved(seriesId: String): Boolean = _seriesBooks.value.containsKey(seriesId) || seriesId in _seriesLoading.value
+    private fun LibraryEntry.groupId(): String? =
+      when (this) {
+        is LibraryEntry.SeriesEntry -> id
+        is LibraryEntry.AuthorEntry -> id
+        is LibraryEntry.BookEntry -> null
+      }
 
-    private suspend fun fetchSeriesBooks(series: LibraryEntry.SeriesEntry) {
-      if (alreadyResolved(series.id)) {
+    private fun alreadyResolved(groupId: String): Boolean = _groupBooks.value.containsKey(groupId) || groupId in _groupLoading.value
+
+    private suspend fun fetchGroupBooks(entry: LibraryEntry) {
+      val groupId = entry.groupId() ?: return
+      if (alreadyResolved(groupId)) {
         return
       }
 
       val libraryId = preferences.getPreferredLibrary()?.id ?: return
 
-      _seriesLoading.value = _seriesLoading.value + series.id
-      mediaChannel
-        .fetchSeriesItems(libraryId = libraryId, seriesId = series.id)
-        .fold(
-          onSuccess = { books -> _seriesBooks.value = _seriesBooks.value + (series.id to books.sortedBySeriesPosition()) },
-          onFailure = { },
-        )
-      _seriesLoading.value = _seriesLoading.value - series.id
+      _groupLoading.value = _groupLoading.value + groupId
+      val result =
+        when (entry) {
+          is LibraryEntry.SeriesEntry -> mediaChannel.fetchSeriesItems(libraryId = libraryId, seriesId = entry.id)
+          is LibraryEntry.AuthorEntry -> mediaChannel.fetchAuthorBooks(libraryId = libraryId, authorId = entry.id)
+          is LibraryEntry.BookEntry -> null
+        }
+
+      result?.fold(
+        onSuccess = { books ->
+          val ordered =
+            when (entry) {
+              is LibraryEntry.SeriesEntry -> books.sortedBySeriesPosition()
+              else -> books
+            }
+          _groupBooks.value = _groupBooks.value + (groupId to ordered)
+        },
+        onFailure = { },
+      )
+      _groupLoading.value = _groupLoading.value - groupId
     }
 
     fun applyLinkedSearch(token: String) {
@@ -246,5 +276,6 @@ class LibraryViewModel
       private const val PAGE_SIZE = 20
       private const val PAGE_SEARCH_SIZE = 50
       private const val SEARCH_DEBOUNCE_MILLIS = 300L
+      private const val MAX_CONCURRENT_PREFETCH = 3
     }
   }

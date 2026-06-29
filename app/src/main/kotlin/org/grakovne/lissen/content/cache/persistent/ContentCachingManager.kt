@@ -81,12 +81,14 @@ class ContentCachingManager
         ) { withContext(context) { emit(CacheState(CacheStatus.Caching, it)) } }
 
       val coverCachingResult = cacheBookCover(mediaItem, channel)
+      val authorImagesCachingResult = cacheAuthorImages(mediaItem, channel)
       val librariesCachingResult = cacheLibraries(channel)
 
       when {
         listOf(
           mediaCachingResult,
           coverCachingResult,
+          authorImagesCachingResult,
           librariesCachingResult,
         ).all { it.status == CacheStatus.Completed } -> {
           cacheBookInfo(mediaItem, requestedChapters)
@@ -238,6 +240,34 @@ class ContentCachingManager
         CacheState(CacheStatus.Completed)
       }
     }
+
+    private suspend fun cacheAuthorImages(
+      book: DetailedItem,
+      channel: MediaChannel,
+    ): CacheState =
+      withContext(Dispatchers.IO) {
+        book.authors.forEach { author ->
+          channel
+            .fetchAuthorCover(author.id)
+            .fold(
+              onSuccess = { image ->
+                try {
+                  val dest = properties.provideAuthorImagePath(author.name)
+                  dest.parentFile?.mkdirs()
+                  image
+                    .withBlur(context)
+                    .writeToFile(dest)
+                } catch (ex: Exception) {
+                  Timber.e("Unable to cache author image for ${author.name} due to: ${ex.message}")
+                }
+              },
+              onFailure = {
+              },
+            )
+        }
+
+        CacheState(CacheStatus.Completed)
+      }
 
     private suspend fun cacheBookInfo(
       book: DetailedItem,

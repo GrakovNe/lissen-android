@@ -66,6 +66,11 @@ abstract class AudiobookshelfChannel(
     width: Int?,
   ): OperationResult<Buffer> = dataRepository.fetchBookCover(bookId, width)
 
+  override suspend fun fetchAuthorCover(
+    authorId: String,
+    width: Int?,
+  ): OperationResult<Buffer> = dataRepository.fetchAuthorImage(authorId, width)
+
   override suspend fun fetchLibraries(): OperationResult<List<Library>> =
     dataRepository
       .fetchLibraries()

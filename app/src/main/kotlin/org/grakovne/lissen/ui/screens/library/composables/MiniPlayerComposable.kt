@@ -60,6 +60,7 @@ import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
+import org.grakovne.lissen.ui.components.BookCoverKey
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
@@ -145,7 +146,7 @@ fun MiniPlayerComposable(
           remember(book.id) {
             ImageRequest
               .Builder(context)
-              .data(book.id)
+              .data(BookCoverKey(book.id))
               .build()
           }
 

@@ -58,6 +58,70 @@ class LocalCacheStorageMigrationTest {
   }
 
   @Test
+  fun migrate19To20_addsNullableAuthorsJson_andKeepsExistingRows() {
+    helper.createDatabase(TEST_DB, 19).use { db ->
+      db.execSQL(
+        """
+        INSERT INTO detailed_books (id, title, duration, createdAt, updatedAt)
+        VALUES ('book-1', 'Dune', 0, 0, 0)
+        """.trimIndent(),
+      )
+    }
+
+    val db = helper.runMigrationsAndValidate(TEST_DB, 20, true, MIGRATION_19_20)
+
+    db.query("SELECT id, authorsJson FROM detailed_books WHERE id = 'book-1'").use { cursor ->
+      assertTrue(cursor.moveToFirst())
+      assertEquals("book-1", cursor.getString(cursor.getColumnIndexOrThrow("id")))
+      assertTrue(cursor.isNull(cursor.getColumnIndexOrThrow("authorsJson")))
+    }
+  }
+
+  @Test
+  fun migrate19To20_allowsStoringAuthorsJson() {
+    helper.createDatabase(TEST_DB, 19).close()
+
+    val db = helper.runMigrationsAndValidate(TEST_DB, 20, true, MIGRATION_19_20)
+
+    db.execSQL(
+      """
+      INSERT INTO detailed_books (id, title, duration, createdAt, updatedAt, authorsJson)
+      VALUES ('book-2', 'Dune Messiah', 0, 0, 0, '[{"id":"aut-1","name":"Frank Herbert"}]')
+      """.trimIndent(),
+    )
+
+    db.query("SELECT authorsJson FROM detailed_books WHERE id = 'book-2'").use { cursor ->
+      assertTrue(cursor.moveToFirst())
+      assertEquals(
+        "[{\"id\":\"aut-1\",\"name\":\"Frank Herbert\"}]",
+        cursor.getString(cursor.getColumnIndexOrThrow("authorsJson")),
+      )
+    }
+  }
+
+  @Test
+  fun migrate19To20_backfillsAuthorsJsonFromExistingAuthor() {
+    helper.createDatabase(TEST_DB, 19).use { db ->
+      db.execSQL(
+        """
+        INSERT INTO detailed_books (id, title, author, duration, createdAt, updatedAt)
+        VALUES ('book-1', 'Dune', 'Frank Herbert, Brian Herbert', 0, 0, 0)
+        """.trimIndent(),
+      )
+    }
+
+    val db = helper.runMigrationsAndValidate(TEST_DB, 20, true, MIGRATION_19_20)
+
+    db.query("SELECT authorsJson FROM detailed_books WHERE id = 'book-1'").use { cursor ->
+      assertTrue(cursor.moveToFirst())
+      assertEquals(
+        "[{\"id\":\"\",\"name\":\"Frank Herbert\"},{\"id\":\"\",\"name\":\"Brian Herbert\"}]",
+        cursor.getString(cursor.getColumnIndexOrThrow("authorsJson")),
+      )
+    }
+  }
+
+  @Test
   fun migrate14To15_createsCachedBookmarkTable_andKeepsBooks() {
     helper.createDatabase(TEST_DB, 14).use { db ->
       db.execSQL(
@@ -149,13 +213,14 @@ class LocalCacheStorageMigrationTest {
     val db =
       helper.runMigrationsAndValidate(
         TEST_DB,
-        19,
+        20,
         true,
         MIGRATION_14_15,
         MIGRATION_15_16,
         MIGRATION_16_17,
         MIGRATION_17_18,
         MIGRATION_18_19,
+        MIGRATION_19_20,
       )
 
     db.query("SELECT seriesId FROM detailed_books WHERE id = 'book-1'").use { cursor ->

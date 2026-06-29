@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import okio.Buffer
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
@@ -29,12 +30,22 @@ class CachedCoverProvider
     suspend fun provideCover(
       channel: MediaChannel,
       itemId: String,
+    ): OperationResult<File> = provide(itemId) { channel.fetchBookCover(itemId) }
+
+    suspend fun provideAuthorCover(
+      channel: MediaChannel,
+      authorId: String,
+    ): OperationResult<File> = provide(authorId) { channel.fetchAuthorCover(authorId) }
+
+    private suspend fun provide(
+      cacheKey: String,
+      fetch: suspend () -> OperationResult<Buffer>,
     ): OperationResult<File> {
-      val lock = locks.computeIfAbsent(itemId) { Mutex() }
+      val lock = locks.computeIfAbsent(cacheKey) { Mutex() }
       return lock.withLock {
-        when (val cover = fetchCachedCover(itemId)) {
-          null -> cacheCover(channel, itemId).also { Timber.d("Caching cover $itemId") }
-          else -> OperationResult.Success(cover).also { Timber.d("Fetched cached $itemId") }
+        when (val cover = fetchCachedCover(cacheKey)) {
+          null -> cacheCover(cacheKey, fetch).also { Timber.d("Caching cover $cacheKey") }
+          else -> OperationResult.Success(cover).also { Timber.d("Fetched cached $cacheKey") }
         }
       }
     }
@@ -51,14 +62,13 @@ class CachedCoverProvider
       }
 
     private suspend fun cacheCover(
-      channel: MediaChannel,
-      itemId: String,
+      cacheKey: String,
+      fetch: suspend () -> OperationResult<Buffer>,
     ): OperationResult<File> {
-      val dest = properties.provideCoverPath(itemId)
+      val dest = properties.provideCoverPath(cacheKey)
 
       return withContext(Dispatchers.IO) {
-        channel
-          .fetchBookCover(itemId)
+        fetch()
           .fold(
             onSuccess = { source ->
               val blurred = source.withBlur(context)

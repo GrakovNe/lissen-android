@@ -11,6 +11,7 @@ data class DetailedItem(
   val title: String,
   val subtitle: String?,
   val author: String?,
+  val authors: List<BookAuthor> = emptyList(),
   val narrator: String?,
   val publisher: String?,
   val series: List<BookSeries>,
@@ -65,6 +66,13 @@ data class BookSeries(
   val serialNumber: String?,
   val name: String,
   val id: String? = null,
+) : Serializable
+
+@Keep
+@JsonClass(generateAdapter = true)
+data class BookAuthor(
+  val id: String,
+  val name: String,
 ) : Serializable
 
 @Keep
