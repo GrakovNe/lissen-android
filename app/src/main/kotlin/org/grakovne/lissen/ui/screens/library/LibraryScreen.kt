@@ -573,12 +573,14 @@ fun LibraryScreen(
       onForceLocalToggled = {
         cachingModelView.toggleCacheForce()
         playerViewModel.book.value?.let { playerViewModel.preparePlayback(it.id) }
+        libraryViewModel.resetSeriesExpansion()
         refreshContent(showPullRefreshing = false)
         coroutineScope.launch { libraryListState.scrollToItem(0) }
       },
       onHideCompletedToggled = {
         settingsViewModel.toggleHideCompleted()
         playerViewModel.book.value?.let { playerViewModel.preparePlayback(it.id) }
+        libraryViewModel.resetSeriesExpansion()
         refreshContent(showPullRefreshing = false)
         coroutineScope.launch { libraryListState.scrollToItem(0) }
       },
