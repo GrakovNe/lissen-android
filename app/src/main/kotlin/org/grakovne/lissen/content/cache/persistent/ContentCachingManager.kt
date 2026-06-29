@@ -81,13 +81,14 @@ class ContentCachingManager
         ) { withContext(context) { emit(CacheState(CacheStatus.Caching, it)) } }
 
       val coverCachingResult = cacheBookCover(mediaItem, channel)
-      cacheAuthorImages(mediaItem, channel)
+      val authorImagesCachingResult = cacheAuthorImages(mediaItem, channel)
       val librariesCachingResult = cacheLibraries(channel)
 
       when {
         listOf(
           mediaCachingResult,
           coverCachingResult,
+          authorImagesCachingResult,
           librariesCachingResult,
         ).all { it.status == CacheStatus.Completed } -> {
           cacheBookInfo(mediaItem, requestedChapters)
@@ -243,7 +244,7 @@ class ContentCachingManager
     private suspend fun cacheAuthorImages(
       book: DetailedItem,
       channel: MediaChannel,
-    ) {
+    ): CacheState =
       withContext(Dispatchers.IO) {
         book.authors.forEach { author ->
           channel
@@ -264,8 +265,9 @@ class ContentCachingManager
               },
             )
         }
+
+        CacheState(CacheStatus.Completed)
       }
-    }
 
     private suspend fun cacheBookInfo(
       book: DetailedItem,

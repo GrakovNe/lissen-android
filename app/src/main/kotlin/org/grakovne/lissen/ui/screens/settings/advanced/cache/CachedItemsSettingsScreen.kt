@@ -71,7 +71,8 @@ import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
-import org.grakovne.lissen.ui.components.BookCoverFetcher.Companion.LocalOnlyKey
+import org.grakovne.lissen.ui.components.BookCoverKey
+import org.grakovne.lissen.ui.components.ImageFetcher.Companion.LocalOnlyKey
 import org.grakovne.lissen.ui.components.withScrollbar
 import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.viewmodel.CachingModelView
@@ -239,7 +240,7 @@ private fun CachedItemComposable(
     remember(book.id) {
       ImageRequest
         .Builder(context)
-        .data(book.id)
+        .data(BookCoverKey(book.id))
         .apply { extras[LocalOnlyKey] = true }
         .build()
     }

@@ -160,19 +160,19 @@ fun QuickSettingsComposable(
         }
       }
 
-      val sortLocked = isLibrary && grouping == LibraryGrouping.AUTHOR
-      val displayedSortOption = if (sortLocked) LibraryOrderingOption.AUTHOR else ordering.option
+      val sortRequired = isLibrary && grouping == LibraryGrouping.AUTHOR
+      val displayedSortOption = if (sortRequired) LibraryOrderingOption.AUTHOR else ordering.option
 
       PickerHeaderRow(
         label = stringResource(R.string.library_quick_settings_sort_title),
         icon = Icons.AutoMirrored.Outlined.Sort,
         value = displayedSortOption.toLocalizedName(context),
         expanded = sortExpanded,
-        enabled = !sortLocked,
+        enabled = !sortRequired,
         onClick = { withHaptic(view) { sortExpanded = !sortExpanded } },
       )
 
-      AnimatedVisibility(visible = sortExpanded && !sortLocked) {
+      AnimatedVisibility(visible = sortExpanded && !sortRequired) {
         Column {
           LibraryOrderingOption.entries.forEach { option ->
             val isSelected = ordering.option == option

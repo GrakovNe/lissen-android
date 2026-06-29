@@ -288,8 +288,4 @@ class AudioBookshelfRepository
             }
           }
         }
-
-    companion object {
-      private const val SERIES_ITEMS_LIMIT = 500
-    }
   }

@@ -42,7 +42,7 @@ import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
-import org.grakovne.lissen.ui.components.BookCoverFetcher
+import org.grakovne.lissen.ui.components.AuthorCoverKey
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 
 private const val AUTHOR_PREFETCH_DWELL_MS = 200L
@@ -69,7 +69,7 @@ fun AuthorComposable(
     remember(author.id) {
       ImageRequest
         .Builder(context)
-        .data(BookCoverFetcher.AUTHOR_PREFIX + author.id)
+        .data(AuthorCoverKey(author.id))
         .build()
     }
 

@@ -101,8 +101,11 @@ class LibraryAudiobookshelfChannel
       when (libraryGrouping) {
         LibraryGrouping.AUTHOR -> {
           dataRepository
-            .fetchLibraryAuthors(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
-            .map { libraryAuthorsResponseConverter.apply(it) }
+            .fetchLibraryAuthors(
+              libraryId = libraryId,
+              pageSize = pageSize,
+              pageNumber = pageNumber,
+            ).map { libraryAuthorsResponseConverter.apply(it) }
         }
 
         else -> {

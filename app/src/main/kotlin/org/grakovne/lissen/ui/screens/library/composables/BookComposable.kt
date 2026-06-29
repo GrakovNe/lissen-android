@@ -31,6 +31,7 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
+import org.grakovne.lissen.ui.components.BookCoverKey
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 
 val LibraryItemCoverSize = 64.dp
@@ -49,7 +50,7 @@ fun BookComposable(
     remember(book.id) {
       ImageRequest
         .Builder(context)
-        .data(book.id)
+        .data(BookCoverKey(book.id))
         .build()
     }
 
