@@ -287,7 +287,7 @@ fun LibraryScreen(
   val libraryTitle = remember(preferredLibrary) { provideLibraryTitle() }
   val recentVisible by remember { derivedStateOf { isRecentVisible() } }
 
-  val navBarTitle by remember {
+  val navBarTitle by remember(libraryTitle) {
     derivedStateOf {
       val recentBlockVisible =
         libraryListState.layoutInfo.visibleItemsInfo
