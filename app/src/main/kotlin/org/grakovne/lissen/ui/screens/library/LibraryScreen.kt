@@ -173,11 +173,6 @@ fun LibraryScreen(
   RequestNotificationPermissions()
 
   RequestLocalNetworkPermission(
-    host =
-      settingsViewModel.host
-        .collectAsState()
-        .value
-        ?.url,
     onGranted = { refreshContent(showPullRefreshing = false) },
   )
 

@@ -65,7 +65,6 @@ import org.grakovne.lissen.channel.common.makeText
 import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.common.hasLocalNetworkPermission
-import org.grakovne.lissen.ui.screens.common.isLocalNetworkHost
 import org.grakovne.lissen.ui.screens.common.localNetworkPermission
 import org.grakovne.lissen.viewmodel.LoginViewModel
 import org.grakovne.lissen.viewmodel.LoginViewModel.LoginState
@@ -95,20 +94,20 @@ fun LoginScreen(
   val permissionRequestLauncher =
     rememberLauncherForActivityResult(
       ActivityResultContracts.RequestPermission(),
-    ) { isGranted ->
-      if (isGranted) pendingAction.value?.invoke()
+    ) {
+      pendingAction.value?.invoke()
       pendingAction.value = null
     }
 
   fun withNetworkPermission(action: () -> Unit) {
-    when (isLocalNetworkHost(host) && hasLocalNetworkPermission(context).not()) {
+    when (hasLocalNetworkPermission(context)) {
       true -> {
-        pendingAction.value = action
-        permissionRequestLauncher.launch(localNetworkPermission())
+        action()
       }
 
       false -> {
-        action()
+        pendingAction.value = action
+        permissionRequestLauncher.launch(localNetworkPermission())
       }
     }
   }
