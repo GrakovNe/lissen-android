@@ -219,4 +219,6 @@
     <string name="disconnect_from_server_confirmation_message">Die Verbindung zu diesem Server wird auf diesem Gerät getrennt. Ihre Daten bleiben davon unberührt</string>
     <string name="disconnect_from_server_confirm">Trennen</string>
     <string name="local_network_permission_request_hint">Die App benötigt Zugriff auf das lokale Netzwerk, um eine Verbindung zu Servern in der Nähe herzustellen</string>
+    <string name="downloads_menu_download_option_decrease">Anzahl verringern</string>
+    <string name="downloads_menu_download_option_increase">Anzahl erhöhen</string>
 </resources>
