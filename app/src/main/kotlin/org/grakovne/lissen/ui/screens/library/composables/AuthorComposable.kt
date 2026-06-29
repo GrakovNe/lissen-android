@@ -25,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -157,11 +158,24 @@ fun AuthorComposable(
                 imageLoader = imageLoader,
                 navController = navController,
                 grouping = LibraryGrouping.AUTHOR,
+                leading = { AuthorBookLeading() },
               )
             }
           }
         }
       }
     }
+  }
+}
+
+@Composable
+private fun AuthorBookLeading() {
+  Box(modifier = Modifier.padding(end = 10.dp)) {
+    Text(
+      text = "0",
+      style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+      maxLines = 1,
+      modifier = Modifier.alpha(0f),
+    )
   }
 }

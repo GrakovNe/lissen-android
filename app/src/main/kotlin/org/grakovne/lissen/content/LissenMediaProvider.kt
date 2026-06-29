@@ -133,10 +133,18 @@ class LissenMediaProvider
 
     suspend fun fetchAuthorCover(authorId: String): OperationResult<File> {
       Timber.d("Fetching author cover: authorId=$authorId")
-      return cachedCoverProvider.provideAuthorCover(
-        channel = providePreferredChannel(),
-        authorId = authorId,
-      )
+      return when (preferences.isForceCache()) {
+        true -> {
+          localCacheRepository.fetchAuthorCover(authorId)
+        }
+
+        false -> {
+          cachedCoverProvider.provideAuthorCover(
+            channel = providePreferredChannel(),
+            authorId = authorId,
+          )
+        }
+      }
     }
 
     suspend fun searchBooks(

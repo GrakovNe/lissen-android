@@ -12,6 +12,7 @@ import androidx.sqlite.db.SupportSQLiteQuery
 import com.squareup.moshi.Types
 import kotlinx.coroutines.flow.Flow
 import org.grakovne.lissen.common.moshi
+import org.grakovne.lissen.content.cache.persistent.entity.BookAuthorDto
 import org.grakovne.lissen.content.cache.persistent.entity.BookChapterEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookFileEntity
@@ -59,6 +60,13 @@ interface CachedBookDao {
             .map { BookSeriesDto(title = it.name, sequence = it.serialNumber, id = it.id) }
             .let {
               adapter.toJson(it)
+            },
+        authorsJson =
+          book
+            .authors
+            .map { BookAuthorDto(id = it.id, name = it.name) }
+            .let {
+              authorsAdapter.toJson(it)
             },
       )
 
@@ -256,5 +264,7 @@ interface CachedBookDao {
   companion object {
     val type = Types.newParameterizedType(List::class.java, BookSeriesDto::class.java)
     val adapter = moshi.adapter<List<BookSeriesDto>>(type)
+    val authorsType = Types.newParameterizedType(List::class.java, BookAuthorDto::class.java)
+    val authorsAdapter = moshi.adapter<List<BookAuthorDto>>(authorsType)
   }
 }

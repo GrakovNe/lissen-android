@@ -3,6 +3,7 @@ package org.grakovne.lissen.channel.audiobookshelf.library.converter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.BookResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryAuthorResponse
+import org.grakovne.lissen.domain.BookAuthor
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.BookSeries
 import org.grakovne.lissen.domain.DetailedItem
@@ -65,6 +66,10 @@ class BookResponseConverter
         author =
           item.media.metadata.authors
             ?.joinToString(", ", transform = LibraryAuthorResponse::name),
+        authors =
+          item.media.metadata.authors
+            ?.map { BookAuthor(id = it.id, name = it.name) }
+            ?: emptyList(),
         narrator =
           item.media.metadata.narrators
             ?.joinToString(separator = ", "),

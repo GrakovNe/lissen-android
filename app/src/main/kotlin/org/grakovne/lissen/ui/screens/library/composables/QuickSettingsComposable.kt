@@ -119,14 +119,13 @@ fun QuickSettingsComposable(
         onClick = { onForceLocalToggled() },
       )
 
-      if (isLibrary) {
-        ToggleRow(
-          title = stringResource(R.string.hide_completed_items),
-          icon = Icons.Outlined.VisibilityOff,
-          checked = hideCompleted,
-          onClick = { onHideCompletedToggled() },
-        )
-      }
+      ToggleRow(
+        title = stringResource(R.string.hide_completed_items),
+        icon = Icons.Outlined.VisibilityOff,
+        checked = isLibrary && hideCompleted,
+        enabled = isLibrary,
+        onClick = { onHideCompletedToggled() },
+      )
 
       Spacer(modifier = Modifier.height(8.dp))
 
@@ -161,15 +160,19 @@ fun QuickSettingsComposable(
         }
       }
 
+      val sortLocked = isLibrary && grouping == LibraryGrouping.AUTHOR
+      val displayedSortOption = if (sortLocked) LibraryOrderingOption.AUTHOR else ordering.option
+
       PickerHeaderRow(
         label = stringResource(R.string.library_quick_settings_sort_title),
         icon = Icons.AutoMirrored.Outlined.Sort,
-        value = ordering.option.toLocalizedName(context),
+        value = displayedSortOption.toLocalizedName(context),
         expanded = sortExpanded,
+        enabled = !sortLocked,
         onClick = { withHaptic(view) { sortExpanded = !sortExpanded } },
       )
 
-      AnimatedVisibility(visible = sortExpanded) {
+      AnimatedVisibility(visible = sortExpanded && !sortLocked) {
         Column {
           LibraryOrderingOption.entries.forEach { option ->
             val isSelected = ordering.option == option
@@ -231,14 +234,16 @@ private fun ToggleRow(
   title: String,
   icon: ImageVector,
   checked: Boolean,
+  enabled: Boolean = true,
   onClick: () -> Unit,
 ) {
   val view = LocalView.current
+  val contentColor = colorScheme.onSurface.copy(alpha = if (enabled) 1f else DISABLED_ALPHA)
   Row(
     modifier =
       Modifier
         .fillMaxWidth()
-        .clickable { withHaptic(view) { onClick() } }
+        .then(if (enabled) Modifier.clickable { withHaptic(view) { onClick() } } else Modifier)
         .padding(horizontal = 16.dp, vertical = 10.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {
@@ -246,16 +251,16 @@ private fun ToggleRow(
       imageVector = icon,
       contentDescription = null,
       modifier = Modifier.size(20.dp),
-      tint = colorScheme.onSurface,
+      tint = contentColor,
     )
     Spacer(modifier = Modifier.width(12.dp))
     Text(
       text = title,
       style = typography.bodyLarge,
-      color = colorScheme.onSurface,
+      color = contentColor,
       modifier = Modifier.weight(1f),
     )
-    LissenToggle(checked = checked)
+    LissenToggle(checked = checked, enabled = enabled)
   }
 }
 
@@ -265,14 +270,17 @@ private fun PickerHeaderRow(
   icon: ImageVector,
   value: String,
   expanded: Boolean,
+  enabled: Boolean = true,
   onClick: () -> Unit,
 ) {
   val view = LocalView.current
+  val labelColor = colorScheme.onSurface.copy(alpha = if (enabled) 1f else DISABLED_ALPHA)
+  val valueColor = colorScheme.onSurfaceVariant.copy(alpha = if (enabled) 1f else DISABLED_ALPHA)
   Row(
     modifier =
       Modifier
         .fillMaxWidth()
-        .clickable { withHaptic(view) { onClick() } }
+        .then(if (enabled) Modifier.clickable { withHaptic(view) { onClick() } } else Modifier)
         .padding(horizontal = 16.dp, vertical = 14.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {
@@ -280,26 +288,26 @@ private fun PickerHeaderRow(
       imageVector = icon,
       contentDescription = null,
       modifier = Modifier.size(20.dp),
-      tint = colorScheme.onSurface,
+      tint = labelColor,
     )
     Spacer(modifier = Modifier.width(12.dp))
     Text(
       text = label,
       style = typography.bodyLarge,
-      color = colorScheme.onSurface,
+      color = labelColor,
       modifier = Modifier.weight(1f),
     )
     Text(
       text = value,
       style = typography.bodyMedium,
-      color = colorScheme.onSurfaceVariant,
+      color = valueColor,
     )
     Spacer(modifier = Modifier.width(4.dp))
     Icon(
       imageVector = if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
       contentDescription = null,
       modifier = Modifier.size(20.dp),
-      tint = colorScheme.onSurfaceVariant,
+      tint = valueColor,
     )
   }
 }
@@ -377,6 +385,8 @@ fun ApplicationSettingsItemComposable(onClicked: () -> Unit) {
     )
   }
 }
+
+private const val DISABLED_ALPHA = 0.38f
 
 private fun LibraryOrderingOption.icon(): ImageVector =
   when (this) {

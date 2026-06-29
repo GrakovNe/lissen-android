@@ -53,6 +53,8 @@ class CachedBookRepository
 
     fun provideBookCover(bookId: String): File = properties.provideBookCoverPath(bookId)
 
+    fun provideAuthorCover(authorName: String): File = properties.provideAuthorImagePath(authorName)
+
     suspend fun removeBook(bookId: String) {
       bookDao
         .fetchBook(bookId)

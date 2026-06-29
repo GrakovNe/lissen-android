@@ -60,6 +60,15 @@ class LocalCacheRepository
       }
     }
 
+    fun fetchAuthorCover(authorName: String): OperationResult<File> {
+      val coverFile = cachedBookRepository.provideAuthorCover(authorName)
+
+      return when (coverFile.exists()) {
+        true -> OperationResult.Success(coverFile)
+        false -> OperationResult.Error(OperationError.InternalError)
+      }
+    }
+
     suspend fun searchBooks(
       libraryId: String,
       query: String,

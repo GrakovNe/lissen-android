@@ -34,9 +34,21 @@ class BookCoverFetcher(
 
     val response =
       when {
-        uri.startsWith(AUTHOR_PREFIX) && !localOnly -> mediaChannel.fetchAuthorCover(uri.removePrefix(AUTHOR_PREFIX))
-        localOnly -> localCacheRepository.fetchBookCover(uri)
-        else -> mediaChannel.fetchBookCover(uri)
+        uri.startsWith(AUTHOR_PREFIX) -> {
+          val authorKey = uri.removePrefix(AUTHOR_PREFIX)
+          when {
+            localOnly -> localCacheRepository.fetchAuthorCover(authorKey)
+            else -> mediaChannel.fetchAuthorCover(authorKey)
+          }
+        }
+
+        localOnly -> {
+          localCacheRepository.fetchBookCover(uri)
+        }
+
+        else -> {
+          mediaChannel.fetchBookCover(uri)
+        }
       }
 
     return when (response) {

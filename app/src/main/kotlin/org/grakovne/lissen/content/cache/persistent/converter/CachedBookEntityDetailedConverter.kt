@@ -2,8 +2,10 @@ package org.grakovne.lissen.content.cache.persistent.converter
 
 import com.squareup.moshi.Types
 import org.grakovne.lissen.common.moshi
+import org.grakovne.lissen.content.cache.persistent.entity.BookAuthorDto
 import org.grakovne.lissen.content.cache.persistent.entity.BookSeriesDto
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
+import org.grakovne.lissen.domain.BookAuthor
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.BookSeries
 import org.grakovne.lissen.domain.DetailedItem
@@ -23,6 +25,16 @@ class CachedBookEntityDetailedConverter
         title = entity.detailedBook.title,
         subtitle = entity.detailedBook.subtitle,
         author = entity.detailedBook.author,
+        authors =
+          entity
+            .detailedBook
+            .authorsJson
+            ?.let {
+              val type = Types.newParameterizedType(List::class.java, BookAuthorDto::class.java)
+              val adapter = moshi.adapter<List<BookAuthorDto>>(type)
+              adapter.fromJson(it)
+            }?.map { BookAuthor(id = it.id, name = it.name) }
+            ?: emptyList(),
         narrator = entity.detailedBook.narrator,
         libraryId = entity.detailedBook.libraryId,
         localProvided = true,
