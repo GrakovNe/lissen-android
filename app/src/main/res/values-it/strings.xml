@@ -220,4 +220,6 @@
     <string name="settings_screen_audio_focus_loss_policy_title">Riproduzione nella notifica</string>
     <string name="settings_screen_audio_focus_loss_policy_option_lower_volume">Abbassa volume</string>
     <string name="local_network_permission_request_hint">L\'app richiede l\'accesso alla rete locale per connettersi ai server nelle vicinanze</string>
+    <string name="downloads_menu_download_option_decrease">Diminuisci numero</string>
+    <string name="downloads_menu_download_option_increase">Aumenta numero</string>
 </resources>
