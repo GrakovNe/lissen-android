@@ -65,7 +65,9 @@ class LinkedSearchE2ETest {
       override fun before() {
         hiltRule.inject()
         preferences.clearPreferences()
-        mediaRepository.clearPlayingBook()
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+          mediaRepository.clearPlayingBook()
+        }
       }
 
       override fun after() {
