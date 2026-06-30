@@ -72,17 +72,23 @@ class SeriesCoverProvider
             .filterNotNull()
         }
 
-      return when (val composed = composer.compose(covers)) {
-        null -> {
-          OperationResult.Error(OperationError.InternalError)
-        }
+      val composed = composer.compose(covers) ?: return OperationResult.Error(OperationError.InternalError)
 
-        else -> {
-          withContext(Dispatchers.IO) {
-            val dest = properties.provideSeriesCoverPath(key)
-            dest.parentFile?.mkdirs()
+      return withContext(Dispatchers.IO) {
+        val dest = properties.provideSeriesCoverPath(key)
+        dest.parentFile?.mkdirs()
+
+        when {
+          covers.size == coverItemIds.size -> {
             composed.writeToFile(dest)
             OperationResult.Success(dest)
+          }
+
+          else -> {
+            Timber.w("Composed partial series cover for $key (${covers.size}/${coverItemIds.size}), skipping persistent cache")
+            val temp = File.createTempFile("series_cover_", null, dest.parentFile)
+            composed.writeToFile(temp)
+            OperationResult.Success(temp)
           }
         }
       }
