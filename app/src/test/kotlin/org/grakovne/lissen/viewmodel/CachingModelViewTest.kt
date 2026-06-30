@@ -201,6 +201,32 @@ class CachingModelViewTest {
       }
   }
 
+  @Nested
+  inner class DownloadChaptersCount {
+    @Test
+    fun `getDownloadChaptersCount delegates to preferences`() {
+      every { preferences.getDownloadChaptersCount() } returns 5
+
+      assertEquals(5, viewModel.getDownloadChaptersCount())
+    }
+
+    @Test
+    fun `saveDownloadChaptersCount delegates to preferences`() {
+      viewModel.saveDownloadChaptersCount(7)
+
+      verify { preferences.saveDownloadChaptersCount(7) }
+    }
+  }
+
+  @Nested
+  inner class FetchCachedItems {
+    @Test
+    fun `fetchCachedItems does not throw before the pager has been collected`() =
+      runTest {
+        viewModel.fetchCachedItems()
+      }
+  }
+
   private fun detailedItem(id: String = "book-1") =
     DetailedItem(
       id = id,

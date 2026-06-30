@@ -494,4 +494,215 @@ class SettingsViewModelTest {
       assertEquals(listOf(preferred), viewModel.libraries.value)
     }
   }
+
+  @Nested
+  inner class ConnectionInfo {
+    @Test
+    fun `refreshConnectionInfo updates username and server version on success`() {
+      val info =
+        org.grakovne.lissen.channel.common.ConnectionInfo(
+          username = "alice",
+          serverVersion = "2.0.0",
+          buildNumber = "42",
+        )
+      io.mockk.coEvery { mediaChannel.fetchConnectionInfo() } returns OperationResult.Success(info)
+
+      viewModel.refreshConnectionInfo()
+
+      assertEquals("alice", viewModel.username.value)
+      assertEquals("2.0.0", viewModel.serverVersion.value)
+    }
+
+    @Test
+    fun `refreshConnectionInfo caches username and server version to preferences on success`() {
+      val info =
+        org.grakovne.lissen.channel.common.ConnectionInfo(
+          username = "alice",
+          serverVersion = "2.0.0",
+          buildNumber = "42",
+        )
+      io.mockk.coEvery { mediaChannel.fetchConnectionInfo() } returns OperationResult.Success(info)
+
+      viewModel.refreshConnectionInfo()
+
+      verify { preferences.saveUsername("alice") }
+      verify { preferences.saveServerVersion("2.0.0") }
+    }
+
+    @Test
+    fun `refreshConnectionInfo leaves username and server version untouched on error`() {
+      io.mockk.coEvery { mediaChannel.fetchConnectionInfo() } returns
+        OperationResult.Error(org.grakovne.lissen.channel.common.OperationError.NetworkError)
+
+      viewModel.refreshConnectionInfo()
+
+      assertEquals("user", viewModel.username.value)
+      assertEquals("1.0.0", viewModel.serverVersion.value)
+    }
+
+    @Test
+    fun `refreshConnectionInfo updates host from the channel on success`() {
+      val host =
+        org.grakovne.lissen.channel.audiobookshelf.Host
+          .internal("http://10.0.0.1")
+      every { mediaChannel.fetchConnectionHost() } returns OperationResult.Success(host)
+      io.mockk.coEvery { mediaChannel.fetchConnectionInfo() } returns
+        OperationResult.Error(org.grakovne.lissen.channel.common.OperationError.NetworkError)
+
+      viewModel.refreshConnectionInfo()
+
+      assertEquals(host, viewModel.host.value)
+    }
+
+    @Test
+    fun `refreshConnectionInfo falls back to the cached host from preferences on error`() {
+      every { mediaChannel.fetchConnectionHost() } returns
+        OperationResult.Error(org.grakovne.lissen.channel.common.OperationError.NetworkError)
+      every { preferences.getHost() } returns "http://cached.example.com"
+      io.mockk.coEvery { mediaChannel.fetchConnectionInfo() } returns
+        OperationResult.Error(org.grakovne.lissen.channel.common.OperationError.NetworkError)
+
+      viewModel.refreshConnectionInfo()
+
+      assertEquals(
+        org.grakovne.lissen.channel.audiobookshelf.Host
+          .external("http://cached.example.com"),
+        viewModel.host.value,
+      )
+    }
+  }
+
+  @Nested
+  inner class HideCompletedToggle {
+    @Test
+    fun `toggleHideCompleted saves true when currently false`() {
+      every { preferences.getHideCompleted() } returns false
+
+      viewModel.toggleHideCompleted()
+
+      verify { preferences.saveHideCompleted(true) }
+    }
+
+    @Test
+    fun `toggleHideCompleted saves false when currently true`() {
+      every { preferences.getHideCompleted() } returns true
+
+      viewModel.toggleHideCompleted()
+
+      verify { preferences.saveHideCompleted(false) }
+    }
+  }
+
+  @Nested
+  inner class MiscPreferences {
+    @Test
+    fun `preferLibraryGrouping saves the grouping to preferences`() {
+      viewModel.preferLibraryGrouping(org.grakovne.lissen.common.LibraryGrouping.SERIES)
+
+      verify { preferences.saveLibraryGrouping(org.grakovne.lissen.common.LibraryGrouping.SERIES) }
+    }
+
+    @Test
+    fun `saveClientCertAlias delegates to preferences`() {
+      viewModel.saveClientCertAlias("alias-1")
+
+      verify { preferences.saveClientCertAlias("alias-1") }
+    }
+
+    @Test
+    fun `clearClientCertAlias delegates to preferences`() {
+      viewModel.clearClientCertAlias()
+
+      verify { preferences.clearClientCertAlias() }
+    }
+
+    @Test
+    fun `saveDefaultTimerOption updates StateFlow and preferences`() {
+      val option =
+        org.grakovne.lissen.domain
+          .DurationTimerOption(600)
+
+      viewModel.saveDefaultTimerOption(option)
+
+      assertEquals(option, viewModel.defaultTimerOption.value)
+      verify { preferences.saveDefaultTimerOption(option) }
+    }
+
+    @Test
+    fun `preferAudioFocusLossPolicy updates StateFlow and preferences`() {
+      viewModel.preferAudioFocusLossPolicy(org.grakovne.lissen.common.AudioFocusLossPolicy.LOWER_VOLUME)
+
+      assertEquals(org.grakovne.lissen.common.AudioFocusLossPolicy.LOWER_VOLUME, viewModel.audioFocusLossPolicy.value)
+      verify { preferences.saveAudioFocusLossPolicy(org.grakovne.lissen.common.AudioFocusLossPolicy.LOWER_VOLUME) }
+    }
+
+    @Test
+    fun `preferSoftwareCodecsEnabled updates StateFlow and preferences`() {
+      viewModel.preferSoftwareCodecsEnabled(true)
+
+      assertTrue(viewModel.softwareCodecsEnabled.value)
+      verify { preferences.saveSoftwareCodecsEnabled(true) }
+    }
+
+    @Test
+    fun `preferActivityLoggingEnabled true enables logging`() {
+      viewModel.preferActivityLoggingEnabled(true)
+
+      assertTrue(viewModel.activityLoggingEnabled.value)
+      verify { logProvider.enableLogging() }
+    }
+
+    @Test
+    fun `preferActivityLoggingEnabled false disables logging`() {
+      viewModel.preferActivityLoggingEnabled(false)
+
+      assertFalse(viewModel.activityLoggingEnabled.value)
+      verify { logProvider.disableLogging() }
+    }
+
+    @Test
+    fun `preferAutoDownloadOption updates StateFlow and preferences`() {
+      viewModel.preferAutoDownloadOption(org.grakovne.lissen.domain.CurrentItemDownloadOption)
+
+      assertEquals(org.grakovne.lissen.domain.CurrentItemDownloadOption, viewModel.preferredAutoDownloadOption.value)
+      verify { preferences.saveAutoDownloadOption(org.grakovne.lissen.domain.CurrentItemDownloadOption) }
+    }
+
+    @Test
+    fun `hasCredentials delegates to preferences`() {
+      every { preferences.hasCredentials() } returns true
+
+      assertTrue(viewModel.hasCredentials())
+    }
+
+    @Test
+    fun `fetchPreferredLibraryId returns the preferred library id`() {
+      every { preferences.getPreferredLibrary() } returns Library(id = "lib-1", title = "Books", type = LibraryType.LIBRARY)
+
+      assertEquals("lib-1", viewModel.fetchPreferredLibraryId())
+    }
+
+    @Test
+    fun `fetchPreferredLibraryId returns empty string when no preferred library`() {
+      every { preferences.getPreferredLibrary() } returns null
+
+      assertEquals("", viewModel.fetchPreferredLibraryId())
+    }
+
+    @Test
+    fun `fetchLibraryOrdering delegates to preferences`() {
+      val ordering = LibraryOrderingConfiguration(LibraryOrderingOption.AUTHOR, LibraryOrderingDirection.DESCENDING)
+      every { preferences.getLibraryOrdering() } returns ordering
+
+      assertEquals(ordering, viewModel.fetchLibraryOrdering())
+    }
+
+    @Test
+    fun `provideLogArchive delegates to the log provider`() {
+      val file = java.io.File("archive.log")
+      every { logProvider.archiveLogFile() } returns file
+
+      assertEquals(file, viewModel.provideLogArchive())
+    }
+  }
 }

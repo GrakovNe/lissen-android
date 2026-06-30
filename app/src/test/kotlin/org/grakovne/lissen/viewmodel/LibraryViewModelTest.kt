@@ -320,4 +320,29 @@ class LibraryViewModelTest {
       assertTrue(viewModel.groupLoading.value.isEmpty())
     }
   }
+
+  @Nested
+  inner class Search {
+    @Test
+    fun `updateSearch emits the new token`() {
+      viewModel.updateSearch("dune")
+
+      assertEquals("dune", viewModel.searchToken.value)
+    }
+  }
+
+  @Nested
+  inner class Refresh {
+    @Test
+    fun `refreshLibrary does not throw when no search is active`() {
+      viewModel.refreshLibrary()
+    }
+
+    @Test
+    fun `refreshLibrary does not throw while search is active`() {
+      viewModel.requestSearch()
+
+      viewModel.refreshLibrary()
+    }
+  }
 }

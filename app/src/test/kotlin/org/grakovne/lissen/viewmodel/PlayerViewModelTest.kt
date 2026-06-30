@@ -246,6 +246,101 @@ class PlayerViewModelTest {
     podcastEpisodeState = BookChapterState.FINISHED,
   )
 
+  @Nested
+  inner class BookmarkActions {
+    @Test
+    fun `createBookmark delegates to mediaRepository`() {
+      viewModel.createBookmark("My bookmark")
+
+      io.mockk.coVerify { mediaRepository.createBookmark("My bookmark") }
+    }
+
+    @Test
+    fun `createBookmark with no title passes null`() {
+      viewModel.createBookmark()
+
+      io.mockk.coVerify { mediaRepository.createBookmark(null) }
+    }
+
+    @Test
+    fun `dropBookmark delegates to mediaRepository`() {
+      val bookmark =
+        Bookmark(
+          libraryItemId = "book-1",
+          title = "Bookmark",
+          totalPosition = 10.0,
+          createdAt = 0L,
+          syncState = org.grakovne.lissen.domain.BookmarkSyncState.SYNCED,
+        )
+
+      viewModel.dropBookmark(bookmark)
+
+      io.mockk.coVerify { mediaRepository.dropBookmark(bookmark = bookmark) }
+    }
+
+    @Test
+    fun `updateBookmarks delegates to mediaRepository`() {
+      viewModel.updateBookmarks()
+
+      io.mockk.coVerify { mediaRepository.updateBookmarks() }
+    }
+  }
+
+  @Nested
+  inner class PlayingItemLifecycle {
+    @Test
+    fun `updatePlayingItem clears playing book when there is no stored item`() {
+      every { preferences.getPlayingItem() } returns null
+
+      viewModel.updatePlayingItem()
+
+      verify { mediaRepository.clearPlayingBook() }
+    }
+
+    @Test
+    fun `updatePlayingItem prepares playback when there is a stored item`() {
+      every { preferences.getPlayingItem() } returns detailedItem()
+
+      viewModel.updatePlayingItem()
+
+      io.mockk.coVerify { mediaRepository.preparePlayback("book-1") }
+    }
+
+    @Test
+    fun `clearPrepared delegates to mediaRepository`() {
+      viewModel.clearPrepared()
+
+      verify { mediaRepository.clearPreparedItem() }
+    }
+
+    @Test
+    fun `preparePlayback clears the prepared item before preparing the new one`() {
+      viewModel.preparePlayback("book-2")
+
+      io.mockk.coVerify { mediaRepository.clearPreparedItem() }
+      io.mockk.coVerify { mediaRepository.preparePlayback("book-2") }
+    }
+
+    @Test
+    fun `prepareAndPlay does nothing when there is no stored playing item`() {
+      every { preferences.getPlayingItem() } returns null
+
+      viewModel.prepareAndPlay()
+
+      verify(exactly = 0) { mediaRepository.prepareAndPlay(any()) }
+    }
+
+    @Test
+    fun `prepareAndPlay delegates to mediaRepository when a playing item is stored`() {
+      val item = detailedItem()
+      every { preferences.getPlayingItem() } returns item
+
+      viewModel.prepareAndPlay()
+
+      verify { mediaRepository.prepareAndPlay(item) }
+    }
+  }
+
   private fun detailedItem(chapters: List<PlayingChapter> = emptyList()) =
     DetailedItem(
       id = "book-1",

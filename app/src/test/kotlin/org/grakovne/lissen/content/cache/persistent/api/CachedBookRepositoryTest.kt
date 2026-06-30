@@ -16,6 +16,7 @@ import org.grakovne.lissen.content.cache.persistent.entity.GroupedEntry
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -246,6 +247,315 @@ class CachedBookRepositoryTest {
 
       val books = repository.fetchAuthorItems(LIBRARY_ID, "Frank Herbert")
       assertEquals(listOf("b1", "b3"), books.map { it.id })
+    }
+
+  @Test
+  fun `provideBookCover delegates to properties`() {
+    val file = java.io.File("cover.img")
+    every { properties.provideBookCoverPath("book-1") } returns file
+
+    assertEquals(file, repository.provideBookCover("book-1"))
+  }
+
+  @Test
+  fun `provideAuthorCover delegates to properties`() {
+    val file = java.io.File("author.img")
+    every { properties.provideAuthorImagePath("Author") } returns file
+
+    assertEquals(file, repository.provideAuthorCover("Author"))
+  }
+
+  @Test
+  fun `removeBook deletes progress and the book when it exists`() =
+    runBlocking {
+      val book = entity("b1")
+      coEvery { bookDao.fetchBook("b1") } returns book
+
+      repository.removeBook("b1")
+
+      io.mockk.coVerify { bookDao.deleteMediaProgress("b1") }
+      io.mockk.coVerify { bookDao.deleteBook(book) }
+    }
+
+  @Test
+  fun `removeBook does nothing when the book does not exist`() =
+    runBlocking {
+      coEvery { bookDao.fetchBook("missing") } returns null
+
+      repository.removeBook("missing")
+
+      io.mockk.coVerify(exactly = 0) { bookDao.deleteBook(any()) }
+    }
+
+  @Test
+  fun `cacheBook delegates to the dao`() =
+    runBlocking {
+      val item =
+        org.grakovne.lissen.domain.DetailedItem(
+          id = "b1",
+          title = "Title",
+          subtitle = null,
+          author = null,
+          narrator = null,
+          publisher = null,
+          series = emptyList(),
+          year = null,
+          abstract = null,
+          files = emptyList(),
+          chapters = emptyList(),
+          progress = null,
+          libraryId = LIBRARY_ID,
+          localProvided = false,
+          createdAt = 0L,
+          updatedAt = 0L,
+        )
+
+      repository.cacheBook(item, emptyList(), emptyList())
+
+      io.mockk.coVerify { bookDao.upsertCachedBook(item, emptyList(), emptyList()) }
+    }
+
+  @Test
+  fun `provideCacheState by book id delegates to the dao`() {
+    val flow = kotlinx.coroutines.flow.flowOf(true)
+    every { bookDao.isBookCached("b1") } returns flow
+
+    assertEquals(flow, repository.provideCacheState("b1"))
+  }
+
+  @Test
+  fun `provideCacheState by book and chapter id delegates to the dao`() {
+    val flow = kotlinx.coroutines.flow.flowOf(false)
+    every { bookDao.isBookChapterCached("b1", "ch-1") } returns flow
+
+    assertEquals(flow, repository.provideCacheState("b1", "ch-1"))
+  }
+
+  @Test
+  fun `fetchCachedItems maps cached entries through the detailed converter`() =
+    runBlocking {
+      val cached = mockk<org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity>()
+      val detailed = mockk<org.grakovne.lissen.domain.DetailedItem>()
+      coEvery { bookDao.fetchCachedItems() } returns listOf(cached)
+      every { cachedBookEntityDetailedConverter.apply(cached) } returns detailed
+
+      assertEquals(listOf(detailed), repository.fetchCachedItems())
+    }
+
+  @Test
+  fun `fetchCachedItems with paging maps cached entries through the detailed converter`() =
+    runBlocking {
+      val cached = mockk<org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity>()
+      val detailed = mockk<org.grakovne.lissen.domain.DetailedItem>()
+      coEvery { bookDao.fetchCachedItems(pageSize = 20, pageNumber = 0) } returns listOf(cached)
+      every { cachedBookEntityDetailedConverter.apply(cached) } returns detailed
+
+      assertEquals(listOf(detailed), repository.fetchCachedItems(pageSize = 20, pageNumber = 0))
+    }
+
+  @Test
+  fun `countCachedItems delegates to the dao`() =
+    runBlocking {
+      coEvery { bookDao.fetchCachedItemsCount() } returns 7
+
+      assertEquals(7, repository.countCachedItems())
+    }
+
+  @Test
+  fun `fetchLatestUpdate delegates to the dao`() =
+    runBlocking {
+      coEvery { bookDao.fetchLatestUpdate(LIBRARY_ID) } returns 12345L
+
+      assertEquals(12345L, repository.fetchLatestUpdate(LIBRARY_ID))
+    }
+
+  @Test
+  fun `countBooks delegates to the dao`() =
+    runBlocking {
+      coEvery { bookDao.countCachedBooks(libraryId = LIBRARY_ID) } returns 3
+
+      assertEquals(3, repository.countBooks(LIBRARY_ID))
+    }
+
+  @Test
+  fun `fetchBooks maps results through the converter respecting hideCompleted`() =
+    runBlocking {
+      every { preferences.getHideCompleted() } returns true
+      coEvery { bookDao.fetchCachedBooks(any()) } returns listOf(entity("b1"), entity("b2"))
+
+      val books = repository.fetchBooks(LIBRARY_ID, pageNumber = 0, pageSize = 20)
+
+      assertEquals(listOf("b1", "b2"), books.map { it.id })
+    }
+
+  @Test
+  fun `searchBooks maps results through the converter`() =
+    runBlocking {
+      coEvery { bookDao.searchBooks(any()) } returns listOf(entity("b1"))
+
+      val books = repository.searchBooks(LIBRARY_ID, "query")
+
+      assertEquals(listOf("b1"), books.map { it.id })
+    }
+
+  @Test
+  fun `fetchRecentBooks pairs each book with its own progress`() =
+    runBlocking {
+      val book1 = entity("b1")
+      val book2 = entity("b2")
+      coEvery { bookDao.fetchRecentlyListenedCachedBooks(libraryId = LIBRARY_ID) } returns listOf(book1, book2)
+      coEvery { bookDao.fetchMediaProgress("b1") } returns
+        org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity(
+          bookId = "b1",
+          currentTime = 10.0,
+          isFinished = false,
+          lastUpdate = 100L,
+        )
+      coEvery { bookDao.fetchMediaProgress("b2") } returns null
+      val recent1 = mockk<org.grakovne.lissen.domain.RecentBook>()
+      val recent2 = mockk<org.grakovne.lissen.domain.RecentBook>()
+      every { cachedBookEntityRecentConverter.apply(book1, 100L to 10.0) } returns recent1
+      every { cachedBookEntityRecentConverter.apply(book2, null) } returns recent2
+
+      val result = repository.fetchRecentBooks(LIBRARY_ID)
+
+      assertEquals(listOf(recent1, recent2), result)
+    }
+
+  @Test
+  fun `fetchBook maps the cached entity through the detailed converter`() =
+    runBlocking {
+      val cached = mockk<org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity>()
+      val detailed = mockk<org.grakovne.lissen.domain.DetailedItem>()
+      coEvery { bookDao.fetchCachedBook("b1") } returns cached
+      every { cachedBookEntityDetailedConverter.apply(cached) } returns detailed
+
+      assertEquals(detailed, repository.fetchBook("b1"))
+    }
+
+  @Test
+  fun `fetchBook returns null when there is no cached entity`() =
+    runBlocking {
+      coEvery { bookDao.fetchCachedBook("missing") } returns null
+
+      assertEquals(null, repository.fetchBook("missing"))
+    }
+
+  @Test
+  fun `fetchMediaProgress maps the entity through the converter when present`() =
+    runBlocking {
+      val entity =
+        org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity(
+          bookId = "b1",
+          currentTime = 5.0,
+          isFinished = false,
+          lastUpdate = 1L,
+        )
+      val progress = mockk<org.grakovne.lissen.domain.MediaProgress>()
+      coEvery { bookDao.fetchMediaProgress("b1") } returns entity
+      every { mediaProgressEntityConverter.apply(entity) } returns progress
+
+      assertEquals(progress, repository.fetchMediaProgress("b1"))
+    }
+
+  @Test
+  fun `fetchMediaProgress returns null when there is no stored progress`() =
+    runBlocking {
+      coEvery { bookDao.fetchMediaProgress("b1") } returns null
+
+      assertEquals(null, repository.fetchMediaProgress("b1"))
+    }
+
+  @Test
+  fun `syncProgress marks the item finished when total time matches the sum of chapter durations`() =
+    runBlocking {
+      val item =
+        org.grakovne.lissen.domain.DetailedItem(
+          id = "b1",
+          title = "Title",
+          subtitle = null,
+          author = null,
+          narrator = null,
+          publisher = null,
+          series = emptyList(),
+          year = null,
+          abstract = null,
+          files = emptyList(),
+          chapters =
+            listOf(
+              org.grakovne.lissen.domain.PlayingChapter(
+                id = "c1",
+                title = "Chapter 1",
+                start = 0.0,
+                end = 60.0,
+                duration = 60.0,
+                available = true,
+                podcastEpisodeState = null,
+              ),
+            ),
+          progress = null,
+          libraryId = LIBRARY_ID,
+          localProvided = false,
+          createdAt = 0L,
+          updatedAt = 0L,
+        )
+      val progressSlot = io.mockk.slot<org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity>()
+      coEvery { bookDao.upsertMediaProgress(capture(progressSlot)) } returns Unit
+
+      repository.syncProgress(
+        item,
+        org.grakovne.lissen.domain
+          .PlaybackProgress(currentChapterTime = 60.0, currentTotalTime = 60.0),
+      )
+
+      assertTrue(progressSlot.captured.isFinished)
+      assertEquals("b1", progressSlot.captured.bookId)
+      assertEquals(60.0, progressSlot.captured.currentTime)
+    }
+
+  @Test
+  fun `syncProgress marks the item unfinished when total time is below the chapter sum`() =
+    runBlocking {
+      val item =
+        org.grakovne.lissen.domain.DetailedItem(
+          id = "b1",
+          title = "Title",
+          subtitle = null,
+          author = null,
+          narrator = null,
+          publisher = null,
+          series = emptyList(),
+          year = null,
+          abstract = null,
+          files = emptyList(),
+          chapters =
+            listOf(
+              org.grakovne.lissen.domain.PlayingChapter(
+                id = "c1",
+                title = "Chapter 1",
+                start = 0.0,
+                end = 60.0,
+                duration = 60.0,
+                available = true,
+                podcastEpisodeState = null,
+              ),
+            ),
+          progress = null,
+          libraryId = LIBRARY_ID,
+          localProvided = false,
+          createdAt = 0L,
+          updatedAt = 0L,
+        )
+      val progressSlot = io.mockk.slot<org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity>()
+      coEvery { bookDao.upsertMediaProgress(capture(progressSlot)) } returns Unit
+
+      repository.syncProgress(
+        item,
+        org.grakovne.lissen.domain
+          .PlaybackProgress(currentChapterTime = 30.0, currentTotalTime = 30.0),
+      )
+
+      assertFalse(progressSlot.captured.isFinished)
     }
 
   companion object {

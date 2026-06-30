@@ -166,6 +166,90 @@ class LoginViewModelTest {
 
       coVerify { mediaChannel.authorize("http://srv.com", "alice", "pw") }
     }
+
+    @Test
+    fun `login sets MissingCredentialsHost error when host is empty`() {
+      viewModel.setHost("")
+      viewModel.setUsername("alice")
+      viewModel.setPassword("pw")
+
+      viewModel.login()
+
+      val state = viewModel.loginState.value
+      assertInstanceOf(LoginViewModel.LoginState.Error::class.java, state)
+      assertEquals(OperationError.MissingCredentialsHost, (state as LoginViewModel.LoginState.Error).message)
+      coVerify(exactly = 0) { mediaChannel.authorize(any(), any(), any()) }
+    }
+
+    @Test
+    fun `login sets MissingCredentialsUsername error when username is empty`() {
+      viewModel.setHost("http://srv.com")
+      viewModel.setUsername("")
+      viewModel.setPassword("pw")
+
+      viewModel.login()
+
+      val state = viewModel.loginState.value
+      assertInstanceOf(LoginViewModel.LoginState.Error::class.java, state)
+      assertEquals(OperationError.MissingCredentialsUsername, (state as LoginViewModel.LoginState.Error).message)
+      coVerify(exactly = 0) { mediaChannel.authorize(any(), any(), any()) }
+    }
+
+    @Test
+    fun `login sets MissingCredentialsPassword error when password is empty`() {
+      viewModel.setHost("http://srv.com")
+      viewModel.setUsername("alice")
+      viewModel.setPassword("")
+
+      viewModel.login()
+
+      val state = viewModel.loginState.value
+      assertInstanceOf(LoginViewModel.LoginState.Error::class.java, state)
+      assertEquals(OperationError.MissingCredentialsPassword, (state as LoginViewModel.LoginState.Error).message)
+      coVerify(exactly = 0) { mediaChannel.authorize(any(), any(), any()) }
+    }
+  }
+
+  @Nested
+  inner class StartOAuth {
+    @Test
+    fun `startOAuth sets MissingCredentialsHost error when host is empty`() {
+      viewModel.setHost("")
+
+      viewModel.startOAuth()
+
+      val state = viewModel.loginState.value
+      assertInstanceOf(LoginViewModel.LoginState.Error::class.java, state)
+      assertEquals(OperationError.MissingCredentialsHost, (state as LoginViewModel.LoginState.Error).message)
+    }
+
+    @Test
+    fun `startOAuth sets Idle state on success`() {
+      viewModel.setHost("http://srv.com")
+      coEvery { mediaChannel.startOAuth(any(), any(), any()) } coAnswers {
+        val onSuccess = secondArg<() -> Unit>()
+        onSuccess()
+      }
+
+      viewModel.startOAuth()
+
+      assertEquals(LoginViewModel.LoginState.Idle, viewModel.loginState.value)
+    }
+
+    @Test
+    fun `startOAuth sets Error state on failure`() {
+      viewModel.setHost("http://srv.com")
+      coEvery { mediaChannel.startOAuth(any(), any(), any()) } coAnswers {
+        val onFailure = thirdArg<(OperationError) -> Unit>()
+        onFailure(OperationError.OAuthFlowFailed)
+      }
+
+      viewModel.startOAuth()
+
+      val state = viewModel.loginState.value
+      assertInstanceOf(LoginViewModel.LoginState.Error::class.java, state)
+      assertEquals(OperationError.OAuthFlowFailed, (state as LoginViewModel.LoginState.Error).message)
+    }
   }
 
   @Nested
