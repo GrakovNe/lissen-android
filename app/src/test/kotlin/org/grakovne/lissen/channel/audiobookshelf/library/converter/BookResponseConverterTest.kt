@@ -256,8 +256,8 @@ class BookResponseConverterTest {
       val item = converter.apply(bookResponse(), progressResponse)
       assertNotNull(item.progress)
       assertEquals(123.0, item.progress!!.currentTime)
-      assertEquals(false, item.progress!!.isFinished)
-      assertEquals(9999L, item.progress!!.lastUpdate)
+      assertEquals(false, item.progress.isFinished)
+      assertEquals(9999L, item.progress.lastUpdate)
     }
   }
 }

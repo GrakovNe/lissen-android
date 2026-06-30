@@ -8,6 +8,7 @@ import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -42,6 +43,8 @@ class LibraryViewModel
     private val mediaChannel: LissenMediaProvider,
     private val preferences: LissenSharedPreferences,
   ) : ViewModel() {
+    internal var dispatcher: CoroutineDispatcher = Dispatchers.IO
+
     private val _recentBooks = MutableStateFlow<List<RecentBook>>(emptyList())
     val recentBooks: StateFlow<List<RecentBook>> = _recentBooks.asStateFlow()
 
@@ -229,7 +232,7 @@ class LibraryViewModel
     fun refreshRecentListening() {
       Timber.d("User action: refreshRecentListening")
       viewModelScope.launch {
-        withContext(Dispatchers.IO) {
+        withContext(dispatcher) {
           fetchRecentListening()
         }
       }
@@ -238,7 +241,7 @@ class LibraryViewModel
     fun refreshLibrary() {
       Timber.d("User action: refreshLibrary")
       viewModelScope.launch {
-        withContext(Dispatchers.IO) {
+        withContext(dispatcher) {
           when (searchRequested.value) {
             true -> searchPagingSource?.invalidate()
             else -> defaultPagingSource?.invalidate()

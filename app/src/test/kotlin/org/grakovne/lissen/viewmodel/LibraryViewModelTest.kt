@@ -39,6 +39,7 @@ class LibraryViewModelTest {
   fun setup() {
     Dispatchers.setMain(testDispatcher)
     viewModel = LibraryViewModel(mediaChannel, preferences)
+    viewModel.dispatcher = testDispatcher
   }
 
   @AfterEach
