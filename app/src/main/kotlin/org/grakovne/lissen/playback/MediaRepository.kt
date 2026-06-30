@@ -55,6 +55,7 @@ class MediaRepository
   ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private lateinit var mediaController: MediaController
+    private var pendingControllerAction: (() -> Unit)? = null
 
     private val token =
       SessionToken(
@@ -164,6 +165,11 @@ class MediaRepository
                 }
               },
             )
+
+            pendingControllerAction?.let { action ->
+              pendingControllerAction = null
+              action()
+            }
           }
 
           override fun onFailure(t: Throwable) {
@@ -418,19 +424,24 @@ class MediaRepository
       }
 
     private fun play() {
-      if (!::mediaController.isInitialized) {
-        Timber.w("play() requested before media controller connected; skipping")
-        return
-      }
+      withMain {
+        if (!::mediaController.isInitialized) {
+          Timber.w("play() requested before media controller connected; deferring until connected")
+          pendingControllerAction = { play() }
+          return@withMain
+        }
 
-      mediaController.prepare()
-      mediaController.setPlaybackSpeed(preferences.getPlaybackSpeed())
-      mediaController.play()
+        mediaController.prepare()
+        mediaController.setPlaybackSpeed(preferences.getPlaybackSpeed())
+        mediaController.play()
+      }
     }
 
     private fun pause() {
-      if (::mediaController.isInitialized) {
-        mediaController.pause()
+      withMain {
+        if (::mediaController.isInitialized) {
+          mediaController.pause()
+        }
       }
     }
 
@@ -543,6 +554,13 @@ class MediaRepository
       val bookmarks = withContext(Dispatchers.IO) { mediaChannel.updateAndProvideBookmarks(book.id) }
 
       _bookmarks.value = bookmarks
+    }
+
+    private fun withMain(action: () -> Unit) {
+      when (Looper.myLooper() == Looper.getMainLooper()) {
+        true -> action()
+        false -> handler.post(action)
+      }
     }
 
     private companion object {

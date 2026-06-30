@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.datastore.preferences.core.Preferences
@@ -60,177 +61,182 @@ class PlayerStateWidget : GlanceAppWidget() {
     id: GlanceId,
   ) {
     provideContent {
-      GlanceTheme(
-        colors =
-          ColorProviders(
-            light =
-              lightColorScheme(
-                background = LightBackground,
-              ),
-            dark = darkColorScheme(),
-          ),
+      Content(context)
+    }
+  }
+
+  @Composable
+  fun Content(context: Context) {
+    GlanceTheme(
+      colors =
+        ColorProviders(
+          light =
+            lightColorScheme(
+              background = LightBackground,
+            ),
+          dark = darkColorScheme(),
+        ),
+    ) {
+      val state = currentState<Preferences>()
+      val maybeCoverFile = state[coverPath]?.takeIf { it.isNotBlank() }?.let { File(it) }
+      val bookId = state[bookId] ?: ""
+      val bookTitle = state[title] ?: ""
+      val chapterTitle =
+        state[chapterTitle]
+          ?.takeIf { it.isNotBlank() }
+          ?: when (bookId) {
+            "" -> context.getString(org.grakovne.lissen.R.string.widget_placeholder_text)
+            else -> ""
+          }
+
+      val isPlaying = state[isPlaying] ?: false
+
+      Column(
+        modifier =
+          GlanceModifier
+            .fillMaxWidth()
+            .background(GlanceTheme.colors.background)
+            .padding(16.dp)
+            .safelyRunOnClick(context),
+        horizontalAlignment = Alignment.CenterHorizontally,
       ) {
-        val state = currentState<Preferences>()
-        val maybeCoverFile = state[coverPath]?.takeIf { it.isNotBlank() }?.let { File(it) }
-        val bookId = state[bookId] ?: ""
-        val bookTitle = state[title] ?: ""
-        val chapterTitle =
-          state[chapterTitle]
-            ?.takeIf { it.isNotBlank() }
-            ?: when (bookId) {
-              "" -> context.getString(org.grakovne.lissen.R.string.widget_placeholder_text)
-              else -> ""
-            }
-
-        val isPlaying = state[isPlaying] ?: false
-
-        Column(
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
           modifier =
             GlanceModifier
               .fillMaxWidth()
-              .background(GlanceTheme.colors.background)
-              .padding(16.dp)
-              .safelyRunOnClick(context),
-          horizontalAlignment = Alignment.CenterHorizontally,
+              .padding(bottom = 16.dp),
         ) {
-          Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier =
-              GlanceModifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp),
-          ) {
-            val targetSizePx = (80f * context.resources.displayMetrics.density).toInt().coerceAtLeast(1)
+          val targetSizePx = (80f * context.resources.displayMetrics.density).toInt().coerceAtLeast(1)
 
-            val coverBitmap =
-              try {
-                maybeCoverFile
-                  ?.takeIf { it.exists() }
-                  ?.let { bitmapFromFile(it.absolutePath, targetSizePx, targetSizePx) }
-                  ?: bitmapFromResource(context, drawable.cover_fallback_png, targetSizePx, targetSizePx)
-              } catch (e: Exception) {
-                Timber.w("Unable to load cover bitmap for widget, using fallback due to: ${e.message}")
-                bitmapFromResource(context, drawable.cover_fallback_png, targetSizePx, targetSizePx)
-              }
-
-            val coverImageProvider = ImageProvider(coverBitmap)
-
-            Image(
-              contentScale = ContentScale.FillBounds,
-              provider = coverImageProvider,
-              contentDescription = null,
-              modifier =
-                GlanceModifier
-                  .size(80.dp)
-                  .cornerRadius(8.dp),
-            )
-
-            Column(
-              modifier =
-                GlanceModifier
-                  .fillMaxWidth()
-                  .padding(start = 20.dp),
-            ) {
-              Text(
-                text = chapterTitle,
-                style =
-                  TextStyle(
-                    fontFamily = SansSerif,
-                    fontSize = 20.sp,
-                    color = GlanceTheme.colors.onBackground,
-                  ),
-                maxLines = 2,
-                modifier = GlanceModifier.padding(bottom = 8.dp),
-              )
-
-              Text(
-                text = bookTitle,
-                style =
-                  TextStyle(
-                    fontFamily = SansSerif,
-                    fontSize = 14.sp,
-                    color = GlanceTheme.colors.onBackground,
-                  ),
-                maxLines = 1,
-              )
+          val coverBitmap =
+            try {
+              maybeCoverFile
+                ?.takeIf { it.exists() }
+                ?.let { bitmapFromFile(it.absolutePath, targetSizePx, targetSizePx) }
+                ?: bitmapFromResource(context, drawable.cover_fallback_png, targetSizePx, targetSizePx)
+            } catch (e: Exception) {
+              Timber.w("Unable to load cover bitmap for widget, using fallback due to: ${e.message}")
+              bitmapFromResource(context, drawable.cover_fallback_png, targetSizePx, targetSizePx)
             }
-          }
 
-          Spacer(
+          val coverImageProvider = ImageProvider(coverBitmap)
+
+          Image(
+            contentScale = ContentScale.FillBounds,
+            provider = coverImageProvider,
+            contentDescription = null,
             modifier =
               GlanceModifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(MediumBackground),
+                .size(80.dp)
+                .cornerRadius(8.dp),
           )
 
-          Row(
+          Column(
             modifier =
               GlanceModifier
-                .padding(top = 16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
+                .fillMaxWidth()
+                .padding(start = 20.dp),
           ) {
-            StateWidgetControlButton(
-              size = 36.dp,
-              icon = ImageProvider(R.drawable.media3_icon_previous),
-              contentColor = GlanceTheme.colors.onBackground,
-              onClick =
-                actionRunCallback<PreviousChapterActionCallback>(
-                  actionParametersOf(bookIdKey to bookId),
+            Text(
+              text = chapterTitle,
+              style =
+                TextStyle(
+                  fontFamily = SansSerif,
+                  fontSize = 20.sp,
+                  color = GlanceTheme.colors.onBackground,
                 ),
-              modifier = GlanceModifier.defaultWeight(),
+              maxLines = 2,
+              modifier = GlanceModifier.padding(bottom = 8.dp),
             )
 
-            StateWidgetControlButton(
-              size = 36.dp,
-              icon = ImageProvider(rewindIcon),
-              contentColor = GlanceTheme.colors.onBackground,
-              onClick =
-                actionRunCallback<RewindActionCallback>(
-                  actionParametersOf(bookIdKey to bookId),
+            Text(
+              text = bookTitle,
+              style =
+                TextStyle(
+                  fontFamily = SansSerif,
+                  fontSize = 14.sp,
+                  color = GlanceTheme.colors.onBackground,
                 ),
-              modifier = GlanceModifier.defaultWeight(),
-            )
-
-            StateWidgetControlButton(
-              icon =
-                if (isPlaying) {
-                  ImageProvider(R.drawable.media3_icon_pause)
-                } else {
-                  ImageProvider(R.drawable.media3_icon_play)
-                },
-              size = 48.dp,
-              contentColor = GlanceTheme.colors.onBackground,
-              onClick =
-                actionRunCallback<PlayToggleActionCallback>(
-                  actionParametersOf(bookIdKey to bookId),
-                ),
-              modifier = GlanceModifier.defaultWeight(),
-            )
-
-            StateWidgetControlButton(
-              icon = ImageProvider(forwardIcon),
-              size = 36.dp,
-              contentColor = GlanceTheme.colors.onBackground,
-              onClick =
-                actionRunCallback<ForwardActionCallback>(
-                  actionParametersOf(bookIdKey to bookId),
-                ),
-              modifier = GlanceModifier.defaultWeight(),
-            )
-
-            StateWidgetControlButton(
-              icon = ImageProvider(R.drawable.media3_icon_next),
-              size = 36.dp,
-              contentColor = GlanceTheme.colors.onBackground,
-              onClick =
-                actionRunCallback<NextChapterActionCallback>(
-                  actionParametersOf(bookIdKey to bookId),
-                ),
-              modifier = GlanceModifier.defaultWeight(),
+              maxLines = 1,
             )
           }
+        }
+
+        Spacer(
+          modifier =
+            GlanceModifier
+              .fillMaxWidth()
+              .height(1.dp)
+              .background(MediumBackground),
+        )
+
+        Row(
+          modifier =
+            GlanceModifier
+              .padding(top = 16.dp)
+              .fillMaxWidth(),
+          verticalAlignment = Alignment.CenterVertically,
+        ) {
+          StateWidgetControlButton(
+            size = 36.dp,
+            icon = ImageProvider(R.drawable.media3_icon_previous),
+            contentColor = GlanceTheme.colors.onBackground,
+            onClick =
+              actionRunCallback<PreviousChapterActionCallback>(
+                actionParametersOf(bookIdKey to bookId),
+              ),
+            modifier = GlanceModifier.defaultWeight(),
+          )
+
+          StateWidgetControlButton(
+            size = 36.dp,
+            icon = ImageProvider(rewindIcon),
+            contentColor = GlanceTheme.colors.onBackground,
+            onClick =
+              actionRunCallback<RewindActionCallback>(
+                actionParametersOf(bookIdKey to bookId),
+              ),
+            modifier = GlanceModifier.defaultWeight(),
+          )
+
+          StateWidgetControlButton(
+            icon =
+              if (isPlaying) {
+                ImageProvider(R.drawable.media3_icon_pause)
+              } else {
+                ImageProvider(R.drawable.media3_icon_play)
+              },
+            size = 48.dp,
+            contentColor = GlanceTheme.colors.onBackground,
+            onClick =
+              actionRunCallback<PlayToggleActionCallback>(
+                actionParametersOf(bookIdKey to bookId),
+              ),
+            modifier = GlanceModifier.defaultWeight(),
+          )
+
+          StateWidgetControlButton(
+            icon = ImageProvider(forwardIcon),
+            size = 36.dp,
+            contentColor = GlanceTheme.colors.onBackground,
+            onClick =
+              actionRunCallback<ForwardActionCallback>(
+                actionParametersOf(bookIdKey to bookId),
+              ),
+            modifier = GlanceModifier.defaultWeight(),
+          )
+
+          StateWidgetControlButton(
+            icon = ImageProvider(R.drawable.media3_icon_next),
+            size = 36.dp,
+            contentColor = GlanceTheme.colors.onBackground,
+            onClick =
+              actionRunCallback<NextChapterActionCallback>(
+                actionParametersOf(bookIdKey to bookId),
+              ),
+            modifier = GlanceModifier.defaultWeight(),
+          )
         }
       }
     }
