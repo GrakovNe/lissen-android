@@ -9,9 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
-import timber.log.Timber
-import java.net.InetAddress
-import java.net.URI
 
 fun hasLocalNetworkPermission(context: Context): Boolean =
   when (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CINNAMON_BUN) {
@@ -22,10 +19,7 @@ fun hasLocalNetworkPermission(context: Context): Boolean =
 fun localNetworkPermission(): String = "android.permission.ACCESS_LOCAL_NETWORK"
 
 @Composable
-fun RequestLocalNetworkPermission(
-  host: String?,
-  onGranted: () -> Unit,
-) {
+fun RequestLocalNetworkPermission(onGranted: () -> Unit) {
   val context = LocalContext.current
 
   val permissionRequestLauncher =
@@ -35,29 +29,8 @@ fun RequestLocalNetworkPermission(
     )
 
   LaunchedEffect(Unit) {
-    if (host != null && isLocalNetworkHost(host) && !hasLocalNetworkPermission(context)) {
+    if (!hasLocalNetworkPermission(context)) {
       permissionRequestLauncher.launch(localNetworkPermission())
     }
-  }
-}
-
-fun isLocalNetworkHost(url: String): Boolean {
-  val host =
-    try {
-      URI(url).host ?: url
-    } catch (ex: Exception) {
-      Timber.w("Unable to parse host from '$url' due to: ${ex.message}")
-      url
-    }
-
-  if (host.endsWith(".local", ignoreCase = true)) return true
-
-  return try {
-    val host = InetAddress.getByName(host)
-
-    host.isSiteLocalAddress || host.isLoopbackAddress || host.isLinkLocalAddress
-  } catch (ex: Exception) {
-    Timber.w("Unable to resolve host '$host' due to: ${ex.message}")
-    false
   }
 }
