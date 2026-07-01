@@ -23,6 +23,7 @@ import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.domain.connection.LocalUrl
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.logging.LissenLogProvider
+import org.grakovne.lissen.persistence.preferences.LissenConfigProvider
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -38,6 +39,7 @@ class SettingsViewModelTest {
   private val preferences = mockk<LissenSharedPreferences>(relaxed = true)
   private val mediaChannel = mockk<LissenMediaProvider>(relaxed = true)
   private val logProvider = mockk<LissenLogProvider>(relaxed = true)
+  private val configProvider = mockk<LissenConfigProvider>(relaxed = true)
   private lateinit var viewModel: SettingsViewModel
 
   @BeforeEach
@@ -71,7 +73,7 @@ class SettingsViewModelTest {
         org.grakovne.lissen.channel.common.OperationError.NetworkError,
       )
 
-    viewModel = SettingsViewModel(mediaChannel, preferences, logProvider)
+    viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider)
   }
 
   @AfterEach
@@ -149,7 +151,7 @@ class SettingsViewModelTest {
     @Test
     fun `changeAutoDownloadLibraryType adds type when state is true`() {
       every { preferences.getAutoDownloadLibraryTypes() } returns listOf(LibraryType.LIBRARY)
-      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider)
+      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider)
 
       viewModel.changeAutoDownloadLibraryType(LibraryType.PODCAST, true)
 
@@ -159,7 +161,7 @@ class SettingsViewModelTest {
     @Test
     fun `changeAutoDownloadLibraryType removes type when state is false`() {
       every { preferences.getAutoDownloadLibraryTypes() } returns LibraryType.meaningfulTypes
-      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider)
+      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider)
 
       viewModel.changeAutoDownloadLibraryType(LibraryType.PODCAST, false)
 
@@ -386,7 +388,7 @@ class SettingsViewModelTest {
     @Test
     fun `userAgent StateFlow is initialized from preferences`() {
       every { preferences.getUserAgent() } returns "StoredAgent/3.0"
-      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider)
+      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider)
       assertEquals("StoredAgent/3.0", viewModel.userAgent.value)
     }
 
@@ -459,7 +461,7 @@ class SettingsViewModelTest {
           preferred,
         )
       io.mockk.coEvery { mediaChannel.fetchLibraries() } returns OperationResult.Success(libs)
-      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider)
+      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider)
 
       viewModel.fetchLibraries()
 
@@ -474,7 +476,7 @@ class SettingsViewModelTest {
           Library(id = "l1", title = "Books", type = LibraryType.LIBRARY),
         )
       io.mockk.coEvery { mediaChannel.fetchLibraries() } returns OperationResult.Success(libs)
-      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider)
+      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider)
 
       viewModel.fetchLibraries()
 
@@ -487,7 +489,7 @@ class SettingsViewModelTest {
       every { preferences.getPreferredLibrary() } returns preferred
       io.mockk.coEvery { mediaChannel.fetchLibraries() } returns
         OperationResult.Error(org.grakovne.lissen.channel.common.OperationError.NetworkError)
-      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider)
+      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider)
 
       viewModel.fetchLibraries()
 
@@ -709,53 +711,25 @@ class SettingsViewModelTest {
   @Nested
   inner class ConfigBackup {
     @Test
-    fun `exportSettingsJson serializes the backup produced by preferences`() {
-      every { preferences.exportSettings() } returns
-        org.grakovne.lissen.persistence.preferences
-          .SettingsBackup(colorScheme = "DARK", playbackSpeed = 1.5f)
+    fun `provideConfigArchive delegates to the config provider`() {
+      val file = java.io.File("lissen-settings.json")
+      every { configProvider.exportConfigFile() } returns file
 
-      val json = viewModel.exportSettingsJson()
-
-      assertTrue(json.contains("\"colorScheme\":\"DARK\""))
-      assertTrue(json.contains("\"playbackSpeed\":1.5"))
+      assertEquals(file, viewModel.provideConfigArchive())
     }
 
     @Test
-    fun `importSettingsJson parses valid json and imports it`() {
-      val json = """{"schemaVersion":1,"colorScheme":"DARK"}"""
+    fun `importSettingsJson returns true when the config provider imports successfully`() {
+      every { configProvider.importConfig(any()) } returns true
 
-      val result = viewModel.importSettingsJson(json)
-
-      assertTrue(result)
-      verify {
-        preferences.importSettings(
-          match { it.colorScheme == "DARK" },
-        )
-      }
+      assertTrue(viewModel.importSettingsJson("{}"))
     }
 
     @Test
-    fun `importSettingsJson returns false for malformed json`() {
-      val result = viewModel.importSettingsJson("not valid json")
+    fun `importSettingsJson returns false when the config provider rejects the input`() {
+      every { configProvider.importConfig(any()) } returns false
 
-      assertFalse(result)
-      verify(exactly = 0) { preferences.importSettings(any()) }
-    }
-
-    @Test
-    fun `importSettingsJson returns false for json that does not match the schema`() {
-      val result = viewModel.importSettingsJson("""{"schemaVersion":"not-a-number"}""")
-
-      assertFalse(result)
-      verify(exactly = 0) { preferences.importSettings(any()) }
-    }
-
-    @Test
-    fun `importSettingsJson returns false for empty string`() {
-      val result = viewModel.importSettingsJson("")
-
-      assertFalse(result)
-      verify(exactly = 0) { preferences.importSettings(any()) }
+      assertFalse(viewModel.importSettingsJson("not valid json"))
     }
   }
 }
