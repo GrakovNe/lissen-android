@@ -28,6 +28,7 @@ import org.grakovne.lissen.ui.screens.settings.SettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.AdvancedSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.advanced.AppearancePreferencesScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.ClientCertificateSettingsScreen
+import org.grakovne.lissen.ui.screens.settings.advanced.ConfigBackupSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.ConnectionSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.CustomHeadersSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.LocalUrlSettingsScreen
@@ -69,6 +70,10 @@ fun AppNavHost(
       val book = preferences.getPlayingItem()
 
       when {
+        appLaunchAction == AppLaunchAction.IMPORT_CONFIG -> {
+          ROUTE_SETTINGS_CONFIG_BACKUP
+        }
+
         preferences.hasCredentials().not() -> {
           ROUTE_LOGIN
         }
@@ -197,7 +202,14 @@ fun AppNavHost(
       }
 
       composable(route = ROUTE_SETTINGS_ADVANCED) {
-        AdvancedSettingsComposable(onBack = navigationService::goBack)
+        AdvancedSettingsComposable(
+          onBack = navigationService::goBack,
+          navController = navigationService,
+        )
+      }
+
+      composable(route = ROUTE_SETTINGS_CONFIG_BACKUP) {
+        ConfigBackupSettingsScreen(onBack = navigationService::goBack)
       }
 
       composable(route = ROUTE_SETTINGS_SEEK) {

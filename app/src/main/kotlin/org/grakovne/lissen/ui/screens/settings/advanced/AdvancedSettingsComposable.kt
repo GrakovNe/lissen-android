@@ -35,6 +35,7 @@ import androidx.core.content.FileProvider
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.restartApplication
+import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsInfoBanner
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
 import org.grakovne.lissen.viewmodel.CachingModelView
@@ -44,7 +45,10 @@ import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AdvancedSettingsComposable(onBack: () -> Unit) {
+fun AdvancedSettingsComposable(
+  onBack: () -> Unit,
+  navController: AppNavigationService,
+) {
   val cachingModelView: CachingModelView = hiltViewModel()
   val viewModel: SettingsViewModel = hiltViewModel()
 
@@ -112,6 +116,12 @@ fun AdvancedSettingsComposable(onBack: () -> Unit) {
             description = stringResource(R.string.export_logs_description),
             enabled = activityLoggingEnabledOnStart,
             onclick = { shareLogs(context, viewModel) },
+          )
+
+          AdvancedSettingsNavigationItemComposable(
+            title = stringResource(R.string.config_backup_title),
+            description = stringResource(R.string.config_backup_description),
+            onclick = { navController.showConfigBackupSettings() },
           )
 
           ClearThumbnailCacheComposable(cachingModelView = cachingModelView)

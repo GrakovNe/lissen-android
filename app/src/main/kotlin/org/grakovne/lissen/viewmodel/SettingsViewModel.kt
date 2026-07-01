@@ -15,6 +15,8 @@ import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.NetworkTypeAutoCache
+import org.grakovne.lissen.common.PendingConfigImport
+import org.grakovne.lissen.common.moshi
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.domain.Library
@@ -26,6 +28,7 @@ import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.domain.connection.ServerRequestHeader.Companion.clean
 import org.grakovne.lissen.logging.LissenLogProvider
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.SettingsBackup
 import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
@@ -37,6 +40,7 @@ class SettingsViewModel
     private val mediaChannel: LissenMediaProvider,
     private val preferences: LissenSharedPreferences,
     private val logProvider: LissenLogProvider,
+    private val pendingConfigImport: PendingConfigImport,
   ) : ViewModel() {
     private val _host = MutableStateFlow<Host?>(preferences.getHost()?.let { Host.external(it) })
     val host: StateFlow<Host?> = _host.asStateFlow()
@@ -120,6 +124,28 @@ class SettingsViewModel
     val userAgent: StateFlow<String> = _userAgent.asStateFlow()
 
     fun provideLogArchive(): File? = logProvider.archiveLogFile()
+
+    fun consumePendingImport(): String? = pendingConfigImport.consume()
+
+    fun exportSettingsJson(): String {
+      Timber.d("User action: exportSettingsJson")
+      return moshi.adapter(SettingsBackup::class.java).toJson(preferences.exportSettings())
+    }
+
+    fun importSettingsJson(json: String): Boolean {
+      Timber.d("User action: importSettingsJson")
+
+      val backup =
+        try {
+          moshi.adapter(SettingsBackup::class.java).fromJson(json)
+        } catch (t: Throwable) {
+          Timber.w("Unable to parse settings backup due to: ${t.message}")
+          null
+        } ?: return false
+
+      preferences.importSettings(backup)
+      return true
+    }
 
     fun saveDefaultTimerOption(option: TimerOption?) {
       Timber.d("User action: saveDefaultTimerOption option=$option")
