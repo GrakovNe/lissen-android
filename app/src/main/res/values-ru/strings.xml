@@ -242,4 +242,12 @@
     <string name="settings_screen_user_agent_title">Сменить User Agent</string>
     <string name="settings_screen_user_agent_hint">Настройте User-Agent приложения</string>
     <string name="settings_screen_user_agent_restore_default">Вернуть по умолчанию</string>
+    <string name="config_backup_title">Копирование и восстановление</string>
+    <string name="config_backup_description">Экспорт и импорт настроек приложения</string>
+    <string name="export_config_title">Экспортировать конфигурацию</string>
+    <string name="export_config_description">Поделиться настройками приложения в виде файла</string>
+    <string name="export_config_failed_toast">Не удалось экспортировать конфигурацию</string>
+    <string name="import_config_title">Импортировать конфигурацию</string>
+    <string name="import_config_description">Восстановить настройки приложения</string>
+    <string name="import_config_failed_toast">Не удалось импортировать конфигурацию</string>
 </resources>
