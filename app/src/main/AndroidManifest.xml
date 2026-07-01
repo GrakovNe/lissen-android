@@ -50,32 +50,6 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
-            <!-- Lets the user open an exported settings backup directly (e.g. from a file
-                 manager) instead of hunting for the import picker inside the app. Matched by
-                 filename rather than a generic MIME type so the app doesn't show up for every
-                 JSON file - only for its own exports. android:pathPattern's "*" only repeats the
-                 single preceding character (no regex-style "any characters" wildcard), so a
-                 variable-prefix path can't be expressed with it - pathSuffix (API 31+) is used
-                 for the external storage provider instead, and our own FileProvider path is
-                 fully known ahead of time so it's matched as a literal. -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data
-                    android:scheme="content"
-                    android:host="com.android.externalstorage.documents"
-                    android:pathSuffix="lissen-backup.lsettings" />
-            </intent-filter>
-
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data
-                    android:scheme="content"
-                    android:host="${applicationId}.fileprovider"
-                    android:path="/logs/lissen-backup.lsettings" />
-            </intent-filter>
         </activity>
 
         <activity

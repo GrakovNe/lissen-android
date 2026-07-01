@@ -70,10 +70,6 @@ fun AppNavHost(
       val book = preferences.getPlayingItem()
 
       when {
-        appLaunchAction == AppLaunchAction.IMPORT_CONFIG -> {
-          ROUTE_SETTINGS_CONFIG_BACKUP
-        }
-
         preferences.hasCredentials().not() -> {
           ROUTE_LOGIN
         }
