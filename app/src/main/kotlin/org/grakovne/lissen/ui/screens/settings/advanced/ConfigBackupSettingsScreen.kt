@@ -1,7 +1,5 @@
 package org.grakovne.lissen.ui.screens.settings.advanced
 
-import android.content.Context
-import android.content.Intent
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -35,15 +33,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.core.content.FileProvider
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.restartApplication
+import org.grakovne.lissen.common.shareFile
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsInfoBanner
 import org.grakovne.lissen.viewmodel.SettingsViewModel
-import java.io.File
-import java.time.OffsetDateTime
-import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,22 +49,32 @@ fun ConfigBackupSettingsScreen(onBack: () -> Unit) {
   var importSucceeded by remember { mutableStateOf(false) }
 
   val importFailedToast = stringResource(R.string.import_config_failed_toast)
+  val exportFailedToast = stringResource(R.string.export_config_failed_toast)
+  val exportChooserTitle = stringResource(R.string.export_config_title)
+  val appName = stringResource(R.string.app_name)
 
   val importLauncher =
     rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-      if (uri == null) return@rememberLauncherForActivityResult
-
       val json =
-        runCatching {
-          context.contentResolver.openInputStream(uri)?.use { it.bufferedReader().readText() }
-        }.getOrNull()
+        uri?.let {
+          runCatching {
+            context.contentResolver.openInputStream(it)?.use { stream -> stream.bufferedReader().readText() }
+          }.getOrNull()
+        }
 
       importSucceeded = json != null && viewModel.importSettingsJson(json)
 
-      if (!importSucceeded) {
+      if (uri != null && !importSucceeded) {
         Toast.makeText(context, importFailedToast, Toast.LENGTH_SHORT).show()
       }
     }
+
+  val onExport = {
+    viewModel
+      .provideConfigArchive()
+      ?.let { context.shareFile(it, "application/json", exportChooserTitle, "$appName settings") }
+      ?: Toast.makeText(context, exportFailedToast, Toast.LENGTH_SHORT).show()
+  }
 
   Scaffold(
     topBar = {
@@ -82,7 +87,7 @@ fun ConfigBackupSettingsScreen(onBack: () -> Unit) {
           )
         },
         navigationIcon = {
-          IconButton(onClick = { onBack() }) {
+          IconButton(onClick = onBack) {
             Icon(
               imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
               contentDescription = "Back",
@@ -97,94 +102,57 @@ fun ConfigBackupSettingsScreen(onBack: () -> Unit) {
         .systemBarsPadding()
         .fillMaxHeight(),
     content = { innerPadding ->
-      Column(
-        modifier =
-          Modifier
-            .fillMaxSize()
-            .padding(innerPadding),
-        verticalArrangement = Arrangement.SpaceBetween,
-        horizontalAlignment = Alignment.CenterHorizontally,
-      ) {
-        Column(
-          modifier =
-            Modifier
-              .fillMaxWidth()
-              .verticalScroll(rememberScrollState()),
-          horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-          AdvancedSettingsSimpleItemComposable(
-            title = stringResource(R.string.import_config_title),
-            description = stringResource(R.string.import_config_description),
-            onclick = { importLauncher.launch(arrayOf("application/json")) },
-          )
-
-          AdvancedSettingsSimpleItemComposable(
-            title = stringResource(R.string.export_config_title),
-            description = stringResource(R.string.export_config_description),
-            onclick = { shareConfig(context, viewModel) },
-          )
-        }
-
-        if (importSucceeded) {
-          SettingsInfoBanner(
-            icon = Icons.Outlined.Description,
-            text = stringResource(R.string.restart_the_app_to_apply_settings_title),
-            ctaText = stringResource(R.string.restart_the_app_to_apply_settings_cta),
-            onAction = { context.restartApplication() },
-          )
-        }
-      }
+      ConfigBackupContent(
+        modifier = Modifier.padding(innerPadding),
+        importSucceeded = importSucceeded,
+        onImport = { importLauncher.launch(arrayOf("application/json")) },
+        onExport = { onExport() },
+        onRestart = { context.restartApplication() },
+      )
     },
   )
 }
 
-private fun shareConfig(
-  context: Context,
-  viewModel: SettingsViewModel,
+@Composable
+private fun ConfigBackupContent(
+  importSucceeded: Boolean,
+  onImport: () -> Unit,
+  onExport: () -> Unit,
+  onRestart: () -> Unit,
+  modifier: Modifier = Modifier,
 ) {
-  val archiveFile = File(context.cacheDir, "lissen-settings.json")
+  Column(
+    modifier = modifier.fillMaxSize(),
+    verticalArrangement = Arrangement.SpaceBetween,
+    horizontalAlignment = Alignment.CenterHorizontally,
+  ) {
+    Column(
+      modifier =
+        Modifier
+          .fillMaxWidth()
+          .verticalScroll(rememberScrollState()),
+      horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+      AdvancedSettingsSimpleItemComposable(
+        title = stringResource(R.string.import_config_title),
+        description = stringResource(R.string.import_config_description),
+        onclick = onImport,
+      )
 
-  val written = runCatching { archiveFile.writeText(viewModel.exportSettingsJson()) }.isSuccess
+      AdvancedSettingsSimpleItemComposable(
+        title = stringResource(R.string.export_config_title),
+        description = stringResource(R.string.export_config_description),
+        onclick = onExport,
+      )
+    }
 
-  if (!written) {
-    Toast.makeText(context, context.getString(R.string.export_config_failed_toast), Toast.LENGTH_SHORT).show()
-    return
+    if (importSucceeded) {
+      SettingsInfoBanner(
+        icon = Icons.Outlined.Description,
+        text = stringResource(R.string.restart_the_app_to_apply_settings_title),
+        ctaText = stringResource(R.string.restart_the_app_to_apply_settings_cta),
+        onAction = onRestart,
+      )
+    }
   }
-
-  val uri =
-    FileProvider.getUriForFile(
-      context,
-      "${context.packageName}.fileprovider",
-      archiveFile,
-    )
-
-  val exportTimestamp = OffsetDateTime.now()
-  val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss XXX")
-
-  val formattedTimestamp = exportTimestamp.format(formatter)
-
-  val sizeKb = archiveFile.length() / 1024
-
-  val subject =
-    "${context.getString(R.string.app_name)} settings • $formattedTimestamp • $sizeKb KB"
-
-  val details =
-    buildString {
-      appendLine(context.getString(R.string.app_name))
-      appendLine(formattedTimestamp)
-      appendLine("$sizeKb KB")
-    }
-
-  val shareIntent =
-    Intent(Intent.ACTION_SEND).apply {
-      type = "application/json"
-
-      putExtra(Intent.EXTRA_STREAM, uri)
-      putExtra(Intent.EXTRA_SUBJECT, subject)
-      putExtra(Intent.EXTRA_TEXT, details)
-
-      addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-    }
-
-  context.startActivity(Intent.createChooser(shareIntent, context.getString(R.string.export_config_title)))
 }
