@@ -25,6 +25,7 @@ import org.grakovne.lissen.domain.connection.LocalUrl.Companion.clean
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.domain.connection.ServerRequestHeader.Companion.clean
 import org.grakovne.lissen.logging.LissenLogProvider
+import org.grakovne.lissen.persistence.preferences.LissenConfigProvider
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import timber.log.Timber
 import java.io.File
@@ -37,6 +38,7 @@ class SettingsViewModel
     private val mediaChannel: LissenMediaProvider,
     private val preferences: LissenSharedPreferences,
     private val logProvider: LissenLogProvider,
+    private val configProvider: LissenConfigProvider,
   ) : ViewModel() {
     private val _host = MutableStateFlow<Host?>(preferences.getHost()?.let { Host.external(it) })
     val host: StateFlow<Host?> = _host.asStateFlow()
@@ -120,6 +122,16 @@ class SettingsViewModel
     val userAgent: StateFlow<String> = _userAgent.asStateFlow()
 
     fun provideLogArchive(): File? = logProvider.archiveLogFile()
+
+    fun provideConfigArchive(): File? {
+      Timber.d("User action: provideConfigArchive")
+      return configProvider.exportConfigFile()
+    }
+
+    fun importSettingsJson(json: String): Boolean {
+      Timber.d("User action: importSettingsJson")
+      return configProvider.importConfig(json)
+    }
 
     fun saveDefaultTimerOption(option: TimerOption?) {
       Timber.d("User action: saveDefaultTimerOption option=$option")

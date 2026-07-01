@@ -92,6 +92,7 @@ class LissenSharedPreferences
         remove(KEY_BYPASS_SSL)
         remove(KEY_LOCAL_URLS)
         remove(KEY_CLIENT_CERT_ALIAS)
+        remove(KEY_USER_AGENT)
 
         remove(KEY_PLAYING_ITEM)
       }
@@ -573,6 +574,93 @@ class LissenSharedPreferences
       sharedPreferences.edit {
         putString(KEY_LIBRARY_GROUPING, value.name)
       }
+
+    fun exportSettings(): SettingsBackup {
+      val timerDto = getDefaultTimerOption()?.toDto()
+
+      return SettingsBackup(
+        colorScheme = getColorScheme().name,
+        materialYouEnabled = getMaterialYouColors(),
+        playbackSpeed = getPlaybackSpeed(),
+        volumeBoost = getPlaybackVolumeBoost(),
+        seekTime = getSeekTime(),
+        audioFocusLossPolicy = getAudioFocusLossPolicy().name,
+        softwareCodecsEnabled = getSoftwareCodecsEnabled(),
+        hideCompleted = getHideCompleted(),
+        libraryGrouping = getLibraryGrouping().name,
+        libraryOrdering = getLibraryOrdering(),
+        autoDownloadOptionId = getAutoDownloadOption().makeId(),
+        autoDownloadNetworkType = getAutoDownloadNetworkType().name,
+        autoDownloadLibraryTypes = getAutoDownloadLibraryTypes().map { it.name },
+        autoDownloadDelayed = getAutoDownloadDelayed(),
+        downloadChaptersCount = getDownloadChaptersCount(),
+        defaultSleepTimerType = timerDto?.type,
+        defaultSleepTimerMinutes = timerDto?.minutes,
+        crashReportingEnabled = getAcraEnabled(),
+        activityLoggingEnabled = isActivityLoggingEnabled(),
+        forceCacheEnabled = isForceCache(),
+        bypassSsl = getSslBypass(),
+        userAgent = getUserAgent(),
+        customHeaders = getCustomHeaders(),
+        localUrls = getLocalUrls(),
+      )
+    }
+
+    fun importSettings(backup: SettingsBackup) {
+      backup.colorScheme
+        ?.let { runCatching { ColorScheme.valueOf(it) }.getOrNull() }
+        ?.let { saveColorScheme(it) }
+
+      backup.materialYouEnabled?.let { saveMaterialYouColors(it) }
+      backup.playbackSpeed?.let { savePlaybackSpeed(it) }
+      backup.volumeBoost?.let { savePlaybackVolumeBoost(it) }
+      backup.seekTime?.let { saveSeekTime(it) }
+
+      backup.audioFocusLossPolicy
+        ?.let { runCatching { AudioFocusLossPolicy.valueOf(it) }.getOrNull() }
+        ?.let { saveAudioFocusLossPolicy(it) }
+
+      backup.softwareCodecsEnabled?.let { saveSoftwareCodecsEnabled(it) }
+      backup.hideCompleted?.let { saveHideCompleted(it) }
+
+      backup.libraryGrouping
+        ?.let { runCatching { LibraryGrouping.valueOf(it) }.getOrNull() }
+        ?.let { saveLibraryGrouping(it) }
+
+      backup.libraryOrdering?.let { saveLibraryOrdering(it) }
+      backup.autoDownloadOptionId?.let { saveAutoDownloadOption(it.makeDownloadOption()) }
+
+      backup.autoDownloadNetworkType
+        ?.let { runCatching { NetworkTypeAutoCache.valueOf(it) }.getOrNull() }
+        ?.let { saveAutoDownloadNetworkType(it) }
+
+      backup.autoDownloadLibraryTypes?.let { types ->
+        saveAutoDownloadLibraryTypes(types.mapNotNull { runCatching { LibraryType.valueOf(it) }.getOrNull() })
+      }
+
+      backup.autoDownloadDelayed?.let { saveAutoDownloadDelayed(it) }
+      backup.downloadChaptersCount?.let { saveDownloadChaptersCount(it) }
+
+      if (backup.defaultSleepTimerType != null) {
+        val option = TimerOptionDto(type = backup.defaultSleepTimerType, minutes = backup.defaultSleepTimerMinutes).toTimerOption()
+        saveDefaultTimerOption(option)
+      }
+
+      backup.crashReportingEnabled?.let { saveAcraEnabled(it) }
+      backup.activityLoggingEnabled?.let { saveActivityLoggingEnabled(it) }
+
+      backup.forceCacheEnabled?.let {
+        when (it) {
+          true -> enableForceCache()
+          false -> disableForceCache()
+        }
+      }
+
+      backup.bypassSsl?.let { saveSslBypass(it) }
+      backup.userAgent?.let { saveUserAgent(it) }
+      backup.customHeaders?.let { saveCustomHeaders(it) }
+      backup.localUrls?.let { saveLocalUrls(it) }
+    }
 
     fun getDefaultTimerOption(): TimerOption? {
       val json = sharedPreferences.getString(KEY_DEFAULT_SLEEP_TIMER, null) ?: return null

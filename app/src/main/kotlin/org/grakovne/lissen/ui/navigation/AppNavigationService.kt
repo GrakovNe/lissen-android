@@ -58,6 +58,8 @@ class AppNavigationService(
 
   fun showAdvancedSettings() = host.navigate(ROUTE_SETTINGS_ADVANCED)
 
+  fun showConfigBackupSettings() = host.navigate(ROUTE_SETTINGS_CONFIG_BACKUP)
+
   fun showPlaybackPreferences() = host.navigate(ROUTE_SETTINGS_PLAYBACK)
 
   fun showAppearancePreferences() = host.navigate(ROUTE_SETTINGS_APPEARANCE)

@@ -705,4 +705,57 @@ class SettingsViewModelTest {
       assertEquals(file, viewModel.provideLogArchive())
     }
   }
+
+  @Nested
+  inner class ConfigBackup {
+    @Test
+    fun `exportSettingsJson serializes the backup produced by preferences`() {
+      every { preferences.exportSettings() } returns
+        org.grakovne.lissen.persistence.preferences
+          .SettingsBackup(colorScheme = "DARK", playbackSpeed = 1.5f)
+
+      val json = viewModel.exportSettingsJson()
+
+      assertTrue(json.contains("\"colorScheme\":\"DARK\""))
+      assertTrue(json.contains("\"playbackSpeed\":1.5"))
+    }
+
+    @Test
+    fun `importSettingsJson parses valid json and imports it`() {
+      val json = """{"schemaVersion":1,"colorScheme":"DARK"}"""
+
+      val result = viewModel.importSettingsJson(json)
+
+      assertTrue(result)
+      verify {
+        preferences.importSettings(
+          match { it.colorScheme == "DARK" },
+        )
+      }
+    }
+
+    @Test
+    fun `importSettingsJson returns false for malformed json`() {
+      val result = viewModel.importSettingsJson("not valid json")
+
+      assertFalse(result)
+      verify(exactly = 0) { preferences.importSettings(any()) }
+    }
+
+    @Test
+    fun `importSettingsJson returns false for json that does not match the schema`() {
+      val result = viewModel.importSettingsJson("""{"schemaVersion":"not-a-number"}""")
+
+      assertFalse(result)
+      verify(exactly = 0) { preferences.importSettings(any()) }
+    }
+
+    @Test
+    fun `importSettingsJson returns false for empty string`() {
+      val result = viewModel.importSettingsJson("")
+
+      assertFalse(result)
+      verify(exactly = 0) { preferences.importSettings(any()) }
+    }
+  }
 }

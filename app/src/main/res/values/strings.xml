@@ -233,4 +233,12 @@
     <string name="settings_screen_user_agent_title">Change User Agent</string>
     <string name="settings_screen_user_agent_hint">Customize the application User-Agent header</string>
     <string name="settings_screen_user_agent_restore_default">Restore Default</string>
+    <string name="config_backup_title">Backup &amp; Restore</string>
+    <string name="config_backup_description">Export or import your app preferences</string>
+    <string name="export_config_title">Export configuration</string>
+    <string name="export_config_description">Share your app preferences as a file</string>
+    <string name="export_config_failed_toast">Unable to export configuration</string>
+    <string name="import_config_title">Import configuration</string>
+    <string name="import_config_description">Restore app preferences from a file</string>
+    <string name="import_config_failed_toast">Unable to import configuration, file may be invalid</string>
 </resources>
