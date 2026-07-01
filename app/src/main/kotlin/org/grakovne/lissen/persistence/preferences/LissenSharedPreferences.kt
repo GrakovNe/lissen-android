@@ -92,6 +92,7 @@ class LissenSharedPreferences
         remove(KEY_BYPASS_SSL)
         remove(KEY_LOCAL_URLS)
         remove(KEY_CLIENT_CERT_ALIAS)
+        remove(KEY_USER_AGENT)
 
         remove(KEY_PLAYING_ITEM)
       }
