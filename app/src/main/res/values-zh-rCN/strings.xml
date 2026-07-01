@@ -219,4 +219,11 @@
     <string name="local_network_permission_request_hint">需要本地网络权限来连接附近的服务器</string>
     <string name="downloads_menu_download_option_decrease">减少数量</string>
     <string name="downloads_menu_download_option_increase">增加数量</string>
+    <plurals name="series_books_count">
+        <item quantity="other">%d 本书</item>
+    </plurals>
+    <string name="library_quick_settings_grouping_title">分组</string>
+    <string name="library_grouping_disabled">关闭</string>
+    <string name="library_grouping_series">按系列</string>
+    <string name="library_grouping_author">按作者</string>
 </resources>
