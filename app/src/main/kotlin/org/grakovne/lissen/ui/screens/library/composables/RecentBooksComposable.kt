@@ -30,7 +30,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,6 +42,7 @@ import coil3.request.crossfade
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.RecentBook
+import org.grakovne.lissen.ui.adaptive.recentBookItemWidth
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.components.BookCoverKey
 import org.grakovne.lissen.ui.navigation.AppNavigationService
@@ -56,13 +56,7 @@ fun RecentBooksComposable(
   modifier: Modifier = Modifier,
   libraryViewModel: LibraryViewModel,
 ) {
-  val configuration = LocalConfiguration.current
-  val screenWidth = remember { configuration.screenWidthDp.dp }
-
-  val itemsVisible = 2.3f
-  val spacing = 16.dp
-  val totalSpacing = spacing * (itemsVisible + 1)
-  val itemWidth = (screenWidth - totalSpacing) / itemsVisible
+  val itemWidth = recentBookItemWidth()
 
   Row(
     modifier =
