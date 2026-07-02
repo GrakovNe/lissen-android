@@ -7,8 +7,8 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import okhttp3.Request
 import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
+import org.grakovne.lissen.channel.common.DownloadClientProvider
 import org.grakovne.lissen.channel.common.MediaChannel
-import org.grakovne.lissen.channel.common.createOkHttpClient
 import org.grakovne.lissen.common.copyTo
 import org.grakovne.lissen.content.cache.common.findRelatedFiles
 import org.grakovne.lissen.content.cache.common.withBlur
@@ -20,7 +20,6 @@ import org.grakovne.lissen.domain.CacheStatus
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.domain.PlayingChapter
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
@@ -37,7 +36,7 @@ class ContentCachingManager
     private val libraryRepository: CachedLibraryRepository,
     private val properties: OfflineBookStorageProperties,
     private val requestHeadersProvider: RequestHeadersProvider,
-    private val preferences: LissenSharedPreferences,
+    private val downloadClientProvider: DownloadClientProvider,
   ) {
     fun cacheMediaItem(
       mediaItem: DetailedItem,
@@ -150,12 +149,7 @@ class ContentCachingManager
     ): CacheState =
       withContext(Dispatchers.IO) {
         val headers = requestHeadersProvider.fetchRequestHeaders()
-        val client =
-          createOkHttpClient(
-            requestHeaders = headers,
-            preferences = preferences,
-            context = context,
-          )
+        val client = downloadClientProvider.provideClient()
 
         val totalFileSize = files.mapNotNull { it.size }.sum()
         val reportingSizeThreshold = totalFileSize / 100.0

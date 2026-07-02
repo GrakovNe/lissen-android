@@ -1,6 +1,7 @@
 package org.grakovne.lissen.ui.screens.library.paging
 
 import androidx.paging.PagingState
+import org.grakovne.lissen.common.LibraryPagingException
 import org.grakovne.lissen.common.LibraryPagingSource
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.LibraryEntry
@@ -33,7 +34,7 @@ class LibrarySearchPagingSource(
           onTotalCountChanged.invoke(books.size)
           LoadResult.Page(books.map { LibraryEntry.BookEntry(it) }, null, null)
         },
-        onFailure = { LoadResult.Page(emptyList(), null, null) },
+        onFailure = { LoadResult.Error(LibraryPagingException(it.code, it.message)) },
       )
   }
 }

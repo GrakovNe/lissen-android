@@ -51,6 +51,23 @@ class LissenSharedPreferences
     private val sharedPreferences: SharedPreferences =
       context.getSharedPreferences("secure_prefs", Context.MODE_PRIVATE)
 
+    private val playingItemLock = Any()
+
+    private val tokenCache = CachedSecret { readSecret(KEY_TOKEN) }
+    private val accessTokenCache = CachedSecret { readSecret(KEY_ACCESS_TOKEN) }
+    private val refreshTokenCache = CachedSecret { readSecret(KEY_REFRESH_TOKEN) }
+
+    private fun readSecret(key: String): String? {
+      val encrypted = sharedPreferences.getString(key, null) ?: return null
+      return decrypt(encrypted)
+    }
+
+    private fun invalidateTokenCaches() {
+      tokenCache.invalidate()
+      accessTokenCache.invalidate()
+      refreshTokenCache.invalidate()
+    }
+
     fun hasCredentials(): Boolean {
       val host = getHost()
       val username = getUsername()
@@ -70,6 +87,7 @@ class LissenSharedPreferences
         remove(KEY_ACCESS_TOKEN)
         remove(KEY_REFRESH_TOKEN)
       }
+      invalidateTokenCaches()
     }
 
     fun clearPreferences() {
@@ -96,6 +114,7 @@ class LissenSharedPreferences
 
         remove(KEY_PLAYING_ITEM)
       }
+      invalidateTokenCaches()
     }
 
     fun getAutoDownloadDelayed() = sharedPreferences.getBoolean(KEY_AUTO_DOWNLOAD_DELAYED, false)
@@ -352,32 +371,26 @@ class LissenSharedPreferences
     fun saveToken(token: String) {
       val encrypted = encrypt(token)
       sharedPreferences.edit { putString(KEY_TOKEN, encrypted) }
+      tokenCache.invalidate()
     }
 
     fun saveAccessToken(accessToken: String) {
       val encrypted = encrypt(accessToken)
       sharedPreferences.edit { putString(KEY_ACCESS_TOKEN, encrypted) }
+      accessTokenCache.invalidate()
     }
 
     fun saveRefreshToken(refreshToken: String) {
       val encrypted = encrypt(refreshToken)
       sharedPreferences.edit { putString(KEY_REFRESH_TOKEN, encrypted) }
+      refreshTokenCache.invalidate()
     }
 
-    fun getAccessToken(): String? {
-      val encrypted = sharedPreferences.getString(KEY_ACCESS_TOKEN, null) ?: return null
-      return decrypt(encrypted)
-    }
+    fun getAccessToken(): String? = accessTokenCache.get()
 
-    fun getRefreshToken(): String? {
-      val encrypted = sharedPreferences.getString(KEY_REFRESH_TOKEN, null) ?: return null
-      return decrypt(encrypted)
-    }
+    fun getRefreshToken(): String? = refreshTokenCache.get()
 
-    fun getToken(): String? {
-      val encrypted = sharedPreferences.getString(KEY_TOKEN, null) ?: return null
-      return decrypt(encrypted)
-    }
+    fun getToken(): String? = tokenCache.get()
 
     fun savePlayingItem(item: DetailedItem) {
       savePlayingItemInternal(
@@ -399,30 +412,32 @@ class LissenSharedPreferences
       libraryId: String,
       item: DetailedItem?,
     ) {
-      val adapter = moshi.adapter<Map<String, DetailedItem>>(playingItemsType)
+      synchronized(playingItemLock) {
+        val adapter = moshi.adapter<Map<String, DetailedItem>>(playingItemsType)
 
-      val current =
-        try {
-          sharedPreferences
-            .getString(KEY_PLAYING_ITEM, null)
-            ?.let { adapter.fromJson(it) }
-            ?.toMutableMap()
-            ?: mutableMapOf()
-        } catch (t: Throwable) {
-          Timber.w("Unable to read stored playing items, starting empty due to: ${t.message}")
-          mutableMapOf()
+        val current =
+          try {
+            sharedPreferences
+              .getString(KEY_PLAYING_ITEM, null)
+              ?.let { adapter.fromJson(it) }
+              ?.toMutableMap()
+              ?: mutableMapOf()
+          } catch (t: Throwable) {
+            Timber.w("Unable to read stored playing items, starting empty due to: ${t.message}")
+            mutableMapOf()
+          }
+
+        if (item == null) {
+          current.remove(libraryId)
+        } else {
+          current[libraryId] = item
         }
 
-      if (item == null) {
-        current.remove(libraryId)
-      } else {
-        current[libraryId] = item
-      }
-
-      try {
-        sharedPreferences.edit { putString(KEY_PLAYING_ITEM, adapter.toJson(current)) }
-      } catch (t: Throwable) {
-        Timber.w("Unable to persist playing item for $libraryId due to: ${t.message}")
+        try {
+          sharedPreferences.edit { putString(KEY_PLAYING_ITEM, adapter.toJson(current)) }
+        } catch (t: Throwable) {
+          Timber.w("Unable to persist playing item for $libraryId due to: ${t.message}")
+        }
       }
     }
 

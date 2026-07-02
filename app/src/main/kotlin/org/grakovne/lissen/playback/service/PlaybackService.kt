@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.Cache
 import androidx.media3.exoplayer.ExoPlayer
@@ -128,8 +129,7 @@ class PlaybackService : MediaLibraryService() {
     playbackSynchronizationService.cancelSynchronization()
     playerServiceScope.cancel()
 
-    exoPlayer.clearMediaItems()
-    exoPlayer.release()
+    haltPlayback(exoPlayer)
 
     session?.release()
     session = null
@@ -324,4 +324,9 @@ class PlaybackService : MediaLibraryService() {
       return MediaItemsWithStartPosition(chapterMediaItems, chapterIndex, (chapterOffset * 1000).toLong())
     }
   }
+}
+
+internal fun haltPlayback(player: Player) {
+  player.stop()
+  player.clearMediaItems()
 }

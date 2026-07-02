@@ -1,5 +1,6 @@
 package org.grakovne.lissen.playback.service
 
+import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.Dispatchers
@@ -79,10 +80,7 @@ class PlaybackSynchronizationService
               exoPlayer.playWhenReady &&
               exoPlayer.playbackState != Player.STATE_ENDED
             ) {
-              val nearStart = exoPlayer.duration - exoPlayer.currentPosition < SHORT_SYNC_WINDOW
-              val nearEnd = exoPlayer.currentPosition < SHORT_SYNC_WINDOW
-
-              delay(if (nearEnd || nearStart) SYNC_INTERVAL_SHORT else SYNC_INTERVAL_LONG)
+              delay(chooseSyncInterval(exoPlayer.duration, exoPlayer.currentPosition))
 
               runSync()
             }
@@ -186,11 +184,6 @@ class PlaybackSynchronizationService
         }
 
     companion object {
-      private const val SYNC_INTERVAL_LONG = 45_000L
-      private const val SHORT_SYNC_WINDOW = SYNC_INTERVAL_LONG * 2 - 1
-
-      private const val SYNC_INTERVAL_SHORT = 5_000L
-
       private val syncEvents =
         listOf(
           Player.EVENT_MEDIA_ITEM_TRANSITION,
@@ -199,3 +192,20 @@ class PlaybackSynchronizationService
         )
     }
   }
+
+internal const val SYNC_INTERVAL_LONG = 45_000L
+internal const val SYNC_INTERVAL_SHORT = 5_000L
+internal const val SHORT_SYNC_WINDOW = SYNC_INTERVAL_LONG * 2 - 1
+
+internal fun chooseSyncInterval(
+  durationMs: Long,
+  positionMs: Long,
+): Long {
+  val nearStart = positionMs < SHORT_SYNC_WINDOW
+  val nearEnd = durationMs != C.TIME_UNSET && durationMs - positionMs < SHORT_SYNC_WINDOW
+
+  return when (nearStart || nearEnd) {
+    true -> SYNC_INTERVAL_SHORT
+    false -> SYNC_INTERVAL_LONG
+  }
+}

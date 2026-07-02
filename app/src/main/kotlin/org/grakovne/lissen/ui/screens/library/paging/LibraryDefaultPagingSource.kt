@@ -1,6 +1,7 @@
 package org.grakovne.lissen.ui.screens.library.paging
 
 import androidx.paging.PagingState
+import org.grakovne.lissen.common.LibraryPagingException
 import org.grakovne.lissen.common.LibraryPagingSource
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.LibraryEntry
@@ -48,7 +49,7 @@ class LibraryDefaultPagingSource(
           )
         },
         onFailure = {
-          LoadResult.Page(emptyList(), null, null)
+          LoadResult.Error(LibraryPagingException(it.code, it.message))
         },
       )
   }
