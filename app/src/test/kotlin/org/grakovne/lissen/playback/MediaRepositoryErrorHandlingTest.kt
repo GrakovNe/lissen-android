@@ -82,11 +82,42 @@ class MediaRepositoryErrorHandlingTest {
     }
   }
 
+  @Nested
+  inner class PlayAfterPrepareReset {
+    @Test
+    fun `error clears the deferred autoplay flag`() {
+      val playAfterPrepare = MutableStateFlow(true)
+
+      simulateOnPlayerError(
+        isPlaying = MutableStateFlow(true),
+        mediaPreparingError = MutableStateFlow(false),
+        playAfterPrepare = playAfterPrepare,
+      )
+
+      assertFalse(playAfterPrepare.value)
+    }
+
+    @Test
+    fun `clearing prepared item clears the deferred autoplay flag`() {
+      val playAfterPrepare = MutableStateFlow(true)
+
+      simulateClearPreparedItem(playAfterPrepare)
+
+      assertFalse(playAfterPrepare.value)
+    }
+  }
+
   private fun simulateOnPlayerError(
     isPlaying: MutableStateFlow<Boolean>,
     mediaPreparingError: MutableStateFlow<Boolean>,
+    playAfterPrepare: MutableStateFlow<Boolean> = MutableStateFlow(false),
   ) {
     isPlaying.value = false
+    playAfterPrepare.value = false
     mediaPreparingError.value = true
+  }
+
+  private fun simulateClearPreparedItem(playAfterPrepare: MutableStateFlow<Boolean>) {
+    playAfterPrepare.value = false
   }
 }

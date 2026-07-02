@@ -52,6 +52,7 @@ class LissenSharedPreferences
       context.getSharedPreferences("secure_prefs", Context.MODE_PRIVATE)
 
     private val playingItemLock = Any()
+    private val deviceIdLock = Any()
 
     @Volatile
     private var playingItemsCache: Map<String, DetailedItem>? = null
@@ -167,18 +168,14 @@ class LissenSharedPreferences
 
     fun getHost(): String? = sharedPreferences.getString(KEY_HOST, null)
 
-    fun getDeviceId(): String {
-      val existingDeviceId = sharedPreferences.getString(KEY_DEVICE_ID, null)
-
-      if (existingDeviceId != null) {
-        return existingDeviceId
+    fun getDeviceId(): String =
+      synchronized(deviceIdLock) {
+        sharedPreferences.getString(KEY_DEVICE_ID, null)
+          ?: UUID
+            .randomUUID()
+            .toString()
+            .also { sharedPreferences.edit { putString(KEY_DEVICE_ID, it) } }
       }
-
-      return UUID
-        .randomUUID()
-        .toString()
-        .also { sharedPreferences.edit { putString(KEY_DEVICE_ID, it) } }
-    }
 
     fun getPreferredLibrary(): Library? {
       val id = getPreferredLibraryId() ?: return null
