@@ -33,6 +33,7 @@ import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.NumberItemDownloadOption
 import org.grakovne.lissen.domain.RemainingItemsDownloadOption
+import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.screens.common.ChaptersCountStepper
 import org.grakovne.lissen.ui.screens.common.makeText
 
@@ -62,8 +63,9 @@ fun DownloadsComposable(
       false -> colorScheme.onBackground
     }
 
-  ModalBottomSheet(
+  LissenModalBottomSheet(
     containerColor = colorScheme.background,
+    scrollable = false,
     onDismissRequest = onDismissRequest,
     content = {
       Column(

@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
+import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.slider.SeekTimeSlider
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
@@ -136,7 +137,7 @@ private fun SeekTimeBottomSheet(
   val context = LocalContext.current
   var selectedSeconds by remember { mutableIntStateOf(currentSeconds) }
 
-  ModalBottomSheet(
+  LissenModalBottomSheet(
     containerColor = colorScheme.background,
     onDismissRequest = onDismissRequest,
     content = {

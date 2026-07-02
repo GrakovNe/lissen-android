@@ -28,27 +28,34 @@ import com.valentinilk.shimmer.shimmer
 import org.grakovne.lissen.R
 
 @Composable
+fun BookCoverPlaceholder(modifier: Modifier = Modifier) {
+  Box(
+    modifier =
+      modifier
+        .clip(RoundedCornerShape(8.dp))
+        .shimmer()
+        .background(Color.Gray),
+  )
+}
+
+@Composable
 fun TrackDetailsPlaceholderComposable(
   bookTitle: String,
   bookSubtitle: String?,
   modifier: Modifier = Modifier,
 ) {
   val configuration = LocalConfiguration.current
-  val screenHeight = configuration.screenHeightDp.dp
-  val maxImageHeight = screenHeight * 0.33f
+  val maxImageHeight = configuration.screenHeightDp.dp * 0.33f
 
   Column(
     horizontalAlignment = Alignment.CenterHorizontally,
     modifier = modifier,
   ) {
-    Box(
+    BookCoverPlaceholder(
       modifier =
         Modifier
           .heightIn(max = maxImageHeight)
-          .aspectRatio(1f)
-          .clip(RoundedCornerShape(8.dp))
-          .shimmer()
-          .background(Color.Gray),
+          .aspectRatio(1f),
     )
 
     Spacer(modifier = Modifier.height(12.dp))

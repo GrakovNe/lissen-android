@@ -12,18 +12,24 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -68,7 +74,7 @@ import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.RecentBook
-import org.grakovne.lissen.ui.components.withScrollbar
+import org.grakovne.lissen.ui.adaptive.isWideLayout
 import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.common.RequestLocalNetworkPermission
@@ -126,13 +132,12 @@ fun LibraryScreen(
   var preferencesExpanded by remember { mutableStateOf(false) }
 
   val library = libraryViewModel.getPager(searchRequested).collectAsLazyPagingItems()
-  val libraryCount by libraryViewModel.totalCount.collectAsState()
   val expandedGroups by libraryViewModel.expandedGroups.collectAsState()
   val groupBooks by libraryViewModel.groupBooks.collectAsState()
   val groupLoading by libraryViewModel.groupLoading.collectAsState()
   val libraryGrouping by settingsViewModel.libraryGrouping.collectAsState(LibraryGrouping.NONE)
 
-  val libraryListState = rememberLazyListState()
+  val libraryListState = rememberLazyGridState()
 
   BackHandler {
     when {
@@ -219,18 +224,6 @@ fun LibraryScreen(
 
     return searchRequested.not() && hasContent && fetchAvailable
   }
-
-  val showScrollbar by remember {
-    derivedStateOf {
-      val scrolledDown = libraryListState.firstVisibleItemIndex > 0 || libraryListState.firstVisibleItemScrollOffset > 0
-      libraryListState.isScrollInProgress && scrolledDown
-    }
-  }
-
-  val scrollbarAlpha by animateFloatAsState(
-    targetValue = if (showScrollbar) 1f else 0f,
-    animationSpec = tween(durationMillis = 300),
-  )
 
   LaunchedEffect(Unit) {
     val emptyContent = library.itemCount == 0
@@ -394,21 +387,25 @@ fun LibraryScreen(
             .pullRefresh(pullRefreshState)
             .fillMaxSize(),
       ) {
-        LazyColumn(
+        val libraryColumns =
+          when {
+            isWideLayout().not() -> 1
+            libraryGrouping != LibraryGrouping.NONE -> 1
+            else -> 2
+          }
+
+        LazyVerticalGrid(
+          columns = GridCells.Fixed(libraryColumns),
           state = libraryListState,
           modifier =
             Modifier
+              .testTag("libraryGrid")
               .fillMaxSize()
-              .imePadding()
-              .withScrollbar(
-                state = libraryListState,
-                color = colorScheme.onBackground.copy(alpha = scrollbarAlpha),
-                totalItems = libraryCount,
-                ignoreItems = listOf("recent_books", "library_title"),
-              ),
+              .imePadding(),
           contentPadding = PaddingValues(horizontal = 16.dp),
+          horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-          item(key = "recent_books") {
+          item(key = "recent_books", span = { GridItemSpan(maxLineSpan) }) {
             val showRecent = recentVisible
 
             when {
@@ -431,7 +428,7 @@ fun LibraryScreen(
             }
           }
 
-          item(key = "library_title") {
+          item(key = "library_title", span = { GridItemSpan(maxLineSpan) }) {
             if (!searchRequested && recentVisible) {
               AnimatedContent(
                 targetState = navBarTitle,
@@ -489,11 +486,11 @@ fun LibraryScreen(
 
           when {
             isPlaceholderRequired -> {
-              item { LibraryPlaceholderComposable() }
+              item(span = { GridItemSpan(maxLineSpan) }) { LibraryPlaceholderComposable() }
             }
 
             library.itemCount == 0 -> {
-              item {
+              item(span = { GridItemSpan(maxLineSpan) }) {
                 LibraryFallbackComposable(
                   searchRequested = searchRequested,
                   contentCachingModelView = cachingModelView,
