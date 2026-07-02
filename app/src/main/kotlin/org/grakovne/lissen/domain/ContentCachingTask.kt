@@ -5,7 +5,7 @@ import java.io.Serializable
 
 @Keep
 data class ContentCachingTask(
-  val item: DetailedItem,
+  val itemId: String,
   val options: DownloadOption,
   val currentPosition: Double,
 ) : Serializable

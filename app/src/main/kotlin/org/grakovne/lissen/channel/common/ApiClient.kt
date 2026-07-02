@@ -14,7 +14,7 @@ class ApiClient(
   preferences: LissenSharedPreferences,
   context: Context,
 ) {
-  private val httpClient = createOkHttpClient(requestHeaders, preferences = preferences, context = context)
+  val httpClient = createOkHttpClient(requestHeaders, preferences = preferences, context = context)
 
   val retrofit: Retrofit? =
     runCatching {

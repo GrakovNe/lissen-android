@@ -3,6 +3,7 @@ package org.grakovne.lissen.channel.audiobookshelf.common.api
 import android.util.Base64
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
 import okio.Buffer
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarkRequest
@@ -37,6 +38,8 @@ class AudioBookshelfRepository
   constructor(
     private val audioBookShelfApiService: AudioBookShelfApiService,
   ) {
+    fun provideHttpClient(): OkHttpClient? = audioBookShelfApiService.provideHttpClient()
+
     suspend fun fetchLibraries(): OperationResult<LibraryResponse> =
       audioBookShelfApiService
         .makeRequest { it.fetchLibraries() }

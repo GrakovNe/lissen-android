@@ -2,6 +2,7 @@ package org.grakovne.lissen.channel.audiobookshelf.common
 
 import android.net.Uri
 import androidx.core.net.toUri
+import okhttp3.OkHttpClient
 import okio.Buffer
 import org.grakovne.lissen.BuildConfig
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfHostProvider
@@ -38,6 +39,8 @@ abstract class AudiobookshelfChannel(
   private val bookmarksResponseConverter: BookmarksResponseConverter,
   private val bookmarkItemResponseConverter: BookmarkItemResponseConverter,
 ) : MediaChannel {
+  override fun provideDownloadClient(): OkHttpClient? = dataRepository.provideHttpClient()
+
   override fun provideFileUri(
     libraryItemId: String,
     fileId: String,

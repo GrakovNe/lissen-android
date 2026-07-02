@@ -5,8 +5,8 @@ import android.os.Bundle
 import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.cache.Cache
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
@@ -19,9 +19,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
 import org.grakovne.lissen.content.ExternalCoverProvider
-import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PlayingChapter
@@ -43,29 +41,16 @@ class PlaybackService : MediaLibraryService() {
   lateinit var mediaLibrarySessionProvider: MediaLibrarySessionProvider
 
   @Inject
-  lateinit var mediaProvider: LissenMediaProvider
-
-  @Inject
   lateinit var playbackSynchronizationService: PlaybackSynchronizationService
 
   @Inject
   lateinit var sharedPreferences: LissenSharedPreferences
 
   @Inject
-  lateinit var channelProvider: LissenMediaProvider
-
-  @Inject
-  lateinit var requestHeadersProvider: RequestHeadersProvider
-
-  @Inject
   lateinit var playbackTimer: PlaybackTimer
 
   @Inject
   lateinit var playbackEventBus: PlaybackEventBus
-
-  @Inject
-  @UnstableApi
-  lateinit var mediaCache: Cache
 
   private var session: MediaLibrarySession? = null
 
@@ -84,12 +69,6 @@ class PlaybackService : MediaLibraryService() {
             Timber.d("Command received: PREPARE_PLAYBACK")
             val book = sharedPreferences.getPlayingItem()
             book?.let { launch { preparePlayback(it) } }
-          }
-
-          is PlaybackCommand.SeekTo -> {
-            Timber.d("Command received: SEEK_TO position=${command.position}")
-            val book = sharedPreferences.getPlayingItem()
-            book?.let { seek(it.chapters, command.position) }
           }
 
           is PlaybackCommand.SetTimer -> {
@@ -128,8 +107,7 @@ class PlaybackService : MediaLibraryService() {
     playbackSynchronizationService.cancelSynchronization()
     playerServiceScope.cancel()
 
-    exoPlayer.clearMediaItems()
-    exoPlayer.release()
+    haltPlayback(exoPlayer)
 
     session?.release()
     session = null
@@ -181,45 +159,6 @@ class PlaybackService : MediaLibraryService() {
   private fun cancelTimer() {
     playbackTimer.stopTimer()
     Timber.d("Timer canceled.")
-  }
-
-  private fun seek(
-    items: List<PlayingChapter>,
-    position: Double?,
-  ) {
-    if (items.isEmpty()) {
-      Timber.w("Tried to seek position $position in the empty book. Skipping")
-      return
-    }
-
-    when (position) {
-      null -> {
-        exoPlayer.seekTo(0, 0)
-      }
-
-      else -> {
-        val positionMs = (position * 1000).toLong()
-
-        val durationsMs = items.map { (it.duration * 1000).toLong() }
-        val cumulativeDurationsMs = durationsMs.runningFold(0L) { acc, duration -> acc + duration }
-
-        val targetChapterIndex = cumulativeDurationsMs.indexOfFirst { it > positionMs }
-
-        when (targetChapterIndex - 1 >= 0) {
-          true -> {
-            val chapterStartTimeMs = cumulativeDurationsMs[targetChapterIndex - 1]
-            val chapterProgressMs = positionMs - chapterStartTimeMs
-            exoPlayer.seekTo(targetChapterIndex - 1, chapterProgressMs)
-          }
-
-          false -> {
-            val lastChapterIndex = items.size - 1
-            val lastChapterDurationMs = durationsMs.last()
-            exoPlayer.seekTo(lastChapterIndex, lastChapterDurationMs)
-          }
-        }
-      }
-    }
   }
 
   companion object {
@@ -324,4 +263,9 @@ class PlaybackService : MediaLibraryService() {
       return MediaItemsWithStartPosition(chapterMediaItems, chapterIndex, (chapterOffset * 1000).toLong())
     }
   }
+}
+
+internal fun haltPlayback(player: Player) {
+  player.stop()
+  player.clearMediaItems()
 }

@@ -1,5 +1,6 @@
 package org.grakovne.lissen.playback.service
 
+import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.Dispatchers
@@ -9,7 +10,6 @@ import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.content.LissenMediaProvider
@@ -36,7 +36,7 @@ class PlaybackSynchronizationService
     private var playbackSession: PlaybackSession? = null
     private val serviceScope = MainScope()
     private var syncJob: Job? = null
-    private val syncMutex = Mutex()
+    private val syncRunner = CoalescingRunner<PlaybackProgress>()
 
     init {
       exoPlayer.addListener(
@@ -79,10 +79,7 @@ class PlaybackSynchronizationService
               exoPlayer.playWhenReady &&
               exoPlayer.playbackState != Player.STATE_ENDED
             ) {
-              val nearStart = exoPlayer.duration - exoPlayer.currentPosition < SHORT_SYNC_WINDOW
-              val nearEnd = exoPlayer.currentPosition < SHORT_SYNC_WINDOW
-
-              delay(if (nearEnd || nearStart) SYNC_INTERVAL_SHORT else SYNC_INTERVAL_LONG)
+              delay(chooseSyncInterval(exoPlayer.duration, exoPlayer.currentPosition))
 
               runSync()
             }
@@ -103,35 +100,37 @@ class PlaybackSynchronizationService
       }
 
       withContext(Dispatchers.IO) {
-        if (syncMutex.tryLock().not()) {
-          Timber.d("Sync is already running")
-          return@withContext
-        }
-
-        try {
-          val currentIndex = calculateChapterIndex(currentItem, overallProgress.currentTotalTime)
-
-          if (playbackSession == null ||
-            playbackSession?.itemId != currentItem.id ||
-            currentIndex != currentChapterIndex ||
-            playbackSession?.sessionSource == PlaybackSessionSource.LOCAL
-          ) {
-            openPlaybackSession(overallProgress)
-            currentChapterIndex = currentIndex
+        syncRunner.submit(overallProgress) { progress ->
+          try {
+            performSync(currentItem, progress)
+          } catch (e: Exception) {
+            Timber.e(e, "Error during sync")
           }
-
-          playbackSession?.let {
-            requestSync(
-              item = currentItem,
-              it = it,
-              overallProgress = overallProgress,
-            )
-          }
-        } catch (e: Exception) {
-          Timber.e(e, "Error during sync")
-        } finally {
-          syncMutex.unlock()
         }
+      }
+    }
+
+    private suspend fun performSync(
+      currentItem: DetailedItem,
+      overallProgress: PlaybackProgress,
+    ) {
+      val currentIndex = calculateChapterIndex(currentItem, overallProgress.currentTotalTime)
+
+      if (playbackSession == null ||
+        playbackSession?.itemId != currentItem.id ||
+        currentIndex != currentChapterIndex ||
+        playbackSession?.sessionSource == PlaybackSessionSource.LOCAL
+      ) {
+        openPlaybackSession(overallProgress)
+        currentChapterIndex = currentIndex
+      }
+
+      playbackSession?.let {
+        requestSync(
+          item = currentItem,
+          it = it,
+          overallProgress = overallProgress,
+        )
       }
     }
 
@@ -186,11 +185,6 @@ class PlaybackSynchronizationService
         }
 
     companion object {
-      private const val SYNC_INTERVAL_LONG = 45_000L
-      private const val SHORT_SYNC_WINDOW = SYNC_INTERVAL_LONG * 2 - 1
-
-      private const val SYNC_INTERVAL_SHORT = 5_000L
-
       private val syncEvents =
         listOf(
           Player.EVENT_MEDIA_ITEM_TRANSITION,
@@ -199,3 +193,20 @@ class PlaybackSynchronizationService
         )
     }
   }
+
+internal const val SYNC_INTERVAL_LONG = 45_000L
+internal const val SYNC_INTERVAL_SHORT = 5_000L
+internal const val SHORT_SYNC_WINDOW = SYNC_INTERVAL_LONG * 2 - 1
+
+internal fun chooseSyncInterval(
+  durationMs: Long,
+  positionMs: Long,
+): Long {
+  val nearStart = positionMs < SHORT_SYNC_WINDOW
+  val nearEnd = durationMs != C.TIME_UNSET && durationMs - positionMs < SHORT_SYNC_WINDOW
+
+  return when (nearStart || nearEnd) {
+    true -> SYNC_INTERVAL_SHORT
+    false -> SYNC_INTERVAL_LONG
+  }
+}

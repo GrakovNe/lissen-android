@@ -80,7 +80,7 @@ internal class LocalFallbackDataSource(
   private var usingLocal: Boolean = false
 
   override fun open(dataSpec: DataSpec): Long {
-    val (itemId, fileId) = unapply(dataSpec.uri) ?: return 0
+    val (itemId, fileId) = unapply(dataSpec.uri) ?: return openPassthrough(dataSpec)
 
     val resolvedUri =
       mediaProvider
@@ -123,6 +123,18 @@ internal class LocalFallbackDataSource(
         throw networkError
       }
     }
+
+  private fun openPassthrough(dataSpec: DataSpec): Long {
+    usingLocal = false
+    activeDataSource = upstream
+
+    resolvedItemId = null
+    resolvedFileId = null
+    resolvedSpec = null
+    bytesRead = 0
+
+    return upstream.open(dataSpec)
+  }
 
   private fun switchToLocalIfAvailable(): Boolean {
     if (usingLocal) return false

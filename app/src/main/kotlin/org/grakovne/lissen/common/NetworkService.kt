@@ -7,6 +7,10 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import org.grakovne.lissen.domain.NetworkType
 import timber.log.Timber
 import javax.inject.Inject
@@ -41,6 +45,31 @@ class NetworkService
 
       connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
     }
+
+    val networkAvailableFlow: Flow<Boolean> =
+      callbackFlow {
+        val callback =
+          object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+              trySend(isNetworkAvailable())
+            }
+
+            override fun onLost(network: Network) {
+              trySend(isNetworkAvailable())
+            }
+
+            override fun onCapabilitiesChanged(
+              network: Network,
+              networkCapabilities: NetworkCapabilities,
+            ) {
+              trySend(isNetworkAvailable())
+            }
+          }
+
+        connectivityManager.registerDefaultNetworkCallback(callback)
+        trySend(isNetworkAvailable())
+        awaitClose { connectivityManager.unregisterNetworkCallback(callback) }
+      }.distinctUntilChanged()
 
     fun isNetworkAvailable(): Boolean {
       val network = connectivityManager.activeNetwork ?: return false

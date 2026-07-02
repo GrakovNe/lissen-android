@@ -6,7 +6,6 @@ import android.os.Build
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
@@ -28,16 +27,12 @@ class ContentCachingService : LifecycleService() {
   lateinit var mediaProvider: LissenMediaProvider
 
   @Inject
-  lateinit var localCacheRepository: LocalCacheRepository
-
-  @Inject
   lateinit var cacheProgressBus: ContentCachingProgress
 
   @Inject
   lateinit var notificationService: ContentCachingNotificationService
 
-  private val executionStatuses = mutableMapOf<DetailedItem, CacheState>()
-  private val executingCaching = mutableMapOf<DetailedItem, Job>()
+  private val registry = CachingSessionRegistry()
 
   override fun onStartCommand(
     intent: Intent?,
@@ -46,105 +41,125 @@ class ContentCachingService : LifecycleService() {
   ): Int {
     val action = intent?.action ?: return START_NOT_STICKY
 
+    startForegroundWithProgress()
+
     when (action) {
-      CACHE_ITEM_ACTION -> cacheItem(intent).also { it?.let { (item, job) -> executingCaching[item] = job } }
+      CACHE_ITEM_ACTION -> cacheItem(intent)
       STOP_CACHING_ACTION -> stopCaching(intent)
     }
 
     return super.onStartCommand(intent, flags, startId)
   }
 
-  private fun stopCaching(intent: Intent) {
-    val cachingItem = intent.getSerializableExtraCompat<DetailedItem>(CACHING_PLAYING_ITEM) ?: return
-    Timber.d("Stopping caching for ${cachingItem.id}")
+  private fun startForegroundWithProgress() {
+    val notification = notificationService.updateCachingNotification(registry.notificationItems())
 
-    val executingJob = executingCaching[cachingItem] ?: return
+    when {
+      Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
+        startForeground(
+          NOTIFICATION_ID,
+          notification,
+          ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
+        )
+      }
 
-    lifecycleScope.launch {
-      executingJob.cancel()
-
-      cacheProgressBus.emit(cachingItem, CacheState(status = CacheStatus.Idle))
-      finish()
+      else -> {
+        startForeground(NOTIFICATION_ID, notification)
+      }
     }
   }
 
-  private fun cacheItem(intent: Intent): Pair<DetailedItem, Job>? {
-    val task = intent.getSerializableExtraCompat<ContentCachingTask>(CACHING_TASK_EXTRA) ?: return null
-    val item = task.item
-    Timber.d("Starting caching for ${item.id}: option=${task.options}, chapters=${item.chapters.size}")
+  private fun stopCaching(intent: Intent) {
+    val itemId = intent.getStringExtra(CACHING_ITEM_ID)
+    Timber.d("Stopping caching for $itemId")
 
-    executingCaching[item]?.cancel()
+    itemId?.let { registry.cancel(it) }
+
+    lifecycleScope.launch {
+      itemId?.let { cacheProgressBus.emit(it, CacheState(status = CacheStatus.Idle)) }
+
+      if (registry.inProgress().not()) {
+        finish()
+      }
+    }
+  }
+
+  private fun cacheItem(intent: Intent) {
+    val task = intent.getSerializableExtraCompat<ContentCachingTask>(CACHING_TASK_EXTRA)
+
+    if (task == null) {
+      Timber.w("Received caching intent without a task, stopping")
+
+      if (registry.inProgress().not()) {
+        finish()
+      }
+      return
+    }
+
+    Timber.d("Starting caching for ${task.itemId}: option=${task.options}")
 
     val job =
       lifecycleScope.launch {
-        val executor =
-          ContentCachingExecutor(
-            item = item,
-            options = task.options,
-            position = task.currentPosition,
-            contentCachingManager = contentCachingManager,
+        mediaProvider
+          .fetchBook(task.itemId)
+          .foldAsync(
+            onSuccess = { item -> cacheFetchedItem(item, task) },
+            onFailure = {
+              Timber.e("Unable to fetch book ${task.itemId} for caching: ${it.code}")
+              registry.settle(task.itemId)
+              cacheProgressBus.emit(task.itemId, CacheState(CacheStatus.Error))
+
+              if (registry.inProgress().not()) {
+                finish(errored = true)
+              }
+            },
           )
-
-        when {
-          Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
-            startForeground(
-              NOTIFICATION_ID,
-              notificationService.updateCachingNotification(emptyList()),
-              ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
-            )
-          }
-
-          else -> {
-            startForeground(
-              NOTIFICATION_ID,
-              notificationService.updateCachingNotification(emptyList()),
-            )
-          }
-        }
-
-        executor
-          .run(mediaProvider.providePreferredChannel())
-          .catch { error ->
-            Timber.e(error, "Caching failed for ${item.id}, emitting error state")
-            emit(CacheState(CacheStatus.Error))
-          }.onCompletion {
-            if (executionStatuses.isEmpty()) {
-              finish()
-            }
-          }.collect { progress ->
-            executionStatuses[item] = progress
-            cacheProgressBus.emit(item, progress)
-
-            Timber.d("Caching progress updated: $progress")
-
-            when (inProgress() && hasErrors().not()) {
-              true -> {
-                executionStatuses
-                  .entries
-                  .map { (item, status) -> item to status }
-                  .let { notificationService.updateCachingNotification(it) }
-              }
-
-              false -> {
-                finish()
-              }
-            }
-          }
       }
 
-    return item to job
+    registry.register(task.itemId, job)
+  }
+
+  private suspend fun cacheFetchedItem(
+    item: DetailedItem,
+    task: ContentCachingTask,
+  ) {
+    val executor =
+      ContentCachingExecutor(
+        item = item,
+        options = task.options,
+        position = task.currentPosition,
+        contentCachingManager = contentCachingManager,
+      )
+
+    executor
+      .run(mediaProvider.providePreferredChannel())
+      .catch { error ->
+        Timber.e(error, "Caching failed for ${item.id}, emitting error state")
+        emit(CacheState(CacheStatus.Error))
+      }.onCompletion {
+        registry.settle(item.id)
+
+        if (registry.inProgress().not()) {
+          finish()
+        }
+      }.collect { progress ->
+        registry.updateStatus(item, progress)
+        cacheProgressBus.emit(item.id, progress)
+
+        Timber.d("Caching progress updated: $progress")
+
+        if (registry.inProgress()) {
+          notificationService.updateCachingNotification(registry.notificationItems())
+        }
+      }
   }
 
   override fun onTimeout(startId: Int) {
     finish()
   }
 
-  private fun inProgress(): Boolean = executionStatuses.values.any { it.status == CacheStatus.Caching }
-
-  private fun hasErrors(): Boolean = executionStatuses.values.any { it.status == CacheStatus.Error }
-
-  private fun finish() {
-    when (hasErrors()) {
+  private fun finish(errored: Boolean = registry.hasErrors()) {
+    when (errored) {
       true -> {
         notificationService.updateErrorNotification()
         stopForeground(STOP_FOREGROUND_DETACH)
@@ -165,7 +180,7 @@ class ContentCachingService : LifecycleService() {
     const val STOP_CACHING_ACTION = "STOP_CACHING_ACTION"
 
     const val CACHING_TASK_EXTRA = "CACHING_TASK_EXTRA"
-    const val CACHING_PLAYING_ITEM = "CACHING_PLAYING_ITEM"
+    const val CACHING_ITEM_ID = "CACHING_ITEM_ID"
   }
 }
 

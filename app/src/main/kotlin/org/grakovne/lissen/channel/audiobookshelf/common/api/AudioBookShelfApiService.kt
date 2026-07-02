@@ -4,6 +4,7 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import okhttp3.OkHttpClient
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfHostProvider
 import org.grakovne.lissen.channel.audiobookshelf.Host
 import org.grakovne.lissen.channel.audiobookshelf.common.client.AudiobookshelfApiClient
@@ -12,7 +13,6 @@ import org.grakovne.lissen.channel.common.ApiClient
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.domain.UserAccount
-import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import retrofit2.Response
 import timber.log.Timber
@@ -29,15 +29,10 @@ class AudioBookShelfApiService
     private val requestHeadersProvider: RequestHeadersProvider,
     private val loginResponseConverter: LoginResponseConverter,
   ) {
-    private var cachedHost: Host? = null
-    private var cachedToken: String? = null
-    private var cachedAccessToken: String? = null
-    private var cachedRefreshToken: String? = null
-    private var cachedHeaders: List<ServerRequestHeader> = emptyList()
-    private var cachedBypassSsl: Boolean = false
-    private var cachedClientCertAlias: String? = null
+    private var cachedConfig: ClientConfig? = null
+    private var clientCache: ChannelClients? = null
 
-    private var clientCache: AudiobookshelfApiClient? = null
+    internal var clientFactory: () -> ChannelClients? = ::createClients
 
     private val mutex = Mutex()
 
@@ -101,51 +96,40 @@ class AudioBookShelfApiService
               "Refresh token updated: hasAccessToken=${refreshResult.data.accessToken != null}, hasRefreshToken=${refreshResult.data.refreshToken != null}",
             )
 
-            refreshResult.data.refreshToken?.let {
-              cachedRefreshToken = it
-              preferences.saveRefreshToken(it)
-            }
-            refreshResult.data.accessToken?.let {
-              cachedAccessToken = it
-              preferences.saveAccessToken(it)
-            }
+            refreshResult.data.refreshToken?.let { preferences.saveRefreshToken(it) }
+            refreshResult.data.accessToken?.let { preferences.saveAccessToken(it) }
           }
         }
       }
     }
 
-    private fun getClientInstance(): AudiobookshelfApiClient? {
-      val host = hostProvider.provideHost()
-      val token = preferences.getToken()
-      val accessToken = preferences.getAccessToken()
-      val refreshToken = preferences.getRefreshToken()
-      val headers = requestHeadersProvider.fetchRequestHeaders()
-      val bypassSsl = preferences.getSslBypass()
-      val clientCertAlias = preferences.getClientCertAlias()
+    fun provideHttpClient(): OkHttpClient? = getClients()?.http
 
-      val clientChanged = isClientChanged(host, token, headers, accessToken, bypassSsl, clientCertAlias)
-      val current = clientCache
+    private fun getClientInstance(): AudiobookshelfApiClient? = getClients()?.api
 
-      return when {
-        current == null || clientChanged -> {
-          cachedHost = host
-          cachedToken = token
-          cachedAccessToken = accessToken
-          cachedRefreshToken = refreshToken
-          cachedHeaders = headers
-          cachedBypassSsl = bypassSsl
-          cachedClientCertAlias = clientCertAlias
+    private fun getClients(): ChannelClients? {
+      val config =
+        ClientConfig(
+          host = hostProvider.provideHost(),
+          headers = requestHeadersProvider.fetchRequestHeaders().map { it.name to it.value },
+          bypassSsl = preferences.getSslBypass(),
+          clientCertAlias = preferences.getClientCertAlias(),
+        )
 
-          createClientInstance()?.also { clientCache = it }
-        }
+      synchronized(this) {
+        clientCache
+          ?.takeIf { config == cachedConfig }
+          ?.let { return it }
 
-        else -> {
-          current
-        }
+        return clientFactory()
+          ?.also {
+            clientCache = it
+            cachedConfig = config
+          }
       }
     }
 
-    private fun createClientInstance(): AudiobookshelfApiClient? {
+    private fun createClients(): ChannelClients? {
       val host = hostProvider.provideHost()?.url
       val headers = requestHeadersProvider.fetchRequestHeaders()
 
@@ -161,22 +145,24 @@ class AudioBookShelfApiService
           context = context,
         )
 
-      return client
-        .retrofit
-        ?.create(AudiobookshelfApiClient::class.java)
+      val api =
+        client
+          .retrofit
+          ?.create(AudiobookshelfApiClient::class.java)
+          ?: return null
+
+      return ChannelClients(api = api, http = client.httpClient)
     }
 
-    private fun isClientChanged(
-      host: Host?,
-      token: String?,
-      headers: List<ServerRequestHeader>,
-      accessToken: String?,
-      bypassSsl: Boolean,
-      clientCertAlias: String?,
-    ) = host != cachedHost ||
-      token != cachedToken ||
-      headers != cachedHeaders ||
-      accessToken != cachedAccessToken ||
-      bypassSsl != cachedBypassSsl ||
-      clientCertAlias != cachedClientCertAlias
+    internal data class ClientConfig(
+      val host: Host?,
+      val headers: List<Pair<String, String>>,
+      val bypassSsl: Boolean,
+      val clientCertAlias: String?,
+    )
+
+    internal data class ChannelClients(
+      val api: AudiobookshelfApiClient,
+      val http: OkHttpClient,
+    )
   }

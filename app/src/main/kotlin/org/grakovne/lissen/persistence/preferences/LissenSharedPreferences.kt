@@ -51,6 +51,35 @@ class LissenSharedPreferences
     private val sharedPreferences: SharedPreferences =
       context.getSharedPreferences("secure_prefs", Context.MODE_PRIVATE)
 
+    private val playingItemLock = Any()
+    private val deviceIdLock = Any()
+
+    private val playingItems = CachedValue { readPlayingItems() }
+
+    private val tokenCache = CachedValue { readSecret(KEY_TOKEN) }
+    private val accessTokenCache = CachedValue { readSecret(KEY_ACCESS_TOKEN) }
+    private val refreshTokenCache = CachedValue { readSecret(KEY_REFRESH_TOKEN) }
+
+    private fun readSecret(key: String): String? {
+      val encrypted = sharedPreferences.getString(key, null) ?: return null
+      return decrypt(encrypted)
+    }
+
+    private fun saveSecret(
+      key: String,
+      value: String,
+      cache: CachedValue<String?>,
+    ) {
+      sharedPreferences.edit { putString(key, encrypt(value)) }
+      cache.invalidate()
+    }
+
+    private fun invalidateTokenCaches() {
+      tokenCache.invalidate()
+      accessTokenCache.invalidate()
+      refreshTokenCache.invalidate()
+    }
+
     fun hasCredentials(): Boolean {
       val host = getHost()
       val username = getUsername()
@@ -70,6 +99,7 @@ class LissenSharedPreferences
         remove(KEY_ACCESS_TOKEN)
         remove(KEY_REFRESH_TOKEN)
       }
+      invalidateTokenCaches()
     }
 
     fun clearPreferences() {
@@ -96,6 +126,8 @@ class LissenSharedPreferences
 
         remove(KEY_PLAYING_ITEM)
       }
+      invalidateTokenCaches()
+      playingItems.invalidate()
     }
 
     fun getAutoDownloadDelayed() = sharedPreferences.getBoolean(KEY_AUTO_DOWNLOAD_DELAYED, false)
@@ -144,18 +176,14 @@ class LissenSharedPreferences
 
     fun getHost(): String? = sharedPreferences.getString(KEY_HOST, null)
 
-    fun getDeviceId(): String {
-      val existingDeviceId = sharedPreferences.getString(KEY_DEVICE_ID, null)
-
-      if (existingDeviceId != null) {
-        return existingDeviceId
+    fun getDeviceId(): String =
+      synchronized(deviceIdLock) {
+        sharedPreferences.getString(KEY_DEVICE_ID, null)
+          ?: UUID
+            .randomUUID()
+            .toString()
+            .also { sharedPreferences.edit { putString(KEY_DEVICE_ID, it) } }
       }
-
-      return UUID
-        .randomUUID()
-        .toString()
-        .also { sharedPreferences.edit { putString(KEY_DEVICE_ID, it) } }
-    }
 
     fun getPreferredLibrary(): Library? {
       val id = getPreferredLibraryId() ?: return null
@@ -312,6 +340,7 @@ class LissenSharedPreferences
     val materialYouFlow = asFlow(KEY_MATERIAL_YOU_ENABLED, ::getMaterialYouColors)
 
     val forceCacheFlow = asFlow(CACHE_FORCE_ENABLED, ::isForceCache)
+    val preferredLibraryTypeFlow = asFlow(KEY_PREFERRED_LIBRARY_TYPE) { getPreferredLibrary()?.type ?: LibraryType.UNKNOWN }
     val hideCompletedFlow = asFlow(KEY_HIDE_COMPLETED, ::getHideCompleted)
     val libraryGroupingFlow = asFlow(KEY_LIBRARY_GROUPING, ::getLibraryGrouping)
     val clientCertAliasFlow = asFlow(KEY_CLIENT_CERT_ALIAS, ::getClientCertAlias)
@@ -349,35 +378,17 @@ class LissenSharedPreferences
 
     fun getServerVersion(): String? = sharedPreferences.getString(KEY_SERVER_VERSION, null)
 
-    fun saveToken(token: String) {
-      val encrypted = encrypt(token)
-      sharedPreferences.edit { putString(KEY_TOKEN, encrypted) }
-    }
+    fun saveToken(token: String) = saveSecret(KEY_TOKEN, token, tokenCache)
 
-    fun saveAccessToken(accessToken: String) {
-      val encrypted = encrypt(accessToken)
-      sharedPreferences.edit { putString(KEY_ACCESS_TOKEN, encrypted) }
-    }
+    fun saveAccessToken(accessToken: String) = saveSecret(KEY_ACCESS_TOKEN, accessToken, accessTokenCache)
 
-    fun saveRefreshToken(refreshToken: String) {
-      val encrypted = encrypt(refreshToken)
-      sharedPreferences.edit { putString(KEY_REFRESH_TOKEN, encrypted) }
-    }
+    fun saveRefreshToken(refreshToken: String) = saveSecret(KEY_REFRESH_TOKEN, refreshToken, refreshTokenCache)
 
-    fun getAccessToken(): String? {
-      val encrypted = sharedPreferences.getString(KEY_ACCESS_TOKEN, null) ?: return null
-      return decrypt(encrypted)
-    }
+    fun getAccessToken(): String? = accessTokenCache.get()
 
-    fun getRefreshToken(): String? {
-      val encrypted = sharedPreferences.getString(KEY_REFRESH_TOKEN, null) ?: return null
-      return decrypt(encrypted)
-    }
+    fun getRefreshToken(): String? = refreshTokenCache.get()
 
-    fun getToken(): String? {
-      val encrypted = sharedPreferences.getString(KEY_TOKEN, null) ?: return null
-      return decrypt(encrypted)
-    }
+    fun getToken(): String? = tokenCache.get()
 
     fun savePlayingItem(item: DetailedItem) {
       savePlayingItemInternal(
@@ -399,50 +410,39 @@ class LissenSharedPreferences
       libraryId: String,
       item: DetailedItem?,
     ) {
-      val adapter = moshi.adapter<Map<String, DetailedItem>>(playingItemsType)
+      synchronized(playingItemLock) {
+        val current = playingItems.get().toMutableMap()
 
-      val current =
-        try {
-          sharedPreferences
-            .getString(KEY_PLAYING_ITEM, null)
-            ?.let { adapter.fromJson(it) }
-            ?.toMutableMap()
-            ?: mutableMapOf()
-        } catch (t: Throwable) {
-          Timber.w("Unable to read stored playing items, starting empty due to: ${t.message}")
-          mutableMapOf()
+        if (item == null) {
+          current.remove(libraryId)
+        } else {
+          current[libraryId] = item
         }
 
-      if (item == null) {
-        current.remove(libraryId)
-      } else {
-        current[libraryId] = item
-      }
-
-      try {
-        sharedPreferences.edit { putString(KEY_PLAYING_ITEM, adapter.toJson(current)) }
-      } catch (t: Throwable) {
-        Timber.w("Unable to persist playing item for $libraryId due to: ${t.message}")
+        try {
+          val adapter = moshi.adapter<Map<String, DetailedItem>>(playingItemsType)
+          sharedPreferences.edit { putString(KEY_PLAYING_ITEM, adapter.toJson(current)) }
+          playingItems.set(current)
+        } catch (t: Throwable) {
+          Timber.w("Unable to persist playing item for $libraryId due to: ${t.message}")
+        }
       }
     }
 
+    private fun readPlayingItems(): Map<String, DetailedItem> =
+      try {
+        sharedPreferences
+          .getString(KEY_PLAYING_ITEM, null)
+          ?.let { moshi.adapter<Map<String, DetailedItem>>(playingItemsType).fromJson(it) }
+          ?: emptyMap()
+      } catch (t: Throwable) {
+        Timber.w("Unable to read stored playing items, returning empty due to: ${t.message}")
+        emptyMap()
+      }
+
     fun getPlayingItem(): DetailedItem? {
       val libraryId = getPreferredLibraryId() ?: return null
-
-      val adapter = moshi.adapter<Map<String, DetailedItem>>(playingItemsType)
-
-      val items =
-        try {
-          sharedPreferences
-            .getString(KEY_PLAYING_ITEM, null)
-            ?.let { adapter.fromJson(it) }
-            ?: emptyMap()
-        } catch (t: Throwable) {
-          Timber.w("Unable to read stored playing item, returning empty due to: ${t.message}")
-          emptyMap()
-        }
-
-      return items[libraryId]
+      return playingItems.get()[libraryId]
     }
 
     fun saveSeekTime(seekTime: SeekTime) {
