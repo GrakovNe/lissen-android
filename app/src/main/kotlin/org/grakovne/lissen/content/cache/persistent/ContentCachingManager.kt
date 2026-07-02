@@ -6,8 +6,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import okhttp3.Request
-import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
-import org.grakovne.lissen.channel.common.DownloadClientProvider
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.common.copyTo
 import org.grakovne.lissen.content.cache.common.findRelatedFiles
@@ -35,8 +33,6 @@ class ContentCachingManager
     private val bookRepository: CachedBookRepository,
     private val libraryRepository: CachedLibraryRepository,
     private val properties: OfflineBookStorageProperties,
-    private val requestHeadersProvider: RequestHeadersProvider,
-    private val downloadClientProvider: DownloadClientProvider,
   ) {
     fun cacheMediaItem(
       mediaItem: DetailedItem,
@@ -148,8 +144,12 @@ class ContentCachingManager
       onProgress: suspend (Double) -> Unit,
     ): CacheState =
       withContext(Dispatchers.IO) {
-        val headers = requestHeadersProvider.fetchRequestHeaders()
-        val client = downloadClientProvider.provideClient()
+        val client =
+          channel.provideDownloadClient()
+            ?: run {
+              Timber.e("Unable to cache media content for $bookId: no download client available")
+              return@withContext CacheState(CacheStatus.Error)
+            }
 
         val totalFileSize = files.mapNotNull { it.size }.sum()
         val reportingSizeThreshold = totalFileSize / 100.0
@@ -157,10 +157,7 @@ class ContentCachingManager
 
         files.forEach { file ->
           val uri = channel.provideFileUri(bookId, file.id)
-          val requestBuilder = Request.Builder().url(uri.toString())
-          headers.forEach { requestBuilder.addHeader(it.name, it.value) }
-
-          val request = requestBuilder.build()
+          val request = Request.Builder().url(uri.toString()).build()
           val response =
             try {
               client.newCall(request).execute()

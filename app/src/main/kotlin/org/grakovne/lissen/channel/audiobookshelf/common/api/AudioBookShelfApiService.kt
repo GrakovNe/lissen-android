@@ -4,6 +4,7 @@ import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import okhttp3.OkHttpClient
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfHostProvider
 import org.grakovne.lissen.channel.audiobookshelf.Host
 import org.grakovne.lissen.channel.audiobookshelf.common.client.AudiobookshelfApiClient
@@ -29,9 +30,9 @@ class AudioBookShelfApiService
     private val loginResponseConverter: LoginResponseConverter,
   ) {
     private var cachedConfig: ClientConfig? = null
-    private var clientCache: AudiobookshelfApiClient? = null
+    private var clientCache: ChannelClients? = null
 
-    internal var clientFactory: () -> AudiobookshelfApiClient? = ::createClientInstance
+    internal var clientFactory: () -> ChannelClients? = ::createClients
 
     private val mutex = Mutex()
 
@@ -102,7 +103,11 @@ class AudioBookShelfApiService
       }
     }
 
-    private fun getClientInstance(): AudiobookshelfApiClient? {
+    fun provideHttpClient(): OkHttpClient? = getClients()?.http
+
+    private fun getClientInstance(): AudiobookshelfApiClient? = getClients()?.api
+
+    private fun getClients(): ChannelClients? {
       val config =
         ClientConfig(
           host = hostProvider.provideHost(),
@@ -124,7 +129,7 @@ class AudioBookShelfApiService
       }
     }
 
-    private fun createClientInstance(): AudiobookshelfApiClient? {
+    private fun createClients(): ChannelClients? {
       val host = hostProvider.provideHost()?.url
       val headers = requestHeadersProvider.fetchRequestHeaders()
 
@@ -140,9 +145,13 @@ class AudioBookShelfApiService
           context = context,
         )
 
-      return client
-        .retrofit
-        ?.create(AudiobookshelfApiClient::class.java)
+      val api =
+        client
+          .retrofit
+          ?.create(AudiobookshelfApiClient::class.java)
+          ?: return null
+
+      return ChannelClients(api = api, http = client.httpClient)
     }
 
     internal data class ClientConfig(
@@ -150,5 +159,10 @@ class AudioBookShelfApiService
       val headers: List<Pair<String, String>>,
       val bypassSsl: Boolean,
       val clientCertAlias: String?,
+    )
+
+    internal data class ChannelClients(
+      val api: AudiobookshelfApiClient,
+      val http: OkHttpClient,
     )
   }

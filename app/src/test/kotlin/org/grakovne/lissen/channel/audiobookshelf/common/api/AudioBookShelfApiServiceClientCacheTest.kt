@@ -8,6 +8,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfHostProvider
 import org.grakovne.lissen.channel.audiobookshelf.Host
 import org.grakovne.lissen.channel.audiobookshelf.common.client.AudiobookshelfApiClient
@@ -16,6 +17,7 @@ import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -54,7 +56,10 @@ class AudioBookShelfApiServiceClientCacheTest {
 
     service.clientFactory = {
       factoryCalls.incrementAndGet()
-      mockk<AudiobookshelfApiClient>()
+      AudioBookShelfApiService.ChannelClients(
+        api = mockk<AudiobookshelfApiClient>(),
+        http = OkHttpClient(),
+      )
     }
   }
 
@@ -90,6 +95,18 @@ class AudioBookShelfApiServiceClientCacheTest {
       makeSuccessfulRequest()
 
       assertEquals(2, factoryCalls.get())
+    }
+
+  @Test
+  fun `download client shares the cached api client instead of building its own`() =
+    runTest {
+      makeSuccessfulRequest()
+      val downloadClient = service.provideHttpClient()
+
+      makeSuccessfulRequest()
+
+      assertSame(downloadClient, service.provideHttpClient())
+      assertEquals(1, factoryCalls.get())
     }
 
   @Test

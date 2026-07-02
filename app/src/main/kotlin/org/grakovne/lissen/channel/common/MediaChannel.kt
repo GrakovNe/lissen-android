@@ -1,6 +1,7 @@
 package org.grakovne.lissen.channel.common
 
 import android.net.Uri
+import okhttp3.OkHttpClient
 import okio.Buffer
 import org.grakovne.lissen.channel.audiobookshelf.Host
 import org.grakovne.lissen.common.LibraryGrouping
@@ -24,6 +25,8 @@ interface MediaChannel {
     libraryItemId: String,
     fileId: String,
   ): Uri
+
+  fun provideDownloadClient(): OkHttpClient?
 
   suspend fun syncProgress(
     sessionId: String,
