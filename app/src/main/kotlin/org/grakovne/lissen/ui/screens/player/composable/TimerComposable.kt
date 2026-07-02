@@ -34,6 +34,7 @@ import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.TimerOption
+import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.slider.SleepTimerSlider
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,7 +48,7 @@ fun TimerComposable(
   val view = LocalView.current
   val context = LocalContext.current
 
-  ModalBottomSheet(
+  LissenModalBottomSheet(
     containerColor = colorScheme.background,
     onDismissRequest = onDismissRequest,
     content = {

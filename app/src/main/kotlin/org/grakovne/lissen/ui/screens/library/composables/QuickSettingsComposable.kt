@@ -70,6 +70,7 @@ import org.grakovne.lissen.common.LibraryOrderingDirection.DESCENDING
 import org.grakovne.lissen.common.LibraryOrderingOption
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.LissenToggle
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.CachingModelView
@@ -100,10 +101,10 @@ fun QuickSettingsComposable(
   var groupingExpanded by remember { mutableStateOf(false) }
   var sortExpanded by remember { mutableStateOf(false) }
 
-  ModalBottomSheet(
+  LissenModalBottomSheet(
     containerColor = colorScheme.surface,
+    scrollable = false,
     onDismissRequest = onDismissRequest,
-    sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
   ) {
     Column(
       modifier =

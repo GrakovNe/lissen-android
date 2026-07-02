@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.channel.audiobookshelf.HostType
+import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
@@ -91,7 +92,7 @@ fun ServerInfoComposable(
   }
 
   if (connectionInfoExpanded) {
-    ModalBottomSheet(
+    LissenModalBottomSheet(
       containerColor = MaterialTheme.colorScheme.background,
       onDismissRequest = { connectionInfoExpanded = false },
       content = {

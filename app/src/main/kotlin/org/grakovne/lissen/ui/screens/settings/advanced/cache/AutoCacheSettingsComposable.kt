@@ -44,6 +44,7 @@ import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.NumberItemDownloadOption
 import org.grakovne.lissen.domain.RemainingItemsDownloadOption
 import org.grakovne.lissen.domain.makeId
+import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.slider.CommonSlider
 import org.grakovne.lissen.ui.screens.common.makeText
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItem
@@ -111,7 +112,7 @@ private fun AutoCacheOptionsSheet(
 
   var value by remember { mutableIntStateOf(selectedOption.toSliderValue()) }
 
-  ModalBottomSheet(
+  LissenModalBottomSheet(
     containerColor = colorScheme.background,
     onDismissRequest = onDismissRequest,
     content = {

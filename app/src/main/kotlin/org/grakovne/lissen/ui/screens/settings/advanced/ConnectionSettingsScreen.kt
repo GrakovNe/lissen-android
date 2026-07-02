@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.channel.common.DEFAULT_USER_AGENT
+import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.settings.composable.DisconnectServerComposable
 import org.grakovne.lissen.ui.screens.settings.composable.ServerInfoComposable
@@ -159,7 +160,7 @@ private fun UserAgentBottomSheet(
 ) {
   var text by remember { mutableStateOf(initialValue) }
 
-  ModalBottomSheet(
+  LissenModalBottomSheet(
     containerColor = colorScheme.background,
     onDismissRequest = onDismiss,
     content = {
