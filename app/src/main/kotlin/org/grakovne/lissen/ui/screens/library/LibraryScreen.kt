@@ -68,7 +68,6 @@ import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.RecentBook
-import org.grakovne.lissen.domain.stableKey
 import org.grakovne.lissen.ui.components.withScrollbar
 import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.ui.navigation.AppNavigationService
@@ -516,10 +515,7 @@ fun LibraryScreen(
             }
 
             else -> {
-              items(
-                count = library.itemCount,
-                key = { index -> library.peek(index)?.stableKey() ?: "library_item_$index" },
-              ) {
+              items(count = library.itemCount, key = { "library_item_$it" }) {
                 when (val entry = library[it] ?: return@items) {
                   is LibraryEntry.BookEntry -> {
                     BookComposable(

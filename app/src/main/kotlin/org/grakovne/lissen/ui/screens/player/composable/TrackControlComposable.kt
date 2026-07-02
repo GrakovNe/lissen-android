@@ -36,7 +36,6 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.common.withHaptic
-import org.grakovne.lissen.playback.PendingSeekTracker
 import org.grakovne.lissen.ui.extensions.formatTime
 import org.grakovne.lissen.ui.screens.player.composable.common.provideForwardIcon
 import org.grakovne.lissen.ui.screens.player.composable.common.provideReplayIcon
@@ -63,12 +62,10 @@ fun TrackControlComposable(
 
   var sliderPosition by remember { mutableDoubleStateOf(0.0) }
   var isDragging by remember { mutableStateOf(false) }
-  val seekTracker = remember { PendingSeekTracker() }
 
   LaunchedEffect(currentTrackPosition, currentTrackIndex, currentTrackDuration) {
     if (!isDragging) {
-      seekTracker.onPositionUpdate(currentTrackPosition)
-      sliderPosition = seekTracker.baseFor(currentTrackPosition)
+      sliderPosition = currentTrackPosition
     }
   }
 
@@ -90,7 +87,6 @@ fun TrackControlComposable(
         },
         onValueChangeFinished = {
           isDragging = false
-          seekTracker.onSeekRequested(sliderPosition)
           viewModel.seekTo(sliderPosition)
         },
         valueRange = 0f..currentTrackDuration.toFloat(),

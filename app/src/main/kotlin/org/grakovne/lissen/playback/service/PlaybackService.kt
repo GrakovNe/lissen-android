@@ -71,12 +71,6 @@ class PlaybackService : MediaLibraryService() {
             book?.let { launch { preparePlayback(it) } }
           }
 
-          is PlaybackCommand.SeekTo -> {
-            Timber.d("Command received: SEEK_TO position=${command.position}")
-            val book = sharedPreferences.getPlayingItem()
-            book?.let { seek(it.chapters, command.position) }
-          }
-
           is PlaybackCommand.SetTimer -> {
             Timber.d("Command received: SET_TIMER delay=${command.delay}")
             setTimer(command.delay, command.option)
@@ -165,45 +159,6 @@ class PlaybackService : MediaLibraryService() {
   private fun cancelTimer() {
     playbackTimer.stopTimer()
     Timber.d("Timer canceled.")
-  }
-
-  private fun seek(
-    items: List<PlayingChapter>,
-    position: Double?,
-  ) {
-    if (items.isEmpty()) {
-      Timber.w("Tried to seek position $position in the empty book. Skipping")
-      return
-    }
-
-    when (position) {
-      null -> {
-        exoPlayer.seekTo(0, 0)
-      }
-
-      else -> {
-        val positionMs = (position * 1000).toLong()
-
-        val durationsMs = items.map { (it.duration * 1000).toLong() }
-        val cumulativeDurationsMs = durationsMs.runningFold(0L) { acc, duration -> acc + duration }
-
-        val targetChapterIndex = cumulativeDurationsMs.indexOfFirst { it > positionMs }
-
-        when (targetChapterIndex - 1 >= 0) {
-          true -> {
-            val chapterStartTimeMs = cumulativeDurationsMs[targetChapterIndex - 1]
-            val chapterProgressMs = positionMs - chapterStartTimeMs
-            exoPlayer.seekTo(targetChapterIndex - 1, chapterProgressMs)
-          }
-
-          false -> {
-            val lastChapterIndex = items.size - 1
-            val lastChapterDurationMs = durationsMs.last()
-            exoPlayer.seekTo(lastChapterIndex, lastChapterDurationMs)
-          }
-        }
-      }
-    }
   }
 
   companion object {

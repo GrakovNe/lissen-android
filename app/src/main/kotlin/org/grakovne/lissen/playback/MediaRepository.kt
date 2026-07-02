@@ -101,7 +101,6 @@ class MediaRepository
     val bookmarks: StateFlow<List<Bookmark>> = _bookmarks.asStateFlow()
 
     private val handler = Handler(Looper.getMainLooper())
-    private val pendingSeekTracker = PendingSeekTracker()
 
     private val progressPoller =
       ProgressPoller(
@@ -245,11 +244,11 @@ class MediaRepository
     }
 
     fun rewind() {
-      seekTo(pendingSeekTracker.baseFor(totalPosition.value) - getSeekTime(preferences.getSeekTime().rewind))
+      seekTo(totalPosition.value - getSeekTime(preferences.getSeekTime().rewind))
     }
 
     fun forward() {
-      seekTo(pendingSeekTracker.baseFor(totalPosition.value) + getSeekTime(preferences.getSeekTime().forward))
+      seekTo(totalPosition.value + getSeekTime(preferences.getSeekTime().forward))
     }
 
     fun setChapter(index: Int) {
@@ -370,7 +369,7 @@ class MediaRepository
 
     fun nextTrack() {
       val book = playingBook.value ?: return
-      val overallPosition = pendingSeekTracker.baseFor(totalPosition.value)
+      val overallPosition = totalPosition.value
       val currentIndex = calculateChapterIndex(book, overallPosition)
       Timber.d("Next track: bookId=${book.id}, currentChapter=$currentIndex -> ${currentIndex + 1}")
 
@@ -380,7 +379,7 @@ class MediaRepository
 
     fun previousTrack(rewindRequired: Boolean = true) {
       val book = playingBook.value ?: return
-      val overallPosition = pendingSeekTracker.baseFor(totalPosition.value)
+      val overallPosition = totalPosition.value
 
       val (currentIndex, chapterPosition) = calculateChapterIndexAndPosition(book, overallPosition)
       Timber.d("Previous track: bookId=${book.id}, currentChapter=$currentIndex, chapterPosition=${chapterPosition.toInt()}s")
@@ -438,7 +437,6 @@ class MediaRepository
 
         val newPosition = accumulated + currentFilePosition
         _totalPosition.value = newPosition
-        pendingSeekTracker.onPositionUpdate(newPosition)
         updateCurrentTrackData()
       }
 
@@ -501,8 +499,15 @@ class MediaRepository
           }
       }
 
-      pendingSeekTracker.onSeekRequested(safePosition)
-      eventBus.send(PlaybackCommand.SeekTo(safePosition))
+      val (chapterIndex, chapterPosition) = calculateChapterIndexAndPosition(book, safePosition)
+
+      withMain {
+        if (::mediaController.isInitialized) {
+          mediaController.seekTo(chapterIndex, (chapterPosition * 1000).toLong())
+          _playingBook.value?.let { updateProgress(it) }
+        }
+      }
+
       adjustTimer(safePosition)
     }
 

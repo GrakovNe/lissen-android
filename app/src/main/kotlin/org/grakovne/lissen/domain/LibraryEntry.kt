@@ -26,13 +26,6 @@ sealed interface LibraryEntry {
   ) : LibraryEntry
 }
 
-fun LibraryEntry.stableKey(): String =
-  when (this) {
-    is LibraryEntry.BookEntry -> "book_${book.id}"
-    is LibraryEntry.SeriesEntry -> "series_$id"
-    is LibraryEntry.AuthorEntry -> "author_$id"
-  }
-
 fun PagedItems<Book>.asLibraryEntries(): PagedItems<LibraryEntry> =
   PagedItems(
     items = items.map { LibraryEntry.BookEntry(it) },

@@ -43,10 +43,6 @@ sealed class PlaybackEvent {
 sealed class PlaybackCommand {
   data object PreparePlayback : PlaybackCommand()
 
-  data class SeekTo(
-    val position: Double,
-  ) : PlaybackCommand()
-
   data class SetTimer(
     val delay: Double,
     val option: TimerOption,

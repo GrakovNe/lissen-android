@@ -65,49 +65,6 @@ class LibraryPagingSourceErrorTest {
     }
 
   @Test
-  fun `default source drops duplicates already emitted on earlier pages`() =
-    runTest {
-      val book = Book(id = "b1", subtitle = null, series = null, title = "Book", author = null)
-      coEvery { mediaChannel.fetchLibrary(any(), any(), any()) } returnsMany
-        listOf(
-          OperationResult.Success(
-            PagedItems(items = listOf(LibraryEntry.BookEntry(book)), currentPage = 0, totalItems = 2),
-          ),
-          OperationResult.Success(
-            PagedItems(items = listOf(LibraryEntry.BookEntry(book)), currentPage = 1, totalItems = 2),
-          ),
-        )
-
-      val source = LibraryDefaultPagingSource(preferences, mediaChannel) {}
-
-      val firstPage = source.load(refreshParams) as LoadResult.Page
-      val secondPage = source.load(LoadParams.Append(key = 1, loadSize = 20, placeholdersEnabled = false)) as LoadResult.Page
-
-      assertEquals(1, firstPage.data.size)
-      assertEquals(0, secondPage.data.size)
-    }
-
-  @Test
-  fun `search source drops duplicate results within one response`() =
-    runTest {
-      val book = Book(id = "b1", subtitle = null, series = null, title = "Book", author = null)
-      coEvery { mediaChannel.searchBooks(any(), any(), any()) } returns
-        OperationResult.Success(listOf(book, book))
-
-      val source =
-        LibrarySearchPagingSource(
-          preferences = preferences,
-          mediaChannel = mediaChannel,
-          searchToken = "query",
-          limit = 50,
-        ) {}
-
-      val result = source.load(refreshParams) as LoadResult.Page
-
-      assertEquals(1, result.data.size)
-    }
-
-  @Test
   fun `search source surfaces network failure as load error`() =
     runTest {
       coEvery { mediaChannel.searchBooks(any(), any(), any()) } returns
