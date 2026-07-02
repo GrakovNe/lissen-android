@@ -332,6 +332,7 @@ class LissenSharedPreferences
     val materialYouFlow = asFlow(KEY_MATERIAL_YOU_ENABLED, ::getMaterialYouColors)
 
     val forceCacheFlow = asFlow(CACHE_FORCE_ENABLED, ::isForceCache)
+    val preferredLibraryTypeFlow = asFlow(KEY_PREFERRED_LIBRARY_TYPE) { getPreferredLibrary()?.type ?: LibraryType.UNKNOWN }
     val hideCompletedFlow = asFlow(KEY_HIDE_COMPLETED, ::getHideCompleted)
     val libraryGroupingFlow = asFlow(KEY_LIBRARY_GROUPING, ::getLibraryGrouping)
     val clientCertAliasFlow = asFlow(KEY_CLIENT_CERT_ALIAS, ::getClientCertAlias)

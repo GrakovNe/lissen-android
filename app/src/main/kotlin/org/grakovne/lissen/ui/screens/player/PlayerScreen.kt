@@ -102,7 +102,7 @@ fun PlayerScreen(
   var itemDetailsSelected by remember { mutableStateOf(false) }
   var bookmarksSelected by remember { mutableStateOf(false) }
 
-  val libraryType = remember { libraryViewModel.fetchPreferredLibraryType() }
+  val libraryType by libraryViewModel.preferredLibraryType.collectAsState()
 
   val screenTitle =
     when (playingQueueExpanded) {

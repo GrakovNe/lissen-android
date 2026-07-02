@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 internal class FakeSharedPreferences : SharedPreferences {
   private val values = HashMap<String, Any?>()
   private val stringReads = HashMap<String, Int>()
+  private val listeners = mutableSetOf<SharedPreferences.OnSharedPreferenceChangeListener>()
 
   @Synchronized
   fun readsOf(key: String): Int = stringReads[key] ?: 0
@@ -57,21 +58,38 @@ internal class FakeSharedPreferences : SharedPreferences {
 
   override fun edit(): SharedPreferences.Editor = FakeEditor()
 
-  override fun registerOnSharedPreferenceChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener?) = Unit
-
-  override fun unregisterOnSharedPreferenceChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener?) = Unit
+  @Synchronized
+  override fun registerOnSharedPreferenceChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener?) {
+    listener?.let { listeners.add(it) }
+  }
 
   @Synchronized
+  override fun unregisterOnSharedPreferenceChangeListener(listener: SharedPreferences.OnSharedPreferenceChangeListener?) {
+    listener?.let { listeners.remove(it) }
+  }
+
   private fun applyChanges(
     changes: Map<String, Any?>,
     removals: Set<String>,
     clearRequested: Boolean,
   ) {
-    if (clearRequested) {
-      values.clear()
+    val changedKeys: List<String>
+    val notified: List<SharedPreferences.OnSharedPreferenceChangeListener>
+
+    synchronized(this) {
+      if (clearRequested) {
+        values.clear()
+      }
+      removals.forEach { values.remove(it) }
+      changes.forEach { (key, value) -> values[key] = value }
+
+      changedKeys = (removals + changes.keys).toList()
+      notified = listeners.toList()
     }
-    removals.forEach { values.remove(it) }
-    changes.forEach { (key, value) -> values[key] = value }
+
+    changedKeys.forEach { key ->
+      notified.forEach { it.onSharedPreferenceChanged(this, key) }
+    }
   }
 
   private inner class FakeEditor : SharedPreferences.Editor {

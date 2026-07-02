@@ -102,7 +102,7 @@ class ContentCachingService : LifecycleService() {
               cacheProgressBus.emit(task.itemId, CacheState(CacheStatus.Error))
 
               if (registry.inProgress().not()) {
-                finish()
+                finish(errored = true)
               }
             },
           )
@@ -149,10 +149,8 @@ class ContentCachingService : LifecycleService() {
     finish()
   }
 
-  private fun hasErrors(): Boolean = registry.hasErrors()
-
-  private fun finish() {
-    when (hasErrors()) {
+  private fun finish(errored: Boolean = registry.hasErrors()) {
+    when (errored) {
       true -> {
         notificationService.updateErrorNotification()
         stopForeground(STOP_FOREGROUND_DETACH)
