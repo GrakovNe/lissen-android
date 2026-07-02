@@ -67,6 +67,35 @@ class CachingSessionRegistryTest {
   }
 
   @Test
+  fun `registered download counts as in progress before its first status update`() {
+    val registry = CachingSessionRegistry()
+
+    registry.register("book-1", Job())
+
+    assertTrue(registry.inProgress())
+  }
+
+  @Test
+  fun `settling a registration without status leaves nothing in progress`() {
+    val registry = CachingSessionRegistry()
+
+    registry.register("book-1", Job())
+    registry.settle("book-1")
+
+    assertFalse(registry.inProgress())
+  }
+
+  @Test
+  fun `first status update replaces the pending registration`() {
+    val registry = CachingSessionRegistry()
+
+    registry.register("book-1", Job())
+    registry.updateStatus(item(id = "book-1"), CacheState(CacheStatus.Completed))
+
+    assertFalse(registry.inProgress())
+  }
+
+  @Test
   fun `error of one item keeps the other download in progress`() {
     val registry = CachingSessionRegistry()
 

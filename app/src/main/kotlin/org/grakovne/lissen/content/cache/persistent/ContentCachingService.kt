@@ -27,9 +27,6 @@ class ContentCachingService : LifecycleService() {
   lateinit var mediaProvider: LissenMediaProvider
 
   @Inject
-  lateinit var localCacheRepository: LocalCacheRepository
-
-  @Inject
   lateinit var cacheProgressBus: ContentCachingProgress
 
   @Inject
@@ -88,7 +85,17 @@ class ContentCachingService : LifecycleService() {
   }
 
   private fun cacheItem(intent: Intent) {
-    val task = intent.getSerializableExtraCompat<ContentCachingTask>(CACHING_TASK_EXTRA) ?: return
+    val task = intent.getSerializableExtraCompat<ContentCachingTask>(CACHING_TASK_EXTRA)
+
+    if (task == null) {
+      Timber.w("Received caching intent without a task, stopping")
+
+      if (registry.inProgress().not()) {
+        finish()
+      }
+      return
+    }
+
     Timber.d("Starting caching for ${task.itemId}: option=${task.options}")
 
     val job =
@@ -99,6 +106,7 @@ class ContentCachingService : LifecycleService() {
             onSuccess = { item -> cacheFetchedItem(item, task) },
             onFailure = {
               Timber.e("Unable to fetch book ${task.itemId} for caching: ${it.code}")
+              registry.settle(task.itemId)
               cacheProgressBus.emit(task.itemId, CacheState(CacheStatus.Error))
 
               if (registry.inProgress().not()) {
@@ -129,7 +137,9 @@ class ContentCachingService : LifecycleService() {
         Timber.e(error, "Caching failed for ${item.id}, emitting error state")
         emit(CacheState(CacheStatus.Error))
       }.onCompletion {
-        if (registry.notificationItems().isEmpty()) {
+        registry.settle(item.id)
+
+        if (registry.inProgress().not()) {
           finish()
         }
       }.collect { progress ->
@@ -138,9 +148,8 @@ class ContentCachingService : LifecycleService() {
 
         Timber.d("Caching progress updated: $progress")
 
-        when (registry.inProgress()) {
-          true -> notificationService.updateCachingNotification(registry.notificationItems())
-          false -> finish()
+        if (registry.inProgress()) {
+          notificationService.updateCachingNotification(registry.notificationItems())
         }
       }
   }

@@ -2,6 +2,7 @@ package org.grakovne.lissen.ui.screens.library
 
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.LibraryEntry
+import org.grakovne.lissen.domain.stableKey
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue

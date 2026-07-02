@@ -228,7 +228,7 @@ class LibraryViewModel
     val preferredLibraryType: StateFlow<LibraryType> =
       preferences
         .preferredLibraryTypeFlow
-        .stateIn(viewModelScope, SharingStarted.Lazily, fetchPreferredLibraryType())
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), fetchPreferredLibraryType())
 
     fun fetchPreferredLibraryType() =
       preferences

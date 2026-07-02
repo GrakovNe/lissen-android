@@ -68,6 +68,7 @@ import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.RecentBook
+import org.grakovne.lissen.domain.stableKey
 import org.grakovne.lissen.ui.components.withScrollbar
 import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.ui.navigation.AppNavigationService
@@ -625,10 +626,3 @@ internal fun shouldShowRecent(
   networkAvailable: Boolean,
   forceCache: Boolean,
 ): Boolean = searchRequested.not() && hasRecentBooks && (networkAvailable || forceCache)
-
-internal fun LibraryEntry.stableKey(): String =
-  when (this) {
-    is LibraryEntry.BookEntry -> "book_${book.id}"
-    is LibraryEntry.SeriesEntry -> "series_$id"
-    is LibraryEntry.AuthorEntry -> "author_$id"
-  }

@@ -5,6 +5,7 @@ import org.grakovne.lissen.common.LibraryPagingException
 import org.grakovne.lissen.common.LibraryPagingSource
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.LibraryEntry
+import org.grakovne.lissen.domain.stableKey
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 
 class LibrarySearchPagingSource(
@@ -32,7 +33,11 @@ class LibrarySearchPagingSource(
       .fold(
         onSuccess = { books ->
           onTotalCountChanged.invoke(books.size)
-          LoadResult.Page(books.map { LibraryEntry.BookEntry(it) }, null, null)
+          val entries =
+            books
+              .map { LibraryEntry.BookEntry(it) }
+              .distinctBy { it.stableKey() }
+          LoadResult.Page(entries, null, null)
         },
         onFailure = { LoadResult.Error(LibraryPagingException(it.code, it.message)) },
       )

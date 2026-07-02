@@ -5,13 +5,17 @@ import org.grakovne.lissen.common.LibraryPagingException
 import org.grakovne.lissen.common.LibraryPagingSource
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.LibraryEntry
+import org.grakovne.lissen.domain.stableKey
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import java.util.concurrent.ConcurrentHashMap
 
 class LibraryDefaultPagingSource(
   private val preferences: LissenSharedPreferences,
   private val mediaChannel: LissenMediaProvider,
   onTotalCountChanged: (Int) -> Unit,
 ) : LibraryPagingSource<LibraryEntry>(onTotalCountChanged) {
+  private val seenKeys = ConcurrentHashMap.newKeySet<String>()
+
   override fun getRefreshKey(state: PagingState<Int, LibraryEntry>) =
     state
       .anchorPosition
@@ -43,7 +47,7 @@ class LibraryDefaultPagingSource(
           onTotalCountChanged.invoke(result.totalItems)
 
           LoadResult.Page(
-            data = result.items,
+            data = result.items.filter { seenKeys.add(it.stableKey()) },
             prevKey = prevKey,
             nextKey = nextPage,
           )

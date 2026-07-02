@@ -33,6 +33,14 @@ class SafeApiCallTest {
     }
 
   @Test
+  fun `204 no content stays a success for void endpoints`() =
+    runTest {
+      val result = safeApiCall<Unit>(preferences) { Response.success<Unit>(204, null) }
+
+      assertEquals(OperationResult.Success(Unit), result)
+    }
+
+  @Test
   fun `401 maps to unauthorized`() =
     runTest {
       val result = safeApiCall<String>(preferences) { Response.error(401, "".toResponseBody()) }

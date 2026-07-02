@@ -102,7 +102,6 @@ class AudioBookShelfApiService
       }
     }
 
-    @Synchronized
     private fun getClientInstance(): AudiobookshelfApiClient? {
       val config =
         ClientConfig(
@@ -112,15 +111,17 @@ class AudioBookShelfApiService
           clientCertAlias = preferences.getClientCertAlias(),
         )
 
-      clientCache
-        ?.takeIf { config == cachedConfig }
-        ?.let { return it }
+      synchronized(this) {
+        clientCache
+          ?.takeIf { config == cachedConfig }
+          ?.let { return it }
 
-      return clientFactory()
-        ?.also {
-          clientCache = it
-          cachedConfig = config
-        }
+        return clientFactory()
+          ?.also {
+            clientCache = it
+            cachedConfig = config
+          }
+      }
     }
 
     private fun createClientInstance(): AudiobookshelfApiClient? {
