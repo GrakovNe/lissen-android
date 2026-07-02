@@ -12,6 +12,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,6 +34,7 @@ fun LissenModalBottomSheet(
         Column(
           modifier =
             Modifier
+              .testTag("bottomSheetContent")
               .fillMaxWidth()
               .verticalScroll(rememberScrollState()),
           content = content,
@@ -40,7 +42,10 @@ fun LissenModalBottomSheet(
       }
 
       false -> {
-        content()
+        Column(
+          modifier = Modifier.testTag("bottomSheetContent"),
+          content = content,
+        )
       }
     }
   }

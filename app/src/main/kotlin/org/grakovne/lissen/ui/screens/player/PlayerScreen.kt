@@ -126,7 +126,8 @@ fun PlayerScreen(
     when {
       searchRequested -> playerViewModel.dismissSearch()
       playingQueueExpanded -> playerViewModel.collapsePlayingQueue()
-      else -> navController.showLibrary(clearHistory = true)
+      playInstantly -> navController.showLibrary(clearHistory = true)
+      else -> navController.goBack()
     }
   }
 

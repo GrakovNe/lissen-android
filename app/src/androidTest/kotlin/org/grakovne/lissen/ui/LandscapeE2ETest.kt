@@ -10,6 +10,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
@@ -22,6 +23,7 @@ import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.MediaRepository
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.ui.activity.AppActivity
+import org.junit.Assert.assertTrue
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.Test
@@ -29,6 +31,7 @@ import org.junit.rules.ExternalResource
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import javax.inject.Inject
+import kotlin.math.abs
 
 private val bookItemMatcher =
   SemanticsMatcher("hasBookItemTag") { node ->
@@ -161,5 +164,71 @@ class LandscapeE2ETest {
     openFirstBook()
 
     composeRule.onNodeWithTag("playerArtworkPane").assertDoesNotExist()
+  }
+
+  @Test
+  fun landscape_libraryUsesTwoColumnGrid() {
+    rotateToLandscape()
+    login()
+
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = bookItemMatcher,
+      timeoutMillis = TIMEOUT_MS,
+    )
+
+    val first = composeRule.onAllNodes(bookItemMatcher)[0].fetchSemanticsNode().boundsInRoot
+    val second = composeRule.onAllNodes(bookItemMatcher)[1].fetchSemanticsNode().boundsInRoot
+
+    assertTrue("first two items should share a row", abs(first.top - second.top) < 4f)
+    assertTrue("first two items should be in different columns", second.left > first.left)
+  }
+
+  @Test
+  fun portrait_libraryUsesSingleColumn() {
+    login()
+
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = bookItemMatcher,
+      timeoutMillis = TIMEOUT_MS,
+    )
+
+    val first = composeRule.onAllNodes(bookItemMatcher)[0].fetchSemanticsNode().boundsInRoot
+    val second = composeRule.onAllNodes(bookItemMatcher)[1].fetchSemanticsNode().boundsInRoot
+
+    assertTrue("second item should be below the first", second.top > first.top)
+    assertTrue("items should share the same column", abs(first.left - second.left) < 4f)
+  }
+
+  @Test
+  fun landscape_playerArtworkOccupiesLeftPane() {
+    rotateToLandscape()
+    login()
+    openFirstBook()
+
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = hasTestTag("playerArtworkPane"),
+      timeoutMillis = TIMEOUT_MS,
+    )
+
+    val artwork = composeRule.onNodeWithTag("playerArtworkPane").fetchSemanticsNode().boundsInRoot
+    val root = composeRule.onRoot().fetchSemanticsNode().boundsInRoot
+
+    assertTrue("artwork should occupy the left pane, not the full width", artwork.right < root.width * 0.6f)
+  }
+
+  @Test
+  fun landscape_mediaDetailSheetOpens() {
+    rotateToLandscape()
+    login()
+    openFirstBook()
+
+    composeRule.onNodeWithTag("playerInfoButton").performClick()
+
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = hasTestTag("bottomSheetContent"),
+      timeoutMillis = TIMEOUT_MS,
+    )
+
+    composeRule.onNodeWithTag("bottomSheetContent").assertIsDisplayed()
   }
 }
