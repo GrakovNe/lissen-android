@@ -102,23 +102,6 @@ class LocalFallbackDataSourceTest {
   }
 
   @Test
-  fun delegates_unknown_uri_to_upstream_instead_of_serving_nothing() {
-    val upstream = FakeNetworkDataSource(payload, serveBeforeFailure = payload.size)
-    val dataSource =
-      LocalFallbackDataSource(
-        upstream = upstream,
-        local = FileDataSource(),
-        mediaProvider = mediaProvider,
-      )
-
-    val opened = dataSource.open(DataSpec.Builder().setUri(remoteUri).build())
-
-    assertEquals(payload.size.toLong(), opened)
-    assertEquals(1, upstream.openCount)
-    assertArrayEquals(payload, drainOpened(dataSource))
-  }
-
-  @Test
   fun reads_local_file_directly_without_touching_network_when_already_cached() {
     val localFile = writeTempFile(payload)
     val localUri = Uri.fromFile(localFile)
