@@ -426,6 +426,8 @@ fun LibraryScreen(
                 RecentBooksPlaceholderComposable(
                   libraryViewModel = libraryViewModel,
                 )
+
+                Spacer(modifier = Modifier.height(RECENT_SECTION_SPACING))
               }
 
               showRecent -> {
@@ -436,7 +438,7 @@ fun LibraryScreen(
                   libraryViewModel = libraryViewModel,
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(RECENT_SECTION_SPACING))
               }
             }
           }
@@ -619,6 +621,8 @@ fun LibraryScreen(
     )
   }
 }
+
+private val RECENT_SECTION_SPACING = 12.dp
 
 internal fun shouldShowRecent(
   searchRequested: Boolean,
