@@ -10,6 +10,8 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipeUp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
@@ -19,6 +21,8 @@ import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.MediaRepository
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.ui.activity.AppActivity
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.Test
@@ -72,7 +76,7 @@ class PlayerE2ETest {
   @get:Rule(order = 3)
   val composeRule = createAndroidComposeRule<AppActivity>()
 
-  private fun loginAndOpenBook() {
+  private fun login() {
     composeRule.onNodeWithTag("hostInput").performTextInput(DEMO_HOST)
     composeRule.onNodeWithTag("usernameInput").performTextInput(DEMO_USERNAME)
     composeRule.onNodeWithTag("passwordInput").performTextInput(DEMO_PASSWORD)
@@ -87,6 +91,10 @@ class PlayerE2ETest {
       matcher = bookItemMatcher,
       timeoutMillis = TIMEOUT_MS,
     )
+  }
+
+  private fun loginAndOpenBook() {
+    login()
 
     composeRule.onAllNodes(bookItemMatcher)[0].performClick()
 
@@ -95,6 +103,12 @@ class PlayerE2ETest {
       timeoutMillis = TIMEOUT_MS,
     )
   }
+
+  private fun topVisibleBookTag(): String =
+    composeRule
+      .onAllNodes(bookItemMatcher)[0]
+      .fetchSemanticsNode()
+      .config[SemanticsProperties.TestTag]
 
   @Test
   fun player_backButtonNavigatesToLibrary() {
@@ -108,5 +122,46 @@ class PlayerE2ETest {
     )
 
     composeRule.onNodeWithTag("libraryScreen").assertIsDisplayed()
+  }
+
+  @Test
+  fun player_backButtonPreservesLibraryScroll() {
+    login()
+
+    val firstBook = topVisibleBookTag()
+
+    repeat(5) {
+      composeRule.onNodeWithTag("libraryScreen").performTouchInput { swipeUp() }
+      composeRule.waitForIdle()
+    }
+
+    val topBeforeOpening = topVisibleBookTag()
+    assertNotEquals(
+      "the test should have scrolled past the first book",
+      firstBook,
+      topBeforeOpening,
+    )
+
+    composeRule.onAllNodes(bookItemMatcher)[0].performClick()
+
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = hasTestTag("playerScreen"),
+      timeoutMillis = TIMEOUT_MS,
+    )
+
+    composeRule.onNodeWithTag("playerBackButton").performClick()
+
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = hasTestTag("libraryScreen"),
+      timeoutMillis = TIMEOUT_MS,
+    )
+    composeRule.waitForIdle()
+
+    val topAfterReturning = topVisibleBookTag()
+    assertEquals(
+      "library scroll position should be preserved after returning from the player",
+      topBeforeOpening,
+      topAfterReturning,
+    )
   }
 }
