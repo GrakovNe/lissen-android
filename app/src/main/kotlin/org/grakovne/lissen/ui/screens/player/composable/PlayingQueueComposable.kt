@@ -110,6 +110,8 @@ fun PlayingQueueComposable(
 
   val expanded = playingQueueExpanded || forceExpanded
 
+  val showQueueHeader = playingQueueExpanded.not() || forceExpanded
+
   val density = LocalDensity.current
 
   var collapsedPlayingQueueHeight by remember { mutableIntStateOf(0) }
@@ -227,7 +229,7 @@ fun PlayingQueueComposable(
             }
           }.padding(horizontal = 16.dp),
     ) {
-      if (expanded.not()) {
+      if (showQueueHeader) {
         Text(
           text = provideNowPlayingTitle(libraryViewModel.fetchPreferredLibraryType(), context),
           fontSize = fontSize.sp,
