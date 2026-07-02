@@ -244,4 +244,12 @@
         <item quantity="many">%d książek</item>
         <item quantity="other">%d książek</item>
     </plurals>
+    <string name="config_backup_title">Kopia zapasowa</string>
+    <string name="config_backup_description">Eksportuj lub importuj ustawienia aplikacji</string>
+    <string name="export_config_title">Eksportuj konfigurację</string>
+    <string name="export_config_description">Udostępnij ustawienia aplikacji jako plik</string>
+    <string name="export_config_failed_toast">Nie udało się wyeksportować konfiguracji</string>
+    <string name="import_config_title">Importuj konfigurację</string>
+    <string name="import_config_description">Przywróć ustawienia aplikacji z pliku</string>
+    <string name="import_config_failed_toast">Nie udało się zaimportować konfiguracji, plik może być nieprawidłowy</string>
 </resources>
