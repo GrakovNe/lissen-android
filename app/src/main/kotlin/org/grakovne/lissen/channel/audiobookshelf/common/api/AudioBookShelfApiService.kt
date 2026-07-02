@@ -12,7 +12,6 @@ import org.grakovne.lissen.channel.common.ApiClient
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.domain.UserAccount
-import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import retrofit2.Response
 import timber.log.Timber
@@ -29,15 +28,10 @@ class AudioBookShelfApiService
     private val requestHeadersProvider: RequestHeadersProvider,
     private val loginResponseConverter: LoginResponseConverter,
   ) {
-    private var cachedHost: Host? = null
-    private var cachedToken: String? = null
-    private var cachedAccessToken: String? = null
-    private var cachedRefreshToken: String? = null
-    private var cachedHeaders: List<ServerRequestHeader> = emptyList()
-    private var cachedBypassSsl: Boolean = false
-    private var cachedClientCertAlias: String? = null
-
+    private var cachedConfig: ClientConfig? = null
     private var clientCache: AudiobookshelfApiClient? = null
+
+    internal var clientFactory: () -> AudiobookshelfApiClient? = ::createClientInstance
 
     private val mutex = Mutex()
 
@@ -101,48 +95,32 @@ class AudioBookShelfApiService
               "Refresh token updated: hasAccessToken=${refreshResult.data.accessToken != null}, hasRefreshToken=${refreshResult.data.refreshToken != null}",
             )
 
-            refreshResult.data.refreshToken?.let {
-              cachedRefreshToken = it
-              preferences.saveRefreshToken(it)
-            }
-            refreshResult.data.accessToken?.let {
-              cachedAccessToken = it
-              preferences.saveAccessToken(it)
-            }
+            refreshResult.data.refreshToken?.let { preferences.saveRefreshToken(it) }
+            refreshResult.data.accessToken?.let { preferences.saveAccessToken(it) }
           }
         }
       }
     }
 
+    @Synchronized
     private fun getClientInstance(): AudiobookshelfApiClient? {
-      val host = hostProvider.provideHost()
-      val token = preferences.getToken()
-      val accessToken = preferences.getAccessToken()
-      val refreshToken = preferences.getRefreshToken()
-      val headers = requestHeadersProvider.fetchRequestHeaders()
-      val bypassSsl = preferences.getSslBypass()
-      val clientCertAlias = preferences.getClientCertAlias()
+      val config =
+        ClientConfig(
+          host = hostProvider.provideHost(),
+          headers = requestHeadersProvider.fetchRequestHeaders().map { it.name to it.value },
+          bypassSsl = preferences.getSslBypass(),
+          clientCertAlias = preferences.getClientCertAlias(),
+        )
 
-      val clientChanged = isClientChanged(host, token, headers, accessToken, bypassSsl, clientCertAlias)
-      val current = clientCache
+      clientCache
+        ?.takeIf { config == cachedConfig }
+        ?.let { return it }
 
-      return when {
-        current == null || clientChanged -> {
-          cachedHost = host
-          cachedToken = token
-          cachedAccessToken = accessToken
-          cachedRefreshToken = refreshToken
-          cachedHeaders = headers
-          cachedBypassSsl = bypassSsl
-          cachedClientCertAlias = clientCertAlias
-
-          createClientInstance()?.also { clientCache = it }
+      return clientFactory()
+        ?.also {
+          clientCache = it
+          cachedConfig = config
         }
-
-        else -> {
-          current
-        }
-      }
     }
 
     private fun createClientInstance(): AudiobookshelfApiClient? {
@@ -166,17 +144,10 @@ class AudioBookShelfApiService
         ?.create(AudiobookshelfApiClient::class.java)
     }
 
-    private fun isClientChanged(
-      host: Host?,
-      token: String?,
-      headers: List<ServerRequestHeader>,
-      accessToken: String?,
-      bypassSsl: Boolean,
-      clientCertAlias: String?,
-    ) = host != cachedHost ||
-      token != cachedToken ||
-      headers != cachedHeaders ||
-      accessToken != cachedAccessToken ||
-      bypassSsl != cachedBypassSsl ||
-      clientCertAlias != cachedClientCertAlias
+    internal data class ClientConfig(
+      val host: Host?,
+      val headers: List<Pair<String, String>>,
+      val bypassSsl: Boolean,
+      val clientCertAlias: String?,
+    )
   }

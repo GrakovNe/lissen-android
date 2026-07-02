@@ -104,7 +104,7 @@ class ContentAutoCachingService
       if (sharedPreferences.getAutoDownloadDelayed().not() || delayed) {
         val task =
           ContentCachingTask(
-            item = playingMediaItem,
+            itemId = playingMediaItem.id,
             options = playbackCacheOption,
             currentPosition = currentTotalPosition,
           )

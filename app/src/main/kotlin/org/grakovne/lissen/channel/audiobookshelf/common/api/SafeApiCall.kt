@@ -18,10 +18,15 @@ suspend fun <T> safeApiCall(
     val response = apiCall.invoke()
 
     if (response.isSuccessful) {
-      @Suppress("UNCHECKED_CAST")
       return when (val body = response.body()) {
-        null -> OperationResult.Success(Unit as T)
-        else -> OperationResult.Success(body)
+        null -> {
+          Timber.w("Successful response without a body for ${response.raw().request.url.encodedPath}")
+          OperationResult.Error(OperationError.InternalError)
+        }
+
+        else -> {
+          OperationResult.Success(body)
+        }
       }
     }
 

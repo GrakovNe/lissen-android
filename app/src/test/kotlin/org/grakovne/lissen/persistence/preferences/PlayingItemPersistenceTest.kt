@@ -48,6 +48,18 @@ class PlayingItemPersistenceTest {
   private fun preferLibrary(libraryId: String) = preferences.savePreferredLibrary(Library(libraryId, "Library", LibraryType.LIBRARY))
 
   @Test
+  fun `stored playing items are parsed once and then served from memory`() {
+    preferLibrary("lib-1")
+    preferences.savePlayingItem(item(id = "book-1", libraryId = "lib-1"))
+
+    repeat(10) {
+      assertEquals("book-1", preferences.getPlayingItem()?.id)
+    }
+
+    assertEquals(1, fakePreferences.readsOf("playing_item"))
+  }
+
+  @Test
   fun `playing item round-trips per library`() {
     preferLibrary("lib-1")
     preferences.savePlayingItem(item(id = "book-1", libraryId = "lib-1"))
@@ -112,6 +124,10 @@ class PlayingItemPersistenceTest {
 
 private class FakeSharedPreferences : SharedPreferences {
   private val values = HashMap<String, Any?>()
+  private val stringReads = HashMap<String, Int>()
+
+  @Synchronized
+  fun readsOf(key: String): Int = stringReads[key] ?: 0
 
   @Synchronized
   override fun getAll(): MutableMap<String, *> = HashMap(values)
@@ -120,7 +136,10 @@ private class FakeSharedPreferences : SharedPreferences {
   override fun getString(
     key: String?,
     defValue: String?,
-  ): String? = values[key] as? String ?: defValue
+  ): String? {
+    key?.let { stringReads[it] = (stringReads[it] ?: 0) + 1 }
+    return values[key] as? String ?: defValue
+  }
 
   @Suppress("UNCHECKED_CAST")
   @Synchronized

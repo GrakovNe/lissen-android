@@ -9,11 +9,11 @@ class CachingSessionRegistry {
   private val statuses = LinkedHashMap<String, Pair<DetailedItem, CacheState>>()
 
   fun register(
-    item: DetailedItem,
+    itemId: String,
     job: Job,
   ) {
-    jobs.remove(item.id)?.cancel()
-    jobs[item.id] = job
+    jobs.remove(itemId)?.cancel()
+    jobs[itemId] = job
   }
 
   fun cancel(itemId: String): Boolean {

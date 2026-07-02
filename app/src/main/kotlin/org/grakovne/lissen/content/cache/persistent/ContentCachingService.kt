@@ -73,13 +73,13 @@ class ContentCachingService : LifecycleService() {
   }
 
   private fun stopCaching(intent: Intent) {
-    val cachingItem = intent.getSerializableExtraCompat<DetailedItem>(CACHING_PLAYING_ITEM)
-    Timber.d("Stopping caching for ${cachingItem?.id}")
+    val itemId = intent.getStringExtra(CACHING_ITEM_ID)
+    Timber.d("Stopping caching for $itemId")
 
-    cachingItem?.let { registry.cancel(it.id) }
+    itemId?.let { registry.cancel(it) }
 
     lifecycleScope.launch {
-      cachingItem?.let { cacheProgressBus.emit(it, CacheState(status = CacheStatus.Idle)) }
+      itemId?.let { cacheProgressBus.emit(it, CacheState(status = CacheStatus.Idle)) }
 
       if (registry.inProgress().not()) {
         finish()
@@ -89,42 +89,60 @@ class ContentCachingService : LifecycleService() {
 
   private fun cacheItem(intent: Intent) {
     val task = intent.getSerializableExtraCompat<ContentCachingTask>(CACHING_TASK_EXTRA) ?: return
-    val item = task.item
-    Timber.d("Starting caching for ${item.id}: option=${task.options}, chapters=${item.chapters.size}")
+    Timber.d("Starting caching for ${task.itemId}: option=${task.options}")
 
     val job =
       lifecycleScope.launch {
-        val executor =
-          ContentCachingExecutor(
-            item = item,
-            options = task.options,
-            position = task.currentPosition,
-            contentCachingManager = contentCachingManager,
+        mediaProvider
+          .fetchBook(task.itemId)
+          .foldAsync(
+            onSuccess = { item -> cacheFetchedItem(item, task) },
+            onFailure = {
+              Timber.e("Unable to fetch book ${task.itemId} for caching: ${it.code}")
+              cacheProgressBus.emit(task.itemId, CacheState(CacheStatus.Error))
+
+              if (registry.inProgress().not()) {
+                finish()
+              }
+            },
           )
-
-        executor
-          .run(mediaProvider.providePreferredChannel())
-          .catch { error ->
-            Timber.e(error, "Caching failed for ${item.id}, emitting error state")
-            emit(CacheState(CacheStatus.Error))
-          }.onCompletion {
-            if (registry.notificationItems().isEmpty()) {
-              finish()
-            }
-          }.collect { progress ->
-            registry.updateStatus(item, progress)
-            cacheProgressBus.emit(item, progress)
-
-            Timber.d("Caching progress updated: $progress")
-
-            when (registry.inProgress()) {
-              true -> notificationService.updateCachingNotification(registry.notificationItems())
-              false -> finish()
-            }
-          }
       }
 
-    registry.register(item, job)
+    registry.register(task.itemId, job)
+  }
+
+  private suspend fun cacheFetchedItem(
+    item: DetailedItem,
+    task: ContentCachingTask,
+  ) {
+    val executor =
+      ContentCachingExecutor(
+        item = item,
+        options = task.options,
+        position = task.currentPosition,
+        contentCachingManager = contentCachingManager,
+      )
+
+    executor
+      .run(mediaProvider.providePreferredChannel())
+      .catch { error ->
+        Timber.e(error, "Caching failed for ${item.id}, emitting error state")
+        emit(CacheState(CacheStatus.Error))
+      }.onCompletion {
+        if (registry.notificationItems().isEmpty()) {
+          finish()
+        }
+      }.collect { progress ->
+        registry.updateStatus(item, progress)
+        cacheProgressBus.emit(item.id, progress)
+
+        Timber.d("Caching progress updated: $progress")
+
+        when (registry.inProgress()) {
+          true -> notificationService.updateCachingNotification(registry.notificationItems())
+          false -> finish()
+        }
+      }
   }
 
   override fun onTimeout(startId: Int) {
@@ -155,7 +173,7 @@ class ContentCachingService : LifecycleService() {
     const val STOP_CACHING_ACTION = "STOP_CACHING_ACTION"
 
     const val CACHING_TASK_EXTRA = "CACHING_TASK_EXTRA"
-    const val CACHING_PLAYING_ITEM = "CACHING_PLAYING_ITEM"
+    const val CACHING_ITEM_ID = "CACHING_ITEM_ID"
   }
 }
 

@@ -10,7 +10,6 @@ import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.content.LissenMediaProvider
@@ -37,7 +36,7 @@ class PlaybackSynchronizationService
     private var playbackSession: PlaybackSession? = null
     private val serviceScope = MainScope()
     private var syncJob: Job? = null
-    private val syncMutex = Mutex()
+    private val syncRunner = CoalescingRunner<PlaybackProgress>()
 
     init {
       exoPlayer.addListener(
@@ -101,35 +100,37 @@ class PlaybackSynchronizationService
       }
 
       withContext(Dispatchers.IO) {
-        if (syncMutex.tryLock().not()) {
-          Timber.d("Sync is already running")
-          return@withContext
-        }
-
-        try {
-          val currentIndex = calculateChapterIndex(currentItem, overallProgress.currentTotalTime)
-
-          if (playbackSession == null ||
-            playbackSession?.itemId != currentItem.id ||
-            currentIndex != currentChapterIndex ||
-            playbackSession?.sessionSource == PlaybackSessionSource.LOCAL
-          ) {
-            openPlaybackSession(overallProgress)
-            currentChapterIndex = currentIndex
+        syncRunner.submit(overallProgress) { progress ->
+          try {
+            performSync(currentItem, progress)
+          } catch (e: Exception) {
+            Timber.e(e, "Error during sync")
           }
-
-          playbackSession?.let {
-            requestSync(
-              item = currentItem,
-              it = it,
-              overallProgress = overallProgress,
-            )
-          }
-        } catch (e: Exception) {
-          Timber.e(e, "Error during sync")
-        } finally {
-          syncMutex.unlock()
         }
+      }
+    }
+
+    private suspend fun performSync(
+      currentItem: DetailedItem,
+      overallProgress: PlaybackProgress,
+    ) {
+      val currentIndex = calculateChapterIndex(currentItem, overallProgress.currentTotalTime)
+
+      if (playbackSession == null ||
+        playbackSession?.itemId != currentItem.id ||
+        currentIndex != currentChapterIndex ||
+        playbackSession?.sessionSource == PlaybackSessionSource.LOCAL
+      ) {
+        openPlaybackSession(overallProgress)
+        currentChapterIndex = currentIndex
+      }
+
+      playbackSession?.let {
+        requestSync(
+          item = currentItem,
+          it = it,
+          overallProgress = overallProgress,
+        )
       }
     }
 

@@ -37,7 +37,8 @@ class CachingSessionRegistryTest {
     val registry = CachingSessionRegistry()
     val job = Job()
 
-    registry.register(item(progress = MediaProgress(currentTime = 10.0, isFinished = false, lastUpdate = 1L)), job)
+    val cachingSnapshot = item(progress = MediaProgress(currentTime = 10.0, isFinished = false, lastUpdate = 1L))
+    registry.register(cachingSnapshot.id, job)
 
     val staleSnapshot = item(progress = MediaProgress(currentTime = 99.0, isFinished = false, lastUpdate = 2L))
 
@@ -58,8 +59,8 @@ class CachingSessionRegistryTest {
     val first = Job()
     val second = Job()
 
-    registry.register(item(), first)
-    registry.register(item(), second)
+    registry.register(item().id, first)
+    registry.register(item().id, second)
 
     assertTrue(first.isCancelled)
     assertFalse(second.isCancelled)
@@ -91,7 +92,7 @@ class CachingSessionRegistryTest {
     val registry = CachingSessionRegistry()
     val cached = item()
 
-    registry.register(cached, Job())
+    registry.register(cached.id, Job())
     registry.updateStatus(cached, CacheState(CacheStatus.Caching))
     registry.cancel(cached.id)
 

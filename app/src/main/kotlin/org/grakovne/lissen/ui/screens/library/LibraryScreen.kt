@@ -213,12 +213,12 @@ fun LibraryScreen(
   val playingBook by playerViewModel.book.collectAsState()
   val context = LocalContext.current
 
-  fun isRecentVisible(): Boolean {
-    val fetchAvailable = networkService.isNetworkAvailable() || cachingModelView.localCacheUsing()
-    val hasContent = recentBooks.isEmpty().not()
-
-    return searchRequested.not() && hasContent && fetchAvailable
-  }
+  val networkAvailable by networkService.networkAvailableFlow.collectAsState(
+    initial = networkService.isNetworkAvailable(),
+  )
+  val forceCache by cachingModelView.forceCache.collectAsState(
+    initial = cachingModelView.localCacheUsing(),
+  )
 
   val showScrollbar by remember {
     derivedStateOf {
@@ -280,7 +280,16 @@ fun LibraryScreen(
   }
 
   val libraryTitle = remember(preferredLibrary) { provideLibraryTitle() }
-  val recentVisible by remember { derivedStateOf { isRecentVisible() } }
+  val recentVisible by remember {
+    derivedStateOf {
+      shouldShowRecent(
+        searchRequested = searchRequested,
+        hasRecentBooks = recentBooks.isNotEmpty(),
+        networkAvailable = networkAvailable,
+        forceCache = forceCache,
+      )
+    }
+  }
 
   val navBarTitle by remember(libraryTitle) {
     derivedStateOf {
@@ -504,7 +513,10 @@ fun LibraryScreen(
             }
 
             else -> {
-              items(count = library.itemCount, key = { "library_item_$it" }) {
+              items(
+                count = library.itemCount,
+                key = { index -> library.peek(index)?.stableKey() ?: "library_item_$index" },
+              ) {
                 when (val entry = library[it] ?: return@items) {
                   is LibraryEntry.BookEntry -> {
                     BookComposable(
@@ -606,3 +618,17 @@ fun LibraryScreen(
     )
   }
 }
+
+internal fun shouldShowRecent(
+  searchRequested: Boolean,
+  hasRecentBooks: Boolean,
+  networkAvailable: Boolean,
+  forceCache: Boolean,
+): Boolean = searchRequested.not() && hasRecentBooks && (networkAvailable || forceCache)
+
+internal fun LibraryEntry.stableKey(): String =
+  when (this) {
+    is LibraryEntry.BookEntry -> "book_${book.id}"
+    is LibraryEntry.SeriesEntry -> "series_$id"
+    is LibraryEntry.AuthorEntry -> "author_$id"
+  }

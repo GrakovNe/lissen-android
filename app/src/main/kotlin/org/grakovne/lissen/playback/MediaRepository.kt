@@ -101,6 +101,7 @@ class MediaRepository
     val bookmarks: StateFlow<List<Bookmark>> = _bookmarks.asStateFlow()
 
     private val handler = Handler(Looper.getMainLooper())
+    private val pendingSeekTracker = PendingSeekTracker()
 
     init {
       val controllerBuilder = MediaController.Builder(context, token)
@@ -216,11 +217,11 @@ class MediaRepository
     }
 
     fun rewind() {
-      seekTo(totalPosition.value - getSeekTime(preferences.getSeekTime().rewind))
+      seekTo(pendingSeekTracker.baseFor(totalPosition.value) - getSeekTime(preferences.getSeekTime().rewind))
     }
 
     fun forward() {
-      seekTo(totalPosition.value + getSeekTime(preferences.getSeekTime().forward))
+      seekTo(pendingSeekTracker.baseFor(totalPosition.value) + getSeekTime(preferences.getSeekTime().forward))
     }
 
     fun setChapter(index: Int) {
@@ -339,7 +340,7 @@ class MediaRepository
 
     fun nextTrack() {
       val book = playingBook.value ?: return
-      val overallPosition = totalPosition.value
+      val overallPosition = pendingSeekTracker.baseFor(totalPosition.value)
       val currentIndex = calculateChapterIndex(book, overallPosition)
       Timber.d("Next track: bookId=${book.id}, currentChapter=$currentIndex -> ${currentIndex + 1}")
 
@@ -349,7 +350,7 @@ class MediaRepository
 
     fun previousTrack(rewindRequired: Boolean = true) {
       val book = playingBook.value ?: return
-      val overallPosition = totalPosition.value
+      val overallPosition = pendingSeekTracker.baseFor(totalPosition.value)
 
       val (currentIndex, chapterPosition) = calculateChapterIndexAndPosition(book, overallPosition)
       Timber.d("Previous track: bookId=${book.id}, currentChapter=$currentIndex, chapterPosition=${chapterPosition.toInt()}s")
@@ -420,6 +421,7 @@ class MediaRepository
 
         val newPosition = accumulated + currentFilePosition
         _totalPosition.value = newPosition
+        pendingSeekTracker.onPositionUpdate(newPosition)
         updateCurrentTrackData()
       }
 
@@ -482,6 +484,7 @@ class MediaRepository
           }
       }
 
+      pendingSeekTracker.onSeekRequested(safePosition)
       eventBus.send(PlaybackCommand.SeekTo(safePosition))
       adjustTimer(safePosition)
     }
