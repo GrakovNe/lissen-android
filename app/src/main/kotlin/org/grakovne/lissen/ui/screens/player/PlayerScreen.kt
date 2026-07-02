@@ -424,7 +424,7 @@ private fun PlayerArtworkAndControlsWide(
 ) {
   Column(
     horizontalAlignment = Alignment.CenterHorizontally,
-    modifier = modifier,
+    modifier = modifier.testTag("playerArtworkPane"),
   ) {
     BoxWithConstraints(
       modifier =

@@ -88,6 +88,7 @@ fun SettingsScreen(
           modifier =
             Modifier
               .fillMaxWidth()
+              .weight(1f)
               .verticalScroll(rememberScrollState()),
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {

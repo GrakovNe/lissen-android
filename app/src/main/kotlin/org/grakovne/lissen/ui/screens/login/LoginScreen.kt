@@ -278,7 +278,10 @@ fun LoginScreen(
                 onClick = {
                   navController.showSettings()
                 },
-                modifier = Modifier.width(56.dp),
+                modifier =
+                  Modifier
+                    .width(56.dp)
+                    .testTag("loginSettingsButton"),
                 shape =
                   RoundedCornerShape(
                     topStart = 0.dp,
