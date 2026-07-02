@@ -9,9 +9,8 @@ import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performTextInput
-import androidx.compose.ui.test.performTouchInput
-import androidx.compose.ui.test.swipeUp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
@@ -130,10 +129,8 @@ class PlayerE2ETest {
 
     val firstBook = topVisibleBookTag()
 
-    repeat(5) {
-      composeRule.onNodeWithTag("libraryScreen").performTouchInput { swipeUp() }
-      composeRule.waitForIdle()
-    }
+    composeRule.onNodeWithTag("libraryGrid").performScrollToIndex(12)
+    composeRule.waitForIdle()
 
     val topBeforeOpening = topVisibleBookTag()
     assertNotEquals(

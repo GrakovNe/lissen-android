@@ -399,6 +399,7 @@ fun LibraryScreen(
           state = libraryListState,
           modifier =
             Modifier
+              .testTag("libraryGrid")
               .fillMaxSize()
               .imePadding(),
           contentPadding = PaddingValues(horizontal = 16.dp),
