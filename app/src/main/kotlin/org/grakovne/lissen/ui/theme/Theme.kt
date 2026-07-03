@@ -72,9 +72,9 @@ fun LissenTheme(
     when {
       materialYouPreferred -> {
         if (isDarkTheme) {
-          dynamicDarkColorScheme(context).copy(primary = FoxOrangeDimmed)
+          dynamicDarkColorScheme(context)
         } else {
-          dynamicLightColorScheme(context).copy(primary = FoxOrange)
+          dynamicLightColorScheme(context)
         }
       }
 
