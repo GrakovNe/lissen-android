@@ -94,7 +94,7 @@ class CachingModelViewTest {
 
     @Test
     fun `progress updates from contentCachingProgress`() =
-      runTest {
+      runTest(testDispatcher) {
         val state = CacheState(CacheStatus.Caching, 0.5)
 
         statusFlow.emit("book-1" to state)
@@ -160,14 +160,14 @@ class CachingModelViewTest {
   inner class DropCache {
     @Test
     fun `dropCache by id delegates to contentCachingManager`() =
-      runTest {
+      runTest(testDispatcher) {
         viewModel.dropCache("book-1")
         coVerify { contentCachingManager.dropCache("book-1") }
       }
 
     @Test
     fun `dropCache by item and chapter delegates to contentCachingManager`() =
-      runTest {
+      runTest(testDispatcher) {
         val item = detailedItem(id = "book-1")
         val chapter = playingChapter(id = "ch-1")
 
@@ -181,7 +181,7 @@ class CachingModelViewTest {
   inner class ClearCache {
     @Test
     fun `clearShortTermCache delegates to cachedCoverProvider`() =
-      runTest {
+      runTest(testDispatcher) {
         viewModel.clearShortTermCache()
         coVerify { cachedCoverProvider.clearCache() }
       }
@@ -191,7 +191,7 @@ class CachingModelViewTest {
   inner class FetchLatestUpdate {
     @Test
     fun `fetchLatestUpdate delegates to localCacheRepository`() =
-      runTest {
+      runTest(testDispatcher) {
         coEvery { localCacheRepository.fetchLatestUpdate("lib-1") } returns 12345L
 
         val result = viewModel.fetchLatestUpdate("lib-1")
@@ -221,7 +221,7 @@ class CachingModelViewTest {
   inner class FetchCachedItems {
     @Test
     fun `fetchCachedItems does not throw before the pager has been collected`() =
-      runTest {
+      runTest(testDispatcher) {
         viewModel.fetchCachedItems()
       }
   }

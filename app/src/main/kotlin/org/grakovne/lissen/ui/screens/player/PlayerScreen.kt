@@ -498,7 +498,7 @@ private fun PlayerArtworkAndControlsWide(
             .testTag("playerChapterNumber"),
       )
     } else {
-      ChapterNumberPlaceholder()
+      ChapterNumberPlaceholder(modifier = Modifier.testTag("playerChapterNumber"))
     }
 
     Spacer(modifier = Modifier.height(8.dp))
