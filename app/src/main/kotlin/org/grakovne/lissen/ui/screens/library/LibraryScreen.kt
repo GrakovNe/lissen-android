@@ -75,6 +75,7 @@ import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.RecentBook
+import org.grakovne.lissen.ui.components.withScrollbar
 import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.common.RequestLocalNetworkPermission
@@ -132,6 +133,7 @@ fun LibraryScreen(
   var preferencesExpanded by remember { mutableStateOf(false) }
 
   val library = libraryViewModel.getPager(searchRequested).collectAsLazyPagingItems()
+  val libraryCount by libraryViewModel.totalCount.collectAsState()
   val expandedGroups by libraryViewModel.expandedGroups.collectAsState()
   val groupBooks by libraryViewModel.groupBooks.collectAsState()
   val groupLoading by libraryViewModel.groupLoading.collectAsState()
@@ -218,12 +220,12 @@ fun LibraryScreen(
   val playingBook by playerViewModel.book.collectAsState()
   val context = LocalContext.current
 
-  val networkAvailable by networkService.networkAvailableFlow.collectAsState(
-    initial = networkService.isNetworkAvailable(),
-  )
-  val forceCache by cachingModelView.forceCache.collectAsState(
-    initial = cachingModelView.localCacheUsing(),
-  )
+  fun isRecentVisible(): Boolean {
+    val fetchAvailable = networkService.isNetworkAvailable() || cachingModelView.localCacheUsing()
+    val hasContent = recentBooks.isEmpty().not()
+
+    return searchRequested.not() && hasContent && fetchAvailable
+  }
 
   LaunchedEffect(Unit) {
     val emptyContent = library.itemCount == 0
@@ -273,16 +275,7 @@ fun LibraryScreen(
   }
 
   val libraryTitle = remember(preferredLibrary) { provideLibraryTitle() }
-  val recentVisible by remember {
-    derivedStateOf {
-      shouldShowRecent(
-        searchRequested = searchRequested,
-        hasRecentBooks = recentBooks.isNotEmpty(),
-        networkAvailable = networkAvailable,
-        forceCache = forceCache,
-      )
-    }
-  }
+  val recentVisible by remember { derivedStateOf { isRecentVisible() } }
 
   val navBarTitle by remember(libraryTitle) {
     derivedStateOf {
@@ -396,6 +389,18 @@ fun LibraryScreen(
             .pullRefresh(pullRefreshState)
             .fillMaxSize(),
       ) {
+        val showScrollbar by remember {
+          derivedStateOf {
+            val scrolledDown = libraryListState.firstVisibleItemIndex > 0 || libraryListState.firstVisibleItemScrollOffset > 0
+            libraryListState.isScrollInProgress && scrolledDown
+          }
+        }
+
+        val scrollbarAlpha by animateFloatAsState(
+          targetValue = if (showScrollbar) 1f else 0f,
+          animationSpec = tween(durationMillis = 300),
+        )
+
         LazyVerticalGrid(
           columns = GridCells.Fixed(1),
           state = libraryListState,
@@ -403,7 +408,13 @@ fun LibraryScreen(
             Modifier
               .testTag("libraryGrid")
               .fillMaxSize()
-              .imePadding(),
+              .imePadding()
+              .withScrollbar(
+                state = libraryListState,
+                color = colorScheme.onBackground.copy(alpha = scrollbarAlpha),
+                totalItems = libraryCount,
+                ignoreItems = listOf("recent_books", "library_title"),
+              ),
           contentPadding = PaddingValues(horizontal = 16.dp),
           horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
@@ -611,10 +622,3 @@ fun LibraryScreen(
 }
 
 private val RECENT_SECTION_SPACING = 2.dp
-
-internal fun shouldShowRecent(
-  searchRequested: Boolean,
-  hasRecentBooks: Boolean,
-  networkAvailable: Boolean,
-  forceCache: Boolean,
-): Boolean = searchRequested.not() && hasRecentBooks && (networkAvailable || forceCache)
