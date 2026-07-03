@@ -111,10 +111,12 @@ fun PlayerScreen(
   var itemDetailsSelected by remember { mutableStateOf(false) }
   var bookmarksSelected by remember { mutableStateOf(false) }
 
+  val libraryType by libraryViewModel.preferredLibraryType.collectAsState()
+
   val screenTitle =
     when {
       playingQueueExpanded && twoPane.not() -> {
-        provideNowPlayingTitle(libraryViewModel.fetchPreferredLibraryType(), context)
+        provideNowPlayingTitle(libraryType, context)
       }
 
       else -> {
@@ -266,7 +268,7 @@ fun PlayerScreen(
     },
     bottomBar = {
       if (playingBook == null || isPlaybackReady.not()) {
-        NavigationBarPlaceholderComposable(libraryType = libraryViewModel.fetchPreferredLibraryType())
+        NavigationBarPlaceholderComposable(libraryType = libraryType)
       } else {
         playingBook
           ?.let {
@@ -275,7 +277,7 @@ fun PlayerScreen(
               playerViewModel = playerViewModel,
               contentCachingModelView = cachingModelView,
               navController = navController,
-              libraryType = libraryViewModel.fetchPreferredLibraryType(),
+              libraryType = libraryType,
             )
           }
       }

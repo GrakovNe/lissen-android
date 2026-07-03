@@ -15,7 +15,7 @@ import javax.inject.Singleton
 class PlaybackEventBus
   @Inject
   constructor() {
-    private val _events = MutableSharedFlow<PlaybackEvent>(extraBufferCapacity = 8)
+    private val _events = MutableSharedFlow<PlaybackEvent>(replay = 1, extraBufferCapacity = 8)
     val events: SharedFlow<PlaybackEvent> = _events.asSharedFlow()
 
     private val _commands = Channel<PlaybackCommand>(Channel.BUFFERED)
@@ -42,10 +42,6 @@ sealed class PlaybackEvent {
 
 sealed class PlaybackCommand {
   data object PreparePlayback : PlaybackCommand()
-
-  data class SeekTo(
-    val position: Double,
-  ) : PlaybackCommand()
 
   data class SetTimer(
     val delay: Double,

@@ -6,9 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import okhttp3.Request
-import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
 import org.grakovne.lissen.channel.common.MediaChannel
-import org.grakovne.lissen.channel.common.createOkHttpClient
 import org.grakovne.lissen.common.copyTo
 import org.grakovne.lissen.content.cache.common.findRelatedFiles
 import org.grakovne.lissen.content.cache.common.withBlur
@@ -20,7 +18,6 @@ import org.grakovne.lissen.domain.CacheStatus
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.domain.PlayingChapter
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
@@ -36,8 +33,6 @@ class ContentCachingManager
     private val bookRepository: CachedBookRepository,
     private val libraryRepository: CachedLibraryRepository,
     private val properties: OfflineBookStorageProperties,
-    private val requestHeadersProvider: RequestHeadersProvider,
-    private val preferences: LissenSharedPreferences,
   ) {
     fun cacheMediaItem(
       mediaItem: DetailedItem,
@@ -149,13 +144,12 @@ class ContentCachingManager
       onProgress: suspend (Double) -> Unit,
     ): CacheState =
       withContext(Dispatchers.IO) {
-        val headers = requestHeadersProvider.fetchRequestHeaders()
         val client =
-          createOkHttpClient(
-            requestHeaders = headers,
-            preferences = preferences,
-            context = context,
-          )
+          channel.provideDownloadClient()
+            ?: run {
+              Timber.e("Unable to cache media content for $bookId: no download client available")
+              return@withContext CacheState(CacheStatus.Error)
+            }
 
         val totalFileSize = files.mapNotNull { it.size }.sum()
         val reportingSizeThreshold = totalFileSize / 100.0
@@ -163,10 +157,7 @@ class ContentCachingManager
 
         files.forEach { file ->
           val uri = channel.provideFileUri(bookId, file.id)
-          val requestBuilder = Request.Builder().url(uri.toString())
-          headers.forEach { requestBuilder.addHeader(it.name, it.value) }
-
-          val request = requestBuilder.build()
+          val request = Request.Builder().url(uri.toString()).build()
           val response =
             try {
               client.newCall(request).execute()

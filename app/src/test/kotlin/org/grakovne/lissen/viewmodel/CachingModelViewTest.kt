@@ -42,7 +42,7 @@ class CachingModelViewTest {
   private val cachedCoverProvider = mockk<CachedCoverProvider>(relaxed = true)
   private val seriesCoverProvider = mockk<SeriesCoverProvider>(relaxed = true)
 
-  private val statusFlow = MutableSharedFlow<Pair<DetailedItem, CacheState>>(replay = 1)
+  private val statusFlow = MutableSharedFlow<Pair<String, CacheState>>(replay = 1)
 
   private lateinit var viewModel: CachingModelView
 
@@ -95,10 +95,9 @@ class CachingModelViewTest {
     @Test
     fun `progress updates from contentCachingProgress`() =
       runTest {
-        val item = detailedItem(id = "book-1")
         val state = CacheState(CacheStatus.Caching, 0.5)
 
-        statusFlow.emit(item to state)
+        statusFlow.emit("book-1" to state)
 
         val progress = viewModel.getProgress("book-1")
         assertEquals(CacheStatus.Caching, progress.value.status)

@@ -218,12 +218,12 @@ fun LibraryScreen(
   val playingBook by playerViewModel.book.collectAsState()
   val context = LocalContext.current
 
-  fun isRecentVisible(): Boolean {
-    val fetchAvailable = networkService.isNetworkAvailable() || cachingModelView.localCacheUsing()
-    val hasContent = recentBooks.isEmpty().not()
-
-    return searchRequested.not() && hasContent && fetchAvailable
-  }
+  val networkAvailable by networkService.networkAvailableFlow.collectAsState(
+    initial = networkService.isNetworkAvailable(),
+  )
+  val forceCache by cachingModelView.forceCache.collectAsState(
+    initial = cachingModelView.localCacheUsing(),
+  )
 
   LaunchedEffect(Unit) {
     val emptyContent = library.itemCount == 0
@@ -273,7 +273,16 @@ fun LibraryScreen(
   }
 
   val libraryTitle = remember(preferredLibrary) { provideLibraryTitle() }
-  val recentVisible by remember { derivedStateOf { isRecentVisible() } }
+  val recentVisible by remember {
+    derivedStateOf {
+      shouldShowRecent(
+        searchRequested = searchRequested,
+        hasRecentBooks = recentBooks.isNotEmpty(),
+        networkAvailable = networkAvailable,
+        forceCache = forceCache,
+      )
+    }
+  }
 
   val navBarTitle by remember(libraryTitle) {
     derivedStateOf {
@@ -413,6 +422,8 @@ fun LibraryScreen(
                 RecentBooksPlaceholderComposable(
                   libraryViewModel = libraryViewModel,
                 )
+
+                Spacer(modifier = Modifier.height(RECENT_SECTION_SPACING))
               }
 
               showRecent -> {
@@ -423,7 +434,7 @@ fun LibraryScreen(
                   libraryViewModel = libraryViewModel,
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(RECENT_SECTION_SPACING))
               }
             }
           }
@@ -603,3 +614,12 @@ fun LibraryScreen(
     )
   }
 }
+
+private val RECENT_SECTION_SPACING = 12.dp
+
+internal fun shouldShowRecent(
+  searchRequested: Boolean,
+  hasRecentBooks: Boolean,
+  networkAvailable: Boolean,
+  forceCache: Boolean,
+): Boolean = searchRequested.not() && hasRecentBooks && (networkAvailable || forceCache)

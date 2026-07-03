@@ -55,7 +55,7 @@ class MediaRepository
   ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private lateinit var mediaController: MediaController
-    private var pendingControllerAction: (() -> Unit)? = null
+    private val deferredControllerActions = DeferredActions()
 
     private val token =
       SessionToken(
@@ -102,6 +102,14 @@ class MediaRepository
 
     private val handler = Handler(Looper.getMainLooper())
 
+    private val progressPoller =
+      ProgressPoller(
+        intervalMs = PROGRESS_UPDATE_INTERVAL_MS,
+        schedule = { runnable, delay -> handler.postDelayed(runnable, delay) },
+        cancel = { runnable -> handler.removeCallbacks(runnable) },
+        onTick = { _playingBook.value?.let { updateProgress(it) } },
+      )
+
     init {
       val controllerBuilder = MediaController.Builder(context, token)
       val futureController = controllerBuilder.buildAsync()
@@ -119,7 +127,11 @@ class MediaRepository
                     val book = preferences.getPlayingItem()
                     book?.let {
                       updateProgress(book).await()
-                      startUpdatingProgress(book)
+
+                      if (mediaController.isPlaying) {
+                        progressPoller.start()
+                      }
+
                       _isPlaybackReady.value = true
 
                       if (_playAfterPrepare.value) {
@@ -146,9 +158,26 @@ class MediaRepository
               object : Player.Listener {
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
                   _isPlaying.value = isPlaying
-                  if (isPlaying) {
-                    defaultTimerActivator.onPlaybackStarted { updateTimer(it) }
+
+                  when {
+                    isPlaying -> {
+                      progressPoller.start()
+                      defaultTimerActivator.onPlaybackStarted { updateTimer(it) }
+                    }
+
+                    else -> {
+                      progressPoller.stop()
+                      _playingBook.value?.let { updateProgress(it) }
+                    }
                   }
+                }
+
+                override fun onPositionDiscontinuity(
+                  oldPosition: Player.PositionInfo,
+                  newPosition: Player.PositionInfo,
+                  reason: Int,
+                ) {
+                  _playingBook.value?.let { updateProgress(it) }
                 }
 
                 override fun onPlaybackStateChanged(playbackState: Int) {
@@ -160,16 +189,15 @@ class MediaRepository
 
                 override fun onPlayerError(error: PlaybackException) {
                   Timber.e(error, "Playback error: ${error.errorCodeName}")
+                  progressPoller.stop()
                   _isPlaying.value = false
+                  _playAfterPrepare.value = false
                   _mediaPreparingError.value = true
                 }
               },
             )
 
-            pendingControllerAction?.let { action ->
-              pendingControllerAction = null
-              action()
-            }
+            deferredControllerActions.drain()
           }
 
           override fun onFailure(t: Throwable) {
@@ -240,6 +268,8 @@ class MediaRepository
 
     fun clearPlayingBook() {
       Timber.d("Clearing playing book: ${_playingBook.value?.id}")
+
+      progressPoller.stop()
 
       if (::mediaController.isInitialized) {
         mediaController.stop()
@@ -373,20 +403,6 @@ class MediaRepository
       eventBus.send(PlaybackCommand.CancelTimer)
     }
 
-    private fun startUpdatingProgress(detailedItem: DetailedItem) {
-      handler.removeCallbacksAndMessages(null)
-
-      handler.postDelayed(
-        object : Runnable {
-          override fun run() {
-            updateProgress(detailedItem)
-            handler.postDelayed(this, 500)
-          }
-        },
-        500,
-      )
-    }
-
     fun clearPreparedItem() {
       if (timerOption.value != null) {
         _timerOption.value = null
@@ -395,6 +411,7 @@ class MediaRepository
 
       defaultTimerActivator.onNewBookPrepared()
       _mediaPreparingError.value = false
+      _playAfterPrepare.value = false
       _isPlaybackReady.value = false
     }
 
@@ -427,7 +444,7 @@ class MediaRepository
       withMain {
         if (!::mediaController.isInitialized) {
           Timber.w("play() requested before media controller connected; deferring until connected")
-          pendingControllerAction = { play() }
+          deferredControllerActions.defer { play() }
           return@withMain
         }
 
@@ -482,7 +499,15 @@ class MediaRepository
           }
       }
 
-      eventBus.send(PlaybackCommand.SeekTo(safePosition))
+      val (chapterIndex, chapterPosition) = calculateChapterIndexAndPosition(book, safePosition)
+
+      withMain {
+        if (::mediaController.isInitialized) {
+          mediaController.seekTo(chapterIndex, (chapterPosition * 1000).toLong())
+          _playingBook.value?.let { updateProgress(it) }
+        }
+      }
+
       adjustTimer(safePosition)
     }
 
@@ -565,6 +590,7 @@ class MediaRepository
 
     private companion object {
       private const val CURRENT_TRACK_REPLAY_THRESHOLD = 5
+      private const val PROGRESS_UPDATE_INTERVAL_MS = 500L
 
       private fun getSeekTime(seconds: Int?): Long = seconds?.toLong() ?: 30L
     }
