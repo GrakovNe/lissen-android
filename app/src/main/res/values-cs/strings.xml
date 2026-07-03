@@ -185,4 +185,30 @@
     <string name="appearance_preferences_title">Vzhled</string>
     <string name="appearance_preferences_description">Barevné schéma, řazení a motiv</string>
     <string name="disconnect_from_server_title">Odpojit se od serveru</string>
+    <string name="a11y_back">Zpět</string>
+    <string name="a11y_menu">Nabídka</string>
+    <string name="a11y_search">Hledat</string>
+    <string name="a11y_clear">Vymazat</string>
+    <string name="a11y_add">Přidat</string>
+    <string name="a11y_settings">Nastavení</string>
+    <string name="a11y_delete_from_cache">Odstranit z mezipaměti</string>
+    <string name="a11y_available_offline">Dostupné offline</string>
+    <string name="a11y_collapse_queue">Sbalit frontu</string>
+    <string name="a11y_open">Otevřít</string>
+    <string name="a11y_previous_track">Předchozí stopa</string>
+    <string name="a11y_next_track">Další stopa</string>
+    <string name="a11y_play">Přehrát</string>
+    <string name="a11y_pause">Pozastavit</string>
+    <string name="a11y_playback_position">Pozice přehrávání</string>
+    <string name="a11y_position_of">%1$s z %2$s</string>
+    <string name="a11y_buffering">Ukládání do vyrovnávací paměti</string>
+    <string name="a11y_playback_error">Chyba přehrávání</string>
+    <string name="a11y_rewind_seconds">Přetočit zpět o %1$d s</string>
+    <string name="a11y_fast_forward_seconds">Přetočit vpřed o %1$d s</string>
+    <plurals name="a11y_hours">
+        <item quantity="one">%d hodina</item>
+        <item quantity="few">%d hodiny</item>
+        <item quantity="many">%d hodiny</item>
+        <item quantity="other">%d hodin</item>
+    </plurals>
 </resources>

@@ -183,4 +183,28 @@
     </plurals>
     <string name="codes_not_supported_warning_toast">Audio formatı dəstəklənmir</string>
     <string name="tree_node_root">Kök</string>
+    <string name="a11y_back">Geri</string>
+    <string name="a11y_menu">Menyu</string>
+    <string name="a11y_search">Axtar</string>
+    <string name="a11y_clear">Təmizlə</string>
+    <string name="a11y_add">Əlavə et</string>
+    <string name="a11y_settings">Ayarlar</string>
+    <string name="a11y_delete_from_cache">Keşdən sil</string>
+    <string name="a11y_available_offline">Oflayn əlçatandır</string>
+    <string name="a11y_collapse_queue">Növbəni yığ</string>
+    <string name="a11y_open">Aç</string>
+    <string name="a11y_previous_track">Əvvəlki trek</string>
+    <string name="a11y_next_track">Növbəti trek</string>
+    <string name="a11y_play">Oxut</string>
+    <string name="a11y_pause">Fasilə</string>
+    <string name="a11y_playback_position">Oxutma mövqeyi</string>
+    <string name="a11y_position_of">%1$s / %2$s</string>
+    <string name="a11y_buffering">Buferlənir</string>
+    <string name="a11y_playback_error">Oxutma xətası</string>
+    <string name="a11y_rewind_seconds">%1$d saniyə geri sar</string>
+    <string name="a11y_fast_forward_seconds">%1$d saniyə irəli sar</string>
+    <plurals name="a11y_hours">
+        <item quantity="one">%d saat</item>
+        <item quantity="other">%d saat</item>
+    </plurals>
 </resources>

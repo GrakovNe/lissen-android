@@ -98,4 +98,30 @@
     <string name="playback_preferences_description">עוצמת קול, בקרות חיפוש ושמע</string>
     <string name="appearance_preferences_title">מראה</string>
     <string name="appearance_preferences_description">ערכת צבעים, מיון וסגנון</string>
+    <string name="a11y_back">חזרה</string>
+    <string name="a11y_menu">תפריט</string>
+    <string name="a11y_search">חיפוש</string>
+    <string name="a11y_clear">ניקוי</string>
+    <string name="a11y_add">הוספה</string>
+    <string name="a11y_settings">הגדרות</string>
+    <string name="a11y_delete_from_cache">מחיקה מהמטמון</string>
+    <string name="a11y_available_offline">זמין במצב לא מקוון</string>
+    <string name="a11y_collapse_queue">כיווץ התור</string>
+    <string name="a11y_open">פתיחה</string>
+    <string name="a11y_previous_track">הרצועה הקודמת</string>
+    <string name="a11y_next_track">הרצועה הבאה</string>
+    <string name="a11y_play">הפעלה</string>
+    <string name="a11y_pause">השהיה</string>
+    <string name="a11y_playback_position">מיקום ההשמעה</string>
+    <string name="a11y_position_of">%1$s מתוך %2$s</string>
+    <string name="a11y_buffering">באגירה</string>
+    <string name="a11y_playback_error">שגיאת השמעה</string>
+    <string name="a11y_rewind_seconds">הרצה אחורה %1$d שניות</string>
+    <string name="a11y_fast_forward_seconds">הרצה קדימה %1$d שניות</string>
+    <plurals name="a11y_hours">
+        <item quantity="one">%d שעה</item>
+        <item quantity="two">שעתיים</item>
+        <item quantity="many">%d שעות</item>
+        <item quantity="other">%d שעות</item>
+    </plurals>
 </resources>

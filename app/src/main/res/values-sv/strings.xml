@@ -107,4 +107,28 @@
     <string name="playback_preferences_description">Volym, sökningskontroller och ljud</string>
     <string name="appearance_preferences_title">Utseende</string>
     <string name="appearance_preferences_description">Färgschema, sortering och tema</string>
+    <string name="a11y_back">Tillbaka</string>
+    <string name="a11y_menu">Meny</string>
+    <string name="a11y_search">Sök</string>
+    <string name="a11y_clear">Rensa</string>
+    <string name="a11y_add">Lägg till</string>
+    <string name="a11y_settings">Inställningar</string>
+    <string name="a11y_delete_from_cache">Ta bort från cache</string>
+    <string name="a11y_available_offline">Tillgänglig offline</string>
+    <string name="a11y_collapse_queue">Fäll ihop kön</string>
+    <string name="a11y_open">Öppna</string>
+    <string name="a11y_previous_track">Föregående spår</string>
+    <string name="a11y_next_track">Nästa spår</string>
+    <string name="a11y_play">Spela upp</string>
+    <string name="a11y_pause">Pausa</string>
+    <string name="a11y_playback_position">Uppspelningsposition</string>
+    <string name="a11y_position_of">%1$s av %2$s</string>
+    <string name="a11y_buffering">Buffrar</string>
+    <string name="a11y_playback_error">Uppspelningsfel</string>
+    <string name="a11y_rewind_seconds">Spola tillbaka %1$d sekunder</string>
+    <string name="a11y_fast_forward_seconds">Spola framåt %1$d sekunder</string>
+    <plurals name="a11y_hours">
+        <item quantity="one">%d timme</item>
+        <item quantity="other">%d timmar</item>
+    </plurals>
 </resources>

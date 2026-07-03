@@ -252,4 +252,30 @@
     <string name="import_config_title">Importuj konfigurację</string>
     <string name="import_config_description">Przywróć ustawienia aplikacji z pliku</string>
     <string name="import_config_failed_toast">Nie udało się zaimportować konfiguracji, plik może być nieprawidłowy</string>
+    <string name="a11y_back">Wstecz</string>
+    <string name="a11y_menu">Menu</string>
+    <string name="a11y_search">Szukaj</string>
+    <string name="a11y_clear">Wyczyść</string>
+    <string name="a11y_add">Dodaj</string>
+    <string name="a11y_settings">Ustawienia</string>
+    <string name="a11y_delete_from_cache">Usuń z pamięci podręcznej</string>
+    <string name="a11y_available_offline">Dostępne offline</string>
+    <string name="a11y_collapse_queue">Zwiń kolejkę</string>
+    <string name="a11y_open">Otwórz</string>
+    <string name="a11y_previous_track">Poprzedni utwór</string>
+    <string name="a11y_next_track">Następny utwór</string>
+    <string name="a11y_play">Odtwórz</string>
+    <string name="a11y_pause">Pauza</string>
+    <string name="a11y_playback_position">Pozycja odtwarzania</string>
+    <string name="a11y_position_of">%1$s z %2$s</string>
+    <string name="a11y_buffering">Buforowanie</string>
+    <string name="a11y_playback_error">Błąd odtwarzania</string>
+    <string name="a11y_rewind_seconds">Przewiń do tyłu o %1$d s</string>
+    <string name="a11y_fast_forward_seconds">Przewiń do przodu o %1$d s</string>
+    <plurals name="a11y_hours">
+        <item quantity="one">%d godzina</item>
+        <item quantity="few">%d godziny</item>
+        <item quantity="many">%d godzin</item>
+        <item quantity="other">%d godziny</item>
+    </plurals>
 </resources>

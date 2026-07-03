@@ -234,4 +234,27 @@
     <string name="import_config_title">导入配置</string>
     <string name="import_config_description">从文件恢复应用偏好设置</string>
     <string name="import_config_failed_toast">无法导入配置，文件可能无效</string>
+    <string name="a11y_back">返回</string>
+    <string name="a11y_menu">菜单</string>
+    <string name="a11y_search">搜索</string>
+    <string name="a11y_clear">清除</string>
+    <string name="a11y_add">添加</string>
+    <string name="a11y_settings">设置</string>
+    <string name="a11y_delete_from_cache">从缓存中删除</string>
+    <string name="a11y_available_offline">可离线使用</string>
+    <string name="a11y_collapse_queue">收起队列</string>
+    <string name="a11y_open">打开</string>
+    <string name="a11y_previous_track">上一曲</string>
+    <string name="a11y_next_track">下一曲</string>
+    <string name="a11y_play">播放</string>
+    <string name="a11y_pause">暂停</string>
+    <string name="a11y_playback_position">播放位置</string>
+    <string name="a11y_position_of">%1$s / %2$s</string>
+    <string name="a11y_buffering">正在缓冲</string>
+    <string name="a11y_playback_error">播放错误</string>
+    <string name="a11y_rewind_seconds">快退 %1$d 秒</string>
+    <string name="a11y_fast_forward_seconds">快进 %1$d 秒</string>
+    <plurals name="a11y_hours">
+        <item quantity="other">%d 小时</item>
+    </plurals>
 </resources>

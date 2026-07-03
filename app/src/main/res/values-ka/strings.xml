@@ -133,4 +133,28 @@
     <string name="playback_preferences_description">ხმა, ძებნის კონტროლი და აუდიო</string>
     <string name="appearance_preferences_title">გარეგნობა</string>
     <string name="appearance_preferences_description">ფერთა სქემა, დალაგება და თემა</string>
+    <string name="a11y_back">უკან</string>
+    <string name="a11y_menu">მენიუ</string>
+    <string name="a11y_search">ძებნა</string>
+    <string name="a11y_clear">გასუფთავება</string>
+    <string name="a11y_add">დამატება</string>
+    <string name="a11y_settings">პარამეტრები</string>
+    <string name="a11y_delete_from_cache">ქეშიდან წაშლა</string>
+    <string name="a11y_available_offline">ხელმისაწვდომია ოფლაინში</string>
+    <string name="a11y_collapse_queue">რიგის ჩაკეცვა</string>
+    <string name="a11y_open">გახსნა</string>
+    <string name="a11y_previous_track">წინა ტრეკი</string>
+    <string name="a11y_next_track">შემდეგი ტრეკი</string>
+    <string name="a11y_play">დაკვრა</string>
+    <string name="a11y_pause">პაუზა</string>
+    <string name="a11y_playback_position">დაკვრის პოზიცია</string>
+    <string name="a11y_position_of">%1$s / %2$s</string>
+    <string name="a11y_buffering">ბუფერიზაცია</string>
+    <string name="a11y_playback_error">დაკვრის შეცდომა</string>
+    <string name="a11y_rewind_seconds">%1$d წამით უკან გადახვევა</string>
+    <string name="a11y_fast_forward_seconds">%1$d წამით წინ გადახვევა</string>
+    <plurals name="a11y_hours">
+        <item quantity="one">%d საათი</item>
+        <item quantity="other">%d საათი</item>
+    </plurals>
 </resources>

@@ -112,4 +112,28 @@
     <string name="playback_preferences_description">Ses seviyesi, arama kontrolleri ve ses</string>
     <string name="appearance_preferences_title">Görünüm</string>
     <string name="appearance_preferences_description">Renk düzeni, sıralama ve tema</string>
+    <string name="a11y_back">Geri</string>
+    <string name="a11y_menu">Menü</string>
+    <string name="a11y_search">Ara</string>
+    <string name="a11y_clear">Temizle</string>
+    <string name="a11y_add">Ekle</string>
+    <string name="a11y_settings">Ayarlar</string>
+    <string name="a11y_delete_from_cache">Önbellekten sil</string>
+    <string name="a11y_available_offline">Çevrimdışı kullanılabilir</string>
+    <string name="a11y_collapse_queue">Kuyruğu daralt</string>
+    <string name="a11y_open">Aç</string>
+    <string name="a11y_previous_track">Önceki parça</string>
+    <string name="a11y_next_track">Sonraki parça</string>
+    <string name="a11y_play">Oynat</string>
+    <string name="a11y_pause">Duraklat</string>
+    <string name="a11y_playback_position">Oynatma konumu</string>
+    <string name="a11y_position_of">%1$s / %2$s</string>
+    <string name="a11y_buffering">Arabelleğe alınıyor</string>
+    <string name="a11y_playback_error">Oynatma hatası</string>
+    <string name="a11y_rewind_seconds">%1$d saniye geri sar</string>
+    <string name="a11y_fast_forward_seconds">%1$d saniye ileri sar</string>
+    <plurals name="a11y_hours">
+        <item quantity="one">%d saat</item>
+        <item quantity="other">%d saat</item>
+    </plurals>
 </resources>

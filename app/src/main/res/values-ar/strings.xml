@@ -208,4 +208,32 @@
     <string name="settings_screen_user_agent_title">تغيير هوية العميل</string>
     <string name="settings_screen_user_agent_restore_default">إعادة الضبط الافتراضي</string>
     <string name="settings_screen_user_agent_hint">تخصص هوية العميل في ترويسة التطبيق</string>
+    <string name="a11y_back">رجوع</string>
+    <string name="a11y_menu">القائمة</string>
+    <string name="a11y_search">بحث</string>
+    <string name="a11y_clear">مسح</string>
+    <string name="a11y_add">إضافة</string>
+    <string name="a11y_settings">الإعدادات</string>
+    <string name="a11y_delete_from_cache">حذف من ذاكرة التخزين المؤقت</string>
+    <string name="a11y_available_offline">متاح دون اتصال</string>
+    <string name="a11y_collapse_queue">طي قائمة الانتظار</string>
+    <string name="a11y_open">فتح</string>
+    <string name="a11y_previous_track">المقطع السابق</string>
+    <string name="a11y_next_track">المقطع التالي</string>
+    <string name="a11y_play">تشغيل</string>
+    <string name="a11y_pause">إيقاف مؤقت</string>
+    <string name="a11y_playback_position">موضع التشغيل</string>
+    <string name="a11y_position_of">%1$s من %2$s</string>
+    <string name="a11y_buffering">جارٍ التخزين المؤقت</string>
+    <string name="a11y_playback_error">خطأ في التشغيل</string>
+    <string name="a11y_rewind_seconds">إرجاع %1$d ثانية</string>
+    <string name="a11y_fast_forward_seconds">تقديم %1$d ثانية</string>
+    <plurals name="a11y_hours">
+        <item quantity="zero">%d ساعة</item>
+        <item quantity="one">ساعة واحدة</item>
+        <item quantity="two">ساعتان</item>
+        <item quantity="few">%d ساعات</item>
+        <item quantity="many">%d ساعة</item>
+        <item quantity="other">%d ساعة</item>
+    </plurals>
 </resources>

@@ -164,4 +164,27 @@
     <string name="playback_preferences_description">음량, 탐색 컨트롤 및 오디오</string>
     <string name="appearance_preferences_title">외관</string>
     <string name="appearance_preferences_description">색상 구성표, 정렬 및 테마</string>
+    <string name="a11y_back">뒤로</string>
+    <string name="a11y_menu">메뉴</string>
+    <string name="a11y_search">검색</string>
+    <string name="a11y_clear">지우기</string>
+    <string name="a11y_add">추가</string>
+    <string name="a11y_settings">설정</string>
+    <string name="a11y_delete_from_cache">캐시에서 삭제</string>
+    <string name="a11y_available_offline">오프라인 사용 가능</string>
+    <string name="a11y_collapse_queue">대기열 접기</string>
+    <string name="a11y_open">열기</string>
+    <string name="a11y_previous_track">이전 트랙</string>
+    <string name="a11y_next_track">다음 트랙</string>
+    <string name="a11y_play">재생</string>
+    <string name="a11y_pause">일시정지</string>
+    <string name="a11y_playback_position">재생 위치</string>
+    <string name="a11y_position_of">%2$s 중 %1$s</string>
+    <string name="a11y_buffering">버퍼링 중</string>
+    <string name="a11y_playback_error">재생 오류</string>
+    <string name="a11y_rewind_seconds">%1$d초 되감기</string>
+    <string name="a11y_fast_forward_seconds">%1$d초 빨리 감기</string>
+    <plurals name="a11y_hours">
+        <item quantity="other">%d시간</item>
+    </plurals>
 </resources>
