@@ -77,6 +77,7 @@ import org.grakovne.lissen.ui.screens.player.composable.placeholder.NavigationBa
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.PlayingQueuePlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackControlPlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackDetailsPlaceholderComposable
+import org.grakovne.lissen.ui.screens.player.composable.provideChapterNumberTitle
 import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
@@ -297,6 +298,7 @@ fun PlayerScreen(
             playingBook = playingBook,
             bookTitle = bookTitle,
             playerViewModel = playerViewModel,
+            libraryViewModel = libraryViewModel,
             imageLoader = imageLoader,
             settingsViewModel = settingsViewModel,
             modifier =
@@ -421,10 +423,14 @@ private fun PlayerArtworkAndControlsWide(
   playingBook: DetailedItem?,
   bookTitle: String,
   playerViewModel: PlayerViewModel,
+  libraryViewModel: LibraryViewModel,
   imageLoader: ImageLoader,
   settingsViewModel: SettingsViewModel,
   modifier: Modifier = Modifier,
 ) {
+  val context = LocalContext.current
+  val currentChapterIndex by playerViewModel.currentChapterIndex.collectAsState()
+
   Column(
     horizontalAlignment = Alignment.CenterHorizontally,
     modifier = modifier.testTag("playerArtworkPane"),
@@ -466,6 +472,24 @@ private fun PlayerArtworkAndControlsWide(
           .fillMaxWidth()
           .padding(horizontal = 8.dp),
     )
+
+    if (isPlaybackReady) {
+      Spacer(modifier = Modifier.height(2.dp))
+
+      Text(
+        text =
+          provideChapterNumberTitle(
+            currentTrackIndex = currentChapterIndex,
+            book = playingBook,
+            libraryType = libraryViewModel.fetchPreferredLibraryType(),
+            context = context,
+          ),
+        style = typography.bodyMedium,
+        color = colorScheme.onBackground.copy(alpha = 0.6f),
+        textAlign = TextAlign.Center,
+        modifier = Modifier.fillMaxWidth(),
+      )
+    }
 
     Spacer(modifier = Modifier.height(8.dp))
 

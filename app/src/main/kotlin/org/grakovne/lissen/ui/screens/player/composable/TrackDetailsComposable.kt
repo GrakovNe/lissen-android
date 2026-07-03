@@ -146,7 +146,7 @@ fun TrackDetailsComposable(
   }
 }
 
-private fun provideChapterNumberTitle(
+fun provideChapterNumberTitle(
   currentTrackIndex: Int,
   book: DetailedItem?,
   libraryType: LibraryType,
