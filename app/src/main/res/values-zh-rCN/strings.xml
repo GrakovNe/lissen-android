@@ -226,4 +226,12 @@
     <string name="library_grouping_disabled">关闭</string>
     <string name="library_grouping_series">按系列</string>
     <string name="library_grouping_author">按作者</string>
+    <string name="config_backup_title">备份和恢复</string>
+    <string name="config_backup_description">导出或导入你的应用偏好设置</string>
+    <string name="export_config_title">导出配置</string>
+    <string name="export_config_description">将您的应用偏好设置以文件的形式分享</string>
+    <string name="export_config_failed_toast">无法导出配置</string>
+    <string name="import_config_title">导入配置</string>
+    <string name="import_config_description">从文件恢复应用偏好设置</string>
+    <string name="import_config_failed_toast">无法导入配置，文件可能无效</string>
 </resources>
