@@ -38,15 +38,11 @@ import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
-fun TrackDetailsComposable(
-  libraryViewModel: LibraryViewModel,
-  viewModel: PlayerViewModel,
-  modifier: Modifier = Modifier,
+fun BookCover(
+  book: DetailedItem?,
   imageLoader: ImageLoader,
+  modifier: Modifier = Modifier,
 ) {
-  val currentTrackIndex by viewModel.currentChapterIndex.collectAsState()
-  val book by viewModel.book.collectAsState()
-
   val context = LocalContext.current
 
   val imageRequest =
@@ -58,25 +54,42 @@ fun TrackDetailsComposable(
         .build()
     }
 
+  AsyncShimmeringImage(
+    imageRequest = imageRequest,
+    imageLoader = imageLoader,
+    contentDescription = "${book?.title} cover",
+    contentScale = ContentScale.FillBounds,
+    modifier = modifier.clip(RoundedCornerShape(8.dp)),
+    error = painterResource(R.drawable.cover_fallback),
+  )
+}
+
+@Composable
+fun TrackDetailsComposable(
+  libraryViewModel: LibraryViewModel,
+  viewModel: PlayerViewModel,
+  modifier: Modifier = Modifier,
+  imageLoader: ImageLoader,
+) {
+  val currentTrackIndex by viewModel.currentChapterIndex.collectAsState()
+  val book by viewModel.book.collectAsState()
+
+  val context = LocalContext.current
+
   val configuration = LocalConfiguration.current
-  val screenHeight = configuration.screenHeightDp.dp
-  val maxImageHeight = screenHeight * 0.33f
+  val maxImageHeight = configuration.screenHeightDp.dp * 0.33f
 
   Column(
     horizontalAlignment = Alignment.CenterHorizontally,
     modifier = modifier,
   ) {
-    AsyncShimmeringImage(
-      imageRequest = imageRequest,
+    BookCover(
+      book = book,
       imageLoader = imageLoader,
-      contentDescription = "${book?.title} cover",
-      contentScale = ContentScale.FillBounds,
       modifier =
         Modifier
           .heightIn(max = maxImageHeight)
-          .aspectRatio(1f)
-          .clip(RoundedCornerShape(8.dp)),
-      error = painterResource(R.drawable.cover_fallback),
+          .aspectRatio(1f),
     )
 
     Spacer(modifier = Modifier.height(12.dp))

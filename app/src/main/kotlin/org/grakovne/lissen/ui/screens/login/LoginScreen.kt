@@ -4,6 +4,7 @@ import android.widget.Toast
 import android.widget.Toast.LENGTH_SHORT
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -16,8 +17,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Visibility
@@ -62,6 +65,7 @@ import kotlinx.coroutines.flow.debounce
 import org.grakovne.lissen.R
 import org.grakovne.lissen.channel.common.AuthMethod
 import org.grakovne.lissen.channel.common.makeText
+import org.grakovne.lissen.ui.adaptive.isWideLayout
 import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.common.hasLocalNetworkPermission
@@ -158,198 +162,213 @@ fun LoginScreen(
         Column(
           modifier =
             Modifier
-              .align(Alignment.Center)
-              .fillMaxWidth(0.8f)
+              .fillMaxSize()
+              .verticalScroll(rememberScrollState())
               .imePadding(),
+          verticalArrangement = Arrangement.Center,
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-          Text(
-            text = stringResource(R.string.login_screen_title),
-            style =
-              TextStyle(
-                fontSize = 24.sp,
-                fontWeight = FontWeight.SemiBold,
-                letterSpacing = 1.5.sp,
-                textAlign = TextAlign.Center,
-              ),
-            modifier = Modifier.padding(vertical = 32.dp),
-          )
-
-          OutlinedTextField(
-            value = host,
-            onValueChange = { viewModel.setHost(it.trim()) },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
-            label = { Text(stringResource(R.string.hint_server_url_input)) },
-            shape = RoundedCornerShape(16.dp),
-            singleLine = true,
+          Column(
             modifier =
-              Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp)
-                .testTag("hostInput"),
-          )
-
-          OutlinedTextField(
-            value = username,
-            onValueChange = { viewModel.setUsername(it.trim()) },
-            label = { Text(stringResource(R.string.login_screen_login_input)) },
-            shape = RoundedCornerShape(16.dp),
-            singleLine = true,
-            modifier =
-              Modifier
-                .fillMaxWidth()
-                .padding(vertical = 12.dp)
-                .testTag("usernameInput"),
-          )
-
-          OutlinedTextField(
-            value = password,
-            visualTransformation = if (!showPassword) PasswordVisualTransformation() else VisualTransformation.None,
-            onValueChange = { viewModel.setPassword(it) },
-            trailingIcon = {
-              IconButton(
-                onClick = { showPassword = !showPassword },
-              ) {
-                Icon(
-                  imageVector = if (showPassword) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                  contentDescription = stringResource(R.string.login_screen_show_password_hint),
-                )
-              }
-            },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-            label = { Text(stringResource(R.string.login_screen_password_input)) },
-            shape = RoundedCornerShape(16.dp),
-            singleLine = true,
-            modifier =
-              Modifier
-                .fillMaxWidth()
-                .padding(vertical = 4.dp)
-                .testTag("passwordInput"),
-          )
-
-          Row(
-            modifier =
-              Modifier
-                .fillMaxWidth()
-                .padding(top = 32.dp),
-          ) {
-            Button(
-              onClick = { withNetworkPermission { viewModel.login() } },
-              modifier =
-                Modifier
-                  .weight(1f)
-                  .testTag("loginButton"),
-              shape =
-                RoundedCornerShape(
-                  topStart = 16.dp,
-                  bottomStart = 16.dp,
-                  topEnd = 0.dp,
-                  bottomEnd = 0.dp,
-                ),
-            ) {
-              Spacer(modifier = Modifier.width(28.dp))
-              Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center,
-              ) {
-                Text(
-                  text = stringResource(R.string.login_screen_connect_button_text),
-                  fontSize = 16.sp,
-                )
-              }
-            }
-
-            Spacer(modifier = Modifier.width(1.dp))
-
-            Button(
-              onClick = {
-                navController.showSettings()
+              when (isWideLayout()) {
+                true -> Modifier.width(520.dp)
+                false -> Modifier.fillMaxWidth(0.8f)
               },
-              modifier = Modifier.width(56.dp),
-              shape =
-                RoundedCornerShape(
-                  topStart = 0.dp,
-                  bottomStart = 0.dp,
-                  topEnd = 16.dp,
-                  bottomEnd = 16.dp,
-                ),
-              contentPadding = PaddingValues(0.dp),
-            ) {
-              Icon(
-                imageVector = Icons.Default.Settings,
-                contentDescription = "Settings",
-                modifier = Modifier.size(24.dp),
-              )
-            }
-          }
-
-          val isEnabled = authMethods.contains(AuthMethod.O_AUTH)
-          val oAuthButtonText =
-            when {
-              isEnabled.not() -> ""
-              customOAuthLoginButton != null -> customOAuthLoginButton
-              else -> stringResource(R.string.login_screen_open_id_button)
-            }
-
-          TextButton(
-            onClick = { withNetworkPermission { viewModel.startOAuth() } },
-            enabled = isEnabled,
-            colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.onSurface),
-            modifier =
-              Modifier
-                .fillMaxWidth()
-                .padding(top = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
           ) {
             Text(
-              text = oAuthButtonText ?: stringResource(R.string.login_screen_open_id_button),
-              maxLines = 1,
-              overflow = TextOverflow.Ellipsis,
+              text = stringResource(R.string.login_screen_title),
               style =
-                typography.bodyMedium.copy(
-                  fontSize = 16.sp,
-                  fontWeight = FontWeight.Medium,
-                  letterSpacing = 0.6.sp,
-                  color =
-                    if (isEnabled) {
-                      colorScheme.primary
-                    } else {
-                      colorScheme.onSurface.copy(
-                        alpha = 0f,
-                      )
-                    },
+                TextStyle(
+                  fontSize = 24.sp,
+                  fontWeight = FontWeight.SemiBold,
+                  letterSpacing = 1.5.sp,
+                  textAlign = TextAlign.Center,
                 ),
-              textAlign = TextAlign.Center,
-              modifier = Modifier.fillMaxWidth(),
+              modifier = Modifier.padding(vertical = 32.dp),
+            )
+
+            OutlinedTextField(
+              value = host,
+              onValueChange = { viewModel.setHost(it.trim()) },
+              keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri),
+              label = { Text(stringResource(R.string.hint_server_url_input)) },
+              shape = RoundedCornerShape(16.dp),
+              singleLine = true,
+              modifier =
+                Modifier
+                  .fillMaxWidth()
+                  .padding(vertical = 4.dp)
+                  .testTag("hostInput"),
+            )
+
+            OutlinedTextField(
+              value = username,
+              onValueChange = { viewModel.setUsername(it.trim()) },
+              label = { Text(stringResource(R.string.login_screen_login_input)) },
+              shape = RoundedCornerShape(16.dp),
+              singleLine = true,
+              modifier =
+                Modifier
+                  .fillMaxWidth()
+                  .padding(vertical = 12.dp)
+                  .testTag("usernameInput"),
+            )
+
+            OutlinedTextField(
+              value = password,
+              visualTransformation = if (!showPassword) PasswordVisualTransformation() else VisualTransformation.None,
+              onValueChange = { viewModel.setPassword(it) },
+              trailingIcon = {
+                IconButton(
+                  onClick = { showPassword = !showPassword },
+                ) {
+                  Icon(
+                    imageVector = if (showPassword) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                    contentDescription = stringResource(R.string.login_screen_show_password_hint),
+                  )
+                }
+              },
+              keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+              label = { Text(stringResource(R.string.login_screen_password_input)) },
+              shape = RoundedCornerShape(16.dp),
+              singleLine = true,
+              modifier =
+                Modifier
+                  .fillMaxWidth()
+                  .padding(vertical = 4.dp)
+                  .testTag("passwordInput"),
+            )
+
+            Row(
+              modifier =
+                Modifier
+                  .fillMaxWidth()
+                  .padding(top = 32.dp),
+            ) {
+              Button(
+                onClick = { withNetworkPermission { viewModel.login() } },
+                modifier =
+                  Modifier
+                    .weight(1f)
+                    .testTag("loginButton"),
+                shape =
+                  RoundedCornerShape(
+                    topStart = 16.dp,
+                    bottomStart = 16.dp,
+                    topEnd = 0.dp,
+                    bottomEnd = 0.dp,
+                  ),
+              ) {
+                Spacer(modifier = Modifier.width(28.dp))
+                Box(
+                  modifier = Modifier.fillMaxWidth(),
+                  contentAlignment = Alignment.Center,
+                ) {
+                  Text(
+                    text = stringResource(R.string.login_screen_connect_button_text),
+                    fontSize = 16.sp,
+                  )
+                }
+              }
+
+              Spacer(modifier = Modifier.width(1.dp))
+
+              Button(
+                onClick = {
+                  navController.showSettings()
+                },
+                modifier =
+                  Modifier
+                    .width(56.dp)
+                    .testTag("loginSettingsButton"),
+                shape =
+                  RoundedCornerShape(
+                    topStart = 0.dp,
+                    bottomStart = 0.dp,
+                    topEnd = 16.dp,
+                    bottomEnd = 16.dp,
+                  ),
+                contentPadding = PaddingValues(0.dp),
+              ) {
+                Icon(
+                  imageVector = Icons.Default.Settings,
+                  contentDescription = "Settings",
+                  modifier = Modifier.size(24.dp),
+                )
+              }
+            }
+
+            val isEnabled = authMethods.contains(AuthMethod.O_AUTH)
+            val oAuthButtonText =
+              when {
+                isEnabled.not() -> ""
+                customOAuthLoginButton != null -> customOAuthLoginButton
+                else -> stringResource(R.string.login_screen_open_id_button)
+              }
+
+            TextButton(
+              onClick = { withNetworkPermission { viewModel.startOAuth() } },
+              enabled = isEnabled,
+              colors = ButtonDefaults.textButtonColors(contentColor = colorScheme.onSurface),
+              modifier =
+                Modifier
+                  .fillMaxWidth()
+                  .padding(top = 12.dp),
+            ) {
+              Text(
+                text = oAuthButtonText ?: stringResource(R.string.login_screen_open_id_button),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style =
+                  typography.bodyMedium.copy(
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    letterSpacing = 0.6.sp,
+                    color =
+                      if (isEnabled) {
+                        colorScheme.primary
+                      } else {
+                        colorScheme.onSurface.copy(
+                          alpha = 0f,
+                        )
+                      },
+                  ),
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+              )
+            }
+
+            CircularProgressIndicator(
+              color = colorScheme.primary,
+              strokeWidth = 4.dp,
+              modifier =
+                Modifier
+                  .padding(vertical = 20.dp)
+                  .alpha(if (loginState !is LoginState.Idle) 1f else 0f),
             )
           }
-
-          CircularProgressIndicator(
-            color = colorScheme.primary,
-            strokeWidth = 4.dp,
-            modifier =
-              Modifier
-                .padding(vertical = 20.dp)
-                .alpha(if (loginState !is LoginState.Idle) 1f else 0f),
-          )
         }
 
-        Text(
-          modifier =
-            Modifier
-              .align(Alignment.BottomCenter)
-              .alpha(0.6f)
-              .padding(bottom = 32.dp),
-          text = stringResource(R.string.audiobookshelf_server_is_required),
-          style =
-            typography.bodySmall.copy(
-              fontSize = 10.sp,
-              fontWeight = FontWeight.Normal,
-              color = colorScheme.onBackground,
-              letterSpacing = 0.6.sp,
-              lineHeight = 32.sp,
-            ),
-          textAlign = TextAlign.Center,
-        )
+        if (!isWideLayout()) {
+          Text(
+            modifier =
+              Modifier
+                .align(Alignment.BottomCenter)
+                .alpha(0.6f)
+                .padding(bottom = 32.dp),
+            text = stringResource(R.string.audiobookshelf_server_is_required),
+            style =
+              typography.bodySmall.copy(
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Normal,
+                color = colorScheme.onBackground,
+                letterSpacing = 0.6.sp,
+                lineHeight = 32.sp,
+              ),
+            textAlign = TextAlign.Center,
+          )
+        }
       }
     },
   )

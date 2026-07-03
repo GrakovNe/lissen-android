@@ -1,6 +1,8 @@
 package org.grakovne.lissen.ui
 
 import android.content.Intent
+import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
@@ -8,8 +10,9 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollToIndex
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -20,8 +23,7 @@ import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.MediaRepository
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.ui.activity.AppActivity
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertTrue
 import org.junit.FixMethodOrder
 import org.junit.Rule
 import org.junit.Test
@@ -29,6 +31,7 @@ import org.junit.rules.ExternalResource
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import javax.inject.Inject
+import kotlin.math.abs
 
 private val bookItemMatcher =
   SemanticsMatcher("hasBookItemTag") { node ->
@@ -41,7 +44,7 @@ private val bookItemMatcher =
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-class PlayerE2ETest {
+class LandscapeE2ETest {
   @get:Rule(order = 0)
   val grantPermissionsRule: GrantPermissionRule =
     GrantPermissionRule.grant(android.Manifest.permission.POST_NOTIFICATIONS)
@@ -75,25 +78,32 @@ class PlayerE2ETest {
   @get:Rule(order = 3)
   val composeRule = createAndroidComposeRule<AppActivity>()
 
+  private fun rotateToLandscape() {
+    composeRule.activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+
+    composeRule.waitUntil(TIMEOUT_MS) {
+      composeRule.activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    }
+    composeRule.waitForIdle()
+  }
+
   private fun login() {
     composeRule.onNodeWithTag("hostInput").performTextInput(DEMO_HOST)
     composeRule.onNodeWithTag("usernameInput").performTextInput(DEMO_USERNAME)
     composeRule.onNodeWithTag("passwordInput").performTextInput(DEMO_PASSWORD)
-    composeRule.onNodeWithTag("loginButton").performClick()
+    composeRule.onNodeWithTag("loginButton").performScrollTo().performClick()
 
     composeRule.waitUntilAtLeastOneExists(
       matcher = hasTestTag("libraryScreen"),
       timeoutMillis = TIMEOUT_MS,
     )
+  }
 
+  private fun openFirstBook() {
     composeRule.waitUntilAtLeastOneExists(
       matcher = bookItemMatcher,
       timeoutMillis = TIMEOUT_MS,
     )
-  }
-
-  private fun loginAndOpenBook() {
-    login()
 
     composeRule.onAllNodes(bookItemMatcher)[0].performClick()
 
@@ -103,62 +113,105 @@ class PlayerE2ETest {
     )
   }
 
-  private fun topVisibleBookTag(): String =
-    composeRule
-      .onAllNodes(bookItemMatcher)[0]
-      .fetchSemanticsNode()
-      .config[SemanticsProperties.TestTag]
+  @Test
+  fun landscape_loginScreenRenders() {
+    rotateToLandscape()
+
+    composeRule.onNodeWithTag("loginScreen").assertIsDisplayed()
+    composeRule.onNodeWithTag("hostInput").assertIsDisplayed()
+  }
 
   @Test
-  fun player_backButtonNavigatesToLibrary() {
-    loginAndOpenBook()
+  fun landscape_settingsFooterIsVisible() {
+    rotateToLandscape()
 
-    composeRule.onNodeWithTag("playerBackButton").performClick()
+    composeRule.onNodeWithTag("loginSettingsButton").performScrollTo().performClick()
 
     composeRule.waitUntilAtLeastOneExists(
-      matcher = hasTestTag("libraryScreen"),
+      matcher = hasTestTag("settingsScreen"),
       timeoutMillis = TIMEOUT_MS,
     )
+
+    composeRule.onNodeWithTag("settingsFooter").assertIsDisplayed()
+  }
+
+  @Test
+  fun landscape_libraryRenders() {
+    rotateToLandscape()
+    login()
 
     composeRule.onNodeWithTag("libraryScreen").assertIsDisplayed()
   }
 
   @Test
-  fun player_backButtonPreservesLibraryScroll() {
+  fun landscape_playerShowsTwoPane() {
+    rotateToLandscape()
+    login()
+    openFirstBook()
+
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = hasTestTag("playerArtworkPane"),
+      timeoutMillis = TIMEOUT_MS,
+    )
+
+    composeRule.onNodeWithTag("playerArtworkPane").assertIsDisplayed()
+    composeRule.onNodeWithTag("playerScreen").assertIsDisplayed()
+  }
+
+  @Test
+  fun portrait_playerIsSinglePane() {
+    login()
+    openFirstBook()
+
+    composeRule.onNodeWithTag("playerArtworkPane").assertDoesNotExist()
+  }
+
+  @Test
+  fun portrait_libraryUsesSingleColumn() {
     login()
 
-    val firstBook = topVisibleBookTag()
-
-    composeRule.onNodeWithTag("libraryGrid").performScrollToIndex(12)
-    composeRule.waitForIdle()
-
-    val topBeforeOpening = topVisibleBookTag()
-    assertNotEquals(
-      "the test should have scrolled past the first book",
-      firstBook,
-      topBeforeOpening,
-    )
-
-    composeRule.onAllNodes(bookItemMatcher)[0].performClick()
-
     composeRule.waitUntilAtLeastOneExists(
-      matcher = hasTestTag("playerScreen"),
+      matcher = bookItemMatcher,
       timeoutMillis = TIMEOUT_MS,
     )
 
-    composeRule.onNodeWithTag("playerBackButton").performClick()
+    val first = composeRule.onAllNodes(bookItemMatcher)[0].fetchSemanticsNode().boundsInRoot
+    val second = composeRule.onAllNodes(bookItemMatcher)[1].fetchSemanticsNode().boundsInRoot
+
+    assertTrue("second item should be below the first", second.top > first.top)
+    assertTrue("items should share the same column", abs(first.left - second.left) < 4f)
+  }
+
+  @Test
+  fun landscape_playerArtworkOccupiesLeftPane() {
+    rotateToLandscape()
+    login()
+    openFirstBook()
 
     composeRule.waitUntilAtLeastOneExists(
-      matcher = hasTestTag("libraryScreen"),
+      matcher = hasTestTag("playerArtworkPane"),
       timeoutMillis = TIMEOUT_MS,
     )
-    composeRule.waitForIdle()
 
-    val topAfterReturning = topVisibleBookTag()
-    assertEquals(
-      "library scroll position should be preserved after returning from the player",
-      topBeforeOpening,
-      topAfterReturning,
+    val artwork = composeRule.onNodeWithTag("playerArtworkPane").fetchSemanticsNode().boundsInRoot
+    val root = composeRule.onRoot().fetchSemanticsNode().boundsInRoot
+
+    assertTrue("artwork should occupy the left pane, not the full width", artwork.right < root.width * 0.6f)
+  }
+
+  @Test
+  fun landscape_mediaDetailSheetOpens() {
+    rotateToLandscape()
+    login()
+    openFirstBook()
+
+    composeRule.onNodeWithTag("playerInfoButton").performClick()
+
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = hasTestTag("bottomSheetContent"),
+      timeoutMillis = TIMEOUT_MS,
     )
+
+    composeRule.onNodeWithTag("bottomSheetContent").assertIsDisplayed()
   }
 }

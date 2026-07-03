@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,8 +41,9 @@ fun CommonSettingsItemComposable(
 ) {
   var activeItem by remember { mutableStateOf(selectedItem) }
 
-  ModalBottomSheet(
+  LissenModalBottomSheet(
     containerColor = MaterialTheme.colorScheme.background,
+    scrollable = false,
     onDismissRequest = onDismissRequest,
     content = {
       Column(

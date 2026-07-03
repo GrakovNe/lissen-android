@@ -12,18 +12,25 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
 import androidx.compose.material.pullrefresh.pullRefresh
@@ -132,7 +139,7 @@ fun LibraryScreen(
   val groupLoading by libraryViewModel.groupLoading.collectAsState()
   val libraryGrouping by settingsViewModel.libraryGrouping.collectAsState(LibraryGrouping.NONE)
 
-  val libraryListState = rememberLazyListState()
+  val libraryListState = rememberLazyGridState()
 
   BackHandler {
     when {
@@ -213,24 +220,12 @@ fun LibraryScreen(
   val playingBook by playerViewModel.book.collectAsState()
   val context = LocalContext.current
 
-  val networkAvailable by networkService.networkAvailableFlow.collectAsState(
-    initial = networkService.isNetworkAvailable(),
-  )
-  val forceCache by cachingModelView.forceCache.collectAsState(
-    initial = cachingModelView.localCacheUsing(),
-  )
+  fun isRecentVisible(): Boolean {
+    val fetchAvailable = networkService.isNetworkAvailable() || cachingModelView.localCacheUsing()
+    val hasContent = recentBooks.isEmpty().not()
 
-  val showScrollbar by remember {
-    derivedStateOf {
-      val scrolledDown = libraryListState.firstVisibleItemIndex > 0 || libraryListState.firstVisibleItemScrollOffset > 0
-      libraryListState.isScrollInProgress && scrolledDown
-    }
+    return searchRequested.not() && hasContent && fetchAvailable
   }
-
-  val scrollbarAlpha by animateFloatAsState(
-    targetValue = if (showScrollbar) 1f else 0f,
-    animationSpec = tween(durationMillis = 300),
-  )
 
   LaunchedEffect(Unit) {
     val emptyContent = library.itemCount == 0
@@ -280,16 +275,7 @@ fun LibraryScreen(
   }
 
   val libraryTitle = remember(preferredLibrary) { provideLibraryTitle() }
-  val recentVisible by remember {
-    derivedStateOf {
-      shouldShowRecent(
-        searchRequested = searchRequested,
-        hasRecentBooks = recentBooks.isNotEmpty(),
-        networkAvailable = networkAvailable,
-        forceCache = forceCache,
-      )
-    }
-  }
+  val recentVisible by remember { derivedStateOf { isRecentVisible() } }
 
   val navBarTitle by remember(libraryTitle) {
     derivedStateOf {
@@ -403,10 +389,24 @@ fun LibraryScreen(
             .pullRefresh(pullRefreshState)
             .fillMaxSize(),
       ) {
-        LazyColumn(
+        val showScrollbar by remember {
+          derivedStateOf {
+            val scrolledDown = libraryListState.firstVisibleItemIndex > 0 || libraryListState.firstVisibleItemScrollOffset > 0
+            libraryListState.isScrollInProgress && scrolledDown
+          }
+        }
+
+        val scrollbarAlpha by animateFloatAsState(
+          targetValue = if (showScrollbar) 1f else 0f,
+          animationSpec = tween(durationMillis = 300),
+        )
+
+        LazyVerticalGrid(
+          columns = GridCells.Fixed(1),
           state = libraryListState,
           modifier =
             Modifier
+              .testTag("libraryGrid")
               .fillMaxSize()
               .imePadding()
               .withScrollbar(
@@ -416,62 +416,65 @@ fun LibraryScreen(
                 ignoreItems = listOf("recent_books", "library_title"),
               ),
           contentPadding = PaddingValues(horizontal = 16.dp),
+          horizontalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-          item(key = "recent_books") {
+          item(key = "recent_books", span = { GridItemSpan(maxLineSpan) }) {
             val showRecent = recentVisible
 
-            when {
-              isPlaceholderRequired -> {
-                RecentBooksPlaceholderComposable(
-                  libraryViewModel = libraryViewModel,
-                )
+            Column(modifier = Modifier.fillMaxWidth()) {
+              when {
+                isPlaceholderRequired -> {
+                  RecentBooksPlaceholderComposable(
+                    libraryViewModel = libraryViewModel,
+                  )
 
-                Spacer(modifier = Modifier.height(RECENT_SECTION_SPACING))
-              }
+                  Spacer(modifier = Modifier.height(RECENT_SECTION_SPACING))
+                }
 
-              showRecent -> {
-                RecentBooksComposable(
-                  navController = navController,
-                  recentBooks = recentBooks,
-                  imageLoader = imageLoader,
-                  libraryViewModel = libraryViewModel,
-                )
+                showRecent -> {
+                  RecentBooksComposable(
+                    navController = navController,
+                    recentBooks = recentBooks,
+                    imageLoader = imageLoader,
+                    libraryViewModel = libraryViewModel,
+                  )
 
-                Spacer(modifier = Modifier.height(RECENT_SECTION_SPACING))
+                  Spacer(modifier = Modifier.height(RECENT_SECTION_SPACING))
+                }
               }
             }
           }
 
-          item(key = "library_title") {
-            if (!searchRequested && recentVisible) {
-              AnimatedContent(
-                targetState = navBarTitle,
-                transitionSpec = {
-                  fadeIn(
-                    animationSpec =
-                      tween(300),
-                  ) togetherWith
-                    fadeOut(
+          item(key = "library_title", span = { GridItemSpan(maxLineSpan) }) {
+            Column(modifier = Modifier.fillMaxWidth()) {
+              if (!searchRequested && recentVisible && isPlaceholderRequired.not()) {
+                AnimatedContent(
+                  targetState = navBarTitle,
+                  transitionSpec = {
+                    fadeIn(
                       animationSpec =
-                        tween(
-                          300,
-                        ),
-                    )
-                },
-                label = "library_header_fade",
-              ) {
-                when {
-                  it == libraryTitle -> {
-                    Spacer(
-                      modifier =
-                        Modifier
-                          .fillMaxWidth()
-                          .height(titleHeightDp),
-                    )
-                  }
+                        tween(300),
+                    ) togetherWith
+                      fadeOut(
+                        animationSpec =
+                          tween(
+                            300,
+                          ),
+                      )
+                  },
+                  label = "library_header_fade",
+                ) {
+                  when {
+                    it == libraryTitle -> {
+                      Spacer(
+                        modifier =
+                          Modifier
+                            .fillMaxWidth()
+                            .height(titleHeightDp),
+                      )
+                    }
 
-                  else -> {
-                    if (isPlaceholderRequired.not()) {
+                    else -> {
                       Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier =
@@ -493,18 +496,18 @@ fun LibraryScreen(
                   }
                 }
               }
-            }
 
-            Spacer(modifier = Modifier.height(8.dp))
+              Spacer(modifier = Modifier.height(8.dp))
+            }
           }
 
           when {
             isPlaceholderRequired -> {
-              item { LibraryPlaceholderComposable() }
+              item(span = { GridItemSpan(maxLineSpan) }) { LibraryPlaceholderComposable() }
             }
 
             library.itemCount == 0 -> {
-              item {
+              item(span = { GridItemSpan(maxLineSpan) }) {
                 LibraryFallbackComposable(
                   searchRequested = searchRequested,
                   contentCachingModelView = cachingModelView,
@@ -618,11 +621,4 @@ fun LibraryScreen(
   }
 }
 
-private val RECENT_SECTION_SPACING = 12.dp
-
-internal fun shouldShowRecent(
-  searchRequested: Boolean,
-  hasRecentBooks: Boolean,
-  networkAvailable: Boolean,
-  forceCache: Boolean,
-): Boolean = searchRequested.not() && hasRecentBooks && (networkAvailable || forceCache)
+private val RECENT_SECTION_SPACING = 2.dp

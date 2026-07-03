@@ -28,6 +28,7 @@
 package org.grakovne.lissen.ui.components
 
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
@@ -92,6 +93,51 @@ fun Modifier.withScrollbar(
     }
   }
 
+fun Modifier.withScrollbar(
+  state: LazyGridState,
+  color: Color,
+  totalItems: Int?,
+  ignoreItems: List<String> = emptyList(),
+): Modifier =
+  composed {
+    val itemHeights = remember { mutableStateMapOf<Int, Int>() }
+
+    LaunchedEffect(totalItems) {
+      itemHeights.clear()
+    }
+
+    LaunchedEffect(state) {
+      snapshotFlow { state.layoutInfo.visibleItemsInfo }
+        .collect { visible ->
+          visible.forEach { item ->
+            if (itemHeights[item.index] != item.size.height) {
+              itemHeights[item.index] = item.size.height
+            }
+          }
+        }
+    }
+
+    val reachedEnd = LocalLayoutDirection.current == LayoutDirection.Ltr
+
+    drawWithContent {
+      drawContent()
+
+      try {
+        drawScrollbar(
+          atEnd = reachedEnd,
+          state = state,
+          totalItems = totalItems,
+          headerCount = ignoreItems.size,
+          itemHeights = itemHeights,
+          color = color,
+        )
+      } catch (ex: Exception) {
+        Timber.w("Unable to apply scrollbar due to ${ex.message}")
+        ACRA.errorReporter.handleSilentException(ex)
+      }
+    }
+  }
+
 private fun DrawScope.drawScrollbar(
   atEnd: Boolean,
   state: LazyListState,
@@ -101,24 +147,71 @@ private fun DrawScope.drawScrollbar(
   color: Color,
 ) {
   val layoutInfo = state.layoutInfo
-  val viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
-  if (viewportSize <= 0) {
-    return
-  }
-
   val visible = layoutInfo.visibleItemsInfo
-  if (visible.isEmpty()) {
+
+  drawScrollbarImpl(
+    atEnd = atEnd,
+    viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset,
+    visibleHeights = visible.map { it.index to it.size },
+    firstIndex = visible.firstOrNull()?.index ?: 0,
+    firstOffset = visible.firstOrNull()?.offset ?: 0,
+    totalItemsCount = layoutInfo.totalItemsCount,
+    totalItems = totalItems,
+    headerCount = headerCount,
+    itemHeights = itemHeights,
+    color = color,
+  )
+}
+
+private fun DrawScope.drawScrollbar(
+  atEnd: Boolean,
+  state: LazyGridState,
+  totalItems: Int?,
+  headerCount: Int,
+  itemHeights: Map<Int, Int>,
+  color: Color,
+) {
+  val layoutInfo = state.layoutInfo
+  val visible = layoutInfo.visibleItemsInfo
+
+  drawScrollbarImpl(
+    atEnd = atEnd,
+    viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset,
+    visibleHeights = visible.map { it.index to it.size.height },
+    firstIndex = visible.firstOrNull()?.index ?: 0,
+    firstOffset = visible.firstOrNull()?.offset?.y ?: 0,
+    totalItemsCount = layoutInfo.totalItemsCount,
+    totalItems = totalItems,
+    headerCount = headerCount,
+    itemHeights = itemHeights,
+    color = color,
+  )
+}
+
+private fun DrawScope.drawScrollbarImpl(
+  atEnd: Boolean,
+  viewportSize: Int,
+  visibleHeights: List<Pair<Int, Int>>,
+  firstIndex: Int,
+  firstOffset: Int,
+  totalItemsCount: Int,
+  totalItems: Int?,
+  headerCount: Int,
+  itemHeights: Map<Int, Int>,
+  color: Color,
+) {
+  if (viewportSize <= 0 || visibleHeights.isEmpty()) {
     return
   }
 
-  val measured = itemHeights.takeIf { it.isNotEmpty() } ?: visible.associate { it.index to it.size }
+  val measured = itemHeights.takeIf { it.isNotEmpty() } ?: visibleHeights.toMap()
 
   val sortedHeights = measured.values.sorted()
   val rowHeight = sortedHeights[sortedHeights.size / 2].coerceAtLeast(1).toFloat()
 
   val itemCount =
     when (totalItems) {
-      null -> layoutInfo.totalItemsCount
+      null -> totalItemsCount
       else -> totalItems + headerCount
     }.coerceAtLeast(1)
 
@@ -134,10 +227,9 @@ private fun DrawScope.drawScrollbar(
     return
   }
 
-  val first = visible.first()
   val pixelsAbove =
-    (0 until first.index).sumOf { measured[it]?.toLong() ?: rowHeight.toLong() }.toFloat()
-  val scrolledPixels = pixelsAbove - first.offset
+    (0 until firstIndex).sumOf { measured[it]?.toLong() ?: rowHeight.toLong() }.toFloat()
+  val scrolledPixels = pixelsAbove - firstOffset
 
   val startOffset = (scrolledPixels / totalSize) * canvasSize
 

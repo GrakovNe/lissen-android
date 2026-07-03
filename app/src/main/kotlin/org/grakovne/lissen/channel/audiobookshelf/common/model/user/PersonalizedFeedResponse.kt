@@ -32,4 +32,5 @@ data class PersonalizedFeedItemMetadataResponse(
   val title: String,
   val subtitle: String?,
   val authorName: String?,
+  val author: String?,
 )

@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.LissenToggle
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -30,8 +31,9 @@ fun CommonSettingsMultiItemComposable(
   onDismissRequest: () -> Unit,
   onItemChanged: (String, Boolean) -> Unit,
 ) {
-  ModalBottomSheet(
+  LissenModalBottomSheet(
     containerColor = colorScheme.background,
+    scrollable = false,
     onDismissRequest = onDismissRequest,
     content = {
       Column(

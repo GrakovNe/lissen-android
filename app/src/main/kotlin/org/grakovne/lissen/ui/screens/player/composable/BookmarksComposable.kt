@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.buildBookmarkTitle
 import org.grakovne.lissen.common.withHaptic
+import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.extensions.formatTime
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
@@ -109,8 +110,9 @@ fun BookmarksComposable(
     stopEditing()
   }
 
-  ModalBottomSheet(
+  LissenModalBottomSheet(
     containerColor = colorScheme.background,
+    scrollable = false,
     onDismissRequest = {
       stopEditing()
       onDismissRequest()

@@ -71,6 +71,7 @@ fun PlayingQueueComposable(
   cachingModelView: CachingModelView,
   viewModel: PlayerViewModel,
   modifier: Modifier = Modifier,
+  forceExpanded: Boolean = false,
 ) {
   val context = LocalContext.current
   val coroutineScope = rememberCoroutineScope()
@@ -106,6 +107,10 @@ fun PlayingQueueComposable(
 
   val playbackReady by viewModel.isPlaybackReady.collectAsState()
   val playingQueueExpanded by viewModel.playingQueueExpanded.collectAsState()
+
+  val expanded = playingQueueExpanded || forceExpanded
+
+  val showQueueHeader = playingQueueExpanded.not() || forceExpanded
 
   val density = LocalDensity.current
 
@@ -208,7 +213,7 @@ fun PlayingQueueComposable(
         Modifier
           .fillMaxSize()
           .let {
-            when (playingQueueExpanded) {
+            when (expanded) {
               true -> {
                 it.withScrollbar(
                   state = listState,
@@ -224,7 +229,7 @@ fun PlayingQueueComposable(
             }
           }.padding(horizontal = 16.dp),
     ) {
-      if (playingQueueExpanded.not()) {
+      if (showQueueHeader) {
         Text(
           text = provideNowPlayingTitle(libraryViewModel.fetchPreferredLibraryType(), context),
           fontSize = fontSize.sp,
@@ -238,7 +243,7 @@ fun PlayingQueueComposable(
 
       LazyColumn(
         contentPadding =
-          when (playingQueueExpanded) {
+          when (expanded) {
             true -> PaddingValues(bottom = 12.dp)
             false -> PaddingValues(bottom = with(density) { collapsedPlayingQueueHeight.toDp() })
           },
@@ -248,7 +253,7 @@ fun PlayingQueueComposable(
             .scrollable(
               state = rememberScrollState(),
               orientation = Orientation.Vertical,
-              enabled = playingQueueExpanded,
+              enabled = expanded,
             ).onGloballyPositioned {
               if (collapsedPlayingQueueHeight == 0) {
                 collapsedPlayingQueueHeight = it.size.height
@@ -271,10 +276,10 @@ fun PlayingQueueComposable(
                 override fun onPreScroll(
                   available: Offset,
                   source: NestedScrollSource,
-                ): Offset = if (playingQueueExpanded) Offset.Zero else available
+                ): Offset = if (expanded) Offset.Zero else available
 
                 override suspend fun onPreFling(available: Velocity): Velocity {
-                  if (available.y < -expandFlingThreshold && !playingQueueExpanded) {
+                  if (available.y < -expandFlingThreshold && !expanded) {
                     viewModel.expandPlayingQueue()
                     return available
                   }
