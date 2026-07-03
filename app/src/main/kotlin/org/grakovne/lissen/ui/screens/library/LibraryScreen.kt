@@ -436,7 +436,7 @@ fun LibraryScreen(
 
           item(key = "library_title", span = { GridItemSpan(maxLineSpan) }) {
             Column(modifier = Modifier.fillMaxWidth()) {
-              if (!searchRequested && recentVisible) {
+              if (!searchRequested && recentVisible && isPlaceholderRequired.not()) {
                 AnimatedContent(
                   targetState = navBarTitle,
                   transitionSpec = {
@@ -454,7 +454,7 @@ fun LibraryScreen(
                   label = "library_header_fade",
                 ) {
                   when {
-                    it == libraryTitle || isPlaceholderRequired -> {
+                    it == libraryTitle -> {
                       Spacer(
                         modifier =
                           Modifier
