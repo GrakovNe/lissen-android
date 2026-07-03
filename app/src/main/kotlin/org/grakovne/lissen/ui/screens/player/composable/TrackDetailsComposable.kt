@@ -58,7 +58,7 @@ fun BookCover(
   AsyncShimmeringImage(
     imageRequest = imageRequest,
     imageLoader = imageLoader,
-    contentDescription = "${book?.title} cover",
+    contentDescription = null,
     contentScale = ContentScale.FillBounds,
     modifier = modifier.clip(RoundedCornerShape(8.dp)),
     error = painterResource(R.drawable.cover_fallback),

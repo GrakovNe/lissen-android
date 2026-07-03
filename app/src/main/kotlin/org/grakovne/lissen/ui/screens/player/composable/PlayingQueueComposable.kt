@@ -53,12 +53,14 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.launch
+import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.components.withScrollbar
 import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
 import org.grakovne.lissen.viewmodel.CachingModelView
@@ -343,7 +345,7 @@ fun PlayingQueueComposable(
       ) {
         Icon(
           imageVector = Icons.Filled.KeyboardArrowDown,
-          contentDescription = "Collapse queue",
+          contentDescription = stringResource(R.string.a11y_collapse_queue),
           tint = colorScheme.onBackground,
         )
       }

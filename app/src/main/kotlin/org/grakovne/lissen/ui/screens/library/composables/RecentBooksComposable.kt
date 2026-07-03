@@ -32,6 +32,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -87,11 +90,16 @@ fun RecentBookItemComposable(
   imageLoader: ImageLoader,
   libraryViewModel: LibraryViewModel,
 ) {
+  val openLabel = stringResource(R.string.a11y_open)
+
   Column(
     modifier =
       Modifier
         .width(width)
-        .clickable { navController.showPlayer(book.id, book.title, book.subtitle) },
+        .semantics(mergeDescendants = true) {}
+        .clickable(onClickLabel = openLabel, role = Role.Button) {
+          navController.showPlayer(book.id, book.title, book.subtitle)
+        },
   ) {
     val context = LocalContext.current
     var coverLoading by remember { mutableStateOf(true) }
@@ -118,7 +126,7 @@ fun RecentBookItemComposable(
         AsyncShimmeringImage(
           imageRequest = imageRequest,
           imageLoader = imageLoader,
-          contentDescription = "${book.title} cover",
+          contentDescription = null,
           contentScale = ContentScale.FillBounds,
           modifier =
             Modifier

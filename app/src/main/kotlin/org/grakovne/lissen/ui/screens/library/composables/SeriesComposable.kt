@@ -30,6 +30,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -71,7 +73,8 @@ fun SeriesComposable(
       modifier =
         Modifier
           .fillMaxWidth()
-          .clickable { onToggle() }
+          .semantics(mergeDescendants = true) {}
+          .clickable(role = Role.Button) { onToggle() }
           .testTag("seriesItem_${series.id}")
           .padding(horizontal = 4.dp, vertical = 8.dp),
       verticalAlignment = Alignment.CenterVertically,
@@ -79,7 +82,7 @@ fun SeriesComposable(
       SeriesCoverStack(
         seriesId = series.id,
         coverItemIds = series.coverItemIds,
-        contentDescription = "${series.title} cover",
+        contentDescription = null,
         imageLoader = imageLoader,
       )
 
@@ -196,7 +199,7 @@ private fun SeriesSequenceLabel(
 private fun SeriesCoverStack(
   seriesId: String,
   coverItemIds: List<String>,
-  contentDescription: String,
+  contentDescription: String?,
   imageLoader: ImageLoader,
 ) {
   val context = LocalContext.current

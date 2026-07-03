@@ -74,7 +74,7 @@ fun CustomHeaderComposable(
       ) {
         Icon(
           imageVector = Icons.Default.DeleteOutline,
-          contentDescription = "Delete from cache",
+          contentDescription = stringResource(R.string.a11y_delete_from_cache),
           tint = colorScheme.error,
           modifier = Modifier.size(32.dp),
         )

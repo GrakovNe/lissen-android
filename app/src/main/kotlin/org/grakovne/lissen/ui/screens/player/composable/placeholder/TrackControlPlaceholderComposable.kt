@@ -25,7 +25,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.extensions.formatTime
 import org.grakovne.lissen.ui.screens.player.composable.common.provideForwardIcon
 import org.grakovne.lissen.ui.screens.player.composable.common.provideReplayIcon
@@ -101,7 +103,7 @@ fun TrackControlPlaceholderComposable(
         ) {
           Icon(
             imageVector = Icons.Rounded.SkipPrevious,
-            contentDescription = "Previous Track",
+            contentDescription = stringResource(R.string.a11y_previous_track),
             tint = colorScheme.onBackground,
             modifier = Modifier.size(36.dp),
           )
@@ -110,7 +112,7 @@ fun TrackControlPlaceholderComposable(
         IconButton(onClick = {}) {
           Icon(
             imageVector = provideReplayIcon(seekTime),
-            contentDescription = "Rewind",
+            contentDescription = stringResource(R.string.a11y_rewind),
             tint = colorScheme.onBackground,
             modifier = Modifier.size(48.dp),
           )
@@ -122,7 +124,7 @@ fun TrackControlPlaceholderComposable(
         ) {
           Icon(
             imageVector = Icons.Rounded.PlayCircleFilled,
-            contentDescription = "Play",
+            contentDescription = stringResource(R.string.a11y_play),
             tint = colorScheme.primary,
             modifier = Modifier.fillMaxSize(),
           )
@@ -131,7 +133,7 @@ fun TrackControlPlaceholderComposable(
         IconButton(onClick = {}) {
           Icon(
             imageVector = provideForwardIcon(seekTime),
-            contentDescription = "Forward",
+            contentDescription = stringResource(R.string.a11y_fast_forward),
             tint = colorScheme.onBackground,
             modifier = Modifier.size(48.dp),
           )
@@ -143,7 +145,7 @@ fun TrackControlPlaceholderComposable(
         ) {
           Icon(
             imageVector = Icons.Rounded.SkipNext,
-            contentDescription = "Next Track",
+            contentDescription = stringResource(R.string.a11y_next_track),
             tint = colorScheme.onBackground.copy(alpha = 0.3f),
             modifier = Modifier.size(36.dp),
           )

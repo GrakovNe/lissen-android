@@ -50,6 +50,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -110,6 +115,14 @@ fun PlayerScreen(
   val isPlaybackReady by playerViewModel.isPlaybackReady.collectAsState()
   val playingQueueExpanded by playerViewModel.playingQueueExpanded.collectAsState()
   val searchRequested by playerViewModel.searchRequested.collectAsState()
+  val preparingError by playerViewModel.preparingError.collectAsState()
+
+  val playbackStatusAnnouncement =
+    when {
+      preparingError -> stringResource(R.string.a11y_playback_error)
+      isPlaybackReady.not() -> stringResource(R.string.a11y_buffering)
+      else -> ""
+    }
 
   var itemDetailsSelected by remember { mutableStateOf(false) }
   var bookmarksSelected by remember { mutableStateOf(false) }
@@ -252,7 +265,10 @@ fun PlayerScreen(
             style = titleTextStyle,
             color = colorScheme.onSurface,
             maxLines = 1,
-            modifier = Modifier.fillMaxWidth(),
+            modifier =
+              Modifier
+                .fillMaxWidth()
+                .semantics { heading() },
           )
         },
         navigationIcon = {
@@ -377,6 +393,16 @@ fun PlayerScreen(
       onDismissRequest = { bookmarksSelected = false },
     )
   }
+
+  Spacer(
+    modifier =
+      Modifier
+        .size(0.dp)
+        .semantics {
+          liveRegion = LiveRegionMode.Polite
+          contentDescription = playbackStatusAnnouncement
+        },
+  )
 }
 
 @Composable

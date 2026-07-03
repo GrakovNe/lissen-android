@@ -23,7 +23,7 @@ import com.valentinilk.shimmer.shimmer
 fun AsyncShimmeringImage(
   imageRequest: ImageRequest,
   imageLoader: ImageLoader,
-  contentDescription: String,
+  contentDescription: String?,
   contentScale: ContentScale,
   modifier: Modifier = Modifier,
   error: Painter,
