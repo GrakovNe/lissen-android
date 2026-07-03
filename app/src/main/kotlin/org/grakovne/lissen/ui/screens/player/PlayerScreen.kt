@@ -48,12 +48,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.LiveRegionMode
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -117,12 +115,21 @@ fun PlayerScreen(
   val searchRequested by playerViewModel.searchRequested.collectAsState()
   val preparingError by playerViewModel.preparingError.collectAsState()
 
-  val playbackStatusAnnouncement =
-    when {
-      preparingError -> stringResource(R.string.a11y_playback_error)
-      isPlaybackReady.not() -> stringResource(R.string.a11y_buffering)
-      else -> ""
+  val view = LocalView.current
+  val bufferingAnnouncement = stringResource(R.string.a11y_buffering)
+  val playbackErrorAnnouncement = stringResource(R.string.a11y_playback_error)
+
+  LaunchedEffect(preparingError) {
+    if (preparingError) {
+      view.announceForAccessibility(playbackErrorAnnouncement)
     }
+  }
+
+  LaunchedEffect(isPlaybackReady) {
+    if (isPlaybackReady.not()) {
+      view.announceForAccessibility(bufferingAnnouncement)
+    }
+  }
 
   var itemDetailsSelected by remember { mutableStateOf(false) }
   var bookmarksSelected by remember { mutableStateOf(false) }
@@ -393,16 +400,6 @@ fun PlayerScreen(
       onDismissRequest = { bookmarksSelected = false },
     )
   }
-
-  Spacer(
-    modifier =
-      Modifier
-        .size(0.dp)
-        .semantics {
-          liveRegion = LiveRegionMode.Polite
-          contentDescription = playbackStatusAnnouncement
-        },
-  )
 }
 
 @Composable

@@ -222,4 +222,28 @@
     <string name="local_network_permission_request_hint">L\'app richiede l\'accesso alla rete locale per connettersi ai server nelle vicinanze</string>
     <string name="downloads_menu_download_option_decrease">Diminuisci numero</string>
     <string name="downloads_menu_download_option_increase">Aumenta numero</string>
+    <string name="a11y_back">Indietro</string>
+    <string name="a11y_menu">Menu</string>
+    <string name="a11y_search">Cerca</string>
+    <string name="a11y_clear">Cancella</string>
+    <string name="a11y_add">Aggiungi</string>
+    <string name="a11y_settings">Impostazioni</string>
+    <string name="a11y_delete_from_cache">Elimina dalla cache</string>
+    <string name="a11y_available_offline">Disponibile offline</string>
+    <string name="a11y_collapse_queue">Comprimi la coda</string>
+    <string name="a11y_open">Apri</string>
+    <string name="a11y_previous_track">Traccia precedente</string>
+    <string name="a11y_next_track">Traccia successiva</string>
+    <string name="a11y_play">Riproduci</string>
+    <string name="a11y_pause">Pausa</string>
+    <string name="a11y_playback_position">Posizione di riproduzione</string>
+    <string name="a11y_position_of">%1$s di %2$s</string>
+    <string name="a11y_buffering">Buffering in corso</string>
+    <string name="a11y_playback_error">Errore di riproduzione</string>
+    <string name="a11y_rewind_seconds">Riavvolgi di %1$d secondi</string>
+    <string name="a11y_fast_forward_seconds">Avanza di %1$d secondi</string>
+    <plurals name="a11y_hours">
+        <item quantity="one">%d ora</item>
+        <item quantity="other">%d ore</item>
+    </plurals>
 </resources>

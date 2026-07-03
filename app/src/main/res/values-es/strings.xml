@@ -205,4 +205,28 @@
     <string name="settings_screen_user_agent_title">Cambiar User-Agent</string>
     <string name="settings_screen_user_agent_hint">Personalizar el encabezado User-Agent de la aplicación</string>
     <string name="settings_screen_user_agent_restore_default">Restaurar valores predeterminados</string>
+    <string name="a11y_back">Atrás</string>
+    <string name="a11y_menu">Menú</string>
+    <string name="a11y_search">Buscar</string>
+    <string name="a11y_clear">Borrar</string>
+    <string name="a11y_add">Añadir</string>
+    <string name="a11y_settings">Ajustes</string>
+    <string name="a11y_delete_from_cache">Eliminar de la caché</string>
+    <string name="a11y_available_offline">Disponible sin conexión</string>
+    <string name="a11y_collapse_queue">Contraer la cola</string>
+    <string name="a11y_open">Abrir</string>
+    <string name="a11y_previous_track">Pista anterior</string>
+    <string name="a11y_next_track">Pista siguiente</string>
+    <string name="a11y_play">Reproducir</string>
+    <string name="a11y_pause">Pausa</string>
+    <string name="a11y_playback_position">Posición de reproducción</string>
+    <string name="a11y_position_of">%1$s de %2$s</string>
+    <string name="a11y_buffering">Almacenando en búfer</string>
+    <string name="a11y_playback_error">Error de reproducción</string>
+    <string name="a11y_rewind_seconds">Retroceder %1$d segundos</string>
+    <string name="a11y_fast_forward_seconds">Avanzar %1$d segundos</string>
+    <plurals name="a11y_hours">
+        <item quantity="one">%d hora</item>
+        <item quantity="other">%d horas</item>
+    </plurals>
 </resources>

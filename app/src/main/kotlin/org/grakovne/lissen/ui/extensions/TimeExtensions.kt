@@ -5,25 +5,40 @@ import androidx.compose.ui.res.pluralStringResource
 import org.grakovne.lissen.R
 import java.util.Locale
 
-@Composable
-fun spokenDuration(seconds: Int): String {
-  val total = seconds.coerceAtLeast(0)
+data class SpokenDurationParts(
+  val hours: Int,
+  val minutes: Int,
+  val seconds: Int,
+  val includeSeconds: Boolean,
+)
+
+fun spokenDurationParts(totalSeconds: Int): SpokenDurationParts {
+  val total = totalSeconds.coerceAtLeast(0)
   val hours = total / 3600
   val minutes = (total % 3600) / 60
-  val secs = total % 60
+  val seconds = total % 60
 
-  val hoursText = pluralStringResource(R.plurals.a11y_hours, hours, hours)
-  val minutesText = pluralStringResource(R.plurals.a11y_minutes, minutes, minutes)
-  val secondsText = pluralStringResource(R.plurals.a11y_seconds, secs, secs)
+  return SpokenDurationParts(
+    hours = hours,
+    minutes = minutes,
+    seconds = seconds,
+    includeSeconds = seconds > 0 || (hours == 0 && minutes == 0),
+  )
+}
 
-  val parts =
-    buildList {
-      if (hours > 0) add(hoursText)
-      if (minutes > 0) add(minutesText)
-      if (secs > 0 || (hours == 0 && minutes == 0)) add(secondsText)
-    }
+@Composable
+fun spokenDuration(seconds: Int): String {
+  val parts = spokenDurationParts(seconds)
 
-  return parts.joinToString(" ")
+  val hoursText = pluralStringResource(R.plurals.a11y_hours, parts.hours, parts.hours)
+  val minutesText = pluralStringResource(R.plurals.timer_option_after_time, parts.minutes, parts.minutes)
+  val secondsText = pluralStringResource(R.plurals.seek_interval_seconds, parts.seconds, parts.seconds)
+
+  return buildList {
+    if (parts.hours > 0) add(hoursText)
+    if (parts.minutes > 0) add(minutesText)
+    if (parts.includeSeconds) add(secondsText)
+  }.joinToString(" ")
 }
 
 fun Int.formatTime(forceLeadingHours: Boolean): String =

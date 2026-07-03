@@ -178,7 +178,7 @@ fun TrackControlComposable(
         ) {
           Icon(
             imageVector = provideReplayIcon(seekTime),
-            contentDescription = stringResource(R.string.a11y_rewind),
+            contentDescription = stringResource(R.string.a11y_rewind_seconds, seekTime.rewind),
             tint = colorScheme.onBackground,
             modifier = Modifier.size(48.dp),
           )
@@ -201,7 +201,7 @@ fun TrackControlComposable(
         ) {
           Icon(
             imageVector = provideForwardIcon(seekTime),
-            contentDescription = stringResource(R.string.a11y_fast_forward),
+            contentDescription = stringResource(R.string.a11y_fast_forward_seconds, seekTime.forward),
             tint = colorScheme.onBackground,
             modifier = Modifier.size(48.dp),
           )

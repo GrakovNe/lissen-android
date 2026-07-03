@@ -28,4 +28,58 @@ class TimeExtensionsTest {
   fun `forceLeadingHours false matches the default formatter`() {
     assertEquals(3725.formatTime(), 3725.formatTime(forceLeadingHours = false))
   }
+
+  @Test
+  fun `spokenDurationParts splits hours minutes and seconds`() {
+    val parts = spokenDurationParts(3725)
+    assertEquals(1, parts.hours)
+    assertEquals(2, parts.minutes)
+    assertEquals(5, parts.seconds)
+    assertEquals(true, parts.includeSeconds)
+  }
+
+  @Test
+  fun `spokenDurationParts under a minute keeps seconds`() {
+    val parts = spokenDurationParts(59)
+    assertEquals(0, parts.hours)
+    assertEquals(0, parts.minutes)
+    assertEquals(59, parts.seconds)
+    assertEquals(true, parts.includeSeconds)
+  }
+
+  @Test
+  fun `spokenDurationParts zero includes seconds so it is never empty`() {
+    val parts = spokenDurationParts(0)
+    assertEquals(0, parts.hours)
+    assertEquals(0, parts.minutes)
+    assertEquals(0, parts.seconds)
+    assertEquals(true, parts.includeSeconds)
+  }
+
+  @Test
+  fun `spokenDurationParts whole minutes drop the seconds component`() {
+    val parts = spokenDurationParts(120)
+    assertEquals(0, parts.hours)
+    assertEquals(2, parts.minutes)
+    assertEquals(0, parts.seconds)
+    assertEquals(false, parts.includeSeconds)
+  }
+
+  @Test
+  fun `spokenDurationParts whole hour drops minutes and seconds`() {
+    val parts = spokenDurationParts(3600)
+    assertEquals(1, parts.hours)
+    assertEquals(0, parts.minutes)
+    assertEquals(0, parts.seconds)
+    assertEquals(false, parts.includeSeconds)
+  }
+
+  @Test
+  fun `spokenDurationParts clamps negative input to zero`() {
+    val parts = spokenDurationParts(-5)
+    assertEquals(0, parts.hours)
+    assertEquals(0, parts.minutes)
+    assertEquals(0, parts.seconds)
+    assertEquals(true, parts.includeSeconds)
+  }
 }

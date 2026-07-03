@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="a11y_back">Назад</string>
-    <string name="a11y_forward">Далее</string>
     <string name="a11y_menu">Меню</string>
     <string name="a11y_search">Поиск</string>
     <string name="a11y_clear">Очистить</string>
@@ -12,8 +11,8 @@
     <string name="a11y_collapse_queue">Свернуть очередь</string>
     <string name="a11y_open">Открыть</string>
     <string name="a11y_previous_track">Предыдущий трек</string>
-    <string name="a11y_rewind">Перемотать назад</string>
-    <string name="a11y_fast_forward">Перемотать вперёд</string>
+    <string name="a11y_rewind_seconds">Перемотать назад на %1$d секунд</string>
+    <string name="a11y_fast_forward_seconds">Перемотать вперёд на %1$d секунд</string>
     <string name="a11y_next_track">Следующий трек</string>
     <string name="a11y_play">Воспроизвести</string>
     <string name="a11y_pause">Пауза</string>
@@ -26,18 +25,6 @@
         <item quantity="few">%d часа</item>
         <item quantity="many">%d часов</item>
         <item quantity="other">%d часа</item>
-    </plurals>
-    <plurals name="a11y_minutes">
-        <item quantity="one">%d минута</item>
-        <item quantity="few">%d минуты</item>
-        <item quantity="many">%d минут</item>
-        <item quantity="other">%d минуты</item>
-    </plurals>
-    <plurals name="a11y_seconds">
-        <item quantity="one">%d секунда</item>
-        <item quantity="few">%d секунды</item>
-        <item quantity="many">%d секунд</item>
-        <item quantity="other">%d секунды</item>
     </plurals>
     <string name="library_screen_library_title">Библиотека</string>
     <string name="library_screen_continue_listening_title">Продолжить слушать</string>

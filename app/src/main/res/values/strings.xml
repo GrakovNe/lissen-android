@@ -2,7 +2,6 @@
 <resources>
     <string name="app_name" translatable="false">Lissen</string>
     <string name="a11y_back">Back</string>
-    <string name="a11y_forward">Forward</string>
     <string name="a11y_menu">Menu</string>
     <string name="a11y_search">Search</string>
     <string name="a11y_clear">Clear</string>
@@ -13,8 +12,8 @@
     <string name="a11y_collapse_queue">Collapse queue</string>
     <string name="a11y_open">Open</string>
     <string name="a11y_previous_track">Previous track</string>
-    <string name="a11y_rewind">Rewind</string>
-    <string name="a11y_fast_forward">Fast forward</string>
+    <string name="a11y_rewind_seconds">Rewind %1$d seconds</string>
+    <string name="a11y_fast_forward_seconds">Fast forward %1$d seconds</string>
     <string name="a11y_next_track">Next track</string>
     <string name="a11y_play">Play</string>
     <string name="a11y_pause">Pause</string>
@@ -25,14 +24,6 @@
     <plurals name="a11y_hours">
         <item quantity="one">%d hour</item>
         <item quantity="other">%d hours</item>
-    </plurals>
-    <plurals name="a11y_minutes">
-        <item quantity="one">%d minute</item>
-        <item quantity="other">%d minutes</item>
-    </plurals>
-    <plurals name="a11y_seconds">
-        <item quantity="one">%d second</item>
-        <item quantity="other">%d seconds</item>
     </plurals>
     <string name="library_screen_library_title">Library</string>
     <string name="library_screen_continue_listening_title">Continue listening</string>
