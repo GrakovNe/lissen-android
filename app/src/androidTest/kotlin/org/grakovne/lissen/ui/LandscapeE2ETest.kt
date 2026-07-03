@@ -200,6 +200,20 @@ class LandscapeE2ETest {
   }
 
   @Test
+  fun landscape_playerShowsChapterNumber() {
+    rotateToLandscape()
+    login()
+    openFirstBook()
+
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = hasTestTag("playerChapterNumber"),
+      timeoutMillis = TIMEOUT_MS,
+    )
+
+    composeRule.onNodeWithTag("playerChapterNumber").assertIsDisplayed()
+  }
+
+  @Test
   fun landscape_mediaDetailSheetOpens() {
     rotateToLandscape()
     login()

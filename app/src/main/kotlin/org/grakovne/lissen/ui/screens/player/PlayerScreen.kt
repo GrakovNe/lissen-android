@@ -492,7 +492,10 @@ private fun PlayerArtworkAndControlsWide(
         style = typography.bodyMedium,
         color = colorScheme.onBackground.copy(alpha = 0.6f),
         textAlign = TextAlign.Center,
-        modifier = Modifier.fillMaxWidth(),
+        modifier =
+          Modifier
+            .fillMaxWidth()
+            .testTag("playerChapterNumber"),
       )
     } else {
       ChapterNumberPlaceholder()

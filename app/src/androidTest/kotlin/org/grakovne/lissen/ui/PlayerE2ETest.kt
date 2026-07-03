@@ -110,6 +110,18 @@ class PlayerE2ETest {
       .config[SemanticsProperties.TestTag]
 
   @Test
+  fun player_showsChapterNumber() {
+    loginAndOpenBook()
+
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = hasTestTag("playerChapterNumber"),
+      timeoutMillis = TIMEOUT_MS,
+    )
+
+    composeRule.onNodeWithTag("playerChapterNumber").assertIsDisplayed()
+  }
+
+  @Test
   fun player_backButtonNavigatesToLibrary() {
     loginAndOpenBook()
 
