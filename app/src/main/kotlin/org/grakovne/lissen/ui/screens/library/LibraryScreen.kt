@@ -74,7 +74,6 @@ import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.RecentBook
-import org.grakovne.lissen.ui.adaptive.isWideLayout
 import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.common.RequestLocalNetworkPermission
@@ -396,15 +395,8 @@ fun LibraryScreen(
             .pullRefresh(pullRefreshState)
             .fillMaxSize(),
       ) {
-        val libraryColumns =
-          when {
-            isWideLayout().not() -> 1
-            libraryGrouping != LibraryGrouping.NONE -> 1
-            else -> 2
-          }
-
         LazyVerticalGrid(
-          columns = GridCells.Fixed(libraryColumns),
+          columns = GridCells.Fixed(1),
           state = libraryListState,
           modifier =
             Modifier
