@@ -62,7 +62,7 @@ fun CommonSettingsItemComposable(
                 item.icon?.let {
                   Icon(
                     imageVector = it,
-                    contentDescription = "Settings Item Icon",
+                    contentDescription = null,
                     modifier = Modifier.size(24.dp),
                   )
                 }

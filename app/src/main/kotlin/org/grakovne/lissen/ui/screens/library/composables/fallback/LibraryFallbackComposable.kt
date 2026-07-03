@@ -94,7 +94,7 @@ fun LibraryFallbackComposable(
         ) {
           Icon(
             imageVector = it,
-            contentDescription = "Library placeholder",
+            contentDescription = null,
             tint = Color.White,
             modifier = Modifier.size(64.dp),
           )

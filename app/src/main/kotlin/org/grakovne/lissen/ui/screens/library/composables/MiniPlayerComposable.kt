@@ -49,6 +49,10 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -73,6 +77,9 @@ fun MiniPlayerComposable(
   libraryType: LibraryType?,
 ) {
   val view: View = LocalView.current
+
+  val openLabel = stringResource(R.string.a11y_open)
+  val closeLabel = stringResource(R.string.mini_player_action_close)
 
   var backgroundVisible by remember { mutableStateOf(true) }
 
@@ -137,8 +144,17 @@ fun MiniPlayerComposable(
             .testTag("miniPlayer")
             .fillMaxWidth()
             .background(colorScheme.background)
-            .clickable { navController.showPlayer(book.id, book.title, book.subtitle) }
-            .padding(horizontal = 20.dp, vertical = 8.dp),
+            .semantics(mergeDescendants = true) {
+              customActions =
+                listOf(
+                  CustomAccessibilityAction(closeLabel) {
+                    playerViewModel.clearPlayingBook()
+                    true
+                  },
+                )
+            }.clickable(onClickLabel = openLabel, role = Role.Button) {
+              navController.showPlayer(book.id, book.title, book.subtitle)
+            }.padding(horizontal = 20.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
       ) {
         val context = LocalContext.current
@@ -153,7 +169,7 @@ fun MiniPlayerComposable(
         AsyncShimmeringImage(
           imageRequest = imageRequest,
           imageLoader = imageLoader,
-          contentDescription = "${book.title} cover",
+          contentDescription = null,
           contentScale = ContentScale.FillBounds,
           modifier =
             Modifier

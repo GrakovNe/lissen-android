@@ -55,6 +55,9 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -129,6 +132,7 @@ fun CachedItemsSettingsScreen(
           Text(
             text = stringResource(R.string.settings_screen_cached_items_title),
             style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
+            modifier = Modifier.semantics { heading() },
             color = colorScheme.onSurface,
           )
         },
@@ -136,7 +140,7 @@ fun CachedItemsSettingsScreen(
           IconButton(onClick = { onBack() }) {
             Icon(
               imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-              contentDescription = "Back",
+              contentDescription = stringResource(R.string.a11y_back),
               tint = colorScheme.onSurface,
             )
           }
@@ -249,7 +253,8 @@ private fun CachedItemComposable(
     modifier =
       Modifier
         .fillMaxWidth()
-        .clickable { expanded = expanded.not() }
+        .semantics(mergeDescendants = true) {}
+        .clickable(role = Role.Button) { expanded = expanded.not() }
         .padding(horizontal = 16.dp, vertical = 8.dp),
   ) {
     Column {
@@ -257,7 +262,7 @@ private fun CachedItemComposable(
         AsyncShimmeringImage(
           imageRequest = imageRequest,
           imageLoader = imageLoader,
-          contentDescription = "${book.title} cover",
+          contentDescription = null,
           contentScale = ContentScale.FillBounds,
           modifier =
             Modifier

@@ -22,6 +22,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -46,6 +49,8 @@ fun BookComposable(
 ) {
   val context = LocalContext.current
 
+  val openLabel = stringResource(R.string.a11y_open)
+
   val imageRequest =
     remember(book.id) {
       ImageRequest
@@ -58,8 +63,10 @@ fun BookComposable(
     modifier =
       Modifier
         .fillMaxWidth()
-        .clickable { navController.showPlayer(book.id, book.title, book.subtitle) }
-        .testTag("bookItem_${book.id}")
+        .semantics(mergeDescendants = true) {}
+        .clickable(onClickLabel = openLabel, role = Role.Button) {
+          navController.showPlayer(book.id, book.title, book.subtitle)
+        }.testTag("bookItem_${book.id}")
         .padding(horizontal = 4.dp, vertical = 8.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {
@@ -68,7 +75,7 @@ fun BookComposable(
     AsyncShimmeringImage(
       imageRequest = imageRequest,
       imageLoader = imageLoader,
-      contentDescription = "${book.title} cover",
+      contentDescription = null,
       contentScale = ContentScale.FillBounds,
       modifier =
         Modifier

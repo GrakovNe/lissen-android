@@ -182,4 +182,28 @@
     <string name="playback_preferences_description">Hangerő, keresési vezérlők és hang</string>
     <string name="appearance_preferences_title">Megjelenés</string>
     <string name="appearance_preferences_description">Színösszeállítás, rendezés és téma</string>
+    <string name="a11y_back">Vissza</string>
+    <string name="a11y_menu">Menü</string>
+    <string name="a11y_search">Keresés</string>
+    <string name="a11y_clear">Törlés</string>
+    <string name="a11y_add">Hozzáadás</string>
+    <string name="a11y_settings">Beállítások</string>
+    <string name="a11y_delete_from_cache">Törlés a gyorsítótárból</string>
+    <string name="a11y_available_offline">Offline elérhető</string>
+    <string name="a11y_collapse_queue">Várólista összecsukása</string>
+    <string name="a11y_open">Megnyitás</string>
+    <string name="a11y_previous_track">Előző szám</string>
+    <string name="a11y_next_track">Következő szám</string>
+    <string name="a11y_play">Lejátszás</string>
+    <string name="a11y_pause">Szünet</string>
+    <string name="a11y_playback_position">Lejátszási pozíció</string>
+    <string name="a11y_position_of">%1$s / %2$s</string>
+    <string name="a11y_buffering">Pufferelés</string>
+    <string name="a11y_playback_error">Lejátszási hiba</string>
+    <string name="a11y_rewind_seconds">%1$d másodperc visszatekerés</string>
+    <string name="a11y_fast_forward_seconds">%1$d másodperc előretekerés</string>
+    <plurals name="a11y_hours">
+        <item quantity="one">%d óra</item>
+        <item quantity="other">%d óra</item>
+    </plurals>
 </resources>

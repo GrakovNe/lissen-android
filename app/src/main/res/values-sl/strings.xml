@@ -174,4 +174,30 @@
     <string name="settings_screen_default_sleep_timer_title">Privzeti časovnik med predvajanjem</string>
     <string name="settings_screen_software_codecs_enabled_title">Vsili programsko dekodiranje</string>
     <string name="settings_screen_software_codecs_enabled_description">Uporabi programske kodeke za predvajanje</string>
+    <string name="a11y_back">Nazaj</string>
+    <string name="a11y_menu">Meni</string>
+    <string name="a11y_search">Iskanje</string>
+    <string name="a11y_clear">Počisti</string>
+    <string name="a11y_add">Dodaj</string>
+    <string name="a11y_settings">Nastavitve</string>
+    <string name="a11y_delete_from_cache">Izbriši iz predpomnilnika</string>
+    <string name="a11y_available_offline">Na voljo brez povezave</string>
+    <string name="a11y_collapse_queue">Strni čakalno vrsto</string>
+    <string name="a11y_open">Odpri</string>
+    <string name="a11y_previous_track">Prejšnja skladba</string>
+    <string name="a11y_next_track">Naslednja skladba</string>
+    <string name="a11y_play">Predvajaj</string>
+    <string name="a11y_pause">Premor</string>
+    <string name="a11y_playback_position">Položaj predvajanja</string>
+    <string name="a11y_position_of">%1$s od %2$s</string>
+    <string name="a11y_buffering">Medpomnjenje</string>
+    <string name="a11y_playback_error">Napaka predvajanja</string>
+    <string name="a11y_rewind_seconds">Previj nazaj za %1$d sekund</string>
+    <string name="a11y_fast_forward_seconds">Previj naprej za %1$d sekund</string>
+    <plurals name="a11y_hours">
+        <item quantity="one">%d ura</item>
+        <item quantity="two">%d uri</item>
+        <item quantity="few">%d ure</item>
+        <item quantity="other">%d ur</item>
+    </plurals>
 </resources>

@@ -101,7 +101,7 @@ fun TrackControlPlaceholderComposable(
         ) {
           Icon(
             imageVector = Icons.Rounded.SkipPrevious,
-            contentDescription = "Previous Track",
+            contentDescription = null,
             tint = colorScheme.onBackground,
             modifier = Modifier.size(36.dp),
           )
@@ -110,7 +110,7 @@ fun TrackControlPlaceholderComposable(
         IconButton(onClick = {}) {
           Icon(
             imageVector = provideReplayIcon(seekTime),
-            contentDescription = "Rewind",
+            contentDescription = null,
             tint = colorScheme.onBackground,
             modifier = Modifier.size(48.dp),
           )
@@ -122,7 +122,7 @@ fun TrackControlPlaceholderComposable(
         ) {
           Icon(
             imageVector = Icons.Rounded.PlayCircleFilled,
-            contentDescription = "Play",
+            contentDescription = null,
             tint = colorScheme.primary,
             modifier = Modifier.fillMaxSize(),
           )
@@ -131,7 +131,7 @@ fun TrackControlPlaceholderComposable(
         IconButton(onClick = {}) {
           Icon(
             imageVector = provideForwardIcon(seekTime),
-            contentDescription = "Forward",
+            contentDescription = null,
             tint = colorScheme.onBackground,
             modifier = Modifier.size(48.dp),
           )
@@ -143,7 +143,7 @@ fun TrackControlPlaceholderComposable(
         ) {
           Icon(
             imageVector = Icons.Rounded.SkipNext,
-            contentDescription = "Next Track",
+            contentDescription = null,
             tint = colorScheme.onBackground.copy(alpha = 0.3f),
             modifier = Modifier.size(36.dp),
           )

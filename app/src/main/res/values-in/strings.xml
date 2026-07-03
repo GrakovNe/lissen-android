@@ -219,4 +219,27 @@
     <string name="settings_screen_user_agent_title">Ubah User Agent</string>
     <string name="settings_screen_user_agent_hint">Sesuaikan header User-Agent aplikasi</string>
     <string name="settings_screen_user_agent_restore_default">Pulihkan Default</string>
+    <string name="a11y_back">Kembali</string>
+    <string name="a11y_menu">Menu</string>
+    <string name="a11y_search">Cari</string>
+    <string name="a11y_clear">Hapus</string>
+    <string name="a11y_add">Tambah</string>
+    <string name="a11y_settings">Pengaturan</string>
+    <string name="a11y_delete_from_cache">Hapus dari cache</string>
+    <string name="a11y_available_offline">Tersedia offline</string>
+    <string name="a11y_collapse_queue">Ciutkan antrean</string>
+    <string name="a11y_open">Buka</string>
+    <string name="a11y_previous_track">Trek sebelumnya</string>
+    <string name="a11y_next_track">Trek berikutnya</string>
+    <string name="a11y_play">Putar</string>
+    <string name="a11y_pause">Jeda</string>
+    <string name="a11y_playback_position">Posisi pemutaran</string>
+    <string name="a11y_position_of">%1$s dari %2$s</string>
+    <string name="a11y_buffering">Menyangga</string>
+    <string name="a11y_playback_error">Kesalahan pemutaran</string>
+    <string name="a11y_rewind_seconds">Mundur %1$d detik</string>
+    <string name="a11y_fast_forward_seconds">Maju %1$d detik</string>
+    <plurals name="a11y_hours">
+        <item quantity="other">%d jam</item>
+    </plurals>
 </resources>

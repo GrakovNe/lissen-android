@@ -123,7 +123,7 @@ fun PlaylistItemComposable(
     if (isCached) {
       Icon(
         imageVector = ImageVector.vectorResource(id = R.drawable.available_offline_filled),
-        contentDescription = "Available offline",
+        contentDescription = stringResource(R.string.a11y_available_offline),
         modifier =
           Modifier
             .padding(horizontal = 6.dp * fontScale)

@@ -27,6 +27,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
@@ -56,6 +58,7 @@ fun PlaybackPreferencesScreen(
           Text(
             text = stringResource(R.string.playback_preferences_title),
             style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
+            modifier = Modifier.semantics { heading() },
             color = colorScheme.onSurface,
           )
         },
@@ -63,7 +66,7 @@ fun PlaybackPreferencesScreen(
           IconButton(onClick = { onBack() }) {
             Icon(
               imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-              contentDescription = "Back",
+              contentDescription = stringResource(R.string.a11y_back),
               tint = colorScheme.onSurface,
             )
           }

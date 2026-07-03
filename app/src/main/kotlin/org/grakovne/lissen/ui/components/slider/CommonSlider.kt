@@ -14,6 +14,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.Dp
 import kotlin.math.roundToInt
 
@@ -57,6 +59,7 @@ fun CommonSlider(
       modifier =
         Modifier
           .fillMaxWidth()
+          .semantics { stateDescription = formatHeader(current) }
           .sliderDrag(sliderState, VISIBLE_SEGMENTS),
       contentAlignment = Alignment.TopCenter,
     ) {

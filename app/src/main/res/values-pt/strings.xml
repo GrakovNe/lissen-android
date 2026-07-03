@@ -202,4 +202,28 @@
     <string name="export_logs_description">Partilhar dados de diagnóstico para a solução de problemas</string>
     <string name="export_logs_no_logs">Nenhum registo disponível</string>
     <string name="settings_screen_activity_logging_title">Logar atividades</string>
+    <string name="a11y_back">Voltar</string>
+    <string name="a11y_menu">Menu</string>
+    <string name="a11y_search">Pesquisar</string>
+    <string name="a11y_clear">Limpar</string>
+    <string name="a11y_add">Adicionar</string>
+    <string name="a11y_settings">Definições</string>
+    <string name="a11y_delete_from_cache">Eliminar da cache</string>
+    <string name="a11y_available_offline">Disponível offline</string>
+    <string name="a11y_collapse_queue">Recolher a fila</string>
+    <string name="a11y_open">Abrir</string>
+    <string name="a11y_previous_track">Faixa anterior</string>
+    <string name="a11y_next_track">Faixa seguinte</string>
+    <string name="a11y_play">Reproduzir</string>
+    <string name="a11y_pause">Pausa</string>
+    <string name="a11y_playback_position">Posição de reprodução</string>
+    <string name="a11y_position_of">%1$s de %2$s</string>
+    <string name="a11y_buffering">A colocar em buffer</string>
+    <string name="a11y_playback_error">Erro de reprodução</string>
+    <string name="a11y_rewind_seconds">Retroceder %1$d segundos</string>
+    <string name="a11y_fast_forward_seconds">Avançar %1$d segundos</string>
+    <plurals name="a11y_hours">
+        <item quantity="one">%d hora</item>
+        <item quantity="other">%d horas</item>
+    </plurals>
 </resources>

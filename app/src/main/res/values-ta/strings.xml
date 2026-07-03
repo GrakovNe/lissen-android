@@ -183,4 +183,28 @@
     <string name="appearance_preferences_title">தோற்றம்</string>
     <string name="appearance_preferences_description">வண்ணத் திட்டம், வரிசையாக்கம் மற்றும் தீம்</string>
     <string name="disconnect_from_server_title">சேவையகத்திலிருந்து துண்டிக்கவும்</string>
+    <string name="a11y_back">பின்செல்</string>
+    <string name="a11y_menu">மெனு</string>
+    <string name="a11y_search">தேடு</string>
+    <string name="a11y_clear">அழி</string>
+    <string name="a11y_add">சேர்</string>
+    <string name="a11y_settings">அமைப்புகள்</string>
+    <string name="a11y_delete_from_cache">தற்காலிக சேமிப்பிலிருந்து நீக்கு</string>
+    <string name="a11y_available_offline">ஆஃப்லைனில் கிடைக்கும்</string>
+    <string name="a11y_collapse_queue">வரிசையைச் சுருக்கு</string>
+    <string name="a11y_open">திற</string>
+    <string name="a11y_previous_track">முந்தைய டிராக்</string>
+    <string name="a11y_next_track">அடுத்த டிராக்</string>
+    <string name="a11y_play">இயக்கு</string>
+    <string name="a11y_pause">இடைநிறுத்து</string>
+    <string name="a11y_playback_position">இயக்க நிலை</string>
+    <string name="a11y_position_of">%2$s இல் %1$s</string>
+    <string name="a11y_buffering">இடையகப்படுத்துகிறது</string>
+    <string name="a11y_playback_error">இயக்கப் பிழை</string>
+    <string name="a11y_rewind_seconds">%1$d வினாடிகள் பின்னோக்கி</string>
+    <string name="a11y_fast_forward_seconds">%1$d வினாடிகள் முன்னோக்கி</string>
+    <plurals name="a11y_hours">
+        <item quantity="one">%d மணிநேரம்</item>
+        <item quantity="other">%d மணிநேரம்</item>
+    </plurals>
 </resources>

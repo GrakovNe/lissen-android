@@ -67,7 +67,7 @@ fun LibrarySearchActionComposable(
     ) {
       Icon(
         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-        contentDescription = "Back",
+        contentDescription = stringResource(R.string.a11y_back),
       )
     }
 
@@ -113,7 +113,7 @@ fun LibrarySearchActionComposable(
         ) {
           Icon(
             imageVector = Icons.Outlined.Clear,
-            contentDescription = "Clear",
+            contentDescription = stringResource(R.string.a11y_clear),
           )
         }
       }

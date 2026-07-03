@@ -219,4 +219,28 @@
     <string name="settings_screen_user_agent_hint">Tilpass applikasjonens User-Agent-overskrift</string>
     <string name="settings_screen_user_agent_restore_default">Gjenopprett standardinnstillinger</string>
     <string name="local_network_permission_request_hint">Appen trenger tilgang til det lokale nettverket for å koble seg til servere i nærheten</string>
+    <string name="a11y_back">Tilbake</string>
+    <string name="a11y_menu">Meny</string>
+    <string name="a11y_search">Søk</string>
+    <string name="a11y_clear">Tøm</string>
+    <string name="a11y_add">Legg til</string>
+    <string name="a11y_settings">Innstillingar</string>
+    <string name="a11y_delete_from_cache">Slett frå hurtiglager</string>
+    <string name="a11y_available_offline">Tilgjengeleg offline</string>
+    <string name="a11y_collapse_queue">Skjul køen</string>
+    <string name="a11y_open">Opne</string>
+    <string name="a11y_previous_track">Førre spor</string>
+    <string name="a11y_next_track">Neste spor</string>
+    <string name="a11y_play">Spel av</string>
+    <string name="a11y_pause">Pause</string>
+    <string name="a11y_playback_position">Avspelingsposisjon</string>
+    <string name="a11y_position_of">%1$s av %2$s</string>
+    <string name="a11y_buffering">Bufrar</string>
+    <string name="a11y_playback_error">Avspelingsfeil</string>
+    <string name="a11y_rewind_seconds">Spol %1$d sekund tilbake</string>
+    <string name="a11y_fast_forward_seconds">Spol %1$d sekund fram</string>
+    <plurals name="a11y_hours">
+        <item quantity="one">%d time</item>
+        <item quantity="other">%d timar</item>
+    </plurals>
 </resources>

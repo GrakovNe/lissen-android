@@ -1,5 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="a11y_back">Назад</string>
+    <string name="a11y_menu">Меню</string>
+    <string name="a11y_search">Поиск</string>
+    <string name="a11y_clear">Очистить</string>
+    <string name="a11y_add">Добавить</string>
+    <string name="a11y_settings">Настройки</string>
+    <string name="a11y_delete_from_cache">Удалить из кэша</string>
+    <string name="a11y_available_offline">Доступно офлайн</string>
+    <string name="a11y_collapse_queue">Свернуть очередь</string>
+    <string name="a11y_open">Открыть</string>
+    <string name="a11y_previous_track">Предыдущий трек</string>
+    <string name="a11y_rewind_seconds">Перемотать назад на %1$d секунд</string>
+    <string name="a11y_fast_forward_seconds">Перемотать вперёд на %1$d секунд</string>
+    <string name="a11y_next_track">Следующий трек</string>
+    <string name="a11y_play">Воспроизвести</string>
+    <string name="a11y_pause">Пауза</string>
+    <string name="a11y_playback_position">Позиция воспроизведения</string>
+    <string name="a11y_position_of">%1$s из %2$s</string>
+    <string name="a11y_buffering">Буферизация</string>
+    <string name="a11y_playback_error">Ошибка воспроизведения</string>
+    <plurals name="a11y_hours">
+        <item quantity="one">%d час</item>
+        <item quantity="few">%d часа</item>
+        <item quantity="many">%d часов</item>
+        <item quantity="other">%d часа</item>
+    </plurals>
     <string name="library_screen_library_title">Библиотека</string>
     <string name="library_screen_continue_listening_title">Продолжить слушать</string>
     <string name="library_screen_preferences_menu_item">Настройки</string>

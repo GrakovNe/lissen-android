@@ -184,4 +184,28 @@
     <string name="appearance_preferences_description">Esquema de cores, ordenação e tema</string>
     <string name="disconnect_from_server_title">Desconectar do servidor</string>
     <string name="download_settings_library_type_no_items_selected">Nenhum tipo selecionado</string>
+    <string name="a11y_back">Voltar</string>
+    <string name="a11y_menu">Menu</string>
+    <string name="a11y_search">Pesquisar</string>
+    <string name="a11y_clear">Limpar</string>
+    <string name="a11y_add">Adicionar</string>
+    <string name="a11y_settings">Configurações</string>
+    <string name="a11y_delete_from_cache">Excluir do cache</string>
+    <string name="a11y_available_offline">Disponível off-line</string>
+    <string name="a11y_collapse_queue">Recolher a fila</string>
+    <string name="a11y_open">Abrir</string>
+    <string name="a11y_previous_track">Faixa anterior</string>
+    <string name="a11y_next_track">Próxima faixa</string>
+    <string name="a11y_play">Reproduzir</string>
+    <string name="a11y_pause">Pausar</string>
+    <string name="a11y_playback_position">Posição de reprodução</string>
+    <string name="a11y_position_of">%1$s de %2$s</string>
+    <string name="a11y_buffering">Armazenando em buffer</string>
+    <string name="a11y_playback_error">Erro de reprodução</string>
+    <string name="a11y_rewind_seconds">Retroceder %1$d segundos</string>
+    <string name="a11y_fast_forward_seconds">Avançar %1$d segundos</string>
+    <plurals name="a11y_hours">
+        <item quantity="one">%d hora</item>
+        <item quantity="other">%d horas</item>
+    </plurals>
 </resources>

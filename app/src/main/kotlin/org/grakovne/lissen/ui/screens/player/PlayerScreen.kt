@@ -48,8 +48,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -110,6 +113,23 @@ fun PlayerScreen(
   val isPlaybackReady by playerViewModel.isPlaybackReady.collectAsState()
   val playingQueueExpanded by playerViewModel.playingQueueExpanded.collectAsState()
   val searchRequested by playerViewModel.searchRequested.collectAsState()
+  val preparingError by playerViewModel.preparingError.collectAsState()
+
+  val view = LocalView.current
+  val bufferingAnnouncement = stringResource(R.string.a11y_buffering)
+  val playbackErrorAnnouncement = stringResource(R.string.a11y_playback_error)
+
+  LaunchedEffect(preparingError) {
+    if (preparingError) {
+      view.announceForAccessibility(playbackErrorAnnouncement)
+    }
+  }
+
+  LaunchedEffect(isPlaybackReady) {
+    if (isPlaybackReady.not()) {
+      view.announceForAccessibility(bufferingAnnouncement)
+    }
+  }
 
   var itemDetailsSelected by remember { mutableStateOf(false) }
   var bookmarksSelected by remember { mutableStateOf(false) }
@@ -252,7 +272,10 @@ fun PlayerScreen(
             style = titleTextStyle,
             color = colorScheme.onSurface,
             maxLines = 1,
-            modifier = Modifier.fillMaxWidth(),
+            modifier =
+              Modifier
+                .fillMaxWidth()
+                .semantics { heading() },
           )
         },
         navigationIcon = {

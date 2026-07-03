@@ -196,4 +196,28 @@
     <string name="settings_screen_client_cert_hint">Utiliser un certificat client pour mTLS</string>
     <string name="settings_screen_client_cert_empty_state_title">Aucun certificat client n\'a été sélectionné</string>
     `<string name="settings_screen_client_cert_install_help_description">Importez le fichier de certificat via la section « Sécurité » ou « VPN » dans les paramètres système de votre appareil</string>`
+    <string name="a11y_back">Retour</string>
+    <string name="a11y_menu">Menu</string>
+    <string name="a11y_search">Rechercher</string>
+    <string name="a11y_clear">Effacer</string>
+    <string name="a11y_add">Ajouter</string>
+    <string name="a11y_settings">Paramètres</string>
+    <string name="a11y_delete_from_cache">Supprimer du cache</string>
+    <string name="a11y_available_offline">Disponible hors ligne</string>
+    <string name="a11y_collapse_queue">Réduire la file d\'attente</string>
+    <string name="a11y_open">Ouvrir</string>
+    <string name="a11y_previous_track">Piste précédente</string>
+    <string name="a11y_next_track">Piste suivante</string>
+    <string name="a11y_play">Lecture</string>
+    <string name="a11y_pause">Pause</string>
+    <string name="a11y_playback_position">Position de lecture</string>
+    <string name="a11y_position_of">%1$s sur %2$s</string>
+    <string name="a11y_buffering">Mise en mémoire tampon</string>
+    <string name="a11y_playback_error">Erreur de lecture</string>
+    <string name="a11y_rewind_seconds">Reculer de %1$d secondes</string>
+    <string name="a11y_fast_forward_seconds">Avancer de %1$d secondes</string>
+    <plurals name="a11y_hours">
+        <item quantity="one">%d heure</item>
+        <item quantity="other">%d heures</item>
+    </plurals>
 </resources>

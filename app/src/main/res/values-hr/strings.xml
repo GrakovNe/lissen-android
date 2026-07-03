@@ -229,4 +229,29 @@
     <string name="clear_thumbnail_cache_confirmation_message">Predmemorirane slike naslovnica bit će uklonjene s ovog uređaja. Podaci vašeg poslužitelja neće biti zahvaćeni</string>
     <string name="downloads_menu_download_option_decrease">Smanji broj</string>
     <string name="downloads_menu_download_option_increase">Povećaj broj</string>
+    <string name="a11y_back">Natrag</string>
+    <string name="a11y_menu">Izbornik</string>
+    <string name="a11y_search">Pretraži</string>
+    <string name="a11y_clear">Očisti</string>
+    <string name="a11y_add">Dodaj</string>
+    <string name="a11y_settings">Postavke</string>
+    <string name="a11y_delete_from_cache">Izbriši iz predmemorije</string>
+    <string name="a11y_available_offline">Dostupno izvan mreže</string>
+    <string name="a11y_collapse_queue">Sažmi red</string>
+    <string name="a11y_open">Otvori</string>
+    <string name="a11y_previous_track">Prethodna pjesma</string>
+    <string name="a11y_next_track">Sljedeća pjesma</string>
+    <string name="a11y_play">Reproduciraj</string>
+    <string name="a11y_pause">Pauza</string>
+    <string name="a11y_playback_position">Položaj reprodukcije</string>
+    <string name="a11y_position_of">%1$s od %2$s</string>
+    <string name="a11y_buffering">Međuspremanje</string>
+    <string name="a11y_playback_error">Pogreška reprodukcije</string>
+    <string name="a11y_rewind_seconds">Premotaj unatrag %1$d sekundi</string>
+    <string name="a11y_fast_forward_seconds">Premotaj unaprijed %1$d sekundi</string>
+    <plurals name="a11y_hours">
+        <item quantity="one">%d sat</item>
+        <item quantity="few">%d sata</item>
+        <item quantity="other">%d sati</item>
+    </plurals>
 </resources>
