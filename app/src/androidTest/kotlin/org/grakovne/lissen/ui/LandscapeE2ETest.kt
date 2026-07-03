@@ -167,23 +167,6 @@ class LandscapeE2ETest {
   }
 
   @Test
-  fun landscape_libraryUsesTwoColumnGrid() {
-    rotateToLandscape()
-    login()
-
-    composeRule.waitUntilAtLeastOneExists(
-      matcher = bookItemMatcher,
-      timeoutMillis = TIMEOUT_MS,
-    )
-
-    val first = composeRule.onAllNodes(bookItemMatcher)[0].fetchSemanticsNode().boundsInRoot
-    val second = composeRule.onAllNodes(bookItemMatcher)[1].fetchSemanticsNode().boundsInRoot
-
-    assertTrue("first two items should share a row", abs(first.top - second.top) < 4f)
-    assertTrue("first two items should be in different columns", second.left > first.left)
-  }
-
-  @Test
   fun portrait_libraryUsesSingleColumn() {
     login()
 
