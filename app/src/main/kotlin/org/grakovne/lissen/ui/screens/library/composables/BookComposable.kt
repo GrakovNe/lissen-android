@@ -11,6 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.DownloadForOffline
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -46,6 +49,7 @@ fun BookComposable(
   navController: AppNavigationService,
   grouping: LibraryGrouping = LibraryGrouping.NONE,
   leading: (@Composable () -> Unit)? = null,
+  downloaded: Boolean = false,
 ) {
   val context = LocalContext.current
 
@@ -105,6 +109,19 @@ fun BookComposable(
       }
 
       BookMetadataComposable(book, grouping)
+    }
+
+    if (downloaded) {
+      Spacer(Modifier.width(12.dp))
+      Icon(
+        imageVector = Icons.Outlined.DownloadForOffline,
+        contentDescription = stringResource(R.string.library_item_downloaded_indicator),
+        tint = MaterialTheme.colorScheme.primary,
+        modifier =
+          Modifier
+            .size(24.dp)
+            .testTag("downloadedIndicator_${book.id}"),
+      )
     }
 
     Spacer(Modifier.width(16.dp))

@@ -60,6 +60,7 @@ fun SeriesComposable(
   navController: AppNavigationService,
   onToggle: () -> Unit,
   onPrefetch: () -> Unit,
+  downloadedIds: Set<String> = emptySet(),
 ) {
   val context = LocalContext.current
 
@@ -165,6 +166,7 @@ fun SeriesComposable(
                 imageLoader = imageLoader,
                 navController = navController,
                 grouping = LibraryGrouping.SERIES,
+                downloaded = book.id in downloadedIds,
                 leading = { SeriesSequenceLabel(number = sequences[index], widthReserve = widthReserve) },
               )
             }

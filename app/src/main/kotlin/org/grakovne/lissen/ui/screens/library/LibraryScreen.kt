@@ -140,6 +140,7 @@ fun LibraryScreen(
   val groupBooks by libraryViewModel.groupBooks.collectAsState()
   val groupLoading by libraryViewModel.groupLoading.collectAsState()
   val libraryGrouping by settingsViewModel.libraryGrouping.collectAsState(LibraryGrouping.NONE)
+  val downloadedIds by cachingModelView.cachedBookIds.collectAsState()
 
   val libraryListState = rememberLazyGridState()
 
@@ -531,6 +532,7 @@ fun LibraryScreen(
                       imageLoader = imageLoader,
                       navController = navController,
                       grouping = libraryGrouping,
+                      downloaded = entry.book.id in downloadedIds,
                     )
                   }
 
@@ -544,6 +546,7 @@ fun LibraryScreen(
                       navController = navController,
                       onToggle = { libraryViewModel.toggleGroup(entry) },
                       onPrefetch = { libraryViewModel.prefetchGroup(entry) },
+                      downloadedIds = downloadedIds,
                     )
                   }
 
@@ -557,6 +560,7 @@ fun LibraryScreen(
                       navController = navController,
                       onToggle = { libraryViewModel.toggleGroup(entry) },
                       onPrefetch = { libraryViewModel.prefetchGroup(entry) },
+                      downloadedIds = downloadedIds,
                     )
                   }
                 }

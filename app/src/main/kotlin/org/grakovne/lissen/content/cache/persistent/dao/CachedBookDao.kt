@@ -210,6 +210,12 @@ interface CachedBookDao {
   @Query("SELECT COUNT(*) FROM detailed_books")
   suspend fun fetchCachedItemsCount(): Int
 
+  @Query("SELECT id FROM detailed_books")
+  suspend fun fetchAllCachedIds(): List<String>
+
+  @Query("SELECT id FROM detailed_books")
+  fun observeCachedIds(): Flow<List<String>>
+
   @Query(
     """
     SELECT COUNT(*) > 0

@@ -14,8 +14,11 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.cache.persistent.CacheState
@@ -52,6 +55,16 @@ class CachingModelView
     val totalCount: StateFlow<Int> = _totalCount.asStateFlow()
 
     val forceCache = preferences.forceCacheFlow
+
+    /**
+     * Ids of all locally-cached books, observed once for the whole library list so rows can render a
+     * download badge without each subscribing its own database Flow.
+     */
+    val cachedBookIds: StateFlow<Set<String>> =
+      localCacheRepository
+        .observeCachedBookIds()
+        .map { it.toSet() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
 
     private val _bookCachingProgress = mutableMapOf<String, MutableStateFlow<CacheState>>()
 

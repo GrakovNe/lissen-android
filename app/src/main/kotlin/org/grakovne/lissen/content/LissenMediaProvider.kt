@@ -190,26 +190,24 @@ class LissenMediaProvider
     ): OperationResult<PagedItems<LibraryEntry>> {
       Timber.d("Fetching library: libraryId=$libraryId, page=$pageNumber, pageSize=$pageSize")
 
-      return when (preferences.isForceCache()) {
-        true -> {
-          localCacheRepository.fetchLibrary(
-            libraryId = libraryId,
-            pageSize = pageSize,
-            pageNumber = pageNumber,
-            libraryGrouping = preferences.getLibraryGrouping(),
-          )
-        }
+      val grouping = preferences.getLibraryGrouping()
 
-        false -> {
-          providePreferredChannel()
-            .fetchLibrary(
-              libraryId = libraryId,
-              pageSize = pageSize,
-              pageNumber = pageNumber,
-              libraryGrouping = preferences.getLibraryGrouping(),
-            )
-        }
+      if (preferences.isForceCache()) {
+        return localCacheRepository.fetchLibrary(
+          libraryId = libraryId,
+          pageSize = pageSize,
+          pageNumber = pageNumber,
+          libraryGrouping = grouping,
+        )
       }
+
+      return providePreferredChannel()
+        .fetchLibrary(
+          libraryId = libraryId,
+          pageSize = pageSize,
+          pageNumber = pageNumber,
+          libraryGrouping = grouping,
+        )
     }
 
     suspend fun fetchSeriesItems(

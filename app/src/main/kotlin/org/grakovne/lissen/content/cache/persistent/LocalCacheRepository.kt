@@ -77,6 +77,10 @@ class LocalCacheRepository
         .searchBooks(libraryId = libraryId, query = query)
         .let { OperationResult.Success(it) }
 
+    suspend fun fetchCachedBookIds(): Set<String> = cachedBookRepository.fetchCachedBookIds()
+
+    fun observeCachedBookIds() = cachedBookRepository.observeCachedBookIds()
+
     suspend fun fetchDetailedItems(): OperationResult<PagedItems<DetailedItem>> {
       val items = cachedBookRepository.fetchCachedItems()
 
