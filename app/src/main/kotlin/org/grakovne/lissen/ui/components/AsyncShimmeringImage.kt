@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,7 +30,10 @@ fun AsyncShimmeringImage(
   onLoadingStateChanged: (Boolean) -> Unit = {},
 ) {
   var isLoading by remember { mutableStateOf(true) }
-  onLoadingStateChanged(isLoading)
+
+  LaunchedEffect(isLoading) {
+    onLoadingStateChanged(isLoading)
+  }
 
   Box(
     modifier = modifier,
@@ -53,11 +57,9 @@ fun AsyncShimmeringImage(
       modifier = Modifier.fillMaxSize(),
       onSuccess = {
         isLoading = false
-        onLoadingStateChanged(false)
       },
       onError = {
         isLoading = false
-        onLoadingStateChanged(false)
       },
       error = error,
     )

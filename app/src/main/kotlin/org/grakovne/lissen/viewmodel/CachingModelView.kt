@@ -77,9 +77,9 @@ class CachingModelView
 
     init {
       viewModelScope.launch {
-        contentCachingProgress.statusFlow.collect { (item, progress) ->
+        contentCachingProgress.statusFlow.collect { (itemId, progress) ->
           val flow =
-            _bookCachingProgress.getOrPut(item.id) {
+            _bookCachingProgress.getOrPut(itemId) {
               MutableStateFlow(progress)
             }
           flow.value = progress
@@ -102,7 +102,7 @@ class CachingModelView
       Timber.d("User action: cache ${mediaItem.id}, option=$option, position=${currentPosition.toInt()}s")
       val task =
         ContentCachingTask(
-          item = mediaItem,
+          itemId = mediaItem.id,
           options = option,
           currentPosition = currentPosition,
         )
@@ -130,7 +130,7 @@ class CachingModelView
       val intent =
         Intent(context, ContentCachingService::class.java).apply {
           action = ContentCachingService.STOP_CACHING_ACTION
-          putExtra(ContentCachingService.CACHING_PLAYING_ITEM, item as Serializable)
+          putExtra(ContentCachingService.CACHING_ITEM_ID, item.id)
         }
 
       context.startForegroundService(intent)

@@ -54,11 +54,7 @@ class PlayerWidgetStateService
           val maybeCover =
             playingItem
               ?.id
-              ?.let { mediaProvider.fetchBookCover(it) }
-              ?.fold(
-                onSuccess = { it },
-                onFailure = { null },
-              )
+              ?.let { provideCover(it) }
 
           PlayingItemState(
             id = playingItem?.id ?: "",
@@ -71,6 +67,26 @@ class PlayerWidgetStateService
           updatePlayingItem(playingItemState)
         }
       }
+    }
+
+    @Volatile
+    private var coverCache: Pair<String, File>? = null
+
+    internal suspend fun provideCover(bookId: String): File? {
+      coverCache
+        ?.takeIf { it.first == bookId }
+        ?.let { return it.second }
+
+      val cover =
+        mediaProvider
+          .fetchBookCover(bookId)
+          .fold(
+            onSuccess = { it },
+            onFailure = { null },
+          )
+
+      cover?.let { coverCache = bookId to it }
+      return cover
     }
 
     private fun provideChapterTitle(
