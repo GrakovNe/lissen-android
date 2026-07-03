@@ -18,6 +18,7 @@ class RecentListeningResponseConverterTest {
     id: String,
     title: String = "Title",
     author: String? = null,
+    podcastAuthor: String? = null,
     subtitle: String? = null,
     hasMedia: Boolean = true,
   ) = PersonalizedFeedItemResponse(
@@ -27,7 +28,13 @@ class RecentListeningResponseConverterTest {
       if (hasMedia) {
         PersonalizedFeedItemMediaResponse(
           id = "media-$id",
-          metadata = PersonalizedFeedItemMetadataResponse(title = title, subtitle = subtitle, authorName = author),
+          metadata =
+            PersonalizedFeedItemMetadataResponse(
+              title = title,
+              subtitle = subtitle,
+              authorName = author,
+              author = podcastAuthor,
+            ),
         )
       } else {
         null
@@ -105,6 +112,30 @@ class RecentListeningResponseConverterTest {
     val result = converter.apply(response, emptyMap())
     assertNull(result[0].listenedPercentage)
     assertNull(result[0].listenedLastUpdate)
+  }
+
+  @Test
+  fun `podcast author falls back to the author field when authorName is absent`() {
+    val response =
+      listOf(
+        feed(continueLabel, listOf(feedItem("1", author = null, podcastAuthor = "Podcast Host"))),
+      )
+
+    val book = converter.apply(response, emptyMap()).single()
+
+    assertEquals("Podcast Host", book.author)
+  }
+
+  @Test
+  fun `authorName wins over the podcast author field`() {
+    val response =
+      listOf(
+        feed(continueLabel, listOf(feedItem("1", author = "Book Author", podcastAuthor = "Podcast Host"))),
+      )
+
+    val book = converter.apply(response, emptyMap()).single()
+
+    assertEquals("Book Author", book.author)
   }
 
   @Test

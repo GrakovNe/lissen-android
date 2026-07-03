@@ -14,6 +14,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -409,58 +410,60 @@ fun LibraryScreen(
           item(key = "recent_books", span = { GridItemSpan(maxLineSpan) }) {
             val showRecent = recentVisible
 
-            when {
-              isPlaceholderRequired -> {
-                RecentBooksPlaceholderComposable(
-                  libraryViewModel = libraryViewModel,
-                )
+            Column(modifier = Modifier.fillMaxWidth()) {
+              when {
+                isPlaceholderRequired -> {
+                  RecentBooksPlaceholderComposable(
+                    libraryViewModel = libraryViewModel,
+                  )
 
-                Spacer(modifier = Modifier.height(RECENT_SECTION_SPACING))
-              }
+                  Spacer(modifier = Modifier.height(RECENT_SECTION_SPACING))
+                }
 
-              showRecent -> {
-                RecentBooksComposable(
-                  navController = navController,
-                  recentBooks = recentBooks,
-                  imageLoader = imageLoader,
-                  libraryViewModel = libraryViewModel,
-                )
+                showRecent -> {
+                  RecentBooksComposable(
+                    navController = navController,
+                    recentBooks = recentBooks,
+                    imageLoader = imageLoader,
+                    libraryViewModel = libraryViewModel,
+                  )
 
-                Spacer(modifier = Modifier.height(RECENT_SECTION_SPACING))
+                  Spacer(modifier = Modifier.height(RECENT_SECTION_SPACING))
+                }
               }
             }
           }
 
           item(key = "library_title", span = { GridItemSpan(maxLineSpan) }) {
-            if (!searchRequested && recentVisible) {
-              AnimatedContent(
-                targetState = navBarTitle,
-                transitionSpec = {
-                  fadeIn(
-                    animationSpec =
-                      tween(300),
-                  ) togetherWith
-                    fadeOut(
+            Column(modifier = Modifier.fillMaxWidth()) {
+              if (!searchRequested && recentVisible) {
+                AnimatedContent(
+                  targetState = navBarTitle,
+                  transitionSpec = {
+                    fadeIn(
                       animationSpec =
-                        tween(
-                          300,
-                        ),
-                    )
-                },
-                label = "library_header_fade",
-              ) {
-                when {
-                  it == libraryTitle -> {
-                    Spacer(
-                      modifier =
-                        Modifier
-                          .fillMaxWidth()
-                          .height(titleHeightDp),
-                    )
-                  }
+                        tween(300),
+                    ) togetherWith
+                      fadeOut(
+                        animationSpec =
+                          tween(
+                            300,
+                          ),
+                      )
+                  },
+                  label = "library_header_fade",
+                ) {
+                  when {
+                    it == libraryTitle || isPlaceholderRequired -> {
+                      Spacer(
+                        modifier =
+                          Modifier
+                            .fillMaxWidth()
+                            .height(titleHeightDp),
+                      )
+                    }
 
-                  else -> {
-                    if (isPlaceholderRequired.not()) {
+                    else -> {
                       Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier =
@@ -482,9 +485,9 @@ fun LibraryScreen(
                   }
                 }
               }
-            }
 
-            Spacer(modifier = Modifier.height(8.dp))
+              Spacer(modifier = Modifier.height(8.dp))
+            }
           }
 
           when {
@@ -607,7 +610,7 @@ fun LibraryScreen(
   }
 }
 
-private val RECENT_SECTION_SPACING = 12.dp
+private val RECENT_SECTION_SPACING = 2.dp
 
 internal fun shouldShowRecent(
   searchRequested: Boolean,
