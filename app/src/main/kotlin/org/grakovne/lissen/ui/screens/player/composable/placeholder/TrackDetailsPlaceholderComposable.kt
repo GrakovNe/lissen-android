@@ -92,16 +92,21 @@ fun TrackDetailsPlaceholderComposable(
         Spacer(modifier = Modifier.height(2.dp))
       }
 
-    Text(
-      text = stringResource(R.string.player_screen_now_playing_title_chapter_of, 100, "1000"),
-      style = typography.bodyMedium,
-      color = Color.Transparent,
-      textAlign = TextAlign.Center,
-      modifier =
-        Modifier
-          .clip(RoundedCornerShape(8.dp))
-          .shimmer()
-          .background(Color.Gray),
-    )
+    ChapterNumberPlaceholder()
   }
+}
+
+@Composable
+fun ChapterNumberPlaceholder(modifier: Modifier = Modifier) {
+  Text(
+    text = stringResource(R.string.player_screen_now_playing_title_chapter_of, 100, "1000"),
+    style = typography.bodyMedium,
+    color = Color.Transparent,
+    textAlign = TextAlign.Center,
+    modifier =
+      modifier
+        .clip(RoundedCornerShape(8.dp))
+        .shimmer()
+        .background(Color.Gray),
+  )
 }

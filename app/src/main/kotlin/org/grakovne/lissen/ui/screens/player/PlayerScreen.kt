@@ -12,6 +12,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -73,6 +74,7 @@ import org.grakovne.lissen.ui.screens.player.composable.TrackDetailsComposable
 import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
 import org.grakovne.lissen.ui.screens.player.composable.fallback.PlayingQueueFallbackComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.BookCoverPlaceholder
+import org.grakovne.lissen.ui.screens.player.composable.placeholder.ChapterNumberPlaceholder
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.NavigationBarPlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.PlayingQueuePlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackControlPlaceholderComposable
@@ -433,27 +435,30 @@ private fun PlayerArtworkAndControlsWide(
 
   Column(
     horizontalAlignment = Alignment.CenterHorizontally,
+    verticalArrangement = Arrangement.Center,
     modifier = modifier.testTag("playerArtworkPane"),
   ) {
     BoxWithConstraints(
       modifier =
         Modifier
-          .weight(1f)
+          .weight(1f, fill = false)
           .fillMaxWidth(),
       contentAlignment = Alignment.Center,
     ) {
       val side = minOf(maxWidth, maxHeight)
 
-      if (isPlaybackReady) {
-        BookCover(
-          book = playingBook,
-          imageLoader = imageLoader,
-          modifier = Modifier.size(side),
-        )
-      } else {
-        BookCoverPlaceholder(
-          modifier = Modifier.size(side),
-        )
+      if (side >= 110.dp) {
+        if (isPlaybackReady) {
+          BookCover(
+            book = playingBook,
+            imageLoader = imageLoader,
+            modifier = Modifier.size(side),
+          )
+        } else {
+          BookCoverPlaceholder(
+            modifier = Modifier.size(side),
+          )
+        }
       }
     }
 
@@ -473,9 +478,9 @@ private fun PlayerArtworkAndControlsWide(
           .padding(horizontal = 8.dp),
     )
 
-    if (isPlaybackReady) {
-      Spacer(modifier = Modifier.height(2.dp))
+    Spacer(modifier = Modifier.height(2.dp))
 
+    if (isPlaybackReady) {
       Text(
         text =
           provideChapterNumberTitle(
@@ -489,6 +494,8 @@ private fun PlayerArtworkAndControlsWide(
         textAlign = TextAlign.Center,
         modifier = Modifier.fillMaxWidth(),
       )
+    } else {
+      ChapterNumberPlaceholder()
     }
 
     Spacer(modifier = Modifier.height(8.dp))
