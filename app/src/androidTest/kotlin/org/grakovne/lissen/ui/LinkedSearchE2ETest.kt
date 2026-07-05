@@ -11,7 +11,6 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
@@ -26,13 +25,6 @@ import org.junit.Test
 import org.junit.rules.ExternalResource
 import org.junit.runner.RunWith
 import javax.inject.Inject
-
-private val bookItemMatcher =
-  SemanticsMatcher("hasBookItemTag") { node ->
-    node.config
-      .getOrElseNullable(SemanticsProperties.TestTag) { null }
-      ?.startsWith("bookItem_") == true
-  }
 
 private val nonEmptySearchFieldMatcher =
   SemanticsMatcher("hasNonEmptyEditableText") { node ->
@@ -65,6 +57,7 @@ class LinkedSearchE2ETest {
       override fun before() {
         hiltRule.inject()
         preferences.clearPreferences()
+        E2ESession.restore()
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
           mediaRepository.clearPlayingBook()
         }
@@ -80,20 +73,8 @@ class LinkedSearchE2ETest {
   val composeRule = createAndroidComposeRule<AppActivity>()
 
   private fun openBookDetails() {
-    composeRule.onNodeWithTag("hostInput").performTextInput(DEMO_HOST)
-    composeRule.onNodeWithTag("usernameInput").performTextInput(DEMO_USERNAME)
-    composeRule.onNodeWithTag("passwordInput").performTextInput(DEMO_PASSWORD)
-    composeRule.onNodeWithTag("loginButton").performClick()
-
-    composeRule.waitUntilAtLeastOneExists(
-      matcher = hasTestTag("libraryScreen"),
-      timeoutMillis = TIMEOUT_MS,
-    )
-
-    composeRule.waitUntilAtLeastOneExists(
-      matcher = bookItemMatcher,
-      timeoutMillis = TIMEOUT_MS,
-    )
+    composeRule.loginToLibrary()
+    composeRule.waitUntilBookItemsExist()
 
     composeRule.onAllNodes(bookItemMatcher)[0].performClick()
 
@@ -116,7 +97,6 @@ class LinkedSearchE2ETest {
 
     composeRule.onNodeWithTag("linkedSearchAuthor").performClick()
 
-    // The library opens directly in search mode with the author pre-filled as the query.
     composeRule.waitUntilAtLeastOneExists(
       matcher = hasTestTag("librarySearchField"),
       timeoutMillis = TIMEOUT_MS,
@@ -124,11 +104,7 @@ class LinkedSearchE2ETest {
     composeRule.onNodeWithTag("librarySearchField").assertIsDisplayed()
     composeRule.onNodeWithTag("librarySearchField").assert(nonEmptySearchFieldMatcher)
 
-    // And the pre-filled query produces results.
-    composeRule.waitUntilAtLeastOneExists(
-      matcher = bookItemMatcher,
-      timeoutMillis = TIMEOUT_MS,
-    )
+    composeRule.waitUntilBookItemsExist()
     composeRule.onAllNodes(bookItemMatcher)[0].assertIsDisplayed()
   }
 

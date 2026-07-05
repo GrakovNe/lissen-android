@@ -63,9 +63,9 @@ class LoginFlowE2ETest {
 
   @Test
   fun loginWithValidCredentials_navigatesToLibrary() {
-    composeRule.onNodeWithTag("hostInput").performTextInput(DEMO_HOST)
-    composeRule.onNodeWithTag("usernameInput").performTextInput(DEMO_USERNAME)
-    composeRule.onNodeWithTag("passwordInput").performTextInput(DEMO_PASSWORD)
+    composeRule.onNodeWithTag("hostInput").performTextInput(E2E_HOST)
+    composeRule.onNodeWithTag("usernameInput").performTextInput(E2E_USERNAME)
+    composeRule.onNodeWithTag("passwordInput").performTextInput(E2E_PASSWORD)
     composeRule.onNodeWithTag("loginButton").performClick()
 
     composeRule.waitUntilAtLeastOneExists(
@@ -78,8 +78,8 @@ class LoginFlowE2ETest {
 
   @Test
   fun loginWithWrongPassword_staysOnLoginScreen() {
-    composeRule.onNodeWithTag("hostInput").performTextInput(DEMO_HOST)
-    composeRule.onNodeWithTag("usernameInput").performTextInput(DEMO_USERNAME)
+    composeRule.onNodeWithTag("hostInput").performTextInput(E2E_HOST)
+    composeRule.onNodeWithTag("usernameInput").performTextInput(E2E_USERNAME)
     composeRule.onNodeWithTag("passwordInput").performTextInput("wrong_password_xyz")
     composeRule.onNodeWithTag("loginButton").performClick()
 

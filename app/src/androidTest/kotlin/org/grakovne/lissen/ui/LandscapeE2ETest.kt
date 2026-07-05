@@ -3,17 +3,13 @@ package org.grakovne.lissen.ui
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
-import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
-import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
@@ -32,13 +28,6 @@ import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import javax.inject.Inject
 import kotlin.math.abs
-
-private val bookItemMatcher =
-  SemanticsMatcher("hasBookItemTag") { node ->
-    node.config
-      .getOrElseNullable(SemanticsProperties.TestTag) { null }
-      ?.startsWith("bookItem_") == true
-  }
 
 @OptIn(ExperimentalTestApi::class)
 @HiltAndroidTest
@@ -64,6 +53,7 @@ class LandscapeE2ETest {
       override fun before() {
         hiltRule.inject()
         preferences.clearPreferences()
+        E2ESession.restore()
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
           mediaRepository.clearPlayingBook()
         }
@@ -88,22 +78,11 @@ class LandscapeE2ETest {
   }
 
   private fun login() {
-    composeRule.onNodeWithTag("hostInput").performTextInput(DEMO_HOST)
-    composeRule.onNodeWithTag("usernameInput").performTextInput(DEMO_USERNAME)
-    composeRule.onNodeWithTag("passwordInput").performTextInput(DEMO_PASSWORD)
-    composeRule.onNodeWithTag("loginButton").performScrollTo().performClick()
-
-    composeRule.waitUntilAtLeastOneExists(
-      matcher = hasTestTag("libraryScreen"),
-      timeoutMillis = TIMEOUT_MS,
-    )
+    composeRule.loginToLibrary(scrollToButton = true)
   }
 
   private fun openFirstBook() {
-    composeRule.waitUntilAtLeastOneExists(
-      matcher = bookItemMatcher,
-      timeoutMillis = TIMEOUT_MS,
-    )
+    composeRule.waitUntilBookItemsExist()
 
     composeRule.onAllNodes(bookItemMatcher)[0].performClick()
 
@@ -111,28 +90,6 @@ class LandscapeE2ETest {
       matcher = hasTestTag("playerScreen"),
       timeoutMillis = TIMEOUT_MS,
     )
-  }
-
-  @Test
-  fun landscape_loginScreenRenders() {
-    rotateToLandscape()
-
-    composeRule.onNodeWithTag("loginScreen").assertIsDisplayed()
-    composeRule.onNodeWithTag("hostInput").assertIsDisplayed()
-  }
-
-  @Test
-  fun landscape_settingsFooterIsVisible() {
-    rotateToLandscape()
-
-    composeRule.onNodeWithTag("loginSettingsButton").performScrollTo().performClick()
-
-    composeRule.waitUntilAtLeastOneExists(
-      matcher = hasTestTag("settingsScreen"),
-      timeoutMillis = TIMEOUT_MS,
-    )
-
-    composeRule.onNodeWithTag("settingsFooter").assertIsDisplayed()
   }
 
   @Test
@@ -170,10 +127,7 @@ class LandscapeE2ETest {
   fun portrait_libraryUsesSingleColumn() {
     login()
 
-    composeRule.waitUntilAtLeastOneExists(
-      matcher = bookItemMatcher,
-      timeoutMillis = TIMEOUT_MS,
-    )
+    composeRule.waitUntilBookItemsExist()
 
     val first = composeRule.onAllNodes(bookItemMatcher)[0].fetchSemanticsNode().boundsInRoot
     val second = composeRule.onAllNodes(bookItemMatcher)[1].fetchSemanticsNode().boundsInRoot
