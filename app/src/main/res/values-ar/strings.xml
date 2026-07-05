@@ -236,4 +236,17 @@
         <item quantity="many">%d ساعة</item>
         <item quantity="other">%d ساعة</item>
     </plurals>
+    <string name="library_quick_settings_grouping_title">تجميع</string>
+    <string name="library_grouping_disabled">معطل</string>
+    <string name="library_grouping_series">بإستخدام السلسلة</string>
+    <string name="library_grouping_author">بإستخدام المؤلف</string>
+    <plurals name="series_books_count">
+        <item quantity="zero">كتاب</item>
+        <item quantity="one">كتاب</item>
+        <item quantity="two">كتابان</item>
+        <item quantity="few">كتب</item>
+        <item quantity="many">كتب</item>
+        <item quantity="other">كتب</item>
+    </plurals>
+    <string name="settings_screen_audio_focus_loss_policy_option_pause">إيقاف مؤقت</string>
 </resources>
