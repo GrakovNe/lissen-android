@@ -245,4 +245,20 @@
         <item quantity="one">%d Stunde</item>
         <item quantity="other">%d Stunden</item>
     </plurals>
+    <plurals name="series_books_count">
+        <item quantity="one">%d Buch</item>
+        <item quantity="other">%d Bücher</item>
+    </plurals>
+    <string name="config_backup_title">Sichern &amp; Wiederherstellen</string>
+    <string name="import_config_title">Konfiguration importieren</string>
+    <string name="import_config_description">Anwendungseinstellungen aus Datei wiederherstellen</string>
+    <string name="export_config_title">Konfiguration exportieren</string>
+    <string name="library_grouping_disabled">Deaktiviert</string>
+    <string name="library_grouping_author">Nach Autor</string>
+    <string name="library_quick_settings_grouping_title">Gruppierung</string>
+    <string name="library_grouping_series">Nach Serien</string>
+    <string name="config_backup_description">Anwendungseinstellungen Exportieren oder Importieren</string>
+    <string name="export_config_description">Anwendungseinstellungen als Datei teilen</string>
+    <string name="export_config_failed_toast">Konfiguration konnte nicht exportiert werden</string>
+    <string name="import_config_failed_toast">Konfiguration konnte nicht importiert werden; die Datei ist möglicherweise ungültig</string>
 </resources>
