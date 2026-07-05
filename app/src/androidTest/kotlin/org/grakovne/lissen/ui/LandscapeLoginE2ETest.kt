@@ -1,12 +1,14 @@
 package org.grakovne.lissen.ui
 
+import android.content.pm.ActivityInfo
+import android.content.res.Configuration
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -22,7 +24,7 @@ import javax.inject.Inject
 @OptIn(ExperimentalTestApi::class)
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
-class LibrarySearchE2ETest {
+class LandscapeLoginE2ETest {
   @get:Rule(order = 0)
   val grantPermissionsRule: GrantPermissionRule =
     GrantPermissionRule.grant(android.Manifest.permission.POST_NOTIFICATIONS)
@@ -39,36 +41,40 @@ class LibrarySearchE2ETest {
       override fun before() {
         hiltRule.inject()
         preferences.clearPreferences()
-        E2ESession.restore()
       }
     }
 
   @get:Rule(order = 3)
   val composeRule = createAndroidComposeRule<AppActivity>()
 
-  private fun login() {
-    composeRule.loginToLibrary()
+  private fun rotateToLandscape() {
+    composeRule.activity.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+
+    composeRule.waitUntil(TIMEOUT_MS) {
+      composeRule.activity.resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    }
+    composeRule.waitForIdle()
   }
 
   @Test
-  fun search_fieldAppearsOnTap() {
-    login()
+  fun landscape_loginScreenRenders() {
+    rotateToLandscape()
 
-    composeRule.onNodeWithContentDescription("Search").performClick()
-
-    composeRule.onNodeWithTag("librarySearchField").assertIsDisplayed()
+    composeRule.onNodeWithTag("loginScreen").assertIsDisplayed()
+    composeRule.onNodeWithTag("hostInput").assertIsDisplayed()
   }
 
   @Test
-  fun search_showsResultsForQuery() {
-    login()
+  fun landscape_settingsFooterIsVisible() {
+    rotateToLandscape()
 
-    composeRule.onNodeWithContentDescription("Search").performClick()
+    composeRule.onNodeWithTag("loginSettingsButton").performScrollTo().performClick()
 
-    composeRule.onNodeWithTag("librarySearchField").performTextInput(E2E_SEARCH_QUERY)
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = hasTestTag("settingsScreen"),
+      timeoutMillis = TIMEOUT_MS,
+    )
 
-    composeRule.waitUntilBookItemsExist()
-
-    composeRule.onAllNodes(bookItemMatcher)[0].assertIsDisplayed()
+    composeRule.onNodeWithTag("settingsFooter").assertIsDisplayed()
   }
 }

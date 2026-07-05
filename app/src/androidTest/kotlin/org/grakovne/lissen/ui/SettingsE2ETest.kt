@@ -10,7 +10,6 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performTextInput
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -43,6 +42,7 @@ class SettingsE2ETest {
       override fun before() {
         hiltRule.inject()
         preferences.clearPreferences()
+        E2ESession.restore()
       }
     }
 
@@ -50,15 +50,7 @@ class SettingsE2ETest {
   val composeRule = createAndroidComposeRule<AppActivity>()
 
   private fun login() {
-    composeRule.onNodeWithTag("hostInput").performTextInput(DEMO_HOST)
-    composeRule.onNodeWithTag("usernameInput").performTextInput(DEMO_USERNAME)
-    composeRule.onNodeWithTag("passwordInput").performTextInput(DEMO_PASSWORD)
-    composeRule.onNodeWithTag("loginButton").performClick()
-
-    composeRule.waitUntilAtLeastOneExists(
-      matcher = hasTestTag("libraryScreen"),
-      timeoutMillis = TIMEOUT_MS,
-    )
+    composeRule.loginToLibrary()
   }
 
   @Test
