@@ -42,19 +42,30 @@ id "${RUNNER_USER}" &>/dev/null || useradd -m -s /bin/bash "${RUNNER_USER}"
 usermod -aG kvm "${RUNNER_USER}"   # emulator needs /dev/kvm (crw-rw---- root:kvm)
 
 # ---- 3. Android SDK (system-wide, owned by runner user) ----------------------
-if [ ! -x "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" ]; then
-  mkdir -p "${ANDROID_HOME}/cmdline-tools"
+# The bootstrap zip must never be unpacked into cmdline-tools/latest: that path
+# belongs to the sdkmanager-managed "cmdline-tools;latest" package. Otherwise the
+# managed copy lands in latest-2 while PATH keeps using the stale bootstrap, which
+# cannot parse newer SDK XML metadata (v4) and breaks package installs on CI.
+export ANDROID_HOME ANDROID_SDK_ROOT="${ANDROID_HOME}"
+SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
+
+if [ -d "${ANDROID_HOME}/cmdline-tools/latest-2" ]; then
+  rm -rf "${ANDROID_HOME}/cmdline-tools/latest"
+  mv "${ANDROID_HOME}/cmdline-tools/latest-2" "${ANDROID_HOME}/cmdline-tools/latest"
+fi
+
+if [ ! -x "${SDKMANAGER}" ]; then
   tmp="$(mktemp -d)"
   wget -q "https://dl.google.com/android/repository/${CMDLINE_TOOLS_ZIP}" -O "${tmp}/cmdt.zip"
   unzip -q -o "${tmp}/cmdt.zip" -d "${tmp}/unz"
-  rm -rf "${ANDROID_HOME}/cmdline-tools/latest"
-  mv "${tmp}/unz/cmdline-tools" "${ANDROID_HOME}/cmdline-tools/latest"
+  BOOTSTRAP_SDKMANAGER="${tmp}/unz/cmdline-tools/bin/sdkmanager"
+  yes | "${BOOTSTRAP_SDKMANAGER}" --sdk_root="${ANDROID_HOME}" --licenses >/dev/null 2>&1 || true
+  "${BOOTSTRAP_SDKMANAGER}" --sdk_root="${ANDROID_HOME}" "cmdline-tools;latest"
   rm -rf "${tmp}"
 fi
 
-export ANDROID_HOME ANDROID_SDK_ROOT="${ANDROID_HOME}"
-SDKMANAGER="${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager"
 yes | "${SDKMANAGER}" --licenses >/dev/null 2>&1 || true
+"${SDKMANAGER}" --update
 "${SDKMANAGER}" "${SDK_PACKAGES[@]}"
 chown -R "${RUNNER_USER}:${RUNNER_USER}" "${ANDROID_HOME}"
 
