@@ -69,6 +69,13 @@ class LibraryE2ETest {
   @Test
   fun library_showsLibraryTitle() {
     login()
+
+    composeRule.waitUntil(TIMEOUT_MS) {
+      runCatching {
+        composeRule.onNodeWithTag("libraryNavBarTitle").assertIsDisplayed()
+      }.isSuccess
+    }
+
     composeRule.onNodeWithTag("libraryNavBarTitle").assertIsDisplayed()
   }
 
