@@ -43,7 +43,7 @@
     <string name="color_scheme_light">Terang</string>
     <string name="color_scheme_dark">Gelap</string>
     <string name="settings_screen_color_scheme_title">Tema warna</string>
-    <string name="library_search_hint">Cari berdasarkan judul, penulis, atau serial</string>
+    <string name="library_search_hint">Cari berdasarkan judul, penulis, atau seri</string>
     <string name="player_screen_title">Sedang mendengarkan</string>
     <string name="settings_screen_custom_headers_title">Header Kustom</string>
     <string name="settings_screen_custom_header_hint">Tentukan header untuk koneksi server</string>
@@ -242,4 +242,19 @@
     <plurals name="a11y_hours">
         <item quantity="other">%d jam</item>
     </plurals>
+    <string name="library_quick_settings_grouping_title">Pengelompokan</string>
+    <string name="library_grouping_disabled">Nonaktif</string>
+    <string name="library_grouping_series">Berdasarkan Seri</string>
+    <string name="library_grouping_author">Berdasarkan Penulis</string>
+    <plurals name="series_books_count">
+        <item quantity="other">%d buku</item>
+    </plurals>
+    <string name="config_backup_title">Cadangkan &amp; Pulihkan</string>
+    <string name="config_backup_description">Ekspor atau impor preferensi aplikasi kamu</string>
+    <string name="export_config_title">Ekspor konfigurasi</string>
+    <string name="export_config_description">Bagikan preferensi aplikasi kamu sebagai file</string>
+    <string name="export_config_failed_toast">Gagal mengekspor konfigurasi</string>
+    <string name="import_config_title">Impor konfigurasi</string>
+    <string name="import_config_description">Pulihkan preferensi aplikasi dari file</string>
+    <string name="import_config_failed_toast">Gagal mengimpor konfigurasi, file mungkin tidak valid</string>
 </resources>
