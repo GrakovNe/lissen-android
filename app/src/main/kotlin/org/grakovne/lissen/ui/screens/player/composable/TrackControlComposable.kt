@@ -1,26 +1,29 @@
 package org.grakovne.lissen.ui.screens.player.composable
 
 import android.view.View
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Slider
-import androidx.compose.material.SliderDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.PauseCircleFilled
 import androidx.compose.material.icons.rounded.PlayCircleFilled
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,6 +42,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
@@ -49,6 +53,7 @@ import org.grakovne.lissen.ui.screens.player.composable.common.provideReplayIcon
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TrackControlComposable(
   viewModel: PlayerViewModel,
@@ -94,6 +99,14 @@ fun TrackControlComposable(
     Column(
       modifier = Modifier.fillMaxWidth(),
     ) {
+      val sliderInteractionSource = remember { MutableInteractionSource() }
+      val sliderColors =
+        SliderDefaults.colors(
+          thumbColor = colorScheme.primary,
+          activeTrackColor = colorScheme.primary,
+          inactiveTrackColor = colorScheme.primary.copy(alpha = 0.24f),
+        )
+
       Slider(
         value = sliderPosition.toFloat(),
         onValueChange = { newPosition ->
@@ -105,11 +118,24 @@ fun TrackControlComposable(
           viewModel.seekTo(sliderPosition)
         },
         valueRange = 0f..currentTrackDuration.toFloat(),
-        colors =
-          SliderDefaults.colors(
-            thumbColor = colorScheme.primary,
-            activeTrackColor = colorScheme.primary,
-          ),
+        interactionSource = sliderInteractionSource,
+        thumb = {
+          SliderDefaults.Thumb(
+            interactionSource = sliderInteractionSource,
+            thumbSize = DpSize(20.dp, 20.dp),
+            colors = sliderColors,
+          )
+        },
+        track = { sliderState ->
+          SliderDefaults.Track(
+            sliderState = sliderState,
+            modifier = Modifier.height(4.dp),
+            colors = sliderColors,
+            thumbTrackGapSize = 0.dp,
+            trackInsideCornerSize = 0.dp,
+            drawStopIndicator = null,
+          )
+        },
         modifier =
           Modifier
             .fillMaxWidth()
