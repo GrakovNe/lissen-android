@@ -21,7 +21,7 @@ class PreferredLibraryTypeFlowTest {
       every { getSharedPreferences(any(), any()) } returns fakePreferences
     }
 
-  private val preferences = LissenSharedPreferences(context)
+  private val preferences = LibraryPreferences(SecurePreferenceStore(context))
 
   @Test
   fun `flow starts with the current type`() =

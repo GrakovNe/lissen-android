@@ -22,7 +22,7 @@ import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.domain.UserAccount
 import org.grakovne.lissen.domain.isSame
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
@@ -32,7 +32,7 @@ import javax.inject.Singleton
 class LissenMediaProvider
   @Inject
   constructor(
-    private val preferences: LissenSharedPreferences,
+    private val preferences: LibraryPreferences,
     private val channelProvider: AudiobookshelfChannelProvider,
     private val localCacheRepository: LocalCacheRepository,
     private val cachedCoverProvider: CachedCoverProvider,

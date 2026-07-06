@@ -13,7 +13,8 @@ import org.grakovne.lissen.channel.common.ApiClient
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.domain.UserAccount
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.ConnectionPreferences
+import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import retrofit2.Response
 import timber.log.Timber
 import javax.inject.Inject
@@ -25,7 +26,8 @@ class AudioBookShelfApiService
   constructor(
     @param:ApplicationContext private val context: Context,
     private val hostProvider: AudiobookshelfHostProvider,
-    private val preferences: LissenSharedPreferences,
+    private val session: SessionPreferences,
+    private val connection: ConnectionPreferences,
     private val requestHeadersProvider: RequestHeadersProvider,
     private val loginResponseConverter: LoginResponseConverter,
   ) {
@@ -37,11 +39,11 @@ class AudioBookShelfApiService
     private val mutex = Mutex()
 
     suspend fun <T> makeRequest(apiCall: suspend (client: AudiobookshelfApiClient) -> Response<T>): OperationResult<T> {
-      val accessToken = preferences.getAccessToken()
+      val accessToken = session.getAccessToken()
 
       val callResult =
         getClientInstance()
-          ?.let { safeApiCall(preferences) { apiCall.invoke(it) } }
+          ?.let { safeApiCall(connection) { apiCall.invoke(it) } }
           ?: return OperationResult.Error(OperationError.NetworkError)
 
       return when (callResult) {
@@ -52,7 +54,7 @@ class AudioBookShelfApiService
               refreshToken(accessToken)
 
               getClientInstance()
-                ?.let { safeApiCall(preferences) { apiCall.invoke(it) } }
+                ?.let { safeApiCall(connection) { apiCall.invoke(it) } }
                 ?: OperationResult.Error(OperationError.NetworkError)
             }
 
@@ -70,16 +72,16 @@ class AudioBookShelfApiService
 
     private suspend fun refreshToken(usedAccessToken: String?) {
       mutex.withLock {
-        if (preferences.getAccessToken() != usedAccessToken) {
+        if (session.getAccessToken() != usedAccessToken) {
           Timber.d("Access token already refreshed by a concurrent request, skipping refresh")
           return@withLock
         }
 
-        val currentToken = preferences.getRefreshToken() ?: return@withLock
+        val currentToken = session.getRefreshToken() ?: return@withLock
 
         val refreshResult =
           getClientInstance()
-            ?.let { safeApiCall(preferences) { it.refreshToken(currentToken) } }
+            ?.let { safeApiCall(connection) { it.refreshToken(currentToken) } }
             ?.map { loginResponseConverter.apply(it) }
             ?: return
 
@@ -87,7 +89,7 @@ class AudioBookShelfApiService
           is OperationResult.Error<*> -> {
             Timber.d("Refresh token update failed: code=${refreshResult.code}")
             if (refreshResult.code == OperationError.Unauthorized) {
-              preferences.clearCredentials()
+              session.clearCredentials()
             }
           }
 
@@ -96,8 +98,8 @@ class AudioBookShelfApiService
               "Refresh token updated: hasAccessToken=${refreshResult.data.accessToken != null}, hasRefreshToken=${refreshResult.data.refreshToken != null}",
             )
 
-            refreshResult.data.refreshToken?.let { preferences.saveRefreshToken(it) }
-            refreshResult.data.accessToken?.let { preferences.saveAccessToken(it) }
+            refreshResult.data.refreshToken?.let { session.saveRefreshToken(it) }
+            refreshResult.data.accessToken?.let { session.saveAccessToken(it) }
           }
         }
       }
@@ -112,8 +114,8 @@ class AudioBookShelfApiService
         ClientConfig(
           host = hostProvider.provideHost(),
           headers = requestHeadersProvider.fetchRequestHeaders().map { it.name to it.value },
-          bypassSsl = preferences.getSslBypass(),
-          clientCertAlias = preferences.getClientCertAlias(),
+          bypassSsl = connection.getSslBypass(),
+          clientCertAlias = connection.getClientCertAlias(),
         )
 
       synchronized(this) {
@@ -140,7 +142,8 @@ class AudioBookShelfApiService
       val client =
         ApiClient(
           host = host,
-          preferences = preferences,
+          session = session,
+          connection = connection,
           requestHeaders = headers,
           context = context,
         )

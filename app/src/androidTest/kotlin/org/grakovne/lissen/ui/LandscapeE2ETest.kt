@@ -15,7 +15,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.PreferencesReset
 import org.grakovne.lissen.playback.MediaRepository
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.ui.activity.AppActivity
@@ -42,7 +42,7 @@ class LandscapeE2ETest {
   val hiltRule = HiltAndroidRule(this)
 
   @Inject
-  lateinit var preferences: LissenSharedPreferences
+  lateinit var preferencesReset: PreferencesReset
 
   @Inject
   lateinit var mediaRepository: MediaRepository
@@ -52,7 +52,7 @@ class LandscapeE2ETest {
     object : ExternalResource() {
       override fun before() {
         hiltRule.inject()
-        preferences.clearPreferences()
+        preferencesReset.clearAll()
         E2ESession.restore()
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
           mediaRepository.clearPlayingBook()

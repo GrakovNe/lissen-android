@@ -15,7 +15,7 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.TimerOption
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.MediaRepository
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -43,7 +43,7 @@ class PlayerViewModelTest {
   private val timerRemaining = MutableStateFlow<Long?>(null)
 
   private val mediaRepository = mockk<MediaRepository>(relaxed = true)
-  private val preferences = mockk<LissenSharedPreferences>(relaxed = true)
+  private val preferences = mockk<PlaybackPreferences>(relaxed = true)
   private lateinit var viewModel: PlayerViewModel
 
   @BeforeEach

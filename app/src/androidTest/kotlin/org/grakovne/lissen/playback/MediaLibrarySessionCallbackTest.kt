@@ -27,7 +27,7 @@ import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PlayingChapter
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.service.FileClip
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.FILE_SEGMENTS
 import org.grakovne.lissen.playback.service.PlaybackSynchronizationService
@@ -43,7 +43,7 @@ import java.util.concurrent.TimeUnit
 @RunWith(AndroidJUnit4::class)
 class MediaLibrarySessionCallbackTest {
   private lateinit var context: Context
-  private lateinit var preferences: LissenSharedPreferences
+  private lateinit var preferences: PlaybackPreferences
   private lateinit var mediaRepository: MediaRepository
   private lateinit var lissenMediaProvider: LissenMediaProvider
   private lateinit var libraryTree: MediaLibraryTree

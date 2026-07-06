@@ -7,7 +7,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.DetailedItem
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -17,7 +17,7 @@ class PlaybackNavigationService
   @Inject
   constructor(
     private val exoPlayer: ExoPlayer,
-    private val sharedPreferences: LissenSharedPreferences,
+    private val sharedPreferences: PlaybackPreferences,
     private val mediaProvider: LissenMediaProvider,
     private val playbackSynchronizationService: PlaybackSynchronizationService,
   ) : RunningComponent {

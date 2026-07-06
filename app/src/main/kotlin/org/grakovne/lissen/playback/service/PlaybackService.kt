@@ -24,7 +24,7 @@ import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.TimerOption
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.MediaLibrarySessionProvider
 import org.grakovne.lissen.playback.PlaybackCommand
 import org.grakovne.lissen.playback.PlaybackEvent
@@ -44,7 +44,7 @@ class PlaybackService : MediaLibraryService() {
   lateinit var playbackSynchronizationService: PlaybackSynchronizationService
 
   @Inject
-  lateinit var sharedPreferences: LissenSharedPreferences
+  lateinit var sharedPreferences: PlaybackPreferences
 
   @Inject
   lateinit var playbackTimer: PlaybackTimer

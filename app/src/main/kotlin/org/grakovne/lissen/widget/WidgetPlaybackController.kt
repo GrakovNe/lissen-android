@@ -6,7 +6,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.MediaRepository
 import org.grakovne.lissen.playback.PlaybackEvent
 import org.grakovne.lissen.playback.PlaybackEventBus
@@ -19,7 +19,7 @@ class WidgetPlaybackController
   @Inject
   constructor(
     private val mediaRepository: MediaRepository,
-    private val sharedPreferences: LissenSharedPreferences,
+    private val sharedPreferences: PlaybackPreferences,
     private val playbackEventBus: PlaybackEventBus,
   ) {
     private var playbackReadyAction: () -> Unit = {}

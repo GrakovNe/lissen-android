@@ -1,10 +1,10 @@
 package org.grakovne.lissen.channel.common
 
 import org.grakovne.lissen.domain.UserAccount
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.SessionPreferences
 
 abstract class ChannelAuthService(
-  private val preferences: LissenSharedPreferences,
+  private val session: SessionPreferences,
 ) {
   abstract suspend fun authorize(
     host: String,
@@ -35,12 +35,12 @@ abstract class ChannelAuthService(
     accessToken: String?,
     refreshToken: String?,
   ) {
-    preferences.saveHost(host)
-    preferences.saveUsername(username)
+    session.saveHost(host)
+    session.saveUsername(username)
 
-    token?.let { preferences.saveToken(it) }
-    accessToken?.let { preferences.saveAccessToken(it) }
-    refreshToken?.let { preferences.saveRefreshToken(it) }
+    token?.let { session.saveToken(it) }
+    accessToken?.let { session.saveAccessToken(it) }
+    refreshToken?.let { session.saveRefreshToken(it) }
   }
 
   fun examineError(raw: String): OperationError =

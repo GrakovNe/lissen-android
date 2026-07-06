@@ -4,17 +4,19 @@ import android.content.Context
 import com.squareup.moshi.Moshi
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.domain.fixUriScheme
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.ConnectionPreferences
+import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
 class ApiClient(
   host: String,
   requestHeaders: List<ServerRequestHeader>?,
-  preferences: LissenSharedPreferences,
+  session: SessionPreferences,
+  connection: ConnectionPreferences,
   context: Context,
 ) {
-  val httpClient = createOkHttpClient(requestHeaders, preferences = preferences, context = context)
+  val httpClient = createOkHttpClient(requestHeaders, session = session, connection = connection, context = context)
 
   val retrofit: Retrofit? =
     runCatching {

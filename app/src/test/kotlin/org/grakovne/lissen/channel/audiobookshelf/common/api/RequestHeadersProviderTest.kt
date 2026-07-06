@@ -4,7 +4,7 @@ import io.mockk.every
 import io.mockk.mockk
 import org.grakovne.lissen.channel.common.DEFAULT_USER_AGENT
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.ConnectionPreferences
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class RequestHeadersProviderTest {
-  private val preferences = mockk<LissenSharedPreferences>(relaxed = true)
+  private val preferences = mockk<ConnectionPreferences>(relaxed = true)
   private lateinit var provider: RequestHeadersProvider
 
   @BeforeEach

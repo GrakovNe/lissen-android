@@ -29,8 +29,15 @@ import org.grakovne.lissen.domain.connection.LocalUrl.Companion.clean
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.domain.connection.ServerRequestHeader.Companion.clean
 import org.grakovne.lissen.logging.LissenLogProvider
+import org.grakovne.lissen.persistence.preferences.AppearancePreferences
+import org.grakovne.lissen.persistence.preferences.ConnectionPreferences
+import org.grakovne.lissen.persistence.preferences.DiagnosticsPreferences
+import org.grakovne.lissen.persistence.preferences.DownloadPreferences
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.LissenConfigProvider
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
+import org.grakovne.lissen.persistence.preferences.PreferencesReset
+import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.grakovne.lissen.playback.EqualizerBandProvider
 import org.grakovne.lissen.playback.EqualizerCapabilities
 import timber.log.Timber
@@ -42,97 +49,104 @@ class SettingsViewModel
   @Inject
   constructor(
     private val mediaChannel: LissenMediaProvider,
-    private val preferences: LissenSharedPreferences,
+    private val session: SessionPreferences,
+    private val connection: ConnectionPreferences,
+    private val library: LibraryPreferences,
+    private val appearance: AppearancePreferences,
+    private val playback: PlaybackPreferences,
+    private val download: DownloadPreferences,
+    private val diagnostics: DiagnosticsPreferences,
+    private val preferencesReset: PreferencesReset,
     private val logProvider: LissenLogProvider,
     private val configProvider: LissenConfigProvider,
     private val equalizerBandProvider: EqualizerBandProvider,
   ) : ViewModel() {
-    private val _host = MutableStateFlow<Host?>(preferences.getHost()?.let { Host.external(it) })
+    private val _host = MutableStateFlow<Host?>(session.getHost()?.let { Host.external(it) })
     val host: StateFlow<Host?> = _host.asStateFlow()
 
-    private val _serverVersion = MutableStateFlow<String?>(preferences.getServerVersion())
+    private val _serverVersion = MutableStateFlow<String?>(session.getServerVersion())
     val serverVersion: StateFlow<String?> = _serverVersion.asStateFlow()
 
-    private val _username = MutableStateFlow<String?>(preferences.getUsername())
+    private val _username = MutableStateFlow<String?>(session.getUsername())
     val username: StateFlow<String?> = _username.asStateFlow()
 
     private val _libraries = MutableStateFlow<List<Library>>(emptyList())
     val libraries: StateFlow<List<Library>> = _libraries.asStateFlow()
 
-    private val _preferredLibrary = MutableStateFlow<Library?>(preferences.getPreferredLibrary())
+    private val _preferredLibrary = MutableStateFlow<Library?>(library.getPreferredLibrary())
     val preferredLibrary: StateFlow<Library?> = _preferredLibrary.asStateFlow()
 
-    private val _preferredColorScheme = MutableStateFlow(preferences.getColorScheme())
+    private val _preferredColorScheme = MutableStateFlow(appearance.getColorScheme())
     val preferredColorScheme: StateFlow<ColorScheme> = _preferredColorScheme.asStateFlow()
 
-    private val _materialYouEnabled = MutableStateFlow(preferences.getMaterialYouColors())
+    private val _materialYouEnabled = MutableStateFlow(appearance.getMaterialYouColors())
     val materialYouEnabled: StateFlow<Boolean> = _materialYouEnabled.asStateFlow()
 
-    private val _preferredAutoDownloadNetworkType = MutableStateFlow(preferences.getAutoDownloadNetworkType())
+    private val _preferredAutoDownloadNetworkType = MutableStateFlow(download.getAutoDownloadNetworkType())
     val preferredAutoDownloadNetworkType: StateFlow<NetworkTypeAutoCache> = _preferredAutoDownloadNetworkType.asStateFlow()
 
-    private val _preferredAutoDownloadLibraryTypes = MutableStateFlow(preferences.getAutoDownloadLibraryTypes())
+    private val _preferredAutoDownloadLibraryTypes = MutableStateFlow(download.getAutoDownloadLibraryTypes())
     val preferredAutoDownloadLibraryTypes: StateFlow<List<LibraryType>> = _preferredAutoDownloadLibraryTypes.asStateFlow()
 
-    private val _preferredAutoDownloadOption = MutableStateFlow<DownloadOption?>(preferences.getAutoDownloadOption())
+    private val _preferredAutoDownloadOption = MutableStateFlow<DownloadOption?>(download.getAutoDownloadOption())
     val preferredAutoDownloadOption: StateFlow<DownloadOption?> = _preferredAutoDownloadOption.asStateFlow()
 
-    private val _preferredPlaybackVolumeBoost = MutableStateFlow(preferences.getPlaybackVolumeBoost())
+    private val _preferredPlaybackVolumeBoost = MutableStateFlow(playback.getPlaybackVolumeBoost())
     val preferredPlaybackVolumeBoost: StateFlow<Int> = _preferredPlaybackVolumeBoost.asStateFlow()
 
-    private val _equalizer = MutableStateFlow(preferences.getEqualizer())
+    private val _equalizer = MutableStateFlow(playback.getEqualizer())
     val equalizer: StateFlow<EqualizerSettings> = _equalizer.asStateFlow()
 
     val equalizerCapabilities: StateFlow<EqualizerCapabilities?> =
       flow { emit(equalizerBandProvider.getCapabilities()) }
         .stateIn(viewModelScope, SharingStarted.Lazily, null)
 
-    private val _preferredLibraryOrdering = MutableStateFlow(preferences.getLibraryOrdering())
+    private val _preferredLibraryOrdering = MutableStateFlow(library.getLibraryOrdering())
     val preferredLibraryOrdering: StateFlow<LibraryOrderingConfiguration> = _preferredLibraryOrdering.asStateFlow()
 
-    private val _customHeaders = MutableStateFlow(preferences.getCustomHeaders())
+    private val _customHeaders = MutableStateFlow(connection.getCustomHeaders())
     val customHeaders: StateFlow<List<ServerRequestHeader>> = _customHeaders.asStateFlow()
 
-    private val _localUrls = MutableStateFlow(preferences.getLocalUrls())
+    private val _localUrls = MutableStateFlow(connection.getLocalUrls())
     val localUrls: StateFlow<List<LocalUrl>> = _localUrls.asStateFlow()
 
-    private val _seekTime = MutableStateFlow(preferences.getSeekTime())
+    private val _seekTime = MutableStateFlow(playback.getSeekTime())
     val seekTime = _seekTime.asStateFlow()
 
-    private val _defaultTimerOption = MutableStateFlow<TimerOption?>(preferences.getDefaultTimerOption())
+    private val _defaultTimerOption = MutableStateFlow<TimerOption?>(playback.getDefaultTimerOption())
     val defaultTimerOption: StateFlow<TimerOption?> = _defaultTimerOption.asStateFlow()
 
-    private val _crashReporting = MutableStateFlow(preferences.getAcraEnabled())
+    private val _crashReporting = MutableStateFlow(diagnostics.getAcraEnabled())
     val crashReporting: StateFlow<Boolean> = _crashReporting.asStateFlow()
 
-    private val _bypassSsl = MutableStateFlow(preferences.getSslBypass())
+    private val _bypassSsl = MutableStateFlow(connection.getSslBypass())
     val bypassSsl: StateFlow<Boolean> = _bypassSsl.asStateFlow()
 
-    val clientCertAlias = preferences.clientCertAliasFlow
+    val clientCertAlias = connection.clientCertAliasFlow
 
-    private val _softwareCodecsEnabled = MutableStateFlow(preferences.getSoftwareCodecsEnabled())
+    private val _softwareCodecsEnabled = MutableStateFlow(playback.getSoftwareCodecsEnabled())
 
     val softwareCodecsEnabled: StateFlow<Boolean> = _softwareCodecsEnabled.asStateFlow()
-    val softwareCodecsEnabledOnStart: Boolean = preferences.getSoftwareCodecsEnabled()
+    val softwareCodecsEnabledOnStart: Boolean = playback.getSoftwareCodecsEnabled()
 
-    private val _audioFocusLossPolicy = MutableStateFlow(preferences.getAudioFocusLossPolicy())
+    private val _audioFocusLossPolicy = MutableStateFlow(playback.getAudioFocusLossPolicy())
 
     val audioFocusLossPolicy: StateFlow<AudioFocusLossPolicy> = _audioFocusLossPolicy.asStateFlow()
 
-    private val _activityLoggingEnabled = MutableStateFlow(preferences.isActivityLoggingEnabled())
+    private val _activityLoggingEnabled = MutableStateFlow(diagnostics.isActivityLoggingEnabled())
 
     val activityLoggingEnabled: StateFlow<Boolean> = _activityLoggingEnabled.asStateFlow()
-    val activityLoggingEnabledOnStart: Boolean = preferences.isActivityLoggingEnabled()
+    val activityLoggingEnabledOnStart: Boolean = diagnostics.isActivityLoggingEnabled()
 
-    private val _hideCompleted = preferences.hideCompletedFlow
+    private val _hideCompleted = library.hideCompletedFlow
     val hideCompleted = _hideCompleted
 
-    val libraryGrouping = preferences.libraryGroupingFlow
+    val libraryGrouping = library.libraryGroupingFlow
 
-    private val _autoDownloadDelayed = MutableStateFlow(preferences.getAutoDownloadDelayed())
+    private val _autoDownloadDelayed = MutableStateFlow(download.getAutoDownloadDelayed())
     val autoDownloadDelayed: StateFlow<Boolean> = _autoDownloadDelayed.asStateFlow()
 
-    private val _userAgent = MutableStateFlow(preferences.getUserAgent())
+    private val _userAgent = MutableStateFlow(connection.getUserAgent())
     val userAgent: StateFlow<String> = _userAgent.asStateFlow()
 
     fun provideLogArchive(): File? = logProvider.archiveLogFile()
@@ -150,47 +164,47 @@ class SettingsViewModel
     fun saveDefaultTimerOption(option: TimerOption?) {
       Timber.d("User action: saveDefaultTimerOption option=$option")
       _defaultTimerOption.value = option
-      preferences.saveDefaultTimerOption(option)
+      playback.saveDefaultTimerOption(option)
     }
 
     fun preferCrashReporting(value: Boolean) {
       Timber.d("User action: preferCrashReporting $value")
       _crashReporting.value = value
-      preferences.saveAcraEnabled(value)
+      diagnostics.saveAcraEnabled(value)
     }
 
     fun preferBypassSsl(value: Boolean) {
       Timber.d("User action: preferBypassSsl $value")
       _bypassSsl.value = value
-      preferences.saveSslBypass(value)
+      connection.saveSslBypass(value)
     }
 
-    fun saveClientCertAlias(alias: String?) = preferences.saveClientCertAlias(alias)
+    fun saveClientCertAlias(alias: String?) = connection.saveClientCertAlias(alias)
 
-    fun clearClientCertAlias() = preferences.clearClientCertAlias()
+    fun clearClientCertAlias() = connection.clearClientCertAlias()
 
     fun preferAutoDownloadDelayed(value: Boolean) {
       Timber.d("User action: preferAutoDownloadDelayed $value")
       _autoDownloadDelayed.value = value
-      preferences.saveAutoDownloadDelayed(value)
+      download.saveAutoDownloadDelayed(value)
     }
 
     fun toggleHideCompleted() {
-      Timber.d("User action: toggleHideCompleted (current=${preferences.getHideCompleted()})")
-      when (preferences.getHideCompleted()) {
-        true -> preferences.saveHideCompleted(false)
-        false -> preferences.saveHideCompleted(true)
+      Timber.d("User action: toggleHideCompleted (current=${library.getHideCompleted()})")
+      when (library.getHideCompleted()) {
+        true -> library.saveHideCompleted(false)
+        false -> library.saveHideCompleted(true)
       }
     }
 
     fun preferLibraryGrouping(grouping: LibraryGrouping) {
       Timber.d("User action: preferLibraryGrouping $grouping")
-      preferences.saveLibraryGrouping(grouping)
+      library.saveLibraryGrouping(grouping)
     }
 
     fun logout() {
       Timber.d("User action: logout")
-      preferences.clearPreferences()
+      preferencesReset.clearAll()
     }
 
     fun refreshConnectionInfo() {
@@ -217,7 +231,7 @@ class SettingsViewModel
             val libraries = response.data
             _libraries.value = libraries
 
-            val preferredLibrary = preferences.getPreferredLibrary()
+            val preferredLibrary = library.getPreferredLibrary()
 
             _preferredLibrary.value =
               when (preferredLibrary) {
@@ -227,26 +241,26 @@ class SettingsViewModel
           }
 
           is OperationResult.Error -> {
-            _libraries.value = preferences.getPreferredLibrary()?.let { listOf(it) } ?: emptyList()
+            _libraries.value = library.getPreferredLibrary()?.let { listOf(it) } ?: emptyList()
           }
         }
       }
     }
 
-    fun fetchPreferredLibraryId(): String = preferences.getPreferredLibrary()?.id ?: ""
+    fun fetchPreferredLibraryId(): String = library.getPreferredLibrary()?.id ?: ""
 
-    fun fetchLibraryOrdering(): LibraryOrderingConfiguration = preferences.getLibraryOrdering()
+    fun fetchLibraryOrdering(): LibraryOrderingConfiguration = library.getLibraryOrdering()
 
     fun preferLibrary(library: Library) {
       Timber.d("User action: preferLibrary ${library.id} '${library.title}'")
       _preferredLibrary.value = library
-      preferences.savePreferredLibrary(library)
+      this.library.savePreferredLibrary(library)
     }
 
     fun preferAutoDownloadNetworkType(type: NetworkTypeAutoCache) {
       Timber.d("User action: preferAutoDownloadNetworkType $type")
       _preferredAutoDownloadNetworkType.value = type
-      preferences.saveAutoDownloadNetworkType(type)
+      download.saveAutoDownloadNetworkType(type)
     }
 
     fun changeAutoDownloadLibraryType(
@@ -266,19 +280,19 @@ class SettingsViewModel
           }
 
       _preferredAutoDownloadLibraryTypes.value = updatedState
-      preferences.saveAutoDownloadLibraryTypes(updatedState)
+      download.saveAutoDownloadLibraryTypes(updatedState)
     }
 
     fun preferLibraryOrdering(configuration: LibraryOrderingConfiguration) {
       Timber.d("User action: preferLibraryOrdering $configuration")
       _preferredLibraryOrdering.value = configuration
-      preferences.saveLibraryOrdering(configuration)
+      library.saveLibraryOrdering(configuration)
     }
 
     fun preferPlaybackVolumeBoost(db: Int) {
       Timber.d("User action: preferPlaybackVolumeBoost $db dB")
       _preferredPlaybackVolumeBoost.value = db
-      preferences.savePlaybackVolumeBoost(db)
+      playback.savePlaybackVolumeBoost(db)
     }
 
     fun preferEqualizerGain(
@@ -292,38 +306,38 @@ class SettingsViewModel
 
       val updated = current.copy(gains = gains)
       _equalizer.value = updated
-      preferences.saveEqualizer(updated)
+      playback.saveEqualizer(updated)
     }
 
     fun resetEqualizer() {
       Timber.d("User action: resetEqualizer")
       val updated = _equalizer.value.copy(gains = emptyList())
       _equalizer.value = updated
-      preferences.saveEqualizer(updated)
+      playback.saveEqualizer(updated)
     }
 
     fun preferColorScheme(colorScheme: ColorScheme) {
       Timber.d("User action: preferColorScheme $colorScheme")
       _preferredColorScheme.value = colorScheme
-      preferences.saveColorScheme(colorScheme)
+      appearance.saveColorScheme(colorScheme)
     }
 
     fun preferMaterialYouColors(value: Boolean) {
       Timber.d("User action: preferMaterialYouColors $value")
       _materialYouEnabled.value = value
-      preferences.saveMaterialYouColors(value)
+      appearance.saveMaterialYouColors(value)
     }
 
     fun preferAudioFocusLossPolicy(policy: AudioFocusLossPolicy) {
       Timber.d("User action: preferAudioFocusLossPolicy $policy")
       _audioFocusLossPolicy.value = policy
-      preferences.saveAudioFocusLossPolicy(policy)
+      playback.saveAudioFocusLossPolicy(policy)
     }
 
     fun preferSoftwareCodecsEnabled(value: Boolean) {
       Timber.d("User action: preferSoftwareCodecsEnabled $value")
       _softwareCodecsEnabled.value = value
-      preferences.saveSoftwareCodecsEnabled(value)
+      playback.saveSoftwareCodecsEnabled(value)
     }
 
     fun preferActivityLoggingEnabled(value: Boolean) {
@@ -335,7 +349,7 @@ class SettingsViewModel
     fun preferAutoDownloadOption(option: DownloadOption?) {
       Timber.d("User action: preferAutoDownloadOption $option")
       _preferredAutoDownloadOption.value = option
-      preferences.saveAutoDownloadOption(option)
+      download.saveAutoDownloadOption(option)
     }
 
     fun preferForwardRewind(seconds: Int) {
@@ -343,7 +357,7 @@ class SettingsViewModel
       val current = _seekTime.value
       val updated = current.copy(forward = seconds)
 
-      preferences.saveSeekTime(updated)
+      playback.saveSeekTime(updated)
       _seekTime.value = updated
     }
 
@@ -352,7 +366,7 @@ class SettingsViewModel
       val current = _seekTime.value
       val updated = current.copy(rewind = seconds)
 
-      preferences.saveSeekTime(updated)
+      playback.saveSeekTime(updated)
       _seekTime.value = updated
     }
 
@@ -366,17 +380,17 @@ class SettingsViewModel
           .filterNot { it.ssid.isEmpty() }
           .filterNot { it.route.isEmpty() }
 
-      preferences.saveLocalUrls(meaningfulRoutes)
+      connection.saveLocalUrls(meaningfulRoutes)
     }
 
     fun updateUserAgent(value: String) {
       val sanitized = value.replace(Regex("[\\x00-\\x08\\x0A-\\x1F\\x7F]"), "").trim()
-      preferences.saveUserAgent(sanitized)
+      connection.saveUserAgent(sanitized)
       _userAgent.value = sanitized
     }
 
     fun resetUserAgent() {
-      preferences.clearUserAgent()
+      connection.clearUserAgent()
       _userAgent.value = DEFAULT_USER_AGENT
     }
 
@@ -390,21 +404,21 @@ class SettingsViewModel
           .filterNot { it.name.isEmpty() }
           .filterNot { it.value.isEmpty() }
 
-      preferences.saveCustomHeaders(meaningfulHeaders)
+      connection.saveCustomHeaders(meaningfulHeaders)
     }
 
-    fun hasCredentials() = preferences.hasCredentials()
+    fun hasCredentials() = session.hasCredentials()
 
     private fun cacheServerInfo() {
-      serverVersion.value?.let { preferences.saveServerVersion(it) }
-      username.value?.let { preferences.saveUsername(it) }
+      serverVersion.value?.let { session.saveServerVersion(it) }
+      username.value?.let { session.saveUsername(it) }
     }
 
     private fun fetchConnectionHost() {
       val host =
         when (val response = mediaChannel.fetchConnectionHost()) {
           is OperationResult.Error -> {
-            preferences.getHost()?.let { Host.external(it) }
+            session.getHost()?.let { Host.external(it) }
           }
 
           is OperationResult.Success -> {

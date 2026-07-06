@@ -20,7 +20,8 @@ import androidx.test.rule.GrantPermissionRule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.grakovne.lissen.domain.EqualizerSettings
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
+import org.grakovne.lissen.persistence.preferences.PreferencesReset
 import org.grakovne.lissen.ui.activity.AppActivity
 import org.junit.Rule
 import org.junit.Test
@@ -40,14 +41,17 @@ class SettingsE2ETest {
   val hiltRule = HiltAndroidRule(this)
 
   @Inject
-  lateinit var preferences: LissenSharedPreferences
+  lateinit var preferencesReset: PreferencesReset
+
+  @Inject
+  lateinit var playbackPreferences: PlaybackPreferences
 
   @get:Rule(order = 2)
   val setupRule =
     object : ExternalResource() {
       override fun before() {
         hiltRule.inject()
-        preferences.clearPreferences()
+        preferencesReset.clearAll()
         E2ESession.restore()
       }
     }
@@ -142,7 +146,7 @@ class SettingsE2ETest {
 
   @Test
   fun equalizer_adjustedBandPersists() {
-    preferences.saveEqualizer(EqualizerSettings.Default)
+    playbackPreferences.saveEqualizer(EqualizerSettings.Default)
     navigateToPlaybackSettings()
 
     composeRule.waitUntilAtLeastOneExists(
@@ -163,7 +167,7 @@ class SettingsE2ETest {
       swipe(start = center, end = center.copy(y = top))
     }
 
-    composeRule.waitUntil(TIMEOUT_MS) { preferences.getEqualizer().isActive }
+    composeRule.waitUntil(TIMEOUT_MS) { playbackPreferences.getEqualizer().isActive }
 
     InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK)
 

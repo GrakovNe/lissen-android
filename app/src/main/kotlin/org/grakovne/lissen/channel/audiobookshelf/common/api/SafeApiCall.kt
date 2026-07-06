@@ -2,7 +2,7 @@ package org.grakovne.lissen.channel.audiobookshelf.common.api
 
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.ConnectionPreferences
 import retrofit2.Response
 import timber.log.Timber
 import java.io.IOException
@@ -11,7 +11,7 @@ import javax.net.ssl.SSLPeerUnverifiedException
 import kotlin.coroutines.cancellation.CancellationException
 
 suspend fun <T> safeApiCall(
-  preferences: LissenSharedPreferences,
+  connection: ConnectionPreferences,
   apiCall: suspend () -> Response<T>,
 ): OperationResult<T> {
   return try {
@@ -64,14 +64,14 @@ suspend fun <T> safeApiCall(
     }
   } catch (e: SSLHandshakeException) {
     Timber.e("SSL handshake failed: $e")
-    if (preferences.getClientCertAlias() != null) {
+    if (connection.getClientCertAlias() != null) {
       OperationResult.Error(OperationError.ClientCertificateError)
     } else {
       OperationResult.Error(OperationError.NetworkError)
     }
   } catch (e: SSLPeerUnverifiedException) {
     Timber.e("SSL peer unverified: $e")
-    if (preferences.getClientCertAlias() != null) {
+    if (connection.getClientCertAlias() != null) {
       OperationResult.Error(OperationError.ClientCertificateError)
     } else {
       OperationResult.Error(OperationError.NetworkError)

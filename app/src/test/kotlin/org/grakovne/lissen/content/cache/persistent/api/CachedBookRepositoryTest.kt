@@ -14,7 +14,7 @@ import org.grakovne.lissen.content.cache.persistent.dao.CachedBookDao
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.GroupedEntry
 import org.grakovne.lissen.domain.LibraryEntry
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertInstanceOf
@@ -28,7 +28,7 @@ class CachedBookRepositoryTest {
   private val cachedBookEntityDetailedConverter = mockk<CachedBookEntityDetailedConverter>(relaxed = true)
   private val cachedBookEntityRecentConverter = mockk<CachedBookEntityRecentConverter>(relaxed = true)
   private val mediaProgressEntityConverter = mockk<MediaProgressEntityConverter>(relaxed = true)
-  private val preferences = mockk<LissenSharedPreferences>(relaxed = true)
+  private val preferences = mockk<LibraryPreferences>(relaxed = true)
 
   private lateinit var repository: CachedBookRepository
 

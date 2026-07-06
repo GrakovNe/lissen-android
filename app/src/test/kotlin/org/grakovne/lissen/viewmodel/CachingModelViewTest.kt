@@ -24,7 +24,8 @@ import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
 import org.grakovne.lissen.content.cache.temporary.SeriesCoverProvider
 import org.grakovne.lissen.domain.CacheStatus
 import org.grakovne.lissen.domain.DetailedItem
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.DownloadPreferences
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -40,7 +41,8 @@ class CachingModelViewTest {
   private val localCacheRepository = mockk<LocalCacheRepository>(relaxed = true)
   private val contentCachingProgress = mockk<ContentCachingProgress>(relaxed = true)
   private val contentCachingManager = mockk<ContentCachingManager>(relaxed = true)
-  private val preferences = mockk<LissenSharedPreferences>(relaxed = true)
+  private val libraryPreferences = mockk<LibraryPreferences>(relaxed = true)
+  private val downloadPreferences = mockk<DownloadPreferences>(relaxed = true)
   private val cachedCoverProvider = mockk<CachedCoverProvider>(relaxed = true)
   private val seriesCoverProvider = mockk<SeriesCoverProvider>(relaxed = true)
 
@@ -52,7 +54,7 @@ class CachingModelViewTest {
   fun setup() {
     Dispatchers.setMain(testDispatcher)
     every { contentCachingProgress.statusFlow } returns statusFlow
-    every { preferences.forceCacheFlow } returns flowOf(false)
+    every { libraryPreferences.forceCacheFlow } returns flowOf(false)
 
     viewModel =
       CachingModelView(
@@ -60,7 +62,8 @@ class CachingModelViewTest {
         localCacheRepository,
         contentCachingProgress,
         contentCachingManager,
-        preferences,
+        libraryPreferences,
+        downloadPreferences,
         cachedCoverProvider,
         seriesCoverProvider,
       )
@@ -132,28 +135,28 @@ class CachingModelViewTest {
   inner class CacheForce {
     @Test
     fun `toggleCacheForce enables when currently disabled`() {
-      every { preferences.isForceCache() } returns false
+      every { libraryPreferences.isForceCache() } returns false
 
       viewModel.toggleCacheForce()
 
-      verify { preferences.enableForceCache() }
+      verify { libraryPreferences.enableForceCache() }
     }
 
     @Test
     fun `toggleCacheForce disables when currently enabled`() {
-      every { preferences.isForceCache() } returns true
+      every { libraryPreferences.isForceCache() } returns true
 
       viewModel.toggleCacheForce()
 
-      verify { preferences.disableForceCache() }
+      verify { libraryPreferences.disableForceCache() }
     }
 
     @Test
     fun `localCacheUsing delegates to preferences`() {
-      every { preferences.isForceCache() } returns true
+      every { libraryPreferences.isForceCache() } returns true
       assertTrue(viewModel.localCacheUsing())
 
-      every { preferences.isForceCache() } returns false
+      every { libraryPreferences.isForceCache() } returns false
       assertFalse(viewModel.localCacheUsing())
     }
   }
@@ -206,7 +209,7 @@ class CachingModelViewTest {
   inner class DownloadChaptersCount {
     @Test
     fun `getDownloadChaptersCount delegates to preferences`() {
-      every { preferences.getDownloadChaptersCount() } returns 5
+      every { downloadPreferences.getDownloadChaptersCount() } returns 5
 
       assertEquals(5, viewModel.getDownloadChaptersCount())
     }
@@ -215,7 +218,7 @@ class CachingModelViewTest {
     fun `saveDownloadChaptersCount delegates to preferences`() {
       viewModel.saveDownloadChaptersCount(7)
 
-      verify { preferences.saveDownloadChaptersCount(7) }
+      verify { downloadPreferences.saveDownloadChaptersCount(7) }
     }
   }
 

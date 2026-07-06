@@ -14,7 +14,7 @@ import org.grakovne.lissen.channel.common.OAuthContextCache
 import org.grakovne.lissen.channel.common.makeText
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.UserAccount
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.grakovne.lissen.ui.activity.AppActivity
 import timber.log.Timber
 import javax.inject.Inject
@@ -31,7 +31,7 @@ class AudiobookshelfOAuthCallbackActivity : ComponentActivity() {
   lateinit var mediaProvider: LissenMediaProvider
 
   @Inject
-  lateinit var preferences: LissenSharedPreferences
+  lateinit var preferences: SessionPreferences
 
   @Inject
   lateinit var hostProvider: AudiobookshelfHostProvider

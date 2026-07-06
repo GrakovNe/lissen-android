@@ -20,7 +20,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import coil3.ImageLoader
 import org.grakovne.lissen.common.NetworkService
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
+import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.grakovne.lissen.ui.screens.library.LibraryScreen
 import org.grakovne.lissen.ui.screens.login.LoginScreen
 import org.grakovne.lissen.ui.screens.player.PlayerScreen
@@ -57,7 +58,8 @@ private val popExitTransition: ExitTransition =
 @Composable
 fun AppNavHost(
   navController: NavHostController,
-  preferences: LissenSharedPreferences,
+  playbackPreferences: PlaybackPreferences,
+  sessionPreferences: SessionPreferences,
   networkService: NetworkService,
   navigationService: AppNavigationService,
   imageLoader: ImageLoader,
@@ -67,10 +69,10 @@ fun AppNavHost(
   // than re-reading preferences on every recomposition.
   val startDestination =
     remember {
-      val book = preferences.getPlayingItem()
+      val book = playbackPreferences.getPlayingItem()
 
       when {
-        preferences.hasCredentials().not() -> {
+        sessionPreferences.hasCredentials().not() -> {
           ROUTE_LOGIN
         }
 

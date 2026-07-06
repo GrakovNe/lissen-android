@@ -23,7 +23,8 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.RecentBook
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.util.listenableFuture
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -85,7 +86,8 @@ class MediaLibraryTree
   @OptIn(UnstableApi::class)
   constructor(
     @param:ApplicationContext private val context: Context,
-    private val preferences: LissenSharedPreferences,
+    private val playbackPreferences: PlaybackPreferences,
+    private val libraryPreferences: LibraryPreferences,
     private val localCacheRepository: LocalCacheRepository,
     private val lissenMediaProvider: LissenMediaProvider,
   ) {
@@ -179,7 +181,7 @@ class MediaLibraryTree
     fun searchBooks(query: String): ListenableFuture<List<MediaItem>> =
       scope
         .listenableFuture {
-          preferences.getPreferredLibrary()?.id?.let { libraryId ->
+          libraryPreferences.getPreferredLibrary()?.id?.let { libraryId ->
             lissenMediaProvider
               .searchBooks(libraryId, query, limit = 20)
               .fold(
@@ -248,10 +250,10 @@ class MediaLibraryTree
     // --- Data fetchers ---
 
     private suspend fun continueListeningItems(): List<MediaItem> =
-      preferences.getPlayingItem()?.let { listOf(bookItem(it)) } ?: emptyList()
+      playbackPreferences.getPlayingItem()?.let { listOf(bookItem(it)) } ?: emptyList()
 
     private suspend fun recentBooksItems(): List<MediaItem> =
-      preferences.getPreferredLibrary()?.id?.let { libraryId ->
+      libraryPreferences.getPreferredLibrary()?.id?.let { libraryId ->
         lissenMediaProvider
           .fetchRecentListenedBooks(libraryId)
           .fold(

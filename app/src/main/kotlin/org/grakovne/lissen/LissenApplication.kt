@@ -13,7 +13,7 @@ import org.acra.security.TLS
 import org.acra.sender.HttpSender
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.logging.LissenLogProvider
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.DiagnosticsPreferences
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -26,7 +26,7 @@ class LissenApplication : Application() {
   lateinit var lissenLogProvider: LissenLogProvider
 
   @Inject
-  lateinit var preferences: LissenSharedPreferences
+  lateinit var preferences: DiagnosticsPreferences
 
   override fun attachBaseContext(base: Context) {
     super.attachBaseContext(base)

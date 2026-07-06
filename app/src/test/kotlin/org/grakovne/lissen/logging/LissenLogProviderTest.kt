@@ -6,7 +6,7 @@ import io.mockk.justRun
 import io.mockk.mockk
 import io.mockk.verify
 import net.lingala.zip4j.ZipFile
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.DiagnosticsPreferences
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -21,7 +21,7 @@ class LissenLogProviderTest {
   lateinit var tempDir: File
 
   private lateinit var context: Context
-  private lateinit var preferences: LissenSharedPreferences
+  private lateinit var preferences: DiagnosticsPreferences
   private lateinit var provider: LissenLogProvider
 
   @BeforeEach

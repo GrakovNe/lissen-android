@@ -21,7 +21,8 @@ import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.ContentCachingTask
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.NetworkType
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.DownloadPreferences
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.playback.MediaRepository
 import timber.log.Timber
 import java.io.Serializable
@@ -36,7 +37,8 @@ class ContentAutoCachingService
     @param:ApplicationContext private val context: Context,
     private val mediaRepository: MediaRepository,
     private val mediaProvider: LissenMediaProvider,
-    private val sharedPreferences: LissenSharedPreferences,
+    private val downloadPreferences: DownloadPreferences,
+    private val libraryPreferences: LibraryPreferences,
     private val networkService: NetworkService,
   ) : RunningComponent {
     private var delayedJob: Job? = null
@@ -68,12 +70,12 @@ class ContentAutoCachingService
       isPlaying: Boolean,
       delayed: Boolean = false,
     ): Job? {
-      val playbackCacheOption = sharedPreferences.getAutoDownloadOption() ?: return null
+      val playbackCacheOption = downloadPreferences.getAutoDownloadOption() ?: return null
       val playingMediaItem = playingItem ?: return null
 
       val isNetworkAvailable = networkService.isNetworkAvailable()
       val currentNetwork = networkService.getCurrentNetworkType() ?: return null
-      val preferredNetwork = sharedPreferences.getAutoDownloadNetworkType()
+      val preferredNetwork = downloadPreferences.getAutoDownloadNetworkType()
       val currentTotalPosition = mediaRepository.totalPosition.value
 
       val playingItemLibraryType =
@@ -86,11 +88,11 @@ class ContentAutoCachingService
           ) ?: return null
 
       val requestedLibraryType =
-        sharedPreferences
+        downloadPreferences
           .getAutoDownloadLibraryTypes()
           .contains(playingItemLibraryType)
 
-      val isForceCache = sharedPreferences.isForceCache()
+      val isForceCache = libraryPreferences.isForceCache()
 
       val cacheAvailable =
         isNetworkAvailable &&
@@ -101,7 +103,7 @@ class ContentAutoCachingService
 
       if (cacheAvailable.not()) return null
 
-      if (sharedPreferences.getAutoDownloadDelayed().not() || delayed) {
+      if (downloadPreferences.getAutoDownloadDelayed().not() || delayed) {
         val task =
           ContentCachingTask(
             itemId = playingMediaItem.id,

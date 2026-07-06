@@ -24,7 +24,7 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackSession
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -35,7 +35,7 @@ class PodcastAudiobookshelfChannel
     hostProvider: AudiobookshelfHostProvider,
     dataRepository: AudioBookshelfRepository,
     recentListeningResponseConverter: RecentListeningResponseConverter,
-    preferences: LissenSharedPreferences,
+    preferences: LibraryPreferences,
     syncService: AudioBookshelfPodcastSyncService,
     sessionResponseConverter: PlaybackSessionResponseConverter,
     libraryResponseConverter: LibraryResponseConverter,

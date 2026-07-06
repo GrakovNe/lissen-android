@@ -17,7 +17,7 @@ import kotlinx.coroutines.withContext
 import org.grakovne.lissen.common.AudioFocusLossPolicy
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.domain.EqualizerSettings
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -29,7 +29,7 @@ class PlaybackEnhancerService
   @Inject
   constructor(
     private val player: ExoPlayer,
-    private val sharedPreferences: LissenSharedPreferences,
+    private val sharedPreferences: PlaybackPreferences,
   ) : RunningComponent {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 

@@ -17,7 +17,7 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.PlaybackSessionSource
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.CHAPTER_START_MS
 import timber.log.Timber
 import javax.inject.Inject
@@ -29,7 +29,7 @@ class PlaybackSynchronizationService
   constructor(
     private val exoPlayer: ExoPlayer,
     private val mediaChannel: LissenMediaProvider,
-    private val sharedPreferences: LissenSharedPreferences,
+    private val sharedPreferences: SessionPreferences,
   ) {
     private var currentItem: DetailedItem? = null
     private var currentChapterIndex: Int? = null

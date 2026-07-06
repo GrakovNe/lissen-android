@@ -18,7 +18,9 @@ import androidx.navigation.compose.rememberNavController
 import coil3.ImageLoader
 import dagger.hilt.android.AndroidEntryPoint
 import org.grakovne.lissen.common.NetworkService
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.AppearancePreferences
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
+import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.grakovne.lissen.ui.navigation.AppLaunchAction
 import org.grakovne.lissen.ui.navigation.AppNavHost
 import org.grakovne.lissen.ui.navigation.AppNavigationService
@@ -31,7 +33,13 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class AppActivity : ComponentActivity() {
   @Inject
-  lateinit var preferences: LissenSharedPreferences
+  lateinit var appearancePreferences: AppearancePreferences
+
+  @Inject
+  lateinit var playbackPreferences: PlaybackPreferences
+
+  @Inject
+  lateinit var sessionPreferences: SessionPreferences
 
   @Inject
   lateinit var imageLoader: ImageLoader
@@ -47,13 +55,13 @@ class AppActivity : ComponentActivity() {
     enableEdgeToEdge()
 
     setContent {
-      val colorScheme by preferences
+      val colorScheme by appearancePreferences
         .colorSchemeFlow
-        .collectAsState(initial = preferences.getColorScheme())
+        .collectAsState(initial = appearancePreferences.getColorScheme())
 
-      val materialYou by preferences
+      val materialYou by appearancePreferences
         .materialYouFlow
-        .collectAsState(initial = preferences.getMaterialYouColors())
+        .collectAsState(initial = appearancePreferences.getMaterialYouColors())
 
       LissenTheme(colorScheme, materialYou) {
         val navController = rememberNavController()
@@ -69,7 +77,8 @@ class AppActivity : ComponentActivity() {
           AppNavHost(
             navController = navController,
             navigationService = appNavigationService,
-            preferences = preferences,
+            playbackPreferences = playbackPreferences,
+            sessionPreferences = sessionPreferences,
             imageLoader = imageLoader,
             networkService = networkService,
             appLaunchAction = getLaunchAction(intent),
@@ -91,7 +100,7 @@ class AppActivity : ComponentActivity() {
 
     when (getLaunchAction(intent)) {
       AppLaunchAction.CONTINUE_PLAYBACK -> {
-        preferences.getPlayingItem()?.let { book ->
+        playbackPreferences.getPlayingItem()?.let { book ->
           appNavigationService.showPlayer(
             bookId = book.id,
             bookTitle = book.title,

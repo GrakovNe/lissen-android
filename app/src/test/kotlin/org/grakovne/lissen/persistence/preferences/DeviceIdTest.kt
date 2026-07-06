@@ -17,7 +17,7 @@ class DeviceIdTest {
       every { getSharedPreferences(any(), any()) } returns fakePreferences
     }
 
-  private val preferences = LissenSharedPreferences(context)
+  private val preferences = SessionPreferences(SecurePreferenceStore(context))
 
   @Test
   fun `device id is stable across calls`() {
