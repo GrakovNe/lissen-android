@@ -24,6 +24,7 @@ import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.domain.DurationTimerOption
+import org.grakovne.lissen.domain.EqualizerSettings
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.SeekTime
@@ -335,6 +336,8 @@ class LissenSharedPreferences
 
     val audioFocusLossPolicyFlow = asFlow(KEY_AUDIO_FOCUS_LOSS_POLICY, ::getAudioFocusLossPolicy)
 
+    val equalizerFlow = asFlow(KEY_EQUALIZER, ::getEqualizer)
+
     val colorSchemeFlow = asFlow(KEY_PREFERRED_COLOR_SCHEME, ::getColorScheme)
 
     val materialYouFlow = asFlow(KEY_MATERIAL_YOU_ENABLED, ::getMaterialYouColors)
@@ -472,6 +475,33 @@ class LissenSharedPreferences
       }
     }
 
+    fun saveEqualizer(settings: EqualizerSettings) {
+      val adapter = moshi.adapter(EqualizerSettings::class.java)
+      val json = adapter.toJson(settings)
+
+      sharedPreferences.edit(commit = true) { putString(KEY_EQUALIZER, json) }
+    }
+
+    fun getEqualizer(): EqualizerSettings {
+      val json = sharedPreferences.getString(KEY_EQUALIZER, null)
+      return when (json) {
+        null -> {
+          EqualizerSettings.Default
+        }
+
+        else -> {
+          try {
+            val adapter = moshi.adapter(EqualizerSettings::class.java)
+            adapter.fromJson(json) ?: EqualizerSettings.Default
+          } catch (e: com.squareup.moshi.JsonDataException) {
+            Timber.w("Stored equalizer is malformed, resetting due to: ${e.message}")
+            sharedPreferences.edit(commit = true) { remove(KEY_EQUALIZER) }
+            EqualizerSettings.Default
+          }
+        }
+      }
+    }
+
     fun saveCustomHeaders(headers: List<ServerRequestHeader>) {
       val type = Types.newParameterizedType(List::class.java, ServerRequestHeader::class.java)
       val adapter = moshi.adapter<List<ServerRequestHeader>>(type)
@@ -584,6 +614,7 @@ class LissenSharedPreferences
         playbackSpeed = getPlaybackSpeed(),
         volumeBoost = getPlaybackVolumeBoost(),
         seekTime = getSeekTime(),
+        equalizer = getEqualizer(),
         audioFocusLossPolicy = getAudioFocusLossPolicy().name,
         softwareCodecsEnabled = getSoftwareCodecsEnabled(),
         hideCompleted = getHideCompleted(),
@@ -615,6 +646,7 @@ class LissenSharedPreferences
       backup.playbackSpeed?.let { savePlaybackSpeed(it) }
       backup.volumeBoost?.let { savePlaybackVolumeBoost(it) }
       backup.seekTime?.let { saveSeekTime(it) }
+      backup.equalizer?.let { saveEqualizer(it) }
 
       backup.audioFocusLossPolicy
         ?.let { runCatching { AudioFocusLossPolicy.valueOf(it) }.getOrNull() }
@@ -744,6 +776,7 @@ class LissenSharedPreferences
 
       private const val KEY_PLAYING_ITEM = "playing_item"
       private const val KEY_VOLUME_BOOST = "volume_boost"
+      private const val KEY_EQUALIZER = "equalizer"
       private const val KEY_DEFAULT_SLEEP_TIMER = "default_sleep_timer"
 
       private const val ANDROID_KEYSTORE = "AndroidKeyStore"

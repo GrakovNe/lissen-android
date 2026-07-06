@@ -184,6 +184,12 @@
     <string name="settings_screen_cached_items_hint">Управляйте скачанными книгами и подкастами</string>
     <string name="volume_boost_disabled">Отключено</string>
     <string name="volume_boost_title">Усиление громкости</string>
+    <string name="settings_screen_equalizer_title">Эквалайзер</string>
+    <string name="settings_screen_equalizer_enabled">Включён</string>
+    <string name="settings_screen_equalizer_disabled">Выключен</string>
+    <string name="equalizer_restore_default">Вернуть по умолчанию</string>
+    <string name="a11y_equalizer_band">Полоса %s герц</string>
+    <string name="a11y_equalizer_restore">Вернуть эквалайзер по умолчанию</string>
     <string name="playing_item_details_time_remaining">Оставшееся время</string>
     <string name="playback_preferences_title">Воспроизведение</string>
     <string name="playback_preferences_description">Громкость, перемотка и звук</string>

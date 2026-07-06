@@ -16,6 +16,7 @@ import org.grakovne.lissen.common.LibraryOrderingOption
 import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.common.moshi
 import org.grakovne.lissen.domain.AllItemsDownloadOption
+import org.grakovne.lissen.domain.EqualizerSettings
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.domain.connection.LocalUrl
@@ -76,6 +77,16 @@ class LissenSharedPreferencesConfigBackupTest {
       val backup = preferences.exportSettings()
 
       assertEquals(SeekTime(rewind = 15, forward = 45), backup.seekTime)
+    }
+
+    @Test
+    fun `maps equalizer from stored json`() {
+      every { sharedPreferences.getString("equalizer", null) } returns
+        """{"gains":[1,-2,0,3,6]}"""
+
+      val backup = preferences.exportSettings()
+
+      assertEquals(EqualizerSettings(gains = listOf(1, -2, 0, 3, 6)), backup.equalizer)
     }
 
     @Test
@@ -218,6 +229,7 @@ class LissenSharedPreferencesConfigBackupTest {
       assertEquals("disabled", backup.autoDownloadOptionId)
       assertEquals(listOf(LibraryType.LIBRARY.name, LibraryType.PODCAST.name), backup.autoDownloadLibraryTypes)
       assertEquals(SeekTime.Default, backup.seekTime)
+      assertEquals(EqualizerSettings.Default, backup.equalizer)
       assertEquals(LibraryOrderingConfiguration.default, backup.libraryOrdering)
       assertEquals(DEFAULT_USER_AGENT, backup.userAgent)
       assertEquals(emptyList<ServerRequestHeader>(), backup.customHeaders)
@@ -306,6 +318,26 @@ class LissenSharedPreferencesConfigBackupTest {
           match { it.contains("\"rewind\":5") && it.contains("\"forward\":90") },
         )
       }
+    }
+
+    @Test
+    fun `saves equalizer when present`() {
+      preferences.importSettings(
+        SettingsBackup(equalizer = EqualizerSettings(gains = listOf(2, 0, -3))),
+      )
+
+      verify {
+        editor.putString(
+          "equalizer",
+          match { it.contains("[2,0,-3]") },
+        )
+      }
+    }
+
+    @Test
+    fun `skips equalizer when absent`() {
+      preferences.importSettings(SettingsBackup(equalizer = null))
+      verify(exactly = 0) { editor.putString("equalizer", any()) }
     }
 
     @Test

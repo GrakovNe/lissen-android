@@ -17,6 +17,7 @@ import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.common.LibraryOrderingOption
 import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.content.LissenMediaProvider
+import org.grakovne.lissen.domain.EqualizerSettings
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.SeekTime
@@ -25,6 +26,7 @@ import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.logging.LissenLogProvider
 import org.grakovne.lissen.persistence.preferences.LissenConfigProvider
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.playback.EqualizerBandProvider
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -40,6 +42,7 @@ class SettingsViewModelTest {
   private val mediaChannel = mockk<LissenMediaProvider>(relaxed = true)
   private val logProvider = mockk<LissenLogProvider>(relaxed = true)
   private val configProvider = mockk<LissenConfigProvider>(relaxed = true)
+  private val equalizerBandProvider = mockk<EqualizerBandProvider>(relaxed = true)
   private lateinit var viewModel: SettingsViewModel
 
   @BeforeEach
@@ -60,6 +63,7 @@ class SettingsViewModelTest {
     every { preferences.getCustomHeaders() } returns emptyList()
     every { preferences.getLocalUrls() } returns emptyList()
     every { preferences.getSeekTime() } returns SeekTime.Default
+    every { preferences.getEqualizer() } returns EqualizerSettings.Default
     every { preferences.getAcraEnabled() } returns true
     every { preferences.getSslBypass() } returns false
     every { preferences.getSoftwareCodecsEnabled() } returns false
@@ -73,7 +77,7 @@ class SettingsViewModelTest {
         org.grakovne.lissen.channel.common.OperationError.NetworkError,
       )
 
-    viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider)
+    viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider, equalizerBandProvider)
   }
 
   @AfterEach
@@ -151,7 +155,7 @@ class SettingsViewModelTest {
     @Test
     fun `changeAutoDownloadLibraryType adds type when state is true`() {
       every { preferences.getAutoDownloadLibraryTypes() } returns listOf(LibraryType.LIBRARY)
-      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider)
+      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider, equalizerBandProvider)
 
       viewModel.changeAutoDownloadLibraryType(LibraryType.PODCAST, true)
 
@@ -161,7 +165,7 @@ class SettingsViewModelTest {
     @Test
     fun `changeAutoDownloadLibraryType removes type when state is false`() {
       every { preferences.getAutoDownloadLibraryTypes() } returns LibraryType.meaningfulTypes
-      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider)
+      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider, equalizerBandProvider)
 
       viewModel.changeAutoDownloadLibraryType(LibraryType.PODCAST, false)
 
@@ -388,7 +392,7 @@ class SettingsViewModelTest {
     @Test
     fun `userAgent StateFlow is initialized from preferences`() {
       every { preferences.getUserAgent() } returns "StoredAgent/3.0"
-      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider)
+      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider, equalizerBandProvider)
       assertEquals("StoredAgent/3.0", viewModel.userAgent.value)
     }
 
@@ -461,7 +465,7 @@ class SettingsViewModelTest {
           preferred,
         )
       io.mockk.coEvery { mediaChannel.fetchLibraries() } returns OperationResult.Success(libs)
-      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider)
+      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider, equalizerBandProvider)
 
       viewModel.fetchLibraries()
 
@@ -476,7 +480,7 @@ class SettingsViewModelTest {
           Library(id = "l1", title = "Books", type = LibraryType.LIBRARY),
         )
       io.mockk.coEvery { mediaChannel.fetchLibraries() } returns OperationResult.Success(libs)
-      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider)
+      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider, equalizerBandProvider)
 
       viewModel.fetchLibraries()
 
@@ -489,7 +493,7 @@ class SettingsViewModelTest {
       every { preferences.getPreferredLibrary() } returns preferred
       io.mockk.coEvery { mediaChannel.fetchLibraries() } returns
         OperationResult.Error(org.grakovne.lissen.channel.common.OperationError.NetworkError)
-      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider)
+      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider, equalizerBandProvider)
 
       viewModel.fetchLibraries()
 
