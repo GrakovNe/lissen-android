@@ -147,7 +147,7 @@ android {
       }
     }
   }
-  buildToolsVersion = "36.0.0"
+  buildToolsVersion = "37.0.0"
   
   testOptions {
     unitTests.all {
