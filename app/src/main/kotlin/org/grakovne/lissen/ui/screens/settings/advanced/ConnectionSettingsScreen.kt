@@ -171,7 +171,6 @@ private fun UserAgentBottomSheet(
         modifier =
           Modifier
             .fillMaxWidth()
-            .padding(bottom = 16.dp)
             .padding(horizontal = 16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
       ) {
@@ -197,11 +196,10 @@ private fun UserAgentBottomSheet(
           modifier =
             Modifier
               .fillMaxWidth()
-              .padding(top = 16.dp)
               .clickable {
                 text = defaultValue
                 onRestoreDefault()
-              },
+              }.padding(vertical = 16.dp),
           horizontalArrangement = Arrangement.Center,
         ) {
           Text(

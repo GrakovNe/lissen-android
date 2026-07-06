@@ -69,10 +69,7 @@ fun EqualizerSettingsComposable(viewModel: SettingsViewModel) {
               capabilities = deviceCapabilities,
               onGainChange = viewModel::preferEqualizerGain,
               onReset = viewModel::resetEqualizer,
-              modifier =
-                Modifier
-                  .fillMaxWidth()
-                  .padding(bottom = 16.dp),
+              modifier = Modifier.fillMaxWidth(),
             )
           },
         )
