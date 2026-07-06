@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
@@ -36,12 +35,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.EqualizerSettings
-import org.grakovne.lissen.playback.BandInfo
-import org.grakovne.lissen.playback.EQUALIZER_MAX_DB
-import org.grakovne.lissen.playback.EQUALIZER_MIN_DB
+import org.grakovne.lissen.playback.EqualizerCapabilities
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.slider.EQUALIZER_SLIDER_HEIGHT
-import org.grakovne.lissen.ui.components.slider.EQUALIZER_SLIDER_WIDTH
+import org.grakovne.lissen.ui.components.slider.EQUALIZER_THUMB_RADIUS
 import org.grakovne.lissen.ui.components.slider.EqualizerBandSlider
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 import kotlin.math.roundToInt
@@ -50,18 +47,18 @@ import kotlin.math.roundToInt
 fun EqualizerSettingsComposable(viewModel: SettingsViewModel) {
   var equalizerExpanded by remember { mutableStateOf(false) }
   val settings by viewModel.equalizer.collectAsState()
-  val bands by viewModel.equalizerBands.collectAsState()
+  val capabilities by viewModel.equalizerCapabilities.collectAsState()
 
   EqualizerSettingsRow(
-    bands = bands,
+    capabilities = capabilities,
     active = settings.isActive,
     onClick = { equalizerExpanded = true },
   )
 
   if (equalizerExpanded) {
-    bands
-      ?.takeIf { it.isNotEmpty() }
-      ?.let { deviceBands ->
+    capabilities
+      ?.takeIf { it.available }
+      ?.let { deviceCapabilities ->
         LissenModalBottomSheet(
           containerColor = colorScheme.background,
           scrollable = false,
@@ -69,7 +66,7 @@ fun EqualizerSettingsComposable(viewModel: SettingsViewModel) {
           content = {
             EqualizerSettingsContent(
               settings = settings,
-              bands = deviceBands,
+              capabilities = deviceCapabilities,
               onGainChange = viewModel::preferEqualizerGain,
               onReset = viewModel::resetEqualizer,
               modifier =
@@ -85,11 +82,11 @@ fun EqualizerSettingsComposable(viewModel: SettingsViewModel) {
 
 @Composable
 internal fun EqualizerSettingsRow(
-  bands: List<BandInfo>?,
+  capabilities: EqualizerCapabilities?,
   active: Boolean,
   onClick: () -> Unit,
 ) {
-  if (bands.isNullOrEmpty()) return
+  if (capabilities?.available != true) return
 
   Row(
     modifier =
@@ -120,7 +117,7 @@ internal fun EqualizerSettingsRow(
 @Composable
 internal fun EqualizerSettingsContent(
   settings: EqualizerSettings,
-  bands: List<BandInfo>,
+  capabilities: EqualizerCapabilities,
   onGainChange: (Int, Int) -> Unit,
   onReset: () -> Unit,
   modifier: Modifier = Modifier,
@@ -128,6 +125,10 @@ internal fun EqualizerSettingsContent(
   val gainLabelHeight =
     with(LocalDensity.current) { typography.bodySmall.lineHeight.toDp() }
       .coerceAtLeast(GAIN_LABEL_MIN_HEIGHT)
+
+  val span = (capabilities.maxDb - capabilities.minDb).toFloat()
+  val zeroLineOffset =
+    EQUALIZER_THUMB_RADIUS + (EQUALIZER_SLIDER_HEIGHT - EQUALIZER_THUMB_RADIUS * 2) * (capabilities.maxDb / span)
 
   Column(
     modifier = modifier,
@@ -149,20 +150,20 @@ internal fun EqualizerSettingsContent(
         modifier =
           Modifier
             .fillMaxWidth()
-            .padding(top = gainLabelHeight + BAND_LABEL_GAP + EQUALIZER_SLIDER_HEIGHT / 2),
+            .padding(top = gainLabelHeight + BAND_LABEL_GAP + zeroLineOffset),
         color = colorScheme.outlineVariant,
       )
 
-      Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-      ) {
-        bands.forEachIndexed { index, band ->
+      Row(modifier = Modifier.fillMaxWidth()) {
+        capabilities.bands.forEachIndexed { index, band ->
           EqualizerBandColumn(
             db = settings.gains.getOrElse(index) { 0 },
             centerFreqHz = band.centerFreqHz,
+            minDb = capabilities.minDb,
+            maxDb = capabilities.maxDb,
             labelHeight = gainLabelHeight,
             onGainChange = { onGainChange(index, it) },
+            modifier = Modifier.weight(1f),
           )
         }
       }
@@ -193,8 +194,11 @@ internal fun EqualizerSettingsContent(
 private fun EqualizerBandColumn(
   db: Int,
   centerFreqHz: Int,
+  minDb: Int,
+  maxDb: Int,
   labelHeight: Dp,
   onGainChange: (Int) -> Unit,
+  modifier: Modifier = Modifier,
 ) {
   val bandDescription = stringResource(R.string.a11y_equalizer_band, freqLabel(centerFreqHz))
   val bandState = "${gainLabel(db)} dB"
@@ -202,20 +206,19 @@ private fun EqualizerBandColumn(
   Column(
     horizontalAlignment = Alignment.CenterHorizontally,
     modifier =
-      Modifier
-        .width(EQUALIZER_SLIDER_WIDTH)
+      modifier
         .clearAndSetSemantics {
           contentDescription = bandDescription
           stateDescription = bandState
           progressBarRangeInfo =
             ProgressBarRangeInfo(
               current = db.toFloat(),
-              range = EQUALIZER_MIN_DB.toFloat()..EQUALIZER_MAX_DB.toFloat(),
-              steps = EQUALIZER_MAX_DB - EQUALIZER_MIN_DB - 1,
+              range = minDb.toFloat()..maxDb.toFloat(),
+              steps = maxDb - minDb - 1,
             )
 
           setProgress { target ->
-            onGainChange(target.roundToInt().coerceIn(EQUALIZER_MIN_DB, EQUALIZER_MAX_DB))
+            onGainChange(target.roundToInt().coerceIn(minDb, maxDb))
             true
           }
         },
@@ -241,6 +244,8 @@ private fun EqualizerBandColumn(
 
     EqualizerBandSlider(
       value = db,
+      minDb = minDb,
+      maxDb = maxDb,
       onValueChange = onGainChange,
       modifier = Modifier.padding(top = BAND_LABEL_GAP),
     )

@@ -12,16 +12,13 @@ class EqualizerLevelsTest {
     assertEquals(300.toShort(), equalizerBandLevel(listOf(3), 0, min, max))
     assertEquals((-600).toShort(), equalizerBandLevel(listOf(-6), 0, min, max))
     assertEquals(0.toShort(), equalizerBandLevel(listOf(0), 0, min, max))
-  }
-
-  @Test
-  fun `clamps stored gain to supported decibel range`() {
-    assertEquals(600.toShort(), equalizerBandLevel(listOf(40), 0, min, max))
-    assertEquals((-600).toShort(), equalizerBandLevel(listOf(-40), 0, min, max))
+    assertEquals(1500.toShort(), equalizerBandLevel(listOf(15), 0, min, max))
   }
 
   @Test
   fun `clamps millibels to device band level range`() {
+    assertEquals(1500.toShort(), equalizerBandLevel(listOf(40), 0, min, max))
+    assertEquals((-1500).toShort(), equalizerBandLevel(listOf(-40), 0, min, max))
     assertEquals(500.toShort(), equalizerBandLevel(listOf(6), 0, (-500).toShort(), 500.toShort()))
     assertEquals((-500).toShort(), equalizerBandLevel(listOf(-6), 0, (-500).toShort(), 500.toShort()))
   }

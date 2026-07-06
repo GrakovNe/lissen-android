@@ -1,5 +1,6 @@
 package org.grakovne.lissen.viewmodel
 
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -27,6 +28,7 @@ import org.grakovne.lissen.logging.LissenLogProvider
 import org.grakovne.lissen.persistence.preferences.LissenConfigProvider
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.playback.EqualizerBandProvider
+import org.grakovne.lissen.playback.EqualizerCapabilities
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -64,6 +66,7 @@ class SettingsViewModelTest {
     every { preferences.getLocalUrls() } returns emptyList()
     every { preferences.getSeekTime() } returns SeekTime.Default
     every { preferences.getEqualizer() } returns EqualizerSettings.Default
+    coEvery { equalizerBandProvider.getCapabilities() } returns EqualizerCapabilities.Unavailable
     every { preferences.getAcraEnabled() } returns true
     every { preferences.getSslBypass() } returns false
     every { preferences.getSoftwareCodecsEnabled() } returns false

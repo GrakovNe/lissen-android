@@ -1,9 +1,9 @@
 package org.grakovne.lissen.playback
 
-import android.media.AudioAttributes
-import android.media.AudioFormat
-import android.media.AudioTrack
+import android.content.Context
+import android.media.AudioManager
 import android.media.audiofx.Equalizer
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -16,62 +16,57 @@ data class BandInfo(
   val centerFreqHz: Int,
 )
 
+data class EqualizerCapabilities(
+  val bands: List<BandInfo>,
+  val minDb: Int,
+  val maxDb: Int,
+) {
+  val available: Boolean
+    get() = bands.isNotEmpty()
+
+  companion object {
+    val Unavailable = EqualizerCapabilities(bands = emptyList(), minDb = 0, maxDb = 0)
+  }
+}
+
 @Singleton
 class EqualizerBandProvider
   @Inject
-  constructor() {
+  constructor(
+    @ApplicationContext private val context: Context,
+  ) {
     private val mutex = Mutex()
-    private var cached: List<BandInfo>? = null
+    private var cached: EqualizerCapabilities? = null
 
-    suspend fun getBands(): List<BandInfo> =
+    suspend fun getCapabilities(): EqualizerCapabilities =
       mutex.withLock {
-        cached ?: probeBands().also { cached = it }
+        cached ?: probeCapabilities().also { cached = it }
       }
 
-    private suspend fun probeBands(): List<BandInfo> =
+    private suspend fun probeCapabilities(): EqualizerCapabilities =
       withContext(Dispatchers.IO) {
-        var track: AudioTrack? = null
         var equalizer: Equalizer? = null
 
         try {
-          track = buildProbeTrack()
-          equalizer = Equalizer(0, track.audioSessionId)
+          val audioManager = requireNotNull(context.getSystemService(AudioManager::class.java))
+          val sessionId = audioManager.generateAudioSessionId()
+          check(sessionId != AudioManager.ERROR)
 
-          (0 until equalizer.numberOfBands.toInt())
-            .map { band -> BandInfo(centerFreqHz = equalizer.getCenterFreq(band.toShort()) / 1000) }
+          equalizer = Equalizer(0, sessionId)
+          val range = equalizer.bandLevelRange
+
+          EqualizerCapabilities(
+            bands =
+              (0 until equalizer.numberOfBands.toInt())
+                .map { band -> BandInfo(centerFreqHz = equalizer.getCenterFreq(band.toShort()) / 1000) },
+            minDb = range[0] / 100,
+            maxDb = range[1] / 100,
+          )
         } catch (ex: Exception) {
-          Timber.e("Unable to probe equalizer bands due to ${ex.message}")
-          emptyList()
+          Timber.e("Unable to probe equalizer capabilities due to ${ex.message}")
+          EqualizerCapabilities.Unavailable
         } finally {
           runCatching { equalizer?.release() }
-          runCatching { track?.release() }
         }
       }
-
-    private fun buildProbeTrack(): AudioTrack {
-      val sampleRate = 44100
-      val bufferSize =
-        AudioTrack
-          .getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT)
-          .coerceAtLeast(1024)
-
-      return AudioTrack
-        .Builder()
-        .setAudioAttributes(
-          AudioAttributes
-            .Builder()
-            .setUsage(AudioAttributes.USAGE_MEDIA)
-            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-            .build(),
-        ).setAudioFormat(
-          AudioFormat
-            .Builder()
-            .setSampleRate(sampleRate)
-            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-            .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
-            .build(),
-        ).setBufferSizeInBytes(bufferSize)
-        .setTransferMode(AudioTrack.MODE_STATIC)
-        .build()
-    }
   }

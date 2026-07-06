@@ -19,6 +19,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.EqualizerSettings
 import org.grakovne.lissen.playback.BandInfo
+import org.grakovne.lissen.playback.EqualizerCapabilities
 import org.junit.Rule
 import org.junit.Test
 
@@ -37,6 +38,8 @@ class EqualizerSettingsComposableTest {
       BandInfo(centerFreqHz = 14000),
     )
 
+  private val capabilities = EqualizerCapabilities(bands = bands, minDb = -6, maxDb = 6)
+
   private fun bandDescription(freq: String): String = context.getString(R.string.a11y_equalizer_band, freq)
 
   private fun restoreDescription(): String = context.getString(R.string.a11y_equalizer_restore)
@@ -52,7 +55,7 @@ class EqualizerSettingsComposableTest {
 
       EqualizerSettingsContent(
         settings = settings,
-        bands = bands,
+        capabilities = capabilities,
         onGainChange = { band, db ->
           val gains = settings.gains.toMutableList().also { it[band] = db }
           settings = settings.copy(gains = gains)
@@ -79,7 +82,7 @@ class EqualizerSettingsComposableTest {
 
       EqualizerSettingsContent(
         settings = settings,
-        bands = bands,
+        capabilities = capabilities,
         onGainChange = { _, _ -> },
         onReset = { settings = settings.copy(gains = emptyList()) },
       )
@@ -103,7 +106,7 @@ class EqualizerSettingsComposableTest {
 
       EqualizerSettingsContent(
         settings = settings,
-        bands = bands,
+        capabilities = capabilities,
         onGainChange = { band, db ->
           val gains = settings.gains.toMutableList().also { it[band] = db }
           settings = settings.copy(gains = gains)
@@ -126,7 +129,7 @@ class EqualizerSettingsComposableTest {
     composeRule.setContent {
       EqualizerSettingsContent(
         settings = EqualizerSettings(gains = List(bands.size) { 0 }),
-        bands = bands,
+        capabilities = capabilities,
         onGainChange = { _, _ -> },
         onReset = {},
       )
@@ -141,7 +144,7 @@ class EqualizerSettingsComposableTest {
   fun entryRowHiddenWhileBandsUnknownOrUnavailable() {
     composeRule.setContent {
       EqualizerSettingsRow(
-        bands = null,
+        capabilities = null,
         active = false,
         onClick = {},
       )
@@ -156,7 +159,7 @@ class EqualizerSettingsComposableTest {
   fun entryRowHiddenForEmptyBands() {
     composeRule.setContent {
       EqualizerSettingsRow(
-        bands = emptyList(),
+        capabilities = EqualizerCapabilities.Unavailable,
         active = false,
         onClick = {},
       )
@@ -171,7 +174,7 @@ class EqualizerSettingsComposableTest {
   fun entryRowShownForAvailableBands() {
     composeRule.setContent {
       EqualizerSettingsRow(
-        bands = bands,
+        capabilities = capabilities,
         active = true,
         onClick = {},
       )

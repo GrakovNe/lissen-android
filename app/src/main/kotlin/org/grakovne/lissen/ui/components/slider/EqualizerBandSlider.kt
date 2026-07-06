@@ -4,8 +4,8 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -14,19 +14,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.common.withHaptic
-import org.grakovne.lissen.playback.EQUALIZER_MAX_DB
-import org.grakovne.lissen.playback.EQUALIZER_MIN_DB
+import kotlin.math.abs
 import kotlin.math.roundToInt
 
 @Composable
 fun EqualizerBandSlider(
   value: Int,
+  minDb: Int,
+  maxDb: Int,
   onValueChange: (Int) -> Unit,
   modifier: Modifier = Modifier,
   trackHeight: Dp = EQUALIZER_SLIDER_HEIGHT,
@@ -42,20 +44,21 @@ fun EqualizerBandSlider(
   val zeroThumbColor = colorScheme.surface
   val zeroThumbBorderColor = colorScheme.outlineVariant
 
+  val span = (maxDb - minDb).toFloat()
+
   Box(
     modifier =
       modifier
-        .width(EQUALIZER_SLIDER_WIDTH)
+        .fillMaxWidth()
         .height(trackHeight)
-        .pointerInput(Unit) {
+        .pointerInput(minDb, maxDb) {
           val thumbRadius = with(density) { EQUALIZER_THUMB_RADIUS.toPx() }
-          val yZero = size.height / 2f
-          val usable = yZero - thumbRadius
+          val usable = size.height - thumbRadius * 2
 
           fun dbAt(y: Float): Int =
-            ((yZero - y) / usable * EQUALIZER_MAX_DB)
+            (maxDb - (y - thumbRadius) / usable * span)
               .roundToInt()
-              .coerceIn(EQUALIZER_MIN_DB, EQUALIZER_MAX_DB)
+              .coerceIn(minDb, maxDb)
 
           var lastDb = 0
 
@@ -81,25 +84,28 @@ fun EqualizerBandSlider(
   ) {
     Canvas(modifier = Modifier.fillMaxSize()) {
       val thumbRadius = EQUALIZER_THUMB_RADIUS.toPx()
-      val trackWidth = 4.dp.toPx()
+      val trackWidth = EQUALIZER_TRACK_WIDTH.toPx()
       val trackLeft = (size.width - trackWidth) / 2f
-      val yZero = size.height / 2f
-      val usable = yZero - thumbRadius
-      val yThumb = yZero - value / EQUALIZER_MAX_DB.toFloat() * usable
+      val usable = size.height - thumbRadius * 2
+
+      fun yOf(db: Float): Float = thumbRadius + (maxDb - db) / span * usable
+
+      val yZero = yOf(0f)
+      val yThumb = yOf(value.toFloat())
 
       drawRoundRect(
         color = trackColor,
         topLeft = Offset(trackLeft, 0f),
         size = Size(trackWidth, size.height),
-        cornerRadius = CornerRadius(2.dp.toPx()),
+        cornerRadius = CornerRadius(trackWidth / 2f),
       )
 
       if (value != 0) {
         drawRoundRect(
           color = activeColor,
           topLeft = Offset(trackLeft, minOf(yZero, yThumb)),
-          size = Size(trackWidth, kotlin.math.abs(yThumb - yZero)),
-          cornerRadius = CornerRadius(2.dp.toPx()),
+          size = Size(trackWidth, abs(yThumb - yZero)),
+          cornerRadius = CornerRadius(trackWidth / 2f),
         )
 
         drawCircle(
@@ -118,15 +124,13 @@ fun EqualizerBandSlider(
           color = zeroThumbBorderColor,
           radius = thumbRadius - 1.dp.toPx(),
           center = Offset(size.width / 2f, yThumb),
-          style =
-            androidx.compose.ui.graphics.drawscope
-              .Stroke(width = 2.dp.toPx()),
+          style = Stroke(width = 2.dp.toPx()),
         )
       }
     }
   }
 }
 
-val EQUALIZER_SLIDER_WIDTH = 48.dp
 val EQUALIZER_SLIDER_HEIGHT = 144.dp
 val EQUALIZER_THUMB_RADIUS = 10.dp
+private val EQUALIZER_TRACK_WIDTH = 4.dp

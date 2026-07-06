@@ -31,8 +31,8 @@ import org.grakovne.lissen.domain.connection.ServerRequestHeader.Companion.clean
 import org.grakovne.lissen.logging.LissenLogProvider
 import org.grakovne.lissen.persistence.preferences.LissenConfigProvider
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
-import org.grakovne.lissen.playback.BandInfo
 import org.grakovne.lissen.playback.EqualizerBandProvider
+import org.grakovne.lissen.playback.EqualizerCapabilities
 import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
@@ -83,8 +83,8 @@ class SettingsViewModel
     private val _equalizer = MutableStateFlow(preferences.getEqualizer())
     val equalizer: StateFlow<EqualizerSettings> = _equalizer.asStateFlow()
 
-    val equalizerBands: StateFlow<List<BandInfo>?> =
-      flow { emit(equalizerBandProvider.getBands()) }
+    val equalizerCapabilities: StateFlow<EqualizerCapabilities?> =
+      flow { emit(equalizerBandProvider.getCapabilities()) }
         .stateIn(viewModelScope, SharingStarted.Lazily, null)
 
     private val _preferredLibraryOrdering = MutableStateFlow(preferences.getLibraryOrdering())
