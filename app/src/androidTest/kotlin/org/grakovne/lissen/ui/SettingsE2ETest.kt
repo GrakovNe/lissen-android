@@ -1,7 +1,9 @@
 package org.grakovne.lissen.ui
 
+import android.view.KeyEvent
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -10,10 +12,14 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.swipe
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import org.grakovne.lissen.domain.EqualizerSettings
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
 import org.grakovne.lissen.ui.activity.AppActivity
 import org.junit.Rule
@@ -105,6 +111,68 @@ class SettingsE2ETest {
       matcher = hasText("Clear thumbnail cache"),
       timeoutMillis = TIMEOUT_MS,
     )
+  }
+
+  private fun navigateToPlaybackSettings() {
+    login()
+    composeRule.onNodeWithContentDescription("Menu").performClick()
+    composeRule.onNodeWithText("Application settings").performClick()
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = hasTestTag("settingsScreen"),
+      timeoutMillis = TIMEOUT_MS,
+    )
+    composeRule.onNodeWithText("Playback").performClick()
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = hasText("Boosted volume"),
+      timeoutMillis = TIMEOUT_MS,
+    )
+  }
+
+  @Test
+  fun playbackSettings_equalizerRowIsVisible() {
+    navigateToPlaybackSettings()
+
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = hasText("Equalizer"),
+      timeoutMillis = TIMEOUT_MS,
+    )
+
+    composeRule.onNodeWithText("Equalizer").assertIsDisplayed()
+  }
+
+  @Test
+  fun equalizer_adjustedBandPersists() {
+    preferences.saveEqualizer(EqualizerSettings.Default)
+    navigateToPlaybackSettings()
+
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = hasText("Equalizer"),
+      timeoutMillis = TIMEOUT_MS,
+    )
+
+    composeRule.onNodeWithText("Equalizer").performClick()
+
+    val bandMatcher = hasContentDescription("hertz band", substring = true)
+
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = bandMatcher,
+      timeoutMillis = TIMEOUT_MS,
+    )
+
+    composeRule.onAllNodes(bandMatcher)[0].performTouchInput {
+      swipe(start = center, end = center.copy(y = top))
+    }
+
+    composeRule.waitUntil(TIMEOUT_MS) { preferences.getEqualizer().isActive }
+
+    InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK)
+
+    composeRule.waitUntilDoesNotExist(
+      matcher = hasText("Restore default"),
+      timeoutMillis = TIMEOUT_MS,
+    )
+
+    composeRule.onNodeWithText("Enabled").assertIsDisplayed()
   }
 
   @Test

@@ -35,6 +35,7 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.common.restartApplication
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.settings.composable.DefaultTimerSettingsComposable
+import org.grakovne.lissen.ui.screens.settings.composable.EqualizerSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.PlaybackVolumeBoostSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsInfoBanner
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
@@ -95,6 +96,8 @@ fun PlaybackPreferencesScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
       ) {
         PlaybackVolumeBoostSettingsComposable(viewModel)
+
+        EqualizerSettingsComposable(viewModel)
 
         AdvancedSettingsNavigationItemComposable(
           title = stringResource(R.string.settings_screen_seek_time_title),

@@ -162,7 +162,6 @@ dependencies {
   implementation(libs.material3)
   
   implementation(libs.androidx.media3.ffmpeg.decoder)
-  implementation(libs.androidx.material)
   implementation(libs.compose.shimmer.android)
   
   implementation(libs.retrofit)

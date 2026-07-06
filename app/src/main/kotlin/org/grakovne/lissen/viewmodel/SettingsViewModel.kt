@@ -4,8 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.channel.audiobookshelf.Host
 import org.grakovne.lissen.channel.common.DEFAULT_USER_AGENT
@@ -17,6 +20,7 @@ import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.DownloadOption
+import org.grakovne.lissen.domain.EqualizerSettings
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.TimerOption
@@ -27,6 +31,8 @@ import org.grakovne.lissen.domain.connection.ServerRequestHeader.Companion.clean
 import org.grakovne.lissen.logging.LissenLogProvider
 import org.grakovne.lissen.persistence.preferences.LissenConfigProvider
 import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.playback.EqualizerBandProvider
+import org.grakovne.lissen.playback.EqualizerCapabilities
 import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
@@ -39,6 +45,7 @@ class SettingsViewModel
     private val preferences: LissenSharedPreferences,
     private val logProvider: LissenLogProvider,
     private val configProvider: LissenConfigProvider,
+    private val equalizerBandProvider: EqualizerBandProvider,
   ) : ViewModel() {
     private val _host = MutableStateFlow<Host?>(preferences.getHost()?.let { Host.external(it) })
     val host: StateFlow<Host?> = _host.asStateFlow()
@@ -72,6 +79,13 @@ class SettingsViewModel
 
     private val _preferredPlaybackVolumeBoost = MutableStateFlow(preferences.getPlaybackVolumeBoost())
     val preferredPlaybackVolumeBoost: StateFlow<Int> = _preferredPlaybackVolumeBoost.asStateFlow()
+
+    private val _equalizer = MutableStateFlow(preferences.getEqualizer())
+    val equalizer: StateFlow<EqualizerSettings> = _equalizer.asStateFlow()
+
+    val equalizerCapabilities: StateFlow<EqualizerCapabilities?> =
+      flow { emit(equalizerBandProvider.getCapabilities()) }
+        .stateIn(viewModelScope, SharingStarted.Lazily, null)
 
     private val _preferredLibraryOrdering = MutableStateFlow(preferences.getLibraryOrdering())
     val preferredLibraryOrdering: StateFlow<LibraryOrderingConfiguration> = _preferredLibraryOrdering.asStateFlow()
@@ -265,6 +279,27 @@ class SettingsViewModel
       Timber.d("User action: preferPlaybackVolumeBoost $db dB")
       _preferredPlaybackVolumeBoost.value = db
       preferences.savePlaybackVolumeBoost(db)
+    }
+
+    fun preferEqualizerGain(
+      band: Int,
+      db: Int,
+    ) {
+      Timber.d("User action: preferEqualizerGain band=$band $db dB")
+      val current = _equalizer.value
+      val size = maxOf(current.gains.size, band + 1)
+      val gains = List(size) { index -> if (index == band) db else current.gains.getOrElse(index) { 0 } }
+
+      val updated = current.copy(gains = gains)
+      _equalizer.value = updated
+      preferences.saveEqualizer(updated)
+    }
+
+    fun resetEqualizer() {
+      Timber.d("User action: resetEqualizer")
+      val updated = _equalizer.value.copy(gains = emptyList())
+      _equalizer.value = updated
+      preferences.saveEqualizer(updated)
     }
 
     fun preferColorScheme(colorScheme: ColorScheme) {

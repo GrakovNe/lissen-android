@@ -3,6 +3,7 @@ package org.grakovne.lissen.persistence.preferences
 import androidx.annotation.Keep
 import com.squareup.moshi.JsonClass
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
+import org.grakovne.lissen.domain.EqualizerSettings
 import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.domain.connection.LocalUrl
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
@@ -16,6 +17,7 @@ data class SettingsBackup(
   val playbackSpeed: Float? = null,
   val volumeBoost: Int? = null,
   val seekTime: SeekTime? = null,
+  val equalizer: EqualizerSettings? = null,
   val audioFocusLossPolicy: String? = null,
   val softwareCodecsEnabled: Boolean? = null,
   val hideCompleted: Boolean? = null,

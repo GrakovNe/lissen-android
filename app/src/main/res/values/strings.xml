@@ -179,6 +179,12 @@
     <string name="settings_screen_cached_items_hint">Manage saved content</string>
     <string name="volume_boost_disabled">Disabled</string>
     <string name="volume_boost_title">Boosted volume</string>
+    <string name="settings_screen_equalizer_title">Equalizer</string>
+    <string name="settings_screen_equalizer_enabled">Enabled</string>
+    <string name="settings_screen_equalizer_disabled">Disabled</string>
+    <string name="equalizer_restore_default">Restore default</string>
+    <string name="a11y_equalizer_band">%s hertz band</string>
+    <string name="a11y_equalizer_restore">Restore equalizer defaults</string>
     <string name="playing_item_details_time_remaining">Time remaining</string>
     <string name="playback_preferences_title">Playback</string>
     <string name="playback_preferences_description">Volume, seek controls, and audio</string>
