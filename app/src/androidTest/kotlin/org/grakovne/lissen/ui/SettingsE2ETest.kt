@@ -1,6 +1,6 @@
 package org.grakovne.lissen.ui
 
-import android.view.KeyEvent
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasContentDescription
@@ -12,15 +12,16 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipe
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.grakovne.lissen.domain.EqualizerSettings
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
+import org.grakovne.lissen.persistence.preferences.PreferencesReset
 import org.grakovne.lissen.ui.activity.AppActivity
 import org.junit.Rule
 import org.junit.Test
@@ -40,14 +41,17 @@ class SettingsE2ETest {
   val hiltRule = HiltAndroidRule(this)
 
   @Inject
-  lateinit var preferences: LissenSharedPreferences
+  lateinit var preferencesReset: PreferencesReset
+
+  @Inject
+  lateinit var playbackPreferences: PlaybackPreferences
 
   @get:Rule(order = 2)
   val setupRule =
     object : ExternalResource() {
       override fun before() {
         hiltRule.inject()
-        preferences.clearPreferences()
+        preferencesReset.clearAll()
         E2ESession.restore()
       }
     }
@@ -142,7 +146,7 @@ class SettingsE2ETest {
 
   @Test
   fun equalizer_adjustedBandPersists() {
-    preferences.saveEqualizer(EqualizerSettings.Default)
+    playbackPreferences.saveEqualizer(EqualizerSettings.Default)
     navigateToPlaybackSettings()
 
     composeRule.waitUntilAtLeastOneExists(
@@ -163,9 +167,11 @@ class SettingsE2ETest {
       swipe(start = center, end = center.copy(y = top))
     }
 
-    composeRule.waitUntil(TIMEOUT_MS) { preferences.getEqualizer().isActive }
+    composeRule.waitUntil(TIMEOUT_MS) { playbackPreferences.getEqualizer().isActive }
 
-    InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK)
+    composeRule
+      .onNodeWithContentDescription("Close sheet")
+      .performSemanticsAction(SemanticsActions.OnClick)
 
     composeRule.waitUntilDoesNotExist(
       matcher = hasText("Restore default"),

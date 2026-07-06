@@ -25,12 +25,12 @@ import org.grakovne.lissen.domain.CreateBookmarkRequest
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.RecentBook
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 
 abstract class AudiobookshelfChannel(
   protected val dataRepository: AudioBookshelfRepository,
   protected val sessionResponseConverter: PlaybackSessionResponseConverter,
-  protected val preferences: LissenSharedPreferences,
+  protected val preferences: LibraryPreferences,
   private val hostProvider: AudiobookshelfHostProvider,
   private val syncService: AudioBookshelfSyncService,
   private val libraryResponseConverter: LibraryResponseConverter,

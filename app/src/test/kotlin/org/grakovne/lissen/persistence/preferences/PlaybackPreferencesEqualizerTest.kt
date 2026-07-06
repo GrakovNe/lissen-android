@@ -12,11 +12,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-class LissenSharedPreferencesEqualizerTest {
+class PlaybackPreferencesEqualizerTest {
   private val editor = mockk<SharedPreferences.Editor>(relaxed = true)
   private val sharedPreferences = mockk<SharedPreferences>(relaxed = true)
   private val context = mockk<Context>(relaxed = true)
-  private lateinit var preferences: LissenSharedPreferences
+  private lateinit var preferences: PlaybackPreferences
 
   @BeforeEach
   fun setup() {
@@ -25,7 +25,7 @@ class LissenSharedPreferencesEqualizerTest {
     every { editor.putString(any(), any()) } returns editor
     every { editor.remove(any()) } returns editor
     every { editor.commit() } returns true
-    preferences = LissenSharedPreferences(context)
+    preferences = PlaybackPreferences(SecurePreferenceStore(context), LibraryPreferences(SecurePreferenceStore(context)))
   }
 
   @Nested

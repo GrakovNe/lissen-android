@@ -13,7 +13,7 @@ import org.grakovne.lissen.channel.common.OperationError.MissingCredentialsHost
 import org.grakovne.lissen.channel.common.OperationError.MissingCredentialsPassword
 import org.grakovne.lissen.channel.common.OperationError.MissingCredentialsUsername
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -21,7 +21,7 @@ import javax.inject.Inject
 class LoginViewModel
   @Inject
   constructor(
-    preferences: LissenSharedPreferences,
+    preferences: SessionPreferences,
     private val mediaChannel: LissenMediaProvider,
   ) : ViewModel() {
     private val _host = MutableStateFlow(preferences.getHost() ?: "")

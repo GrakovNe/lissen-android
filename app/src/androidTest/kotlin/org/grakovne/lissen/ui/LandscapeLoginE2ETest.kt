@@ -13,7 +13,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.PreferencesReset
 import org.grakovne.lissen.ui.activity.AppActivity
 import org.junit.Rule
 import org.junit.Test
@@ -33,14 +33,14 @@ class LandscapeLoginE2ETest {
   val hiltRule = HiltAndroidRule(this)
 
   @Inject
-  lateinit var preferences: LissenSharedPreferences
+  lateinit var preferencesReset: PreferencesReset
 
   @get:Rule(order = 2)
   val setupRule =
     object : ExternalResource() {
       override fun before() {
         hiltRule.inject()
-        preferences.clearPreferences()
+        preferencesReset.clearAll()
       }
     }
 

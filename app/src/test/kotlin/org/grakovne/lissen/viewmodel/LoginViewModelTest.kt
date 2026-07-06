@@ -16,7 +16,7 @@ import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.UserAccount
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class LoginViewModelTest {
   private val testDispatcher = UnconfinedTestDispatcher()
-  private val preferences = mockk<LissenSharedPreferences>(relaxed = true)
+  private val preferences = mockk<SessionPreferences>(relaxed = true)
   private val mediaChannel = mockk<LissenMediaProvider>(relaxed = true)
   private val authService = mockk<ChannelAuthService>(relaxed = true)
   private lateinit var viewModel: LoginViewModel

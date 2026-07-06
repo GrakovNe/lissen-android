@@ -14,7 +14,8 @@ import androidx.media3.datasource.okhttp.OkHttpDataSource
 import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
 import org.grakovne.lissen.channel.common.createOkHttpClient
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.ConnectionPreferences
+import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import timber.log.Timber
 import java.io.IOException
 
@@ -23,7 +24,8 @@ class LissenDataSourceFactory(
   private val baseContext: Context,
   private val mediaCache: Cache,
   private val requestHeadersProvider: RequestHeadersProvider,
-  private val sharedPreferences: LissenSharedPreferences,
+  private val session: SessionPreferences,
+  private val connection: ConnectionPreferences,
   private val mediaProvider: LissenMediaProvider,
 ) : DataSource.Factory {
   private val upstreamFactory by lazy {
@@ -36,7 +38,8 @@ class LissenDataSourceFactory(
       .Factory(
         createOkHttpClient(
           requestHeaders = requestHeadersProvider.fetchRequestHeaders(),
-          preferences = sharedPreferences,
+          session = session,
+          connection = connection,
           context = baseContext,
         ),
       ).setDefaultRequestProperties(requestHeaders)

@@ -12,20 +12,20 @@ class LissenConfigProvider
   @Inject
   constructor(
     @param:ApplicationContext private val context: Context,
-    private val preferences: LissenSharedPreferences,
+    private val backupManager: SettingsBackupManager,
   ) {
     private val adapter = moshi.adapter(SettingsBackup::class.java)
 
     fun exportConfigFile(): File? =
       runCatching {
         File(context.cacheDir, FILE_CONFIG_NAME)
-          .apply { writeText(adapter.toJson(preferences.exportSettings())) }
+          .apply { writeText(adapter.toJson(backupManager.exportSettings())) }
       }.getOrNull()
 
     fun importConfig(json: String): Boolean =
       runCatching { adapter.fromJson(json) }
         .getOrNull()
-        ?.also(preferences::importSettings)
+        ?.also(backupManager::importSettings)
         ?.let { true }
         ?: false
 

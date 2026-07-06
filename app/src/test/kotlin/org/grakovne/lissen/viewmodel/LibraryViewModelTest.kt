@@ -17,7 +17,7 @@ import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.RecentBook
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class LibraryViewModelTest {
   private val testDispatcher = UnconfinedTestDispatcher()
-  private val preferences = mockk<LissenSharedPreferences>(relaxed = true)
+  private val preferences = mockk<LibraryPreferences>(relaxed = true)
   private val mediaChannel = mockk<LissenMediaProvider>(relaxed = true)
   private lateinit var viewModel: LibraryViewModel
 

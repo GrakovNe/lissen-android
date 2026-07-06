@@ -30,7 +30,8 @@ import org.grakovne.lissen.domain.ContentCachingTask
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.domain.PlayingChapter
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.DownloadPreferences
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.ui.screens.settings.advanced.cache.CachedItemsPageSource
 import timber.log.Timber
 import java.io.Serializable
@@ -44,14 +45,15 @@ class CachingModelView
     private val localCacheRepository: LocalCacheRepository,
     private val contentCachingProgress: ContentCachingProgress,
     private val contentCachingManager: ContentCachingManager,
-    private val preferences: LissenSharedPreferences,
+    private val libraryPreferences: LibraryPreferences,
+    private val downloadPreferences: DownloadPreferences,
     private val cachedCoverProvider: CachedCoverProvider,
     private val seriesCoverProvider: SeriesCoverProvider,
   ) : ViewModel() {
     private val _totalCount = MutableStateFlow(0)
     val totalCount: StateFlow<Int> = _totalCount.asStateFlow()
 
-    val forceCache = preferences.forceCacheFlow
+    val forceCache = libraryPreferences.forceCacheFlow
 
     private val _bookCachingProgress = mutableMapOf<String, MutableStateFlow<CacheState>>()
 
@@ -147,16 +149,16 @@ class CachingModelView
     fun toggleCacheForce() {
       Timber.d("User action: toggleCacheForce (current=${localCacheUsing()})")
       when (localCacheUsing()) {
-        true -> preferences.disableForceCache()
-        false -> preferences.enableForceCache()
+        true -> libraryPreferences.disableForceCache()
+        false -> libraryPreferences.enableForceCache()
       }
     }
 
-    fun localCacheUsing() = preferences.isForceCache()
+    fun localCacheUsing() = libraryPreferences.isForceCache()
 
-    fun getDownloadChaptersCount() = preferences.getDownloadChaptersCount()
+    fun getDownloadChaptersCount() = downloadPreferences.getDownloadChaptersCount()
 
-    fun saveDownloadChaptersCount(count: Int) = preferences.saveDownloadChaptersCount(count)
+    fun saveDownloadChaptersCount(count: Int) = downloadPreferences.saveDownloadChaptersCount(count)
 
     fun provideCacheState(bookId: String): Flow<Boolean> = contentCachingManager.hasMetadataCached(bookId)
 

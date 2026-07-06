@@ -29,7 +29,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.playback.service.PlaybackSynchronizationService
 import org.grakovne.lissen.util.listenableFuture
@@ -43,7 +43,7 @@ class MediaLibrarySessionCallback
   @Inject
   constructor(
     @param:ApplicationContext private val context: Context,
-    private val preferences: LissenSharedPreferences,
+    private val preferences: PlaybackPreferences,
     private val mediaRepository: MediaRepository,
     private val lissenMediaProvider: LissenMediaProvider,
     private val libraryTree: MediaLibraryTree,

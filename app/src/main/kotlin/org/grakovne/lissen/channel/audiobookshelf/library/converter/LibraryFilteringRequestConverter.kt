@@ -1,6 +1,6 @@
 package org.grakovne.lissen.channel.audiobookshelf.library.converter
 
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -8,7 +8,7 @@ import javax.inject.Singleton
 class LibraryFilteringRequestConverter
   @Inject
   constructor() {
-    fun apply(preferences: LissenSharedPreferences): String? {
+    fun apply(preferences: LibraryPreferences): String? {
       val hideCompleted = preferences.getHideCompleted()
 
       if (hideCompleted) {

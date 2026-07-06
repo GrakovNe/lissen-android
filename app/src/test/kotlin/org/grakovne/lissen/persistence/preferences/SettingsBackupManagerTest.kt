@@ -30,11 +30,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-class LissenSharedPreferencesConfigBackupTest {
+class SettingsBackupManagerTest {
   private val editor = mockk<SharedPreferences.Editor>(relaxed = true)
   private val sharedPreferences = mockk<SharedPreferences>(relaxed = true)
   private val context = mockk<Context>(relaxed = true)
-  private lateinit var preferences: LissenSharedPreferences
+  private lateinit var preferences: SettingsBackupManager
 
   @BeforeEach
   fun setup() {
@@ -49,7 +49,17 @@ class LissenSharedPreferencesConfigBackupTest {
     every { sharedPreferences.getInt(any(), any()) } answers { secondArg() }
     every { sharedPreferences.getFloat(any(), any()) } answers { secondArg() }
 
-    preferences = LissenSharedPreferences(context)
+    val store = SecurePreferenceStore(context)
+    val library = LibraryPreferences(store)
+    preferences =
+      SettingsBackupManager(
+        appearance = AppearancePreferences(store),
+        playback = PlaybackPreferences(store, library),
+        library = library,
+        download = DownloadPreferences(store),
+        connection = ConnectionPreferences(store),
+        diagnostics = DiagnosticsPreferences(store),
+      )
   }
 
   @Nested
@@ -362,10 +372,8 @@ class LissenSharedPreferencesConfigBackupTest {
 
     @Test
     fun `maps auto download option id disabled to null option`() {
-      // saveAutoDownloadOption(option) writes "option?.makeId()" - a null option short-circuits
-      // the safe call and stores null directly, rather than invoking makeId() on it.
       preferences.importSettings(SettingsBackup(autoDownloadOptionId = "disabled"))
-      verify { editor.putString("preferred_auto_download", null) }
+      verify { editor.remove("preferred_auto_download") }
     }
 
     @Test

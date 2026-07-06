@@ -17,7 +17,7 @@ import org.grakovne.lissen.content.cache.persistent.converter.MediaProgressEntit
 import org.grakovne.lissen.content.cache.persistent.dao.CachedBookDao
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.domain.LibraryEntry
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -40,7 +40,7 @@ class CachedBookGroupingTest {
         .build()
     dao = db.cachedBookDao()
 
-    val preferences = mockk<LissenSharedPreferences>(relaxed = true)
+    val preferences = mockk<LibraryPreferences>(relaxed = true)
     every { preferences.getLibraryOrdering() } returns LibraryOrderingConfiguration.default
     every { preferences.getHideCompleted() } returns false
 

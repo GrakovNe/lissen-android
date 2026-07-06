@@ -5,10 +5,10 @@ import org.grakovne.lissen.common.LibraryPagingException
 import org.grakovne.lissen.common.LibraryPagingSource
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.LibraryEntry
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 
 class LibraryDefaultPagingSource(
-  private val preferences: LissenSharedPreferences,
+  private val preferences: LibraryPreferences,
   private val mediaChannel: LissenMediaProvider,
   onTotalCountChanged: (Int) -> Unit,
 ) : LibraryPagingSource<LibraryEntry>(onTotalCountChanged) {

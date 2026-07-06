@@ -31,7 +31,7 @@ import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.RecentBook
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.ui.screens.library.paging.LibraryDefaultPagingSource
 import org.grakovne.lissen.ui.screens.library.paging.LibrarySearchPagingSource
 import timber.log.Timber
@@ -43,7 +43,7 @@ class LibraryViewModel
   @Inject
   constructor(
     private val mediaChannel: LissenMediaProvider,
-    private val preferences: LissenSharedPreferences,
+    private val preferences: LibraryPreferences,
   ) : ViewModel() {
     internal var dispatcher: CoroutineDispatcher = Dispatchers.IO
 

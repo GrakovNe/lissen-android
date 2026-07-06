@@ -25,7 +25,7 @@ import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.RecentBook
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import java.io.File
 import java.time.Instant
 import javax.inject.Inject
@@ -41,7 +41,7 @@ class CachedBookRepository
     private val cachedBookEntityDetailedConverter: CachedBookEntityDetailedConverter,
     private val cachedBookEntityRecentConverter: CachedBookEntityRecentConverter,
     private val mediaProgressEntityConverter: MediaProgressEntityConverter,
-    private val preferences: LissenSharedPreferences,
+    private val preferences: LibraryPreferences,
   ) {
     fun provideFileUri(
       bookId: String,

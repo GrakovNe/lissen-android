@@ -25,8 +25,15 @@ import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.domain.connection.LocalUrl
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.logging.LissenLogProvider
+import org.grakovne.lissen.persistence.preferences.AppearancePreferences
+import org.grakovne.lissen.persistence.preferences.ConnectionPreferences
+import org.grakovne.lissen.persistence.preferences.DiagnosticsPreferences
+import org.grakovne.lissen.persistence.preferences.DownloadPreferences
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.LissenConfigProvider
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
+import org.grakovne.lissen.persistence.preferences.PreferencesReset
+import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.grakovne.lissen.playback.EqualizerBandProvider
 import org.grakovne.lissen.playback.EqualizerCapabilities
 import org.junit.jupiter.api.AfterEach
@@ -40,7 +47,14 @@ import org.junit.jupiter.api.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class SettingsViewModelTest {
   private val testDispatcher = UnconfinedTestDispatcher()
-  private val preferences = mockk<LissenSharedPreferences>(relaxed = true)
+  private val session = mockk<SessionPreferences>(relaxed = true)
+  private val connection = mockk<ConnectionPreferences>(relaxed = true)
+  private val libraryPreferences = mockk<LibraryPreferences>(relaxed = true)
+  private val appearance = mockk<AppearancePreferences>(relaxed = true)
+  private val playback = mockk<PlaybackPreferences>(relaxed = true)
+  private val download = mockk<DownloadPreferences>(relaxed = true)
+  private val diagnostics = mockk<DiagnosticsPreferences>(relaxed = true)
+  private val preferencesReset = mockk<PreferencesReset>(relaxed = true)
   private val mediaChannel = mockk<LissenMediaProvider>(relaxed = true)
   private val logProvider = mockk<LissenLogProvider>(relaxed = true)
   private val configProvider = mockk<LissenConfigProvider>(relaxed = true)
@@ -51,36 +65,50 @@ class SettingsViewModelTest {
   fun setup() {
     Dispatchers.setMain(testDispatcher)
 
-    every { preferences.getHost() } returns "http://example.com"
-    every { preferences.getUsername() } returns "user"
-    every { preferences.getServerVersion() } returns "1.0.0"
-    every { preferences.getPreferredLibrary() } returns null
-    every { preferences.getColorScheme() } returns ColorScheme.FOLLOW_SYSTEM
-    every { preferences.getMaterialYouColors() } returns false
-    every { preferences.getAutoDownloadNetworkType() } returns NetworkTypeAutoCache.WIFI_ONLY
-    every { preferences.getAutoDownloadLibraryTypes() } returns LibraryType.meaningfulTypes
-    every { preferences.getAutoDownloadOption() } returns null
-    every { preferences.getPlaybackVolumeBoost() } returns 0
-    every { preferences.getLibraryOrdering() } returns LibraryOrderingConfiguration.default
-    every { preferences.getCustomHeaders() } returns emptyList()
-    every { preferences.getLocalUrls() } returns emptyList()
-    every { preferences.getSeekTime() } returns SeekTime.Default
-    every { preferences.getEqualizer() } returns EqualizerSettings.Default
+    every { session.getHost() } returns "http://example.com"
+    every { session.getUsername() } returns "user"
+    every { session.getServerVersion() } returns "1.0.0"
+    every { libraryPreferences.getPreferredLibrary() } returns null
+    every { appearance.getColorScheme() } returns ColorScheme.FOLLOW_SYSTEM
+    every { appearance.getMaterialYouColors() } returns false
+    every { download.getAutoDownloadNetworkType() } returns NetworkTypeAutoCache.WIFI_ONLY
+    every { download.getAutoDownloadLibraryTypes() } returns LibraryType.meaningfulTypes
+    every { download.getAutoDownloadOption() } returns null
+    every { playback.getPlaybackVolumeBoost() } returns 0
+    every { libraryPreferences.getLibraryOrdering() } returns LibraryOrderingConfiguration.default
+    every { connection.getCustomHeaders() } returns emptyList()
+    every { connection.getLocalUrls() } returns emptyList()
+    every { playback.getSeekTime() } returns SeekTime.Default
+    every { playback.getEqualizer() } returns EqualizerSettings.Default
     coEvery { equalizerBandProvider.getCapabilities() } returns EqualizerCapabilities.Unavailable
-    every { preferences.getAcraEnabled() } returns true
-    every { preferences.getSslBypass() } returns false
-    every { preferences.getSoftwareCodecsEnabled() } returns false
-    every { preferences.isActivityLoggingEnabled() } returns true
-    every { preferences.getAutoDownloadDelayed() } returns false
-    every { preferences.getUserAgent() } returns DEFAULT_USER_AGENT
-    every { preferences.clientCertAliasFlow } returns flowOf(null)
-    every { preferences.hideCompletedFlow } returns flowOf(false)
+    every { diagnostics.getAcraEnabled() } returns true
+    every { connection.getSslBypass() } returns false
+    every { playback.getSoftwareCodecsEnabled() } returns false
+    every { diagnostics.isActivityLoggingEnabled() } returns true
+    every { download.getAutoDownloadDelayed() } returns false
+    every { connection.getUserAgent() } returns DEFAULT_USER_AGENT
+    every { connection.clientCertAliasFlow } returns flowOf(null)
+    every { libraryPreferences.hideCompletedFlow } returns flowOf(false)
     every { mediaChannel.fetchConnectionHost() } returns
       OperationResult.Error(
         org.grakovne.lissen.channel.common.OperationError.NetworkError,
       )
 
-    viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider, equalizerBandProvider)
+    viewModel =
+      SettingsViewModel(
+        mediaChannel,
+        session,
+        connection,
+        libraryPreferences,
+        appearance,
+        playback,
+        download,
+        diagnostics,
+        preferencesReset,
+        logProvider,
+        configProvider,
+        equalizerBandProvider,
+      )
   }
 
   @AfterEach
@@ -101,7 +129,7 @@ class SettingsViewModelTest {
     fun `preferLibrary saves library to preferences`() {
       val library = Library(id = "lib-2", title = "Podcasts", type = LibraryType.PODCAST)
       viewModel.preferLibrary(library)
-      verify { preferences.savePreferredLibrary(library) }
+      verify { libraryPreferences.savePreferredLibrary(library) }
     }
   }
 
@@ -116,7 +144,7 @@ class SettingsViewModelTest {
     @Test
     fun `preferColorScheme saves to preferences`() {
       viewModel.preferColorScheme(ColorScheme.LIGHT)
-      verify { preferences.saveColorScheme(ColorScheme.LIGHT) }
+      verify { appearance.saveColorScheme(ColorScheme.LIGHT) }
     }
   }
 
@@ -131,7 +159,7 @@ class SettingsViewModelTest {
     @Test
     fun `preferMaterialYouColors saves to preferences`() {
       viewModel.preferMaterialYouColors(false)
-      verify { preferences.saveMaterialYouColors(false) }
+      verify { appearance.saveMaterialYouColors(false) }
     }
   }
 
@@ -149,7 +177,7 @@ class SettingsViewModelTest {
     @Test
     fun `preferAutoDownloadNetworkType saves to preferences`() {
       viewModel.preferAutoDownloadNetworkType(NetworkTypeAutoCache.WIFI_ONLY)
-      verify { preferences.saveAutoDownloadNetworkType(NetworkTypeAutoCache.WIFI_ONLY) }
+      verify { download.saveAutoDownloadNetworkType(NetworkTypeAutoCache.WIFI_ONLY) }
     }
   }
 
@@ -157,8 +185,22 @@ class SettingsViewModelTest {
   inner class AutoDownloadLibraryType {
     @Test
     fun `changeAutoDownloadLibraryType adds type when state is true`() {
-      every { preferences.getAutoDownloadLibraryTypes() } returns listOf(LibraryType.LIBRARY)
-      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider, equalizerBandProvider)
+      every { download.getAutoDownloadLibraryTypes() } returns listOf(LibraryType.LIBRARY)
+      viewModel =
+        SettingsViewModel(
+          mediaChannel,
+          session,
+          connection,
+          libraryPreferences,
+          appearance,
+          playback,
+          download,
+          diagnostics,
+          preferencesReset,
+          logProvider,
+          configProvider,
+          equalizerBandProvider,
+        )
 
       viewModel.changeAutoDownloadLibraryType(LibraryType.PODCAST, true)
 
@@ -167,8 +209,22 @@ class SettingsViewModelTest {
 
     @Test
     fun `changeAutoDownloadLibraryType removes type when state is false`() {
-      every { preferences.getAutoDownloadLibraryTypes() } returns LibraryType.meaningfulTypes
-      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider, equalizerBandProvider)
+      every { download.getAutoDownloadLibraryTypes() } returns LibraryType.meaningfulTypes
+      viewModel =
+        SettingsViewModel(
+          mediaChannel,
+          session,
+          connection,
+          libraryPreferences,
+          appearance,
+          playback,
+          download,
+          diagnostics,
+          preferencesReset,
+          logProvider,
+          configProvider,
+          equalizerBandProvider,
+        )
 
       viewModel.changeAutoDownloadLibraryType(LibraryType.PODCAST, false)
 
@@ -178,7 +234,7 @@ class SettingsViewModelTest {
     @Test
     fun `changeAutoDownloadLibraryType saves updated list to preferences`() {
       viewModel.changeAutoDownloadLibraryType(LibraryType.LIBRARY, false)
-      verify { preferences.saveAutoDownloadLibraryTypes(any()) }
+      verify { download.saveAutoDownloadLibraryTypes(any()) }
     }
   }
 
@@ -199,7 +255,7 @@ class SettingsViewModelTest {
     fun `preferLibraryOrdering saves to preferences`() {
       val config = LibraryOrderingConfiguration.default
       viewModel.preferLibraryOrdering(config)
-      verify { preferences.saveLibraryOrdering(config) }
+      verify { libraryPreferences.saveLibraryOrdering(config) }
     }
   }
 
@@ -214,7 +270,7 @@ class SettingsViewModelTest {
     @Test
     fun `preferPlaybackVolumeBoost saves to preferences`() {
       viewModel.preferPlaybackVolumeBoost(6)
-      verify { preferences.savePlaybackVolumeBoost(6) }
+      verify { playback.savePlaybackVolumeBoost(6) }
     }
   }
 
@@ -229,7 +285,7 @@ class SettingsViewModelTest {
     @Test
     fun `preferCrashReporting saves to preferences`() {
       viewModel.preferCrashReporting(true)
-      verify { preferences.saveAcraEnabled(true) }
+      verify { diagnostics.saveAcraEnabled(true) }
     }
   }
 
@@ -244,7 +300,7 @@ class SettingsViewModelTest {
     @Test
     fun `preferBypassSsl saves to preferences`() {
       viewModel.preferBypassSsl(false)
-      verify { preferences.saveSslBypass(false) }
+      verify { connection.saveSslBypass(false) }
     }
   }
 
@@ -286,7 +342,7 @@ class SettingsViewModelTest {
         )
       viewModel.updateLocalUrls(urls)
       verify {
-        preferences.saveLocalUrls(
+        connection.saveLocalUrls(
           match { saved -> saved.none { it.ssid.isEmpty() } },
         )
       }
@@ -301,7 +357,7 @@ class SettingsViewModelTest {
         )
       viewModel.updateLocalUrls(urls)
       verify {
-        preferences.saveLocalUrls(match { it.size == 2 })
+        connection.saveLocalUrls(match { it.size == 2 })
       }
     }
 
@@ -314,7 +370,7 @@ class SettingsViewModelTest {
         )
       viewModel.updateLocalUrls(urls)
       verify {
-        preferences.saveLocalUrls(match { it.size == 1 })
+        connection.saveLocalUrls(match { it.size == 1 })
       }
     }
   }
@@ -330,7 +386,7 @@ class SettingsViewModelTest {
         )
       viewModel.updateCustomHeaders(headers)
       verify {
-        preferences.saveCustomHeaders(
+        connection.saveCustomHeaders(
           match { saved -> saved.none { it.name.isEmpty() } },
         )
       }
@@ -345,7 +401,7 @@ class SettingsViewModelTest {
         )
       viewModel.updateCustomHeaders(headers)
       verify {
-        preferences.saveCustomHeaders(
+        connection.saveCustomHeaders(
           match { saved -> saved.none { it.value.isEmpty() } },
         )
       }
@@ -360,7 +416,7 @@ class SettingsViewModelTest {
         )
       viewModel.updateCustomHeaders(headers)
       verify {
-        preferences.saveCustomHeaders(match { it.size == 1 })
+        connection.saveCustomHeaders(match { it.size == 1 })
       }
     }
   }
@@ -376,13 +432,13 @@ class SettingsViewModelTest {
     @Test
     fun `updateUserAgent saves to preferences`() {
       viewModel.updateUserAgent("CustomAgent/1.0")
-      verify { preferences.saveUserAgent("CustomAgent/1.0") }
+      verify { connection.saveUserAgent("CustomAgent/1.0") }
     }
 
     @Test
     fun `resetUserAgent calls clearUserAgent on preferences`() {
       viewModel.resetUserAgent()
-      verify { preferences.clearUserAgent() }
+      verify { connection.clearUserAgent() }
     }
 
     @Test
@@ -394,27 +450,41 @@ class SettingsViewModelTest {
 
     @Test
     fun `userAgent StateFlow is initialized from preferences`() {
-      every { preferences.getUserAgent() } returns "StoredAgent/3.0"
-      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider, equalizerBandProvider)
+      every { connection.getUserAgent() } returns "StoredAgent/3.0"
+      viewModel =
+        SettingsViewModel(
+          mediaChannel,
+          session,
+          connection,
+          libraryPreferences,
+          appearance,
+          playback,
+          download,
+          diagnostics,
+          preferencesReset,
+          logProvider,
+          configProvider,
+          equalizerBandProvider,
+        )
       assertEquals("StoredAgent/3.0", viewModel.userAgent.value)
     }
 
     @Test
     fun `updateUserAgent strips newline characters`() {
       viewModel.updateUserAgent("Custom\nAgent/1.0")
-      verify { preferences.saveUserAgent("CustomAgent/1.0") }
+      verify { connection.saveUserAgent("CustomAgent/1.0") }
     }
 
     @Test
     fun `updateUserAgent strips carriage return characters`() {
       viewModel.updateUserAgent("Custom\rAgent/1.0")
-      verify { preferences.saveUserAgent("CustomAgent/1.0") }
+      verify { connection.saveUserAgent("CustomAgent/1.0") }
     }
 
     @Test
     fun `updateUserAgent trims surrounding whitespace after stripping`() {
       viewModel.updateUserAgent("  Agent/1.0\n  ")
-      verify { preferences.saveUserAgent("Agent/1.0") }
+      verify { connection.saveUserAgent("Agent/1.0") }
     }
   }
 
@@ -423,7 +493,7 @@ class SettingsViewModelTest {
     @Test
     fun `logout calls clearPreferences`() {
       viewModel.logout()
-      verify { preferences.clearPreferences() }
+      verify { preferencesReset.clearAll() }
     }
   }
 
@@ -438,7 +508,7 @@ class SettingsViewModelTest {
     @Test
     fun `preferAutoDownloadDelayed saves to preferences`() {
       viewModel.preferAutoDownloadDelayed(false)
-      verify { preferences.saveAutoDownloadDelayed(false) }
+      verify { download.saveAutoDownloadDelayed(false) }
     }
   }
 
@@ -461,14 +531,28 @@ class SettingsViewModelTest {
     @Test
     fun `fetchLibraries selects matching preferred library`() {
       val preferred = Library(id = "l2", title = "Podcasts", type = LibraryType.PODCAST)
-      every { preferences.getPreferredLibrary() } returns preferred
+      every { libraryPreferences.getPreferredLibrary() } returns preferred
       val libs =
         listOf(
           Library(id = "l1", title = "Books", type = LibraryType.LIBRARY),
           preferred,
         )
       io.mockk.coEvery { mediaChannel.fetchLibraries() } returns OperationResult.Success(libs)
-      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider, equalizerBandProvider)
+      viewModel =
+        SettingsViewModel(
+          mediaChannel,
+          session,
+          connection,
+          libraryPreferences,
+          appearance,
+          playback,
+          download,
+          diagnostics,
+          preferencesReset,
+          logProvider,
+          configProvider,
+          equalizerBandProvider,
+        )
 
       viewModel.fetchLibraries()
 
@@ -477,13 +561,27 @@ class SettingsViewModelTest {
 
     @Test
     fun `fetchLibraries selects first library when no preferred set`() {
-      every { preferences.getPreferredLibrary() } returns null
+      every { libraryPreferences.getPreferredLibrary() } returns null
       val libs =
         listOf(
           Library(id = "l1", title = "Books", type = LibraryType.LIBRARY),
         )
       io.mockk.coEvery { mediaChannel.fetchLibraries() } returns OperationResult.Success(libs)
-      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider, equalizerBandProvider)
+      viewModel =
+        SettingsViewModel(
+          mediaChannel,
+          session,
+          connection,
+          libraryPreferences,
+          appearance,
+          playback,
+          download,
+          diagnostics,
+          preferencesReset,
+          logProvider,
+          configProvider,
+          equalizerBandProvider,
+        )
 
       viewModel.fetchLibraries()
 
@@ -493,10 +591,24 @@ class SettingsViewModelTest {
     @Test
     fun `fetchLibraries falls back to cached preferred library on error`() {
       val preferred = Library(id = "l1", title = "Books", type = LibraryType.LIBRARY)
-      every { preferences.getPreferredLibrary() } returns preferred
+      every { libraryPreferences.getPreferredLibrary() } returns preferred
       io.mockk.coEvery { mediaChannel.fetchLibraries() } returns
         OperationResult.Error(org.grakovne.lissen.channel.common.OperationError.NetworkError)
-      viewModel = SettingsViewModel(mediaChannel, preferences, logProvider, configProvider, equalizerBandProvider)
+      viewModel =
+        SettingsViewModel(
+          mediaChannel,
+          session,
+          connection,
+          libraryPreferences,
+          appearance,
+          playback,
+          download,
+          diagnostics,
+          preferencesReset,
+          logProvider,
+          configProvider,
+          equalizerBandProvider,
+        )
 
       viewModel.fetchLibraries()
 
@@ -534,8 +646,8 @@ class SettingsViewModelTest {
 
       viewModel.refreshConnectionInfo()
 
-      verify { preferences.saveUsername("alice") }
-      verify { preferences.saveServerVersion("2.0.0") }
+      verify { session.saveUsername("alice") }
+      verify { session.saveServerVersion("2.0.0") }
     }
 
     @Test
@@ -567,7 +679,7 @@ class SettingsViewModelTest {
     fun `refreshConnectionInfo falls back to the cached host from preferences on error`() {
       every { mediaChannel.fetchConnectionHost() } returns
         OperationResult.Error(org.grakovne.lissen.channel.common.OperationError.NetworkError)
-      every { preferences.getHost() } returns "http://cached.example.com"
+      every { session.getHost() } returns "http://cached.example.com"
       io.mockk.coEvery { mediaChannel.fetchConnectionInfo() } returns
         OperationResult.Error(org.grakovne.lissen.channel.common.OperationError.NetworkError)
 
@@ -585,20 +697,20 @@ class SettingsViewModelTest {
   inner class HideCompletedToggle {
     @Test
     fun `toggleHideCompleted saves true when currently false`() {
-      every { preferences.getHideCompleted() } returns false
+      every { libraryPreferences.getHideCompleted() } returns false
 
       viewModel.toggleHideCompleted()
 
-      verify { preferences.saveHideCompleted(true) }
+      verify { libraryPreferences.saveHideCompleted(true) }
     }
 
     @Test
     fun `toggleHideCompleted saves false when currently true`() {
-      every { preferences.getHideCompleted() } returns true
+      every { libraryPreferences.getHideCompleted() } returns true
 
       viewModel.toggleHideCompleted()
 
-      verify { preferences.saveHideCompleted(false) }
+      verify { libraryPreferences.saveHideCompleted(false) }
     }
   }
 
@@ -608,21 +720,21 @@ class SettingsViewModelTest {
     fun `preferLibraryGrouping saves the grouping to preferences`() {
       viewModel.preferLibraryGrouping(org.grakovne.lissen.common.LibraryGrouping.SERIES)
 
-      verify { preferences.saveLibraryGrouping(org.grakovne.lissen.common.LibraryGrouping.SERIES) }
+      verify { libraryPreferences.saveLibraryGrouping(org.grakovne.lissen.common.LibraryGrouping.SERIES) }
     }
 
     @Test
     fun `saveClientCertAlias delegates to preferences`() {
       viewModel.saveClientCertAlias("alias-1")
 
-      verify { preferences.saveClientCertAlias("alias-1") }
+      verify { connection.saveClientCertAlias("alias-1") }
     }
 
     @Test
     fun `clearClientCertAlias delegates to preferences`() {
       viewModel.clearClientCertAlias()
 
-      verify { preferences.clearClientCertAlias() }
+      verify { connection.clearClientCertAlias() }
     }
 
     @Test
@@ -634,7 +746,7 @@ class SettingsViewModelTest {
       viewModel.saveDefaultTimerOption(option)
 
       assertEquals(option, viewModel.defaultTimerOption.value)
-      verify { preferences.saveDefaultTimerOption(option) }
+      verify { playback.saveDefaultTimerOption(option) }
     }
 
     @Test
@@ -642,7 +754,7 @@ class SettingsViewModelTest {
       viewModel.preferAudioFocusLossPolicy(org.grakovne.lissen.common.AudioFocusLossPolicy.LOWER_VOLUME)
 
       assertEquals(org.grakovne.lissen.common.AudioFocusLossPolicy.LOWER_VOLUME, viewModel.audioFocusLossPolicy.value)
-      verify { preferences.saveAudioFocusLossPolicy(org.grakovne.lissen.common.AudioFocusLossPolicy.LOWER_VOLUME) }
+      verify { playback.saveAudioFocusLossPolicy(org.grakovne.lissen.common.AudioFocusLossPolicy.LOWER_VOLUME) }
     }
 
     @Test
@@ -650,7 +762,7 @@ class SettingsViewModelTest {
       viewModel.preferSoftwareCodecsEnabled(true)
 
       assertTrue(viewModel.softwareCodecsEnabled.value)
-      verify { preferences.saveSoftwareCodecsEnabled(true) }
+      verify { playback.saveSoftwareCodecsEnabled(true) }
     }
 
     @Test
@@ -674,26 +786,26 @@ class SettingsViewModelTest {
       viewModel.preferAutoDownloadOption(org.grakovne.lissen.domain.CurrentItemDownloadOption)
 
       assertEquals(org.grakovne.lissen.domain.CurrentItemDownloadOption, viewModel.preferredAutoDownloadOption.value)
-      verify { preferences.saveAutoDownloadOption(org.grakovne.lissen.domain.CurrentItemDownloadOption) }
+      verify { download.saveAutoDownloadOption(org.grakovne.lissen.domain.CurrentItemDownloadOption) }
     }
 
     @Test
     fun `hasCredentials delegates to preferences`() {
-      every { preferences.hasCredentials() } returns true
+      every { session.hasCredentials() } returns true
 
       assertTrue(viewModel.hasCredentials())
     }
 
     @Test
     fun `fetchPreferredLibraryId returns the preferred library id`() {
-      every { preferences.getPreferredLibrary() } returns Library(id = "lib-1", title = "Books", type = LibraryType.LIBRARY)
+      every { libraryPreferences.getPreferredLibrary() } returns Library(id = "lib-1", title = "Books", type = LibraryType.LIBRARY)
 
       assertEquals("lib-1", viewModel.fetchPreferredLibraryId())
     }
 
     @Test
     fun `fetchPreferredLibraryId returns empty string when no preferred library`() {
-      every { preferences.getPreferredLibrary() } returns null
+      every { libraryPreferences.getPreferredLibrary() } returns null
 
       assertEquals("", viewModel.fetchPreferredLibraryId())
     }
@@ -701,7 +813,7 @@ class SettingsViewModelTest {
     @Test
     fun `fetchLibraryOrdering delegates to preferences`() {
       val ordering = LibraryOrderingConfiguration(LibraryOrderingOption.AUTHOR, LibraryOrderingDirection.DESCENDING)
-      every { preferences.getLibraryOrdering() } returns ordering
+      every { libraryPreferences.getLibraryOrdering() } returns ordering
 
       assertEquals(ordering, viewModel.fetchLibraryOrdering())
     }

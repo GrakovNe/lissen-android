@@ -15,12 +15,12 @@ import java.io.File
 
 class LissenConfigProviderTest {
   private val context = mockk<Context>(relaxed = true)
-  private val preferences = mockk<LissenSharedPreferences>(relaxed = true)
+  private val backupManager = mockk<SettingsBackupManager>(relaxed = true)
   private lateinit var provider: LissenConfigProvider
 
   @BeforeEach
   fun setup() {
-    provider = LissenConfigProvider(context, preferences)
+    provider = LissenConfigProvider(context, backupManager)
   }
 
   @Nested
@@ -30,7 +30,7 @@ class LissenConfigProviderTest {
       @TempDir cacheDir: File,
     ) {
       every { context.cacheDir } returns cacheDir
-      every { preferences.exportSettings() } returns SettingsBackup(colorScheme = "DARK", playbackSpeed = 1.5f)
+      every { backupManager.exportSettings() } returns SettingsBackup(colorScheme = "DARK", playbackSpeed = 1.5f)
 
       val file = provider.exportConfigFile()
 
@@ -48,7 +48,7 @@ class LissenConfigProviderTest {
       val result = provider.importConfig("""{"schemaVersion":1,"colorScheme":"DARK"}""")
 
       assertTrue(result)
-      verify { preferences.importSettings(match { it.colorScheme == "DARK" }) }
+      verify { backupManager.importSettings(match { it.colorScheme == "DARK" }) }
     }
 
     @Test
@@ -56,7 +56,7 @@ class LissenConfigProviderTest {
       val result = provider.importConfig("not valid json")
 
       assertFalse(result)
-      verify(exactly = 0) { preferences.importSettings(any()) }
+      verify(exactly = 0) { backupManager.importSettings(any()) }
     }
 
     @Test
@@ -64,7 +64,7 @@ class LissenConfigProviderTest {
       val result = provider.importConfig("""{"schemaVersion":"not-a-number"}""")
 
       assertFalse(result)
-      verify(exactly = 0) { preferences.importSettings(any()) }
+      verify(exactly = 0) { backupManager.importSettings(any()) }
     }
 
     @Test
@@ -72,7 +72,7 @@ class LissenConfigProviderTest {
       val result = provider.importConfig("")
 
       assertFalse(result)
-      verify(exactly = 0) { preferences.importSettings(any()) }
+      verify(exactly = 0) { backupManager.importSettings(any()) }
     }
   }
 }

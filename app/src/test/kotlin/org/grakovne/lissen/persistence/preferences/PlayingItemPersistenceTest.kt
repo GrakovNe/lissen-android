@@ -20,7 +20,9 @@ class PlayingItemPersistenceTest {
       every { getSharedPreferences(any(), any()) } returns fakePreferences
     }
 
-  private val preferences = LissenSharedPreferences(context)
+  private val store = SecurePreferenceStore(context)
+  private val library = LibraryPreferences(store)
+  private val preferences = PlaybackPreferences(store, library)
 
   private fun item(
     id: String,
@@ -44,7 +46,7 @@ class PlayingItemPersistenceTest {
     updatedAt = 0L,
   )
 
-  private fun preferLibrary(libraryId: String) = preferences.savePreferredLibrary(Library(libraryId, "Library", LibraryType.LIBRARY))
+  private fun preferLibrary(libraryId: String) = library.savePreferredLibrary(Library(libraryId, "Library", LibraryType.LIBRARY))
 
   @Test
   fun `stored playing items are parsed once and then served from memory`() {

@@ -5,7 +5,7 @@ import kotlinx.coroutines.test.runTest
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.ConnectionPreferences
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -13,7 +13,7 @@ import retrofit2.Response
 import kotlin.coroutines.cancellation.CancellationException
 
 class SafeApiCallTest {
-  private val preferences = mockk<LissenSharedPreferences>(relaxed = true)
+  private val preferences = mockk<ConnectionPreferences>(relaxed = true)
 
   @Test
   fun `successful response with body returns the body`() =

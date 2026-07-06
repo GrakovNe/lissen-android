@@ -13,7 +13,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.grakovne.lissen.domain.DetailedItem
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.MediaRepository
 import org.grakovne.lissen.playback.PlaybackEvent
 import org.grakovne.lissen.playback.PlaybackEventBus
@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test
 class WidgetPlaybackControllerTest {
   private val testDispatcher = UnconfinedTestDispatcher()
   private val mediaRepository = mockk<MediaRepository>(relaxed = true)
-  private val preferences = mockk<LissenSharedPreferences>(relaxed = true)
+  private val preferences = mockk<PlaybackPreferences>(relaxed = true)
   private val eventBus = PlaybackEventBus()
   private lateinit var controller: WidgetPlaybackController
 

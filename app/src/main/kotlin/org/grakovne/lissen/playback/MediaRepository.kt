@@ -32,7 +32,7 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DetailedItem.Companion.same
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.TimerOption
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.service.DefaultTimerActivator
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.playback.service.calculateChapterIndex
@@ -48,7 +48,7 @@ class MediaRepository
   @Inject
   constructor(
     @param:ApplicationContext private val context: Context,
-    private val preferences: LissenSharedPreferences,
+    private val preferences: PlaybackPreferences,
     private val mediaChannel: LissenMediaProvider,
     private val eventBus: PlaybackEventBus,
     private val defaultTimerActivator: DefaultTimerActivator,

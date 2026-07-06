@@ -33,7 +33,8 @@ import org.grakovne.lissen.channel.common.createOkHttpClient
 import org.grakovne.lissen.channel.common.randomPkce
 import org.grakovne.lissen.common.moshi
 import org.grakovne.lissen.domain.UserAccount
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.ConnectionPreferences
+import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
@@ -46,10 +47,11 @@ class AudiobookshelfAuthService
     @param:ApplicationContext private val context: Context,
     private val loginResponseConverter: LoginResponseConverter,
     private val requestHeadersProvider: RequestHeadersProvider,
-    private val preferences: LissenSharedPreferences,
+    private val session: SessionPreferences,
+    private val connection: ConnectionPreferences,
     private val contextCache: OAuthContextCache,
     private val authMethodResponseConverter: AuthMethodResponseConverter,
-  ) : ChannelAuthService(preferences) {
+  ) : ChannelAuthService(session) {
     override suspend fun authorize(
       host: String,
       username: String,
@@ -67,7 +69,8 @@ class AudiobookshelfAuthService
         val apiClient =
           ApiClient(
             host = host,
-            preferences = preferences,
+            session = session,
+            connection = connection,
             requestHeaders = requestHeadersProvider.fetchRequestHeaders(),
             context = context,
           )
@@ -81,7 +84,7 @@ class AudiobookshelfAuthService
       }
 
       val response: OperationResult<LoggedUserResponse> =
-        safeApiCall(preferences) { apiService.login(CredentialsLoginRequest(username, password)) }
+        safeApiCall(connection) { apiService.login(CredentialsLoginRequest(username, password)) }
 
       return response
         .foldAsync(
@@ -106,7 +109,13 @@ class AudiobookshelfAuthService
               .appendEncodedPath("status")
               .build()
 
-          val client = createOkHttpClient(requestHeaders = preferences.getCustomHeaders(), preferences = preferences, context = context)
+          val client =
+            createOkHttpClient(
+              requestHeaders = connection.getCustomHeaders(),
+              session = session,
+              connection = connection,
+              context = context,
+            )
           val request =
             Request
               .Builder()
@@ -143,7 +152,7 @@ class AudiobookshelfAuthService
     ) {
       Timber.d("Starting OAuth flow for $host")
 
-      preferences.saveHost(host)
+      session.saveHost(host)
 
       val pkce = randomPkce()
       contextCache.storePkce(pkce)
@@ -168,7 +177,7 @@ class AudiobookshelfAuthService
           .get()
           .build()
 
-      createOkHttpClient(requestHeaders = preferences.getCustomHeaders(), preferences = preferences, context = context)
+      createOkHttpClient(requestHeaders = connection.getCustomHeaders(), session = session, connection = connection, context = context)
         .newBuilder()
         .followRedirects(false)
         .build()
@@ -245,7 +254,8 @@ class AudiobookshelfAuthService
           .appendQueryParameter("code_verifier", pkce.verifier)
           .build()
 
-      val client = createOkHttpClient(requestHeaders = preferences.getCustomHeaders(), preferences = preferences, context = context)
+      val client =
+        createOkHttpClient(requestHeaders = connection.getCustomHeaders(), session = session, connection = connection, context = context)
 
       val request =
         Request

@@ -23,7 +23,7 @@ import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.RecentBook
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.BeforeEach
@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class LissenMediaProviderTest {
-  private val preferences = mockk<LissenSharedPreferences>(relaxed = true)
+  private val preferences = mockk<LibraryPreferences>(relaxed = true)
   private val channelProvider = mockk<AudiobookshelfChannelProvider>(relaxed = true)
   private val localCacheRepository = mockk<LocalCacheRepository>(relaxed = true)
   private val cachedCoverProvider = mockk<CachedCoverProvider>(relaxed = true)

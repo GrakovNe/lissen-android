@@ -15,7 +15,8 @@ import org.grakovne.lissen.channel.audiobookshelf.common.client.AudiobookshelfAp
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LoginResponseConverter
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.ConnectionPreferences
+import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -27,7 +28,8 @@ import java.util.concurrent.atomic.AtomicInteger
 class AudioBookShelfApiServiceClientCacheTest {
   private val context = mockk<Context>(relaxed = true)
   private val hostProvider = mockk<AudiobookshelfHostProvider>()
-  private val preferences = mockk<LissenSharedPreferences>(relaxed = true)
+  private val session = mockk<SessionPreferences>(relaxed = true)
+  private val connection = mockk<ConnectionPreferences>(relaxed = true)
   private val requestHeadersProvider = mockk<RequestHeadersProvider>()
   private val loginResponseConverter = mockk<LoginResponseConverter>(relaxed = true)
 
@@ -38,9 +40,9 @@ class AudioBookShelfApiServiceClientCacheTest {
   @BeforeEach
   fun setup() {
     every { hostProvider.provideHost() } returns Host.external("https://example.org")
-    every { preferences.getAccessToken() } returns "access-token"
-    every { preferences.getSslBypass() } returns false
-    every { preferences.getClientCertAlias() } returns null
+    every { session.getAccessToken() } returns "access-token"
+    every { connection.getSslBypass() } returns false
+    every { connection.getClientCertAlias() } returns null
     every { requestHeadersProvider.fetchRequestHeaders() } answers {
       listOf(ServerRequestHeader("User-Agent", "Lissen"))
     }
@@ -49,7 +51,8 @@ class AudioBookShelfApiServiceClientCacheTest {
       AudioBookShelfApiService(
         context = context,
         hostProvider = hostProvider,
-        preferences = preferences,
+        session = session,
+        connection = connection,
         requestHeadersProvider = requestHeadersProvider,
         loginResponseConverter = loginResponseConverter,
       )
@@ -80,7 +83,7 @@ class AudioBookShelfApiServiceClientCacheTest {
     runTest {
       makeSuccessfulRequest()
 
-      every { preferences.getAccessToken() } returns "refreshed-token"
+      every { session.getAccessToken() } returns "refreshed-token"
       makeSuccessfulRequest()
 
       assertEquals(1, factoryCalls.get())

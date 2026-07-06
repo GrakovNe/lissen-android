@@ -7,7 +7,7 @@ import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.ChannelProvider
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.domain.LibraryType
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -18,7 +18,7 @@ class AudiobookshelfChannelProvider
     private val podcastAudiobookshelfChannel: PodcastAudiobookshelfChannel,
     private val libraryAudiobookshelfChannel: LibraryAudiobookshelfChannel,
     private val audiobookshelfAuthService: AudiobookshelfAuthService,
-    private val sharedPreferences: LissenSharedPreferences,
+    private val sharedPreferences: LibraryPreferences,
   ) : ChannelProvider {
     override fun provideMediaChannel(): MediaChannel {
       val libraryType =

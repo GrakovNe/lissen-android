@@ -13,7 +13,7 @@ import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.TimerOption
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.MediaRepository
 import timber.log.Timber
 import javax.inject.Inject
@@ -24,7 +24,7 @@ class PlayerViewModel
   @Inject
   constructor(
     private val mediaRepository: MediaRepository,
-    private val preferences: LissenSharedPreferences,
+    private val preferences: PlaybackPreferences,
   ) : ViewModel() {
     val book: StateFlow<DetailedItem?> = mediaRepository.playingBook
 

@@ -22,7 +22,8 @@ import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.RecentBook
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -34,7 +35,8 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class MediaLibraryTreeTest {
   private lateinit var context: Context
-  private lateinit var preferences: LissenSharedPreferences
+  private lateinit var playbackPreferences: PlaybackPreferences
+  private lateinit var libraryPreferences: LibraryPreferences
   private lateinit var localCacheRepository: LocalCacheRepository
   private lateinit var lissenMediaProvider: LissenMediaProvider
   private lateinit var tree: MediaLibraryTree
@@ -42,12 +44,13 @@ class MediaLibraryTreeTest {
   @Before
   fun setUp() {
     context = ApplicationProvider.getApplicationContext()
-    preferences = mockk(relaxed = true)
+    playbackPreferences = mockk(relaxed = true)
+    libraryPreferences = mockk(relaxed = true)
     localCacheRepository = mockk(relaxed = true)
     lissenMediaProvider = mockk(relaxed = true)
 
-    every { preferences.getPlayingItem() } returns null
-    every { preferences.getPreferredLibrary() } returns null
+    every { playbackPreferences.getPlayingItem() } returns null
+    every { libraryPreferences.getPreferredLibrary() } returns null
 
     coEvery { lissenMediaProvider.fetchLibraries() } returns
       OperationResult.Error(OperationError.InternalError)
@@ -58,7 +61,7 @@ class MediaLibraryTreeTest {
     coEvery { localCacheRepository.fetchDetailedItems() } returns
       OperationResult.Error(OperationError.InternalError)
 
-    tree = MediaLibraryTree(context, preferences, localCacheRepository, lissenMediaProvider)
+    tree = MediaLibraryTree(context, playbackPreferences, libraryPreferences, localCacheRepository, lissenMediaProvider)
   }
 
   @Test
@@ -110,7 +113,7 @@ class MediaLibraryTreeTest {
   @Test
   fun getChildren_continue_returnsEmptyWhenNoPlayingBook() =
     runBlocking {
-      every { preferences.getPlayingItem() } returns null
+      every { playbackPreferences.getPlayingItem() } returns null
       val result = tree.getChildren("root/continue", 0, 100).get()
       assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
       assertTrue(result.value!!.isEmpty())
@@ -119,7 +122,7 @@ class MediaLibraryTreeTest {
   @Test
   fun getChildren_continue_returnsOneItemWhenPlayingBookSet() =
     runBlocking {
-      every { preferences.getPlayingItem() } returns makeDetailedItem("book-1", "My Book")
+      every { playbackPreferences.getPlayingItem() } returns makeDetailedItem("book-1", "My Book")
       val result = tree.getChildren("root/continue", 0, 100).get()
       assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
       val item = result.value!!.first()
@@ -130,7 +133,7 @@ class MediaLibraryTreeTest {
   @Test
   fun getChildren_recent_returnsEmptyWhenNoLibraryConfigured() =
     runBlocking {
-      every { preferences.getPreferredLibrary() } returns null
+      every { libraryPreferences.getPreferredLibrary() } returns null
       val result = tree.getChildren("root/recent", 0, 100).get()
       assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
       assertTrue(result.value!!.isEmpty())
@@ -139,7 +142,7 @@ class MediaLibraryTreeTest {
   @Test
   fun getChildren_recent_returnsEmptyWhenProviderFails() =
     runBlocking {
-      every { preferences.getPreferredLibrary() } returns makeLibrary("lib-1")
+      every { libraryPreferences.getPreferredLibrary() } returns makeLibrary("lib-1")
       coEvery { lissenMediaProvider.fetchRecentListenedBooks("lib-1") } returns
         OperationResult.Error(OperationError.NetworkError)
       val result = tree.getChildren("root/recent", 0, 100).get()
@@ -150,7 +153,7 @@ class MediaLibraryTreeTest {
   @Test
   fun getChildren_recent_returnsBookItems() =
     runBlocking {
-      every { preferences.getPreferredLibrary() } returns makeLibrary("lib-1")
+      every { libraryPreferences.getPreferredLibrary() } returns makeLibrary("lib-1")
       coEvery { lissenMediaProvider.fetchRecentListenedBooks("lib-1") } returns
         OperationResult.Success(
           listOf(
@@ -308,7 +311,7 @@ class MediaLibraryTreeTest {
   @Test
   fun searchBooks_returnsEmptyWhenNoLibraryConfigured() =
     runBlocking {
-      every { preferences.getPreferredLibrary() } returns null
+      every { libraryPreferences.getPreferredLibrary() } returns null
       val results = tree.searchBooks("audiobook").get()
       assertTrue(results.isEmpty())
     }
@@ -316,7 +319,7 @@ class MediaLibraryTreeTest {
   @Test
   fun searchBooks_returnsEmptyWhenProviderFails() =
     runBlocking {
-      every { preferences.getPreferredLibrary() } returns makeLibrary("lib-1")
+      every { libraryPreferences.getPreferredLibrary() } returns makeLibrary("lib-1")
       coEvery { lissenMediaProvider.searchBooks("lib-1", "audiobook", any()) } returns
         OperationResult.Error(OperationError.NetworkError)
       val results = tree.searchBooks("audiobook").get()
@@ -326,7 +329,7 @@ class MediaLibraryTreeTest {
   @Test
   fun searchBooks_returnsMatchingBooks() =
     runBlocking {
-      every { preferences.getPreferredLibrary() } returns makeLibrary("lib-1")
+      every { libraryPreferences.getPreferredLibrary() } returns makeLibrary("lib-1")
       coEvery { lissenMediaProvider.searchBooks("lib-1", "dune", any()) } returns
         OperationResult.Success(
           listOf(

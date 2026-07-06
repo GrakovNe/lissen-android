@@ -1,7 +1,7 @@
 package org.grakovne.lissen.playback.service
 
 import org.grakovne.lissen.domain.TimerOption
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -9,7 +9,7 @@ import javax.inject.Singleton
 class DefaultTimerActivator
   @Inject
   constructor(
-    private val preferences: LissenSharedPreferences,
+    private val preferences: PlaybackPreferences,
   ) {
     private var pending = true
 

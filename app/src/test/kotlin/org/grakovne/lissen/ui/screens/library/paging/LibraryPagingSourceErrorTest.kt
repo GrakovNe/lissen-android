@@ -15,14 +15,14 @@ import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PagedItems
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class LibraryPagingSourceErrorTest {
   private val preferences =
-    mockk<LissenSharedPreferences> {
+    mockk<LibraryPreferences> {
       every { getPreferredLibrary() } returns Library("lib-1", "Library", LibraryType.LIBRARY)
     }
 

@@ -6,7 +6,7 @@ import net.lingala.zip4j.ZipFile
 import net.lingala.zip4j.model.ZipParameters
 import net.lingala.zip4j.model.enums.CompressionLevel
 import net.lingala.zip4j.model.enums.CompressionMethod
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.DiagnosticsPreferences
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,7 +16,7 @@ class LissenLogProvider
   @Inject
   constructor(
     @param:ApplicationContext private val context: Context,
-    private val preferences: LissenSharedPreferences,
+    private val preferences: DiagnosticsPreferences,
   ) {
     private val tree: FileLoggingTree by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
       FileLoggingTree(profileLogFile())
