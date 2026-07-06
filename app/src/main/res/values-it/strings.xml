@@ -246,4 +246,21 @@
         <item quantity="one">%d ora</item>
         <item quantity="other">%d ore</item>
     </plurals>
+    <string name="library_quick_settings_grouping_title">Raggruppamento</string>
+    <string name="library_grouping_disabled">Disabilitato</string>
+    <string name="library_grouping_series">Per serie</string>
+    <string name="library_grouping_author">Per autore</string>
+    <plurals name="series_books_count">
+        <item quantity="one">%d libro</item>
+        <item quantity="many">%d libri</item>
+        <item quantity="other">%d libri</item>
+    </plurals>
+    <string name="config_backup_title">Backup e ripristino</string>
+    <string name="config_backup_description">Esporta e importa le preferenze dell\'app</string>
+    <string name="export_config_title">Esporta configurazione</string>
+    <string name="export_config_description">Condividi le preferenze dell\'app come file</string>
+    <string name="export_config_failed_toast">Impossibile esportare la configurazione</string>
+    <string name="import_config_title">Importa configurazione</string>
+    <string name="import_config_description">Ripristina le preferenze dell\'app da un file</string>
+    <string name="import_config_failed_toast">Impossibile importare la configurazione, il file potrebbe non essere valido</string>
 </resources>
