@@ -6,7 +6,7 @@ plugins {
   alias(libs.plugins.compose.compiler)
   
   alias(libs.plugins.hilt.android)
-  id("org.jmailen.kotlinter") version "5.5.0"
+  id("org.jmailen.kotlinter") version "5.6.0"
   id("com.google.devtools.ksp")
   id("kotlin-parcelize")
 }
