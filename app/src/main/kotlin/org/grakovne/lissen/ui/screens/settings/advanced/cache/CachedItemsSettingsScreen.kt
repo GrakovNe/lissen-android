@@ -19,11 +19,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -33,9 +37,6 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
-import androidx.compose.material3.pulltorefresh.pullToRefresh
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -80,7 +81,7 @@ import org.grakovne.lissen.ui.extensions.withMinimumTime
 import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun CachedItemsSettingsScreen(
   onBack: () -> Unit,
@@ -116,7 +117,13 @@ fun CachedItemsSettingsScreen(
     }
   }
 
-  val pullRefreshState = rememberPullToRefreshState()
+  val pullRefreshState =
+    rememberPullRefreshState(
+      refreshing = pullRefreshing,
+      onRefresh = {
+        withHaptic(view) { refreshContent(showPullRefreshing = true) }
+      },
+    )
 
   Scaffold(
     topBar = {
@@ -146,13 +153,8 @@ fun CachedItemsSettingsScreen(
         Modifier
           .padding(innerPadding)
           .testTag("libraryScreen")
-          .pullToRefresh(
-            isRefreshing = pullRefreshing,
-            state = pullRefreshState,
-            onRefresh = {
-              withHaptic(view) { refreshContent(showPullRefreshing = true) }
-            },
-          ).fillMaxSize(),
+          .pullRefresh(pullRefreshState)
+          .fillMaxSize(),
     ) {
       when (cachedItems.itemCount == 0) {
         true -> {
@@ -170,10 +172,10 @@ fun CachedItemsSettingsScreen(
         }
       }
 
-      PullToRefreshDefaults.Indicator(
-        isRefreshing = pullRefreshing,
+      PullRefreshIndicator(
+        refreshing = pullRefreshing,
         state = pullRefreshState,
-        color = colorScheme.primary,
+        contentColor = colorScheme.primary,
         modifier = Modifier.align(Alignment.TopCenter),
       )
     }

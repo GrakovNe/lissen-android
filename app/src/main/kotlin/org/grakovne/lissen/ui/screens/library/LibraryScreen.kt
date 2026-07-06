@@ -31,6 +31,10 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
+import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -38,9 +42,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
-import androidx.compose.material3.pulltorefresh.pullToRefresh
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -98,7 +99,7 @@ import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun LibraryScreen(
   navController: AppNavigationService,
@@ -207,7 +208,13 @@ fun LibraryScreen(
     }
   }
 
-  val pullRefreshState = rememberPullToRefreshState()
+  val pullRefreshState =
+    rememberPullRefreshState(
+      refreshing = pullRefreshing,
+      onRefresh = {
+        withHaptic(view) { refreshContent(showPullRefreshing = true) }
+      },
+    )
 
   val titleTextStyle = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
   val titleHeightDp = with(LocalDensity.current) { titleTextStyle.lineHeight.toPx().toDp() }
@@ -384,13 +391,8 @@ fun LibraryScreen(
         modifier =
           Modifier
             .padding(innerPadding)
-            .pullToRefresh(
-              isRefreshing = pullRefreshing,
-              state = pullRefreshState,
-              onRefresh = {
-                withHaptic(view) { refreshContent(showPullRefreshing = true) }
-              },
-            ).fillMaxSize(),
+            .pullRefresh(pullRefreshState)
+            .fillMaxSize(),
       ) {
         val showScrollbar by remember {
           derivedStateOf {
@@ -564,11 +566,11 @@ fun LibraryScreen(
         }
 
         if (!searchRequested) {
-          PullToRefreshDefaults.Indicator(
-            isRefreshing = pullRefreshing,
+          PullRefreshIndicator(
+            refreshing = pullRefreshing,
             state = pullRefreshState,
-            color = colorScheme.primary,
-            containerColor = colorScheme.surfaceContainer,
+            contentColor = colorScheme.primary,
+            backgroundColor = colorScheme.surfaceContainer,
             modifier = Modifier.align(Alignment.TopCenter),
           )
         }
