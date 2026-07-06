@@ -71,6 +71,8 @@ class NetworkService
       if (!capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) return null
 
       val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as android.net.wifi.WifiManager
+
+      @Suppress("DEPRECATION")
       val wifiInfo = wifiManager.connectionInfo
       val ssid = wifiInfo.ssid
 

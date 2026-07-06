@@ -121,12 +121,14 @@ fun PlayerScreen(
 
   LaunchedEffect(preparingError) {
     if (preparingError) {
+      @Suppress("DEPRECATION")
       view.announceForAccessibility(playbackErrorAnnouncement)
     }
   }
 
   LaunchedEffect(isPlaybackReady) {
     if (isPlaybackReady.not()) {
+      @Suppress("DEPRECATION")
       view.announceForAccessibility(bufferingAnnouncement)
     }
   }

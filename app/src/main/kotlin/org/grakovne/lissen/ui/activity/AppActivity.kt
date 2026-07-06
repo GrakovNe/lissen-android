@@ -105,9 +105,7 @@ class AppActivity : ComponentActivity() {
         appNavigationService.showCachedItemsSettings()
       }
 
-      AppLaunchAction.DEFAULT -> {
-        Unit
-      }
+      AppLaunchAction.DEFAULT -> {}
     }
   }
 
