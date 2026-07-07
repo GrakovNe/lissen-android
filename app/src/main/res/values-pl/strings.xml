@@ -234,7 +234,7 @@
     </plurals>
     <string name="downloads_menu_download_option_decrease">Zmniejsz liczbę</string>
     <string name="downloads_menu_download_option_increase">Zwiększ liczbę</string>
-    <string name="library_quick_settings_grouping_title">Grupowanie</string>
+    <string name="library_quick_settings_grouping_title">Grupuj</string>
     <string name="library_grouping_disabled">Wyłączone</string>
     <string name="library_grouping_series">Według serii</string>
     <string name="library_grouping_author">Według autora</string>
