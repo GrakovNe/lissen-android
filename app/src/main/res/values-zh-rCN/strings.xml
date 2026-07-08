@@ -257,4 +257,10 @@
     <plurals name="a11y_hours">
         <item quantity="other">%d 小时</item>
     </plurals>
+    <string name="settings_screen_equalizer_title">均衡器</string>
+    <string name="settings_screen_equalizer_enabled">启用</string>
+    <string name="settings_screen_equalizer_disabled">禁用</string>
+    <string name="equalizer_restore_default">恢复默认</string>
+    <string name="a11y_equalizer_band">%s Hz 频段</string>
+    <string name="a11y_equalizer_restore">恢复均衡器默认设置</string>
 </resources>
