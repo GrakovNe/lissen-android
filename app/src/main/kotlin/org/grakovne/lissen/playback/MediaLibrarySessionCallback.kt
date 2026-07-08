@@ -113,7 +113,7 @@ class MediaLibrarySessionCallback
           .setSessionCommand(prevChapterCommand)
           .setDisplayName("Previous Chapter")
           .setEnabled(true)
-          .setSlots(CommandButton.SLOT_BACK)
+          .setSlots(CommandButton.SLOT_OVERFLOW)
           .build()
 
       val nextChapterButton =
@@ -121,7 +121,7 @@ class MediaLibrarySessionCallback
           .Builder(CommandButton.ICON_NEXT)
           .setSessionCommand(nextChapterCommand)
           .setDisplayName("Next Chapter")
-          .setSlots(CommandButton.SLOT_FORWARD)
+          .setSlots(CommandButton.SLOT_OVERFLOW)
           .setEnabled(true)
           .build()
 
@@ -131,7 +131,7 @@ class MediaLibrarySessionCallback
           .setSessionCommand(rewindCommand)
           .setDisplayName("Rewind")
           .setEnabled(true)
-          .setSlots(CommandButton.SLOT_OVERFLOW)
+          .setSlots(CommandButton.SLOT_BACK)
           .build()
 
       val forwardButton =
@@ -139,7 +139,7 @@ class MediaLibrarySessionCallback
           .Builder(CommandButton.ICON_SKIP_FORWARD)
           .setSessionCommand(forwardCommand)
           .setDisplayName("Forward")
-          .setSlots(CommandButton.SLOT_OVERFLOW)
+          .setSlots(CommandButton.SLOT_FORWARD)
           .setEnabled(true)
           .build()
 
@@ -210,6 +210,7 @@ class MediaLibrarySessionCallback
                       preferences.savePlayingItem(it)
                       playbackSynchronizationService.startPlaybackSynchronization(it)
                     }
+                    mediaRepository.registerPlayingBook(it)
                     PlaybackService.bookToChapterMediaItems(it)
                   },
                   onFailure = { MediaItemsWithStartPosition(emptyList(), 0, 0) },
