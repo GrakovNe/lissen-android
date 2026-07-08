@@ -254,4 +254,27 @@
         <item quantity="few">%d sata</item>
         <item quantity="other">%d sati</item>
     </plurals>
+    <string name="library_quick_settings_grouping_title">Grupiranje</string>
+    <string name="library_grouping_disabled">Onemogućeno</string>
+    <string name="library_grouping_series">po seriji</string>
+    <string name="library_grouping_author">po autoru</string>
+    <plurals name="series_books_count">
+        <item quantity="one">%d knjiga</item>
+        <item quantity="few">%d knjige</item>
+        <item quantity="other">%d knjiga</item>
+    </plurals>
+    <string name="settings_screen_equalizer_title">Ekvalizator</string>
+    <string name="settings_screen_equalizer_enabled">Omogućeno</string>
+    <string name="settings_screen_equalizer_disabled">Onemogućeno</string>
+    <string name="equalizer_restore_default">Vrati zadano</string>
+    <string name="a11y_equalizer_band">%s Hz pojas</string>
+    <string name="a11y_equalizer_restore">Vrati zadane postavke ekvilajzera</string>
+    <string name="config_backup_title">Sigurnosna kopija i vraćanje</string>
+    <string name="config_backup_description">Izvoz ili uvoz postavki aplikacije</string>
+    <string name="export_config_title">Izvoz konfiguracije</string>
+    <string name="export_config_description">Podijelite postavke aplikacije kao datoteku</string>
+    <string name="export_config_failed_toast">Nije moguće izvesti konfiguraciju</string>
+    <string name="import_config_title">Uvoz konfiguracije</string>
+    <string name="import_config_description">Vraćanje postavki aplikacije iz datoteke</string>
+    <string name="import_config_failed_toast">Nije moguće uvesti konfiguraciju, datoteka možda nije valjana</string>
 </resources>
