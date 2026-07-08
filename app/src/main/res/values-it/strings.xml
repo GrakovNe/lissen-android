@@ -263,4 +263,8 @@
     <string name="import_config_title">Importa configurazione</string>
     <string name="import_config_description">Ripristina le preferenze dell\'app da un file</string>
     <string name="import_config_failed_toast">Impossibile importare la configurazione, il file potrebbe non essere valido</string>
+    <string name="settings_screen_equalizer_title">Equalizzatore</string>
+    <string name="settings_screen_equalizer_enabled">Abilitato</string>
+    <string name="settings_screen_equalizer_disabled">Disabilitato</string>
+    <string name="equalizer_restore_default">Ripristina predefinito</string>
 </resources>
