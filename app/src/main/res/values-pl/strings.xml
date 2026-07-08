@@ -278,4 +278,10 @@
         <item quantity="many">%d godzin</item>
         <item quantity="other">%d godziny</item>
     </plurals>
+    <string name="settings_screen_equalizer_title">Korektor dźwięku</string>
+    <string name="settings_screen_equalizer_enabled">Włączony</string>
+    <string name="settings_screen_equalizer_disabled">Wyłączony</string>
+    <string name="equalizer_restore_default">Przywróć domyślne</string>
+    <string name="a11y_equalizer_band">%s pasmo herców</string>
+    <string name="a11y_equalizer_restore">Przywróć ustawienia korektora dźwięku</string>
 </resources>
