@@ -415,6 +415,18 @@ class MediaRepository
       _isPlaybackReady.value = false
     }
 
+    fun registerPlayingBook(book: DetailedItem) {
+      val sameBook = _playingBook.value?.same(book) ?: false
+
+      if (sameBook.not()) {
+        Timber.d("Registering playing book prepared via media session: ${book.id}")
+
+        _totalPosition.value = book.progress?.currentTime ?: 0.0
+        _playingBook.value = book
+        _isPlaybackReady.value = true
+      }
+    }
+
     private fun startPreparingPlayback(book: DetailedItem) {
       val sameBook = _playingBook.value?.same(book) ?: false
 
