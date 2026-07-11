@@ -267,4 +267,5 @@
     <string name="settings_screen_equalizer_enabled">Abilitato</string>
     <string name="settings_screen_equalizer_disabled">Disabilitato</string>
     <string name="equalizer_restore_default">Ripristina predefinito</string>
+    <string name="a11y_equalizer_restore">Ripristina le impostazioni predefinite dell\'equalizzatore</string>
 </resources>
