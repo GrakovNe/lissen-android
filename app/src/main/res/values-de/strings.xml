@@ -261,4 +261,10 @@
     <string name="export_config_description">Anwendungseinstellungen als Datei teilen</string>
     <string name="export_config_failed_toast">Konfiguration konnte nicht exportiert werden</string>
     <string name="import_config_failed_toast">Konfiguration konnte nicht importiert werden; die Datei ist möglicherweise ungültig</string>
+    <string name="settings_screen_equalizer_title">Equalizer</string>
+    <string name="settings_screen_equalizer_enabled">Aktiviert</string>
+    <string name="settings_screen_equalizer_disabled">Deaktiviert</string>
+    <string name="equalizer_restore_default">Auf Standard zurücksetzen</string>
+    <string name="a11y_equalizer_band">%s-Hertz-Band</string>
+    <string name="a11y_equalizer_restore">Equalizer-Standardeinstellungen wiederherstellen</string>
 </resources>
