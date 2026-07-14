@@ -214,10 +214,6 @@ fun RecentBookItemComposable(
         )
       }
     }
-
-    if (libraryViewModel.fetchPreferredLibraryType() != LibraryType.LIBRARY) {
-      Spacer(modifier = Modifier.height(18.dp))
-    }
   }
 }
 
