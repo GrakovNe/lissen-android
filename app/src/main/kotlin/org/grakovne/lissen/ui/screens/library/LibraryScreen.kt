@@ -502,7 +502,7 @@ fun LibraryScreen(
                 }
               }
 
-              Spacer(modifier = Modifier.height(8.dp))
+              Spacer(modifier = Modifier.height(6.dp))
             }
           }
 
@@ -626,4 +626,4 @@ fun LibraryScreen(
   }
 }
 
-private val RECENT_SECTION_SPACING = 2.dp
+private val RECENT_SECTION_SPACING = 14.dp
