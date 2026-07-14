@@ -257,4 +257,10 @@
     <string name="import_config_title">Impor konfigurasi</string>
     <string name="import_config_description">Pulihkan preferensi aplikasi dari file</string>
     <string name="import_config_failed_toast">Gagal mengimpor konfigurasi, file mungkin tidak valid</string>
+    <string name="settings_screen_equalizer_title">Equalizer</string>
+    <string name="settings_screen_equalizer_enabled">Aktifkan</string>
+    <string name="settings_screen_equalizer_disabled">Nonaktifkan</string>
+    <string name="equalizer_restore_default">Pulihkan default</string>
+    <string name="a11y_equalizer_band">%s Hz</string>
+    <string name="a11y_equalizer_restore">Pulihkan default equalizer</string>
 </resources>
