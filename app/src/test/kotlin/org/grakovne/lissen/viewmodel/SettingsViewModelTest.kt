@@ -307,26 +307,26 @@ class SettingsViewModelTest {
   @Nested
   inner class SeekTimePreference {
     @Test
-    fun `preferForwardRewind updates seek forward`() {
-      viewModel.preferForwardRewind(60)
+    fun `preferForward updates seek forward`() {
+      viewModel.preferForward(60)
       assertEquals(60, viewModel.seekTime.value.forward)
     }
 
     @Test
-    fun `preferRewindRewind updates seek rewind`() {
-      viewModel.preferRewindRewind(30)
+    fun `preferRewind updates seek rewind`() {
+      viewModel.preferRewind(30)
       assertEquals(30, viewModel.seekTime.value.rewind)
     }
 
     @Test
-    fun `preferForwardRewind preserves rewind value`() {
-      viewModel.preferForwardRewind(60)
+    fun `preferForward preserves rewind value`() {
+      viewModel.preferForward(60)
       assertEquals(SeekTime.Default.rewind, viewModel.seekTime.value.rewind)
     }
 
     @Test
-    fun `preferRewindRewind preserves forward value`() {
-      viewModel.preferRewindRewind(10)
+    fun `preferRewind preserves forward value`() {
+      viewModel.preferRewind(10)
       assertEquals(SeekTime.Default.forward, viewModel.seekTime.value.forward)
     }
   }

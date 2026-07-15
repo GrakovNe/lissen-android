@@ -404,14 +404,15 @@ class CachedBookRepositoryTest {
       val book1 = entity("b1")
       val book2 = entity("b2")
       coEvery { bookDao.fetchRecentlyListenedCachedBooks(libraryId = LIBRARY_ID) } returns listOf(book1, book2)
-      coEvery { bookDao.fetchMediaProgress("b1") } returns
-        org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity(
-          bookId = "b1",
-          currentTime = 10.0,
-          isFinished = false,
-          lastUpdate = 100L,
+      coEvery { bookDao.fetchMediaProgress(listOf("b1", "b2")) } returns
+        listOf(
+          org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity(
+            bookId = "b1",
+            currentTime = 10.0,
+            isFinished = false,
+            lastUpdate = 100L,
+          ),
         )
-      coEvery { bookDao.fetchMediaProgress("b2") } returns null
       val recent1 = mockk<org.grakovne.lissen.domain.RecentBook>()
       val recent2 = mockk<org.grakovne.lissen.domain.RecentBook>()
       every { cachedBookEntityRecentConverter.apply(book1, 100L to 10.0) } returns recent1

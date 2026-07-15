@@ -21,7 +21,6 @@ import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.domain.UserAccount
-import org.grakovne.lissen.domain.isSame
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import timber.log.Timber
 import java.io.File
@@ -60,14 +59,16 @@ class LissenMediaProvider
     suspend fun provideBookmarks(playingItemId: String): List<Bookmark> =
       cachedBookmarkProvider
         .provideBookmarks(playingItemId)
-        .sortedByDescending { it.createdAt }
-        .fold(emptyList()) { acc, item -> if (acc.any { it.isSame(item) }) acc else acc + item }
+        .sortedDeduplicated()
 
     suspend fun updateAndProvideBookmarks(playingItemId: String): List<Bookmark> =
       cachedBookmarkProvider
         .fetchBookmarks(playingItemId)
-        .sortedByDescending { it.createdAt }
-        .fold(emptyList()) { acc, b -> if (acc.any { it.isSame(b) }) acc else acc + b }
+        .sortedDeduplicated()
+
+    private fun List<Bookmark>.sortedDeduplicated(): List<Bookmark> =
+      sortedByDescending { it.createdAt }
+        .distinctBy { it.libraryItemId to it.totalPosition }
 
     fun provideFileUri(
       libraryItemId: String,

@@ -254,6 +254,10 @@ interface CachedBookDao {
   @Query("SELECT * FROM media_progress WHERE bookId = :bookId")
   suspend fun fetchMediaProgress(bookId: String): MediaProgressEntity?
 
+  @Transaction
+  @Query("SELECT * FROM media_progress WHERE bookId IN (:bookIds)")
+  suspend fun fetchMediaProgress(bookIds: List<String>): List<MediaProgressEntity>
+
   @Delete
   suspend fun deleteBook(book: BookEntity)
 

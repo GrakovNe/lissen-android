@@ -125,10 +125,10 @@ class PlaybackSynchronizationService
         currentChapterIndex = currentIndex
       }
 
-      playbackSession?.let {
+      playbackSession?.let { session ->
         requestSync(
           item = currentItem,
-          it = it,
+          session = session,
           overallProgress = overallProgress,
         )
       }
@@ -136,12 +136,12 @@ class PlaybackSynchronizationService
 
     private suspend fun requestSync(
       item: DetailedItem,
-      it: PlaybackSession,
+      session: PlaybackSession,
       overallProgress: PlaybackProgress,
     ): Unit? =
       mediaChannel
         .syncProgress(
-          sessionId = it.sessionId,
+          sessionId = session.sessionId,
           detailedItem = item,
           progress = overallProgress,
         ).foldAsync(

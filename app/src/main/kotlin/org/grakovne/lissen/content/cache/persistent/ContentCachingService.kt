@@ -176,7 +176,7 @@ class ContentCachingService : LifecycleService() {
   }
 
   companion object {
-    const val CACHE_ITEM_ACTION = "CACHING_TASK_EXTRA"
+    const val CACHE_ITEM_ACTION = "org.grakovne.lissen.CACHE_ITEM_ACTION"
     const val STOP_CACHING_ACTION = "STOP_CACHING_ACTION"
 
     const val CACHING_TASK_EXTRA = "CACHING_TASK_EXTRA"

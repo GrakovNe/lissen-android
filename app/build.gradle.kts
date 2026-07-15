@@ -88,7 +88,18 @@ android {
     versionName = "1.11.11-release"
     
     testInstrumentationRunner = "org.grakovne.lissen.HiltTestRunner"
-    
+
+    buildConfigField(
+      "String",
+      "ACRA_BASIC_AUTH_LOGIN",
+      "\"${localProperties.getProperty("acra.basicAuthLogin", "")}\"",
+    )
+    buildConfigField(
+      "String",
+      "ACRA_BASIC_AUTH_PASSWORD",
+      "\"${localProperties.getProperty("acra.basicAuthPassword", "")}\"",
+    )
+
     if (project.hasProperty("RELEASE_STORE_FILE")) {
       signingConfigs {
         create("release") {

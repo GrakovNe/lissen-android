@@ -352,8 +352,8 @@ class SettingsViewModel
       download.saveAutoDownloadOption(option)
     }
 
-    fun preferForwardRewind(seconds: Int) {
-      Timber.d("User action: preferForwardSkip $seconds")
+    fun preferForward(seconds: Int) {
+      Timber.d("User action: preferForward $seconds")
       val current = _seekTime.value
       val updated = current.copy(forward = seconds)
 
@@ -361,8 +361,8 @@ class SettingsViewModel
       _seekTime.value = updated
     }
 
-    fun preferRewindRewind(seconds: Int) {
-      Timber.d("User action: preferRewindSkip $seconds")
+    fun preferRewind(seconds: Int) {
+      Timber.d("User action: preferRewind $seconds")
       val current = _seekTime.value
       val updated = current.copy(rewind = seconds)
 

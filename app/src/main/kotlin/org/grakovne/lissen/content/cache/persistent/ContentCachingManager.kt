@@ -219,16 +219,16 @@ class ContentCachingManager
                 cover
                   .withBlur(context)
                   .writeToFile(file)
+                CacheState(CacheStatus.Completed)
               } catch (ex: Exception) {
                 Timber.e("Unable to cache cover for ${book.id} due to: ${ex.message}")
-                return@fold CacheState(CacheStatus.Error)
+                CacheState(CacheStatus.Error)
               }
             },
             onFailure = {
+              CacheState(CacheStatus.Completed)
             },
           )
-
-        CacheState(CacheStatus.Completed)
       }
     }
 

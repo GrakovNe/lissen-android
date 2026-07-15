@@ -114,7 +114,7 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
       title = stringResource(R.string.rewind_interval),
       currentSeconds = preferredSeekTime.rewind,
       onDismissRequest = { rewindExpanded = false },
-      onUpdate = { viewModel.preferRewindRewind(it) },
+      onUpdate = { viewModel.preferRewind(it) },
     )
   }
 
@@ -123,7 +123,7 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
       title = stringResource(R.string.forward_interval),
       currentSeconds = preferredSeekTime.forward,
       onDismissRequest = { forwardExpanded = false },
-      onUpdate = { viewModel.preferForwardRewind(it) },
+      onUpdate = { viewModel.preferForward(it) },
     )
   }
 }

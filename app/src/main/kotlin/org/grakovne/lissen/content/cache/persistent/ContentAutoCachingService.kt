@@ -13,6 +13,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.common.NetworkTypeAutoCache
@@ -58,6 +59,8 @@ class ContentAutoCachingService
           mediaRepository.currentChapterIndex,
         ) { playingItem: DetailedItem?, isPlaying: Boolean, _: Int ->
           playingItem to isPlaying
+        }.distinctUntilChanged { old, new ->
+          old.first?.id == new.first?.id && old.second == new.second
         }.collectLatest { (playingItem, isPlaying) ->
           delayedJob?.cancel()
           delayedJob = updatePlaybackCache(playingItem, isPlaying)

@@ -444,7 +444,11 @@ class MediaRepository
     private fun updateProgress(detailedItem: DetailedItem): Deferred<Unit> =
       scope.async {
         val currentIndex = mediaController.currentMediaItemIndex
-        val accumulated = detailedItem.chapters.take(currentIndex).sumOf { it.duration }
+        val chapters = detailedItem.chapters
+        var accumulated = 0.0
+        for (index in 0 until currentIndex.coerceIn(0, chapters.size)) {
+          accumulated += chapters[index].duration
+        }
         val currentFilePosition = mediaController.currentPosition / 1000.0
 
         val newPosition = accumulated + currentFilePosition
