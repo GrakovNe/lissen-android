@@ -6,8 +6,10 @@ import android.os.Build
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.cache.persistent.ContentCachingNotificationService.Companion.NOTIFICATION_ID
@@ -106,7 +108,7 @@ class ContentCachingService : LifecycleService() {
             onSuccess = { item -> cacheFetchedItem(item, task) },
             onFailure = {
               Timber.e("Unable to fetch book ${task.itemId} for caching: ${it.code}")
-              registry.settle(task.itemId)
+              registry.settle(task.itemId, currentCoroutineContext().job)
               cacheProgressBus.emit(task.itemId, CacheState(CacheStatus.Error))
 
               if (registry.inProgress().not()) {
@@ -137,7 +139,7 @@ class ContentCachingService : LifecycleService() {
         Timber.e(error, "Caching failed for ${item.id}, emitting error state")
         emit(CacheState(CacheStatus.Error))
       }.onCompletion {
-        registry.settle(item.id)
+        registry.settle(item.id, currentCoroutineContext().job)
 
         if (registry.inProgress().not()) {
           finish()

@@ -45,8 +45,12 @@ class CachedBookRepository
     @Volatile
     private var authorsGroupedCache: Pair<String, List<LibraryEntry>>? = null
 
+    @Volatile
+    private var allEntitiesCache: Pair<String, List<BookEntity>>? = null
+
     private fun invalidateAuthorsGroupedCache() {
       authorsGroupedCache = null
+      allEntitiesCache = null
     }
 
     fun provideFileUri(
@@ -257,6 +261,12 @@ class CachedBookRepository
 
     private suspend fun fetchAllEntities(libraryId: String): List<BookEntity> {
       val (option, direction) = buildOrdering()
+      val cacheKey = "$libraryId|$option|$direction|${preferences.getHideCompleted()}"
+
+      allEntitiesCache
+        ?.takeIf { it.first == cacheKey }
+        ?.let { return it.second }
+
       val total = countBooks(libraryId)
 
       if (total == 0) {
@@ -273,7 +283,9 @@ class CachedBookRepository
           .hideCompleted(preferences.getHideCompleted())
           .build()
 
-      return bookDao.fetchCachedBooks(request)
+      val entities = bookDao.fetchCachedBooks(request)
+      allEntitiesCache = cacheKey to entities
+      return entities
     }
 
     private fun BookEntity.primarySeriesName(): String? =

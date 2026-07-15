@@ -78,11 +78,26 @@ class CachingSessionRegistryTest {
   @Test
   fun `settling a registration without status leaves nothing in progress`() {
     val registry = CachingSessionRegistry()
+    val job = Job()
 
-    registry.register("book-1", Job())
-    registry.settle("book-1")
+    registry.register("book-1", job)
+    registry.settle("book-1", job)
 
     assertFalse(registry.inProgress())
+  }
+
+  @Test
+  fun `settling a stale job does not clear the newer registration`() {
+    val registry = CachingSessionRegistry()
+    val first = Job()
+    val second = Job()
+
+    registry.register("book-1", first)
+    registry.register("book-1", second)
+
+    registry.settle("book-1", first)
+
+    assertTrue(registry.inProgress())
   }
 
   @Test

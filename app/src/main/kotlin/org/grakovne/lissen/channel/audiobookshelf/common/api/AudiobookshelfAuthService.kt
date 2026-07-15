@@ -7,6 +7,7 @@ import androidx.core.net.toUri
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.Call
@@ -52,6 +53,8 @@ class AudiobookshelfAuthService
     private val contextCache: OAuthContextCache,
     private val authMethodResponseConverter: AuthMethodResponseConverter,
   ) : ChannelAuthService(session) {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
     override suspend fun authorize(
       host: String,
       username: String,
@@ -196,30 +199,38 @@ class AudiobookshelfAuthService
               call: Call,
               response: Response,
             ) {
-              Timber.d("OAuth redirect received from ABS: status=${response.code}")
+              response.use {
+                Timber.d("OAuth redirect received from ABS: status=${response.code}")
 
-              if (response.code != 302) {
-                onFailure(examineError(response.body.string()))
-                return
-              }
+                if (response.code != 302) {
+                  val body =
+                    try {
+                      response.body.string()
+                    } catch (ex: IOException) {
+                      ex.message ?: ""
+                    }
+                  onFailure(examineError(body))
+                  return
+                }
 
-              val location =
-                response
-                  .header("Location")
-                  ?: kotlin.run {
-                    onFailure(examineError("invalid_redirect"))
-                    return
-                  }
+                val location =
+                  response
+                    .header("Location")
+                    ?: kotlin.run {
+                      onFailure(examineError("invalid_redirect"))
+                      return
+                    }
 
-              try {
-                val cookieHeaders: List<String> = response.headers("Set-Cookie")
-                contextCache.storeCookies(cookieHeaders)
+                try {
+                  val cookieHeaders: List<String> = response.headers("Set-Cookie")
+                  contextCache.storeCookies(cookieHeaders)
 
-                onSuccess()
-                forwardAuthRequest(location)
-              } catch (ex: Exception) {
-                Timber.e("Unable to process OAuth redirect due to: ${ex.message}")
-                onFailure(examineError(ex.message ?: ""))
+                  onSuccess()
+                  forwardAuthRequest(location)
+                } catch (ex: Exception) {
+                  Timber.e("Unable to process OAuth redirect due to: ${ex.message}")
+                  onFailure(examineError(ex.message ?: ""))
+                }
               }
             }
           },
@@ -302,7 +313,7 @@ class AudiobookshelfAuthService
                   return
                 }
 
-              CoroutineScope(Dispatchers.IO).launch { onSuccess(user) }
+              scope.launch { onSuccess(user) }
             }
           },
         )

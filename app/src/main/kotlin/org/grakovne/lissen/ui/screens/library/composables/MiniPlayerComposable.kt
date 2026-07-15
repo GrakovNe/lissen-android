@@ -234,11 +234,13 @@ private fun PlaybackProgressButton(
   val isPlaying by playerViewModel.isPlaying.collectAsState()
   val totalPosition by playerViewModel.totalPosition.collectAsState()
 
+  val totalDuration = remember(book.id) { book.chapters.sumOf { it.duration } }
+
   val progress =
     calculateProgress(
-      item = book,
       libraryType = libraryType,
       totalPosition = totalPosition,
+      totalDuration = totalDuration,
     )
 
   PlaybackButton(
@@ -249,17 +251,14 @@ private fun PlaybackProgressButton(
 }
 
 private fun calculateProgress(
-  item: DetailedItem,
   libraryType: LibraryType?,
   totalPosition: Double,
-): Float {
-  val totalDuration = item.chapters.sumOf { it.duration }
-
-  return when (totalDuration > 0 && libraryType == LibraryType.LIBRARY) {
+  totalDuration: Double,
+): Float =
+  when (totalDuration > 0 && libraryType == LibraryType.LIBRARY) {
     true -> (totalPosition / totalDuration).toFloat().coerceIn(0f, 1f).snapProgress()
     false -> 0f
   }
-}
 
 @Composable
 private fun PlaybackButton(

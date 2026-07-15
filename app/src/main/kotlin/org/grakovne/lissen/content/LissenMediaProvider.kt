@@ -76,21 +76,20 @@ class LissenMediaProvider
     ): OperationResult<Uri> {
       Timber.d("Resolving file URI: bookId=$libraryItemId, chapterId=$chapterId")
 
-      return when (preferences.isForceCache()) {
+      val cached =
+        localCacheRepository
+          .provideFileUri(libraryItemId, chapterId)
+          ?.let { OperationResult.Success(it) }
+
+      return cached ?: when (preferences.isForceCache()) {
         true -> {
-          localCacheRepository
-            .provideFileUri(libraryItemId, chapterId)
-            ?.let { OperationResult.Success(it) }
-            ?: OperationResult.Error(OperationError.InternalError)
+          OperationResult.Error(OperationError.InternalError)
         }
 
         false -> {
-          localCacheRepository
+          providePreferredChannel()
             .provideFileUri(libraryItemId, chapterId)
-            ?.let { OperationResult.Success(it) }
-            ?: providePreferredChannel()
-              .provideFileUri(libraryItemId, chapterId)
-              .let { OperationResult.Success(it) }
+            .let { OperationResult.Success(it) }
         }
       }
     }
@@ -293,7 +292,7 @@ class LissenMediaProvider
         false -> {
           providePreferredChannel()
             .fetchRecentListenedBooks(libraryId)
-            .map { items -> syncFromLocalProgress(libraryId = libraryId, detailedItems = items) }
+            .map { items -> syncFromLocalProgress(libraryId = libraryId, recentBooks = items) }
         }
       }
     }
@@ -391,19 +390,19 @@ class LissenMediaProvider
 
     private suspend fun syncFromLocalProgress(
       libraryId: String,
-      detailedItems: List<RecentBook>,
+      recentBooks: List<RecentBook>,
     ): List<RecentBook> {
-      val localRecentlyBooks =
+      val localRecentBooks =
         localCacheRepository
           .fetchRecentListenedBooks(libraryId)
           .fold(
             onSuccess = { it },
-            onFailure = { return@fold detailedItems },
+            onFailure = { return@fold recentBooks },
           )
 
-      val syncedRecentlyBooks =
-        detailedItems
-          .mapNotNull { item -> localRecentlyBooks.find { it.id == item.id }?.let { item to it } }
+      val syncedRecentBooks =
+        recentBooks
+          .mapNotNull { item -> localRecentBooks.find { it.id == item.id }?.let { item to it } }
           .map { (remote, local) ->
             val localTimestamp = local.listenedLastUpdate ?: return@map remote
             val remoteTimestamp = remote.listenedLastUpdate ?: return@map remote
@@ -414,9 +413,9 @@ class LissenMediaProvider
             }
           }
 
-      return detailedItems
+      return recentBooks
         .map { item ->
-          syncedRecentlyBooks
+          syncedRecentBooks
             .find { item.id == it.id }
             ?.let { local -> item.copy(listenedPercentage = local.listenedPercentage) }
             ?: item

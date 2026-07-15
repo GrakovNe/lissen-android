@@ -64,7 +64,7 @@ fun NavigationBarComposable(
   val playingQueueExpanded by playerViewModel.playingQueueExpanded.collectAsState()
   val hasEpisodes = book.chapters.isNotEmpty()
 
-  val isMetadataCached by contentCachingModelView.provideCacheState(book.id).collectAsState(initial = false)
+  val isMetadataCached by remember(book.id) { contentCachingModelView.provideCacheState(book.id) }.collectAsState(initial = false)
   val totalPosition by playerViewModel.totalPosition.collectAsState()
   val remainingChapters = (book.chapters.size - calculateChapterIndex(book, totalPosition)).coerceAtLeast(1)
 
