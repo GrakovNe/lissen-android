@@ -292,7 +292,7 @@ class LissenMediaProvider
         false -> {
           providePreferredChannel()
             .fetchRecentListenedBooks(libraryId)
-            .map { items -> syncFromLocalProgress(libraryId = libraryId, recentBooks = items) }
+            .map { items -> mergeLocalRecentProgress(libraryId = libraryId, recentBooks = items) }
         }
       }
     }
@@ -311,7 +311,7 @@ class LissenMediaProvider
         false -> {
           providePreferredChannel()
             .fetchBook(bookId)
-            .map { syncFromLocalProgress(it) }
+            .map { mergeLocalItemProgress(it) }
             .map { trimProgress(it) }
         }
       }
@@ -388,7 +388,7 @@ class LissenMediaProvider
         )
     }
 
-    private suspend fun syncFromLocalProgress(
+    private suspend fun mergeLocalRecentProgress(
       libraryId: String,
       recentBooks: List<RecentBook>,
     ): List<RecentBook> {
@@ -433,7 +433,7 @@ class LissenMediaProvider
       }
     }
 
-    private suspend fun syncFromLocalProgress(detailedItem: DetailedItem): DetailedItem {
+    private suspend fun mergeLocalItemProgress(detailedItem: DetailedItem): DetailedItem {
       val cachedProgress = localCacheRepository.fetchPlayingItemProgress(detailedItem.id)
       val channelProgress = detailedItem.progress
 

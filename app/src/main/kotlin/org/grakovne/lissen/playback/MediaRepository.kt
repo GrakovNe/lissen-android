@@ -35,7 +35,6 @@ import org.grakovne.lissen.playback.service.DefaultTimerActivator
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.playback.service.calculateChapterIndexAndPosition
-import org.grakovne.lissen.playback.service.calculateChapterPosition
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -436,6 +435,10 @@ class MediaRepository
         preferences.savePlayingItem(book)
 
         eventBus.send(PlaybackCommand.PreparePlayback)
+      } else {
+        // The same book is already prepared in the media session, so no PreparePlayback
+        // command is emitted. Re-mark readiness restored by clearPreparedItem() during re-prepare.
+        _isPlaybackReady.value = true
       }
     }
 
@@ -445,10 +448,7 @@ class MediaRepository
     private fun updateProgress(detailedItem: DetailedItem) {
       val currentIndex = mediaController.currentMediaItemIndex
       val chapters = detailedItem.chapters
-      var accumulated = 0.0
-      for (index in 0 until currentIndex.coerceIn(0, chapters.size)) {
-        accumulated += chapters[index].duration
-      }
+      val accumulated = chapters.take(currentIndex.coerceIn(0, chapters.size)).sumOf { it.duration }
       val currentFilePosition = mediaController.currentPosition / 1000.0
 
       val newPosition = accumulated + currentFilePosition
@@ -501,6 +501,7 @@ class MediaRepository
 
       var safePosition = minOf(overallDuration, maxOf(0.0, position))
 
+      // Skip undownloaded/unavailable chapters: advance in the seek direction to the nearest available chapter's start.
       while (true) {
         val currentIndex = calculateChapterIndex(book, safePosition)
         if (book.chapters[currentIndex].available) {
@@ -551,8 +552,7 @@ class MediaRepository
       val book = playingBook.value ?: return
       val totalPosition = totalPosition.value
 
-      val trackIndex = calculateChapterIndex(book, totalPosition)
-      val trackPosition = calculateChapterPosition(book, totalPosition)
+      val (trackIndex, trackPosition) = calculateChapterIndexAndPosition(book, totalPosition)
 
       _currentChapterIndex.value = trackIndex
       _currentChapterPosition.value = trackPosition

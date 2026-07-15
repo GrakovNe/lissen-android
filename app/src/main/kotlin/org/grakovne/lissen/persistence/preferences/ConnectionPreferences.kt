@@ -33,16 +33,27 @@ class ConnectionPreferences
     fun clearClientCertAlias() = store.remove(KEY_CLIENT_CERT_ALIAS)
 
     fun saveCustomHeaders(headers: List<ServerRequestHeader>) {
-      val type = Types.newParameterizedType(List::class.java, ServerRequestHeader::class.java)
-      val adapter = moshi.adapter<List<ServerRequestHeader>>(type)
+      val adapter = moshi.adapter<List<ServerRequestHeader>>(customHeadersType)
       store.putString(KEY_CUSTOM_HEADERS, adapter.toJson(headers))
     }
 
+    @Volatile
+    private var cachedCustomHeadersJson: String? = null
+
+    @Volatile
+    private var cachedCustomHeaders: List<ServerRequestHeader> = emptyList()
+
     fun getCustomHeaders(): List<ServerRequestHeader> {
       val json = store.getString(KEY_CUSTOM_HEADERS) ?: return emptyList()
-      val type = Types.newParameterizedType(List::class.java, ServerRequestHeader::class.java)
-      val adapter = moshi.adapter<List<ServerRequestHeader>>(type)
-      return adapter.fromJson(json) ?: emptyList()
+      if (json == cachedCustomHeadersJson) {
+        return cachedCustomHeaders
+      }
+
+      val adapter = moshi.adapter<List<ServerRequestHeader>>(customHeadersType)
+      val parsed = adapter.fromJson(json) ?: emptyList()
+      cachedCustomHeadersJson = json
+      cachedCustomHeaders = parsed
+      return parsed
     }
 
     fun saveLocalUrls(urls: List<LocalUrl>) {
@@ -77,6 +88,9 @@ class ConnectionPreferences
     }
 
     companion object {
+      private val customHeadersType =
+        Types.newParameterizedType(List::class.java, ServerRequestHeader::class.java)
+
       private const val KEY_CUSTOM_HEADERS = "custom_headers"
       private const val KEY_BYPASS_SSL = "bypass_ssl"
       private const val KEY_LOCAL_URLS = "local_urls"

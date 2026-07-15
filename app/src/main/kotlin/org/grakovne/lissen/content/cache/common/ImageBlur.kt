@@ -56,7 +56,7 @@ private fun sourceWithBackdropBlur(
   original.recycle()
 
   return Buffer().also { buffer ->
-    result.compress(Bitmap.CompressFormat.PNG, 100, buffer.outputStream())
+    result.compress(Bitmap.CompressFormat.JPEG, 85, buffer.outputStream())
     result.recycle()
   }
 }

@@ -208,7 +208,7 @@ class LibraryViewModelTest {
 
       viewModel.toggleGroup(series())
 
-      assertEquals(listOf("1", "2", "22"), viewModel.groupBooks.value["ser-1"]?.map { it.id })
+      assertEquals(listOf("1", "2", "22"), viewModel.groupBooks["ser-1"]?.map { it.id })
     }
 
     @Test
@@ -220,7 +220,7 @@ class LibraryViewModelTest {
       viewModel.toggleGroup(author())
 
       assertTrue("aut-1" in viewModel.expandedGroups.value)
-      assertEquals(listOf("b1"), viewModel.groupBooks.value["aut-1"]?.map { it.id })
+      assertEquals(listOf("b1"), viewModel.groupBooks["aut-1"]?.map { it.id })
       coVerify(exactly = 1) { mediaChannel.fetchAuthorBooks("lib-1", "aut-1") }
     }
 
@@ -233,8 +233,8 @@ class LibraryViewModelTest {
       viewModel.toggleGroup(series())
 
       assertTrue("ser-1" in viewModel.expandedGroups.value)
-      assertEquals(listOf("b1", "b2"), viewModel.groupBooks.value["ser-1"]?.map { it.id })
-      assertTrue(viewModel.groupLoading.value.isEmpty())
+      assertEquals(listOf("b1", "b2"), viewModel.groupBooks["ser-1"]?.map { it.id })
+      assertTrue(viewModel.groupLoading.isEmpty())
     }
 
     @Test
@@ -280,7 +280,7 @@ class LibraryViewModelTest {
 
       viewModel.prefetchGroup(series())
 
-      assertEquals(listOf("b1", "b2"), viewModel.groupBooks.value["ser-1"]?.map { it.id })
+      assertEquals(listOf("b1", "b2"), viewModel.groupBooks["ser-1"]?.map { it.id })
       assertFalse("ser-1" in viewModel.expandedGroups.value)
     }
 
@@ -316,8 +316,8 @@ class LibraryViewModelTest {
       viewModel.resetGroupExpansion()
 
       assertTrue(viewModel.expandedGroups.value.isEmpty())
-      assertTrue(viewModel.groupBooks.value.isEmpty())
-      assertTrue(viewModel.groupLoading.value.isEmpty())
+      assertTrue(viewModel.groupBooks.isEmpty())
+      assertTrue(viewModel.groupLoading.isEmpty())
     }
   }
 

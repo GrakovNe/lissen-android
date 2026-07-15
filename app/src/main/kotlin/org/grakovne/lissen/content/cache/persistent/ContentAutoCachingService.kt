@@ -57,11 +57,11 @@ class ContentAutoCachingService
           mediaRepository.playingBook,
           mediaRepository.isPlaying,
           mediaRepository.currentChapterIndex,
-        ) { playingItem: DetailedItem?, isPlaying: Boolean, _: Int ->
-          playingItem to isPlaying
+        ) { playingItem: DetailedItem?, isPlaying: Boolean, chapterIndex: Int ->
+          Triple(playingItem, isPlaying, chapterIndex)
         }.distinctUntilChanged { old, new ->
-          old.first?.id == new.first?.id && old.second == new.second
-        }.collectLatest { (playingItem, isPlaying) ->
+          old.first?.id == new.first?.id && old.second == new.second && old.third == new.third
+        }.collectLatest { (playingItem, isPlaying, _) ->
           delayedJob?.cancel()
           delayedJob = updatePlaybackCache(playingItem, isPlaying)
         }
