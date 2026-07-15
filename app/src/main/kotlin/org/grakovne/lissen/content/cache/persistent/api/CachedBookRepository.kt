@@ -4,11 +4,9 @@ import android.net.Uri
 import androidx.core.net.toUri
 import androidx.sqlite.db.SimpleSQLiteQuery
 import androidx.sqlite.db.SupportSQLiteQuery
-import com.squareup.moshi.Types
 import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.common.LibraryOrderingOption
 import org.grakovne.lissen.common.mergeAuthorNames
-import org.grakovne.lissen.common.moshi
 import org.grakovne.lissen.content.cache.persistent.OfflineBookStorageProperties
 import org.grakovne.lissen.content.cache.persistent.converter.CachedBookEntityConverter
 import org.grakovne.lissen.content.cache.persistent.converter.CachedBookEntityDetailedConverter
@@ -16,7 +14,6 @@ import org.grakovne.lissen.content.cache.persistent.converter.CachedBookEntityRe
 import org.grakovne.lissen.content.cache.persistent.converter.MediaProgressEntityConverter
 import org.grakovne.lissen.content.cache.persistent.dao.CachedBookDao
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
-import org.grakovne.lissen.content.cache.persistent.entity.BookSeriesDto
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
@@ -89,6 +86,8 @@ class CachedBookRepository
       bookId: String,
       chapterId: String,
     ) = bookDao.isBookChapterCached(bookId, chapterId)
+
+    fun provideCachedChapterIds(bookId: String) = bookDao.cachedChapterIds(bookId)
 
     suspend fun fetchCachedItems() =
       bookDao
@@ -279,10 +278,8 @@ class CachedBookRepository
 
     private fun BookEntity.primarySeriesName(): String? =
       seriesJson
-        ?.let {
-          val type = Types.newParameterizedType(List::class.java, BookSeriesDto::class.java)
-          moshi.adapter<List<BookSeriesDto>>(type).fromJson(it)
-        }?.firstOrNull()
+        ?.let { CachedBookDao.adapter.fromJson(it) }
+        ?.firstOrNull()
         ?.title
 
     suspend fun searchBooks(

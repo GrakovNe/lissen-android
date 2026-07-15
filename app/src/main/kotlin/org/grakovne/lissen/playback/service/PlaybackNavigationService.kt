@@ -102,7 +102,7 @@ class PlaybackNavigationService
       return findAvailableTrackIndex(foundItem, direction, exoPlayer, iteration + 1)
     }
 
-    private fun isTrackAvailable(fileId: String): Boolean {
+    private fun isTrackAvailable(mediaId: String): Boolean {
       val mediaItem =
         exoPlayer
           .currentMediaItem
@@ -111,7 +111,7 @@ class PlaybackNavigationService
           ?: return false
 
       return mediaProvider
-        .provideFileUri(mediaItem.id, fileId)
+        .provideFileUri(mediaItem.id, mediaId)
         .fold(
           onSuccess = { true },
           onFailure = { false },

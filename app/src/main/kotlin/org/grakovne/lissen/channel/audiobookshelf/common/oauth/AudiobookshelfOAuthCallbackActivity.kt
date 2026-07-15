@@ -49,6 +49,15 @@ class AudiobookshelfOAuthCallbackActivity : ComponentActivity() {
       val code = data.getQueryParameter("code") ?: ""
       Timber.d("Got Exchange code from ABS")
 
+      val returnedState = data.getQueryParameter("state").orEmpty()
+      val expectedState = contextCache.readPkce().state
+
+      if (expectedState.isEmpty() || returnedState != expectedState) {
+        Timber.e("OAuth state validation failed: returned state does not match the stored state")
+        onLoginFailed("invalid_state")
+        return
+      }
+
       lifecycleScope.launch {
         authService.exchangeToken(
           host =

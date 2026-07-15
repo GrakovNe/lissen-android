@@ -167,6 +167,8 @@ class CachingModelView
       chapterId: String,
     ): Flow<Boolean> = contentCachingManager.hasMetadataCached(bookId, chapterId)
 
+    fun provideCachedChapterIds(bookId: String): Flow<List<String>> = contentCachingManager.provideCachedChapterIds(bookId)
+
     fun fetchCachedItems() {
       viewModelScope.launch {
         withContext(Dispatchers.IO) {

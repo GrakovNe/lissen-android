@@ -293,6 +293,7 @@ class AudiobookshelfAuthService
                     ?.let { loginResponseConverter.apply(it) }
                     ?: run {
                       Timber.e("OAuth token exchange returned an empty or unparseable user payload for $host (status=${response.code})")
+                      onFailure("empty_user")
                       return
                     }
                 } catch (ex: Exception) {

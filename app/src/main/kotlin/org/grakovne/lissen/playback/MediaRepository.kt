@@ -501,11 +501,16 @@ class MediaRepository
 
       var safePosition = minOf(overallDuration, maxOf(0.0, position))
 
-      while (book.chapters[calculateChapterIndex(book, safePosition)].available.not()) {
+      while (true) {
+        val currentIndex = calculateChapterIndex(book, safePosition)
+        if (book.chapters[currentIndex].available) {
+          break
+        }
+
         val chapterIndex =
           when (direction) {
-            ScrollingDirection.FORWARD -> calculateChapterIndex(book, safePosition) + 1
-            ScrollingDirection.BACKWARD -> calculateChapterIndex(book, safePosition) - 1
+            ScrollingDirection.FORWARD -> currentIndex + 1
+            ScrollingDirection.BACKWARD -> currentIndex - 1
           }
 
         safePosition =
@@ -564,7 +569,12 @@ class MediaRepository
       val playingBook = _playingBook.value ?: return
       val totalPosition = _totalPosition.value
 
-      val currentChapter = playingBook.chapters[calculateChapterIndex(playingBook, totalPosition)].title
+      val chapterIndex = calculateChapterIndex(playingBook, totalPosition)
+      if (chapterIndex !in playingBook.chapters.indices) {
+        Timber.w("Unable to create bookmark: chapter index $chapterIndex out of bounds")
+        return
+      }
+      val currentChapter = playingBook.chapters[chapterIndex].title
       val chapterPosition = _currentChapterPosition.value
 
       val bookmarkTitle =

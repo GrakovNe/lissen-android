@@ -21,11 +21,8 @@ class CachedBookEntityConverter
         series =
           entity
             .seriesJson
-            ?.let {
-              val type = Types.newParameterizedType(List::class.java, BookSeriesDto::class.java)
-              val adapter = moshi.adapter<List<BookSeriesDto>>(type)
-              adapter.fromJson(it)
-            }?.joinToString(", ") { series ->
+            ?.let { seriesAdapter.fromJson(it) }
+            ?.joinToString(", ") { series ->
               buildString {
                 append(series.title)
                 series.sequence
@@ -34,4 +31,9 @@ class CachedBookEntityConverter
               }
             },
       )
+
+    private companion object {
+      val seriesType = Types.newParameterizedType(List::class.java, BookSeriesDto::class.java)
+      val seriesAdapter = moshi.adapter<List<BookSeriesDto>>(seriesType)
+    }
   }

@@ -226,6 +226,16 @@ interface CachedBookDao {
 
   @Query(
     """
+    SELECT bookChapterId
+    FROM book_chapters
+    WHERE bookId  = :bookId
+      AND isCached = 1
+    """,
+  )
+  fun cachedChapterIds(bookId: String): Flow<List<String>>
+
+  @Query(
+    """
         SELECT MAX(mp.lastUpdate)
         FROM detailed_books AS d
         INNER JOIN media_progress AS mp ON d.id = mp.bookId

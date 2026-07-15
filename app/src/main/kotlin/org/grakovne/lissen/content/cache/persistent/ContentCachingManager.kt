@@ -137,6 +137,8 @@ class ContentCachingManager
       chapterId: String,
     ) = bookRepository.provideCacheState(mediaItemId, chapterId)
 
+    fun provideCachedChapterIds(mediaItemId: String) = bookRepository.provideCachedChapterIds(mediaItemId)
+
     private suspend fun cacheBookMedia(
       bookId: String,
       files: List<BookFile>,
@@ -168,6 +170,7 @@ class ContentCachingManager
 
           if (!response.isSuccessful) {
             Timber.e("Unable to cache media content: $response")
+            response.close()
             return@withContext CacheState(CacheStatus.Error)
           }
 

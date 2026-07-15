@@ -29,19 +29,19 @@ class OfflineBookStorageProperties
             }
           }
 
-    fun provideBookCache(bookId: String): File = baseFolder().resolve(bookId)
+    fun provideBookCache(bookId: String): File = baseFolder().resolve(bookId.toFileKey())
 
     fun provideMediaCachePatch(
       bookId: String,
       fileId: String,
     ): File =
       baseFolder()
-        .resolve(bookId)
-        .resolve(fileId)
+        .resolve(bookId.toFileKey())
+        .resolve(fileId.toFileKey())
 
     fun provideBookCoverPath(bookId: String): File =
       baseFolder()
-        .resolve(bookId)
+        .resolve(bookId.toFileKey())
         .resolve("cover.img")
 
     fun provideAuthorImagePath(authorName: String): File =
