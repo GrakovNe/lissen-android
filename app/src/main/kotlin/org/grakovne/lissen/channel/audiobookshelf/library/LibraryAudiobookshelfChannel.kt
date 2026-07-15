@@ -183,8 +183,11 @@ class LibraryAudiobookshelfChannel
             searchResult
               .map { it.authors }
               .map { authors -> authors.map { it.id } }
-              .map { ids -> ids.map { id -> async { dataRepository.fetchAuthorItems(id) } } }
-              .map { it.awaitAll() }
+              .map { ids ->
+                ids.map { id ->
+                  async { concurrentFetchSemaphore.withPermit { dataRepository.fetchAuthorItems(id) } }
+                }
+              }.map { it.awaitAll() }
               .map { result ->
                 result
                   .flatMap { authorResponse ->

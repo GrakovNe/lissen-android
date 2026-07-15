@@ -109,6 +109,21 @@ class MediaLibraryTree
 
     private val scope = CoroutineScope(Dispatchers.Default)
 
+    // Libraries rarely change during a browse session; cache them in memory so that
+    // per-navigation title lookups (resolveLibrary) don't trigger a network fetchLibraries().
+    @Volatile
+    private var cachedLibraries: List<Library>? = null
+
+    private suspend fun libraries(): List<Library> {
+      cachedLibraries?.let { return it }
+      return lissenMediaProvider
+        .fetchLibraries()
+        .fold(
+          onSuccess = { libs -> libs.also { cachedLibraries = it } },
+          onFailure = { emptyList() },
+        )
+    }
+
     private val root: MediaTreeNode by lazy { buildTree() }
 
     @OptIn(UnstableApi::class)
@@ -262,21 +277,9 @@ class MediaLibraryTree
           )
       } ?: emptyList()
 
-    private suspend fun libraryItems(): List<MediaItem> =
-      lissenMediaProvider
-        .fetchLibraries()
-        .fold(
-          onSuccess = { libs -> libs.map { libraryFolderItem("$ROOT/$LIBRARY/${it.id}", it) } },
-          onFailure = { emptyList() },
-        )
+    private suspend fun libraryItems(): List<MediaItem> = libraries().map { libraryFolderItem("$ROOT/$LIBRARY/${it.id}", it) }
 
-    private suspend fun resolveLibrary(libId: String): Library? =
-      lissenMediaProvider
-        .fetchLibraries()
-        .fold(
-          onSuccess = { libs -> libs.find { it.id == libId } },
-          onFailure = { null },
-        )
+    private suspend fun resolveLibrary(libId: String): Library? = libraries().find { it.id == libId }
 
     private suspend fun booksFromLibraryItems(
       libraryId: String,

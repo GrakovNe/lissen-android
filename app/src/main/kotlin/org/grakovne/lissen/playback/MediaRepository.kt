@@ -14,10 +14,8 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -126,7 +124,7 @@ class MediaRepository
                   is PlaybackEvent.PlaybackReady -> {
                     val book = preferences.getPlayingItem()
                     book?.let {
-                      updateProgress(book).await()
+                      updateProgress(book)
 
                       if (mediaController.isPlaying) {
                         progressPoller.start()
@@ -441,20 +439,22 @@ class MediaRepository
       }
     }
 
-    private fun updateProgress(detailedItem: DetailedItem): Deferred<Unit> =
-      scope.async {
-        val currentIndex = mediaController.currentMediaItemIndex
-        val chapters = detailedItem.chapters
-        var accumulated = 0.0
-        for (index in 0 until currentIndex.coerceIn(0, chapters.size)) {
-          accumulated += chapters[index].duration
-        }
-        val currentFilePosition = mediaController.currentPosition / 1000.0
-
-        val newPosition = accumulated + currentFilePosition
-        _totalPosition.value = newPosition
-        updateCurrentTrackData()
+    // Synchronous progress update. All call sites run on the main thread (poller handler,
+    // player listeners, main-scope collectors), matching MediaController's threading model,
+    // so no coroutine/Deferred allocation is needed.
+    private fun updateProgress(detailedItem: DetailedItem) {
+      val currentIndex = mediaController.currentMediaItemIndex
+      val chapters = detailedItem.chapters
+      var accumulated = 0.0
+      for (index in 0 until currentIndex.coerceIn(0, chapters.size)) {
+        accumulated += chapters[index].duration
       }
+      val currentFilePosition = mediaController.currentPosition / 1000.0
+
+      val newPosition = accumulated + currentFilePosition
+      _totalPosition.value = newPosition
+      updateCurrentTrackData()
+    }
 
     private fun play() {
       withMain {

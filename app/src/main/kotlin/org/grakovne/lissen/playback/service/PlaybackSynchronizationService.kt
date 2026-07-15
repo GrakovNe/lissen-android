@@ -196,14 +196,16 @@ class PlaybackSynchronizationService
 
 internal const val SYNC_INTERVAL_LONG = 45_000L
 internal const val SYNC_INTERVAL_SHORT = 5_000L
-internal const val SHORT_SYNC_WINDOW = SYNC_INTERVAL_LONG * 2 - 1
+
+// Position window (from start / to end) within which we sync more frequently.
+private const val SHORT_SYNC_WINDOW_MS = 90_000L
 
 internal fun chooseSyncInterval(
   durationMs: Long,
   positionMs: Long,
 ): Long {
-  val nearStart = positionMs < SHORT_SYNC_WINDOW
-  val nearEnd = durationMs != C.TIME_UNSET && durationMs - positionMs < SHORT_SYNC_WINDOW
+  val nearStart = positionMs < SHORT_SYNC_WINDOW_MS
+  val nearEnd = durationMs != C.TIME_UNSET && durationMs - positionMs < SHORT_SYNC_WINDOW_MS
 
   return when (nearStart || nearEnd) {
     true -> SYNC_INTERVAL_SHORT

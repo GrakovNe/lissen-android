@@ -51,11 +51,17 @@ class PlaybackEnhancerService
       attachEqualizer(player.audioSessionId, sharedPreferences.getEqualizer())
 
       scope.launch {
-        sharedPreferences.playbackVolumeBoostFlow.collectLatest { updateGain(it) }
+        sharedPreferences.playbackVolumeBoostFlow.collectLatest {
+          // Confine all enhancer access to the main thread (same thread as attach/release).
+          withContext(Dispatchers.Main) { updateGain(it) }
+        }
       }
 
       scope.launch {
-        sharedPreferences.equalizerFlow.collectLatest { applyEqualizer(it) }
+        sharedPreferences.equalizerFlow.collectLatest {
+          // Confine all equalizer access to the main thread (same thread as attach/release).
+          withContext(Dispatchers.Main) { applyEqualizer(it) }
+        }
       }
 
       scope.launch {

@@ -114,21 +114,21 @@ class LissenDataSourceFactoryTest {
     @Test
     fun `unapply returns null for non-lissen URI`() {
       val uri = stubUri(scheme = "https", segments = listOf("api", "items"))
-      val result = unapply(uri)
+      val result = parseLissenUri(uri)
       assertEquals(null, result)
     }
 
     @Test
     fun `unapply returns null for file URI`() {
       val uri = stubUri(scheme = "file", segments = listOf("data", "media_cache", "book1", "file1"))
-      val result = unapply(uri)
+      val result = parseLissenUri(uri)
       assertEquals(null, result)
     }
 
     @Test
     fun `unapply extracts bookId and fileId from valid lissen URI`() {
       val uri = stubUri(scheme = "lissen", segments = listOf("book-abc", "file-xyz"))
-      val result = unapply(uri)
+      val result = parseLissenUri(uri)
       assertEquals("book-abc" to "file-xyz", result)
     }
 

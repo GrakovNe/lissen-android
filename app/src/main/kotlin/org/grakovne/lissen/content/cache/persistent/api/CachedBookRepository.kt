@@ -351,8 +351,15 @@ class CachedBookRepository
           lastUpdate = Instant.now().toEpochMilli(),
         )
 
+      val previousFinished = bookDao.fetchMediaProgress(playingItem.id)?.isFinished
       bookDao.upsertMediaProgress(entity)
-      invalidateAuthorsGroupedCache()
+
+      // Author grouping / book set only change when completed books are hidden and the
+      // finished flag actually transitions. A position-only update never affects grouping,
+      // so avoid the expensive whole-library cache invalidation on every progress sync.
+      if (preferences.getHideCompleted() && previousFinished != entity.isFinished) {
+        invalidateAuthorsGroupedCache()
+      }
     }
 
     private fun buildOrdering(): Pair<String, String> {

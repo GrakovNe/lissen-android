@@ -222,16 +222,6 @@ fun QuickSettingsComposable(
 }
 
 @Composable
-private fun SectionHeader(title: String) {
-  Text(
-    text = title,
-    style = typography.labelMedium,
-    color = colorScheme.onSurfaceVariant,
-    modifier = Modifier.padding(start = 16.dp, top = 8.dp, bottom = 4.dp),
-  )
-}
-
-@Composable
 private fun ToggleRow(
   title: String,
   icon: ImageVector,

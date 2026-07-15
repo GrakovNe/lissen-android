@@ -68,7 +68,7 @@ class LissenMediaSourceFactory(
         .createMediaSource(
           MediaItem
             .Builder()
-            .setUri(apply(bookId, fileId))
+            .setUri(toLissenUri(bookId, fileId))
             .apply { metadata?.let { setMediaMetadata(it) } }
             .build(),
         ).let {
