@@ -501,24 +501,22 @@ class MediaRepository
 
       var safePosition = minOf(overallDuration, maxOf(0.0, position))
 
-      // Skip undownloaded/unavailable chapters: advance in the seek direction to the nearest available chapter's start.
-      while (true) {
-        val currentIndex = calculateChapterIndex(book, safePosition)
-        if (book.chapters[currentIndex].available) {
-          break
-        }
+      // Skip undownloaded/unavailable chapters to the nearest available one, preferring the seek
+      // direction. If none is available ahead in that direction, fall back to the nearest available
+      // one behind — otherwise a seek toward the end parks the playhead on an unavailable trailing
+      // chapter (e.g. the last, non-downloaded chapter in cache/offline mode).
+      val startIndex = calculateChapterIndex(book, safePosition)
+      if (startIndex in book.chapters.indices && book.chapters[startIndex].available.not()) {
+        val forward = (startIndex..book.chapters.lastIndex).firstOrNull { book.chapters[it].available }
+        val backward = (startIndex downTo 0).firstOrNull { book.chapters[it].available }
 
-        val chapterIndex =
+        val target =
           when (direction) {
-            ScrollingDirection.FORWARD -> currentIndex + 1
-            ScrollingDirection.BACKWARD -> currentIndex - 1
+            ScrollingDirection.FORWARD -> forward ?: backward
+            ScrollingDirection.BACKWARD -> backward ?: forward
           }
 
-        safePosition =
-          when {
-            chapterIndex in 0..book.chapters.lastIndex -> book.chapters[chapterIndex].start
-            else -> break
-          }
+        target?.let { safePosition = book.chapters[it].start }
       }
 
       val (chapterIndex, chapterPosition) = calculateChapterIndexAndPosition(book, safePosition)
