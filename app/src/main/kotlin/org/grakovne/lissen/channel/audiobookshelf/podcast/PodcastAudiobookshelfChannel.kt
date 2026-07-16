@@ -12,8 +12,6 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInf
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
-import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.DeviceInfo
-import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastOrderingRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastPageResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastResponseConverter
@@ -100,28 +98,13 @@ class PodcastAudiobookshelfChannel
       episodeId: String,
       supportedMimeTypes: List<String>,
       deviceId: String,
-    ): OperationResult<PlaybackSession> {
-      val request =
-        PlaybackStartRequest(
-          supportedMimeTypes = supportedMimeTypes,
-          deviceInfo =
-            DeviceInfo(
-              clientName = getClientName(),
-              deviceId = deviceId,
-              deviceName = getClientName(),
-            ),
-          forceTranscode = false,
-          forceDirectPlay = false,
-          mediaPlayer = getClientName(),
-        )
-
-      return dataRepository
+    ): OperationResult<PlaybackSession> =
+      dataRepository
         .startPodcastPlayback(
           itemId = bookId,
           episodeId = episodeId,
-          request = request,
+          request = buildPlaybackStartRequest(supportedMimeTypes, deviceId),
         ).map { sessionResponseConverter.apply(it) }
-    }
 
     override suspend fun fetchBook(bookId: String): OperationResult<DetailedItem> =
       coroutineScope {

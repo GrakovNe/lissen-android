@@ -15,6 +15,8 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInf
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.DeviceInfo
+import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
 import org.grakovne.lissen.channel.common.ConnectionInfo
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
@@ -132,4 +134,21 @@ abstract class AudiobookshelfChannel(
       .map { connectionInfoResponseConverter.apply(it) }
 
   protected fun getClientName() = "Lissen App ${BuildConfig.VERSION_NAME}"
+
+  protected fun buildPlaybackStartRequest(
+    supportedMimeTypes: List<String>,
+    deviceId: String,
+  ): PlaybackStartRequest =
+    PlaybackStartRequest(
+      supportedMimeTypes = supportedMimeTypes,
+      deviceInfo =
+        DeviceInfo(
+          clientName = getClientName(),
+          deviceId = deviceId,
+          deviceName = getClientName(),
+        ),
+      forceTranscode = false,
+      forceDirectPlay = false,
+      mediaPlayer = getClientName(),
+    )
 }

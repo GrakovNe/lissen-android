@@ -78,6 +78,7 @@ import org.grakovne.lissen.ui.components.BookCoverKey
 import org.grakovne.lissen.ui.components.ImageFetcher.Companion.LocalOnlyKey
 import org.grakovne.lissen.ui.components.withScrollbar
 import org.grakovne.lissen.ui.extensions.withMinimumTime
+import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
 import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
@@ -127,24 +128,9 @@ fun CachedItemsSettingsScreen(
 
   Scaffold(
     topBar = {
-      TopAppBar(
-        title = {
-          Text(
-            text = stringResource(R.string.settings_screen_cached_items_title),
-            style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-            modifier = Modifier.semantics { heading() },
-            color = colorScheme.onSurface,
-          )
-        },
-        navigationIcon = {
-          IconButton(onClick = { onBack() }) {
-            Icon(
-              imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-              contentDescription = stringResource(R.string.a11y_back),
-              tint = colorScheme.onSurface,
-            )
-          }
-        },
+      SettingsTopAppBar(
+        title = stringResource(R.string.settings_screen_cached_items_title),
+        onBack = onBack,
       )
     },
   ) { innerPadding ->

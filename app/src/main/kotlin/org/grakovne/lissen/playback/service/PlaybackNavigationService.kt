@@ -70,7 +70,13 @@ class PlaybackNavigationService
               val nextTrack = findAvailableTrackIndex(exoPlayer.currentMediaItemIndex, direction, exoPlayer)
               nextTrack?.let { exoPlayer.seekTo(it, 0) }
 
-              if (nextTrack == null || nextTrack < currentIndex) {
+              val wrapped =
+                when (direction) {
+                  Direction.FORWARD -> nextTrack != null && nextTrack < currentIndex
+                  Direction.BACKWARD -> nextTrack != null && nextTrack > currentIndex
+                }
+
+              if (nextTrack == null || wrapped) {
                 exoPlayer.pause()
                 playbackSynchronizationService.cancelSynchronization()
               }

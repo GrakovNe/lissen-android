@@ -1,8 +1,11 @@
 package org.grakovne.lissen.content.cache.persistent.api
 
+import androidx.sqlite.db.SupportSQLiteQuery
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import kotlinx.coroutines.runBlocking
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.content.cache.persistent.OfflineBookStorageProperties
@@ -11,6 +14,7 @@ import org.grakovne.lissen.content.cache.persistent.converter.CachedBookEntityDe
 import org.grakovne.lissen.content.cache.persistent.converter.CachedBookEntityRecentConverter
 import org.grakovne.lissen.content.cache.persistent.converter.MediaProgressEntityConverter
 import org.grakovne.lissen.content.cache.persistent.dao.CachedBookDao
+import org.grakovne.lissen.content.cache.persistent.entity.AuthorEntry
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.GroupedEntry
 import org.grakovne.lissen.domain.LibraryEntry
@@ -89,11 +93,6 @@ class CachedBookRepositoryTest {
     coEvery { bookDao.fetchGroupedEntries(any()) } returns headers
     coEvery { bookDao.fetchBooksByIds(any()) } answers { firstArg<List<String>>().mapNotNull { byId[it] } }
     coEvery { bookDao.fetchBooksBySeriesIds(any()) } answers { firstArg<List<String>>().flatMap { bySeries[it].orEmpty() } }
-  }
-
-  private fun stubBooks(books: List<BookEntity>) {
-    coEvery { bookDao.countCachedBooks(libraryId = any()) } returns books.size
-    coEvery { bookDao.fetchCachedBooks(any()) } returns books
   }
 
   @Test
@@ -211,42 +210,53 @@ class CachedBookRepositoryTest {
     }
 
   @Test
-  fun `groups cached books by primary author sorted by name and skips authorless books`() =
+  fun `maps author rows into paged author entries`() =
     runBlocking {
-      stubBooks(
+      coEvery { bookDao.countAuthorEntries(any()) } returns 2
+      coEvery { bookDao.fetchAuthorEntries(any()) } returns
         listOf(
-          entity("b1", author = "Frank Herbert"),
-          entity("b2", author = "Frank Herbert, Brian Herbert"),
-          entity("b3", author = "Andy Weir"),
-          entity("b4", author = null),
-        ),
-      )
+          AuthorEntry(author = "Andy Weir", bookCount = 1),
+          AuthorEntry(author = "Frank Herbert", bookCount = 2),
+        )
 
-      val entries = repository.fetchAuthorsGrouped(LIBRARY_ID)
-      assertEquals(2, entries.size)
+      val page = repository.fetchAuthorsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0)
+      assertEquals(2, page.totalItems)
+      assertEquals(2, page.items.size)
 
-      val first = entries[0] as LibraryEntry.AuthorEntry
+      val first = page.items[0] as LibraryEntry.AuthorEntry
       assertEquals("Andy Weir", first.id)
       assertEquals(1, first.bookCount)
 
-      val second = entries[1] as LibraryEntry.AuthorEntry
+      val second = page.items[1] as LibraryEntry.AuthorEntry
       assertEquals("Frank Herbert", second.id)
       assertEquals(2, second.bookCount)
     }
 
   @Test
-  fun `fetchAuthorItems returns only the requested author's books`() =
+  fun `empty author grouping skips the page query`() =
     runBlocking {
-      stubBooks(
+      coEvery { bookDao.countAuthorEntries(any()) } returns 0
+
+      val page = repository.fetchAuthorsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0)
+      assertEquals(0, page.totalItems)
+      assertTrue(page.items.isEmpty())
+      coVerify(exactly = 0) { bookDao.fetchAuthorEntries(any()) }
+    }
+
+  @Test
+  fun `fetchAuthorItems filters by author key in sql`() =
+    runBlocking {
+      val query = slot<SupportSQLiteQuery>()
+      coEvery { bookDao.fetchCachedBooks(capture(query)) } returns
         listOf(
           entity("b1", author = "Frank Herbert"),
-          entity("b2", author = "Andy Weir"),
           entity("b3", author = "Frank Herbert, Brian Herbert"),
-        ),
-      )
+        )
 
       val books = repository.fetchAuthorItems(LIBRARY_ID, "Frank Herbert")
       assertEquals(listOf("b1", "b3"), books.map { it.id })
+      assertTrue(query.captured.sql.contains("WHERE libraryId = ?"))
+      assertTrue(query.captured.sql.contains("instr(author, ',')"))
     }
 
   @Test

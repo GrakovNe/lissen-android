@@ -30,6 +30,8 @@ import javax.inject.Singleton
 
 private const val FINISHED_POSITION_EPSILON = 1.0
 
+private const val AUTHOR_KEY = "TRIM(CASE WHEN instr(author, ',') > 0 THEN substr(author, 1, instr(author, ',') - 1) ELSE author END)"
+
 @Singleton
 class CachedBookRepository
   @Inject
@@ -212,47 +214,79 @@ class CachedBookRepository
       return SimpleSQLiteQuery(sql, arrayOf<Any>(libraryId, pageSize, pageNumber * pageSize))
     }
 
-    suspend fun fetchAuthorsGrouped(libraryId: String): List<LibraryEntry> =
-      fetchAllEntities(libraryId)
-        .groupingBy { it.primaryAuthor() }
-        .eachCount()
-        .mapNotNull { (author, count) ->
-          author?.let { LibraryEntry.AuthorEntry(id = it, name = it, bookCount = count) }
-        }.sortedBy { it.name.lowercase() }
+    suspend fun fetchAuthorsGrouped(
+      libraryId: String,
+      pageSize: Int,
+      pageNumber: Int,
+    ): PagedItems<LibraryEntry> {
+      val total = bookDao.countAuthorEntries(buildAuthorCountQuery(libraryId))
+
+      if (total == 0) {
+        return PagedItems(items = emptyList(), currentPage = pageNumber, totalItems = 0)
+      }
+
+      val items =
+        bookDao
+          .fetchAuthorEntries(buildAuthorPageQuery(libraryId, pageSize, pageNumber))
+          .map { LibraryEntry.AuthorEntry(id = it.author, name = it.author, bookCount = it.bookCount) }
+
+      return PagedItems(items = items, currentPage = pageNumber, totalItems = total)
+    }
 
     suspend fun fetchAuthorItems(
       libraryId: String,
       authorId: String,
-    ): List<Book> =
-      fetchAllEntities(libraryId)
-        .filter { it.primaryAuthor() == authorId }
-        .map { cachedBookEntityConverter.apply(it) }
-
-    private fun BookEntity.primaryAuthor(): String? =
-      author
-        ?.substringBefore(",")
-        ?.trim()
-        ?.takeIf { it.isNotEmpty() }
-
-    private suspend fun fetchAllEntities(libraryId: String): List<BookEntity> {
+    ): List<Book> {
       val (option, direction) = buildOrdering()
-      val total = countBooks(libraryId)
 
-      if (total == 0) {
-        return emptyList()
-      }
+      val field =
+        when (option) {
+          "author" -> "author"
+          "duration" -> "duration"
+          else -> "title"
+        }
 
-      val request =
-        FetchRequestBuilder()
-          .libraryId(libraryId)
-          .pageNumber(0)
-          .pageSize(total)
-          .orderField(option)
-          .orderDirection(direction)
-          .hideCompleted(preferences.getHideCompleted())
-          .build()
+      val sortDirection = if (direction.equals("desc", ignoreCase = true)) "DESC" else "ASC"
 
-      return bookDao.fetchCachedBooks(request)
+      val sql =
+        """
+        SELECT * FROM detailed_books
+        WHERE libraryId = ? AND $AUTHOR_KEY = ?
+        ORDER BY $field $sortDirection
+        """.trimIndent()
+
+      return bookDao
+        .fetchCachedBooks(SimpleSQLiteQuery(sql, arrayOf<Any>(libraryId, authorId)))
+        .map { cachedBookEntityConverter.apply(it) }
+    }
+
+    private fun buildAuthorPageQuery(
+      libraryId: String,
+      pageSize: Int,
+      pageNumber: Int,
+    ): SupportSQLiteQuery {
+      val sql =
+        """
+        SELECT $AUTHOR_KEY AS author, COUNT(*) AS bookCount
+        FROM detailed_books
+        WHERE libraryId = ? AND $AUTHOR_KEY IS NOT NULL AND $AUTHOR_KEY != ''
+        GROUP BY $AUTHOR_KEY
+        ORDER BY LOWER($AUTHOR_KEY) ASC
+        LIMIT ? OFFSET ?
+        """.trimIndent()
+
+      return SimpleSQLiteQuery(sql, arrayOf<Any>(libraryId, pageSize, pageNumber * pageSize))
+    }
+
+    private fun buildAuthorCountQuery(libraryId: String): SupportSQLiteQuery {
+      val sql =
+        """
+        SELECT COUNT(DISTINCT $AUTHOR_KEY)
+        FROM detailed_books
+        WHERE libraryId = ? AND $AUTHOR_KEY IS NOT NULL AND $AUTHOR_KEY != ''
+        """.trimIndent()
+
+      return SimpleSQLiteQuery(sql, arrayOf<Any>(libraryId))
     }
 
     private fun BookEntity.primarySeriesName(): String? =

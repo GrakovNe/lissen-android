@@ -146,17 +146,9 @@ class LocalCacheRepository
         }
 
         LibraryGrouping.AUTHOR -> {
-          val entries = cachedBookRepository.fetchAuthorsGrouped(libraryId)
-          val fromIndex = (pageNumber * pageSize).coerceIn(0, entries.size)
-          val toIndex = (fromIndex + pageSize).coerceIn(0, entries.size)
-
-          OperationResult.Success(
-            PagedItems(
-              items = entries.subList(fromIndex, toIndex),
-              currentPage = pageNumber,
-              totalItems = entries.size,
-            ),
-          )
+          cachedBookRepository
+            .fetchAuthorsGrouped(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
+            .let { OperationResult.Success(it) }
         }
       }
 

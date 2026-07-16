@@ -12,6 +12,7 @@ import androidx.sqlite.db.SupportSQLiteQuery
 import com.squareup.moshi.Types
 import kotlinx.coroutines.flow.Flow
 import org.grakovne.lissen.common.moshi
+import org.grakovne.lissen.content.cache.persistent.entity.AuthorEntry
 import org.grakovne.lissen.content.cache.persistent.entity.BookAuthorDto
 import org.grakovne.lissen.content.cache.persistent.entity.BookChapterEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
@@ -138,6 +139,12 @@ interface CachedBookDao {
 
   @RawQuery
   suspend fun fetchGroupedEntries(query: SupportSQLiteQuery): List<GroupedEntry>
+
+  @RawQuery
+  suspend fun fetchAuthorEntries(query: SupportSQLiteQuery): List<AuthorEntry>
+
+  @RawQuery
+  suspend fun countAuthorEntries(query: SupportSQLiteQuery): Int
 
   @Query(
     """
