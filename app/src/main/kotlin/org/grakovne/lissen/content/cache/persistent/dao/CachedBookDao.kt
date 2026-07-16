@@ -144,29 +144,13 @@ interface CachedBookDao {
   suspend fun fetchAuthorEntries(query: SupportSQLiteQuery): List<AuthorEntry>
 
   @RawQuery
-  suspend fun countAuthorEntries(query: SupportSQLiteQuery): Int
-
-  @Query(
-    """
-    SELECT COUNT(DISTINCT COALESCE(seriesId, id)) FROM detailed_books
-    WHERE libraryId = :libraryId
-    """,
-  )
-  suspend fun countGroupedEntries(libraryId: String): Int
+  suspend fun countRaw(query: SupportSQLiteQuery): Int
 
   @Query("SELECT * FROM detailed_books WHERE id IN (:ids)")
   suspend fun fetchBooksByIds(ids: List<String>): List<BookEntity>
 
   @Query("SELECT * FROM detailed_books WHERE seriesId IN (:seriesIds)")
   suspend fun fetchBooksBySeriesIds(seriesIds: List<String>): List<BookEntity>
-
-  @Query(
-    """
-    SELECT COUNT(*) FROM detailed_books
-    WHERE (libraryId = :libraryId)
-    """,
-  )
-  suspend fun countCachedBooks(libraryId: String?): Int
 
   @Transaction
   @RawQuery

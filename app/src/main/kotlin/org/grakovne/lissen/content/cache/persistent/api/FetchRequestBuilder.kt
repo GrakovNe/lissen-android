@@ -29,7 +29,43 @@ class FetchRequestBuilder {
 
   fun build(): SupportSQLiteQuery {
     val args = mutableListOf<Any>()
+    val whereClause = whereClause(args)
 
+    val field = "b.${resolveOrderField(orderField)}"
+    val direction = resolveOrderDirection(orderDirection)
+
+    args.add(pageSize)
+    args.add(pageNumber * pageSize)
+
+    val sql =
+      """
+      SELECT b.*
+      FROM detailed_books b
+      LEFT JOIN media_progress mp ON mp.bookId = b.id
+      WHERE $whereClause
+      ORDER BY $field $direction
+      LIMIT ? OFFSET ?
+      """.trimIndent()
+
+    return SimpleSQLiteQuery(sql, args.toTypedArray())
+  }
+
+  fun buildCount(): SupportSQLiteQuery {
+    val args = mutableListOf<Any>()
+    val whereClause = whereClause(args)
+
+    val sql =
+      """
+      SELECT COUNT(*)
+      FROM detailed_books b
+      LEFT JOIN media_progress mp ON mp.bookId = b.id
+      WHERE $whereClause
+      """.trimIndent()
+
+    return SimpleSQLiteQuery(sql, args.toTypedArray())
+  }
+
+  private fun whereClause(args: MutableList<Any>): String {
     val libraryWhereClause =
       when (val id = libraryId) {
         null -> {
@@ -48,22 +84,6 @@ class FetchRequestBuilder {
         else -> ""
       }
 
-    val field = "b.${resolveOrderField(orderField)}"
-    val direction = resolveOrderDirection(orderDirection)
-
-    args.add(pageSize)
-    args.add(pageNumber * pageSize)
-
-    val sql =
-      """
-      SELECT b.*
-      FROM detailed_books b
-      LEFT JOIN media_progress mp ON mp.bookId = b.id
-      WHERE $libraryWhereClause $hideCompletedWhereClause
-      ORDER BY $field $direction
-      LIMIT ? OFFSET ?
-      """.trimIndent()
-
-    return SimpleSQLiteQuery(sql, args.toTypedArray())
+    return "$libraryWhereClause $hideCompletedWhereClause"
   }
 }

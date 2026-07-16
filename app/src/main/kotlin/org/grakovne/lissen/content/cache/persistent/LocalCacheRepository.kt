@@ -101,16 +101,18 @@ class LocalCacheRepository
       pageSize: Int,
       pageNumber: Int,
     ): OperationResult<PagedItems<Book>> {
+      val libraryType = cachedLibraryRepository.fetchLibraryType(libraryId)
+
       val books =
         cachedBookRepository
-          .fetchBooks(pageNumber = pageNumber, pageSize = pageSize, libraryId = libraryId)
+          .fetchBooks(pageNumber = pageNumber, pageSize = pageSize, libraryId = libraryId, libraryType = libraryType)
 
       return OperationResult
         .Success(
           PagedItems(
             items = books,
             currentPage = pageNumber,
-            totalItems = cachedBookRepository.countBooks(libraryId),
+            totalItems = cachedBookRepository.countBooks(libraryId, libraryType),
           ),
         )
     }
@@ -129,14 +131,22 @@ class LocalCacheRepository
 
         LibraryGrouping.SERIES -> {
           cachedBookRepository
-            .fetchLibraryGrouped(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
-            .let { OperationResult.Success(it) }
+            .fetchLibraryGrouped(
+              libraryId = libraryId,
+              pageSize = pageSize,
+              pageNumber = pageNumber,
+              libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
+            ).let { OperationResult.Success(it) }
         }
 
         LibraryGrouping.AUTHOR -> {
           cachedBookRepository
-            .fetchAuthorsGrouped(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
-            .let { OperationResult.Success(it) }
+            .fetchAuthorsGrouped(
+              libraryId = libraryId,
+              pageSize = pageSize,
+              pageNumber = pageNumber,
+              libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
+            ).let { OperationResult.Success(it) }
         }
       }
 

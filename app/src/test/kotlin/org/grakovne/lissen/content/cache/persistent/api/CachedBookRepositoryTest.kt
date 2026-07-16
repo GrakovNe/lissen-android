@@ -18,6 +18,7 @@ import org.grakovne.lissen.content.cache.persistent.entity.AuthorEntry
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.GroupedEntry
 import org.grakovne.lissen.domain.LibraryEntry
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -89,7 +90,7 @@ class CachedBookRepositoryTest {
     val byId = books.associateBy { it.id }
     val bySeries = books.filter { it.seriesId != null }.groupBy { it.seriesId }
 
-    coEvery { bookDao.countGroupedEntries(any()) } returns headers.size
+    coEvery { bookDao.countRaw(any()) } returns headers.size
     coEvery { bookDao.fetchGroupedEntries(any()) } returns headers
     coEvery { bookDao.fetchBooksByIds(any()) } answers { firstArg<List<String>>().mapNotNull { byId[it] } }
     coEvery { bookDao.fetchBooksBySeriesIds(any()) } answers { firstArg<List<String>>().flatMap { bySeries[it].orEmpty() } }
@@ -98,9 +99,9 @@ class CachedBookRepositoryTest {
   @Test
   fun `empty library produces no entries`() =
     runBlocking {
-      coEvery { bookDao.countGroupedEntries(any()) } returns 0
+      coEvery { bookDao.countRaw(any()) } returns 0
 
-      assertTrue(repository.fetchLibraryGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0).items.isEmpty())
+      assertTrue(repository.fetchLibraryGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = null).items.isEmpty())
     }
 
   @Test
@@ -122,7 +123,7 @@ class CachedBookRepositoryTest {
           ),
       )
 
-      val entries = repository.fetchLibraryGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0).items
+      val entries = repository.fetchLibraryGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = null).items
 
       assertEquals(2, entries.size)
 
@@ -145,7 +146,15 @@ class CachedBookRepositoryTest {
         books = listOf(entity("b1", seriesId = "ser-x", seriesJson = null)),
       )
 
-      val series = repository.fetchLibraryGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0).items.single() as LibraryEntry.SeriesEntry
+      val series =
+        repository
+          .fetchLibraryGrouped(
+            LIBRARY_ID,
+            pageSize = 20,
+            pageNumber = 0,
+            libraryType = null,
+          ).items
+          .single() as LibraryEntry.SeriesEntry
       assertEquals("ser-x", series.title)
     }
 
@@ -162,7 +171,7 @@ class CachedBookRepositoryTest {
         books = listOf(entity("a"), entity("b"), entity("c")),
       )
 
-      val entries = repository.fetchLibraryGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0).items
+      val entries = repository.fetchLibraryGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = null).items
       assertEquals(
         listOf("a", "b", "c"),
         entries.map { (it as LibraryEntry.BookEntry).book.id },
@@ -177,7 +186,7 @@ class CachedBookRepositoryTest {
         books = (1..5).map { entity("b$it", seriesId = "ser", seriesJson = seriesJson("Series", "$it", "ser")) },
       )
 
-      val page = repository.fetchLibraryGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0)
+      val page = repository.fetchLibraryGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = null)
       assertEquals(1, page.totalItems)
       assertEquals(1, page.items.size)
     }
@@ -203,7 +212,7 @@ class CachedBookRepositoryTest {
         books = (1..5).map { entity("b$it", seriesId = "ser", seriesJson = seriesJson("Series", "$it", "ser")) },
       )
 
-      val series = repository.fetchLibraryGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0).items.single()
+      val series = repository.fetchLibraryGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = null).items.single()
       assertInstanceOf(LibraryEntry.SeriesEntry::class.java, series)
       assertEquals(listOf("b1", "b2", "b3", "b4", "b5"), (series as LibraryEntry.SeriesEntry).coverItemIds)
       assertEquals(5, series.bookCount)
@@ -212,14 +221,14 @@ class CachedBookRepositoryTest {
   @Test
   fun `maps author rows into paged author entries`() =
     runBlocking {
-      coEvery { bookDao.countAuthorEntries(any()) } returns 2
+      coEvery { bookDao.countRaw(any()) } returns 2
       coEvery { bookDao.fetchAuthorEntries(any()) } returns
         listOf(
           AuthorEntry(author = "Andy Weir", bookCount = 1),
           AuthorEntry(author = "Frank Herbert", bookCount = 2),
         )
 
-      val page = repository.fetchAuthorsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0)
+      val page = repository.fetchAuthorsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = null)
       assertEquals(2, page.totalItems)
       assertEquals(2, page.items.size)
 
@@ -233,11 +242,25 @@ class CachedBookRepositoryTest {
     }
 
   @Test
+  fun `author grouping hides completed books only for library type`() =
+    runBlocking {
+      every { preferences.getHideCompleted() } returns true
+      val queries = mutableListOf<SupportSQLiteQuery>()
+      coEvery { bookDao.countRaw(capture(queries)) } returns 0
+
+      repository.fetchAuthorsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = LibraryType.LIBRARY)
+      repository.fetchAuthorsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = LibraryType.PODCAST)
+
+      assertTrue(queries[0].sql.contains("isFinished"))
+      assertFalse(queries[1].sql.contains("isFinished"))
+    }
+
+  @Test
   fun `empty author grouping skips the page query`() =
     runBlocking {
-      coEvery { bookDao.countAuthorEntries(any()) } returns 0
+      coEvery { bookDao.countRaw(any()) } returns 0
 
-      val page = repository.fetchAuthorsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0)
+      val page = repository.fetchAuthorsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = null)
       assertEquals(0, page.totalItems)
       assertTrue(page.items.isEmpty())
       coVerify(exactly = 0) { bookDao.fetchAuthorEntries(any()) }
@@ -382,9 +405,9 @@ class CachedBookRepositoryTest {
   @Test
   fun `countBooks delegates to the dao`() =
     runBlocking {
-      coEvery { bookDao.countCachedBooks(libraryId = LIBRARY_ID) } returns 3
+      coEvery { bookDao.countRaw(any()) } returns 3
 
-      assertEquals(3, repository.countBooks(LIBRARY_ID))
+      assertEquals(3, repository.countBooks(LIBRARY_ID, libraryType = null))
     }
 
   @Test
@@ -393,7 +416,7 @@ class CachedBookRepositoryTest {
       every { preferences.getHideCompleted() } returns true
       coEvery { bookDao.fetchCachedBooks(any()) } returns listOf(entity("b1"), entity("b2"))
 
-      val books = repository.fetchBooks(LIBRARY_ID, pageNumber = 0, pageSize = 20)
+      val books = repository.fetchBooks(LIBRARY_ID, pageNumber = 0, pageSize = 20, libraryType = null)
 
       assertEquals(listOf("b1", "b2"), books.map { it.id })
     }

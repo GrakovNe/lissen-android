@@ -18,6 +18,7 @@ import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryEntry
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlayingChapter
@@ -102,17 +103,16 @@ class CachedBookRepository
       libraryId: String,
       pageNumber: Int,
       pageSize: Int,
+      libraryType: LibraryType?,
     ): List<Book> {
       val (option, direction) = buildOrdering()
 
       val request =
-        FetchRequestBuilder()
-          .libraryId(libraryId)
+        fetchRequest(libraryId, libraryType)
           .pageNumber(pageNumber)
           .pageSize(pageSize)
           .orderField(option)
           .orderDirection(direction)
-          .hideCompleted(preferences.getHideCompleted())
           .build()
 
       return bookDao
@@ -120,20 +120,39 @@ class CachedBookRepository
         .map { cachedBookEntityConverter.apply(it) }
     }
 
-    suspend fun countBooks(libraryId: String): Int = bookDao.countCachedBooks(libraryId = libraryId)
+    suspend fun countBooks(
+      libraryId: String,
+      libraryType: LibraryType?,
+    ): Int = bookDao.countRaw(fetchRequest(libraryId, libraryType).buildCount())
+
+    private fun fetchRequest(
+      libraryId: String,
+      libraryType: LibraryType?,
+    ): FetchRequestBuilder =
+      FetchRequestBuilder()
+        .libraryId(libraryId)
+        .libraryType(libraryType)
+        .hideCompleted(preferences.getHideCompleted())
+
+    private fun hideCompletedClauses(libraryType: LibraryType?): Pair<String, String> =
+      when (preferences.getHideCompleted() && libraryType == LibraryType.LIBRARY) {
+        true -> "LEFT JOIN media_progress mp ON mp.bookId = id" to "AND (mp.isFinished = 0 OR mp.isFinished IS NULL)"
+        false -> "" to ""
+      }
 
     suspend fun fetchLibraryGrouped(
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
+      libraryType: LibraryType?,
     ): PagedItems<LibraryEntry> {
-      val total = bookDao.countGroupedEntries(libraryId)
+      val total = bookDao.countRaw(buildGroupedCountQuery(libraryId, libraryType))
 
       if (total == 0) {
         return PagedItems(items = emptyList(), currentPage = pageNumber, totalItems = 0)
       }
 
-      val headers = bookDao.fetchGroupedEntries(buildGroupedPageQuery(libraryId, pageSize, pageNumber))
+      val headers = bookDao.fetchGroupedEntries(buildGroupedPageQuery(libraryId, pageSize, pageNumber, libraryType))
 
       val standaloneBooks =
         headers
@@ -187,6 +206,7 @@ class CachedBookRepository
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
+      libraryType: LibraryType?,
     ): SupportSQLiteQuery {
       val (option, direction) = buildOrdering()
 
@@ -194,12 +214,14 @@ class CachedBookRepository
       val descending = resolveOrderDirection(direction) == "DESC"
       val aggregate = if (descending) "MAX" else "MIN"
       val sortDirection = if (descending) "DESC" else "ASC"
+      val (join, filter) = hideCompletedClauses(libraryType)
 
       val sql =
         """
         SELECT COALESCE(seriesId, id) AS groupKey, seriesId AS seriesId, COUNT(*) AS bookCount
         FROM detailed_books
-        WHERE libraryId = ?
+        $join
+        WHERE libraryId = ? $filter
         GROUP BY COALESCE(seriesId, id)
         ORDER BY $aggregate($field) $sortDirection
         LIMIT ? OFFSET ?
@@ -208,12 +230,30 @@ class CachedBookRepository
       return SimpleSQLiteQuery(sql, arrayOf<Any>(libraryId, pageSize, pageNumber * pageSize))
     }
 
+    private fun buildGroupedCountQuery(
+      libraryId: String,
+      libraryType: LibraryType?,
+    ): SupportSQLiteQuery {
+      val (join, filter) = hideCompletedClauses(libraryType)
+
+      val sql =
+        """
+        SELECT COUNT(DISTINCT COALESCE(seriesId, id))
+        FROM detailed_books
+        $join
+        WHERE libraryId = ? $filter
+        """.trimIndent()
+
+      return SimpleSQLiteQuery(sql, arrayOf<Any>(libraryId))
+    }
+
     suspend fun fetchAuthorsGrouped(
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
+      libraryType: LibraryType?,
     ): PagedItems<LibraryEntry> {
-      val total = bookDao.countAuthorEntries(buildAuthorCountQuery(libraryId))
+      val total = bookDao.countRaw(buildAuthorCountQuery(libraryId, libraryType))
 
       if (total == 0) {
         return PagedItems(items = emptyList(), currentPage = pageNumber, totalItems = 0)
@@ -221,7 +261,7 @@ class CachedBookRepository
 
       val items =
         bookDao
-          .fetchAuthorEntries(buildAuthorPageQuery(libraryId, pageSize, pageNumber))
+          .fetchAuthorEntries(buildAuthorPageQuery(libraryId, pageSize, pageNumber, libraryType))
           .map { LibraryEntry.AuthorEntry(id = it.author, name = it.author, bookCount = it.bookCount) }
 
       return PagedItems(items = items, currentPage = pageNumber, totalItems = total)
@@ -252,12 +292,16 @@ class CachedBookRepository
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
+      libraryType: LibraryType?,
     ): SupportSQLiteQuery {
+      val (join, filter) = hideCompletedClauses(libraryType)
+
       val sql =
         """
         SELECT $AUTHOR_KEY AS author, COUNT(*) AS bookCount
         FROM detailed_books
-        WHERE libraryId = ? AND $AUTHOR_KEY IS NOT NULL AND $AUTHOR_KEY != ''
+        $join
+        WHERE libraryId = ? AND $AUTHOR_KEY IS NOT NULL AND $AUTHOR_KEY != '' $filter
         GROUP BY $AUTHOR_KEY
         ORDER BY LOWER($AUTHOR_KEY) ASC
         LIMIT ? OFFSET ?
@@ -266,12 +310,18 @@ class CachedBookRepository
       return SimpleSQLiteQuery(sql, arrayOf<Any>(libraryId, pageSize, pageNumber * pageSize))
     }
 
-    private fun buildAuthorCountQuery(libraryId: String): SupportSQLiteQuery {
+    private fun buildAuthorCountQuery(
+      libraryId: String,
+      libraryType: LibraryType?,
+    ): SupportSQLiteQuery {
+      val (join, filter) = hideCompletedClauses(libraryType)
+
       val sql =
         """
         SELECT COUNT(DISTINCT $AUTHOR_KEY)
         FROM detailed_books
-        WHERE libraryId = ? AND $AUTHOR_KEY IS NOT NULL AND $AUTHOR_KEY != ''
+        $join
+        WHERE libraryId = ? AND $AUTHOR_KEY IS NOT NULL AND $AUTHOR_KEY != '' $filter
         """.trimIndent()
 
       return SimpleSQLiteQuery(sql, arrayOf<Any>(libraryId))

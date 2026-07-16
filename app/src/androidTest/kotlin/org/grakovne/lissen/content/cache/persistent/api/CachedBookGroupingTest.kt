@@ -94,7 +94,7 @@ class CachedBookGroupingTest {
       insert("o1", "Other", "ser-other", """[{"title":"Other","sequence":"1","id":"ser-other"}]""")
       insert("z1", "Zulu")
 
-      val all = repository.fetchLibraryGrouped(LIBRARY, pageSize = 20, pageNumber = 0)
+      val all = repository.fetchLibraryGrouped(LIBRARY, pageSize = 20, pageNumber = 0, libraryType = null)
       assertEquals(4, all.totalItems)
       assertEquals(listOf("a1", "ser-dune", "ser-other", "z1"), all.items.map { it.keyOf() })
 
@@ -103,10 +103,10 @@ class CachedBookGroupingTest {
       assertEquals("Dune", dune.title)
       assertEquals(listOf("d1", "d2", "d3"), dune.coverItemIds)
 
-      val page0 = repository.fetchLibraryGrouped(LIBRARY, pageSize = 2, pageNumber = 0)
+      val page0 = repository.fetchLibraryGrouped(LIBRARY, pageSize = 2, pageNumber = 0, libraryType = null)
       assertEquals(listOf("a1", "ser-dune"), page0.items.map { it.keyOf() })
 
-      val page1 = repository.fetchLibraryGrouped(LIBRARY, pageSize = 2, pageNumber = 1)
+      val page1 = repository.fetchLibraryGrouped(LIBRARY, pageSize = 2, pageNumber = 1, libraryType = null)
       assertEquals(listOf("ser-other", "z1"), page1.items.map { it.keyOf() })
     }
 
