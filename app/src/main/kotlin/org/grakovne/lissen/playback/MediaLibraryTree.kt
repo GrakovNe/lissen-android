@@ -109,20 +109,13 @@ class MediaLibraryTree
 
     private val scope = CoroutineScope(Dispatchers.Default)
 
-    // Libraries rarely change during a browse session; cache them in memory so that
-    // per-navigation title lookups (resolveLibrary) don't trigger a network fetchLibraries().
-    @Volatile
-    private var cachedLibraries: List<Library>? = null
-
-    private suspend fun libraries(): List<Library> {
-      cachedLibraries?.let { return it }
-      return lissenMediaProvider
+    private suspend fun libraries(): List<Library> =
+      lissenMediaProvider
         .fetchLibraries()
         .fold(
-          onSuccess = { libs -> libs.also { cachedLibraries = it } },
+          onSuccess = { it },
           onFailure = { emptyList() },
         )
-    }
 
     private val root: MediaTreeNode by lazy { buildTree() }
 

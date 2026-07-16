@@ -72,8 +72,6 @@ class LibraryViewModel
     private val _expandedGroups = MutableStateFlow<Set<String>>(emptySet())
     val expandedGroups: StateFlow<Set<String>> = _expandedGroups.asStateFlow()
 
-    // Per-key snapshot-backed state so only the item whose group changes recomposes,
-    // instead of invalidating every visible grouped item on each whole-collection update.
     val groupBooks: SnapshotStateMap<String, List<Book>> = mutableStateMapOf()
 
     val groupLoading: SnapshotStateList<String> = mutableStateListOf()

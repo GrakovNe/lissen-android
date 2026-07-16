@@ -37,23 +37,10 @@ class ConnectionPreferences
       store.putString(KEY_CUSTOM_HEADERS, adapter.toJson(headers))
     }
 
-    @Volatile
-    private var cachedCustomHeadersJson: String? = null
-
-    @Volatile
-    private var cachedCustomHeaders: List<ServerRequestHeader> = emptyList()
-
     fun getCustomHeaders(): List<ServerRequestHeader> {
       val json = store.getString(KEY_CUSTOM_HEADERS) ?: return emptyList()
-      if (json == cachedCustomHeadersJson) {
-        return cachedCustomHeaders
-      }
-
       val adapter = moshi.adapter<List<ServerRequestHeader>>(customHeadersType)
-      val parsed = adapter.fromJson(json) ?: emptyList()
-      cachedCustomHeadersJson = json
-      cachedCustomHeaders = parsed
-      return parsed
+      return adapter.fromJson(json) ?: emptyList()
     }
 
     fun saveLocalUrls(urls: List<LocalUrl>) {

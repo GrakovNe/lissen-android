@@ -436,15 +436,10 @@ class MediaRepository
 
         eventBus.send(PlaybackCommand.PreparePlayback)
       } else {
-        // The same book is already prepared in the media session, so no PreparePlayback
-        // command is emitted. Re-mark readiness restored by clearPreparedItem() during re-prepare.
         _isPlaybackReady.value = true
       }
     }
 
-    // Synchronous progress update. All call sites run on the main thread (poller handler,
-    // player listeners, main-scope collectors), matching MediaController's threading model,
-    // so no coroutine/Deferred allocation is needed.
     private fun updateProgress(detailedItem: DetailedItem) {
       val currentIndex = mediaController.currentMediaItemIndex
       val chapters = detailedItem.chapters
@@ -501,10 +496,6 @@ class MediaRepository
 
       var safePosition = minOf(overallDuration, maxOf(0.0, position))
 
-      // Skip undownloaded/unavailable chapters to the nearest available one, preferring the seek
-      // direction. If none is available ahead in that direction, fall back to the nearest available
-      // one behind — otherwise a seek toward the end parks the playhead on an unavailable trailing
-      // chapter (e.g. the last, non-downloaded chapter in cache/offline mode).
       val startIndex = calculateChapterIndex(book, safePosition)
       if (startIndex in book.chapters.indices && book.chapters[startIndex].available.not()) {
         val forward = (startIndex..book.chapters.lastIndex).firstOrNull { book.chapters[it].available }

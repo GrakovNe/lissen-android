@@ -52,14 +52,12 @@ class PlaybackEnhancerService
 
       scope.launch {
         sharedPreferences.playbackVolumeBoostFlow.collectLatest {
-          // Confine all enhancer access to the main thread (same thread as attach/release).
           withContext(Dispatchers.Main) { updateGain(it) }
         }
       }
 
       scope.launch {
         sharedPreferences.equalizerFlow.collectLatest {
-          // Confine all equalizer access to the main thread (same thread as attach/release).
           withContext(Dispatchers.Main) { applyEqualizer(it) }
         }
       }

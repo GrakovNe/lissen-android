@@ -42,17 +42,6 @@ class CachedBookRepository
     private val mediaProgressEntityConverter: MediaProgressEntityConverter,
     private val preferences: LibraryPreferences,
   ) {
-    @Volatile
-    private var authorsGroupedCache: Pair<String, List<LibraryEntry>>? = null
-
-    @Volatile
-    private var allEntitiesCache: Pair<String, List<BookEntity>>? = null
-
-    private fun invalidateAuthorsGroupedCache() {
-      authorsGroupedCache = null
-      allEntitiesCache = null
-    }
-
     fun provideFileUri(
       bookId: String,
       fileId: String,
@@ -72,7 +61,6 @@ class CachedBookRepository
           bookDao.deleteMediaProgress(it.id)
           bookDao.deleteBook(it)
         }
-      invalidateAuthorsGroupedCache()
     }
 
     suspend fun cacheBook(
@@ -81,7 +69,6 @@ class CachedBookRepository
       droppedChapters: List<PlayingChapter>,
     ) {
       bookDao.upsertCachedBook(book, fetchedChapters, droppedChapters)
-      invalidateAuthorsGroupedCache()
     }
 
     fun provideCacheState(bookId: String) = bookDao.isBookCached(bookId)
@@ -225,25 +212,13 @@ class CachedBookRepository
       return SimpleSQLiteQuery(sql, arrayOf<Any>(libraryId, pageSize, pageNumber * pageSize))
     }
 
-    suspend fun fetchAuthorsGrouped(libraryId: String): List<LibraryEntry> {
-      val (option, direction) = buildOrdering()
-      val cacheKey = "$libraryId|$option|$direction|${preferences.getHideCompleted()}"
-
-      authorsGroupedCache
-        ?.takeIf { it.first == cacheKey }
-        ?.let { return it.second }
-
-      val grouped =
-        fetchAllEntities(libraryId)
-          .groupingBy { it.primaryAuthor() }
-          .eachCount()
-          .mapNotNull { (author, count) ->
-            author?.let { LibraryEntry.AuthorEntry(id = it, name = it, bookCount = count) }
-          }.sortedBy { it.name.lowercase() }
-
-      authorsGroupedCache = cacheKey to grouped
-      return grouped
-    }
+    suspend fun fetchAuthorsGrouped(libraryId: String): List<LibraryEntry> =
+      fetchAllEntities(libraryId)
+        .groupingBy { it.primaryAuthor() }
+        .eachCount()
+        .mapNotNull { (author, count) ->
+          author?.let { LibraryEntry.AuthorEntry(id = it, name = it, bookCount = count) }
+        }.sortedBy { it.name.lowercase() }
 
     suspend fun fetchAuthorItems(
       libraryId: String,
@@ -261,12 +236,6 @@ class CachedBookRepository
 
     private suspend fun fetchAllEntities(libraryId: String): List<BookEntity> {
       val (option, direction) = buildOrdering()
-      val cacheKey = "$libraryId|$option|$direction|${preferences.getHideCompleted()}"
-
-      allEntitiesCache
-        ?.takeIf { it.first == cacheKey }
-        ?.let { return it.second }
-
       val total = countBooks(libraryId)
 
       if (total == 0) {
@@ -283,9 +252,7 @@ class CachedBookRepository
           .hideCompleted(preferences.getHideCompleted())
           .build()
 
-      val entities = bookDao.fetchCachedBooks(request)
-      allEntitiesCache = cacheKey to entities
-      return entities
+      return bookDao.fetchCachedBooks(request)
     }
 
     private fun BookEntity.primarySeriesName(): String? =
@@ -351,15 +318,7 @@ class CachedBookRepository
           lastUpdate = Instant.now().toEpochMilli(),
         )
 
-      val previousFinished = bookDao.fetchMediaProgress(playingItem.id)?.isFinished
       bookDao.upsertMediaProgress(entity)
-
-      // Author grouping / book set only change when completed books are hidden and the
-      // finished flag actually transitions. A position-only update never affects grouping,
-      // so avoid the expensive whole-library cache invalidation on every progress sync.
-      if (preferences.getHideCompleted() && previousFinished != entity.isFinished) {
-        invalidateAuthorsGroupedCache()
-      }
     }
 
     private fun buildOrdering(): Pair<String, String> {
