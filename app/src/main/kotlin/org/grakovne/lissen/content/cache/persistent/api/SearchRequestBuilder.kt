@@ -32,17 +32,8 @@ class SearchRequestBuilder {
         args.add(pattern)
       }
 
-    val field =
-      when (orderField) {
-        "title", "author", "duration" -> orderField
-        else -> "title"
-      }
-
-    val direction =
-      when (orderDirection.uppercase()) {
-        "ASC", "DESC" -> orderDirection.uppercase()
-        else -> "ASC"
-      }
+    val field = resolveOrderField(orderField)
+    val direction = resolveOrderDirection(orderDirection)
 
     val sql =
       """

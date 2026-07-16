@@ -228,7 +228,7 @@ class PlaybackService : MediaLibraryService() {
           ?: ChapterPosition(0, 0.0)
 
       val negativeChapter = chapterIndex < 0
-      val lastMoments = chapterIndex == book.chapters.lastIndex && (book.chapters.last().end - 5) < chapterOffset
+      val lastMoments = chapterIndex == book.chapters.lastIndex && (book.chapters.last().duration - 5) < chapterOffset
 
       if (negativeChapter || lastMoments) {
         chapterIndex = 0

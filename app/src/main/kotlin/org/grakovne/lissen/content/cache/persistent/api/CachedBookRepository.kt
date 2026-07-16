@@ -190,14 +190,8 @@ class CachedBookRepository
     ): SupportSQLiteQuery {
       val (option, direction) = buildOrdering()
 
-      val field =
-        when (option) {
-          "author" -> "author"
-          "duration" -> "duration"
-          else -> "title"
-        }
-
-      val descending = direction.equals("desc", ignoreCase = true)
+      val field = resolveOrderField(option)
+      val descending = resolveOrderDirection(direction) == "DESC"
       val aggregate = if (descending) "MAX" else "MIN"
       val sortDirection = if (descending) "DESC" else "ASC"
 
@@ -239,14 +233,8 @@ class CachedBookRepository
     ): List<Book> {
       val (option, direction) = buildOrdering()
 
-      val field =
-        when (option) {
-          "author" -> "author"
-          "duration" -> "duration"
-          else -> "title"
-        }
-
-      val sortDirection = if (direction.equals("desc", ignoreCase = true)) "DESC" else "ASC"
+      val field = resolveOrderField(option)
+      val sortDirection = resolveOrderDirection(direction)
 
       val sql =
         """

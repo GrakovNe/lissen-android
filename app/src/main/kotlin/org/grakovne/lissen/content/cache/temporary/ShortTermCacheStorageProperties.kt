@@ -2,8 +2,8 @@ package org.grakovne.lissen.content.cache.temporary
 
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
+import org.grakovne.lissen.content.cache.common.toFileKey
 import java.io.File
-import java.security.MessageDigest
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -20,12 +20,6 @@ class ShortTermCacheStorageProperties
     fun provideSeriesCoverCacheFolder(): File = seriesCoverCacheFolder()
 
     fun provideSeriesCoverPath(key: String): File = seriesCoverCacheFolder().resolve(key.toFileKey())
-
-    private fun String.toFileKey(): String =
-      MessageDigest
-        .getInstance("SHA-256")
-        .digest(toByteArray(Charsets.UTF_8))
-        .joinToString("") { "%02x".format(it) }
 
     private fun coverCacheFolder(): File =
       baseFolder()

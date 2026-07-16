@@ -48,19 +48,8 @@ class FetchRequestBuilder {
         else -> ""
       }
 
-    val field =
-      when (orderField) {
-        "title" -> "b.title"
-        "author" -> "b.author"
-        "duration" -> "b.duration"
-        else -> "b.title"
-      }
-
-    val direction =
-      when (orderDirection.uppercase()) {
-        "ASC", "DESC" -> orderDirection.uppercase()
-        else -> "ASC"
-      }
+    val field = "b.${resolveOrderField(orderField)}"
+    val direction = resolveOrderDirection(orderDirection)
 
     args.add(pageSize)
     args.add(pageNumber * pageSize)
