@@ -49,6 +49,12 @@ class DownloadOptionTest {
   fun `unknown string produces null`() = assertNull("something_else".makeDownloadOption())
 
   @Test
+  fun `malformed number_items suffix produces null instead of crashing`() {
+    assertNull("number_items_".makeDownloadOption())
+    assertNull("number_items_abc".makeDownloadOption())
+  }
+
+  @Test
   fun `singleton options roundtrip through makeId and makeDownloadOption`() {
     listOf(AllItemsDownloadOption, CurrentItemDownloadOption, RemainingItemsDownloadOption).forEach { option ->
       assertEquals(option, option.makeId().makeDownloadOption())

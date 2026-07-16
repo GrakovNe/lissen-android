@@ -23,7 +23,7 @@ class DownloadPreferences
     fun getAutoDownloadNetworkType(): NetworkTypeAutoCache =
       store
         .getString(KEY_PREFERRED_AUTO_DOWNLOAD_NETWORK_TYPE, NetworkTypeAutoCache.WIFI_ONLY.name)
-        ?.let { NetworkTypeAutoCache.valueOf(it) }
+        ?.let { runCatching { NetworkTypeAutoCache.valueOf(it) }.getOrNull() }
         ?: NetworkTypeAutoCache.WIFI_ONLY
 
     fun saveAutoDownloadNetworkType(networkTypeAutoCache: NetworkTypeAutoCache) =

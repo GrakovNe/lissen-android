@@ -17,7 +17,7 @@ class AppearancePreferences
     fun getColorScheme(): ColorScheme =
       store
         .getString(KEY_PREFERRED_COLOR_SCHEME, ColorScheme.FOLLOW_SYSTEM.name)
-        ?.let { ColorScheme.valueOf(it) }
+        ?.let { runCatching { ColorScheme.valueOf(it) }.getOrNull() }
         ?: ColorScheme.FOLLOW_SYSTEM
 
     fun saveColorScheme(colorScheme: ColorScheme) = store.putString(KEY_PREFERRED_COLOR_SCHEME, colorScheme.name)

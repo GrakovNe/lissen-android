@@ -31,6 +31,6 @@ fun String?.makeDownloadOption(): DownloadOption? =
     this == "all_items" -> AllItemsDownloadOption
     this == "current_item" -> CurrentItemDownloadOption
     this == "remaining_items" -> RemainingItemsDownloadOption
-    startsWith("number_items_") -> NumberItemDownloadOption(substringAfter("number_items_").toInt())
+    startsWith("number_items_") -> substringAfter("number_items_").toIntOrNull()?.let { NumberItemDownloadOption(it) }
     else -> null
   }
