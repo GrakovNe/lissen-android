@@ -32,7 +32,10 @@ data class CachedBookEntity(
 )
 
 @Keep
-@Entity(tableName = "detailed_books")
+@Entity(
+  tableName = "detailed_books",
+  indices = [Index(value = ["libraryId"]), Index(value = ["seriesId"])],
+)
 @JsonClass(generateAdapter = true)
 data class BookEntity(
   @PrimaryKey val id: String,

@@ -42,13 +42,12 @@ import androidx.glance.text.FontFamily.Companion.SansSerif
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.media3.session.R
-import dagger.hilt.android.EntryPointAccessors
 import org.grakovne.lissen.R.drawable
 import org.grakovne.lissen.ui.theme.LightBackground
 import org.grakovne.lissen.ui.theme.MediumBackground
-import org.grakovne.lissen.widget.WidgetPlaybackControllerEntryPoint
 import org.grakovne.lissen.widget.bitmapFromFile
 import org.grakovne.lissen.widget.bitmapFromResource
+import org.grakovne.lissen.widget.safelyRun
 import org.grakovne.lissen.widget.state.PlayerStateWidget.Companion.bookIdKey
 import timber.log.Timber
 import java.io.File
@@ -332,25 +331,3 @@ private fun provideAppLaunchIntent(context: Context): Intent? =
     .packageManager
     .getLaunchIntentForPackage(context.packageName)
     ?.apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP }
-
-private suspend fun safelyRun(
-  playingItemId: String,
-  context: Context,
-  action: (org.grakovne.lissen.widget.WidgetPlaybackController) -> Unit,
-) {
-  try {
-    val playbackController =
-      EntryPointAccessors
-        .fromApplication(
-          context = context.applicationContext,
-          entryPoint = WidgetPlaybackControllerEntryPoint::class.java,
-        ).widgetPlaybackController()
-
-    when (playbackController.providePlayingItem()) {
-      null -> playbackController.prepareAndRun(playingItemId) { action(playbackController) }
-      else -> action(playbackController)
-    }
-  } catch (ex: Exception) {
-    Timber.w("Unable to run $action on $playingItemId due to $ex")
-  }
-}

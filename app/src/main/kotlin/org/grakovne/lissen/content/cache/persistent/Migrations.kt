@@ -371,3 +371,11 @@ val MIGRATION_19_20 =
       }
     }
   }
+
+val MIGRATION_20_21 =
+  object : Migration(20, 21) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+      db.execSQL("CREATE INDEX IF NOT EXISTS index_detailed_books_libraryId ON detailed_books(libraryId)")
+      db.execSQL("CREATE INDEX IF NOT EXISTS index_detailed_books_seriesId ON detailed_books(seriesId)")
+    }
+  }

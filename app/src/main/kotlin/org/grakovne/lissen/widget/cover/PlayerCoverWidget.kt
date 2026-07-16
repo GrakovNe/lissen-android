@@ -35,13 +35,12 @@ import androidx.glance.semantics.testTag
 import androidx.glance.state.PreferencesGlanceStateDefinition
 import androidx.media3.session.R.drawable.media3_icon_pause
 import androidx.media3.session.R.drawable.media3_icon_play
-import dagger.hilt.android.EntryPointAccessors
 import org.grakovne.lissen.R.drawable
 import org.grakovne.lissen.ui.theme.WidgetBackgroundDark
 import org.grakovne.lissen.ui.theme.WidgetBackgroundLight
-import org.grakovne.lissen.widget.WidgetPlaybackControllerEntryPoint
 import org.grakovne.lissen.widget.bitmapFromFile
 import org.grakovne.lissen.widget.bitmapFromResource
+import org.grakovne.lissen.widget.safelyRun
 import org.grakovne.lissen.widget.state.PlayerStateWidget
 import timber.log.Timber
 import java.io.File
@@ -167,21 +166,7 @@ class PlayerCoverTogglePlaybackAction : ActionCallback {
   ) {
     val playingItemId = parameters[PlayerCoverWidget.bookIdActionKey] ?: return
 
-    try {
-      val playbackController =
-        EntryPointAccessors
-          .fromApplication(
-            context = context.applicationContext,
-            entryPoint = WidgetPlaybackControllerEntryPoint::class.java,
-          ).widgetPlaybackController()
-
-      when (playbackController.providePlayingItem()) {
-        null -> playbackController.prepareAndRun(playingItemId) { playbackController.togglePlayPause() }
-        else -> playbackController.togglePlayPause()
-      }
-    } catch (ex: Exception) {
-      Timber.w(ex, "Unable to toggle playback from PlayerCoverWidget for %s", playingItemId)
-    }
+    safelyRun(playingItemId = playingItemId, context = context) { it.togglePlayPause() }
   }
 }
 
