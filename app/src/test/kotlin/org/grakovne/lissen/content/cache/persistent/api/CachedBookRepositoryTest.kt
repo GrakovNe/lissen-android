@@ -194,13 +194,13 @@ class CachedBookRepositoryTest {
   @Test
   fun `fetchSeriesItems returns only books of the requested series`() =
     runBlocking {
-      coEvery { bookDao.fetchBooksBySeriesIds(listOf("ser-dune")) } returns
+      coEvery { bookDao.fetchCachedBooks(any()) } returns
         listOf(
           entity("b1", seriesId = "ser-dune", seriesJson = seriesJson("Dune", "1", "ser-dune")),
           entity("b2", seriesId = "ser-dune", seriesJson = seriesJson("Dune", "2", "ser-dune")),
         )
 
-      val books = repository.fetchSeriesItems(LIBRARY_ID, "ser-dune")
+      val books = repository.fetchSeriesItems(LIBRARY_ID, "ser-dune", libraryType = null)
       assertEquals(listOf("b1", "b2"), books.map { it.id })
     }
 
@@ -276,10 +276,28 @@ class CachedBookRepositoryTest {
           entity("b3", author = "Frank Herbert, Brian Herbert"),
         )
 
-      val books = repository.fetchAuthorItems(LIBRARY_ID, "Frank Herbert")
+      val books = repository.fetchAuthorItems(LIBRARY_ID, "Frank Herbert", libraryType = null)
       assertEquals(listOf("b1", "b3"), books.map { it.id })
       assertTrue(query.captured.sql.contains("WHERE libraryId = ?"))
       assertTrue(query.captured.sql.contains("instr(author, ',')"))
+    }
+
+  @Test
+  fun `series and author drill-down hide completed only for library type`() =
+    runBlocking {
+      every { preferences.getHideCompleted() } returns true
+      val queries = mutableListOf<SupportSQLiteQuery>()
+      coEvery { bookDao.fetchCachedBooks(capture(queries)) } returns emptyList()
+
+      repository.fetchSeriesItems(LIBRARY_ID, "ser", libraryType = LibraryType.LIBRARY)
+      repository.fetchSeriesItems(LIBRARY_ID, "ser", libraryType = LibraryType.PODCAST)
+      repository.fetchAuthorItems(LIBRARY_ID, "author", libraryType = LibraryType.LIBRARY)
+      repository.fetchAuthorItems(LIBRARY_ID, "author", libraryType = LibraryType.PODCAST)
+
+      assertTrue(queries[0].sql.contains("isFinished"))
+      assertFalse(queries[1].sql.contains("isFinished"))
+      assertTrue(queries[2].sql.contains("isFinished"))
+      assertFalse(queries[3].sql.contains("isFinished"))
     }
 
   @Test

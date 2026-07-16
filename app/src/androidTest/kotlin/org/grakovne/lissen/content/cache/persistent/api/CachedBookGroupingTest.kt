@@ -117,7 +117,7 @@ class CachedBookGroupingTest {
       insert("d2", "Dune B", "ser-dune")
       insert("z1", "Zulu")
 
-      val books = repository.fetchSeriesItems(LIBRARY, "ser-dune")
+      val books = repository.fetchSeriesItems(LIBRARY, "ser-dune", libraryType = null)
       assertEquals(setOf("d1", "d2"), books.map { it.id }.toSet())
     }
 

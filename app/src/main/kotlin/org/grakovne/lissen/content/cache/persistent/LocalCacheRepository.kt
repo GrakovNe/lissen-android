@@ -155,16 +155,22 @@ class LocalCacheRepository
       seriesId: String,
     ): OperationResult<List<Book>> =
       cachedBookRepository
-        .fetchSeriesItems(libraryId = libraryId, seriesId = seriesId)
-        .let { OperationResult.Success(it) }
+        .fetchSeriesItems(
+          libraryId = libraryId,
+          seriesId = seriesId,
+          libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
+        ).let { OperationResult.Success(it) }
 
     suspend fun fetchAuthorItems(
       libraryId: String,
       authorId: String,
     ): OperationResult<List<Book>> =
       cachedBookRepository
-        .fetchAuthorItems(libraryId = libraryId, authorId = authorId)
-        .let { OperationResult.Success(it) }
+        .fetchAuthorItems(
+          libraryId = libraryId,
+          authorId = authorId,
+          libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
+        ).let { OperationResult.Success(it) }
 
     suspend fun fetchLibraries(): OperationResult<List<Library>> =
       cachedLibraryRepository

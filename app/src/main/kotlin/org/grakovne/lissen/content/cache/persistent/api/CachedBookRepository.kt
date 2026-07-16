@@ -135,10 +135,7 @@ class CachedBookRepository
         .hideCompleted(preferences.getHideCompleted())
 
     private fun hideCompletedClauses(libraryType: LibraryType?): Pair<String, String> =
-      when (preferences.getHideCompleted() && libraryType == LibraryType.LIBRARY) {
-        true -> "LEFT JOIN media_progress mp ON mp.bookId = id" to "AND (mp.isFinished = 0 OR mp.isFinished IS NULL)"
-        false -> "" to ""
-      }
+      hideCompletedSql(hideCompletedApplies(preferences.getHideCompleted(), libraryType), "id")
 
     suspend fun fetchLibraryGrouped(
       libraryId: String,
@@ -197,10 +194,21 @@ class CachedBookRepository
     suspend fun fetchSeriesItems(
       libraryId: String,
       seriesId: String,
-    ): List<Book> =
-      bookDao
-        .fetchBooksBySeriesIds(listOf(seriesId))
+      libraryType: LibraryType?,
+    ): List<Book> {
+      val (join, filter) = hideCompletedClauses(libraryType)
+
+      val sql =
+        """
+        SELECT detailed_books.* FROM detailed_books
+        $join
+        WHERE seriesId = ? $filter
+        """.trimIndent()
+
+      return bookDao
+        .fetchCachedBooks(SimpleSQLiteQuery(sql, arrayOf<Any>(seriesId)))
         .map { cachedBookEntityConverter.apply(it) }
+    }
 
     private fun buildGroupedPageQuery(
       libraryId: String,
@@ -270,16 +278,19 @@ class CachedBookRepository
     suspend fun fetchAuthorItems(
       libraryId: String,
       authorId: String,
+      libraryType: LibraryType?,
     ): List<Book> {
       val (option, direction) = buildOrdering()
 
       val field = resolveOrderField(option)
       val sortDirection = resolveOrderDirection(direction)
+      val (join, filter) = hideCompletedClauses(libraryType)
 
       val sql =
         """
-        SELECT * FROM detailed_books
-        WHERE libraryId = ? AND $AUTHOR_KEY = ?
+        SELECT detailed_books.* FROM detailed_books
+        $join
+        WHERE libraryId = ? AND $AUTHOR_KEY = ? $filter
         ORDER BY $field $sortDirection
         """.trimIndent()
 

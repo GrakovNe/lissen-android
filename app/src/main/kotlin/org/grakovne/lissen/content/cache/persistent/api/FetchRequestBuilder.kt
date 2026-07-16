@@ -29,7 +29,7 @@ class FetchRequestBuilder {
 
   fun build(): SupportSQLiteQuery {
     val args = mutableListOf<Any>()
-    val whereClause = whereClause(args)
+    val (join, whereClause) = clauses(args)
 
     val field = "b.${resolveOrderField(orderField)}"
     val direction = resolveOrderDirection(orderDirection)
@@ -41,7 +41,7 @@ class FetchRequestBuilder {
       """
       SELECT b.*
       FROM detailed_books b
-      LEFT JOIN media_progress mp ON mp.bookId = b.id
+      $join
       WHERE $whereClause
       ORDER BY $field $direction
       LIMIT ? OFFSET ?
@@ -52,20 +52,20 @@ class FetchRequestBuilder {
 
   fun buildCount(): SupportSQLiteQuery {
     val args = mutableListOf<Any>()
-    val whereClause = whereClause(args)
+    val (join, whereClause) = clauses(args)
 
     val sql =
       """
       SELECT COUNT(*)
       FROM detailed_books b
-      LEFT JOIN media_progress mp ON mp.bookId = b.id
+      $join
       WHERE $whereClause
       """.trimIndent()
 
     return SimpleSQLiteQuery(sql, args.toTypedArray())
   }
 
-  private fun whereClause(args: MutableList<Any>): String {
+  private fun clauses(args: MutableList<Any>): Pair<String, String> {
     val libraryWhereClause =
       when (val id = libraryId) {
         null -> {
@@ -78,12 +78,8 @@ class FetchRequestBuilder {
         }
       }
 
-    val hideCompletedWhereClause =
-      when {
-        hideCompleted && libraryType == LibraryType.LIBRARY -> "AND (mp.isFinished = 0 OR mp.isFinished IS NULL)"
-        else -> ""
-      }
+    val (join, filter) = hideCompletedSql(hideCompletedApplies(hideCompleted, libraryType), "b.id")
 
-    return "$libraryWhereClause $hideCompletedWhereClause"
+    return join to "$libraryWhereClause $filter"
   }
 }
