@@ -142,7 +142,7 @@ class MediaLibraryTree
         }
 
         +mediaTreeNode(folderItem("$ROOT/$DOWNLOADS", context.getString(R.string.tree_node_downloads))) {
-          pagedChildren { _, _ -> downloadedBooksItems() }
+          pagedChildren { page, pageSize -> downloadedBooksItems(page, pageSize) }
         }
       }
 
@@ -286,9 +286,12 @@ class MediaLibraryTree
           onFailure = { emptyList() },
         )
 
-    private suspend fun downloadedBooksItems(): List<MediaItem> =
+    private suspend fun downloadedBooksItems(
+      page: Int,
+      pageSize: Int,
+    ): List<MediaItem> =
       localCacheRepository
-        .fetchDetailedItems()
+        .fetchDetailedItems(pageSize = pageSize, pageNumber = page)
         .fold(
           onSuccess = { paged -> paged.items.map { bookItem(it) } },
           onFailure = { emptyList() },

@@ -156,7 +156,7 @@ class LissenMediaProvider
 
       return when (preferences.isForceCache()) {
         true -> {
-          localCacheRepository.searchBooks(libraryId = libraryId, query = query)
+          localCacheRepository.searchBooks(libraryId = libraryId, query = query, limit = limit)
         }
 
         false -> {

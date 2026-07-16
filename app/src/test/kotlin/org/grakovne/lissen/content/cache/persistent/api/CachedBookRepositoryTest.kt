@@ -403,7 +403,7 @@ class CachedBookRepositoryTest {
     runBlocking {
       coEvery { bookDao.searchBooks(any()) } returns listOf(entity("b1"))
 
-      val books = repository.searchBooks(LIBRARY_ID, "query")
+      val books = repository.searchBooks(LIBRARY_ID, "query", limit = 20)
 
       assertEquals(listOf("b1"), books.map { it.id })
     }

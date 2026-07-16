@@ -2,7 +2,7 @@ package org.grakovne.lissen.content.cache.persistent.api
 
 fun resolveOrderField(field: String): String =
   when (field) {
-    "author", "duration" -> field
+    "author", "createdAt", "updatedAt" -> field
     else -> "title"
   }
 

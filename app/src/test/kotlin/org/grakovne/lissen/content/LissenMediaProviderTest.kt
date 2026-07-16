@@ -200,12 +200,12 @@ class LissenMediaProviderTest {
       runBlocking {
         every { preferences.isForceCache() } returns true
         coEvery {
-          localCacheRepository.searchBooks(libraryId = "l1", query = "test")
+          localCacheRepository.searchBooks(libraryId = "l1", query = "test", limit = 10)
         } returns OperationResult.Success(emptyList())
 
         provider.searchBooks("l1", "test", 10)
 
-        coVerify { localCacheRepository.searchBooks("l1", "test") }
+        coVerify { localCacheRepository.searchBooks("l1", "test", 10) }
         coVerify(exactly = 0) { mediaChannel.searchBooks(any(), any(), any()) }
       }
 

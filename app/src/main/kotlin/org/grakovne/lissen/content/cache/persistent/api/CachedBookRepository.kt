@@ -286,6 +286,7 @@ class CachedBookRepository
     suspend fun searchBooks(
       libraryId: String,
       query: String,
+      limit: Int,
     ): List<Book> {
       val (option, direction) = buildOrdering()
 
@@ -295,6 +296,7 @@ class CachedBookRepository
           .libraryId(libraryId)
           .orderField(option)
           .orderDirection(direction)
+          .limit(limit)
           .build()
 
       return bookDao
