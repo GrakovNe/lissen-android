@@ -80,8 +80,6 @@ fun ServerInfoComposable(
     IconButton(
       onClick = {
         connectionInfoExpanded = true
-        // navController.showLogin()
-        // viewModel.logout()
       },
     ) {
       Icon(

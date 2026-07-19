@@ -94,7 +94,7 @@ class LoginViewModel
         mediaChannel.startOAuth(
           host = host,
           onSuccess = { _loginState.value = LoginState.Idle },
-          onFailure = { onLoginFailure(it) },
+          onFailure = { _loginState.value = onLoginFailure(it) },
         )
       }
     }
@@ -133,12 +133,7 @@ class LoginViewModel
       }
     }
 
-    private fun onLoginFailure(error: OperationError): LoginState.Error {
-      viewModelScope.launch {
-        _loginState.value = LoginState.Error(error)
-      }
-      return LoginState.Error(error)
-    }
+    private fun onLoginFailure(error: OperationError): LoginState.Error = LoginState.Error(error)
 
     sealed class LoginState {
       data object Idle : LoginState()

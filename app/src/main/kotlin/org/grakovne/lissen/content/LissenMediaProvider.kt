@@ -21,7 +21,6 @@ import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.domain.UserAccount
-import org.grakovne.lissen.domain.isSame
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import timber.log.Timber
 import java.io.File
@@ -60,14 +59,16 @@ class LissenMediaProvider
     suspend fun provideBookmarks(playingItemId: String): List<Bookmark> =
       cachedBookmarkProvider
         .provideBookmarks(playingItemId)
-        .sortedByDescending { it.createdAt }
-        .fold(emptyList()) { acc, item -> if (acc.any { it.isSame(item) }) acc else acc + item }
+        .sortedDeduplicated()
 
     suspend fun updateAndProvideBookmarks(playingItemId: String): List<Bookmark> =
       cachedBookmarkProvider
         .fetchBookmarks(playingItemId)
-        .sortedByDescending { it.createdAt }
-        .fold(emptyList()) { acc, b -> if (acc.any { it.isSame(b) }) acc else acc + b }
+        .sortedDeduplicated()
+
+    private fun List<Bookmark>.sortedDeduplicated(): List<Bookmark> =
+      sortedByDescending { it.createdAt }
+        .distinctBy { it.libraryItemId to it.totalPosition }
 
     fun provideFileUri(
       libraryItemId: String,
@@ -75,21 +76,20 @@ class LissenMediaProvider
     ): OperationResult<Uri> {
       Timber.d("Resolving file URI: bookId=$libraryItemId, chapterId=$chapterId")
 
-      return when (preferences.isForceCache()) {
+      val cached =
+        localCacheRepository
+          .provideFileUri(libraryItemId, chapterId)
+          ?.let { OperationResult.Success(it) }
+
+      return cached ?: when (preferences.isForceCache()) {
         true -> {
-          localCacheRepository
-            .provideFileUri(libraryItemId, chapterId)
-            ?.let { OperationResult.Success(it) }
-            ?: OperationResult.Error(OperationError.InternalError)
+          OperationResult.Error(OperationError.InternalError)
         }
 
         false -> {
-          localCacheRepository
+          providePreferredChannel()
             .provideFileUri(libraryItemId, chapterId)
-            ?.let { OperationResult.Success(it) }
-            ?: providePreferredChannel()
-              .provideFileUri(libraryItemId, chapterId)
-              .let { OperationResult.Success(it) }
+            .let { OperationResult.Success(it) }
         }
       }
     }
@@ -156,7 +156,7 @@ class LissenMediaProvider
 
       return when (preferences.isForceCache()) {
         true -> {
-          localCacheRepository.searchBooks(libraryId = libraryId, query = query)
+          localCacheRepository.searchBooks(libraryId = libraryId, query = query, limit = limit)
         }
 
         false -> {
@@ -292,7 +292,7 @@ class LissenMediaProvider
         false -> {
           providePreferredChannel()
             .fetchRecentListenedBooks(libraryId)
-            .map { items -> syncFromLocalProgress(libraryId = libraryId, detailedItems = items) }
+            .map { items -> mergeLocalRecentProgress(libraryId = libraryId, recentBooks = items) }
         }
       }
     }
@@ -311,7 +311,7 @@ class LissenMediaProvider
         false -> {
           providePreferredChannel()
             .fetchBook(bookId)
-            .map { syncFromLocalProgress(it) }
+            .map { mergeLocalItemProgress(it) }
             .map { trimProgress(it) }
         }
       }
@@ -388,21 +388,21 @@ class LissenMediaProvider
         )
     }
 
-    private suspend fun syncFromLocalProgress(
+    private suspend fun mergeLocalRecentProgress(
       libraryId: String,
-      detailedItems: List<RecentBook>,
+      recentBooks: List<RecentBook>,
     ): List<RecentBook> {
-      val localRecentlyBooks =
+      val localRecentBooks =
         localCacheRepository
           .fetchRecentListenedBooks(libraryId)
           .fold(
             onSuccess = { it },
-            onFailure = { return@fold detailedItems },
+            onFailure = { return@fold recentBooks },
           )
 
-      val syncedRecentlyBooks =
-        detailedItems
-          .mapNotNull { item -> localRecentlyBooks.find { it.id == item.id }?.let { item to it } }
+      val syncedRecentBooks =
+        recentBooks
+          .mapNotNull { item -> localRecentBooks.find { it.id == item.id }?.let { item to it } }
           .map { (remote, local) ->
             val localTimestamp = local.listenedLastUpdate ?: return@map remote
             val remoteTimestamp = remote.listenedLastUpdate ?: return@map remote
@@ -413,9 +413,9 @@ class LissenMediaProvider
             }
           }
 
-      return detailedItems
+      return recentBooks
         .map { item ->
-          syncedRecentlyBooks
+          syncedRecentBooks
             .find { item.id == it.id }
             ?.let { local -> item.copy(listenedPercentage = local.listenedPercentage) }
             ?: item
@@ -433,7 +433,7 @@ class LissenMediaProvider
       }
     }
 
-    private suspend fun syncFromLocalProgress(detailedItem: DetailedItem): DetailedItem {
+    private suspend fun mergeLocalItemProgress(detailedItem: DetailedItem): DetailedItem {
       val cachedProgress = localCacheRepository.fetchPlayingItemProgress(detailedItem.id)
       val channelProgress = detailedItem.progress
 

@@ -33,6 +33,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.screens.settings.composable.ColorSchemeSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
+import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
@@ -43,24 +44,9 @@ fun AppearancePreferencesScreen(onBack: () -> Unit) {
 
   Scaffold(
     topBar = {
-      TopAppBar(
-        title = {
-          Text(
-            text = stringResource(R.string.appearance_preferences_title),
-            style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-            modifier = Modifier.semantics { heading() },
-            color = colorScheme.onSurface,
-          )
-        },
-        navigationIcon = {
-          IconButton(onClick = { onBack() }) {
-            Icon(
-              imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-              contentDescription = stringResource(R.string.a11y_back),
-              tint = colorScheme.onSurface,
-            )
-          }
-        },
+      SettingsTopAppBar(
+        title = stringResource(R.string.appearance_preferences_title),
+        onBack = onBack,
       )
     },
     modifier =

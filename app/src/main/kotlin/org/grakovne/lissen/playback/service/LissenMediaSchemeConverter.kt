@@ -2,7 +2,7 @@ package org.grakovne.lissen.playback.service
 
 import android.net.Uri
 
-fun apply(
+fun toLissenUri(
   mediaItemId: String,
   fileId: String,
 ): Uri =
@@ -13,7 +13,7 @@ fun apply(
     .appendPath(fileId)
     .build()
 
-fun unapply(uri: Uri): Pair<String, String>? {
+fun parseLissenUri(uri: Uri): Pair<String, String>? {
   if (uri.scheme != "lissen") return null
 
   val segments = uri.pathSegments

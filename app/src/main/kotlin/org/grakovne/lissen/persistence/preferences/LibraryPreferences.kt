@@ -85,7 +85,7 @@ class LibraryPreferences
     private fun getPreferredLibraryType(): LibraryType =
       store
         .getString(KEY_PREFERRED_LIBRARY_TYPE)
-        ?.let { LibraryType.valueOf(it) }
+        ?.let { runCatching { LibraryType.valueOf(it) }.getOrNull() }
         ?: LibraryType.LIBRARY
 
     companion object {

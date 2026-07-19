@@ -40,6 +40,7 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.common.restartApplication
 import org.grakovne.lissen.common.shareFile
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsInfoBanner
+import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -80,24 +81,9 @@ fun ConfigBackupSettingsScreen(onBack: () -> Unit) {
 
   Scaffold(
     topBar = {
-      TopAppBar(
-        title = {
-          Text(
-            text = stringResource(R.string.config_backup_title),
-            style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-            modifier = Modifier.semantics { heading() },
-            color = colorScheme.onSurface,
-          )
-        },
-        navigationIcon = {
-          IconButton(onClick = onBack) {
-            Icon(
-              imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-              contentDescription = stringResource(R.string.a11y_back),
-              tint = colorScheme.onSurface,
-            )
-          }
-        },
+      SettingsTopAppBar(
+        title = stringResource(R.string.config_backup_title),
+        onBack = onBack,
       )
     },
     modifier =

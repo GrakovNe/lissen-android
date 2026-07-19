@@ -29,11 +29,8 @@ class CachedBookEntityDetailedConverter
           entity
             .detailedBook
             .authorsJson
-            ?.let {
-              val type = Types.newParameterizedType(List::class.java, BookAuthorDto::class.java)
-              val adapter = moshi.adapter<List<BookAuthorDto>>(type)
-              adapter.fromJson(it)
-            }?.map { BookAuthor(id = it.id, name = it.name) }
+            ?.let { authorsAdapter.fromJson(it) }
+            ?.map { BookAuthor(id = it.id, name = it.name) }
             ?: emptyList(),
         narrator = entity.detailedBook.narrator,
         libraryId = entity.detailedBook.libraryId,
@@ -69,11 +66,8 @@ class CachedBookEntityDetailedConverter
           entity
             .detailedBook
             .seriesJson
-            ?.let {
-              val type = Types.newParameterizedType(List::class.java, BookSeriesDto::class.java)
-              val adapter = moshi.adapter<List<BookSeriesDto>>(type)
-              adapter.fromJson(it)
-            }?.map {
+            ?.let { seriesAdapter.fromJson(it) }
+            ?.map {
               BookSeries(
                 id = it.id,
                 name = it.title,
@@ -82,4 +76,11 @@ class CachedBookEntityDetailedConverter
             } ?: emptyList(),
         progress = entity.progress?.let { mediaProgressEntityConverter.apply(it) },
       )
+
+    private companion object {
+      val authorsType = Types.newParameterizedType(List::class.java, BookAuthorDto::class.java)
+      val authorsAdapter = moshi.adapter<List<BookAuthorDto>>(authorsType)
+      val seriesType = Types.newParameterizedType(List::class.java, BookSeriesDto::class.java)
+      val seriesAdapter = moshi.adapter<List<BookSeriesDto>>(seriesType)
+    }
   }

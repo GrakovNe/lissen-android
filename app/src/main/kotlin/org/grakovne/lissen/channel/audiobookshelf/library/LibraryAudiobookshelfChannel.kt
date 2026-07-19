@@ -18,8 +18,6 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryPageRe
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
-import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.DeviceInfo
-import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.BookResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibraryFilteringRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibraryOrderingRequestConverter
@@ -183,8 +181,11 @@ class LibraryAudiobookshelfChannel
             searchResult
               .map { it.authors }
               .map { authors -> authors.map { it.id } }
-              .map { ids -> ids.map { id -> async { dataRepository.fetchAuthorItems(id) } } }
-              .map { it.awaitAll() }
+              .map { ids ->
+                ids.map { id ->
+                  async { concurrentFetchSemaphore.withPermit { dataRepository.fetchAuthorItems(id) } }
+                }
+              }.map { it.awaitAll() }
               .map { result ->
                 result
                   .flatMap { authorResponse ->
@@ -264,27 +265,12 @@ class LibraryAudiobookshelfChannel
       episodeId: String,
       supportedMimeTypes: List<String>,
       deviceId: String,
-    ): OperationResult<PlaybackSession> {
-      val request =
-        PlaybackStartRequest(
-          supportedMimeTypes = supportedMimeTypes,
-          deviceInfo =
-            DeviceInfo(
-              clientName = getClientName(),
-              deviceId = deviceId,
-              deviceName = getClientName(),
-            ),
-          forceTranscode = false,
-          forceDirectPlay = false,
-          mediaPlayer = getClientName(),
-        )
-
-      return dataRepository
+    ): OperationResult<PlaybackSession> =
+      dataRepository
         .startPlayback(
           itemId = bookId,
-          request = request,
+          request = buildPlaybackStartRequest(supportedMimeTypes, deviceId),
         ).map { sessionResponseConverter.apply(it) }
-    }
 
     override suspend fun fetchBook(bookId: String): OperationResult<DetailedItem> =
       coroutineScope {

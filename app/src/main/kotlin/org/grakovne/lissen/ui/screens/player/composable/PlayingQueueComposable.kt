@@ -59,6 +59,8 @@ import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.android.awaitFrame
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.components.withScrollbar
@@ -106,6 +108,16 @@ fun PlayingQueueComposable(
       book?.chapters?.getOrNull(currentTrackIndex)
     }
   }
+
+  val bookId = book?.id ?: ""
+  val cachedChapterIdsFlow =
+    remember(bookId) {
+      when (bookId.isEmpty()) {
+        true -> flowOf(emptySet())
+        false -> cachingModelView.provideCachedChapterIds(bookId).map { it.toSet() }
+      }
+    }
+  val cachedChapterIds by cachedChapterIdsFlow.collectAsState(initial = emptySet())
 
   val playbackReady by viewModel.isPlaybackReady.collectAsState()
   val playingQueueExpanded by viewModel.playingQueueExpanded.collectAsState()
@@ -298,21 +310,13 @@ fun PlayingQueueComposable(
           showingChapters,
           key = { _, chapter -> chapter.id },
         ) { index, chapter ->
-          val bookId = book?.id ?: ""
-
-          val cacheStateFlow =
-            remember(bookId, chapter.id) {
-              cachingModelView.provideCacheState(bookId = bookId, chapterId = chapter.id)
-            }
-          val isCached by cacheStateFlow.collectAsState(initial = false)
-
           PlaylistItemComposable(
             track = chapter,
             onClick = { viewModel.setChapter(chapter) },
             isSelected = chapter.id == currentTrackId?.id,
             modifier = Modifier.wrapContentWidth(),
             maxDuration = maxDuration,
-            isCached = isCached,
+            isCached = chapter.id in cachedChapterIds,
           )
 
           if (index < showingChapters.size - 1) {

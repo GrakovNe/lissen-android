@@ -109,6 +109,14 @@ class MediaLibraryTree
 
     private val scope = CoroutineScope(Dispatchers.Default)
 
+    private suspend fun libraries(): List<Library> =
+      lissenMediaProvider
+        .fetchLibraries()
+        .fold(
+          onSuccess = { it },
+          onFailure = { emptyList() },
+        )
+
     private val root: MediaTreeNode by lazy { buildTree() }
 
     @OptIn(UnstableApi::class)
@@ -134,7 +142,7 @@ class MediaLibraryTree
         }
 
         +mediaTreeNode(folderItem("$ROOT/$DOWNLOADS", context.getString(R.string.tree_node_downloads))) {
-          pagedChildren { _, _ -> downloadedBooksItems() }
+          pagedChildren { page, pageSize -> downloadedBooksItems(page, pageSize) }
         }
       }
 
@@ -262,21 +270,9 @@ class MediaLibraryTree
           )
       } ?: emptyList()
 
-    private suspend fun libraryItems(): List<MediaItem> =
-      lissenMediaProvider
-        .fetchLibraries()
-        .fold(
-          onSuccess = { libs -> libs.map { libraryFolderItem("$ROOT/$LIBRARY/${it.id}", it) } },
-          onFailure = { emptyList() },
-        )
+    private suspend fun libraryItems(): List<MediaItem> = libraries().map { libraryFolderItem("$ROOT/$LIBRARY/${it.id}", it) }
 
-    private suspend fun resolveLibrary(libId: String): Library? =
-      lissenMediaProvider
-        .fetchLibraries()
-        .fold(
-          onSuccess = { libs -> libs.find { it.id == libId } },
-          onFailure = { null },
-        )
+    private suspend fun resolveLibrary(libId: String): Library? = libraries().find { it.id == libId }
 
     private suspend fun booksFromLibraryItems(
       libraryId: String,
@@ -290,9 +286,12 @@ class MediaLibraryTree
           onFailure = { emptyList() },
         )
 
-    private suspend fun downloadedBooksItems(): List<MediaItem> =
+    private suspend fun downloadedBooksItems(
+      page: Int,
+      pageSize: Int,
+    ): List<MediaItem> =
       localCacheRepository
-        .fetchDetailedItems()
+        .fetchDetailedItems(pageSize = pageSize, pageNumber = page)
         .fold(
           onSuccess = { paged -> paged.items.map { bookItem(it) } },
           onFailure = { emptyList() },

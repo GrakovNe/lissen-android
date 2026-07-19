@@ -38,6 +38,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
+import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 import kotlin.math.max
 
@@ -55,26 +56,9 @@ fun CustomHeadersSettingsScreen(onBack: () -> Unit) {
 
   Scaffold(
     topBar = {
-      TopAppBar(
-        title = {
-          Text(
-            text = stringResource(R.string.custom_headers_title),
-            style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-            modifier = Modifier.semantics { heading() },
-            color = colorScheme.onSurface,
-          )
-        },
-        navigationIcon = {
-          IconButton(onClick = {
-            onBack()
-          }) {
-            Icon(
-              imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-              contentDescription = stringResource(R.string.a11y_back),
-              tint = colorScheme.onSurface,
-            )
-          }
-        },
+      SettingsTopAppBar(
+        title = stringResource(R.string.custom_headers_title),
+        onBack = onBack,
       )
     },
     modifier =

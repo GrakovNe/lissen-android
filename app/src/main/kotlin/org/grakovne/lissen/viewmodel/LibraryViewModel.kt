@@ -1,5 +1,9 @@
 package org.grakovne.lissen.viewmodel
 
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -68,11 +72,9 @@ class LibraryViewModel
     private val _expandedGroups = MutableStateFlow<Set<String>>(emptySet())
     val expandedGroups: StateFlow<Set<String>> = _expandedGroups.asStateFlow()
 
-    private val _groupBooks = MutableStateFlow<Map<String, List<Book>>>(emptyMap())
-    val groupBooks: StateFlow<Map<String, List<Book>>> = _groupBooks.asStateFlow()
+    val groupBooks: SnapshotStateMap<String, List<Book>> = mutableStateMapOf()
 
-    private val _groupLoading = MutableStateFlow<Set<String>>(emptySet())
-    val groupLoading: StateFlow<Set<String>> = _groupLoading.asStateFlow()
+    val groupLoading: SnapshotStateList<String> = mutableStateListOf()
 
     private val prefetchSemaphore = Semaphore(MAX_CONCURRENT_PREFETCH)
 
@@ -171,8 +173,8 @@ class LibraryViewModel
 
     fun resetGroupExpansion() {
       _expandedGroups.value = emptySet()
-      _groupBooks.value = emptyMap()
-      _groupLoading.value = emptySet()
+      groupBooks.clear()
+      groupLoading.clear()
     }
 
     private fun LibraryEntry.groupId(): String? =
@@ -182,7 +184,7 @@ class LibraryViewModel
         is LibraryEntry.BookEntry -> null
       }
 
-    private fun alreadyResolved(groupId: String): Boolean = _groupBooks.value.containsKey(groupId) || groupId in _groupLoading.value
+    private fun alreadyResolved(groupId: String): Boolean = groupBooks.containsKey(groupId) || groupId in groupLoading
 
     private suspend fun fetchGroupBooks(entry: LibraryEntry) {
       val groupId = entry.groupId() ?: return
@@ -192,7 +194,7 @@ class LibraryViewModel
 
       val libraryId = preferences.getPreferredLibrary()?.id ?: return
 
-      _groupLoading.value = _groupLoading.value + groupId
+      groupLoading.add(groupId)
       val result =
         when (entry) {
           is LibraryEntry.SeriesEntry -> mediaChannel.fetchSeriesItems(libraryId = libraryId, seriesId = entry.id)
@@ -207,11 +209,11 @@ class LibraryViewModel
               is LibraryEntry.SeriesEntry -> books.sortedBySeriesPosition()
               else -> books
             }
-          _groupBooks.value = _groupBooks.value + (groupId to ordered)
+          groupBooks[groupId] = ordered
         },
         onFailure = { },
       )
-      _groupLoading.value = _groupLoading.value - groupId
+      groupLoading.remove(groupId)
     }
 
     fun applyLinkedSearch(token: String) {

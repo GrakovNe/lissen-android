@@ -46,6 +46,7 @@ import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.settings.composable.DisconnectServerComposable
 import org.grakovne.lissen.ui.screens.settings.composable.ServerInfoComposable
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
+import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
@@ -63,22 +64,9 @@ fun ConnectionSettingsScreen(
 
   Scaffold(
     topBar = {
-      TopAppBar(
-        title = {
-          Text(
-            text = stringResource(R.string.connection_settings_title),
-            style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-            modifier = Modifier.semantics { heading() },
-          )
-        },
-        navigationIcon = {
-          IconButton(onClick = { onBack() }) {
-            Icon(
-              imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-              contentDescription = stringResource(R.string.a11y_back),
-            )
-          }
-        },
+      SettingsTopAppBar(
+        title = stringResource(R.string.connection_settings_title),
+        onBack = onBack,
       )
     },
     modifier =

@@ -72,23 +72,11 @@ class LocalCacheRepository
     suspend fun searchBooks(
       libraryId: String,
       query: String,
+      limit: Int,
     ): OperationResult<List<Book>> =
       cachedBookRepository
-        .searchBooks(libraryId = libraryId, query = query)
+        .searchBooks(libraryId = libraryId, query = query, limit = limit)
         .let { OperationResult.Success(it) }
-
-    suspend fun fetchDetailedItems(): OperationResult<PagedItems<DetailedItem>> {
-      val items = cachedBookRepository.fetchCachedItems()
-
-      return OperationResult
-        .Success(
-          PagedItems(
-            items = items,
-            currentPage = 0,
-            totalItems = cachedBookRepository.countCachedItems(),
-          ),
-        )
-    }
 
     suspend fun fetchDetailedItems(
       pageSize: Int,
@@ -113,16 +101,18 @@ class LocalCacheRepository
       pageSize: Int,
       pageNumber: Int,
     ): OperationResult<PagedItems<Book>> {
+      val libraryType = cachedLibraryRepository.fetchLibraryType(libraryId)
+
       val books =
         cachedBookRepository
-          .fetchBooks(pageNumber = pageNumber, pageSize = pageSize, libraryId = libraryId)
+          .fetchBooks(pageNumber = pageNumber, pageSize = pageSize, libraryId = libraryId, libraryType = libraryType)
 
       return OperationResult
         .Success(
           PagedItems(
             items = books,
             currentPage = pageNumber,
-            totalItems = cachedBookRepository.countBooks(libraryId),
+            totalItems = cachedBookRepository.countBooks(libraryId, libraryType),
           ),
         )
     }
@@ -141,22 +131,22 @@ class LocalCacheRepository
 
         LibraryGrouping.SERIES -> {
           cachedBookRepository
-            .fetchLibraryGrouped(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
-            .let { OperationResult.Success(it) }
+            .fetchLibraryGrouped(
+              libraryId = libraryId,
+              pageSize = pageSize,
+              pageNumber = pageNumber,
+              libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
+            ).let { OperationResult.Success(it) }
         }
 
         LibraryGrouping.AUTHOR -> {
-          val entries = cachedBookRepository.fetchAuthorsGrouped(libraryId)
-          val fromIndex = (pageNumber * pageSize).coerceIn(0, entries.size)
-          val toIndex = (fromIndex + pageSize).coerceIn(0, entries.size)
-
-          OperationResult.Success(
-            PagedItems(
-              items = entries.subList(fromIndex, toIndex),
-              currentPage = pageNumber,
-              totalItems = entries.size,
-            ),
-          )
+          cachedBookRepository
+            .fetchAuthorsGrouped(
+              libraryId = libraryId,
+              pageSize = pageSize,
+              pageNumber = pageNumber,
+              libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
+            ).let { OperationResult.Success(it) }
         }
       }
 
@@ -165,16 +155,22 @@ class LocalCacheRepository
       seriesId: String,
     ): OperationResult<List<Book>> =
       cachedBookRepository
-        .fetchSeriesItems(libraryId = libraryId, seriesId = seriesId)
-        .let { OperationResult.Success(it) }
+        .fetchSeriesItems(
+          libraryId = libraryId,
+          seriesId = seriesId,
+          libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
+        ).let { OperationResult.Success(it) }
 
     suspend fun fetchAuthorItems(
       libraryId: String,
       authorId: String,
     ): OperationResult<List<Book>> =
       cachedBookRepository
-        .fetchAuthorItems(libraryId = libraryId, authorId = authorId)
-        .let { OperationResult.Success(it) }
+        .fetchAuthorItems(
+          libraryId = libraryId,
+          authorId = authorId,
+          libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
+        ).let { OperationResult.Success(it) }
 
     suspend fun fetchLibraries(): OperationResult<List<Library>> =
       cachedLibraryRepository

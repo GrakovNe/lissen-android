@@ -29,7 +29,43 @@ class FetchRequestBuilder {
 
   fun build(): SupportSQLiteQuery {
     val args = mutableListOf<Any>()
+    val (join, whereClause) = clauses(args)
 
+    val field = "b.${resolveOrderField(orderField)}"
+    val direction = resolveOrderDirection(orderDirection)
+
+    args.add(pageSize)
+    args.add(pageNumber * pageSize)
+
+    val sql =
+      """
+      SELECT b.*
+      FROM detailed_books b
+      $join
+      WHERE $whereClause
+      ORDER BY $field $direction
+      LIMIT ? OFFSET ?
+      """.trimIndent()
+
+    return SimpleSQLiteQuery(sql, args.toTypedArray())
+  }
+
+  fun buildCount(): SupportSQLiteQuery {
+    val args = mutableListOf<Any>()
+    val (join, whereClause) = clauses(args)
+
+    val sql =
+      """
+      SELECT COUNT(*)
+      FROM detailed_books b
+      $join
+      WHERE $whereClause
+      """.trimIndent()
+
+    return SimpleSQLiteQuery(sql, args.toTypedArray())
+  }
+
+  private fun clauses(args: MutableList<Any>): Pair<String, String> {
     val libraryWhereClause =
       when (val id = libraryId) {
         null -> {
@@ -42,39 +78,8 @@ class FetchRequestBuilder {
         }
       }
 
-    val hideCompletedWhereClause =
-      when {
-        hideCompleted && libraryType == LibraryType.LIBRARY -> "AND (mp.isFinished = 0 OR mp.isFinished IS NULL)"
-        else -> ""
-      }
+    val (join, filter) = hideCompletedSql(hideCompletedApplies(hideCompleted, libraryType), "b.id")
 
-    val field =
-      when (orderField) {
-        "title" -> "b.title"
-        "author" -> "b.author"
-        "duration" -> "b.duration"
-        else -> "b.title"
-      }
-
-    val direction =
-      when (orderDirection.uppercase()) {
-        "ASC", "DESC" -> orderDirection.uppercase()
-        else -> "ASC"
-      }
-
-    args.add(pageSize)
-    args.add(pageNumber * pageSize)
-
-    val sql =
-      """
-      SELECT b.*
-      FROM detailed_books b
-      LEFT JOIN media_progress mp ON mp.bookId = b.id
-      WHERE $libraryWhereClause $hideCompletedWhereClause
-      ORDER BY $field $direction
-      LIMIT ? OFFSET ?
-      """.trimIndent()
-
-    return SimpleSQLiteQuery(sql, args.toTypedArray())
+    return join to "$libraryWhereClause $filter"
   }
 }

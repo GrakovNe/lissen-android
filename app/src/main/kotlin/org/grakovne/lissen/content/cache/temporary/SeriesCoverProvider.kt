@@ -14,7 +14,6 @@ import org.grakovne.lissen.content.cache.common.SeriesCoverComposer
 import org.grakovne.lissen.content.cache.common.writeToFile
 import timber.log.Timber
 import java.io.File
-import java.security.MessageDigest
 import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -97,9 +96,5 @@ class SeriesCoverProvider
     private fun cacheKey(
       seriesId: String,
       coverItemIds: List<String>,
-    ): String =
-      MessageDigest
-        .getInstance("SHA-256")
-        .digest((seriesId + coverItemIds.joinToString(",")).toByteArray())
-        .joinToString("") { "%02x".format(it) }
+    ): String = seriesId + coverItemIds.joinToString(",")
   }

@@ -50,6 +50,7 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.slider.SeekTimeSlider
+import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
@@ -63,22 +64,9 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
 
   Scaffold(
     topBar = {
-      TopAppBar(
-        title = {
-          Text(
-            text = stringResource(R.string.settings_screen_seek_time_title),
-            style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-            modifier = Modifier.semantics { heading() },
-          )
-        },
-        navigationIcon = {
-          IconButton(onClick = { onBack() }) {
-            Icon(
-              imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-              contentDescription = stringResource(R.string.a11y_back),
-            )
-          }
-        },
+      SettingsTopAppBar(
+        title = stringResource(R.string.settings_screen_seek_time_title),
+        onBack = onBack,
       )
     },
     modifier =
@@ -114,7 +102,7 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
       title = stringResource(R.string.rewind_interval),
       currentSeconds = preferredSeekTime.rewind,
       onDismissRequest = { rewindExpanded = false },
-      onUpdate = { viewModel.preferRewindRewind(it) },
+      onUpdate = { viewModel.preferRewind(it) },
     )
   }
 
@@ -123,7 +111,7 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
       title = stringResource(R.string.forward_interval),
       currentSeconds = preferredSeekTime.forward,
       onDismissRequest = { forwardExpanded = false },
-      onUpdate = { viewModel.preferForwardRewind(it) },
+      onUpdate = { viewModel.preferForward(it) },
     )
   }
 }

@@ -12,6 +12,7 @@ import androidx.sqlite.db.SupportSQLiteQuery
 import com.squareup.moshi.Types
 import kotlinx.coroutines.flow.Flow
 import org.grakovne.lissen.common.moshi
+import org.grakovne.lissen.content.cache.persistent.entity.AuthorEntry
 import org.grakovne.lissen.content.cache.persistent.entity.BookAuthorDto
 import org.grakovne.lissen.content.cache.persistent.entity.BookChapterEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
@@ -139,27 +140,17 @@ interface CachedBookDao {
   @RawQuery
   suspend fun fetchGroupedEntries(query: SupportSQLiteQuery): List<GroupedEntry>
 
-  @Query(
-    """
-    SELECT COUNT(DISTINCT COALESCE(seriesId, id)) FROM detailed_books
-    WHERE libraryId = :libraryId
-    """,
-  )
-  suspend fun countGroupedEntries(libraryId: String): Int
+  @RawQuery
+  suspend fun fetchAuthorEntries(query: SupportSQLiteQuery): List<AuthorEntry>
+
+  @RawQuery
+  suspend fun countRaw(query: SupportSQLiteQuery): Int
 
   @Query("SELECT * FROM detailed_books WHERE id IN (:ids)")
   suspend fun fetchBooksByIds(ids: List<String>): List<BookEntity>
 
   @Query("SELECT * FROM detailed_books WHERE seriesId IN (:seriesIds)")
   suspend fun fetchBooksBySeriesIds(seriesIds: List<String>): List<BookEntity>
-
-  @Query(
-    """
-    SELECT COUNT(*) FROM detailed_books
-    WHERE (libraryId = :libraryId)
-    """,
-  )
-  suspend fun countCachedBooks(libraryId: String?): Int
 
   @Transaction
   @RawQuery
@@ -226,6 +217,16 @@ interface CachedBookDao {
 
   @Query(
     """
+    SELECT bookChapterId
+    FROM book_chapters
+    WHERE bookId  = :bookId
+      AND isCached = 1
+    """,
+  )
+  fun cachedChapterIds(bookId: String): Flow<List<String>>
+
+  @Query(
+    """
         SELECT MAX(mp.lastUpdate)
         FROM detailed_books AS d
         INNER JOIN media_progress AS mp ON d.id = mp.bookId
@@ -253,6 +254,10 @@ interface CachedBookDao {
   @Transaction
   @Query("SELECT * FROM media_progress WHERE bookId = :bookId")
   suspend fun fetchMediaProgress(bookId: String): MediaProgressEntity?
+
+  @Transaction
+  @Query("SELECT * FROM media_progress WHERE bookId IN (:bookIds)")
+  suspend fun fetchMediaProgress(bookIds: List<String>): List<MediaProgressEntity>
 
   @Delete
   suspend fun deleteBook(book: BookEntity)

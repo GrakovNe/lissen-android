@@ -14,10 +14,8 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,7 +35,6 @@ import org.grakovne.lissen.playback.service.DefaultTimerActivator
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.playback.service.calculateChapterIndexAndPosition
-import org.grakovne.lissen.playback.service.calculateChapterPosition
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -126,7 +123,7 @@ class MediaRepository
                   is PlaybackEvent.PlaybackReady -> {
                     val book = preferences.getPlayingItem()
                     book?.let {
-                      updateProgress(book).await()
+                      updateProgress(book)
 
                       if (mediaController.isPlaying) {
                         progressPoller.start()
@@ -438,19 +435,21 @@ class MediaRepository
         preferences.savePlayingItem(book)
 
         eventBus.send(PlaybackCommand.PreparePlayback)
+      } else {
+        _isPlaybackReady.value = true
       }
     }
 
-    private fun updateProgress(detailedItem: DetailedItem): Deferred<Unit> =
-      scope.async {
-        val currentIndex = mediaController.currentMediaItemIndex
-        val accumulated = detailedItem.chapters.take(currentIndex).sumOf { it.duration }
-        val currentFilePosition = mediaController.currentPosition / 1000.0
+    private fun updateProgress(detailedItem: DetailedItem) {
+      val currentIndex = mediaController.currentMediaItemIndex
+      val chapters = detailedItem.chapters
+      val accumulated = chapters.take(currentIndex.coerceIn(0, chapters.size)).sumOf { it.duration }
+      val currentFilePosition = mediaController.currentPosition / 1000.0
 
-        val newPosition = accumulated + currentFilePosition
-        _totalPosition.value = newPosition
-        updateCurrentTrackData()
-      }
+      val newPosition = accumulated + currentFilePosition
+      _totalPosition.value = newPosition
+      updateCurrentTrackData()
+    }
 
     private fun play() {
       withMain {
@@ -497,18 +496,18 @@ class MediaRepository
 
       var safePosition = minOf(overallDuration, maxOf(0.0, position))
 
-      while (book.chapters[calculateChapterIndex(book, safePosition)].available.not()) {
-        val chapterIndex =
+      val startIndex = calculateChapterIndex(book, safePosition)
+      if (startIndex in book.chapters.indices && book.chapters[startIndex].available.not()) {
+        val forward = (startIndex..book.chapters.lastIndex).firstOrNull { book.chapters[it].available }
+        val backward = (startIndex downTo 0).firstOrNull { book.chapters[it].available }
+
+        val target =
           when (direction) {
-            ScrollingDirection.FORWARD -> calculateChapterIndex(book, safePosition) + 1
-            ScrollingDirection.BACKWARD -> calculateChapterIndex(book, safePosition) - 1
+            ScrollingDirection.FORWARD -> forward ?: backward
+            ScrollingDirection.BACKWARD -> backward ?: forward
           }
 
-        safePosition =
-          when {
-            chapterIndex in 0..book.chapters.lastIndex -> book.chapters[chapterIndex].start
-            else -> break
-          }
+        target?.let { safePosition = book.chapters[it].start }
       }
 
       val (chapterIndex, chapterPosition) = calculateChapterIndexAndPosition(book, safePosition)
@@ -542,8 +541,7 @@ class MediaRepository
       val book = playingBook.value ?: return
       val totalPosition = totalPosition.value
 
-      val trackIndex = calculateChapterIndex(book, totalPosition)
-      val trackPosition = calculateChapterPosition(book, totalPosition)
+      val (trackIndex, trackPosition) = calculateChapterIndexAndPosition(book, totalPosition)
 
       _currentChapterIndex.value = trackIndex
       _currentChapterPosition.value = trackPosition
@@ -560,7 +558,12 @@ class MediaRepository
       val playingBook = _playingBook.value ?: return
       val totalPosition = _totalPosition.value
 
-      val currentChapter = playingBook.chapters[calculateChapterIndex(playingBook, totalPosition)].title
+      val chapterIndex = calculateChapterIndex(playingBook, totalPosition)
+      if (chapterIndex !in playingBook.chapters.indices) {
+        Timber.w("Unable to create bookmark: chapter index $chapterIndex out of bounds")
+        return
+      }
+      val currentChapter = playingBook.chapters[chapterIndex].title
       val chapterPosition = _currentChapterPosition.value
 
       val bookmarkTitle =

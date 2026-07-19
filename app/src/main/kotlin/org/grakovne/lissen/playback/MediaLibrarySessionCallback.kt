@@ -27,7 +27,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.service.PlaybackService
@@ -206,10 +205,8 @@ class MediaLibrarySessionCallback
                 .fetchBook(bookId)
                 .foldAsync(
                   onSuccess = {
-                    async {
-                      preferences.savePlayingItem(it)
-                      playbackSynchronizationService.startPlaybackSynchronization(it)
-                    }
+                    preferences.savePlayingItem(it)
+                    playbackSynchronizationService.startPlaybackSynchronization(it)
                     mediaRepository.registerPlayingBook(it)
                     PlaybackService.bookToChapterMediaItems(it)
                   },
@@ -256,7 +253,9 @@ class MediaLibrarySessionCallback
       pageSize: Int,
       params: MediaLibraryService.LibraryParams?,
     ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
-      val searchFuture = searchCache.get(query)
+      val searchFuture =
+        searchCache.get(query)
+          ?: return Futures.immediateFuture(LibraryResult.ofItemList(ImmutableList.of(), params))
       return Futures.transform(
         searchFuture,
         { items ->

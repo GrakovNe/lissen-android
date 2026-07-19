@@ -1,6 +1,7 @@
 package org.grakovne.lissen.playback.service
 
 import androidx.annotation.OptIn
+import androidx.core.os.BundleCompat
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
@@ -52,7 +53,7 @@ class PlaybackNavigationService
               return
             }
 
-            if (exoPlayer.currentMediaItem?.mediaId?.let { isTrackAvailable(it) } != false) {
+            if (isTrackAvailable(exoPlayer.currentMediaItemIndex)) {
               return
             }
 
@@ -66,10 +67,16 @@ class PlaybackNavigationService
                   false -> Direction.BACKWARD
                 }
 
-              val nextTrack = findAvailableTrackIndex(exoPlayer.currentMediaItemIndex, direction, exoPlayer, 0)
+              val nextTrack = findAvailableTrackIndex(exoPlayer.currentMediaItemIndex, direction, exoPlayer)
               nextTrack?.let { exoPlayer.seekTo(it, 0) }
 
-              if (nextTrack == null || nextTrack < currentIndex) {
+              val wrapped =
+                when (direction) {
+                  Direction.FORWARD -> nextTrack != null && nextTrack < currentIndex
+                  Direction.BACKWARD -> nextTrack != null && nextTrack > currentIndex
+                }
+
+              if (nextTrack == null || wrapped) {
                 exoPlayer.pause()
                 playbackSynchronizationService.cancelSynchronization()
               }
@@ -80,42 +87,63 @@ class PlaybackNavigationService
     }
 
     private fun findAvailableTrackIndex(
-      currentItem: Int,
+      startIndex: Int,
       direction: Direction,
       exoPlayer: ExoPlayer,
-      iteration: Int,
     ): Int? {
-      if (isTrackAvailable(exoPlayer.getMediaItemAt(currentItem).mediaId)) {
-        return currentItem
-      }
-
-      if (iteration > 4096) {
+      val count = exoPlayer.mediaItemCount
+      if (count == 0) {
         return null
       }
 
-      val foundItem =
-        when (direction) {
-          Direction.FORWARD -> (currentItem + 1) % exoPlayer.mediaItemCount
-          Direction.BACKWARD -> if (currentItem - 1 < 0) exoPlayer.mediaItemCount - 1 else currentItem - 1
+      var index = startIndex
+      repeat(count) {
+        if (isTrackAvailable(index)) {
+          return index
         }
 
-      return findAvailableTrackIndex(foundItem, direction, exoPlayer, iteration + 1)
+        index =
+          when (direction) {
+            Direction.FORWARD -> (index + 1) % count
+            Direction.BACKWARD -> if (index - 1 < 0) count - 1 else index - 1
+          }
+      }
+
+      return null
     }
 
-    private fun isTrackAvailable(fileId: String): Boolean {
-      val mediaItem =
-        exoPlayer
-          .currentMediaItem
-          ?.localConfiguration
-          ?.tag as? DetailedItem
+    private fun isTrackAvailable(index: Int): Boolean {
+      if (index < 0 || index >= exoPlayer.mediaItemCount) {
+        return false
+      }
+
+      val mediaItem = exoPlayer.getMediaItemAt(index)
+
+      val bookId =
+        LissenMediaSourceFactory.MediaId
+          .fromString(mediaItem.mediaId)
+          ?.bookId
           ?: return false
 
-      return mediaProvider
-        .provideFileUri(mediaItem.id, fileId)
-        .fold(
-          onSuccess = { true },
-          onFailure = { false },
-        )
+      val segments =
+        mediaItem
+          .requestMetadata
+          .extras
+          ?.let { BundleCompat.getParcelableArrayList(it, PlaybackService.FILE_SEGMENTS, FileClip::class.java) }
+          ?: return false
+
+      if (segments.isEmpty()) {
+        return false
+      }
+
+      return segments.all { clip ->
+        mediaProvider
+          .provideFileUri(bookId, clip.fileId)
+          .fold(
+            onSuccess = { true },
+            onFailure = { false },
+          )
+      }
     }
   }
 

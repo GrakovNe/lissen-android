@@ -13,7 +13,7 @@ import io.mockk.mockk
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.playback.service.LocalFallbackDataSource
-import org.grakovne.lissen.playback.service.apply
+import org.grakovne.lissen.playback.service.toLissenUri
 import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertThrows
@@ -29,7 +29,7 @@ class LocalFallbackDataSourceTest {
   private val mediaProvider = mockk<LissenMediaProvider>()
 
   private val payload = ByteArray(1000) { (it % 251).toByte() }
-  private val lissenUri = apply("book-1", "file-1")
+  private val lissenUri = toLissenUri("book-1", "file-1")
   private val remoteUri = Uri.parse("https://server:8080/api/items/book-1/file/file-1")
 
   @Test

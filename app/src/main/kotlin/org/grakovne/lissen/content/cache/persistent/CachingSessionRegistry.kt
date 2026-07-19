@@ -27,8 +27,14 @@ class CachingSessionRegistry {
     return true
   }
 
-  fun settle(itemId: String) {
-    pending.remove(itemId)
+  fun settle(
+    itemId: String,
+    job: Job,
+  ) {
+    if (jobs[itemId] === job) {
+      pending.remove(itemId)
+      jobs.remove(itemId)
+    }
   }
 
   fun updateStatus(

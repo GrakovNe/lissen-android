@@ -83,7 +83,7 @@ internal class LocalFallbackDataSource(
   private var usingLocal: Boolean = false
 
   override fun open(dataSpec: DataSpec): Long {
-    val (itemId, fileId) = unapply(dataSpec.uri) ?: return openPassthrough(dataSpec)
+    val (itemId, fileId) = parseLissenUri(dataSpec.uri) ?: return openPassthrough(dataSpec)
 
     val resolvedUri =
       mediaProvider

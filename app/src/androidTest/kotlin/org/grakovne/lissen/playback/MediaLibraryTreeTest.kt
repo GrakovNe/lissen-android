@@ -58,7 +58,7 @@ class MediaLibraryTreeTest {
       OperationResult.Error(OperationError.InternalError)
     coEvery { lissenMediaProvider.fetchBooks(any(), any(), any()) } returns
       OperationResult.Error(OperationError.InternalError)
-    coEvery { localCacheRepository.fetchDetailedItems() } returns
+    coEvery { localCacheRepository.fetchDetailedItems(any(), any()) } returns
       OperationResult.Error(OperationError.InternalError)
 
     tree = MediaLibraryTree(context, playbackPreferences, libraryPreferences, localCacheRepository, lissenMediaProvider)
@@ -231,7 +231,7 @@ class MediaLibraryTreeTest {
   @Test
   fun getChildren_downloads_returnsEmptyWhenRepositoryFails() =
     runBlocking {
-      coEvery { localCacheRepository.fetchDetailedItems() } returns
+      coEvery { localCacheRepository.fetchDetailedItems(any(), any()) } returns
         OperationResult.Error(OperationError.InternalError)
       val result = tree.getChildren("root/downloads", 0, 100).get()
       assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
@@ -241,7 +241,7 @@ class MediaLibraryTreeTest {
   @Test
   fun getChildren_downloads_returnsDownloadedBooks() =
     runBlocking {
-      coEvery { localCacheRepository.fetchDetailedItems() } returns
+      coEvery { localCacheRepository.fetchDetailedItems(any(), any()) } returns
         OperationResult.Success(
           PagedItems(
             items =

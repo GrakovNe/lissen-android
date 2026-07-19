@@ -52,6 +52,7 @@ import org.grakovne.lissen.ui.screens.common.hasLocationPermission
 import org.grakovne.lissen.ui.screens.common.localNetworkPermission
 import org.grakovne.lissen.ui.screens.common.locationPermission
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsInfoBanner
+import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 import kotlin.math.max
 
@@ -76,26 +77,9 @@ fun LocalUrlSettingsScreen(onBack: () -> Unit) {
 
   Scaffold(
     topBar = {
-      TopAppBar(
-        title = {
-          Text(
-            text = stringResource(R.string.settings_screen_internal_connection_url_title),
-            style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-            modifier = Modifier.semantics { heading() },
-            color = colorScheme.onSurface,
-          )
-        },
-        navigationIcon = {
-          IconButton(onClick = {
-            onBack()
-          }) {
-            Icon(
-              imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-              contentDescription = stringResource(R.string.a11y_back),
-              tint = colorScheme.onSurface,
-            )
-          }
-        },
+      SettingsTopAppBar(
+        title = stringResource(R.string.settings_screen_internal_connection_url_title),
+        onBack = onBack,
       )
     },
     modifier =

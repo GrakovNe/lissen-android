@@ -137,8 +137,8 @@ fun LibraryScreen(
   val library = libraryViewModel.getPager(searchRequested).collectAsLazyPagingItems()
   val libraryCount by libraryViewModel.totalCount.collectAsState()
   val expandedGroups by libraryViewModel.expandedGroups.collectAsState()
-  val groupBooks by libraryViewModel.groupBooks.collectAsState()
-  val groupLoading by libraryViewModel.groupLoading.collectAsState()
+  val groupBooks = libraryViewModel.groupBooks
+  val groupLoading = libraryViewModel.groupLoading
   val libraryGrouping by settingsViewModel.libraryGrouping.collectAsState(LibraryGrouping.NONE)
 
   val libraryListState = rememberLazyGridState()
