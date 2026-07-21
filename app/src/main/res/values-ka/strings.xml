@@ -2,7 +2,7 @@
 <resources>
     <string name="library_screen_library_title">ბიბლიოთეკა</string>
     <string name="library_screen_continue_listening_title">მოსმენის გაგრძელება</string>
-    <string name="library_screen_preferences_menu_item">პარამეტრები</string>
+    <string name="library_screen_preferences_menu_item">მორგება</string>
     <string name="login_screen_title">სერვერთან დაკავშირება</string>
     <string name="hint_server_url_input">სერვერის URL მისამართი</string>
     <string name="login_screen_login_input">შესვლა</string>
@@ -17,7 +17,7 @@
     <string name="player_screen_now_playing_title_chapter_of">თავი %1$d %2$s-დან</string>
     <string name="player_screen_now_playing_title_podcast_of">ეპიზოდი %1$d %2$s-დან</string>
     <string name="player_screen_now_playing_title_item_of">ელემენტი %1$d %2$s-დან</string>
-    <string name="settings_screen_title">პარამეტრები</string>
+    <string name="settings_screen_title">მორგება</string>
     <string name="settings_screen_connected_as_title">დაკავშირებულია როგორც</string>
     <string name="settings_screen_server_connection">სერვერის კავშირი</string>
     <string name="login_error_host_is_down">ჰოსტი გათიშულია</string>
@@ -73,13 +73,16 @@
     <string name="downloads_menu_download_option_remaining_episodes">დარჩენილი ეპიზოდები</string>
     <string name="downloads_menu_download_option_remaining_items">დარჩენილი ელემენტები</string>
     <plurals name="downloads_menu_download_option_next_chapters">
-        <item quantity="other">შემდეგი %1$d თავი</item>
+        <item quantity="one">შემდეგი %d თავი</item>
+        <item quantity="other">შემდეგი %d თავი</item>
     </plurals>
     <plurals name="downloads_menu_download_option_next_episodes">
-        <item quantity="other">შემდეგი %1$d ეპიზოდი</item>
+        <item quantity="one">შემდეგი %d ეპიზოდი</item>
+        <item quantity="other">შემდეგი %d ეპიზოდი</item>
     </plurals>
     <plurals name="downloads_menu_download_option_next_items">
-        <item quantity="other">შემდეგი %1$d ელემენტი</item>
+        <item quantity="one">შემდეგი %d ელემენტი</item>
+        <item quantity="other">შემდეგი %d ელემენტი</item>
     </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">შემდეგი თავები</string>
     <string name="downloads_menu_download_option_next_episodes_label">შემდეგი ეპიზოდები</string>
@@ -138,7 +141,7 @@
     <string name="a11y_search">ძებნა</string>
     <string name="a11y_clear">გასუფთავება</string>
     <string name="a11y_add">დამატება</string>
-    <string name="a11y_settings">პარამეტრები</string>
+    <string name="a11y_settings">მორგება</string>
     <string name="a11y_delete_from_cache">ქეშიდან წაშლა</string>
     <string name="a11y_available_offline">ხელმისაწვდომია ოფლაინში</string>
     <string name="a11y_collapse_queue">რიგის ჩაკეცვა</string>
