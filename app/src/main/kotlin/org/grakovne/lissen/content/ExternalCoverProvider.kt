@@ -2,6 +2,7 @@ package org.grakovne.lissen.content
 
 import android.content.res.AssetFileDescriptor
 import android.net.Uri
+import android.os.ParcelFileDescriptor
 import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import dagger.hilt.EntryPoint
@@ -12,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import org.grakovne.lissen.BuildConfig
 import org.grakovne.lissen.R
+import java.io.File
 
 @EntryPoint
 @InstallIn(SingletonComponent::class)
@@ -46,9 +48,16 @@ class ExternalCoverProvider : FileProvider() {
       lissenMediaProvider
         .fetchBookCover(bookId = bookId)
         .fold(
-          onSuccess = { super.openAssetFile(uri, mode) },
+          onSuccess = { it.toAssetFileDescriptor() },
           onFailure = { context?.resources?.openRawResourceFd(R.raw.cover_fallback_png) },
         )
     }
   }
+
+  private fun File.toAssetFileDescriptor() =
+    AssetFileDescriptor(
+      ParcelFileDescriptor.open(this, ParcelFileDescriptor.MODE_READ_ONLY),
+      0,
+      AssetFileDescriptor.UNKNOWN_LENGTH,
+    )
 }
