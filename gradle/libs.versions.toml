@@ -1,6 +1,6 @@
 [versions]
 acraCore = "5.13.1"
-agp = "9.3.0"
+agp = "9.3.1"
 browser = "1.10.0"
 coilCompose = "3.5.0"
 composeShimmerAndroid = "1.5.0"
