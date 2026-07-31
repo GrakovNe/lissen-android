@@ -105,14 +105,10 @@ class LissenMediaProvider
 
       localCacheRepository.syncProgress(detailedItem, progress)
 
-      val channelSyncResult =
-        providePreferredChannel()
-          .syncProgress(sessionId, progress)
+      if (preferences.isForceCache()) return OperationResult.Success(Unit)
 
-      return when (preferences.isForceCache()) {
-        true -> OperationResult.Success(Unit)
-        false -> channelSyncResult
-      }
+      return providePreferredChannel()
+        .syncProgress(sessionId, progress)
     }
 
     suspend fun fetchBookCover(bookId: String): OperationResult<File> {
@@ -264,6 +260,8 @@ class LissenMediaProvider
       deviceId: String,
     ): OperationResult<PlaybackSession> {
       Timber.d("Starting playback: itemId=$itemId, chapterId=$chapterId, mimeTypes=$supportedMimeTypes")
+
+      if (preferences.isForceCache()) return OperationResult.Success(PlaybackSession.local(itemId))
 
       return providePreferredChannel()
         .startPlayback(
