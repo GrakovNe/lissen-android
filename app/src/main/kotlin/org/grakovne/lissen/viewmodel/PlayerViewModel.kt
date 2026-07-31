@@ -115,6 +115,10 @@ class PlayerViewModel
       mediaRepository.clearPreparedItem()
     }
 
+    fun clearPreparingError() {
+      mediaRepository.clearPreparingError()
+    }
+
     fun preparePlayback(bookId: String) {
       viewModelScope.launch {
         mediaRepository.clearPreparedItem()

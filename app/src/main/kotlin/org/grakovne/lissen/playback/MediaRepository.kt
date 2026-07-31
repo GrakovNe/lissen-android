@@ -268,7 +268,7 @@ class MediaRepository
     fun clearPlayingBook() {
       Timber.d("Clearing playing book: ${_playingBook.value?.id}")
 
-      scope.launch { prepareRunner.cancel() }
+      prepareRunner.cancel()
       progressPoller.stop()
 
       if (::mediaController.isInitialized) {
@@ -413,6 +413,10 @@ class MediaRepository
       _mediaPreparingError.value = false
       _playAfterPrepare.value = false
       _isPlaybackReady.value = false
+    }
+
+    fun clearPreparingError() {
+      _mediaPreparingError.value = false
     }
 
     fun registerPlayingBook(book: DetailedItem) {

@@ -108,6 +108,17 @@ class CachedBookmarkProviderTest {
     }
 
   @Test
+  fun `createBookmark keeps pending draft without channel when network unavailable`() =
+    runBlocking {
+      every { networkService.isNetworkAvailable() } returns false
+
+      val result = provider.createBookmark(totalTime = 100.0, libraryItemId = "book-1", title = "Bookmark")
+
+      assertEquals(BookmarkSyncState.PENDING_CREATE, result.syncState)
+      coVerify(exactly = 0) { mediaChannel.createBookmark(any()) }
+    }
+
+  @Test
   fun `createBookmark pushes to channel when available`() =
     runBlocking {
       val remote = bookmark(totalPosition = 100.0, syncState = BookmarkSyncState.SYNCED)
@@ -123,6 +134,18 @@ class CachedBookmarkProviderTest {
     runBlocking {
       val target = bookmark(totalPosition = 100.0, syncState = BookmarkSyncState.SYNCED)
       every { networkService.isNetworkAvailable() } returns false
+
+      provider.dropBookmark(target)
+
+      coVerify { localCacheRepository.upsertBookmark(target.copy(syncState = BookmarkSyncState.PENDING_DELETE)) }
+      coVerify(exactly = 0) { mediaChannel.dropBookmark(any()) }
+    }
+
+  @Test
+  fun `dropBookmark keeps pending delete without channel when force cache enabled`() =
+    runBlocking {
+      val target = bookmark(totalPosition = 100.0, syncState = BookmarkSyncState.SYNCED)
+      every { preferences.isForceCache() } returns true
 
       provider.dropBookmark(target)
 

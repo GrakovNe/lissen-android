@@ -107,7 +107,7 @@ class LissenMediaProvider
 
       localCacheRepository.syncProgress(detailedItem, progress)
 
-      if (channelAvailable().not()) return OperationResult.Success(Unit)
+      if (isChannelAvailable().not()) return OperationResult.Success(Unit)
 
       return providePreferredChannel()
         .syncProgress(sessionId, progress)
@@ -148,21 +148,10 @@ class LissenMediaProvider
         }
 
         false -> {
-          cachedCoverProvider
-            .provideAuthorCover(
-              channel = providePreferredChannel(),
-              authorId = authorId,
-            ).fold(
-              onSuccess = { OperationResult.Success(it) },
-              onFailure = { error ->
-                localCacheRepository
-                  .fetchAuthorCover(authorId)
-                  .fold(
-                    onSuccess = { OperationResult.Success(it) },
-                    onFailure = { error },
-                  )
-              },
-            )
+          cachedCoverProvider.provideAuthorCover(
+            channel = providePreferredChannel(),
+            authorId = authorId,
+          )
         }
       }
     }
@@ -285,7 +274,7 @@ class LissenMediaProvider
     ): OperationResult<PlaybackSession> {
       Timber.d("Starting playback: itemId=$itemId, chapterId=$chapterId, mimeTypes=$supportedMimeTypes")
 
-      if (channelAvailable().not()) return OperationResult.Success(PlaybackSession.local(itemId))
+      if (isChannelAvailable().not()) return OperationResult.Success(PlaybackSession.local(itemId))
 
       return providePreferredChannel()
         .startPlayback(
@@ -504,5 +493,5 @@ class LissenMediaProvider
 
     fun providePreferredChannel(): MediaChannel = channelProvider.provideMediaChannel()
 
-    private fun channelAvailable(): Boolean = preferences.isForceCache().not() && networkService.isNetworkAvailable()
+    private fun isChannelAvailable(): Boolean = preferences.isForceCache().not() && networkService.isNetworkAvailable()
   }

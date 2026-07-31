@@ -100,6 +100,30 @@ class PreemptingRunnerTest {
     }
 
   @Test
+  fun `cancelling the caller cancels the in-flight action`() =
+    runTest {
+      val runner = PreemptingRunner()
+      val started = CompletableDeferred<Unit>()
+      var completed = false
+
+      val caller =
+        launch {
+          runner.run(this@runTest) {
+            started.complete(Unit)
+            CompletableDeferred<Unit>().await()
+            completed = true
+          }
+        }
+
+      started.await()
+
+      caller.cancel()
+      caller.join()
+
+      assertFalse(completed)
+    }
+
+  @Test
   fun `run after cancel executes normally`() =
     runTest {
       val runner = PreemptingRunner()

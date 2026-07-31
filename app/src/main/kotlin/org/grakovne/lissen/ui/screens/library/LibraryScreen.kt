@@ -127,6 +127,7 @@ fun LibraryScreen(
   val searchRequested by libraryViewModel.searchRequested.collectAsState()
   val searchToken by libraryViewModel.searchToken.collectAsState()
   val preparingError by playerViewModel.preparingError.collectAsState()
+  val isPlaybackReady by playerViewModel.isPlaybackReady.collectAsState()
 
   val preferredLibrary by settingsViewModel.preferredLibrary.collectAsState()
   val libraries by settingsViewModel.libraries.collectAsState()
@@ -198,7 +199,10 @@ fun LibraryScreen(
 
   LaunchedEffect(preparingError) {
     if (preparingError) {
-      playerViewModel.clearPrepared()
+      when (isPlaybackReady) {
+        true -> playerViewModel.clearPreparingError()
+        false -> playerViewModel.clearPrepared()
+      }
     }
   }
 

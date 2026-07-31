@@ -77,7 +77,7 @@ class ContentAutoCachingService
       val playingMediaItem = playingItem ?: return null
 
       val preconditionsMet =
-        autoCachePreconditionsMet(
+        isAutoCacheAvailable(
           isPlaying = isPlaying,
           isForceCache = libraryPreferences.isForceCache(),
           isNetworkAvailable = networkService.isNetworkAvailable(),
@@ -141,7 +141,7 @@ class ContentAutoCachingService
     }
   }
 
-internal fun autoCachePreconditionsMet(
+internal fun isAutoCacheAvailable(
   isPlaying: Boolean,
   isForceCache: Boolean,
   isNetworkAvailable: Boolean,

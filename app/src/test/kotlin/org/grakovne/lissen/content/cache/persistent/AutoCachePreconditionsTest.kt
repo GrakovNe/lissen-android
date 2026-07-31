@@ -10,7 +10,7 @@ class AutoCachePreconditionsTest {
   @Test
   fun `blocked when force cache enabled`() {
     assertFalse(
-      autoCachePreconditionsMet(
+      isAutoCacheAvailable(
         isPlaying = true,
         isForceCache = true,
         isNetworkAvailable = true,
@@ -23,7 +23,7 @@ class AutoCachePreconditionsTest {
   @Test
   fun `blocked when not playing`() {
     assertFalse(
-      autoCachePreconditionsMet(
+      isAutoCacheAvailable(
         isPlaying = false,
         isForceCache = false,
         isNetworkAvailable = true,
@@ -36,7 +36,7 @@ class AutoCachePreconditionsTest {
   @Test
   fun `blocked when network unavailable`() {
     assertFalse(
-      autoCachePreconditionsMet(
+      isAutoCacheAvailable(
         isPlaying = true,
         isForceCache = false,
         isNetworkAvailable = false,
@@ -49,7 +49,7 @@ class AutoCachePreconditionsTest {
   @Test
   fun `blocked when network type unknown`() {
     assertFalse(
-      autoCachePreconditionsMet(
+      isAutoCacheAvailable(
         isPlaying = true,
         isForceCache = false,
         isNetworkAvailable = true,
@@ -62,7 +62,7 @@ class AutoCachePreconditionsTest {
   @Test
   fun `blocked on cellular when wifi only preferred`() {
     assertFalse(
-      autoCachePreconditionsMet(
+      isAutoCacheAvailable(
         isPlaying = true,
         isForceCache = false,
         isNetworkAvailable = true,
@@ -75,7 +75,7 @@ class AutoCachePreconditionsTest {
   @Test
   fun `allowed on wifi when wifi only preferred`() {
     assertTrue(
-      autoCachePreconditionsMet(
+      isAutoCacheAvailable(
         isPlaying = true,
         isForceCache = false,
         isNetworkAvailable = true,
@@ -88,7 +88,7 @@ class AutoCachePreconditionsTest {
   @Test
   fun `allowed on cellular when wifi or cellular preferred`() {
     assertTrue(
-      autoCachePreconditionsMet(
+      isAutoCacheAvailable(
         isPlaying = true,
         isForceCache = false,
         isNetworkAvailable = true,

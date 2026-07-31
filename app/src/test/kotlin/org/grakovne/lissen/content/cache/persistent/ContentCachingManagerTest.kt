@@ -79,14 +79,15 @@ class ContentCachingManagerTest {
   ) = runBlocking {
     val item = detailedItem("book-1")
     val mediaFile = File(tempDir, "file-1.mp3").apply { writeText("audio") }
+    val otherBookFile = File(tempDir, "other-file-1.mp3").apply { writeText("audio") }
     coEvery { bookRepository.fetchBook("book-1") } returns item
-    every { properties.provideMediaCachePatch(any(), any()) } returns File(tempDir, "missing.mp3")
     every { properties.provideMediaCachePatch("book-1", "file-1") } returns mediaFile
+    every { properties.provideMediaCachePatch("book-2", "file-1") } returns otherBookFile
 
     manager.dropCache(item, item.chapters.first())
 
     assertFalse(mediaFile.exists())
-    assertTrue(tempDir.exists())
+    assertTrue(otherBookFile.exists())
   }
 
   private fun detailedItem(id: String) =

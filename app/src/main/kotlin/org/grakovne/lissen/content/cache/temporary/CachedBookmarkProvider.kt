@@ -27,7 +27,7 @@ class CachedBookmarkProvider
   ) {
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    private fun channelAvailable(): Boolean = preferences.isForceCache().not() && networkService.isNetworkAvailable()
+    private fun isChannelAvailable(): Boolean = preferences.isForceCache().not() && networkService.isNetworkAvailable()
 
     suspend fun provideBookmarks(libraryItemId: String): List<Bookmark> =
       localCacheRepository
@@ -40,7 +40,7 @@ class CachedBookmarkProvider
         }
 
     suspend fun fetchBookmarks(libraryItemId: String): List<Bookmark> {
-      if (channelAvailable().not()) return provideBookmarks(libraryItemId)
+      if (isChannelAvailable().not()) return provideBookmarks(libraryItemId)
 
       val local = localCacheRepository.fetchBookmarks(libraryItemId)
 
@@ -122,7 +122,7 @@ class CachedBookmarkProvider
 
       localCacheRepository.upsertBookmark(localDraft)
 
-      if (channelAvailable().not()) return localDraft
+      if (isChannelAvailable().not()) return localDraft
 
       scope.launch {
         channelProvider
@@ -150,7 +150,7 @@ class CachedBookmarkProvider
         bookmark.copy(syncState = BookmarkSyncState.PENDING_DELETE),
       )
 
-      if (channelAvailable().not()) return
+      if (isChannelAvailable().not()) return
 
       scope.launch {
         channelProvider

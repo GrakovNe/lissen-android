@@ -315,6 +315,15 @@ class PlayerViewModelTest {
     }
 
     @Test
+    fun `clearPreparingError resets only the error flag`() {
+      viewModel.clearPreparingError()
+
+      verify { mediaRepository.clearPreparingError() }
+      verify(exactly = 0) { mediaRepository.clearPreparedItem() }
+      verify(exactly = 0) { mediaRepository.clearPlayingBook() }
+    }
+
+    @Test
     fun `preparePlayback clears the prepared item before preparing the new one`() {
       viewModel.preparePlayback("book-2")
 
