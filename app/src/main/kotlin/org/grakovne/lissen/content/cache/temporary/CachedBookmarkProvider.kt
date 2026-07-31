@@ -7,11 +7,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfChannelProvider
+import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.BookmarkSyncState
 import org.grakovne.lissen.domain.CreateBookmarkRequest
 import org.grakovne.lissen.domain.isSame
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import timber.log.Timber
 
 @Singleton
@@ -20,8 +22,12 @@ class CachedBookmarkProvider
   constructor(
     private val channelProvider: AudiobookshelfChannelProvider,
     private val localCacheRepository: LocalCacheRepository,
+    private val preferences: LibraryPreferences,
+    private val networkService: NetworkService,
   ) {
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    private fun channelAvailable(): Boolean = preferences.isForceCache().not() && networkService.isNetworkAvailable()
 
     suspend fun provideBookmarks(libraryItemId: String): List<Bookmark> =
       localCacheRepository
@@ -34,6 +40,8 @@ class CachedBookmarkProvider
         }
 
     suspend fun fetchBookmarks(libraryItemId: String): List<Bookmark> {
+      if (channelAvailable().not()) return provideBookmarks(libraryItemId)
+
       val local = localCacheRepository.fetchBookmarks(libraryItemId)
 
       local
@@ -114,6 +122,8 @@ class CachedBookmarkProvider
 
       localCacheRepository.upsertBookmark(localDraft)
 
+      if (channelAvailable().not()) return localDraft
+
       scope.launch {
         channelProvider
           .provideMediaChannel()
@@ -139,6 +149,8 @@ class CachedBookmarkProvider
       localCacheRepository.upsertBookmark(
         bookmark.copy(syncState = BookmarkSyncState.PENDING_DELETE),
       )
+
+      if (channelAvailable().not()) return
 
       scope.launch {
         channelProvider
