@@ -16,7 +16,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -33,6 +33,7 @@ import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.service.DefaultTimerActivator
 import org.grakovne.lissen.playback.service.PlaybackService
+import org.grakovne.lissen.playback.service.PreemptingRunner
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.playback.service.calculateChapterIndexAndPosition
 import timber.log.Timber
@@ -53,6 +54,7 @@ class MediaRepository
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private lateinit var mediaController: MediaController
     private val deferredControllerActions = DeferredActions()
+    private val prepareRunner = PreemptingRunner()
 
     private val token =
       SessionToken(
@@ -266,6 +268,7 @@ class MediaRepository
     fun clearPlayingBook() {
       Timber.d("Clearing playing book: ${_playingBook.value?.id}")
 
+      scope.launch { prepareRunner.cancel() }
       progressPoller.stop()
 
       if (::mediaController.isInitialized) {
@@ -352,15 +355,15 @@ class MediaRepository
     }
 
     suspend fun preparePlayback(bookId: String) {
-      coroutineScope {
-        withContext(Dispatchers.IO) {
-          mediaChannel
-            .fetchBook(bookId)
-            .foldAsync(
-              onSuccess = { startPreparingPlayback(it) },
-              onFailure = { _mediaPreparingError.value = true },
-            )
-        }
+      prepareRunner.run(scope) {
+        val book = withContext(Dispatchers.IO) { mediaChannel.fetchBook(bookId) }
+
+        ensureActive()
+
+        book.fold(
+          onSuccess = { startPreparingPlayback(it) },
+          onFailure = { _mediaPreparingError.value = true },
+        )
       }
     }
 
