@@ -76,9 +76,17 @@ class ContentAutoCachingService
       val playbackCacheOption = downloadPreferences.getAutoDownloadOption() ?: return null
       val playingMediaItem = playingItem ?: return null
 
-      val isNetworkAvailable = networkService.isNetworkAvailable()
-      val currentNetwork = networkService.getCurrentNetworkType() ?: return null
-      val preferredNetwork = downloadPreferences.getAutoDownloadNetworkType()
+      val preconditionsMet =
+        autoCachePreconditionsMet(
+          isPlaying = isPlaying,
+          isForceCache = libraryPreferences.isForceCache(),
+          isNetworkAvailable = networkService.isNetworkAvailable(),
+          currentNetwork = networkService.getCurrentNetworkType(),
+          preferredNetwork = downloadPreferences.getAutoDownloadNetworkType(),
+        )
+
+      if (preconditionsMet.not()) return null
+
       val currentTotalPosition = mediaRepository.totalPosition.value
 
       val playingItemLibraryType =
@@ -95,16 +103,7 @@ class ContentAutoCachingService
           .getAutoDownloadLibraryTypes()
           .contains(playingItemLibraryType)
 
-      val isForceCache = libraryPreferences.isForceCache()
-
-      val cacheAvailable =
-        isNetworkAvailable &&
-          isPlaying &&
-          isForceCache.not() &&
-          validNetworkType(currentNetwork, preferredNetwork) &&
-          requestedLibraryType
-
-      if (cacheAvailable.not()) return null
+      if (requestedLibraryType.not()) return null
 
       if (downloadPreferences.getAutoDownloadDelayed().not() || delayed) {
         val task =
@@ -137,20 +136,27 @@ class ContentAutoCachingService
       }
     }
 
-    private fun validNetworkType(
-      current: NetworkType,
-      required: NetworkTypeAutoCache,
-    ): Boolean {
-      val positiveNetworkTypes =
-        when (required) {
-          NetworkTypeAutoCache.WIFI_ONLY -> listOf(NetworkType.WIFI)
-          NetworkTypeAutoCache.WIFI_OR_CELLULAR -> listOf(NetworkType.WIFI, NetworkType.CELLULAR)
-        }
-
-      return positiveNetworkTypes.contains(current)
-    }
-
     companion object {
       private const val DELAY_TIME: Long = 30_000
     }
   }
+
+internal fun autoCachePreconditionsMet(
+  isPlaying: Boolean,
+  isForceCache: Boolean,
+  isNetworkAvailable: Boolean,
+  currentNetwork: NetworkType?,
+  preferredNetwork: NetworkTypeAutoCache,
+): Boolean {
+  if (isPlaying.not() || isForceCache || isNetworkAvailable.not()) {
+    return false
+  }
+
+  val positiveNetworkTypes =
+    when (preferredNetwork) {
+      NetworkTypeAutoCache.WIFI_ONLY -> listOf(NetworkType.WIFI)
+      NetworkTypeAutoCache.WIFI_OR_CELLULAR -> listOf(NetworkType.WIFI, NetworkType.CELLULAR)
+    }
+
+  return positiveNetworkTypes.contains(currentNetwork)
+}
