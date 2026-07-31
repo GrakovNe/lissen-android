@@ -411,6 +411,51 @@ class LissenMediaProviderTest {
       }
 
     @Test
+    fun `book cover falls back to persistent cache when cover provider fails`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns false
+        coEvery { cachedCoverProvider.provideCover(mediaChannel, "book-1") } returns
+          OperationResult.Error(OperationError.NetworkError)
+        every { localCacheRepository.fetchBookCover("book-1") } returns
+          OperationResult.Success(File("cover.jpg"))
+
+        val result = provider.fetchBookCover("book-1")
+
+        assertInstanceOf(OperationResult.Success::class.java, result)
+        assertEquals(File("cover.jpg"), (result as OperationResult.Success).data)
+      }
+
+    @Test
+    fun `book cover returns provider error when no persistent copy exists`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns false
+        coEvery { cachedCoverProvider.provideCover(mediaChannel, "book-1") } returns
+          OperationResult.Error(OperationError.NetworkError)
+        every { localCacheRepository.fetchBookCover("book-1") } returns
+          OperationResult.Error(OperationError.InternalError)
+
+        val result = provider.fetchBookCover("book-1")
+
+        assertInstanceOf(OperationResult.Error::class.java, result)
+        assertEquals(OperationError.NetworkError, (result as OperationResult.Error).code)
+      }
+
+    @Test
+    fun `author cover falls back to persistent cache when cover provider fails`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns false
+        coEvery { cachedCoverProvider.provideAuthorCover(mediaChannel, "a1") } returns
+          OperationResult.Error(OperationError.NetworkError)
+        every { localCacheRepository.fetchAuthorCover("a1") } returns
+          OperationResult.Success(File("author.jpg"))
+
+        val result = provider.fetchAuthorCover("a1")
+
+        assertInstanceOf(OperationResult.Success::class.java, result)
+        assertEquals(File("author.jpg"), (result as OperationResult.Success).data)
+      }
+
+    @Test
     fun `author cover comes from local cache without cover provider when force cache enabled`() =
       runBlocking {
         every { preferences.isForceCache() } returns true

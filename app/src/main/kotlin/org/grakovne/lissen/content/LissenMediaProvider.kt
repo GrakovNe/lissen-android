@@ -121,10 +121,21 @@ class LissenMediaProvider
         }
 
         false -> {
-          cachedCoverProvider.provideCover(
-            channel = providePreferredChannel(),
-            itemId = bookId,
-          )
+          cachedCoverProvider
+            .provideCover(
+              channel = providePreferredChannel(),
+              itemId = bookId,
+            ).fold(
+              onSuccess = { OperationResult.Success(it) },
+              onFailure = { error ->
+                localCacheRepository
+                  .fetchBookCover(bookId)
+                  .fold(
+                    onSuccess = { OperationResult.Success(it) },
+                    onFailure = { error },
+                  )
+              },
+            )
         }
       }
     }
@@ -137,10 +148,21 @@ class LissenMediaProvider
         }
 
         false -> {
-          cachedCoverProvider.provideAuthorCover(
-            channel = providePreferredChannel(),
-            authorId = authorId,
-          )
+          cachedCoverProvider
+            .provideAuthorCover(
+              channel = providePreferredChannel(),
+              authorId = authorId,
+            ).fold(
+              onSuccess = { OperationResult.Success(it) },
+              onFailure = { error ->
+                localCacheRepository
+                  .fetchAuthorCover(authorId)
+                  .fold(
+                    onSuccess = { OperationResult.Success(it) },
+                    onFailure = { error },
+                  )
+              },
+            )
         }
       }
     }
