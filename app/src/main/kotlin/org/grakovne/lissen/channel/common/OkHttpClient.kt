@@ -33,7 +33,7 @@ fun createOkHttpClient(
   return builder
     .addInterceptor(loggingInterceptor())
     .addInterceptor { chain -> authInterceptor(chain, session, requestHeaders) }
-    .connectTimeout(60, TimeUnit.SECONDS)
+    .connectTimeout(20, TimeUnit.SECONDS)
     .readTimeout(120, TimeUnit.SECONDS)
     .writeTimeout(120, TimeUnit.SECONDS)
     .build()
