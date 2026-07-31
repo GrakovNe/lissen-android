@@ -307,10 +307,11 @@ class PlayerViewModelTest {
     }
 
     @Test
-    fun `clearPrepared delegates to mediaRepository`() {
+    fun `clearPrepared resets preparation without clearing playing book`() {
       viewModel.clearPrepared()
 
       verify { mediaRepository.clearPreparedItem() }
+      verify(exactly = 0) { mediaRepository.clearPlayingBook() }
     }
 
     @Test

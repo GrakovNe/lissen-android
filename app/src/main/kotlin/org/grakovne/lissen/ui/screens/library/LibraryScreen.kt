@@ -198,7 +198,7 @@ fun LibraryScreen(
 
   LaunchedEffect(preparingError) {
     if (preparingError) {
-      playerViewModel.clearPlayingBook()
+      playerViewModel.clearPrepared()
     }
   }
 
