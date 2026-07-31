@@ -10,6 +10,7 @@ import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfChannelProvider
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
+import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.content.cache.temporary.CachedBookmarkProvider
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
@@ -17,6 +18,7 @@ import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
+import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
@@ -29,6 +31,7 @@ import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import java.io.File
 
 class LissenMediaProviderTest {
   private val preferences = mockk<LibraryPreferences>(relaxed = true)
@@ -224,6 +227,155 @@ class LissenMediaProviderTest {
   }
 
   @Nested
+  inner class FetchLibrary {
+    @Test
+    fun `uses local cache without calling channel when force cache enabled`() =
+      runBlocking {
+        val paged = PagedItems(items = listOf<LibraryEntry>(), currentPage = 0, totalItems = 0)
+        every { preferences.isForceCache() } returns true
+        every { preferences.getLibraryGrouping() } returns LibraryGrouping.NONE
+        coEvery {
+          localCacheRepository.fetchLibrary("l1", 10, 0, LibraryGrouping.NONE)
+        } returns OperationResult.Success(paged)
+
+        provider.fetchLibrary("l1", 10, 0)
+
+        coVerify { localCacheRepository.fetchLibrary("l1", 10, 0, LibraryGrouping.NONE) }
+        coVerify(exactly = 0) { mediaChannel.fetchLibrary(any(), any(), any(), any()) }
+      }
+
+    @Test
+    fun `uses channel when force cache disabled`() =
+      runBlocking {
+        val paged = PagedItems(items = listOf<LibraryEntry>(), currentPage = 0, totalItems = 0)
+        every { preferences.isForceCache() } returns false
+        every { preferences.getLibraryGrouping() } returns LibraryGrouping.NONE
+        coEvery {
+          mediaChannel.fetchLibrary("l1", 10, 0, LibraryGrouping.NONE)
+        } returns OperationResult.Success(paged)
+
+        provider.fetchLibrary("l1", 10, 0)
+
+        coVerify { mediaChannel.fetchLibrary("l1", 10, 0, LibraryGrouping.NONE) }
+      }
+  }
+
+  @Nested
+  inner class FetchSeriesItems {
+    @Test
+    fun `uses local cache without calling channel when force cache enabled`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns true
+        coEvery {
+          localCacheRepository.fetchSeriesItems(libraryId = "l1", seriesId = "s1")
+        } returns OperationResult.Success(emptyList())
+
+        provider.fetchSeriesItems("l1", "s1")
+
+        coVerify { localCacheRepository.fetchSeriesItems("l1", "s1") }
+        coVerify(exactly = 0) { mediaChannel.fetchSeriesItems(any(), any()) }
+      }
+
+    @Test
+    fun `uses channel when force cache disabled`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns false
+        coEvery {
+          mediaChannel.fetchSeriesItems(libraryId = "l1", seriesId = "s1")
+        } returns OperationResult.Success(emptyList())
+
+        provider.fetchSeriesItems("l1", "s1")
+
+        coVerify { mediaChannel.fetchSeriesItems("l1", "s1") }
+      }
+  }
+
+  @Nested
+  inner class FetchAuthorBooks {
+    @Test
+    fun `uses local cache without calling channel when force cache enabled`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns true
+        coEvery {
+          localCacheRepository.fetchAuthorItems(libraryId = "l1", authorId = "a1")
+        } returns OperationResult.Success(emptyList())
+
+        provider.fetchAuthorBooks("l1", "a1")
+
+        coVerify { localCacheRepository.fetchAuthorItems("l1", "a1") }
+        coVerify(exactly = 0) { mediaChannel.fetchAuthorBooks(any(), any()) }
+      }
+
+    @Test
+    fun `uses channel when force cache disabled`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns false
+        coEvery {
+          mediaChannel.fetchAuthorBooks(libraryId = "l1", authorId = "a1")
+        } returns OperationResult.Success(emptyList())
+
+        provider.fetchAuthorBooks("l1", "a1")
+
+        coVerify { mediaChannel.fetchAuthorBooks("l1", "a1") }
+      }
+  }
+
+  @Nested
+  inner class FetchCovers {
+    @Test
+    fun `book cover comes from local cache without cover provider when force cache enabled`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns true
+        every { localCacheRepository.fetchBookCover("book-1") } returns
+          OperationResult.Success(File("cover.jpg"))
+
+        provider.fetchBookCover("book-1")
+
+        io.mockk.verify { localCacheRepository.fetchBookCover("book-1") }
+        coVerify(exactly = 0) { cachedCoverProvider.provideCover(any(), any()) }
+      }
+
+    @Test
+    fun `book cover comes from cover provider when force cache disabled`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns false
+        coEvery {
+          cachedCoverProvider.provideCover(mediaChannel, "book-1")
+        } returns OperationResult.Success(File("cover.jpg"))
+
+        provider.fetchBookCover("book-1")
+
+        coVerify { cachedCoverProvider.provideCover(mediaChannel, "book-1") }
+      }
+
+    @Test
+    fun `author cover comes from local cache without cover provider when force cache enabled`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns true
+        every { localCacheRepository.fetchAuthorCover("a1") } returns
+          OperationResult.Success(File("author.jpg"))
+
+        provider.fetchAuthorCover("a1")
+
+        io.mockk.verify { localCacheRepository.fetchAuthorCover("a1") }
+        coVerify(exactly = 0) { cachedCoverProvider.provideAuthorCover(any(), any()) }
+      }
+
+    @Test
+    fun `author cover comes from cover provider when force cache disabled`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns false
+        coEvery {
+          cachedCoverProvider.provideAuthorCover(mediaChannel, "a1")
+        } returns OperationResult.Success(File("author.jpg"))
+
+        provider.fetchAuthorCover("a1")
+
+        coVerify { cachedCoverProvider.provideAuthorCover(mediaChannel, "a1") }
+      }
+  }
+
+  @Nested
   inner class FetchRecentListenedBooks {
     @Test
     fun `uses local cache when force cache enabled`() =
@@ -310,30 +462,32 @@ class LissenMediaProviderTest {
   @Nested
   inner class SyncProgress {
     @Test
-    fun `returns Success regardless of channel result when force cache enabled`() =
+    fun `syncs local cache without calling channel when force cache enabled`() =
       runBlocking {
         val item = detailedItem("book-1")
         val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
         every { preferences.isForceCache() } returns true
-        coEvery { mediaChannel.syncProgress(any(), any()) } returns
-          OperationResult.Error(OperationError.NetworkError)
 
         val result = provider.syncProgress("session-1", item, progress)
 
         assertInstanceOf(OperationResult.Success::class.java, result)
+        coVerify { localCacheRepository.syncProgress(item, progress) }
         coVerify(exactly = 0) { mediaChannel.syncProgress(any(), any()) }
       }
 
     @Test
-    fun `always syncs local cache regardless of force cache flag`() =
+    fun `syncs local cache when force cache disabled`() =
       runBlocking {
         val item = detailedItem("book-1")
         val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
-        every { preferences.isForceCache() } returns true
+        every { preferences.isForceCache() } returns false
+        coEvery { mediaChannel.syncProgress("session-1", progress) } returns
+          OperationResult.Success(Unit)
 
         provider.syncProgress("session-1", item, progress)
 
         coVerify { localCacheRepository.syncProgress(item, progress) }
+        coVerify { mediaChannel.syncProgress("session-1", progress) }
       }
 
     @Test
