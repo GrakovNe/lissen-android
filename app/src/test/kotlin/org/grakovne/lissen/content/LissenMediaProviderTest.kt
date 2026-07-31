@@ -109,15 +109,45 @@ class LissenMediaProviderTest {
       }
 
     @Test
-    fun `returns Error when channel call fails and force cache disabled`() =
+    fun `falls back to local cache when channel fails and force cache disabled`() =
+      runBlocking {
+        val item = detailedItem("book-1")
+        every { preferences.isForceCache() } returns false
+        coEvery { mediaChannel.fetchBook("book-1") } returns
+          OperationResult.Error(OperationError.NetworkError)
+        coEvery { localCacheRepository.fetchBook("book-1") } returns item
+
+        val result = provider.fetchBook("book-1")
+
+        assertInstanceOf(OperationResult.Success::class.java, result)
+        assertEquals("book-1", (result as OperationResult.Success).data.id)
+      }
+
+    @Test
+    fun `returns Error when channel fails and no cached copy exists`() =
       runBlocking {
         every { preferences.isForceCache() } returns false
         coEvery { mediaChannel.fetchBook(any()) } returns
           OperationResult.Error(OperationError.NetworkError)
+        coEvery { localCacheRepository.fetchBook(any()) } returns null
 
         val result = provider.fetchBook("book-1")
 
         assertInstanceOf(OperationResult.Error::class.java, result)
+        assertEquals(OperationError.NetworkError, (result as OperationResult.Error).code)
+      }
+
+    @Test
+    fun `does not read local cache when channel succeeds and force cache disabled`() =
+      runBlocking {
+        val item = detailedItem("book-1")
+        every { preferences.isForceCache() } returns false
+        coEvery { mediaChannel.fetchBook("book-1") } returns OperationResult.Success(item)
+        coEvery { localCacheRepository.fetchPlayingItemProgress("book-1") } returns null
+
+        provider.fetchBook("book-1")
+
+        coVerify(exactly = 0) { localCacheRepository.fetchBook(any()) }
       }
   }
 

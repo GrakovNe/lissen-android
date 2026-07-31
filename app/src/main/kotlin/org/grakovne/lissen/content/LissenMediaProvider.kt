@@ -311,6 +311,15 @@ class LissenMediaProvider
             .fetchBook(bookId)
             .map { mergeLocalItemProgress(it) }
             .map { trimProgress(it) }
+            .foldAsync(
+              onSuccess = { OperationResult.Success(it) },
+              onFailure = { error ->
+                localCacheRepository
+                  .fetchBook(bookId)
+                  ?.let { OperationResult.Success(it) }
+                  ?: error
+              },
+            )
         }
       }
     }
