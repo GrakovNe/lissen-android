@@ -259,6 +259,20 @@ class LissenMediaProviderTest {
   @Nested
   inner class StartPlayback {
     @Test
+    fun `returns local session without calling channel when force cache enabled`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns true
+
+        val result = provider.startPlayback("book-1", "ep-1", listOf("audio/mp3"), "device-1")
+
+        assertInstanceOf(OperationResult.Success::class.java, result)
+        val session = (result as OperationResult.Success).data
+        assertEquals("book-1", session.itemId)
+        assertEquals(org.grakovne.lissen.domain.PlaybackSessionSource.LOCAL, session.sessionSource)
+        coVerify(exactly = 0) { mediaChannel.startPlayback(any(), any(), any(), any()) }
+      }
+
+    @Test
     fun `returns remote session on channel success`() =
       runBlocking {
         val session = PlaybackSession.remote("session-1", "book-1")
@@ -307,6 +321,7 @@ class LissenMediaProviderTest {
         val result = provider.syncProgress("session-1", item, progress)
 
         assertInstanceOf(OperationResult.Success::class.java, result)
+        coVerify(exactly = 0) { mediaChannel.syncProgress(any(), any()) }
       }
 
     @Test
