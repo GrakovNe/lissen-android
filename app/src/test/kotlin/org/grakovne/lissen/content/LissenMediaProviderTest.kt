@@ -11,6 +11,7 @@ import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.common.LibraryGrouping
+import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.content.cache.temporary.CachedBookmarkProvider
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
@@ -39,6 +40,7 @@ class LissenMediaProviderTest {
   private val localCacheRepository = mockk<LocalCacheRepository>(relaxed = true)
   private val cachedCoverProvider = mockk<CachedCoverProvider>(relaxed = true)
   private val cachedBookmarkProvider = mockk<CachedBookmarkProvider>(relaxed = true)
+  private val networkService = mockk<NetworkService>(relaxed = true)
   private val mediaChannel = mockk<MediaChannel>(relaxed = true)
 
   private lateinit var provider: LissenMediaProvider
@@ -46,6 +48,7 @@ class LissenMediaProviderTest {
   @BeforeEach
   fun setup() {
     every { channelProvider.provideMediaChannel() } returns mediaChannel
+    every { networkService.isNetworkAvailable() } returns true
     provider =
       LissenMediaProvider(
         preferences,
@@ -53,6 +56,7 @@ class LissenMediaProviderTest {
         localCacheRepository,
         cachedCoverProvider,
         cachedBookmarkProvider,
+        networkService,
       )
   }
 
@@ -129,6 +133,34 @@ class LissenMediaProviderTest {
         every { preferences.isForceCache() } returns false
         coEvery { mediaChannel.fetchBook(any()) } returns
           OperationResult.Error(OperationError.NetworkError)
+        coEvery { localCacheRepository.fetchBook(any()) } returns null
+
+        val result = provider.fetchBook("book-1")
+
+        assertInstanceOf(OperationResult.Error::class.java, result)
+        assertEquals(OperationError.NetworkError, (result as OperationResult.Error).code)
+      }
+
+    @Test
+    fun `serves cached copy without calling channel when network unavailable`() =
+      runBlocking {
+        val item = detailedItem("book-1")
+        every { preferences.isForceCache() } returns false
+        every { networkService.isNetworkAvailable() } returns false
+        coEvery { localCacheRepository.fetchBook("book-1") } returns item
+
+        val result = provider.fetchBook("book-1")
+
+        assertInstanceOf(OperationResult.Success::class.java, result)
+        assertEquals("book-1", (result as OperationResult.Success).data.id)
+        coVerify(exactly = 0) { mediaChannel.fetchBook(any()) }
+      }
+
+    @Test
+    fun `returns NetworkError when network unavailable and no cached copy`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns false
+        every { networkService.isNetworkAvailable() } returns false
         coEvery { localCacheRepository.fetchBook(any()) } returns null
 
         val result = provider.fetchBook("book-1")
@@ -455,6 +487,20 @@ class LissenMediaProviderTest {
       }
 
     @Test
+    fun `returns local session without calling channel when network unavailable`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns false
+        every { networkService.isNetworkAvailable() } returns false
+
+        val result = provider.startPlayback("book-1", "ep-1", listOf("audio/mp3"), "device-1")
+
+        assertInstanceOf(OperationResult.Success::class.java, result)
+        val session = (result as OperationResult.Success).data
+        assertEquals(org.grakovne.lissen.domain.PlaybackSessionSource.LOCAL, session.sessionSource)
+        coVerify(exactly = 0) { mediaChannel.startPlayback(any(), any(), any(), any()) }
+      }
+
+    @Test
     fun `returns remote session on channel success`() =
       runBlocking {
         val session = PlaybackSession.remote("session-1", "book-1")
@@ -497,6 +543,21 @@ class LissenMediaProviderTest {
         val item = detailedItem("book-1")
         val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
         every { preferences.isForceCache() } returns true
+
+        val result = provider.syncProgress("session-1", item, progress)
+
+        assertInstanceOf(OperationResult.Success::class.java, result)
+        coVerify { localCacheRepository.syncProgress(item, progress) }
+        coVerify(exactly = 0) { mediaChannel.syncProgress(any(), any()) }
+      }
+
+    @Test
+    fun `syncs local cache without calling channel when network unavailable`() =
+      runBlocking {
+        val item = detailedItem("book-1")
+        val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
+        every { preferences.isForceCache() } returns false
+        every { networkService.isNetworkAvailable() } returns false
 
         val result = provider.syncProgress("session-1", item, progress)
 

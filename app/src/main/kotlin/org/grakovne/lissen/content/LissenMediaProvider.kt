@@ -7,6 +7,7 @@ import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.common.LibraryGrouping
+import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.content.cache.temporary.CachedBookmarkProvider
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
@@ -36,6 +37,7 @@ class LissenMediaProvider
     private val localCacheRepository: LocalCacheRepository,
     private val cachedCoverProvider: CachedCoverProvider,
     private val cachedBookmarkProvider: CachedBookmarkProvider,
+    private val networkService: NetworkService,
   ) {
     suspend fun dropBookmark(bookmark: Bookmark) {
       Timber.d("Dropping bookmark for ${bookmark.libraryItemId} at position=${bookmark.totalPosition.toInt()}s")
@@ -105,7 +107,7 @@ class LissenMediaProvider
 
       localCacheRepository.syncProgress(detailedItem, progress)
 
-      if (preferences.isForceCache()) return OperationResult.Success(Unit)
+      if (channelAvailable().not()) return OperationResult.Success(Unit)
 
       return providePreferredChannel()
         .syncProgress(sessionId, progress)
@@ -261,7 +263,7 @@ class LissenMediaProvider
     ): OperationResult<PlaybackSession> {
       Timber.d("Starting playback: itemId=$itemId, chapterId=$chapterId, mimeTypes=$supportedMimeTypes")
 
-      if (preferences.isForceCache()) return OperationResult.Success(PlaybackSession.local(itemId))
+      if (channelAvailable().not()) return OperationResult.Success(PlaybackSession.local(itemId))
 
       return providePreferredChannel()
         .startPlayback(
@@ -307,19 +309,30 @@ class LissenMediaProvider
         }
 
         false -> {
-          providePreferredChannel()
-            .fetchBook(bookId)
-            .map { mergeLocalItemProgress(it) }
-            .map { trimProgress(it) }
-            .foldAsync(
-              onSuccess = { OperationResult.Success(it) },
-              onFailure = { error ->
-                localCacheRepository
-                  .fetchBook(bookId)
-                  ?.let { OperationResult.Success(it) }
-                  ?: error
-              },
-            )
+          when (networkService.isNetworkAvailable()) {
+            true -> {
+              providePreferredChannel()
+                .fetchBook(bookId)
+                .map { mergeLocalItemProgress(it) }
+                .map { trimProgress(it) }
+                .foldAsync(
+                  onSuccess = { OperationResult.Success(it) },
+                  onFailure = { error ->
+                    localCacheRepository
+                      .fetchBook(bookId)
+                      ?.let { OperationResult.Success(it) }
+                      ?: error
+                  },
+                )
+            }
+
+            false -> {
+              localCacheRepository
+                .fetchBook(bookId)
+                ?.let { OperationResult.Success(it) }
+                ?: OperationResult.Error(OperationError.NetworkError)
+            }
+          }
         }
       }
     }
@@ -468,4 +481,6 @@ class LissenMediaProvider
     fun provideAuthService(): ChannelAuthService = channelProvider.provideChannelAuth()
 
     fun providePreferredChannel(): MediaChannel = channelProvider.provideMediaChannel()
+
+    private fun channelAvailable(): Boolean = preferences.isForceCache().not() && networkService.isNetworkAvailable()
   }
