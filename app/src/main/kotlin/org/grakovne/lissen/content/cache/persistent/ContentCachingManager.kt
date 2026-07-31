@@ -102,12 +102,15 @@ class ContentCachingManager
       chapter: PlayingChapter,
     ) {
       Timber.d("Dropping cache for ${item.id}, chapter=${chapter.id}")
-      bookRepository
-        .cacheBook(
-          book = item,
-          fetchedChapters = emptyList(),
-          droppedChapters = listOf(chapter),
-        )
+
+      if (bookRepository.fetchBook(item.id) != null) {
+        bookRepository
+          .cacheBook(
+            book = item,
+            fetchedChapters = emptyList(),
+            droppedChapters = listOf(chapter),
+          )
+      }
 
       findRequestedFiles(item, listOf(chapter))
         .forEach { file ->
