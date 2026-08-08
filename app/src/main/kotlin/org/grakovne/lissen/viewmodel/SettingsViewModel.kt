@@ -3,6 +3,7 @@ package org.grakovne.lissen.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -207,7 +208,7 @@ class SettingsViewModel
     fun logout() {
       Timber.d("User action: logout")
       preferencesReset.clearAll()
-      viewModelScope.launch { listeningRecordRepository.dropAll() }
+      viewModelScope.launch(NonCancellable) { listeningRecordRepository.dropAll() }
     }
 
     fun refreshConnectionInfo() {

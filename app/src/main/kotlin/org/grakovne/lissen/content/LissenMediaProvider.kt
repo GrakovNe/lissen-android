@@ -115,7 +115,7 @@ class LissenMediaProvider
         .syncListening(record)
         .foldAsync(
           onSuccess = {
-            listeningRecordRepository.markSynced(listOf(record.id))
+            listeningRecordRepository.markSynced(listOf(record))
             OperationResult.Success(Unit)
           },
           onFailure = { OperationResult.Error(it.code, it.message) },

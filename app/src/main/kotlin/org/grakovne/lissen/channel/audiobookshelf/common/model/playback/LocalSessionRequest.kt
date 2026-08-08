@@ -47,5 +47,4 @@ data class LocalSessionsSyncResponse(
 data class LocalSessionSyncResult(
   val id: String,
   val success: Boolean,
-  val error: String? = null,
 )

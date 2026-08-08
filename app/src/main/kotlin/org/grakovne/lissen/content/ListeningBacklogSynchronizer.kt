@@ -34,10 +34,10 @@ class ListeningBacklogSynchronizer
       if (preferences.isForceCache()) return
       if (networkService.isNetworkAvailable().not()) return
 
-      val records = listeningRecordRepository.fetchUnsynced()
+      val records = listeningRecordRepository.fetchUnsynced(System.currentTimeMillis())
 
       if (records.isNotEmpty()) {
-        Timber.d("Syncing listening backlog of ${records.size} records")
+        Timber.d("Syncing listening backlog: records=${records.size}")
       }
 
       records

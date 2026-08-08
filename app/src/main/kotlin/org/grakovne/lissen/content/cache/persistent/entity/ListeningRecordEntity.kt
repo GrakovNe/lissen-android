@@ -26,7 +26,6 @@ data class ListeningRecordEntity(
   val timeListeningMs: Long,
   val startedAt: Long,
   val updatedAt: Long,
-  val host: String,
-  val username: String,
+  val account: String,
   val synced: Boolean,
 )

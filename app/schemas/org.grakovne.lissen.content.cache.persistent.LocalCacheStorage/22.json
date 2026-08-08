@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 22,
-    "identityHash": "c60ecc6e0fbb31d510b29217cbf2d0e8",
+    "identityHash": "c4e6280a04216b0a808c6a87beba362b",
     "entities": [
       {
         "tableName": "detailed_books",
@@ -430,7 +430,7 @@
       },
       {
         "tableName": "listening_record",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `itemId` TEXT NOT NULL, `episodeId` TEXT, `mediaType` TEXT NOT NULL, `displayTitle` TEXT NOT NULL, `duration` REAL NOT NULL, `startTime` REAL NOT NULL, `currentTime` REAL NOT NULL, `timeListeningMs` INTEGER NOT NULL, `startedAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `host` TEXT NOT NULL, `username` TEXT NOT NULL, `synced` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `itemId` TEXT NOT NULL, `episodeId` TEXT, `mediaType` TEXT NOT NULL, `displayTitle` TEXT NOT NULL, `duration` REAL NOT NULL, `startTime` REAL NOT NULL, `currentTime` REAL NOT NULL, `timeListeningMs` INTEGER NOT NULL, `startedAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, `account` TEXT NOT NULL, `synced` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -498,14 +498,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "host",
-            "columnName": "host",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "username",
-            "columnName": "username",
+            "fieldPath": "account",
+            "columnName": "account",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -538,7 +532,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c60ecc6e0fbb31d510b29217cbf2d0e8')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c4e6280a04216b0a808c6a87beba362b')"
     ]
   }
 }

@@ -60,24 +60,20 @@ abstract class AudiobookshelfChannel(
   override suspend fun syncListening(record: ListeningRecord): OperationResult<Unit> =
     dataRepository.publishLocalSession(listeningRecordRequestConverter.apply(record))
 
-  override suspend fun syncListeningBacklog(records: List<ListeningRecord>): OperationResult<List<String>> =
-    when (records.isEmpty()) {
-      true -> {
-        OperationResult.Success(emptyList())
-      }
+  override suspend fun syncListeningBacklog(records: List<ListeningRecord>): OperationResult<List<ListeningRecord>> =
+    dataRepository
+      .publishLocalSessions(
+        LocalSessionsSyncRequest(records.map { listeningRecordRequestConverter.apply(it) }),
+      ).map { response ->
+        val synced =
+          response
+            .results
+            .filter { it.success }
+            .map { it.id }
+            .toSet()
 
-      false -> {
-        dataRepository
-          .publishLocalSessions(
-            LocalSessionsSyncRequest(records.map { listeningRecordRequestConverter.apply(it) }),
-          ).map { response ->
-            response
-              .results
-              .filter { it.success }
-              .map { it.id }
-          }
+        records.filter { it.id in synced }
       }
-    }
 
   override suspend fun fetchBookCover(
     bookId: String,

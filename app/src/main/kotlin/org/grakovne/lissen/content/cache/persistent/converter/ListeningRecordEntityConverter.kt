@@ -27,8 +27,7 @@ class ListeningRecordEntityConverter
 
     fun apply(
       record: ListeningRecord,
-      host: String,
-      username: String,
+      account: String,
       synced: Boolean,
     ): ListeningRecordEntity =
       ListeningRecordEntity(
@@ -43,8 +42,7 @@ class ListeningRecordEntityConverter
         timeListeningMs = record.timeListeningMs,
         startedAt = record.startedAt,
         updatedAt = record.updatedAt,
-        host = host,
-        username = username,
+        account = account,
         synced = synced,
       )
   }

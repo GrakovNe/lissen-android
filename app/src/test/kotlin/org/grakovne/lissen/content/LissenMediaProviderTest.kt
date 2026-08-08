@@ -481,7 +481,7 @@ class LissenMediaProviderTest {
         assertInstanceOf(OperationResult.Success::class.java, result)
         coVerify { localCacheRepository.syncProgress(item, session.progress) }
         coVerify { listeningRecordRepository.upsert(match { it.id == "session-1" }) }
-        coVerify { listeningRecordRepository.markSynced(listOf("session-1")) }
+        coVerify { listeningRecordRepository.markSynced(match { it.single().id == "session-1" }) }
       }
 
     @Test

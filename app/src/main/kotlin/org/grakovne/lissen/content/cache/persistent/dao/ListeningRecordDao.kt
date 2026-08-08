@@ -16,24 +16,28 @@ interface ListeningRecordDao {
     SELECT *
     FROM listening_record
     WHERE synced = 0
-      AND host = :host
-      AND username = :username
+      AND account = :account
+      AND updatedAt < :threshold
     ORDER BY updatedAt ASC
     """,
   )
-  suspend fun fetchUnsyncedByHostAndUsername(
-    host: String,
-    username: String,
+  suspend fun fetchUnsyncedByAccount(
+    account: String,
+    threshold: Long,
   ): List<ListeningRecordEntity>
 
   @Query(
     """
     UPDATE listening_record
     SET synced = 1
-    WHERE id IN (:ids)
+    WHERE id = :id
+      AND updatedAt = :updatedAt
     """,
   )
-  suspend fun markSynced(ids: List<String>)
+  suspend fun markSynced(
+    id: String,
+    updatedAt: Long,
+  )
 
   @Query(
     """

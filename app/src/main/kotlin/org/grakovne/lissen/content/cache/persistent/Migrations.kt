@@ -397,8 +397,7 @@ val MIGRATION_21_22 =
             timeListeningMs INTEGER NOT NULL,
             startedAt INTEGER NOT NULL,
             updatedAt INTEGER NOT NULL,
-            host TEXT NOT NULL,
-            username TEXT NOT NULL,
+            account TEXT NOT NULL,
             synced INTEGER NOT NULL
         )
         """.trimIndent(),

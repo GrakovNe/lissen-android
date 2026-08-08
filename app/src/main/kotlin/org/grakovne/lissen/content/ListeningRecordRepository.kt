@@ -19,19 +19,18 @@ class ListeningRecordRepository
       listeningRecordDao.upsert(
         converter.apply(
           record = record,
-          host = sessionPreferences.getHost().orEmpty(),
-          username = sessionPreferences.getUsername().orEmpty(),
+          account = provideAccountHash(),
           synced = false,
         ),
       )
 
-    suspend fun markSynced(ids: List<String>) = listeningRecordDao.markSynced(ids)
+    suspend fun markSynced(records: List<ListeningRecord>) = records.forEach { listeningRecordDao.markSynced(it.id, it.updatedAt) }
 
-    suspend fun fetchUnsynced(): List<ListeningRecord> =
+    suspend fun fetchUnsynced(now: Long): List<ListeningRecord> =
       listeningRecordDao
-        .fetchUnsyncedByHostAndUsername(
-          host = sessionPreferences.getHost().orEmpty(),
-          username = sessionPreferences.getUsername().orEmpty(),
+        .fetchUnsyncedByAccount(
+          account = provideAccountHash(),
+          threshold = now - BACKLOG_MIN_AGE_MS,
         ).map { converter.apply(it) }
 
     suspend fun dropStale(now: Long) {
@@ -40,7 +39,14 @@ class ListeningRecordRepository
     }
 
     suspend fun dropAll() = listeningRecordDao.deleteAll()
+
+    private fun provideAccountHash(): String =
+      calculateAccountHash(
+        host = sessionPreferences.getHost(),
+        username = sessionPreferences.getUsername(),
+      )
   }
 
+internal const val BACKLOG_MIN_AGE_MS = 90_000L
 internal const val SYNCED_RETENTION_MS = 7 * 24 * 60 * 60 * 1000L
 internal const val UNSYNCED_RETENTION_MS = 30 * 24 * 60 * 60 * 1000L

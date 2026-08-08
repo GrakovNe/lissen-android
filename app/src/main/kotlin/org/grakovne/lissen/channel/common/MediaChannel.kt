@@ -29,7 +29,7 @@ interface MediaChannel {
 
   suspend fun syncListening(record: ListeningRecord): OperationResult<Unit>
 
-  suspend fun syncListeningBacklog(records: List<ListeningRecord>): OperationResult<List<String>>
+  suspend fun syncListeningBacklog(records: List<ListeningRecord>): OperationResult<List<ListeningRecord>>
 
   suspend fun fetchBookCover(
     bookId: String,
