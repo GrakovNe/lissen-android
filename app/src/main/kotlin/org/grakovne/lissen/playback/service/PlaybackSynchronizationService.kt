@@ -12,6 +12,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.LissenMediaProvider
+import org.grakovne.lissen.content.ListeningBacklogSynchronizer
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.ListeningSession
 import org.grakovne.lissen.domain.PlaybackProgress
@@ -27,6 +28,7 @@ class PlaybackSynchronizationService
     private val exoPlayer: ExoPlayer,
     private val mediaChannel: LissenMediaProvider,
     private val listeningSessionTracker: ListeningSessionTracker,
+    private val listeningBacklogSynchronizer: ListeningBacklogSynchronizer,
   ) {
     private var currentItem: DetailedItem? = null
     private val serviceScope = MainScope()
@@ -53,6 +55,7 @@ class PlaybackSynchronizationService
       serviceScope.coroutineContext.cancelChildren()
       syncJob = null
       currentItem = item
+      listeningBacklogSynchronizer.requestSynchronization()
     }
 
     fun cancelSynchronization() {

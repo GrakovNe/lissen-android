@@ -19,6 +19,7 @@ import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.content.LissenMediaProvider
+import org.grakovne.lissen.content.ListeningRecordRepository
 import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.domain.EqualizerSettings
 import org.grakovne.lissen.domain.Library
@@ -57,6 +58,7 @@ class SettingsViewModel
     private val download: DownloadPreferences,
     private val diagnostics: DiagnosticsPreferences,
     private val preferencesReset: PreferencesReset,
+    private val listeningRecordRepository: ListeningRecordRepository,
     private val logProvider: LissenLogProvider,
     private val configProvider: LissenConfigProvider,
     private val equalizerBandProvider: EqualizerBandProvider,
@@ -205,6 +207,7 @@ class SettingsViewModel
     fun logout() {
       Timber.d("User action: logout")
       preferencesReset.clearAll()
+      viewModelScope.launch { listeningRecordRepository.dropAll() }
     }
 
     fun refreshConnectionInfo() {

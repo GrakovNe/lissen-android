@@ -18,6 +18,7 @@ import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.common.LibraryOrderingOption
 import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.content.LissenMediaProvider
+import org.grakovne.lissen.content.ListeningRecordRepository
 import org.grakovne.lissen.domain.EqualizerSettings
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryType
@@ -55,6 +56,7 @@ class SettingsViewModelTest {
   private val download = mockk<DownloadPreferences>(relaxed = true)
   private val diagnostics = mockk<DiagnosticsPreferences>(relaxed = true)
   private val preferencesReset = mockk<PreferencesReset>(relaxed = true)
+  private val listeningRecordRepository = mockk<ListeningRecordRepository>(relaxed = true)
   private val mediaChannel = mockk<LissenMediaProvider>(relaxed = true)
   private val logProvider = mockk<LissenLogProvider>(relaxed = true)
   private val configProvider = mockk<LissenConfigProvider>(relaxed = true)
@@ -105,6 +107,7 @@ class SettingsViewModelTest {
         download,
         diagnostics,
         preferencesReset,
+        listeningRecordRepository,
         logProvider,
         configProvider,
         equalizerBandProvider,
@@ -197,6 +200,7 @@ class SettingsViewModelTest {
           download,
           diagnostics,
           preferencesReset,
+          listeningRecordRepository,
           logProvider,
           configProvider,
           equalizerBandProvider,
@@ -221,6 +225,7 @@ class SettingsViewModelTest {
           download,
           diagnostics,
           preferencesReset,
+          listeningRecordRepository,
           logProvider,
           configProvider,
           equalizerBandProvider,
@@ -462,6 +467,7 @@ class SettingsViewModelTest {
           download,
           diagnostics,
           preferencesReset,
+          listeningRecordRepository,
           logProvider,
           configProvider,
           equalizerBandProvider,
@@ -549,6 +555,7 @@ class SettingsViewModelTest {
           download,
           diagnostics,
           preferencesReset,
+          listeningRecordRepository,
           logProvider,
           configProvider,
           equalizerBandProvider,
@@ -578,6 +585,7 @@ class SettingsViewModelTest {
           download,
           diagnostics,
           preferencesReset,
+          listeningRecordRepository,
           logProvider,
           configProvider,
           equalizerBandProvider,
@@ -605,6 +613,7 @@ class SettingsViewModelTest {
           download,
           diagnostics,
           preferencesReset,
+          listeningRecordRepository,
           logProvider,
           configProvider,
           equalizerBandProvider,
