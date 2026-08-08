@@ -379,3 +379,33 @@ val MIGRATION_20_21 =
       db.execSQL("CREATE INDEX IF NOT EXISTS index_detailed_books_seriesId ON detailed_books(seriesId)")
     }
   }
+
+val MIGRATION_21_22 =
+  object : Migration(21, 22) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+      db.execSQL(
+        """
+        CREATE TABLE IF NOT EXISTS listening_record (
+            id TEXT NOT NULL PRIMARY KEY,
+            itemId TEXT NOT NULL,
+            episodeId TEXT,
+            mediaType TEXT NOT NULL,
+            displayTitle TEXT NOT NULL,
+            duration REAL NOT NULL,
+            startTime REAL NOT NULL,
+            currentTime REAL NOT NULL,
+            timeListeningMs INTEGER NOT NULL,
+            startedAt INTEGER NOT NULL,
+            updatedAt INTEGER NOT NULL,
+            host TEXT NOT NULL,
+            username TEXT NOT NULL,
+            synced INTEGER NOT NULL
+        )
+        """.trimIndent(),
+      )
+
+      db.execSQL(
+        "CREATE INDEX IF NOT EXISTS index_listening_record_synced_updatedAt ON listening_record(synced, updatedAt)",
+      )
+    }
+  }
