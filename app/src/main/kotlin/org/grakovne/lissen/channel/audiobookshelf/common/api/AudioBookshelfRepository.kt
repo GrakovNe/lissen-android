@@ -12,6 +12,9 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.Bookmark
 import org.grakovne.lissen.channel.audiobookshelf.common.model.connection.ConnectionInfoResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.AuthorItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.LocalSessionRequest
+import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.LocalSessionsSyncRequest
+import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.LocalSessionsSyncResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackSessionResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.ProgressSyncRequest
@@ -274,6 +277,16 @@ class AudioBookshelfRepository
           itemId = itemId,
           syncProgressRequest = progress,
         )
+      }
+
+    suspend fun publishLocalSession(request: LocalSessionRequest): OperationResult<Unit> =
+      audioBookShelfApiService.makeRequest {
+        it.publishLocalSession(request)
+      }
+
+    suspend fun publishLocalSessions(request: LocalSessionsSyncRequest): OperationResult<LocalSessionsSyncResponse> =
+      audioBookShelfApiService.makeRequest {
+        it.publishLocalSessions(request)
       }
 
     suspend fun fetchBookCover(

@@ -13,9 +13,11 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarkItemR
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarksResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.ListeningRecordRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.DeviceInfo
+import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.LocalSessionsSyncRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
 import org.grakovne.lissen.channel.common.ConnectionInfo
 import org.grakovne.lissen.channel.common.MediaChannel
@@ -25,6 +27,7 @@ import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.BookmarkSyncState
 import org.grakovne.lissen.domain.CreateBookmarkRequest
 import org.grakovne.lissen.domain.Library
+import org.grakovne.lissen.domain.ListeningRecord
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
@@ -35,6 +38,7 @@ abstract class AudiobookshelfChannel(
   protected val preferences: LibraryPreferences,
   private val hostProvider: AudiobookshelfHostProvider,
   private val syncService: AudioBookshelfSyncService,
+  private val listeningRecordRequestConverter: ListeningRecordRequestConverter,
   private val libraryResponseConverter: LibraryResponseConverter,
   private val recentBookResponseConverter: RecentListeningResponseConverter,
   private val connectionInfoResponseConverter: ConnectionInfoResponseConverter,
@@ -65,6 +69,28 @@ abstract class AudiobookshelfChannel(
     sessionId: String,
     progress: PlaybackProgress,
   ): OperationResult<Unit> = syncService.syncProgress(sessionId, progress)
+
+  override suspend fun syncListening(record: ListeningRecord): OperationResult<Unit> =
+    dataRepository.publishLocalSession(listeningRecordRequestConverter.apply(record))
+
+  override suspend fun syncListeningBacklog(records: List<ListeningRecord>): OperationResult<List<String>> =
+    when (records.isEmpty()) {
+      true -> {
+        OperationResult.Success(emptyList())
+      }
+
+      false -> {
+        dataRepository
+          .publishLocalSessions(
+            LocalSessionsSyncRequest(records.map { listeningRecordRequestConverter.apply(it) }),
+          ).map { response ->
+            response
+              .results
+              .filter { it.success }
+              .map { it.id }
+          }
+      }
+    }
 
   override suspend fun fetchBookCover(
     bookId: String,

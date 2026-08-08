@@ -10,6 +10,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarkItemR
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarksResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.ListeningRecordRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastOrderingRequestConverter
@@ -35,6 +36,7 @@ class PodcastAudiobookshelfChannel
     recentListeningResponseConverter: RecentListeningResponseConverter,
     preferences: LibraryPreferences,
     syncService: AudioBookshelfPodcastSyncService,
+    listeningRecordRequestConverter: ListeningRecordRequestConverter,
     sessionResponseConverter: PlaybackSessionResponseConverter,
     libraryResponseConverter: LibraryResponseConverter,
     connectionInfoResponseConverter: ConnectionInfoResponseConverter,
@@ -51,6 +53,7 @@ class PodcastAudiobookshelfChannel
       sessionResponseConverter = sessionResponseConverter,
       preferences = preferences,
       syncService = syncService,
+      listeningRecordRequestConverter = listeningRecordRequestConverter,
       libraryResponseConverter = libraryResponseConverter,
       connectionInfoResponseConverter = connectionInfoResponseConverter,
       bookmarksResponseConverter = bookmarksResponseConverter,

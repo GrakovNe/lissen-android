@@ -12,6 +12,7 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.ListeningRecord
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
@@ -32,6 +33,10 @@ interface MediaChannel {
     sessionId: String,
     progress: PlaybackProgress,
   ): OperationResult<Unit>
+
+  suspend fun syncListening(record: ListeningRecord): OperationResult<Unit>
+
+  suspend fun syncListeningBacklog(records: List<ListeningRecord>): OperationResult<List<String>>
 
   suspend fun fetchBookCover(
     bookId: String,

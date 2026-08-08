@@ -26,6 +26,7 @@ class LibraryAudiobookshelfChannelTest {
       recentListeningResponseConverter = mockk(relaxed = true),
       preferences = mockk(relaxed = true),
       syncService = mockk(relaxed = true),
+      listeningRecordRequestConverter = mockk(relaxed = true),
       sessionResponseConverter = mockk(relaxed = true),
       libraryResponseConverter = mockk(relaxed = true),
       connectionInfoResponseConverter = mockk(relaxed = true),
