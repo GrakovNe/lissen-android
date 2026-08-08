@@ -11,6 +11,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.grakovne.lissen.common.CoalescingRunner
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.ListeningBacklogSynchronizer
 import org.grakovne.lissen.domain.DetailedItem
@@ -55,6 +56,7 @@ class PlaybackSynchronizationService
       serviceScope.coroutineContext.cancelChildren()
       syncJob = null
       currentItem = item
+      listeningSessionTracker.reset()
       listeningBacklogSynchronizer.requestSynchronization()
     }
 

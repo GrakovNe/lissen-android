@@ -4,6 +4,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import org.grakovne.lissen.common.CoalescingRunner
 import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
@@ -21,16 +22,19 @@ class ListeningBacklogSynchronizer
     private val networkService: NetworkService,
   ) : RunningComponent {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val runner = CoalescingRunner<Unit>()
 
     override fun onCreate() {
       requestSynchronization()
     }
 
     fun requestSynchronization() {
-      scope.launch { synchronize() }
+      scope.launch { runner.submit(Unit) { synchronize() } }
     }
 
     private suspend fun synchronize() {
+      listeningRecordRepository.dropStale(System.currentTimeMillis())
+
       if (preferences.isForceCache()) return
       if (networkService.isNetworkAvailable().not()) return
 
@@ -55,8 +59,6 @@ class ListeningBacklogSynchronizer
               onFailure = {},
             )
         }
-
-      listeningRecordRepository.dropStale(System.currentTimeMillis())
     }
   }
 

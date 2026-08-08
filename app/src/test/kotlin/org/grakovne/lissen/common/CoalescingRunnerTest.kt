@@ -1,4 +1,4 @@
-package org.grakovne.lissen.playback.service
+package org.grakovne.lissen.common
 
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
