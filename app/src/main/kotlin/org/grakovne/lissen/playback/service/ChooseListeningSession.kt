@@ -17,7 +17,7 @@ fun chooseListeningSession(
     ?.takeIf { it.itemId == itemId }
     ?.takeIf { it.chapterId == chapterId }
     ?.takeIf { now - it.updatedAt < LISTENING_IDLE_GAP_MS }
-    ?.takeIf { sameCalendarDay(it.updatedAt, now) }
+    ?.takeIf { isSameCalendarDay(it.updatedAt, now) }
     ?: ListeningSession(
       id = UUID.randomUUID().toString(),
       itemId = itemId,
@@ -29,11 +29,11 @@ fun chooseListeningSession(
       progress = progress,
     )
 
-internal fun sameCalendarDay(
-  left: Long,
-  right: Long,
+internal fun isSameCalendarDay(
+  first: Long,
+  second: Long,
 ): Boolean =
-  Instant.ofEpochMilli(left).atZone(ZoneId.systemDefault()).toLocalDate() ==
-    Instant.ofEpochMilli(right).atZone(ZoneId.systemDefault()).toLocalDate()
+  Instant.ofEpochMilli(first).atZone(ZoneId.systemDefault()).toLocalDate() ==
+    Instant.ofEpochMilli(second).atZone(ZoneId.systemDefault()).toLocalDate()
 
 internal const val LISTENING_IDLE_GAP_MS = 4 * 60 * 60 * 1000L

@@ -13,7 +13,7 @@ class ListeningSessionTracker
     private var session: ListeningSession? = null
     private var playingSince: Long? = null
 
-    fun flush(
+    fun advance(
       itemId: String,
       chapterId: String?,
       progress: PlaybackProgress,

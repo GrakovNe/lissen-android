@@ -30,6 +30,7 @@ import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
+import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -41,6 +42,7 @@ class LibraryAudiobookshelfChannel
     repository: AudioBookshelfRepository,
     recentListeningResponseConverter: RecentListeningResponseConverter,
     preferences: LibraryPreferences,
+    sessionPreferences: SessionPreferences,
     listeningRecordRequestConverter: ListeningRecordRequestConverter,
     libraryResponseConverter: LibraryResponseConverter,
     connectionInfoResponseConverter: ConnectionInfoResponseConverter,
@@ -57,6 +59,7 @@ class LibraryAudiobookshelfChannel
       dataRepository = repository,
       recentBookResponseConverter = recentListeningResponseConverter,
       preferences = preferences,
+      sessionPreferences = sessionPreferences,
       listeningRecordRequestConverter = listeningRecordRequestConverter,
       libraryResponseConverter = libraryResponseConverter,
       connectionInfoResponseConverter = connectionInfoResponseConverter,

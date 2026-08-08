@@ -72,12 +72,20 @@ class ChooseListeningSessionTest {
   }
 
   @Test
-  fun `calendar day change starts a new session`() {
-    val nextDay = noon + 13 * 60 * 60 * 1000L
+  fun `calendar day change starts a new session within the idle gap`() {
+    val lateEvening =
+      LocalDate
+        .of(2026, 8, 8)
+        .atTime(23, 0)
+        .atZone(ZoneId.systemDefault())
+        .toInstant()
+        .toEpochMilli()
+    val eveningSession = session.copy(startedAt = lateEvening, updatedAt = lateEvening)
+    val pastMidnight = lateEvening + 90 * 60 * 1000L
 
-    val chosen = chooseListeningSession(session, "book", "chapter", progress, nextDay)
+    val chosen = chooseListeningSession(eveningSession, "book", "chapter", progress, pastMidnight)
 
-    assertNotEquals(session.id, chosen.id)
+    assertNotEquals(eveningSession.id, chosen.id)
   }
 
   @Test

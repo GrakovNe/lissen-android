@@ -5,17 +5,17 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.DeviceIn
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.LocalSessionRequest
 import org.grakovne.lissen.domain.ListeningMediaType
 import org.grakovne.lissen.domain.ListeningRecord
-import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class ListeningRecordRequestConverter
   @Inject
-  constructor(
-    private val sessionPreferences: SessionPreferences,
-  ) {
-    fun apply(record: ListeningRecord): LocalSessionRequest {
+  constructor() {
+    fun apply(
+      record: ListeningRecord,
+      deviceId: String,
+    ): LocalSessionRequest {
       val clientName = "Lissen App ${BuildConfig.VERSION_NAME}"
 
       return LocalSessionRequest(
@@ -34,7 +34,7 @@ class ListeningRecordRequestConverter
         deviceInfo =
           DeviceInfo(
             clientName = clientName,
-            deviceId = sessionPreferences.getDeviceId(),
+            deviceId = deviceId,
             deviceName = clientName,
           ),
         timeListening = record.timeListeningMs / 1000.0,

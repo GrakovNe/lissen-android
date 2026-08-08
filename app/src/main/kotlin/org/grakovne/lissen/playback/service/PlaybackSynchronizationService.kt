@@ -107,7 +107,7 @@ class PlaybackSynchronizationService
           ?.id
 
       val session =
-        listeningSessionTracker.flush(
+        listeningSessionTracker.advance(
           itemId = currentItem.id,
           chapterId = chapterId,
           progress = overallProgress,

@@ -28,7 +28,7 @@ fun buildListeningRecord(
       )
     }
 
-    else -> {
+    LibraryType.LIBRARY, LibraryType.UNKNOWN -> {
       ListeningRecord(
         id = session.id,
         itemId = session.itemId,

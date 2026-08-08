@@ -25,11 +25,13 @@ import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.ListeningRecord
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
+import org.grakovne.lissen.persistence.preferences.SessionPreferences
 
 abstract class AudiobookshelfChannel(
   protected val dataRepository: AudioBookshelfRepository,
   protected val preferences: LibraryPreferences,
   private val hostProvider: AudiobookshelfHostProvider,
+  private val sessionPreferences: SessionPreferences,
   private val listeningRecordRequestConverter: ListeningRecordRequestConverter,
   private val libraryResponseConverter: LibraryResponseConverter,
   private val recentBookResponseConverter: RecentListeningResponseConverter,
@@ -58,12 +60,16 @@ abstract class AudiobookshelfChannel(
   }
 
   override suspend fun syncListening(record: ListeningRecord): OperationResult<Unit> =
-    dataRepository.publishLocalSession(listeningRecordRequestConverter.apply(record))
+    dataRepository.publishLocalSession(
+      listeningRecordRequestConverter.apply(record, sessionPreferences.getDeviceId()),
+    )
 
   override suspend fun syncListeningBacklog(records: List<ListeningRecord>): OperationResult<List<ListeningRecord>> =
     dataRepository
       .publishLocalSessions(
-        LocalSessionsSyncRequest(records.map { listeningRecordRequestConverter.apply(it) }),
+        LocalSessionsSyncRequest(
+          records.map { listeningRecordRequestConverter.apply(it, sessionPreferences.getDeviceId()) },
+        ),
       ).map { response ->
         val synced =
           response
