@@ -14,8 +14,6 @@ import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.ListeningRecord
 import org.grakovne.lissen.domain.PagedItems
-import org.grakovne.lissen.domain.PlaybackProgress
-import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.domain.asLibraryEntries
 
@@ -28,11 +26,6 @@ interface MediaChannel {
   ): Uri
 
   fun provideDownloadClient(): OkHttpClient?
-
-  suspend fun syncProgress(
-    sessionId: String,
-    progress: PlaybackProgress,
-  ): OperationResult<Unit>
 
   suspend fun syncListening(record: ListeningRecord): OperationResult<Unit>
 
@@ -86,13 +79,6 @@ interface MediaChannel {
   ): OperationResult<List<Book>>
 
   suspend fun fetchLibraries(): OperationResult<List<Library>>
-
-  suspend fun startPlayback(
-    bookId: String,
-    episodeId: String,
-    supportedMimeTypes: List<String>,
-    deviceId: String,
-  ): OperationResult<PlaybackSession>
 
   fun fetchConnectionHost(): OperationResult<Host>
 

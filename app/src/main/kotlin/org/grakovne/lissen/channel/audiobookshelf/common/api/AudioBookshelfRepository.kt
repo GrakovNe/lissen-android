@@ -15,9 +15,6 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryR
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.LocalSessionRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.LocalSessionsSyncRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.LocalSessionsSyncResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackSessionResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
-import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.ProgressSyncRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.PersonalizedFeedResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.UserResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.BookResponse
@@ -242,41 +239,6 @@ class AudioBookshelfRepository
     suspend fun fetchUserInfoResponse(): OperationResult<UserResponse> =
       audioBookShelfApiService.makeRequest {
         it.fetchUserInfo()
-      }
-
-    suspend fun startPlayback(
-      itemId: String,
-      request: PlaybackStartRequest,
-    ): OperationResult<PlaybackSessionResponse> =
-      audioBookShelfApiService.makeRequest {
-        it.startLibraryPlayback(
-          itemId = itemId,
-          syncProgressRequest = request,
-        )
-      }
-
-    suspend fun startPodcastPlayback(
-      itemId: String,
-      episodeId: String,
-      request: PlaybackStartRequest,
-    ): OperationResult<PlaybackSessionResponse> =
-      audioBookShelfApiService.makeRequest {
-        it.startPodcastPlayback(
-          itemId = itemId,
-          episodeId = episodeId,
-          syncProgressRequest = request,
-        )
-      }
-
-    suspend fun publishLibraryItemProgress(
-      itemId: String,
-      progress: ProgressSyncRequest,
-    ): OperationResult<Unit> =
-      audioBookShelfApiService.makeRequest {
-        it.publishLibraryItemProgress(
-          itemId = itemId,
-          syncProgressRequest = progress,
-        )
       }
 
     suspend fun publishLocalSession(request: LocalSessionRequest): OperationResult<Unit> =

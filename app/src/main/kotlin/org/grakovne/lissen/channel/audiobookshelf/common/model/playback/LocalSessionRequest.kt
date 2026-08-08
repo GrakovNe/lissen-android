@@ -5,6 +5,14 @@ import com.squareup.moshi.JsonClass
 
 @Keep
 @JsonClass(generateAdapter = true)
+data class DeviceInfo(
+  val clientName: String,
+  val deviceId: String,
+  val deviceName: String,
+)
+
+@Keep
+@JsonClass(generateAdapter = true)
 data class LocalSessionRequest(
   val id: String,
   val libraryItemId: String,

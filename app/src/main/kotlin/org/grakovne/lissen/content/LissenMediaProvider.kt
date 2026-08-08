@@ -16,9 +16,8 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.ListeningSession
 import org.grakovne.lissen.domain.PagedItems
-import org.grakovne.lissen.domain.PlaybackProgress
-import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
@@ -36,6 +35,7 @@ class LissenMediaProvider
     private val localCacheRepository: LocalCacheRepository,
     private val cachedCoverProvider: CachedCoverProvider,
     private val cachedBookmarkProvider: CachedBookmarkProvider,
+    private val listeningRecordRepository: ListeningRecordRepository,
   ) {
     suspend fun dropBookmark(bookmark: Bookmark) {
       Timber.d("Dropping bookmark for ${bookmark.libraryItemId} at position=${bookmark.totalPosition.toInt()}s")
@@ -94,21 +94,32 @@ class LissenMediaProvider
       }
     }
 
-    suspend fun syncProgress(
-      sessionId: String,
+    suspend fun syncListening(
       detailedItem: DetailedItem,
-      progress: PlaybackProgress,
+      session: ListeningSession,
     ): OperationResult<Unit> {
       Timber.d(
-        "Syncing progress: bookId=${detailedItem.id}, totalTime=${progress.currentTotalTime.toInt()}s, chapterTime=${progress.currentChapterTime.toInt()}s",
+        "Syncing listening: bookId=${detailedItem.id}, totalTime=${session.progress.currentTotalTime.toInt()}s, listened=${session.timeListeningMs / 1000}s",
       )
 
-      localCacheRepository.syncProgress(detailedItem, progress)
+      localCacheRepository.syncProgress(detailedItem, session.progress)
+
+      val channel = providePreferredChannel()
+      val record = buildListeningRecord(detailedItem, session, channel.getLibraryType())
+
+      listeningRecordRepository.upsert(record)
 
       if (preferences.isForceCache()) return OperationResult.Success(Unit)
 
-      return providePreferredChannel()
-        .syncProgress(sessionId, progress)
+      return channel
+        .syncListening(record)
+        .foldAsync(
+          onSuccess = {
+            listeningRecordRepository.markSynced(listOf(record.id))
+            OperationResult.Success(Unit)
+          },
+          onFailure = { OperationResult.Error(it.code, it.message) },
+        )
     }
 
     suspend fun fetchBookCover(bookId: String): OperationResult<File> {
@@ -251,32 +262,6 @@ class LissenMediaProvider
             }
         }
       }
-    }
-
-    suspend fun startPlayback(
-      itemId: String,
-      chapterId: String,
-      supportedMimeTypes: List<String>,
-      deviceId: String,
-    ): OperationResult<PlaybackSession> {
-      Timber.d("Starting playback: itemId=$itemId, chapterId=$chapterId, mimeTypes=$supportedMimeTypes")
-
-      if (preferences.isForceCache()) return OperationResult.Success(PlaybackSession.local(itemId))
-
-      return providePreferredChannel()
-        .startPlayback(
-          bookId = itemId,
-          episodeId = chapterId,
-          supportedMimeTypes = supportedMimeTypes,
-          deviceId = deviceId,
-        ).foldAsync(
-          onSuccess = {
-            OperationResult.Success(it)
-          },
-          onFailure = {
-            OperationResult.Success(PlaybackSession.local(itemId))
-          },
-        )
     }
 
     suspend fun fetchRecentListenedBooks(libraryId: String): OperationResult<List<RecentBook>> {

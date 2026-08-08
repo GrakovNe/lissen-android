@@ -11,9 +11,6 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryR
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.LocalSessionRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.LocalSessionsSyncRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.LocalSessionsSyncResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackSessionResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
-import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.ProgressSyncRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.CredentialsLoginRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.LoggedUserResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.PersonalizedFeedResponse
@@ -138,12 +135,6 @@ interface AudiobookshelfApiClient {
     @Body request: LibraryItemsBatchRequest,
   ): Response<LibraryItemsBatchResponse>
 
-  @POST("api/session/{itemId}/sync")
-  suspend fun publishLibraryItemProgress(
-    @Path("itemId") itemId: String,
-    @Body syncProgressRequest: ProgressSyncRequest,
-  ): Response<Unit>
-
   @POST("api/session/local")
   suspend fun publishLocalSession(
     @Body request: LocalSessionRequest,
@@ -153,19 +144,6 @@ interface AudiobookshelfApiClient {
   suspend fun publishLocalSessions(
     @Body request: LocalSessionsSyncRequest,
   ): Response<LocalSessionsSyncResponse>
-
-  @POST("api/items/{itemId}/play/{episodeId}")
-  suspend fun startPodcastPlayback(
-    @Path("itemId") itemId: String,
-    @Path("episodeId") episodeId: String,
-    @Body syncProgressRequest: PlaybackStartRequest,
-  ): Response<PlaybackSessionResponse>
-
-  @POST("api/items/{itemId}/play")
-  suspend fun startLibraryPlayback(
-    @Path("itemId") itemId: String,
-    @Body syncProgressRequest: PlaybackStartRequest,
-  ): Response<PlaybackSessionResponse>
 
   @POST("login")
   @Headers("x-return-tokens: true")

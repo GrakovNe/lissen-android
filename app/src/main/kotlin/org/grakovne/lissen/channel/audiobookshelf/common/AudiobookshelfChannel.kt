@@ -4,21 +4,16 @@ import android.net.Uri
 import androidx.core.net.toUri
 import okhttp3.OkHttpClient
 import okio.Buffer
-import org.grakovne.lissen.BuildConfig
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfHostProvider
 import org.grakovne.lissen.channel.audiobookshelf.Host
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfRepository
-import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfSyncService
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarkItemResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarksResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ListeningRecordRequestConverter
-import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
-import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.DeviceInfo
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.LocalSessionsSyncRequest
-import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
 import org.grakovne.lissen.channel.common.ConnectionInfo
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
@@ -28,16 +23,13 @@ import org.grakovne.lissen.domain.BookmarkSyncState
 import org.grakovne.lissen.domain.CreateBookmarkRequest
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.ListeningRecord
-import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 
 abstract class AudiobookshelfChannel(
   protected val dataRepository: AudioBookshelfRepository,
-  protected val sessionResponseConverter: PlaybackSessionResponseConverter,
   protected val preferences: LibraryPreferences,
   private val hostProvider: AudiobookshelfHostProvider,
-  private val syncService: AudioBookshelfSyncService,
   private val listeningRecordRequestConverter: ListeningRecordRequestConverter,
   private val libraryResponseConverter: LibraryResponseConverter,
   private val recentBookResponseConverter: RecentListeningResponseConverter,
@@ -64,11 +56,6 @@ abstract class AudiobookshelfChannel(
       .appendPath(fileId)
       .build()
   }
-
-  override suspend fun syncProgress(
-    sessionId: String,
-    progress: PlaybackProgress,
-  ): OperationResult<Unit> = syncService.syncProgress(sessionId, progress)
 
   override suspend fun syncListening(record: ListeningRecord): OperationResult<Unit> =
     dataRepository.publishLocalSession(listeningRecordRequestConverter.apply(record))
@@ -158,23 +145,4 @@ abstract class AudiobookshelfChannel(
     dataRepository
       .fetchConnectionInfo()
       .map { connectionInfoResponseConverter.apply(it) }
-
-  protected fun getClientName() = "Lissen App ${BuildConfig.VERSION_NAME}"
-
-  protected fun buildPlaybackStartRequest(
-    supportedMimeTypes: List<String>,
-    deviceId: String,
-  ): PlaybackStartRequest =
-    PlaybackStartRequest(
-      supportedMimeTypes = supportedMimeTypes,
-      deviceInfo =
-        DeviceInfo(
-          clientName = getClientName(),
-          deviceId = deviceId,
-          deviceName = getClientName(),
-        ),
-      forceTranscode = false,
-      forceDirectPlay = false,
-      mediaPlayer = getClientName(),
-    )
 }

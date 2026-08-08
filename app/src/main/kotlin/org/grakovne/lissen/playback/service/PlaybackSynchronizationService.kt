@@ -11,13 +11,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.ListeningSession
 import org.grakovne.lissen.domain.PlaybackProgress
-import org.grakovne.lissen.domain.PlaybackSession
-import org.grakovne.lissen.domain.PlaybackSessionSource
-import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.CHAPTER_START_MS
 import timber.log.Timber
 import javax.inject.Inject
@@ -29,14 +26,12 @@ class PlaybackSynchronizationService
   constructor(
     private val exoPlayer: ExoPlayer,
     private val mediaChannel: LissenMediaProvider,
-    private val sharedPreferences: SessionPreferences,
+    private val listeningSessionTracker: ListeningSessionTracker,
   ) {
     private var currentItem: DetailedItem? = null
-    private var currentChapterIndex: Int? = null
-    private var playbackSession: PlaybackSession? = null
     private val serviceScope = MainScope()
     private var syncJob: Job? = null
-    private val syncRunner = CoalescingRunner<PlaybackProgress>()
+    private val syncRunner = CoalescingRunner<ListeningSession>()
 
     init {
       exoPlayer.addListener(
@@ -64,6 +59,7 @@ class PlaybackSynchronizationService
       Timber.d("Cancelling playback synchronization for ${currentItem?.id}")
       serviceScope.coroutineContext.cancelChildren()
       syncJob = null
+      listeningSessionTracker.reset()
     }
 
     private fun handleSyncEvent() {
@@ -99,77 +95,30 @@ class PlaybackSynchronizationService
         return
       }
 
+      val chapterId =
+        currentItem
+          .chapters
+          .getOrNull(calculateChapterIndex(currentItem, overallProgress.currentTotalTime))
+          ?.id
+
+      val session =
+        listeningSessionTracker.flush(
+          itemId = currentItem.id,
+          chapterId = chapterId,
+          progress = overallProgress,
+          isPlaying = exoPlayer.isPlaying,
+        )
+
       withContext(Dispatchers.IO) {
-        syncRunner.submit(overallProgress) { progress ->
+        syncRunner.submit(session) { snapshot ->
           try {
-            performSync(currentItem, progress)
+            mediaChannel.syncListening(currentItem, snapshot)
           } catch (e: Exception) {
             Timber.e(e, "Error during sync")
           }
         }
       }
     }
-
-    private suspend fun performSync(
-      currentItem: DetailedItem,
-      overallProgress: PlaybackProgress,
-    ) {
-      val currentIndex = calculateChapterIndex(currentItem, overallProgress.currentTotalTime)
-
-      if (playbackSession == null ||
-        playbackSession?.itemId != currentItem.id ||
-        currentIndex != currentChapterIndex ||
-        playbackSession?.sessionSource == PlaybackSessionSource.LOCAL
-      ) {
-        openPlaybackSession(overallProgress)
-        currentChapterIndex = currentIndex
-      }
-
-      playbackSession?.let { session ->
-        requestSync(
-          item = currentItem,
-          session = session,
-          overallProgress = overallProgress,
-        )
-      }
-    }
-
-    private suspend fun requestSync(
-      item: DetailedItem,
-      session: PlaybackSession,
-      overallProgress: PlaybackProgress,
-    ): Unit? =
-      mediaChannel
-        .syncProgress(
-          sessionId = session.sessionId,
-          detailedItem = item,
-          progress = overallProgress,
-        ).foldAsync(
-          onSuccess = {},
-          onFailure = {
-            when (it.code) {
-              OperationError.NotFoundError -> openPlaybackSession(overallProgress)
-              else -> Unit
-            }
-          },
-        )
-
-    private suspend fun openPlaybackSession(overallProgress: PlaybackProgress) =
-      currentItem
-        ?.let { item ->
-          Timber.d("Opening new playback session for ${item.id} at position=${overallProgress.currentTotalTime.toInt()}s")
-          val chapterIndex = calculateChapterIndex(item, overallProgress.currentTotalTime)
-          mediaChannel
-            .startPlayback(
-              itemId = item.id,
-              deviceId = sharedPreferences.getDeviceId(),
-              supportedMimeTypes = MimeTypeProvider.getSupportedMimeTypes(),
-              chapterId = item.chapters[chapterIndex].id,
-            ).fold(
-              onSuccess = { playbackSession = it },
-              onFailure = {},
-            )
-        }
 
     private fun getProgress(exoPlayer: ExoPlayer): PlaybackProgress? =
       exoPlayer.currentMediaItem

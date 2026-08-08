@@ -5,13 +5,11 @@ import kotlinx.coroutines.coroutineScope
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfHostProvider
 import org.grakovne.lissen.channel.audiobookshelf.common.AudiobookshelfChannel
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfRepository
-import org.grakovne.lissen.channel.audiobookshelf.common.api.podcast.AudioBookshelfPodcastSyncService
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarkItemResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarksResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ListeningRecordRequestConverter
-import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastOrderingRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastPageResponseConverter
@@ -22,7 +20,6 @@ import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PagedItems
-import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -35,9 +32,7 @@ class PodcastAudiobookshelfChannel
     dataRepository: AudioBookshelfRepository,
     recentListeningResponseConverter: RecentListeningResponseConverter,
     preferences: LibraryPreferences,
-    syncService: AudioBookshelfPodcastSyncService,
     listeningRecordRequestConverter: ListeningRecordRequestConverter,
-    sessionResponseConverter: PlaybackSessionResponseConverter,
     libraryResponseConverter: LibraryResponseConverter,
     connectionInfoResponseConverter: ConnectionInfoResponseConverter,
     bookmarksResponseConverter: BookmarksResponseConverter,
@@ -50,9 +45,7 @@ class PodcastAudiobookshelfChannel
       hostProvider = hostProvider,
       dataRepository = dataRepository,
       recentBookResponseConverter = recentListeningResponseConverter,
-      sessionResponseConverter = sessionResponseConverter,
       preferences = preferences,
-      syncService = syncService,
       listeningRecordRequestConverter = listeningRecordRequestConverter,
       libraryResponseConverter = libraryResponseConverter,
       connectionInfoResponseConverter = connectionInfoResponseConverter,
@@ -95,19 +88,6 @@ class PodcastAudiobookshelfChannel
 
         byTitle.await()
       }
-
-    override suspend fun startPlayback(
-      bookId: String,
-      episodeId: String,
-      supportedMimeTypes: List<String>,
-      deviceId: String,
-    ): OperationResult<PlaybackSession> =
-      dataRepository
-        .startPodcastPlayback(
-          itemId = bookId,
-          episodeId = episodeId,
-          request = buildPlaybackStartRequest(supportedMimeTypes, deviceId),
-        ).map { sessionResponseConverter.apply(it) }
 
     override suspend fun fetchBook(bookId: String): OperationResult<DetailedItem> =
       coroutineScope {

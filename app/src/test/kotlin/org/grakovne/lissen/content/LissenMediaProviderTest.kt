@@ -20,9 +20,9 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.ListeningSession
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
-import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
@@ -39,6 +39,7 @@ class LissenMediaProviderTest {
   private val localCacheRepository = mockk<LocalCacheRepository>(relaxed = true)
   private val cachedCoverProvider = mockk<CachedCoverProvider>(relaxed = true)
   private val cachedBookmarkProvider = mockk<CachedBookmarkProvider>(relaxed = true)
+  private val listeningRecordRepository = mockk<ListeningRecordRepository>(relaxed = true)
   private val mediaChannel = mockk<MediaChannel>(relaxed = true)
 
   private lateinit var provider: LissenMediaProvider
@@ -53,6 +54,7 @@ class LissenMediaProviderTest {
         localCacheRepository,
         cachedCoverProvider,
         cachedBookmarkProvider,
+        listeningRecordRepository,
       )
   }
 
@@ -439,100 +441,63 @@ class LissenMediaProviderTest {
   }
 
   @Nested
-  inner class StartPlayback {
+  inner class SyncListening {
+    private val session =
+      ListeningSession(
+        id = "session-1",
+        itemId = "book-1",
+        chapterId = null,
+        startedAt = 1_000,
+        updatedAt = 2_000,
+        startTime = 0.0,
+        timeListeningMs = 60_000,
+        progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0),
+      )
+
     @Test
-    fun `returns local session without calling channel when force cache enabled`() =
+    fun `stores record without calling channel when force cache enabled`() =
       runBlocking {
+        val item = detailedItem("book-1")
         every { preferences.isForceCache() } returns true
 
-        val result = provider.startPlayback("book-1", "ep-1", listOf("audio/mp3"), "device-1")
+        val result = provider.syncListening(item, session)
 
         assertInstanceOf(OperationResult.Success::class.java, result)
-        val session = (result as OperationResult.Success).data
-        assertEquals("book-1", session.itemId)
-        assertEquals(org.grakovne.lissen.domain.PlaybackSessionSource.LOCAL, session.sessionSource)
-        coVerify(exactly = 0) { mediaChannel.startPlayback(any(), any(), any(), any()) }
+        coVerify { localCacheRepository.syncProgress(item, session.progress) }
+        coVerify { listeningRecordRepository.upsert(any()) }
+        coVerify(exactly = 0) { mediaChannel.syncListening(any()) }
       }
 
     @Test
-    fun `returns remote session on channel success`() =
-      runBlocking {
-        val session = PlaybackSession.remote("session-1", "book-1")
-        coEvery {
-          mediaChannel.startPlayback(
-            bookId = "book-1",
-            episodeId = "ep-1",
-            supportedMimeTypes = any(),
-            deviceId = any(),
-          )
-        } returns OperationResult.Success(session)
-
-        val result = provider.startPlayback("book-1", "ep-1", listOf("audio/mp3"), "device-1")
-
-        assertInstanceOf(OperationResult.Success::class.java, result)
-        assertEquals("session-1", (result as OperationResult.Success).data.sessionId)
-      }
-
-    @Test
-    fun `returns local session on channel failure`() =
-      runBlocking {
-        coEvery {
-          mediaChannel.startPlayback(any(), any(), any(), any())
-        } returns OperationResult.Error(OperationError.NetworkError)
-
-        val result = provider.startPlayback("book-1", "ep-1", listOf("audio/mp3"), "device-1")
-
-        assertInstanceOf(OperationResult.Success::class.java, result)
-        val session = (result as OperationResult.Success).data
-        assertEquals("book-1", session.itemId)
-        assertEquals(org.grakovne.lissen.domain.PlaybackSessionSource.LOCAL, session.sessionSource)
-      }
-  }
-
-  @Nested
-  inner class SyncProgress {
-    @Test
-    fun `syncs local cache without calling channel when force cache enabled`() =
+    fun `marks record synced on channel success`() =
       runBlocking {
         val item = detailedItem("book-1")
-        val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
-        every { preferences.isForceCache() } returns true
-
-        val result = provider.syncProgress("session-1", item, progress)
-
-        assertInstanceOf(OperationResult.Success::class.java, result)
-        coVerify { localCacheRepository.syncProgress(item, progress) }
-        coVerify(exactly = 0) { mediaChannel.syncProgress(any(), any()) }
-      }
-
-    @Test
-    fun `syncs local cache when force cache disabled`() =
-      runBlocking {
-        val item = detailedItem("book-1")
-        val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
         every { preferences.isForceCache() } returns false
-        coEvery { mediaChannel.syncProgress("session-1", progress) } returns
-          OperationResult.Success(Unit)
+        every { mediaChannel.getLibraryType() } returns LibraryType.LIBRARY
+        coEvery { mediaChannel.syncListening(any()) } returns OperationResult.Success(Unit)
 
-        provider.syncProgress("session-1", item, progress)
+        val result = provider.syncListening(item, session)
 
-        coVerify { localCacheRepository.syncProgress(item, progress) }
-        coVerify { mediaChannel.syncProgress("session-1", progress) }
+        assertInstanceOf(OperationResult.Success::class.java, result)
+        coVerify { localCacheRepository.syncProgress(item, session.progress) }
+        coVerify { listeningRecordRepository.upsert(match { it.id == "session-1" }) }
+        coVerify { listeningRecordRepository.markSynced(listOf("session-1")) }
       }
 
     @Test
-    fun `uses channel result when force cache disabled`() =
+    fun `keeps record unsynced on channel failure`() =
       runBlocking {
         val item = detailedItem("book-1")
-        val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
         every { preferences.isForceCache() } returns false
-        coEvery {
-          mediaChannel.syncProgress("session-1", progress)
-        } returns OperationResult.Error(OperationError.NetworkError)
+        every { mediaChannel.getLibraryType() } returns LibraryType.LIBRARY
+        coEvery { mediaChannel.syncListening(any()) } returns
+          OperationResult.Error(OperationError.NetworkError)
 
-        val result = provider.syncProgress("session-1", item, progress)
+        val result = provider.syncListening(item, session)
 
         assertInstanceOf(OperationResult.Error::class.java, result)
+        coVerify { listeningRecordRepository.upsert(any()) }
+        coVerify(exactly = 0) { listeningRecordRepository.markSynced(any()) }
       }
   }
 
