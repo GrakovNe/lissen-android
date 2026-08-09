@@ -98,9 +98,10 @@ class LissenMediaProvider
       sessionId: String,
       detailedItem: DetailedItem,
       progress: PlaybackProgress,
+      timeListened: Double,
     ): OperationResult<Unit> {
       Timber.d(
-        "Syncing progress: bookId=${detailedItem.id}, totalTime=${progress.currentTotalTime.toInt()}s, chapterTime=${progress.currentChapterTime.toInt()}s",
+        "Syncing progress: bookId=${detailedItem.id}, totalTime=${progress.currentTotalTime.toInt()}s, listened=${timeListened.toInt()}s",
       )
 
       localCacheRepository.syncProgress(detailedItem, progress)
@@ -108,7 +109,7 @@ class LissenMediaProvider
       if (preferences.isForceCache()) return OperationResult.Success(Unit)
 
       return providePreferredChannel()
-        .syncProgress(sessionId, progress)
+        .syncProgress(sessionId, progress, timeListened)
     }
 
     suspend fun fetchBookCover(bookId: String): OperationResult<File> {

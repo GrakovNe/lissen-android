@@ -6,6 +6,6 @@ import com.squareup.moshi.JsonClass
 @Keep
 @JsonClass(generateAdapter = true)
 data class ProgressSyncRequest(
-  val timeListened: Int,
+  val timeListened: Double,
   val currentTime: Double,
 )

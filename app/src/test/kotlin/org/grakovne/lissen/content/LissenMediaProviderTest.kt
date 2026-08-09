@@ -498,11 +498,11 @@ class LissenMediaProviderTest {
         val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
         every { preferences.isForceCache() } returns true
 
-        val result = provider.syncProgress("session-1", item, progress)
+        val result = provider.syncProgress("session-1", item, progress, 42.0)
 
         assertInstanceOf(OperationResult.Success::class.java, result)
         coVerify { localCacheRepository.syncProgress(item, progress) }
-        coVerify(exactly = 0) { mediaChannel.syncProgress(any(), any()) }
+        coVerify(exactly = 0) { mediaChannel.syncProgress(any(), any(), any()) }
       }
 
     @Test
@@ -511,13 +511,13 @@ class LissenMediaProviderTest {
         val item = detailedItem("book-1")
         val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
         every { preferences.isForceCache() } returns false
-        coEvery { mediaChannel.syncProgress("session-1", progress) } returns
+        coEvery { mediaChannel.syncProgress("session-1", progress, 42.0) } returns
           OperationResult.Success(Unit)
 
-        provider.syncProgress("session-1", item, progress)
+        provider.syncProgress("session-1", item, progress, 42.0)
 
         coVerify { localCacheRepository.syncProgress(item, progress) }
-        coVerify { mediaChannel.syncProgress("session-1", progress) }
+        coVerify { mediaChannel.syncProgress("session-1", progress, 42.0) }
       }
 
     @Test
@@ -527,10 +527,10 @@ class LissenMediaProviderTest {
         val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
         every { preferences.isForceCache() } returns false
         coEvery {
-          mediaChannel.syncProgress("session-1", progress)
+          mediaChannel.syncProgress("session-1", progress, 42.0)
         } returns OperationResult.Error(OperationError.NetworkError)
 
-        val result = provider.syncProgress("session-1", item, progress)
+        val result = provider.syncProgress("session-1", item, progress, 42.0)
 
         assertInstanceOf(OperationResult.Error::class.java, result)
       }

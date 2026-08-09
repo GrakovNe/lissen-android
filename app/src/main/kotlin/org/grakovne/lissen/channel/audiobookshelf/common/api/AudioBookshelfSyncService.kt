@@ -7,5 +7,6 @@ interface AudioBookshelfSyncService {
   suspend fun syncProgress(
     itemId: String,
     progress: PlaybackProgress,
+    timeListened: Double,
   ): OperationResult<Unit>
 }
