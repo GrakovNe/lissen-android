@@ -47,10 +47,10 @@ class ListeningRecordRequestConverterTest {
   }
 
   @Test
-  fun `request carries local play method and device identity`() {
+  fun `request carries direct play method and device identity`() {
     val request = converter.apply(record, "device")
 
-    assertEquals(LOCAL_PLAY_METHOD, request.playMethod)
+    assertEquals(DIRECT_PLAY_METHOD, request.playMethod)
     assertEquals("device", request.deviceInfo.deviceId)
     assertEquals("item", request.libraryItemId)
     assertEquals(123.4, request.currentTime)

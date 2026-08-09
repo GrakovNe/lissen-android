@@ -29,7 +29,7 @@ class ListeningRecordRequestConverter
           },
         displayTitle = record.displayTitle,
         duration = record.duration,
-        playMethod = LOCAL_PLAY_METHOD,
+        playMethod = DIRECT_PLAY_METHOD,
         mediaPlayer = clientName,
         deviceInfo =
           DeviceInfo(
@@ -46,4 +46,4 @@ class ListeningRecordRequestConverter
     }
   }
 
-internal const val LOCAL_PLAY_METHOD = 3
+internal const val DIRECT_PLAY_METHOD = 0
