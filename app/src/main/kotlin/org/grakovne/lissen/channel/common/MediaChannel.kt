@@ -31,6 +31,7 @@ interface MediaChannel {
   suspend fun syncProgress(
     sessionId: String,
     progress: PlaybackProgress,
+    timeListened: Double,
   ): OperationResult<Unit>
 
   suspend fun fetchBookCover(

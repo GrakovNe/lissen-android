@@ -1,5 +1,6 @@
 package org.grakovne.lissen.playback.service
 
+import android.os.SystemClock
 import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
@@ -34,9 +35,10 @@ class PlaybackSynchronizationService
     private var currentItem: DetailedItem? = null
     private var currentChapterIndex: Int? = null
     private var playbackSession: PlaybackSession? = null
+    private var listeningMark = ListeningMark(playingSince = null, unsyncedMs = 0)
     private val serviceScope = MainScope()
     private var syncJob: Job? = null
-    private val syncRunner = CoalescingRunner<PlaybackProgress>()
+    private val syncRunner = CoalescingRunner<SyncSnapshot>()
 
     init {
       exoPlayer.addListener(
@@ -58,12 +60,14 @@ class PlaybackSynchronizationService
       serviceScope.coroutineContext.cancelChildren()
       syncJob = null
       currentItem = item
+      listeningMark = listeningMark.copy(playingSince = null)
     }
 
     fun cancelSynchronization() {
       Timber.d("Cancelling playback synchronization for ${currentItem?.id}")
       serviceScope.coroutineContext.cancelChildren()
       syncJob = null
+      listeningMark = listeningMark.copy(playingSince = null)
     }
 
     private fun handleSyncEvent() {
@@ -99,10 +103,18 @@ class PlaybackSynchronizationService
         return
       }
 
+      listeningMark = accumulateListening(listeningMark, exoPlayer.isPlaying, SystemClock.elapsedRealtime())
+
+      val snapshot =
+        SyncSnapshot(
+          progress = overallProgress,
+          timeListened = listeningMark.unsyncedMs / 1000.0,
+        )
+
       withContext(Dispatchers.IO) {
-        syncRunner.submit(overallProgress) { progress ->
+        syncRunner.submit(snapshot) { value ->
           try {
-            performSync(currentItem, progress)
+            performSync(currentItem, value)
           } catch (e: Exception) {
             Timber.e(e, "Error during sync")
           }
@@ -112,16 +124,16 @@ class PlaybackSynchronizationService
 
     private suspend fun performSync(
       currentItem: DetailedItem,
-      overallProgress: PlaybackProgress,
+      snapshot: SyncSnapshot,
     ) {
-      val currentIndex = calculateChapterIndex(currentItem, overallProgress.currentTotalTime)
+      val currentIndex = calculateChapterIndex(currentItem, snapshot.progress.currentTotalTime)
 
       if (playbackSession == null ||
         playbackSession?.itemId != currentItem.id ||
         currentIndex != currentChapterIndex ||
         playbackSession?.sessionSource == PlaybackSessionSource.LOCAL
       ) {
-        openPlaybackSession(overallProgress)
+        openPlaybackSession(snapshot.progress)
         currentChapterIndex = currentIndex
       }
 
@@ -129,7 +141,7 @@ class PlaybackSynchronizationService
         requestSync(
           item = currentItem,
           session = session,
-          overallProgress = overallProgress,
+          snapshot = snapshot,
         )
       }
     }
@@ -137,18 +149,24 @@ class PlaybackSynchronizationService
     private suspend fun requestSync(
       item: DetailedItem,
       session: PlaybackSession,
-      overallProgress: PlaybackProgress,
+      snapshot: SyncSnapshot,
     ): Unit? =
       mediaChannel
         .syncProgress(
           sessionId = session.sessionId,
           detailedItem = item,
-          progress = overallProgress,
+          progress = snapshot.progress,
+          timeListened = snapshot.timeListened,
         ).foldAsync(
-          onSuccess = {},
+          onSuccess = {
+            withContext(serviceScope.coroutineContext) {
+              val sentMs = (snapshot.timeListened * 1000).toLong()
+              listeningMark = listeningMark.copy(unsyncedMs = listeningMark.unsyncedMs - sentMs)
+            }
+          },
           onFailure = {
             when (it.code) {
-              OperationError.NotFoundError -> openPlaybackSession(overallProgress)
+              OperationError.NotFoundError -> openPlaybackSession(snapshot.progress)
               else -> Unit
             }
           },
@@ -193,6 +211,11 @@ class PlaybackSynchronizationService
         )
     }
   }
+
+private data class SyncSnapshot(
+  val progress: PlaybackProgress,
+  val timeListened: Double,
+)
 
 internal const val SYNC_INTERVAL_LONG = 45_000L
 internal const val SYNC_INTERVAL_SHORT = 5_000L

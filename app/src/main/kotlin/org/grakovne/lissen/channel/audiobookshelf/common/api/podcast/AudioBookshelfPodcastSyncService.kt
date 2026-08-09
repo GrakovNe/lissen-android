@@ -14,31 +14,17 @@ class AudioBookshelfPodcastSyncService
   constructor(
     private val dataRepository: AudioBookshelfRepository,
   ) : AudioBookshelfSyncService {
-    private var previousItemId: String? = null
-    private var previousTrackedTime: Double = 0.0
-
     override suspend fun syncProgress(
       itemId: String,
       progress: PlaybackProgress,
-    ): OperationResult<Unit> {
-      val trackedTime =
-        previousTrackedTime
-          .takeIf { itemId == previousItemId }
-          ?.let { progress.currentChapterTime - previousTrackedTime }
-          ?.toInt()
-          ?: 0
-
-      val request =
-        ProgressSyncRequest(
-          currentTime = progress.currentChapterTime,
-          timeListened = trackedTime,
-        )
-
-      return dataRepository
-        .publishLibraryItemProgress(itemId, request)
-        .also {
-          previousTrackedTime = progress.currentChapterTime
-          previousItemId = itemId
-        }
-    }
+      timeListened: Double,
+    ): OperationResult<Unit> =
+      dataRepository.publishLibraryItemProgress(
+        itemId = itemId,
+        progress =
+          ProgressSyncRequest(
+            currentTime = progress.currentChapterTime,
+            timeListened = timeListened,
+          ),
+      )
   }
