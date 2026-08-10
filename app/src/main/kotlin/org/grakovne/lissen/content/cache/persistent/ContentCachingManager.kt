@@ -139,7 +139,7 @@ class ContentCachingManager
         .cancelAll()
         .forEach { progress.emit(it, CacheState(CacheStatus.Idle)) }
 
-      bookRepository.removeAllBooks()
+      bookRepository.dropCache()
 
       withContext(Dispatchers.IO) {
         val storage = properties.provideActiveStorage()

@@ -267,16 +267,16 @@ interface CachedBookDao {
   suspend fun deleteMediaProgress(bookId: String)
 
   @Transaction
-  suspend fun deleteAllCachedBooks() {
-    deleteAllMediaProgress()
-    deleteAllBooks()
+  suspend fun dropCache() {
+    dropMediaProgress()
+    dropDetailedBooks()
   }
 
   @Query("DELETE FROM media_progress")
-  suspend fun deleteAllMediaProgress()
+  suspend fun dropMediaProgress()
 
   @Query("DELETE FROM detailed_books")
-  suspend fun deleteAllBooks()
+  suspend fun dropDetailedBooks()
 
   companion object {
     val type = Types.newParameterizedType(List::class.java, BookSeriesDto::class.java)

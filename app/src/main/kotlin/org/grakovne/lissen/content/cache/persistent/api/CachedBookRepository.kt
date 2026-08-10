@@ -66,7 +66,7 @@ class CachedBookRepository
         }
     }
 
-    suspend fun removeAllBooks() = bookDao.deleteAllCachedBooks()
+    suspend fun dropCache() = bookDao.dropCache()
 
     suspend fun cacheBook(
       book: DetailedItem,
