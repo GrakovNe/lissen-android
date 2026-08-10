@@ -66,6 +66,8 @@ class CachedBookRepository
         }
     }
 
+    suspend fun removeAllBooks() = bookDao.deleteAllCachedBooks()
+
     suspend fun cacheBook(
       book: DetailedItem,
       fetchedChapters: List<PlayingChapter>,

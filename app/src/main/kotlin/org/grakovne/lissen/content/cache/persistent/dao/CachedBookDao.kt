@@ -266,6 +266,18 @@ interface CachedBookDao {
   @Query("DELETE FROM media_progress WHERE bookId = :bookId")
   suspend fun deleteMediaProgress(bookId: String)
 
+  @Transaction
+  suspend fun deleteAllCachedBooks() {
+    deleteAllMediaProgress()
+    deleteAllBooks()
+  }
+
+  @Query("DELETE FROM media_progress")
+  suspend fun deleteAllMediaProgress()
+
+  @Query("DELETE FROM detailed_books")
+  suspend fun deleteAllBooks()
+
   companion object {
     val type = Types.newParameterizedType(List::class.java, BookSeriesDto::class.java)
     val adapter = moshi.adapter<List<BookSeriesDto>>(type)

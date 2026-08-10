@@ -33,6 +33,8 @@ class ContentCachingManager
     private val bookRepository: CachedBookRepository,
     private val libraryRepository: CachedLibraryRepository,
     private val properties: OfflineBookStorageProperties,
+    private val registry: CachingSessionRegistry,
+    private val progress: ContentCachingProgress,
   ) {
     fun cacheMediaItem(
       mediaItem: DetailedItem,
@@ -127,6 +129,24 @@ class ContentCachingManager
 
       if (cachedContent.exists()) {
         cachedContent.deleteRecursively()
+      }
+    }
+
+    suspend fun dropAllCache() {
+      Timber.d("Dropping all cache")
+
+      registry
+        .cancelAll()
+        .forEach { progress.emit(it, CacheState(CacheStatus.Idle)) }
+
+      bookRepository.removeAllBooks()
+
+      withContext(Dispatchers.IO) {
+        val storage = properties.provideActiveStorage()
+
+        if (storage.exists() && storage.deleteRecursively().not()) {
+          Timber.e("Unable to fully remove media cache at $storage")
+        }
       }
     }
 

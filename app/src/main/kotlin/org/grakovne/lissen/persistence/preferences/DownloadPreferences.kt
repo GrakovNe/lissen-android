@@ -5,6 +5,7 @@ import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.common.moshi
 import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.StoragePath
 import org.grakovne.lissen.domain.makeDownloadOption
 import org.grakovne.lissen.domain.makeId
 import javax.inject.Inject
@@ -57,12 +58,24 @@ class DownloadPreferences
 
     fun saveDownloadChaptersCount(count: Int) = store.putInt(KEY_DOWNLOAD_CHAPTERS_COUNT, count)
 
+    fun getDownloadStoragePath(): StoragePath? =
+      store
+        .getString(KEY_DOWNLOAD_STORAGE_PATH)
+        ?.let { moshi.adapter(StoragePath::class.java).fromJson(it) }
+
+    fun saveDownloadStoragePath(storagePath: StoragePath) =
+      store.putString(
+        KEY_DOWNLOAD_STORAGE_PATH,
+        moshi.adapter(StoragePath::class.java).toJson(storagePath),
+      )
+
     companion object {
       private const val KEY_AUTO_DOWNLOAD_DELAYED = "auto_download_delayed"
       private const val KEY_PREFERRED_AUTO_DOWNLOAD = "preferred_auto_download"
       private const val KEY_PREFERRED_AUTO_DOWNLOAD_NETWORK_TYPE = "preferred_auto_download_network_type"
       private const val KEY_PREFERRED_AUTO_DOWNLOAD_LIBRARY_TYPE = "preferred_auto_download_library_type"
       private const val KEY_DOWNLOAD_CHAPTERS_COUNT = "download_chapters_count"
+      private const val KEY_DOWNLOAD_STORAGE_PATH = "download_storage_path"
       private const val DEFAULT_DOWNLOAD_CHAPTERS_COUNT = 5
     }
   }

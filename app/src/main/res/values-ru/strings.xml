@@ -205,6 +205,11 @@
     <string name="download_settings_network_type_title">Использовать для автоскачивания</string>
     <string name="download_settings_library_type_title">Автоматически скачивать</string>
     <string name="download_settings_library_type_no_items_selected">Типы библиотек не выбраны</string>
+    <string name="download_settings_storage_title">Хранилище загруженного контента</string>
+    <string name="download_settings_storage_unavailable">Недоступно</string>
+    <string name="download_settings_storage_switch_failed_toast">Не удалось сменить хранилище</string>
+    <string name="download_settings_storage_confirmation_message">Загрузки будут удалены с этого устройства. Данные на сервере останутся без изменений</string>
+    <string name="download_settings_storage_confirm">Изменить хранилище</string>
     <string name="wifi_only_settings_option">Только WiFi</string>
     <string name="wifi_or_cellular_settings_option">WiFi или мобильную сеть</string>
     <string name="library_type_library">Книги</string>

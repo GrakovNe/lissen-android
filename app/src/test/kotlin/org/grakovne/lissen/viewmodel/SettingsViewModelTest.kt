@@ -1,27 +1,42 @@
 package org.grakovne.lissen.viewmodel
 
 import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import org.grakovne.lissen.channel.audiobookshelf.Host
+import org.grakovne.lissen.channel.common.ConnectionInfo
 import org.grakovne.lissen.channel.common.DEFAULT_USER_AGENT
+import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
+import org.grakovne.lissen.common.AudioFocusLossPolicy
 import org.grakovne.lissen.common.ColorScheme
+import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.common.LibraryOrderingOption
 import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.content.LissenMediaProvider
+import org.grakovne.lissen.content.cache.persistent.ContentCachingManager
+import org.grakovne.lissen.content.cache.persistent.OfflineBookStorageProperties
+import org.grakovne.lissen.domain.CurrentItemDownloadOption
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.EqualizerSettings
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.SeekTime
+import org.grakovne.lissen.domain.StoragePath
 import org.grakovne.lissen.domain.connection.LocalUrl
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.logging.LissenLogProvider
@@ -36,6 +51,7 @@ import org.grakovne.lissen.persistence.preferences.PreferencesReset
 import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.grakovne.lissen.playback.EqualizerBandProvider
 import org.grakovne.lissen.playback.EqualizerCapabilities
+import org.grakovne.lissen.playback.MediaRepository
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -43,6 +59,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import java.io.File
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SettingsViewModelTest {
@@ -59,6 +76,9 @@ class SettingsViewModelTest {
   private val logProvider = mockk<LissenLogProvider>(relaxed = true)
   private val configProvider = mockk<LissenConfigProvider>(relaxed = true)
   private val equalizerBandProvider = mockk<EqualizerBandProvider>(relaxed = true)
+  private val offlineBookStorageProperties = mockk<OfflineBookStorageProperties>(relaxed = true)
+  private val contentCachingManager = mockk<ContentCachingManager>(relaxed = true)
+  private val mediaRepository = mockk<MediaRepository>(relaxed = true)
   private lateinit var viewModel: SettingsViewModel
 
   @BeforeEach
@@ -89,9 +109,10 @@ class SettingsViewModelTest {
     every { connection.getUserAgent() } returns DEFAULT_USER_AGENT
     every { connection.clientCertAliasFlow } returns flowOf(null)
     every { libraryPreferences.hideCompletedFlow } returns flowOf(false)
+    every { mediaRepository.playingBook } returns MutableStateFlow(null)
     every { mediaChannel.fetchConnectionHost() } returns
       OperationResult.Error(
-        org.grakovne.lissen.channel.common.OperationError.NetworkError,
+        OperationError.NetworkError,
       )
 
     viewModel =
@@ -108,12 +129,128 @@ class SettingsViewModelTest {
         logProvider,
         configProvider,
         equalizerBandProvider,
+        offlineBookStorageProperties,
+        contentCachingManager,
+        mediaRepository,
       )
   }
 
   @AfterEach
   fun teardown() {
     Dispatchers.resetMain()
+  }
+
+  @Nested
+  inner class DownloadStorage {
+    private val internal =
+      StoragePath(
+        path = "/storage/emulated/0/Android/data/org.grakovne.lissen/files/media_cache",
+        name = "Internal storage",
+      )
+    private val card =
+      StoragePath(
+        path = "/storage/0000-0000/Android/data/org.grakovne.lissen/files/media_cache",
+        name = "SD card",
+      )
+
+    private fun buildViewModel(): SettingsViewModel =
+      SettingsViewModel(
+        mediaChannel,
+        session,
+        connection,
+        libraryPreferences,
+        appearance,
+        playback,
+        download,
+        diagnostics,
+        preferencesReset,
+        logProvider,
+        configProvider,
+        equalizerBandProvider,
+        offlineBookStorageProperties,
+        contentCachingManager,
+        mediaRepository,
+      )
+
+    @Test
+    fun `preferDownloadStorage drops cache before saving the new path`() =
+      runTest {
+        every { offlineBookStorageProperties.provideAvailableStorages() } returns listOf(internal, card)
+        every { offlineBookStorageProperties.provideActiveStorage() } returns File(internal.path)
+        val viewModel = buildViewModel()
+
+        val result = viewModel.preferDownloadStorage(card)
+
+        assertTrue(result)
+        coVerifyOrder {
+          contentCachingManager.dropAllCache()
+          download.saveDownloadStoragePath(card)
+        }
+        assertEquals(card, viewModel.downloadStorage.value)
+        assertEquals(card, viewModel.downloadStoragePath.value)
+        assertFalse(viewModel.downloadStorageClearing.value)
+      }
+
+    @Test
+    fun `preferDownloadStorage saves the path without dropping when folder is already active`() =
+      runTest {
+        every { offlineBookStorageProperties.provideAvailableStorages() } returns listOf(internal)
+        every { offlineBookStorageProperties.provideActiveStorage() } returns File(internal.path)
+        val viewModel = buildViewModel()
+
+        val result = viewModel.preferDownloadStorage(internal)
+
+        assertTrue(result)
+        coVerify(exactly = 0) { contentCachingManager.dropAllCache() }
+        verify { download.saveDownloadStoragePath(internal) }
+      }
+
+    @Test
+    fun `preferDownloadStorage rejects folder which is not available`() =
+      runTest {
+        every { offlineBookStorageProperties.provideAvailableStorages() } returns listOf(internal)
+        every { offlineBookStorageProperties.provideActiveStorage() } returns File(internal.path)
+        val viewModel = buildViewModel()
+
+        val result = viewModel.preferDownloadStorage(card)
+
+        assertFalse(result)
+        coVerify(exactly = 0) { contentCachingManager.dropAllCache() }
+        verify(exactly = 0) { download.saveDownloadStoragePath(any()) }
+      }
+
+    @Test
+    fun `preferDownloadStorage clears the playing book when it is cached`() =
+      runTest {
+        every { offlineBookStorageProperties.provideAvailableStorages() } returns listOf(internal, card)
+        every { offlineBookStorageProperties.provideActiveStorage() } returns File(internal.path)
+        val playingBook = mockk<DetailedItem> { every { id } returns "book-1" }
+        every { mediaRepository.playingBook } returns MutableStateFlow(playingBook)
+        every { contentCachingManager.hasMetadataCached("book-1") } returns flowOf(true)
+        val viewModel = buildViewModel()
+
+        viewModel.preferDownloadStorage(card)
+
+        coVerifyOrder {
+          mediaRepository.clearPlayingBook()
+          contentCachingManager.dropAllCache()
+        }
+      }
+
+    @Test
+    fun `preferDownloadStorage keeps the old path when dropping fails`() =
+      runTest {
+        every { offlineBookStorageProperties.provideAvailableStorages() } returns listOf(internal, card)
+        every { offlineBookStorageProperties.provideActiveStorage() } returns File(internal.path)
+        coEvery { contentCachingManager.dropAllCache() } throws IllegalStateException("db error")
+        val viewModel = buildViewModel()
+
+        val result = viewModel.preferDownloadStorage(card)
+
+        assertFalse(result)
+        verify(exactly = 0) { download.saveDownloadStoragePath(any()) }
+        assertFalse(viewModel.downloadStorageClearing.value)
+      }
   }
 
   @Nested
@@ -200,6 +337,9 @@ class SettingsViewModelTest {
           logProvider,
           configProvider,
           equalizerBandProvider,
+          offlineBookStorageProperties,
+          contentCachingManager,
+          mediaRepository,
         )
 
       viewModel.changeAutoDownloadLibraryType(LibraryType.PODCAST, true)
@@ -224,6 +364,9 @@ class SettingsViewModelTest {
           logProvider,
           configProvider,
           equalizerBandProvider,
+          offlineBookStorageProperties,
+          contentCachingManager,
+          mediaRepository,
         )
 
       viewModel.changeAutoDownloadLibraryType(LibraryType.PODCAST, false)
@@ -465,6 +608,9 @@ class SettingsViewModelTest {
           logProvider,
           configProvider,
           equalizerBandProvider,
+          offlineBookStorageProperties,
+          contentCachingManager,
+          mediaRepository,
         )
       assertEquals("StoredAgent/3.0", viewModel.userAgent.value)
     }
@@ -521,7 +667,7 @@ class SettingsViewModelTest {
           Library(id = "l1", title = "Books", type = LibraryType.LIBRARY),
           Library(id = "l2", title = "Podcasts", type = LibraryType.PODCAST),
         )
-      io.mockk.coEvery { mediaChannel.fetchLibraries() } returns OperationResult.Success(libs)
+      coEvery { mediaChannel.fetchLibraries() } returns OperationResult.Success(libs)
 
       viewModel.fetchLibraries()
 
@@ -537,7 +683,7 @@ class SettingsViewModelTest {
           Library(id = "l1", title = "Books", type = LibraryType.LIBRARY),
           preferred,
         )
-      io.mockk.coEvery { mediaChannel.fetchLibraries() } returns OperationResult.Success(libs)
+      coEvery { mediaChannel.fetchLibraries() } returns OperationResult.Success(libs)
       viewModel =
         SettingsViewModel(
           mediaChannel,
@@ -552,6 +698,9 @@ class SettingsViewModelTest {
           logProvider,
           configProvider,
           equalizerBandProvider,
+          offlineBookStorageProperties,
+          contentCachingManager,
+          mediaRepository,
         )
 
       viewModel.fetchLibraries()
@@ -566,7 +715,7 @@ class SettingsViewModelTest {
         listOf(
           Library(id = "l1", title = "Books", type = LibraryType.LIBRARY),
         )
-      io.mockk.coEvery { mediaChannel.fetchLibraries() } returns OperationResult.Success(libs)
+      coEvery { mediaChannel.fetchLibraries() } returns OperationResult.Success(libs)
       viewModel =
         SettingsViewModel(
           mediaChannel,
@@ -581,6 +730,9 @@ class SettingsViewModelTest {
           logProvider,
           configProvider,
           equalizerBandProvider,
+          offlineBookStorageProperties,
+          contentCachingManager,
+          mediaRepository,
         )
 
       viewModel.fetchLibraries()
@@ -592,8 +744,8 @@ class SettingsViewModelTest {
     fun `fetchLibraries falls back to cached preferred library on error`() {
       val preferred = Library(id = "l1", title = "Books", type = LibraryType.LIBRARY)
       every { libraryPreferences.getPreferredLibrary() } returns preferred
-      io.mockk.coEvery { mediaChannel.fetchLibraries() } returns
-        OperationResult.Error(org.grakovne.lissen.channel.common.OperationError.NetworkError)
+      coEvery { mediaChannel.fetchLibraries() } returns
+        OperationResult.Error(OperationError.NetworkError)
       viewModel =
         SettingsViewModel(
           mediaChannel,
@@ -608,6 +760,9 @@ class SettingsViewModelTest {
           logProvider,
           configProvider,
           equalizerBandProvider,
+          offlineBookStorageProperties,
+          contentCachingManager,
+          mediaRepository,
         )
 
       viewModel.fetchLibraries()
@@ -617,16 +772,16 @@ class SettingsViewModelTest {
   }
 
   @Nested
-  inner class ConnectionInfo {
+  inner class ConnectionInfoRefresh {
     @Test
     fun `refreshConnectionInfo updates username and server version on success`() {
       val info =
-        org.grakovne.lissen.channel.common.ConnectionInfo(
+        ConnectionInfo(
           username = "alice",
           serverVersion = "2.0.0",
           buildNumber = "42",
         )
-      io.mockk.coEvery { mediaChannel.fetchConnectionInfo() } returns OperationResult.Success(info)
+      coEvery { mediaChannel.fetchConnectionInfo() } returns OperationResult.Success(info)
 
       viewModel.refreshConnectionInfo()
 
@@ -637,12 +792,12 @@ class SettingsViewModelTest {
     @Test
     fun `refreshConnectionInfo caches username and server version to preferences on success`() {
       val info =
-        org.grakovne.lissen.channel.common.ConnectionInfo(
+        ConnectionInfo(
           username = "alice",
           serverVersion = "2.0.0",
           buildNumber = "42",
         )
-      io.mockk.coEvery { mediaChannel.fetchConnectionInfo() } returns OperationResult.Success(info)
+      coEvery { mediaChannel.fetchConnectionInfo() } returns OperationResult.Success(info)
 
       viewModel.refreshConnectionInfo()
 
@@ -652,8 +807,8 @@ class SettingsViewModelTest {
 
     @Test
     fun `refreshConnectionInfo leaves username and server version untouched on error`() {
-      io.mockk.coEvery { mediaChannel.fetchConnectionInfo() } returns
-        OperationResult.Error(org.grakovne.lissen.channel.common.OperationError.NetworkError)
+      coEvery { mediaChannel.fetchConnectionInfo() } returns
+        OperationResult.Error(OperationError.NetworkError)
 
       viewModel.refreshConnectionInfo()
 
@@ -664,11 +819,10 @@ class SettingsViewModelTest {
     @Test
     fun `refreshConnectionInfo updates host from the channel on success`() {
       val host =
-        org.grakovne.lissen.channel.audiobookshelf.Host
-          .internal("http://10.0.0.1")
+        Host.internal("http://10.0.0.1")
       every { mediaChannel.fetchConnectionHost() } returns OperationResult.Success(host)
-      io.mockk.coEvery { mediaChannel.fetchConnectionInfo() } returns
-        OperationResult.Error(org.grakovne.lissen.channel.common.OperationError.NetworkError)
+      coEvery { mediaChannel.fetchConnectionInfo() } returns
+        OperationResult.Error(OperationError.NetworkError)
 
       viewModel.refreshConnectionInfo()
 
@@ -678,16 +832,15 @@ class SettingsViewModelTest {
     @Test
     fun `refreshConnectionInfo falls back to the cached host from preferences on error`() {
       every { mediaChannel.fetchConnectionHost() } returns
-        OperationResult.Error(org.grakovne.lissen.channel.common.OperationError.NetworkError)
+        OperationResult.Error(OperationError.NetworkError)
       every { session.getHost() } returns "http://cached.example.com"
-      io.mockk.coEvery { mediaChannel.fetchConnectionInfo() } returns
-        OperationResult.Error(org.grakovne.lissen.channel.common.OperationError.NetworkError)
+      coEvery { mediaChannel.fetchConnectionInfo() } returns
+        OperationResult.Error(OperationError.NetworkError)
 
       viewModel.refreshConnectionInfo()
 
       assertEquals(
-        org.grakovne.lissen.channel.audiobookshelf.Host
-          .external("http://cached.example.com"),
+        Host.external("http://cached.example.com"),
         viewModel.host.value,
       )
     }
@@ -718,9 +871,9 @@ class SettingsViewModelTest {
   inner class MiscPreferences {
     @Test
     fun `preferLibraryGrouping saves the grouping to preferences`() {
-      viewModel.preferLibraryGrouping(org.grakovne.lissen.common.LibraryGrouping.SERIES)
+      viewModel.preferLibraryGrouping(LibraryGrouping.SERIES)
 
-      verify { libraryPreferences.saveLibraryGrouping(org.grakovne.lissen.common.LibraryGrouping.SERIES) }
+      verify { libraryPreferences.saveLibraryGrouping(LibraryGrouping.SERIES) }
     }
 
     @Test
@@ -740,8 +893,7 @@ class SettingsViewModelTest {
     @Test
     fun `saveDefaultTimerOption updates StateFlow and preferences`() {
       val option =
-        org.grakovne.lissen.domain
-          .DurationTimerOption(600)
+        DurationTimerOption(600)
 
       viewModel.saveDefaultTimerOption(option)
 
@@ -751,10 +903,10 @@ class SettingsViewModelTest {
 
     @Test
     fun `preferAudioFocusLossPolicy updates StateFlow and preferences`() {
-      viewModel.preferAudioFocusLossPolicy(org.grakovne.lissen.common.AudioFocusLossPolicy.LOWER_VOLUME)
+      viewModel.preferAudioFocusLossPolicy(AudioFocusLossPolicy.LOWER_VOLUME)
 
-      assertEquals(org.grakovne.lissen.common.AudioFocusLossPolicy.LOWER_VOLUME, viewModel.audioFocusLossPolicy.value)
-      verify { playback.saveAudioFocusLossPolicy(org.grakovne.lissen.common.AudioFocusLossPolicy.LOWER_VOLUME) }
+      assertEquals(AudioFocusLossPolicy.LOWER_VOLUME, viewModel.audioFocusLossPolicy.value)
+      verify { playback.saveAudioFocusLossPolicy(AudioFocusLossPolicy.LOWER_VOLUME) }
     }
 
     @Test
@@ -783,10 +935,10 @@ class SettingsViewModelTest {
 
     @Test
     fun `preferAutoDownloadOption updates StateFlow and preferences`() {
-      viewModel.preferAutoDownloadOption(org.grakovne.lissen.domain.CurrentItemDownloadOption)
+      viewModel.preferAutoDownloadOption(CurrentItemDownloadOption)
 
-      assertEquals(org.grakovne.lissen.domain.CurrentItemDownloadOption, viewModel.preferredAutoDownloadOption.value)
-      verify { download.saveAutoDownloadOption(org.grakovne.lissen.domain.CurrentItemDownloadOption) }
+      assertEquals(CurrentItemDownloadOption, viewModel.preferredAutoDownloadOption.value)
+      verify { download.saveAutoDownloadOption(CurrentItemDownloadOption) }
     }
 
     @Test

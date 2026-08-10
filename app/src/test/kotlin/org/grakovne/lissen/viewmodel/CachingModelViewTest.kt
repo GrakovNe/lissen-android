@@ -22,8 +22,10 @@ import org.grakovne.lissen.content.cache.persistent.ContentCachingProgress
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
 import org.grakovne.lissen.content.cache.temporary.SeriesCoverProvider
+import org.grakovne.lissen.domain.BookChapterState
 import org.grakovne.lissen.domain.CacheStatus
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.persistence.preferences.DownloadPreferences
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.junit.jupiter.api.AfterEach
@@ -259,13 +261,13 @@ class CachingModelViewTest {
     )
 
   private fun playingChapter(id: String = "ch-1") =
-    org.grakovne.lissen.domain.PlayingChapter(
+    PlayingChapter(
       id = id,
       title = "Chapter 1",
       start = 0.0,
       end = 100.0,
       duration = 100.0,
       available = true,
-      podcastEpisodeState = org.grakovne.lissen.domain.BookChapterState.FINISHED,
+      podcastEpisodeState = BookChapterState.FINISHED,
     )
 }

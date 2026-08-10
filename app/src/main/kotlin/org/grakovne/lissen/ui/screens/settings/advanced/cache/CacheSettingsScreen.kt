@@ -92,6 +92,8 @@ fun CacheSettingsScreen(
             description = stringResource(R.string.settings_screen_cached_items_hint),
             onclick = { navController.showCachedItemsSettings() },
           )
+
+          DownloadStorageSettingsComposable(viewModel)
         }
       }
     },

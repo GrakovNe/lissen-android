@@ -68,8 +68,31 @@ fun CommonSettingsItemComposable(
                 }
               },
               headlineContent = {
-                Row { Text(item.name) }
+                Row {
+                  Text(
+                    text = item.name,
+                    color =
+                      when (item.enabled) {
+                        true -> MaterialTheme.colorScheme.onSurface
+                        false -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                      },
+                  )
+                }
               },
+              supportingContent =
+                item.description?.let {
+                  {
+                    Text(
+                      text = it,
+                      style = MaterialTheme.typography.bodyMedium,
+                      color =
+                        when (item.enabled) {
+                          true -> MaterialTheme.colorScheme.onSurfaceVariant
+                          false -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                        },
+                    )
+                  }
+                },
               trailingContent = {
                 if (item.id == activeItem?.id) {
                   Icon(
@@ -83,6 +106,7 @@ fun CommonSettingsItemComposable(
                 Modifier
                   .fillMaxWidth()
                   .clickable(
+                    enabled = item.enabled,
                     indication = null,
                     interactionSource = remember { MutableInteractionSource() },
                   ) {

@@ -1,5 +1,6 @@
 package org.grakovne.lissen.viewmodel
 
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -11,6 +12,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.grakovne.lissen.domain.BookChapterState
 import org.grakovne.lissen.domain.Bookmark
+import org.grakovne.lissen.domain.BookmarkSyncState
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.PlayingChapter
@@ -252,14 +254,14 @@ class PlayerViewModelTest {
     fun `createBookmark delegates to mediaRepository`() {
       viewModel.createBookmark("My bookmark")
 
-      io.mockk.coVerify { mediaRepository.createBookmark("My bookmark") }
+      coVerify { mediaRepository.createBookmark("My bookmark") }
     }
 
     @Test
     fun `createBookmark with no title passes null`() {
       viewModel.createBookmark()
 
-      io.mockk.coVerify { mediaRepository.createBookmark(null) }
+      coVerify { mediaRepository.createBookmark(null) }
     }
 
     @Test
@@ -270,19 +272,19 @@ class PlayerViewModelTest {
           title = "Bookmark",
           totalPosition = 10.0,
           createdAt = 0L,
-          syncState = org.grakovne.lissen.domain.BookmarkSyncState.SYNCED,
+          syncState = BookmarkSyncState.SYNCED,
         )
 
       viewModel.dropBookmark(bookmark)
 
-      io.mockk.coVerify { mediaRepository.dropBookmark(bookmark = bookmark) }
+      coVerify { mediaRepository.dropBookmark(bookmark = bookmark) }
     }
 
     @Test
     fun `updateBookmarks delegates to mediaRepository`() {
       viewModel.updateBookmarks()
 
-      io.mockk.coVerify { mediaRepository.updateBookmarks() }
+      coVerify { mediaRepository.updateBookmarks() }
     }
   }
 
@@ -303,7 +305,7 @@ class PlayerViewModelTest {
 
       viewModel.updatePlayingItem()
 
-      io.mockk.coVerify { mediaRepository.preparePlayback("book-1") }
+      coVerify { mediaRepository.preparePlayback("book-1") }
     }
 
     @Test
@@ -317,8 +319,8 @@ class PlayerViewModelTest {
     fun `preparePlayback clears the prepared item before preparing the new one`() {
       viewModel.preparePlayback("book-2")
 
-      io.mockk.coVerify { mediaRepository.clearPreparedItem() }
-      io.mockk.coVerify { mediaRepository.preparePlayback("book-2") }
+      coVerify { mediaRepository.clearPreparedItem() }
+      coVerify { mediaRepository.preparePlayback("book-2") }
     }
 
     @Test
