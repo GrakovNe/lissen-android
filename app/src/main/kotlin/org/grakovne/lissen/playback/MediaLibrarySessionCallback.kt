@@ -218,6 +218,27 @@ class MediaLibrarySessionCallback
         }
       } ?: super.onSetMediaItems(mediaSession, controller, mediaItems, startIndex, startPositionMs)
 
+    override fun onPlaybackResumption(
+      mediaSession: MediaSession,
+      controller: MediaSession.ControllerInfo,
+      isForPlayback: Boolean
+    ): ListenableFuture<MediaItemsWithStartPosition> =
+      futureScope.listenableFuture {
+        preferences.getPlayingItem()?.id?.let { bookId ->
+          lissenMediaProvider
+            .fetchBook(bookId)
+            .foldAsync(
+              onSuccess = {
+                preferences.savePlayingItem(it)
+                playbackSynchronizationService.startPlaybackSynchronization(it)
+                mediaRepository.registerPlayingBook(it)
+                PlaybackService.bookToChapterMediaItems(it)
+              },
+              onFailure = { MediaItemsWithStartPosition(emptyList(), 0, 0) },
+            )
+        } ?: MediaItemsWithStartPosition(emptyList(), 0, 0)
+      }
+
     override fun onSearch(
       session: MediaLibraryService.MediaLibrarySession,
       browser: MediaSession.ControllerInfo,
