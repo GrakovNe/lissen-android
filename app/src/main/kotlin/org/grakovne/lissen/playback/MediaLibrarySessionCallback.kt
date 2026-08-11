@@ -51,7 +51,16 @@ class MediaLibrarySessionCallback
     @OptIn(DelicateCoroutinesApi::class)
     private val futureScope = CoroutineScope(Dispatchers.Default)
 
-    internal var searchCache = LruCache<String, ListenableFuture<List<MediaItem>>>(3)
+    internal var searchCache = LruCache<String, ListenableFuture<List<MediaItem>>>(5)
+
+    private fun searchFutureFor(query: String): ListenableFuture<List<MediaItem>> {
+      val key = query.trim().lowercase()
+      return synchronized(searchCache) {
+        searchCache.get(key) ?: libraryTree
+          .searchBooks(query)
+          .also { searchCache.put(key, it) }
+      }
+    }
 
     override fun onMediaButtonEvent(
       session: MediaSession,
@@ -245,12 +254,7 @@ class MediaLibrarySessionCallback
       query: String,
       params: MediaLibraryService.LibraryParams?,
     ): ListenableFuture<LibraryResult<Void>> {
-      val searchFuture =
-        synchronized(searchCache) {
-          searchCache.get(query) ?: libraryTree
-            .searchBooks(query)
-            .also { searchCache.put(query, it) }
-        }
+      val searchFuture = searchFutureFor(query)
 
       searchFuture.addListener({
         val resultSetSize =
@@ -274,9 +278,7 @@ class MediaLibrarySessionCallback
       pageSize: Int,
       params: MediaLibraryService.LibraryParams?,
     ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
-      val searchFuture =
-        searchCache.get(query)
-          ?: return Futures.immediateFuture(LibraryResult.ofItemList(ImmutableList.of(), params))
+      val searchFuture = searchFutureFor(query)
       return Futures.transform(
         searchFuture,
         { items ->

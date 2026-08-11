@@ -114,7 +114,7 @@ class MediaLibraryTree
       fun isBookPath(mediaId: String) = mediaId.startsWith("$BOOK/")
     }
 
-    private val scope = CoroutineScope(Dispatchers.Default)
+    private val scope = CoroutineScope(Dispatchers.IO)
 
     private val recentItemsCache = AtomicReference<List<MediaItem>>(emptyList())
 
@@ -333,7 +333,7 @@ class MediaLibraryTree
       extraFilter: Pair<String, String>? = null,
     ): List<MediaItem> =
       lissenMediaProvider
-        .fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = page, extraFilter = extraFilter)
+        .fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = page)
         .fold(
           onSuccess = { paged -> paged.items.map { bookItem(it) } },
           onFailure = { emptyList() },
