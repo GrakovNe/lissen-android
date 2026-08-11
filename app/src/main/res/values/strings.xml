@@ -205,6 +205,11 @@
     <string name="download_settings_network_type_title">Use for automatic downloads</string>
     <string name="download_settings_library_type_title">Download automatically</string>
     <string name="download_settings_library_type_no_items_selected">No types defined</string>
+    <string name="download_settings_storage_title">Storage location</string>
+    <string name="download_settings_storage_unavailable">Unavailable</string>
+    <string name="download_settings_storage_switch_failed_toast">Unable to switch storage location</string>
+    <string name="download_settings_storage_confirmation_message">Downloaded content will be removed from this device. Your server data will not be affected</string>
+    <string name="download_settings_storage_confirm">Switch location</string>
     <string name="wifi_only_settings_option">WiFi only</string>
     <string name="wifi_or_cellular_settings_option">WiFi or cellular network</string>
     <string name="library_type_library">Books</string>

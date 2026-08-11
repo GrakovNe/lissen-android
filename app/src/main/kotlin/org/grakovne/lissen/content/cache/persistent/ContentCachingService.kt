@@ -34,7 +34,8 @@ class ContentCachingService : LifecycleService() {
   @Inject
   lateinit var notificationService: ContentCachingNotificationService
 
-  private val registry = CachingSessionRegistry()
+  @Inject
+  lateinit var registry: CachingSessionRegistry
 
   override fun onStartCommand(
     intent: Intent?,

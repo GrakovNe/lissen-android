@@ -1,5 +1,6 @@
 package org.grakovne.lissen.channel.audiobookshelf.library.converter
 
+import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.AudioFileMetadata
 import org.grakovne.lissen.channel.audiobookshelf.library.model.AudioFileTag
 import org.grakovne.lissen.channel.audiobookshelf.library.model.BookAudioFileResponse
@@ -245,7 +246,7 @@ class BookResponseConverterTest {
     @Test
     fun `progress response is mapped correctly`() {
       val progressResponse =
-        org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse(
+        MediaProgressResponse(
           libraryItemId = "book-1",
           episodeId = null,
           currentTime = 123.0,
