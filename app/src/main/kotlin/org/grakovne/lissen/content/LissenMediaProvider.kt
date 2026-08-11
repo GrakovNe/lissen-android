@@ -171,12 +171,13 @@ class LissenMediaProvider
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
+      extraFilter: Pair<String, String>? = null,
     ): OperationResult<PagedItems<Book>> {
       Timber.d("Fetching books: libraryId=$libraryId, page=$pageNumber, pageSize=$pageSize")
 
       return when (preferences.isForceCache()) {
         true -> localCacheRepository.fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
-        false -> providePreferredChannel().fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
+        false -> providePreferredChannel().fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber, extraFilter)
       }
     }
 
@@ -250,6 +251,27 @@ class LissenMediaProvider
                 onFailure = {},
               )
             }
+        }
+      }
+    }
+
+    suspend fun fetchLibrary(libraryId: String): OperationResult<Library> {
+      Timber.d("Fetching List of libraries")
+
+      return when (preferences.isForceCache()) {
+        true -> {
+          TODO()
+        }
+
+        false -> {
+          providePreferredChannel()
+            .fetchLibrary(libraryId)
+//            .also {
+//              it.foldAsync(
+//                onSuccess = { libraries -> localCacheRepository.updateLibraries(libraries) },
+//                onFailure = {},
+//              )
+//            }
         }
       }
     }

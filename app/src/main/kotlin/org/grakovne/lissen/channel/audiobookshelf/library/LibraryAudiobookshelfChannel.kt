@@ -1,5 +1,6 @@
 package org.grakovne.lissen.channel.audiobookshelf.library
 
+import androidx.compose.ui.graphics.vector.Path
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -34,6 +35,7 @@ import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.io.encoding.Base64
 
 @Singleton
 class LibraryAudiobookshelfChannel
@@ -45,6 +47,7 @@ class LibraryAudiobookshelfChannel
     preferences: LibraryPreferences,
     syncService: AudioBookshelfLibrarySyncService,
     sessionResponseConverter: PlaybackSessionResponseConverter,
+    libraryListResponseConverter: LibraryListResponseConverter,
     libraryResponseConverter: LibraryResponseConverter,
     connectionInfoResponseConverter: ConnectionInfoResponseConverter,
     bookmarksResponseConverter: BookmarksResponseConverter,
@@ -62,10 +65,11 @@ class LibraryAudiobookshelfChannel
       sessionResponseConverter = sessionResponseConverter,
       preferences = preferences,
       syncService = syncService,
-      libraryResponseConverter = libraryResponseConverter,
+      libraryListResponseConverter = libraryListResponseConverter,
       connectionInfoResponseConverter = connectionInfoResponseConverter,
       bookmarksResponseConverter = bookmarksResponseConverter,
       bookmarkItemResponseConverter = bookmarkItemResponseConverter,
+      libraryResponseConverter = libraryResponseConverter,
     ) {
     private val concurrentFetchSemaphore = Semaphore(MAX_CONCURRENT_FETCH)
 
@@ -75,9 +79,20 @@ class LibraryAudiobookshelfChannel
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
+      extraFilter: Pair<String, String>?,
     ): OperationResult<PagedItems<Book>> {
-      val (option, direction) = libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering())
-      val filter = libraryFilteringRequestConverter.apply(preferences)
+      val (option, direction) =
+        if (extraFilter?.first == "series") {
+          "sequence" to "0"
+        } else {
+          libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering())
+        }
+      val filter =
+        if (extraFilter != null) {
+          "${extraFilter.first}.${Base64.encode(extraFilter.second.encodeToByteArray())}"
+        } else {
+          libraryFilteringRequestConverter.apply(preferences)
+        }
 
       return dataRepository
         .fetchLibraryItems(

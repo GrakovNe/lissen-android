@@ -9,6 +9,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.api.podcast.AudioBooksh
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarkItemResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarksResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryListResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
@@ -36,6 +37,7 @@ class PodcastAudiobookshelfChannel
     preferences: LibraryPreferences,
     syncService: AudioBookshelfPodcastSyncService,
     sessionResponseConverter: PlaybackSessionResponseConverter,
+    libraryListResponseConverter: LibraryListResponseConverter,
     libraryResponseConverter: LibraryResponseConverter,
     connectionInfoResponseConverter: ConnectionInfoResponseConverter,
     bookmarksResponseConverter: BookmarksResponseConverter,
@@ -52,6 +54,7 @@ class PodcastAudiobookshelfChannel
       preferences = preferences,
       syncService = syncService,
       libraryResponseConverter = libraryResponseConverter,
+      libraryListResponseConverter = libraryListResponseConverter,
       connectionInfoResponseConverter = connectionInfoResponseConverter,
       bookmarksResponseConverter = bookmarksResponseConverter,
       bookmarkItemResponseConverter = bookmarkItemResponseConverter,
@@ -62,6 +65,7 @@ class PodcastAudiobookshelfChannel
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
+      extraFilter: Pair<String, String>?,
     ): OperationResult<PagedItems<Book>> {
       val (option, direction) = podcastOrderingRequestConverter.apply(preferences.getLibraryOrdering())
 

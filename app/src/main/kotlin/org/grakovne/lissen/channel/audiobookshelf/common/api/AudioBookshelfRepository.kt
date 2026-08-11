@@ -11,6 +11,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.Bookmark
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarksResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.connection.ConnectionInfoResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.AuthorItemsResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibrariesResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackSessionResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
@@ -43,6 +44,10 @@ class AudioBookshelfRepository
     suspend fun fetchLibraries(): OperationResult<LibraryResponse> =
       audioBookShelfApiService
         .makeRequest { it.fetchLibraries() }
+
+    suspend fun fetchLibrary(libraryId: String): OperationResult<LibraryResponse> =
+      audioBookShelfApiService
+        .makeRequest { it.fetchLibrary(libraryId) }
 
     suspend fun fetchAuthorItems(authorId: String): OperationResult<AuthorItemsResponse> =
       audioBookShelfApiService

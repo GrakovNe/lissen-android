@@ -12,6 +12,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfSyncS
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarkItemResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarksResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryListResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
@@ -35,6 +36,7 @@ abstract class AudiobookshelfChannel(
   protected val preferences: LibraryPreferences,
   private val hostProvider: AudiobookshelfHostProvider,
   private val syncService: AudioBookshelfSyncService,
+  private val libraryListResponseConverter: LibraryListResponseConverter,
   private val libraryResponseConverter: LibraryResponseConverter,
   private val recentBookResponseConverter: RecentListeningResponseConverter,
   private val connectionInfoResponseConverter: ConnectionInfoResponseConverter,
@@ -81,6 +83,11 @@ abstract class AudiobookshelfChannel(
     dataRepository
       .fetchLibraries()
       .map { it.libraries.sortedBy { library -> library.displayOrder } }
+      .map { libraryListResponseConverter.apply(it) }
+
+  override suspend fun fetchLibrary(libraryId: String): OperationResult<Library> =
+    dataRepository
+      .fetchLibrary(libraryId)
       .map { libraryResponseConverter.apply(it) }
 
   override fun fetchConnectionHost(): OperationResult<Host> =

@@ -48,6 +48,7 @@ interface MediaChannel {
     libraryId: String,
     pageSize: Int,
     pageNumber: Int,
+    extraFilter: Pair<String, String>? = null,
   ): OperationResult<PagedItems<Book>>
 
   suspend fun fetchLibrary(
@@ -82,6 +83,8 @@ interface MediaChannel {
   ): OperationResult<List<Book>>
 
   suspend fun fetchLibraries(): OperationResult<List<Library>>
+
+  suspend fun fetchLibrary(libraryId: String): OperationResult<Library>
 
   suspend fun startPlayback(
     bookId: String,

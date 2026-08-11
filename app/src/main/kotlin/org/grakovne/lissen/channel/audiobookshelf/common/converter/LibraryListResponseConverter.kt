@@ -1,0 +1,62 @@
+package org.grakovne.lissen.channel.audiobookshelf.common.converter
+
+import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryItemResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryResponse
+import org.grakovne.lissen.lib.domain.FilterData
+import org.grakovne.lissen.lib.domain.Library
+import org.grakovne.lissen.lib.domain.LibraryType
+import org.grakovne.lissen.lib.domain.NamedId
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class LibraryListResponseConverter
+  @Inject
+  constructor() {
+    fun apply(response: List<LibraryItemResponse>): List<Library> =
+      response
+        .map {
+          it
+            .mediaType
+            .toLibraryType()
+            .let { type -> Library(it.id, it.name, type) }
+        }
+
+    private fun String.toLibraryType() =
+      when (this) {
+        "podcast" -> LibraryType.PODCAST
+        "book" -> LibraryType.LIBRARY
+        else -> LibraryType.UNKNOWN
+      }
+  }
+
+@Singleton
+class LibraryResponseConverter
+  @Inject
+  constructor() {
+    fun apply(response: LibraryResponse): Library =
+      response.library
+        .mediaType
+        .toLibraryType()
+        .let { type ->
+          Library(
+            id = response.library.id,
+            title = response.library.name,
+            type = type,
+            filters =
+              FilterData(
+                authors = response.filterdata.authors.map { NamedId(it.id, it.name) },
+                genres = response.filterdata.genres,
+                tags = response.filterdata.tags,
+                series = response.filterdata.series.map { NamedId(it.id, it.name) },
+              ),
+          )
+        }
+
+    private fun String.toLibraryType() =
+      when (this) {
+        "podcast" -> LibraryType.PODCAST
+        "book" -> LibraryType.LIBRARY
+        else -> LibraryType.UNKNOWN
+      }
+  }

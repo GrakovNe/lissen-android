@@ -134,11 +134,81 @@ class MediaLibraryTree
         }
 
         +mediaTreeNode(folderItem("$ROOT/$LIBRARY", context.getString(R.string.tree_node_library))) {
-          pagedChildren { _, _, _ -> libraryItems() }
-          resolveChild { libId ->
-            resolveLibrary(libId)?.let { lib ->
-              mediaTreeNode(libraryFolderItem("$ROOT/$LIBRARY/$libId", lib)) {
-                pagedChildren { page, pageSize, _ -> booksFromLibraryItems(libId, page, pageSize) }
+          pagedChildren { _, _ -> libraryItems() }
+          resolveChild { libraryId ->
+            resolveLibrary(libraryId)?.let { library ->
+              mediaTreeNode(libraryFolderItem("$ROOT/$LIBRARY/$libraryId", library)) {
+                +mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/all", "By title")) {
+                  pagedChildren { page, pageSize -> booksFromLibrary(libraryId = libraryId, page = page, pageSize = pageSize) }
+                }
+                library.filters?.genres?.let { genres ->
+                  +mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/genre", "By genre")) {
+                    for (genre in genres) {
+                      +mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/genre/$genre", genre)) {
+                        pagedChildren { page, pageSize ->
+                          booksFromLibrary(
+                            libraryId = libraryId,
+                            page = page,
+                            pageSize = pageSize,
+                            extraFilter =
+                              "genres" to genre,
+                          )
+                        }
+                      }
+                    }
+                  }
+                }
+                library.filters?.tags?.let { tags ->
+                  +mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/tag", "By tag")) {
+                    for (tag in tags) {
+                      +mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/tag/$tag", tag)) {
+                        pagedChildren { page, pageSize ->
+                          booksFromLibrary(
+                            libraryId = libraryId,
+                            page = page,
+                            pageSize = pageSize,
+                            extraFilter =
+                              "tags" to tag,
+                          )
+                        }
+                      }
+                    }
+                  }
+                }
+                library.filters?.authors?.let { authors ->
+                  +mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/author", "By author")) {
+                    for (author in authors) {
+                      +mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/author/${author.id}", author.name)) {
+                        pagedChildren { page, pageSize ->
+                          booksFromLibrary(
+                            libraryId = libraryId,
+                            page = page,
+                            pageSize = pageSize,
+                            extraFilter =
+                              "authors" to author.id,
+                          )
+                        }
+                      }
+                    }
+                  }
+                }
+                library.filters?.series?.let { series ->
+                  +mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/series", "By series")) {
+                    for (serie in series) {
+                      +mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/series/${serie.id}", serie.name)) {
+                        pagedChildren { page, pageSize ->
+                          booksFromLibrary(
+                            libraryId = libraryId,
+                            page = page,
+                            pageSize = pageSize,
+                            extraFilter =
+                              "series" to serie.id,
+                          )
+                        }
+                      }
+                    }
+                  }
+                }
               }
             }
           }
@@ -293,13 +363,14 @@ class MediaLibraryTree
 
     private suspend fun resolveLibrary(libId: String): Library? = libraries().find { it.id == libId }
 
-    private suspend fun booksFromLibraryItems(
+    private suspend fun booksFromLibrary(
       libraryId: String,
       page: Int,
       pageSize: Int,
+      extraFilter: Pair<String, String>? = null,
     ): List<MediaItem> =
       lissenMediaProvider
-        .fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = page)
+        .fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = page, extraFilter = extraFilter)
         .fold(
           onSuccess = { paged -> paged.items.map { bookItem(it) } },
           onFailure = { emptyList() },
