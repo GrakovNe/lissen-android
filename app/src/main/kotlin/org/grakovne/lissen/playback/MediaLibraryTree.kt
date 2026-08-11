@@ -3,6 +3,7 @@ package org.grakovne.lissen.playback
 import android.content.Context
 import android.net.Uri
 import androidx.annotation.OptIn
+import androidx.annotation.VisibleForTesting
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
@@ -118,9 +119,10 @@ class MediaLibraryTree
       ) = "$ROOT/$LIBRARY/$libraryId/$SERIES_COLLAPSED/$seriesId"
     }
 
-    private val scope = CoroutineScope(Dispatchers.IO)
-
     private val recentItemsCache = AtomicReference<List<MediaItem>>(emptyList())
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    internal var scope = CoroutineScope(Dispatchers.IO)
 
     private suspend fun libraries(): List<Library> =
       lissenMediaProvider
@@ -128,14 +130,6 @@ class MediaLibraryTree
         .fold(
           onSuccess = { it },
           onFailure = { emptyList() },
-        )
-
-    private suspend fun library(id: String): Library? =
-      lissenMediaProvider
-        .fetchLibrary(id)
-        .fold(
-          onSuccess = { it },
-          onFailure = { null },
         )
 
     private val root: MediaTreeNode by lazy { buildTree() }
@@ -373,7 +367,13 @@ class MediaLibraryTree
 
     private suspend fun libraryItems(): List<MediaItem> = libraries().map { libraryFolderItem("$ROOT/$LIBRARY/${it.id}", it) }
 
-    private suspend fun resolveLibrary(libId: String): Library? = library(libId)
+    private suspend fun resolveLibrary(libId: String): Library? =
+      lissenMediaProvider
+        .fetchLibrary(libId)
+        .fold(
+          onSuccess = { it },
+          onFailure = { null },
+        )
 
     private suspend fun booksFromLibrary(
       libraryId: String,

@@ -1,15 +1,19 @@
 package org.grakovne.lissen.playback
 
 import android.content.Context
-import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.SessionResult
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runTest
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
@@ -30,6 +34,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import kotlin.OptIn
 
 @OptIn(UnstableApi::class)
 @RunWith(AndroidJUnit4::class)
@@ -40,6 +45,10 @@ class MediaLibraryTreeTest {
   private lateinit var localCacheRepository: LocalCacheRepository
   private lateinit var lissenMediaProvider: LissenMediaProvider
   private lateinit var tree: MediaLibraryTree
+  private lateinit var session: MediaLibraryService.MediaLibrarySession
+
+  @OptIn(ExperimentalCoroutinesApi::class)
+  private val testScope = TestScope(UnconfinedTestDispatcher())
 
   @Before
   fun setUp() {
@@ -48,11 +57,14 @@ class MediaLibraryTreeTest {
     libraryPreferences = mockk(relaxed = true)
     localCacheRepository = mockk(relaxed = true)
     lissenMediaProvider = mockk(relaxed = true)
+    session = mockk(relaxed = true)
 
     every { playbackPreferences.getPlayingItem() } returns null
     every { libraryPreferences.getPreferredLibrary() } returns null
 
     coEvery { lissenMediaProvider.fetchLibraries() } returns
+      OperationResult.Error(OperationError.InternalError)
+    coEvery { lissenMediaProvider.fetchLibrary(any()) } returns
       OperationResult.Error(OperationError.InternalError)
     coEvery { lissenMediaProvider.fetchRecentListenedBooks(any()) } returns
       OperationResult.Error(OperationError.InternalError)
@@ -60,8 +72,8 @@ class MediaLibraryTreeTest {
       OperationResult.Error(OperationError.InternalError)
     coEvery { localCacheRepository.fetchDetailedItems(any(), any()) } returns
       OperationResult.Error(OperationError.InternalError)
-
     tree = MediaLibraryTree(context, playbackPreferences, libraryPreferences, localCacheRepository, lissenMediaProvider)
+    tree.scope = testScope
   }
 
   @Test
@@ -81,9 +93,9 @@ class MediaLibraryTreeTest {
   @Test
   fun getChildren_root_returnsFourChildren() =
     runBlocking {
-      val result = tree.getChildren("root", 0, 100).get()
+      val result = tree.getChildren("root", 0, 100, session).get()
       assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
-      assertEquals(4, result.value!!.size)
+      assertEquals(3, result.value!!.size)
     }
 
   @Test
@@ -91,13 +103,13 @@ class MediaLibraryTreeTest {
     runBlocking {
       val ids =
         tree
-          .getChildren("root", 0, 100)
+          .getChildren("root", 0, 100, session)
           .get()
           .value!!
           .map { it.mediaId }
           .toSet()
       assertEquals(
-        setOf("root/continue", "root/recent", "root/library", "root/downloads"),
+        setOf("root/recent", "root/library", "root/downloads"),
         ids,
       )
     }
@@ -105,25 +117,25 @@ class MediaLibraryTreeTest {
   @Test
   fun getChildren_root_allChildrenAreBrowsable() =
     runBlocking {
-      val children = tree.getChildren("root", 0, 100).get().value!!
+      val children = tree.getChildren("root", 0, 100, session).get().value!!
       assertTrue(children.all { it.mediaMetadata.isBrowsable == true })
       assertTrue(children.all { it.mediaMetadata.isPlayable == false })
     }
 
   @Test
-  fun getChildren_continue_returnsEmptyWhenNoPlayingBook() =
+  fun getChildren_recent_returnsEmptyWhenNoPlayingBook() =
     runBlocking {
       every { playbackPreferences.getPlayingItem() } returns null
-      val result = tree.getChildren("root/continue", 0, 100).get()
+      val result = tree.getChildren("root/recent", 0, 100, session).get()
       assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
       assertTrue(result.value!!.isEmpty())
     }
 
   @Test
-  fun getChildren_continue_returnsOneItemWhenPlayingBookSet() =
+  fun getChildren_recent_returnsOneItemWhenPlayingBookSet() =
     runBlocking {
       every { playbackPreferences.getPlayingItem() } returns makeDetailedItem("book-1", "My Book")
-      val result = tree.getChildren("root/continue", 0, 100).get()
+      val result = tree.getChildren("root/recent", 0, 100, session).get()
       assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
       val item = result.value!!.first()
       assertEquals(MediaLibraryTree.bookPath("book-1"), item.mediaId)
@@ -133,8 +145,9 @@ class MediaLibraryTreeTest {
   @Test
   fun getChildren_recent_returnsEmptyWhenNoLibraryConfigured() =
     runBlocking {
+      every { playbackPreferences.getPlayingItem() } returns null
       every { libraryPreferences.getPreferredLibrary() } returns null
-      val result = tree.getChildren("root/recent", 0, 100).get()
+      val result = tree.getChildren("root/recent", 0, 100, session).get()
       assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
       assertTrue(result.value!!.isEmpty())
     }
@@ -142,18 +155,23 @@ class MediaLibraryTreeTest {
   @Test
   fun getChildren_recent_returnsEmptyWhenProviderFails() =
     runBlocking {
+      every { playbackPreferences.getPlayingItem() } returns null
       every { libraryPreferences.getPreferredLibrary() } returns makeLibrary("lib-1")
       coEvery { lissenMediaProvider.fetchRecentListenedBooks("lib-1") } returns
         OperationResult.Error(OperationError.NetworkError)
-      val result = tree.getChildren("root/recent", 0, 100).get()
+      val result = tree.getChildren("root/recent", 0, 100, session).get()
       assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
       assertTrue(result.value!!.isEmpty())
     }
 
   @Test
+  @OptIn(ExperimentalCoroutinesApi::class)
   fun getChildren_recent_returnsBookItems() =
     runBlocking {
+      every { playbackPreferences.getPlayingItem() } returns makeDetailedItem("book-1", "My Book")
       every { libraryPreferences.getPreferredLibrary() } returns makeLibrary("lib-1")
+      coEvery { lissenMediaProvider.fetchLibrary("lib-1") } returns
+        OperationResult.Success(makeLibrary("lib-1"))
       coEvery { lissenMediaProvider.fetchRecentListenedBooks("lib-1") } returns
         OperationResult.Success(
           listOf(
@@ -161,12 +179,50 @@ class MediaLibraryTreeTest {
             makeRecentBook("r-2", "Recent Two"),
           ),
         )
-      val result = tree.getChildren("root/recent", 0, 100).get()
+
+      val result = tree.getChildren("root/recent", 0, 100, session).get()
       assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
-      assertEquals(2, result.value!!.size)
-      val expectedIds = listOf("r-1", "r-2").map { MediaLibraryTree.bookPath(it) }
+      assertEquals(1, result.value!!.size)
+      val expectedIds = listOf("book-1").map { MediaLibraryTree.bookPath(it) }
       val ids = result.value!!.map { it.mediaId }
       assertEquals(expectedIds, ids)
+
+      val result2 = tree.getChildren("root/recent", 0, 100, session).get()
+      assertEquals(SessionResult.RESULT_SUCCESS, result2.resultCode)
+      assertEquals(3, result2.value!!.size)
+      val expectedIds2 = listOf("book-1", "r-1", "r-2").map { MediaLibraryTree.bookPath(it) }
+      val ids2 = result2.value!!.map { it.mediaId }
+      assertEquals(expectedIds2, ids2)
+    }
+
+  @Test
+  @OptIn(ExperimentalCoroutinesApi::class)
+  fun getChildren_recent_mergesBookItems() =
+    runBlocking {
+      every { playbackPreferences.getPlayingItem() } returns makeDetailedItem("r-1", "Recent One")
+      every { libraryPreferences.getPreferredLibrary() } returns makeLibrary("lib-1")
+      coEvery { lissenMediaProvider.fetchLibrary("lib-1") } returns
+        OperationResult.Success(makeLibrary("lib-1"))
+      coEvery { lissenMediaProvider.fetchRecentListenedBooks("lib-1") } returns
+        OperationResult.Success(
+          listOf(
+            makeRecentBook("r-1", "Recent One"),
+            makeRecentBook("r-2", "Recent Two"),
+          ),
+        )
+      val result = tree.getChildren("root/recent", 0, 100, session).get()
+      assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
+      assertEquals(1, result.value!!.size)
+      val expectedIds = listOf("r-1").map { MediaLibraryTree.bookPath(it) }
+      val ids = result.value!!.map { it.mediaId }
+      assertEquals(expectedIds, ids)
+
+      val result2 = tree.getChildren("root/recent", 0, 100, session).get()
+      assertEquals(SessionResult.RESULT_SUCCESS, result2.resultCode)
+      assertEquals(2, result2.value!!.size)
+      val expectedIds2 = listOf("r-1", "r-2").map { MediaLibraryTree.bookPath(it) }
+      val ids2 = result2.value!!.map { it.mediaId }
+      assertEquals(expectedIds2, ids2)
     }
 
   @Test
@@ -174,7 +230,7 @@ class MediaLibraryTreeTest {
     runBlocking {
       coEvery { lissenMediaProvider.fetchLibraries() } returns
         OperationResult.Error(OperationError.NetworkError)
-      val result = tree.getChildren("root/library", 0, 100).get()
+      val result = tree.getChildren("root/library", 0, 100, session).get()
       assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
       assertTrue(result.value!!.isEmpty())
     }
@@ -189,7 +245,7 @@ class MediaLibraryTreeTest {
             makeLibrary("lib-2"),
           ),
         )
-      val result = tree.getChildren("root/library", 0, 100).get()
+      val result = tree.getChildren("root/library", 0, 100, session).get()
       assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
       assertEquals(2, result.value!!.size)
     }
@@ -199,6 +255,8 @@ class MediaLibraryTreeTest {
     runBlocking {
       coEvery { lissenMediaProvider.fetchLibraries() } returns
         OperationResult.Success(listOf(makeLibrary("lib-1")))
+      coEvery { lissenMediaProvider.fetchLibrary("lib-1") } returns
+        OperationResult.Success(makeLibrary("lib-1"))
       coEvery { lissenMediaProvider.fetchBooks("lib-1", any(), any()) } returns
         OperationResult.Success(
           PagedItems(
@@ -211,7 +269,7 @@ class MediaLibraryTreeTest {
             totalItems = 2,
           ),
         )
-      val result = tree.getChildren("root/library/lib-1", 0, 100).get()
+      val result = tree.getChildren("root/library/lib-1/titles", 0, 100, session).get()
       assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
       assertEquals(2, result.value!!.size)
       val expectedIds = listOf("book-1", "book-2").map { MediaLibraryTree.bookPath(it) }
@@ -224,7 +282,7 @@ class MediaLibraryTreeTest {
     runBlocking {
       coEvery { lissenMediaProvider.fetchLibraries() } returns
         OperationResult.Success(emptyList())
-      val result = tree.getChildren("root/library/unknown-lib", 0, 100).get()
+      val result = tree.getChildren("root/library/unknown-lib", 0, 100, session).get()
       assertTrue(result.resultCode != SessionResult.RESULT_SUCCESS)
     }
 
@@ -233,7 +291,7 @@ class MediaLibraryTreeTest {
     runBlocking {
       coEvery { localCacheRepository.fetchDetailedItems(any(), any()) } returns
         OperationResult.Error(OperationError.InternalError)
-      val result = tree.getChildren("root/downloads", 0, 100).get()
+      val result = tree.getChildren("root/downloads", 0, 100, session).get()
       assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
       assertTrue(result.value!!.isEmpty())
     }
@@ -253,7 +311,7 @@ class MediaLibraryTreeTest {
             totalItems = 2,
           ),
         )
-      val result = tree.getChildren("root/downloads", 0, 100).get()
+      val result = tree.getChildren("root/downloads", 0, 100, session).get()
       assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
       assertEquals(2, result.value!!.size)
       val expectedIds = listOf("d-1", "d-2").map { MediaLibraryTree.bookPath(it) }
@@ -266,18 +324,18 @@ class MediaLibraryTreeTest {
   @Test
   fun getChildren_invalidPaths_returnError() =
     runBlocking {
-      val result1 = tree.getChildren("invalid/path", 0, 100).get()
+      val result1 = tree.getChildren("invalid/path", 0, 100, session).get()
       assertTrue(result1.resultCode != SessionResult.RESULT_SUCCESS)
-      val result2 = tree.getChildren("root/nonexistent", 0, 100).get()
+      val result2 = tree.getChildren("root/nonexistent", 0, 100, session).get()
       assertTrue(result2.resultCode != SessionResult.RESULT_SUCCESS)
-      val result3 = tree.getChildren("root/library/invalid-id", 0, 100).get()
+      val result3 = tree.getChildren("root/library/invalid-id", 0, 100, session).get()
       assertTrue(result3.resultCode != SessionResult.RESULT_SUCCESS)
     }
 
   @Test
   fun getItem_root_returnsRootItem() =
     runBlocking {
-      listOf("root", "root/continue", "root/recent", "root/library", "root/downloads").forEach { path ->
+      listOf("root", "root/recent", "root/library", "root/downloads").forEach { path ->
         val item = tree.getItem(path).get()
         assertEquals(SessionResult.RESULT_SUCCESS, item.resultCode)
         assertEquals(path, item.value!!.mediaId)
