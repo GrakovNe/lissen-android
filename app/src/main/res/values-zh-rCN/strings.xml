@@ -263,4 +263,9 @@
     <string name="equalizer_restore_default">恢复默认</string>
     <string name="a11y_equalizer_band">%s Hz 频段</string>
     <string name="a11y_equalizer_restore">恢复均衡器默认设置</string>
+    <string name="download_settings_storage_title">存储位置</string>
+    <string name="download_settings_storage_unavailable">不可用</string>
+    <string name="download_settings_storage_switch_failed_toast">无法切换存储位置</string>
+    <string name="download_settings_storage_confirmation_message">已下载的内容将被从此设备删除。服务器数据不会受到影响</string>
+    <string name="download_settings_storage_confirm">切换位置</string>
 </resources>
