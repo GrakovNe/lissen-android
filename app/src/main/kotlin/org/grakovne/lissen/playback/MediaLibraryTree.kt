@@ -126,6 +126,14 @@ class MediaLibraryTree
           onFailure = { emptyList() },
         )
 
+    private suspend fun library(id: String): Library? =
+      lissenMediaProvider
+        .fetchLibrary(id)
+        .fold(
+          onSuccess = { it },
+          onFailure = { null },
+        )
+
     private val root: MediaTreeNode by lazy { buildTree() }
 
     private fun <T> libraryFilterNode(
@@ -324,7 +332,7 @@ class MediaLibraryTree
 
     private suspend fun libraryItems(): List<MediaItem> = libraries().map { libraryFolderItem("$ROOT/$LIBRARY/${it.id}", it) }
 
-    private suspend fun resolveLibrary(libId: String): Library? = libraries().find { it.id == libId }
+    private suspend fun resolveLibrary(libId: String): Library? = library(libId)
 
     private suspend fun booksFromLibrary(
       libraryId: String,
@@ -333,7 +341,7 @@ class MediaLibraryTree
       extraFilter: Pair<String, String>? = null,
     ): List<MediaItem> =
       lissenMediaProvider
-        .fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = page)
+        .fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = page, extraFilter = extraFilter)
         .fold(
           onSuccess = { paged -> paged.items.map { bookItem(it) } },
           onFailure = { emptyList() },
