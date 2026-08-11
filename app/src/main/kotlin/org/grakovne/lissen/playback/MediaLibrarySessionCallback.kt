@@ -106,6 +106,8 @@ class MediaLibrarySessionCallback
       val forwardCommand = SessionCommand(FORWARD_COMMAND, Bundle.EMPTY)
       val nextChapterCommand = SessionCommand(NEXT_CHAPTER_COMMAND, Bundle.EMPTY)
 
+      val seekTime = preferences.getSeekTime()
+
       val sessionCommands =
         MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS
           .buildUpon()
@@ -135,8 +137,15 @@ class MediaLibrarySessionCallback
 
       val rewindButton =
         CommandButton
-          .Builder(CommandButton.ICON_SKIP_BACK)
-          .setSessionCommand(rewindCommand)
+          .Builder(
+            when (seekTime.rewind) {
+              5 -> CommandButton.ICON_SKIP_BACK_5
+              10 -> CommandButton.ICON_SKIP_BACK_10
+              15 -> CommandButton.ICON_SKIP_BACK_15
+              30 -> CommandButton.ICON_SKIP_BACK_30
+              else -> CommandButton.ICON_SKIP_BACK
+            },
+          ).setSessionCommand(rewindCommand)
           .setDisplayName("Rewind")
           .setEnabled(true)
           .setSlots(CommandButton.SLOT_BACK)
@@ -144,8 +153,15 @@ class MediaLibrarySessionCallback
 
       val forwardButton =
         CommandButton
-          .Builder(CommandButton.ICON_SKIP_FORWARD)
-          .setSessionCommand(forwardCommand)
+          .Builder(
+            when (seekTime.forward) {
+              5 -> CommandButton.ICON_SKIP_FORWARD_5
+              10 -> CommandButton.ICON_SKIP_FORWARD_10
+              15 -> CommandButton.ICON_SKIP_FORWARD_15
+              30 -> CommandButton.ICON_SKIP_FORWARD_30
+              else -> CommandButton.ICON_SKIP_BACK
+            },
+          ).setSessionCommand(forwardCommand)
           .setDisplayName("Forward")
           .setSlots(CommandButton.SLOT_FORWARD)
           .setEnabled(true)
