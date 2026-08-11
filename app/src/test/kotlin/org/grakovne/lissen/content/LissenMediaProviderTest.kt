@@ -5,6 +5,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfChannelProvider
 import org.grakovne.lissen.channel.common.MediaChannel
@@ -16,6 +17,7 @@ import org.grakovne.lissen.content.cache.temporary.CachedBookmarkProvider
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.Bookmark
+import org.grakovne.lissen.domain.BookmarkSyncState
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
@@ -23,6 +25,7 @@ import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
+import org.grakovne.lissen.domain.PlaybackSessionSource
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
@@ -361,7 +364,7 @@ class LissenMediaProviderTest {
 
         provider.fetchBookCover("book-1")
 
-        io.mockk.verify { localCacheRepository.fetchBookCover("book-1") }
+        verify { localCacheRepository.fetchBookCover("book-1") }
         coVerify(exactly = 0) { cachedCoverProvider.provideCover(any(), any()) }
       }
 
@@ -387,7 +390,7 @@ class LissenMediaProviderTest {
 
         provider.fetchAuthorCover("a1")
 
-        io.mockk.verify { localCacheRepository.fetchAuthorCover("a1") }
+        verify { localCacheRepository.fetchAuthorCover("a1") }
         coVerify(exactly = 0) { cachedCoverProvider.provideAuthorCover(any(), any()) }
       }
 
@@ -450,7 +453,7 @@ class LissenMediaProviderTest {
         assertInstanceOf(OperationResult.Success::class.java, result)
         val session = (result as OperationResult.Success).data
         assertEquals("book-1", session.itemId)
-        assertEquals(org.grakovne.lissen.domain.PlaybackSessionSource.LOCAL, session.sessionSource)
+        assertEquals(PlaybackSessionSource.LOCAL, session.sessionSource)
         coVerify(exactly = 0) { mediaChannel.startPlayback(any(), any(), any(), any()) }
       }
 
@@ -485,7 +488,7 @@ class LissenMediaProviderTest {
         assertInstanceOf(OperationResult.Success::class.java, result)
         val session = (result as OperationResult.Success).data
         assertEquals("book-1", session.itemId)
-        assertEquals(org.grakovne.lissen.domain.PlaybackSessionSource.LOCAL, session.sessionSource)
+        assertEquals(PlaybackSessionSource.LOCAL, session.sessionSource)
       }
   }
 
@@ -619,7 +622,7 @@ class LissenMediaProviderTest {
 
       provider.provideFileUri("book-1", "file-1")
 
-      io.mockk.verify(exactly = 0) { mediaChannel.provideFileUri(any(), any()) }
+      verify(exactly = 0) { mediaChannel.provideFileUri(any(), any()) }
     }
 
     @Test
@@ -630,7 +633,7 @@ class LissenMediaProviderTest {
 
       provider.provideFileUri("book-1", "file-1")
 
-      io.mockk.verify(exactly = 0) { mediaChannel.provideFileUri(any(), any()) }
+      verify(exactly = 0) { mediaChannel.provideFileUri(any(), any()) }
     }
   }
 
@@ -703,6 +706,6 @@ class LissenMediaProviderTest {
     title = "Bookmark",
     totalPosition = totalPosition,
     createdAt = createdAt,
-    syncState = org.grakovne.lissen.domain.BookmarkSyncState.SYNCED,
+    syncState = BookmarkSyncState.SYNCED,
   )
 }

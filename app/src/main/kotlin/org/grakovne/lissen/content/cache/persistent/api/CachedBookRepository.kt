@@ -66,6 +66,8 @@ class CachedBookRepository
         }
     }
 
+    suspend fun dropCache() = bookDao.dropCache()
+
     suspend fun cacheBook(
       book: DetailedItem,
       fetchedChapters: List<PlayingChapter>,
