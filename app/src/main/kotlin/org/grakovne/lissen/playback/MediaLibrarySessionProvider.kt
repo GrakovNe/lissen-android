@@ -52,6 +52,7 @@ class MediaLibrarySessionProvider
             Intent(context, AppActivity::class.java),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
           ),
-        ).build()
+        ).setPeriodicPositionUpdateEnabled(false)
+        .build()
     }
   }
