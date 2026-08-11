@@ -277,4 +277,9 @@
     <string name="import_config_title">Uvoz konfiguracije</string>
     <string name="import_config_description">Vraćanje postavki aplikacije iz datoteke</string>
     <string name="import_config_failed_toast">Nije moguće uvesti konfiguraciju, datoteka možda nije valjana</string>
+    <string name="download_settings_storage_title">Mjesto pohrane</string>
+    <string name="download_settings_storage_unavailable">Nije dostupno</string>
+    <string name="download_settings_storage_switch_failed_toast">Nije moguće promijeniti lokaciju pohrane</string>
+    <string name="download_settings_storage_confirmation_message">Preuzeti sadržaj bit će uklonjen s ovog uređaja. Podaci vašeg poslužitelja neće biti pogođeni.</string>
+    <string name="download_settings_storage_confirm">Promijeni lokaciju</string>
 </resources>
