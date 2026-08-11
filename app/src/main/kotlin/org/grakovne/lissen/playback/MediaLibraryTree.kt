@@ -260,15 +260,25 @@ class MediaLibraryTree
     private suspend fun continueListeningItems(): List<MediaItem> =
       playbackPreferences.getPlayingItem()?.let { listOf(bookItem(it)) } ?: emptyList()
 
-    private suspend fun recentBooksItems(): List<MediaItem> =
-      libraryPreferences.getPreferredLibrary()?.id?.let { libraryId ->
+    private suspend fun recentBooksItems(): List<MediaItem> {
+      val playingBook = playbackPreferences.getPlayingItem()
+      val continueListeningItems = playingBook?.let { listOf(bookItem(it)) } ?: emptyList()
+      return continueListeningItems + (
+        libraryPreferences.getPreferredLibrary()?.id?.let { libraryId ->
         lissenMediaProvider
           .fetchRecentListenedBooks(libraryId)
           .fold(
-            onSuccess = { books -> books.map { bookItem(it) } },
+            onSuccess = { books ->
+              books
+                .asSequence()
+                .filter { it.id != playingBook?.id }
+                .map { bookItem(it) }
+                .toList() },
             onFailure = { emptyList() },
           )
       } ?: emptyList()
+        )
+    }
 
     private suspend fun libraryItems(): List<MediaItem> = libraries().map { libraryFolderItem("$ROOT/$LIBRARY/${it.id}", it) }
 
