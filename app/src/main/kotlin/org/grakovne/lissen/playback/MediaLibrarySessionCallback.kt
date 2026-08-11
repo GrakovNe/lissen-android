@@ -181,7 +181,7 @@ class MediaLibrarySessionCallback
       page: Int,
       pageSize: Int,
       params: MediaLibraryService.LibraryParams?,
-    ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = libraryTree.getChildren(parentId, page, pageSize)
+    ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = libraryTree.getChildren(parentId, page, pageSize, session)
 
     override fun onGetItem(
       session: MediaLibraryService.MediaLibrarySession,

@@ -7,6 +7,8 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.LibraryResult
+import androidx.media3.session.MediaLibraryService
+import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.SessionError
 import com.google.common.collect.ImmutableList
 import com.google.common.util.concurrent.Futures
@@ -14,6 +16,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.content.ExternalCoverProvider
 import org.grakovne.lissen.content.LissenMediaProvider
@@ -26,6 +29,7 @@ import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.util.listenableFuture
+import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -38,7 +42,7 @@ class MediaTreeNode(
   val item: MediaItem,
   private val staticChildren: List<MediaTreeNode>,
   private val dynamicResolver: (suspend (String) -> MediaTreeNode?)?,
-  private val childrenProvider: (suspend (Int, Int) -> List<MediaItem>)?,
+  private val childrenProvider: (suspend (Int, Int, MediaLibrarySession) -> List<MediaItem>)?,
 ) {
   suspend fun child(segment: String): MediaTreeNode? =
     staticChildren.find { it.item.mediaId.substringAfterLast('/') == segment }
@@ -47,8 +51,9 @@ class MediaTreeNode(
   suspend fun listChildren(
     page: Int,
     pageSize: Int,
+    session: MediaLibraryService.MediaLibrarySession,
   ): List<MediaItem> =
-    childrenProvider?.invoke(page, pageSize)
+    childrenProvider?.invoke(page, pageSize, session)
       ?: staticChildren.map { it.item }
 }
 
@@ -56,7 +61,7 @@ class MediaTreeNode(
 class MediaTreeBuilder {
   private val children = mutableListOf<MediaTreeNode>()
   private var resolveChild: (suspend (String) -> MediaTreeNode?)? = null
-  private var pagedChildren: (suspend (Int, Int) -> List<MediaItem>)? = null
+  private var pagedChildren: (suspend (Int, Int, MediaLibrarySession) -> List<MediaItem>)? = null
 
   operator fun MediaTreeNode.unaryPlus() {
     children += this
@@ -66,7 +71,7 @@ class MediaTreeBuilder {
     resolveChild = resolver
   }
 
-  fun pagedChildren(provider: suspend (Int, Int) -> List<MediaItem>) {
+  fun pagedChildren(provider: suspend (Int, Int, MediaLibrarySession) -> List<MediaItem>) {
     pagedChildren = provider
   }
 
@@ -109,6 +114,8 @@ class MediaLibraryTree
 
     private val scope = CoroutineScope(Dispatchers.Default)
 
+    private val recentItemsCache = AtomicReference<List<MediaItem>>(emptyList())
+
     private suspend fun libraries(): List<Library> =
       lissenMediaProvider
         .fetchLibraries()
@@ -122,27 +129,23 @@ class MediaLibraryTree
     @OptIn(UnstableApi::class)
     private fun buildTree(): MediaTreeNode =
       mediaTreeNode(folderItem(ROOT, context.getString(R.string.tree_node_root))) {
-        +mediaTreeNode(folderItem("$ROOT/$CONTINUE", context.getString(R.string.tree_node_continue))) {
-          pagedChildren { _, _ -> continueListeningItems() }
-        }
-
         +mediaTreeNode(folderItem("$ROOT/$RECENT", context.getString(R.string.tree_node_recent))) {
-          pagedChildren { _, _ -> recentBooksItems() }
+          pagedChildren { _, _, session -> recentBooksItems(session) }
         }
 
         +mediaTreeNode(folderItem("$ROOT/$LIBRARY", context.getString(R.string.tree_node_library))) {
-          pagedChildren { _, _ -> libraryItems() }
+          pagedChildren { _, _, _ -> libraryItems() }
           resolveChild { libId ->
             resolveLibrary(libId)?.let { lib ->
               mediaTreeNode(libraryFolderItem("$ROOT/$LIBRARY/$libId", lib)) {
-                pagedChildren { page, pageSize -> booksFromLibraryItems(libId, page, pageSize) }
+                pagedChildren { page, pageSize, _ -> booksFromLibraryItems(libId, page, pageSize) }
               }
             }
           }
         }
 
         +mediaTreeNode(folderItem("$ROOT/$DOWNLOADS", context.getString(R.string.tree_node_downloads))) {
-          pagedChildren { page, pageSize -> downloadedBooksItems(page, pageSize) }
+          pagedChildren { page, pageSize, _ -> downloadedBooksItems(page, pageSize) }
         }
       }
 
@@ -156,11 +159,12 @@ class MediaLibraryTree
       path: String,
       page: Int,
       pageSize: Int,
+      session: MediaLibrarySession,
     ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> =
       scope
         .listenableFuture {
           navigateTo(path)
-            ?.listChildren(page, pageSize)
+            ?.listChildren(page, pageSize, session)
             ?.let { LibraryResult.ofItemList(it, null) }
             ?: LibraryResult.ofError(SessionError.INFO_CANCELLED)
         }
@@ -257,28 +261,33 @@ class MediaLibraryTree
 
     // --- Data fetchers ---
 
-    private suspend fun continueListeningItems(): List<MediaItem> =
-      playbackPreferences.getPlayingItem()?.let { listOf(bookItem(it)) } ?: emptyList()
+    private fun recentBooksItems(session: MediaLibrarySession): List<MediaItem> =
+      recentItemsCache.get().ifEmpty {
+        val playingItem = playbackPreferences.getPlayingItem()
+        val immediateItems = playingItem?.let { listOf(bookItem(it)) } ?: emptyList()
+        scope.launch {
+          val networkItems =
+            libraryPreferences.getPreferredLibrary()?.id?.let { libraryId ->
+              lissenMediaProvider
+                .fetchRecentListenedBooks(libraryId)
+                .fold(
+                  onSuccess = { books ->
+                    books
+                      .asSequence()
+                      .filter { it.id != playingItem?.id }
+                      .map { bookItem(it) }
+                      .toList()
+                  },
+                  onFailure = { emptyList() },
+                )
+            } ?: emptyList()
 
-    private suspend fun recentBooksItems(): List<MediaItem> {
-      val playingBook = playbackPreferences.getPlayingItem()
-      val continueListeningItems = playingBook?.let { listOf(bookItem(it)) } ?: emptyList()
-      return continueListeningItems + (
-        libraryPreferences.getPreferredLibrary()?.id?.let { libraryId ->
-        lissenMediaProvider
-          .fetchRecentListenedBooks(libraryId)
-          .fold(
-            onSuccess = { books ->
-              books
-                .asSequence()
-                .filter { it.id != playingBook?.id }
-                .map { bookItem(it) }
-                .toList() },
-            onFailure = { emptyList() },
-          )
-      } ?: emptyList()
-        )
-    }
+          val merged = immediateItems + networkItems
+          recentItemsCache.set(merged)
+          session.notifyChildrenChanged("$ROOT/$RECENT", merged.size, null)
+        }
+        immediateItems
+      }
 
     private suspend fun libraryItems(): List<MediaItem> = libraries().map { libraryFolderItem("$ROOT/$LIBRARY/${it.id}", it) }
 
