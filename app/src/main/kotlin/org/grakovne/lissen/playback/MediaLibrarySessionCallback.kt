@@ -221,7 +221,7 @@ class MediaLibrarySessionCallback
     override fun onPlaybackResumption(
       mediaSession: MediaSession,
       controller: MediaSession.ControllerInfo,
-      isForPlayback: Boolean
+      isForPlayback: Boolean,
     ): ListenableFuture<MediaItemsWithStartPosition> =
       futureScope.listenableFuture {
         preferences.getPlayingItem()?.id?.let { bookId ->

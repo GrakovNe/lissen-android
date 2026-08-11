@@ -63,8 +63,10 @@ class MediaTreeBuilder {
   private var resolveChild: (suspend (String) -> MediaTreeNode?)? = null
   private var pagedChildren: (suspend (Int, Int, MediaLibrarySession) -> List<MediaItem>)? = null
 
-  operator fun MediaTreeNode.unaryPlus() {
-    children += this
+  operator fun MediaTreeNode?.unaryPlus() {
+    if (this != null) {
+      children += this
+    }
   }
 
   fun resolveChild(resolver: suspend (String) -> MediaTreeNode?) {
@@ -126,6 +128,31 @@ class MediaLibraryTree
 
     private val root: MediaTreeNode by lazy { buildTree() }
 
+    private fun <T> libraryFilterNode(
+      libraryId: String,
+      filterKey: String,
+      label: String,
+      items: List<T>?,
+      toIdAndName: (T) -> Pair<String, String>,
+    ): MediaTreeNode? =
+      items?.let {
+        mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/$filterKey", label)) {
+          for (item in items) {
+            val (id, name) = toIdAndName(item)
+            +mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/$filterKey/$id", name)) {
+              pagedChildren { page, pageSize, _ ->
+                booksFromLibrary(
+                  libraryId = libraryId,
+                  page = page,
+                  pageSize = pageSize,
+                  extraFilter = filterKey to id,
+                )
+              }
+            }
+          }
+        }
+      }
+
     @OptIn(UnstableApi::class)
     private fun buildTree(): MediaTreeNode =
       mediaTreeNode(folderItem(ROOT, context.getString(R.string.tree_node_root))) {
@@ -134,81 +161,17 @@ class MediaLibraryTree
         }
 
         +mediaTreeNode(folderItem("$ROOT/$LIBRARY", context.getString(R.string.tree_node_library))) {
-          pagedChildren { _, _ -> libraryItems() }
+          pagedChildren { _, _, _ -> libraryItems() }
           resolveChild { libraryId ->
             resolveLibrary(libraryId)?.let { library ->
               mediaTreeNode(libraryFolderItem("$ROOT/$LIBRARY/$libraryId", library)) {
                 +mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/all", "By title")) {
-                  pagedChildren { page, pageSize -> booksFromLibrary(libraryId = libraryId, page = page, pageSize = pageSize) }
+                  pagedChildren { page, pageSize, _ -> booksFromLibrary(libraryId = libraryId, page = page, pageSize = pageSize) }
                 }
-                library.filters?.genres?.let { genres ->
-                  +mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/genre", "By genre")) {
-                    for (genre in genres) {
-                      +mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/genre/$genre", genre)) {
-                        pagedChildren { page, pageSize ->
-                          booksFromLibrary(
-                            libraryId = libraryId,
-                            page = page,
-                            pageSize = pageSize,
-                            extraFilter =
-                              "genres" to genre,
-                          )
-                        }
-                      }
-                    }
-                  }
-                }
-                library.filters?.tags?.let { tags ->
-                  +mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/tag", "By tag")) {
-                    for (tag in tags) {
-                      +mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/tag/$tag", tag)) {
-                        pagedChildren { page, pageSize ->
-                          booksFromLibrary(
-                            libraryId = libraryId,
-                            page = page,
-                            pageSize = pageSize,
-                            extraFilter =
-                              "tags" to tag,
-                          )
-                        }
-                      }
-                    }
-                  }
-                }
-                library.filters?.authors?.let { authors ->
-                  +mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/author", "By author")) {
-                    for (author in authors) {
-                      +mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/author/${author.id}", author.name)) {
-                        pagedChildren { page, pageSize ->
-                          booksFromLibrary(
-                            libraryId = libraryId,
-                            page = page,
-                            pageSize = pageSize,
-                            extraFilter =
-                              "authors" to author.id,
-                          )
-                        }
-                      }
-                    }
-                  }
-                }
-                library.filters?.series?.let { series ->
-                  +mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/series", "By series")) {
-                    for (serie in series) {
-                      +mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/series/${serie.id}", serie.name)) {
-                        pagedChildren { page, pageSize ->
-                          booksFromLibrary(
-                            libraryId = libraryId,
-                            page = page,
-                            pageSize = pageSize,
-                            extraFilter =
-                              "series" to serie.id,
-                          )
-                        }
-                      }
-                    }
-                  }
-                }
+                +libraryFilterNode(libraryId, "genres", "By genre", library.filters?.genres) { it to it }
+                +libraryFilterNode(libraryId, "tags", "By tag", library.filters?.tags) { it to it }
+                +libraryFilterNode(libraryId, "authors", "By author", library.filters?.authors) { it.id to it.name }
+                +libraryFilterNode(libraryId, "series", "By series", library.filters?.series) { it.id to it.name }
               }
             }
           }

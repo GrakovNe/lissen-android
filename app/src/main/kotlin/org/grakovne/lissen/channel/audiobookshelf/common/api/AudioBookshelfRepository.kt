@@ -41,7 +41,7 @@ class AudioBookshelfRepository
   ) {
     fun provideHttpClient(): OkHttpClient? = audioBookShelfApiService.provideHttpClient()
 
-    suspend fun fetchLibraries(): OperationResult<LibraryResponse> =
+    suspend fun fetchLibraries(): OperationResult<LibrariesResponse> =
       audioBookShelfApiService
         .makeRequest { it.fetchLibraries() }
 
