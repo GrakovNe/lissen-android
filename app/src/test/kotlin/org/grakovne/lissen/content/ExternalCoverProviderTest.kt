@@ -68,7 +68,7 @@ class ExternalCoverProviderTest {
     every { ParcelFileDescriptor.open(coverFile, ParcelFileDescriptor.MODE_READ_ONLY) } returns descriptor
     mockkConstructor(AssetFileDescriptor::class)
 
-    val result = provider.openAssetFile(coverUri("book-1"), "r")
+    val result = provider.openAssetFile(mockBookCoverUri("book-1"), "r")
 
     assertNotNull(result)
     verify(exactly = 1) { ParcelFileDescriptor.open(coverFile, ParcelFileDescriptor.MODE_READ_ONLY) }
@@ -83,7 +83,7 @@ class ExternalCoverProviderTest {
 
     mockkStatic(ParcelFileDescriptor::class)
 
-    val result = provider.openAssetFile(coverUri("book-1"), "r")
+    val result = provider.openAssetFile(mockBookCoverUri("book-1"), "r")
 
     assertSame(fallback, result)
     verify(exactly = 0) { ParcelFileDescriptor.open(any<File>(), any<Int>()) }
@@ -100,13 +100,14 @@ class ExternalCoverProviderTest {
     every { ParcelFileDescriptor.open(any(), any()) } returns mockk()
     mockkConstructor(AssetFileDescriptor::class)
 
-    provider.openAssetFile(coverUri("podcast-42"), "r")
+    provider.openAssetFile(mockBookCoverUri("podcast-42"), "r")
 
     coVerify(exactly = 1) { mediaProvider.fetchBookCover("podcast-42") }
   }
 
-  private fun coverUri(bookId: String): Uri =
+  private fun mockBookCoverUri(bookId: String): Uri =
     mockk {
+      every { pathSegments } returns listOf(ExternalCoverProvider.BOOK_PATH, bookId)
       every { lastPathSegment } returns bookId
     }
 }

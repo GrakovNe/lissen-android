@@ -185,8 +185,15 @@ class LissenMediaProvider
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
+    ): OperationResult<PagedItems<LibraryEntry>> = fetchLibrary(libraryId, pageSize, pageNumber, preferences.getLibraryGrouping())
+
+    suspend fun fetchLibrary(
+      libraryId: String,
+      pageSize: Int,
+      pageNumber: Int,
+      grouping: LibraryGrouping,
     ): OperationResult<PagedItems<LibraryEntry>> {
-      Timber.d("Fetching library: libraryId=$libraryId, page=$pageNumber, pageSize=$pageSize")
+      Timber.d("Fetching library: libraryId=$libraryId, page=$pageNumber, pageSize=$pageSize, grouping=$grouping")
 
       return when (preferences.isForceCache()) {
         true -> {
@@ -194,7 +201,7 @@ class LissenMediaProvider
             libraryId = libraryId,
             pageSize = pageSize,
             pageNumber = pageNumber,
-            libraryGrouping = preferences.getLibraryGrouping(),
+            libraryGrouping = grouping,
           )
         }
 
@@ -204,7 +211,7 @@ class LissenMediaProvider
               libraryId = libraryId,
               pageSize = pageSize,
               pageNumber = pageNumber,
-              libraryGrouping = preferences.getLibraryGrouping(),
+              libraryGrouping = grouping,
             )
         }
       }
