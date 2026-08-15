@@ -91,12 +91,23 @@ class MediaLibraryTreeTest {
   }
 
   @Test
-  fun getChildren_root_returnsFourChildren() =
+  fun getChildren_root_returnsThreeChildren() =
     runBlocking {
       val result = tree.getChildren("root", 0, 100, session).get()
       assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
       assertEquals(3, result.value!!.size)
     }
+
+  @Test
+  fun getChildren_offlineRoot_returnsOneChild() {
+    every { libraryPreferences.isForceCache() } returns true
+    runBlocking {
+      val result = tree.getChildren("root", 0, 100, session).get()
+      assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
+      assertEquals(1, result.value!!.size)
+      assertEquals("root/downloads", result.value!![0].mediaId)
+    }
+  }
 
   @Test
   fun getChildren_root_hasExpectedChildIds() =

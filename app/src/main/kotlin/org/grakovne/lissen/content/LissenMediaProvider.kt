@@ -262,26 +262,20 @@ class LissenMediaProvider
       }
     }
 
-    suspend fun fetchLibrary(libraryId: String): OperationResult<Library> {
-      Timber.d("Fetching List of libraries")
-
-      return when (preferences.isForceCache()) {
+    suspend fun fetchLibrary(libraryId: String): OperationResult<Library> =
+      when (preferences.isForceCache()) {
         true -> {
-          TODO()
+          // This function gets called only from the MediaLibraryTree
+          // and only when isForceCache is off, so this path should never really happen.
+          // We guard it nonetheless.
+          OperationResult.Error(OperationError.UnsupportedError)
         }
 
         false -> {
           providePreferredChannel()
             .fetchLibrary(libraryId)
-//            .also {
-//              it.foldAsync(
-//                onSuccess = { libraries -> localCacheRepository.updateLibraries(libraries) },
-//                onFailure = {},
-//              )
-//            }
         }
       }
-    }
 
     suspend fun startPlayback(
       itemId: String,

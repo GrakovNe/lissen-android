@@ -132,7 +132,21 @@ class MediaLibraryTree
           onFailure = { emptyList() },
         )
 
-    private val root: MediaTreeNode by lazy { buildTree() }
+    private val onlineRoot: MediaTreeNode by lazy { buildTree() }
+    private val offlineRoot: MediaTreeNode by lazy { buildOfflineTree() }
+
+    private fun buildOfflineTree(): MediaTreeNode =
+      mediaTreeNode(folderItem(ROOT, context.getString(R.string.tree_node_root))) {
+        +mediaTreeNode(
+          folderItem(
+            "$ROOT/$DOWNLOADS",
+            context.getString(R.string.tree_node_downloads_offline),
+            MediaMetadata.MEDIA_TYPE_FOLDER_AUDIO_BOOKS,
+          ),
+        ) {
+          pagedChildren { page, pageSize, _ -> downloadedBooksItems(page, pageSize) }
+        }
+      }
 
     private fun <T> libraryFilterNode(
       libraryId: String,
@@ -208,8 +222,11 @@ class MediaLibraryTree
         }
       }
 
+    private fun root(): MediaTreeNode = if (libraryPreferences.isForceCache()) offlineRoot else onlineRoot
+
     fun getRootItem(): ListenableFuture<LibraryResult<MediaItem>> =
-      root.item
+      root()
+        .item
         .let { LibraryResult.ofItem(it, null) }
         .let { Futures.immediateFuture(it) }
 
@@ -267,7 +284,7 @@ class MediaLibraryTree
     private suspend fun navigateTo(path: String): MediaTreeNode? {
       val segments = path.split("/")
       if (segments.isEmpty() || segments[0] != ROOT) return null
-      return segments.drop(1).fold(root as MediaTreeNode?) { node, segment ->
+      return segments.drop(1).fold(root() as MediaTreeNode?) { node, segment ->
         node?.child(segment)
       }
     }
