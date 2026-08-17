@@ -31,6 +31,7 @@ import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.util.listenableFuture
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -120,6 +121,11 @@ class MediaLibraryTree
     }
 
     private val recentItemsCache = AtomicReference<List<MediaItem>>(emptyList())
+    private val recentFetchInFlight = AtomicBoolean(false)
+
+    fun invalidateRecentCache() {
+      recentItemsCache.set(emptyList())
+    }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     internal var scope = CoroutineScope(Dispatchers.IO)
@@ -358,28 +364,32 @@ class MediaLibraryTree
       recentItemsCache.get().ifEmpty {
         val playingItem = playbackPreferences.getPlayingItem()
         val immediateItems = playingItem?.let { listOf(bookItem(it)) } ?: emptyList()
-        scope.launch {
-          val networkItems =
-            libraryPreferences.getPreferredLibrary()?.id?.let { libraryId ->
-              lissenMediaProvider
-                .fetchRecentListenedBooks(libraryId)
-                .fold(
-                  onSuccess = { books ->
-                    books
-                      .asSequence()
-                      .filter { it.id != playingItem?.id }
-                      .map { bookItem(it) }
-                      .toList()
-                  },
-                  onFailure = { emptyList() },
-                )
-            } ?: emptyList()
 
-          val merged = immediateItems + networkItems
-          recentItemsCache.set(merged)
-          session.notifyChildrenChanged("$ROOT/$RECENT", merged.size, null)
+        if (recentFetchInFlight.compareAndSet(false, true)) {
+          scope.launch {
+            val networkItems =
+              libraryPreferences.getPreferredLibrary()?.id?.let { libraryId ->
+                lissenMediaProvider
+                  .fetchRecentListenedBooks(libraryId)
+                  .fold(
+                    onSuccess = { books ->
+                      books
+                        .asSequence()
+                        .filter { it.id != playingItem?.id }
+                        .map { bookItem(it) }
+                        .toList()
+                    },
+                    onFailure = { emptyList() },
+                  )
+              } ?: emptyList()
+
+            val merged = immediateItems + networkItems
+            recentItemsCache.set(merged)
+            recentFetchInFlight.set(false)
+            session.notifyChildrenChanged("$ROOT/$RECENT", merged.size, null)
+          }
         }
-        immediateItems
+        return immediateItems
       }
 
     private suspend fun libraryItems(): List<MediaItem> = libraries().map { libraryFolderItem("$ROOT/$LIBRARY/${it.id}", it) }
@@ -456,16 +466,32 @@ class MediaLibraryTree
           onFailure = { emptyList() },
         )
 
+    private fun <T, ID> List<T>.hoistToFront(
+      id: ID?,
+      selector: (T) -> ID,
+    ): List<T> {
+      val index = indexOfFirst { selector(it) == id }
+      if (index <= 0) return this
+      return listOf(this[index]) + this.subList(0, index) + this.subList(index + 1, this.size)
+    }
+
     private suspend fun downloadedBooksItems(
       page: Int,
       pageSize: Int,
-    ): List<MediaItem> =
-      localCacheRepository
+    ): List<MediaItem> {
+      val playingItem = playbackPreferences.getPlayingItem()
+
+      return localCacheRepository
         .fetchDetailedItems(pageSize = pageSize, pageNumber = page)
         .fold(
-          onSuccess = { paged -> paged.items.map { bookItem(it) } },
+          onSuccess = { paged ->
+            paged.items
+              .hoistToFront(playingItem?.id) { it.id }
+              .map { bookItem(it) }
+          },
           onFailure = { emptyList() },
         )
+    }
 
     private suspend fun fetchBookItem(bookId: String): MediaItem? =
       lissenMediaProvider

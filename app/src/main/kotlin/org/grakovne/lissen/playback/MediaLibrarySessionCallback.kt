@@ -233,6 +233,7 @@ class MediaLibrarySessionCallback
                     preferences.savePlayingItem(it)
                     playbackSynchronizationService.startPlaybackSynchronization(it)
                     mediaRepository.registerPlayingBook(it)
+                    libraryTree.invalidateRecentCache()
                     PlaybackService.bookToChapterMediaItems(it)
                   },
                   onFailure = { MediaItemsWithStartPosition(emptyList(), 0, 0) },
