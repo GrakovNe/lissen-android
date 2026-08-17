@@ -251,8 +251,7 @@
     <string name="tree_node_downloads">Downloads</string>
     <string name="tree_node_downloads_offline">Downloads (offline mode)</string>
     <string name="tree_node_root">Root</string>
-    <string name="tree_node_continue">Continue</string>
-    <string name="tree_node_all_titles">Titles alphabetically</string>
+    <string name="tree_node_all_titles">All titles</string>
     <string name="tree_node_series_collapsed">Collapsed series</string>
     <string name="tree_node_genres">Genres</string>
     <string name="tree_node_tags">Tags</string>
