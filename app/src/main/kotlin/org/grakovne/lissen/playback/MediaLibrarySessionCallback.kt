@@ -159,7 +159,7 @@ class MediaLibrarySessionCallback
               10 -> CommandButton.ICON_SKIP_FORWARD_10
               15 -> CommandButton.ICON_SKIP_FORWARD_15
               30 -> CommandButton.ICON_SKIP_FORWARD_30
-              else -> CommandButton.ICON_SKIP_BACK
+              else -> CommandButton.ICON_SKIP_FORWARD
             },
           ).setSessionCommand(forwardCommand)
           .setDisplayName("Forward")
