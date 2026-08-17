@@ -254,9 +254,11 @@ class MediaLibrarySessionCallback
             .fetchBook(bookId)
             .foldAsync(
               onSuccess = {
-                preferences.savePlayingItem(it)
-                playbackSynchronizationService.startPlaybackSynchronization(it)
-                mediaRepository.registerPlayingBook(it)
+                if (isForPlayback) {
+                  preferences.savePlayingItem(it)
+                  playbackSynchronizationService.startPlaybackSynchronization(it)
+                  mediaRepository.registerPlayingBook(it)
+                }
                 PlaybackService.bookToChapterMediaItems(it)
               },
               onFailure = { MediaItemsWithStartPosition(emptyList(), 0, 0) },
