@@ -16,9 +16,11 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.SettableFuture
 import io.mockk.Ordering
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
@@ -33,10 +35,12 @@ import org.grakovne.lissen.playback.service.PlaybackService.Companion.FILE_SEGME
 import org.grakovne.lissen.playback.service.PlaybackSynchronizationService
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 
 @OptIn(UnstableApi::class)
@@ -196,6 +200,166 @@ class MediaLibrarySessionCallbackTest {
           .get(5, TimeUnit.SECONDS)
 
       assertTrue(result.mediaItems.isEmpty())
+    }
+
+  @Test
+  fun onPlaybackResumption_storedBook_refreshesAndResolvesQueue() =
+    runBlocking {
+      val storedBook = makeDetailedItem("book-1", "Stored Book", MediaProgress(170.0, false, 0L))
+      val refreshedBook = makeDetailedItem("book-1", "Refreshed Book", MediaProgress(170.0, false, 0L))
+      every { preferences.getPlayingItem() } returns storedBook
+      coEvery { lissenMediaProvider.fetchBook("book-1") } returns OperationResult.Success(refreshedBook)
+
+      val result =
+        callback
+          .onPlaybackResumption(session, controller, isForPlayback = true)
+          .get(5, TimeUnit.SECONDS)
+
+      assertEquals(listOf("chapter:book-1:0", "chapter:book-1:1"), result.mediaItems.map { it.mediaId })
+      assertEquals(1, result.startIndex)
+      assertEquals(20000, result.startPositionMs)
+      assertEquals(
+        "Refreshed Book",
+        result.mediaItems[0]
+          .mediaMetadata.albumTitle
+          .toString(),
+      )
+      verify(exactly = 1) { preferences.savePlayingItem(refreshedBook) }
+      verify(exactly = 1) { playbackSynchronizationService.startPlaybackSynchronization(refreshedBook) }
+      verify(exactly = 1) { mediaRepository.registerPlayingBook(refreshedBook) }
+    }
+
+  @Test
+  fun onPlaybackResumption_noStoredBook_returnsFailedFutureWithoutSideEffects() =
+    runBlocking {
+      every { preferences.getPlayingItem() } returns null
+
+      val future = callback.onPlaybackResumption(session, controller, isForPlayback = true)
+
+      assertThrows(ExecutionException::class.java) { future.get(5, TimeUnit.SECONDS) }
+      coVerify(exactly = 0) { lissenMediaProvider.fetchBook(any()) }
+      verify(exactly = 0) { preferences.savePlayingItem(any()) }
+      verify(exactly = 0) { playbackSynchronizationService.startPlaybackSynchronization(any()) }
+      verify(exactly = 0) { mediaRepository.registerPlayingBook(any()) }
+    }
+
+  @Test
+  fun onPlaybackResumption_fetchBookFails_fallsBackToStoredBook() =
+    runBlocking {
+      val storedBook = makeDetailedItem("book-1", "My Book", MediaProgress(170.0, false, 0L))
+      every { preferences.getPlayingItem() } returns storedBook
+      coEvery { lissenMediaProvider.fetchBook("book-1") } returns
+        OperationResult.Error(OperationError.NotFoundError)
+
+      val result =
+        callback
+          .onPlaybackResumption(session, controller, isForPlayback = true)
+          .get(5, TimeUnit.SECONDS)
+
+      assertEquals(listOf("chapter:book-1:0", "chapter:book-1:1"), result.mediaItems.map { it.mediaId })
+      assertEquals(1, result.startIndex)
+      assertEquals(20000, result.startPositionMs)
+      verify(exactly = 1) { preferences.savePlayingItem(storedBook) }
+      verify(exactly = 1) { playbackSynchronizationService.startPlaybackSynchronization(storedBook) }
+      verify(exactly = 1) { mediaRepository.registerPlayingBook(storedBook) }
+    }
+
+  @Test
+  fun onPlaybackResumption_metadataOnlyRequest_skipsPlaybackSideEffects() =
+    runBlocking {
+      val storedBook = makeDetailedItem("book-1", "My Book", MediaProgress(170.0, false, 0L))
+      every { preferences.getPlayingItem() } returns storedBook
+      coEvery { lissenMediaProvider.fetchBook("book-1") } returns OperationResult.Success(storedBook)
+
+      val result =
+        callback
+          .onPlaybackResumption(session, controller, isForPlayback = false)
+          .get(5, TimeUnit.SECONDS)
+
+      assertEquals(listOf("chapter:book-1:0", "chapter:book-1:1"), result.mediaItems.map { it.mediaId })
+      assertEquals(1, result.startIndex)
+      assertEquals(20000, result.startPositionMs)
+      verify(exactly = 0) { preferences.savePlayingItem(any()) }
+      verify(exactly = 0) { playbackSynchronizationService.startPlaybackSynchronization(any()) }
+      verify(exactly = 0) { mediaRepository.registerPlayingBook(any()) }
+    }
+
+  @Test
+  fun onPlaybackResumption_fetchBookStalls_fallsBackToStoredBook() =
+    runBlocking {
+      val storedBook = makeDetailedItem("book-1", "My Book", MediaProgress(170.0, false, 0L))
+      val slowBook = makeDetailedItem("book-1", "Slow Book", MediaProgress(170.0, false, 0L))
+      every { preferences.getPlayingItem() } returns storedBook
+      coEvery { lissenMediaProvider.fetchBook("book-1") } coAnswers {
+        delay(5_000)
+        OperationResult.Success(slowBook)
+      }
+
+      val startedAt = System.nanoTime()
+      val result =
+        callback
+          .onPlaybackResumption(session, controller, isForPlayback = true)
+          .get(10, TimeUnit.SECONDS)
+      val elapsedMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startedAt)
+
+      assertTrue(elapsedMs < 4_500)
+      assertEquals(listOf("chapter:book-1:0", "chapter:book-1:1"), result.mediaItems.map { it.mediaId })
+      assertEquals(1, result.startIndex)
+      assertEquals(20000, result.startPositionMs)
+      assertEquals(
+        "My Book",
+        result.mediaItems[0]
+          .mediaMetadata
+          .albumTitle
+          .toString(),
+      )
+      verify(exactly = 1) { preferences.savePlayingItem(storedBook) }
+      verify(exactly = 1) { playbackSynchronizationService.startPlaybackSynchronization(storedBook) }
+      verify(exactly = 1) { mediaRepository.registerPlayingBook(storedBook) }
+    }
+
+  @Test
+  fun onPlaybackResumption_refreshedBookUnusable_fallsBackToStoredBook() =
+    runBlocking {
+      val storedBook = makeDetailedItem("book-1", "My Book", MediaProgress(170.0, false, 0L))
+      val unusableBook =
+        makeDetailedItem("book-1", "Unusable Book", MediaProgress(170.0, false, 0L)).copy(files = emptyList())
+      every { preferences.getPlayingItem() } returns storedBook
+      coEvery { lissenMediaProvider.fetchBook("book-1") } returns OperationResult.Success(unusableBook)
+
+      val result =
+        callback
+          .onPlaybackResumption(session, controller, isForPlayback = true)
+          .get(5, TimeUnit.SECONDS)
+
+      assertEquals(listOf("chapter:book-1:0", "chapter:book-1:1"), result.mediaItems.map { it.mediaId })
+      assertEquals(1, result.startIndex)
+      assertEquals(20000, result.startPositionMs)
+      assertEquals(
+        "My Book",
+        result.mediaItems[0]
+          .mediaMetadata
+          .albumTitle
+          .toString(),
+      )
+      verify(exactly = 1) { preferences.savePlayingItem(storedBook) }
+      verify(exactly = 1) { playbackSynchronizationService.startPlaybackSynchronization(storedBook) }
+      verify(exactly = 1) { mediaRepository.registerPlayingBook(storedBook) }
+    }
+
+  @Test
+  fun onPlaybackResumption_storedBookUnusable_returnsFailedFutureWithoutSideEffects() =
+    runBlocking {
+      val storedBook = makeDetailedItem("book-1", "My Book").copy(files = emptyList())
+      every { preferences.getPlayingItem() } returns storedBook
+      coEvery { lissenMediaProvider.fetchBook("book-1") } returns OperationResult.Success(storedBook)
+
+      val future = callback.onPlaybackResumption(session, controller, isForPlayback = true)
+
+      assertThrows(ExecutionException::class.java) { future.get(5, TimeUnit.SECONDS) }
+      verify(exactly = 0) { preferences.savePlayingItem(any()) }
+      verify(exactly = 0) { playbackSynchronizationService.startPlaybackSynchronization(any()) }
+      verify(exactly = 0) { mediaRepository.registerPlayingBook(any()) }
     }
 
   private fun makePlayableMediaItem(id: String) =

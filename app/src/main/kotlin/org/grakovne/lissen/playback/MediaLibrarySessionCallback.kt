@@ -27,6 +27,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withTimeoutOrNull
+import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.service.PlaybackService
@@ -218,6 +220,70 @@ class MediaLibrarySessionCallback
         }
       } ?: super.onSetMediaItems(mediaSession, controller, mediaItems, startIndex, startPositionMs)
 
+    override fun onPlaybackResumption(
+      mediaSession: MediaSession,
+      controller: MediaSession.ControllerInfo,
+      isForPlayback: Boolean,
+    ): ListenableFuture<MediaItemsWithStartPosition> {
+      Timber.d("Resuming playback for: $controller (isForPlayback=$isForPlayback)")
+
+      val storedBook =
+        preferences.getPlayingItem()
+          ?: return Futures.immediateFailedFuture(IllegalStateException("No last played book stored"))
+
+      return futureScope
+        .listenableFuture {
+          val refreshedBook =
+            withTimeoutOrNull(REFRESH_TIMEOUT_MS) {
+              lissenMediaProvider.fetchBook(storedBook.id)
+            }
+
+          val book =
+            when {
+              refreshedBook is OperationResult.Success && refreshedBook.data.canProducePlaybackQueue() -> {
+                refreshedBook.data
+              }
+
+              refreshedBook is OperationResult.Error -> {
+                Timber.w(
+                  "Unable to refresh last played book (bookId=${storedBook.id}) for resumption, " +
+                    "falling back to stored copy due to: ${refreshedBook.message}",
+                )
+                storedBook
+              }
+
+              refreshedBook == null -> {
+                Timber.w(
+                  "Timed out refreshing last played book (bookId=${storedBook.id}) for resumption, " +
+                    "falling back to stored copy",
+                )
+                storedBook
+              }
+
+              else -> {
+                Timber.w(
+                  "Refreshed last played book (bookId=${storedBook.id}) can't produce a playback " +
+                    "queue, falling back to stored copy",
+                )
+                storedBook
+              }
+            }
+
+          if (!book.canProducePlaybackQueue()) {
+            Timber.w("Can't build resumption queue: book has no chapters or files (bookId=${book.id})")
+            throw IllegalStateException("Stored book can't produce a playback queue (bookId=${book.id})")
+          }
+
+          if (isForPlayback) {
+            preferences.savePlayingItem(book)
+            playbackSynchronizationService.startPlaybackSynchronization(book)
+            mediaRepository.registerPlayingBook(book)
+          }
+
+          PlaybackService.bookToChapterMediaItems(book)
+        }
+    }
+
     override fun onSearch(
       session: MediaLibraryService.MediaLibrarySession,
       browser: MediaSession.ControllerInfo,
@@ -272,6 +338,12 @@ class MediaLibrarySessionCallback
       internal const val REWIND_COMMAND = "notification_rewind"
       internal const val FORWARD_COMMAND = "notification_forward"
       internal const val NEXT_CHAPTER_COMMAND = "notification_next_chapter"
+
+      // Deliberately much shorter than the OkHttp timeouts (connect 20 s / read 120 s): the
+      // foreground-service start window after startForegroundService is only a few seconds, and
+      // the stored copy is nearly always correct because it is refreshed whenever the book is
+      // opened, so a fast start beats freshness here.
+      private const val REFRESH_TIMEOUT_MS = 2_000L
     }
   }
 
