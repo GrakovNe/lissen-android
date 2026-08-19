@@ -175,7 +175,6 @@
     <string name="tree_node_library">Bibliotek</string>
     <string name="tree_node_downloads">Nedlastinger</string>
     <string name="tree_node_root">Rot</string>
-    <string name="tree_node_continue">Fortsett</string>
     <string name="connection_settings_title">Tilkobling</string>
     <string name="connection_settings_description">Serveradresse, proxy og SSL</string>
     <string name="playback_preferences_title">Avspeling</string>

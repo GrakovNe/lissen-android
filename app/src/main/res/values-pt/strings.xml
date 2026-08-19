@@ -175,7 +175,6 @@
     <string name="tree_node_library">Biblioteca</string>
     <string name="tree_node_downloads">Downloads</string>
     <string name="tree_node_root">Raiz</string>
-    <string name="tree_node_continue">Continuar</string>
     <string name="connection_settings_title">Conexão</string>
     <string name="connection_settings_description">Endereço do servidor, proxy e SSL</string>
     <string name="playback_preferences_title">Reprodução</string>

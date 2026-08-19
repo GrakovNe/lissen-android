@@ -176,7 +176,6 @@
     <string name="tree_node_library">Könyvtár</string>
     <string name="tree_node_downloads">Letöltések</string>
     <string name="tree_node_root">Root</string>
-    <string name="tree_node_continue">Folytatás</string>
     <string name="connection_settings_title">Kapcsolat</string>
     <string name="playback_preferences_title">Lejátszás</string>
     <string name="playback_preferences_description">Hangerő, keresési vezérlők és hang</string>

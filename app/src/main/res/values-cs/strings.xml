@@ -177,7 +177,6 @@
     <string name="tree_node_library">Knihovna</string>
     <string name="tree_node_downloads">Stažené</string>
     <string name="tree_node_root">Kořenový adresář</string>
-    <string name="tree_node_continue">Pokračovat</string>
     <string name="connection_settings_title">Připojení</string>
     <string name="connection_settings_description">Adresa serveru, proxy a SSL</string>
     <string name="playback_preferences_title">Přehrávání</string>

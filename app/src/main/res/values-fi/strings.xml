@@ -175,7 +175,6 @@
     <string name="tree_node_library">Kirjasto</string>
     <string name="tree_node_downloads">Lataukset</string>
     <string name="tree_node_root">Juuri</string>
-    <string name="tree_node_continue">Jatka</string>
     <string name="connection_settings_title">Yhteys</string>
     <string name="connection_settings_description">Palvelinosoite, proxy ja SSL</string>
     <string name="playback_preferences_title">Toisto</string>

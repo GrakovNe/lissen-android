@@ -176,7 +176,6 @@
     <string name="tree_node_library">Bibliothèque</string>
     <string name="tree_node_downloads">Téléchargements</string>
     <string name="tree_node_root">Root</string>
-    <string name="tree_node_continue">Continuer</string>
     <string name="connection_settings_title">Connexion</string>
     <string name="connection_settings_description">Adresse du serveur, proxy et SSL</string>
     <string name="playback_preferences_title">Lecture</string>
