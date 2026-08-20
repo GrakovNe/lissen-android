@@ -100,6 +100,17 @@ class SettingsBackupManagerTest {
     }
 
     @Test
+    fun `maps rewind on pause from stored json`() {
+      every { sharedPreferences.getString("rewind_on_pause_time", null) } returns
+        """{"enabled":false,"seconds":15}"""
+
+      val backup = preferences.exportSettings()
+
+      assertFalse(backup.rewindOnPauseEnabled == true)
+      assertEquals(15, backup.rewindOnPauseSeconds)
+    }
+
+    @Test
     fun `maps audio focus policy, software codecs, hide completed and library grouping`() {
       every { sharedPreferences.getString("audio_focus_loss_policy", any()) } returns "PAUSE"
       every { sharedPreferences.getBoolean("software_codecs", false) } returns true
@@ -240,6 +251,8 @@ class SettingsBackupManagerTest {
       assertEquals(listOf(LibraryType.LIBRARY.name, LibraryType.PODCAST.name), backup.autoDownloadLibraryTypes)
       assertEquals(SeekTime.Default, backup.seekTime)
       assertEquals(EqualizerSettings.Default, backup.equalizer)
+      assertTrue(backup.rewindOnPauseEnabled == true)
+      assertEquals(30, backup.rewindOnPauseSeconds)
       assertEquals(LibraryOrderingConfiguration.default, backup.libraryOrdering)
       assertEquals(DEFAULT_USER_AGENT, backup.userAgent)
       assertEquals(emptyList<ServerRequestHeader>(), backup.customHeaders)
@@ -348,6 +361,73 @@ class SettingsBackupManagerTest {
     fun `skips equalizer when absent`() {
       preferences.importSettings(SettingsBackup(equalizer = null))
       verify(exactly = 0) { editor.putString("equalizer", any()) }
+    }
+
+    @Test
+    fun `saves rewind on pause when present`() {
+      preferences.importSettings(SettingsBackup(rewindOnPauseEnabled = true, rewindOnPauseSeconds = 60))
+
+      verify {
+        editor.putString(
+          "rewind_on_pause_time",
+          match { it.contains("\"enabled\":true") && it.contains("\"seconds\":60") },
+        )
+      }
+    }
+
+    @Test
+    fun `merges missing rewind on pause fields with the current setting`() {
+      preferences.importSettings(SettingsBackup(rewindOnPauseSeconds = 45))
+
+      verify {
+        editor.putString(
+          "rewind_on_pause_time",
+          match { it.contains("\"enabled\":true") && it.contains("\"seconds\":45") },
+        )
+      }
+    }
+
+    @Test
+    fun `clamps out-of-range rewind seconds on import`() {
+      preferences.importSettings(SettingsBackup(rewindOnPauseEnabled = true, rewindOnPauseSeconds = 0))
+
+      verify {
+        editor.putString(
+          "rewind_on_pause_time",
+          match { it.contains("\"enabled\":true") && it.contains("\"seconds\":1") },
+        )
+      }
+    }
+
+    @Test
+    fun `clamps negative rewind seconds on import`() {
+      preferences.importSettings(SettingsBackup(rewindOnPauseEnabled = true, rewindOnPauseSeconds = -10))
+
+      verify {
+        editor.putString(
+          "rewind_on_pause_time",
+          match { it.contains("\"enabled\":true") && it.contains("\"seconds\":1") },
+        )
+      }
+    }
+
+    @Test
+    fun `clamps huge rewind seconds on import`() {
+      preferences.importSettings(SettingsBackup(rewindOnPauseEnabled = true, rewindOnPauseSeconds = 1000))
+
+      verify {
+        editor.putString(
+          "rewind_on_pause_time",
+          match { it.contains("\"enabled\":true") && it.contains("\"seconds\":60") },
+        )
+      }
+    }
+
+    @Test
+    fun `skips rewind on pause when both fields are absent`() {
+      preferences.importSettings(SettingsBackup(rewindOnPauseEnabled = null, rewindOnPauseSeconds = null))
+
+      verify(exactly = 0) { editor.putString("rewind_on_pause_time", any()) }
     }
 
     @Test

@@ -35,6 +35,7 @@ import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.EqualizerSettings
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.RewindOnPauseTime
 import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.domain.StoragePath
 import org.grakovne.lissen.domain.connection.LocalUrl
@@ -99,6 +100,7 @@ class SettingsViewModelTest {
     every { connection.getCustomHeaders() } returns emptyList()
     every { connection.getLocalUrls() } returns emptyList()
     every { playback.getSeekTime() } returns SeekTime.Default
+    every { playback.getRewindOnPauseTime() } returns RewindOnPauseTime.Default
     every { playback.getEqualizer() } returns EqualizerSettings.Default
     coEvery { equalizerBandProvider.getCapabilities() } returns EqualizerCapabilities.Unavailable
     every { diagnostics.getAcraEnabled() } returns true
@@ -471,6 +473,59 @@ class SettingsViewModelTest {
     fun `preferRewind preserves forward value`() {
       viewModel.preferRewind(10)
       assertEquals(SeekTime.Default.forward, viewModel.seekTime.value.forward)
+    }
+  }
+
+  @Nested
+  inner class RewindOnPausePreference {
+    @Test
+    fun `preferRewindOnPauseEnabled updates enabled`() {
+      viewModel.preferRewindOnPauseEnabled(false)
+      assertFalse(viewModel.rewindOnPauseTime.value.enabled)
+    }
+
+    @Test
+    fun `preferRewindOnPauseEnabled saves to preferences`() {
+      viewModel.preferRewindOnPauseEnabled(false)
+      verify {
+        playback.saveRewindOnPauseTime(
+          RewindOnPauseTime(
+            enabled = false,
+            seconds = RewindOnPauseTime.Default.seconds,
+          ),
+        )
+      }
+    }
+
+    @Test
+    fun `preferRewindOnPauseEnabled preserves seconds value`() {
+      viewModel.preferRewindOnPauseEnabled(false)
+      assertEquals(RewindOnPauseTime.Default.seconds, viewModel.rewindOnPauseTime.value.seconds)
+    }
+
+    @Test
+    fun `preferRewindOnPauseSeconds updates seconds`() {
+      viewModel.preferRewindOnPauseSeconds(15)
+      assertEquals(15, viewModel.rewindOnPauseTime.value.seconds)
+    }
+
+    @Test
+    fun `preferRewindOnPauseSeconds saves to preferences`() {
+      viewModel.preferRewindOnPauseSeconds(15)
+      verify {
+        playback.saveRewindOnPauseTime(
+          RewindOnPauseTime(
+            enabled = RewindOnPauseTime.Default.enabled,
+            seconds = 15,
+          ),
+        )
+      }
+    }
+
+    @Test
+    fun `preferRewindOnPauseSeconds preserves enabled value`() {
+      viewModel.preferRewindOnPauseSeconds(10)
+      assertTrue(viewModel.rewindOnPauseTime.value.enabled)
     }
   }
 

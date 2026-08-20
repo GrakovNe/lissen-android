@@ -18,6 +18,8 @@ data class SettingsBackup(
   val volumeBoost: Int? = null,
   val seekTime: SeekTime? = null,
   val equalizer: EqualizerSettings? = null,
+  val rewindOnPauseEnabled: Boolean? = null,
+  val rewindOnPauseSeconds: Int? = null,
   val audioFocusLossPolicy: String? = null,
   val softwareCodecsEnabled: Boolean? = null,
   val hideCompleted: Boolean? = null,
