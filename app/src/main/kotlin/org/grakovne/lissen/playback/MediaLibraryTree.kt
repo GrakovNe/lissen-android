@@ -16,6 +16,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.LibraryGrouping
@@ -31,10 +32,12 @@ import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.util.listenableFuture
+import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.cancellation.CancellationException
 
 // --- Media Tree DSL ---
 
@@ -123,14 +126,11 @@ class MediaLibraryTree
     }
 
     private val recentItemsCache = AtomicReference<List<MediaItem>>(emptyList())
+    private val recentCacheKey = AtomicReference<String?>(null)
     private val recentFetchInFlight = AtomicBoolean(false)
 
-    fun invalidateRecentCache() {
-      recentItemsCache.set(emptyList())
-    }
-
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    internal var scope = CoroutineScope(Dispatchers.IO)
+    internal var scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private suspend fun libraries(): List<Library> =
       lissenMediaProvider
@@ -167,7 +167,7 @@ class MediaLibraryTree
         mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/$filterKey", label)) {
           for (item in items) {
             val (id, name) = toIdAndName(item)
-            +mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/$filterKey/$id", name)) {
+            +mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/$filterKey/${Uri.encode(id)}", name)) {
               pagedChildren { page, pageSize, _ ->
                 booksFromLibrary(
                   libraryId = libraryId,
@@ -382,13 +382,21 @@ class MediaLibraryTree
 
     // --- Data fetchers ---
 
-    private fun recentBooksItems(session: MediaLibrarySession): List<MediaItem> =
-      recentItemsCache.get().ifEmpty {
-        val playingItem = playbackPreferences.getPlayingItem()
-        val immediateItems = playingItem?.let { listOf(bookItem(it)) } ?: emptyList()
+    private fun recentBooksItems(session: MediaLibrarySession): List<MediaItem> {
+      val playingItem = playbackPreferences.getPlayingItem()
 
-        if (recentFetchInFlight.compareAndSet(false, true)) {
-          scope.launch {
+      if (recentCacheKey.get() != playingItem?.id) {
+        recentItemsCache.set(emptyList())
+      }
+
+      val cached = recentItemsCache.get()
+      if (cached.isNotEmpty()) return cached
+
+      val immediateItems = playingItem?.let { listOf(bookItem(it)) } ?: emptyList()
+
+      if (recentFetchInFlight.compareAndSet(false, true)) {
+        scope.launch {
+          try {
             val networkItems =
               libraryPreferences.getPreferredLibrary()?.id?.let { libraryId ->
                 lissenMediaProvider
@@ -406,13 +414,21 @@ class MediaLibraryTree
               } ?: emptyList()
 
             val merged = immediateItems + networkItems
+            recentCacheKey.set(playingItem?.id)
             recentItemsCache.set(merged)
-            recentFetchInFlight.set(false)
             session.notifyChildrenChanged("$ROOT/$RECENT", merged.size, null)
+          } catch (e: CancellationException) {
+            throw e
+          } catch (e: Exception) {
+            Timber.w("Unable to load recent books for the media tree due to: ${e.message}")
+          } finally {
+            recentFetchInFlight.set(false)
           }
         }
-        return immediateItems
       }
+
+      return immediateItems
+    }
 
     private suspend fun libraryItems(): List<MediaItem> = libraries().map { libraryFolderItem("$ROOT/$LIBRARY/${it.id}", it) }
 

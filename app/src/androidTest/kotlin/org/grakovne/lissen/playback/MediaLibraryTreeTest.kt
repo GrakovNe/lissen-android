@@ -110,6 +110,68 @@ class MediaLibraryTreeTest {
   }
 
   @Test
+  fun getChildren_recent_fetchThrows_keepsTreeUsable() =
+    runBlocking {
+      val realTree =
+        MediaLibraryTree(context, playbackPreferences, libraryPreferences, localCacheRepository, lissenMediaProvider)
+      every { playbackPreferences.getPlayingItem() } returns makeDetailedItem("book-1", "My Book")
+      every { libraryPreferences.getPreferredLibrary() } returns makeLibrary("lib-1")
+      coEvery { lissenMediaProvider.fetchRecentListenedBooks("lib-1") } throws RuntimeException("boom")
+
+      realTree.getChildren("root/recent", 0, 100, session).get()
+      Thread.sleep(1000)
+
+      val result = realTree.getChildren("root", 0, 100, session).get()
+      assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
+      assertEquals(3, result.value!!.size)
+    }
+
+  @Test
+  @OptIn(ExperimentalCoroutinesApi::class)
+  fun getChildren_recent_fetchThrows_laterFetchStillRuns() =
+    runBlocking {
+      every { playbackPreferences.getPlayingItem() } returns makeDetailedItem("book-1", "My Book")
+      every { libraryPreferences.getPreferredLibrary() } returns makeLibrary("lib-1")
+      coEvery { lissenMediaProvider.fetchRecentListenedBooks("lib-1") } throws RuntimeException("boom")
+
+      tree.getChildren("root/recent", 0, 100, session).get()
+
+      coEvery { lissenMediaProvider.fetchRecentListenedBooks("lib-1") } returns
+        OperationResult.Success(listOf(makeRecentBook("r-1", "Recent One")))
+
+      tree.getChildren("root/recent", 0, 100, session).get()
+      val result = tree.getChildren("root/recent", 0, 100, session).get()
+
+      assertEquals(
+        listOf("book-1", "r-1").map { MediaLibraryTree.bookPath(it) },
+        result.value!!.map { it.mediaId },
+      )
+    }
+
+  @Test
+  @OptIn(ExperimentalCoroutinesApi::class)
+  fun getChildren_recent_playingItemChanged_dropsStaleCache() =
+    runBlocking {
+      every { playbackPreferences.getPlayingItem() } returns makeDetailedItem("book-1", "My Book")
+      every { libraryPreferences.getPreferredLibrary() } returns makeLibrary("lib-1")
+      coEvery { lissenMediaProvider.fetchRecentListenedBooks("lib-1") } returns
+        OperationResult.Success(listOf(makeRecentBook("r-1", "Recent One")))
+
+      tree.getChildren("root/recent", 0, 100, session).get()
+      tree.getChildren("root/recent", 0, 100, session).get()
+
+      every { playbackPreferences.getPlayingItem() } returns makeDetailedItem("book-2", "Other Book")
+
+      tree.getChildren("root/recent", 0, 100, session).get()
+      val result = tree.getChildren("root/recent", 0, 100, session).get()
+
+      assertEquals(
+        listOf("book-2", "r-1").map { MediaLibraryTree.bookPath(it) },
+        result.value!!.map { it.mediaId },
+      )
+    }
+
+  @Test
   fun getChildren_root_hasExpectedChildIds() =
     runBlocking {
       val ids =

@@ -1,6 +1,5 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.api
 
-import android.util.Base64
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -156,11 +155,9 @@ class AudioBookshelfRepository
           pageNumber = pageNumber,
           sort = "sequence",
           desc = "0",
-          filter = "series." + seriesId.encodeSeriesFilter(),
+          filter = encodeLibraryFilter("series", seriesId),
         )
       }
-
-    private fun String.encodeSeriesFilter(): String = Base64.encodeToString(toByteArray(Charsets.UTF_8), Base64.NO_WRAP)
 
     suspend fun fetchPodcastItems(
       libraryId: String,

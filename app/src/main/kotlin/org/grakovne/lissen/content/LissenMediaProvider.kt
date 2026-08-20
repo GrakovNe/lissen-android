@@ -265,9 +265,6 @@ class LissenMediaProvider
     suspend fun fetchLibrary(libraryId: String): OperationResult<Library> =
       when (preferences.isForceCache()) {
         true -> {
-          // This function gets called only from the MediaLibraryTree
-          // and only when isForceCache is off, so this path should never really happen.
-          // We guard it nonetheless.
           OperationResult.Error(OperationError.UnsupportedError)
         }
 

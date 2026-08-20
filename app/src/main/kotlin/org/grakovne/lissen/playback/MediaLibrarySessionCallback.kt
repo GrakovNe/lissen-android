@@ -27,7 +27,11 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.withTimeoutOrNull
+import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
+import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.playback.service.PlaybackSynchronizationService
@@ -35,6 +39,7 @@ import org.grakovne.lissen.util.listenableFuture
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.cancellation.CancellationException
 
 @OptIn(UnstableApi::class)
 @Singleton
@@ -49,7 +54,7 @@ class MediaLibrarySessionCallback
     private val playbackSynchronizationService: PlaybackSynchronizationService,
   ) : MediaLibraryService.MediaLibrarySession.Callback {
     @OptIn(DelicateCoroutinesApi::class)
-    private val futureScope = CoroutineScope(Dispatchers.Default)
+    private val futureScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     internal var searchCache = LruCache<String, ListenableFuture<List<MediaItem>>>(5)
 
@@ -233,7 +238,6 @@ class MediaLibrarySessionCallback
                     preferences.savePlayingItem(it)
                     playbackSynchronizationService.startPlaybackSynchronization(it)
                     mediaRepository.registerPlayingBook(it)
-                    libraryTree.invalidateRecentCache()
                     PlaybackService.bookToChapterMediaItems(it)
                   },
                   onFailure = { MediaItemsWithStartPosition(emptyList(), 0, 0) },
@@ -249,23 +253,65 @@ class MediaLibrarySessionCallback
       controller: MediaSession.ControllerInfo,
       isForPlayback: Boolean,
     ): ListenableFuture<MediaItemsWithStartPosition> =
-      futureScope.listenableFuture {
-        preferences.getPlayingItem()?.id?.let { bookId ->
-          lissenMediaProvider
-            .fetchBook(bookId)
-            .foldAsync(
-              onSuccess = {
-                if (isForPlayback) {
-                  preferences.savePlayingItem(it)
-                  playbackSynchronizationService.startPlaybackSynchronization(it)
-                  mediaRepository.registerPlayingBook(it)
-                }
-                PlaybackService.bookToChapterMediaItems(it)
-              },
-              onFailure = { MediaItemsWithStartPosition(emptyList(), 0, 0) },
-            )
-        } ?: MediaItemsWithStartPosition(emptyList(), 0, 0)
+      futureScope
+        .listenableFuture {
+          Timber.d("Resuming playback for: $controller (isForPlayback=$isForPlayback)")
+
+          val storedBook =
+            preferences.getPlayingItem()
+              ?: throw IllegalStateException("No last played book stored")
+
+          val refreshedBook = refreshBookForResumption(storedBook)
+          val book = refreshedBook ?: storedBook
+
+          if (book.canProducePlaybackQueue().not()) {
+            throw IllegalStateException("Book can't produce a playback queue (bookId=${book.id})")
+          }
+
+          if (isForPlayback) {
+            refreshedBook?.let { preferences.savePlayingItem(it) }
+            playbackSynchronizationService.startPlaybackSynchronization(book)
+            mediaRepository.registerPlayingBook(book)
+          }
+
+          PlaybackService.bookToChapterMediaItems(book)
+        }
+
+    private suspend fun refreshBookForResumption(storedBook: DetailedItem): DetailedItem? {
+      val refreshed =
+        try {
+          withTimeoutOrNull(REFRESH_TIMEOUT_MS) { lissenMediaProvider.fetchBook(storedBook.id) }
+        } catch (e: CancellationException) {
+          throw e
+        } catch (e: Exception) {
+          Timber.w("Unable to refresh last played book (bookId=${storedBook.id}) for resumption due to: ${e.message}")
+          return null
+        }
+
+      return when (refreshed) {
+        null -> {
+          Timber.w("Timed out refreshing last played book (bookId=${storedBook.id}) for resumption")
+          null
+        }
+
+        is OperationResult.Error -> {
+          Timber.w(
+            "Unable to refresh last played book (bookId=${storedBook.id}) for resumption due to: ${refreshed.message}",
+          )
+          null
+        }
+
+        is OperationResult.Success -> {
+          refreshed
+            .data
+            .takeIf { it.canProducePlaybackQueue() }
+            ?: run {
+              Timber.w("Refreshed last played book (bookId=${storedBook.id}) can't produce a playback queue")
+              null
+            }
+        }
       }
+    }
 
     override fun onSearch(
       session: MediaLibraryService.MediaLibrarySession,
@@ -314,6 +360,8 @@ class MediaLibrarySessionCallback
       internal const val REWIND_COMMAND = "notification_rewind"
       internal const val FORWARD_COMMAND = "notification_forward"
       internal const val NEXT_CHAPTER_COMMAND = "notification_next_chapter"
+
+      private const val REFRESH_TIMEOUT_MS = 2_000L
     }
   }
 

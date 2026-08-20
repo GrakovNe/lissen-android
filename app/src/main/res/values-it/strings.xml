@@ -268,4 +268,9 @@
     <string name="equalizer_restore_default">Ripristina predefinito</string>
     <string name="a11y_equalizer_restore">Ripristina le impostazioni predefinite dell\'equalizzatore</string>
     <string name="a11y_equalizer_band">banda a %s hertz</string>
+    <string name="download_settings_storage_title">Posizione di archiviazione</string>
+    <string name="download_settings_storage_unavailable">Non disponibile</string>
+    <string name="download_settings_storage_switch_failed_toast">Impossibile cambiare la posizione di archiviazione</string>
+    <string name="download_settings_storage_confirmation_message">I contenuti scaricati verranno rimossi da questo dispositivo. I dati sul server non subiranno modifiche</string>
+    <string name="download_settings_storage_confirm">Cambia posizione</string>
 </resources>

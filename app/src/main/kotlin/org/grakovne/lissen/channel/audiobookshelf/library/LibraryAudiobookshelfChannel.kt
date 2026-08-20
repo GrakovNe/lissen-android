@@ -1,6 +1,5 @@
 package org.grakovne.lissen.channel.audiobookshelf.library
 
-import androidx.compose.ui.graphics.vector.Path
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -10,6 +9,7 @@ import kotlinx.coroutines.sync.withPermit
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfHostProvider
 import org.grakovne.lissen.channel.audiobookshelf.common.AudiobookshelfChannel
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfRepository
+import org.grakovne.lissen.channel.audiobookshelf.common.api.encodeLibraryFilter
 import org.grakovne.lissen.channel.audiobookshelf.common.api.library.AudioBookshelfLibrarySyncService
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarkItemResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarksResponseConverter
@@ -36,7 +36,6 @@ import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.io.encoding.Base64
 
 @Singleton
 class LibraryAudiobookshelfChannel
@@ -90,7 +89,7 @@ class LibraryAudiobookshelfChannel
         }
       val filter =
         if (extraFilter != null) {
-          "${extraFilter.first}.${Base64.encode(extraFilter.second.encodeToByteArray())}"
+          encodeLibraryFilter(extraFilter.first, extraFilter.second)
         } else {
           libraryFilteringRequestConverter.apply(preferences)
         }
