@@ -174,7 +174,6 @@
     <string name="tree_node_library">媒体库</string>
     <string name="tree_node_downloads">已下载</string>
     <string name="tree_node_root">根目录</string>
-    <string name="tree_node_continue">继续收听</string>
     <string name="connection_settings_description">服务器地址、代理及 SSL</string>
     <string name="connection_settings_title">连接</string>
     <string name="playback_preferences_title">播放</string>

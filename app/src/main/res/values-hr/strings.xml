@@ -182,7 +182,6 @@
     <string name="tree_node_library">Knjižnica</string>
     <string name="tree_node_downloads">Preuzimanja</string>
     <string name="tree_node_root">Root</string>
-    <string name="tree_node_continue">Nastavi</string>
     <string name="connection_settings_title">Veza</string>
     <string name="connection_settings_description">Adresa poslužitelja, proxy i SSL</string>
     <string name="playback_preferences_title">Reprodukcija</string>

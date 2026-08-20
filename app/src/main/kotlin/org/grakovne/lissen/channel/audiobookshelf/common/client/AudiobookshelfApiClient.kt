@@ -7,6 +7,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.Bookmark
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarksResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.connection.ConnectionInfoResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.AuthorItemsResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibrariesResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackSessionResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
@@ -37,7 +38,13 @@ import retrofit2.http.Streaming
 
 interface AudiobookshelfApiClient {
   @GET("api/libraries")
-  suspend fun fetchLibraries(): Response<LibraryResponse>
+  suspend fun fetchLibraries(): Response<LibrariesResponse>
+
+  @GET("api/libraries/{libraryId}")
+  suspend fun fetchLibrary(
+    @Path("libraryId") libraryId: String,
+    @Query("include") include: String = "filterdata",
+  ): Response<LibraryResponse>
 
   @GET("api/libraries/{libraryId}/personalized")
   suspend fun fetchPersonalizedFeed(

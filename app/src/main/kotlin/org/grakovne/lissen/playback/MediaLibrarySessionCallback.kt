@@ -56,7 +56,16 @@ class MediaLibrarySessionCallback
     @OptIn(DelicateCoroutinesApi::class)
     private val futureScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-    internal var searchCache = LruCache<String, ListenableFuture<List<MediaItem>>>(3)
+    internal var searchCache = LruCache<String, ListenableFuture<List<MediaItem>>>(5)
+
+    private fun searchFutureFor(query: String): ListenableFuture<List<MediaItem>> {
+      val key = query.trim().lowercase()
+      return synchronized(searchCache) {
+        searchCache.get(key) ?: libraryTree
+          .searchBooks(query)
+          .also { searchCache.put(key, it) }
+      }
+    }
 
     override fun onMediaButtonEvent(
       session: MediaSession,
@@ -102,6 +111,8 @@ class MediaLibrarySessionCallback
       val forwardCommand = SessionCommand(FORWARD_COMMAND, Bundle.EMPTY)
       val nextChapterCommand = SessionCommand(NEXT_CHAPTER_COMMAND, Bundle.EMPTY)
 
+      val seekTime = preferences.getSeekTime()
+
       val sessionCommands =
         MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS
           .buildUpon()
@@ -131,8 +142,15 @@ class MediaLibrarySessionCallback
 
       val rewindButton =
         CommandButton
-          .Builder(CommandButton.ICON_SKIP_BACK)
-          .setSessionCommand(rewindCommand)
+          .Builder(
+            when (seekTime.rewind) {
+              5 -> CommandButton.ICON_SKIP_BACK_5
+              10 -> CommandButton.ICON_SKIP_BACK_10
+              15 -> CommandButton.ICON_SKIP_BACK_15
+              30 -> CommandButton.ICON_SKIP_BACK_30
+              else -> CommandButton.ICON_SKIP_BACK
+            },
+          ).setSessionCommand(rewindCommand)
           .setDisplayName("Rewind")
           .setEnabled(true)
           .setSlots(CommandButton.SLOT_BACK)
@@ -140,8 +158,15 @@ class MediaLibrarySessionCallback
 
       val forwardButton =
         CommandButton
-          .Builder(CommandButton.ICON_SKIP_FORWARD)
-          .setSessionCommand(forwardCommand)
+          .Builder(
+            when (seekTime.forward) {
+              5 -> CommandButton.ICON_SKIP_FORWARD_5
+              10 -> CommandButton.ICON_SKIP_FORWARD_10
+              15 -> CommandButton.ICON_SKIP_FORWARD_15
+              30 -> CommandButton.ICON_SKIP_FORWARD_30
+              else -> CommandButton.ICON_SKIP_FORWARD
+            },
+          ).setSessionCommand(forwardCommand)
           .setDisplayName("Forward")
           .setSlots(CommandButton.SLOT_FORWARD)
           .setEnabled(true)
@@ -186,7 +211,7 @@ class MediaLibrarySessionCallback
       page: Int,
       pageSize: Int,
       params: MediaLibraryService.LibraryParams?,
-    ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = libraryTree.getChildren(parentId, page, pageSize)
+    ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = libraryTree.getChildren(parentId, page, pageSize, session)
 
     override fun onGetItem(
       session: MediaLibraryService.MediaLibrarySession,
@@ -294,12 +319,7 @@ class MediaLibrarySessionCallback
       query: String,
       params: MediaLibraryService.LibraryParams?,
     ): ListenableFuture<LibraryResult<Void>> {
-      val searchFuture =
-        synchronized(searchCache) {
-          searchCache.get(query) ?: libraryTree
-            .searchBooks(query)
-            .also { searchCache.put(query, it) }
-        }
+      val searchFuture = searchFutureFor(query)
 
       searchFuture.addListener({
         val resultSetSize =
@@ -323,9 +343,7 @@ class MediaLibrarySessionCallback
       pageSize: Int,
       params: MediaLibraryService.LibraryParams?,
     ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
-      val searchFuture =
-        searchCache.get(query)
-          ?: return Futures.immediateFuture(LibraryResult.ofItemList(ImmutableList.of(), params))
+      val searchFuture = searchFutureFor(query)
       return Futures.transform(
         searchFuture,
         { items ->

@@ -175,7 +175,6 @@
     <string name="tree_node_library">நூலகம்</string>
     <string name="tree_node_downloads">பதிவிறக்கங்கள்</string>
     <string name="tree_node_root">மூலம்</string>
-    <string name="tree_node_continue">தொடரவும்</string>
     <string name="connection_settings_title">இணைப்பு</string>
     <string name="connection_settings_description">சேவையக முகவரி, பதிலாள் மற்றும் SSL</string>
     <string name="playback_preferences_title">இயக்கம்</string>

@@ -174,7 +174,6 @@
     <string name="tree_node_library">Pustaka</string>
     <string name="tree_node_downloads">Unduhan</string>
     <string name="tree_node_root">Root</string>
-    <string name="tree_node_continue">Lanjutkan</string>
     <string name="connection_settings_description">Alamat server, proksi, dan SSL</string>
     <string name="connection_settings_title">Koneksi</string>
     <string name="playback_preferences_title">Pemutaran</string>

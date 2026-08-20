@@ -9,11 +9,13 @@ import kotlinx.coroutines.sync.withPermit
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfHostProvider
 import org.grakovne.lissen.channel.audiobookshelf.common.AudiobookshelfChannel
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfRepository
+import org.grakovne.lissen.channel.audiobookshelf.common.api.encodeLibraryFilter
 import org.grakovne.lissen.channel.audiobookshelf.common.api.library.AudioBookshelfLibrarySyncService
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarkItemResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarksResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryAuthorsResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryListResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryPageResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
@@ -45,6 +47,7 @@ class LibraryAudiobookshelfChannel
     preferences: LibraryPreferences,
     syncService: AudioBookshelfLibrarySyncService,
     sessionResponseConverter: PlaybackSessionResponseConverter,
+    libraryListResponseConverter: LibraryListResponseConverter,
     libraryResponseConverter: LibraryResponseConverter,
     connectionInfoResponseConverter: ConnectionInfoResponseConverter,
     bookmarksResponseConverter: BookmarksResponseConverter,
@@ -62,10 +65,11 @@ class LibraryAudiobookshelfChannel
       sessionResponseConverter = sessionResponseConverter,
       preferences = preferences,
       syncService = syncService,
-      libraryResponseConverter = libraryResponseConverter,
+      libraryListResponseConverter = libraryListResponseConverter,
       connectionInfoResponseConverter = connectionInfoResponseConverter,
       bookmarksResponseConverter = bookmarksResponseConverter,
       bookmarkItemResponseConverter = bookmarkItemResponseConverter,
+      libraryResponseConverter = libraryResponseConverter,
     ) {
     private val concurrentFetchSemaphore = Semaphore(MAX_CONCURRENT_FETCH)
 
@@ -75,9 +79,20 @@ class LibraryAudiobookshelfChannel
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
+      extraFilter: Pair<String, String>?,
     ): OperationResult<PagedItems<Book>> {
-      val (option, direction) = libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering())
-      val filter = libraryFilteringRequestConverter.apply(preferences)
+      val (option, direction) =
+        if (extraFilter?.first == "series") {
+          "sequence" to "0"
+        } else {
+          libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering())
+        }
+      val filter =
+        if (extraFilter != null) {
+          encodeLibraryFilter(extraFilter.first, extraFilter.second)
+        } else {
+          libraryFilteringRequestConverter.apply(preferences)
+        }
 
       return dataRepository
         .fetchLibraryItems(

@@ -175,7 +175,6 @@
     <string name="tree_node_library">Bibliotek</string>
     <string name="tree_node_downloads">Downloads</string>
     <string name="tree_node_root">Rod</string>
-    <string name="tree_node_continue">Fortsæt</string>
     <string name="connection_settings_title">Forbindelse</string>
     <string name="connection_settings_description">Serveradresse, proxy og SSL</string>
     <string name="playback_preferences_title">Afspilning</string>

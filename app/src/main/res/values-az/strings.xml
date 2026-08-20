@@ -169,7 +169,6 @@
     <string name="tree_node_recent">Sonuncu</string>
     <string name="tree_node_library">Kitabxana</string>
     <string name="tree_node_downloads">Endirilənlər</string>
-    <string name="tree_node_continue">Davam edin</string>
     <string name="connection_settings_title">Bağlantı</string>
     <string name="connection_settings_description">Server ünvanı, proksi və SSL parametrləri</string>
     <string name="playback_preferences_title">Oynatma</string>

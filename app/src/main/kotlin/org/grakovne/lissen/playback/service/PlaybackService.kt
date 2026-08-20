@@ -256,7 +256,7 @@ class PlaybackService : MediaLibraryService() {
                 .setArtist(book.title)
                 .setIsBrowsable(false)
                 .setIsPlayable(true)
-                .setArtworkUri(ExternalCoverProvider.coverUri(book.id))
+                .setArtworkUri(ExternalCoverProvider.bookCoverUri(book.id))
                 .setMediaType(MediaMetadata.MEDIA_TYPE_AUDIO_BOOK_CHAPTER)
                 .setExtras(Bundle().apply { putLong(CHAPTER_START_MS, (chapter.start * 1000).toLong()) })
                 .build(),

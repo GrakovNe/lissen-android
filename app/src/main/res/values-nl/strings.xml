@@ -202,7 +202,6 @@
     <string name="tree_node_library">Bibliotheek</string>
     <string name="tree_node_downloads">Downloads</string>
     <string name="tree_node_root">Root</string>
-    <string name="tree_node_continue">Doorgaan</string>
     <string name="disconnect_from_server_title">De verbinding met de server verbreken</string>
     <string name="disconnect_from_server_confirmation_message">Je verbinding met de server wordt op dit apparaat verbroken. Je gegevens blijven ongewijzigd</string>
     <string name="disconnect_from_server_confirm">Verbinding verbreken</string>

@@ -34,13 +34,16 @@ class MediaLibrarySessionProvider
           "com.google.android.googlequicksearchbox",
           "com.google.android.projection.gearhead",
           "com.google.android.wearable.app",
+          "com.google.android.clockwork.home",
           "androidx.media3.testapp.controller", // Media3 controller test app
         )
       for (pkg in knownPackages) {
         context.grantUriPermission(
           pkg,
           "content://${BuildConfig.APPLICATION_ID}.cover/".toUri(),
-          Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION or Intent.FLAG_GRANT_PREFIX_URI_PERMISSION,
+          Intent.FLAG_GRANT_READ_URI_PERMISSION or
+            Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION or
+            Intent.FLAG_GRANT_PREFIX_URI_PERMISSION,
         )
       }
       return MediaLibraryService.MediaLibrarySession
@@ -52,6 +55,7 @@ class MediaLibrarySessionProvider
             Intent(context, AppActivity::class.java),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
           ),
-        ).build()
+        ).setPeriodicPositionUpdateEnabled(false)
+        .build()
     }
   }

@@ -168,7 +168,6 @@
     <string name="tree_node_library">Biblioteka</string>
     <string name="tree_node_downloads">Pobrane</string>
     <string name="tree_node_root">Główny</string>
-    <string name="tree_node_continue">Kontynuuj</string>
     <string name="connection_settings_title">Połączenie</string>
     <string name="connection_settings_description">Adres serwera, proxy i SSL</string>
     <string name="playback_preferences_title">Odtwarzanie</string>

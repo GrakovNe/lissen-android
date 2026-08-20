@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class LibraryResponseConverterTest {
-  private val converter = LibraryResponseConverter()
+  private val converter = LibraryListResponseConverter()
 
   private fun item(
     id: String,

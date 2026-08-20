@@ -169,7 +169,6 @@
     <string name="timer_option_disabled">Ausgeschaltet</string>
     <string name="bookmarks_create_bookmark">Lesezeichen erstellen</string>
     <string name="bookmarks_title">Lesezeichen</string>
-    <string name="tree_node_continue">Weiter</string>
     <string name="hide_completed_items">Abgeschlossene ausblenden</string>
     <string name="application_settings">Anwendungseinstellungen</string>
     <string name="tree_node_recent">Kürzlich</string>

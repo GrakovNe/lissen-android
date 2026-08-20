@@ -5,6 +5,7 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfRepository
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryListResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibrarySearchItemsConverter
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItem
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsResponse
@@ -37,6 +38,7 @@ class LibraryAudiobookshelfChannelTest {
       libraryAuthorsResponseConverter = mockk(relaxed = true),
       bookResponseConverter = mockk(relaxed = true),
       librarySearchItemsConverter = LibrarySearchItemsConverter(),
+      libraryListResponseConverter = LibraryListResponseConverter(),
     )
 
   @Test

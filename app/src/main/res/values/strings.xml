@@ -249,8 +249,14 @@
     <string name="tree_node_recent">Recent</string>
     <string name="tree_node_library">Library</string>
     <string name="tree_node_downloads">Downloads</string>
+    <string name="tree_node_downloads_offline">Downloads (offline mode)</string>
     <string name="tree_node_root">Root</string>
-    <string name="tree_node_continue">Continue</string>
+    <string name="tree_node_all_titles">All titles</string>
+    <string name="tree_node_series_collapsed">Collapsed series</string>
+    <string name="tree_node_genres">Genres</string>
+    <string name="tree_node_tags">Tags</string>
+    <string name="tree_node_authors">Authors</string>
+    <string name="tree_node_series">Series</string>
     <string name="connection_settings_title">Connection</string>
     <string name="connection_settings_description">Server address, proxy, and SSL</string>
     <string name="disconnect_from_server_title">Disconnect from the server</string>
