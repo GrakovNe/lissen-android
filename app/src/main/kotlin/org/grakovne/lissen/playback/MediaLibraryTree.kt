@@ -14,6 +14,7 @@ import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import org.grakovne.lissen.R
 import org.grakovne.lissen.content.ExternalCoverProvider
 import org.grakovne.lissen.content.LissenMediaProvider
@@ -107,7 +108,7 @@ class MediaLibraryTree
       fun isBookPath(mediaId: String) = mediaId.startsWith("$BOOK/")
     }
 
-    private val scope = CoroutineScope(Dispatchers.Default)
+    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     private suspend fun libraries(): List<Library> =
       lissenMediaProvider

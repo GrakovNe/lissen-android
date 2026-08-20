@@ -259,7 +259,7 @@ class MediaLibrarySessionCallbackTest {
       assertEquals(listOf("chapter:book-1:0", "chapter:book-1:1"), result.mediaItems.map { it.mediaId })
       assertEquals(1, result.startIndex)
       assertEquals(20000, result.startPositionMs)
-      verify(exactly = 1) { preferences.savePlayingItem(storedBook) }
+      verify(exactly = 0) { preferences.savePlayingItem(any()) }
       verify(exactly = 1) { playbackSynchronizationService.startPlaybackSynchronization(storedBook) }
       verify(exactly = 1) { mediaRepository.registerPlayingBook(storedBook) }
     }
@@ -313,7 +313,7 @@ class MediaLibrarySessionCallbackTest {
           .albumTitle
           .toString(),
       )
-      verify(exactly = 1) { preferences.savePlayingItem(storedBook) }
+      verify(exactly = 0) { preferences.savePlayingItem(any()) }
       verify(exactly = 1) { playbackSynchronizationService.startPlaybackSynchronization(storedBook) }
       verify(exactly = 1) { mediaRepository.registerPlayingBook(storedBook) }
     }
@@ -342,7 +342,7 @@ class MediaLibrarySessionCallbackTest {
           .albumTitle
           .toString(),
       )
-      verify(exactly = 1) { preferences.savePlayingItem(storedBook) }
+      verify(exactly = 0) { preferences.savePlayingItem(any()) }
       verify(exactly = 1) { playbackSynchronizationService.startPlaybackSynchronization(storedBook) }
       verify(exactly = 1) { mediaRepository.registerPlayingBook(storedBook) }
     }
@@ -360,6 +360,48 @@ class MediaLibrarySessionCallbackTest {
       verify(exactly = 0) { preferences.savePlayingItem(any()) }
       verify(exactly = 0) { playbackSynchronizationService.startPlaybackSynchronization(any()) }
       verify(exactly = 0) { mediaRepository.registerPlayingBook(any()) }
+    }
+
+  @Test
+  fun onPlaybackResumption_fetchBookThrows_fallsBackToStoredBook() =
+    runBlocking {
+      val storedBook = makeDetailedItem("book-1", "My Book", MediaProgress(170.0, false, 0L))
+      every { preferences.getPlayingItem() } returns storedBook
+      coEvery { lissenMediaProvider.fetchBook("book-1") } throws IllegalStateException("boom")
+
+      val result =
+        callback
+          .onPlaybackResumption(session, controller, isForPlayback = true)
+          .get(5, TimeUnit.SECONDS)
+
+      assertEquals(listOf("chapter:book-1:0", "chapter:book-1:1"), result.mediaItems.map { it.mediaId })
+      assertEquals(1, result.startIndex)
+      assertEquals(20000, result.startPositionMs)
+      verify(exactly = 0) { preferences.savePlayingItem(any()) }
+      verify(exactly = 1) { playbackSynchronizationService.startPlaybackSynchronization(storedBook) }
+      verify(exactly = 1) { mediaRepository.registerPlayingBook(storedBook) }
+    }
+
+  @Test
+  fun onPlaybackResumption_failedResumption_keepsSubsequentCallbacksWorking() =
+    runBlocking {
+      val unusableBook = makeDetailedItem("book-1", "My Book").copy(files = emptyList())
+      every { preferences.getPlayingItem() } returns unusableBook
+      coEvery { lissenMediaProvider.fetchBook("book-1") } returns OperationResult.Success(unusableBook)
+
+      val failed = callback.onPlaybackResumption(session, controller, isForPlayback = true)
+      assertThrows(ExecutionException::class.java) { failed.get(5, TimeUnit.SECONDS) }
+
+      val book = makeDetailedItem("book-2", "Other Book", MediaProgress(170.0, false, 0L))
+      coEvery { lissenMediaProvider.fetchBook("book-2") } returns OperationResult.Success(book)
+      val mediaItem = MediaItem.Builder().setMediaId(MediaLibraryTree.bookPath("book-2")).build()
+
+      val result =
+        callback
+          .onSetMediaItems(session, controller, listOf(mediaItem), C.INDEX_UNSET, C.TIME_UNSET)
+          .get(5, TimeUnit.SECONDS)
+
+      assertEquals(listOf("chapter:book-2:0", "chapter:book-2:1"), result.mediaItems.map { it.mediaId })
     }
 
   private fun makePlayableMediaItem(id: String) =

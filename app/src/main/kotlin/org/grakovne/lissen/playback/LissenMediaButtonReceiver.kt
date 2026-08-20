@@ -11,7 +11,7 @@ import javax.inject.Inject
 
 @OptIn(UnstableApi::class)
 @AndroidEntryPoint
-open class LissenMediaButtonReceiver : MediaButtonReceiver() {
+class LissenMediaButtonReceiver : MediaButtonReceiver() {
   @Inject
   lateinit var preferences: PlaybackPreferences
 
