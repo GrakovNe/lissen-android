@@ -1,8 +1,6 @@
 package org.grakovne.lissen.playback
 
-import androidx.media3.common.C
 import androidx.media3.common.Player
-import androidx.media3.common.Timeline
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -20,15 +18,12 @@ class RewindOnPauseHandlerTest {
   private val preferences = mockk<PlaybackPreferences>(relaxed = true)
   private val handler = RewindOnPauseHandler(preferences)
 
-  private val chapterDurations = listOf(60_000L, 60_000L, 60_000L)
-
   private fun decide(
     setting: RewindOnPauseTime = RewindOnPauseTime(enabled = true, seconds = 30),
     storedLastActiveMillis: Long? = 100_000L,
     nowMillis: Long = 200_000L,
     chapterIndex: Int = 1,
     positionMillis: Long = 50_000L,
-    chapterDurationsMillis: List<Long> = chapterDurations,
   ): RewindTarget? =
     decideRewindTarget(
       setting = setting,
@@ -36,7 +31,6 @@ class RewindOnPauseHandlerTest {
       nowMillis = nowMillis,
       chapterIndex = chapterIndex,
       positionMillis = positionMillis,
-      chapterDurationsMillis = chapterDurationsMillis,
     )
 
   @Nested
@@ -72,11 +66,11 @@ class RewindOnPauseHandlerTest {
     }
 
     @Test
-    fun `rewind can cross a chapter start`() {
-      // Full 30s rewind from 10s into chapter 1: 10s back to its start,
-      // then 20s into the end of the 60s-long chapter 0.
+    fun `rewind that would cross a chapter start clamps at the chapter start`() {
+      // Full 30s rewind from 10s into chapter 1 clamps at position 0 of
+      // chapter 1 instead of walking into chapter 0.
       assertEquals(
-        RewindTarget(chapterIndex = 0, positionMillis = 40_000L),
+        RewindTarget(chapterIndex = 1, positionMillis = 0L),
         decide(storedLastActiveMillis = null, chapterIndex = 1, positionMillis = 10_000L),
       )
     }
@@ -105,19 +99,13 @@ class RewindOnPauseHandlerTest {
     }
 
     @Test
-    fun `chapter index outside the timeline means no rewind`() {
+    fun `negative chapter index means no rewind`() {
       assertNull(decide(chapterIndex = -1))
-      assertNull(decide(chapterIndex = 3))
     }
 
     @Test
-    fun `empty chapter list means no rewind`() {
-      assertNull(decide(chapterDurationsMillis = emptyList()))
-    }
-
-    @Test
-    fun `chapter with a negative duration means no rewind`() {
-      assertNull(decide(chapterDurationsMillis = listOf(60_000L, -1L)))
+    fun `negative position means no rewind`() {
+      assertNull(decide(positionMillis = -1L))
     }
   }
 
@@ -311,17 +299,10 @@ class RewindOnPauseHandlerTest {
     }
 
     @Test
-    fun `rewind is produced when the player timeline durations are unknown`() {
-      // A fresh play: ExoPlayer reports C.TIME_UNSET for chapters it has not
-      // prepared yet, so durations must come from the book, not the timeline.
-      val timeline = mockk<Timeline>()
-      every { timeline.windowCount } returns 2
-      every { timeline.getWindow(any(), any()) } answers {
-        secondArg<Timeline.Window>().apply { durationUs = C.TIME_UNSET }
-      }
-
+    fun `rewind that would cross a chapter start clamps at the chapter start`() {
+      // A fresh play: 10s into chapter 1 with a full 30s rewind clamps at
+      // position 0 of chapter 1, never walking back into chapter 0.
       val player = mockk<Player>(relaxed = true)
-      every { player.currentTimeline } returns timeline
       every { player.currentMediaItemIndex } returns 1
       every { player.currentPosition } returns 10_000L
 
@@ -331,9 +312,7 @@ class RewindOnPauseHandlerTest {
 
       handler.applyRewind(player)
 
-      // 10s into chapter 1: 10s back to its start, then 20s into the 30s-long
-      // chapter 0, using the book's durations rather than the timeline's.
-      verify { player.seekTo(0, 10_000L) }
+      verify { player.seekTo(1, 0L) }
     }
 
     @Test

@@ -58,8 +58,6 @@ class CalculateRewindSecondsTest {
 
   @Nested
   inner class SeekTarget {
-    private val durations = listOf(60_000L, 60_000L, 60_000L)
-
     private fun assertTarget(
       chapterIndex: Int,
       positionMillis: Long,
@@ -67,7 +65,7 @@ class CalculateRewindSecondsTest {
       expectedIndex: Int,
       expectedPosition: Long,
     ) {
-      val (index, position) = calculateRewindTarget(chapterIndex, positionMillis, durations, rewindSeconds)
+      val (index, position) = calculateRewindTarget(chapterIndex, positionMillis, rewindSeconds)
       Assertions.assertEquals(expectedIndex, index, "Wrong chapter index for rewind=$rewindSeconds")
       Assertions.assertEquals(expectedPosition, position, "Wrong position for rewind=$rewindSeconds")
     }
@@ -79,10 +77,10 @@ class CalculateRewindSecondsTest {
     fun `rewind exactly to a chapter start stays in that chapter`() = assertTarget(1, 10_000, 10.0, 1, 0)
 
     @Test
-    fun `rewind crosses one chapter start`() = assertTarget(1, 10_000, 20.0, 0, 50_000)
+    fun `rewind that would cross a chapter start clamps at the chapter start`() = assertTarget(1, 10_000, 20.0, 1, 0)
 
     @Test
-    fun `rewind crosses more than one chapter start`() = assertTarget(2, 5_000, 70.0, 0, 55_000)
+    fun `rewind that would cross several chapter starts clamps at the current chapter start`() = assertTarget(2, 5_000, 70.0, 2, 0)
 
     @Test
     fun `rewind clamps at the start of the book`() = assertTarget(0, 5_000, 30.0, 0, 0)
@@ -91,7 +89,7 @@ class CalculateRewindSecondsTest {
     fun `five second floor clamps at the start of the book`() = assertTarget(0, 3_000, 5.0, 0, 0)
 
     @Test
-    fun `rewind larger than the whole book clamps at the start`() = assertTarget(2, 30_000, 500.0, 0, 0)
+    fun `rewind larger than the current position never moves to an earlier chapter`() = assertTarget(2, 30_000, 500.0, 2, 0)
 
     @Test
     fun `rewind from the start of the book stays at the start`() = assertTarget(0, 0, 30.0, 0, 0)
@@ -101,12 +99,5 @@ class CalculateRewindSecondsTest {
 
     @Test
     fun `fractional rewind seconds are converted to milliseconds`() = assertTarget(1, 50_000, 10.5, 1, 39_500)
-
-    @Test
-    fun `empty chapter list does not crash`() {
-      val (index, position) = calculateRewindTarget(2, 5_000, emptyList(), 30.0)
-      Assertions.assertEquals(2, index)
-      Assertions.assertEquals(5_000, position)
-    }
   }
 }

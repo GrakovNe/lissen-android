@@ -1,7 +1,6 @@
 package org.grakovne.lissen.playback
 
 import androidx.media3.common.Player
-import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.RewindOnPauseTime
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.service.RewindTarget
@@ -70,7 +69,7 @@ class RewindOnPauseHandler
 
       // applyRewind runs from play(), after startPreparingPlayback stored the
       // book that is about to play, so the playing item is the right source
-      // for both the book id and the chapter durations.
+      // for the book id.
       val playingBook = preferences.getPlayingItem()
       activeBookId = playingBook?.id
 
@@ -84,17 +83,11 @@ class RewindOnPauseHandler
           nowMillis = System.currentTimeMillis(),
           chapterIndex = player.currentMediaItemIndex,
           positionMillis = player.currentPosition,
-          chapterDurationsMillis = readChapterDurationsMillis(playingBook),
         ) ?: return
 
       Timber.d("Rewind on pause: seeking to chapter=${target.chapterIndex} position=${target.positionMillis}ms")
       player.seekTo(target.chapterIndex, target.positionMillis)
     }
-
-    // Durations come from the playing book: the player timeline reports
-    // C.TIME_UNSET for chapters that ExoPlayer has not prepared yet. The
-    // timeline holds one media item per chapter, in the same order.
-    private fun readChapterDurationsMillis(book: DetailedItem): List<Long> = book.chapters.map { (it.duration * 1000).toLong() }
   }
 
 internal fun decideRewindTarget(
@@ -103,11 +96,9 @@ internal fun decideRewindTarget(
   nowMillis: Long,
   chapterIndex: Int,
   positionMillis: Long,
-  chapterDurationsMillis: List<Long>,
 ): RewindTarget? {
   if (!setting.enabled) return null
-  if (chapterIndex !in chapterDurationsMillis.indices) return null
-  if (positionMillis < 0 || chapterDurationsMillis.any { it < 0 }) return null
+  if (chapterIndex < 0 || positionMillis < 0) return null
 
   // Without a stored timestamp the pause length is unknown, so treat it as the
   // full rewind window or longer and apply the full rewind.
@@ -115,7 +106,7 @@ internal fun decideRewindTarget(
 
   val rewindSeconds = calculateRewindSeconds(setting.seconds, pausedMillis)
   val current = RewindTarget(chapterIndex, positionMillis)
-  val target = calculateRewindTarget(chapterIndex, positionMillis, chapterDurationsMillis, rewindSeconds)
+  val target = calculateRewindTarget(chapterIndex, positionMillis, rewindSeconds)
 
   return if (target == current) null else target
 }

@@ -27,31 +27,18 @@ data class RewindTarget(
 fun calculateRewindTarget(
   chapterIndex: Int,
   positionMillis: Long,
-  chapterDurationsMillis: List<Long>,
   rewindSeconds: Double,
 ): RewindTarget {
   val rewindMillis = (rewindSeconds * 1000).roundToLong()
-  if (rewindMillis <= 0 || chapterDurationsMillis.isEmpty()) {
+  if (rewindMillis <= 0) {
     return RewindTarget(chapterIndex, positionMillis)
   }
 
-  var targetIndex = chapterIndex
-  var targetPosition = positionMillis
-  var remainingRewind = rewindMillis
-
-  while (remainingRewind > 0) {
-    if (targetPosition >= remainingRewind) {
-      targetPosition -= remainingRewind
-      remainingRewind = 0
-    } else {
-      remainingRewind -= targetPosition
-      if (targetIndex == 0) {
-        return RewindTarget(0, 0)
-      }
-      targetIndex -= 1
-      targetPosition = chapterDurationsMillis[targetIndex]
-    }
-  }
-
-  return RewindTarget(targetIndex, targetPosition)
+  // Clamp inside the current chapter: the timeline holds one media item per
+  // chapter, and PlaybackNavigationService.onPositionDiscontinuity treats a
+  // backward seek into a different media item as a discontinuity. With a
+  // partly downloaded book a rewind that walks into a missing chapter turns
+  // into a jump to the start of a much earlier chapter, or a stall, so a
+  // rewind must never cross a chapter boundary.
+  return RewindTarget(chapterIndex, (positionMillis - rewindMillis).coerceAtLeast(0))
 }
