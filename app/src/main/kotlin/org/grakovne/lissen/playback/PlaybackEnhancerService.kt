@@ -72,6 +72,10 @@ class PlaybackEnhancerService
       updateGain(sharedPreferences.getPlaybackVolumeBoost())
     }
 
+    // Boost goes through DynamicsProcessing (compressor + limiter) because LoudnessEnhancer
+    // has no limiter we control and clips audibly from ~6 dB of boost on some devices.
+    // LoudnessEnhancer stays as a best-effort fallback for sessions where the richer
+    // effect cannot attach.
     @OptIn(UnstableApi::class)
     private fun attachEnhancer(
       sessionId: Int,
