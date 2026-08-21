@@ -267,4 +267,11 @@
     <string name="download_settings_storage_switch_failed_toast">无法切换存储位置</string>
     <string name="download_settings_storage_confirmation_message">已下载的内容将被从此设备删除。服务器数据不会受到影响</string>
     <string name="download_settings_storage_confirm">切换位置</string>
+    <string name="tree_node_all_titles">所有标题</string>
+    <string name="tree_node_authors">作者</string>
+    <string name="tree_node_series">系列</string>
+    <string name="tree_node_genres">流派</string>
+    <string name="tree_node_tags">标签</string>
+    <string name="tree_node_downloads_offline">下载（离线模式）</string>
+    <string name="tree_node_series_collapsed">已折叠系列</string>
 </resources>
