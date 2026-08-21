@@ -31,6 +31,7 @@ import org.grakovne.lissen.domain.DownloadOption
 import org.grakovne.lissen.domain.EqualizerSettings
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.RewindOnPauseTime
 import org.grakovne.lissen.domain.StoragePath
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.domain.connection.LocalUrl
@@ -126,6 +127,9 @@ class SettingsViewModel
 
     private val _seekTime = MutableStateFlow(playback.getSeekTime())
     val seekTime = _seekTime.asStateFlow()
+
+    private val _rewindOnPauseTime = MutableStateFlow(playback.getRewindOnPauseTime())
+    val rewindOnPauseTime = _rewindOnPauseTime.asStateFlow()
 
     private val _defaultTimerOption = MutableStateFlow<TimerOption?>(playback.getDefaultTimerOption())
     val defaultTimerOption: StateFlow<TimerOption?> = _defaultTimerOption.asStateFlow()
@@ -447,6 +451,24 @@ class SettingsViewModel
 
       playback.saveSeekTime(updated)
       _seekTime.value = updated
+    }
+
+    fun preferRewindOnPauseEnabled(enabled: Boolean) {
+      Timber.d("User action: preferRewindOnPauseEnabled $enabled")
+      val current = _rewindOnPauseTime.value
+      val updated = current.copy(enabled = enabled)
+
+      playback.saveRewindOnPauseTime(updated)
+      _rewindOnPauseTime.value = updated
+    }
+
+    fun preferRewindOnPauseSeconds(seconds: Int) {
+      Timber.d("User action: preferRewindOnPauseSeconds $seconds")
+      val current = _rewindOnPauseTime.value
+      val updated = current.copy(seconds = seconds)
+
+      playback.saveRewindOnPauseTime(updated)
+      _rewindOnPauseTime.value = updated
     }
 
     fun updateLocalUrls(urls: List<LocalUrl>) {

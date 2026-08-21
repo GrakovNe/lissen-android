@@ -22,6 +22,7 @@ class MediaLibrarySessionProvider
     @param:ApplicationContext private val context: Context,
     private val exoPlayer: ExoPlayer,
     private val callback: MediaLibrarySessionCallback,
+    private val rewindOnPauseHandler: RewindOnPauseHandler,
   ) {
     @OptIn(UnstableApi::class)
     fun provideMediaLibrarySession(mediaLibraryService: MediaLibraryService): MediaLibraryService.MediaLibrarySession {
@@ -46,8 +47,13 @@ class MediaLibrarySessionProvider
             Intent.FLAG_GRANT_PREFIX_URI_PERMISSION,
         )
       }
+      rewindOnPauseHandler.attach(exoPlayer)
+
+      val sessionPlayer =
+        RewindForwardingPlayer(exoPlayer) { player -> rewindOnPauseHandler.applyRewind(player) }
+
       return MediaLibraryService.MediaLibrarySession
-        .Builder(mediaLibraryService, exoPlayer, callback)
+        .Builder(mediaLibraryService, sessionPlayer, callback)
         .setSessionActivity(
           PendingIntent.getActivity(
             context,

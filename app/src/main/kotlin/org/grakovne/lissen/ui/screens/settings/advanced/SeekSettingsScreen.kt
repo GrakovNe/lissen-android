@@ -37,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
@@ -48,8 +49,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
+import org.grakovne.lissen.domain.RewindOnPauseTime
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
+import org.grakovne.lissen.ui.components.slider.DEFAULT_MAX_SECONDS
+import org.grakovne.lissen.ui.components.slider.DEFAULT_MIN_SECONDS
 import org.grakovne.lissen.ui.components.slider.SeekTimeSlider
+import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
@@ -58,9 +63,11 @@ import org.grakovne.lissen.viewmodel.SettingsViewModel
 fun SeekSettingsScreen(onBack: () -> Unit) {
   val viewModel: SettingsViewModel = hiltViewModel()
   val preferredSeekTime by viewModel.seekTime.collectAsState()
+  val rewindOnPauseTime by viewModel.rewindOnPauseTime.collectAsState()
 
   var rewindExpanded by remember { mutableStateOf(false) }
   var forwardExpanded by remember { mutableStateOf(false) }
+  var rewindOnPauseExpanded by remember { mutableStateOf(false) }
 
   Scaffold(
     topBar = {
@@ -93,6 +100,20 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
           currentSeconds = preferredSeekTime.forward,
           onClicked = { forwardExpanded = true },
         )
+
+        SettingsToggleItem(
+          title = stringResource(R.string.settings_screen_rewind_on_pause_title),
+          description = stringResource(R.string.settings_screen_rewind_on_pause_description),
+          initialState = rewindOnPauseTime.enabled,
+          onCheckedChange = { viewModel.preferRewindOnPauseEnabled(it) },
+        )
+
+        SeekTimeRowComposable(
+          title = stringResource(R.string.settings_screen_rewind_on_pause_amount_title),
+          currentSeconds = rewindOnPauseTime.seconds,
+          enabled = rewindOnPauseTime.enabled,
+          onClicked = { rewindOnPauseExpanded = true },
+        )
       }
     },
   )
@@ -114,6 +135,18 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
       onUpdate = { viewModel.preferForward(it) },
     )
   }
+
+  if (rewindOnPauseExpanded && rewindOnPauseTime.enabled) {
+    SeekTimeBottomSheet(
+      title = stringResource(R.string.settings_screen_rewind_on_pause_amount_title),
+      currentSeconds = rewindOnPauseTime.seconds,
+      onDismissRequest = { rewindOnPauseExpanded = false },
+      onUpdate = { viewModel.preferRewindOnPauseSeconds(it) },
+      minSeconds = RewindOnPauseTime.MIN_SECONDS,
+      maxSeconds = RewindOnPauseTime.MAX_SECONDS,
+      presets = rewindOnPausePresets,
+    )
+  }
 }
 
 @Composable
@@ -123,10 +156,13 @@ private fun SeekTimeBottomSheet(
   currentSeconds: Int,
   onDismissRequest: () -> Unit,
   onUpdate: (Int) -> Unit,
+  minSeconds: Int = DEFAULT_MIN_SECONDS,
+  maxSeconds: Int = DEFAULT_MAX_SECONDS,
+  presets: List<Int> = seekTimePresets,
 ) {
   val view: View = LocalView.current
   val context = LocalContext.current
-  var selectedSeconds by remember { mutableIntStateOf(currentSeconds) }
+  var selectedSeconds by remember { mutableIntStateOf(currentSeconds.coerceIn(minSeconds, maxSeconds)) }
 
   LissenModalBottomSheet(
     containerColor = colorScheme.background,
@@ -152,6 +188,8 @@ private fun SeekTimeBottomSheet(
             Modifier
               .fillMaxWidth()
               .padding(vertical = 16.dp),
+          minSeconds = minSeconds,
+          maxSeconds = maxSeconds,
           onUpdate = {
             selectedSeconds = it
             onUpdate(it)
@@ -162,7 +200,7 @@ private fun SeekTimeBottomSheet(
           modifier = Modifier.fillMaxWidth(),
           horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
-          seekTimePresets.forEach { preset ->
+          presets.forEach { preset ->
             FilledTonalButton(
               onClick = {
                 withHaptic(view) {
@@ -204,6 +242,7 @@ private fun SeekTimeBottomSheet(
 private fun SeekTimeRowComposable(
   title: String,
   currentSeconds: Int,
+  enabled: Boolean = true,
   onClicked: () -> Unit,
 ) {
   val context = LocalContext.current
@@ -212,7 +251,8 @@ private fun SeekTimeRowComposable(
     modifier =
       Modifier
         .fillMaxWidth()
-        .clickable { onClicked() }
+        .clickable(enabled = enabled) { onClicked() }
+        .then(if (enabled) Modifier else Modifier.alpha(0.4f))
         .padding(horizontal = 24.dp, vertical = 12.dp),
   ) {
     Column(modifier = Modifier.weight(1f)) {
@@ -230,3 +270,5 @@ private fun SeekTimeRowComposable(
 }
 
 private val seekTimePresets = listOf(5, 10, 15, 30, 60)
+
+private val rewindOnPausePresets = listOf(10, 15, 30, 60)

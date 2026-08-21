@@ -5,6 +5,7 @@ import org.grakovne.lissen.common.ColorScheme
 import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.RewindOnPauseTime
 import org.grakovne.lissen.domain.makeDownloadOption
 import org.grakovne.lissen.domain.makeId
 import javax.inject.Inject
@@ -23,6 +24,7 @@ class SettingsBackupManager
   ) {
     fun exportSettings(): SettingsBackup {
       val timerDto = playback.getDefaultTimerOption()?.toDto()
+      val rewindOnPauseTime = playback.getRewindOnPauseTime()
 
       return SettingsBackup(
         colorScheme = appearance.getColorScheme().name,
@@ -31,6 +33,8 @@ class SettingsBackupManager
         volumeBoost = playback.getPlaybackVolumeBoost(),
         seekTime = playback.getSeekTime(),
         equalizer = playback.getEqualizer(),
+        rewindOnPauseEnabled = rewindOnPauseTime.enabled,
+        rewindOnPauseSeconds = rewindOnPauseTime.seconds,
         audioFocusLossPolicy = playback.getAudioFocusLossPolicy().name,
         softwareCodecsEnabled = playback.getSoftwareCodecsEnabled(),
         hideCompleted = library.getHideCompleted(),
@@ -63,6 +67,16 @@ class SettingsBackupManager
       backup.volumeBoost?.let { playback.savePlaybackVolumeBoost(it) }
       backup.seekTime?.let { playback.saveSeekTime(it) }
       backup.equalizer?.let { playback.saveEqualizer(it) }
+
+      if (backup.rewindOnPauseEnabled != null || backup.rewindOnPauseSeconds != null) {
+        val current = playback.getRewindOnPauseTime()
+        playback.saveRewindOnPauseTime(
+          RewindOnPauseTime(
+            enabled = backup.rewindOnPauseEnabled ?: current.enabled,
+            seconds = RewindOnPauseTime.clampedSeconds(backup.rewindOnPauseSeconds ?: current.seconds),
+          ),
+        )
+      }
 
       backup.audioFocusLossPolicy
         ?.let { runCatching { AudioFocusLossPolicy.valueOf(it) }.getOrNull() }

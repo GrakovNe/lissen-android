@@ -8,6 +8,7 @@ import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.EqualizerSettings
+import org.grakovne.lissen.domain.RewindOnPauseTime
 import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.domain.TimerOption
 import timber.log.Timber
@@ -24,10 +25,14 @@ class PlaybackPreferences
     private val playingItemLock = Any()
     private val playingItems = CachedValue { readPlayingItems() }
 
+    private val bookLastActiveLock = Any()
+    private val bookLastActive = CachedValue { readBookLastActive() }
+
     val playingItemFlow: Flow<DetailedItem?> = store.asFlow(KEY_PLAYING_ITEM, ::getPlayingItem)
     val playbackVolumeBoostFlow: Flow<Int> = store.asFlow(KEY_VOLUME_BOOST, ::getPlaybackVolumeBoost)
     val audioFocusLossPolicyFlow: Flow<AudioFocusLossPolicy> = store.asFlow(KEY_AUDIO_FOCUS_LOSS_POLICY, ::getAudioFocusLossPolicy)
     val equalizerFlow: Flow<EqualizerSettings> = store.asFlow(KEY_EQUALIZER, ::getEqualizer)
+    val rewindOnPauseTimeFlow: Flow<RewindOnPauseTime> = store.asFlow(KEY_REWIND_ON_PAUSE_TIME, ::getRewindOnPauseTime)
 
     fun getPlaybackVolumeBoost(): Int =
       try {
@@ -96,6 +101,54 @@ class PlaybackPreferences
       store.putString(KEY_PREFERRED_SEEK_TIME, json, commit = true)
     }
 
+    fun getRewindOnPauseTime(): RewindOnPauseTime {
+      val json = store.getString(KEY_REWIND_ON_PAUSE_TIME) ?: return RewindOnPauseTime.Default
+      return try {
+        val parsed = moshi.adapter(RewindOnPauseTime::class.java).fromJson(json) ?: return RewindOnPauseTime.Default
+        parsed.copy(seconds = RewindOnPauseTime.clampedSeconds(parsed.seconds))
+      } catch (e: com.squareup.moshi.JsonDataException) {
+        Timber.w("Stored rewind on pause time is malformed, resetting due to: ${e.message}")
+        store.remove(KEY_REWIND_ON_PAUSE_TIME, commit = true)
+        RewindOnPauseTime.Default
+      }
+    }
+
+    fun saveRewindOnPauseTime(rewindOnPauseTime: RewindOnPauseTime) {
+      val json = moshi.adapter(RewindOnPauseTime::class.java).toJson(rewindOnPauseTime)
+      store.putString(KEY_REWIND_ON_PAUSE_TIME, json, commit = true)
+    }
+
+    fun markBookLastActive(
+      bookId: String,
+      epochMillis: Long,
+    ) {
+      synchronized(bookLastActiveLock) {
+        val current = bookLastActive.get().toMutableMap()
+        current[bookId] = epochMillis
+
+        val trimmed =
+          if (current.size > MAX_BOOK_LAST_ACTIVE_ENTRIES) {
+            current
+              .entries
+              .sortedBy { it.value }
+              .takeLast(MAX_BOOK_LAST_ACTIVE_ENTRIES)
+              .associate { it.toPair() }
+          } else {
+            current
+          }
+
+        try {
+          val adapter = moshi.adapter<Map<String, Long>>(bookLastActiveType)
+          store.putString(KEY_BOOK_LAST_ACTIVE, adapter.toJson(trimmed))
+          bookLastActive.set(trimmed)
+        } catch (t: Throwable) {
+          Timber.w("Unable to persist last active time for $bookId due to: ${t.message}")
+        }
+      }
+    }
+
+    fun getBookLastActive(bookId: String): Long? = bookLastActive.get()[bookId]
+
     fun getEqualizer(): EqualizerSettings {
       val json = store.getString(KEY_EQUALIZER) ?: return EqualizerSettings.Default
       return try {
@@ -163,6 +216,17 @@ class PlaybackPreferences
         emptyMap()
       }
 
+    private fun readBookLastActive(): Map<String, Long> =
+      try {
+        store
+          .getString(KEY_BOOK_LAST_ACTIVE)
+          ?.let { moshi.adapter<Map<String, Long>>(bookLastActiveType).fromJson(it) }
+          ?: emptyMap()
+      } catch (t: Throwable) {
+        Timber.w("Unable to read stored book last active times, returning empty due to: ${t.message}")
+        emptyMap()
+      }
+
     private fun TimerOption.toDto() =
       when (this) {
         CurrentEpisodeTimerOption -> TimerOptionDto(type = "episode")
@@ -185,12 +249,22 @@ class PlaybackPreferences
       private const val KEY_AUDIO_FOCUS_LOSS_POLICY = "audio_focus_loss_policy"
       private const val KEY_EQUALIZER = "equalizer"
       private const val KEY_DEFAULT_SLEEP_TIMER = "default_sleep_timer"
+      private const val KEY_REWIND_ON_PAUSE_TIME = "rewind_on_pause_time"
+      private const val KEY_BOOK_LAST_ACTIVE = "book_last_active"
+      private const val MAX_BOOK_LAST_ACTIVE_ENTRIES = 100
 
       private val playingItemsType =
         Types.newParameterizedType(
           Map::class.java,
           String::class.java,
           DetailedItem::class.java,
+        )
+
+      private val bookLastActiveType =
+        Types.newParameterizedType(
+          Map::class.java,
+          String::class.java,
+          Long::class.javaObjectType,
         )
     }
   }
