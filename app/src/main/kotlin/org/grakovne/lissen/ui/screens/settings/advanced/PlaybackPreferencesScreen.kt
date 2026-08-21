@@ -51,6 +51,7 @@ fun PlaybackPreferencesScreen(
   val viewModel: SettingsViewModel = hiltViewModel()
   val softwareCodecsEnabled by viewModel.softwareCodecsEnabled.collectAsState()
   val softwareCodecsEnabledOnStart = viewModel.softwareCodecsEnabledOnStart
+  val showBookTimeRemaining by viewModel.showBookTimeRemaining.collectAsState()
   val context = LocalContext.current
 
   Scaffold(
@@ -92,6 +93,12 @@ fun PlaybackPreferencesScreen(
         )
 
         DefaultTimerSettingsComposable(viewModel)
+
+        SettingsToggleItem(
+          title = stringResource(R.string.settings_screen_show_book_time_remaining_title),
+          description = stringResource(R.string.settings_screen_show_book_time_remaining_description),
+          initialState = showBookTimeRemaining,
+        ) { viewModel.preferShowBookTimeRemaining(it) }
 
         SettingsToggleItem(
           title = stringResource(R.string.settings_screen_software_codecs_enabled_title),

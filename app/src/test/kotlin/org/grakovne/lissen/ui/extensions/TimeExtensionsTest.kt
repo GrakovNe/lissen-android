@@ -82,4 +82,20 @@ class TimeExtensionsTest {
     assertEquals(0, parts.seconds)
     assertEquals(true, parts.includeSeconds)
   }
+
+  @Test
+  fun `speedCompensatedSeconds divides by the playback speed`() {
+    assertEquals(30.0, speedCompensatedSeconds(60.0, 2f))
+  }
+
+  @Test
+  fun `speedCompensatedSeconds keeps the raw value at one times speed`() {
+    assertEquals(60.0, speedCompensatedSeconds(60.0, 1f))
+  }
+
+  @Test
+  fun `speedCompensatedSeconds keeps the raw value when speed is not positive`() {
+    assertEquals(60.0, speedCompensatedSeconds(60.0, 0f))
+    assertEquals(60.0, speedCompensatedSeconds(60.0, -1.5f))
+  }
 }

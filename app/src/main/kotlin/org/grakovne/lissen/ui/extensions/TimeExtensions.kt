@@ -65,3 +65,8 @@ fun Int.formatTime(): String {
     String.format(Locale.getDefault(), "%02d:%02d", minutes, seconds)
   }
 }
+
+fun speedCompensatedSeconds(
+  seconds: Double,
+  playbackSpeed: Float,
+): Double = if (playbackSpeed > 0f) seconds / playbackSpeed else seconds

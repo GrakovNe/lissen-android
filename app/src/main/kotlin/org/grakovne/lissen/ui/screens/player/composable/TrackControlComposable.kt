@@ -42,7 +42,9 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.extensions.formatTime
+import org.grakovne.lissen.ui.extensions.speedCompensatedSeconds
 import org.grakovne.lissen.ui.extensions.spokenDuration
 import org.grakovne.lissen.ui.screens.player.composable.common.provideForwardIcon
 import org.grakovne.lissen.ui.screens.player.composable.common.provideReplayIcon
@@ -59,8 +61,11 @@ fun TrackControlComposable(
   val currentTrackIndex by viewModel.currentChapterIndex.collectAsState()
   val currentTrackPosition by viewModel.currentChapterPosition.collectAsState()
   val currentTrackDuration by viewModel.currentChapterDuration.collectAsState()
+  val playbackSpeed by viewModel.playbackSpeed.collectAsState()
 
   val seekTime by settingsViewModel.seekTime.collectAsState()
+  val showBookTimeRemaining by settingsViewModel.showBookTimeRemaining.collectAsState()
+  val preferredLibrary by settingsViewModel.preferredLibrary.collectAsState()
 
   val book by viewModel.book.collectAsState()
   val chapters = book?.chapters ?: emptyList()
@@ -75,6 +80,19 @@ fun TrackControlComposable(
       sliderPosition = currentTrackPosition
     }
   }
+
+  val remainingSeconds =
+    if (showBookTimeRemaining && preferredLibrary?.type == LibraryType.LIBRARY) {
+      chapters
+        .getOrNull(currentTrackIndex)
+        ?.let { chapter ->
+          val absolutePosition = chapter.start + sliderPosition
+          maxOf(0.0, chapters.sumOf { it.duration } - absolutePosition)
+        }
+        ?: maxOf(0.0, currentTrackDuration - sliderPosition)
+    } else {
+      maxOf(0.0, currentTrackDuration - sliderPosition)
+    }
 
   Column(
     modifier =
@@ -140,7 +158,7 @@ fun TrackControlComposable(
           )
           Text(
             text =
-              maxOf(0.0, currentTrackDuration - sliderPosition)
+              speedCompensatedSeconds(remainingSeconds, playbackSpeed)
                 .toInt()
                 .formatTime(true),
             style = typography.bodySmall,

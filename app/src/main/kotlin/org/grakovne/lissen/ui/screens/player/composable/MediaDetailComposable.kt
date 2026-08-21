@@ -45,6 +45,7 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.extensions.formatTime
+import org.grakovne.lissen.ui.extensions.speedCompensatedSeconds
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.player.InfoRow
 import org.grakovne.lissen.viewmodel.PlayerViewModel
@@ -60,6 +61,7 @@ fun MediaDetailComposable(
   navController: AppNavigationService,
 ) {
   val totalPosition by playingViewModel.totalPosition.collectAsState()
+  val playbackSpeed by playingViewModel.playbackSpeed.collectAsState()
   val totalDuration = playingBook?.chapters?.sumOf { it.duration }
   val preferredLibrary by settingsViewModel.preferredLibrary.collectAsState()
 
@@ -172,7 +174,7 @@ fun MediaDetailComposable(
             InfoRow(
               icon = Icons.Filled.HourglassEmpty,
               label = stringResource(R.string.playing_item_details_time_remaining),
-              textValue = (it - totalPosition).toInt().formatTime(),
+              textValue = speedCompensatedSeconds(maxOf(0.0, it - totalPosition), playbackSpeed).toInt().formatTime(),
             )
           }
         }
