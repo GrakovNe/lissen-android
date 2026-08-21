@@ -163,7 +163,7 @@ class MediaLibraryTree
       items: List<T>?,
       toIdAndName: (T) -> Pair<String, String>,
     ): MediaTreeNode? =
-      items?.takeIf { it.isNotEmpty() }?.let {
+      items?.let {
         mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/$filterKey", label)) {
           for (item in items) {
             val (id, name) = toIdAndName(item)
@@ -185,11 +185,11 @@ class MediaLibraryTree
     private fun buildTree(): MediaTreeNode =
       mediaTreeNode(folderItem(ROOT, context.getString(R.string.tree_node_root))) {
         +mediaTreeNode(folderItem("$ROOT/$RECENT", context.getString(R.string.tree_node_recent))) {
-          pagedChildren { _, _, session -> recentBooksItems(session) }
+          pagedChildren { page, pageSize, session -> recentBooksItems(session).page(page, pageSize) }
         }
 
         +mediaTreeNode(folderItem("$ROOT/$LIBRARY", context.getString(R.string.tree_node_library))) {
-          pagedChildren { _, _, _ -> libraryItems() }
+          pagedChildren { page, pageSize, _ -> libraryItems().page(page, pageSize) }
           resolveChild { libraryId ->
             resolveLibrary(libraryId)?.let { library ->
               mediaTreeNode(libraryFolderItem("$ROOT/$LIBRARY/$libraryId", library)) {
@@ -197,7 +197,7 @@ class MediaLibraryTree
                   pagedChildren { page, pageSize, _ -> booksFromLibrary(libraryId = libraryId, page = page, pageSize = pageSize) }
                 }
 
-                if (library.type == LibraryType.LIBRARY) {
+                if (library.type != LibraryType.PODCAST) {
                   +mediaTreeNode(
                     folderItem("$ROOT/$LIBRARY/$libraryId/$SERIES_COLLAPSED", context.getString(R.string.tree_node_series_collapsed)),
                   ) {

@@ -6,6 +6,7 @@ import android.os.Build
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onCompletion
@@ -107,7 +108,7 @@ class ContentCachingService : LifecycleService() {
     Timber.d("Starting caching for ${task.itemId}: option=${task.options}")
 
     val job =
-      lifecycleScope.launch {
+      lifecycleScope.launch(start = CoroutineStart.LAZY) {
         mediaProvider
           .fetchBook(task.itemId)
           .foldAsync(
@@ -120,7 +121,7 @@ class ContentCachingService : LifecycleService() {
                 cacheProgressBus.emit(task.itemId, CacheState(CacheStatus.Error))
 
                 if (registry.inProgress().not()) {
-                  finish(forceError = true)
+                  finish()
                 }
               }
             },
@@ -128,6 +129,7 @@ class ContentCachingService : LifecycleService() {
       }
 
     registry.register(task.itemId, job)
+    job.start()
   }
 
   private suspend fun cacheFetchedItem(
@@ -169,10 +171,16 @@ class ContentCachingService : LifecycleService() {
     finish()
   }
 
-  private fun finish(forceError: Boolean = false) {
+  override fun onDestroy() {
+    sessionLifecycle.beginFinish()
+    registry.finishSession()
+    super.onDestroy()
+  }
+
+  private fun finish() {
     val finishingStartId = sessionLifecycle.beginFinish() ?: return
 
-    val errored = registry.finishSession(forceError)
+    val errored = registry.finishSession()
 
     when (errored) {
       true -> {

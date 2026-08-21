@@ -49,8 +49,8 @@ class CachingSessionRegistry
       return itemIds
     }
 
-    fun finishSession(forceError: Boolean = false): Boolean {
-      val errored = forceError || sessionErrored || hasErrors()
+    fun finishSession(): Boolean {
+      val errored = sessionErrored || hasErrors()
       val activeJobs = jobs.values.toList()
 
       pending.clear()

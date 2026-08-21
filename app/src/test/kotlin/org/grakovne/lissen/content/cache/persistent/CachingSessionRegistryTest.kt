@@ -171,14 +171,6 @@ class CachingSessionRegistryTest {
   }
 
   @Test
-  fun `forced session failure is reported without a stored error status`() {
-    val registry = CachingSessionRegistry()
-
-    assertTrue(registry.finishSession(forceError = true))
-    assertTrue(registry.notificationItems().isEmpty())
-  }
-
-  @Test
   fun `an early failure is retained until the concurrent session finishes`() {
     val registry = CachingSessionRegistry()
     val job = Job()

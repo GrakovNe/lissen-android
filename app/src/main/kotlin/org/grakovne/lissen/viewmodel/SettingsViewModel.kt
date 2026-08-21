@@ -403,14 +403,7 @@ class SettingsViewModel
 
       val actualSwitch =
         withContext(Dispatchers.IO) {
-          val currentStorage =
-            download
-              .getDownloadStoragePath()
-              ?.path
-              ?.let(::File)
-              ?: offlineBookStorageProperties.provideActiveStorage()
-
-          currentStorage.canonicalFile != File(storagePath.path).canonicalFile
+          offlineBookStorageProperties.provideActiveStorage().canonicalFile != File(storagePath.path).canonicalFile
         }
 
       if (actualSwitch) {
