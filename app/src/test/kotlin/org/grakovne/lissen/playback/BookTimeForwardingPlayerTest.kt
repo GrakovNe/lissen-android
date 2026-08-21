@@ -1,10 +1,12 @@
 package org.grakovne.lissen.playback
 
 import android.os.Bundle
+import androidx.annotation.OptIn
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -19,6 +21,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
+@OptIn(UnstableApi::class)
 class BookTimeForwardingPlayerTest {
   private val delegate = mockk<Player>(relaxed = true)
   private val playbackPreferences = mockk<PlaybackPreferences>(relaxed = true)

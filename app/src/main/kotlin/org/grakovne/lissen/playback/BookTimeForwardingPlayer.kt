@@ -3,6 +3,7 @@ package org.grakovne.lissen.playback
 import androidx.media3.common.C
 import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
@@ -27,6 +28,7 @@ import org.grakovne.lissen.playback.service.calculateChapterIndexAndPosition
  * Android Auto or the notification showing the previous scope until the next such event. This is
  * an accepted limitation.
  */
+@UnstableApi
 class BookTimeForwardingPlayer(
   player: Player,
   private val playbackPreferences: PlaybackPreferences,

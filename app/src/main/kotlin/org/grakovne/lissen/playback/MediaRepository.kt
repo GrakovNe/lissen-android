@@ -13,6 +13,7 @@ import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.FutureCallback
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.MoreExecutors
+import dagger.Lazy
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -50,7 +51,7 @@ class MediaRepository
     private val mediaChannel: LissenMediaProvider,
     private val eventBus: PlaybackEventBus,
     private val defaultTimerActivator: DefaultTimerActivator,
-    private val exoPlayer: ExoPlayer,
+    private val exoPlayer: Lazy<ExoPlayer>,
   ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private lateinit var mediaController: MediaController
@@ -443,10 +444,11 @@ class MediaRepository
     }
 
     private fun updateProgress(detailedItem: DetailedItem) {
-      val currentIndex = exoPlayer.currentMediaItemIndex
+      val player = exoPlayer.get()
+      val currentIndex = player.currentMediaItemIndex
       val chapters = detailedItem.chapters
       val accumulated = chapters.take(currentIndex.coerceIn(0, chapters.size)).sumOf { it.duration }
-      val currentFilePosition = exoPlayer.currentPosition / 1000.0
+      val currentFilePosition = player.currentPosition / 1000.0
 
       val newPosition = accumulated + currentFilePosition
       _totalPosition.value = newPosition
