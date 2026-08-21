@@ -5,6 +5,7 @@ import kotlinx.coroutines.coroutineScope
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfHostProvider
 import org.grakovne.lissen.channel.audiobookshelf.common.AudiobookshelfChannel
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfRepository
+import org.grakovne.lissen.channel.audiobookshelf.common.api.encodeLibraryFilter
 import org.grakovne.lissen.channel.audiobookshelf.common.api.podcast.AudioBookshelfPodcastSyncService
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarkItemResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarksResponseConverter
@@ -76,6 +77,7 @@ class PodcastAudiobookshelfChannel
           pageNumber = pageNumber,
           sort = option,
           direction = direction,
+          filter = extraFilter?.let { (key, value) -> encodeLibraryFilter(key, value) },
         ).map { podcastPageResponseConverter.apply(it) }
     }
 

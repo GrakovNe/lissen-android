@@ -94,6 +94,7 @@ class SettingsViewModelTest {
     every { download.getAutoDownloadNetworkType() } returns NetworkTypeAutoCache.WIFI_ONLY
     every { download.getAutoDownloadLibraryTypes() } returns LibraryType.meaningfulTypes
     every { download.getAutoDownloadOption() } returns null
+    every { download.getDownloadStoragePath() } returns null
     every { playback.getPlaybackVolumeBoost() } returns 0
     every { libraryPreferences.getLibraryOrdering() } returns LibraryOrderingConfiguration.default
     every { connection.getCustomHeaders() } returns emptyList()
@@ -203,6 +204,23 @@ class SettingsViewModelTest {
         assertTrue(result)
         coVerify(exactly = 0) { contentCachingManager.dropAllCache() }
         verify { download.saveDownloadStoragePath(internal) }
+      }
+
+    @Test
+    fun `preferDownloadStorage drops cache when configured storage differs from active fallback`() =
+      runTest {
+        every { download.getDownloadStoragePath() } returns card
+        every { offlineBookStorageProperties.provideAvailableStorages() } returns listOf(internal)
+        every { offlineBookStorageProperties.provideActiveStorage() } returns File(internal.path)
+        val viewModel = buildViewModel()
+
+        val result = viewModel.preferDownloadStorage(internal)
+
+        assertTrue(result)
+        coVerifyOrder {
+          contentCachingManager.dropAllCache()
+          download.saveDownloadStoragePath(internal)
+        }
       }
 
     @Test

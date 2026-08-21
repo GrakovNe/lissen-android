@@ -14,6 +14,7 @@ class CachingSessionRegistry
     private val jobs = mutableMapOf<String, Job>()
     private val statuses = LinkedHashMap<String, Pair<DetailedItem, CacheState>>()
     private val pending = mutableSetOf<String>()
+    private var sessionErrored = false
 
     fun register(
       itemId: String,
@@ -40,6 +41,7 @@ class CachingSessionRegistry
       pending.clear()
       statuses.clear()
       jobs.clear()
+      sessionErrored = false
 
       cancelledJobs.forEach { it.cancel() }
       cancelledJobs.joinAll()
@@ -47,14 +49,32 @@ class CachingSessionRegistry
       return itemIds
     }
 
+    fun finishSession(forceError: Boolean = false): Boolean {
+      val errored = forceError || sessionErrored || hasErrors()
+      val activeJobs = jobs.values.toList()
+
+      pending.clear()
+      statuses.clear()
+      jobs.clear()
+      sessionErrored = false
+      activeJobs.forEach { it.cancel() }
+
+      return errored
+    }
+
     fun settle(
       itemId: String,
       job: Job,
-    ) {
+      errored: Boolean = false,
+    ): Boolean {
       if (jobs[itemId] === job) {
+        sessionErrored = sessionErrored || errored
         pending.remove(itemId)
         jobs.remove(itemId)
+        return true
       }
+
+      return false
     }
 
     fun updateStatus(

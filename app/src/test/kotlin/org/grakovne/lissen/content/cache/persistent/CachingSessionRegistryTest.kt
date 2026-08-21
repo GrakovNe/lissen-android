@@ -142,4 +142,72 @@ class CachingSessionRegistryTest {
 
     assertEquals(emptyList<Pair<DetailedItem, CacheState>>(), registry.notificationItems())
   }
+
+  @Test
+  fun `finishing an errored session does not poison the next session`() {
+    val registry = CachingSessionRegistry()
+
+    registry.updateStatus(item(id = "failed"), CacheState(CacheStatus.Error))
+
+    assertTrue(registry.finishSession())
+    assertTrue(registry.notificationItems().isEmpty())
+
+    registry.updateStatus(item(id = "completed"), CacheState(CacheStatus.Completed))
+
+    assertFalse(registry.finishSession())
+    assertTrue(registry.notificationItems().isEmpty())
+  }
+
+  @Test
+  fun `finishing a session cancels registrations which are still active`() {
+    val registry = CachingSessionRegistry()
+    val job = Job()
+    registry.register("book-1", job)
+
+    assertFalse(registry.finishSession())
+
+    assertTrue(job.isCancelled)
+    assertFalse(registry.inProgress())
+  }
+
+  @Test
+  fun `forced session failure is reported without a stored error status`() {
+    val registry = CachingSessionRegistry()
+
+    assertTrue(registry.finishSession(forceError = true))
+    assertTrue(registry.notificationItems().isEmpty())
+  }
+
+  @Test
+  fun `an early failure is retained until the concurrent session finishes`() {
+    val registry = CachingSessionRegistry()
+    val job = Job()
+    val concurrentJob = Job()
+    registry.register("book-2", job)
+    registry.register("book-3", concurrentJob)
+    registry.settle("book-2", job, errored = true)
+
+    assertTrue(registry.inProgress())
+
+    registry.updateStatus(item(id = "book-3"), CacheState(CacheStatus.Completed))
+    registry.settle("book-3", concurrentJob)
+
+    assertTrue(registry.finishSession())
+    assertFalse(registry.finishSession())
+  }
+
+  @Test
+  fun `failure from a replaced job does not poison its replacement`() {
+    val registry = CachingSessionRegistry()
+    val replacedJob = Job()
+    val replacementJob = Job()
+    registry.register("book-1", replacedJob)
+    registry.register("book-1", replacementJob)
+
+    assertFalse(registry.settle("book-1", replacedJob, errored = true))
+
+    registry.updateStatus(item(id = "book-1"), CacheState(CacheStatus.Completed))
+    assertTrue(registry.settle("book-1", replacementJob))
+    assertFalse(registry.finishSession())
+  }
 }

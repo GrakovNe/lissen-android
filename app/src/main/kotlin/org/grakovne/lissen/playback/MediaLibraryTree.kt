@@ -60,7 +60,7 @@ class MediaTreeNode(
     session: MediaLibrarySession,
   ): List<MediaItem> =
     childrenProvider?.invoke(page, pageSize, session)
-      ?: staticChildren.map { it.item }
+      ?: staticChildren.page(page, pageSize).map { it.item }
 }
 
 @MediaTreeDsl
@@ -163,7 +163,7 @@ class MediaLibraryTree
       items: List<T>?,
       toIdAndName: (T) -> Pair<String, String>,
     ): MediaTreeNode? =
-      items?.let {
+      items?.takeIf { it.isNotEmpty() }?.let {
         mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/$filterKey", label)) {
           for (item in items) {
             val (id, name) = toIdAndName(item)
@@ -196,18 +196,22 @@ class MediaLibraryTree
                 +mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/titles", context.getString(R.string.tree_node_all_titles))) {
                   pagedChildren { page, pageSize, _ -> booksFromLibrary(libraryId = libraryId, page = page, pageSize = pageSize) }
                 }
-                +mediaTreeNode(
-                  folderItem("$ROOT/$LIBRARY/$libraryId/$SERIES_COLLAPSED", context.getString(R.string.tree_node_series_collapsed)),
-                ) {
-                  pagedChildren { page, pageSize, _ -> collapsedSeriesItems(libraryId = libraryId, page = page, pageSize = pageSize) }
-                  resolveChild { seriesId -> collapsedSeriesNode(libraryId = libraryId, seriesId = seriesId) }
+
+                if (library.type == LibraryType.LIBRARY) {
+                  +mediaTreeNode(
+                    folderItem("$ROOT/$LIBRARY/$libraryId/$SERIES_COLLAPSED", context.getString(R.string.tree_node_series_collapsed)),
+                  ) {
+                    pagedChildren { page, pageSize, _ -> collapsedSeriesItems(libraryId = libraryId, page = page, pageSize = pageSize) }
+                    resolveChild { seriesId -> collapsedSeriesNode(libraryId = libraryId, seriesId = seriesId) }
+                  }
+                  +libraryFilterNode(libraryId, "series", context.getString(R.string.tree_node_series), library.filters?.series) {
+                    it.id to it.name
+                  }
+                  +libraryFilterNode(libraryId, "authors", context.getString(R.string.tree_node_authors), library.filters?.authors) {
+                    it.id to it.name
+                  }
                 }
-                +libraryFilterNode(libraryId, "series", context.getString(R.string.tree_node_series), library.filters?.series) {
-                  it.id to it.name
-                }
-                +libraryFilterNode(libraryId, "authors", context.getString(R.string.tree_node_authors), library.filters?.authors) {
-                  it.id to it.name
-                }
+
                 +libraryFilterNode(libraryId, "genres", context.getString(R.string.tree_node_genres), library.filters?.genres) {
                   it to it
                 }
@@ -355,7 +359,7 @@ class MediaLibraryTree
         )
 
       return mediaTreeNode(item) {
-        pagedChildren { _, _, _ -> books.map { bookItem(it) } }
+        pagedChildren { page, pageSize, _ -> books.page(page, pageSize).map { bookItem(it) } }
       }
     }
 

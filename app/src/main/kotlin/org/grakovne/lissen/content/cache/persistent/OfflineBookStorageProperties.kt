@@ -19,7 +19,7 @@ class OfflineBookStorageProperties
     private val preferences: DownloadPreferences,
   ) {
     private fun baseFolder(): File =
-      preferredFolder()
+      configuredFolder()
         ?: context
           .getExternalFilesDir(MEDIA_CACHE_FOLDER)
           ?.takeIf {
@@ -35,17 +35,15 @@ class OfflineBookStorageProperties
             }
           }
 
-    private fun preferredFolder(): File? =
+    private fun configuredFolder(): File? =
       preferences
         .getDownloadStoragePath()
         ?.path
         ?.let(::File)
-        ?.takeIf { it.exists() || it.mkdirs() }
-        ?.takeIf { it.canWrite() }
 
     fun provideActiveStorage(): File = baseFolder()
 
-    fun provideActiveStoragePath(): StoragePath = baseFolder().toStoragePath()
+    fun provideActiveStoragePath(): StoragePath = preferences.getDownloadStoragePath() ?: baseFolder().toStoragePath()
 
     fun provideAvailableStorages(): List<StoragePath> =
       context

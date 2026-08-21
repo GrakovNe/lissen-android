@@ -21,8 +21,10 @@ import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.FilterData
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.NamedId
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.RecentBook
@@ -188,6 +190,18 @@ class MediaLibraryTreeTest {
     }
 
   @Test
+  fun getChildren_staticNodes_respectPagination() =
+    runBlocking {
+      val firstPage = tree.getChildren("root", 0, 2, session).get().value!!
+      val secondPage = tree.getChildren("root", 1, 2, session).get().value!!
+      val exhaustedPage = tree.getChildren("root", 2, 2, session).get().value!!
+
+      assertEquals(listOf("root/recent", "root/library"), firstPage.map { it.mediaId })
+      assertEquals(listOf("root/downloads"), secondPage.map { it.mediaId })
+      assertTrue(exhaustedPage.isEmpty())
+    }
+
+  @Test
   fun getChildren_root_allChildrenAreBrowsable() =
     runBlocking {
       val children = tree.getChildren("root", 0, 100, session).get().value!!
@@ -321,6 +335,73 @@ class MediaLibraryTreeTest {
       val result = tree.getChildren("root/library", 0, 100, session).get()
       assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
       assertEquals(2, result.value!!.size)
+    }
+
+  @Test
+  fun getChildren_filterNodes_respectPagination() =
+    runBlocking {
+      val library =
+        makeLibrary(
+          id = "lib-1",
+          filters =
+            FilterData(
+              authors = (1..5).map { NamedId("author-$it", "Author $it") },
+              series = emptyList(),
+              genres = emptyList(),
+              tags = emptyList(),
+            ),
+        )
+      coEvery { lissenMediaProvider.fetchLibrary("lib-1") } returns OperationResult.Success(library)
+
+      val firstPage = tree.getChildren("root/library/lib-1/authors", 0, 2, session).get().value!!
+      val secondPage = tree.getChildren("root/library/lib-1/authors", 1, 2, session).get().value!!
+      val thirdPage = tree.getChildren("root/library/lib-1/authors", 2, 2, session).get().value!!
+
+      assertEquals(listOf("author-1", "author-2"), firstPage.map { it.mediaId.substringAfterLast('/') })
+      assertEquals(listOf("author-3", "author-4"), secondPage.map { it.mediaId.substringAfterLast('/') })
+      assertEquals(listOf("author-5"), thirdPage.map { it.mediaId.substringAfterLast('/') })
+    }
+
+  @Test
+  fun getChildren_collapsedSeries_respectsPagination() =
+    runBlocking {
+      coEvery { lissenMediaProvider.fetchLibrary("lib-1") } returns OperationResult.Success(makeLibrary("lib-1"))
+      coEvery { lissenMediaProvider.fetchSeriesItems("lib-1", "series-1") } returns
+        OperationResult.Success((1..5).map { makeBook("book-$it", "Book $it") })
+
+      val firstPage = tree.getChildren("root/library/lib-1/series_collapsed/series-1", 0, 2, session).get().value!!
+      val secondPage = tree.getChildren("root/library/lib-1/series_collapsed/series-1", 1, 2, session).get().value!!
+      val thirdPage = tree.getChildren("root/library/lib-1/series_collapsed/series-1", 2, 2, session).get().value!!
+
+      assertEquals(listOf("book/book-1", "book/book-2"), firstPage.map { it.mediaId })
+      assertEquals(listOf("book/book-3", "book/book-4"), secondPage.map { it.mediaId })
+      assertEquals(listOf("book/book-5"), thirdPage.map { it.mediaId })
+    }
+
+  @Test
+  fun getChildren_podcastLibrary_onlyExposesApplicableFilters() =
+    runBlocking {
+      val podcastLibrary =
+        Library(
+          id = "podcasts",
+          title = "Podcasts",
+          type = LibraryType.PODCAST,
+          filters =
+            FilterData(
+              authors = listOf(NamedId("author-1", "Ignored Author")),
+              series = listOf(NamedId("series-1", "Ignored Series")),
+              genres = listOf("News"),
+              tags = listOf("Daily"),
+            ),
+        )
+      coEvery { lissenMediaProvider.fetchLibrary("podcasts") } returns OperationResult.Success(podcastLibrary)
+
+      val children = tree.getChildren("root/library/podcasts", 0, 100, session).get().value!!
+
+      assertEquals(
+        listOf("titles", "genres", "tags"),
+        children.map { it.mediaId.substringAfterLast('/') },
+      )
     }
 
   @Test
@@ -475,7 +556,10 @@ class MediaLibraryTreeTest {
       assertEquals(expectedIds, ids)
     }
 
-  private fun makeLibrary(id: String) = Library(id = id, title = "Library $id", type = LibraryType.LIBRARY)
+  private fun makeLibrary(
+    id: String,
+    filters: FilterData? = null,
+  ) = Library(id = id, title = "Library $id", type = LibraryType.LIBRARY, filters = filters)
 
   private fun makeRecentBook(
     id: String,

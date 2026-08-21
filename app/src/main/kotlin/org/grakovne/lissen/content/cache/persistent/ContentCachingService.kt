@@ -22,6 +22,8 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class ContentCachingService : LifecycleService() {
+  private val sessionLifecycle = CachingServiceSessionLifecycle()
+
   @Inject
   lateinit var contentCachingManager: ContentCachingManager
 
@@ -43,6 +45,9 @@ class ContentCachingService : LifecycleService() {
     startId: Int,
   ): Int {
     val action = intent?.action ?: return START_NOT_STICKY
+    if (action != CACHE_ITEM_ACTION && action != STOP_CACHING_ACTION) return START_NOT_STICKY
+
+    sessionLifecycle.accept(startId)
 
     startForegroundWithProgress()
 
@@ -109,11 +114,14 @@ class ContentCachingService : LifecycleService() {
             onSuccess = { item -> cacheFetchedItem(item, task) },
             onFailure = {
               Timber.e("Unable to fetch book ${task.itemId} for caching: ${it.code}")
-              registry.settle(task.itemId, currentCoroutineContext().job)
-              cacheProgressBus.emit(task.itemId, CacheState(CacheStatus.Error))
+              val settled = registry.settle(task.itemId, currentCoroutineContext().job, errored = true)
 
-              if (registry.inProgress().not()) {
-                finish(errored = true)
+              if (settled) {
+                cacheProgressBus.emit(task.itemId, CacheState(CacheStatus.Error))
+
+                if (registry.inProgress().not()) {
+                  finish(forceError = true)
+                }
               }
             },
           )
@@ -161,7 +169,11 @@ class ContentCachingService : LifecycleService() {
     finish()
   }
 
-  private fun finish(errored: Boolean = registry.hasErrors()) {
+  private fun finish(forceError: Boolean = false) {
+    val finishingStartId = sessionLifecycle.beginFinish() ?: return
+
+    val errored = registry.finishSession(forceError)
+
     when (errored) {
       true -> {
         notificationService.updateErrorNotification()
@@ -174,7 +186,7 @@ class ContentCachingService : LifecycleService() {
       }
     }
 
-    stopSelf()
+    stopSelfResult(finishingStartId)
     Timber.d("All tasks finished, stopping foreground service")
   }
 
