@@ -7,6 +7,7 @@ import android.os.Looper
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.FutureCallback
@@ -49,6 +50,7 @@ class MediaRepository
     private val mediaChannel: LissenMediaProvider,
     private val eventBus: PlaybackEventBus,
     private val defaultTimerActivator: DefaultTimerActivator,
+    private val exoPlayer: ExoPlayer,
   ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private lateinit var mediaController: MediaController
@@ -441,10 +443,10 @@ class MediaRepository
     }
 
     private fun updateProgress(detailedItem: DetailedItem) {
-      val currentIndex = mediaController.currentMediaItemIndex
+      val currentIndex = exoPlayer.currentMediaItemIndex
       val chapters = detailedItem.chapters
       val accumulated = chapters.take(currentIndex.coerceIn(0, chapters.size)).sumOf { it.duration }
-      val currentFilePosition = mediaController.currentPosition / 1000.0
+      val currentFilePosition = exoPlayer.currentPosition / 1000.0
 
       val newPosition = accumulated + currentFilePosition
       _totalPosition.value = newPosition
