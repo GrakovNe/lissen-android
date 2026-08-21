@@ -260,8 +260,7 @@ class PlaybackService : MediaLibraryService() {
                 .setMediaType(MediaMetadata.MEDIA_TYPE_AUDIO_BOOK_CHAPTER)
                 .setExtras(Bundle().apply { putLong(CHAPTER_START_MS, (chapter.start * 1000).toLong()) })
                 .build(),
-            ).setTag(book)
-            .build()
+            ).build()
         }
       return MediaItemsWithStartPosition(chapterMediaItems, chapterIndex, (chapterOffset * 1000).toLong())
     }
