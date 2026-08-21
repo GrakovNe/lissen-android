@@ -172,7 +172,7 @@ fun MediaDetailComposable(
             InfoRow(
               icon = Icons.Filled.HourglassEmpty,
               label = stringResource(R.string.playing_item_details_time_remaining),
-              textValue = (it - totalPosition).toInt().formatTime(),
+              textValue = maxOf(0.0, it - totalPosition).toInt().formatTime(),
             )
           }
         }

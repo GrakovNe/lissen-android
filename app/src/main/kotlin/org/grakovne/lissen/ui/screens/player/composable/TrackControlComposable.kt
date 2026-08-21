@@ -42,6 +42,7 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.extensions.formatTime
 import org.grakovne.lissen.ui.extensions.spokenDuration
 import org.grakovne.lissen.ui.screens.player.composable.common.provideForwardIcon
@@ -59,8 +60,11 @@ fun TrackControlComposable(
   val currentTrackIndex by viewModel.currentChapterIndex.collectAsState()
   val currentTrackPosition by viewModel.currentChapterPosition.collectAsState()
   val currentTrackDuration by viewModel.currentChapterDuration.collectAsState()
+  val totalPosition by viewModel.totalPosition.collectAsState()
 
   val seekTime by settingsViewModel.seekTime.collectAsState()
+  val showBookTime by settingsViewModel.showBookTime.collectAsState()
+  val preferredLibrary by settingsViewModel.preferredLibrary.collectAsState()
 
   val book by viewModel.book.collectAsState()
   val chapters = book?.chapters ?: emptyList()
@@ -70,11 +74,38 @@ fun TrackControlComposable(
   var sliderPosition by remember { mutableDoubleStateOf(0.0) }
   var isDragging by remember { mutableStateOf(false) }
 
-  LaunchedEffect(currentTrackPosition, currentTrackIndex, currentTrackDuration) {
+  val bookDuration = chapters.sumOf { it.duration }
+  val bookScoped =
+    showBookTime && preferredLibrary?.type == LibraryType.LIBRARY && currentTrackIndex in chapters.indices
+
+  LaunchedEffect(currentTrackPosition, currentTrackIndex, currentTrackDuration, bookScoped, bookDuration) {
     if (!isDragging) {
-      sliderPosition = currentTrackPosition
+      sliderPosition =
+        if (bookScoped) {
+          chapters
+            .getOrNull(currentTrackIndex)
+            ?.let { it.start + currentTrackPosition }
+            ?: currentTrackPosition
+        } else {
+          currentTrackPosition
+        }
     }
   }
+
+  val displayPosition =
+    when {
+      bookScoped && isDragging -> sliderPosition
+      bookScoped -> totalPosition
+      else -> sliderPosition
+    }
+  val displayDuration = if (bookScoped) bookDuration else currentTrackDuration
+
+  val remainingSeconds =
+    if (bookScoped) {
+      maxOf(0.0, bookDuration - sliderPosition)
+    } else {
+      maxOf(0.0, currentTrackDuration - sliderPosition)
+    }
 
   Column(
     modifier =
@@ -87,8 +118,8 @@ fun TrackControlComposable(
     val spokenPosition =
       stringResource(
         R.string.a11y_position_of,
-        spokenDuration(sliderPosition.toInt()),
-        spokenDuration(currentTrackDuration.toInt()),
+        spokenDuration(displayPosition.toInt()),
+        spokenDuration(displayDuration.toInt()),
       )
 
     Column(
@@ -102,9 +133,18 @@ fun TrackControlComposable(
         },
         onValueChangeFinished = {
           isDragging = false
-          viewModel.seekTo(sliderPosition)
+          if (bookScoped) {
+            viewModel.setTotalPosition(sliderPosition)
+          } else {
+            viewModel.seekTo(sliderPosition)
+          }
         },
-        valueRange = 0f..currentTrackDuration.toFloat(),
+        valueRange =
+          if (bookScoped) {
+            0f..bookDuration.toFloat()
+          } else {
+            0f..currentTrackDuration.toFloat()
+          },
         colors =
           SliderDefaults.colors(
             thumbColor = colorScheme.primary,
@@ -133,16 +173,13 @@ fun TrackControlComposable(
           horizontalArrangement = Arrangement.SpaceBetween,
         ) {
           Text(
-            text = sliderPosition.toInt().formatTime(true),
+            text = displayPosition.toInt().formatTime(true),
             style = typography.bodySmall,
             color = colorScheme.onBackground.copy(alpha = 0.6f),
             modifier = Modifier.clearAndSetSemantics {},
           )
           Text(
-            text =
-              maxOf(0.0, currentTrackDuration - sliderPosition)
-                .toInt()
-                .formatTime(true),
+            text = remainingSeconds.toInt().formatTime(true),
             style = typography.bodySmall,
             color = colorScheme.onBackground.copy(alpha = 0.6f),
             modifier = Modifier.clearAndSetSemantics {},
