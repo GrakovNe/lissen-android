@@ -1,5 +1,6 @@
 package org.grakovne.lissen.playback
 
+import android.media.audiofx.DynamicsProcessing
 import android.media.audiofx.Equalizer
 import android.media.audiofx.LoudnessEnhancer
 import androidx.annotation.OptIn
@@ -33,7 +34,9 @@ class PlaybackEnhancerService
   ) : RunningComponent {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    private var enhancer: LoudnessEnhancer? = null
+    private var dynamicsProcessing: DynamicsProcessing? = null
+
+    private var loudnessEnhancer: LoudnessEnhancer? = null
 
     private var equalizer: Equalizer? = null
 
@@ -69,31 +72,121 @@ class PlaybackEnhancerService
       updateGain(sharedPreferences.getPlaybackVolumeBoost())
     }
 
+    // Boost goes through DynamicsProcessing (compressor + limiter) because LoudnessEnhancer
+    // has no limiter we control and clips audibly from ~6 dB of boost on some devices.
+    // LoudnessEnhancer stays as a best-effort fallback for sessions where the richer
+    // effect cannot attach.
     @OptIn(UnstableApi::class)
     private fun attachEnhancer(
       sessionId: Int,
       db: Int,
     ) {
-      enhancer?.release()
-      enhancer = null
+      dynamicsProcessing?.release()
+      dynamicsProcessing = null
+      loudnessEnhancer?.release()
+      loudnessEnhancer = null
 
       if (sessionId == C.AUDIO_SESSION_ID_UNSET) return
 
+      val effect =
+        try {
+          createDynamicsProcessing(sessionId, db)
+        } catch (ex: Exception) {
+          Timber.e("Unable to attach DynamicsProcessing due to ${ex.message}")
+          null
+        }
+
+      if (effect != null) {
+        dynamicsProcessing = effect
+      } else {
+        attachLoudnessEnhancer(sessionId)
+      }
+
+      updateGain(db)
+    }
+
+    private fun attachLoudnessEnhancer(sessionId: Int) {
       try {
-        enhancer = LoudnessEnhancer(sessionId)
-        updateGain(db)
+        loudnessEnhancer = LoudnessEnhancer(sessionId)
       } catch (ex: Exception) {
         Timber.e("Unable to attach LoudnessEnhancer due to ${ex.message}")
       }
     }
 
+    private fun createDynamicsProcessing(
+      sessionId: Int,
+      db: Int,
+    ): DynamicsProcessing {
+      val config =
+        DynamicsProcessing.Config
+          .Builder(
+            DynamicsProcessingTuning.VARIANT,
+            DynamicsProcessingTuning.CHANNEL_COUNT,
+            false, // preEqInUse
+            0, // preEqBandCount
+            true, // mbcInUse
+            DynamicsProcessingTuning.MBC_BAND_COUNT,
+            false, // postEqInUse
+            0, // postEqBandCount
+            true, // limiterInUse
+          ).setMbcAllChannelsTo(buildMbc(db.toFloat()))
+          .setLimiterAllChannelsTo(buildLimiter())
+          .build()
+
+      // Constructor order: priority, audioSession, config.
+      return DynamicsProcessing(0, sessionId, config)
+    }
+
+    private fun buildMbc(postGainDb: Float): DynamicsProcessing.Mbc {
+      val band =
+        DynamicsProcessing.MbcBand(
+          true, // enabled
+          DynamicsProcessingTuning.MBC_BAND_CUTOFF_FREQUENCY_HZ,
+          DynamicsProcessingTuning.MBC_ATTACK_MS,
+          DynamicsProcessingTuning.MBC_RELEASE_MS,
+          DynamicsProcessingTuning.MBC_RATIO,
+          DynamicsProcessingTuning.MBC_THRESHOLD_DB,
+          DynamicsProcessingTuning.MBC_KNEE_WIDTH_DB,
+          DynamicsProcessingTuning.MBC_NOISE_GATE_THRESHOLD_DB,
+          DynamicsProcessingTuning.MBC_EXPANDER_RATIO,
+          DynamicsProcessingTuning.MBC_PRE_GAIN_DB,
+          postGainDb,
+        )
+
+      // Constructor order: inUse, enabled, bandCount.
+      val mbc = DynamicsProcessing.Mbc(true, true, DynamicsProcessingTuning.MBC_BAND_COUNT)
+      mbc.setBand(0, band)
+      return mbc
+    }
+
+    private fun buildLimiter(): DynamicsProcessing.Limiter =
+      // Constructor order: inUse, enabled, linkGroup, attackTime, releaseTime, ratio,
+      // threshold, postGain.
+      DynamicsProcessing.Limiter(
+        true, // inUse
+        true, // enabled
+        DynamicsProcessingTuning.LIMITER_LINK_GROUP,
+        DynamicsProcessingTuning.LIMITER_ATTACK_MS,
+        DynamicsProcessingTuning.LIMITER_RELEASE_MS,
+        DynamicsProcessingTuning.LIMITER_RATIO,
+        DynamicsProcessingTuning.LIMITER_THRESHOLD_DB,
+        DynamicsProcessingTuning.LIMITER_POST_GAIN_DB,
+      )
+
     private fun updateGain(db: Int) {
       try {
+        val processor = dynamicsProcessing
+        val fallback = loudnessEnhancer
+
         if (db <= 0) {
-          enhancer?.enabled = false
+          processor?.enabled = false
+          fallback?.enabled = false
+        } else if (processor != null) {
+          processor.enabled = true
+          processor.setMbcAllChannelsTo(buildMbc(db.toFloat()))
         } else {
-          enhancer?.enabled = true
-          enhancer?.setTargetGain(dbToMb(db.toFloat()))
+          fallback?.enabled = true
+          fallback?.setTargetGain(loudnessEnhancerGainMb(db))
         }
       } catch (ex: Exception) {
         Timber.e("Unable update volume gain with $db dB due to: $ex")
@@ -161,5 +254,6 @@ class PlaybackEnhancerService
       }
     }
 
-    private fun dbToMb(db: Float): Int = (db * 100f).roundToInt()
+    /** Maps a boost in dB to the millibels expected by LoudnessEnhancer.setTargetGain. */
+    private fun loudnessEnhancerGainMb(boostDb: Int): Int = (boostDb * 100f).roundToInt()
   }
