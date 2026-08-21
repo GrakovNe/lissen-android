@@ -10,7 +10,7 @@ data class RewindOnPauseTime(
   val seconds: Int,
 ) {
   companion object {
-    const val MIN_SECONDS = 1
+    const val MIN_SECONDS = 10
     const val MAX_SECONDS = 60
 
     val Default = RewindOnPauseTime(enabled = true, seconds = 30)

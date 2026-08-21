@@ -8,13 +8,24 @@ class CalculateRewindSecondsTest {
   @Nested
   inner class RewindAmount {
     @Test
-    fun `momentary pause rewinds almost nothing`() {
-      Assertions.assertEquals(0.01, calculateRewindSeconds(30, 100), 0.001)
+    fun `momentary pause rewinds the five second floor`() {
+      Assertions.assertEquals(5.0, calculateRewindSeconds(30, 100), 0.001)
     }
 
     @Test
-    fun `thirty second pause with thirty second setting gives about three seconds`() {
-      Assertions.assertEquals(3.0, calculateRewindSeconds(30, 30_000), 0.001)
+    fun `proportional amount under five seconds still rewinds five`() {
+      Assertions.assertEquals(5.0, calculateRewindSeconds(30, 15_000), 0.001)
+      Assertions.assertEquals(5.0, calculateRewindSeconds(30, 30_000), 0.001)
+    }
+
+    @Test
+    fun `proportional amount over five seconds is unchanged`() {
+      Assertions.assertEquals(6.0, calculateRewindSeconds(30, 60_000), 0.001)
+    }
+
+    @Test
+    fun `proportional amount exactly at five seconds stays at five`() {
+      Assertions.assertEquals(5.0, calculateRewindSeconds(30, 50_000), 0.001)
     }
 
     @Test
@@ -28,23 +39,23 @@ class CalculateRewindSecondsTest {
     }
 
     @Test
-    fun `negative pause duration is clamped to zero`() {
-      Assertions.assertEquals(0.0, calculateRewindSeconds(30, -5_000), 0.001)
+    fun `smallest setting still rewinds the floor`() {
+      Assertions.assertEquals(5.0, calculateRewindSeconds(10, 30_000), 0.001)
     }
 
     @Test
-    fun `zero pause rewinds nothing`() {
-      Assertions.assertEquals(0.0, calculateRewindSeconds(30, 0), 0.001)
+    fun `negative pause duration still rewinds the floor`() {
+      Assertions.assertEquals(5.0, calculateRewindSeconds(30, -5_000), 0.001)
     }
 
     @Test
-    fun `pause scales linearly within the window`() {
-      Assertions.assertEquals(1.5, calculateRewindSeconds(30, 15_000), 0.001)
+    fun `zero pause rewinds the floor`() {
+      Assertions.assertEquals(5.0, calculateRewindSeconds(30, 0), 0.001)
     }
 
     @Test
-    fun `smaller setting scales down`() {
-      Assertions.assertEquals(0.5, calculateRewindSeconds(5, 30_000), 0.001)
+    fun `pause scales linearly within the window above the floor`() {
+      Assertions.assertEquals(15.0, calculateRewindSeconds(30, 150_000), 0.001)
     }
   }
 
@@ -78,6 +89,9 @@ class CalculateRewindSecondsTest {
 
     @Test
     fun `rewind clamps at the start of the book`() = assertTarget(0, 5_000, 30.0, 0, 0)
+
+    @Test
+    fun `five second floor clamps at the start of the book`() = assertTarget(0, 3_000, 5.0, 0, 0)
 
     @Test
     fun `rewind larger than the whole book clamps at the start`() = assertTarget(2, 30_000, 500.0, 0, 0)

@@ -173,7 +173,7 @@
     <string name="rewind_interval">Rewind interval</string>
     <string name="forward_interval">Forward interval</string>
     <string name="settings_screen_rewind_on_pause_title">Rewind on pause</string>
-    <string name="settings_screen_rewind_on_pause_description">Rewinds a little when you continue a book, based on how long it was paused. A short pause rewinds almost nothing, a pause of five minutes or more rewinds the full amount.</string>
+    <string name="settings_screen_rewind_on_pause_description">Rewinds when you continue a book, based on how long it was paused. A short pause rewinds 5 seconds, a pause of five minutes or more rewinds the full amount.</string>
     <string name="settings_screen_rewind_on_pause_amount_title">Rewind on pause amount</string>
     <string name="continue_playback_shortcut_title">Continue</string>
     <string name="continue_playback_shortcut_description">Continue listening</string>

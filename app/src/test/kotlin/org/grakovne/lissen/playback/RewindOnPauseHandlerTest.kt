@@ -95,8 +95,13 @@ class RewindOnPauseHandlerTest {
     }
 
     @Test
-    fun `stored timestamp in the future means no rewind`() {
-      assertNull(decide(storedLastActiveMillis = 300_000L, nowMillis = 200_000L))
+    fun `stored timestamp in the future still applies the five second floor`() {
+      // Clock skew can make the stored timestamp look like the future, which
+      // reads as a zero-length pause and therefore gets the five second floor.
+      assertEquals(
+        RewindTarget(chapterIndex = 1, positionMillis = 45_000L),
+        decide(storedLastActiveMillis = 300_000L, nowMillis = 200_000L),
+      )
     }
 
     @Test

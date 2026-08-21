@@ -394,7 +394,7 @@ class SettingsBackupManagerTest {
       verify {
         editor.putString(
           "rewind_on_pause_time",
-          match { it.contains("\"enabled\":true") && it.contains("\"seconds\":1") },
+          match { it.contains("\"enabled\":true") && it.contains("\"seconds\":10") },
         )
       }
     }
@@ -406,7 +406,7 @@ class SettingsBackupManagerTest {
       verify {
         editor.putString(
           "rewind_on_pause_time",
-          match { it.contains("\"enabled\":true") && it.contains("\"seconds\":1") },
+          match { it.contains("\"enabled\":true") && it.contains("\"seconds\":10") },
         )
       }
     }

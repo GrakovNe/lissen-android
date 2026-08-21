@@ -1,13 +1,21 @@
 package org.grakovne.lissen.playback.service
 
+import kotlin.math.max
 import kotlin.math.roundToLong
 
+private const val MIN_REWIND_SECONDS = 5
 private const val FULL_REWIND_WINDOW_MILLIS = 300_000L
 
 fun calculateRewindSeconds(
   settingSeconds: Int,
   pausedMillis: Long,
-): Double = settingSeconds * pausedMillis.coerceIn(0, FULL_REWIND_WINDOW_MILLIS).toDouble() / FULL_REWIND_WINDOW_MILLIS.toDouble()
+): Double {
+  val proportionalSeconds =
+    settingSeconds *
+      pausedMillis.coerceIn(0, FULL_REWIND_WINDOW_MILLIS).toDouble() /
+      FULL_REWIND_WINDOW_MILLIS.toDouble()
+  return max(MIN_REWIND_SECONDS.toDouble(), proportionalSeconds)
+}
 
 data class RewindTarget(
   val chapterIndex: Int,

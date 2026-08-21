@@ -70,13 +70,20 @@ class PlaybackPreferencesRewindOnPauseTest {
     @Test
     fun `clamps seconds into the valid range when reading stored json`() {
       fakePreferences.edit().putString("rewind_on_pause_time", """{"enabled":true,"seconds":0}""").commit()
-      assertEquals(RewindOnPauseTime(enabled = true, seconds = 1), preferences.getRewindOnPauseTime())
+      assertEquals(RewindOnPauseTime(enabled = true, seconds = 10), preferences.getRewindOnPauseTime())
 
       fakePreferences.edit().putString("rewind_on_pause_time", """{"enabled":false,"seconds":-5}""").commit()
-      assertEquals(RewindOnPauseTime(enabled = false, seconds = 1), preferences.getRewindOnPauseTime())
+      assertEquals(RewindOnPauseTime(enabled = false, seconds = 10), preferences.getRewindOnPauseTime())
 
       fakePreferences.edit().putString("rewind_on_pause_time", """{"enabled":true,"seconds":999}""").commit()
       assertEquals(RewindOnPauseTime(enabled = true, seconds = 60), preferences.getRewindOnPauseTime())
+    }
+
+    @Test
+    fun `stored amount below the new minimum is raised on read`() {
+      fakePreferences.edit().putString("rewind_on_pause_time", """{"enabled":true,"seconds":5}""").commit()
+
+      assertEquals(RewindOnPauseTime(enabled = true, seconds = 10), preferences.getRewindOnPauseTime())
     }
 
     @Test
