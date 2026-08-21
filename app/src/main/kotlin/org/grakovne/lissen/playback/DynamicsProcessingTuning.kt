@@ -26,15 +26,6 @@ internal object DynamicsProcessingTuning {
   val PRE_EQ_BAND_CUTOFF_FREQUENCIES_HZ = floatArrayOf(120f, 460f, 1800f, 7200f, 20000f)
   val PRE_EQ_BAND_CENTER_FREQUENCIES_HZ = intArrayOf(60, 230, 910, 3600, 14000)
 
-  init {
-    require(PRE_EQ_BAND_CUTOFF_FREQUENCIES_HZ.size == PRE_EQ_BAND_COUNT) {
-      "Cutoff frequency set must match the band count"
-    }
-    require(PRE_EQ_BAND_CENTER_FREQUENCIES_HZ.size == PRE_EQ_BAND_COUNT) {
-      "Centre frequency set must match the band count"
-    }
-  }
-
   const val MBC_BAND_COUNT = 1
   const val MBC_THRESHOLD_DB = -20f
   const val MBC_RATIO = 2f
