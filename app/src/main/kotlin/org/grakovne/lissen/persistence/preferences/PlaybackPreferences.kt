@@ -99,7 +99,13 @@ class PlaybackPreferences
     fun getEqualizer(): EqualizerSettings {
       val json = store.getString(KEY_EQUALIZER) ?: return EqualizerSettings.Default
       return try {
-        moshi.adapter(EqualizerSettings::class.java).fromJson(json) ?: EqualizerSettings.Default
+        moshi
+          .adapter(EqualizerSettings::class.java)
+          .fromJson(json)
+          // Older builds persisted gains for every band the device reported, which can exceed
+          // the app's fixed band set. Trim so gains beyond BAND_COUNT cannot make isActive lie.
+          ?.trimToBandCount()
+          ?: EqualizerSettings.Default
       } catch (e: com.squareup.moshi.JsonDataException) {
         Timber.w("Stored equalizer is malformed, resetting due to: ${e.message}")
         store.remove(KEY_EQUALIZER, commit = true)
@@ -111,6 +117,8 @@ class PlaybackPreferences
       val json = moshi.adapter(EqualizerSettings::class.java).toJson(settings)
       store.putString(KEY_EQUALIZER, json, commit = true)
     }
+
+    private fun EqualizerSettings.trimToBandCount(): EqualizerSettings = copy(gains = gains.take(EqualizerSettings.BAND_COUNT))
 
     fun getDefaultTimerOption(): TimerOption? {
       val json = store.getString(KEY_DEFAULT_SLEEP_TIMER) ?: return null

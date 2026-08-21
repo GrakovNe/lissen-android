@@ -59,6 +59,28 @@ class PlaybackPreferencesEqualizerTest {
     }
 
     @Test
+    fun `trims stored gains beyond the app band count`() {
+      every { sharedPreferences.getString("equalizer", null) } returns
+        """{"gains":[0,0,0,0,0,7,-4]}"""
+
+      val loaded = preferences.getEqualizer()
+
+      assertEquals(EqualizerSettings(gains = listOf(0, 0, 0, 0, 0)), loaded)
+      assertEquals(false, loaded.isActive)
+    }
+
+    @Test
+    fun `keeps in-band gains when trimming a longer list`() {
+      every { sharedPreferences.getString("equalizer", null) } returns
+        """{"gains":[2,0,0,0,0,7]}"""
+
+      val loaded = preferences.getEqualizer()
+
+      assertEquals(EqualizerSettings(gains = listOf(2, 0, 0, 0, 0)), loaded)
+      assertEquals(true, loaded.isActive)
+    }
+
+    @Test
     fun `returns Default and clears preference for malformed json`() {
       every { sharedPreferences.getString("equalizer", null) } returns
         """{"gains":"loud"}"""
