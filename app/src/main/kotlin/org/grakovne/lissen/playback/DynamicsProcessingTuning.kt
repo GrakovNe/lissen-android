@@ -1,7 +1,6 @@
 package org.grakovne.lissen.playback
 
 import android.media.audiofx.DynamicsProcessing
-import kotlin.math.roundToInt
 
 /**
  * Tuning values for the DynamicsProcessing volume boost (single-band compressor + limiter).
@@ -10,6 +9,10 @@ import kotlin.math.roundToInt
  */
 internal object DynamicsProcessingTuning {
   const val VARIANT = DynamicsProcessing.VARIANT_FAVOR_FREQUENCY_RESOLUTION
+
+  // Fixed 2 is safe: the framework re-maps the supplied Config to the effect's real channel
+  // count and replicates the last configured channel when it needs more, so mono and
+  // multi-channel sessions both work.
   const val CHANNEL_COUNT = 2
 
   const val MBC_BAND_COUNT = 1
@@ -30,9 +33,3 @@ internal object DynamicsProcessingTuning {
   const val LIMITER_POST_GAIN_DB = 0f
   const val LIMITER_LINK_GROUP = 0
 }
-
-/** Maps a boost in dB to the millibels expected by LoudnessEnhancer.setTargetGain. */
-internal fun loudnessEnhancerGainMb(boostDb: Int): Int = (boostDb * 100f).roundToInt()
-
-/** Maps a boost in dB to the make-up gain of the DynamicsProcessing MBC band. */
-internal fun mbcPostGainDb(boostDb: Int): Float = boostDb.toFloat()

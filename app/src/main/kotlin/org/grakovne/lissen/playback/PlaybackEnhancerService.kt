@@ -22,6 +22,7 @@ import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.roundToInt
 
 @Singleton
 class PlaybackEnhancerService
@@ -124,7 +125,7 @@ class PlaybackEnhancerService
             false, // postEqInUse
             0, // postEqBandCount
             true, // limiterInUse
-          ).setMbcAllChannelsTo(buildMbc(mbcPostGainDb(db)))
+          ).setMbcAllChannelsTo(buildMbc(db.toFloat()))
           .setLimiterAllChannelsTo(buildLimiter())
           .build()
 
@@ -178,7 +179,7 @@ class PlaybackEnhancerService
           fallback?.enabled = false
         } else if (processor != null) {
           processor.enabled = true
-          processor.setMbcAllChannelsTo(buildMbc(mbcPostGainDb(db)))
+          processor.setMbcAllChannelsTo(buildMbc(db.toFloat()))
         } else {
           fallback?.enabled = true
           fallback?.setTargetGain(loudnessEnhancerGainMb(db))
@@ -248,4 +249,7 @@ class PlaybackEnhancerService
         )
       }
     }
+
+    /** Maps a boost in dB to the millibels expected by LoudnessEnhancer.setTargetGain. */
+    private fun loudnessEnhancerGainMb(boostDb: Int): Int = (boostDb * 100f).roundToInt()
   }
