@@ -56,9 +56,9 @@ class RewindOnPauseHandlerTest {
 
     @Test
     fun `pause within the window rewinds proportionally`() {
-      // 150s of the 300s window with a 30s setting = 15s rewind.
+      // 150s of the 300s window with a 30s setting = 5s floor + 25s * 0.5 = 17.5s.
       assertEquals(
-        RewindTarget(chapterIndex = 1, positionMillis = 35_000L),
+        RewindTarget(chapterIndex = 1, positionMillis = 32_500L),
         decide(storedLastActiveMillis = 50_000L, nowMillis = 200_000L),
       )
     }

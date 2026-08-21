@@ -8,24 +8,18 @@ class CalculateRewindSecondsTest {
   @Nested
   inner class RewindAmount {
     @Test
-    fun `momentary pause rewinds the five second floor`() {
-      Assertions.assertEquals(5.0, calculateRewindSeconds(30, 100), 0.001)
+    fun `short pause rewinds just above the five second floor`() {
+      Assertions.assertEquals(5.0833, calculateRewindSeconds(30, 1_000), 0.001)
     }
 
     @Test
-    fun `proportional amount under five seconds still rewinds five`() {
-      Assertions.assertEquals(5.0, calculateRewindSeconds(30, 15_000), 0.001)
-      Assertions.assertEquals(5.0, calculateRewindSeconds(30, 30_000), 0.001)
+    fun `ten second pause interpolates between the floor and the setting`() {
+      Assertions.assertEquals(5.8333, calculateRewindSeconds(30, 10_000), 0.001)
     }
 
     @Test
-    fun `proportional amount over five seconds is unchanged`() {
-      Assertions.assertEquals(6.0, calculateRewindSeconds(30, 60_000), 0.001)
-    }
-
-    @Test
-    fun `proportional amount exactly at five seconds stays at five`() {
-      Assertions.assertEquals(5.0, calculateRewindSeconds(30, 50_000), 0.001)
+    fun `pause at half the window rewinds to the midpoint`() {
+      Assertions.assertEquals(17.5, calculateRewindSeconds(30, 150_000), 0.001)
     }
 
     @Test
@@ -39,8 +33,10 @@ class CalculateRewindSecondsTest {
     }
 
     @Test
-    fun `smallest setting still rewinds the floor`() {
-      Assertions.assertEquals(5.0, calculateRewindSeconds(10, 30_000), 0.001)
+    fun `smallest allowed setting interpolates between five and ten`() {
+      Assertions.assertEquals(5.0, calculateRewindSeconds(10, 0), 0.001)
+      Assertions.assertEquals(7.5, calculateRewindSeconds(10, 150_000), 0.001)
+      Assertions.assertEquals(10.0, calculateRewindSeconds(10, 300_000), 0.001)
     }
 
     @Test
@@ -54,8 +50,9 @@ class CalculateRewindSecondsTest {
     }
 
     @Test
-    fun `pause scales linearly within the window above the floor`() {
-      Assertions.assertEquals(15.0, calculateRewindSeconds(30, 150_000), 0.001)
+    fun `setting below the floor never rewinds under five seconds`() {
+      Assertions.assertEquals(5.0, calculateRewindSeconds(2, 300_000), 0.001)
+      Assertions.assertEquals(5.0, calculateRewindSeconds(0, 150_000), 0.001)
     }
   }
 
