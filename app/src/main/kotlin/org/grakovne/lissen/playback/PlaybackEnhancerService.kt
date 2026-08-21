@@ -39,6 +39,8 @@ class PlaybackEnhancerService
 
     private var equalizerSettings: EqualizerSettings = sharedPreferences.getEqualizer()
 
+    private var playbackVolumeBoost: Int = sharedPreferences.getPlaybackVolumeBoost()
+
     @OptIn(UnstableApi::class)
     override fun onCreate() {
       player.addListener(
@@ -199,6 +201,8 @@ class PlaybackEnhancerService
       )
 
     private fun updateGain(db: Int) {
+      playbackVolumeBoost = db
+
       try {
         val processor = dynamicsProcessing
         val fallback = loudnessEnhancer
@@ -208,7 +212,7 @@ class PlaybackEnhancerService
           // whenever boost or the equalizer needs it, and bypass the MBC stage when there is
           // no boost so the compressor cannot colour a boost-free session.
           processor.setMbcAllChannelsTo(buildMbc(db.coerceAtLeast(0).toFloat(), enabled = db > 0))
-          processor.enabled = db > 0 || equalizerSettings.isActive
+          processor.enabled = isEffectNeeded()
         } else if (db <= 0) {
           fallback?.enabled = false
         } else {
@@ -226,30 +230,19 @@ class PlaybackEnhancerService
       try {
         val processor = dynamicsProcessing ?: return
 
-        for (band in 0 until DynamicsProcessingTuning.PRE_EQ_BAND_COUNT) {
-          val gainDb =
-            when (settings.isActive) {
-              true -> equalizerBandGainDb(settings.gains, band)
-              false -> 0f
-            }
+        processor.setPreEqAllChannelsTo(buildPreEq())
 
-          processor.setPreEqBandAllChannelsTo(
-            band,
-            DynamicsProcessing.EqBand(
-              true, // enabled
-              DynamicsProcessingTuning.PRE_EQ_BAND_CUTOFF_FREQUENCIES_HZ[band],
-              gainDb,
-            ),
-          )
-        }
-
-        // updateGain toggles the same enabled flag from the boost side; mirror it here so the
-        // equalizer alone keeps the effect alive.
-        processor.enabled = settings.isActive || sharedPreferences.getPlaybackVolumeBoost() > 0
+        // updateGain toggles the same enabled flag from the boost side; both sides use the
+        // shared rule in isEffectNeeded, so the equalizer alone keeps the effect alive.
+        processor.enabled = isEffectNeeded()
       } catch (ex: Exception) {
         Timber.e("Unable to apply equalizer due to: $ex")
       }
     }
+
+    // The one DynamicsProcessing instance carries the pre-EQ equalizer, the compressor and the
+    // limiter, so the effect stays enabled while either the boost or the equalizer needs it.
+    private fun isEffectNeeded(): Boolean = playbackVolumeBoost > 0 || equalizerSettings.isActive
 
     @OptIn(UnstableApi::class)
     private suspend fun applyAudioFocusLossPolicy(policy: AudioFocusLossPolicy) {
