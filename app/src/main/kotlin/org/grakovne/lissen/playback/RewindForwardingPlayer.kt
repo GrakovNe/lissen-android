@@ -2,7 +2,9 @@ package org.grakovne.lissen.playback
 
 import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 
+@UnstableApi
 internal class RewindForwardingPlayer(
   player: Player,
   private val onPlay: (Player) -> Unit,

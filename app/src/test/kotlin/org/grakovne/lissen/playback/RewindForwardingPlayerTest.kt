@@ -1,12 +1,15 @@
 package org.grakovne.lissen.playback
 
+import androidx.annotation.OptIn
 import androidx.media3.common.Player
+import androidx.media3.common.util.UnstableApi
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
+@OptIn(UnstableApi::class)
 class RewindForwardingPlayerTest {
   private val wrapped = mockk<Player>(relaxed = true)
 
