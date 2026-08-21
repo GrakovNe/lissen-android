@@ -3,7 +3,6 @@ package org.grakovne.lissen.playback.service
 import android.os.Parcelable
 import androidx.core.os.BundleCompat
 import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.drm.DrmSessionManagerProvider
 import androidx.media3.exoplayer.source.ClippingMediaSource
@@ -59,25 +58,33 @@ class LissenMediaSourceFactory(
 
   override fun getSupportedTypes(): IntArray = mediaSourceFactory.supportedTypes
 
+  /**
+   * The player reports the MediaItem of the MediaSource we return here, not the one it was given:
+   * both getCurrentMediaItem() and getMediaItemAt() read Timeline.Window.mediaItem, and that comes
+   * from the created source. So every source we build must carry the chapter item's identity
+   * (mediaId, requestMetadata with FILE_SEGMENTS, mediaMetadata with CHAPTER_START_MS) or it becomes
+   * invisible to PlaybackNavigationService and PlaybackSynchronizationService. Do not drop it.
+   */
   override fun createMediaSource(mediaItem: MediaItem): MediaSource {
     fun FileClip.toMediaSource(
       bookId: String,
-      metadata: MediaMetadata? = null,
-    ): MediaSource =
-      mediaSourceFactory
-        .createMediaSource(
-          MediaItem
-            .Builder()
-            .setUri(toLissenUri(bookId, fileId))
-            .apply { metadata?.let { setMediaMetadata(it) } }
-            .build(),
-        ).let {
+      template: MediaItem? = null,
+    ): MediaSource {
+      val innerItem =
+        (template?.buildUpon() ?: MediaItem.Builder())
+          .setUri(toLissenUri(bookId, fileId))
+          .build()
+
+      return mediaSourceFactory
+        .createMediaSource(innerItem)
+        .let {
           ClippingMediaSource
             .Builder(it)
             .setStartPositionUs((clipStart * 1_000_000).toLong())
             .setEndPositionUs((clipEnd * 1_000_000).toLong())
             .build()
         }
+    }
 
     return MediaId.fromString(mediaItem.mediaId)?.let { (bookId, chapterId) ->
       mediaItem.requestMetadata.extras?.let { extras ->
@@ -88,7 +95,7 @@ class LissenMediaSourceFactory(
             }
 
             1 -> {
-              segments.first().toMediaSource(bookId, mediaItem.mediaMetadata)
+              segments.first().toMediaSource(bookId, mediaItem)
             }
 
             else -> {
@@ -98,12 +105,8 @@ class LissenMediaSourceFactory(
                   segments.forEach {
                     add(it.toMediaSource(bookId), ((it.clipEnd - it.clipStart) * 1000).toLong())
                   }
-                }.setMediaItem(
-                  MediaItem
-                    .Builder()
-                    .setMediaMetadata(mediaItem.mediaMetadata)
-                    .build(),
-                ).build()
+                }.setMediaItem(mediaItem)
+                .build()
             }
           }
         }
