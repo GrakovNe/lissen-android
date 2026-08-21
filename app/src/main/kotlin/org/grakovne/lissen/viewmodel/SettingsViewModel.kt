@@ -143,9 +143,9 @@ class SettingsViewModel
     val softwareCodecsEnabled: StateFlow<Boolean> = _softwareCodecsEnabled.asStateFlow()
     val softwareCodecsEnabledOnStart: Boolean = playback.getSoftwareCodecsEnabled()
 
-    private val _showBookTimeRemaining = MutableStateFlow(playback.getShowBookTimeRemaining())
+    private val _showBookTime = MutableStateFlow(playback.getShowBookTime())
 
-    val showBookTimeRemaining: StateFlow<Boolean> = _showBookTimeRemaining.asStateFlow()
+    val showBookTime: StateFlow<Boolean> = _showBookTime.asStateFlow()
 
     private val _audioFocusLossPolicy = MutableStateFlow(playback.getAudioFocusLossPolicy())
 
@@ -377,10 +377,10 @@ class SettingsViewModel
       playback.saveSoftwareCodecsEnabled(value)
     }
 
-    fun preferShowBookTimeRemaining(value: Boolean) {
-      Timber.d("User action: preferShowBookTimeRemaining $value")
-      _showBookTimeRemaining.value = value
-      playback.saveShowBookTimeRemaining(value)
+    fun preferShowBookTime(value: Boolean) {
+      Timber.d("User action: preferShowBookTime $value")
+      _showBookTime.value = value
+      playback.saveShowBookTime(value)
     }
 
     fun preferActivityLoggingEnabled(value: Boolean) {

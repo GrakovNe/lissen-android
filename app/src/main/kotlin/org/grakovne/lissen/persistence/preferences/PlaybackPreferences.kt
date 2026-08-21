@@ -48,9 +48,9 @@ class PlaybackPreferences
 
     fun saveSoftwareCodecsEnabled(value: Boolean) = store.putBoolean(KEY_SOFTWARE_CODECS, value)
 
-    fun getShowBookTimeRemaining(): Boolean = store.getBoolean(KEY_SHOW_BOOK_TIME_REMAINING, false)
+    fun getShowBookTime(): Boolean = store.getBoolean(KEY_SHOW_BOOK_TIME_REMAINING, false)
 
-    fun saveShowBookTimeRemaining(value: Boolean) = store.putBoolean(KEY_SHOW_BOOK_TIME_REMAINING, value)
+    fun saveShowBookTime(value: Boolean) = store.putBoolean(KEY_SHOW_BOOK_TIME_REMAINING, value)
 
     fun getAudioFocusLossPolicy(): AudioFocusLossPolicy =
       store

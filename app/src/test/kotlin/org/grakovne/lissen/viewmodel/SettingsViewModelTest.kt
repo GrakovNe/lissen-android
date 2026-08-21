@@ -104,7 +104,7 @@ class SettingsViewModelTest {
     every { diagnostics.getAcraEnabled() } returns true
     every { connection.getSslBypass() } returns false
     every { playback.getSoftwareCodecsEnabled() } returns false
-    every { playback.getShowBookTimeRemaining() } returns false
+    every { playback.getShowBookTime() } returns false
     every { diagnostics.isActivityLoggingEnabled() } returns true
     every { download.getAutoDownloadDelayed() } returns false
     every { connection.getUserAgent() } returns DEFAULT_USER_AGENT
@@ -919,11 +919,11 @@ class SettingsViewModelTest {
     }
 
     @Test
-    fun `preferShowBookTimeRemaining updates StateFlow and preferences`() {
-      viewModel.preferShowBookTimeRemaining(true)
+    fun `preferShowBookTime updates StateFlow and preferences`() {
+      viewModel.preferShowBookTime(true)
 
-      assertTrue(viewModel.showBookTimeRemaining.value)
-      verify { playback.saveShowBookTimeRemaining(true) }
+      assertTrue(viewModel.showBookTime.value)
+      verify { playback.saveShowBookTime(true) }
     }
 
     @Test
