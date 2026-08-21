@@ -273,4 +273,11 @@
     <string name="download_settings_storage_switch_failed_toast">Impossibile cambiare la posizione di archiviazione</string>
     <string name="download_settings_storage_confirmation_message">I contenuti scaricati verranno rimossi da questo dispositivo. I dati sul server non subiranno modifiche</string>
     <string name="download_settings_storage_confirm">Cambia posizione</string>
+    <string name="tree_node_downloads_offline">Download (modalità offline)</string>
+    <string name="tree_node_all_titles">Tutti i titoli</string>
+    <string name="tree_node_series_collapsed">Serie compresse</string>
+    <string name="tree_node_genres">Generi</string>
+    <string name="tree_node_tags">Tag</string>
+    <string name="tree_node_authors">Autori</string>
+    <string name="tree_node_series">Serie</string>
 </resources>
