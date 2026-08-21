@@ -38,7 +38,7 @@ class EqualizerSettingsComposableTest {
       BandInfo(centerFreqHz = 14000),
     )
 
-  private val capabilities = EqualizerCapabilities(bands = bands, minDb = -6, maxDb = 6)
+  private val capabilities = EqualizerCapabilities(bands = bands, minDb = -15, maxDb = 15)
 
   private fun bandDescription(freq: String): String = context.getString(R.string.a11y_equalizer_band, freq)
 
@@ -67,10 +67,10 @@ class EqualizerSettingsComposableTest {
     val band = composeRule.onNodeWithContentDescription(bandDescription("60"))
 
     band.performTouchInput { swipe(start = center, end = center.copy(y = top)) }
-    band.assert(stateDescriptionMatcher("+6 dB"))
+    band.assert(stateDescriptionMatcher("+15 dB"))
 
     band.performTouchInput { swipe(start = center, end = center.copy(y = bottom)) }
-    band.assert(stateDescriptionMatcher("−6 dB"))
+    band.assert(stateDescriptionMatcher("−15 dB"))
   }
 
   @Test
@@ -121,7 +121,7 @@ class EqualizerSettingsComposableTest {
     band.assert(stateDescriptionMatcher("+3 dB"))
 
     band.performSemanticsAction(SemanticsActions.SetProgress) { it(-42f) }
-    band.assert(stateDescriptionMatcher("−6 dB"))
+    band.assert(stateDescriptionMatcher("−15 dB"))
   }
 
   @Test
