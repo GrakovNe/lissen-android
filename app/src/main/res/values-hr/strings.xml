@@ -281,4 +281,11 @@
     <string name="download_settings_storage_switch_failed_toast">Nije moguće promijeniti lokaciju pohrane</string>
     <string name="download_settings_storage_confirmation_message">Preuzeti sadržaj bit će uklonjen s ovog uređaja. Podaci vašeg poslužitelja neće biti pogođeni.</string>
     <string name="download_settings_storage_confirm">Promijeni lokaciju</string>
+    <string name="tree_node_downloads_offline">Preuzimanja (izvanmrežni način rada)</string>
+    <string name="tree_node_all_titles">Svi naslovi</string>
+    <string name="tree_node_series_collapsed">Sažeta serija</string>
+    <string name="tree_node_genres">Žanrovi</string>
+    <string name="tree_node_tags">Tagovi</string>
+    <string name="tree_node_authors">Autori</string>
+    <string name="tree_node_series">Serije</string>
 </resources>
