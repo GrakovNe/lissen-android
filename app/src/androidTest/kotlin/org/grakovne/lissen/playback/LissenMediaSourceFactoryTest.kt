@@ -1,5 +1,6 @@
 package org.grakovne.lissen.playback
 
+import androidx.core.os.BundleCompat
 import androidx.core.os.bundleOf
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -43,6 +44,13 @@ class LissenMediaSourceFactoryTest {
     assertEquals(mediaItem.mediaId, reportedItem.mediaId)
     assertEquals(mediaItem.requestMetadata, reportedItem.requestMetadata)
     assertEquals(mediaItem.mediaMetadata, reportedItem.mediaMetadata)
+    assertEquals(500_000L, reportedItem.mediaMetadata.extras?.getLong(CHAPTER_START_MS))
+    val reportedSegments =
+      reportedItem.requestMetadata.extras?.let {
+        BundleCompat.getParcelableArrayList(it, FILE_SEGMENTS, FileClip::class.java)
+      }
+    assertNotNull(reportedSegments)
+    assertEquals(1, reportedSegments!!.size)
   }
 
   @Test
@@ -60,6 +68,13 @@ class LissenMediaSourceFactoryTest {
     assertEquals(mediaItem.mediaId, reportedItem.mediaId)
     assertEquals(mediaItem.requestMetadata, reportedItem.requestMetadata)
     assertEquals(mediaItem.mediaMetadata, reportedItem.mediaMetadata)
+    assertEquals(500_000L, reportedItem.mediaMetadata.extras?.getLong(CHAPTER_START_MS))
+    val reportedSegments =
+      reportedItem.requestMetadata.extras?.let {
+        BundleCompat.getParcelableArrayList(it, FILE_SEGMENTS, FileClip::class.java)
+      }
+    assertNotNull(reportedSegments)
+    assertEquals(2, reportedSegments!!.size)
   }
 
   private fun chapterMediaItem(segments: ArrayList<FileClip>): MediaItem =
