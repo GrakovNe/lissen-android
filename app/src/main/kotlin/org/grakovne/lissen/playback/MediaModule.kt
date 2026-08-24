@@ -92,16 +92,14 @@ object MediaModule {
         ).setRenderersFactory(renderersFactory)
         .setMediaSourceFactory(
           LissenMediaSourceFactory(
-            mediaSourceFactory =
-              DefaultMediaSourceFactory(
-                LissenDataSourceFactory(
-                  baseContext = context,
-                  mediaCache = mediaCache,
-                  requestHeadersProvider = requestHeadersProvider,
-                  session = sessionPreferences,
-                  connection = connectionPreferences,
-                  mediaProvider = mediaProvider,
-                ),
+            dataSourceFactory =
+              LissenDataSourceFactory(
+                baseContext = context,
+                mediaCache = mediaCache,
+                requestHeadersProvider = requestHeadersProvider,
+                session = sessionPreferences,
+                connection = connectionPreferences,
+                mediaProvider = mediaProvider,
               ),
           ),
         ).build()

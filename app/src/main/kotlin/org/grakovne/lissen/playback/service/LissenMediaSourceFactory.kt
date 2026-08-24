@@ -4,6 +4,7 @@ import android.os.Parcelable
 import androidx.core.os.BundleCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DataSource
 import androidx.media3.exoplayer.drm.DrmSessionManagerProvider
 import androidx.media3.exoplayer.source.ClippingMediaSource
 import androidx.media3.exoplayer.source.ConcatenatingMediaSource2
@@ -23,8 +24,10 @@ data class FileClip(
 
 @UnstableApi
 class LissenMediaSourceFactory(
-  private val mediaSourceFactory: DefaultMediaSourceFactory,
+  dataSourceFactory: DataSource.Factory,
 ) : MediaSource.Factory {
+  private val mediaSourceFactory = DefaultMediaSourceFactory(dataSourceFactory)
+
   data class MediaId(
     val bookId: String,
     val chapterId: Int,
