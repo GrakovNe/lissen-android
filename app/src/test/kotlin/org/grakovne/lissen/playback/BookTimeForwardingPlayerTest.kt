@@ -172,6 +172,15 @@ class BookTimeForwardingPlayerTest {
     }
 
     @Test
+    fun `position with unparseable media id passes through`() {
+      enableTranslation()
+      setCurrentMediaItem(mediaId = "not-a-chapter-media-id", chapterStartMs = 100_000L)
+      every { delegate.currentPosition } returns 50_000L
+
+      assertEquals(50_000L, createWrapper().getCurrentPosition())
+    }
+
+    @Test
     fun `unknown buffered position passes through`() {
       enableTranslation()
       setCurrentMediaItem(chapterStartMs = 100_000L)
@@ -252,6 +261,15 @@ class BookTimeForwardingPlayerTest {
 
       assertEquals(100_000L, createWrapper().getDuration())
     }
+
+    @Test
+    fun `duration without chapter start extra passes through`() {
+      enableTranslation()
+      setCurrentMediaItem(chapterStartMs = null)
+      every { delegate.duration } returns 100_000L
+
+      assertEquals(100_000L, createWrapper().getDuration())
+    }
   }
 
   @Nested
@@ -277,13 +295,23 @@ class BookTimeForwardingPlayerTest {
     }
 
     @Test
-    fun `single position seek beyond the book end clamps to the last chapter start`() {
+    fun `single position seek at the book end seeks to the end of the last chapter`() {
+      enableTranslation()
+      setCurrentMediaItem()
+
+      createWrapper().seekTo(200_000L)
+
+      verify { delegate.seekTo(1, 100_000L) }
+    }
+
+    @Test
+    fun `single position seek beyond the book end seeks to the end of the last chapter`() {
       enableTranslation()
       setCurrentMediaItem()
 
       createWrapper().seekTo(999_000L)
 
-      verify { delegate.seekTo(1, 0L) }
+      verify { delegate.seekTo(1, 100_000L) }
     }
 
     @Test

@@ -1,5 +1,8 @@
 package org.grakovne.lissen.playback
 
+import android.os.Bundle
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import io.mockk.every
 import io.mockk.mockk
 import org.grakovne.lissen.domain.DetailedItem
@@ -8,20 +11,20 @@ import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.grakovne.lissen.playback.service.PlaybackService.Companion.CHAPTER_START_MS
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 /**
- * Specifies the scope predicate [MediaRepository.updateProgress] branches on: book scope only
- * when the [BookTimeScope] snapshot holds the same book that is playing. The player reaches the
- * same conclusion through the mediaId cross-check in [BookTimeForwardingPlayer], so both fail
- * closed to chapter scope together on a mismatch.
- *
- * [MediaRepository] depends on Android primitives (MediaController, Handler, Looper) and cannot
- * be instantiated in a JVM unit test, so this pins the branch condition against the real
- * snapshot rather than re-implementing the position arithmetic.
+ * Specifies the shared book-time scope machinery that [MediaRepository.updateProgress] and
+ * [BookTimeForwardingPlayer] both run: [resolveBookTimeTranslation] is the one predicate (book
+ * scope only when the snapshot book matches the current item's mediaId and the item carries a
+ * valid CHAPTER_START_MS extra), and [bookTimeProgress] is the position arithmetic for both
+ * scopes. [MediaRepository] itself depends on Android primitives (MediaController, Handler,
+ * Looper) and cannot be instantiated in a JVM unit test, but these functions are the production
+ * code it calls, executed here for real.
  */
 class MediaRepositoryProgressScopeTest {
   private val playbackPreferences = mockk<PlaybackPreferences>(relaxed = true)
@@ -29,6 +32,7 @@ class MediaRepositoryProgressScopeTest {
 
   private val book = createBook(id = "book")
   private val otherBook = createBook(id = "other-book")
+  private val chapters = book.chapters
 
   @BeforeEach
   fun resetBookTimeScope() {
@@ -41,42 +45,84 @@ class MediaRepositoryProgressScopeTest {
     BookTimeScope.update(book, playbackPreferences, libraryPreferences)
   }
 
-  private fun isBookScope(playingBook: DetailedItem): Boolean = BookTimeScope.book?.id == playingBook.id
+  private fun chapterMediaItem(
+    mediaId: String = "chapter:book:0",
+    chapterStartMs: Long? = 100_000L,
+  ): MediaItem {
+    val metadata =
+      MediaMetadata
+        .Builder()
+        .apply {
+          chapterStartMs?.let {
+            val extras = mockk<Bundle>()
+            every { extras.getLong(CHAPTER_START_MS, -1) } returns it
+            setExtras(extras)
+          }
+        }.build()
+
+    return MediaItem
+      .Builder()
+      .setMediaId(mediaId)
+      .setMediaMetadata(metadata)
+      .build()
+  }
 
   @Test
-  fun `book scope when the snapshot holds the playing book`() {
+  fun `resolves the snapshot book when the media id matches and the item carries a chapter start`() {
     enableBookScope()
 
-    assertTrue(isBookScope(book))
+    val translation = resolveBookTimeTranslation(chapterMediaItem(), BookTimeScope.book)
+
+    assertEquals(book, translation?.book)
+    assertEquals(100_000L, translation?.chapterStartMs)
   }
 
   @Test
-  fun `chapter scope when the playing book differs from the snapshot book`() {
+  fun `null when the media id does not match the snapshot book`() {
     enableBookScope()
 
-    assertFalse(isBookScope(otherBook))
+    assertNull(resolveBookTimeTranslation(chapterMediaItem(mediaId = "chapter:other-book:0"), BookTimeScope.book))
   }
 
   @Test
-  fun `chapter scope when the snapshot is empty`() {
-    // relaxed mocks: setting off, so the snapshot stays empty
+  fun `null when the media id does not parse`() {
+    enableBookScope()
 
-    assertFalse(isBookScope(book))
+    assertNull(resolveBookTimeTranslation(chapterMediaItem(mediaId = "not-a-chapter-media-id"), BookTimeScope.book))
   }
 
   @Test
-  fun `chapter scope when the prepared book has no chapters`() {
-    enableBookScope(book = createBook(id = "book", chapterCount = 0))
+  fun `null when the item carries no chapter start extra`() {
+    enableBookScope()
 
-    assertFalse(isBookScope(book))
+    assertNull(resolveBookTimeTranslation(chapterMediaItem(chapterStartMs = null), BookTimeScope.book))
   }
 
-  private fun createBook(
-    id: String,
-    chapterCount: Int = 2,
-  ): DetailedItem {
+  @Test
+  fun `null when the snapshot is empty`() {
+    assertNull(resolveBookTimeTranslation(chapterMediaItem(), BookTimeScope.book))
+  }
+
+  @Test
+  fun `book scope position is the raw controller position without accumulated chapter offsets`() {
+    val translation = resolveBookTimeTranslation(chapterMediaItem(), book)
+
+    assertEquals(50.0, bookTimeProgress(translation, currentMediaItemIndex = 2, currentPositionMs = 50_000L, chapters = chapters))
+  }
+
+  @Test
+  fun `chapter scope position accumulates the offsets of the chapters before the current one`() {
+    assertEquals(250.0, bookTimeProgress(null, currentMediaItemIndex = 2, currentPositionMs = 50_000L, chapters = chapters))
+  }
+
+  @Test
+  fun `chapter scope position in the first chapter is the raw position`() {
+    assertEquals(50.0, bookTimeProgress(null, currentMediaItemIndex = 0, currentPositionMs = 50_000L, chapters = chapters))
+  }
+
+  private fun createBook(id: String): DetailedItem {
     val chapters =
-      (0 until chapterCount).map { index ->
+      (0 until 3).map { index ->
         PlayingChapter(
           available = true,
           podcastEpisodeState = null,

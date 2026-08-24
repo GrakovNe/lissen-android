@@ -441,22 +441,22 @@ class MediaRepository
     }
 
     private fun updateProgress(detailedItem: DetailedItem) {
-      val currentIndex = mediaController.currentMediaItemIndex
-      val chapters = detailedItem.chapters
-      val accumulated = chapters.take(currentIndex.coerceIn(0, chapters.size)).sumOf { it.duration }
-      val currentFilePosition = mediaController.currentPosition / 1000.0
+      // The controller mirrors the session timeline, so its current item carries the same
+      // mediaId and extras the session player resolves against: both sides share the one
+      // scope predicate and fail closed to chapter scope together.
+      val translation =
+        resolveBookTimeTranslation(
+          mediaItem = mediaController.currentMediaItem,
+          snapshotBook = BookTimeScope.book,
+        )
 
-      // In book scope the session player already reports book-scoped positions, so the
-      // accumulated chapter offsets would double-count. The snapshot book must match the
-      // playing book, exactly like the player's own scope check, so both fail closed to
-      // chapter scope together.
-      val newPosition =
-        if (BookTimeScope.book?.id == detailedItem.id) {
-          currentFilePosition
-        } else {
-          accumulated + currentFilePosition
-        }
-      _totalPosition.value = newPosition
+      _totalPosition.value =
+        bookTimeProgress(
+          translation = translation,
+          currentMediaItemIndex = mediaController.currentMediaItemIndex,
+          currentPositionMs = mediaController.currentPosition,
+          chapters = detailedItem.chapters,
+        )
       updateCurrentTrackData()
     }
 
