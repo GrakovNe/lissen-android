@@ -1,6 +1,8 @@
 package org.grakovne.lissen.playback
 
+import androidx.annotation.OptIn
 import androidx.media3.common.MediaItem
+import androidx.media3.common.util.UnstableApi
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PlayingChapter
@@ -66,6 +68,7 @@ data class BookTimeTranslation(
  * a missing chapter offset — resolves to null, and both sides fail closed to chapter scope
  * together.
  */
+@OptIn(UnstableApi::class)
 fun resolveBookTimeTranslation(
   mediaItem: MediaItem?,
   snapshotBook: DetailedItem?,
