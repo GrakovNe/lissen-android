@@ -32,6 +32,7 @@ import kotlinx.coroutines.withTimeoutOrNull
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.playback.service.PlaybackSynchronizationService
@@ -48,6 +49,7 @@ class MediaLibrarySessionCallback
   constructor(
     @param:ApplicationContext private val context: Context,
     private val preferences: PlaybackPreferences,
+    private val libraryPreferences: LibraryPreferences,
     private val mediaRepository: MediaRepository,
     private val lissenMediaProvider: LissenMediaProvider,
     private val libraryTree: MediaLibraryTree,
@@ -236,6 +238,7 @@ class MediaLibrarySessionCallback
                 .foldAsync(
                   onSuccess = {
                     preferences.savePlayingItem(it)
+                    BookTimeScope.update(preferences, libraryPreferences)
                     playbackSynchronizationService.startPlaybackSynchronization(it)
                     mediaRepository.registerPlayingBook(it)
                     PlaybackService.bookToChapterMediaItems(it)
@@ -274,6 +277,7 @@ class MediaLibrarySessionCallback
             mediaRepository.registerPlayingBook(book)
           }
 
+          BookTimeScope.update(preferences, libraryPreferences)
           PlaybackService.bookToChapterMediaItems(book)
         }
 

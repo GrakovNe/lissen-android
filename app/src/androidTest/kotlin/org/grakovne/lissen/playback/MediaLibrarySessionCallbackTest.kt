@@ -29,6 +29,7 @@ import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PlayingChapter
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.service.FileClip
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.FILE_SEGMENTS
@@ -48,6 +49,7 @@ import java.util.concurrent.TimeUnit
 class MediaLibrarySessionCallbackTest {
   private lateinit var context: Context
   private lateinit var preferences: PlaybackPreferences
+  private lateinit var libraryPreferences: LibraryPreferences
   private lateinit var mediaRepository: MediaRepository
   private lateinit var lissenMediaProvider: LissenMediaProvider
   private lateinit var libraryTree: MediaLibraryTree
@@ -61,6 +63,7 @@ class MediaLibrarySessionCallbackTest {
   fun setUp() {
     context = ApplicationProvider.getApplicationContext()
     preferences = mockk(relaxed = true)
+    libraryPreferences = mockk(relaxed = true)
     mediaRepository = mockk(relaxed = true)
     lissenMediaProvider = mockk(relaxed = true)
     libraryTree = mockk(relaxed = true)
@@ -73,6 +76,7 @@ class MediaLibrarySessionCallbackTest {
       MediaLibrarySessionCallback(
         context,
         preferences,
+        libraryPreferences,
         mediaRepository,
         lissenMediaProvider,
         libraryTree,

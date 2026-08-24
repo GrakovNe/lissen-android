@@ -10,7 +10,6 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaLibraryService
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.grakovne.lissen.BuildConfig
-import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.ui.activity.AppActivity
 import javax.inject.Inject
@@ -25,7 +24,6 @@ class MediaLibrarySessionProvider
     private val exoPlayer: ExoPlayer,
     private val callback: MediaLibrarySessionCallback,
     private val playbackPreferences: PlaybackPreferences,
-    private val libraryPreferences: LibraryPreferences,
   ) {
     @OptIn(UnstableApi::class)
     fun provideMediaLibrarySession(mediaLibraryService: MediaLibraryService): MediaLibraryService.MediaLibrarySession {
@@ -54,7 +52,6 @@ class MediaLibrarySessionProvider
         BookTimeForwardingPlayer(
           player = exoPlayer,
           playbackPreferences = playbackPreferences,
-          libraryPreferences = libraryPreferences,
         )
       return MediaLibraryService.MediaLibrarySession
         .Builder(mediaLibraryService, sessionPlayer, callback)

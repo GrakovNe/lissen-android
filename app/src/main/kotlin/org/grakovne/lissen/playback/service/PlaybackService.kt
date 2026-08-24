@@ -24,7 +24,9 @@ import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.TimerOption
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
+import org.grakovne.lissen.playback.BookTimeScope
 import org.grakovne.lissen.playback.MediaLibrarySessionProvider
 import org.grakovne.lissen.playback.PlaybackCommand
 import org.grakovne.lissen.playback.PlaybackEvent
@@ -45,6 +47,9 @@ class PlaybackService : MediaLibraryService() {
 
   @Inject
   lateinit var sharedPreferences: PlaybackPreferences
+
+  @Inject
+  lateinit var libraryPreferences: LibraryPreferences
 
   @Inject
   lateinit var playbackTimer: PlaybackTimer
@@ -128,6 +133,7 @@ class PlaybackService : MediaLibraryService() {
             return@async
           }
 
+          BookTimeScope.update(sharedPreferences, libraryPreferences)
           val itemsWithPosition = bookToChapterMediaItems(book)
 
           withContext(Dispatchers.Main) {

@@ -5,8 +5,6 @@ import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import org.grakovne.lissen.domain.DetailedItem
-import org.grakovne.lissen.domain.LibraryType
-import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.service.LissenMediaSourceFactory
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.CHAPTER_START_MS
@@ -17,22 +15,20 @@ import org.grakovne.lissen.playback.service.calculateChapterIndexAndPosition
  * chapter) into book-scoped values for whatever consumes the player through the media session:
  * Android Auto, the system media notification, the lock screen and Wear.
  *
- * The translation is applied per call and only while the book-time setting is enabled and the
- * active library is a book library, so toggling the setting changes controller behaviour without
- * rebuilding the session. Everything else keeps receiving the raw player and keeps working on
- * chapter values.
+ * The active book is identified from the mediaId of the current timeline item, which
+ * LissenMediaSourceFactory carries over from the playlist item into the sources it builds.
  *
- * Note: reading the preference per getter does not push new values to already-connected
- * controllers, and the session disables periodic position updates, so controllers only republish
- * after the next player event (play, pause or seek). Toggling the setting can therefore leave
- * Android Auto or the notification showing the previous scope until the next such event. This is
- * an accepted limitation.
+ * The translation is applied per call, but only while the book-time scope snapshot
+ * [BookTimeScope.isBookTimeEnabled] is set. The snapshot is written once when a playlist is
+ * built, so position, duration and the seek reverse mapping always agree on the same scope, and
+ * MediaRepository reads the same value. Toggling the setting therefore applies the next time a
+ * book is prepared, never mid-book. Everything else keeps receiving the raw player and keeps
+ * working on chapter values.
  */
 @UnstableApi
 class BookTimeForwardingPlayer(
   player: Player,
   private val playbackPreferences: PlaybackPreferences,
-  private val libraryPreferences: LibraryPreferences,
 ) : ForwardingPlayer(player) {
   override fun getCurrentPosition(): Long = translateChapterPosition(super.getCurrentPosition())
 
@@ -64,12 +60,8 @@ class BookTimeForwardingPlayer(
     super.seekTo(chapterIndex, (chapterPosition * 1000).toLong())
   }
 
-  private fun isBookTimeEnabled(): Boolean =
-    playbackPreferences.getShowBookTime() &&
-      libraryPreferences.getPreferredLibrary()?.type == LibraryType.LIBRARY
-
   private fun activeBook(): DetailedItem? {
-    if (!isBookTimeEnabled()) return null
+    if (!BookTimeScope.isBookTimeEnabled) return null
 
     val book = playbackPreferences.getPlayingItem()?.takeIf { it.chapters.isNotEmpty() } ?: return null
 
@@ -85,7 +77,7 @@ class BookTimeForwardingPlayer(
 
   private fun translateChapterPosition(chapterPositionMs: Long): Long {
     if (chapterPositionMs == C.TIME_UNSET) return chapterPositionMs
-    if (!isBookTimeEnabled()) return chapterPositionMs
+    if (!BookTimeScope.isBookTimeEnabled) return chapterPositionMs
 
     val chapterStartMs =
       currentMediaItem

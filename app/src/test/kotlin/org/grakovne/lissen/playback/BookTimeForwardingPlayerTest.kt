@@ -18,6 +18,7 @@ import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
@@ -29,17 +30,22 @@ class BookTimeForwardingPlayerTest {
 
   private val book = createBook(100.0, 100.0)
 
+  @BeforeEach
+  fun resetBookTimeScope() {
+    BookTimeScope.update(playbackPreferences, libraryPreferences)
+  }
+
   private fun createWrapper() =
     BookTimeForwardingPlayer(
       player = delegate,
       playbackPreferences = playbackPreferences,
-      libraryPreferences = libraryPreferences,
     )
 
   private fun enableTranslation() {
     every { playbackPreferences.getShowBookTime() } returns true
     every { libraryPreferences.getPreferredLibrary() } returns Library(id = "lib", title = "Books", type = LibraryType.LIBRARY)
     every { playbackPreferences.getPlayingItem() } returns book
+    BookTimeScope.update(playbackPreferences, libraryPreferences)
   }
 
   private fun setCurrentMediaItem(
@@ -312,6 +318,7 @@ class BookTimeForwardingPlayerTest {
     @Test
     fun `setting off reports chapter values`() {
       every { playbackPreferences.getShowBookTime() } returns false
+      BookTimeScope.update(playbackPreferences, libraryPreferences)
       every { delegate.currentPosition } returns 50_000L
       every { delegate.duration } returns 100_000L
 
@@ -324,6 +331,7 @@ class BookTimeForwardingPlayerTest {
     @Test
     fun `setting off forwards single position seek untouched`() {
       every { playbackPreferences.getShowBookTime() } returns false
+      BookTimeScope.update(playbackPreferences, libraryPreferences)
 
       createWrapper().seekTo(150_000L)
 
@@ -335,6 +343,7 @@ class BookTimeForwardingPlayerTest {
       every { playbackPreferences.getShowBookTime() } returns true
       every { libraryPreferences.getPreferredLibrary() } returns Library(id = "lib", title = "Podcasts", type = LibraryType.PODCAST)
       every { playbackPreferences.getPlayingItem() } returns book
+      BookTimeScope.update(playbackPreferences, libraryPreferences)
       every { delegate.currentPosition } returns 50_000L
 
       assertEquals(50_000L, createWrapper().getCurrentPosition())
@@ -345,6 +354,7 @@ class BookTimeForwardingPlayerTest {
       every { playbackPreferences.getShowBookTime() } returns true
       every { libraryPreferences.getPreferredLibrary() } returns Library(id = "lib", title = "Books", type = LibraryType.LIBRARY)
       every { playbackPreferences.getPlayingItem() } returns null
+      BookTimeScope.update(playbackPreferences, libraryPreferences)
       every { delegate.currentPosition } returns 50_000L
 
       assertEquals(50_000L, createWrapper().getCurrentPosition())
@@ -355,6 +365,7 @@ class BookTimeForwardingPlayerTest {
       every { playbackPreferences.getShowBookTime() } returns true
       every { libraryPreferences.getPreferredLibrary() } returns Library(id = "lib", title = "Books", type = LibraryType.LIBRARY)
       every { playbackPreferences.getPlayingItem() } returns createBook()
+      BookTimeScope.update(playbackPreferences, libraryPreferences)
       every { delegate.currentPosition } returns 50_000L
       every { delegate.duration } returns 100_000L
 
@@ -366,17 +377,17 @@ class BookTimeForwardingPlayerTest {
   }
 
   @Test
-  fun `translation reads the preference at call time instead of a snapshot`() {
+  fun `translation uses the scope snapshot taken at playlist build instead of the current preference`() {
     every { libraryPreferences.getPreferredLibrary() } returns Library(id = "lib", title = "Books", type = LibraryType.LIBRARY)
     every { playbackPreferences.getPlayingItem() } returns book
     setCurrentMediaItem(chapterStartMs = 100_000L)
     every { delegate.currentPosition } returns 50_000L
-    val wrapper = createWrapper()
 
     every { playbackPreferences.getShowBookTime() } returns true
-    assertEquals(150_000L, wrapper.getCurrentPosition())
+    BookTimeScope.update(playbackPreferences, libraryPreferences)
+    val wrapper = createWrapper()
 
     every { playbackPreferences.getShowBookTime() } returns false
-    assertEquals(50_000L, wrapper.getCurrentPosition())
+    assertEquals(150_000L, wrapper.getCurrentPosition())
   }
 }

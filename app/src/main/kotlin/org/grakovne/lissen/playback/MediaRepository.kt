@@ -7,13 +7,11 @@ import android.os.Looper
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.FutureCallback
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.MoreExecutors
-import dagger.Lazy
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -51,7 +49,6 @@ class MediaRepository
     private val mediaChannel: LissenMediaProvider,
     private val eventBus: PlaybackEventBus,
     private val defaultTimerActivator: DefaultTimerActivator,
-    private val exoPlayer: Lazy<ExoPlayer>,
   ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private lateinit var mediaController: MediaController
@@ -444,13 +441,19 @@ class MediaRepository
     }
 
     private fun updateProgress(detailedItem: DetailedItem) {
-      val player = exoPlayer.get()
-      val currentIndex = player.currentMediaItemIndex
+      val currentIndex = mediaController.currentMediaItemIndex
       val chapters = detailedItem.chapters
       val accumulated = chapters.take(currentIndex.coerceIn(0, chapters.size)).sumOf { it.duration }
-      val currentFilePosition = player.currentPosition / 1000.0
+      val currentFilePosition = mediaController.currentPosition / 1000.0
 
-      val newPosition = accumulated + currentFilePosition
+      // In book scope the session player already reports book-scoped positions, so the
+      // accumulated chapter offsets would double-count.
+      val newPosition =
+        if (BookTimeScope.isBookTimeEnabled) {
+          currentFilePosition
+        } else {
+          accumulated + currentFilePosition
+        }
       _totalPosition.value = newPosition
       updateCurrentTrackData()
     }
