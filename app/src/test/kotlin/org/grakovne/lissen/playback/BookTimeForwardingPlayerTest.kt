@@ -32,20 +32,15 @@ class BookTimeForwardingPlayerTest {
 
   @BeforeEach
   fun resetBookTimeScope() {
-    BookTimeScope.update(playbackPreferences, libraryPreferences)
+    BookTimeScope.update(book, playbackPreferences, libraryPreferences)
   }
 
-  private fun createWrapper() =
-    BookTimeForwardingPlayer(
-      player = delegate,
-      playbackPreferences = playbackPreferences,
-    )
+  private fun createWrapper() = BookTimeForwardingPlayer(player = delegate)
 
-  private fun enableTranslation() {
+  private fun enableTranslation(book: DetailedItem = this.book) {
     every { playbackPreferences.getShowBookTime() } returns true
     every { libraryPreferences.getPreferredLibrary() } returns Library(id = "lib", title = "Books", type = LibraryType.LIBRARY)
-    every { playbackPreferences.getPlayingItem() } returns book
-    BookTimeScope.update(playbackPreferences, libraryPreferences)
+    BookTimeScope.update(book, playbackPreferences, libraryPreferences)
   }
 
   private fun setCurrentMediaItem(
@@ -159,13 +154,21 @@ class BookTimeForwardingPlayerTest {
     }
 
     @Test
-    fun `position translation uses the media item offset instead of the stored book`() {
-      enableTranslation()
-      every { playbackPreferences.getPlayingItem() } returns createBook(50.0, 50.0).copy(id = "another-book")
-      setCurrentMediaItem(mediaId = "chapter:book:0", chapterStartMs = 100_000L)
+    fun `position translation uses the media item offset instead of the snapshot book chapter starts`() {
+      enableTranslation(book = createBook(50.0, 50.0))
+      setCurrentMediaItem(chapterStartMs = 100_000L)
       every { delegate.currentPosition } returns 50_000L
 
       assertEquals(150_000L, createWrapper().getCurrentPosition())
+    }
+
+    @Test
+    fun `position with media id not matching the snapshot book passes through`() {
+      enableTranslation()
+      setCurrentMediaItem(mediaId = "chapter:another-book:0", chapterStartMs = 100_000L)
+      every { delegate.currentPosition } returns 50_000L
+
+      assertEquals(50_000L, createWrapper().getCurrentPosition())
     }
 
     @Test
@@ -233,7 +236,7 @@ class BookTimeForwardingPlayerTest {
     }
 
     @Test
-    fun `duration with mismatched stored book passes through`() {
+    fun `duration with media id not matching the snapshot book passes through`() {
       enableTranslation()
       setCurrentMediaItem(mediaId = "chapter:another-book:0")
       every { delegate.duration } returns 100_000L
@@ -293,7 +296,7 @@ class BookTimeForwardingPlayerTest {
     }
 
     @Test
-    fun `single position seek with mismatched stored book forwards untouched`() {
+    fun `single position seek with media id not matching the snapshot book forwards untouched`() {
       enableTranslation()
       setCurrentMediaItem(mediaId = "chapter:another-book:0")
 
@@ -318,7 +321,7 @@ class BookTimeForwardingPlayerTest {
     @Test
     fun `setting off reports chapter values`() {
       every { playbackPreferences.getShowBookTime() } returns false
-      BookTimeScope.update(playbackPreferences, libraryPreferences)
+      BookTimeScope.update(book, playbackPreferences, libraryPreferences)
       every { delegate.currentPosition } returns 50_000L
       every { delegate.duration } returns 100_000L
 
@@ -331,7 +334,7 @@ class BookTimeForwardingPlayerTest {
     @Test
     fun `setting off forwards single position seek untouched`() {
       every { playbackPreferences.getShowBookTime() } returns false
-      BookTimeScope.update(playbackPreferences, libraryPreferences)
+      BookTimeScope.update(book, playbackPreferences, libraryPreferences)
 
       createWrapper().seekTo(150_000L)
 
@@ -342,19 +345,7 @@ class BookTimeForwardingPlayerTest {
     fun `podcast library reports chapter values`() {
       every { playbackPreferences.getShowBookTime() } returns true
       every { libraryPreferences.getPreferredLibrary() } returns Library(id = "lib", title = "Podcasts", type = LibraryType.PODCAST)
-      every { playbackPreferences.getPlayingItem() } returns book
-      BookTimeScope.update(playbackPreferences, libraryPreferences)
-      every { delegate.currentPosition } returns 50_000L
-
-      assertEquals(50_000L, createWrapper().getCurrentPosition())
-    }
-
-    @Test
-    fun `no playing item reports chapter values`() {
-      every { playbackPreferences.getShowBookTime() } returns true
-      every { libraryPreferences.getPreferredLibrary() } returns Library(id = "lib", title = "Books", type = LibraryType.LIBRARY)
-      every { playbackPreferences.getPlayingItem() } returns null
-      BookTimeScope.update(playbackPreferences, libraryPreferences)
+      BookTimeScope.update(book, playbackPreferences, libraryPreferences)
       every { delegate.currentPosition } returns 50_000L
 
       assertEquals(50_000L, createWrapper().getCurrentPosition())
@@ -364,8 +355,7 @@ class BookTimeForwardingPlayerTest {
     fun `book without chapters reports chapter values`() {
       every { playbackPreferences.getShowBookTime() } returns true
       every { libraryPreferences.getPreferredLibrary() } returns Library(id = "lib", title = "Books", type = LibraryType.LIBRARY)
-      every { playbackPreferences.getPlayingItem() } returns createBook()
-      BookTimeScope.update(playbackPreferences, libraryPreferences)
+      BookTimeScope.update(createBook(), playbackPreferences, libraryPreferences)
       every { delegate.currentPosition } returns 50_000L
       every { delegate.duration } returns 100_000L
 
@@ -379,12 +369,11 @@ class BookTimeForwardingPlayerTest {
   @Test
   fun `translation uses the scope snapshot taken at playlist build instead of the current preference`() {
     every { libraryPreferences.getPreferredLibrary() } returns Library(id = "lib", title = "Books", type = LibraryType.LIBRARY)
-    every { playbackPreferences.getPlayingItem() } returns book
     setCurrentMediaItem(chapterStartMs = 100_000L)
     every { delegate.currentPosition } returns 50_000L
 
     every { playbackPreferences.getShowBookTime() } returns true
-    BookTimeScope.update(playbackPreferences, libraryPreferences)
+    BookTimeScope.update(book, playbackPreferences, libraryPreferences)
     val wrapper = createWrapper()
 
     every { playbackPreferences.getShowBookTime() } returns false

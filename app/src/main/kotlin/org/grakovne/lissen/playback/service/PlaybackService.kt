@@ -133,7 +133,7 @@ class PlaybackService : MediaLibraryService() {
             return@async
           }
 
-          BookTimeScope.update(sharedPreferences, libraryPreferences)
+          BookTimeScope.update(book, sharedPreferences, libraryPreferences)
           val itemsWithPosition = bookToChapterMediaItems(book)
 
           withContext(Dispatchers.Main) {

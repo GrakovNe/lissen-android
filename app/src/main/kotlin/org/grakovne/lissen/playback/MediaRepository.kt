@@ -447,9 +447,11 @@ class MediaRepository
       val currentFilePosition = mediaController.currentPosition / 1000.0
 
       // In book scope the session player already reports book-scoped positions, so the
-      // accumulated chapter offsets would double-count.
+      // accumulated chapter offsets would double-count. The snapshot book must match the
+      // playing book, exactly like the player's own scope check, so both fail closed to
+      // chapter scope together.
       val newPosition =
-        if (BookTimeScope.isBookTimeEnabled) {
+        if (BookTimeScope.book?.id == detailedItem.id) {
           currentFilePosition
         } else {
           accumulated + currentFilePosition
