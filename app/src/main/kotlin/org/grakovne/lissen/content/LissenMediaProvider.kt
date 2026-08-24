@@ -22,6 +22,7 @@ import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
+import org.grakovne.lissen.playback.service.adjustToFirstAvailableChapter
 import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
@@ -94,6 +95,21 @@ class LissenMediaProvider
       }
     }
 
+    /**
+     * Persists the playback progress into the local cache, marking it dirty.
+     * Does not touch the server; the sync path calls this before any network
+     * work so the local write survives even when the sync never completes.
+     */
+    suspend fun syncProgressLocally(
+      detailedItem: DetailedItem,
+      progress: PlaybackProgress,
+    ) {
+      Timber.d(
+        "Persisting progress locally: bookId=${detailedItem.id}, totalTime=${progress.currentTotalTime.toInt()}s",
+      )
+      localCacheRepository.syncProgress(detailedItem, progress)
+    }
+
     suspend fun syncProgress(
       sessionId: String,
       detailedItem: DetailedItem,
@@ -104,12 +120,16 @@ class LissenMediaProvider
         "Syncing progress: bookId=${detailedItem.id}, totalTime=${progress.currentTotalTime.toInt()}s, listened=${timeListened.toInt()}s",
       )
 
-      localCacheRepository.syncProgress(detailedItem, progress)
-
+      // In offline mode the server never sees the value, so the local row must
+      // stay dirty. Do not clear the dirty flag on this short-circuit.
       if (preferences.isForceCache()) return OperationResult.Success(Unit)
 
       return providePreferredChannel()
         .syncProgress(sessionId, progress, timeListened)
+        .map {
+          localCacheRepository.markProgressSynced(detailedItem.id)
+          Unit
+        }
     }
 
     suspend fun fetchBookCover(bookId: String): OperationResult<File> {
@@ -337,6 +357,7 @@ class LissenMediaProvider
               onFailure = { error ->
                 localCacheRepository
                   .fetchBook(bookId)
+                  ?.let { mergeLocalItemProgress(it) }
                   ?.let { OperationResult.Success(it) }
                   ?: error
               },
@@ -461,14 +482,33 @@ class LissenMediaProvider
       }
     }
 
+    /**
+     * Overlays the locally recorded progress (the media_progress row) onto the
+     * given item. Used on restore paths where the network snapshot may be
+     * stale or unreachable, so an offline resume lands on the position that
+     * was actually played. The resulting position is guaranteed to point at an
+     * available chapter, mirroring [LocalCacheRepository.fetchBook].
+     */
+    suspend fun overlayLocalProgress(book: DetailedItem): DetailedItem = mergeLocalItemProgress(book)
+
     private suspend fun mergeLocalItemProgress(detailedItem: DetailedItem): DetailedItem {
       val cachedProgress = localCacheRepository.fetchPlayingItemProgress(detailedItem.id)
       val channelProgress = detailedItem.progress
 
+      // A locally recorded progress that has not been synced to the server yet
+      // wins outright; it reflects the actual playback position.
       val updatedProgress =
-        listOfNotNull(cachedProgress, channelProgress)
-          .maxByOrNull { it.lastUpdate }
-          ?: return detailedItem
+        when {
+          cachedProgress?.dirty == true -> {
+            cachedProgress
+          }
+
+          else -> {
+            listOfNotNull(cachedProgress, channelProgress)
+              .maxByOrNull { it.lastUpdate }
+              ?: return detailedItem
+          }
+        }
 
       Timber.d(
         """
@@ -479,7 +519,13 @@ class LissenMediaProvider
         """.trimIndent(),
       )
 
-      return detailedItem.copy(progress = updatedProgress)
+      val merged = detailedItem.copy(progress = updatedProgress)
+
+      // The merged position must point at a chapter the player can actually
+      // play; a dirty row recorded on a chapter that is not cached would
+      // otherwise resume into a remote URI while offline. The adjustment is a
+      // no-op when the current chapter is available.
+      return merged.adjustToFirstAvailableChapter() ?: merged
     }
 
     fun fetchConnectionHost() = providePreferredChannel().fetchConnectionHost()

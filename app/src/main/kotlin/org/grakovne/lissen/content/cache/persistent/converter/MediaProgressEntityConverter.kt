@@ -14,5 +14,6 @@ class MediaProgressEntityConverter
         currentTime = entity.currentTime,
         isFinished = entity.isFinished,
         lastUpdate = entity.lastUpdate,
+        dirty = entity.dirty,
       )
   }

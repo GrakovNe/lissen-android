@@ -569,6 +569,7 @@ class CachedBookRepositoryTest {
       assertTrue(progressSlot.captured.isFinished)
       assertEquals("b1", progressSlot.captured.bookId)
       assertEquals(60.0, progressSlot.captured.currentTime)
+      assertTrue(progressSlot.captured.dirty)
     }
 
   @Test
@@ -613,6 +614,15 @@ class CachedBookRepositoryTest {
       )
 
       assertFalse(progressSlot.captured.isFinished)
+      assertTrue(progressSlot.captured.dirty)
+    }
+
+  @Test
+  fun `markProgressSynced clears the dirty flag via the dao`() =
+    runBlocking {
+      repository.markProgressSynced("b1")
+
+      coVerify { bookDao.markMediaProgressSynced("b1") }
     }
 
   companion object {

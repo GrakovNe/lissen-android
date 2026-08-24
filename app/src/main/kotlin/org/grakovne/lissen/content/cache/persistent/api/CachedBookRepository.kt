@@ -403,9 +403,18 @@ class CachedBookRepository
           currentTime = progress.currentTotalTime,
           isFinished = progress.currentTotalTime >= totalDuration - FINISHED_POSITION_EPSILON,
           lastUpdate = Instant.now().toEpochMilli(),
+          dirty = true,
         )
 
       bookDao.upsertMediaProgress(entity)
+    }
+
+    /**
+     * Clears the dirty flag after the progress for this book has been
+     * acknowledged by the server. The row keeps its current values.
+     */
+    suspend fun markProgressSynced(bookId: String) {
+      bookDao.markMediaProgressSynced(bookId)
     }
 
     private fun buildOrdering(): Pair<String, String> {

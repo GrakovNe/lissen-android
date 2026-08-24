@@ -200,6 +200,51 @@ class LocalCacheStorageMigrationTest {
   }
 
   @Test
+  fun migrate21To22_addsDirtyDefaultingToFalse_andKeepsExistingRows() {
+    helper.createDatabase(TEST_DB, 21).use { db ->
+      db.execSQL(
+        """
+        INSERT INTO detailed_books (id, title, duration, createdAt, updatedAt)
+        VALUES ('book-1', 'Dune', 0, 0, 0)
+        """.trimIndent(),
+      )
+      db.execSQL(
+        """
+        INSERT INTO media_progress (bookId, currentTime, isFinished, lastUpdate)
+        VALUES ('book-1', 12.0, 0, 0)
+        """.trimIndent(),
+      )
+    }
+
+    val db = helper.runMigrationsAndValidate(TEST_DB, 22, true, MIGRATION_21_22)
+
+    db.query("SELECT bookId, dirty FROM media_progress WHERE bookId = 'book-1'").use { cursor ->
+      assertTrue(cursor.moveToFirst())
+      assertEquals("book-1", cursor.getString(cursor.getColumnIndexOrThrow("bookId")))
+      assertEquals(0, cursor.getInt(cursor.getColumnIndexOrThrow("dirty")))
+    }
+  }
+
+  @Test
+  fun migrate21To22_allowsStoringDirtyFlag() {
+    helper.createDatabase(TEST_DB, 21).close()
+
+    val db = helper.runMigrationsAndValidate(TEST_DB, 22, true, MIGRATION_21_22)
+
+    db.execSQL(
+      """
+      INSERT INTO media_progress (bookId, currentTime, isFinished, lastUpdate, dirty)
+      VALUES ('book-2', 5.0, 0, 0, 1)
+      """.trimIndent(),
+    )
+
+    db.query("SELECT dirty FROM media_progress WHERE bookId = 'book-2'").use { cursor ->
+      assertTrue(cursor.moveToFirst())
+      assertEquals(1, cursor.getInt(cursor.getColumnIndexOrThrow("dirty")))
+    }
+  }
+
+  @Test
   fun migrateFrom14To19_appliesEveryMigrationInChain() {
     helper.createDatabase(TEST_DB, 14).use { db ->
       db.execSQL(

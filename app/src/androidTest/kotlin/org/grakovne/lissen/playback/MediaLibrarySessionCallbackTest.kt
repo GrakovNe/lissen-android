@@ -69,6 +69,10 @@ class MediaLibrarySessionCallbackTest {
     session = mockk(relaxed = true)
     controller = mockk(relaxed = true)
 
+    // The provider is mocked here; on the resumption path its overlay is what
+    // restores the locally recorded progress, so default it to an identity.
+    coEvery { lissenMediaProvider.overlayLocalProgress(any()) } answers { firstArg() }
+
     callback =
       MediaLibrarySessionCallback(
         context,
@@ -227,6 +231,28 @@ class MediaLibrarySessionCallbackTest {
       verify(exactly = 1) { preferences.savePlayingItem(refreshedBook) }
       verify(exactly = 1) { playbackSynchronizationService.startPlaybackSynchronization(refreshedBook) }
       verify(exactly = 1) { mediaRepository.registerPlayingBook(refreshedBook) }
+    }
+
+  @Test
+  fun onPlaybackResumption_localOverlayProgress_resumesAtOverlaidPosition() =
+    runBlocking {
+      val storedBook = makeDetailedItem("book-1", "My Book", MediaProgress(170.0, false, 0L))
+      val overlaidBook = makeDetailedItem("book-1", "My Book", MediaProgress(270.0, false, 0L))
+      every { preferences.getPlayingItem() } returns storedBook
+      coEvery { lissenMediaProvider.fetchBook("book-1") } returns
+        OperationResult.Error(OperationError.NotFoundError)
+      coEvery { lissenMediaProvider.overlayLocalProgress(any()) } returns overlaidBook
+
+      val result =
+        callback
+          .onPlaybackResumption(session, controller, isForPlayback = true)
+          .get(5, TimeUnit.SECONDS)
+
+      assertEquals(listOf("chapter:book-1:0", "chapter:book-1:1"), result.mediaItems.map { it.mediaId })
+      assertEquals(1, result.startIndex)
+      assertEquals(120000, result.startPositionMs)
+      verify(exactly = 1) { playbackSynchronizationService.startPlaybackSynchronization(overlaidBook) }
+      verify(exactly = 1) { mediaRepository.registerPlayingBook(overlaidBook) }
     }
 
   @Test

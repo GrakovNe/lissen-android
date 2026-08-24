@@ -22,6 +22,7 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
@@ -151,6 +152,236 @@ class LissenMediaProviderTest {
         provider.fetchBook("book-1")
 
         coVerify(exactly = 0) { localCacheRepository.fetchBook(any()) }
+      }
+
+    @Test
+    fun `overlays dirty local progress onto the cached copy when the channel fails`() =
+      runBlocking {
+        val cachedItem =
+          detailedItem(
+            "book-1",
+            progress = MediaProgress(currentTime = 10.0, isFinished = false, lastUpdate = 100),
+          )
+        val localProgress = MediaProgress(currentTime = 500.0, isFinished = false, lastUpdate = 200, dirty = true)
+        every { preferences.isForceCache() } returns false
+        coEvery { mediaChannel.fetchBook("book-1") } returns
+          OperationResult.Error(OperationError.NetworkError)
+        coEvery { localCacheRepository.fetchBook("book-1") } returns cachedItem
+        coEvery { localCacheRepository.fetchPlayingItemProgress("book-1") } returns localProgress
+
+        val result = provider.fetchBook("book-1")
+
+        assertEquals(localProgress, (result as OperationResult.Success).data.progress)
+      }
+
+    @Test
+    fun `keeps newer local progress when the channel fails and the row is not dirty`() =
+      runBlocking {
+        val cachedItem =
+          detailedItem(
+            "book-1",
+            progress = MediaProgress(currentTime = 10.0, isFinished = false, lastUpdate = 100),
+          )
+        val localProgress = MediaProgress(currentTime = 500.0, isFinished = false, lastUpdate = 200, dirty = false)
+        every { preferences.isForceCache() } returns false
+        coEvery { mediaChannel.fetchBook("book-1") } returns
+          OperationResult.Error(OperationError.NetworkError)
+        coEvery { localCacheRepository.fetchBook("book-1") } returns cachedItem
+        coEvery { localCacheRepository.fetchPlayingItemProgress("book-1") } returns localProgress
+
+        val result = provider.fetchBook("book-1")
+
+        assertEquals(localProgress, (result as OperationResult.Success).data.progress)
+      }
+
+    @Test
+    fun `dirty local progress wins over a newer channel progress`() =
+      runBlocking {
+        val chapters =
+          listOf(
+            PlayingChapter(
+              available = true,
+              podcastEpisodeState = null,
+              duration = 1000.0,
+              start = 0.0,
+              end = 1000.0,
+              title = "Chapter",
+              id = "c1",
+            ),
+          )
+        val channelItem =
+          detailedItem(
+            "book-1",
+            chapters = chapters,
+            progress = MediaProgress(currentTime = 10.0, isFinished = false, lastUpdate = 999),
+          )
+        val localProgress = MediaProgress(currentTime = 500.0, isFinished = false, lastUpdate = 100, dirty = true)
+        every { preferences.isForceCache() } returns false
+        coEvery { mediaChannel.fetchBook("book-1") } returns OperationResult.Success(channelItem)
+        coEvery { localCacheRepository.fetchPlayingItemProgress("book-1") } returns localProgress
+
+        val result = provider.fetchBook("book-1")
+
+        assertEquals(localProgress, (result as OperationResult.Success).data.progress)
+      }
+
+    @Test
+    fun `adjusts the overlaid dirty progress to the first available chapter when the channel fails`() =
+      runBlocking {
+        val chapters =
+          listOf(
+            PlayingChapter(
+              available = true,
+              podcastEpisodeState = null,
+              duration = 300.0,
+              start = 0.0,
+              end = 300.0,
+              title = "Chapter 1",
+              id = "c1",
+            ),
+            PlayingChapter(
+              available = false,
+              podcastEpisodeState = null,
+              duration = 300.0,
+              start = 300.0,
+              end = 600.0,
+              title = "Chapter 2",
+              id = "c2",
+            ),
+          )
+        val cachedItem =
+          detailedItem(
+            "book-1",
+            chapters = chapters,
+            progress = MediaProgress(currentTime = 0.0, isFinished = false, lastUpdate = 100),
+          )
+        val localProgress = MediaProgress(currentTime = 450.0, isFinished = false, lastUpdate = 200, dirty = true)
+        every { preferences.isForceCache() } returns false
+        coEvery { mediaChannel.fetchBook("book-1") } returns
+          OperationResult.Error(OperationError.NetworkError)
+        coEvery { localCacheRepository.fetchBook("book-1") } returns cachedItem
+        coEvery { localCacheRepository.fetchPlayingItemProgress("book-1") } returns localProgress
+
+        val result = provider.fetchBook("book-1")
+
+        val data = (result as OperationResult.Success).data
+        assertEquals(0.0, data.progress?.currentTime)
+      }
+  }
+
+  @Nested
+  inner class OverlayLocalProgress {
+    @Test
+    fun `returns the book unchanged when there is no local progress row`() =
+      runBlocking {
+        val item =
+          detailedItem(
+            "book-1",
+            progress = MediaProgress(currentTime = 10.0, isFinished = false, lastUpdate = 100),
+          )
+        coEvery { localCacheRepository.fetchPlayingItemProgress("book-1") } returns null
+
+        val result = provider.overlayLocalProgress(item)
+
+        assertEquals(10.0, result.progress?.currentTime)
+      }
+
+    @Test
+    fun `dirty local progress wins outright even when the book progress is newer`() =
+      runBlocking {
+        val item =
+          detailedItem(
+            "book-1",
+            progress = MediaProgress(currentTime = 10.0, isFinished = false, lastUpdate = 999),
+          )
+        coEvery { localCacheRepository.fetchPlayingItemProgress("book-1") } returns
+          MediaProgress(currentTime = 500.0, isFinished = false, lastUpdate = 100, dirty = true)
+
+        val result = provider.overlayLocalProgress(item)
+
+        assertEquals(500.0, result.progress?.currentTime)
+      }
+
+    @Test
+    fun `newest lastUpdate wins when the local row is not dirty`() =
+      runBlocking {
+        val item =
+          detailedItem(
+            "book-1",
+            progress = MediaProgress(currentTime = 10.0, isFinished = false, lastUpdate = 100),
+          )
+        coEvery { localCacheRepository.fetchPlayingItemProgress("book-1") } returns
+          MediaProgress(currentTime = 500.0, isFinished = false, lastUpdate = 200, dirty = false)
+
+        val result = provider.overlayLocalProgress(item)
+
+        assertEquals(500.0, result.progress?.currentTime)
+      }
+
+    @Test
+    fun `book progress wins when it is newer and the local row is not dirty`() =
+      runBlocking {
+        val item =
+          detailedItem(
+            "book-1",
+            progress = MediaProgress(currentTime = 10.0, isFinished = false, lastUpdate = 999),
+          )
+        coEvery { localCacheRepository.fetchPlayingItemProgress("book-1") } returns
+          MediaProgress(currentTime = 500.0, isFinished = false, lastUpdate = 100, dirty = false)
+
+        val result = provider.overlayLocalProgress(item)
+
+        assertEquals(10.0, result.progress?.currentTime)
+      }
+
+    @Test
+    fun `applies when the book has no progress at all`() =
+      runBlocking {
+        val item = detailedItem("book-1", progress = null)
+        coEvery { localCacheRepository.fetchPlayingItemProgress("book-1") } returns
+          MediaProgress(currentTime = 500.0, isFinished = false, lastUpdate = 100)
+
+        val result = provider.overlayLocalProgress(item)
+
+        assertEquals(500.0, result.progress?.currentTime)
+      }
+
+    @Test
+    fun `adjusts to the first available chapter when the dirty progress points at an uncached chapter`() =
+      runBlocking {
+        val chapters =
+          listOf(
+            PlayingChapter(
+              available = true,
+              podcastEpisodeState = null,
+              duration = 300.0,
+              start = 0.0,
+              end = 300.0,
+              title = "Chapter 1",
+              id = "c1",
+            ),
+            PlayingChapter(
+              available = false,
+              podcastEpisodeState = null,
+              duration = 300.0,
+              start = 300.0,
+              end = 600.0,
+              title = "Chapter 2",
+              id = "c2",
+            ),
+          )
+        val item =
+          detailedItem(
+            "book-1",
+            chapters = chapters,
+            progress = MediaProgress(currentTime = 0.0, isFinished = false, lastUpdate = 100),
+          )
+        coEvery { localCacheRepository.fetchPlayingItemProgress("book-1") } returns
+          MediaProgress(currentTime = 450.0, isFinished = false, lastUpdate = 200, dirty = true)
+
+        val result = provider.overlayLocalProgress(item)
+
+        assertEquals(0.0, result.progress?.currentTime)
       }
   }
 
@@ -495,7 +726,7 @@ class LissenMediaProviderTest {
   @Nested
   inner class SyncProgress {
     @Test
-    fun `syncs local cache without calling channel when force cache enabled`() =
+    fun `returns success without network call or clearing dirty when force cache enabled`() =
       runBlocking {
         val item = detailedItem("book-1")
         val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
@@ -504,12 +735,13 @@ class LissenMediaProviderTest {
         val result = provider.syncProgress("session-1", item, progress, 42.0)
 
         assertInstanceOf(OperationResult.Success::class.java, result)
-        coVerify { localCacheRepository.syncProgress(item, progress) }
         coVerify(exactly = 0) { mediaChannel.syncProgress(any(), any(), any()) }
+        coVerify(exactly = 0) { localCacheRepository.syncProgress(any(), any()) }
+        coVerify(exactly = 0) { localCacheRepository.markProgressSynced(any()) }
       }
 
     @Test
-    fun `syncs local cache when force cache disabled`() =
+    fun `posts to the channel and clears dirty when force cache disabled`() =
       runBlocking {
         val item = detailedItem("book-1")
         val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
@@ -519,8 +751,9 @@ class LissenMediaProviderTest {
 
         provider.syncProgress("session-1", item, progress, 42.0)
 
-        coVerify { localCacheRepository.syncProgress(item, progress) }
         coVerify { mediaChannel.syncProgress("session-1", progress, 42.0) }
+        coVerify { localCacheRepository.markProgressSynced("book-1") }
+        coVerify(exactly = 0) { localCacheRepository.syncProgress(any(), any()) }
       }
 
     @Test
@@ -536,6 +769,38 @@ class LissenMediaProviderTest {
         val result = provider.syncProgress("session-1", item, progress, 42.0)
 
         assertInstanceOf(OperationResult.Error::class.java, result)
+      }
+
+    @Test
+    fun `does not clear dirty when the server post fails with not found`() =
+      runBlocking {
+        val item = detailedItem("book-1")
+        val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
+        every { preferences.isForceCache() } returns false
+        coEvery {
+          mediaChannel.syncProgress("session-1", progress, 42.0)
+        } returns OperationResult.Error(OperationError.NotFoundError)
+
+        val result = provider.syncProgress("session-1", item, progress, 42.0)
+
+        assertInstanceOf(OperationResult.Error::class.java, result)
+        coVerify(exactly = 0) { localCacheRepository.markProgressSynced(any()) }
+      }
+  }
+
+  @Nested
+  inner class SyncProgressLocally {
+    @Test
+    fun `persists progress locally without calling the channel or clearing dirty`() =
+      runBlocking {
+        val item = detailedItem("book-1")
+        val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
+
+        provider.syncProgressLocally(item, progress)
+
+        coVerify { localCacheRepository.syncProgress(item, progress) }
+        coVerify(exactly = 0) { mediaChannel.syncProgress(any(), any(), any()) }
+        coVerify(exactly = 0) { localCacheRepository.markProgressSynced(any()) }
       }
   }
 
@@ -668,6 +933,7 @@ class LissenMediaProviderTest {
   private fun detailedItem(
     id: String = "book-1",
     chapters: List<PlayingChapter> = emptyList(),
+    progress: MediaProgress? = null,
   ) = DetailedItem(
     id = id,
     title = "Test Book",
@@ -680,7 +946,7 @@ class LissenMediaProviderTest {
     abstract = null,
     files = emptyList(),
     chapters = chapters,
-    progress = null,
+    progress = progress,
     libraryId = "lib-1",
     localProvided = false,
     createdAt = 0L,

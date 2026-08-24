@@ -15,11 +15,19 @@ class MediaProgressEntityConverterTest {
         currentTime = 123.45,
         isFinished = true,
         lastUpdate = 9999L,
+        dirty = true,
       )
     val progress = converter.apply(entity)
     assertEquals(123.45, progress.currentTime)
     assertEquals(true, progress.isFinished)
     assertEquals(9999L, progress.lastUpdate)
+    assertEquals(true, progress.dirty)
+  }
+
+  @Test
+  fun `dirty flag is preserved when false`() {
+    val entity = MediaProgressEntity(bookId = "b", currentTime = 0.0, isFinished = false, lastUpdate = 0L)
+    assertEquals(false, converter.apply(entity).dirty)
   }
 
   @Test

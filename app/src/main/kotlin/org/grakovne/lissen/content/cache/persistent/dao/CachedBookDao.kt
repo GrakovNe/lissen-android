@@ -115,6 +115,8 @@ interface CachedBookDao {
           )
         }
 
+    val existingProgress = fetchMediaProgress(book.id)
+
     val mediaProgress =
       book
         .progress
@@ -124,13 +126,19 @@ interface CachedBookDao {
             currentTime = progress.currentTime,
             isFinished = progress.isFinished,
             lastUpdate = progress.lastUpdate,
+            dirty = progress.dirty,
           )
         }
 
     upsertBook(bookEntity)
     upsertBookFiles(bookFiles)
     upsertBookChapters(bookChapters)
-    mediaProgress?.let { upsertMediaProgress(it) }
+
+    // Never let a caching run clobber a locally recorded progress that has
+    // not been synced to the server yet.
+    if (existingProgress?.dirty != true) {
+      mediaProgress?.let { upsertMediaProgress(it) }
+    }
   }
 
   @Transaction
@@ -250,6 +258,9 @@ interface CachedBookDao {
 
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   suspend fun upsertMediaProgress(progress: MediaProgressEntity)
+
+  @Query("UPDATE media_progress SET dirty = 0 WHERE bookId = :bookId")
+  suspend fun markMediaProgressSynced(bookId: String)
 
   @Transaction
   @Query("SELECT * FROM media_progress WHERE bookId = :bookId")

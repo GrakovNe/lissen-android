@@ -46,6 +46,7 @@ data class MediaProgress(
   val currentTime: Double,
   val isFinished: Boolean,
   val lastUpdate: Long,
+  val dirty: Boolean = false,
 ) : Serializable
 
 @Keep

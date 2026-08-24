@@ -379,3 +379,15 @@ val MIGRATION_20_21 =
       db.execSQL("CREATE INDEX IF NOT EXISTS index_detailed_books_seriesId ON detailed_books(seriesId)")
     }
   }
+
+val MIGRATION_21_22 =
+  object : Migration(21, 22) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+      db.execSQL(
+        """
+        ALTER TABLE media_progress
+        ADD COLUMN dirty INTEGER NOT NULL DEFAULT 0
+        """.trimIndent(),
+      )
+    }
+  }

@@ -262,7 +262,10 @@ class MediaLibrarySessionCallback
               ?: throw IllegalStateException("No last played book stored")
 
           val refreshedBook = refreshBookForResumption(storedBook)
-          val book = refreshedBook ?: storedBook
+          // The refreshed book already carries the merged local progress; when
+          // it is unavailable (offline), overlay the locally recorded progress
+          // onto the stored snapshot so resumption lands at the real position.
+          val book = lissenMediaProvider.overlayLocalProgress(refreshedBook ?: storedBook)
 
           if (book.canProducePlaybackQueue().not()) {
             throw IllegalStateException("Book can't produce a playback queue (bookId=${book.id})")

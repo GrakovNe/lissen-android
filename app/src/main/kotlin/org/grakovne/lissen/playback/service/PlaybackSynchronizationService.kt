@@ -23,6 +23,7 @@ import org.grakovne.lissen.playback.service.PlaybackService.Companion.CHAPTER_ST
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.abs
 
 @Singleton
 class PlaybackSynchronizationService
@@ -36,6 +37,7 @@ class PlaybackSynchronizationService
     private var currentChapterIndex: Int? = null
     private var playbackSession: PlaybackSession? = null
     private var listeningMark = ListeningMark(playingSince = null, unsyncedMs = 0)
+    private var restoredStartPosition: Double? = null
     private val serviceScope = MainScope()
     private var syncJob: Job? = null
     private val syncRunner = CoalescingRunner<SyncSnapshot>()
@@ -60,6 +62,7 @@ class PlaybackSynchronizationService
       serviceScope.coroutineContext.cancelChildren()
       syncJob = null
       currentItem = item
+      restoredStartPosition = item.progress?.currentTime
       listeningMark = listeningMark.copy(playingSince = null)
     }
 
@@ -105,6 +108,17 @@ class PlaybackSynchronizationService
 
       listeningMark = accumulateListening(listeningMark, exoPlayer.isPlaying, SystemClock.elapsedRealtime())
 
+      if (isRestoredPositionUnchanged(restoredStartPosition, overallProgress.currentTotalTime, listeningMark.unsyncedMs)) {
+        Timber.d("Skipping sync for ${currentItem.id} due to position is still the restored start position")
+        return
+      }
+
+      // The gate is one-shot per item: the first unsuppressed sync (playing,
+      // seeking, or any other activity) clears the restored start position so the
+      // gate can never re-engage for this item, e.g. when the user later pauses
+      // back at the restored start position.
+      restoredStartPosition = null
+
       val snapshot =
         SyncSnapshot(
           progress = overallProgress,
@@ -127,6 +141,11 @@ class PlaybackSynchronizationService
       snapshot: SyncSnapshot,
     ) {
       val currentIndex = calculateChapterIndex(currentItem, snapshot.progress.currentTotalTime)
+
+      // Persist the position locally before any network work so the write
+      // survives a process kill mid-sync. The row is marked dirty until the
+      // server POST below succeeds.
+      mediaChannel.syncProgressLocally(currentItem, snapshot.progress)
 
       if (playbackSession == null ||
         playbackSession?.itemId != currentItem.id ||
@@ -208,6 +227,7 @@ class PlaybackSynchronizationService
           Player.EVENT_MEDIA_ITEM_TRANSITION,
           Player.EVENT_PLAYBACK_STATE_CHANGED,
           Player.EVENT_IS_PLAYING_CHANGED,
+          Player.EVENT_POSITION_DISCONTINUITY,
         )
     }
   }
@@ -221,6 +241,21 @@ internal const val SYNC_INTERVAL_LONG = 45_000L
 internal const val SYNC_INTERVAL_SHORT = 5_000L
 
 private const val SHORT_SYNC_WINDOW_MS = 90_000L
+private const val RESTORED_POSITION_TOLERANCE_SECONDS = 0.1
+
+/**
+ * True when the player still sits on the position the current item was restored to
+ * and no listening time has accumulated yet. In that state the position carries no
+ * new information, so syncing it would only write the just-restored value back.
+ */
+internal fun isRestoredPositionUnchanged(
+  restoredStartPosition: Double?,
+  currentPosition: Double,
+  unsyncedMs: Long,
+): Boolean =
+  restoredStartPosition != null &&
+    unsyncedMs == 0L &&
+    abs(currentPosition - restoredStartPosition) <= RESTORED_POSITION_TOLERANCE_SECONDS
 
 internal fun chooseSyncInterval(
   durationMs: Long,
