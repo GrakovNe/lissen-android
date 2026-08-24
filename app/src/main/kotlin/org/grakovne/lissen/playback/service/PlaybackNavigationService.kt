@@ -7,7 +7,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -36,6 +35,12 @@ class PlaybackNavigationService
             }
           }
 
+          /**
+           * Skips chapters whose files are missing, which happens in offline mode when a book is
+           * only partly downloaded. Known limitation: this only covers transitions between items,
+           * so an unavailable first chapter is not skipped and still fails on load. Setting the
+           * playlist raises onTimelineChanged, not a discontinuity, so we never see it here.
+           */
           override fun onPositionDiscontinuity(
             oldPosition: Player.PositionInfo,
             newPosition: Player.PositionInfo,
@@ -43,15 +48,6 @@ class PlaybackNavigationService
           ) {
             val previousIndex = oldPosition.mediaItemIndex
             val currentIndex = newPosition.mediaItemIndex
-            val currentItem =
-              exoPlayer
-                .currentMediaItem
-                ?.localConfiguration
-                ?.tag as? DetailedItem
-
-            if (null == currentItem) {
-              return
-            }
 
             if (isTrackAvailable(exoPlayer.currentMediaItemIndex)) {
               return
