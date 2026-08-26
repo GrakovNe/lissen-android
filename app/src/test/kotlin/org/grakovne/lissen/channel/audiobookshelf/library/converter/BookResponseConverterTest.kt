@@ -100,6 +100,7 @@ class BookResponseConverterTest {
         )
       assertEquals(1, item.chapters.size)
       assertEquals("c1", item.chapters[0].id)
+      assertTrue(item.hasServerChapters)
     }
 
     @Test
@@ -112,6 +113,7 @@ class BookResponseConverterTest {
           ),
         )
       assertEquals(2, item.chapters.size)
+      assertEquals(false, item.hasServerChapters)
     }
 
     @Test
@@ -124,6 +126,7 @@ class BookResponseConverterTest {
           ),
         )
       assertEquals(1, item.chapters.size)
+      assertEquals(false, item.hasServerChapters)
     }
 
     @Test
