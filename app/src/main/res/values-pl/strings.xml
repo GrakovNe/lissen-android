@@ -283,4 +283,16 @@
     <string name="equalizer_restore_default">Przywróć domyślne</string>
     <string name="a11y_equalizer_band">%s pasmo herców</string>
     <string name="a11y_equalizer_restore">Przywróć ustawienia korektora dźwięku</string>
+    <string name="download_settings_storage_title">Miejsce zapisu danych</string>
+    <string name="download_settings_storage_unavailable">Niedostępne</string>
+    <string name="download_settings_storage_switch_failed_toast">Nie udało się zmienić miejsca, w którym zapiszemy dane</string>
+    <string name="download_settings_storage_confirmation_message">Pobrana treść zostanie usunięta z tego urządzenia. Dane na serwerze pozostaną nienaruszone</string>
+    <string name="download_settings_storage_confirm">Zmień lokalizację</string>
+    <string name="tree_node_downloads_offline">Pobrane (tryb offline)</string>
+    <string name="tree_node_all_titles">Wszystkie tytuły</string>
+    <string name="tree_node_series_collapsed">Zwinięte serie</string>
+    <string name="tree_node_genres">Gatunki</string>
+    <string name="tree_node_tags">Tagi</string>
+    <string name="tree_node_authors">Autorzy</string>
+    <string name="tree_node_series">Serie</string>
 </resources>
