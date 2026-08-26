@@ -212,11 +212,6 @@ class PlaybackService : MediaLibraryService() {
 
       return result
     }
-
-    @UnstableApi
-    fun bookToChapterMediaItems(book: DetailedItem) =
-      org.grakovne.lissen.playback.service
-        .bookToChapterMediaItems(book)
   }
 }
 

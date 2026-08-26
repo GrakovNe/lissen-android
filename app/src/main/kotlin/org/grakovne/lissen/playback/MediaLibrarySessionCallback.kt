@@ -33,8 +33,8 @@ import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
-import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.playback.service.PlaybackSynchronizationService
+import org.grakovne.lissen.playback.service.bookToChapterMediaItems
 import org.grakovne.lissen.util.listenableFuture
 import timber.log.Timber
 import javax.inject.Inject
@@ -238,7 +238,7 @@ class MediaLibrarySessionCallback
                     preferences.savePlayingItem(it)
                     playbackSynchronizationService.startPlaybackSynchronization(it)
                     mediaRepository.registerPlayingBook(it)
-                    PlaybackService.bookToChapterMediaItems(it)
+                    bookToChapterMediaItems(it)
                   },
                   onFailure = { MediaItemsWithStartPosition(emptyList(), 0, 0) },
                 )
@@ -274,7 +274,7 @@ class MediaLibrarySessionCallback
             mediaRepository.registerPlayingBook(book)
           }
 
-          PlaybackService.bookToChapterMediaItems(book)
+          bookToChapterMediaItems(book)
         }
 
     private suspend fun refreshBookForResumption(storedBook: DetailedItem): DetailedItem? {
