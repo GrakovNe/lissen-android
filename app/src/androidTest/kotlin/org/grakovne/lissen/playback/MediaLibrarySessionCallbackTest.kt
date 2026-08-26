@@ -203,6 +203,28 @@ class MediaLibrarySessionCallbackTest {
     }
 
   @Test
+  fun onSetMediaItems_andPlaybackResumption_resolveTheSameChapterQueue() =
+    runBlocking {
+      val book = makeDetailedItem("book-1", "My Book", MediaProgress(170.0, false, 0L))
+      every { preferences.getPlayingItem() } returns book
+      coEvery { lissenMediaProvider.fetchBook("book-1") } returns OperationResult.Success(book)
+
+      val mediaItem = MediaItem.Builder().setMediaId(MediaLibraryTree.bookPath("book-1")).build()
+      val setItemsResult =
+        callback
+          .onSetMediaItems(session, controller, listOf(mediaItem), C.INDEX_UNSET, C.TIME_UNSET)
+          .get(5, TimeUnit.SECONDS)
+      val resumptionResult =
+        callback
+          .onPlaybackResumption(session, controller, isForPlayback = false)
+          .get(5, TimeUnit.SECONDS)
+
+      assertEquals(setItemsResult.mediaItems.map { it.mediaId }, resumptionResult.mediaItems.map { it.mediaId })
+      assertEquals(setItemsResult.startIndex, resumptionResult.startIndex)
+      assertEquals(setItemsResult.startPositionMs, resumptionResult.startPositionMs)
+    }
+
+  @Test
   fun onPlaybackResumption_storedBook_refreshesAndResolvesQueue() =
     runBlocking {
       val storedBook = makeDetailedItem("book-1", "Stored Book", MediaProgress(170.0, false, 0L))
