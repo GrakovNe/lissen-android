@@ -17,6 +17,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.grakovne.lissen.content.cache.persistent.CacheState
+import org.grakovne.lissen.content.cache.persistent.CachingSessionRegistry
 import org.grakovne.lissen.content.cache.persistent.ContentCachingManager
 import org.grakovne.lissen.content.cache.persistent.ContentCachingProgress
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
@@ -43,6 +44,7 @@ class CachingModelViewTest {
   private val localCacheRepository = mockk<LocalCacheRepository>(relaxed = true)
   private val contentCachingProgress = mockk<ContentCachingProgress>(relaxed = true)
   private val contentCachingManager = mockk<ContentCachingManager>(relaxed = true)
+  private val cachingSessionRegistry = mockk<CachingSessionRegistry>(relaxed = true)
   private val libraryPreferences = mockk<LibraryPreferences>(relaxed = true)
   private val downloadPreferences = mockk<DownloadPreferences>(relaxed = true)
   private val cachedCoverProvider = mockk<CachedCoverProvider>(relaxed = true)
@@ -64,6 +66,7 @@ class CachingModelViewTest {
         localCacheRepository,
         contentCachingProgress,
         contentCachingManager,
+        cachingSessionRegistry,
         libraryPreferences,
         downloadPreferences,
         cachedCoverProvider,
@@ -161,6 +164,40 @@ class CachingModelViewTest {
       every { libraryPreferences.isForceCache() } returns false
       assertFalse(viewModel.localCacheUsing())
     }
+  }
+
+  @Nested
+  inner class StopCaching {
+    @Test
+    fun `stopCaching cancels the caching session in process`() =
+      runTest(testDispatcher) {
+        val item = detailedItem(id = "book-1")
+
+        viewModel.stopCaching(item)
+
+        verify { cachingSessionRegistry.cancel("book-1") }
+      }
+
+    @Test
+    fun `stopCaching emits Idle state for the item`() =
+      runTest(testDispatcher) {
+        val item = detailedItem(id = "book-1")
+
+        viewModel.stopCaching(item)
+
+        coVerify { contentCachingProgress.emit("book-1", CacheState(CacheStatus.Idle)) }
+      }
+
+    @Test
+    fun `stopCaching does not start any service`() =
+      runTest(testDispatcher) {
+        val item = detailedItem(id = "book-1")
+
+        viewModel.stopCaching(item)
+
+        verify(exactly = 0) { context.startForegroundService(any()) }
+        verify(exactly = 0) { context.startService(any()) }
+      }
   }
 
   @Nested

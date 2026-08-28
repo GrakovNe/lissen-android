@@ -121,7 +121,10 @@ class ContentAutoCachingService
           }
 
         Timber.d("Auto-cache triggered for ${playingMediaItem.id}: option=$playbackCacheOption, position=${currentTotalPosition.toInt()}s")
-        context.startForegroundService(intent)
+
+        if (ContentCachingService.requestStart(context, intent).not()) {
+          Timber.w("Caching service is unavailable, skipping auto-cache for ${playingMediaItem.id}")
+        }
         return null
       }
 

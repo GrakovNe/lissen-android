@@ -14,6 +14,7 @@ class CachingSessionRegistry
     private val jobs = mutableMapOf<String, Job>()
     private val statuses = LinkedHashMap<String, Pair<DetailedItem, CacheState>>()
     private val pending = mutableSetOf<String>()
+    private var errorMarked = false
 
     fun register(
       itemId: String,
@@ -35,16 +36,36 @@ class CachingSessionRegistry
 
     suspend fun cancelAll(): List<String> {
       val itemIds = (jobs.keys + statuses.keys + pending).toList()
-      val cancelledJobs = jobs.values.toList()
 
-      pending.clear()
-      statuses.clear()
-      jobs.clear()
-
-      cancelledJobs.forEach { it.cancel() }
-      cancelledJobs.joinAll()
+      teardown().joinAll()
 
       return itemIds
+    }
+
+    fun drainAll(): List<String> {
+      val inFlight =
+        (
+          pending +
+            jobs.keys +
+            statuses.filterValues { (_, state) -> state.status == CacheStatus.Caching }.keys
+        ).toList()
+
+      teardown()
+
+      return inFlight
+    }
+
+    private fun teardown(): List<Job> {
+      val cancelledJobs = jobs.values.toList()
+
+      clear()
+
+      cancelledJobs.forEach { it.cancel() }
+      return cancelledJobs
+    }
+
+    fun markError() {
+      errorMarked = true
     }
 
     fun settle(
@@ -69,5 +90,12 @@ class CachingSessionRegistry
 
     fun inProgress(): Boolean = pending.isNotEmpty() || statuses.values.any { (_, state) -> state.status == CacheStatus.Caching }
 
-    fun hasErrors(): Boolean = statuses.values.any { (_, state) -> state.status == CacheStatus.Error }
+    fun hasErrors(): Boolean = errorMarked || statuses.values.any { (_, state) -> state.status == CacheStatus.Error }
+
+    private fun clear() {
+      pending.clear()
+      statuses.clear()
+      jobs.clear()
+      errorMarked = false
+    }
   }

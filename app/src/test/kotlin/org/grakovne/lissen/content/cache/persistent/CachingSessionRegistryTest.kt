@@ -1,145 +1,222 @@
 package org.grakovne.lissen.content.cache.persistent
 
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.test.runTest
 import org.grakovne.lissen.domain.CacheStatus
 import org.grakovne.lissen.domain.DetailedItem
-import org.grakovne.lissen.domain.MediaProgress
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class CachingSessionRegistryTest {
-  private fun item(
-    id: String = "book-1",
-    progress: MediaProgress? = null,
-  ) = DetailedItem(
-    id = id,
-    title = "Title",
-    subtitle = null,
-    author = null,
-    narrator = null,
-    publisher = null,
-    series = emptyList(),
-    year = null,
-    abstract = null,
-    files = emptyList(),
-    chapters = emptyList(),
-    progress = progress,
-    libraryId = "lib-1",
-    localProvided = false,
-    createdAt = 0L,
-    updatedAt = 0L,
-  )
+  private lateinit var registry: CachingSessionRegistry
 
-  @Test
-  fun `cancel by id works when the stop request carries a stale item snapshot`() {
-    val registry = CachingSessionRegistry()
-    val job = Job()
-
-    val cachingSnapshot = item(progress = MediaProgress(currentTime = 10.0, isFinished = false, lastUpdate = 1L))
-    registry.register(cachingSnapshot.id, job)
-
-    val staleSnapshot = item(progress = MediaProgress(currentTime = 99.0, isFinished = false, lastUpdate = 2L))
-
-    assertTrue(registry.cancel(staleSnapshot.id))
-    assertTrue(job.isCancelled)
+  @BeforeEach
+  fun setup() {
+    registry = CachingSessionRegistry()
   }
 
-  @Test
-  fun `cancel of unknown item reports nothing to stop`() {
-    val registry = CachingSessionRegistry()
+  @Nested
+  inner class Register {
+    @Test
+    fun `register marks item as in progress`() {
+      registry.register("book-1", Job())
 
-    assertFalse(registry.cancel("missing"))
+      assertTrue(registry.inProgress())
+    }
+
+    @Test
+    fun `register replaces and cancels previous job for the same item`() {
+      val first = Job()
+      val second = Job()
+
+      registry.register("book-1", first)
+      registry.register("book-1", second)
+
+      assertTrue(first.isCancelled)
+      assertFalse(second.isCancelled)
+    }
   }
 
-  @Test
-  fun `registering the same item twice cancels the previous job`() {
-    val registry = CachingSessionRegistry()
-    val first = Job()
-    val second = Job()
+  @Nested
+  inner class Settle {
+    @Test
+    fun `settle with registered job clears in progress`() {
+      val job = Job()
+      registry.register("book-1", job)
 
-    registry.register(item().id, first)
-    registry.register(item().id, second)
+      registry.settle("book-1", job)
 
-    assertTrue(first.isCancelled)
-    assertFalse(second.isCancelled)
+      assertFalse(registry.inProgress())
+    }
+
+    @Test
+    fun `settle with stale job keeps the current session`() {
+      val stale = Job()
+      val current = Job()
+      registry.register("book-1", stale)
+      registry.register("book-1", current)
+
+      registry.settle("book-1", stale)
+
+      assertTrue(registry.inProgress())
+    }
   }
 
-  @Test
-  fun `registered download counts as in progress before its first status update`() {
-    val registry = CachingSessionRegistry()
+  @Nested
+  inner class Cancel {
+    @Test
+    fun `cancel cancels the job and clears the status`() {
+      val job = Job()
+      registry.register("book-1", job)
+      registry.updateStatus(detailedItem("book-1"), CacheState(CacheStatus.Caching))
 
-    registry.register("book-1", Job())
+      val cancelled = registry.cancel("book-1")
 
-    assertTrue(registry.inProgress())
+      assertTrue(cancelled)
+      assertTrue(job.isCancelled)
+      assertFalse(registry.inProgress())
+      assertTrue(registry.notificationItems().isEmpty())
+    }
+
+    @Test
+    fun `cancel of unknown item returns false`() {
+      assertFalse(registry.cancel("unknown"))
+    }
   }
 
-  @Test
-  fun `settling a registration without status leaves nothing in progress`() {
-    val registry = CachingSessionRegistry()
-    val job = Job()
+  @Nested
+  inner class Statuses {
+    @Test
+    fun `caching status keeps session in progress`() {
+      val job = Job()
+      registry.register("book-1", job)
+      registry.updateStatus(detailedItem("book-1"), CacheState(CacheStatus.Caching))
+      registry.settle("book-1", job)
 
-    registry.register("book-1", job)
-    registry.settle("book-1", job)
+      assertTrue(registry.inProgress())
+    }
 
-    assertFalse(registry.inProgress())
+    @Test
+    fun `completed status finishes the session`() {
+      val job = Job()
+      registry.register("book-1", job)
+      registry.updateStatus(detailedItem("book-1"), CacheState(CacheStatus.Completed))
+      registry.settle("book-1", job)
+
+      assertFalse(registry.inProgress())
+      assertFalse(registry.hasErrors())
+    }
+
+    @Test
+    fun `error status is reported`() {
+      registry.updateStatus(detailedItem("book-1"), CacheState(CacheStatus.Error))
+
+      assertTrue(registry.hasErrors())
+    }
+
+    @Test
+    fun `marked error is reported without statuses`() {
+      registry.markError()
+
+      assertTrue(registry.hasErrors())
+    }
   }
 
-  @Test
-  fun `settling a stale job does not clear the newer registration`() {
-    val registry = CachingSessionRegistry()
-    val first = Job()
-    val second = Job()
+  @Nested
+  inner class DrainAll {
+    @Test
+    fun `drainAll cancels jobs and returns in-flight items`() {
+      val cachingJob = Job()
+      val pendingJob = Job()
 
-    registry.register("book-1", first)
-    registry.register("book-1", second)
+      registry.register("book-caching", cachingJob)
+      registry.updateStatus(detailedItem("book-caching"), CacheState(CacheStatus.Caching))
 
-    registry.settle("book-1", first)
+      registry.register("book-pending", pendingJob)
 
-    assertTrue(registry.inProgress())
+      val completedJob = Job()
+      registry.register("book-completed", completedJob)
+      registry.updateStatus(detailedItem("book-completed"), CacheState(CacheStatus.Completed))
+      registry.settle("book-completed", completedJob)
+
+      val interrupted = registry.drainAll()
+
+      assertEquals(setOf("book-caching", "book-pending"), interrupted.toSet())
+      assertTrue(cachingJob.isCancelled)
+      assertTrue(pendingJob.isCancelled)
+    }
+
+    @Test
+    fun `drainAll resets the whole session`() {
+      registry.register("book-1", Job())
+      registry.updateStatus(detailedItem("book-1"), CacheState(CacheStatus.Caching))
+      registry.markError()
+
+      registry.drainAll()
+
+      assertFalse(registry.inProgress())
+      assertFalse(registry.hasErrors())
+      assertTrue(registry.notificationItems().isEmpty())
+    }
+
+    @Test
+    fun `drainAll on empty registry returns nothing`() {
+      assertTrue(registry.drainAll().isEmpty())
+    }
   }
 
-  @Test
-  fun `first status update replaces the pending registration`() {
-    val registry = CachingSessionRegistry()
+  @Nested
+  inner class CancelAll {
+    @Test
+    fun `cancelAll cancels jobs and returns every tracked item`() =
+      runTest {
+        val job = Job()
+        registry.register("book-1", job)
 
-    registry.register("book-1", Job())
-    registry.updateStatus(item(id = "book-1"), CacheState(CacheStatus.Completed))
+        val completedJob = Job()
+        registry.register("book-2", completedJob)
+        registry.updateStatus(detailedItem("book-2"), CacheState(CacheStatus.Completed))
+        registry.settle("book-2", completedJob)
 
-    assertFalse(registry.inProgress())
+        val cancelled = registry.cancelAll()
+
+        assertEquals(setOf("book-1", "book-2"), cancelled.toSet())
+        assertTrue(job.isCancelled)
+        assertFalse(registry.inProgress())
+      }
+
+    @Test
+    fun `cancelAll resets the error mark`() =
+      runTest {
+        registry.markError()
+
+        registry.cancelAll()
+
+        assertFalse(registry.hasErrors())
+      }
   }
 
-  @Test
-  fun `error of one item keeps the other download in progress`() {
-    val registry = CachingSessionRegistry()
-
-    registry.updateStatus(item(id = "book-1"), CacheState(CacheStatus.Error))
-    registry.updateStatus(item(id = "book-2"), CacheState(CacheStatus.Caching))
-
-    assertTrue(registry.inProgress())
-    assertTrue(registry.hasErrors())
-  }
-
-  @Test
-  fun `finished downloads leave nothing in progress`() {
-    val registry = CachingSessionRegistry()
-
-    registry.updateStatus(item(id = "book-1"), CacheState(CacheStatus.Completed))
-
-    assertFalse(registry.inProgress())
-    assertFalse(registry.hasErrors())
-  }
-
-  @Test
-  fun `cancel removes the item from notification payload`() {
-    val registry = CachingSessionRegistry()
-    val cached = item()
-
-    registry.register(cached.id, Job())
-    registry.updateStatus(cached, CacheState(CacheStatus.Caching))
-    registry.cancel(cached.id)
-
-    assertEquals(emptyList<Pair<DetailedItem, CacheState>>(), registry.notificationItems())
-  }
+  private fun detailedItem(id: String) =
+    DetailedItem(
+      id = id,
+      title = "Test Book",
+      subtitle = null,
+      author = "Author",
+      narrator = null,
+      publisher = null,
+      series = emptyList(),
+      year = null,
+      abstract = null,
+      files = emptyList(),
+      chapters = emptyList(),
+      progress = null,
+      libraryId = "lib-1",
+      localProvided = false,
+      createdAt = 0L,
+      updatedAt = 0L,
+    )
 }

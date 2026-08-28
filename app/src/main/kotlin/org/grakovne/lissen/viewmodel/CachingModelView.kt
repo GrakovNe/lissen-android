@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.cache.persistent.CacheState
+import org.grakovne.lissen.content.cache.persistent.CachingSessionRegistry
 import org.grakovne.lissen.content.cache.persistent.ContentCachingManager
 import org.grakovne.lissen.content.cache.persistent.ContentCachingProgress
 import org.grakovne.lissen.content.cache.persistent.ContentCachingService
@@ -45,6 +46,7 @@ class CachingModelView
     private val localCacheRepository: LocalCacheRepository,
     private val contentCachingProgress: ContentCachingProgress,
     private val contentCachingManager: ContentCachingManager,
+    private val cachingSessionRegistry: CachingSessionRegistry,
     private val libraryPreferences: LibraryPreferences,
     private val downloadPreferences: DownloadPreferences,
     private val cachedCoverProvider: CachedCoverProvider,
@@ -115,7 +117,11 @@ class CachingModelView
           putExtra(ContentCachingService.CACHING_TASK_EXTRA, task as Serializable)
         }
 
-      context.startForegroundService(intent)
+      if (ContentCachingService.requestStart(context, intent).not()) {
+        viewModelScope.launch {
+          contentCachingProgress.emit(task.itemId, CacheState(CacheStatus.Error))
+        }
+      }
     }
 
     fun getProgress(bookId: String) =
@@ -129,13 +135,12 @@ class CachingModelView
 
     fun stopCaching(item: DetailedItem) {
       Timber.d("User action: stopCaching ${item.id}")
-      val intent =
-        Intent(context, ContentCachingService::class.java).apply {
-          action = ContentCachingService.STOP_CACHING_ACTION
-          putExtra(ContentCachingService.CACHING_ITEM_ID, item.id)
-        }
 
-      context.startForegroundService(intent)
+      cachingSessionRegistry.cancel(item.id)
+
+      viewModelScope.launch {
+        contentCachingProgress.emit(item.id, CacheState(CacheStatus.Idle))
+      }
     }
 
     suspend fun dropCache(

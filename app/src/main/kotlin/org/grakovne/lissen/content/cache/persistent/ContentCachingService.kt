@@ -1,11 +1,15 @@
 package org.grakovne.lissen.content.cache.persistent
 
+import android.app.ForegroundServiceStartNotAllowedException
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
+import androidx.core.app.ServiceCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.onCompletion
@@ -37,6 +41,9 @@ class ContentCachingService : LifecycleService() {
   @Inject
   lateinit var registry: CachingSessionRegistry
 
+  @Volatile
+  private var stopping = false
+
   override fun onStartCommand(
     intent: Intent?,
     flags: Int,
@@ -44,45 +51,44 @@ class ContentCachingService : LifecycleService() {
   ): Int {
     val action = intent?.action ?: return START_NOT_STICKY
 
-    startForegroundWithProgress()
+    stopping = false
 
-    when (action) {
-      CACHE_ITEM_ACTION -> cacheItem(intent)
-      STOP_CACHING_ACTION -> stopCaching(intent)
+    when {
+      startForegroundWithProgress().not() -> rejectStart(intent)
+      action == CACHE_ITEM_ACTION -> cacheItem(intent)
     }
 
     return super.onStartCommand(intent, flags, startId)
   }
 
-  private fun startForegroundWithProgress() {
+  private fun startForegroundWithProgress(): Boolean {
     val notification = notificationService.updateCachingNotification(registry.notificationItems())
 
-    when {
-      Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
-        startForeground(
-          NOTIFICATION_ID,
-          notification,
-          ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
-        )
-      }
-
-      else -> {
-        startForeground(NOTIFICATION_ID, notification)
-      }
+    return attemptForegroundStart("Unable to promote caching service to foreground, rejecting the start") {
+      ServiceCompat.startForeground(
+        this,
+        NOTIFICATION_ID,
+        notification,
+        ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC,
+      )
     }
   }
 
-  private fun stopCaching(intent: Intent) {
-    val itemId = intent.getStringExtra(CACHING_ITEM_ID)
-    Timber.d("Stopping caching for $itemId")
+  private fun rejectStart(intent: Intent) {
+    val task = intent.getSerializableExtraCompat<ContentCachingTask>(CACHING_TASK_EXTRA)
+    abortCaching(rejectedItemId = task?.itemId)
+  }
 
-    itemId?.let { registry.cancel(it) }
+  private fun abortCaching(rejectedItemId: String? = null) {
+    stopping = true
+
+    val interrupted = (registry.drainAll() + listOfNotNull(rejectedItemId)).distinct()
 
     lifecycleScope.launch {
-      itemId?.let { cacheProgressBus.emit(it, CacheState(status = CacheStatus.Idle)) }
+      interrupted.forEach { cacheProgressBus.emit(it, CacheState(CacheStatus.Error)) }
 
-      if (registry.inProgress().not()) {
-        finish()
+      if (stopping) {
+        finish(errored = interrupted.isNotEmpty())
       }
     }
   }
@@ -102,24 +108,29 @@ class ContentCachingService : LifecycleService() {
     Timber.d("Starting caching for ${task.itemId}: option=${task.options}")
 
     val job =
-      lifecycleScope.launch {
+      lifecycleScope.launch(start = CoroutineStart.LAZY) {
         mediaProvider
           .fetchBook(task.itemId)
           .foldAsync(
             onSuccess = { item -> cacheFetchedItem(item, task) },
             onFailure = {
               Timber.e("Unable to fetch book ${task.itemId} for caching: ${it.code}")
+              registry.markError()
               registry.settle(task.itemId, currentCoroutineContext().job)
               cacheProgressBus.emit(task.itemId, CacheState(CacheStatus.Error))
-
-              if (registry.inProgress().not()) {
-                finish(errored = true)
-              }
             },
           )
       }
 
     registry.register(task.itemId, job)
+
+    job.invokeOnCompletion {
+      if (stopping.not() && registry.inProgress().not()) {
+        finish()
+      }
+    }
+
+    job.start()
   }
 
   private suspend fun cacheFetchedItem(
@@ -141,10 +152,6 @@ class ContentCachingService : LifecycleService() {
         emit(CacheState(CacheStatus.Error))
       }.onCompletion {
         registry.settle(item.id, currentCoroutineContext().job)
-
-        if (registry.inProgress().not()) {
-          finish()
-        }
       }.collect { progress ->
         registry.updateStatus(item, progress)
         cacheProgressBus.emit(item.id, progress)
@@ -157,8 +164,22 @@ class ContentCachingService : LifecycleService() {
       }
   }
 
-  override fun onTimeout(startId: Int) {
-    finish()
+  override fun onTimeout(
+    startId: Int,
+    fgsType: Int,
+  ) {
+    Timber.w("Time limit for the foreground service is exhausted, interrupting caching")
+    abortCaching()
+  }
+
+  override fun onDestroy() {
+    val leftovers = registry.drainAll()
+
+    if (leftovers.isNotEmpty()) {
+      Timber.w("Caching service destroyed with unfinished sessions: $leftovers")
+    }
+
+    super.onDestroy()
   }
 
   private fun finish(errored: Boolean = registry.hasErrors()) {
@@ -180,10 +201,39 @@ class ContentCachingService : LifecycleService() {
 
   companion object {
     const val CACHE_ITEM_ACTION = "org.grakovne.lissen.CACHE_ITEM_ACTION"
-    const val STOP_CACHING_ACTION = "STOP_CACHING_ACTION"
 
     const val CACHING_TASK_EXTRA = "CACHING_TASK_EXTRA"
-    const val CACHING_ITEM_ID = "CACHING_ITEM_ID"
+
+    fun requestStart(
+      context: Context,
+      intent: Intent,
+    ): Boolean =
+      attemptForegroundStart("Unable to start caching service: foreground start not allowed") {
+        context.startForegroundService(intent)
+      }
+
+    private inline fun attemptForegroundStart(
+      deniedMessage: String,
+      block: () -> Unit,
+    ): Boolean =
+      try {
+        block()
+        true
+      } catch (ex: Exception) {
+        when {
+          deniedForegroundStart(ex) -> {
+            Timber.w(ex, deniedMessage)
+            false
+          }
+
+          else -> {
+            throw ex
+          }
+        }
+      }
+
+    private fun deniedForegroundStart(ex: Exception): Boolean =
+      Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ex is ForegroundServiceStartNotAllowedException
   }
 }
 
