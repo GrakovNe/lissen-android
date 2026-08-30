@@ -99,6 +99,8 @@ fun AppNavHost(
       exitTransition = { exitTransition },
       popEnterTransition = { popEnterTransition },
       popExitTransition = { popExitTransition },
+      predictivePopEnterTransition = { _ -> popEnterTransition },
+      predictivePopExitTransition = { _ -> popExitTransition },
     ) {
       composable(route = ROUTE_SETTINGS_CACHED_ITEMS) {
         CachedItemsSettingsScreen(
