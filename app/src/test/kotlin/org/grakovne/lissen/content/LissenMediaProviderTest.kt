@@ -444,9 +444,29 @@ class LissenMediaProviderTest {
   @Nested
   inner class StartPlayback {
     @Test
-    fun `returns local session without calling channel when force cache enabled`() =
+    fun `opens remote session via channel even when force cache enabled`() =
+      runBlocking {
+        val session = PlaybackSession.remote("session-1", "book-1")
+        every { preferences.isForceCache() } returns true
+        coEvery {
+          mediaChannel.startPlayback(any(), any(), any(), any())
+        } returns OperationResult.Success(session)
+
+        val result = provider.startPlayback("book-1", "ep-1", listOf("audio/mp3"), "device-1")
+
+        assertInstanceOf(OperationResult.Success::class.java, result)
+        assertEquals(PlaybackSessionSource.REMOTE, (result as OperationResult.Success).data.sessionSource)
+        assertEquals("session-1", result.data.sessionId)
+        coVerify(exactly = 1) { mediaChannel.startPlayback("book-1", "ep-1", any(), any()) }
+      }
+
+    @Test
+    fun `falls back to local session on channel failure when force cache enabled`() =
       runBlocking {
         every { preferences.isForceCache() } returns true
+        coEvery {
+          mediaChannel.startPlayback(any(), any(), any(), any())
+        } returns OperationResult.Error(OperationError.NetworkError)
 
         val result = provider.startPlayback("book-1", "ep-1", listOf("audio/mp3"), "device-1")
 
@@ -454,7 +474,6 @@ class LissenMediaProviderTest {
         val session = (result as OperationResult.Success).data
         assertEquals("book-1", session.itemId)
         assertEquals(PlaybackSessionSource.LOCAL, session.sessionSource)
-        coVerify(exactly = 0) { mediaChannel.startPlayback(any(), any(), any(), any()) }
       }
 
     @Test
@@ -495,17 +514,35 @@ class LissenMediaProviderTest {
   @Nested
   inner class SyncProgress {
     @Test
-    fun `syncs local cache without calling channel when force cache enabled`() =
+    fun `syncs local cache and channel when force cache enabled`() =
       runBlocking {
         val item = detailedItem("book-1")
         val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
         every { preferences.isForceCache() } returns true
+        coEvery { mediaChannel.syncProgress("session-1", progress, 42.0) } returns
+          OperationResult.Success(Unit)
 
         val result = provider.syncProgress("session-1", item, progress, 42.0)
 
         assertInstanceOf(OperationResult.Success::class.java, result)
         coVerify { localCacheRepository.syncProgress(item, progress) }
-        coVerify(exactly = 0) { mediaChannel.syncProgress(any(), any(), any()) }
+        coVerify(exactly = 1) { mediaChannel.syncProgress("session-1", progress, 42.0) }
+      }
+
+    @Test
+    fun `keeps local progress and reports channel failure when force cache enabled`() =
+      runBlocking {
+        val item = detailedItem("book-1")
+        val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
+        every { preferences.isForceCache() } returns true
+        coEvery { mediaChannel.syncProgress("session-1", progress, 42.0) } returns
+          OperationResult.Error(OperationError.NetworkError)
+
+        val result = provider.syncProgress("session-1", item, progress, 42.0)
+
+        assertInstanceOf(OperationResult.Error::class.java, result)
+        assertEquals(OperationError.NetworkError, (result as OperationResult.Error).code)
+        coVerify { localCacheRepository.syncProgress(item, progress) }
       }
 
     @Test
@@ -536,6 +573,7 @@ class LissenMediaProviderTest {
         val result = provider.syncProgress("session-1", item, progress, 42.0)
 
         assertInstanceOf(OperationResult.Error::class.java, result)
+        assertEquals(OperationError.NetworkError, (result as OperationResult.Error).code)
       }
   }
 
