@@ -106,8 +106,6 @@ class LissenMediaProvider
 
       localCacheRepository.syncProgress(detailedItem, progress)
 
-      if (preferences.isForceCache()) return OperationResult.Success(Unit)
-
       return providePreferredChannel()
         .syncProgress(sessionId, progress, timeListened)
     }
@@ -281,8 +279,6 @@ class LissenMediaProvider
       deviceId: String,
     ): OperationResult<PlaybackSession> {
       Timber.d("Starting playback: itemId=$itemId, chapterId=$chapterId, mimeTypes=$supportedMimeTypes")
-
-      if (preferences.isForceCache()) return OperationResult.Success(PlaybackSession.local(itemId))
 
       return providePreferredChannel()
         .startPlayback(
