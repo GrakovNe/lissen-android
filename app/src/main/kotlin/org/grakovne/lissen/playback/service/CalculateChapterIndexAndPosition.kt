@@ -1,6 +1,7 @@
 package org.grakovne.lissen.playback.service
 
 import org.grakovne.lissen.lib.domain.DetailedItem
+import org.grakovne.lissen.lib.domain.PlayingChapter
 
 fun calculateChapterPosition(
   book: DetailedItem,
@@ -20,8 +21,12 @@ data class ChapterPosition(
 fun calculateChapterIndexAndPosition(
   book: DetailedItem,
   overallPosition: Double,
+): ChapterPosition = calculateChapterIndexAndPosition(book.chapters, overallPosition)
+
+fun calculateChapterIndexAndPosition(
+  chapters: List<PlayingChapter>,
+  overallPosition: Double,
 ): ChapterPosition {
-  val chapters = book.chapters
   if (chapters.isEmpty()) return ChapterPosition(-1, 0.0)
 
   val target = overallPosition + 0.1

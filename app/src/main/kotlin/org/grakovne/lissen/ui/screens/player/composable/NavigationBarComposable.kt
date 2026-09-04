@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.outlined.CloudDownload
-import androidx.compose.material.icons.outlined.ContentCut
 import androidx.compose.material.icons.outlined.SlowMotionVideo
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.CircularProgressIndicator
@@ -40,7 +39,6 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.content.cache.persistent.CacheState
 import org.grakovne.lissen.lib.domain.CacheStatus
-import org.grakovne.lissen.lib.domain.ChapterSkipConfig
 import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.lib.domain.DetailedItem
 import org.grakovne.lissen.lib.domain.DurationTimerOption
@@ -72,11 +70,6 @@ fun NavigationBarComposable(
   var playbackSpeedExpanded by remember { mutableStateOf(false) }
   var timerExpanded by remember { mutableStateOf(false) }
   var downloadsExpanded by remember { mutableStateOf(false) }
-  var chapterSkipExpanded by remember { mutableStateOf(false) }
-
-  val chapterSkipConfig by playerViewModel.chapterSkipConfig.observeAsState(ChapterSkipConfig())
-  val currentChapterPosition by playerViewModel.currentChapterPosition.observeAsState(0.0)
-  val currentChapterDuration by playerViewModel.currentChapterDuration.observeAsState(0.0)
 
   val scope = rememberCoroutineScope()
 
@@ -180,33 +173,6 @@ fun NavigationBarComposable(
       )
 
       NavigationBarItem(
-        enabled = hasEpisodes,
-        icon = {
-          Icon(
-            Icons.Outlined.ContentCut,
-            contentDescription = stringResource(R.string.player_screen_chapter_skip_navigation),
-            modifier = Modifier.size(iconSize),
-            tint = if (chapterSkipConfig.enabled) colorScheme.primary else LocalContentColor.current,
-          )
-        },
-        label = {
-          Text(
-            text = stringResource(R.string.player_screen_chapter_skip_navigation),
-            style = labelStyle,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-          )
-        },
-        selected = false,
-        onClick = { chapterSkipExpanded = true },
-        colors =
-          NavigationBarItemDefaults.colors(
-            selectedIconColor = colorScheme.primary,
-            indicatorColor = colorScheme.surfaceContainer,
-          ),
-      )
-
-      NavigationBarItem(
         icon = {
           Icon(
             when (timerOption) {
@@ -266,16 +232,6 @@ fun NavigationBarComposable(
           currentOption = timerOption,
           onOptionSelected = { playerViewModel.setTimer(it) },
           onDismissRequest = { timerExpanded = false },
-        )
-      }
-
-      if (chapterSkipExpanded) {
-        ChapterSkipComposable(
-          config = chapterSkipConfig,
-          currentChapterPosition = currentChapterPosition,
-          currentChapterDuration = currentChapterDuration,
-          onConfigChanged = { playerViewModel.updateChapterSkipConfig(it) },
-          onDismissRequest = { chapterSkipExpanded = false },
         )
       }
 

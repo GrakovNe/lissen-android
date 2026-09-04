@@ -349,7 +349,7 @@ class LissenMediaProvider
     }
 
     private fun trimProgress(detailedItem: DetailedItem): DetailedItem {
-      val totalDuration = detailedItem.chapters.sumOf { it.duration }
+      val totalDuration = detailedItem.chapters.maxOf { it.end }
       val progress = detailedItem.progress?.currentTime ?: return detailedItem
 
       return when {

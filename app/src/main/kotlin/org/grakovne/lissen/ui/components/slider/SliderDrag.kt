@@ -7,7 +7,7 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.horizontalDrag
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.input.pointer.positionChangeIgnoreConsumed
 import androidx.compose.ui.input.pointer.util.VelocityTracker
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
@@ -32,7 +32,9 @@ fun Modifier.sliderDrag(
 
         awaitPointerEventScope {
           horizontalDrag(pointerId) { change ->
-            val deltaX = change.positionChange().x
+            val deltaX = change.positionChangeIgnoreConsumed().x
+            change.consume()
+
             if (deltaX == 0f) return@horizontalDrag
 
             val pixelsPerStep = size.width / segments.toFloat()
@@ -48,8 +50,6 @@ fun Modifier.sliderDrag(
               change.uptimeMillis,
               change.position,
             )
-
-            change.consume()
           }
         }
 

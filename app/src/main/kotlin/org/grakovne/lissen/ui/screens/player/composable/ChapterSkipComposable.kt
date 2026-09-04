@@ -1,5 +1,6 @@
 package org.grakovne.lissen.ui.screens.player.composable
 
+import android.view.View
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -9,40 +10,30 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.MyLocation
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.lib.domain.ChapterSkipConfig
+import org.grakovne.lissen.ui.components.slider.ChapterSkipSlider
 
 private val PRESET_SECONDS = listOf(5, 10, 15, 30)
 
@@ -50,12 +41,11 @@ private val PRESET_SECONDS = listOf(5, 10, 15, 30)
 @Composable
 fun ChapterSkipComposable(
   config: ChapterSkipConfig,
-  currentChapterPosition: Double,
-  currentChapterDuration: Double,
   onConfigChanged: (ChapterSkipConfig) -> Unit,
   onDismissRequest: () -> Unit,
 ) {
-  val view = LocalView.current
+  val view: View = LocalView.current
+  val latestConfig by rememberUpdatedState(config)
 
   ModalBottomSheet(
     containerColor = colorScheme.background,
@@ -90,7 +80,7 @@ fun ChapterSkipComposable(
             checked = config.enabled,
             onCheckedChange = { enabled ->
               withHaptic(view) {
-                onConfigChanged(config.copy(enabled = enabled))
+                onConfigChanged(latestConfig.copy(enabled = enabled))
               }
             },
           )
@@ -101,18 +91,12 @@ fun ChapterSkipComposable(
         Spacer(modifier = Modifier.height(12.dp))
 
         // Intro Skip Section
-        SkipSection(
+        SkipSliderSection(
           title = stringResource(R.string.chapter_skip_intro),
           currentSeconds = config.introSeconds,
           onSecondsChanged = { seconds ->
             withHaptic(view) {
-              onConfigChanged(config.copy(introSeconds = seconds))
-            }
-          },
-          onSetFromPosition = {
-            withHaptic(view) {
-              val seconds = currentChapterPosition.toInt().coerceAtLeast(0)
-              onConfigChanged(config.copy(introSeconds = seconds))
+              onConfigChanged(latestConfig.copy(introSeconds = seconds))
             }
           },
         )
@@ -122,18 +106,12 @@ fun ChapterSkipComposable(
         Spacer(modifier = Modifier.height(12.dp))
 
         // Outro Skip Section
-        SkipSection(
+        SkipSliderSection(
           title = stringResource(R.string.chapter_skip_outro),
           currentSeconds = config.outroSeconds,
           onSecondsChanged = { seconds ->
             withHaptic(view) {
-              onConfigChanged(config.copy(outroSeconds = seconds))
-            }
-          },
-          onSetFromPosition = {
-            withHaptic(view) {
-              val remaining = (currentChapterDuration - currentChapterPosition).toInt().coerceAtLeast(0)
-              onConfigChanged(config.copy(outroSeconds = remaining))
+              onConfigChanged(latestConfig.copy(outroSeconds = seconds))
             }
           },
         )
@@ -143,42 +121,32 @@ fun ChapterSkipComposable(
 }
 
 @Composable
-private fun SkipSection(
+private fun SkipSliderSection(
   title: String,
   currentSeconds: Int,
   onSecondsChanged: (Int) -> Unit,
-  onSetFromPosition: () -> Unit,
 ) {
-  var manualInput by remember(currentSeconds) { mutableStateOf("") }
+  val view = LocalView.current
 
   Column(
     modifier = Modifier.fillMaxWidth(),
+    horizontalAlignment = Alignment.CenterHorizontally,
   ) {
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-      Text(
-        text = title,
-        style = typography.titleSmall,
-        fontWeight = FontWeight.Bold,
-      )
-      Text(
-        text =
-          if (currentSeconds > 0) {
-            stringResource(R.string.chapter_skip_current_value, currentSeconds)
-          } else {
-            stringResource(R.string.chapter_skip_disabled)
-          },
-        style = typography.bodySmall,
-        color = colorScheme.onSurfaceVariant,
-      )
-    }
+    Text(
+      text = title,
+      style = typography.titleSmall,
+      fontWeight = FontWeight.Bold,
+    )
 
-    Spacer(modifier = Modifier.height(8.dp))
+    ChapterSkipSlider(
+      seconds = currentSeconds,
+      modifier =
+        Modifier
+          .fillMaxWidth()
+          .padding(vertical = 16.dp),
+      onUpdate = { onSecondsChanged(it) },
+    )
 
-    // Preset buttons
     Row(
       modifier = Modifier.fillMaxWidth(),
       horizontalArrangement = Arrangement.SpaceEvenly,
@@ -186,9 +154,11 @@ private fun SkipSection(
       PRESET_SECONDS.forEach { seconds ->
         FilledTonalButton(
           onClick = {
-            onSecondsChanged(if (currentSeconds == seconds) 0 else seconds)
+            withHaptic(view) {
+              onSecondsChanged(if (currentSeconds == seconds) 0 else seconds)
+            }
           },
-          modifier = Modifier.size(52.dp),
+          modifier = Modifier.size(56.dp),
           shape = CircleShape,
           colors =
             ButtonDefaults.filledTonalButtonColors(
@@ -219,69 +189,6 @@ private fun SkipSection(
             overflow = TextOverflow.Ellipsis,
           )
         }
-      }
-    }
-
-    Spacer(modifier = Modifier.height(8.dp))
-
-    // Set from current position button
-    TextButton(
-      onClick = onSetFromPosition,
-      modifier = Modifier.fillMaxWidth(),
-    ) {
-      Icon(
-        imageVector = Icons.Outlined.MyLocation,
-        contentDescription = null,
-        modifier = Modifier.size(16.dp),
-      )
-      Spacer(modifier = Modifier.width(6.dp))
-      Text(
-        text = stringResource(R.string.chapter_skip_set_from_position),
-        style = typography.bodySmall,
-      )
-    }
-
-    // Manual input
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.Center,
-    ) {
-      OutlinedTextField(
-        value = manualInput,
-        onValueChange = { value ->
-          manualInput = value.filter { it.isDigit() }
-        },
-        label = {
-          Text(
-            text = stringResource(R.string.chapter_skip_manual_input),
-            style = typography.bodySmall,
-          )
-        },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        modifier =
-          Modifier
-            .weight(1f)
-            .height(56.dp),
-        shape = RoundedCornerShape(12.dp),
-        singleLine = true,
-        textStyle = typography.bodyMedium,
-      )
-      Spacer(modifier = Modifier.width(8.dp))
-      FilledTonalButton(
-        onClick = {
-          val seconds = manualInput.toIntOrNull() ?: 0
-          onSecondsChanged(seconds.coerceIn(0, 3600))
-          manualInput = ""
-        },
-        enabled = manualInput.isNotBlank(),
-        shape = RoundedCornerShape(12.dp),
-        modifier = Modifier.height(56.dp),
-      ) {
-        Text(
-          text = stringResource(android.R.string.ok),
-          style = typography.labelMedium,
-        )
       }
     }
   }

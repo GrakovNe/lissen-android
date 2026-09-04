@@ -52,7 +52,7 @@ fun MediaDetailComposable(
   settingsViewModel: SettingsViewModel,
 ) {
   val totalPosition by playingViewModel.totalPosition.observeAsState(0.0)
-  val totalDuration = playingBook?.chapters?.sumOf { it.duration }
+  val totalDuration = playingBook?.chapters?.maxOf { it.end }
   val preferredLibrary by settingsViewModel.preferredLibrary.observeAsState()
 
   ModalBottomSheet(

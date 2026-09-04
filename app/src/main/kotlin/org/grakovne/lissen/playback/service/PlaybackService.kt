@@ -234,24 +234,18 @@ class PlaybackService : MediaLibraryService() {
       else -> {
         val positionMs = (position * 1000).toLong()
 
-        val durationsMs = items.map { (it.duration * 1000).toLong() }
-        val cumulativeDurationsMs = durationsMs.runningFold(0L) { acc, duration -> acc + duration }
-
-        val targetChapterIndex = cumulativeDurationsMs.indexOfFirst { it > positionMs }
-
-        when (targetChapterIndex - 1 >= 0) {
-          true -> {
-            val chapterStartTimeMs = cumulativeDurationsMs[targetChapterIndex - 1]
-            val chapterProgressMs = positionMs - chapterStartTimeMs
-            exoPlayer.seekTo(targetChapterIndex - 1, chapterProgressMs)
-          }
-
-          false -> {
-            val lastChapterIndex = items.size - 1
-            val lastChapterDurationMs = durationsMs.last()
-            exoPlayer.seekTo(lastChapterIndex, lastChapterDurationMs)
-          }
+        if (positionMs >= (items.last().end * 1000).toLong()) {
+          val lastChapterIndex = items.size - 1
+          val lastChapterDurationMs = (items.last().duration * 1000).toLong()
+          exoPlayer.seekTo(lastChapterIndex, lastChapterDurationMs)
+          return
         }
+
+        val (chapterIndex, chapterPosition) = calculateChapterIndexAndPosition(items, position)
+        val safeChapterIndex = chapterIndex.coerceAtLeast(0)
+        val safeChapterPositionMs = (chapterPosition * 1000).toLong().coerceAtLeast(0L)
+
+        exoPlayer.seekTo(safeChapterIndex, safeChapterPositionMs)
       }
     }
   }

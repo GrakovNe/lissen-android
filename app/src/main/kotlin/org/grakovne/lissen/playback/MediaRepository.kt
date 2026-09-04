@@ -480,10 +480,10 @@ class MediaRepository
     private fun updateProgress(detailedItem: DetailedItem): Deferred<Unit> =
       CoroutineScope(Dispatchers.Main).async {
         val currentIndex = mediaController.currentMediaItemIndex
-        val accumulated = detailedItem.chapters.take(currentIndex).sumOf { it.duration }
+        val chapterStart = detailedItem.chapters.getOrNull(currentIndex)?.start ?: 0.0
         val currentFilePosition = mediaController.currentPosition / 1000.0
 
-        _totalPosition.postValue(accumulated + currentFilePosition)
+        _totalPosition.postValue(chapterStart + currentFilePosition)
       }
 
     private fun play() {
@@ -512,10 +512,7 @@ class MediaRepository
         return
       }
 
-      val overallDuration =
-        book
-          .chapters
-          .sumOf { it.duration }
+      val overallDuration = book.chapters.maxOf { it.end }
 
       val current = totalPosition.value ?: 0.0
 
