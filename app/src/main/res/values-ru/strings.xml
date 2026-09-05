@@ -286,4 +286,13 @@
     <string name="import_config_title">Импортировать конфигурацию</string>
     <string name="import_config_description">Восстановить настройки приложения</string>
     <string name="import_config_failed_toast">Не удалось импортировать конфигурацию</string>
+    <string name="downloads_menu_download_option_decrease">Уменьшить количество</string>
+    <string name="downloads_menu_download_option_increase">Увеличить количество</string>
+    <string name="tree_node_downloads_offline">Загрузки</string>
+    <string name="tree_node_all_titles">Библиотека</string>
+    <string name="tree_node_series_collapsed">Серии</string>
+    <string name="tree_node_genres">Жанры</string>
+    <string name="tree_node_tags">Теги</string>
+    <string name="tree_node_authors">Авторы</string>
+    <string name="tree_node_series">Серии</string>
 </resources>
