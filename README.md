@@ -50,6 +50,21 @@ nano local.properties
 ```
 5. Build and run the app on an Android device or emulator.
 
+### Signing Certificate
+
+Release APKs are signed with the following certificate (SHA-256 fingerprint):
+
+```
+org.grakovne.lissen
+1A:E5:50:AB:71:2B:C1:78:53:DF:F5:9F:52:C0:69:7E:CC:48:85:4C:9B:7E:51:B4:7A:6F:79:C9:D2:D0:FA:E4
+```
+
+Verify an APK with [apksigner](https://developer.android.com/tools/apksigner):
+
+```
+apksigner verify --print-certs lissen.apk
+```
+
 ### Localization
 
 Help us translate Lissen into more languages! We use [Weblate](https://hosted.weblate.org/engage/lissen/) to manage translations.
