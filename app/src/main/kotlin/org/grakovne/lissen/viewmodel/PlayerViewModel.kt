@@ -81,7 +81,7 @@ class PlayerViewModel
       val playingItem = preferences.getPlayingItem()
 
       if (playingItem == null) {
-        mediaRepository.clearPlayingBook()
+        viewModelScope.launch { mediaRepository.clearPlayingBook() }
         return
       }
 
