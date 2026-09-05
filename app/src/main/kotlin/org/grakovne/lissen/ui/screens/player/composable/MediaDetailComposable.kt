@@ -62,6 +62,7 @@ fun MediaDetailComposable(
   val totalPosition by playingViewModel.totalPosition.collectAsState()
   val totalDuration = playingBook?.chapters?.sumOf { it.duration }
   val preferredLibrary by settingsViewModel.preferredLibrary.collectAsState()
+  val libraryType = playingBook?.libraryType ?: preferredLibrary?.type ?: LibraryType.UNKNOWN
 
   LissenModalBottomSheet(
     onDismissRequest = onDismissRequest,
@@ -161,7 +162,7 @@ fun MediaDetailComposable(
             )
           }
 
-        if (preferredLibrary?.type == LibraryType.LIBRARY) {
+        if (libraryType == LibraryType.LIBRARY) {
           totalDuration?.let {
             InfoRow(
               icon = Icons.Filled.AvTimer,
@@ -200,7 +201,7 @@ fun MediaDetailComposable(
           }
       }
 
-      if (null != totalDuration && preferredLibrary?.type == LibraryType.LIBRARY) {
+      if (null != totalDuration && libraryType == LibraryType.LIBRARY) {
         Box(
           modifier =
             Modifier

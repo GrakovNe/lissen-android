@@ -8,6 +8,7 @@ import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastMedia
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastMediaMetadataResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
 import org.grakovne.lissen.domain.BookChapterState
+import org.grakovne.lissen.domain.LibraryType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
@@ -68,6 +69,7 @@ class PodcastResponseConverterTest {
     assertEquals("podcast-1", result.id)
     assertEquals("My Podcast", result.title)
     assertEquals("lib-1", result.libraryId)
+    assertEquals(LibraryType.PODCAST, result.libraryType)
     assertEquals("Some Author", result.author)
     assertNull(result.narrator)
     assertEquals(false, result.localProvided)

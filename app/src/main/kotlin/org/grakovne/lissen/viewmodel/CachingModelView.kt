@@ -109,6 +109,7 @@ class CachingModelView
           itemId = mediaItem.id,
           options = option,
           currentPosition = currentPosition,
+          libraryType = mediaItem.libraryType,
         )
 
       val intent =

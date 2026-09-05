@@ -5,6 +5,7 @@ import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookFileEntity
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
+import org.grakovne.lissen.domain.LibraryType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -45,7 +46,7 @@ class CachedBookEntityDetailedConverterTest {
 
   @Test
   fun `maps basic fields and marks the item as locally provided`() {
-    val result = converter.apply(entity())
+    val result = converter.apply(entity(), LibraryType.LIBRARY)
 
     assertEquals("book-1", result.id)
     assertEquals("My Book", result.title)
@@ -53,6 +54,7 @@ class CachedBookEntityDetailedConverterTest {
     assertEquals("Author", result.author)
     assertEquals("Narrator", result.narrator)
     assertEquals("lib-1", result.libraryId)
+    assertEquals(LibraryType.LIBRARY, result.libraryType)
     assertTrue(result.localProvided)
     assertEquals("Abstract", result.abstract)
     assertEquals("Publisher", result.publisher)

@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
@@ -73,11 +74,14 @@ class PlayerViewModel
     }
 
     fun updatePlayingItem() {
-      val playingItem = preferences.getPlayingItem()
+      if (mediaRepository.playingBook.value != null) {
+        return
+      }
 
-      when (playingItem?.id) {
-        null -> viewModelScope.launch { mediaRepository.clearPlayingBook() }
-        else -> viewModelScope.launch { mediaRepository.preparePlayback(playingItem.id) }
+      val playingItem = preferences.getPlayingItem() ?: return
+
+      viewModelScope.launch {
+        mediaRepository.preparePlayback(playingItem.id, playingItem.libraryType)
       }
     }
 
@@ -115,10 +119,13 @@ class PlayerViewModel
       mediaRepository.clearPreparedItem()
     }
 
-    fun preparePlayback(bookId: String) {
+    fun preparePlayback(
+      bookId: String,
+      libraryType: LibraryType? = null,
+    ) {
       viewModelScope.launch {
         mediaRepository.clearPreparedItem()
-        mediaRepository.preparePlayback(bookId)
+        mediaRepository.preparePlayback(bookId, libraryType)
       }
     }
 

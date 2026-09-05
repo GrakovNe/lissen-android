@@ -6,6 +6,7 @@ import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
 import org.grakovne.lissen.domain.BookChapterState
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PlayingChapter
 import timber.log.Timber
@@ -75,6 +76,7 @@ class PodcastResponseConverter
         title = item.media.metadata.title,
         subtitle = null,
         libraryId = item.libraryId,
+        libraryType = LibraryType.PODCAST,
         author = item.media.metadata.author,
         narrator = null,
         localProvided = false,

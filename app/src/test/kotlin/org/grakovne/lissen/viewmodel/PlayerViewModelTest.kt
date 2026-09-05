@@ -15,6 +15,7 @@ import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.BookmarkSyncState
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DurationTimerOption
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
@@ -291,21 +292,33 @@ class PlayerViewModelTest {
   @Nested
   inner class PlayingItemLifecycle {
     @Test
-    fun `updatePlayingItem clears playing book when there is no stored item`() {
+    fun `updatePlayingItem does nothing when there is no stored item`() {
       every { preferences.getPlayingItem() } returns null
 
       viewModel.updatePlayingItem()
 
-      verify { mediaRepository.clearPlayingBook() }
+      verify(exactly = 0) { mediaRepository.clearPlayingBook() }
+      coVerify(exactly = 0) { mediaRepository.preparePlayback(any(), any()) }
     }
 
     @Test
     fun `updatePlayingItem prepares playback when there is a stored item`() {
-      every { preferences.getPlayingItem() } returns detailedItem()
+      every { preferences.getPlayingItem() } returns detailedItem(libraryType = LibraryType.PODCAST)
 
       viewModel.updatePlayingItem()
 
-      coVerify { mediaRepository.preparePlayback("book-1") }
+      coVerify { mediaRepository.preparePlayback("book-1", LibraryType.PODCAST) }
+    }
+
+    @Test
+    fun `updatePlayingItem does not replace an already registered playing book`() {
+      playingBook.value = detailedItem(id = "current-book")
+      every { preferences.getPlayingItem() } returns detailedItem(id = "stored-book")
+
+      viewModel.updatePlayingItem()
+
+      verify(exactly = 0) { mediaRepository.clearPlayingBook() }
+      coVerify(exactly = 0) { mediaRepository.preparePlayback(any(), any()) }
     }
 
     @Test
@@ -317,10 +330,10 @@ class PlayerViewModelTest {
 
     @Test
     fun `preparePlayback clears the prepared item before preparing the new one`() {
-      viewModel.preparePlayback("book-2")
+      viewModel.preparePlayback("book-2", LibraryType.LIBRARY)
 
       coVerify { mediaRepository.clearPreparedItem() }
-      coVerify { mediaRepository.preparePlayback("book-2") }
+      coVerify { mediaRepository.preparePlayback("book-2", LibraryType.LIBRARY) }
     }
 
     @Test
@@ -343,23 +356,27 @@ class PlayerViewModelTest {
     }
   }
 
-  private fun detailedItem(chapters: List<PlayingChapter> = emptyList()) =
-    DetailedItem(
-      id = "book-1",
-      title = "Test Book",
-      subtitle = null,
-      author = "Author",
-      narrator = null,
-      publisher = null,
-      series = emptyList(),
-      year = null,
-      abstract = null,
-      files = emptyList(),
-      chapters = chapters,
-      progress = null,
-      libraryId = "lib-1",
-      localProvided = false,
-      createdAt = 0L,
-      updatedAt = 0L,
-    )
+  private fun detailedItem(
+    chapters: List<PlayingChapter> = emptyList(),
+    id: String = "book-1",
+    libraryType: LibraryType? = null,
+  ) = DetailedItem(
+    id = id,
+    title = "Test Book",
+    subtitle = null,
+    author = "Author",
+    narrator = null,
+    publisher = null,
+    series = emptyList(),
+    year = null,
+    abstract = null,
+    files = emptyList(),
+    chapters = chapters,
+    progress = null,
+    libraryId = "lib-1",
+    libraryType = libraryType,
+    localProvided = false,
+    createdAt = 0L,
+    updatedAt = 0L,
+  )
 }
