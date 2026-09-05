@@ -268,25 +268,15 @@ class MediaRepository
 
       progressPoller.stop()
 
-      withMain {
-        if (::mediaController.isInitialized) {
-          mediaController.stop()
-          mediaController.clearMediaItems()
-        }
+      if (::mediaController.isInitialized) {
+        mediaController.stop()
+        mediaController.clearMediaItems()
       }
 
       _isPlaying.value = false
       _isPlaybackReady.value = false
       _playingBook.value = null
       preferences.clearPlayingItem()
-    }
-
-    fun disconnect() {
-      withMain {
-        if (::mediaController.isInitialized) {
-          mediaController.release()
-        }
-      }
     }
 
     fun setTotalPosition(totalPosition: Double) {

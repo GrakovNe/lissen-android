@@ -14,6 +14,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
+import androidx.media3.datasource.cache.Cache
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
@@ -57,6 +58,9 @@ class ContentAcceptanceTest {
   lateinit var mediaRepository: MediaRepository
 
   @Inject
+  lateinit var cache: Cache
+
+  @Inject
   lateinit var libraryPreferences: LibraryPreferences
 
   @get:Rule(order = 2)
@@ -84,13 +88,7 @@ class ContentAcceptanceTest {
       mediaRepository.clearPlayingBook()
     }
 
-    InstrumentationRegistry.getInstrumentation().runOnMainSync {
-      mediaRepository.disconnect()
-    }
-
-    val context = InstrumentationRegistry.getInstrumentation().targetContext
-    context.stopService(Intent(context, PlaybackService::class.java))
-    sleepReal(1_000)
+    releasePlayback(mediaRepository, cache)
   }
 
   @Test

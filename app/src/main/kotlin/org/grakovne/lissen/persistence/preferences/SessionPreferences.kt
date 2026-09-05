@@ -50,17 +50,18 @@ class SessionPreferences
 
     fun getRefreshToken(): String? = refreshTokenCache.get()
 
-    fun hasCredentials(): Boolean =
-      try {
-        val host = getHost()
-        val username = getUsername()
-        val hasToken = getToken() != null || getAccessToken() != null
+    fun hasCredentials(): Boolean {
+      val host = getHost()
+      val username = getUsername()
+      val hasToken = getToken() != null || getAccessToken() != null
 
+      return try {
         host != null && username != null && hasToken
       } catch (ex: Exception) {
         Timber.w("Unable to resolve credentials state due to: ${ex.message}")
         false
       }
+    }
 
     fun clearCredentials() {
       store.remove(listOf(KEY_TOKEN, KEY_ACCESS_TOKEN, KEY_REFRESH_TOKEN))

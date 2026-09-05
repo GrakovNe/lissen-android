@@ -33,7 +33,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.content.cache.persistent.CacheState
@@ -261,7 +260,7 @@ fun NavigationBarComposable(
               .book
               .value
               ?.let {
-                scope.launch(Dispatchers.Main) {
+                scope.launch {
                   contentCachingModelView.dropCache(it.id)
 
                   playerViewModel.clearPlayingBook()

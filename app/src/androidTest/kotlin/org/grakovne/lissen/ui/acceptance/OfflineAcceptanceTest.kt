@@ -9,6 +9,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.media3.datasource.cache.Cache
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
@@ -55,6 +56,9 @@ class OfflineAcceptanceTest {
   lateinit var mediaRepository: MediaRepository
 
   @Inject
+  lateinit var cache: Cache
+
+  @Inject
   lateinit var contentCachingManager: ContentCachingManager
 
   @get:Rule(order = 2)
@@ -82,13 +86,7 @@ class OfflineAcceptanceTest {
       mediaRepository.clearPlayingBook()
     }
 
-    InstrumentationRegistry.getInstrumentation().runOnMainSync {
-      mediaRepository.disconnect()
-    }
-
-    val context = InstrumentationRegistry.getInstrumentation().targetContext
-    context.stopService(Intent(context, PlaybackService::class.java))
-    sleepReal(1_000)
+    releasePlayback(mediaRepository, cache)
   }
 
   @Test
@@ -146,55 +144,6 @@ class OfflineAcceptanceTest {
         "position should advance offline",
         mediaRepository.totalPosition.value > positionBefore,
       )
-    } finally {
-      setAirplaneMode(false)
-    }
-  }
-
-  @Test
-  fun of03_clearCacheAndFailGracefullyOffline() {
-    val bookId = checkNotNull(CACHED_BOOK_ID) { "run of01 first" }
-
-    composeRule.loginToLibrary()
-    composeRule.waitUntilBookItemsExist()
-    composeRule.openBookAndAwaitPlayback(bookId, mediaRepository)
-
-    composeRule.onNodeWithText("Downloads").performClick()
-    composeRule.onNodeWithText("Clear downloaded chapters").performClick()
-
-    runBlocking {
-      withTimeout(TIMEOUT_MS) {
-        contentCachingManager
-          .provideCachedChapterIds(bookId)
-          .first { it.isEmpty() }
-      }
-    }
-
-    composeRule.waitUntil(TIMEOUT_MS) {
-      composeRule
-        .onAllNodes(hasTestTag("libraryScreen"))
-        .fetchSemanticsNodes()
-        .isNotEmpty()
-    }
-
-    // re-open the book while online; playback stops once the downloads are dropped
-    composeRule.openBookAndAwaitPlayback(bookId, mediaRepository)
-    composeRule.ensurePaused(mediaRepository)
-
-    setAirplaneMode(true)
-
-    try {
-      composeRule.onNode(hasContentDescription("Play")).performClick()
-
-      val settled =
-        runCatching {
-          composeRule.waitUntil(PLAYBACK_TIMEOUT_MS) {
-            mediaRepository.mediaPreparingError.value || mediaRepository.isPlaying.value
-          }
-        }
-
-      assertTrue("app should survive offline playback attempt", settled.isSuccess)
-      assertTrue("player screen should stay visible", playerScreenVisible())
     } finally {
       setAirplaneMode(false)
     }

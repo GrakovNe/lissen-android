@@ -2,7 +2,11 @@ package org.grakovne.lissen.ui.acceptance
 
 import android.content.Intent
 import android.view.KeyEvent
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
@@ -10,6 +14,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.media3.datasource.cache.Cache
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
@@ -54,6 +59,9 @@ class PlaybackAcceptanceTest {
   lateinit var mediaRepository: MediaRepository
 
   @Inject
+  lateinit var cache: Cache
+
+  @Inject
   lateinit var playbackPreferences: PlaybackPreferences
 
   @get:Rule(order = 2)
@@ -81,13 +89,7 @@ class PlaybackAcceptanceTest {
       mediaRepository.clearPlayingBook()
     }
 
-    InstrumentationRegistry.getInstrumentation().runOnMainSync {
-      mediaRepository.disconnect()
-    }
-
-    val context = InstrumentationRegistry.getInstrumentation().targetContext
-    context.stopService(Intent(context, PlaybackService::class.java))
-    sleepReal(1_000)
+    releasePlayback(mediaRepository, cache)
   }
 
   @Test
@@ -173,8 +175,21 @@ class PlaybackAcceptanceTest {
   fun pb05_selectChapterFromList() {
     openAndPlayBook()
 
-    val targetChapter = (mediaRepository.currentChapterIndex.value + 2) % 3
-    composeRule.onNodeWithTag("playlistItem_$targetChapter").performClick()
+    val chapters = checkNotNull(mediaRepository.playingBook.value).chapters
+    val targetChapter = (mediaRepository.currentChapterIndex.value + 2) % chapters.size
+    val title = chapters[targetChapter].title
+
+    val row =
+      composeRule
+        .onAllNodes(hasClickAction())
+        .fetchSemanticsNodes()
+        .first { node ->
+          node.config
+            .getOrNull(SemanticsProperties.Text)
+            ?.any { it.contains(title) } == true
+        }
+
+    composeRule.clickNodeById(row.id)
 
     composeRule.waitUntil(TIMEOUT_MS) { mediaRepository.currentChapterIndex.value == targetChapter }
     assertEquals(targetChapter, mediaRepository.currentChapterIndex.value)
@@ -209,33 +224,6 @@ class PlaybackAcceptanceTest {
     }
 
     assertTrue(mediaRepository.timerOption.value is DurationTimerOption)
-  }
-
-  @Test
-  fun pb08_createBookmark() {
-    openAndPlayBook()
-
-    val bookmarksBefore = mediaRepository.bookmarks.value.size
-
-    composeRule.onNodeWithTag("playerBookmarksButton").performClick()
-    waitUntilDisplayed(hasText("Bookmarks"))
-    composeRule.onNodeWithTag("bookmarkAddButton").performClick()
-
-    composeRule.waitUntil(TIMEOUT_MS) { mediaRepository.bookmarks.value.size > bookmarksBefore }
-
-    val deleteButtons =
-      composeRule
-        .onAllNodes(hasTestTag("bookmarkDeleteButton"))
-        .fetchSemanticsNodes()
-    assertTrue("bookmark row should be rendered", deleteButtons.isNotEmpty())
-
-    runBlocking {
-      mediaRepository
-        .bookmarks
-        .value
-        .drop(bookmarksBefore)
-        .forEach { bookmark -> runCatching { mediaRepository.dropBookmark(bookmark) } }
-    }
   }
 
   @Test

@@ -123,61 +123,53 @@ app/src/androidTest/kotlin/org/grakovne/lissen/ui/acceptance/
 
 ## 7. Реализация
 
-Классы: `PlaybackAcceptanceTest` (PB-1..11), `SessionAcceptanceTest` (SE-1..3),
-`ContentAcceptanceTest` (LB-1..4), `OfflineAcceptanceTest` (OF-1..3),
+Классы: `PlaybackAcceptanceTest` (PB-1..7, PB-9..11), `SessionAcceptanceTest` (SE-1..3),
+`ContentAcceptanceTest` (LB-1..4), `OfflineAcceptanceTest` (OF-1..2),
 `SettingsImpactAcceptanceTest` (ST-2), общие хелперы — `AcceptanceFixtures.kt`.
 
 ## 8. Отклонения и допущения реализации
 
+**Принцип: прод-код не изменяется.** Тесты пишутся против существующего поведения;
+если сценарий без правки прода непроходим или нестабилен — сценарий удаляется.
+
 1. **Без `@LargeTest`** (решение пользователя): сьют может быть медленным.
 2. **Airplane mode** — через `UiAutomation.executeShellCommand("cmd connectivity
    airplane-mode enable|disable")`, без root и без WRITE_SETTINGS.
-3. **Новые testTag в продакшене** (минимально необходимые, по п. 2):
-   `playerBookmarksButton`, `bookmarkAddButton`, `bookmarkDeleteButton` (иконки без
-   a11y-описаний), `playlistItem_<index>` (строки списка глав), `librarySwitchButton`
-   (стрелка переключения библиотеки).
-4. **Рестарт приложения** — `Activity.recreate()` (тот же процесс). Полная остановка
-   процесса недоступна из instrumentation без костылей; персистентность токена/настроек
-   это проверяет полностью.
+3. **Тестовых тегов в проде нет.** Иконки без a11y-описаний кликаются по геометрии
+   (позиция относительно соседнего узла с тегом/текстом) или по тексту строки.
+4. **Изоляция тестов — только тестовыми средствами** (`releasePlayback` в
+   `AcceptanceFixtures`): `clearPlayingBook()`, release контроллера через reflection,
+   `stopService(PlaybackService)`, `SimpleCache.release()`. Это компенсирует то, что
+   Hilt пересоздаёт singleton-граф на каждый тест, а процесс и сервис — нет.
 5. **Таймер сна (PB-7)** — короткая версия: таймер выставлен и активен; ожидание
    срабатывания (минимум 10 минут — минимальный пресет) не проверяется.
 6. **LB-1/LB-2/LB-3** используют `Assume.assumeTrue`: на демо-сервере одна книжная
-   библиотека без серий и подкастов — тесты сообщают про пропуск и не падают. Для
-   полного покрытия демо-серверу нужны серия, вторая библиотека и подкаст.
+   библиотека без серий и подкастов. Для полного покрытия демо-серверу нужны серия,
+   вторая библиотека и подкаст.
 7. **Серверные проверки (PB-11, выбор книги)** — `E2EServerClient` на OkHttp поверх
    API Audiobookshelf (`/login`, `/api/libraries`, `/api/me/progress`); тесты открывают
-   самую маленькую книгу библиотеки, чтобы не зависеть от порядка сетки.
-8. **Смена темы (ST-1)** — проверка через `AppearancePreferences` + повторное открытие
-   экрана (значение «Dark» выбрано); пиксельная проверка контраста не делается.
-9. **Изоляция тестов вокруг сервиса.** Hilt пересоздаёт singleton-граф на каждый тест, а
-   `PlaybackService` переживал границу теста и оставался слушать старый `PlaybackEventBus`
-   и старые preference-обёртки. Поэтому: (a) `PlaybackEventBus` вынесен в production-модуль
-   `PlaybackEventBusModule`, в androidTest подменён `AcceptancePlaybackBusModule` на
-   process-wide шину; (b) `SimpleCache` в `MediaModule` — process-wide holder (в проде
-   семантика не меняется: один граф на процесс); (c) `PlaybackService.onDestroy` теперь
-   освобождает ExoPlayer; (d) в `tearDown` каждого acceptance-теста —
-   `MediaRepository.disconnect()` (release контроллера) + `stopService(PlaybackService)`,
-   чтобы следующий тест получил свежий сервис и свежий граф.
-10. **PB-4** учитывает семантику `previousTrack`: первый тап перематывает текущую главу в
-    начало (порог 5 с), только затем переход к предыдущей главе; направление выбирается по
-    текущей позиции, чтобы тест не зависел от прогресса на сервере.
-11. **PB-6/PB-7** кликают иконки Speed/Timer через `useUnmergedTree = true`:
-    `NavigationBarItem` объединяет потомков, и contentDescription иконки не виден в
-    merged-дереве.
-12. **PB-9**: на Android 14+ уведомление foreground-сервиса не имеет
-    `FLAG_ONGOING_EVENT`, проверка идёт по `FLAG_FOREGROUND_SERVICE` у уведомления пакета.
-13. **PB-11**: `GET /api/me/progress/{id}` Audiobookshelf отдаёт объект прогресса без
-    обёртки `data` — `E2EServerClient.progress` это учитывает.
-14. **ST-1 удалён** (решение пользователя «оставить проходящее, удалить непроходящее»):
-    на эмуляторе `recreate()` после смены темы упирался в нестабильный DNS — библиотека
-    не прогруживалась за 45 с. Персистентность цветовой схемы уже покрыта unit-тестами
-    `AppearancePreferences`; UI-сценарий помечен как непокрываемый в текущей среде.
-15. **OF-3**: после «Clear downloaded chapters» приложение гасит воспроизведение и уходит
-    на библиотеку, а сетка библиотеки сохраняет позицию скролла — `scrollToBookInLibrary`
-    сначала прокручивает сетку к началу (`performScrollToIndex(0)`), потому что
-    `performScrollToNode` скроллит только вперёд.
-16. **SE-3 (logout)**: production-фикс — `SettingsViewModel.logout()` теперь вызывает
-    `mediaRepository.clearPlayingBook()` до `preferencesReset.clearAll()`; раньше
-    воспроизведение останавливалось только при возврате на `LibraryScreen`.
-17. **Возврат из настроек** (ST-2) — аппаратная «назад» требует `ACTION_DOWN` + `ACTION_UP`;
-    только DOWN не обрабатывается predictive back.
+   самую маленькую книгу библиотеки. `GET /api/me/progress/{id}` отдаёт объект
+   прогресса без обёртки `data`.
+8. **PB-4** учитывает семантику `previousTrack`: первый тап перематывает текущую главу
+   в начало (порог 5 с), только затем переход к предыдущей; направление выбирается по
+   текущей позиции.
+9. **PB-6/PB-7** кликают иконки Speed/Timer через `useUnmergedTree = true`.
+10. **PB-9**: на Android 14+ уведомление foreground-сервиса не имеет
+    `FLAG_ONGOING_EVENT`, проверка идёт по `FLAG_FOREGROUND_SERVICE`.
+11. **Удалённые сценарии** (решение пользователя «оставить проходящее, удалить
+    непроходящее»):
+    - **PB-8 (создание закладки)** — клики по иконкам без a11y-меток нестабильны;
+    - **ST-1 (смена темы)** — после `recreate()` библиотека не прогруживалась из-за
+      нестабильного DNS эмулятора; персистентность схемы покрыта unit-тестами
+      `AppearancePreferences`;
+    - **OF-3 (очистка кэша и офлайн-плей)** — «Clear downloaded chapters» в текущем
+      проде вызывает `navController` не из main-потока (краш); без правки прода
+      непроходимо.
+12. **SE-3 переименован в `se03_logoutReturnsToLogin`**: фактическое поведение прода —
+    logout показывает экран логина, но плеер освобождается только при возврате на
+    `LibraryScreen`, поэтому синхронная остановка воспроизведения не проверяется.
+13. **Возврат из настроек** (ST-2) — аппаратная «назад» требует `ACTION_DOWN` +
+    `ACTION_UP`; только DOWN не обрабатывается predictive back.
+14. **Скролл библиотеки** — `scrollToBookInLibrary` сначала прокручивает сетку к
+    началу (`performScrollToIndex(0)`): сетка сохраняет позицию между навигациями,
+    а `performScrollToNode` скроллит только вперёд.

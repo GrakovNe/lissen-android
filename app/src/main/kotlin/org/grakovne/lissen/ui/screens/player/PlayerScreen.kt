@@ -242,10 +242,7 @@ fun PlayerScreen(
                           bookmarksSelected = true
                         }
                       },
-                      modifier =
-                        Modifier
-                          .padding(end = 4.dp)
-                          .testTag("playerBookmarksButton"),
+                      modifier = Modifier.padding(end = 4.dp),
                     ) {
                       Icon(
                         imageVector = Icons.Outlined.Bookmarks,

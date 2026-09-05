@@ -11,6 +11,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performSemanticsAction
+import androidx.media3.datasource.cache.Cache
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.rule.GrantPermissionRule
@@ -52,6 +53,9 @@ class SettingsImpactAcceptanceTest {
   lateinit var mediaRepository: MediaRepository
 
   @Inject
+  lateinit var cache: Cache
+
+  @Inject
   lateinit var playbackPreferences: PlaybackPreferences
 
   @get:Rule(order = 2)
@@ -79,13 +83,7 @@ class SettingsImpactAcceptanceTest {
       mediaRepository.clearPlayingBook()
     }
 
-    InstrumentationRegistry.getInstrumentation().runOnMainSync {
-      mediaRepository.disconnect()
-    }
-
-    val context = InstrumentationRegistry.getInstrumentation().targetContext
-    context.stopService(Intent(context, PlaybackService::class.java))
-    sleepReal(1_000)
+    releasePlayback(mediaRepository, cache)
   }
 
   @Test

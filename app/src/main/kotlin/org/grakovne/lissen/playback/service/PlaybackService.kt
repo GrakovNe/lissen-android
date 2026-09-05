@@ -108,7 +108,6 @@ class PlaybackService : MediaLibraryService() {
     playerServiceScope.cancel()
 
     haltPlayback(exoPlayer)
-    exoPlayer.release()
 
     session?.release()
     session = null

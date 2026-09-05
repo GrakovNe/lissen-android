@@ -5,9 +5,12 @@ import android.app.Notification
 import android.content.Context
 import android.content.Intent
 import android.os.ParcelFileDescriptor
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.ComposeTestRule
@@ -16,12 +19,16 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.performScrollToNode
 import androidx.core.app.NotificationManagerCompat
+import androidx.media3.datasource.cache.Cache
+import androidx.media3.datasource.cache.SimpleCache
+import androidx.media3.session.MediaController
 import androidx.test.platform.app.InstrumentationRegistry
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.grakovne.lissen.playback.MediaRepository
+import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.ui.E2E_HOST
 import org.grakovne.lissen.ui.E2E_PASSWORD
 import org.grakovne.lissen.ui.E2E_USERNAME
@@ -122,6 +129,34 @@ internal fun ComposeTestRule.ensurePaused(mediaRepository: MediaRepository) {
 
   onNode(hasContentDescription("Pause")).performClick()
   waitPaused(mediaRepository)
+}
+
+internal fun releasePlayback(
+  mediaRepository: MediaRepository,
+  cache: Cache?,
+) {
+  InstrumentationRegistry.getInstrumentation().runOnMainSync {
+    runCatching { mediaRepository.clearPlayingBook() }
+
+    runCatching {
+      val field = MediaRepository::class.java.getDeclaredField("mediaController")
+      field.isAccessible = true
+      (field.get(mediaRepository) as? MediaController)?.release()
+    }
+  }
+
+  val context = InstrumentationRegistry.getInstrumentation().targetContext
+  context.stopService(Intent(context, PlaybackService::class.java))
+  sleepReal(500)
+
+  // Hilt recreates the graph per test; without closing the cache the next
+  // SimpleCache instance on the same folder throws on creation
+  runCatching { (cache as? SimpleCache)?.release() }
+  sleepReal(500)
+}
+
+internal fun ComposeTestRule.clickNodeById(id: Int) {
+  onNode(SemanticsMatcher("node $id") { it.id == id }).performClick()
 }
 
 internal fun ComposeTestRule.scrollToBookInLibrary(bookId: String) {

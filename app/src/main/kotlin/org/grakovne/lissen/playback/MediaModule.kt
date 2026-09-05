@@ -37,28 +37,24 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object MediaModule {
-  private var mediaCache: Cache? = null
-
   @OptIn(UnstableApi::class)
   @Provides
   @Singleton
   fun provideMediaCache(
     @ApplicationContext context: Context,
-  ): Cache =
-    synchronized(this) {
-      mediaCache
-        ?: SimpleCache(
-          File(cacheFolder(context), "playback_cache"),
-          LeastRecentlyUsedCacheEvictor(buildPlaybackCacheLimit(context)),
-          StandaloneDatabaseProvider(context),
-        ).also { mediaCache = it }
-    }
+  ): Cache {
+    val baseFolder =
+      context
+        .externalCacheDir
+        ?.takeIf { it.exists() && it.canWrite() }
+        ?: context.cacheDir
 
-  private fun cacheFolder(context: Context): File =
-    context
-      .externalCacheDir
-      ?.takeIf { it.exists() && it.canWrite() }
-      ?: context.cacheDir
+    return SimpleCache(
+      File(baseFolder, "playback_cache"),
+      LeastRecentlyUsedCacheEvictor(buildPlaybackCacheLimit(context)),
+      StandaloneDatabaseProvider(context),
+    )
+  }
 
   @OptIn(UnstableApi::class)
   @Provides
