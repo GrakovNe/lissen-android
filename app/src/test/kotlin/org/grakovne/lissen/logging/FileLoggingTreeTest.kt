@@ -155,4 +155,67 @@ class FileLoggingTreeTest {
     assertFalse(content.contains("aaaa"))
     assertTrue(content.length <= 10)
   }
+
+  @Test
+  fun `log writes a formatted line to the file`() {
+    val logFile = File(tempDir, "app.log")
+    val tree = FileLoggingTree(logFile)
+
+    tree.log(Log.INFO, "hello")
+
+    assertTrue(waitUntil { logFile.exists() && logFile.readText().contains(" I/") && logFile.readText().contains("hello\n") })
+    tree.close()
+  }
+
+  @Test
+  fun `tree creates missing parent directories`() {
+    val logFile = File(tempDir, "nested/dir/app.log")
+
+    val tree = FileLoggingTree(logFile)
+
+    assertTrue(logFile.parentFile!!.isDirectory)
+    tree.close()
+  }
+
+  @Test
+  fun `close flushes all pending lines`() {
+    val logFile = File(tempDir, "flush.log")
+    val tree = FileLoggingTree(logFile)
+
+    repeat(50) { tree.log(Log.DEBUG, "entry-$it") }
+    tree.close()
+
+    assertTrue(waitUntil { logFile.readText().contains("entry-49\n") })
+    val content = logFile.readText()
+    repeat(50) { assertTrue(content.contains("entry-$it\n")) }
+  }
+
+  @Test
+  fun `log trims the file once the trim threshold is exceeded`() {
+    val logFile = File(tempDir, "trim.log")
+    val tree =
+      FileLoggingTree(
+        logFile = logFile,
+        maxSizeBytes = 512,
+        trimThresholdBytes = 2_048,
+      )
+
+    repeat(500) { tree.log(Log.DEBUG, "line-$it-with-some-padding") }
+    tree.close()
+
+    assertTrue(waitUntil { logFile.readText().contains("line-499-with-some-padding") })
+    val content = logFile.readText()
+    assertTrue(logFile.length() < 500L * 33L)
+    assertTrue(content.endsWith("\n"))
+    assertTrue(content.contains("line-499-with-some-padding"))
+  }
+
+  private fun waitUntil(predicate: () -> Boolean): Boolean {
+    val deadline = System.currentTimeMillis() + 2_000
+    while (System.currentTimeMillis() < deadline) {
+      if (predicate()) return true
+      Thread.sleep(20)
+    }
+    return predicate()
+  }
 }

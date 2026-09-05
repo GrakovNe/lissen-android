@@ -11,6 +11,9 @@ internal class FakeSharedPreferences : SharedPreferences {
   fun readsOf(key: String): Int = stringReads[key] ?: 0
 
   @Synchronized
+  fun listenerCount(): Int = listeners.size
+
+  @Synchronized
   override fun getAll(): MutableMap<String, *> = HashMap(values)
 
   @Synchronized

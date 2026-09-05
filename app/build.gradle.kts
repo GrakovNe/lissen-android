@@ -227,6 +227,7 @@ dependencies {
   testRuntimeOnly(libs.junit.platform.launcher)
   
   androidTestImplementation(libs.androidx.room.testing)
+  androidTestImplementation(libs.androidx.media3.datasource)
   androidTestImplementation(libs.androidx.test.ext.junit)
   androidTestImplementation(libs.androidx.test.runner)
   androidTestImplementation(libs.androidx.test.rules)
