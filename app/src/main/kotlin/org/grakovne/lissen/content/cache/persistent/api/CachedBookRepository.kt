@@ -100,7 +100,7 @@ class CachedBookRepository
       return entities.map { entity ->
         cachedBookEntityDetailedConverter.apply(
           entity = entity,
-          libraryType = entity.detailedBook.libraryId?.let(libraryTypes::get),
+          libraryType = entity.detailedBook.libraryId?.let { libraryTypes[it] ?: activeLibraryTypeIfMatches(it) },
         )
       }
     }
@@ -396,9 +396,18 @@ class CachedBookRepository
         ?.let { entity ->
           cachedBookEntityDetailedConverter.apply(
             entity = entity,
-            libraryType = entity.detailedBook.libraryId?.let { cachedLibraryRepository.fetchLibraryType(it) },
+            libraryType = resolveLibraryType(entity.detailedBook.libraryId),
           )
         }
+
+    private suspend fun resolveLibraryType(libraryId: String?): LibraryType? {
+      if (libraryId == null) return null
+
+      return cachedLibraryRepository.fetchLibraryType(libraryId) ?: activeLibraryTypeIfMatches(libraryId)
+    }
+
+    private fun activeLibraryTypeIfMatches(libraryId: String): LibraryType? =
+      preferences.getPreferredLibrary().takeIf { it?.id == libraryId }?.type
 
     suspend fun fetchMediaProgress(playingItemId: String) =
       bookDao

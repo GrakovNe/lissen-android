@@ -84,6 +84,23 @@ class PlayingItemPersistenceTest {
   }
 
   @Test
+  fun `clearing by item id prefers the active library when the same id exists in multiple libraries`() {
+    preferLibrary("lib-1")
+    preferences.savePlayingItem(item(id = "book-1", libraryId = "lib-1"))
+
+    preferLibrary("lib-2")
+    preferences.savePlayingItem(item(id = "book-1", libraryId = "lib-2"))
+
+    preferences.clearPlayingItem("book-1")
+
+    preferLibrary("lib-2")
+    assertNull(preferences.getPlayingItem())
+
+    preferLibrary("lib-1")
+    assertEquals("book-1", preferences.getPlayingItem()?.id)
+  }
+
+  @Test
   fun `concurrent saves from different libraries do not lose each other`() {
     val items = (1..8).map { item(id = "book-$it", libraryId = "lib-$it") }
     val startGate = CountDownLatch(1)

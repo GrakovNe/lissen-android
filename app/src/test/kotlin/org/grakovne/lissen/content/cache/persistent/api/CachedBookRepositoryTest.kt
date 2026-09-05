@@ -20,6 +20,7 @@ import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.GroupedEntry
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.MediaProgress
@@ -428,6 +429,25 @@ class CachedBookRepositoryTest {
     }
 
   @Test
+  fun `fetchCachedItems falls back to the active library type when the library table misses the library`() =
+    runBlocking {
+      val cached = mockk<CachedBookEntity>(relaxed = true)
+      val detailed = mockk<DetailedItem>()
+      coEvery { bookDao.fetchCachedItems() } returns listOf(cached)
+      every { cached.detailedBook.libraryId } returns LIBRARY_ID
+      coEvery { cachedLibraryRepository.fetchLibraryTypes() } returns emptyMap()
+      every { preferences.getPreferredLibrary() } returns Library(LIBRARY_ID, "Library", LibraryType.PODCAST)
+      every {
+        cachedBookEntityDetailedConverter.apply(
+          entity = cached,
+          libraryType = LibraryType.PODCAST,
+        )
+      } returns detailed
+
+      assertEquals(listOf(detailed), repository.fetchCachedItems())
+    }
+
+  @Test
   fun `countCachedItems delegates to the dao`() =
     runBlocking {
       coEvery { bookDao.fetchCachedItemsCount() } returns 7
@@ -509,6 +529,25 @@ class CachedBookRepositoryTest {
         cachedBookEntityDetailedConverter.apply(
           entity = cached,
           libraryType = LibraryType.LIBRARY,
+        )
+      } returns detailed
+
+      assertEquals(detailed, repository.fetchBook("b1"))
+    }
+
+  @Test
+  fun `fetchBook falls back to the active library type when the library table misses the library`() =
+    runBlocking {
+      val cached = mockk<CachedBookEntity>(relaxed = true)
+      val detailed = mockk<DetailedItem>()
+      coEvery { bookDao.fetchCachedBook("b1") } returns cached
+      every { cached.detailedBook.libraryId } returns LIBRARY_ID
+      coEvery { cachedLibraryRepository.fetchLibraryType(LIBRARY_ID) } returns null
+      every { preferences.getPreferredLibrary() } returns Library(LIBRARY_ID, "Library", LibraryType.PODCAST)
+      every {
+        cachedBookEntityDetailedConverter.apply(
+          entity = cached,
+          libraryType = LibraryType.PODCAST,
         )
       } returns detailed
 

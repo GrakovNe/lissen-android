@@ -78,7 +78,12 @@ class PlayerViewModel
         return
       }
 
-      val playingItem = preferences.getPlayingItem() ?: return
+      val playingItem = preferences.getPlayingItem()
+
+      if (playingItem == null) {
+        mediaRepository.clearPlayingBook()
+        return
+      }
 
       viewModelScope.launch {
         mediaRepository.preparePlayback(playingItem.id, playingItem.libraryType)

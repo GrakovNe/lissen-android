@@ -72,12 +72,16 @@ class PlaybackPreferences
       savePlayingItemInternal(libraryId = libraryId, item = null)
     }
 
-    private fun findLibraryIdByItemId(itemId: String): String? =
-      playingItems
-        .get()
-        .entries
-        .firstOrNull { it.value.id == itemId }
-        ?.key
+    private fun findLibraryIdByItemId(itemId: String): String? {
+      val items = playingItems.get()
+      val activeLibraryId = libraryPreferences.activeLibraryId()
+
+      if (activeLibraryId != null && items[activeLibraryId]?.id == itemId) {
+        return activeLibraryId
+      }
+
+      return items.entries.firstOrNull { it.value.id == itemId }?.key
+    }
 
     fun getPlayingItem(): DetailedItem? {
       val libraryId = libraryPreferences.activeLibraryId() ?: return null

@@ -292,12 +292,12 @@ class PlayerViewModelTest {
   @Nested
   inner class PlayingItemLifecycle {
     @Test
-    fun `updatePlayingItem does nothing when there is no stored item`() {
+    fun `updatePlayingItem clears the playing book when there is no stored item`() {
       every { preferences.getPlayingItem() } returns null
 
       viewModel.updatePlayingItem()
 
-      verify(exactly = 0) { mediaRepository.clearPlayingBook() }
+      verify { mediaRepository.clearPlayingBook() }
       coVerify(exactly = 0) { mediaRepository.preparePlayback(any(), any()) }
     }
 
