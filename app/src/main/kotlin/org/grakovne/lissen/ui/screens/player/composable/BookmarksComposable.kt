@@ -44,6 +44,7 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
@@ -158,7 +159,10 @@ fun BookmarksComposable(
             showRipple = false,
             onClick = { withHaptic(view = view) { startEditing() } },
             trailing = {
-              IconButton(onClick = { withHaptic(view = view) { submitBookmark() } }) {
+              IconButton(
+                onClick = { withHaptic(view = view) { submitBookmark() } },
+                modifier = Modifier.testTag("bookmarkAddButton"),
+              ) {
                 Icon(
                   imageVector = Icons.Outlined.BookmarkAdd,
                   contentDescription = null,
@@ -183,6 +187,7 @@ fun BookmarksComposable(
             trailing = {
               IconButton(
                 onClick = { withHaptic(view) { playerViewModel.dropBookmark(item) } },
+                modifier = Modifier.testTag("bookmarkDeleteButton"),
               ) {
                 Icon(
                   imageVector = Icons.Outlined.DeleteOutline,

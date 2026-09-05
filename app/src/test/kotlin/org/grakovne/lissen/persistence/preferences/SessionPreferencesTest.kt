@@ -177,6 +177,40 @@ class SessionPreferencesTest {
 
       assertFalse(preferences.hasCredentials())
     }
+
+    @Test
+    fun `no credentials when the host lookup throws`() {
+      every { store.getString("host") } throws IllegalStateException("keystore is gone")
+
+      assertFalse(preferences.hasCredentials())
+    }
+
+    @Test
+    fun `no credentials when the username lookup throws`() {
+      every { store.getString("host") } returns "https://example.org"
+      every { store.getString("username") } throws IllegalStateException("keystore is gone")
+
+      assertFalse(preferences.hasCredentials())
+    }
+
+    @Test
+    fun `no credentials when the token lookup throws`() {
+      every { store.getString("host") } returns "https://example.org"
+      every { store.getString("username") } returns "user"
+      every { store.readSecret("token") } throws IllegalStateException("keystore is gone")
+
+      assertFalse(preferences.hasCredentials())
+    }
+
+    @Test
+    fun `no credentials when the access token lookup throws`() {
+      every { store.getString("host") } returns "https://example.org"
+      every { store.getString("username") } returns "user"
+      every { store.readSecret("token") } returns null
+      every { store.readSecret("access_token") } throws IllegalStateException("keystore is gone")
+
+      assertFalse(preferences.hasCredentials())
+    }
   }
 
   @Nested

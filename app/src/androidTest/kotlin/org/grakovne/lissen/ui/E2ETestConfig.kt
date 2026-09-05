@@ -72,14 +72,21 @@ internal object E2ESession {
       .getSharedPreferences("secure_prefs", Context.MODE_PRIVATE)
 }
 
+private fun ComposeTestRule.screenExists(tag: String): Boolean =
+  onAllNodes(hasTestTag(tag))
+    .fetchSemanticsNodes()
+    .isNotEmpty()
+
 @OptIn(ExperimentalTestApi::class)
 internal fun ComposeTestRule.loginToLibrary(scrollToButton: Boolean = false) {
   if (E2ESession.available) {
-    waitUntilAtLeastOneExists(
-      matcher = hasTestTag("libraryScreen"),
-      timeoutMillis = TIMEOUT_MS,
-    )
-    return
+    waitUntil(TIMEOUT_MS) {
+      screenExists("libraryScreen") || screenExists("loginScreen")
+    }
+
+    if (!screenExists("loginScreen")) {
+      return
+    }
   }
 
   onNodeWithTag("hostInput").performTextInput(E2E_HOST)

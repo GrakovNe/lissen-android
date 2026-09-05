@@ -314,7 +314,10 @@ fun PlayingQueueComposable(
             track = chapter,
             onClick = { viewModel.setChapter(chapter) },
             isSelected = chapter.id == currentTrackId?.id,
-            modifier = Modifier.wrapContentWidth(),
+            modifier =
+              Modifier
+                .wrapContentWidth()
+                .testTag("playlistItem_$index"),
             maxDuration = maxDuration,
             isCached = chapter.id in cachedChapterIds,
           )

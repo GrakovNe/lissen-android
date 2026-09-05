@@ -639,6 +639,7 @@ class SettingsViewModelTest {
     @Test
     fun `logout calls clearPreferences`() {
       viewModel.logout()
+      verify { mediaRepository.clearPlayingBook() }
       verify { preferencesReset.clearAll() }
     }
   }

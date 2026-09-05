@@ -237,6 +237,7 @@ class SettingsViewModel
 
     fun logout() {
       Timber.d("User action: logout")
+      mediaRepository.clearPlayingBook()
       preferencesReset.clearAll()
     }
 

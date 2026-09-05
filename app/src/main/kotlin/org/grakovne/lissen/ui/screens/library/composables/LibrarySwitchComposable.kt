@@ -10,6 +10,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -20,6 +21,7 @@ fun LibrarySwitchComposable(onclick: () -> Unit) {
     modifier =
       Modifier
         .clip(RoundedCornerShape(12.dp))
+        .testTag("librarySwitchButton")
         .clickable { onclick() },
     imageVector = Icons.Outlined.ArrowDropDown,
     contentDescription = null,

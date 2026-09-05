@@ -8,27 +8,22 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import org.grakovne.lissen.domain.TimerOption
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class PlaybackEventBus
-  @Inject
-  constructor() {
-    private val _events = MutableSharedFlow<PlaybackEvent>(replay = 1, extraBufferCapacity = 8)
-    val events: SharedFlow<PlaybackEvent> = _events.asSharedFlow()
+class PlaybackEventBus {
+  private val _events = MutableSharedFlow<PlaybackEvent>(replay = 1, extraBufferCapacity = 8)
+  val events: SharedFlow<PlaybackEvent> = _events.asSharedFlow()
 
-    private val _commands = Channel<PlaybackCommand>(Channel.BUFFERED)
-    val commands: Flow<PlaybackCommand> = _commands.receiveAsFlow()
+  private val _commands = Channel<PlaybackCommand>(Channel.BUFFERED)
+  val commands: Flow<PlaybackCommand> = _commands.receiveAsFlow()
 
-    fun emit(event: PlaybackEvent) {
-      _events.tryEmit(event)
-    }
-
-    fun send(command: PlaybackCommand) {
-      _commands.trySendBlocking(command)
-    }
+  fun emit(event: PlaybackEvent) {
+    _events.tryEmit(event)
   }
+
+  fun send(command: PlaybackCommand) {
+    _commands.trySendBlocking(command)
+  }
+}
 
 sealed class PlaybackEvent {
   data object PlaybackReady : PlaybackEvent()
