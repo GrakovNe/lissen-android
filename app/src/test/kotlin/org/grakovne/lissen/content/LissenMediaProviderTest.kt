@@ -49,6 +49,7 @@ class LissenMediaProviderTest {
   @BeforeEach
   fun setup() {
     every { channelProvider.provideMediaChannel() } returns mediaChannel
+    every { channelProvider.provideMediaChannel(any()) } returns mediaChannel
     provider =
       LissenMediaProvider(
         preferences,

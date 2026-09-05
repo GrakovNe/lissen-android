@@ -58,6 +58,13 @@ class WidgetPlaybackController
       onPlaybackReady: () -> Unit,
     ) {
       playbackReadyAction = onPlaybackReady
-      mediaRepository.preparePlayback(bookId = itemId)
+
+      val libraryType =
+        mediaRepository.playingBook.value
+          ?.takeIf { it.id == itemId }
+          ?.libraryType
+          ?: sharedPreferences.getPlayingItem()?.takeIf { it.id == itemId }?.libraryType
+
+      mediaRepository.preparePlayback(bookId = itemId, libraryType = libraryType)
     }
   }

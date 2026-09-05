@@ -15,12 +15,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.LibraryType
-import org.grakovne.lissen.viewmodel.LibraryViewModel
 
 @Composable
 fun PlayingQueueFallbackComposable(
   modifier: Modifier = Modifier,
-  libraryViewModel: LibraryViewModel,
+  libraryType: LibraryType,
 ) {
   Column(
     modifier =
@@ -33,7 +32,7 @@ fun PlayingQueueFallbackComposable(
     Text(
       textAlign = TextAlign.Center,
       text =
-        when (libraryViewModel.fetchPreferredLibraryType()) {
+        when (libraryType) {
           LibraryType.LIBRARY -> stringResource(R.string.chapters_list_empty)
           LibraryType.PODCAST -> stringResource(R.string.episodes_list_empty)
           LibraryType.UNKNOWN -> stringResource(R.string.items_list_empty)

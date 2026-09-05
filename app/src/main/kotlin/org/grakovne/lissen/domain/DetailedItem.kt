@@ -21,12 +21,14 @@ data class DetailedItem(
   val chapters: List<PlayingChapter>,
   val progress: MediaProgress?,
   val libraryId: String?,
+  val libraryType: LibraryType? = null,
   val localProvided: Boolean,
   val createdAt: Long,
   val updatedAt: Long,
 ) : Serializable {
   companion object {
-    fun DetailedItem.same(other: DetailedItem) = this.copy(progress = null) == other.copy(progress = null)
+    fun DetailedItem.same(other: DetailedItem) =
+      this.copy(progress = null, libraryType = null) == other.copy(progress = null, libraryType = null)
   }
 }
 

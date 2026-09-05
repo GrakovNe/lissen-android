@@ -20,19 +20,20 @@ class AudiobookshelfChannelProvider
     private val audiobookshelfAuthService: AudiobookshelfAuthService,
     private val sharedPreferences: LibraryPreferences,
   ) : ChannelProvider {
-    override fun provideMediaChannel(): MediaChannel {
-      val libraryType =
-        sharedPreferences
-          .getPreferredLibrary()
-          ?.type
-          ?: LibraryType.UNKNOWN
+    override fun provideMediaChannel(): MediaChannel = provideMediaChannel(activeLibraryType())
 
-      return when (libraryType) {
+    fun provideMediaChannel(libraryType: LibraryType?): MediaChannel =
+      when (libraryType ?: activeLibraryType()) {
         LibraryType.LIBRARY -> libraryAudiobookshelfChannel
         LibraryType.PODCAST -> podcastAudiobookshelfChannel
         LibraryType.UNKNOWN -> libraryAudiobookshelfChannel
       }
-    }
 
     override fun provideChannelAuth(): ChannelAuthService = audiobookshelfAuthService
+
+    private fun activeLibraryType(): LibraryType =
+      sharedPreferences
+        .getPreferredLibrary()
+        ?.type
+        ?: LibraryType.UNKNOWN
   }

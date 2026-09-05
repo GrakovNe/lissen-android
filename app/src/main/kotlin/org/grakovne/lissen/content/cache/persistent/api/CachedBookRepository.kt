@@ -14,6 +14,7 @@ import org.grakovne.lissen.content.cache.persistent.converter.CachedBookEntityRe
 import org.grakovne.lissen.content.cache.persistent.converter.MediaProgressEntityConverter
 import org.grakovne.lissen.content.cache.persistent.dao.CachedBookDao
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
+import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
@@ -43,6 +44,7 @@ class CachedBookRepository
     private val cachedBookEntityDetailedConverter: CachedBookEntityDetailedConverter,
     private val cachedBookEntityRecentConverter: CachedBookEntityRecentConverter,
     private val mediaProgressEntityConverter: MediaProgressEntityConverter,
+    private val cachedLibraryRepository: CachedLibraryRepository,
     private val preferences: LibraryPreferences,
   ) {
     fun provideFileUri(
@@ -85,17 +87,23 @@ class CachedBookRepository
 
     fun provideCachedChapterIds(bookId: String) = bookDao.cachedChapterIds(bookId)
 
-    suspend fun fetchCachedItems() =
-      bookDao
-        .fetchCachedItems()
-        .map { cachedBookEntityDetailedConverter.apply(it) }
+    suspend fun fetchCachedItems(): List<DetailedItem> = convertEntities(bookDao.fetchCachedItems())
 
     suspend fun fetchCachedItems(
       pageSize: Int,
       pageNumber: Int,
-    ) = bookDao
-      .fetchCachedItems(pageSize = pageSize, pageNumber = pageNumber)
-      .map { cachedBookEntityDetailedConverter.apply(it) }
+    ): List<DetailedItem> = convertEntities(bookDao.fetchCachedItems(pageSize = pageSize, pageNumber = pageNumber))
+
+    private suspend fun convertEntities(entities: List<CachedBookEntity>): List<DetailedItem> {
+      val libraryTypes = cachedLibraryRepository.fetchLibraryTypes()
+
+      return entities.map { entity ->
+        cachedBookEntityDetailedConverter.apply(
+          entity = entity,
+          libraryType = entity.detailedBook.libraryId?.let { libraryTypes[it] ?: activeLibraryTypeIfMatches(it) },
+        )
+      }
+    }
 
     suspend fun countCachedItems(): Int = bookDao.fetchCachedItemsCount()
 
@@ -385,7 +393,21 @@ class CachedBookRepository
     suspend fun fetchBook(bookId: String): DetailedItem? =
       bookDao
         .fetchCachedBook(bookId)
-        ?.let { cachedBookEntityDetailedConverter.apply(it) }
+        ?.let { entity ->
+          cachedBookEntityDetailedConverter.apply(
+            entity = entity,
+            libraryType = resolveLibraryType(entity.detailedBook.libraryId),
+          )
+        }
+
+    private suspend fun resolveLibraryType(libraryId: String?): LibraryType? {
+      if (libraryId == null) return null
+
+      return cachedLibraryRepository.fetchLibraryType(libraryId) ?: activeLibraryTypeIfMatches(libraryId)
+    }
+
+    private fun activeLibraryTypeIfMatches(libraryId: String): LibraryType? =
+      preferences.getPreferredLibrary().takeIf { it?.id == libraryId }?.type
 
     suspend fun fetchMediaProgress(playingItemId: String) =
       bookDao

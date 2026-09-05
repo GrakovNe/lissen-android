@@ -183,6 +183,7 @@ class PlaybackSynchronizationService
               deviceId = sharedPreferences.getDeviceId(),
               supportedMimeTypes = MimeTypeProvider.getSupportedMimeTypes(),
               chapterId = item.chapters[chapterIndex].id,
+              libraryType = item.libraryType,
             ).fold(
               onSuccess = { playbackSession = it },
               onFailure = {},

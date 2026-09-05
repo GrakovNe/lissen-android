@@ -280,7 +280,7 @@ class MediaLibrarySessionCallback
     private suspend fun refreshBookForResumption(storedBook: DetailedItem): DetailedItem? {
       val refreshed =
         try {
-          withTimeoutOrNull(REFRESH_TIMEOUT_MS) { lissenMediaProvider.fetchBook(storedBook.id) }
+          withTimeoutOrNull(REFRESH_TIMEOUT_MS) { lissenMediaProvider.fetchBook(storedBook.id, storedBook.libraryType) }
         } catch (e: CancellationException) {
           throw e
         } catch (e: Exception) {

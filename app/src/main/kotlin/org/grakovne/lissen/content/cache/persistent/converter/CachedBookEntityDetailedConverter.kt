@@ -9,6 +9,7 @@ import org.grakovne.lissen.domain.BookAuthor
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.BookSeries
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PlayingChapter
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -19,7 +20,10 @@ class CachedBookEntityDetailedConverter
   constructor(
     private val mediaProgressEntityConverter: MediaProgressEntityConverter,
   ) {
-    fun apply(entity: CachedBookEntity): DetailedItem =
+    fun apply(
+      entity: CachedBookEntity,
+      libraryType: LibraryType? = null,
+    ): DetailedItem =
       DetailedItem(
         id = entity.detailedBook.id,
         title = entity.detailedBook.title,
@@ -34,6 +38,7 @@ class CachedBookEntityDetailedConverter
             ?: emptyList(),
         narrator = entity.detailedBook.narrator,
         libraryId = entity.detailedBook.libraryId,
+        libraryType = libraryType,
         localProvided = true,
         files =
           entity.files.map { fileEntity ->

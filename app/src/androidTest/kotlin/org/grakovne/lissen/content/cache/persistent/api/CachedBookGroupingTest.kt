@@ -52,6 +52,7 @@ class CachedBookGroupingTest {
         cachedBookEntityDetailedConverter = mockk<CachedBookEntityDetailedConverter>(relaxed = true),
         cachedBookEntityRecentConverter = mockk<CachedBookEntityRecentConverter>(relaxed = true),
         mediaProgressEntityConverter = mockk<MediaProgressEntityConverter>(relaxed = true),
+        cachedLibraryRepository = mockk<CachedLibraryRepository>(relaxed = true),
         preferences = preferences,
       )
   }

@@ -64,6 +64,7 @@ import androidx.lifecycle.withResumed
 import coil3.ImageLoader
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.adaptive.isWideLayout
 import org.grakovne.lissen.ui.icons.Search
 import org.grakovne.lissen.ui.navigation.AppNavigationService
@@ -136,7 +137,8 @@ fun PlayerScreen(
   var itemDetailsSelected by remember { mutableStateOf(false) }
   var bookmarksSelected by remember { mutableStateOf(false) }
 
-  val libraryType by libraryViewModel.preferredLibraryType.collectAsState()
+  val preferredLibraryType by libraryViewModel.preferredLibraryType.collectAsState()
+  val libraryType = playingBook?.libraryType ?: preferredLibraryType
 
   val screenTitle =
     when {
@@ -180,7 +182,7 @@ fun PlayerScreen(
     lifecycle.withResumed {}
 
     if (needsPreparation) {
-      playerViewModel.preparePlayback(bookId)
+      playerViewModel.preparePlayback(bookId, playingBook?.takeIf { it.id == bookId }?.libraryType)
     }
 
     if (playInstantly) {
@@ -325,7 +327,7 @@ fun PlayerScreen(
             playingBook = playingBook,
             bookTitle = bookTitle,
             playerViewModel = playerViewModel,
-            libraryViewModel = libraryViewModel,
+            libraryType = libraryType,
             imageLoader = imageLoader,
             settingsViewModel = settingsViewModel,
             modifier =
@@ -338,7 +340,7 @@ fun PlayerScreen(
           PlayerQueueSection(
             isPlaybackReady = isPlaybackReady,
             playingBook = playingBook,
-            libraryViewModel = libraryViewModel,
+            libraryType = libraryType,
             cachingModelView = cachingModelView,
             playerViewModel = playerViewModel,
             forceExpanded = true,
@@ -367,7 +369,7 @@ fun PlayerScreen(
               bookSubtitle = bookSubtitle,
               playerViewModel = playerViewModel,
               imageLoader = imageLoader,
-              libraryViewModel = libraryViewModel,
+              libraryType = libraryType,
               settingsViewModel = settingsViewModel,
             )
           }
@@ -377,7 +379,7 @@ fun PlayerScreen(
           PlayerQueueSection(
             isPlaybackReady = isPlaybackReady,
             playingBook = playingBook,
-            libraryViewModel = libraryViewModel,
+            libraryType = libraryType,
             cachingModelView = cachingModelView,
             playerViewModel = playerViewModel,
           )
@@ -411,7 +413,7 @@ private fun PlayerArtworkAndControls(
   bookSubtitle: String?,
   playerViewModel: PlayerViewModel,
   imageLoader: ImageLoader,
-  libraryViewModel: LibraryViewModel,
+  libraryType: LibraryType,
   settingsViewModel: SettingsViewModel,
   modifier: Modifier = Modifier,
 ) {
@@ -425,7 +427,7 @@ private fun PlayerArtworkAndControls(
       TrackDetailsComposable(
         viewModel = playerViewModel,
         imageLoader = imageLoader,
-        libraryViewModel = libraryViewModel,
+        libraryType = libraryType,
       )
     }
 
@@ -450,7 +452,7 @@ private fun PlayerArtworkAndControlsWide(
   playingBook: DetailedItem?,
   bookTitle: String,
   playerViewModel: PlayerViewModel,
-  libraryViewModel: LibraryViewModel,
+  libraryType: LibraryType,
   imageLoader: ImageLoader,
   settingsViewModel: SettingsViewModel,
   modifier: Modifier = Modifier,
@@ -511,7 +513,7 @@ private fun PlayerArtworkAndControlsWide(
           provideChapterNumberTitle(
             currentTrackIndex = currentChapterIndex,
             book = playingBook,
-            libraryType = libraryViewModel.fetchPreferredLibraryType(),
+            libraryType = libraryType,
             context = context,
           ),
         style = typography.bodyMedium,
@@ -547,7 +549,7 @@ private fun PlayerArtworkAndControlsWide(
 private fun PlayerQueueSection(
   isPlaybackReady: Boolean,
   playingBook: DetailedItem?,
-  libraryViewModel: LibraryViewModel,
+  libraryType: LibraryType,
   cachingModelView: CachingModelView,
   playerViewModel: PlayerViewModel,
   modifier: Modifier = Modifier,
@@ -556,21 +558,21 @@ private fun PlayerQueueSection(
   when {
     isPlaybackReady.not() -> {
       PlayingQueuePlaceholderComposable(
-        libraryViewModel = libraryViewModel,
+        libraryType = libraryType,
         modifier = modifier,
       )
     }
 
     playingBook?.chapters.isNullOrEmpty() -> {
       PlayingQueueFallbackComposable(
-        libraryViewModel = libraryViewModel,
+        libraryType = libraryType,
         modifier = modifier,
       )
     }
 
     else -> {
       PlayingQueueComposable(
-        libraryViewModel = libraryViewModel,
+        libraryType = libraryType,
         cachingModelView = cachingModelView,
         viewModel = playerViewModel,
         modifier = modifier,

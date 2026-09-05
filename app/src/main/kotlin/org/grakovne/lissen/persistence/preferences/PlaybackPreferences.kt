@@ -63,9 +63,24 @@ class PlaybackPreferences
       )
     }
 
-    fun clearPlayingItem() {
-      val libraryId = libraryPreferences.activeLibraryId() ?: return
+    fun clearPlayingItem(itemId: String? = null) {
+      val libraryId =
+        itemId?.let(::findLibraryIdByItemId)
+          ?: libraryPreferences.activeLibraryId()
+          ?: return
+
       savePlayingItemInternal(libraryId = libraryId, item = null)
+    }
+
+    private fun findLibraryIdByItemId(itemId: String): String? {
+      val items = playingItems.get()
+      val activeLibraryId = libraryPreferences.activeLibraryId()
+
+      if (activeLibraryId != null && items[activeLibraryId]?.id == itemId) {
+        return activeLibraryId
+      }
+
+      return items.entries.firstOrNull { it.value.id == itemId }?.key
     }
 
     fun getPlayingItem(): DetailedItem? {

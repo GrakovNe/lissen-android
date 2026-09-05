@@ -10,6 +10,7 @@ class DetailedItemTest {
     id: String = "book-1",
     title: String = "Title",
     progress: MediaProgress? = null,
+    libraryType: LibraryType? = null,
   ) = DetailedItem(
     id = id,
     title = title,
@@ -24,6 +25,7 @@ class DetailedItemTest {
     chapters = emptyList(),
     progress = progress,
     libraryId = "lib-1",
+    libraryType = libraryType,
     localProvided = false,
     createdAt = 0L,
     updatedAt = 0L,
@@ -33,6 +35,14 @@ class DetailedItemTest {
   fun `same is true for identical items ignoring progress`() {
     val a = item(progress = MediaProgress(currentTime = 1.0, isFinished = false, lastUpdate = 1L))
     val b = item(progress = MediaProgress(currentTime = 99.0, isFinished = true, lastUpdate = 2L))
+
+    assertTrue(a.same(b))
+  }
+
+  @Test
+  fun `same ignores library type changes`() {
+    val a = item(libraryType = LibraryType.LIBRARY)
+    val b = item(libraryType = LibraryType.PODCAST)
 
     assertTrue(a.same(b))
   }
