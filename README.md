@@ -2,8 +2,9 @@
 [![Build Lissen App](https://github.com/GrakovNe/lissen-android/actions/workflows/app_build.yml/badge.svg)](https://github.com/GrakovNe/lissen-android/actions/workflows/app_build.yml)
 
 <p align="center"> 
-  <a href="https://play.google.com/store/apps/details?id=org.grakovne.lissen"><img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" height="60"></a>&nbsp;&nbsp;&nbsp;<!--
-  --><a href="https://f-droid.org/packages/org.grakovne.lissen"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a3/Get_it_on_F-Droid_%28material_design%29.svg" alt="Get it on F-Droid" height="60"></a>
+  <a href="https://play.google.com/store/apps/details?id=org.grakovne.lissen"><img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" height="60" align="middle"></a>&nbsp;&nbsp;&nbsp;<!--
+  --><a href="https://f-droid.org/packages/org.grakovne.lissen"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a3/Get_it_on_F-Droid_%28material_design%29.svg" alt="Get it on F-Droid" height="60" align="middle"></a><!--
+  --><a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/%7B%22id%22%3A%22org.grakovne.lissen%22%2C%22url%22%3A%22https%3A%2F%2Fgithub.com%2FGrakovNe%2Flissen-android%22%2C%22author%22%3A%22GrakovNe%22%2C%22name%22%3A%22Lissen%22%7D"><img src="https://raw.githubusercontent.com/ImranR98/Obtainium/main/assets/graphics/badge_obtainium.png" alt="Get it on Obtainium" height="89" align="middle"></a>
 </p>
 
 ### Features
