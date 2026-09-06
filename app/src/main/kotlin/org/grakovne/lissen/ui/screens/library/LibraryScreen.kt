@@ -197,7 +197,9 @@ fun LibraryScreen(
   }
 
   LaunchedEffect(preparingError) {
-    if (preparingError) {
+    // in force-cache mode a preparation failure just means the book is not downloaded yet;
+    // keeping it selected allows playback to recover when the policy is toggled back
+    if (preparingError && cachingModelView.localCacheUsing().not()) {
       playerViewModel.clearPlayingBook()
     }
   }
@@ -600,14 +602,18 @@ fun LibraryScreen(
       onDismissRequest = { preferencesExpanded = false },
       onForceLocalToggled = {
         cachingModelView.toggleCacheForce()
-        playerViewModel.book.value?.let { playerViewModel.preparePlayback(it.id, it.libraryType) }
+        playerViewModel.book.value?.let { book ->
+          val representationMismatch = cachingModelView.localCacheUsing() != book.localProvided
+          if (representationMismatch || playerViewModel.isPlaybackReady.value.not()) {
+            playerViewModel.preparePlayback(book.id, book.libraryType)
+          }
+        }
         libraryViewModel.resetGroupExpansion()
         refreshContent(showPullRefreshing = false)
         coroutineScope.launch { libraryListState.scrollToItem(0) }
       },
       onHideCompletedToggled = {
         settingsViewModel.toggleHideCompleted()
-        playerViewModel.book.value?.let { playerViewModel.preparePlayback(it.id, it.libraryType) }
         libraryViewModel.resetGroupExpansion()
         refreshContent(showPullRefreshing = false)
         coroutineScope.launch { libraryListState.scrollToItem(0) }
