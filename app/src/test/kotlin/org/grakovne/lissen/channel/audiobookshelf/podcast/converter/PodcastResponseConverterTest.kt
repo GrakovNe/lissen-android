@@ -12,6 +12,7 @@ import org.grakovne.lissen.domain.LibraryType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
+import java.util.concurrent.Executors
 
 class PodcastResponseConverterTest {
   private val converter = PodcastResponseConverter()
@@ -106,6 +107,32 @@ class PodcastResponseConverterTest {
     val result = converter.apply(podcast(episodes))
 
     assertEquals(listOf("bad", "good"), result.files.map { it.id })
+  }
+
+  @Test
+  fun `orders episodes consistently when many threads convert at once`() {
+    val episodes =
+      (1..50).map { index ->
+        episode(
+          id = "e$index",
+          pubDate = "Sun, %02d Feb 2024 %02d:00:00 +0000".format(index % 28 + 1, index % 24),
+          season = (index % 4).toString(),
+          episode = (index % 6).toString(),
+        )
+      }
+    val expected = converter.apply(podcast(episodes)).files.map { it.id }
+
+    val executor = Executors.newFixedThreadPool(8)
+    try {
+      val results =
+        (1..100)
+          .map { executor.submit<List<String>> { converter.apply(podcast(episodes)).files.map { file -> file.id } } }
+          .map { future -> future.get() }
+
+      results.forEach { assertEquals(expected, it) }
+    } finally {
+      executor.shutdown()
+    }
   }
 
   @Test
