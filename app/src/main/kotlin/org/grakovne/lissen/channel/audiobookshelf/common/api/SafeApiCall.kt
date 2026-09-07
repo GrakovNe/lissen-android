@@ -37,6 +37,8 @@ suspend fun <T> safeApiCall(
       }
     }
 
+    response.errorBody()?.close()
+
     return when (response.code()) {
       400 -> {
         OperationResult.Error(OperationError.InternalError)

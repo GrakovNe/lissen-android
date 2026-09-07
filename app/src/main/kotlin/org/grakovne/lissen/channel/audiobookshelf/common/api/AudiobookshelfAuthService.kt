@@ -128,6 +128,7 @@ class AudiobookshelfAuthService
           val response = client.newCall(request).execute()
 
           if (!response.isSuccessful) {
+            response.close()
             return@withContext OperationResult.Success(empty)
           }
 

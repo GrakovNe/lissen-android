@@ -3,7 +3,6 @@ package org.grakovne.lissen.channel.audiobookshelf.common
 import android.net.Uri
 import androidx.core.net.toUri
 import okhttp3.OkHttpClient
-import okio.Buffer
 import org.grakovne.lissen.BuildConfig
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfHostProvider
 import org.grakovne.lissen.channel.audiobookshelf.Host
@@ -29,6 +28,7 @@ import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
+import java.io.File
 
 abstract class AudiobookshelfChannel(
   protected val dataRepository: AudioBookshelfRepository,
@@ -72,12 +72,12 @@ abstract class AudiobookshelfChannel(
   override suspend fun fetchBookCover(
     bookId: String,
     width: Int?,
-  ): OperationResult<Buffer> = dataRepository.fetchBookCover(bookId, width)
+  ): OperationResult<File> = dataRepository.fetchBookCover(bookId, width)
 
   override suspend fun fetchAuthorCover(
     authorId: String,
     width: Int?,
-  ): OperationResult<Buffer> = dataRepository.fetchAuthorImage(authorId, width)
+  ): OperationResult<File> = dataRepository.fetchAuthorImage(authorId, width)
 
   override suspend fun fetchLibraries(): OperationResult<List<Library>> =
     dataRepository

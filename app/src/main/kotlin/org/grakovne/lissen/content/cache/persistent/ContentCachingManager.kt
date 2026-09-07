@@ -10,7 +10,6 @@ import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.common.copyTo
 import org.grakovne.lissen.content.cache.common.findRelatedFiles
 import org.grakovne.lissen.content.cache.common.withBlur
-import org.grakovne.lissen.content.cache.common.writeToFile
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedLibraryRepository
 import org.grakovne.lissen.domain.BookFile
@@ -239,9 +238,10 @@ class ContentCachingManager
           .fold(
             onSuccess = { cover ->
               try {
-                cover
-                  .withBlur(context)
-                  .writeToFile(file)
+                val blurred = cover.withBlur(context)
+                blurred.copyTo(file, overwrite = true)
+                if (blurred != cover) blurred.delete()
+                cover.delete()
               } catch (ex: Exception) {
                 Timber.e("Unable to cache cover for ${book.id} due to: ${ex.message}")
               }
@@ -267,9 +267,10 @@ class ContentCachingManager
                 try {
                   val dest = properties.provideAuthorImagePath(author.name)
                   dest.parentFile?.mkdirs()
-                  image
-                    .withBlur(context)
-                    .writeToFile(dest)
+                  val blurred = image.withBlur(context)
+                  blurred.copyTo(dest, overwrite = true)
+                  if (blurred != image) blurred.delete()
+                  image.delete()
                 } catch (ex: Exception) {
                   Timber.e("Unable to cache author image for ${author.name} due to: ${ex.message}")
                 }

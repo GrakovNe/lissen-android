@@ -6,12 +6,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import okio.Buffer
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.cache.common.withBlur
-import org.grakovne.lissen.content.cache.common.writeToFile
 import timber.log.Timber
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
@@ -39,7 +37,7 @@ class CachedCoverProvider
 
     private suspend fun provide(
       cacheKey: String,
-      fetch: suspend () -> OperationResult<Buffer>,
+      fetch: suspend () -> OperationResult<File>,
     ): OperationResult<File> {
       val lock = locks.computeIfAbsent(cacheKey) { Mutex() }
       return lock.withLock {
@@ -63,7 +61,7 @@ class CachedCoverProvider
 
     private suspend fun cacheCover(
       cacheKey: String,
-      fetch: suspend () -> OperationResult<Buffer>,
+      fetch: suspend () -> OperationResult<File>,
     ): OperationResult<File> {
       val dest = properties.provideCoverPath(cacheKey)
 
@@ -73,8 +71,9 @@ class CachedCoverProvider
             onSuccess = { source ->
               val blurred = source.withBlur(context)
               dest.parentFile?.mkdirs()
-
-              blurred.writeToFile(dest)
+              blurred.copyTo(dest, overwrite = true)
+              if (blurred != source) blurred.delete()
+              source.delete()
               OperationResult.Success(dest)
             },
             onFailure = { OperationResult.Error(OperationError.InternalError, it.message) },

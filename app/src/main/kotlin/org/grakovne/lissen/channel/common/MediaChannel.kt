@@ -2,7 +2,6 @@ package org.grakovne.lissen.channel.common
 
 import android.net.Uri
 import okhttp3.OkHttpClient
-import okio.Buffer
 import org.grakovne.lissen.channel.audiobookshelf.Host
 import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.domain.Book
@@ -17,6 +16,7 @@ import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.domain.asLibraryEntries
+import java.io.File
 
 interface MediaChannel {
   fun getLibraryType(): LibraryType
@@ -37,12 +37,12 @@ interface MediaChannel {
   suspend fun fetchBookCover(
     bookId: String,
     width: Int? = null,
-  ): OperationResult<Buffer>
+  ): OperationResult<File>
 
   suspend fun fetchAuthorCover(
     authorId: String,
     width: Int? = null,
-  ): OperationResult<Buffer> = OperationResult.Error(OperationError.InternalError)
+  ): OperationResult<File> = OperationResult.Error(OperationError.InternalError)
 
   suspend fun fetchBooks(
     libraryId: String,

@@ -11,30 +11,41 @@ import androidx.core.graphics.scale
 import com.hoko.blur.HokoBlur
 import com.hoko.blur.HokoBlur.MODE_GAUSSIAN
 import com.hoko.blur.HokoBlur.SCHEME_NATIVE
-import okio.Buffer
-import okio.BufferedSource
+import java.io.File
+import java.io.FileOutputStream
+import kotlin.math.max
 import kotlin.math.roundToInt
 
-fun Buffer.withBlur(context: Context): Buffer {
-  val dimensions: Pair<Int, Int>? = getImageDimensions(this)
+/**
+ * Returns a square cover for this image: the file itself when it is already
+ * square, otherwise a temp file with a blurred square backdrop.
+ */
+fun File.withBlur(context: Context): File {
+  val bounds =
+    BitmapFactory
+      .Options()
+      .apply { inJustDecodeBounds = true }
+  BitmapFactory.decodeFile(path, bounds)
 
-  return when (dimensions?.first == dimensions?.second) {
-    true -> this
-    false -> runCatching { sourceWithBackdropBlur(this, context) }.getOrElse { this }
+  val width = bounds.outWidth
+  val height = bounds.outHeight
+
+  if (width <= 0 || height <= 0 || width == height) {
+    return this
   }
+
+  return runCatching { blurredBackdropFile(this, context) }.getOrElse { this }
 }
 
-private fun sourceWithBackdropBlur(
-  source: BufferedSource,
+private fun blurredBackdropFile(
+  source: File,
   context: Context,
-): Buffer {
-  val peeked = source.peek()
+): File {
+  val original = BitmapFactory.decodeFile(source.path) ?: return source
 
-  val original = BitmapFactory.decodeStream(peeked.inputStream())
   val width = original.width
   val height = original.height
-
-  val size = maxOf(width, height)
+  val size = max(width, height)
 
   val backdrop = buildBlurredBackdrop(original, size, context)
 
@@ -55,10 +66,13 @@ private fun sourceWithBackdropBlur(
   canvas.drawBitmap(original, left, top, null)
   original.recycle()
 
-  return Buffer().also { buffer ->
-    result.compress(Bitmap.CompressFormat.PNG, 100, buffer.outputStream())
-    result.recycle()
+  val output = File.createTempFile("blurred_", ".png", context.cacheDir)
+  FileOutputStream(output).use { stream ->
+    result.compress(Bitmap.CompressFormat.PNG, 100, stream)
   }
+  result.recycle()
+
+  return output
 }
 
 private fun buildBlurredBackdrop(
