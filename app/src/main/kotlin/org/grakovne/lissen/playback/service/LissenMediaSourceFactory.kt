@@ -2,6 +2,7 @@ package org.grakovne.lissen.playback.service
 
 import android.os.Parcelable
 import androidx.core.os.BundleCompat
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
@@ -63,21 +64,33 @@ class LissenMediaSourceFactory(
     fun FileClip.toMediaSource(
       bookId: String,
       metadata: MediaMetadata? = null,
-    ): MediaSource =
-      mediaSourceFactory
-        .createMediaSource(
-          MediaItem
-            .Builder()
-            .setUri(toLissenUri(bookId, fileId))
-            .apply { metadata?.let { setMediaMetadata(it) } }
-            .build(),
-        ).let {
+    ): MediaSource {
+      val source =
+        mediaSourceFactory
+          .createMediaSource(
+            MediaItem
+              .Builder()
+              .setUri(toLissenUri(bookId, fileId))
+              .apply { metadata?.let { setMediaMetadata(it) } }
+              .build(),
+          )
+
+      val (startUs, endUs) = clipBoundsUs(clipStart, clipEnd)
+
+      return when {
+        startUs == 0L && endUs == C.TIME_UNSET -> {
+          source
+        }
+
+        else -> {
           ClippingMediaSource
-            .Builder(it)
-            .setStartPositionUs((clipStart * 1_000_000).toLong())
-            .setEndPositionUs((clipEnd * 1_000_000).toLong())
+            .Builder(source)
+            .setStartPositionUs(startUs)
+            .setEndPositionUs(endUs)
             .build()
         }
+      }
+    }
 
     return MediaId.fromString(mediaItem.mediaId)?.let { (bookId, chapterId) ->
       mediaItem.requestMetadata.extras?.let { extras ->
@@ -96,7 +109,7 @@ class LissenMediaSourceFactory(
                 .Builder()
                 .apply {
                   segments.forEach {
-                    add(it.toMediaSource(bookId), ((it.clipEnd - it.clipStart) * 1000).toLong())
+                    add(it.toMediaSource(bookId), segmentDurationMs(it.clipStart, it.clipEnd))
                   }
                 }.setMediaItem(
                   MediaItem
@@ -109,5 +122,39 @@ class LissenMediaSourceFactory(
         }
       }
     } ?: mediaSourceFactory.createMediaSource(mediaItem)
+  }
+
+  internal companion object {
+    /**
+     * Converts clip bounds in seconds to microseconds, tolerating corrupted metadata.
+     *
+     * Durations coming from the server can be NaN or negative, which previously produced
+     * end positions smaller than start positions and made media3 reject the clip with
+     * "IllegalArgumentException". Invalid bounds degrade to playing from the start
+     * position until the end of the file instead of crashing the playback service.
+     */
+    internal fun clipBoundsUs(
+      clipStart: Double,
+      clipEnd: Double,
+    ): Pair<Long, Long> {
+      val startUs = if (clipStart.isFinite() && clipStart > 0) (clipStart * 1_000_000).toLong() else 0L
+      val endUs =
+        when {
+          !clipEnd.isFinite() || clipEnd <= 0 -> C.TIME_UNSET
+          clipEnd * 1_000_000 <= startUs -> C.TIME_UNSET
+          else -> (clipEnd * 1_000_000).toLong()
+        }
+
+      return startUs to endUs
+    }
+
+    internal fun segmentDurationMs(
+      clipStart: Double,
+      clipEnd: Double,
+    ): Long {
+      val durationMs = ((clipEnd - clipStart) * 1000).toLong()
+
+      return if (durationMs > 0) durationMs else 1L
+    }
   }
 }
