@@ -8,6 +8,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfChannelProvider
+import org.grakovne.lissen.channel.audiobookshelf.common.api.UserStateProvider
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
@@ -42,6 +43,7 @@ class LissenMediaProviderTest {
   private val localCacheRepository = mockk<LocalCacheRepository>(relaxed = true)
   private val cachedCoverProvider = mockk<CachedCoverProvider>(relaxed = true)
   private val cachedBookmarkProvider = mockk<CachedBookmarkProvider>(relaxed = true)
+  private val userStateProvider = mockk<UserStateProvider>(relaxed = true)
   private val mediaChannel = mockk<MediaChannel>(relaxed = true)
 
   private lateinit var provider: LissenMediaProvider
@@ -57,6 +59,7 @@ class LissenMediaProviderTest {
         localCacheRepository,
         cachedCoverProvider,
         cachedBookmarkProvider,
+        userStateProvider,
       )
   }
 

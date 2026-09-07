@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.channel.audiobookshelf.Host
+import org.grakovne.lissen.channel.audiobookshelf.common.api.UserStateProvider
 import org.grakovne.lissen.channel.common.DEFAULT_USER_AGENT
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.common.AudioFocusLossPolicy
@@ -74,6 +75,7 @@ class SettingsViewModel
     private val offlineBookStorageProperties: OfflineBookStorageProperties,
     private val contentCachingManager: ContentCachingManager,
     private val mediaRepository: MediaRepository,
+    private val userStateProvider: UserStateProvider,
   ) : ViewModel() {
     private val _host = MutableStateFlow<Host?>(session.getHost()?.let { Host.external(it) })
     val host: StateFlow<Host?> = _host.asStateFlow()
@@ -237,6 +239,7 @@ class SettingsViewModel
 
     fun logout() {
       Timber.d("User action: logout")
+      userStateProvider.invalidate()
       preferencesReset.clearAll()
     }
 
