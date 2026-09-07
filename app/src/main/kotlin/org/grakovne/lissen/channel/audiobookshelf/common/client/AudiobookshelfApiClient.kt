@@ -4,6 +4,7 @@ import okhttp3.ResponseBody
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarkRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarksItemResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarksResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.connection.ConnectionInfoResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.AuthorItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibrariesResponse
@@ -14,6 +15,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.Progress
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.CredentialsLoginRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.LoggedUserResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.PersonalizedFeedResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.user.UserResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.BookResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryAuthorsResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsBatchRequest
@@ -58,7 +60,7 @@ interface AudiobookshelfApiClient {
   suspend fun fetchConnectionInfo(): Response<ConnectionInfoResponse>
 
   @GET("api/me")
-  suspend fun fetchUserState(): Response<ResponseBody>
+  suspend fun fetchBookmarks(): Response<BookmarksResponse>
 
   @POST("api/me/item/{libraryItemId}/bookmark")
   suspend fun createBookmarks(
@@ -71,6 +73,9 @@ interface AudiobookshelfApiClient {
     @Path("libraryItemId") libraryItemId: String,
     @Path("totalTime") totalTime: Int,
   ): Response<Unit>
+
+  @GET("api/me")
+  suspend fun fetchUserInfo(): Response<UserResponse>
 
   @GET("api/libraries/{libraryId}/items")
   suspend fun fetchLibraryItems(

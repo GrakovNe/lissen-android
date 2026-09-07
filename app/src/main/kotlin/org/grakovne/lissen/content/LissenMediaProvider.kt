@@ -2,7 +2,6 @@ package org.grakovne.lissen.content
 
 import android.net.Uri
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfChannelProvider
-import org.grakovne.lissen.channel.audiobookshelf.common.api.UserStateProvider
 import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
@@ -37,7 +36,6 @@ class LissenMediaProvider
     private val localCacheRepository: LocalCacheRepository,
     private val cachedCoverProvider: CachedCoverProvider,
     private val cachedBookmarkProvider: CachedBookmarkProvider,
-    private val userStateProvider: UserStateProvider,
   ) {
     suspend fun dropBookmark(bookmark: Bookmark) {
       Timber.d("Dropping bookmark for ${bookmark.libraryItemId} at position=${bookmark.totalPosition.toInt()}s")
@@ -384,8 +382,6 @@ class LissenMediaProvider
           accessToken = account.accessToken,
           refreshToken = account.refreshToken,
         )
-
-      userStateProvider.invalidate()
 
       fetchLibraries()
         .fold(
