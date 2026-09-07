@@ -224,6 +224,7 @@ dependencies {
   testImplementation(libs.junit.jupiter)
   testImplementation(libs.mockk)
   testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation(libs.mockwebserver)
   testRuntimeOnly(libs.junit.platform.launcher)
   
   androidTestImplementation(libs.androidx.room.testing)
