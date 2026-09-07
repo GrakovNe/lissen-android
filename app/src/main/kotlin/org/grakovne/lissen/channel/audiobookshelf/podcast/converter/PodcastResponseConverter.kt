@@ -111,20 +111,32 @@ class PodcastResponseConverter
 
     companion object {
       private const val FINISHED_PROGRESS_THRESHOLD = 0.9
-      private val dateFormat = SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH)
+      private const val PUB_DATE_PATTERN = "EEE, dd MMM yyyy HH:mm:ss Z"
 
-      private fun List<PodcastEpisodeResponse>.orderEpisode() =
-        this.sortedWith(
-          compareBy<PodcastEpisodeResponse> { item ->
+      private data class EpisodeOrder(
+        val publishedAt: Long?,
+        val season: Int?,
+        val episode: Int?,
+      )
+
+      // SimpleDateFormat is not thread-safe and podcast books are fetched concurrently,
+      // so parsing happens once per sort with a dedicated instance instead of a shared one.
+      private fun List<PodcastEpisodeResponse>.orderEpisode(): List<PodcastEpisodeResponse> {
+        val dateFormat = SimpleDateFormat(PUB_DATE_PATTERN, Locale.ENGLISH)
+
+        return map { item ->
+          val publishedAt =
             try {
               item.pubDate?.let { dateFormat.parse(it)?.time }
             } catch (e: Exception) {
               Timber.w("Unable to parse episode pubDate '${item.pubDate}' due to: ${e.message}")
               null
             }
-          }.thenBy { it.season.safeToInt() }
-            .thenBy { it.episode.safeToInt() },
-        )
+          EpisodeOrder(publishedAt, item.season.safeToInt(), item.episode.safeToInt()) to item
+        }.sortedWith(
+          compareBy({ it.first.publishedAt }, { it.first.season }, { it.first.episode }),
+        ).map { it.second }
+      }
 
       private fun String?.safeToInt(): Int? {
         val maybeNumber = this?.takeIf { it.isNotBlank() }
