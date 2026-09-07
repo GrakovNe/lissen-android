@@ -2,6 +2,7 @@ package org.grakovne.lissen.channel.audiobookshelf.common.api
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
 import okio.Buffer
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarkRequest
@@ -9,6 +10,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.Bookmark
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarksResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.connection.ConnectionInfoResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.AuthorItemsResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibrariesResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackSessionResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
@@ -16,14 +18,17 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.Progress
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.PersonalizedFeedResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.UserResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.BookResponse
+import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryAuthorsResponse
+import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsBatchRequest
+import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsBatchResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibrarySearchResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastSearchResponse
 import org.grakovne.lissen.channel.common.OperationResult
-import org.grakovne.lissen.lib.domain.Bookmark
-import org.grakovne.lissen.lib.domain.CreateBookmarkRequest
+import org.grakovne.lissen.domain.Bookmark
+import org.grakovne.lissen.domain.CreateBookmarkRequest
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -33,15 +38,29 @@ class AudioBookshelfRepository
   constructor(
     private val audioBookShelfApiService: AudioBookShelfApiService,
   ) {
-    suspend fun fetchLibraries(): OperationResult<LibraryResponse> =
+    fun provideHttpClient(): OkHttpClient? = audioBookShelfApiService.provideHttpClient()
+
+    suspend fun fetchLibraries(): OperationResult<LibrariesResponse> =
       audioBookShelfApiService
         .makeRequest { it.fetchLibraries() }
+
+    suspend fun fetchLibrary(libraryId: String): OperationResult<LibraryResponse> =
+      audioBookShelfApiService
+        .makeRequest { it.fetchLibrary(libraryId) }
 
     suspend fun fetchAuthorItems(authorId: String): OperationResult<AuthorItemsResponse> =
       audioBookShelfApiService
         .makeRequest {
           it.fetchAuthorLibraryItems(
             authorId = authorId,
+          )
+        }
+
+    suspend fun fetchLibraryItemsBatch(itemIds: List<String>): OperationResult<LibraryItemsBatchResponse> =
+      audioBookShelfApiService
+        .makeRequest {
+          it.fetchLibraryItemsBatch(
+            LibraryItemsBatchRequest(libraryItemIds = itemIds),
           )
         }
 
@@ -80,6 +99,7 @@ class AudioBookshelfRepository
       sort: String,
       direction: String,
       filter: String?,
+      collapseSeries: Boolean = false,
     ): OperationResult<LibraryItemsResponse> =
       audioBookShelfApiService.makeRequest {
         it.fetchLibraryItems(
@@ -89,6 +109,53 @@ class AudioBookshelfRepository
           sort = sort,
           desc = direction,
           filter = filter,
+          collapseSeries = if (collapseSeries) "1" else "0",
+        )
+      }
+
+    suspend fun fetchLibraryAuthors(
+      libraryId: String,
+      pageSize: Int,
+      pageNumber: Int,
+    ): OperationResult<LibraryAuthorsResponse> =
+      audioBookShelfApiService.makeRequest {
+        it.fetchLibraryAuthors(
+          libraryId = libraryId,
+          limit = pageSize,
+          page = pageNumber,
+          sort = "name",
+          desc = "0",
+        )
+      }
+
+    suspend fun fetchAuthorImage(
+      authorId: String,
+      width: Int?,
+    ): OperationResult<Buffer> =
+      audioBookShelfApiService
+        .makeRequest { it.getAuthorImage(authorId = authorId, width = width) }
+        .map { response ->
+          withContext(Dispatchers.IO) {
+            response.use {
+              Buffer().apply { writeAll(it.source()) }
+            }
+          }
+        }
+
+    suspend fun fetchSeriesItems(
+      libraryId: String,
+      seriesId: String,
+      pageSize: Int,
+      pageNumber: Int,
+    ): OperationResult<LibraryItemsResponse> =
+      audioBookShelfApiService.makeRequest {
+        it.fetchLibraryItems(
+          libraryId = libraryId,
+          pageSize = pageSize,
+          pageNumber = pageNumber,
+          sort = "sequence",
+          desc = "0",
+          filter = encodeLibraryFilter("series", seriesId),
         )
       }
 

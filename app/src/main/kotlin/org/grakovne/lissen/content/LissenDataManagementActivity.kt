@@ -14,8 +14,7 @@ class LissenDataManagementActivity : ComponentActivity() {
 
     val intent =
       Intent(this, AppActivity::class.java).apply {
-        flags = Intent.FLAG_ACTIVITY_NEW_TASK or
-          Intent.FLAG_ACTIVITY_CLEAR_TASK
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         action = SHOW_DOWNLOADS
       }
 

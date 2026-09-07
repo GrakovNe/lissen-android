@@ -70,9 +70,18 @@
     <string name="downloads_menu_download_option_entire_book">Livre entier</string>
     <string name="downloads_menu_download_option_entire_podcast">Podcast entier</string>
     <string name="downloads_menu_download_option_entire_item">Objet entier</string>
-    <string name="downloads_menu_download_option_next_chapters">Prochains %1$d chapitres</string>
-    <string name="downloads_menu_download_option_next_episodes">Prochains %1$d épisodes</string>
-    <string name="downloads_menu_download_option_next_items">Prochains %1$d objets</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="other">Prochains %1$d chapitres</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="other">Prochains %1$d épisodes</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="other">Prochains %1$d objets</item>
+    </plurals>
+    <string name="downloads_menu_download_option_next_chapters_label">Prochains chapitres</string>
+    <string name="downloads_menu_download_option_next_episodes_label">Prochains épisodes</string>
+    <string name="downloads_menu_download_option_next_items_label">Prochains objets</string>
     <string name="downloads_menu_download_option_clear_chapters">Vider les chapitres téléchargés</string>
     <string name="downloads_menu_download_option_clear_episodes">Vider les épisodes téléchargés</string>
     <string name="downloads_menu_download_option_clear_items">Vider les objets téléchargés</string>
@@ -88,9 +97,7 @@
     <string name="playing_item_details_duration">Durée</string>
     <string name="settings_screen_seek_time_title">Rechercher les paramètres</string>
     <string name="settings_screen_seek_time_hint">Définir les contrôles de recherche</string>
-    <string name="seek_interval_5_seconds">5 secondes</string>
     <string name="forward_interval">Intervalle avant</string>
-    <string name="seek_interval_10_seconds">10 secondes</string>
     <string name="chapters_list_empty">Ce livre n\'a pas de chapitres</string>
     <string name="continue_playback_shortcut_description">Continuer à écouter</string>
     <string name="episodes_list_empty">Il n\'y a pas d\'épisodes dans les podcasts</string>
@@ -99,9 +106,6 @@
     <string name="source_code_on_github_title">Code source sur GitHub</string>
     <string name="source_code_on_github_subtitle">Signaler des problèmes ou suggérer des améliorations</string>
     <string name="rewind_interval">Intervalle de rembobinage</string>
-    <string name="seek_interval_15_seconds">15 secondes</string>
-    <string name="seek_interval_30_seconds">30 secondes</string>
-    <string name="seek_interval_60_seconds">60 secondes</string>
     <string name="continue_playback_shortcut_title">Continuer</string>
     <string name="settings_screen_library_ordering_author_option">Auteur</string>
     <string name="settings_screen_library_ordering_creation_date_option">Date de création</string>
@@ -127,18 +131,15 @@
     <string name="settings_screen_cached_items_title">Téléchargements</string>
     <string name="settings_screen_cached_items_hint">Gérer le contenu enregistré</string>
     <string name="volume_boost_disabled">Désactiver</string>
-    <string name="volume_boost_low">Faible</string>
-    <string name="volume_boost_medium">Moyen</string>
-    <string name="volume_boost_high">Fort</string>
     <string name="volume_boost_title">Volume boosté</string>
     <string name="playing_item_details_time_remaining">Temps restant</string>
-    <string name="settings_screen_advanced_preferences_title">Préférences avancées</string>
-    <string name="settings_screen_advanced_preferences_description">Recherche de contrôle, en-têtes proxy ou son</string>
+    <string name="settings_screen_advanced_preferences_title">Avancé</string>
+    <string name="settings_screen_advanced_preferences_description">Diagnostics, journaux et autres options</string>
     <string name="settings_screen_crash_report_title">Rapport d\'incident</string>
     <string name="settings_screen_crash_report_description">Envoyer des rapports si l\'application plante</string>
     <string name="settings_download_automatically_title">Télécharger automatiquement</string>
-    <string name="download_settings_title">Préférences de téléchargement</string>
-    <string name="download_settings_description">Définir les téléchargements et gérer le contenu</string>
+    <string name="download_settings_title">Téléchargements</string>
+    <string name="download_settings_description">Téléchargements et gestion du contenu</string>
     <string name="download_settings_network_type_title">Utilisation pour les téléchargements automatiques</string>
     <string name="download_settings_library_type_title">Télécharger automatiquement</string>
     <string name="download_settings_library_type_no_items_selected">Aucun type défini</string>
@@ -157,7 +158,6 @@
     <string name="settings_screen_clear_thumbnail_cache_success_toast">Cache des miniatures nettoyé</string>
     <string name="settings_screen_delay_autodownload_title">Reporter le téléchargement automatique</string>
     <string name="settings_screen_delay_autodownload_description">Attendre un peu avant que le téléchargement ne commence</string>
-    <string name="volume_boost_max">Maximum</string>
     <string name="settings_screen_bypass_ssl_title">Désactiver la vérification SSL</string>
     <string name="settings_screen_bypass_ssl_hint">Se connecter aux serveurs avec tout certificat</string>
     <string name="settings_screen_material_you_title">Couleurs Material You</string>
@@ -176,8 +176,47 @@
     <string name="tree_node_library">Bibliothèque</string>
     <string name="tree_node_downloads">Téléchargements</string>
     <string name="tree_node_root">Root</string>
-    <string name="tree_node_continue">Continuer</string>
-    <string name="connection_settings_title">Préférences de connexion</string>
-    <string name="connection_settings_description">Paramètres relatifs à l\'adresse du serveur de contrôle, au proxy et au protocole SSL</string>
+    <string name="connection_settings_title">Connexion</string>
+    <string name="connection_settings_description">Adresse du serveur, proxy et SSL</string>
+    <string name="playback_preferences_title">Lecture</string>
+    <string name="playback_preferences_description">Volume, contrôles de navigation et audio</string>
+    <string name="appearance_preferences_title">Apparence</string>
+    <string name="appearance_preferences_description">Jeu de couleurs, tri et thème</string>
     <string name="disconnect_from_server_title">Se déconnecter du serveur</string>
+    <string name="library_quick_settings_sort_title">Trier par</string>
+    <plurals name="seek_interval_seconds">
+        <item quantity="one">%d seconde</item>
+        <item quantity="many">%d secondes</item>
+        <item quantity="other">%d secondes</item>
+    </plurals>
+    <string name="settings_screen_default_sleep_timer_title">Minuterie de mise en veille par défaut pendant la lecture</string>
+    <string name="settings_screen_audio_focus_loss_policy_title">Lecture à la réception d\'une notification</string>
+    <string name="settings_screen_client_cert_title">Certificat client</string>
+    <string name="settings_screen_client_cert_hint">Utiliser un certificat client pour mTLS</string>
+    <string name="settings_screen_client_cert_empty_state_title">Aucun certificat client n\'a été sélectionné</string>
+    `<string name="settings_screen_client_cert_install_help_description">Importez le fichier de certificat via la section « Sécurité » ou « VPN » dans les paramètres système de votre appareil</string>`
+    <string name="a11y_back">Retour</string>
+    <string name="a11y_menu">Menu</string>
+    <string name="a11y_search">Rechercher</string>
+    <string name="a11y_clear">Effacer</string>
+    <string name="a11y_add">Ajouter</string>
+    <string name="a11y_settings">Paramètres</string>
+    <string name="a11y_delete_from_cache">Supprimer du cache</string>
+    <string name="a11y_available_offline">Disponible hors ligne</string>
+    <string name="a11y_collapse_queue">Réduire la file d\'attente</string>
+    <string name="a11y_open">Ouvrir</string>
+    <string name="a11y_previous_track">Piste précédente</string>
+    <string name="a11y_next_track">Piste suivante</string>
+    <string name="a11y_play">Lecture</string>
+    <string name="a11y_pause">Pause</string>
+    <string name="a11y_playback_position">Position de lecture</string>
+    <string name="a11y_position_of">%1$s sur %2$s</string>
+    <string name="a11y_buffering">Mise en mémoire tampon</string>
+    <string name="a11y_playback_error">Erreur de lecture</string>
+    <string name="a11y_rewind_seconds">Reculer de %1$d secondes</string>
+    <string name="a11y_fast_forward_seconds">Avancer de %1$d secondes</string>
+    <plurals name="a11y_hours">
+        <item quantity="one">%d heure</item>
+        <item quantity="other">%d heures</item>
+    </plurals>
 </resources>

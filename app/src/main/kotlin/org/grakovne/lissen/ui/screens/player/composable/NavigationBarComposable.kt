@@ -21,7 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -34,15 +33,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.map
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.content.cache.persistent.CacheState
-import org.grakovne.lissen.lib.domain.CacheStatus
-import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.DurationTimerOption
-import org.grakovne.lissen.lib.domain.LibraryType
+import org.grakovne.lissen.domain.CacheStatus
+import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.DurationTimerOption
+import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.ui.extensions.formatTime
 import org.grakovne.lissen.ui.icons.TimerPlay
 import org.grakovne.lissen.ui.navigation.AppNavigationService
@@ -59,13 +58,15 @@ fun NavigationBarComposable(
   libraryType: LibraryType,
 ) {
   val cacheProgress: CacheState by contentCachingModelView.getProgress(book.id).collectAsState()
-  val timerOption by playerViewModel.timerOption.observeAsState(null)
-  val timerRemaining by playerViewModel.timerRemaining.observeAsState(0)
-  val playbackSpeed by playerViewModel.playbackSpeed.observeAsState(1f)
-  val playingQueueExpanded by playerViewModel.playingQueueExpanded.observeAsState(false)
-  val hasEpisodes by playerViewModel.book.map { book.chapters.isNotEmpty() }.observeAsState(true)
+  val timerOption by playerViewModel.timerOption.collectAsState()
+  val timerRemaining by playerViewModel.timerRemaining.collectAsState()
+  val playbackSpeed by playerViewModel.playbackSpeed.collectAsState()
+  val playingQueueExpanded by playerViewModel.playingQueueExpanded.collectAsState()
+  val hasEpisodes = book.chapters.isNotEmpty()
 
-  val isMetadataCached by contentCachingModelView.provideCacheState(book.id).observeAsState(false)
+  val isMetadataCached by remember(book.id) { contentCachingModelView.provideCacheState(book.id) }.collectAsState(initial = false)
+  val totalPosition by playerViewModel.totalPosition.collectAsState()
+  val remainingChapters = (book.chapters.size - calculateChapterIndex(book, totalPosition)).coerceAtLeast(1)
 
   var playbackSpeedExpanded by remember { mutableStateOf(false) }
   var timerExpanded by remember { mutableStateOf(false) }
@@ -241,12 +242,15 @@ fun NavigationBarComposable(
           hasCachedEpisodes = isMetadataCached,
           isForceCache = contentCachingModelView.localCacheUsing(),
           cachingInProgress = cacheProgress.status is CacheStatus.Caching,
+          chaptersCount = contentCachingModelView.getDownloadChaptersCount(),
+          maxChaptersCount = remainingChapters,
+          onChaptersCountChanged = { contentCachingModelView.saveDownloadChaptersCount(it) },
           onRequestedDownload = { option ->
             playerViewModel.book.value?.let {
               contentCachingModelView
                 .cache(
                   mediaItem = it,
-                  currentPosition = playerViewModel.totalPosition.value ?: 0.0,
+                  currentPosition = playerViewModel.totalPosition.value,
                   option = option,
                 )
             }

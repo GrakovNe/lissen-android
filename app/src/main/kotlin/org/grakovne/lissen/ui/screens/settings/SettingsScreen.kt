@@ -21,21 +21,23 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.settings.advanced.AdvancedSettingsNavigationItemComposable
 import org.grakovne.lissen.ui.screens.settings.composable.ChapterSkipSettingsComposable
-import org.grakovne.lissen.ui.screens.settings.composable.ColorSchemeSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.GitHubLinkComposable
-import org.grakovne.lissen.ui.screens.settings.composable.LibraryOrderingSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.LicenseFooterComposable
+import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
@@ -47,7 +49,7 @@ fun SettingsScreen(
 ) {
   val viewModel: SettingsViewModel = hiltViewModel()
   val playerViewModel: PlayerViewModel = hiltViewModel()
-  val host by viewModel.host.observeAsState()
+  val host by viewModel.host.collectAsState()
 
   LaunchedEffect(Unit) {
     viewModel.refreshConnectionInfo()
@@ -55,27 +57,14 @@ fun SettingsScreen(
 
   Scaffold(
     topBar = {
-      TopAppBar(
-        title = {
-          Text(
-            text = stringResource(R.string.settings_screen_title),
-            style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-            color = colorScheme.onSurface,
-          )
-        },
-        navigationIcon = {
-          IconButton(onClick = { onBack() }) {
-            Icon(
-              imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-              contentDescription = "Back",
-              tint = colorScheme.onSurface,
-            )
-          }
-        },
+      SettingsTopAppBar(
+        title = stringResource(R.string.settings_screen_title),
+        onBack = onBack,
       )
     },
     modifier =
       Modifier
+        .testTag("settingsScreen")
         .systemBarsPadding()
         .fillMaxHeight(),
     content = { innerPadding ->
@@ -91,6 +80,7 @@ fun SettingsScreen(
           modifier =
             Modifier
               .fillMaxWidth()
+              .weight(1f)
               .verticalScroll(rememberScrollState()),
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -100,9 +90,17 @@ fun SettingsScreen(
             onclick = { navController.showConnectionSettings() },
           )
 
-          ColorSchemeSettingsComposable(viewModel)
+          AdvancedSettingsNavigationItemComposable(
+            title = stringResource(R.string.playback_preferences_title),
+            description = stringResource(R.string.playback_preferences_description),
+            onclick = { navController.showPlaybackPreferences() },
+          )
 
-          LibraryOrderingSettingsComposable(viewModel)
+          AdvancedSettingsNavigationItemComposable(
+            title = stringResource(R.string.appearance_preferences_title),
+            description = stringResource(R.string.appearance_preferences_description),
+            onclick = { navController.showAppearancePreferences() },
+          )
 
           ChapterSkipSettingsComposable(playerViewModel)
 

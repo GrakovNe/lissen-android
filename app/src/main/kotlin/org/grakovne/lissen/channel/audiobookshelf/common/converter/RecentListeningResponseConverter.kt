@@ -1,7 +1,7 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.converter
 
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.PersonalizedFeedResponse
-import org.grakovne.lissen.lib.domain.RecentBook
+import org.grakovne.lissen.domain.RecentBook
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -24,7 +24,7 @@ class RecentListeningResponseConverter
             id = it.id,
             title = media.metadata.title,
             subtitle = media.metadata.subtitle,
-            author = media.metadata.authorName,
+            author = media.metadata.authorName ?: media.metadata.author,
             listenedPercentage = progress[it.id]?.second?.let { it * 100 }?.toInt(),
             listenedLastUpdate = progress[it.id]?.first,
           )

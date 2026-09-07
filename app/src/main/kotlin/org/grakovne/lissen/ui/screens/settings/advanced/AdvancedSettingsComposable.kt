@@ -1,10 +1,9 @@
 package org.grakovne.lissen.ui.screens.settings.advanced
 
-import android.os.Build
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,7 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Memory
+import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,25 +21,25 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.restartApplication
+import org.grakovne.lissen.common.shareFile
 import org.grakovne.lissen.ui.navigation.AppNavigationService
-import org.grakovne.lissen.ui.screens.settings.composable.PlaybackVolumeBoostSettingsComposable
+import org.grakovne.lissen.ui.screens.settings.composable.SettingsInfoBanner
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
+import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
 import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
@@ -53,34 +52,17 @@ fun AdvancedSettingsComposable(
   val cachingModelView: CachingModelView = hiltViewModel()
   val viewModel: SettingsViewModel = hiltViewModel()
 
-  val crashReporting by viewModel.crashReporting.observeAsState(true)
-
-  val materialYouColorsEnabled by viewModel.materialYouEnabled.observeAsState(false)
-  val softwareCodecsEnabled by viewModel.softwareCodecsEnabled.observeAsState(false)
-  val softwareCodecsEnabledOnStart = viewModel.softwareCodecsEnabledOnStart
+  val crashReporting by viewModel.crashReporting.collectAsState()
+  val activityLoggingEnabled by viewModel.activityLoggingEnabled.collectAsState()
+  val activityLoggingEnabledOnStart = viewModel.activityLoggingEnabledOnStart
 
   val context = LocalContext.current
-  val scope = rememberCoroutineScope()
 
   Scaffold(
     topBar = {
-      TopAppBar(
-        title = {
-          Text(
-            text = stringResource(R.string.settings_screen_advanced_preferences_title),
-            style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-            color = colorScheme.onSurface,
-          )
-        },
-        navigationIcon = {
-          IconButton(onClick = { onBack() }) {
-            Icon(
-              imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-              contentDescription = "Back",
-              tint = colorScheme.onSurface,
-            )
-          }
-        },
+      SettingsTopAppBar(
+        title = stringResource(R.string.settings_screen_advanced_preferences_title),
+        onBack = onBack,
       )
     },
     modifier =
@@ -100,56 +82,42 @@ fun AdvancedSettingsComposable(
           modifier =
             Modifier
               .fillMaxWidth()
+              .weight(1f)
               .verticalScroll(rememberScrollState()),
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-          PlaybackVolumeBoostSettingsComposable(viewModel)
-
-          AdvancedSettingsNavigationItemComposable(
-            title = stringResource(R.string.settings_screen_seek_time_title),
-            description = stringResource(R.string.settings_screen_seek_time_hint),
-            onclick = { navController.showSeekSettings() },
-          )
-
-          if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            SettingsToggleItem(
-              stringResource(R.string.settings_screen_material_you_title),
-              stringResource(R.string.settings_screen_material_you_description),
-              materialYouColorsEnabled,
-            ) {
-              viewModel.preferMaterialYouColors(it)
-            }
-          }
-
-          SettingsToggleItem(
-            title = stringResource(R.string.settings_screen_software_codecs_enabled_title),
-            description = stringResource(R.string.settings_screen_software_codecs_enabled_description),
-            initialState = softwareCodecsEnabled,
-          ) { viewModel.preferSoftwareCodecsEnabled(it) }
-
           SettingsToggleItem(
             title = stringResource(R.string.settings_screen_crash_report_title),
             description = stringResource(R.string.settings_screen_crash_report_description),
             initialState = crashReporting,
           ) { viewModel.preferCrashReporting(it) }
 
+          SettingsToggleItem(
+            title = stringResource(R.string.settings_screen_activity_logging_title),
+            description = stringResource(R.string.settings_screen_activity_logging_description),
+            initialState = activityLoggingEnabled,
+          ) { viewModel.preferActivityLoggingEnabled(it) }
+
           AdvancedSettingsSimpleItemComposable(
-            title = stringResource(R.string.settings_screen_clear_thumbnail_cache_title),
-            description = stringResource(R.string.settings_screen_clear_thumbnail_cache_hint),
-            onclick = {
-              scope.launch { cachingModelView.clearShortTermCache() }
-              Toast
-                .makeText(
-                  context,
-                  context.getString(R.string.settings_screen_clear_thumbnail_cache_success_toast),
-                  Toast.LENGTH_SHORT,
-                ).show()
-            },
+            title = stringResource(R.string.export_logs_title),
+            description = stringResource(R.string.export_logs_description),
+            enabled = activityLoggingEnabledOnStart,
+            onclick = { shareLogs(context, viewModel) },
           )
+
+          AdvancedSettingsNavigationItemComposable(
+            title = stringResource(R.string.config_backup_title),
+            description = stringResource(R.string.config_backup_description),
+            onclick = { navController.showConfigBackupSettings() },
+          )
+
+          ClearThumbnailCacheComposable(cachingModelView = cachingModelView)
         }
 
-        if (softwareCodecsEnabledOnStart != softwareCodecsEnabled) {
-          SoftwareCodecsPreferenceBanner()
+        val loggingChanged = activityLoggingEnabledOnStart != activityLoggingEnabled
+
+        if (loggingChanged) {
+          ActivityLoggingPreferenceBanner()
         }
       }
     },
@@ -157,43 +125,23 @@ fun AdvancedSettingsComposable(
 }
 
 @Composable
-fun SoftwareCodecsPreferenceBanner(modifier: Modifier = Modifier) {
+fun ActivityLoggingPreferenceBanner(modifier: Modifier = Modifier) {
   val context = LocalContext.current
+  SettingsInfoBanner(
+    icon = Icons.Outlined.Description,
+    text = stringResource(R.string.restart_the_app_to_apply_logging_changes_title),
+    ctaText = stringResource(R.string.restart_the_app_to_apply_logging_changes_cta),
+    onAction = { context.restartApplication() },
+    modifier = modifier,
+  )
+}
 
-  Row(
-    modifier =
-      modifier
-        .fillMaxWidth()
-        .padding(horizontal = 20.dp, vertical = 14.dp),
-    verticalAlignment = Alignment.CenterVertically,
-  ) {
-    Icon(
-      imageVector = Icons.Outlined.Memory,
-      contentDescription = null,
-      tint = colorScheme.primary,
-      modifier = Modifier.padding(end = 12.dp),
-    )
-
-    Text(
-      text = stringResource(R.string.restart_the_app_to_start_using_the_new_codecs_title),
-      style =
-        typography.bodyMedium.copy(
-          color = colorScheme.onSurface,
-        ),
-      modifier = Modifier.weight(1f),
-    )
-
-    TextButton(
-      onClick = { context.restartApplication() },
-    ) {
-      Text(
-        text = stringResource(R.string.restart_the_app_to_start_using_the_new_codecs_cta),
-        style =
-          typography.bodyMedium.copy(
-            color = colorScheme.primary,
-            fontWeight = FontWeight.SemiBold,
-          ),
-      )
-    }
-  }
+private fun shareLogs(
+  context: Context,
+  viewModel: SettingsViewModel,
+) {
+  viewModel
+    .provideLogArchive()
+    ?.let { context.shareFile(it, "application/zip", "Export logs", "${context.getString(R.string.app_name)} logs") }
+    ?: Toast.makeText(context, context.getString(R.string.export_logs_no_logs), Toast.LENGTH_SHORT).show()
 }

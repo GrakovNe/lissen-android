@@ -27,9 +27,12 @@
  */
 package org.grakovne.lissen.ui.components
 
-import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawWithContent
@@ -38,14 +41,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
-import androidx.compose.ui.input.nestedscroll.NestedScrollSource
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.collect
 import org.acra.ACRA
 import timber.log.Timber
 
@@ -54,47 +53,187 @@ fun Modifier.withScrollbar(
   color: Color,
   totalItems: Int?,
   ignoreItems: List<String> = emptyList(),
-): Modifier {
-  try {
-    return baseScrollbar { atEnd ->
-      val layoutInfo = state.layoutInfo
-      val viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset
+): Modifier =
+  composed {
+    val itemHeights = remember { mutableStateMapOf<Int, Int>() }
 
-      val items =
-        layoutInfo.visibleItemsInfo
-          .filterNot {
-            val key = it.key
-            key is String && ignoreItems.contains(key)
+    LaunchedEffect(totalItems) {
+      itemHeights.clear()
+    }
+
+    LaunchedEffect(state) {
+      snapshotFlow { state.layoutInfo.visibleItemsInfo }
+        .collect { visible ->
+          visible.forEach { item ->
+            if (itemHeights[item.index] != item.size) {
+              itemHeights[item.index] = item.size
+            }
           }
-
-      val itemsSize = items.sumOf { it.size }
-      val count = totalItems ?: layoutInfo.totalItemsCount
-
-      if (items.size < count || itemsSize > viewportSize) {
-        val itemSize = itemsSize.toFloat() / items.size
-
-        val totalSize = itemSize * count
-        val canvasSize = size.height
-        val thumbSize = (viewportSize / totalSize) * canvasSize
-
-        if (thumbSize > canvasSize * 0.95) {
-          return@baseScrollbar
         }
+    }
 
-        val startOffset =
-          items
-            .firstOrNull()
-            ?.let { (itemSize * it.index - it.offset) / totalSize * canvasSize }
-            ?: 0f
+    val reachedEnd = LocalLayoutDirection.current == LayoutDirection.Ltr
 
-        drawScrollbarThumb(atEnd, thumbSize, startOffset, color)
+    drawWithContent {
+      drawContent()
+
+      try {
+        drawScrollbar(
+          atEnd = reachedEnd,
+          state = state,
+          totalItems = totalItems,
+          headerCount = ignoreItems.size,
+          itemHeights = itemHeights,
+          color = color,
+        )
+      } catch (ex: Exception) {
+        Timber.w("Unable to apply scrollbar due to ${ex.message}")
+        ACRA.errorReporter.handleSilentException(ex)
       }
     }
-  } catch (ex: Exception) {
-    Timber.w("Unable to apply scrollbar due to ${ex.message}")
-    ACRA.errorReporter.handleSilentException(ex)
-    return this
   }
+
+fun Modifier.withScrollbar(
+  state: LazyGridState,
+  color: Color,
+  totalItems: Int?,
+  ignoreItems: List<String> = emptyList(),
+): Modifier =
+  composed {
+    val itemHeights = remember { mutableStateMapOf<Int, Int>() }
+
+    LaunchedEffect(totalItems) {
+      itemHeights.clear()
+    }
+
+    LaunchedEffect(state) {
+      snapshotFlow { state.layoutInfo.visibleItemsInfo }
+        .collect { visible ->
+          visible.forEach { item ->
+            if (itemHeights[item.index] != item.size.height) {
+              itemHeights[item.index] = item.size.height
+            }
+          }
+        }
+    }
+
+    val reachedEnd = LocalLayoutDirection.current == LayoutDirection.Ltr
+
+    drawWithContent {
+      drawContent()
+
+      try {
+        drawScrollbar(
+          atEnd = reachedEnd,
+          state = state,
+          totalItems = totalItems,
+          headerCount = ignoreItems.size,
+          itemHeights = itemHeights,
+          color = color,
+        )
+      } catch (ex: Exception) {
+        Timber.w("Unable to apply scrollbar due to ${ex.message}")
+        ACRA.errorReporter.handleSilentException(ex)
+      }
+    }
+  }
+
+private fun DrawScope.drawScrollbar(
+  atEnd: Boolean,
+  state: LazyListState,
+  totalItems: Int?,
+  headerCount: Int,
+  itemHeights: Map<Int, Int>,
+  color: Color,
+) {
+  val layoutInfo = state.layoutInfo
+  val visible = layoutInfo.visibleItemsInfo
+
+  drawScrollbarImpl(
+    atEnd = atEnd,
+    viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset,
+    visibleHeights = visible.map { it.index to it.size },
+    firstIndex = visible.firstOrNull()?.index ?: 0,
+    firstOffset = visible.firstOrNull()?.offset ?: 0,
+    totalItemsCount = layoutInfo.totalItemsCount,
+    totalItems = totalItems,
+    headerCount = headerCount,
+    itemHeights = itemHeights,
+    color = color,
+  )
+}
+
+private fun DrawScope.drawScrollbar(
+  atEnd: Boolean,
+  state: LazyGridState,
+  totalItems: Int?,
+  headerCount: Int,
+  itemHeights: Map<Int, Int>,
+  color: Color,
+) {
+  val layoutInfo = state.layoutInfo
+  val visible = layoutInfo.visibleItemsInfo
+
+  drawScrollbarImpl(
+    atEnd = atEnd,
+    viewportSize = layoutInfo.viewportEndOffset - layoutInfo.viewportStartOffset,
+    visibleHeights = visible.map { it.index to it.size.height },
+    firstIndex = visible.firstOrNull()?.index ?: 0,
+    firstOffset = visible.firstOrNull()?.offset?.y ?: 0,
+    totalItemsCount = layoutInfo.totalItemsCount,
+    totalItems = totalItems,
+    headerCount = headerCount,
+    itemHeights = itemHeights,
+    color = color,
+  )
+}
+
+private fun DrawScope.drawScrollbarImpl(
+  atEnd: Boolean,
+  viewportSize: Int,
+  visibleHeights: List<Pair<Int, Int>>,
+  firstIndex: Int,
+  firstOffset: Int,
+  totalItemsCount: Int,
+  totalItems: Int?,
+  headerCount: Int,
+  itemHeights: Map<Int, Int>,
+  color: Color,
+) {
+  if (viewportSize <= 0 || visibleHeights.isEmpty()) {
+    return
+  }
+
+  val measured = itemHeights.takeIf { it.isNotEmpty() } ?: visibleHeights.toMap()
+
+  val sortedHeights = measured.values.sorted()
+  val rowHeight = sortedHeights[sortedHeights.size / 2].coerceAtLeast(1).toFloat()
+
+  val itemCount =
+    when (totalItems) {
+      null -> totalItemsCount
+      else -> totalItems + headerCount
+    }.coerceAtLeast(1)
+
+  val unknownCount = (itemCount - measured.size).coerceAtLeast(0)
+  val totalSize = measured.values.sum() + unknownCount * rowHeight
+  if (totalSize <= 0f) {
+    return
+  }
+
+  val canvasSize = size.height
+  val thumbSize = (viewportSize / totalSize) * canvasSize
+  if (thumbSize >= canvasSize * 0.95f) {
+    return
+  }
+
+  val pixelsAbove =
+    (0 until firstIndex).sumOf { measured[it]?.toLong() ?: rowHeight.toLong() }.toFloat()
+  val scrolledPixels = pixelsAbove - firstOffset
+
+  val startOffset = (scrolledPixels / totalSize) * canvasSize
+
+  drawScrollbarThumb(atEnd, thumbSize, startOffset, color)
 }
 
 private fun DrawScope.drawScrollbarThumb(
@@ -124,32 +263,3 @@ private fun DrawScope.drawScrollbarThumb(
     cornerRadius = CornerRadius(radius),
   )
 }
-
-private fun Modifier.baseScrollbar(onDraw: DrawScope.(atEnd: Boolean) -> Unit): Modifier =
-  composed {
-    val scrolled =
-      remember {
-        MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-      }
-
-    val nestedScrollConnection =
-      remember(Orientation.Vertical, scrolled) {
-        object : NestedScrollConnection {
-          override fun onPostScroll(
-            consumed: Offset,
-            available: Offset,
-            source: NestedScrollSource,
-          ) = Offset.Zero.also {
-            val delta = consumed.y
-            if (delta != 0f) scrolled.tryEmit(Unit)
-          }
-        }
-      }
-
-    val reachedEnd = LocalLayoutDirection.current == LayoutDirection.Ltr
-
-    nestedScroll(nestedScrollConnection).drawWithContent {
-      drawContent()
-      onDraw(reachedEnd)
-    }
-  }

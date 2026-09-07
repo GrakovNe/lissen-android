@@ -19,8 +19,8 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.channel.audiobookshelf.HostType
+import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
@@ -43,8 +44,10 @@ fun ServerInfoComposable(
 ) {
   var connectionInfoExpanded by remember { mutableStateOf(false) }
 
-  val localUrls by viewModel.localUrls.observeAsState(emptyList())
-  val host by viewModel.host.observeAsState()
+  val localUrls by viewModel.localUrls.collectAsState()
+  val host by viewModel.host.collectAsState()
+  val username by viewModel.username.collectAsState()
+  val serverVersion by viewModel.serverVersion.collectAsState()
 
   LaunchedEffect(Unit) {
     viewModel.refreshConnectionInfo()
@@ -77,8 +80,6 @@ fun ServerInfoComposable(
     IconButton(
       onClick = {
         connectionInfoExpanded = true
-        // navController.showLogin()
-        // viewModel.logout()
       },
     ) {
       Icon(
@@ -89,7 +90,7 @@ fun ServerInfoComposable(
   }
 
   if (connectionInfoExpanded) {
-    ModalBottomSheet(
+    LissenModalBottomSheet(
       containerColor = MaterialTheme.colorScheme.background,
       onDismissRequest = { connectionInfoExpanded = false },
       content = {
@@ -100,7 +101,7 @@ fun ServerInfoComposable(
               .padding(bottom = 16.dp)
               .padding(horizontal = 16.dp),
         ) {
-          viewModel.username.value?.let {
+          username?.let {
             InfoRow(
               label = stringResource(R.string.settings_screen_connected_as_title),
               value = it,
@@ -109,7 +110,7 @@ fun ServerInfoComposable(
             HorizontalDivider()
           }
 
-          viewModel.serverVersion.value?.let {
+          serverVersion?.let {
             InfoRow(
               label = stringResource(R.string.settings_screen_server_version),
               value = it,

@@ -22,8 +22,11 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import org.grakovne.lissen.R
 import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
+import org.grakovne.lissen.common.AudioFocusLossPolicy
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.ConnectionPreferences
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
+import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.grakovne.lissen.playback.service.LissenDataSourceFactory
 import org.grakovne.lissen.playback.service.LissenMediaSourceFactory
 import timber.log.Timber
@@ -58,13 +61,15 @@ object MediaModule {
   @Singleton
   fun provideExoPlayer(
     @ApplicationContext context: Context,
-    sharedPreferences: LissenSharedPreferences,
+    playbackPreferences: PlaybackPreferences,
+    sessionPreferences: SessionPreferences,
+    connectionPreferences: ConnectionPreferences,
     mediaCache: Cache,
     requestHeadersProvider: RequestHeadersProvider,
     mediaProvider: LissenMediaProvider,
   ): ExoPlayer {
     val renderersFactory =
-      when (sharedPreferences.getSoftwareCodecsEnabled()) {
+      when (playbackPreferences.getSoftwareCodecsEnabled()) {
         true -> SoftwareCodecRendersFactory(context)
         false -> DefaultRenderersFactory(context)
       }
@@ -77,8 +82,12 @@ object MediaModule {
           AudioAttributes
             .Builder()
             .setUsage(C.USAGE_MEDIA)
-            .setContentType(C.AUDIO_CONTENT_TYPE_SPEECH)
-            .build(),
+            .setContentType(
+              when (playbackPreferences.getAudioFocusLossPolicy()) {
+                AudioFocusLossPolicy.LOWER_VOLUME -> C.AUDIO_CONTENT_TYPE_MUSIC
+                AudioFocusLossPolicy.PAUSE -> C.AUDIO_CONTENT_TYPE_SPEECH
+              },
+            ).build(),
           true,
         ).setRenderersFactory(renderersFactory)
         .setMediaSourceFactory(
@@ -89,7 +98,8 @@ object MediaModule {
                   baseContext = context,
                   mediaCache = mediaCache,
                   requestHeadersProvider = requestHeadersProvider,
-                  sharedPreferences = sharedPreferences,
+                  session = sessionPreferences,
+                  connection = connectionPreferences,
                   mediaProvider = mediaProvider,
                 ),
               ),
@@ -114,7 +124,7 @@ object MediaModule {
     return minOf(MAX_CACHE_BYTES, dynamicCap)
   }
 
-  private const val MAX_CACHE_BYTES = 512L * 1024 * 1024
+  private const val MAX_CACHE_BYTES = 128L * 1024 * 1024
   private const val KEEP_FREE_BYTES = 20L * 1024 * 1024
   private const val MIN_CACHE_BYTES = 10L * 1024 * 1024
 }

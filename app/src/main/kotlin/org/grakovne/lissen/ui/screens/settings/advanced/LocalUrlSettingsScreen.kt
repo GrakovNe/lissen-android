@@ -1,13 +1,10 @@
 package org.grakovne.lissen.ui.screens.settings.advanced
 
-import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -19,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Router
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -29,11 +27,10 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -42,13 +39,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
-import org.grakovne.lissen.lib.domain.connection.LocalUrl
+import org.grakovne.lissen.domain.connection.LocalUrl
+import org.grakovne.lissen.ui.screens.common.hasLocalNetworkPermission
 import org.grakovne.lissen.ui.screens.common.hasLocationPermission
+import org.grakovne.lissen.ui.screens.common.localNetworkPermission
+import org.grakovne.lissen.ui.screens.common.locationPermission
+import org.grakovne.lissen.ui.screens.settings.composable.SettingsInfoBanner
+import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 import kotlin.math.max
 
@@ -56,7 +60,7 @@ import kotlin.math.max
 @Composable
 fun LocalUrlSettingsScreen(onBack: () -> Unit) {
   val settingsViewModel: SettingsViewModel = hiltViewModel()
-  val localUrls = settingsViewModel.localUrls.observeAsState(emptyList())
+  val localUrls = settingsViewModel.localUrls.collectAsState()
 
   val context = LocalContext.current
 
@@ -66,29 +70,16 @@ fun LocalUrlSettingsScreen(onBack: () -> Unit) {
   val state = rememberLazyListState()
   val coroutineScope = rememberCoroutineScope()
 
-  var hasPermission by remember { mutableStateOf(hasLocationPermission(context)) }
+  var hasLocationPermission by remember { mutableStateOf(hasLocationPermission(context)) }
+  var hasLocalNetworkPermission by remember { mutableStateOf(hasLocalNetworkPermission(context)) }
+
+  val hasPermissions = hasLocationPermission && hasLocalNetworkPermission
 
   Scaffold(
     topBar = {
-      TopAppBar(
-        title = {
-          Text(
-            text = stringResource(R.string.settings_screen_internal_connection_url_title),
-            style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-            color = colorScheme.onSurface,
-          )
-        },
-        navigationIcon = {
-          IconButton(onClick = {
-            onBack()
-          }) {
-            Icon(
-              imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-              contentDescription = "Back",
-              tint = colorScheme.onSurface,
-            )
-          }
-        },
+      SettingsTopAppBar(
+        title = stringResource(R.string.settings_screen_internal_connection_url_title),
+        onBack = onBack,
       )
     },
     modifier =
@@ -114,7 +105,7 @@ fun LocalUrlSettingsScreen(onBack: () -> Unit) {
 
         itemsIndexed(customHeaders) { index, header ->
           LocalUrlComposable(
-            enabled = hasPermission,
+            enabled = hasPermissions,
             url = header,
             onChanged = { newPair ->
               val updatedList = customHeaders.toMutableList()
@@ -147,7 +138,7 @@ fun LocalUrlSettingsScreen(onBack: () -> Unit) {
     },
     floatingActionButtonPosition = FabPosition.Center,
     floatingActionButton = {
-      when (hasPermission) {
+      when (hasPermissions) {
         true -> {
           FloatingActionButton(
             containerColor = colorScheme.primary,
@@ -164,13 +155,16 @@ fun LocalUrlSettingsScreen(onBack: () -> Unit) {
           ) {
             Icon(
               imageVector = Icons.Filled.Add,
-              contentDescription = "Add",
+              contentDescription = stringResource(R.string.a11y_add),
             )
           }
         }
 
         false -> {
-          LocationPermissionBanner { hasPermission = it }
+          when (hasLocationPermission) {
+            false -> LocationPermissionBanner { hasLocationPermission = it }
+            true -> LocalNetworkPermissionBanner { hasLocalNetworkPermission = it }
+          }
         }
       }
     },
@@ -182,46 +176,37 @@ fun LocationPermissionBanner(
   modifier: Modifier = Modifier,
   onResult: (Boolean) -> Unit,
 ) {
-  Row(
-    modifier =
-      modifier
-        .fillMaxWidth()
-        .padding(horizontal = 20.dp, vertical = 14.dp),
-    verticalAlignment = Alignment.CenterVertically,
-  ) {
-    Icon(
-      imageVector = Icons.Default.LocationOn,
-      contentDescription = null,
-      tint = colorScheme.primary,
-      modifier = Modifier.padding(end = 12.dp),
+  val permissionRequestLauncher =
+    rememberLauncherForActivityResult(
+      contract = ActivityResultContracts.RequestPermission(),
+      onResult = onResult,
     )
 
-    val permissionRequestLauncher =
-      rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission(),
-        onResult = onResult,
-      )
+  SettingsInfoBanner(
+    icon = Icons.Default.LocationOn,
+    text = stringResource(R.string.location_permission_request_hint),
+    ctaText = stringResource(R.string.permission_request_grant_button),
+    onAction = { permissionRequestLauncher.launch(locationPermission()) },
+    modifier = modifier,
+  )
+}
 
-    Text(
-      text = stringResource(R.string.location_permission_request_hint),
-      style =
-        typography.bodyMedium.copy(
-          color = colorScheme.onSurface,
-        ),
-      modifier = Modifier.weight(1f),
+@Composable
+fun LocalNetworkPermissionBanner(
+  modifier: Modifier = Modifier,
+  onResult: (Boolean) -> Unit,
+) {
+  val permissionRequestLauncher =
+    rememberLauncherForActivityResult(
+      contract = ActivityResultContracts.RequestPermission(),
+      onResult = onResult,
     )
 
-    TextButton(
-      onClick = { permissionRequestLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
-    ) {
-      Text(
-        text = stringResource(R.string.permission_request_grant_button),
-        style =
-          typography.bodyMedium.copy(
-            color = colorScheme.primary,
-            fontWeight = FontWeight.SemiBold,
-          ),
-      )
-    }
-  }
+  SettingsInfoBanner(
+    icon = Icons.Default.Router,
+    text = stringResource(R.string.local_network_permission_request_hint),
+    ctaText = stringResource(R.string.permission_request_grant_button),
+    onAction = { permissionRequestLauncher.launch(localNetworkPermission()) },
+    modifier = modifier,
+  )
 }

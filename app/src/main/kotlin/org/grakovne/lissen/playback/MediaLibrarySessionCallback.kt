@@ -2,7 +2,9 @@ package org.grakovne.lissen.playback
 
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.os.Parcelable
 import android.util.LruCache
 import android.view.KeyEvent
 import android.view.KeyEvent.KEYCODE_MEDIA_NEXT
@@ -25,32 +27,45 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.withTimeoutOrNull
+import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.playback.service.PlaybackSynchronizationService
 import org.grakovne.lissen.util.listenableFuture
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.cancellation.CancellationException
 
 @OptIn(UnstableApi::class)
 @Singleton
 class MediaLibrarySessionCallback
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
-    private val preferences: LissenSharedPreferences,
+    @param:ApplicationContext private val context: Context,
+    private val preferences: PlaybackPreferences,
     private val mediaRepository: MediaRepository,
     private val lissenMediaProvider: LissenMediaProvider,
     private val libraryTree: MediaLibraryTree,
     private val playbackSynchronizationService: PlaybackSynchronizationService,
   ) : MediaLibraryService.MediaLibrarySession.Callback {
     @OptIn(DelicateCoroutinesApi::class)
-    private val futureScope = CoroutineScope(Dispatchers.Default)
+    private val futureScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-    internal var searchCache = LruCache<String, ListenableFuture<List<MediaItem>>>(3)
+    internal var searchCache = LruCache<String, ListenableFuture<List<MediaItem>>>(5)
+
+    private fun searchFutureFor(query: String): ListenableFuture<List<MediaItem>> {
+      val key = query.trim().lowercase()
+      return synchronized(searchCache) {
+        searchCache.get(key) ?: libraryTree
+          .searchBooks(query)
+          .also { searchCache.put(key, it) }
+      }
+    }
 
     override fun onMediaButtonEvent(
       session: MediaSession,
@@ -61,7 +76,7 @@ class MediaLibrarySessionCallback
 
       val keyEvent =
         intent
-          .getParcelableExtra<KeyEvent>(Intent.EXTRA_KEY_EVENT)
+          .getParcelable<KeyEvent>(Intent.EXTRA_KEY_EVENT)
           ?: return super.onMediaButtonEvent(session, controllerInfo, intent)
 
       Timber.d("Got media key event: $keyEvent")
@@ -96,6 +111,8 @@ class MediaLibrarySessionCallback
       val forwardCommand = SessionCommand(FORWARD_COMMAND, Bundle.EMPTY)
       val nextChapterCommand = SessionCommand(NEXT_CHAPTER_COMMAND, Bundle.EMPTY)
 
+      val seekTime = preferences.getSeekTime()
+
       val sessionCommands =
         MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS
           .buildUpon()
@@ -111,7 +128,7 @@ class MediaLibrarySessionCallback
           .setSessionCommand(prevChapterCommand)
           .setDisplayName("Previous Chapter")
           .setEnabled(true)
-          .setSlots(CommandButton.SLOT_BACK)
+          .setSlots(CommandButton.SLOT_OVERFLOW)
           .build()
 
       val nextChapterButton =
@@ -119,25 +136,39 @@ class MediaLibrarySessionCallback
           .Builder(CommandButton.ICON_NEXT)
           .setSessionCommand(nextChapterCommand)
           .setDisplayName("Next Chapter")
-          .setSlots(CommandButton.SLOT_FORWARD)
+          .setSlots(CommandButton.SLOT_OVERFLOW)
           .setEnabled(true)
           .build()
 
       val rewindButton =
         CommandButton
-          .Builder(CommandButton.ICON_SKIP_BACK)
-          .setSessionCommand(rewindCommand)
+          .Builder(
+            when (seekTime.rewind) {
+              5 -> CommandButton.ICON_SKIP_BACK_5
+              10 -> CommandButton.ICON_SKIP_BACK_10
+              15 -> CommandButton.ICON_SKIP_BACK_15
+              30 -> CommandButton.ICON_SKIP_BACK_30
+              else -> CommandButton.ICON_SKIP_BACK
+            },
+          ).setSessionCommand(rewindCommand)
           .setDisplayName("Rewind")
           .setEnabled(true)
-          .setSlots(CommandButton.SLOT_OVERFLOW)
+          .setSlots(CommandButton.SLOT_BACK)
           .build()
 
       val forwardButton =
         CommandButton
-          .Builder(CommandButton.ICON_SKIP_FORWARD)
-          .setSessionCommand(forwardCommand)
+          .Builder(
+            when (seekTime.forward) {
+              5 -> CommandButton.ICON_SKIP_FORWARD_5
+              10 -> CommandButton.ICON_SKIP_FORWARD_10
+              15 -> CommandButton.ICON_SKIP_FORWARD_15
+              30 -> CommandButton.ICON_SKIP_FORWARD_30
+              else -> CommandButton.ICON_SKIP_FORWARD
+            },
+          ).setSessionCommand(forwardCommand)
           .setDisplayName("Forward")
-          .setSlots(CommandButton.SLOT_OVERFLOW)
+          .setSlots(CommandButton.SLOT_FORWARD)
           .setEnabled(true)
           .build()
 
@@ -180,7 +211,7 @@ class MediaLibrarySessionCallback
       page: Int,
       pageSize: Int,
       params: MediaLibraryService.LibraryParams?,
-    ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = libraryTree.getChildren(parentId, page, pageSize)
+    ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> = libraryTree.getChildren(parentId, page, pageSize, session)
 
     override fun onGetItem(
       session: MediaLibraryService.MediaLibrarySession,
@@ -204,10 +235,9 @@ class MediaLibrarySessionCallback
                 .fetchBook(bookId)
                 .foldAsync(
                   onSuccess = {
-                    async {
-                      preferences.savePlayingItem(it)
-                      playbackSynchronizationService.startPlaybackSynchronization(it)
-                    }
+                    preferences.savePlayingItem(it)
+                    playbackSynchronizationService.startPlaybackSynchronization(it)
+                    mediaRepository.registerPlayingBook(it)
                     PlaybackService.bookToChapterMediaItems(it)
                   },
                   onFailure = { MediaItemsWithStartPosition(emptyList(), 0, 0) },
@@ -218,24 +248,85 @@ class MediaLibrarySessionCallback
         }
       } ?: super.onSetMediaItems(mediaSession, controller, mediaItems, startIndex, startPositionMs)
 
+    override fun onPlaybackResumption(
+      mediaSession: MediaSession,
+      controller: MediaSession.ControllerInfo,
+      isForPlayback: Boolean,
+    ): ListenableFuture<MediaItemsWithStartPosition> =
+      futureScope
+        .listenableFuture {
+          Timber.d("Resuming playback for: $controller (isForPlayback=$isForPlayback)")
+
+          val storedBook =
+            preferences.getPlayingItem()
+              ?: throw IllegalStateException("No last played book stored")
+
+          val refreshedBook = refreshBookForResumption(storedBook)
+          val book = refreshedBook ?: storedBook
+
+          if (book.canProducePlaybackQueue().not()) {
+            throw IllegalStateException("Book can't produce a playback queue (bookId=${book.id})")
+          }
+
+          if (isForPlayback) {
+            refreshedBook?.let { preferences.savePlayingItem(it) }
+            playbackSynchronizationService.startPlaybackSynchronization(book)
+            mediaRepository.registerPlayingBook(book)
+          }
+
+          PlaybackService.bookToChapterMediaItems(book)
+        }
+
+    private suspend fun refreshBookForResumption(storedBook: DetailedItem): DetailedItem? {
+      val refreshed =
+        try {
+          withTimeoutOrNull(REFRESH_TIMEOUT_MS) { lissenMediaProvider.fetchBook(storedBook.id) }
+        } catch (e: CancellationException) {
+          throw e
+        } catch (e: Exception) {
+          Timber.w("Unable to refresh last played book (bookId=${storedBook.id}) for resumption due to: ${e.message}")
+          return null
+        }
+
+      return when (refreshed) {
+        null -> {
+          Timber.w("Timed out refreshing last played book (bookId=${storedBook.id}) for resumption")
+          null
+        }
+
+        is OperationResult.Error -> {
+          Timber.w(
+            "Unable to refresh last played book (bookId=${storedBook.id}) for resumption due to: ${refreshed.message}",
+          )
+          null
+        }
+
+        is OperationResult.Success -> {
+          refreshed
+            .data
+            .takeIf { it.canProducePlaybackQueue() }
+            ?: run {
+              Timber.w("Refreshed last played book (bookId=${storedBook.id}) can't produce a playback queue")
+              null
+            }
+        }
+      }
+    }
+
     override fun onSearch(
       session: MediaLibraryService.MediaLibrarySession,
       browser: MediaSession.ControllerInfo,
       query: String,
       params: MediaLibraryService.LibraryParams?,
     ): ListenableFuture<LibraryResult<Void>> {
-      val searchFuture =
-        synchronized(searchCache) {
-          searchCache.get(query) ?: libraryTree
-            .searchBooks(query)
-            .also { searchCache.put(query, it) }
-        }
+      val searchFuture = searchFutureFor(query)
 
       searchFuture.addListener({
         val resultSetSize =
           try {
             searchFuture.get().size
-          } catch (_: Exception) {
+          } catch (ex: Exception) {
+            Timber.w("Unable to obtain search results for query '$query' due to: ${ex.message}")
             0
           }
         session.notifySearchResultChanged(browser, query, resultSetSize, params)
@@ -252,7 +343,7 @@ class MediaLibrarySessionCallback
       pageSize: Int,
       params: MediaLibraryService.LibraryParams?,
     ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
-      val searchFuture = searchCache.get(query)
+      val searchFuture = searchFutureFor(query)
       return Futures.transform(
         searchFuture,
         { items ->
@@ -269,5 +360,15 @@ class MediaLibrarySessionCallback
       internal const val REWIND_COMMAND = "notification_rewind"
       internal const val FORWARD_COMMAND = "notification_forward"
       internal const val NEXT_CHAPTER_COMMAND = "notification_next_chapter"
+
+      private const val REFRESH_TIMEOUT_MS = 2_000L
     }
+  }
+
+@Suppress("DEPRECATION")
+private inline fun <reified T : Parcelable> Intent.getParcelable(key: String): T? =
+  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+    getParcelableExtra(key, T::class.java)
+  } else {
+    getParcelableExtra(key)
   }

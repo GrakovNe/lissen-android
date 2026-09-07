@@ -89,7 +89,7 @@ fun ChapterSearchActionComposable(onSearchRequested: (String) -> Unit) {
         ) {
           Icon(
             imageVector = Icons.Outlined.Clear,
-            contentDescription = "Clear",
+            contentDescription = stringResource(R.string.a11y_clear),
           )
         }
       }

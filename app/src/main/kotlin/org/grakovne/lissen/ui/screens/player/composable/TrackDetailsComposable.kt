@@ -13,8 +13,8 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -30,11 +31,39 @@ import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
 import coil3.request.ImageRequest
 import org.grakovne.lissen.R
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.LibraryType
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
+import org.grakovne.lissen.ui.components.BookCoverKey
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
+
+@Composable
+fun BookCover(
+  book: DetailedItem?,
+  imageLoader: ImageLoader,
+  modifier: Modifier = Modifier,
+) {
+  val context = LocalContext.current
+
+  val imageRequest =
+    remember(book?.id) {
+      ImageRequest
+        .Builder(context)
+        .data(book?.let { BookCoverKey(it.id) })
+        .size(coil3.size.Size.ORIGINAL)
+        .build()
+    }
+
+  AsyncShimmeringImage(
+    imageRequest = imageRequest,
+    imageLoader = imageLoader,
+    contentDescription = null,
+    contentScale = ContentScale.FillBounds,
+    modifier = modifier.clip(RoundedCornerShape(8.dp)),
+    error = painterResource(R.drawable.cover_fallback),
+  )
+}
 
 @Composable
 fun TrackDetailsComposable(
@@ -43,39 +72,25 @@ fun TrackDetailsComposable(
   modifier: Modifier = Modifier,
   imageLoader: ImageLoader,
 ) {
-  val currentTrackIndex by viewModel.currentChapterIndex.observeAsState(0)
-  val book by viewModel.book.observeAsState()
+  val currentTrackIndex by viewModel.currentChapterIndex.collectAsState()
+  val book by viewModel.book.collectAsState()
 
   val context = LocalContext.current
 
-  val imageRequest =
-    remember(book?.id) {
-      ImageRequest
-        .Builder(context)
-        .data(book?.id)
-        .size(coil3.size.Size.ORIGINAL)
-        .build()
-    }
-
   val configuration = LocalConfiguration.current
-  val screenHeight = configuration.screenHeightDp.dp
-  val maxImageHeight = screenHeight * 0.33f
+  val maxImageHeight = configuration.screenHeightDp.dp * 0.33f
 
   Column(
     horizontalAlignment = Alignment.CenterHorizontally,
     modifier = modifier,
   ) {
-    AsyncShimmeringImage(
-      imageRequest = imageRequest,
+    BookCover(
+      book = book,
       imageLoader = imageLoader,
-      contentDescription = "${book?.title} cover",
-      contentScale = ContentScale.FillBounds,
       modifier =
         Modifier
           .heightIn(max = maxImageHeight)
-          .aspectRatio(1f)
-          .clip(RoundedCornerShape(8.dp)),
-      error = painterResource(R.drawable.cover_fallback),
+          .aspectRatio(1f),
     )
 
     Spacer(modifier = Modifier.height(12.dp))
@@ -127,12 +142,15 @@ fun TrackDetailsComposable(
       style = typography.bodyMedium,
       color = colorScheme.onBackground.copy(alpha = 0.6f),
       textAlign = TextAlign.Center,
-      modifier = Modifier.fillMaxWidth(),
+      modifier =
+        Modifier
+          .fillMaxWidth()
+          .testTag("playerChapterNumber"),
     )
   }
 }
 
-private fun provideChapterNumberTitle(
+fun provideChapterNumberTitle(
   currentTrackIndex: Int,
   book: DetailedItem?,
   libraryType: LibraryType,

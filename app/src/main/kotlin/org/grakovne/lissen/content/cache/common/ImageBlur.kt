@@ -4,6 +4,8 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Rect
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.scale
 import com.hoko.blur.HokoBlur
@@ -11,6 +13,7 @@ import com.hoko.blur.HokoBlur.MODE_GAUSSIAN
 import com.hoko.blur.HokoBlur.SCHEME_NATIVE
 import okio.Buffer
 import okio.BufferedSource
+import kotlin.math.roundToInt
 
 fun Buffer.withBlur(context: Context): Buffer {
   val dimensions: Pair<Int, Int>? = getImageDimensions(this)
@@ -33,31 +36,64 @@ private fun sourceWithBackdropBlur(
 
   val size = maxOf(width, height)
 
-  val radius = 32
+  val backdrop = buildBlurredBackdrop(original, size, context)
+
+  val result = createBitmap(size, size, Bitmap.Config.RGB_565)
+  val canvas = Canvas(result)
+
+  canvas.drawBitmap(
+    backdrop,
+    null,
+    Rect(0, 0, size, size),
+    Paint(Paint.FILTER_BITMAP_FLAG),
+  )
+  backdrop.recycle()
+
+  val left = ((size - width) / 2f)
+  val top = ((size - height) / 2f)
+
+  canvas.drawBitmap(original, left, top, null)
+  original.recycle()
+
+  return Buffer().also { buffer ->
+    result.compress(Bitmap.CompressFormat.PNG, 100, buffer.outputStream())
+    result.recycle()
+  }
+}
+
+private fun buildBlurredBackdrop(
+  original: Bitmap,
+  size: Int,
+  context: Context,
+): Bitmap {
+  val radius =
+    (BASE_RADIUS.toFloat() * BACKDROP_WORK_SIZE / size)
+      .roundToInt()
+      .coerceIn(1, BASE_RADIUS)
   val padding = radius * 2
 
-  val scaled = original.scale(size + padding, size + padding)
+  val padded = original.scale(BACKDROP_WORK_SIZE + padding, BACKDROP_WORK_SIZE + padding)
 
-  val blurredPadded =
+  val blurred =
     HokoBlur
       .with(context)
       .scheme(SCHEME_NATIVE)
       .mode(MODE_GAUSSIAN)
       .radius(radius)
       .forceCopy(true)
-      .blur(scaled)
+      .blur(padded)
 
-  val backdrop = Bitmap.createBitmap(blurredPadded, padding / 2, padding / 2, size, size)
+  if (blurred !== padded) {
+    padded.recycle()
+  }
 
-  val result = createBitmap(size, size, Bitmap.Config.RGB_565)
+  val cropped = Bitmap.createBitmap(blurred, padding / 2, padding / 2, BACKDROP_WORK_SIZE, BACKDROP_WORK_SIZE)
+  if (cropped !== blurred) {
+    blurred.recycle()
+  }
 
-  val canvas = Canvas(result)
-  canvas.drawBitmap(backdrop, 0f, 0f, null)
-
-  val left = ((size - width) / 2f)
-  val top = ((size - height) / 2f)
-
-  canvas.drawBitmap(original, left, top, null)
-
-  return Buffer().apply { result.compress(Bitmap.CompressFormat.JPEG, 90, this.outputStream()) }
+  return cropped
 }
+
+private const val BASE_RADIUS = 32
+private const val BACKDROP_WORK_SIZE = 512

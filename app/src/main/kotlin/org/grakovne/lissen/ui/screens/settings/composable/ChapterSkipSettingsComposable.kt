@@ -9,8 +9,8 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -20,15 +20,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
-import org.grakovne.lissen.lib.domain.ChapterSkipConfig
+import org.grakovne.lissen.domain.ChapterSkipConfig
 import org.grakovne.lissen.ui.screens.player.composable.ChapterSkipComposable
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
 fun ChapterSkipSettingsComposable(playerViewModel: PlayerViewModel) {
   var expanded by remember { mutableStateOf(false) }
-  val chapterSkipConfig by playerViewModel.chapterSkipConfig.observeAsState(ChapterSkipConfig())
-  val book by playerViewModel.book.observeAsState(null)
+  val chapterSkipConfig by playerViewModel.chapterSkipConfig.collectAsState()
+  val book by playerViewModel.book.collectAsState()
 
   val isBookPlaying = book != null
   val playingBook = book

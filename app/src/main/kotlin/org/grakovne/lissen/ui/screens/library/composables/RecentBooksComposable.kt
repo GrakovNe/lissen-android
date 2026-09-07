@@ -30,9 +30,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -41,9 +43,11 @@ import coil3.ImageLoader
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import org.grakovne.lissen.R
-import org.grakovne.lissen.lib.domain.LibraryType
-import org.grakovne.lissen.lib.domain.RecentBook
+import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.RecentBook
+import org.grakovne.lissen.ui.adaptive.recentBookItemWidth
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
+import org.grakovne.lissen.ui.components.BookCoverKey
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 
@@ -55,13 +59,7 @@ fun RecentBooksComposable(
   modifier: Modifier = Modifier,
   libraryViewModel: LibraryViewModel,
 ) {
-  val configuration = LocalConfiguration.current
-  val screenWidth = remember { configuration.screenWidthDp.dp }
-
-  val itemsVisible = 2.3f
-  val spacing = 16.dp
-  val totalSpacing = spacing * (itemsVisible + 1)
-  val itemWidth = (screenWidth - totalSpacing) / itemsVisible
+  val itemWidth = recentBookItemWidth()
 
   Row(
     modifier =
@@ -92,11 +90,16 @@ fun RecentBookItemComposable(
   imageLoader: ImageLoader,
   libraryViewModel: LibraryViewModel,
 ) {
+  val openLabel = stringResource(R.string.a11y_open)
+
   Column(
     modifier =
       Modifier
         .width(width)
-        .clickable { navController.showPlayer(book.id, book.title, book.subtitle) },
+        .semantics(mergeDescendants = true) {}
+        .clickable(onClickLabel = openLabel, role = Role.Button) {
+          navController.showPlayer(book.id, book.title, book.subtitle)
+        },
   ) {
     val context = LocalContext.current
     var coverLoading by remember { mutableStateOf(true) }
@@ -105,7 +108,7 @@ fun RecentBookItemComposable(
       remember(book.id) {
         ImageRequest
           .Builder(context)
-          .data(book.id)
+          .data(BookCoverKey(book.id))
           .crossfade(300)
           .build()
       }
@@ -123,7 +126,7 @@ fun RecentBookItemComposable(
         AsyncShimmeringImage(
           imageRequest = imageRequest,
           imageLoader = imageLoader,
-          contentDescription = "${book.title} cover",
+          contentDescription = null,
           contentScale = ContentScale.FillBounds,
           modifier =
             Modifier
@@ -214,4 +217,4 @@ fun RecentBookItemComposable(
   }
 }
 
-private fun calculateProgress(book: RecentBook): Float = book.listenedPercentage?.div(100.0f) ?: 0.0f
+private fun calculateProgress(book: RecentBook) = (book.listenedPercentage?.div(100.0f) ?: 0.0f).coerceIn(0.0f, 1.0f)

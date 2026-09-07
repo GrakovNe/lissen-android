@@ -8,6 +8,7 @@ class SearchRequestBuilder {
   private var searchQuery: String = ""
   private var orderField: String = "title"
   private var orderDirection: String = "ASC"
+  private var limit: Int? = null
 
   fun libraryId(id: String) = apply { this.libraryId = id }
 
@@ -16,6 +17,8 @@ class SearchRequestBuilder {
   fun orderField(field: String) = apply { this.orderField = field }
 
   fun orderDirection(direction: String) = apply { this.orderDirection = direction }
+
+  fun limit(value: Int) = apply { this.limit = value }
 
   fun build(): SupportSQLiteQuery {
     val args = mutableListOf<Any>()
@@ -32,23 +35,23 @@ class SearchRequestBuilder {
         args.add(pattern)
       }
 
-    val field =
-      when (orderField) {
-        "title", "author", "duration" -> orderField
-        else -> "title"
-      }
+    val field = resolveOrderField(orderField)
+    val direction = resolveOrderDirection(orderDirection)
 
-    val direction =
-      when (orderDirection.uppercase()) {
-        "ASC", "DESC" -> orderDirection.uppercase()
-        else -> "ASC"
-      }
+    val limitClause =
+      limit
+        ?.let {
+          args.add(it)
+          "LIMIT ?"
+        }
+        ?: ""
 
     val sql =
       """
       SELECT * FROM detailed_books
       WHERE $whereClause
       ORDER BY $field $direction
+      $limitClause
       """.trimIndent()
 
     return SimpleSQLiteQuery(sql, args.toTypedArray())

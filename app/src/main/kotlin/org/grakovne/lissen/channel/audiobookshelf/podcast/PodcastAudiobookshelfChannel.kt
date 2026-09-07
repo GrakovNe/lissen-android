@@ -9,22 +9,21 @@ import org.grakovne.lissen.channel.audiobookshelf.common.api.podcast.AudioBooksh
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarkItemResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarksResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryListResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
-import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.DeviceInfo
-import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastOrderingRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastPageResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastSearchItemsConverter
 import org.grakovne.lissen.channel.common.OperationResult
-import org.grakovne.lissen.lib.domain.Book
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.LibraryType
-import org.grakovne.lissen.lib.domain.PagedItems
-import org.grakovne.lissen.lib.domain.PlaybackSession
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.domain.Book
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.PagedItems
+import org.grakovne.lissen.domain.PlaybackSession
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -35,9 +34,10 @@ class PodcastAudiobookshelfChannel
     hostProvider: AudiobookshelfHostProvider,
     dataRepository: AudioBookshelfRepository,
     recentListeningResponseConverter: RecentListeningResponseConverter,
-    preferences: LissenSharedPreferences,
+    preferences: LibraryPreferences,
     syncService: AudioBookshelfPodcastSyncService,
     sessionResponseConverter: PlaybackSessionResponseConverter,
+    libraryListResponseConverter: LibraryListResponseConverter,
     libraryResponseConverter: LibraryResponseConverter,
     connectionInfoResponseConverter: ConnectionInfoResponseConverter,
     bookmarksResponseConverter: BookmarksResponseConverter,
@@ -54,6 +54,7 @@ class PodcastAudiobookshelfChannel
       preferences = preferences,
       syncService = syncService,
       libraryResponseConverter = libraryResponseConverter,
+      libraryListResponseConverter = libraryListResponseConverter,
       connectionInfoResponseConverter = connectionInfoResponseConverter,
       bookmarksResponseConverter = bookmarksResponseConverter,
       bookmarkItemResponseConverter = bookmarkItemResponseConverter,
@@ -64,6 +65,7 @@ class PodcastAudiobookshelfChannel
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
+      extraFilter: Pair<String, String>?,
     ): OperationResult<PagedItems<Book>> {
       val (option, direction) = podcastOrderingRequestConverter.apply(preferences.getLibraryOrdering())
 
@@ -100,28 +102,13 @@ class PodcastAudiobookshelfChannel
       episodeId: String,
       supportedMimeTypes: List<String>,
       deviceId: String,
-    ): OperationResult<PlaybackSession> {
-      val request =
-        PlaybackStartRequest(
-          supportedMimeTypes = supportedMimeTypes,
-          deviceInfo =
-            DeviceInfo(
-              clientName = getClientName(),
-              deviceId = deviceId,
-              deviceName = getClientName(),
-            ),
-          forceTranscode = false,
-          forceDirectPlay = false,
-          mediaPlayer = getClientName(),
-        )
-
-      return dataRepository
+    ): OperationResult<PlaybackSession> =
+      dataRepository
         .startPodcastPlayback(
           itemId = bookId,
           episodeId = episodeId,
-          request = request,
+          request = buildPlaybackStartRequest(supportedMimeTypes, deviceId),
         ).map { sessionResponseConverter.apply(it) }
-    }
 
     override suspend fun fetchBook(bookId: String): OperationResult<DetailedItem> =
       coroutineScope {

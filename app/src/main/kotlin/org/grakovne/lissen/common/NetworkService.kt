@@ -7,7 +7,7 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import dagger.hilt.android.qualifiers.ApplicationContext
-import org.grakovne.lissen.lib.domain.NetworkType
+import org.grakovne.lissen.domain.NetworkType
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,7 +16,7 @@ import javax.inject.Singleton
 class NetworkService
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
   ) : RunningComponent {
     private val connectivityManager = context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
 
@@ -71,6 +71,8 @@ class NetworkService
       if (!capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) return null
 
       val wifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as android.net.wifi.WifiManager
+
+      @Suppress("DEPRECATION")
       val wifiInfo = wifiManager.connectionInfo
       val ssid = wifiInfo.ssid
 

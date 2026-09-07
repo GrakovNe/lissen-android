@@ -25,17 +25,20 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
-import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
+import org.grakovne.lissen.domain.connection.ServerRequestHeader
+import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 import kotlin.math.max
 
@@ -43,7 +46,7 @@ import kotlin.math.max
 @Composable
 fun CustomHeadersSettingsScreen(onBack: () -> Unit) {
   val settingsViewModel: SettingsViewModel = hiltViewModel()
-  val headers = settingsViewModel.customHeaders.observeAsState(emptyList())
+  val headers = settingsViewModel.customHeaders.collectAsState()
 
   val fabHeight = 56.dp
   val additionalPadding = 16.dp
@@ -53,25 +56,9 @@ fun CustomHeadersSettingsScreen(onBack: () -> Unit) {
 
   Scaffold(
     topBar = {
-      TopAppBar(
-        title = {
-          Text(
-            text = stringResource(R.string.custom_headers_title),
-            style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-            color = colorScheme.onSurface,
-          )
-        },
-        navigationIcon = {
-          IconButton(onClick = {
-            onBack()
-          }) {
-            Icon(
-              imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-              contentDescription = "Back",
-              tint = colorScheme.onSurface,
-            )
-          }
-        },
+      SettingsTopAppBar(
+        title = stringResource(R.string.custom_headers_title),
+        onBack = onBack,
       )
     },
     modifier =
@@ -144,7 +131,7 @@ fun CustomHeadersSettingsScreen(onBack: () -> Unit) {
       ) {
         Icon(
           imageVector = Icons.Filled.Add,
-          contentDescription = "Add",
+          contentDescription = stringResource(R.string.a11y_add),
         )
       }
     },

@@ -21,8 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
-import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader
-import org.grakovne.lissen.lib.domain.connection.ServerRequestHeader.Companion.clean
+import org.grakovne.lissen.domain.connection.ServerRequestHeader
+import org.grakovne.lissen.domain.connection.ServerRequestHeader.Companion.clean
 
 @Composable
 fun CustomHeaderComposable(
@@ -53,7 +53,10 @@ fun CustomHeaderComposable(
           label = { Text(stringResource(R.string.custom_header_hint_name)) },
           singleLine = true,
           shape = RoundedCornerShape(16.dp),
-          modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+          modifier =
+            Modifier
+              .fillMaxWidth()
+              .padding(bottom = 12.dp),
         )
 
         OutlinedTextField(
@@ -71,7 +74,7 @@ fun CustomHeaderComposable(
       ) {
         Icon(
           imageVector = Icons.Default.DeleteOutline,
-          contentDescription = "Delete from cache",
+          contentDescription = stringResource(R.string.a11y_delete_from_cache),
           tint = colorScheme.error,
           modifier = Modifier.size(32.dp),
         )

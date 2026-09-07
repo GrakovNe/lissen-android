@@ -1,7 +1,7 @@
 package org.grakovne.lissen.content.cache.persistent.converter
 
 import org.grakovne.lissen.content.cache.persistent.entity.CachedLibraryEntity
-import org.grakovne.lissen.lib.domain.Library
+import org.grakovne.lissen.domain.Library
 import javax.inject.Inject
 import javax.inject.Singleton
 

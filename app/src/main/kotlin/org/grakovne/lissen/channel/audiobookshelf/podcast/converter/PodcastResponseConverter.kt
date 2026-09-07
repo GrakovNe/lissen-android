@@ -3,11 +3,12 @@ package org.grakovne.lissen.channel.audiobookshelf.podcast.converter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastEpisodeResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
-import org.grakovne.lissen.lib.domain.BookChapterState
-import org.grakovne.lissen.lib.domain.BookFile
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.MediaProgress
-import org.grakovne.lissen.lib.domain.PlayingChapter
+import org.grakovne.lissen.domain.BookChapterState
+import org.grakovne.lissen.domain.BookFile
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.MediaProgress
+import org.grakovne.lissen.domain.PlayingChapter
+import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
@@ -33,7 +34,7 @@ class PodcastResponseConverter
           ?.let { progress ->
             orderedEpisodes
               ?.takeWhile { it.id != progress.episodeId }
-              ?.sumOf { it.audioFile.duration }
+              ?.sumOf { it.audioFile.duration ?: 0.0 }
               ?.plus(progress.currentTime)
           }
 
@@ -54,9 +55,9 @@ class PodcastResponseConverter
             chapters.add(
               PlayingChapter(
                 start = accDuration,
-                end = accDuration + episode.audioFile.duration,
+                end = accDuration + (episode.audioFile.duration ?: 0.0),
                 title = episode.title,
-                duration = episode.audioFile.duration,
+                duration = episode.audioFile.duration ?: 0.0,
                 id = episode.id,
                 available = true,
                 podcastEpisodeState =
@@ -65,7 +66,7 @@ class PodcastResponseConverter
                     ?.let { hasFinished(it) },
               ),
             )
-            accDuration + episode.audioFile.duration to chapters
+            accDuration + (episode.audioFile.duration ?: 0.0) to chapters
           }?.second
           ?: emptyList()
 
@@ -83,7 +84,7 @@ class PodcastResponseConverter
               BookFile(
                 id = it.audioFile.ino,
                 name = it.title,
-                duration = it.audioFile.duration,
+                duration = it.audioFile.duration ?: 0.0,
                 mimeType = it.audioFile.mimeType,
                 size = it.audioFile.metadata.size,
               )
@@ -116,6 +117,7 @@ class PodcastResponseConverter
             try {
               item.pubDate?.let { dateFormat.parse(it)?.time }
             } catch (e: Exception) {
+              Timber.w("Unable to parse episode pubDate '${item.pubDate}' due to: ${e.message}")
               null
             }
           }.thenBy { it.season.safeToInt() }
@@ -128,6 +130,7 @@ class PodcastResponseConverter
         return try {
           maybeNumber?.toInt()
         } catch (ex: Exception) {
+          Timber.w("Unable to parse '$maybeNumber' as season/episode number due to: ${ex.message}")
           null
         }
       }

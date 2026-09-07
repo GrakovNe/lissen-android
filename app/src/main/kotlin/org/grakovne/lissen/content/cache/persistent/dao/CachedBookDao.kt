@@ -1,6 +1,5 @@
 package org.grakovne.lissen.content.cache.persistent.dao
 
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -11,15 +10,19 @@ import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.Transaction
 import androidx.sqlite.db.SupportSQLiteQuery
 import com.squareup.moshi.Types
+import kotlinx.coroutines.flow.Flow
 import org.grakovne.lissen.common.moshi
+import org.grakovne.lissen.content.cache.persistent.entity.AuthorEntry
+import org.grakovne.lissen.content.cache.persistent.entity.BookAuthorDto
 import org.grakovne.lissen.content.cache.persistent.entity.BookChapterEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookFileEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookSeriesDto
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
+import org.grakovne.lissen.content.cache.persistent.entity.GroupedEntry
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.PlayingChapter
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.PlayingChapter
 
 @Dao
 interface CachedBookDao {
@@ -47,12 +50,24 @@ interface CachedBookDao {
           book
             .series
             .joinToString(" ") { it.name },
+        seriesId =
+          book
+            .series
+            .firstOrNull()
+            ?.id,
         seriesJson =
           book
             .series
-            .map { BookSeriesDto(title = it.name, sequence = it.serialNumber) }
+            .map { BookSeriesDto(title = it.name, sequence = it.serialNumber, id = it.id) }
             .let {
               adapter.toJson(it)
+            },
+        authorsJson =
+          book
+            .authors
+            .map { BookAuthorDto(id = it.id, name = it.name) }
+            .let {
+              authorsAdapter.toJson(it)
             },
       )
 
@@ -122,13 +137,20 @@ interface CachedBookDao {
   @RawQuery
   suspend fun fetchCachedBooks(query: SupportSQLiteQuery): List<BookEntity>
 
-  @Query(
-    """
-    SELECT COUNT(*) FROM detailed_books
-    WHERE (libraryId = :libraryId)
-    """,
-  )
-  suspend fun countCachedBooks(libraryId: String?): Int
+  @RawQuery
+  suspend fun fetchGroupedEntries(query: SupportSQLiteQuery): List<GroupedEntry>
+
+  @RawQuery
+  suspend fun fetchAuthorEntries(query: SupportSQLiteQuery): List<AuthorEntry>
+
+  @RawQuery
+  suspend fun countRaw(query: SupportSQLiteQuery): Int
+
+  @Query("SELECT * FROM detailed_books WHERE id IN (:ids)")
+  suspend fun fetchBooksByIds(ids: List<String>): List<BookEntity>
+
+  @Query("SELECT * FROM detailed_books WHERE seriesId IN (:seriesIds)")
+  suspend fun fetchBooksBySeriesIds(seriesIds: List<String>): List<BookEntity>
 
   @Transaction
   @RawQuery
@@ -151,7 +173,7 @@ interface CachedBookDao {
   suspend fun fetchCachedBook(bookId: String): CachedBookEntity?
 
   @Query("SELECT COUNT(*) > 0 FROM detailed_books WHERE id = :bookId")
-  fun isBookCached(bookId: String): LiveData<Boolean>
+  fun isBookCached(bookId: String): Flow<Boolean>
 
   @Transaction
   @Query(
@@ -191,7 +213,17 @@ interface CachedBookDao {
   fun isBookChapterCached(
     bookId: String,
     chapterId: String,
-  ): LiveData<Boolean>
+  ): Flow<Boolean>
+
+  @Query(
+    """
+    SELECT bookChapterId
+    FROM book_chapters
+    WHERE bookId  = :bookId
+      AND isCached = 1
+    """,
+  )
+  fun cachedChapterIds(bookId: String): Flow<List<String>>
 
   @Query(
     """
@@ -223,6 +255,10 @@ interface CachedBookDao {
   @Query("SELECT * FROM media_progress WHERE bookId = :bookId")
   suspend fun fetchMediaProgress(bookId: String): MediaProgressEntity?
 
+  @Transaction
+  @Query("SELECT * FROM media_progress WHERE bookId IN (:bookIds)")
+  suspend fun fetchMediaProgress(bookIds: List<String>): List<MediaProgressEntity>
+
   @Delete
   suspend fun deleteBook(book: BookEntity)
 
@@ -230,8 +266,22 @@ interface CachedBookDao {
   @Query("DELETE FROM media_progress WHERE bookId = :bookId")
   suspend fun deleteMediaProgress(bookId: String)
 
+  @Transaction
+  suspend fun dropCache() {
+    dropMediaProgress()
+    dropDetailedBooks()
+  }
+
+  @Query("DELETE FROM media_progress")
+  suspend fun dropMediaProgress()
+
+  @Query("DELETE FROM detailed_books")
+  suspend fun dropDetailedBooks()
+
   companion object {
     val type = Types.newParameterizedType(List::class.java, BookSeriesDto::class.java)
     val adapter = moshi.adapter<List<BookSeriesDto>>(type)
+    val authorsType = Types.newParameterizedType(List::class.java, BookAuthorDto::class.java)
+    val authorsAdapter = moshi.adapter<List<BookAuthorDto>>(authorsType)
   }
 }

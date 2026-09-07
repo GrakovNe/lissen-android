@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -28,27 +29,34 @@ import com.valentinilk.shimmer.shimmer
 import org.grakovne.lissen.R
 
 @Composable
+fun BookCoverPlaceholder(modifier: Modifier = Modifier) {
+  Box(
+    modifier =
+      modifier
+        .clip(RoundedCornerShape(8.dp))
+        .shimmer()
+        .background(Color.Gray),
+  )
+}
+
+@Composable
 fun TrackDetailsPlaceholderComposable(
   bookTitle: String,
   bookSubtitle: String?,
   modifier: Modifier = Modifier,
 ) {
   val configuration = LocalConfiguration.current
-  val screenHeight = configuration.screenHeightDp.dp
-  val maxImageHeight = screenHeight * 0.33f
+  val maxImageHeight = configuration.screenHeightDp.dp * 0.33f
 
   Column(
     horizontalAlignment = Alignment.CenterHorizontally,
     modifier = modifier,
   ) {
-    Box(
+    BookCoverPlaceholder(
       modifier =
         Modifier
           .heightIn(max = maxImageHeight)
-          .aspectRatio(1f)
-          .clip(RoundedCornerShape(8.dp))
-          .shimmer()
-          .background(Color.Gray),
+          .aspectRatio(1f),
     )
 
     Spacer(modifier = Modifier.height(12.dp))
@@ -85,16 +93,21 @@ fun TrackDetailsPlaceholderComposable(
         Spacer(modifier = Modifier.height(2.dp))
       }
 
-    Text(
-      text = stringResource(R.string.player_screen_now_playing_title_chapter_of, 100, "1000"),
-      style = typography.bodyMedium,
-      color = Color.Transparent,
-      textAlign = TextAlign.Center,
-      modifier =
-        Modifier
-          .clip(RoundedCornerShape(8.dp))
-          .shimmer()
-          .background(Color.Gray),
-    )
+    ChapterNumberPlaceholder(modifier = Modifier.testTag("playerChapterNumber"))
   }
+}
+
+@Composable
+fun ChapterNumberPlaceholder(modifier: Modifier = Modifier) {
+  Text(
+    text = stringResource(R.string.player_screen_now_playing_title_chapter_of, 100, "1000"),
+    style = typography.bodyMedium,
+    color = Color.Transparent,
+    textAlign = TextAlign.Center,
+    modifier =
+      modifier
+        .clip(RoundedCornerShape(8.dp))
+        .shimmer()
+        .background(Color.Gray),
+  )
 }

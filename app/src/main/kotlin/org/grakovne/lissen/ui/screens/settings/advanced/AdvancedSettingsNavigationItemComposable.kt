@@ -54,7 +54,7 @@ fun AdvancedSettingsNavigationItemComposable(
     ) {
       Icon(
         imageVector = Icons.AutoMirrored.Outlined.ArrowForwardIos,
-        contentDescription = "Forward",
+        contentDescription = null,
       )
     }
   }

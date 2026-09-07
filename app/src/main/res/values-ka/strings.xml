@@ -2,7 +2,7 @@
 <resources>
     <string name="library_screen_library_title">ბიბლიოთეკა</string>
     <string name="library_screen_continue_listening_title">მოსმენის გაგრძელება</string>
-    <string name="library_screen_preferences_menu_item">პარამეტრები</string>
+    <string name="library_screen_preferences_menu_item">მორგება</string>
     <string name="login_screen_title">სერვერთან დაკავშირება</string>
     <string name="hint_server_url_input">სერვერის URL მისამართი</string>
     <string name="login_screen_login_input">შესვლა</string>
@@ -17,7 +17,7 @@
     <string name="player_screen_now_playing_title_chapter_of">თავი %1$d %2$s-დან</string>
     <string name="player_screen_now_playing_title_podcast_of">ეპიზოდი %1$d %2$s-დან</string>
     <string name="player_screen_now_playing_title_item_of">ელემენტი %1$d %2$s-დან</string>
-    <string name="settings_screen_title">პარამეტრები</string>
+    <string name="settings_screen_title">მორგება</string>
     <string name="settings_screen_connected_as_title">დაკავშირებულია როგორც</string>
     <string name="settings_screen_server_connection">სერვერის კავშირი</string>
     <string name="login_error_host_is_down">ჰოსტი გათიშულია</string>
@@ -72,9 +72,21 @@
     <string name="downloads_menu_download_option_remaining_chapters">დარჩენილი თავები</string>
     <string name="downloads_menu_download_option_remaining_episodes">დარჩენილი ეპიზოდები</string>
     <string name="downloads_menu_download_option_remaining_items">დარჩენილი ელემენტები</string>
-    <string name="downloads_menu_download_option_next_chapters">შემდეგი %1$d თავი</string>
-    <string name="downloads_menu_download_option_next_episodes">შემდეგი %1$d ეპიზოდი</string>
-    <string name="downloads_menu_download_option_next_items">შემდეგი %1$d ელემენტი</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="one">შემდეგი %d თავი</item>
+        <item quantity="other">შემდეგი %d თავი</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="one">შემდეგი %d ეპიზოდი</item>
+        <item quantity="other">შემდეგი %d ეპიზოდი</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="one">შემდეგი %d ელემენტი</item>
+        <item quantity="other">შემდეგი %d ელემენტი</item>
+    </plurals>
+    <string name="downloads_menu_download_option_next_chapters_label">შემდეგი თავები</string>
+    <string name="downloads_menu_download_option_next_episodes_label">შემდეგი ეპიზოდები</string>
+    <string name="downloads_menu_download_option_next_items_label">შემდეგი ელემენტები</string>
     <string name="downloads_menu_download_option_clear_chapters">ჩამოტვირთული თავების გასუფთავება</string>
     <string name="downloads_menu_download_option_clear_episodes">ჩამოტვირთული ეპიზოდების გასუფთავება</string>
     <string name="downloads_menu_download_option_clear_items">ჩამოტვირთული ელემენტების გასუფთავება</string>
@@ -107,19 +119,45 @@
     <string name="settings_screen_seek_time_hint">გადახვევის კონტროლის განსაზღვრა</string>
     <string name="rewind_interval">უკან გადახვევის ინტერვალი</string>
     <string name="forward_interval">წინ გადახვევის ინტერვალი</string>
-    <string name="seek_interval_5_seconds">5 წამი</string>
-    <string name="seek_interval_10_seconds">10 წამი</string>
-    <string name="seek_interval_15_seconds">15 წამი</string>
-    <string name="seek_interval_30_seconds">30 წამი</string>
-    <string name="seek_interval_60_seconds">60 წამი</string>
     <string name="continue_playback_shortcut_title">გაგრძელება</string>
     <string name="continue_playback_shortcut_description">მოსმენის გაგრძელება</string>
     <string name="offline_cache_is_empty">შენახული კონტენტი არ არის</string>
     <string name="settings_screen_cached_items_title">ჩამოტვირთვები</string>
     <string name="settings_screen_cached_items_hint">შენახული კონტენტის მართვა</string>
     <string name="volume_boost_disabled">გათიშულია</string>
-    <string name="volume_boost_low">დაბალი</string>
-    <string name="volume_boost_medium">საშუალო</string>
-    <string name="volume_boost_high">მაღალი</string>
     <string name="volume_boost_title">აწეული ხმა</string>
+    <string name="connection_settings_title">კავშირი</string>
+    <string name="connection_settings_description">სერვერის მისამართი, proxy და SSL</string>
+    <string name="download_settings_title">ჩამოტვირთვები</string>
+    <string name="download_settings_description">ჩამოტვირთვები და კონტენტის მართვა</string>
+    <string name="settings_screen_advanced_preferences_title">გაფართოებული</string>
+    <string name="settings_screen_advanced_preferences_description">დიაგნოსტიკა, ჟურნალები და სხვა პარამეტრები</string>
+    <string name="playback_preferences_title">დაკვრა</string>
+    <string name="playback_preferences_description">ხმა, ძებნის კონტროლი და აუდიო</string>
+    <string name="appearance_preferences_title">გარეგნობა</string>
+    <string name="appearance_preferences_description">ფერთა სქემა, დალაგება და თემა</string>
+    <string name="a11y_back">უკან</string>
+    <string name="a11y_menu">მენიუ</string>
+    <string name="a11y_search">ძებნა</string>
+    <string name="a11y_clear">გასუფთავება</string>
+    <string name="a11y_add">დამატება</string>
+    <string name="a11y_settings">მორგება</string>
+    <string name="a11y_delete_from_cache">ქეშიდან წაშლა</string>
+    <string name="a11y_available_offline">ხელმისაწვდომია ოფლაინში</string>
+    <string name="a11y_collapse_queue">რიგის ჩაკეცვა</string>
+    <string name="a11y_open">გახსნა</string>
+    <string name="a11y_previous_track">წინა ტრეკი</string>
+    <string name="a11y_next_track">შემდეგი ტრეკი</string>
+    <string name="a11y_play">დაკვრა</string>
+    <string name="a11y_pause">პაუზა</string>
+    <string name="a11y_playback_position">დაკვრის პოზიცია</string>
+    <string name="a11y_position_of">%1$s / %2$s</string>
+    <string name="a11y_buffering">ბუფერიზაცია</string>
+    <string name="a11y_playback_error">დაკვრის შეცდომა</string>
+    <string name="a11y_rewind_seconds">%1$d წამით უკან გადახვევა</string>
+    <string name="a11y_fast_forward_seconds">%1$d წამით წინ გადახვევა</string>
+    <plurals name="a11y_hours">
+        <item quantity="one">%d საათი</item>
+        <item quantity="other">%d საათი</item>
+    </plurals>
 </resources>

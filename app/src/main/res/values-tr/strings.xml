@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">Lissen</string>
     <string name="library_screen_library_title">Kütüphane</string>
     <string name="library_screen_continue_listening_title">Dinlemeye devam et</string>
     <string name="library_screen_preferences_menu_item">Tercihler</string>
@@ -70,9 +69,18 @@
     <string name="downloads_menu_download_option_entire_book">Tüm kitap</string>
     <string name="downloads_menu_download_option_entire_podcast">Tüm podcast</string>
     <string name="downloads_menu_download_option_entire_item">Tüm öğe</string>
-    <string name="downloads_menu_download_option_next_chapters">Sonraki %1$d bölüm</string>
-    <string name="downloads_menu_download_option_next_episodes">Sonraki %1$d bölüm</string>
-    <string name="downloads_menu_download_option_next_items">Sonraki %1$d öğe</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="other">Sonraki %1$d bölüm</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="other">Sonraki %1$d bölüm</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="other">Sonraki %1$d öğe</item>
+    </plurals>
+    <string name="downloads_menu_download_option_next_chapters_label">Sonraki bölümler</string>
+    <string name="downloads_menu_download_option_next_episodes_label">Sonraki bölümler</string>
+    <string name="downloads_menu_download_option_next_items_label">Sonraki öğeler</string>
     <string name="downloads_menu_download_option_clear_chapters">İndirilen bölümleri temizle</string>
     <string name="downloads_menu_download_option_clear_episodes">İndirilen bölümleri temizle</string>
     <string name="downloads_menu_download_option_clear_items">İndirilen öğeleri temizle</string>
@@ -94,4 +102,38 @@
     <string name="login_screen_open_id_button">OpenID ile Bağlan</string>
     <string name="playing_item_details_narrator">Anlatıcı</string>
     <string name="playing_item_details_duration">Süre</string>
+    <string name="connection_settings_title">Bağlantı</string>
+    <string name="connection_settings_description">Sunucu adresi, proxy ve SSL</string>
+    <string name="download_settings_title">İndirilenler</string>
+    <string name="download_settings_description">İndirmeler ve içerik yönetimi</string>
+    <string name="settings_screen_advanced_preferences_title">Gelişmiş</string>
+    <string name="settings_screen_advanced_preferences_description">Tanılama, günlükler ve diğer seçenekler</string>
+    <string name="playback_preferences_title">Oynatma</string>
+    <string name="playback_preferences_description">Ses seviyesi, arama kontrolleri ve ses</string>
+    <string name="appearance_preferences_title">Görünüm</string>
+    <string name="appearance_preferences_description">Renk düzeni, sıralama ve tema</string>
+    <string name="a11y_back">Geri</string>
+    <string name="a11y_menu">Menü</string>
+    <string name="a11y_search">Ara</string>
+    <string name="a11y_clear">Temizle</string>
+    <string name="a11y_add">Ekle</string>
+    <string name="a11y_settings">Ayarlar</string>
+    <string name="a11y_delete_from_cache">Önbellekten sil</string>
+    <string name="a11y_available_offline">Çevrimdışı kullanılabilir</string>
+    <string name="a11y_collapse_queue">Kuyruğu daralt</string>
+    <string name="a11y_open">Aç</string>
+    <string name="a11y_previous_track">Önceki parça</string>
+    <string name="a11y_next_track">Sonraki parça</string>
+    <string name="a11y_play">Oynat</string>
+    <string name="a11y_pause">Duraklat</string>
+    <string name="a11y_playback_position">Oynatma konumu</string>
+    <string name="a11y_position_of">%1$s / %2$s</string>
+    <string name="a11y_buffering">Arabelleğe alınıyor</string>
+    <string name="a11y_playback_error">Oynatma hatası</string>
+    <string name="a11y_rewind_seconds">%1$d saniye geri sar</string>
+    <string name="a11y_fast_forward_seconds">%1$d saniye ileri sar</string>
+    <plurals name="a11y_hours">
+        <item quantity="one">%d saat</item>
+        <item quantity="other">%d saat</item>
+    </plurals>
 </resources>

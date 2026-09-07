@@ -8,4 +8,6 @@ data class CommonSettingsItem(
   val id: String,
   val name: String,
   val icon: ImageVector?,
+  val description: String? = null,
+  val enabled: Boolean = true,
 )

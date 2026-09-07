@@ -2,12 +2,14 @@ package org.grakovne.lissen.content.cache.persistent.converter
 
 import com.squareup.moshi.Types
 import org.grakovne.lissen.common.moshi
+import org.grakovne.lissen.content.cache.persistent.entity.BookAuthorDto
 import org.grakovne.lissen.content.cache.persistent.entity.BookSeriesDto
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
-import org.grakovne.lissen.lib.domain.BookFile
-import org.grakovne.lissen.lib.domain.BookSeries
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.PlayingChapter
+import org.grakovne.lissen.domain.BookAuthor
+import org.grakovne.lissen.domain.BookFile
+import org.grakovne.lissen.domain.BookSeries
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.PlayingChapter
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -23,6 +25,13 @@ class CachedBookEntityDetailedConverter
         title = entity.detailedBook.title,
         subtitle = entity.detailedBook.subtitle,
         author = entity.detailedBook.author,
+        authors =
+          entity
+            .detailedBook
+            .authorsJson
+            ?.let { authorsAdapter.fromJson(it) }
+            ?.map { BookAuthor(id = it.id, name = it.name) }
+            ?: emptyList(),
         narrator = entity.detailedBook.narrator,
         libraryId = entity.detailedBook.libraryId,
         localProvided = true,
@@ -57,16 +66,21 @@ class CachedBookEntityDetailedConverter
           entity
             .detailedBook
             .seriesJson
-            ?.let {
-              val type = Types.newParameterizedType(List::class.java, BookSeriesDto::class.java)
-              val adapter = moshi.adapter<List<BookSeriesDto>>(type)
-              adapter.fromJson(it)
-            }?.map {
+            ?.let { seriesAdapter.fromJson(it) }
+            ?.map {
               BookSeries(
+                id = it.id,
                 name = it.title,
                 serialNumber = it.sequence,
               )
             } ?: emptyList(),
         progress = entity.progress?.let { mediaProgressEntityConverter.apply(it) },
       )
+
+    private companion object {
+      val authorsType = Types.newParameterizedType(List::class.java, BookAuthorDto::class.java)
+      val authorsAdapter = moshi.adapter<List<BookAuthorDto>>(authorsType)
+      val seriesType = Types.newParameterizedType(List::class.java, BookSeriesDto::class.java)
+      val seriesAdapter = moshi.adapter<List<BookSeriesDto>>(seriesType)
+    }
   }

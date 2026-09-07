@@ -7,13 +7,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfChannelProvider
-import org.grakovne.lissen.common.buildBookmarkTitle
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
-import org.grakovne.lissen.lib.domain.Bookmark
-import org.grakovne.lissen.lib.domain.BookmarkSyncState
-import org.grakovne.lissen.lib.domain.CreateBookmarkRequest
-import org.grakovne.lissen.lib.domain.isSame
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.domain.Bookmark
+import org.grakovne.lissen.domain.BookmarkSyncState
+import org.grakovne.lissen.domain.CreateBookmarkRequest
+import org.grakovne.lissen.domain.isSame
+import timber.log.Timber
 
 @Singleton
 class CachedBookmarkProvider
@@ -21,7 +20,6 @@ class CachedBookmarkProvider
   constructor(
     private val channelProvider: AudiobookshelfChannelProvider,
     private val localCacheRepository: LocalCacheRepository,
-    private val preferences: LissenSharedPreferences,
   ) {
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -56,7 +54,7 @@ class CachedBookmarkProvider
                 localCacheRepository.deleteBookmark(pending.libraryItemId, pending.totalPosition)
                 localCacheRepository.upsertBookmark(remoteCreated.copy(syncState = BookmarkSyncState.SYNCED))
               },
-              onFailure = { Unit },
+              onFailure = {},
             )
         }
 
@@ -65,6 +63,7 @@ class CachedBookmarkProvider
         .filter { it.libraryItemId == libraryItemId }
         .filter { it.syncState == BookmarkSyncState.PENDING_DELETE }
         .forEach { pendingDelete ->
+          Timber.d("Uploading pending bookmark delete for $libraryItemId at position=${pendingDelete.totalPosition.toInt()}s")
           channelProvider
             .provideMediaChannel()
             .dropBookmark(pendingDelete)
@@ -72,7 +71,7 @@ class CachedBookmarkProvider
               onSuccess = {
                 localCacheRepository.deleteBookmark(pendingDelete.libraryItemId, pendingDelete.totalPosition)
               },
-              onFailure = { Unit },
+              onFailure = {},
             )
         }
 
@@ -99,15 +98,15 @@ class CachedBookmarkProvider
     }
 
     suspend fun createBookmark(
-      chapterTime: Double,
       totalTime: Double,
       libraryItemId: String,
-      currentChapter: String,
+      title: String,
     ): Bookmark {
+      Timber.d("Creating bookmark (local-first) for $libraryItemId at position=${totalTime.toInt()}s")
       val localDraft =
         Bookmark(
           libraryItemId = libraryItemId,
-          title = buildBookmarkTitle(currentChapter, chapterTime),
+          title = title,
           totalPosition = totalTime,
           createdAt = System.currentTimeMillis(),
           syncState = BookmarkSyncState.PENDING_CREATE,
@@ -136,16 +135,19 @@ class CachedBookmarkProvider
     }
 
     suspend fun dropBookmark(bookmark: Bookmark) {
+      Timber.d("Dropping bookmark (local-first) for ${bookmark.libraryItemId} at position=${bookmark.totalPosition.toInt()}s")
       localCacheRepository.upsertBookmark(
         bookmark.copy(syncState = BookmarkSyncState.PENDING_DELETE),
       )
 
-      channelProvider
-        .provideMediaChannel()
-        .dropBookmark(bookmark)
-        .foldAsync(
-          onSuccess = { localCacheRepository.deleteBookmark(bookmark.libraryItemId, bookmark.totalPosition) },
-          onFailure = { Unit },
-        )
+      scope.launch {
+        channelProvider
+          .provideMediaChannel()
+          .dropBookmark(bookmark)
+          .foldAsync(
+            onSuccess = { localCacheRepository.deleteBookmark(bookmark.libraryItemId, bookmark.totalPosition) },
+            onFailure = { /* keep PENDING_DELETE for retry on reconnect */ },
+          )
+      }
     }
   }

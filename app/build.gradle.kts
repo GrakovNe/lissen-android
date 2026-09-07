@@ -1,13 +1,35 @@
+import com.project.starter.easylauncher.plugin.EasyLauncherExtension
 import java.util.Properties
 
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.compose.compiler)
   
-  id("com.google.dagger.hilt.android")
-  id("org.jmailen.kotlinter") version "5.4.2"
+  alias(libs.plugins.hilt.android)
+  id("org.jmailen.kotlinter") version "5.6.0"
   id("com.google.devtools.ksp")
   id("kotlin-parcelize")
+}
+
+// easylauncher is applied here (rather than via the plugins DSL) so it shares a classloader
+// with the webp-imageio reader declared in the root buildscript, letting it read the .webp
+// launcher icons from the command line. Because it is not on the plugins DSL, it is
+// configured through the typed extension instead of generated accessors.
+apply(plugin = "com.starter.easylauncher")
+
+configure<EasyLauncherExtension> {
+  buildTypes.register("debug") {
+    filters(
+      chromeLike(
+        mapOf(
+          "label" to "DEBUG",
+          "ribbonColor" to "#FF6F3F",
+          "labelColor" to "#FFFFFF",
+          "labelPadding" to 15,
+        ),
+      ),
+    )
+  }
 }
 
 kotlinter {
@@ -24,41 +46,48 @@ tasks.named("preBuild") {
   dependsOn("formatKotlin")
 }
 
+tasks.withType<JavaCompile>().configureEach {
+  if (name.startsWith("hiltJavaCompile")) {
+    doFirst {
+      val original = options.annotationProcessorPath ?: return@doFirst
+      options.annotationProcessorPath = original.filter { !it.name.contains("moshi-kotlin-codegen") }
+    }
+  }
+}
+
+configurations.all {
+  resolutionStrategy.force("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
+  resolutionStrategy.force("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.1")
+}
+
 ksp {
   arg("room.schemaLocation", "$projectDir/schemas")
 }
 
-fun gitCommitHash(): String {
-  return try {
-    val process = ProcessBuilder("git", "rev-parse", "--short", "HEAD")
-      .redirectErrorStream(true)
-      .start()
-    process.inputStream.bufferedReader().use { it.readText().trim() }
-  } catch (e: Exception) {
-    "stable"
-  }
-}
-
 android {
   namespace = "org.grakovne.lissen"
-  compileSdk = 36
-  
+  compileSdk = 37
+
+  // Bundle the exported Room schemas into the androidTest APK so MigrationTestHelper can load them.
+  sourceSets {
+    getByName("androidTest") {
+      assets.srcDirs(files("$projectDir/schemas"))
+    }
+  }
+
   lint {
     disable.add("MissingTranslation")
+    disable.add("MissingQuantity")
   }
   
   defaultConfig {
-    val commitHash = gitCommitHash()
-    
     applicationId = "org.grakovne.lissen"
     minSdk = 28
-    targetSdk = 36
-    versionCode = 10906
-    versionName = "1.9.6-$commitHash"
+    targetSdk = 37
+    versionCode = 11122
+    versionName = "1.11.22-release"
     
-    buildConfigField("String", "GIT_HASH", "\"$commitHash\"")
-    
-    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    testInstrumentationRunner = "org.grakovne.lissen.HiltTestRunner"
     
     if (project.hasProperty("RELEASE_STORE_FILE")) {
       signingConfigs {
@@ -73,7 +102,7 @@ android {
       }
     }
   }
-
+  
   
   buildTypes {
     release {
@@ -118,8 +147,8 @@ android {
       }
     }
   }
-  buildToolsVersion = "36.0.0"
-
+  buildToolsVersion = "37.0.0"
+  
   testOptions {
     unitTests.all {
       it.useJUnitPlatform()
@@ -128,14 +157,11 @@ android {
 }
 
 dependencies {
-  implementation(project(":lib"))
-  
   implementation(libs.androidx.navigation.compose)
   implementation(libs.material)
   implementation(libs.material3)
   
   implementation(libs.androidx.media3.ffmpeg.decoder)
-  implementation(libs.process.phoenix)
   implementation(libs.androidx.material)
   implementation(libs.compose.shimmer.android)
   
@@ -168,7 +194,6 @@ dependencies {
   implementation(libs.androidx.ui)
   implementation(libs.androidx.ui.graphics)
   implementation(libs.androidx.material3)
-  implementation(libs.androidx.runtime.livedata)
   
   implementation(libs.androidx.media3.exoplayer)
   implementation(libs.androidx.media3.exoplayer.dash)
@@ -176,7 +201,6 @@ dependencies {
   implementation(libs.androidx.media3.datasource)
   implementation(libs.androidx.media3.database)
   
-  implementation(libs.androidx.localbroadcastmanager)
   implementation(libs.timber)
   
   implementation(libs.androidx.glance)
@@ -192,14 +216,25 @@ dependencies {
   
   implementation(libs.converter.moshi)
   implementation(libs.moshi)
+  implementation(libs.zip4j)
   
   debugImplementation(libs.androidx.ui.tooling)
   debugImplementation(libs.androidx.ui.test.manifest)
-
+  
   testImplementation(libs.junit.jupiter)
+  testImplementation(libs.mockk)
+  testImplementation(libs.kotlinx.coroutines.test)
   testRuntimeOnly(libs.junit.platform.launcher)
-
+  
+  androidTestImplementation(libs.androidx.room.testing)
   androidTestImplementation(libs.androidx.test.ext.junit)
   androidTestImplementation(libs.androidx.test.runner)
+  androidTestImplementation(libs.androidx.test.rules)
   androidTestImplementation(libs.mockk.android)
+  androidTestImplementation(platform(libs.androidx.compose.bom))
+  androidTestImplementation(libs.androidx.ui.test.junit4)
+  androidTestImplementation(libs.hilt.android.testing)
+  androidTestImplementation(libs.androidx.espresso.core)
+  androidTestImplementation(libs.androidx.glance.appwidget.testing)
+  kspAndroidTest(libs.hilt.android.compiler)
 }

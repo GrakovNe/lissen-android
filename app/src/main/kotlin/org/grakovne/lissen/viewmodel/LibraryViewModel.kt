@@ -1,9 +1,10 @@
 package org.grakovne.lissen.viewmodel
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asFlow
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
@@ -11,47 +12,71 @@ import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.withContext
+import org.grakovne.lissen.common.sortedBySeriesPosition
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.lib.domain.Book
-import org.grakovne.lissen.lib.domain.LibraryType
-import org.grakovne.lissen.lib.domain.RecentBook
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.domain.Book
+import org.grakovne.lissen.domain.LibraryEntry
+import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.RecentBook
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.ui.screens.library.paging.LibraryDefaultPagingSource
 import org.grakovne.lissen.ui.screens.library.paging.LibrarySearchPagingSource
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 class LibraryViewModel
   @Inject
   constructor(
     private val mediaChannel: LissenMediaProvider,
-    private val preferences: LissenSharedPreferences,
+    private val preferences: LibraryPreferences,
   ) : ViewModel() {
-    private val _recentBooks = MutableLiveData<List<RecentBook>>(emptyList())
-    val recentBooks: LiveData<List<RecentBook>> = _recentBooks
+    internal var dispatcher: CoroutineDispatcher = Dispatchers.IO
 
-    private val _recentBookUpdating = MutableLiveData(false)
-    val recentBookUpdating: LiveData<Boolean> = _recentBookUpdating
+    private val _recentBooks = MutableStateFlow<List<RecentBook>>(emptyList())
+    val recentBooks: StateFlow<List<RecentBook>> = _recentBooks.asStateFlow()
 
-    private val _searchRequested = MutableLiveData(false)
-    val searchRequested: LiveData<Boolean> = _searchRequested
+    private val _recentBookUpdating = MutableStateFlow(false)
+    val recentBookUpdating: StateFlow<Boolean> = _recentBookUpdating.asStateFlow()
+
+    private val _searchRequested = MutableStateFlow(false)
+    val searchRequested: StateFlow<Boolean> = _searchRequested.asStateFlow()
 
     private val _searchToken = MutableStateFlow(EMPTY_SEARCH)
+    val searchToken: StateFlow<String> = _searchToken.asStateFlow()
 
-    private var defaultPagingSource: PagingSource<Int, Book>? = null
-    private var searchPagingSource: PagingSource<Int, Book>? = null
+    private var defaultPagingSource: PagingSource<Int, LibraryEntry>? = null
+    private var searchPagingSource: PagingSource<Int, LibraryEntry>? = null
 
-    private val _totalCount = MutableLiveData<Int>()
-    val totalCount: LiveData<Int> = _totalCount
+    private val _totalCount = MutableStateFlow(0)
+    val totalCount: StateFlow<Int> = _totalCount.asStateFlow()
+
+    private val _expandedGroups = MutableStateFlow<Set<String>>(emptySet())
+    val expandedGroups: StateFlow<Set<String>> = _expandedGroups.asStateFlow()
+
+    val groupBooks: SnapshotStateMap<String, List<Book>> = mutableStateMapOf()
+
+    val groupLoading: SnapshotStateList<String> = mutableStateListOf()
+
+    private val prefetchSemaphore = Semaphore(MAX_CONCURRENT_PREFETCH)
 
     private val pageConfig =
       PagingConfig(
@@ -66,10 +91,10 @@ class LibraryViewModel
         false -> libraryPager
       }
 
-    private val searchPager: Flow<PagingData<Book>> =
+    private val searchPager: Flow<PagingData<LibraryEntry>> =
       combine(
-        _searchToken,
-        searchRequested.asFlow(),
+        _searchToken.debounce(SEARCH_DEBOUNCE_MILLIS),
+        _searchRequested,
       ) { token, requested ->
         Pair(token, requested)
       }.flatMapLatest { (token, _) ->
@@ -82,7 +107,7 @@ class LibraryViewModel
                 mediaChannel = mediaChannel,
                 searchToken = token,
                 limit = PAGE_SEARCH_SIZE,
-              ) { _totalCount.postValue(it) }
+              ) { _totalCount.value = it }
 
             searchPagingSource = source
             source
@@ -90,11 +115,11 @@ class LibraryViewModel
         ).flow
       }.cachedIn(viewModelScope)
 
-    private val libraryPager: Flow<PagingData<Book>> by lazy {
+    private val libraryPager: Flow<PagingData<LibraryEntry>> by lazy {
       Pager(
         config = pageConfig,
         pagingSourceFactory = {
-          val source = LibraryDefaultPagingSource(preferences, mediaChannel) { _totalCount.postValue(it) }
+          val source = LibraryDefaultPagingSource(preferences, mediaChannel) { _totalCount.value = it }
           defaultPagingSource = source
 
           source
@@ -103,11 +128,13 @@ class LibraryViewModel
     }
 
     fun requestSearch() {
-      _searchRequested.postValue(true)
+      Timber.d("User action: requestSearch")
+      _searchRequested.value = true
     }
 
     fun dismissSearch() {
-      _searchRequested.postValue(false)
+      Timber.d("User action: dismissSearch")
+      _searchRequested.value = false
       _searchToken.value = EMPTY_SEARCH
     }
 
@@ -115,10 +142,95 @@ class LibraryViewModel
       viewModelScope.launch { _searchToken.emit(token) }
     }
 
+    fun toggleGroup(entry: LibraryEntry) {
+      val groupId = entry.groupId() ?: return
+      Timber.d("User action: toggleGroup $groupId")
+
+      when (groupId in _expandedGroups.value) {
+        true -> {
+          _expandedGroups.value = _expandedGroups.value - groupId
+        }
+
+        false -> {
+          _expandedGroups.value = _expandedGroups.value + groupId
+          viewModelScope.launch { fetchGroupBooks(entry) }
+        }
+      }
+    }
+
+    fun prefetchGroup(entry: LibraryEntry) {
+      val groupId = entry.groupId() ?: return
+      if (alreadyResolved(groupId)) {
+        return
+      }
+
+      viewModelScope.launch {
+        prefetchSemaphore.withPermit {
+          fetchGroupBooks(entry)
+        }
+      }
+    }
+
+    fun resetGroupExpansion() {
+      _expandedGroups.value = emptySet()
+      groupBooks.clear()
+      groupLoading.clear()
+    }
+
+    private fun LibraryEntry.groupId(): String? =
+      when (this) {
+        is LibraryEntry.SeriesEntry -> id
+        is LibraryEntry.AuthorEntry -> id
+        is LibraryEntry.BookEntry -> null
+      }
+
+    private fun alreadyResolved(groupId: String): Boolean = groupBooks.containsKey(groupId) || groupId in groupLoading
+
+    private suspend fun fetchGroupBooks(entry: LibraryEntry) {
+      val groupId = entry.groupId() ?: return
+      if (alreadyResolved(groupId)) {
+        return
+      }
+
+      val libraryId = preferences.getPreferredLibrary()?.id ?: return
+
+      groupLoading.add(groupId)
+      val result =
+        when (entry) {
+          is LibraryEntry.SeriesEntry -> mediaChannel.fetchSeriesItems(libraryId = libraryId, seriesId = entry.id)
+          is LibraryEntry.AuthorEntry -> mediaChannel.fetchAuthorBooks(libraryId = libraryId, authorId = entry.id)
+          is LibraryEntry.BookEntry -> null
+        }
+
+      result?.fold(
+        onSuccess = { books ->
+          val ordered =
+            when (entry) {
+              is LibraryEntry.SeriesEntry -> books.sortedBySeriesPosition()
+              else -> books
+            }
+          groupBooks[groupId] = ordered
+        },
+        onFailure = { },
+      )
+      groupLoading.remove(groupId)
+    }
+
+    fun applyLinkedSearch(token: String) {
+      Timber.d("User action: applyLinkedSearch")
+      _searchToken.value = token
+      _searchRequested.value = true
+    }
+
     fun fetchPreferredLibraryTitle(): String? =
       preferences
         .getPreferredLibrary()
         ?.title
+
+    val preferredLibraryType: StateFlow<LibraryType> =
+      preferences
+        .preferredLibraryTypeFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), fetchPreferredLibraryType())
 
     fun fetchPreferredLibraryType() =
       preferences
@@ -127,16 +239,18 @@ class LibraryViewModel
         ?: LibraryType.UNKNOWN
 
     fun refreshRecentListening() {
+      Timber.d("User action: refreshRecentListening")
       viewModelScope.launch {
-        withContext(Dispatchers.IO) {
+        withContext(dispatcher) {
           fetchRecentListening()
         }
       }
     }
 
     fun refreshLibrary() {
+      Timber.d("User action: refreshLibrary")
       viewModelScope.launch {
-        withContext(Dispatchers.IO) {
+        withContext(dispatcher) {
           when (searchRequested.value) {
             true -> searchPagingSource?.invalidate()
             else -> defaultPagingSource?.invalidate()
@@ -146,11 +260,11 @@ class LibraryViewModel
     }
 
     fun fetchRecentListening() {
-      _recentBookUpdating.postValue(true)
+      _recentBookUpdating.value = true
 
       val preferredLibrary =
         preferences.getPreferredLibrary()?.id ?: run {
-          _recentBookUpdating.postValue(false)
+          _recentBookUpdating.value = false
           return
         }
 
@@ -159,11 +273,11 @@ class LibraryViewModel
           .fetchRecentListenedBooks(preferredLibrary)
           .fold(
             onSuccess = {
-              _recentBooks.postValue(it)
-              _recentBookUpdating.postValue(false)
+              _recentBooks.value = it
+              _recentBookUpdating.value = false
             },
             onFailure = {
-              _recentBookUpdating.postValue(false)
+              _recentBookUpdating.value = false
             },
           )
       }
@@ -173,5 +287,7 @@ class LibraryViewModel
       private const val EMPTY_SEARCH = ""
       private const val PAGE_SIZE = 20
       private const val PAGE_SEARCH_SIZE = 50
+      private const val SEARCH_DEBOUNCE_MILLIS = 300L
+      private const val MAX_CONCURRENT_PREFETCH = 3
     }
   }

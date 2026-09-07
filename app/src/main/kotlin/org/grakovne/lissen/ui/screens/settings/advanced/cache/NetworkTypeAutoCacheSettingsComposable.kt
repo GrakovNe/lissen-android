@@ -10,8 +10,8 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -33,7 +33,7 @@ fun NetworkTypeAutoCacheSettingsComposable(
 ) {
   val context = LocalContext.current
   var networkTypeExpanded by remember { mutableStateOf(false) }
-  val preferredNetworkType by viewModel.preferredAutoDownloadNetworkType.observeAsState()
+  val preferredNetworkType by viewModel.preferredAutoDownloadNetworkType.collectAsState()
 
   Row(
     modifier =
@@ -56,7 +56,7 @@ fun NetworkTypeAutoCacheSettingsComposable(
           },
       )
       Text(
-        text = preferredNetworkType?.toItem(context)?.name ?: "",
+        text = preferredNetworkType.toItem(context).name,
         style = typography.bodyMedium,
         color =
           when (enabled) {
@@ -74,7 +74,7 @@ fun NetworkTypeAutoCacheSettingsComposable(
           NetworkTypeAutoCache.WIFI_ONLY.toItem(context),
           NetworkTypeAutoCache.WIFI_OR_CELLULAR.toItem(context),
         ),
-      selectedItem = preferredNetworkType?.toItem(context),
+      selectedItem = preferredNetworkType.toItem(context),
       onDismissRequest = { networkTypeExpanded = false },
       onItemSelected = { item ->
         NetworkTypeAutoCache

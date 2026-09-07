@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Audiotrack
 import androidx.compose.material.icons.outlined.Check
@@ -29,9 +30,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
-import org.grakovne.lissen.lib.domain.BookChapterState
-import org.grakovne.lissen.lib.domain.PlayingChapter
+import org.grakovne.lissen.domain.BookChapterState
+import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.ui.extensions.formatTime
+import kotlin.math.ceil
 
 @Composable
 fun PlaylistItemComposable(
@@ -53,13 +55,15 @@ fun PlaylistItemComposable(
   val durationColumnWidth =
     remember(maxDurationText, density, bodySmallStyle) {
       with(density) {
-        textMeasurer
-          .measure(
-            text = AnnotatedString(maxDurationText),
-            style = bodySmallStyle,
-          ).size
-          .width
-          .toDp()
+        val measureResult =
+          textMeasurer
+            .measure(
+              text = AnnotatedString(maxDurationText),
+              style = bodySmallStyle,
+            )
+
+        val rawWidth = measureResult.size.width.toFloat()
+        ceil(rawWidth).toInt().toDp()
       }
     }
 
@@ -119,7 +123,7 @@ fun PlaylistItemComposable(
     if (isCached) {
       Icon(
         imageVector = ImageVector.vectorResource(id = R.drawable.available_offline_filled),
-        contentDescription = "Available offline",
+        contentDescription = stringResource(R.string.a11y_available_offline),
         modifier =
           Modifier
             .padding(horizontal = 6.dp * fontScale)
@@ -134,7 +138,7 @@ fun PlaylistItemComposable(
     Text(
       text = track.duration.toInt().formatTime(forceLeadingHours),
       style = MaterialTheme.typography.bodySmall,
-      modifier = Modifier.width(durationColumnWidth),
+      modifier = Modifier.widthIn(min = durationColumnWidth),
       textAlign = TextAlign.End,
       fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
       color =

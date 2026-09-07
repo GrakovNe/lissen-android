@@ -1,0 +1,99 @@
+package org.grakovne.lissen.ui
+
+import android.content.Intent
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import androidx.test.ext.junit.runners.AndroidJUnit4
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.rule.GrantPermissionRule
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import org.grakovne.lissen.persistence.preferences.PreferencesReset
+import org.grakovne.lissen.playback.service.PlaybackService
+import org.grakovne.lissen.ui.activity.AppActivity
+import org.junit.FixMethodOrder
+import org.junit.Rule
+import org.junit.Test
+import org.junit.rules.ExternalResource
+import org.junit.runner.RunWith
+import org.junit.runners.MethodSorters
+import javax.inject.Inject
+
+@OptIn(ExperimentalTestApi::class)
+@HiltAndroidTest
+@RunWith(AndroidJUnit4::class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+class LibraryE2ETest {
+  @get:Rule(order = 0)
+  val grantPermissionsRule: GrantPermissionRule =
+    GrantPermissionRule.grant(android.Manifest.permission.POST_NOTIFICATIONS)
+
+  @get:Rule(order = 1)
+  val hiltRule = HiltAndroidRule(this)
+
+  @Inject
+  lateinit var preferencesReset: PreferencesReset
+
+  @get:Rule(order = 2)
+  val setupRule =
+    object : ExternalResource() {
+      override fun before() {
+        hiltRule.inject()
+        preferencesReset.clearAll()
+        E2ESession.restore()
+      }
+
+      override fun after() {
+        val ctx = InstrumentationRegistry.getInstrumentation().targetContext
+        ctx.stopService(Intent(ctx, PlaybackService::class.java))
+      }
+    }
+
+  @get:Rule(order = 3)
+  val composeRule = createAndroidComposeRule<AppActivity>()
+
+  private fun login() {
+    composeRule.loginToLibrary()
+  }
+
+  @Test
+  fun library_isDisplayedAfterLogin() {
+    login()
+    composeRule.onNodeWithTag("libraryScreen").assertIsDisplayed()
+  }
+
+  @Test
+  fun library_showsLibraryTitle() {
+    login()
+
+    composeRule.waitUntil(TIMEOUT_MS) {
+      runCatching {
+        composeRule.onNodeWithTag("libraryNavBarTitle").assertIsDisplayed()
+      }.isSuccess
+    }
+
+    composeRule.onNodeWithTag("libraryNavBarTitle").assertIsDisplayed()
+  }
+
+  @Test
+  fun library_tapBookNavigatesToPlayer() {
+    login()
+
+    composeRule.waitUntilBookItemsExist()
+
+    composeRule
+      .onAllNodes(bookItemMatcher)[0]
+      .performClick()
+
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = hasTestTag("playerScreen"),
+      timeoutMillis = TIMEOUT_MS,
+    )
+
+    composeRule.onNodeWithTag("playerScreen").assertIsDisplayed()
+  }
+}

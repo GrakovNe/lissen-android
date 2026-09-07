@@ -47,7 +47,7 @@ class LissenMediaSourceFactoryTest {
               .setArtist("book")
               .setIsBrowsable(false)
               .setIsPlayable(true)
-              .setArtworkUri(ExternalCoverProvider.coverUri("book-id"))
+              .setArtworkUri(ExternalCoverProvider.bookCoverUri("book-id"))
               .setMediaType(MediaMetadata.MEDIA_TYPE_AUDIO_BOOK_CHAPTER)
               .setExtras(bundleOf(CHAPTER_START_MS to (500 * 1000).toLong()))
               .build(),

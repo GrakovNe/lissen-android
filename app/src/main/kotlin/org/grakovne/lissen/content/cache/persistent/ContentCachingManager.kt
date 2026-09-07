@@ -6,23 +6,21 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import okhttp3.Request
-import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
 import org.grakovne.lissen.channel.common.MediaChannel
-import org.grakovne.lissen.channel.common.createOkHttpClient
 import org.grakovne.lissen.common.copyTo
 import org.grakovne.lissen.content.cache.common.findRelatedFiles
 import org.grakovne.lissen.content.cache.common.withBlur
 import org.grakovne.lissen.content.cache.common.writeToFile
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedLibraryRepository
-import org.grakovne.lissen.lib.domain.BookFile
-import org.grakovne.lissen.lib.domain.CacheStatus
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.DownloadOption
-import org.grakovne.lissen.lib.domain.PlayingChapter
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.domain.BookFile
+import org.grakovne.lissen.domain.CacheStatus
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.DownloadOption
+import org.grakovne.lissen.domain.PlayingChapter
 import timber.log.Timber
 import java.io.File
+import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.coroutineContext
@@ -31,12 +29,12 @@ import kotlin.coroutines.coroutineContext
 class ContentCachingManager
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val bookRepository: CachedBookRepository,
     private val libraryRepository: CachedLibraryRepository,
     private val properties: OfflineBookStorageProperties,
-    private val requestHeadersProvider: RequestHeadersProvider,
-    private val preferences: LissenSharedPreferences,
+    private val registry: CachingSessionRegistry,
+    private val progress: ContentCachingProgress,
   ) {
     fun cacheMediaItem(
       mediaItem: DetailedItem,
@@ -44,6 +42,7 @@ class ContentCachingManager
       channel: MediaChannel,
       currentTotalPosition: Double,
     ) = flow {
+      Timber.d("Caching media item ${mediaItem.id}: option=$option, position=${currentTotalPosition.toInt()}s")
       val context = coroutineContext
 
       val requestedChapters =
@@ -79,12 +78,14 @@ class ContentCachingManager
         ) { withContext(context) { emit(CacheState(CacheStatus.Caching, it)) } }
 
       val coverCachingResult = cacheBookCover(mediaItem, channel)
+      val authorImagesCachingResult = cacheAuthorImages(mediaItem, channel)
       val librariesCachingResult = cacheLibraries(channel)
 
       when {
         listOf(
           mediaCachingResult,
           coverCachingResult,
+          authorImagesCachingResult,
           librariesCachingResult,
         ).all { it.status == CacheStatus.Completed } -> {
           cacheBookInfo(mediaItem, requestedChapters)
@@ -102,6 +103,7 @@ class ContentCachingManager
       item: DetailedItem,
       chapter: PlayingChapter,
     ) {
+      Timber.d("Dropping cache for ${item.id}, chapter=${chapter.id}")
       bookRepository
         .cacheBook(
           book = item,
@@ -120,12 +122,31 @@ class ContentCachingManager
     }
 
     suspend fun dropCache(itemId: String) {
+      Timber.d("Dropping full cache for $itemId")
       bookRepository.removeBook(itemId)
 
       val cachedContent: File = properties.provideBookCache(itemId)
 
       if (cachedContent.exists()) {
         cachedContent.deleteRecursively()
+      }
+    }
+
+    suspend fun dropAllCache() {
+      Timber.d("Dropping all cache")
+
+      registry
+        .cancelAll()
+        .forEach { progress.emit(it, CacheState(CacheStatus.Idle)) }
+
+      bookRepository.dropCache()
+
+      withContext(Dispatchers.IO) {
+        val storage = properties.provideActiveStorage()
+
+        if (storage.exists() && storage.deleteRecursively().not()) {
+          Timber.e("Unable to fully remove media cache at $storage")
+        }
       }
     }
 
@@ -136,6 +157,8 @@ class ContentCachingManager
       chapterId: String,
     ) = bookRepository.provideCacheState(mediaItemId, chapterId)
 
+    fun provideCachedChapterIds(mediaItemId: String) = bookRepository.provideCachedChapterIds(mediaItemId)
+
     private suspend fun cacheBookMedia(
       bookId: String,
       files: List<BookFile>,
@@ -143,12 +166,12 @@ class ContentCachingManager
       onProgress: suspend (Double) -> Unit,
     ): CacheState =
       withContext(Dispatchers.IO) {
-        val headers = requestHeadersProvider.fetchRequestHeaders()
         val client =
-          createOkHttpClient(
-            requestHeaders = headers,
-            preferences = preferences,
-          )
+          channel.provideDownloadClient()
+            ?: run {
+              Timber.e("Unable to cache media content for $bookId: no download client available")
+              return@withContext CacheState(CacheStatus.Error)
+            }
 
         val totalFileSize = files.mapNotNull { it.size }.sum()
         val reportingSizeThreshold = totalFileSize / 100.0
@@ -156,23 +179,28 @@ class ContentCachingManager
 
         files.forEach { file ->
           val uri = channel.provideFileUri(bookId, file.id)
-          val requestBuilder = Request.Builder().url(uri.toString())
-          headers.forEach { requestBuilder.addHeader(it.name, it.value) }
-
-          val request = requestBuilder.build()
-          val response = client.newCall(request).execute()
+          val request = Request.Builder().url(uri.toString()).build()
+          val response =
+            try {
+              client.newCall(request).execute()
+            } catch (ex: IOException) {
+              Timber.e("Unable to cache media content for $bookId due to: ${ex.message}")
+              return@withContext CacheState(CacheStatus.Error)
+            }
 
           if (!response.isSuccessful) {
             Timber.e("Unable to cache media content: $response")
+            response.close()
             return@withContext CacheState(CacheStatus.Error)
           }
 
           val body = response.body
           val dest = properties.provideMediaCachePatch(bookId, file.id)
+          val tempDest = File(dest.parent, "${dest.name}.tmp")
           dest.parentFile?.mkdirs()
 
           try {
-            dest.outputStream().use { output ->
+            tempDest.outputStream().use { output ->
               body.byteStream().use { input ->
                 var lastReportedSize = 0.0
                 input.copyTo(output) {
@@ -185,8 +213,14 @@ class ContentCachingManager
                 }
               }
             }
+            if (!tempDest.renameTo(dest)) {
+              return@withContext CacheState(CacheStatus.Error)
+            }
           } catch (ex: Exception) {
+            Timber.e("Unable to cache media file ${file.id} for $bookId due to: ${ex.message}")
             return@withContext CacheState(CacheStatus.Error)
+          } finally {
+            tempDest.delete()
           }
         }
 
@@ -209,16 +243,44 @@ class ContentCachingManager
                   .withBlur(context)
                   .writeToFile(file)
               } catch (ex: Exception) {
-                return@fold CacheState(CacheStatus.Error)
+                Timber.e("Unable to cache cover for ${book.id} due to: ${ex.message}")
               }
+              CacheState(CacheStatus.Completed)
             },
             onFailure = {
+              CacheState(CacheStatus.Completed)
             },
           )
+      }
+    }
+
+    private suspend fun cacheAuthorImages(
+      book: DetailedItem,
+      channel: MediaChannel,
+    ): CacheState =
+      withContext(Dispatchers.IO) {
+        book.authors.forEach { author ->
+          channel
+            .fetchAuthorCover(author.id)
+            .fold(
+              onSuccess = { image ->
+                try {
+                  val dest = properties.provideAuthorImagePath(author.name)
+                  dest.parentFile?.mkdirs()
+                  image
+                    .withBlur(context)
+                    .writeToFile(dest)
+                } catch (ex: Exception) {
+                  Timber.e("Unable to cache author image for ${author.name} due to: ${ex.message}")
+                }
+              },
+              onFailure = {
+              },
+            )
+        }
 
         CacheState(CacheStatus.Completed)
       }
-    }
 
     private suspend fun cacheBookInfo(
       book: DetailedItem,

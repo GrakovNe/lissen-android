@@ -2,12 +2,12 @@ package org.grakovne.lissen.ui.screens.common
 
 import android.content.Context
 import org.grakovne.lissen.R
-import org.grakovne.lissen.lib.domain.AllItemsDownloadOption
-import org.grakovne.lissen.lib.domain.CurrentItemDownloadOption
-import org.grakovne.lissen.lib.domain.DownloadOption
-import org.grakovne.lissen.lib.domain.LibraryType
-import org.grakovne.lissen.lib.domain.NumberItemDownloadOption
-import org.grakovne.lissen.lib.domain.RemainingItemsDownloadOption
+import org.grakovne.lissen.domain.AllItemsDownloadOption
+import org.grakovne.lissen.domain.CurrentItemDownloadOption
+import org.grakovne.lissen.domain.DownloadOption
+import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.NumberItemDownloadOption
+import org.grakovne.lissen.domain.RemainingItemsDownloadOption
 
 fun DownloadOption?.makeText(
   context: Context,
@@ -45,22 +45,25 @@ fun DownloadOption?.makeText(
     is NumberItemDownloadOption -> {
       when (libraryType) {
         LibraryType.LIBRARY -> {
-          context.getString(
-            R.string.downloads_menu_download_option_next_chapters,
+          context.resources.getQuantityString(
+            R.plurals.downloads_menu_download_option_next_chapters,
+            itemsNumber,
             itemsNumber,
           )
         }
 
         LibraryType.PODCAST -> {
-          context.getString(
-            R.string.downloads_menu_download_option_next_episodes,
+          context.resources.getQuantityString(
+            R.plurals.downloads_menu_download_option_next_episodes,
+            itemsNumber,
             itemsNumber,
           )
         }
 
         LibraryType.UNKNOWN -> {
-          context.getString(
-            R.string.downloads_menu_download_option_next_items,
+          context.resources.getQuantityString(
+            R.plurals.downloads_menu_download_option_next_items,
+            itemsNumber,
             itemsNumber,
           )
         }

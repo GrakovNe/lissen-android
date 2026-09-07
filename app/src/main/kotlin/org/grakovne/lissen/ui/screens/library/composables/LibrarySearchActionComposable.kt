@@ -24,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -31,19 +32,25 @@ import org.grakovne.lissen.R
 
 @Composable
 fun LibrarySearchActionComposable(
+  currentSearchToken: String,
   onSearchDismissed: () -> Unit,
   onSearchRequested: (String) -> Unit,
+  autoFocus: Boolean = true,
 ) {
   val focusRequester = remember { FocusRequester() }
-  val searchText = remember { mutableStateOf("") }
+  val searchText = remember { mutableStateOf(currentSearchToken) }
 
   fun updateSearchText(text: String) {
     searchText.value = text
     onSearchRequested(searchText.value)
   }
 
-  LaunchedEffect(Unit) {
-    focusRequester.requestFocus()
+  // Linked search arrives pre-filled, so the user is reading results, not typing — don't
+  // grab focus / pop the keyboard in that case. They can still tap the field to edit.
+  LaunchedEffect(autoFocus) {
+    if (autoFocus) {
+      focusRequester.requestFocus()
+    }
   }
 
   Row(
@@ -60,7 +67,7 @@ fun LibrarySearchActionComposable(
     ) {
       Icon(
         imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-        contentDescription = "Back",
+        contentDescription = stringResource(R.string.a11y_back),
       )
     }
 
@@ -78,6 +85,7 @@ fun LibrarySearchActionComposable(
         onValueChange = { updateSearchText(it) },
         modifier =
           Modifier
+            .testTag("librarySearchField")
             .weight(1f)
             .focusRequester(focusRequester),
         textStyle = typography.bodyLarge.copy(color = colorScheme.onBackground),
@@ -105,7 +113,7 @@ fun LibrarySearchActionComposable(
         ) {
           Icon(
             imageVector = Icons.Outlined.Clear,
-            contentDescription = "Clear",
+            contentDescription = stringResource(R.string.a11y_clear),
           )
         }
       }

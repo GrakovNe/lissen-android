@@ -15,15 +15,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.valentinilk.shimmer.shimmer
+import org.grakovne.lissen.ui.adaptive.recentBookItemWidth
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 
 @Composable
@@ -31,13 +30,7 @@ fun RecentBooksPlaceholderComposable(
   itemCount: Int = 5,
   libraryViewModel: LibraryViewModel,
 ) {
-  val configuration = LocalConfiguration.current
-  val screenWidth = remember { configuration.screenWidthDp.dp }
-
-  val itemsVisible = 2.3f
-  val spacing = 16.dp
-  val totalSpacing = spacing * (itemsVisible + 1)
-  val itemWidth = (screenWidth - totalSpacing) / itemsVisible
+  val itemWidth = recentBookItemWidth()
 
   LazyRow(
     contentPadding = PaddingValues(horizontal = 4.dp),

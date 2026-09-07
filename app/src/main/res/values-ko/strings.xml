@@ -46,7 +46,6 @@
     <string name="timer_option_after_current_chapter">챕터 종료 시</string>
     <string name="timer_option_after_current_episode">에피소드 종료 시</string>
     <plurals name="timer_option_after_time">
-        <item quantity="one">%d분</item>
         <item quantity="other">%d분</item>
     </plurals>
     <string name="timer_option_disable_timer">타이머 해제</string>
@@ -65,8 +64,12 @@
     <string name="downloads_menu_download_option_entire_podcast">팟캐스트 전체</string>
     <string name="downloads_menu_download_option_remaining_chapters">남아있는 챕터</string>
     <string name="downloads_menu_download_option_remaining_episodes">남아있는 에피소드</string>
-    <string name="downloads_menu_download_option_next_chapters">다음 %1$d 챕터</string>
-    <string name="downloads_menu_download_option_next_episodes">다음 %1$d 에피소드</string>
+    <plurals name="downloads_menu_download_option_next_chapters">
+        <item quantity="other">다음 %1$d 챕터</item>
+    </plurals>
+    <plurals name="downloads_menu_download_option_next_episodes">
+        <item quantity="other">다음 %1$d 에피소드</item>
+    </plurals>
     <string name="downloads_menu_download_option_clear_chapters">다운로드 챕터 지우기</string>
     <string name="downloads_menu_download_option_clear_episodes">다운로드 에피소드 지우기</string>
     <string name="mini_player_action_close">닫기</string>
@@ -84,7 +87,12 @@
     <string name="downloads_menu_download_option_current_item">현재 아이템</string>
     <string name="downloads_menu_download_option_entire_item">아이템 전체</string>
     <string name="downloads_menu_download_option_remaining_items">남아있는 아이템</string>
-    <string name="downloads_menu_download_option_next_items">다음 %1$d 아이템</string>
+    <plurals name="downloads_menu_download_option_next_items">
+        <item quantity="other">다음 %1$d 아이템</item>
+    </plurals>
+    <string name="downloads_menu_download_option_next_chapters_label">다음 챕터</string>
+    <string name="downloads_menu_download_option_next_episodes_label">다음 에피소드</string>
+    <string name="downloads_menu_download_option_next_items_label">다음 아이템</string>
     <string name="downloads_menu_download_option_clear_items">다운로드 아이템 지우기</string>
     <string name="playing_item_details_publisher">출판사</string>
     <string name="playing_item_details_narrator">낭독</string>
@@ -107,11 +115,6 @@
     <string name="settings_screen_seek_time_hint">빨리 감기/되감기 시간 설정</string>
     <string name="rewind_interval">되감기 시간</string>
     <string name="forward_interval">빨리 감기 시간</string>
-    <string name="seek_interval_5_seconds">5 초</string>
-    <string name="seek_interval_10_seconds">10 초</string>
-    <string name="seek_interval_15_seconds">15 초</string>
-    <string name="seek_interval_30_seconds">30 초</string>
-    <string name="seek_interval_60_seconds">60 초</string>
     <string name="continue_playback_shortcut_title">이어듣기</string>
     <string name="continue_playback_shortcut_description">이전에 듣던 부분을 이어서 재생합니다</string>
     <string name="offline_cache_is_empty">저장된 콘텐츠가 없습니다</string>
@@ -126,18 +129,15 @@
     <string name="downloads_menu_download_option_stop_downloads">다운로드 중지</string>
     <string name="login_error_lissen_not_found">URL을 찾을 수 없습니다. 서버 설정을 확인하세요.</string>
     <string name="volume_boost_disabled">비활성</string>
-    <string name="volume_boost_low">낮음</string>
-    <string name="volume_boost_medium">중간</string>
-    <string name="volume_boost_high">높음</string>
     <string name="volume_boost_title">사운드 증폭</string>
     <string name="playing_item_details_time_remaining">남은 시간</string>
-    <string name="settings_screen_advanced_preferences_title">고급 설정</string>
-    <string name="settings_screen_advanced_preferences_description">탐색 제어, 프록시 헤더, 사운드 설정</string>
+    <string name="settings_screen_advanced_preferences_title">고급</string>
+    <string name="settings_screen_advanced_preferences_description">진단, 로그 및 기타 옵션</string>
     <string name="settings_screen_crash_report_title">오류 보고</string>
     <string name="settings_screen_crash_report_description">앱이 충돌하면 보고서 보내기</string>
     <string name="settings_download_automatically_title">자동 다운로드</string>
-    <string name="download_settings_title">다운로드 설정</string>
-    <string name="download_settings_description">다운로드 설정, 콘텐츠 관리</string>
+    <string name="download_settings_title">다운로드</string>
+    <string name="download_settings_description">다운로드 및 콘텐츠 관리</string>
     <string name="download_settings_network_type_title">자동 다운로드 연결 설정</string>
     <string name="download_settings_library_type_title">자동 다운로드</string>
     <string name="download_settings_library_type_no_items_selected">지정된 타입 없음</string>
@@ -158,4 +158,33 @@
     <string name="settings_screen_delay_autodownload_description">다운로드를 시작하기 전에 잠시 대기</string>
     <string name="settings_screen_bypass_ssl_title">SSL 인증 비활성화</string>
     <string name="settings_screen_bypass_ssl_hint">SSL 인증 없이 서버에 연결</string>
+    <string name="connection_settings_title">연결</string>
+    <string name="connection_settings_description">서버 주소, 프록시 및 SSL</string>
+    <string name="playback_preferences_title">재생</string>
+    <string name="playback_preferences_description">음량, 탐색 컨트롤 및 오디오</string>
+    <string name="appearance_preferences_title">외관</string>
+    <string name="appearance_preferences_description">색상 구성표, 정렬 및 테마</string>
+    <string name="a11y_back">뒤로</string>
+    <string name="a11y_menu">메뉴</string>
+    <string name="a11y_search">검색</string>
+    <string name="a11y_clear">지우기</string>
+    <string name="a11y_add">추가</string>
+    <string name="a11y_settings">설정</string>
+    <string name="a11y_delete_from_cache">캐시에서 삭제</string>
+    <string name="a11y_available_offline">오프라인 사용 가능</string>
+    <string name="a11y_collapse_queue">대기열 접기</string>
+    <string name="a11y_open">열기</string>
+    <string name="a11y_previous_track">이전 트랙</string>
+    <string name="a11y_next_track">다음 트랙</string>
+    <string name="a11y_play">재생</string>
+    <string name="a11y_pause">일시정지</string>
+    <string name="a11y_playback_position">재생 위치</string>
+    <string name="a11y_position_of">%2$s 중 %1$s</string>
+    <string name="a11y_buffering">버퍼링 중</string>
+    <string name="a11y_playback_error">재생 오류</string>
+    <string name="a11y_rewind_seconds">%1$d초 되감기</string>
+    <string name="a11y_fast_forward_seconds">%1$d초 빨리 감기</string>
+    <plurals name="a11y_hours">
+        <item quantity="other">%d시간</item>
+    </plurals>
 </resources>

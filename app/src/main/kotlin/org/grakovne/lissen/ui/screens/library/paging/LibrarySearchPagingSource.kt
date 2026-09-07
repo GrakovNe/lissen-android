@@ -1,21 +1,22 @@
 package org.grakovne.lissen.ui.screens.library.paging
 
 import androidx.paging.PagingState
+import org.grakovne.lissen.common.LibraryPagingException
 import org.grakovne.lissen.common.LibraryPagingSource
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.lib.domain.Book
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.domain.LibraryEntry
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 
 class LibrarySearchPagingSource(
-  private val preferences: LissenSharedPreferences,
+  private val preferences: LibraryPreferences,
   private val mediaChannel: LissenMediaProvider,
   private val searchToken: String,
   private val limit: Int,
   onTotalCountChanged: (Int) -> Unit,
-) : LibraryPagingSource<Book>(onTotalCountChanged) {
-  override fun getRefreshKey(state: PagingState<Int, Book>) = null
+) : LibraryPagingSource<LibraryEntry>(onTotalCountChanged) {
+  override fun getRefreshKey(state: PagingState<Int, LibraryEntry>) = null
 
-  override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Book> {
+  override suspend fun load(params: LoadParams<Int>): LoadResult<Int, LibraryEntry> {
     val libraryId =
       preferences
         .getPreferredLibrary()
@@ -29,11 +30,11 @@ class LibrarySearchPagingSource(
     return mediaChannel
       .searchBooks(libraryId, searchToken, limit)
       .fold(
-        onSuccess = {
-          onTotalCountChanged.invoke(it.size)
-          LoadResult.Page(it, null, null)
+        onSuccess = { books ->
+          onTotalCountChanged.invoke(books.size)
+          LoadResult.Page(books.map { LibraryEntry.BookEntry(it) }, null, null)
         },
-        onFailure = { LoadResult.Page(emptyList(), null, null) },
+        onFailure = { LoadResult.Error(LibraryPagingException(it.code, it.message)) },
       )
   }
 }

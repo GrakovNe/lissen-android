@@ -1,18 +1,10 @@
 package org.grakovne.lissen.playback
 
-import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.os.Handler
 import android.os.Looper
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MediatorLiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ProcessLifecycleOwner
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.MediaController
@@ -22,34 +14,28 @@ import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.grakovne.lissen.common.buildBookmarkTitle
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.lib.domain.Bookmark
-import org.grakovne.lissen.lib.domain.ChapterSkipConfig
-import org.grakovne.lissen.lib.domain.CurrentEpisodeTimerOption
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.DetailedItem.Companion.same
-import org.grakovne.lissen.lib.domain.DurationTimerOption
-import org.grakovne.lissen.lib.domain.SeekTimeOption
-import org.grakovne.lissen.lib.domain.TimerOption
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.domain.Bookmark
+import org.grakovne.lissen.domain.ChapterSkipConfig
+import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.DetailedItem.Companion.same
+import org.grakovne.lissen.domain.DurationTimerOption
+import org.grakovne.lissen.domain.TimerOption
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
+import org.grakovne.lissen.playback.service.DefaultTimerActivator
 import org.grakovne.lissen.playback.service.PlaybackService
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.ACTION_SEEK_TO
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.PLAYBACK_READY
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.POSITION
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_EXPIRED
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_OPTION_EXTRA
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_REMAINING
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_TICK
-import org.grakovne.lissen.playback.service.PlaybackService.Companion.TIMER_VALUE_EXTRA
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.playback.service.calculateChapterIndexAndPosition
-import org.grakovne.lissen.playback.service.calculateChapterPosition
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -59,11 +45,15 @@ import javax.inject.Singleton
 class MediaRepository
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
-    private val preferences: LissenSharedPreferences,
+    @param:ApplicationContext private val context: Context,
+    private val preferences: PlaybackPreferences,
     private val mediaChannel: LissenMediaProvider,
+    private val eventBus: PlaybackEventBus,
+    private val defaultTimerActivator: DefaultTimerActivator,
   ) {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private lateinit var mediaController: MediaController
+    private val deferredControllerActions = DeferredActions()
 
     private val token =
       SessionToken(
@@ -71,66 +61,59 @@ class MediaRepository
         ComponentName(context, PlaybackService::class.java),
       )
 
-    private val _isPlaying = MutableLiveData(false)
-    val isPlaying: LiveData<Boolean> = _isPlaying
+    private val _isPlaying = MutableStateFlow(false)
+    val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
 
-    private val _timerOption = MutableLiveData<TimerOption?>()
-    val timerOption = _timerOption
+    private val _timerOption = MutableStateFlow<TimerOption?>(null)
+    val timerOption: StateFlow<TimerOption?> = _timerOption.asStateFlow()
 
-    private val _timerRemaining = MutableLiveData<Long>()
-    val timerRemaining = _timerRemaining
+    private val _timerRemaining = MutableStateFlow<Long?>(null)
+    val timerRemaining: StateFlow<Long?> = _timerRemaining.asStateFlow()
 
-    private val _playAfterPrepare = MutableLiveData(false)
-    private val _isPlaybackReady = MutableLiveData(false)
-    val isPlaybackReady: LiveData<Boolean> = _isPlaybackReady
+    private val _playAfterPrepare = MutableStateFlow(false)
+    private val _isPlaybackReady = MutableStateFlow(false)
+    val isPlaybackReady: StateFlow<Boolean> = _isPlaybackReady.asStateFlow()
 
-    private val _totalPosition = MutableLiveData<Double>()
-    val totalPosition: LiveData<Double> = _totalPosition
+    private val _totalPosition = MutableStateFlow(0.0)
+    val totalPosition: StateFlow<Double> = _totalPosition.asStateFlow()
 
-    private val _playingBook = MutableLiveData<DetailedItem?>()
-    val playingBook: LiveData<DetailedItem?> = _playingBook
+    private val _playingBook = MutableStateFlow<DetailedItem?>(null)
+    val playingBook: StateFlow<DetailedItem?> = _playingBook.asStateFlow()
 
-    private val _mediaPreparingError = MutableLiveData<Boolean>()
-    val mediaPreparingError: LiveData<Boolean> = _mediaPreparingError
+    private val _mediaPreparingError = MutableStateFlow(false)
+    val mediaPreparingError: StateFlow<Boolean> = _mediaPreparingError.asStateFlow()
 
-    private val _playbackSpeed = MutableLiveData(preferences.getPlaybackSpeed())
-    val playbackSpeed: LiveData<Float> = _playbackSpeed
+    private val _playbackSpeed = MutableStateFlow(preferences.getPlaybackSpeed())
+    val playbackSpeed: StateFlow<Float> = _playbackSpeed.asStateFlow()
 
-    private val _chapterSkipConfig = MutableLiveData(ChapterSkipConfig())
-    val chapterSkipConfig: LiveData<ChapterSkipConfig> = _chapterSkipConfig
+    private val _chapterSkipConfig = MutableStateFlow(ChapterSkipConfig())
+    val chapterSkipConfig: StateFlow<ChapterSkipConfig> = _chapterSkipConfig.asStateFlow()
 
     private var _lastSkippedIntroChapterIndex = -1
     private var _lastSkippedOutroChapterIndex = -1
     private var _userSeekedManually = false
 
-    private val _currentChapterIndex =
-      MediatorLiveData<Int>().apply {
-        addSource(totalPosition) { updateCurrentTrackData() }
-        addSource(playingBook) { updateCurrentTrackData() }
-      }
+    private val _currentChapterIndex = MutableStateFlow(0)
+    val currentChapterIndex: StateFlow<Int> = _currentChapterIndex.asStateFlow()
 
-    val currentChapterIndex: LiveData<Int> = _currentChapterIndex
+    private val _currentChapterPosition = MutableStateFlow(0.0)
+    val currentChapterPosition: StateFlow<Double> = _currentChapterPosition.asStateFlow()
 
-    private val _currentChapterPosition =
-      MediatorLiveData<Double>().apply {
-        addSource(totalPosition) { updateCurrentTrackData() }
-        addSource(playingBook) { updateCurrentTrackData() }
-      }
+    private val _currentChapterDuration = MutableStateFlow(0.0)
+    val currentChapterDuration: StateFlow<Double> = _currentChapterDuration.asStateFlow()
 
-    val currentChapterPosition: LiveData<Double> = _currentChapterPosition
-
-    private val _currentChapterDuration =
-      MediatorLiveData<Double>().apply {
-        addSource(totalPosition) { updateCurrentTrackData() }
-        addSource(playingBook) { updateCurrentTrackData() }
-      }
-
-    private val _bookmarks = MutableLiveData<List<Bookmark>>()
-    val bookmarks: LiveData<List<Bookmark>> = _bookmarks
-
-    val currentChapterDuration: LiveData<Double> = _currentChapterDuration
+    private val _bookmarks = MutableStateFlow<List<Bookmark>>(emptyList())
+    val bookmarks: StateFlow<List<Bookmark>> = _bookmarks.asStateFlow()
 
     private val handler = Handler(Looper.getMainLooper())
+
+    private val progressPoller =
+      ProgressPoller(
+        intervalMs = PROGRESS_UPDATE_INTERVAL_MS,
+        schedule = { runnable, delay -> handler.postDelayed(runnable, delay) },
+        cancel = { runnable -> handler.removeCallbacks(runnable) },
+        onTick = { _playingBook.value?.let { updateProgress(it) } },
+      )
 
     init {
       val controllerBuilder = MediaController.Builder(context, token)
@@ -142,22 +125,64 @@ class MediaRepository
           override fun onSuccess(controller: MediaController) {
             mediaController = controller
 
-            LocalBroadcastManager
-              .getInstance(context)
-              .registerReceiver(playbackReadyReceiver, IntentFilter(PLAYBACK_READY))
+            scope.launch {
+              eventBus.events.collect { event ->
+                when (event) {
+                  is PlaybackEvent.PlaybackReady -> {
+                    val book = preferences.getPlayingItem()
+                    book?.let {
+                      updateProgress(book)
 
-            LocalBroadcastManager
-              .getInstance(context)
-              .registerReceiver(timerExpiredReceiver, IntentFilter(TIMER_EXPIRED))
+                      if (mediaController.isPlaying) {
+                        progressPoller.start()
+                      }
 
-            LocalBroadcastManager
-              .getInstance(context)
-              .registerReceiver(timerTickReceiver, IntentFilter(TIMER_TICK))
+                      _isPlaybackReady.value = true
+
+                      if (_playAfterPrepare.value) {
+                        _playAfterPrepare.value = false
+                        play()
+                      }
+                    }
+                  }
+
+                  is PlaybackEvent.TimerExpired -> {
+                    defaultTimerActivator.onTimerExpired()
+                    _timerOption.value = null
+                    pause()
+                  }
+
+                  is PlaybackEvent.TimerTick -> {
+                    _timerRemaining.value = event.remainingSeconds
+                  }
+                }
+              }
+            }
 
             mediaController.addListener(
               object : Player.Listener {
                 override fun onIsPlayingChanged(isPlaying: Boolean) {
                   _isPlaying.value = isPlaying
+
+                  when {
+                    isPlaying -> {
+                      progressPoller.start()
+                      defaultTimerActivator.onPlaybackStarted { updateTimer(it) }
+                    }
+
+                    else -> {
+                      progressPoller.stop()
+                      _playingBook.value?.let { updateProgress(it) }
+                    }
+                  }
+                }
+
+                override fun onPositionDiscontinuity(
+                  oldPosition: Player.PositionInfo,
+                  newPosition: Player.PositionInfo,
+                  reason: Int,
+                ) {
+                  _playingBook.value?.let { updateProgress(it) }
                 }
 
                 override fun onPlaybackStateChanged(playbackState: Int) {
@@ -166,8 +191,18 @@ class MediaRepository
                     mediaController.pause()
                   }
                 }
+
+                override fun onPlayerError(error: PlaybackException) {
+                  Timber.e(error, "Playback error: ${error.errorCodeName}")
+                  progressPoller.stop()
+                  _isPlaying.value = false
+                  _playAfterPrepare.value = false
+                  _mediaPreparingError.value = true
+                }
               },
             )
+
+            deferredControllerActions.drain()
           }
 
           override fun onFailure(t: Throwable) {
@@ -178,63 +213,12 @@ class MediaRepository
       )
     }
 
-    private val playbackReadyReceiver =
-      object : BroadcastReceiver() {
-        @Suppress("DEPRECATION")
-        override fun onReceive(
-          context: Context?,
-          intent: Intent?,
-        ) {
-          if (intent?.action == PLAYBACK_READY) {
-            val book = preferences.getPlayingItem()
-
-            book?.let {
-              CoroutineScope(Dispatchers.Main).launch {
-                updateProgress(book).await()
-                startUpdatingProgress(book)
-                _isPlaybackReady.postValue(true)
-
-                if (_playAfterPrepare.value == true) {
-                  _playAfterPrepare.postValue(false)
-                  play()
-                }
-              }
-            }
-          }
-        }
-      }
-
-    private val timerExpiredReceiver =
-      object : BroadcastReceiver() {
-        override fun onReceive(
-          context: Context?,
-          intent: Intent?,
-        ) {
-          if (intent?.action == TIMER_EXPIRED) {
-            _timerOption.postValue(null)
-            pause()
-          }
-        }
-      }
-
-    private val timerTickReceiver =
-      object : BroadcastReceiver() {
-        override fun onReceive(
-          context: Context?,
-          intent: Intent?,
-        ) {
-          if (intent?.action == TIMER_TICK) {
-            val remaining = intent.getLongExtra(TIMER_REMAINING, 0L)
-            _timerRemaining.postValue(remaining)
-          }
-        }
-      }
-
     fun updateTimer(
       timerOption: TimerOption?,
       position: Double? = null,
     ) {
-      _timerOption.postValue(timerOption)
+      defaultTimerActivator.onTimerManuallySet()
+      _timerOption.value = timerOption
 
       when (timerOption) {
         is DurationTimerOption -> {
@@ -243,7 +227,7 @@ class MediaRepository
 
         is CurrentEpisodeTimerOption -> {
           val playingBook = playingBook.value ?: return
-          val currentPosition = position ?: totalPosition.value ?: return
+          val currentPosition = position ?: totalPosition.value
 
           val (chapterIndex, chapterPosition) = calculateChapterIndexAndPosition(playingBook, currentPosition)
           val chapterDuration =
@@ -265,15 +249,11 @@ class MediaRepository
     }
 
     fun rewind() {
-      totalPosition
-        .value
-        ?.let { seekTo(it - getSeekTime(preferences.getSeekTime().rewind)) }
+      seekTo(totalPosition.value - getSeekTime(preferences.getSeekTime().rewind))
     }
 
     fun forward() {
-      totalPosition
-        .value
-        ?.let { seekTo(it + getSeekTime(preferences.getSeekTime().forward)) }
+      seekTo(totalPosition.value + getSeekTime(preferences.getSeekTime().forward))
     }
 
     fun setChapter(index: Int) {
@@ -286,14 +266,24 @@ class MediaRepository
 
         seekTo(chapterStartsAt)
       } catch (ex: Exception) {
+        Timber.w("Unable to set chapter index=$index for ${book.id} due to: ${ex.message}")
         return
       }
     }
 
     fun clearPlayingBook() {
-      pause()
+      Timber.d("Clearing playing book: ${_playingBook.value?.id}")
 
-      _playingBook.postValue(null)
+      progressPoller.stop()
+
+      if (::mediaController.isInitialized) {
+        mediaController.stop()
+        mediaController.clearMediaItems()
+      }
+
+      _isPlaying.value = false
+      _isPlaybackReady.value = false
+      _playingBook.value = null
       preferences.clearPlayingItem()
     }
 
@@ -304,7 +294,7 @@ class MediaRepository
     fun setChapterPosition(chapterPosition: Double) {
       _userSeekedManually = true
       val book = playingBook.value ?: return
-      val overallPosition = totalPosition.value ?: return
+      val overallPosition = totalPosition.value
 
       val currentIndex = calculateChapterIndex(book, overallPosition)
 
@@ -320,18 +310,20 @@ class MediaRepository
 
         seekTo(absolutePosition)
       } catch (ex: Exception) {
+        Timber.w("Unable to set chapter position=${chapterPosition.toInt()}s for ${book.id} due to: ${ex.message}")
         return
       }
     }
 
     fun prepareAndPlay(book: DetailedItem) {
+      Timber.d("prepareAndPlay: bookId=${book.id}, alreadyReady=${isPlaybackReady.value}")
       when (isPlaybackReady.value) {
         true -> {
           play()
         }
 
         else -> {
-          _playAfterPrepare.postValue(true)
+          _playAfterPrepare.value = true
           startPreparingPlayback(book)
         }
       }
@@ -350,6 +342,7 @@ class MediaRepository
     }
 
     fun setPlaybackSpeed(factor: Float) {
+      Timber.d("Setting playback speed to $factor")
       val speed =
         when {
           factor < 0.5f -> 0.5f
@@ -361,10 +354,10 @@ class MediaRepository
         mediaController.setPlaybackSpeed(speed)
       }
 
-      _playbackSpeed.postValue(speed)
+      _playbackSpeed.value = speed
       preferences.savePlaybackSpeed(speed)
 
-      _totalPosition.value?.let { adjustTimer(it) }
+      adjustTimer(totalPosition.value)
     }
 
     suspend fun preparePlayback(bookId: String) {
@@ -374,7 +367,7 @@ class MediaRepository
             .fetchBook(bookId)
             .foldAsync(
               onSuccess = { startPreparingPlayback(it) },
-              onFailure = { _mediaPreparingError.postValue(true) },
+              onFailure = { _mediaPreparingError.value = true },
             )
         }
       }
@@ -382,8 +375,9 @@ class MediaRepository
 
     fun nextTrack() {
       val book = playingBook.value ?: return
-      val overallPosition = totalPosition.value ?: return
+      val overallPosition = totalPosition.value
       val currentIndex = calculateChapterIndex(book, overallPosition)
+      Timber.d("Next track: bookId=${book.id}, currentChapter=$currentIndex -> ${currentIndex + 1}")
 
       val nextChapterIndex = currentIndex + 1
       _userSeekedManually = false
@@ -392,9 +386,10 @@ class MediaRepository
 
     fun previousTrack(rewindRequired: Boolean = true) {
       val book = playingBook.value ?: return
-      val overallPosition = totalPosition.value ?: return
+      val overallPosition = totalPosition.value
 
       val (currentIndex, chapterPosition) = calculateChapterIndexAndPosition(book, overallPosition)
+      Timber.d("Previous track: bookId=${book.id}, currentChapter=$currentIndex, chapterPosition=${chapterPosition.toInt()}s")
 
       val currentIndexReplay = (chapterPosition > CURRENT_TRACK_REPLAY_THRESHOLD || currentIndex == 0)
 
@@ -408,100 +403,88 @@ class MediaRepository
       delay: Double,
       option: TimerOption,
     ) {
-      val intent =
-        Intent(context, PlaybackService::class.java).apply {
-          action = PlaybackService.ACTION_SET_TIMER
-          putExtra(TIMER_VALUE_EXTRA, delay)
-          putExtra(TIMER_OPTION_EXTRA, option)
-        }
-
-      context.startService(intent)
+      eventBus.send(PlaybackCommand.SetTimer(delay, option))
     }
 
     private fun cancelServiceTimer() {
-      val intent =
-        Intent(context, PlaybackService::class.java).apply {
-          action = PlaybackService.ACTION_CANCEL_TIMER
-        }
-
-      context.startService(intent)
-    }
-
-    private fun startUpdatingProgress(detailedItem: DetailedItem) {
-      handler.removeCallbacksAndMessages(null)
-
-      handler.postDelayed(
-        object : Runnable {
-          override fun run() {
-            updateProgress(detailedItem)
-            handler.postDelayed(this, 500)
-          }
-        },
-        500,
-      )
+      eventBus.send(PlaybackCommand.CancelTimer)
     }
 
     fun clearPreparedItem() {
-      timerOption
-        .value
-        ?.let { updateTimer(timerOption = null) }
+      if (timerOption.value != null) {
+        _timerOption.value = null
+        cancelServiceTimer()
+      }
 
-      _mediaPreparingError.postValue(false)
-      _isPlaybackReady.postValue(false)
+      defaultTimerActivator.onNewBookPrepared()
+      _mediaPreparingError.value = false
+      _playAfterPrepare.value = false
+      _isPlaybackReady.value = false
+    }
+
+    fun registerPlayingBook(book: DetailedItem) {
+      val sameBook = _playingBook.value?.same(book) ?: false
+
+      if (sameBook.not()) {
+        Timber.d("Registering playing book prepared via media session: ${book.id}")
+
+        _totalPosition.value = book.progress?.currentTime ?: 0.0
+        _playingBook.value = book
+        _isPlaybackReady.value = true
+      }
     }
 
     private fun startPreparingPlayback(book: DetailedItem) {
       val sameBook = _playingBook.value?.same(book) ?: false
 
       if (sameBook.not()) {
-        _totalPosition.postValue(0.0)
-        _isPlaying.postValue(false)
+        _totalPosition.value = 0.0
+        _isPlaying.value = false
 
-        _playingBook.postValue(book)
+        _playingBook.value = book
         preferences.savePlayingItem(book)
 
-        _chapterSkipConfig.postValue(preferences.getChapterSkipConfig(book.id))
+        _chapterSkipConfig.value = preferences.getChapterSkipConfig(book.id)
         _lastSkippedIntroChapterIndex = -1
         _lastSkippedOutroChapterIndex = -1
         _userSeekedManually = false
 
-        val intent =
-          Intent(context, PlaybackService::class.java).apply {
-            action = PlaybackService.ACTION_SET_PLAYBACK
-          }
-
-        when (inBackground()) {
-          true -> context.startForegroundService(intent)
-          false -> context.startService(intent)
-        }
+        eventBus.send(PlaybackCommand.PreparePlayback)
+      } else {
+        _isPlaybackReady.value = true
       }
     }
 
-    private fun updateProgress(detailedItem: DetailedItem): Deferred<Unit> =
-      CoroutineScope(Dispatchers.Main).async {
-        val currentIndex = mediaController.currentMediaItemIndex
-        val chapterStart = detailedItem.chapters.getOrNull(currentIndex)?.start ?: 0.0
-        val currentFilePosition = mediaController.currentPosition / 1000.0
+    private fun updateProgress(detailedItem: DetailedItem) {
+      val currentIndex = mediaController.currentMediaItemIndex
+      val chapterStart = detailedItem.chapters.getOrNull(currentIndex)?.start ?: 0.0
+      val currentFilePosition = mediaController.currentPosition / 1000.0
 
-        _totalPosition.postValue(chapterStart + currentFilePosition)
-      }
+      val newPosition = chapterStart + currentFilePosition
+      _totalPosition.value = newPosition
+      updateCurrentTrackData()
+    }
 
     private fun play() {
-      val intent =
-        Intent(context, PlaybackService::class.java).apply {
-          action = PlaybackService.ACTION_PLAY
+      withMain {
+        if (!::mediaController.isInitialized) {
+          Timber.w("play() requested before media controller connected; deferring until connected")
+          deferredControllerActions.defer { play() }
+          return@withMain
         }
 
-      context.startForegroundService(intent)
+        mediaController.prepare()
+        mediaController.setPlaybackSpeed(preferences.getPlaybackSpeed())
+        mediaController.play()
+      }
     }
 
     private fun pause() {
-      val intent =
-        Intent(context, PlaybackService::class.java).apply {
-          action = PlaybackService.ACTION_PAUSE
+      withMain {
+        if (::mediaController.isInitialized) {
+          mediaController.pause()
         }
-
-      context.startService(intent)
+      }
     }
 
     private fun seekTo(position: Double) {
@@ -514,7 +497,7 @@ class MediaRepository
 
       val overallDuration = book.chapters.maxOf { it.end }
 
-      val current = totalPosition.value ?: 0.0
+      val current = totalPosition.value
 
       val direction =
         when (current > maxOf(0.0, position)) {
@@ -524,27 +507,29 @@ class MediaRepository
 
       var safePosition = minOf(overallDuration, maxOf(0.0, position))
 
-      while (book.chapters[calculateChapterIndex(book, safePosition)].available.not()) {
-        val chapterIndex =
+      val startIndex = calculateChapterIndex(book, safePosition)
+      if (startIndex in book.chapters.indices && book.chapters[startIndex].available.not()) {
+        val forward = (startIndex..book.chapters.lastIndex).firstOrNull { book.chapters[it].available }
+        val backward = (startIndex downTo 0).firstOrNull { book.chapters[it].available }
+
+        val target =
           when (direction) {
-            ScrollingDirection.FORWARD -> calculateChapterIndex(book, safePosition) + 1
-            ScrollingDirection.BACKWARD -> calculateChapterIndex(book, safePosition) - 1
+            ScrollingDirection.FORWARD -> forward ?: backward
+            ScrollingDirection.BACKWARD -> backward ?: forward
           }
 
-        safePosition =
-          when {
-            chapterIndex in 0..book.chapters.lastIndex -> book.chapters[chapterIndex].start
-            else -> break
-          }
+        target?.let { safePosition = book.chapters[it].start }
       }
 
-      val intent =
-        Intent(context, PlaybackService::class.java).apply {
-          action = ACTION_SEEK_TO
-          putExtra(POSITION, safePosition)
-        }
+      val (chapterIndex, chapterPosition) = calculateChapterIndexAndPosition(book, safePosition)
 
-      context.startService(intent)
+      withMain {
+        if (::mediaController.isInitialized) {
+          mediaController.seekTo(chapterIndex, (chapterPosition * 1000).toLong())
+          _playingBook.value?.let { updateProgress(it) }
+        }
+      }
+
       adjustTimer(safePosition)
     }
 
@@ -557,27 +542,22 @@ class MediaRepository
           )
         }
 
-        is DurationTimerOption -> {
-          Unit
-        }
+        is DurationTimerOption -> {}
 
-        null -> {
-          Unit
-        }
+        null -> {}
       }
     }
 
     private fun updateCurrentTrackData() {
       val book = playingBook.value ?: return
-      val totalPosition = totalPosition.value ?: return
+      val totalPosition = totalPosition.value
 
-      val trackIndex = calculateChapterIndex(book, totalPosition)
-      val trackPosition = calculateChapterPosition(book, totalPosition)
+      val (trackIndex, trackPosition) = calculateChapterIndexAndPosition(book, totalPosition)
 
-      val previousIndex = _currentChapterIndex.value ?: -1
+      val previousIndex = _currentChapterIndex.value
 
-      _currentChapterIndex.postValue(trackIndex)
-      _currentChapterPosition.postValue(trackPosition)
+      _currentChapterIndex.value = trackIndex
+      _currentChapterPosition.value = trackPosition
 
       val chapterDuration =
         book
@@ -586,9 +566,9 @@ class MediaRepository
           ?.duration
           ?: 0.0
 
-      _currentChapterDuration.postValue(chapterDuration)
+      _currentChapterDuration.value = chapterDuration
 
-      val skipConfig = _chapterSkipConfig.value ?: return
+      val skipConfig = _chapterSkipConfig.value
       if (!skipConfig.enabled) return
       if (_userSeekedManually) {
         if (trackIndex != previousIndex) {
@@ -628,22 +608,37 @@ class MediaRepository
       }
     }
 
-    suspend fun createBookmark() {
+    suspend fun createBookmark(title: String? = null) {
+      Timber.d("Creating bookmark for ${_playingBook.value?.id} at position=${_totalPosition.value.toInt()}s")
       val playingBook = _playingBook.value ?: return
-      val chapterPosition = _currentChapterPosition.value ?: return
-      val totalPosition = _totalPosition.value ?: return
+      val totalPosition = _totalPosition.value
+
+      val chapterIndex = calculateChapterIndex(playingBook, totalPosition)
+      if (chapterIndex !in playingBook.chapters.indices) {
+        Timber.w("Unable to create bookmark: chapter index $chapterIndex out of bounds")
+        return
+      }
+      val currentChapter = playingBook.chapters[chapterIndex].title
+      val chapterPosition = _currentChapterPosition.value
+
+      val bookmarkTitle =
+        when (title) {
+          null -> buildBookmarkTitle(currentChapter, chapterPosition)
+          else -> title
+        }
 
       mediaChannel
         .createBookmark(
           libraryItemId = playingBook.id,
-          chapterPosition = chapterPosition,
           totalPosition = totalPosition,
+          title = bookmarkTitle,
         )
 
       _bookmarks.value = mediaChannel.provideBookmarks(playingBook.id)
     }
 
     suspend fun dropBookmark(bookmark: Bookmark) {
+      Timber.d("Dropping bookmark for ${bookmark.libraryItemId} at position=${bookmark.totalPosition.toInt()}s")
       mediaChannel.dropBookmark(bookmark = bookmark)
 
       _bookmarks.value = mediaChannel.provideBookmarks(bookmark.libraryItemId)
@@ -656,27 +651,18 @@ class MediaRepository
       _bookmarks.value = bookmarks
     }
 
+    private fun withMain(action: () -> Unit) {
+      when (Looper.myLooper() == Looper.getMainLooper()) {
+        true -> action()
+        false -> handler.post(action)
+      }
+    }
+
     private companion object {
       private const val CURRENT_TRACK_REPLAY_THRESHOLD = 5
+      private const val PROGRESS_UPDATE_INTERVAL_MS = 500L
 
-      private fun getSeekTime(option: SeekTimeOption?): Long =
-        when (option) {
-          SeekTimeOption.SEEK_5 -> 5L
-          SeekTimeOption.SEEK_10 -> 10L
-          SeekTimeOption.SEEK_15 -> 15L
-          SeekTimeOption.SEEK_30 -> 30L
-          SeekTimeOption.SEEK_60 -> 60L
-          else -> 30L
-        }
-
-      private fun inBackground(): Boolean =
-        ProcessLifecycleOwner
-          .get()
-          .lifecycle
-          .currentState
-          .isAtMost(Lifecycle.State.STARTED)
-
-      private fun Lifecycle.State.isAtMost(state: Lifecycle.State) = this <= state
+      private fun getSeekTime(seconds: Int?): Long = seconds?.toLong() ?: 30L
     }
 
     fun updateChapterSkipConfig(
@@ -684,7 +670,7 @@ class MediaRepository
       config: ChapterSkipConfig,
     ) {
       preferences.saveChapterSkipConfig(bookId, config)
-      _chapterSkipConfig.postValue(config)
+      _chapterSkipConfig.value = config
     }
   }
 

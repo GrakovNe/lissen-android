@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,8 +41,9 @@ fun CommonSettingsItemComposable(
 ) {
   var activeItem by remember { mutableStateOf(selectedItem) }
 
-  ModalBottomSheet(
+  LissenModalBottomSheet(
     containerColor = MaterialTheme.colorScheme.background,
+    scrollable = false,
     onDismissRequest = onDismissRequest,
     content = {
       Column(
@@ -60,14 +62,37 @@ fun CommonSettingsItemComposable(
                 item.icon?.let {
                   Icon(
                     imageVector = it,
-                    contentDescription = "Settings Item Icon",
+                    contentDescription = null,
                     modifier = Modifier.size(24.dp),
                   )
                 }
               },
               headlineContent = {
-                Row { Text(item.name) }
+                Row {
+                  Text(
+                    text = item.name,
+                    color =
+                      when (item.enabled) {
+                        true -> MaterialTheme.colorScheme.onSurface
+                        false -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
+                      },
+                  )
+                }
               },
+              supportingContent =
+                item.description?.let {
+                  {
+                    Text(
+                      text = it,
+                      style = MaterialTheme.typography.bodyMedium,
+                      color =
+                        when (item.enabled) {
+                          true -> MaterialTheme.colorScheme.onSurfaceVariant
+                          false -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
+                        },
+                    )
+                  }
+                },
               trailingContent = {
                 if (item.id == activeItem?.id) {
                   Icon(
@@ -81,6 +106,7 @@ fun CommonSettingsItemComposable(
                 Modifier
                   .fillMaxWidth()
                   .clickable(
+                    enabled = item.enabled,
                     indication = null,
                     interactionSource = remember { MutableInteractionSource() },
                   ) {

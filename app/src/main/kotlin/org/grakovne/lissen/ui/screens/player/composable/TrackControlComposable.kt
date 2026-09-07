@@ -24,8 +24,8 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,10 +33,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
+import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
-import org.grakovne.lissen.lib.domain.SeekTime
 import org.grakovne.lissen.ui.extensions.formatTime
+import org.grakovne.lissen.ui.extensions.spokenDuration
 import org.grakovne.lissen.ui.screens.player.composable.common.provideForwardIcon
 import org.grakovne.lissen.ui.screens.player.composable.common.provideReplayIcon
 import org.grakovne.lissen.viewmodel.PlayerViewModel
@@ -48,14 +55,14 @@ fun TrackControlComposable(
   settingsViewModel: SettingsViewModel,
   modifier: Modifier = Modifier,
 ) {
-  val isPlaying by viewModel.isPlaying.observeAsState(false)
-  val currentTrackIndex by viewModel.currentChapterIndex.observeAsState(0)
-  val currentTrackPosition by viewModel.currentChapterPosition.observeAsState(0.0)
-  val currentTrackDuration by viewModel.currentChapterDuration.observeAsState(0.0)
+  val isPlaying by viewModel.isPlaying.collectAsState()
+  val currentTrackIndex by viewModel.currentChapterIndex.collectAsState()
+  val currentTrackPosition by viewModel.currentChapterPosition.collectAsState()
+  val currentTrackDuration by viewModel.currentChapterDuration.collectAsState()
 
-  val seekTime by settingsViewModel.seekTime.observeAsState(SeekTime.Default)
+  val seekTime by settingsViewModel.seekTime.collectAsState()
 
-  val book by viewModel.book.observeAsState()
+  val book by viewModel.book.collectAsState()
   val chapters = book?.chapters ?: emptyList()
 
   val view: View = LocalView.current
@@ -72,9 +79,18 @@ fun TrackControlComposable(
   Column(
     modifier =
       modifier
+        .testTag("trackControls")
         .fillMaxWidth()
         .padding(horizontal = 12.dp),
   ) {
+    val positionLabel = stringResource(R.string.a11y_playback_position)
+    val spokenPosition =
+      stringResource(
+        R.string.a11y_position_of,
+        spokenDuration(sliderPosition.toInt()),
+        spokenDuration(currentTrackDuration.toInt()),
+      )
+
     Column(
       modifier = Modifier.fillMaxWidth(),
     ) {
@@ -94,7 +110,13 @@ fun TrackControlComposable(
             thumbColor = colorScheme.primary,
             activeTrackColor = colorScheme.primary,
           ),
-        modifier = Modifier.fillMaxWidth(),
+        modifier =
+          Modifier
+            .fillMaxWidth()
+            .semantics {
+              contentDescription = positionLabel
+              stateDescription = spokenPosition
+            },
       )
     }
 
@@ -114,6 +136,7 @@ fun TrackControlComposable(
             text = sliderPosition.toInt().formatTime(true),
             style = typography.bodySmall,
             color = colorScheme.onBackground.copy(alpha = 0.6f),
+            modifier = Modifier.clearAndSetSemantics {},
           )
           Text(
             text =
@@ -122,6 +145,7 @@ fun TrackControlComposable(
                 .formatTime(true),
             style = typography.bodySmall,
             color = colorScheme.onBackground.copy(alpha = 0.6f),
+            modifier = Modifier.clearAndSetSemantics {},
           )
         }
       }
@@ -143,7 +167,7 @@ fun TrackControlComposable(
         ) {
           Icon(
             imageVector = Icons.Rounded.SkipPrevious,
-            contentDescription = "Previous Track",
+            contentDescription = stringResource(R.string.a11y_previous_track),
             tint = colorScheme.onBackground,
             modifier = Modifier.size(36.dp),
           )
@@ -154,7 +178,7 @@ fun TrackControlComposable(
         ) {
           Icon(
             imageVector = provideReplayIcon(seekTime),
-            contentDescription = "Rewind",
+            contentDescription = stringResource(R.string.a11y_rewind_seconds, seekTime.rewind),
             tint = colorScheme.onBackground,
             modifier = Modifier.size(48.dp),
           )
@@ -166,7 +190,7 @@ fun TrackControlComposable(
         ) {
           Icon(
             imageVector = if (isPlaying) Icons.Rounded.PauseCircleFilled else Icons.Rounded.PlayCircleFilled,
-            contentDescription = "Play / Pause",
+            contentDescription = if (isPlaying) stringResource(R.string.a11y_pause) else stringResource(R.string.a11y_play),
             tint = colorScheme.primary,
             modifier = Modifier.fillMaxSize(),
           )
@@ -177,7 +201,7 @@ fun TrackControlComposable(
         ) {
           Icon(
             imageVector = provideForwardIcon(seekTime),
-            contentDescription = "Forward",
+            contentDescription = stringResource(R.string.a11y_fast_forward_seconds, seekTime.forward),
             tint = colorScheme.onBackground,
             modifier = Modifier.size(48.dp),
           )
@@ -193,7 +217,7 @@ fun TrackControlComposable(
         ) {
           Icon(
             imageVector = Icons.Rounded.SkipNext,
-            contentDescription = "Next Track",
+            contentDescription = stringResource(R.string.a11y_next_track),
             tint =
               if (currentTrackIndex < chapters.size - 1) {
                 colorScheme.onBackground

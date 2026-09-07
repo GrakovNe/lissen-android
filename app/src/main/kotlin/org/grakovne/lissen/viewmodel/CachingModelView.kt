@@ -2,8 +2,6 @@ package org.grakovne.lissen.viewmodel
 
 import android.content.Context
 import android.content.Intent
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -16,21 +14,27 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.cache.persistent.CacheState
+import org.grakovne.lissen.content.cache.persistent.CachingSessionRegistry
 import org.grakovne.lissen.content.cache.persistent.ContentCachingManager
 import org.grakovne.lissen.content.cache.persistent.ContentCachingProgress
 import org.grakovne.lissen.content.cache.persistent.ContentCachingService
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
-import org.grakovne.lissen.lib.domain.CacheStatus
-import org.grakovne.lissen.lib.domain.ContentCachingTask
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.DownloadOption
-import org.grakovne.lissen.lib.domain.PlayingChapter
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.content.cache.temporary.SeriesCoverProvider
+import org.grakovne.lissen.domain.CacheStatus
+import org.grakovne.lissen.domain.ContentCachingTask
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.DownloadOption
+import org.grakovne.lissen.domain.PlayingChapter
+import org.grakovne.lissen.persistence.preferences.DownloadPreferences
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.ui.screens.settings.advanced.cache.CachedItemsPageSource
+import timber.log.Timber
 import java.io.Serializable
 import javax.inject.Inject
 
@@ -38,17 +42,20 @@ import javax.inject.Inject
 class CachingModelView
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val localCacheRepository: LocalCacheRepository,
     private val contentCachingProgress: ContentCachingProgress,
     private val contentCachingManager: ContentCachingManager,
-    private val preferences: LissenSharedPreferences,
+    private val cachingSessionRegistry: CachingSessionRegistry,
+    private val libraryPreferences: LibraryPreferences,
+    private val downloadPreferences: DownloadPreferences,
     private val cachedCoverProvider: CachedCoverProvider,
+    private val seriesCoverProvider: SeriesCoverProvider,
   ) : ViewModel() {
-    private val _totalCount = MutableLiveData<Int>()
-    val totalCount: LiveData<Int> = _totalCount
+    private val _totalCount = MutableStateFlow(0)
+    val totalCount: StateFlow<Int> = _totalCount.asStateFlow()
 
-    val forceCache = preferences.forceCacheFlow
+    val forceCache = libraryPreferences.forceCacheFlow
 
     private val _bookCachingProgress = mutableMapOf<String, MutableStateFlow<CacheState>>()
 
@@ -64,7 +71,7 @@ class CachingModelView
       Pager(
         config = pageConfig,
         pagingSourceFactory = {
-          val source = CachedItemsPageSource(localCacheRepository) { _totalCount.postValue(it) }
+          val source = CachedItemsPageSource(localCacheRepository) { _totalCount.value = it }
 
           pageSource = source
           source
@@ -74,9 +81,9 @@ class CachingModelView
 
     init {
       viewModelScope.launch {
-        contentCachingProgress.statusFlow.collect { (item, progress) ->
+        contentCachingProgress.statusFlow.collect { (itemId, progress) ->
           val flow =
-            _bookCachingProgress.getOrPut(item.id) {
+            _bookCachingProgress.getOrPut(itemId) {
               MutableStateFlow(progress)
             }
           flow.value = progress
@@ -87,6 +94,7 @@ class CachingModelView
     suspend fun clearShortTermCache() {
       withContext(Dispatchers.IO) {
         cachedCoverProvider.clearCache()
+        seriesCoverProvider.clearCache()
       }
     }
 
@@ -95,9 +103,10 @@ class CachingModelView
       currentPosition: Double,
       option: DownloadOption,
     ) {
+      Timber.d("User action: cache ${mediaItem.id}, option=$option, position=${currentPosition.toInt()}s")
       val task =
         ContentCachingTask(
-          item = mediaItem,
+          itemId = mediaItem.id,
           options = option,
           currentPosition = currentPosition,
         )
@@ -108,7 +117,11 @@ class CachingModelView
           putExtra(ContentCachingService.CACHING_TASK_EXTRA, task as Serializable)
         }
 
-      context.startForegroundService(intent)
+      if (ContentCachingService.requestStart(context, intent).not()) {
+        viewModelScope.launch {
+          contentCachingProgress.emit(task.itemId, CacheState(CacheStatus.Error))
+        }
+      }
     }
 
     fun getProgress(bookId: String) =
@@ -116,41 +129,50 @@ class CachingModelView
         .getOrPut(bookId) { MutableStateFlow(CacheState(CacheStatus.Idle)) }
 
     suspend fun dropCache(bookId: String) {
+      Timber.d("User action: dropCache $bookId")
       contentCachingManager.dropCache(bookId)
     }
 
     fun stopCaching(item: DetailedItem) {
-      val intent =
-        Intent(context, ContentCachingService::class.java).apply {
-          action = ContentCachingService.STOP_CACHING_ACTION
-          putExtra(ContentCachingService.CACHING_PLAYING_ITEM, item as Serializable)
-        }
+      Timber.d("User action: stopCaching ${item.id}")
 
-      context.startForegroundService(intent)
+      cachingSessionRegistry.cancel(item.id)
+
+      viewModelScope.launch {
+        contentCachingProgress.emit(item.id, CacheState(CacheStatus.Idle))
+      }
     }
 
     suspend fun dropCache(
       item: DetailedItem,
       chapter: PlayingChapter,
     ) {
+      Timber.d("User action: dropCache ${item.id}, chapter=${chapter.id}")
       contentCachingManager.dropCache(item, chapter)
     }
 
     fun toggleCacheForce() {
+      Timber.d("User action: toggleCacheForce (current=${localCacheUsing()})")
       when (localCacheUsing()) {
-        true -> preferences.disableForceCache()
-        false -> preferences.enableForceCache()
+        true -> libraryPreferences.disableForceCache()
+        false -> libraryPreferences.enableForceCache()
       }
     }
 
-    fun localCacheUsing() = preferences.isForceCache()
+    fun localCacheUsing() = libraryPreferences.isForceCache()
 
-    fun provideCacheState(bookId: String): LiveData<Boolean> = contentCachingManager.hasMetadataCached(bookId)
+    fun getDownloadChaptersCount() = downloadPreferences.getDownloadChaptersCount()
+
+    fun saveDownloadChaptersCount(count: Int) = downloadPreferences.saveDownloadChaptersCount(count)
+
+    fun provideCacheState(bookId: String): Flow<Boolean> = contentCachingManager.hasMetadataCached(bookId)
 
     fun provideCacheState(
       bookId: String,
       chapterId: String,
-    ): LiveData<Boolean> = contentCachingManager.hasMetadataCached(bookId, chapterId)
+    ): Flow<Boolean> = contentCachingManager.hasMetadataCached(bookId, chapterId)
+
+    fun provideCachedChapterIds(bookId: String): Flow<List<String>> = contentCachingManager.provideCachedChapterIds(bookId)
 
     fun fetchCachedItems() {
       viewModelScope.launch {

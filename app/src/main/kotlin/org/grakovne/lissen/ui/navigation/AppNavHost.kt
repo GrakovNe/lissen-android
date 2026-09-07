@@ -11,8 +11,6 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -22,158 +20,146 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import coil3.ImageLoader
 import org.grakovne.lissen.common.NetworkService
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
+import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.grakovne.lissen.ui.screens.library.LibraryScreen
 import org.grakovne.lissen.ui.screens.login.LoginScreen
 import org.grakovne.lissen.ui.screens.player.PlayerScreen
 import org.grakovne.lissen.ui.screens.settings.SettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.AdvancedSettingsComposable
+import org.grakovne.lissen.ui.screens.settings.advanced.AppearancePreferencesScreen
+import org.grakovne.lissen.ui.screens.settings.advanced.ClientCertificateSettingsScreen
+import org.grakovne.lissen.ui.screens.settings.advanced.ConfigBackupSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.ConnectionSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.CustomHeadersSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.LocalUrlSettingsScreen
+import org.grakovne.lissen.ui.screens.settings.advanced.PlaybackPreferencesScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.SeekSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.cache.CacheSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.cache.CachedItemsSettingsScreen
 
-@Composable
+private val enterTransition: EnterTransition =
+  slideInHorizontally(initialOffsetX = { it }, animationSpec = tween()) +
+    fadeIn(animationSpec = tween())
+
+private val exitTransition: ExitTransition =
+  slideOutHorizontally(targetOffsetX = { -it }, animationSpec = tween()) +
+    fadeOut(animationSpec = tween())
+
+private val popEnterTransition: EnterTransition =
+  slideInHorizontally(initialOffsetX = { -it }, animationSpec = tween()) +
+    fadeIn(animationSpec = tween())
+
+private val popExitTransition: ExitTransition =
+  slideOutHorizontally(targetOffsetX = { it }, animationSpec = tween()) +
+    fadeOut(animationSpec = tween())
+
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@Composable
 fun AppNavHost(
   navController: NavHostController,
-  preferences: LissenSharedPreferences,
+  playbackPreferences: PlaybackPreferences,
+  sessionPreferences: SessionPreferences,
   networkService: NetworkService,
   navigationService: AppNavigationService,
   imageLoader: ImageLoader,
   appLaunchAction: AppLaunchAction,
 ) {
-  val hasCredentials by remember {
-    mutableStateOf(
-      preferences.hasCredentials(),
-    )
-  }
-
-  val book = preferences.getPlayingItem()
-
+  // Only consumed once, when the graph is first laid out, so resolve it a single time rather
+  // than re-reading preferences on every recomposition.
   val startDestination =
-    when {
-      appLaunchAction == AppLaunchAction.MANAGE_DOWNLOADS -> {
-        "$ROUTE_SETTINGS/cached_items"
-      }
+    remember {
+      val book = playbackPreferences.getPlayingItem()
 
-      hasCredentials.not() -> {
-        ROUTE_LOGIN
-      }
+      when {
+        sessionPreferences.hasCredentials().not() -> {
+          ROUTE_LOGIN
+        }
 
-      appLaunchAction == AppLaunchAction.CONTINUE_PLAYBACK && book != null -> {
-        "$ROUTE_PLAYER/${book.id}?bookTitle=${book.title}&bookSubtitle=${book.subtitle}&startInstantly=true"
-      }
+        appLaunchAction == AppLaunchAction.MANAGE_DOWNLOADS -> {
+          ROUTE_SETTINGS_CACHED_ITEMS
+        }
 
-      else -> {
-        ROUTE_LIBRARY
+        appLaunchAction == AppLaunchAction.CONTINUE_PLAYBACK && book != null -> {
+          playerRoute(book.id, book.title, book.subtitle, startInstantly = true)
+        }
+
+        else -> {
+          ROUTE_LIBRARY
+        }
       }
     }
-
-  val enterTransition: EnterTransition =
-    slideInHorizontally(
-      initialOffsetX = { it },
-      animationSpec = tween(),
-    ) + fadeIn(animationSpec = tween())
-
-  val exitTransition: ExitTransition =
-    slideOutHorizontally(
-      targetOffsetX = { -it },
-      animationSpec = tween(),
-    ) + fadeOut(animationSpec = tween())
-
-  val popEnterTransition: EnterTransition =
-    slideInHorizontally(
-      initialOffsetX = { -it },
-      animationSpec = tween(),
-    ) + fadeIn(animationSpec = tween())
-
-  val popExitTransition: ExitTransition =
-    slideOutHorizontally(
-      targetOffsetX = { it },
-      animationSpec = tween(),
-    ) + fadeOut(animationSpec = tween())
 
   Scaffold(modifier = Modifier.fillMaxSize()) { _ ->
     NavHost(
       navController = navController,
       startDestination = startDestination,
+      modifier = Modifier.fillMaxSize(),
+      enterTransition = { enterTransition },
+      exitTransition = { exitTransition },
+      popEnterTransition = { popEnterTransition },
+      popExitTransition = { popExitTransition },
+      predictivePopEnterTransition = { _ -> popEnterTransition },
+      predictivePopExitTransition = { _ -> popExitTransition },
     ) {
-      composable(
-        route = "settings_screen/cached_items",
-        enterTransition = { enterTransition },
-        exitTransition = { exitTransition },
-        popEnterTransition = { popEnterTransition },
-        popExitTransition = { popExitTransition },
-      ) {
+      composable(route = ROUTE_SETTINGS_CACHED_ITEMS) {
         CachedItemsSettingsScreen(
-          onBack = {
-            if (navController.previousBackStackEntry != null) {
-              navController.popBackStack()
-            }
-          },
+          onBack = navigationService::goBack,
           imageLoader = imageLoader,
         )
       }
-      composable(
-        route = "settings_screen/cache_settings",
-        enterTransition = { enterTransition },
-        exitTransition = { exitTransition },
-        popEnterTransition = { popEnterTransition },
-        popExitTransition = { popExitTransition },
-      ) {
+
+      composable(route = ROUTE_SETTINGS_CACHE) {
         CacheSettingsScreen(
           navController = navigationService,
-          onBack = {
-            if (navController.previousBackStackEntry != null) {
-              navController.popBackStack()
-            }
-          },
-        )
-      }
-      composable(
-        route = "library_screen",
-        enterTransition = { enterTransition },
-        exitTransition = { exitTransition },
-        popEnterTransition = { popEnterTransition },
-        popExitTransition = { popExitTransition },
-      ) {
-        LibraryScreen(
-          navController = navigationService,
-          imageLoader = imageLoader,
-          networkService = networkService,
+          onBack = navigationService::goBack,
         )
       }
 
       composable(
-        route = "player_screen/{bookId}?bookTitle={bookTitle}&bookSubtitle={bookSubtitle}&startInstantly={startInstantly}",
+        route = ROUTE_LIBRARY_PATTERN,
         arguments =
           listOf(
-            navArgument("bookId") { type = NavType.StringType },
-            navArgument("bookTitle") {
+            navArgument(ARG_LINKED_SEARCH_TOKEN) {
               type = NavType.StringType
               nullable = true
             },
-            navArgument("bookSubtitle") {
+          ),
+      ) { backStackEntry ->
+        // The Navigation component already URL-decodes argument values, so read them as-is.
+        val linkedSearchToken = backStackEntry.arguments?.getString(ARG_LINKED_SEARCH_TOKEN)
+
+        LibraryScreen(
+          navController = navigationService,
+          imageLoader = imageLoader,
+          networkService = networkService,
+          linkedSearchToken = linkedSearchToken,
+        )
+      }
+
+      composable(
+        route = ROUTE_PLAYER_PATTERN,
+        arguments =
+          listOf(
+            navArgument(ARG_BOOK_ID) { type = NavType.StringType },
+            navArgument(ARG_BOOK_TITLE) {
               type = NavType.StringType
               nullable = true
             },
-            navArgument("startInstantly") {
+            navArgument(ARG_BOOK_SUBTITLE) {
+              type = NavType.StringType
+              nullable = true
+            },
+            navArgument(ARG_START_INSTANTLY) {
               type = NavType.BoolType
               nullable = false
             },
           ),
-        enterTransition = { enterTransition },
-        exitTransition = { exitTransition },
-        popEnterTransition = { popEnterTransition },
-        popExitTransition = { popExitTransition },
       ) { navigationStack ->
-        val bookId = navigationStack.arguments?.getString("bookId") ?: return@composable
-        val bookTitle = navigationStack.arguments?.getString("bookTitle") ?: ""
-        val bookSubtitle = navigationStack.arguments?.getString("bookSubtitle")
-        val startInstantly = navigationStack.arguments?.getBoolean("startInstantly")
+        val bookId = navigationStack.arguments?.getString(ARG_BOOK_ID) ?: return@composable
+        val bookTitle = navigationStack.arguments?.getString(ARG_BOOK_TITLE) ?: ""
+        val bookSubtitle = navigationStack.arguments?.getString(ARG_BOOK_SUBTITLE)
+        val startInstantly = navigationStack.arguments?.getBoolean(ARG_START_INSTANTLY) ?: false
 
         PlayerScreen(
           navController = navigationService,
@@ -181,117 +167,64 @@ fun AppNavHost(
           bookId = bookId,
           bookTitle = bookTitle,
           bookSubtitle = bookSubtitle,
-          playInstantly = startInstantly ?: false,
+          playInstantly = startInstantly,
         )
       }
 
-      composable(
-        route = "login_screen",
-        enterTransition = { enterTransition },
-        exitTransition = { exitTransition },
-        popEnterTransition = { popEnterTransition },
-        popExitTransition = { popExitTransition },
-      ) {
+      composable(route = ROUTE_LOGIN) {
         LoginScreen(navigationService)
       }
 
-      composable(
-        route = "settings_screen",
-        enterTransition = { enterTransition },
-        exitTransition = { exitTransition },
-        popEnterTransition = { popEnterTransition },
-        popExitTransition = { popExitTransition },
-      ) {
+      composable(route = ROUTE_SETTINGS) {
         SettingsScreen(
-          onBack = {
-            if (navController.previousBackStackEntry != null) {
-              navController.popBackStack()
-            }
-          },
+          onBack = navigationService::goBack,
           navController = navigationService,
         )
       }
 
-      composable(
-        route = "settings_screen/local_url",
-        enterTransition = { enterTransition },
-        exitTransition = { exitTransition },
-        popEnterTransition = { popEnterTransition },
-        popExitTransition = { popExitTransition },
-      ) {
-        LocalUrlSettingsScreen(
-          onBack = {
-            if (navController.previousBackStackEntry != null) {
-              navController.popBackStack()
-            }
-          },
-        )
+      composable(route = ROUTE_SETTINGS_LOCAL_URL) {
+        LocalUrlSettingsScreen(onBack = navigationService::goBack)
       }
 
-      composable(
-        route = "settings_screen/custom_headers",
-        enterTransition = { enterTransition },
-        exitTransition = { exitTransition },
-        popEnterTransition = { popEnterTransition },
-        popExitTransition = { popExitTransition },
-      ) {
-        CustomHeadersSettingsScreen(
-          onBack = {
-            if (navController.previousBackStackEntry != null) {
-              navController.popBackStack()
-            }
-          },
-        )
+      composable(route = ROUTE_SETTINGS_CUSTOM_HEADERS) {
+        CustomHeadersSettingsScreen(onBack = navigationService::goBack)
       }
 
-      composable(
-        route = "settings_screen/connection_settings",
-        enterTransition = { enterTransition },
-        exitTransition = { exitTransition },
-        popEnterTransition = { popEnterTransition },
-        popExitTransition = { popExitTransition },
-      ) {
+      composable(route = ROUTE_SETTINGS_CLIENT_CERTIFICATE) {
+        ClientCertificateSettingsScreen(onBack = navigationService::goBack)
+      }
+
+      composable(route = ROUTE_SETTINGS_CONNECTION) {
         ConnectionSettingsScreen(
           navController = navigationService,
-          onBack = {
-            if (navController.previousBackStackEntry != null) {
-              navController.popBackStack()
-            }
-          },
+          onBack = navigationService::goBack,
         )
       }
 
-      composable(
-        route = "settings_screen/advanced_settings",
-        enterTransition = { enterTransition },
-        exitTransition = { exitTransition },
-        popEnterTransition = { popEnterTransition },
-        popExitTransition = { popExitTransition },
-      ) {
+      composable(route = ROUTE_SETTINGS_ADVANCED) {
         AdvancedSettingsComposable(
+          onBack = navigationService::goBack,
           navController = navigationService,
-          onBack = {
-            if (navController.previousBackStackEntry != null) {
-              navController.popBackStack()
-            }
-          },
         )
       }
 
-      composable(
-        route = "settings_screen/seek_settings",
-        enterTransition = { enterTransition },
-        exitTransition = { exitTransition },
-        popEnterTransition = { popEnterTransition },
-        popExitTransition = { popExitTransition },
-      ) {
-        SeekSettingsScreen(
-          onBack = {
-            if (navController.previousBackStackEntry != null) {
-              navController.popBackStack()
-            }
-          },
+      composable(route = ROUTE_SETTINGS_CONFIG_BACKUP) {
+        ConfigBackupSettingsScreen(onBack = navigationService::goBack)
+      }
+
+      composable(route = ROUTE_SETTINGS_SEEK) {
+        SeekSettingsScreen(onBack = navigationService::goBack)
+      }
+
+      composable(route = ROUTE_SETTINGS_PLAYBACK) {
+        PlaybackPreferencesScreen(
+          navController = navigationService,
+          onBack = navigationService::goBack,
         )
+      }
+
+      composable(route = ROUTE_SETTINGS_APPEARANCE) {
+        AppearancePreferencesScreen(onBack = navigationService::goBack)
       }
     }
   }

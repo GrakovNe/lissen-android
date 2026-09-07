@@ -55,7 +55,7 @@ data class LibraryAuthorResponse(
 data class BookAudioFileResponse(
   val index: Int,
   val ino: String,
-  val duration: Double,
+  val duration: Double?,
   val metadata: AudioFileMetadata,
   val metaTags: AudioFileTag?,
   val mimeType: String,

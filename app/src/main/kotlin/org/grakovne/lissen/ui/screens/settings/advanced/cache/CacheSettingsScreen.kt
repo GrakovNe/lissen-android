@@ -20,17 +20,20 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.settings.advanced.AdvancedSettingsNavigationItemComposable
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
+import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
@@ -40,28 +43,14 @@ fun CacheSettingsScreen(
   navController: AppNavigationService,
   viewModel: SettingsViewModel = hiltViewModel(),
 ) {
-  val preferredDownloadOption by viewModel.preferredAutoDownloadOption.observeAsState()
-  val autoDownloadDelayed by viewModel.autoDownloadDelayed.observeAsState(true)
+  val preferredDownloadOption by viewModel.preferredAutoDownloadOption.collectAsState()
+  val autoDownloadDelayed by viewModel.autoDownloadDelayed.collectAsState()
 
   Scaffold(
     topBar = {
-      TopAppBar(
-        title = {
-          Text(
-            text = stringResource(R.string.download_settings_title),
-            style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-            color = colorScheme.onSurface,
-          )
-        },
-        navigationIcon = {
-          IconButton(onClick = { onBack() }) {
-            Icon(
-              imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-              contentDescription = "Back",
-              tint = colorScheme.onSurface,
-            )
-          }
-        },
+      SettingsTopAppBar(
+        title = stringResource(R.string.download_settings_title),
+        onBack = onBack,
       )
     },
     modifier =
@@ -81,6 +70,7 @@ fun CacheSettingsScreen(
           modifier =
             Modifier
               .fillMaxWidth()
+              .weight(1f)
               .verticalScroll(rememberScrollState()),
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
@@ -102,6 +92,8 @@ fun CacheSettingsScreen(
             description = stringResource(R.string.settings_screen_cached_items_hint),
             onclick = { navController.showCachedItemsSettings() },
           )
+
+          DownloadStorageSettingsComposable(viewModel)
         }
       }
     },

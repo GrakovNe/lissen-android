@@ -12,6 +12,7 @@ data class AuthData(
   }
 }
 
+@Keep
 enum class AuthMethod {
   CREDENTIALS,
   O_AUTH,

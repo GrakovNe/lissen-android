@@ -1,7 +1,7 @@
 package org.grakovne.lissen.content.cache.persistent.converter
 
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
-import org.grakovne.lissen.lib.domain.MediaProgress
+import org.grakovne.lissen.domain.MediaProgress
 import javax.inject.Inject
 import javax.inject.Singleton
 

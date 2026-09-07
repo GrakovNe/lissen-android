@@ -38,10 +38,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -55,6 +55,9 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -68,12 +71,14 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.PlayingChapter
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
-import org.grakovne.lissen.ui.components.BookCoverFetcher.Companion.LocalOnlyKey
+import org.grakovne.lissen.ui.components.BookCoverKey
+import org.grakovne.lissen.ui.components.ImageFetcher.Companion.LocalOnlyKey
 import org.grakovne.lissen.ui.components.withScrollbar
 import org.grakovne.lissen.ui.extensions.withMinimumTime
+import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
 import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
@@ -123,23 +128,9 @@ fun CachedItemsSettingsScreen(
 
   Scaffold(
     topBar = {
-      TopAppBar(
-        title = {
-          Text(
-            text = stringResource(R.string.settings_screen_cached_items_title),
-            style = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
-            color = colorScheme.onSurface,
-          )
-        },
-        navigationIcon = {
-          IconButton(onClick = { onBack() }) {
-            Icon(
-              imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-              contentDescription = "Back",
-              tint = colorScheme.onSurface,
-            )
-          }
-        },
+      SettingsTopAppBar(
+        title = stringResource(R.string.settings_screen_cached_items_title),
+        onBack = onBack,
       )
     },
   ) { innerPadding ->
@@ -186,7 +177,7 @@ private fun CachedItemsComposable(
   onItemRemoved: () -> Unit,
 ) {
   val state = rememberLazyListState()
-  val itemsCount by viewModel.totalCount.observeAsState()
+  val itemsCount by viewModel.totalCount.collectAsState()
 
   val showScrollbar by remember {
     derivedStateOf {
@@ -239,7 +230,7 @@ private fun CachedItemComposable(
     remember(book.id) {
       ImageRequest
         .Builder(context)
-        .data(book.id)
+        .data(BookCoverKey(book.id))
         .apply { extras[LocalOnlyKey] = true }
         .build()
     }
@@ -248,7 +239,8 @@ private fun CachedItemComposable(
     modifier =
       Modifier
         .fillMaxWidth()
-        .clickable { expanded = expanded.not() }
+        .semantics(mergeDescendants = true) {}
+        .clickable(role = Role.Button) { expanded = expanded.not() }
         .padding(horizontal = 16.dp, vertical = 8.dp),
   ) {
     Column {
@@ -256,7 +248,7 @@ private fun CachedItemComposable(
         AsyncShimmeringImage(
           imageRequest = imageRequest,
           imageLoader = imageLoader,
-          contentDescription = "${book.title} cover",
+          contentDescription = null,
           contentScale = ContentScale.FillBounds,
           modifier =
             Modifier

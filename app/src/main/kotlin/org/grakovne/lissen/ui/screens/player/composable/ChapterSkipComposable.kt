@@ -32,7 +32,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
-import org.grakovne.lissen.lib.domain.ChapterSkipConfig
+import org.grakovne.lissen.domain.ChapterSkipConfig
 import org.grakovne.lissen.ui.components.slider.ChapterSkipSlider
 
 private val PRESET_SECONDS = listOf(5, 10, 15, 30)

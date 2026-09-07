@@ -2,7 +2,10 @@ package org.grakovne.lissen.content.cache.persistent
 
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import org.grakovne.lissen.lib.domain.LibraryType
+import com.squareup.moshi.Types
+import org.grakovne.lissen.common.moshi
+import org.grakovne.lissen.content.cache.persistent.entity.BookAuthorDto
+import org.grakovne.lissen.domain.LibraryType
 
 val MIGRATION_1_2 =
   object : Migration(1, 2) {
@@ -166,10 +169,10 @@ val MIGRATION_9_10 =
 
 val MIGRATION_10_11 =
   object : Migration(10, 11) {
-    override fun migrate(database: SupportSQLiteDatabase) {
+    override fun migrate(db: SupportSQLiteDatabase) {
       val now = System.currentTimeMillis() / 1000
 
-      database.execSQL(
+      db.execSQL(
         """
         CREATE TABLE detailed_books_new (
             id TEXT NOT NULL PRIMARY KEY,
@@ -187,7 +190,7 @@ val MIGRATION_10_11 =
         """.trimIndent(),
       )
 
-      database.execSQL(
+      db.execSQL(
         """
         INSERT INTO detailed_books_new (
             id, title, author, duration, abstract, subtitle, year, libraryId, publisher, seriesJson, createdAt
@@ -198,17 +201,17 @@ val MIGRATION_10_11 =
         """.trimIndent(),
       )
 
-      database.execSQL("DROP TABLE detailed_books")
-      database.execSQL("ALTER TABLE detailed_books_new RENAME TO detailed_books")
+      db.execSQL("DROP TABLE detailed_books")
+      db.execSQL("ALTER TABLE detailed_books_new RENAME TO detailed_books")
     }
   }
 
 val MIGRATION_11_12 =
   object : Migration(11, 12) {
-    override fun migrate(database: SupportSQLiteDatabase) {
+    override fun migrate(db: SupportSQLiteDatabase) {
       val now = System.currentTimeMillis() / 1000
 
-      database.execSQL(
+      db.execSQL(
         """
         CREATE TABLE detailed_books_new (
             id TEXT NOT NULL PRIMARY KEY,
@@ -227,7 +230,7 @@ val MIGRATION_11_12 =
         """.trimIndent(),
       )
 
-      database.execSQL(
+      db.execSQL(
         """
         INSERT INTO detailed_books_new (
             id, title, author, duration, abstract, subtitle, year, libraryId, publisher, seriesJson, createdAt, updatedAt
@@ -238,8 +241,8 @@ val MIGRATION_11_12 =
         """.trimIndent(),
       )
 
-      database.execSQL("DROP TABLE detailed_books")
-      database.execSQL("ALTER TABLE detailed_books_new RENAME TO detailed_books")
+      db.execSQL("DROP TABLE detailed_books")
+      db.execSQL("ALTER TABLE detailed_books_new RENAME TO detailed_books")
     }
   }
 
@@ -325,5 +328,54 @@ val MIGRATION_17_18 =
   object : Migration(17, 18) {
     override fun migrate(db: SupportSQLiteDatabase) {
       db.execSQL("ALTER TABLE book_files ADD COLUMN size INTEGER NOT NULL DEFAULT 0")
+    }
+  }
+
+val MIGRATION_18_19 =
+  object : Migration(18, 19) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+      db.execSQL("ALTER TABLE detailed_books ADD COLUMN seriesId TEXT")
+    }
+  }
+
+val MIGRATION_19_20 =
+  object : Migration(19, 20) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+      db.execSQL("ALTER TABLE detailed_books ADD COLUMN authorsJson TEXT")
+
+      val type = Types.newParameterizedType(List::class.java, BookAuthorDto::class.java)
+      val adapter = moshi.adapter<List<BookAuthorDto>>(type)
+
+      db.query("SELECT id, author FROM detailed_books WHERE author IS NOT NULL AND author <> ''").use { cursor ->
+        val idIndex = cursor.getColumnIndexOrThrow("id")
+        val authorIndex = cursor.getColumnIndexOrThrow("author")
+
+        while (cursor.moveToNext()) {
+          val authors =
+            cursor
+              .getString(authorIndex)
+              .split(",")
+              .map { it.trim() }
+              .filter { it.isNotEmpty() }
+              .map { BookAuthorDto(id = "", name = it) }
+
+          if (authors.isEmpty()) {
+            continue
+          }
+
+          db.execSQL(
+            "UPDATE detailed_books SET authorsJson = ? WHERE id = ?",
+            arrayOf(adapter.toJson(authors), cursor.getString(idIndex)),
+          )
+        }
+      }
+    }
+  }
+
+val MIGRATION_20_21 =
+  object : Migration(20, 21) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+      db.execSQL("CREATE INDEX IF NOT EXISTS index_detailed_books_libraryId ON detailed_books(libraryId)")
+      db.execSQL("CREATE INDEX IF NOT EXISTS index_detailed_books_seriesId ON detailed_books(seriesId)")
     }
   }

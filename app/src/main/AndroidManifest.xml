@@ -9,9 +9,12 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission
+        android:name="android.permission.ACCESS_COARSE_LOCATION"
+        android:maxSdkVersion="32" />
 
     <application
         android:name=".LissenApplication"
@@ -37,12 +40,10 @@
             android:resource="@xml/automotive_app_desc" />
 
         <activity
-            android:screenOrientation="portrait"
             android:name=".ui.activity.AppActivity"
             android:exported="true"
             android:launchMode="singleTop"
-            android:theme="@style/Theme.Lissen"
-            tools:ignore="LockedOrientationActivity">
+            android:theme="@style/Theme.Lissen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -80,20 +81,27 @@
             <intent-filter>
                 <action android:name="androidx.media3.session.MediaSessionService" />
                 <action android:name="androidx.media3.session.MediaLibraryService" />
-                <action android:name="android.media.browse.MediaBrowserService"/>
-                <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH"/>
+                <action android:name="android.media.browse.MediaBrowserService" />
+                <action android:name="android.media.action.MEDIA_PLAY_FROM_SEARCH" />
             </intent-filter>
         </service>
+
+        <receiver
+            android:name=".playback.LissenMediaButtonReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MEDIA_BUTTON" />
+            </intent-filter>
+        </receiver>
 
         <service
             android:name=".content.cache.persistent.ContentCachingService"
             android:exported="false"
             android:foregroundServiceType="dataSync"
-            android:enabled="true"
-            android:permission="android.permission.FOREGROUND_SERVICE" />
+            android:enabled="true" />
 
         <receiver
-            android:name=".widget.PlayerWidgetReceiver"
+            android:name=".widget.state.PlayerStateWidgetReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -101,7 +109,19 @@
 
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/mini_player_widget_info" />
+                android:resource="@xml/player_state_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.cover.PlayerCoverWidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/player_cover_widget_info" />
         </receiver>
 
         <provider
@@ -112,6 +132,16 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
+        </provider>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/log_file_paths" />
         </provider>
 
     </application>

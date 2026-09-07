@@ -3,11 +3,12 @@ package org.grakovne.lissen.channel.audiobookshelf.library.converter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.BookResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryAuthorResponse
-import org.grakovne.lissen.lib.domain.BookFile
-import org.grakovne.lissen.lib.domain.BookSeries
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.MediaProgress
-import org.grakovne.lissen.lib.domain.PlayingChapter
+import org.grakovne.lissen.domain.BookAuthor
+import org.grakovne.lissen.domain.BookFile
+import org.grakovne.lissen.domain.BookSeries
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.MediaProgress
+import org.grakovne.lissen.domain.PlayingChapter
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -46,14 +47,14 @@ class BookResponseConverter
               PlayingChapter(
                 available = true,
                 start = accDuration,
-                end = accDuration + file.duration,
+                end = accDuration + (file.duration ?: 0.0),
                 title = file.metaTags?.tagTitle ?: file.metadata.filename.removeSuffix(file.metadata.ext),
-                duration = file.duration,
+                duration = file.duration ?: 0.0,
                 id = file.ino,
                 podcastEpisodeState = null,
               ),
             )
-            accDuration + file.duration to chapters
+            accDuration + (file.duration ?: 0.0) to chapters
           }?.second
           ?: emptyList()
       }
@@ -65,6 +66,10 @@ class BookResponseConverter
         author =
           item.media.metadata.authors
             ?.joinToString(", ", transform = LibraryAuthorResponse::name),
+        authors =
+          item.media.metadata.authors
+            ?.map { BookAuthor(id = it.id, name = it.name) }
+            ?: emptyList(),
         narrator =
           item.media.metadata.narrators
             ?.joinToString(separator = ", "),
@@ -80,7 +85,7 @@ class BookResponseConverter
                   it.metaTags
                     ?.tagTitle
                     ?: (it.metadata.filename.removeSuffix(it.metadata.ext)),
-                duration = it.duration,
+                duration = it.duration ?: 0.0,
                 mimeType = it.mimeType,
                 size = it.metadata.size,
               )
@@ -99,6 +104,7 @@ class BookResponseConverter
             .series
             ?.map {
               BookSeries(
+                id = it.id,
                 name = it.name,
                 serialNumber = it.sequence,
               )

@@ -7,6 +7,7 @@ import androidx.core.net.toUri
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.Call
@@ -32,8 +33,9 @@ import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.channel.common.createOkHttpClient
 import org.grakovne.lissen.channel.common.randomPkce
 import org.grakovne.lissen.common.moshi
-import org.grakovne.lissen.lib.domain.UserAccount
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.domain.UserAccount
+import org.grakovne.lissen.persistence.preferences.ConnectionPreferences
+import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import timber.log.Timber
 import java.io.IOException
 import javax.inject.Inject
@@ -43,18 +45,15 @@ import javax.inject.Singleton
 class AudiobookshelfAuthService
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val loginResponseConverter: LoginResponseConverter,
     private val requestHeadersProvider: RequestHeadersProvider,
-    private val preferences: LissenSharedPreferences,
+    private val session: SessionPreferences,
+    private val connection: ConnectionPreferences,
     private val contextCache: OAuthContextCache,
     private val authMethodResponseConverter: AuthMethodResponseConverter,
-  ) : ChannelAuthService(preferences) {
-    private val client =
-      createOkHttpClient(requestHeaders = preferences.getCustomHeaders(), preferences = preferences)
-        .newBuilder()
-        .followRedirects(false)
-        .build()
+  ) : ChannelAuthService(session) {
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override suspend fun authorize(
       host: String,
@@ -62,6 +61,7 @@ class AudiobookshelfAuthService
       password: String,
       onSuccess: suspend (UserAccount) -> Unit,
     ): OperationResult<UserAccount> {
+      Timber.d("Authorizing with credentials for $host")
       if (host.isBlank() || !urlPattern.matches(host)) {
         return OperationResult.Error(OperationError.InvalidCredentialsHost)
       }
@@ -72,19 +72,22 @@ class AudiobookshelfAuthService
         val apiClient =
           ApiClient(
             host = host,
-            preferences = preferences,
+            session = session,
+            connection = connection,
             requestHeaders = requestHeadersProvider.fetchRequestHeaders(),
+            context = context,
           )
 
         apiService = apiClient.retrofit
           ?.create(AudiobookshelfApiClient::class.java)
           ?: return OperationResult.Error(OperationError.InternalError)
       } catch (e: Exception) {
+        Timber.e("Unable to build API client for $host due to: ${e.message}")
         return OperationResult.Error(OperationError.InternalError)
       }
 
       val response: OperationResult<LoggedUserResponse> =
-        safeApiCall { apiService.login(CredentialsLoginRequest(username, password)) }
+        safeApiCall(connection) { apiService.login(CredentialsLoginRequest(username, password)) }
 
       return response
         .foldAsync(
@@ -99,6 +102,7 @@ class AudiobookshelfAuthService
     }
 
     override suspend fun fetchAuthMethods(host: String): OperationResult<AuthData> {
+      Timber.d("Fetching auth methods for $host")
       return withContext(Dispatchers.IO) {
         try {
           val url =
@@ -108,7 +112,13 @@ class AudiobookshelfAuthService
               .appendEncodedPath("status")
               .build()
 
-          val client = createOkHttpClient(requestHeaders = preferences.getCustomHeaders(), preferences = preferences)
+          val client =
+            createOkHttpClient(
+              requestHeaders = connection.getCustomHeaders(),
+              session = session,
+              connection = connection,
+              context = context,
+            )
           val request =
             Request
               .Builder()
@@ -132,6 +142,7 @@ class AudiobookshelfAuthService
           val converted = authMethodResponseConverter.apply(authMethod)
           OperationResult.Success(converted)
         } catch (e: Exception) {
+          Timber.w("Unable to fetch auth methods, falling back to empty due to: ${e.message}")
           OperationResult.Success(empty)
         }
       }
@@ -144,7 +155,7 @@ class AudiobookshelfAuthService
     ) {
       Timber.d("Starting OAuth flow for $host")
 
-      preferences.saveHost(host)
+      session.saveHost(host)
 
       val pkce = randomPkce()
       contextCache.storePkce(pkce)
@@ -169,7 +180,10 @@ class AudiobookshelfAuthService
           .get()
           .build()
 
-      client
+      createOkHttpClient(requestHeaders = connection.getCustomHeaders(), session = session, connection = connection, context = context)
+        .newBuilder()
+        .followRedirects(false)
+        .build()
         .newCall(request)
         .enqueue(
           object : Callback {
@@ -177,7 +191,7 @@ class AudiobookshelfAuthService
               call: Call,
               e: IOException,
             ) {
-              Timber.e("Failed OAuth flow due to: $e")
+              Timber.e(e, "OAuth flow failed for $host")
               onFailure(examineError(e.message ?: ""))
             }
 
@@ -185,29 +199,38 @@ class AudiobookshelfAuthService
               call: Call,
               response: Response,
             ) {
-              Timber.d("Got Redirect from ABS")
+              response.use {
+                Timber.d("OAuth redirect received from ABS: status=${response.code}")
 
-              if (response.code != 302) {
-                onFailure(examineError(response.body.string()))
-                return
-              }
+                if (response.code != 302) {
+                  val body =
+                    try {
+                      response.body.string()
+                    } catch (ex: IOException) {
+                      ex.message ?: ""
+                    }
+                  onFailure(examineError(body))
+                  return
+                }
 
-              val location =
-                response
-                  .header("Location")
-                  ?: kotlin.run {
-                    onFailure(examineError("invalid_redirect"))
-                    return
-                  }
+                val location =
+                  response
+                    .header("Location")
+                    ?: kotlin.run {
+                      onFailure(examineError("invalid_redirect"))
+                      return
+                    }
 
-              try {
-                val cookieHeaders: List<String> = response.headers("Set-Cookie")
-                contextCache.storeCookies(cookieHeaders)
+                try {
+                  val cookieHeaders: List<String> = response.headers("Set-Cookie")
+                  contextCache.storeCookies(cookieHeaders)
 
-                onSuccess()
-                forwardAuthRequest(location)
-              } catch (ex: Exception) {
-                onFailure(examineError(ex.message ?: ""))
+                  onSuccess()
+                  forwardAuthRequest(location)
+                } catch (ex: Exception) {
+                  Timber.e("Unable to process OAuth redirect due to: ${ex.message}")
+                  onFailure(examineError(ex.message ?: ""))
+                }
               }
             }
           },
@@ -242,7 +265,8 @@ class AudiobookshelfAuthService
           .appendQueryParameter("code_verifier", pkce.verifier)
           .build()
 
-      val client = createOkHttpClient(requestHeaders = preferences.getCustomHeaders(), preferences = preferences)
+      val client =
+        createOkHttpClient(requestHeaders = connection.getCustomHeaders(), session = session, connection = connection, context = context)
 
       val request =
         Request
@@ -259,7 +283,7 @@ class AudiobookshelfAuthService
               call: Call,
               e: IOException,
             ) {
-              Timber.e("Callback request failed: $e")
+              Timber.e(e, "OAuth callback request failed for $host")
               onFailure(e.message ?: "")
             }
 
@@ -278,14 +302,18 @@ class AudiobookshelfAuthService
                     .adapter(LoggedUserResponse::class.java)
                     .fromJson(raw)
                     ?.let { loginResponseConverter.apply(it) }
-                    ?: return
+                    ?: run {
+                      Timber.e("OAuth token exchange returned an empty or unparseable user payload for $host (status=${response.code})")
+                      onFailure("empty_user")
+                      return
+                    }
                 } catch (ex: Exception) {
                   Timber.e("Unable to get User data from response: $ex")
                   onFailure(ex.message ?: "")
                   return
                 }
 
-              CoroutineScope(Dispatchers.IO).launch { onSuccess(user) }
+              scope.launch { onSuccess(user) }
             }
           },
         )

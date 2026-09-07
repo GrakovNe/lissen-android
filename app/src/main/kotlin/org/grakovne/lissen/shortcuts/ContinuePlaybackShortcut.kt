@@ -12,8 +12,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.RunningComponent
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.ui.activity.AppActivity
 import org.grakovne.lissen.ui.navigation.CONTINUE_PLAYBACK
 import timber.log.Timber
@@ -24,8 +24,8 @@ import javax.inject.Singleton
 class ContinuePlaybackShortcut
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
-    private val sharedPreferences: LissenSharedPreferences,
+    @param:ApplicationContext private val context: Context,
+    private val sharedPreferences: PlaybackPreferences,
   ) : RunningComponent {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 

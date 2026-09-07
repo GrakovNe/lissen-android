@@ -55,7 +55,7 @@ fun CachedItemsFallbackComposable() {
         ) {
           Icon(
             imageVector = Icons.AutoMirrored.Filled.LibraryBooks,
-            contentDescription = "Library placeholder",
+            contentDescription = null,
             tint = Color.White,
             modifier = Modifier.size(64.dp),
           )

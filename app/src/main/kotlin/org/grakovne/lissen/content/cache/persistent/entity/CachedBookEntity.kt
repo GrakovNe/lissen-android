@@ -32,7 +32,10 @@ data class CachedBookEntity(
 )
 
 @Keep
-@Entity(tableName = "detailed_books")
+@Entity(
+  tableName = "detailed_books",
+  indices = [Index(value = ["libraryId"]), Index(value = ["seriesId"])],
+)
 @JsonClass(generateAdapter = true)
 data class BookEntity(
   @PrimaryKey val id: String,
@@ -47,6 +50,8 @@ data class BookEntity(
   val libraryId: String?,
   val seriesJson: String?, // List<BookSeriesDto> Json
   val seriesNames: String?,
+  val seriesId: String?, // primary series id, used to group the library by series
+  val authorsJson: String? = null,
   val createdAt: Long,
   val updatedAt: Long,
 ) : Serializable
@@ -118,4 +123,12 @@ data class MediaProgressEntity(
 data class BookSeriesDto(
   val title: String,
   val sequence: String?,
+  val id: String? = null,
+)
+
+@Keep
+@JsonClass(generateAdapter = true)
+data class BookAuthorDto(
+  val id: String,
+  val name: String,
 )

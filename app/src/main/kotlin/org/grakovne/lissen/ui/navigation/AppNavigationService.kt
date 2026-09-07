@@ -1,6 +1,5 @@
 package org.grakovne.lissen.ui.navigation
 
-import android.net.Uri
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 
@@ -10,9 +9,23 @@ class AppNavigationService(
   fun showLibrary(clearHistory: Boolean = false) {
     host.navigate(ROUTE_LIBRARY) {
       val startId = host.graph.findStartDestination().id
-      popUpTo(startId) { inclusive = clearHistory }
+      popUpTo(startId) {
+        inclusive = clearHistory
+        saveState = !clearHistory
+      }
 
       launchSingleTop = true
+      restoreState = !clearHistory
+    }
+  }
+
+  fun showLinkedSearch(token: String) {
+    host.navigate(libraryRoute(token)) { launchSingleTop = true }
+  }
+
+  fun goBack() {
+    if (host.previousBackStackEntry != null) {
+      host.popBackStack()
     }
   }
 
@@ -22,31 +35,34 @@ class AppNavigationService(
     bookSubtitle: String?,
     startInstantly: Boolean = false,
   ) {
-    val route =
-      buildString {
-        append("$ROUTE_PLAYER/$bookId")
-        append("?bookTitle=${Uri.encode(bookTitle)}")
-        append("&bookSubtitle=${Uri.encode(bookSubtitle ?: "")}")
-        append("&startInstantly=$startInstantly")
-      }
-    host.navigate(route) { launchSingleTop = true }
+    host.navigate(playerRoute(bookId, bookTitle, bookSubtitle, startInstantly)) {
+      launchSingleTop = true
+    }
   }
 
   fun showSettings() = host.navigate(ROUTE_SETTINGS)
 
-  fun showCustomHeadersSettings() = host.navigate("$ROUTE_SETTINGS/custom_headers")
+  fun showCustomHeadersSettings() = host.navigate(ROUTE_SETTINGS_CUSTOM_HEADERS)
 
-  fun showConnectionSettings() = host.navigate("$ROUTE_SETTINGS/connection_settings")
+  fun showConnectionSettings() = host.navigate(ROUTE_SETTINGS_CONNECTION)
 
-  fun showLocalUrlSettings() = host.navigate("$ROUTE_SETTINGS/local_url")
+  fun showLocalUrlSettings() = host.navigate(ROUTE_SETTINGS_LOCAL_URL)
 
-  fun showSeekSettings() = host.navigate("$ROUTE_SETTINGS/seek_settings")
+  fun showClientCertificateSettings() = host.navigate(ROUTE_SETTINGS_CLIENT_CERTIFICATE)
 
-  fun showCachedItemsSettings() = host.navigate("$ROUTE_SETTINGS/cached_items")
+  fun showSeekSettings() = host.navigate(ROUTE_SETTINGS_SEEK)
 
-  fun showCacheSettings() = host.navigate("$ROUTE_SETTINGS/cache_settings")
+  fun showCachedItemsSettings() = host.navigate(ROUTE_SETTINGS_CACHED_ITEMS)
 
-  fun showAdvancedSettings() = host.navigate("$ROUTE_SETTINGS/advanced_settings")
+  fun showCacheSettings() = host.navigate(ROUTE_SETTINGS_CACHE)
+
+  fun showAdvancedSettings() = host.navigate(ROUTE_SETTINGS_ADVANCED)
+
+  fun showConfigBackupSettings() = host.navigate(ROUTE_SETTINGS_CONFIG_BACKUP)
+
+  fun showPlaybackPreferences() = host.navigate(ROUTE_SETTINGS_PLAYBACK)
+
+  fun showAppearancePreferences() = host.navigate(ROUTE_SETTINGS_APPEARANCE)
 
   fun showLogin() {
     host.navigate(ROUTE_LOGIN) {

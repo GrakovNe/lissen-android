@@ -7,6 +7,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.Bookmark
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarksResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.connection.ConnectionInfoResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.AuthorItemsResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibrariesResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackSessionResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
@@ -16,6 +17,9 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.user.LoggedUserRe
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.PersonalizedFeedResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.UserResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.BookResponse
+import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryAuthorsResponse
+import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsBatchRequest
+import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsBatchResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibrarySearchResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastItemsResponse
@@ -34,7 +38,13 @@ import retrofit2.http.Streaming
 
 interface AudiobookshelfApiClient {
   @GET("api/libraries")
-  suspend fun fetchLibraries(): Response<LibraryResponse>
+  suspend fun fetchLibraries(): Response<LibrariesResponse>
+
+  @GET("api/libraries/{libraryId}")
+  suspend fun fetchLibrary(
+    @Path("libraryId") libraryId: String,
+    @Query("include") include: String = "filterdata",
+  ): Response<LibraryResponse>
 
   @GET("api/libraries/{libraryId}/personalized")
   suspend fun fetchPersonalizedFeed(
@@ -76,6 +86,7 @@ interface AudiobookshelfApiClient {
     @Query("desc") desc: String,
     @Query("minified") minified: String = "1",
     @Query("filter") filter: String?,
+    @Query("collapseseries") collapseSeries: String = "0",
   ): Response<LibraryItemsResponse>
 
   @GET("api/libraries/{libraryId}/items")
@@ -87,6 +98,15 @@ interface AudiobookshelfApiClient {
     @Query("desc") desc: String,
     @Query("minified") minified: String = "1",
   ): Response<PodcastItemsResponse>
+
+  @GET("api/libraries/{libraryId}/authors")
+  suspend fun fetchLibraryAuthors(
+    @Path("libraryId") libraryId: String,
+    @Query("limit") limit: Int,
+    @Query("page") page: Int,
+    @Query("sort") sort: String,
+    @Query("desc") desc: String,
+  ): Response<LibraryAuthorsResponse>
 
   @GET("api/libraries/{libraryId}/search")
   suspend fun searchLibraryItems(
@@ -116,6 +136,11 @@ interface AudiobookshelfApiClient {
   suspend fun fetchAuthorLibraryItems(
     @Path("authorId") authorId: String,
   ): Response<AuthorItemsResponse>
+
+  @POST("api/items/batch/get")
+  suspend fun fetchLibraryItemsBatch(
+    @Body request: LibraryItemsBatchRequest,
+  ): Response<LibraryItemsBatchResponse>
 
   @POST("api/session/{itemId}/sync")
   suspend fun publishLibraryItemProgress(
@@ -158,6 +183,13 @@ interface AudiobookshelfApiClient {
   @Streaming
   suspend fun getItemCover(
     @Path("itemId") itemId: String,
+    @Query("width") width: Int?,
+  ): Response<ResponseBody>
+
+  @GET("api/authors/{authorId}/image")
+  @Streaming
+  suspend fun getAuthorImage(
+    @Path("authorId") authorId: String,
     @Query("width") width: Int?,
   ): Response<ResponseBody>
 }

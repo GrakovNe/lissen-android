@@ -4,17 +4,20 @@ import android.net.Uri
 import androidx.core.net.toFile
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
+import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookmarkRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedLibraryRepository
-import org.grakovne.lissen.lib.domain.Book
-import org.grakovne.lissen.lib.domain.Bookmark
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.Library
-import org.grakovne.lissen.lib.domain.MediaProgress
-import org.grakovne.lissen.lib.domain.PagedItems
-import org.grakovne.lissen.lib.domain.PlaybackProgress
-import org.grakovne.lissen.lib.domain.RecentBook
+import org.grakovne.lissen.domain.Book
+import org.grakovne.lissen.domain.Bookmark
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.Library
+import org.grakovne.lissen.domain.LibraryEntry
+import org.grakovne.lissen.domain.MediaProgress
+import org.grakovne.lissen.domain.PagedItems
+import org.grakovne.lissen.domain.PlaybackProgress
+import org.grakovne.lissen.domain.RecentBook
+import org.grakovne.lissen.domain.asLibraryEntries
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import java.io.File
 import javax.inject.Inject
@@ -57,26 +60,23 @@ class LocalCacheRepository
       }
     }
 
+    fun fetchAuthorCover(authorName: String): OperationResult<File> {
+      val coverFile = cachedBookRepository.provideAuthorCover(authorName)
+
+      return when (coverFile.exists()) {
+        true -> OperationResult.Success(coverFile)
+        false -> OperationResult.Error(OperationError.InternalError)
+      }
+    }
+
     suspend fun searchBooks(
       libraryId: String,
       query: String,
+      limit: Int,
     ): OperationResult<List<Book>> =
       cachedBookRepository
-        .searchBooks(libraryId = libraryId, query = query)
+        .searchBooks(libraryId = libraryId, query = query, limit = limit)
         .let { OperationResult.Success(it) }
-
-    suspend fun fetchDetailedItems(): OperationResult<PagedItems<DetailedItem>> {
-      val items = cachedBookRepository.fetchCachedItems()
-
-      return OperationResult
-        .Success(
-          PagedItems(
-            items = items,
-            currentPage = 0,
-            totalItems = cachedBookRepository.countCachedItems(),
-          ),
-        )
-    }
 
     suspend fun fetchDetailedItems(
       pageSize: Int,
@@ -101,19 +101,76 @@ class LocalCacheRepository
       pageSize: Int,
       pageNumber: Int,
     ): OperationResult<PagedItems<Book>> {
+      val libraryType = cachedLibraryRepository.fetchLibraryType(libraryId)
+
       val books =
         cachedBookRepository
-          .fetchBooks(pageNumber = pageNumber, pageSize = pageSize, libraryId = libraryId)
+          .fetchBooks(pageNumber = pageNumber, pageSize = pageSize, libraryId = libraryId, libraryType = libraryType)
 
       return OperationResult
         .Success(
           PagedItems(
             items = books,
             currentPage = pageNumber,
-            totalItems = cachedBookRepository.countBooks(libraryId),
+            totalItems = cachedBookRepository.countBooks(libraryId, libraryType),
           ),
         )
     }
+
+    suspend fun fetchLibrary(
+      libraryId: String,
+      pageSize: Int,
+      pageNumber: Int,
+      libraryGrouping: LibraryGrouping,
+    ): OperationResult<PagedItems<LibraryEntry>> =
+      when (libraryGrouping) {
+        LibraryGrouping.NONE -> {
+          fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
+            .map { it.asLibraryEntries() }
+        }
+
+        LibraryGrouping.SERIES -> {
+          cachedBookRepository
+            .fetchLibraryGrouped(
+              libraryId = libraryId,
+              pageSize = pageSize,
+              pageNumber = pageNumber,
+              libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
+            ).let { OperationResult.Success(it) }
+        }
+
+        LibraryGrouping.AUTHOR -> {
+          cachedBookRepository
+            .fetchAuthorsGrouped(
+              libraryId = libraryId,
+              pageSize = pageSize,
+              pageNumber = pageNumber,
+              libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
+            ).let { OperationResult.Success(it) }
+        }
+      }
+
+    suspend fun fetchSeriesItems(
+      libraryId: String,
+      seriesId: String,
+    ): OperationResult<List<Book>> =
+      cachedBookRepository
+        .fetchSeriesItems(
+          libraryId = libraryId,
+          seriesId = seriesId,
+          libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
+        ).let { OperationResult.Success(it) }
+
+    suspend fun fetchAuthorItems(
+      libraryId: String,
+      authorId: String,
+    ): OperationResult<List<Book>> =
+      cachedBookRepository
+        .fetchAuthorItems(
+          libraryId = libraryId,
+          authorId = authorId,
+          libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
+        ).let { OperationResult.Success(it) }
 
     suspend fun fetchLibraries(): OperationResult<List<Library>> =
       cachedLibraryRepository

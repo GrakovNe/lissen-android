@@ -13,8 +13,8 @@ import org.grakovne.lissen.channel.audiobookshelf.common.api.AudiobookshelfAuthS
 import org.grakovne.lissen.channel.common.OAuthContextCache
 import org.grakovne.lissen.channel.common.makeText
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.lib.domain.UserAccount
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.domain.UserAccount
+import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.grakovne.lissen.ui.activity.AppActivity
 import timber.log.Timber
 import javax.inject.Inject
@@ -31,7 +31,7 @@ class AudiobookshelfOAuthCallbackActivity : ComponentActivity() {
   lateinit var mediaProvider: LissenMediaProvider
 
   @Inject
-  lateinit var preferences: LissenSharedPreferences
+  lateinit var preferences: SessionPreferences
 
   @Inject
   lateinit var hostProvider: AudiobookshelfHostProvider
@@ -48,6 +48,15 @@ class AudiobookshelfOAuthCallbackActivity : ComponentActivity() {
     if (intent?.action == Intent.ACTION_VIEW && data.scheme == AuthScheme) {
       val code = data.getQueryParameter("code") ?: ""
       Timber.d("Got Exchange code from ABS")
+
+      val returnedState = data.getQueryParameter("state").orEmpty()
+      val expectedState = contextCache.readPkce().state
+
+      if (expectedState.isEmpty() || returnedState != expectedState) {
+        Timber.e("OAuth state validation failed: returned state does not match the stored state")
+        onLoginFailed("invalid_state")
+        return
+      }
 
       lifecycleScope.launch {
         authService.exchangeToken(

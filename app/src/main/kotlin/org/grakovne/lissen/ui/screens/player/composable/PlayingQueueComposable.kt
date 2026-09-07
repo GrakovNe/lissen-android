@@ -34,9 +34,9 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,12 +52,17 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.android.awaitFrame
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.components.withScrollbar
 import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
 import org.grakovne.lissen.viewmodel.CachingModelView
@@ -70,12 +75,13 @@ fun PlayingQueueComposable(
   cachingModelView: CachingModelView,
   viewModel: PlayerViewModel,
   modifier: Modifier = Modifier,
+  forceExpanded: Boolean = false,
 ) {
   val context = LocalContext.current
   val coroutineScope = rememberCoroutineScope()
 
-  val book by viewModel.book.observeAsState()
-  val searchToken by viewModel.searchToken.observeAsState("")
+  val book by viewModel.book.collectAsState()
+  val searchToken by viewModel.searchToken.collectAsState()
 
   val showingChapters by remember {
     derivedStateOf {
@@ -96,15 +102,29 @@ fun PlayingQueueComposable(
     }
   }
 
-  val currentTrackIndex by viewModel.currentChapterIndex.observeAsState(0)
+  val currentTrackIndex by viewModel.currentChapterIndex.collectAsState()
   val currentTrackId by remember {
     derivedStateOf {
       book?.chapters?.getOrNull(currentTrackIndex)
     }
   }
 
-  val playbackReady by viewModel.isPlaybackReady.observeAsState(false)
-  val playingQueueExpanded by viewModel.playingQueueExpanded.observeAsState(false)
+  val bookId = book?.id ?: ""
+  val cachedChapterIdsFlow =
+    remember(bookId) {
+      when (bookId.isEmpty()) {
+        true -> flowOf(emptySet())
+        false -> cachingModelView.provideCachedChapterIds(bookId).map { it.toSet() }
+      }
+    }
+  val cachedChapterIds by cachedChapterIdsFlow.collectAsState(initial = emptySet())
+
+  val playbackReady by viewModel.isPlaybackReady.collectAsState()
+  val playingQueueExpanded by viewModel.playingQueueExpanded.collectAsState()
+
+  val expanded = playingQueueExpanded || forceExpanded
+
+  val showQueueHeader = playingQueueExpanded.not() || forceExpanded
 
   val density = LocalDensity.current
 
@@ -198,6 +218,7 @@ fun PlayingQueueComposable(
   Box(
     modifier =
       modifier
+        .testTag("chapterList")
         .fillMaxSize()
         .nestedScroll(fabScrollConnection),
   ) {
@@ -206,7 +227,7 @@ fun PlayingQueueComposable(
         Modifier
           .fillMaxSize()
           .let {
-            when (playingQueueExpanded) {
+            when (expanded) {
               true -> {
                 it.withScrollbar(
                   state = listState,
@@ -222,7 +243,7 @@ fun PlayingQueueComposable(
             }
           }.padding(horizontal = 16.dp),
     ) {
-      if (playingQueueExpanded.not()) {
+      if (showQueueHeader) {
         Text(
           text = provideNowPlayingTitle(libraryViewModel.fetchPreferredLibraryType(), context),
           fontSize = fontSize.sp,
@@ -236,7 +257,7 @@ fun PlayingQueueComposable(
 
       LazyColumn(
         contentPadding =
-          when (playingQueueExpanded) {
+          when (expanded) {
             true -> PaddingValues(bottom = 12.dp)
             false -> PaddingValues(bottom = with(density) { collapsedPlayingQueueHeight.toDp() })
           },
@@ -246,7 +267,7 @@ fun PlayingQueueComposable(
             .scrollable(
               state = rememberScrollState(),
               orientation = Orientation.Vertical,
-              enabled = playingQueueExpanded,
+              enabled = expanded,
             ).onGloballyPositioned {
               if (collapsedPlayingQueueHeight == 0) {
                 collapsedPlayingQueueHeight = it.size.height
@@ -269,10 +290,10 @@ fun PlayingQueueComposable(
                 override fun onPreScroll(
                   available: Offset,
                   source: NestedScrollSource,
-                ): Offset = if (playingQueueExpanded) Offset.Zero else available
+                ): Offset = if (expanded) Offset.Zero else available
 
                 override suspend fun onPreFling(available: Velocity): Velocity {
-                  if (available.y < -expandFlingThreshold && !playingQueueExpanded) {
+                  if (available.y < -expandFlingThreshold && !expanded) {
                     viewModel.expandPlayingQueue()
                     return available
                   }
@@ -285,20 +306,17 @@ fun PlayingQueueComposable(
       ) {
         val maxDuration = showingChapters.maxOfOrNull { it.duration } ?: 0.0
 
-        itemsIndexed(showingChapters) { index, chapter ->
-          val isCached by cachingModelView
-            .provideCacheState(
-              bookId = book?.id ?: "",
-              chapterId = chapter.id,
-            ).observeAsState(false)
-
+        itemsIndexed(
+          showingChapters,
+          key = { _, chapter -> chapter.id },
+        ) { index, chapter ->
           PlaylistItemComposable(
             track = chapter,
             onClick = { viewModel.setChapter(chapter) },
             isSelected = chapter.id == currentTrackId?.id,
             modifier = Modifier.wrapContentWidth(),
             maxDuration = maxDuration,
-            isCached = isCached,
+            isCached = chapter.id in cachedChapterIds,
           )
 
           if (index < showingChapters.size - 1) {
@@ -331,7 +349,7 @@ fun PlayingQueueComposable(
       ) {
         Icon(
           imageVector = Icons.Filled.KeyboardArrowDown,
-          contentDescription = "Collapse queue",
+          contentDescription = stringResource(R.string.a11y_collapse_queue),
           tint = colorScheme.onBackground,
         )
       }

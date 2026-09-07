@@ -3,27 +3,29 @@ package org.grakovne.lissen.content.cache.persistent
 import android.content.Context
 import android.content.Intent
 import androidx.annotation.OptIn
-import androidx.lifecycle.asFlow
 import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.lib.domain.ContentCachingTask
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.NetworkType
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.domain.ContentCachingTask
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.NetworkType
+import org.grakovne.lissen.persistence.preferences.DownloadPreferences
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.playback.MediaRepository
+import timber.log.Timber
 import java.io.Serializable
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -33,27 +35,33 @@ import javax.inject.Singleton
 class ContentAutoCachingService
   @Inject
   constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val mediaRepository: MediaRepository,
     private val mediaProvider: LissenMediaProvider,
-    private val sharedPreferences: LissenSharedPreferences,
+    private val downloadPreferences: DownloadPreferences,
+    private val libraryPreferences: LibraryPreferences,
     private val networkService: NetworkService,
   ) : RunningComponent {
     private var delayedJob: Job? = null
-    private val scope = CoroutineScope(Dispatchers.IO)
+    private val scope =
+      CoroutineScope(
+        SupervisorJob() + Dispatchers.IO +
+          CoroutineExceptionHandler { _, throwable ->
+            Timber.e(throwable, "Auto-caching coroutine failed, ignoring")
+          },
+      )
 
     override fun onCreate() {
       scope.launch {
         combine(
-          mediaRepository.playingBook.asFlow().distinctUntilChanged(),
-          mediaRepository.isPlaying
-            .asFlow()
-            .filterNotNull()
-            .distinctUntilChanged(),
-          mediaRepository.currentChapterIndex.asFlow().distinctUntilChanged(),
-        ) { playingItem: DetailedItem?, isPlaying: Boolean, _: Int? ->
-          playingItem to isPlaying
-        }.collectLatest { (playingItem, isPlaying) ->
+          mediaRepository.playingBook,
+          mediaRepository.isPlaying,
+          mediaRepository.currentChapterIndex,
+        ) { playingItem: DetailedItem?, isPlaying: Boolean, chapterIndex: Int ->
+          Triple(playingItem, isPlaying, chapterIndex)
+        }.distinctUntilChanged { old, new ->
+          old.first?.id == new.first?.id && old.second == new.second && old.third == new.third
+        }.collectLatest { (playingItem, isPlaying, _) ->
           delayedJob?.cancel()
           delayedJob = updatePlaybackCache(playingItem, isPlaying)
         }
@@ -65,13 +73,13 @@ class ContentAutoCachingService
       isPlaying: Boolean,
       delayed: Boolean = false,
     ): Job? {
-      val playbackCacheOption = sharedPreferences.getAutoDownloadOption() ?: return null
+      val playbackCacheOption = downloadPreferences.getAutoDownloadOption() ?: return null
       val playingMediaItem = playingItem ?: return null
 
       val isNetworkAvailable = networkService.isNetworkAvailable()
       val currentNetwork = networkService.getCurrentNetworkType() ?: return null
-      val preferredNetwork = sharedPreferences.getAutoDownloadNetworkType()
-      val currentTotalPosition = mediaRepository.totalPosition.value ?: return null
+      val preferredNetwork = downloadPreferences.getAutoDownloadNetworkType()
+      val currentTotalPosition = mediaRepository.totalPosition.value
 
       val playingItemLibraryType =
         mediaProvider
@@ -83,11 +91,11 @@ class ContentAutoCachingService
           ) ?: return null
 
       val requestedLibraryType =
-        sharedPreferences
+        downloadPreferences
           .getAutoDownloadLibraryTypes()
           .contains(playingItemLibraryType)
 
-      val isForceCache = sharedPreferences.isForceCache()
+      val isForceCache = libraryPreferences.isForceCache()
 
       val cacheAvailable =
         isNetworkAvailable &&
@@ -98,10 +106,10 @@ class ContentAutoCachingService
 
       if (cacheAvailable.not()) return null
 
-      if (sharedPreferences.getAutoDownloadDelayed().not() || delayed) {
+      if (downloadPreferences.getAutoDownloadDelayed().not() || delayed) {
         val task =
           ContentCachingTask(
-            item = playingMediaItem,
+            itemId = playingMediaItem.id,
             options = playbackCacheOption,
             currentPosition = currentTotalPosition,
           )
@@ -112,10 +120,15 @@ class ContentAutoCachingService
             putExtra(ContentCachingService.CACHING_TASK_EXTRA, task as Serializable)
           }
 
-        context.startForegroundService(intent)
+        Timber.d("Auto-cache triggered for ${playingMediaItem.id}: option=$playbackCacheOption, position=${currentTotalPosition.toInt()}s")
+
+        if (ContentCachingService.requestStart(context, intent).not()) {
+          Timber.w("Caching service is unavailable, skipping auto-cache for ${playingMediaItem.id}")
+        }
         return null
       }
 
+      Timber.d("Auto-cache delayed for ${playingMediaItem.id}: will retry in ${DELAY_TIME}ms")
       return scope.launch {
         val originalBookId = playingMediaItem.id
         delay(DELAY_TIME)

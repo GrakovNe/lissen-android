@@ -4,31 +4,36 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfHostProvider
 import org.grakovne.lissen.channel.audiobookshelf.common.AudiobookshelfChannel
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfRepository
+import org.grakovne.lissen.channel.audiobookshelf.common.api.encodeLibraryFilter
 import org.grakovne.lissen.channel.audiobookshelf.common.api.library.AudioBookshelfLibrarySyncService
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarkItemResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarksResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryAuthorsResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryListResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryPageResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
-import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.DeviceInfo
-import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.BookResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibraryFilteringRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibraryOrderingRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibrarySearchItemsConverter
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.channel.common.OperationResult.Success
-import org.grakovne.lissen.lib.domain.Book
-import org.grakovne.lissen.lib.domain.DetailedItem
-import org.grakovne.lissen.lib.domain.LibraryType
-import org.grakovne.lissen.lib.domain.PagedItems
-import org.grakovne.lissen.lib.domain.PlaybackSession
-import org.grakovne.lissen.persistence.preferences.LissenSharedPreferences
+import org.grakovne.lissen.common.LibraryGrouping
+import org.grakovne.lissen.domain.Book
+import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.LibraryEntry
+import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.PagedItems
+import org.grakovne.lissen.domain.PlaybackSession
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -39,9 +44,10 @@ class LibraryAudiobookshelfChannel
     hostProvider: AudiobookshelfHostProvider,
     repository: AudioBookshelfRepository,
     recentListeningResponseConverter: RecentListeningResponseConverter,
-    preferences: LissenSharedPreferences,
+    preferences: LibraryPreferences,
     syncService: AudioBookshelfLibrarySyncService,
     sessionResponseConverter: PlaybackSessionResponseConverter,
+    libraryListResponseConverter: LibraryListResponseConverter,
     libraryResponseConverter: LibraryResponseConverter,
     connectionInfoResponseConverter: ConnectionInfoResponseConverter,
     bookmarksResponseConverter: BookmarksResponseConverter,
@@ -49,6 +55,7 @@ class LibraryAudiobookshelfChannel
     private val libraryOrderingRequestConverter: LibraryOrderingRequestConverter,
     private val libraryFilteringRequestConverter: LibraryFilteringRequestConverter,
     private val libraryPageResponseConverter: LibraryPageResponseConverter,
+    private val libraryAuthorsResponseConverter: LibraryAuthorsResponseConverter,
     private val bookResponseConverter: BookResponseConverter,
     private val librarySearchItemsConverter: LibrarySearchItemsConverter,
   ) : AudiobookshelfChannel(
@@ -58,20 +65,34 @@ class LibraryAudiobookshelfChannel
       sessionResponseConverter = sessionResponseConverter,
       preferences = preferences,
       syncService = syncService,
-      libraryResponseConverter = libraryResponseConverter,
+      libraryListResponseConverter = libraryListResponseConverter,
       connectionInfoResponseConverter = connectionInfoResponseConverter,
       bookmarksResponseConverter = bookmarksResponseConverter,
       bookmarkItemResponseConverter = bookmarkItemResponseConverter,
+      libraryResponseConverter = libraryResponseConverter,
     ) {
+    private val concurrentFetchSemaphore = Semaphore(MAX_CONCURRENT_FETCH)
+
     override fun getLibraryType() = LibraryType.LIBRARY
 
     override suspend fun fetchBooks(
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
+      extraFilter: Pair<String, String>?,
     ): OperationResult<PagedItems<Book>> {
-      val (option, direction) = libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering())
-      val filter = libraryFilteringRequestConverter.apply(preferences)
+      val (option, direction) =
+        if (extraFilter?.first == "series") {
+          "sequence" to "0"
+        } else {
+          libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering())
+        }
+      val filter =
+        if (extraFilter != null) {
+          encodeLibraryFilter(extraFilter.first, extraFilter.second)
+        } else {
+          libraryFilteringRequestConverter.apply(preferences)
+        }
 
       return dataRepository
         .fetchLibraryItems(
@@ -83,6 +104,76 @@ class LibraryAudiobookshelfChannel
           filter = filter,
         ).map { libraryPageResponseConverter.apply(it) }
     }
+
+    override suspend fun fetchLibrary(
+      libraryId: String,
+      pageSize: Int,
+      pageNumber: Int,
+      libraryGrouping: LibraryGrouping,
+    ): OperationResult<PagedItems<LibraryEntry>> =
+      when (libraryGrouping) {
+        LibraryGrouping.AUTHOR -> {
+          dataRepository
+            .fetchLibraryAuthors(
+              libraryId = libraryId,
+              pageSize = pageSize,
+              pageNumber = pageNumber,
+            ).map { libraryAuthorsResponseConverter.apply(it) }
+        }
+
+        else -> {
+          val (option, direction) = libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering())
+          val filter = libraryFilteringRequestConverter.apply(preferences)
+
+          dataRepository
+            .fetchLibraryItems(
+              libraryId = libraryId,
+              pageSize = pageSize,
+              pageNumber = pageNumber,
+              sort = option,
+              direction = direction,
+              filter = filter,
+              collapseSeries = libraryGrouping == LibraryGrouping.SERIES,
+            ).map { libraryPageResponseConverter.applyEntries(it) }
+        }
+      }
+
+    override suspend fun fetchSeriesItems(
+      libraryId: String,
+      seriesId: String,
+    ): OperationResult<List<Book>> =
+      concurrentFetchSemaphore.withPermit {
+        fetchAllSeriesItems(libraryId = libraryId, seriesId = seriesId)
+      }
+
+    private suspend fun fetchAllSeriesItems(
+      libraryId: String,
+      seriesId: String,
+      page: Int = 0,
+      acc: List<Book> = emptyList(),
+    ): OperationResult<List<Book>> =
+      dataRepository
+        .fetchSeriesItems(
+          libraryId = libraryId,
+          seriesId = seriesId,
+          pageSize = SERIES_PAGE_SIZE,
+          pageNumber = page,
+        ).flatMap { response ->
+          val books = acc + librarySearchItemsConverter.apply(response.results)
+
+          when {
+            response.results.isEmpty() || books.size >= response.total -> Success(books)
+            else -> fetchAllSeriesItems(libraryId, seriesId, page + 1, books)
+          }
+        }
+
+    override suspend fun fetchAuthorBooks(
+      libraryId: String,
+      authorId: String,
+    ): OperationResult<List<Book>> =
+      dataRepository
+        .fetchAuthorItems(authorId)
+        .map { librarySearchItemsConverter.apply(it.libraryItems) }
 
     override suspend fun searchBooks(
       libraryId: String,
@@ -105,8 +196,11 @@ class LibraryAudiobookshelfChannel
             searchResult
               .map { it.authors }
               .map { authors -> authors.map { it.id } }
-              .map { ids -> ids.map { id -> async { dataRepository.fetchAuthorItems(id) } } }
-              .map { it.awaitAll() }
+              .map { ids ->
+                ids.map { id ->
+                  async { concurrentFetchSemaphore.withPermit { dataRepository.fetchAuthorItems(id) } }
+                }
+              }.map { it.awaitAll() }
               .map { result ->
                 result
                   .flatMap { authorResponse ->
@@ -122,20 +216,23 @@ class LibraryAudiobookshelfChannel
         val bySeries: Deferred<OperationResult<List<Book>>> =
           async {
             searchResult
-              .map { result -> result.series }
-              .map { result -> result.flatMap { it.books } }
-              .map { result -> result.mapNotNull { it.media.metadata.title } }
-              .map { result -> result.map { async { dataRepository.searchBooks(libraryId, it, limit) } } }
-              .map { result -> result.awaitAll() }
-              .map { result ->
-                result.flatMap {
-                  it.fold(
-                    onSuccess = { items -> items.book },
-                    onFailure = { emptyList() },
-                  )
+              .map { result -> result.series.flatMap { it.books }.map { book -> book.id } }
+              .map { ids ->
+                when {
+                  ids.isEmpty() -> {
+                    emptyList()
+                  }
+
+                  else -> {
+                    dataRepository
+                      .fetchLibraryItemsBatch(ids)
+                      .fold(
+                        onSuccess = { it.libraryItems },
+                        onFailure = { emptyList() },
+                      )
+                  }
                 }
-              }.map { result -> result.map { it.libraryItem } }
-              .map { result -> result.let { librarySearchItemsConverter.apply(it) } }
+              }.map { librarySearchItemsConverter.apply(it) }
           }
 
         mergeBooks(byTitle, byAuthor, bySeries)
@@ -183,27 +280,12 @@ class LibraryAudiobookshelfChannel
       episodeId: String,
       supportedMimeTypes: List<String>,
       deviceId: String,
-    ): OperationResult<PlaybackSession> {
-      val request =
-        PlaybackStartRequest(
-          supportedMimeTypes = supportedMimeTypes,
-          deviceInfo =
-            DeviceInfo(
-              clientName = getClientName(),
-              deviceId = deviceId,
-              deviceName = getClientName(),
-            ),
-          forceTranscode = false,
-          forceDirectPlay = false,
-          mediaPlayer = getClientName(),
-        )
-
-      return dataRepository
+    ): OperationResult<PlaybackSession> =
+      dataRepository
         .startPlayback(
           itemId = bookId,
-          request = request,
+          request = buildPlaybackStartRequest(supportedMimeTypes, deviceId),
         ).map { sessionResponseConverter.apply(it) }
-    }
 
     override suspend fun fetchBook(bookId: String): OperationResult<DetailedItem> =
       coroutineScope {
@@ -222,4 +304,9 @@ class LibraryAudiobookshelfChannel
           onFailure = { OperationResult.Error(it.code) },
         )
       }
+
+    companion object {
+      private const val SERIES_PAGE_SIZE = 20
+      private const val MAX_CONCURRENT_FETCH = 3
+    }
   }

@@ -22,29 +22,40 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
 import coil3.request.ImageRequest
 import org.grakovne.lissen.R
-import org.grakovne.lissen.lib.domain.Book
+import org.grakovne.lissen.common.LibraryGrouping
+import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
+import org.grakovne.lissen.ui.components.BookCoverKey
 import org.grakovne.lissen.ui.navigation.AppNavigationService
+
+val LibraryItemCoverSize = 64.dp
 
 @Composable
 fun BookComposable(
   book: Book,
   imageLoader: ImageLoader,
   navController: AppNavigationService,
+  grouping: LibraryGrouping = LibraryGrouping.NONE,
+  leading: (@Composable () -> Unit)? = null,
 ) {
   val context = LocalContext.current
+
+  val openLabel = stringResource(R.string.a11y_open)
 
   val imageRequest =
     remember(book.id) {
       ImageRequest
         .Builder(context)
-        .data(book.id)
+        .data(BookCoverKey(book.id))
         .build()
     }
 
@@ -52,19 +63,23 @@ fun BookComposable(
     modifier =
       Modifier
         .fillMaxWidth()
-        .clickable { navController.showPlayer(book.id, book.title, book.subtitle) }
-        .testTag("bookItem_${book.id}")
+        .semantics(mergeDescendants = true) {}
+        .clickable(onClickLabel = openLabel, role = Role.Button) {
+          navController.showPlayer(book.id, book.title, book.subtitle)
+        }.testTag("bookItem_${book.id}")
         .padding(horizontal = 4.dp, vertical = 8.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {
+    leading?.invoke()
+
     AsyncShimmeringImage(
       imageRequest = imageRequest,
       imageLoader = imageLoader,
-      contentDescription = "${book.title} cover",
+      contentDescription = null,
       contentScale = ContentScale.FillBounds,
       modifier =
         Modifier
-          .size(64.dp)
+          .size(LibraryItemCoverSize)
           .aspectRatio(1f)
           .clip(RoundedCornerShape(4.dp)),
       error = painterResource(R.drawable.cover_fallback),
@@ -89,7 +104,7 @@ fun BookComposable(
         )
       }
 
-      BookMetadataComposable(book)
+      BookMetadataComposable(book, grouping)
     }
 
     Spacer(Modifier.width(16.dp))
@@ -97,12 +112,18 @@ fun BookComposable(
 }
 
 @Composable
-fun BookMetadataComposable(book: Book) {
-  if ((book.series?.isNotBlank() == true) || (book.author != null)) {
+fun BookMetadataComposable(
+  book: Book,
+  grouping: LibraryGrouping = LibraryGrouping.NONE,
+) {
+  val series = book.series?.takeIf { it.isNotBlank() && grouping != LibraryGrouping.SERIES }
+  val author = book.author?.takeIf { it.isNotBlank() && grouping != LibraryGrouping.AUTHOR }
+
+  if (series != null || author != null) {
     Spacer(modifier = Modifier.height(2.dp))
   }
 
-  book.author?.takeIf { it.isNotBlank() }?.let {
+  author?.let {
     Text(
       text = it,
       style =
@@ -114,7 +135,7 @@ fun BookMetadataComposable(book: Book) {
     )
   }
 
-  book.series?.takeIf { it.isNotBlank() }?.let {
+  series?.let {
     Text(
       text = it,
       style =

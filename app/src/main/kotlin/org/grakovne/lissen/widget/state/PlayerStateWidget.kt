@@ -1,0 +1,333 @@
+package org.grakovne.lissen.widget.state
+
+import android.content.Context
+import android.content.Intent
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.glance.GlanceId
+import androidx.glance.GlanceModifier
+import androidx.glance.GlanceTheme
+import androidx.glance.Image
+import androidx.glance.ImageProvider
+import androidx.glance.action.ActionParameters
+import androidx.glance.action.actionParametersOf
+import androidx.glance.action.clickable
+import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.action.ActionCallback
+import androidx.glance.appwidget.action.actionRunCallback
+import androidx.glance.appwidget.action.actionStartActivity
+import androidx.glance.appwidget.cornerRadius
+import androidx.glance.appwidget.provideContent
+import androidx.glance.background
+import androidx.glance.currentState
+import androidx.glance.layout.Alignment
+import androidx.glance.layout.Column
+import androidx.glance.layout.ContentScale
+import androidx.glance.layout.Row
+import androidx.glance.layout.Spacer
+import androidx.glance.layout.fillMaxWidth
+import androidx.glance.layout.height
+import androidx.glance.layout.padding
+import androidx.glance.layout.size
+import androidx.glance.material3.ColorProviders
+import androidx.glance.state.GlanceStateDefinition
+import androidx.glance.state.PreferencesGlanceStateDefinition
+import androidx.glance.text.FontFamily.Companion.SansSerif
+import androidx.glance.text.Text
+import androidx.glance.text.TextStyle
+import androidx.media3.session.R
+import org.grakovne.lissen.R.drawable
+import org.grakovne.lissen.ui.theme.LightBackground
+import org.grakovne.lissen.ui.theme.MediumBackground
+import org.grakovne.lissen.widget.bitmapFromFile
+import org.grakovne.lissen.widget.bitmapFromResource
+import org.grakovne.lissen.widget.safelyRun
+import org.grakovne.lissen.widget.state.PlayerStateWidget.Companion.bookIdKey
+import timber.log.Timber
+import java.io.File
+
+class PlayerStateWidget : GlanceAppWidget() {
+  override val stateDefinition: GlanceStateDefinition<*> = PreferencesGlanceStateDefinition
+
+  override suspend fun provideGlance(
+    context: Context,
+    id: GlanceId,
+  ) {
+    provideContent {
+      Content(context)
+    }
+  }
+
+  @Composable
+  fun Content(context: Context) {
+    GlanceTheme(
+      colors =
+        ColorProviders(
+          light =
+            lightColorScheme(
+              background = LightBackground,
+            ),
+          dark = darkColorScheme(),
+        ),
+    ) {
+      val state = currentState<Preferences>()
+      val maybeCoverFile = state[coverPath]?.takeIf { it.isNotBlank() }?.let { File(it) }
+      val bookId = state[bookId] ?: ""
+      val bookTitle = state[title] ?: ""
+      val chapterTitle =
+        state[chapterTitle]
+          ?.takeIf { it.isNotBlank() }
+          ?: when (bookId) {
+            "" -> context.getString(org.grakovne.lissen.R.string.widget_placeholder_text)
+            else -> ""
+          }
+
+      val isPlaying = state[isPlaying] ?: false
+
+      Column(
+        modifier =
+          GlanceModifier
+            .fillMaxWidth()
+            .background(GlanceTheme.colors.background)
+            .padding(16.dp)
+            .safelyRunOnClick(context),
+        horizontalAlignment = Alignment.CenterHorizontally,
+      ) {
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          modifier =
+            GlanceModifier
+              .fillMaxWidth()
+              .padding(bottom = 16.dp),
+        ) {
+          val targetSizePx = (80f * context.resources.displayMetrics.density).toInt().coerceAtLeast(1)
+
+          val coverBitmap =
+            try {
+              maybeCoverFile
+                ?.takeIf { it.exists() }
+                ?.let { bitmapFromFile(it.absolutePath, targetSizePx, targetSizePx) }
+                ?: bitmapFromResource(context, drawable.cover_fallback_png, targetSizePx, targetSizePx)
+            } catch (e: Exception) {
+              Timber.w("Unable to load cover bitmap for widget, using fallback due to: ${e.message}")
+              bitmapFromResource(context, drawable.cover_fallback_png, targetSizePx, targetSizePx)
+            }
+
+          val coverImageProvider = ImageProvider(coverBitmap)
+
+          Image(
+            contentScale = ContentScale.FillBounds,
+            provider = coverImageProvider,
+            contentDescription = null,
+            modifier =
+              GlanceModifier
+                .size(80.dp)
+                .cornerRadius(8.dp),
+          )
+
+          Column(
+            modifier =
+              GlanceModifier
+                .fillMaxWidth()
+                .padding(start = 20.dp),
+          ) {
+            Text(
+              text = chapterTitle,
+              style =
+                TextStyle(
+                  fontFamily = SansSerif,
+                  fontSize = 20.sp,
+                  color = GlanceTheme.colors.onBackground,
+                ),
+              maxLines = 2,
+              modifier = GlanceModifier.padding(bottom = 8.dp),
+            )
+
+            Text(
+              text = bookTitle,
+              style =
+                TextStyle(
+                  fontFamily = SansSerif,
+                  fontSize = 14.sp,
+                  color = GlanceTheme.colors.onBackground,
+                ),
+              maxLines = 1,
+            )
+          }
+        }
+
+        Spacer(
+          modifier =
+            GlanceModifier
+              .fillMaxWidth()
+              .height(1.dp)
+              .background(MediumBackground),
+        )
+
+        Row(
+          modifier =
+            GlanceModifier
+              .padding(top = 16.dp)
+              .fillMaxWidth(),
+          verticalAlignment = Alignment.CenterVertically,
+        ) {
+          StateWidgetControlButton(
+            size = 36.dp,
+            icon = ImageProvider(R.drawable.media3_icon_previous),
+            contentColor = GlanceTheme.colors.onBackground,
+            onClick =
+              actionRunCallback<PreviousChapterActionCallback>(
+                actionParametersOf(bookIdKey to bookId),
+              ),
+            modifier = GlanceModifier.defaultWeight(),
+          )
+
+          StateWidgetControlButton(
+            size = 36.dp,
+            icon = ImageProvider(rewindIcon),
+            contentColor = GlanceTheme.colors.onBackground,
+            onClick =
+              actionRunCallback<RewindActionCallback>(
+                actionParametersOf(bookIdKey to bookId),
+              ),
+            modifier = GlanceModifier.defaultWeight(),
+          )
+
+          StateWidgetControlButton(
+            icon =
+              if (isPlaying) {
+                ImageProvider(R.drawable.media3_icon_pause)
+              } else {
+                ImageProvider(R.drawable.media3_icon_play)
+              },
+            size = 48.dp,
+            contentColor = GlanceTheme.colors.onBackground,
+            onClick =
+              actionRunCallback<PlayToggleActionCallback>(
+                actionParametersOf(bookIdKey to bookId),
+              ),
+            modifier = GlanceModifier.defaultWeight(),
+          )
+
+          StateWidgetControlButton(
+            icon = ImageProvider(forwardIcon),
+            size = 36.dp,
+            contentColor = GlanceTheme.colors.onBackground,
+            onClick =
+              actionRunCallback<ForwardActionCallback>(
+                actionParametersOf(bookIdKey to bookId),
+              ),
+            modifier = GlanceModifier.defaultWeight(),
+          )
+
+          StateWidgetControlButton(
+            icon = ImageProvider(R.drawable.media3_icon_next),
+            size = 36.dp,
+            contentColor = GlanceTheme.colors.onBackground,
+            onClick =
+              actionRunCallback<NextChapterActionCallback>(
+                actionParametersOf(bookIdKey to bookId),
+              ),
+            modifier = GlanceModifier.defaultWeight(),
+          )
+        }
+      }
+    }
+  }
+
+  private fun GlanceModifier.safelyRunOnClick(context: Context) =
+    provideAppLaunchIntent(context)
+      ?.let { intent -> this.clickable(onClick = actionStartActivity(intent)) }
+      ?: this
+
+  companion object {
+    val rewindIcon = R.drawable.media3_icon_rewind
+    val forwardIcon = R.drawable.media3_icon_fast_forward
+
+    val bookIdKey = ActionParameters.Key<String>("book_id")
+
+    val coverPath = stringPreferencesKey("player_widget_key_cover")
+    val bookId = stringPreferencesKey("player_widget_key_id")
+    val title = stringPreferencesKey("player_widget_key_title")
+    val chapterTitle = stringPreferencesKey("player_widget_key_chapter_title")
+
+    val isPlaying = booleanPreferencesKey("player_widget_key_is_playing")
+  }
+}
+
+class PlayToggleActionCallback : ActionCallback {
+  override suspend fun onAction(
+    context: Context,
+    glanceId: GlanceId,
+    parameters: ActionParameters,
+  ) {
+    safelyRun(
+      playingItemId = parameters[bookIdKey] ?: return,
+      context = context,
+    ) { it.togglePlayPause() }
+  }
+}
+
+class ForwardActionCallback : ActionCallback {
+  override suspend fun onAction(
+    context: Context,
+    glanceId: GlanceId,
+    parameters: ActionParameters,
+  ) {
+    safelyRun(
+      playingItemId = parameters[bookIdKey] ?: return,
+      context = context,
+    ) { it.forward() }
+  }
+}
+
+class RewindActionCallback : ActionCallback {
+  override suspend fun onAction(
+    context: Context,
+    glanceId: GlanceId,
+    parameters: ActionParameters,
+  ) {
+    safelyRun(
+      playingItemId = parameters[bookIdKey] ?: return,
+      context = context,
+    ) { it.rewind() }
+  }
+}
+
+class NextChapterActionCallback : ActionCallback {
+  override suspend fun onAction(
+    context: Context,
+    glanceId: GlanceId,
+    parameters: ActionParameters,
+  ) {
+    safelyRun(
+      playingItemId = parameters[bookIdKey] ?: return,
+      context = context,
+    ) { it.nextTrack() }
+  }
+}
+
+class PreviousChapterActionCallback : ActionCallback {
+  override suspend fun onAction(
+    context: Context,
+    glanceId: GlanceId,
+    parameters: ActionParameters,
+  ) {
+    safelyRun(
+      playingItemId = parameters[bookIdKey] ?: return,
+      context = context,
+    ) { it.previousTrack() }
+  }
+}
+
+private fun provideAppLaunchIntent(context: Context): Intent? =
+  context
+    .packageManager
+    .getLaunchIntentForPackage(context.packageName)
+    ?.apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP }
