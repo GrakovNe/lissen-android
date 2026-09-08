@@ -7,6 +7,14 @@ import org.junit.jupiter.api.Test
 class ConditionalCacheTest {
   private val cache = ConditionalCache()
 
+  // Weight under ConditionalCache.sizeOf is the element count of a top-level
+  // collection, so payloads are wrapped in a single-list holder.
+  private data class Bag(
+    val items: List<String>,
+  )
+
+  private fun bag(size: Int) = Bag(List(size) { "e$it" })
+
   @Test
   fun `a fresh url has neither a validator nor a value`() {
     assertNull(cache.etag("url"))
@@ -86,28 +94,40 @@ class ConditionalCacheTest {
   }
 
   @Test
-  fun `eviction accounts for element count, not just the number of entries`() {
-    val lru = ConditionalCache(maxWeight = 3)
-    lru.put("big", listOf(1, 2, 3), "vb")
+  fun `a large payload evicts several small ones`() {
+    val lru = ConditionalCache(maxWeight = 10)
+    lru.put("x", bag(1), "vx")
+    lru.put("y", bag(1), "vy")
+    lru.put("z", bag(1), "vz")
 
-    // The three-element list already fills the budget, so adding one more element
-    // evicts the list even though only two keys were ever stored.
-    lru.put("one", "x", "vo")
+    // "big" holds nine elements, so fitting it pushes out the two oldest small entries.
+    lru.put("big", bag(9), "vb")
 
-    assertNull(lru.value<List<Int>>("big"))
-    assertEquals("x", lru.value<String>("one"))
+    assertNull(lru.value<Bag>("x"))
+    assertNull(lru.value<Bag>("y"))
+    assertEquals(1, lru.value<Bag>("z")?.items?.size)
+    assertEquals(9, lru.value<Bag>("big")?.items?.size)
+  }
+
+  @Test
+  fun `an entry larger than the whole budget is not retained`() {
+    val lru = ConditionalCache(maxWeight = 5)
+
+    lru.put("huge", bag(10), "vh")
+
+    assertNull(lru.value<Bag>("huge"))
   }
 
   @Test
   fun `re-putting a key updates its weight instead of double counting it`() {
-    val lru = ConditionalCache(maxWeight = 3)
-    lru.put("a", listOf(1, 2), "va")
-    lru.put("a", listOf(1, 2), "va")
+    val lru = ConditionalCache(maxWeight = 10)
+    lru.put("a", bag(4), "va")
+    lru.put("a", bag(4), "va")
 
-    // If the re-put double counted, the total would be 5 and "a" would be evicted here.
-    lru.put("b", "x", "vb")
+    // If the re-put double counted, "a" would weigh 8 and adding "b" (4) would evict it.
+    lru.put("b", bag(4), "vb")
 
-    assertEquals(listOf(1, 2), lru.value<List<Int>>("a"))
-    assertEquals("x", lru.value<String>("b"))
+    assertEquals(4, lru.value<Bag>("a")?.items?.size)
+    assertEquals(4, lru.value<Bag>("b")?.items?.size)
   }
 }
