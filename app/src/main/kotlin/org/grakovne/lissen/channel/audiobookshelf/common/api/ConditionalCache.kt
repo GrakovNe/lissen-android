@@ -1,5 +1,6 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.api
 
+import androidx.collection.LruCache
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 import java.util.concurrent.ConcurrentHashMap
@@ -11,67 +12,52 @@ import javax.inject.Singleton
  * holds the last deserialized object and its weak `ETag`; the [ConditionalCacheInterceptor]
  * reads the validator to revalidate, and [safeApiCall] writes the fresh object.
  *
- * The store is a weighted LRU: every entry carries a weight ([sizeOf]) and the total
- * is kept under [maxWeight] by evicting the least-recently-used entries first. Reads
- * count as use, so a resource served even on a `304` stays hot while cold pages fall
- * out. Nothing is persisted; [invalidateAll] drops everything on an identity change.
+ * Backed by [androidx.collection.LruCache]: every entry carries a weight ([sizeOf]) and
+ * the total is kept under the budget by evicting the least-recently-used entries first.
+ * Reads count as use, so a resource served even on a `304` stays hot while cold pages
+ * fall out. Nothing is persisted; [invalidateAll] drops everything on an identity change.
  */
 @Singleton
 class ConditionalCache
   internal constructor(
-    private val maxWeight: Int,
+    maxWeight: Int,
   ) {
     @Inject
     constructor() : this(DEFAULT_MAX_WEIGHT)
 
-    // accessOrder = true: a get() moves the entry to the most-recently-used tail, so
-    // iteration order is least-recently-used first, which is exactly the eviction order.
-    private val entries = LinkedHashMap<String, Entry>(16, 0.75f, true)
-    private var totalWeight = 0
+    // The weight is computed once on write and frozen onto the entry, so LruCache's
+    // accounting never re-measures a value that could have mutated underneath it.
+    private val entries =
+      object : LruCache<String, Entry>(maxWeight) {
+        override fun sizeOf(
+          key: String,
+          value: Entry,
+        ): Int = value.weight
+      }
 
     // Per-class list of the collection-valued fields used by the reflective weight
     // estimate; resolved once per type so a cache write does no field discovery.
     private val collectionFields = ConcurrentHashMap<Class<*>, List<Field>>()
 
-    @Synchronized
-    fun etag(url: String): String? = entries[url]?.etag
+    fun etag(url: String): String? = entries.get(url)?.etag
 
     @Suppress("UNCHECKED_CAST")
-    @Synchronized
-    fun <T> value(url: String): T? = entries[url]?.value as T?
+    fun <T> value(url: String): T? = entries.get(url)?.value as T?
 
-    @Synchronized
     fun put(
       url: String,
       value: Any?,
       etag: String?,
     ) {
-      entries.remove(url)?.let { totalWeight -= it.weight }
-
-      val weight = sizeOf(value)
-      entries[url] = Entry(value, etag, weight)
-      totalWeight += weight
-
-      evictToBudget()
+      entries.put(url, Entry(value, etag, sizeOf(value)))
     }
 
-    @Synchronized
     fun invalidate(url: String) {
-      entries.remove(url)?.let { totalWeight -= it.weight }
+      entries.remove(url)
     }
 
-    @Synchronized
     fun invalidateAll() {
-      entries.clear()
-      totalWeight = 0
-    }
-
-    private fun evictToBudget() {
-      val iterator = entries.entries.iterator()
-      while (totalWeight > maxWeight && iterator.hasNext()) {
-        totalWeight -= iterator.next().value.weight
-        iterator.remove()
-      }
+      entries.evictAll()
     }
 
     /**
@@ -81,7 +67,7 @@ class ConditionalCache
      * constant, so element count tracks retained memory while allocating nothing per
      * element — unlike `toString()`, which materializes the whole graph just to measure
      * it. The set of collection fields is resolved once per class and cached. Measured
-     * on write and stored on the entry; [maxWeight] is a budget in elements.
+     * on write and stored on the entry; the budget is expressed in elements.
      */
     private fun sizeOf(value: Any?): Int {
       if (value == null) return 1

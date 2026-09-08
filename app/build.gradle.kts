@@ -169,6 +169,7 @@ dependencies {
   implementation(libs.logging.interceptor)
   implementation(libs.okhttp)
   implementation(libs.androidx.browser)
+  implementation(libs.androidx.collection)
   
   implementation(libs.coil.compose)
   implementation(libs.coil.svg)
