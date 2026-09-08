@@ -30,12 +30,12 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
 /**
- * Drives [UserStateProvider] and [AudioBookshelfRepository] through a real
+ * Drives [ConditionalCache] and [AudioBookshelfRepository] through a real
  * Retrofit + Moshi + OkHttp stack against [MockWebServer], so the object
  * deserialization, the `If-None-Match` / `304` handshake and the "readers share
  * a single download" guarantee are exercised end to end rather than mocked.
  */
-class UserStateProviderIntegrationTest {
+class ConditionalCacheIntegrationTest {
   private val server = MockWebServer()
 
   private val context = mockk<Context>(relaxed = true)
@@ -46,7 +46,7 @@ class UserStateProviderIntegrationTest {
   private val loginResponseConverter = mockk<LoginResponseConverter>(relaxed = true)
 
   private lateinit var service: AudioBookShelfApiService
-  private lateinit var provider: UserStateProvider
+  private lateinit var cache: ConditionalCache
   private lateinit var repository: AudioBookshelfRepository
 
   private val progress = MediaProgressResponse("book-1", null, 42.0, false, 1000L, 0.5)
@@ -91,14 +91,16 @@ class UserStateProviderIntegrationTest {
 
     service.clientFactory = { AudioBookShelfApiService.ChannelClients(api = api, http = http) }
 
-    provider = UserStateProvider(service)
-    repository = AudioBookshelfRepository(context, service, provider)
+    cache = ConditionalCache(service)
+    repository = AudioBookshelfRepository(context, service, cache)
   }
 
   @AfterEach
   fun tearDown() {
     runCatching { server.close() }
   }
+
+  private suspend fun getUserState() = cache.load<UserStateResponse>(CacheKeys.USER_STATE) { client, etag -> client.fetchUserState(etag) }
 
   private fun ok(
     body: String,
@@ -123,7 +125,7 @@ class UserStateProviderIntegrationTest {
     runTest {
       server.enqueue(ok(json, "\"v1\""))
 
-      val result = provider.get()
+      val result = getUserState()
 
       assertTrue(result is OperationResult.Success)
       assertEquals(state, (result as OperationResult.Success).data)
@@ -137,11 +139,11 @@ class UserStateProviderIntegrationTest {
   fun `revalidates with If-None-Match and serves the cached object on 304 without re-downloading`() =
     runTest {
       server.enqueue(ok(json, "\"v1\""))
-      provider.get()
+      getUserState()
       server.takeRequest()
 
       server.enqueue(notModified("\"v1\""))
-      val result = provider.get()
+      val result = getUserState()
 
       assertEquals(OperationResult.Success(state), result)
 
@@ -159,7 +161,7 @@ class UserStateProviderIntegrationTest {
 
       val user = repository.fetchUserInfoResponse()
       val bookmarks = repository.fetchBookmarks()
-      val again = provider.get()
+      val again = getUserState()
 
       assertEquals(OperationResult.Success(UserResponse(listOf(progress))), user)
       assertEquals(OperationResult.Success(BookmarksResponse(listOf(bookmark))), bookmarks)
@@ -176,7 +178,7 @@ class UserStateProviderIntegrationTest {
   fun `a changed payload replaces the cached object`() =
     runTest {
       server.enqueue(ok(json, "\"v1\""))
-      provider.get()
+      getUserState()
       server.takeRequest()
 
       val changed =
@@ -185,7 +187,7 @@ class UserStateProviderIntegrationTest {
         """.trimIndent()
       server.enqueue(ok(changed, "\"v2\""))
 
-      val result = provider.get()
+      val result = getUserState()
 
       assertEquals(OperationResult.Success(UserStateResponse(emptyList(), emptyList())), result)
       assertEquals("\"v1\"", server.takeRequest().headers["If-None-Match"])
@@ -195,13 +197,13 @@ class UserStateProviderIntegrationTest {
   fun `invalidate drops the etag so the next read fetches unconditionally`() =
     runTest {
       server.enqueue(ok(json, "\"v1\""))
-      provider.get()
+      getUserState()
       server.takeRequest()
 
-      provider.invalidate()
+      cache.invalidateAll()
 
       server.enqueue(ok(json, "\"v2\""))
-      provider.get()
+      getUserState()
 
       assertNull(server.takeRequest().headers["If-None-Match"])
     }

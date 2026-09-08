@@ -12,10 +12,10 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-class UserStateProviderTest {
+class ConditionalCacheTest {
   private val apiService = mockk<AudioBookShelfApiService>()
 
-  private lateinit var provider: UserStateProvider
+  private lateinit var cache: ConditionalCache
 
   private val stateA =
     UserStateResponse(
@@ -37,11 +37,27 @@ class UserStateProviderTest {
 
   @BeforeEach
   fun setup() {
-    provider = UserStateProvider(apiService)
+    cache = ConditionalCache(apiService)
   }
+
+  private suspend fun loadUserState() =
+    cache.load<UserStateResponse>(CacheKeys.USER_STATE) { _, _ -> error("the client is supplied by the mocked service") }
 
   private fun stub(result: CacheableResult<UserStateResponse>) {
     coEvery { apiService.makeRequestCacheable<UserStateResponse>(any(), any()) } returns result
+  }
+
+  /** Stubs a sequence of results and records the cached object handed to the service on each read. */
+  private fun stubRecording(vararg results: CacheableResult<UserStateResponse>): MutableList<UserStateResponse?> {
+    val observed = mutableListOf<UserStateResponse?>()
+    var call = 0
+    coEvery { apiService.makeRequestCacheable<UserStateResponse>(any(), any()) } coAnswers {
+      observed += firstArg<UserStateResponse?>()
+      val result = results[minOf(call, results.lastIndex)]
+      call += 1
+      result
+    }
+    return observed
   }
 
   @Test
@@ -49,27 +65,27 @@ class UserStateProviderTest {
     runTest {
       stub(CacheableResult.Fresh(stateA, "v1"))
 
-      assertEquals(OperationResult.Success(stateA), provider.get())
+      assertEquals(OperationResult.Success(stateA), loadUserState())
     }
 
   @Test
   fun `a not-modified result serves the cached object`() =
     runTest {
       stub(CacheableResult.Fresh(stateA, "v1"))
-      provider.get()
+      loadUserState()
 
       stub(CacheableResult.NotModified(stateA, "v1"))
-      assertEquals(OperationResult.Success(stateA), provider.get())
+      assertEquals(OperationResult.Success(stateA), loadUserState())
     }
 
   @Test
   fun `a fresh object replaces the cached one`() =
     runTest {
       stub(CacheableResult.Fresh(stateA, "v1"))
-      provider.get()
+      loadUserState()
 
       stub(CacheableResult.Fresh(stateB, "v2"))
-      assertEquals(OperationResult.Success(stateB), provider.get())
+      assertEquals(OperationResult.Success(stateB), loadUserState())
     }
 
   @Test
@@ -77,8 +93,31 @@ class UserStateProviderTest {
     runTest {
       stub(CacheableResult.Error(OperationError.NetworkError))
 
-      val result = provider.get()
+      val result = loadUserState()
 
       assertEquals(OperationError.NetworkError, (result as OperationResult.Error).code)
+    }
+
+  @Test
+  fun `the stored object is revalidated on the next read`() =
+    runTest {
+      val observed = stubRecording(CacheableResult.Fresh(stateA, "v1"), CacheableResult.Fresh(stateB, "v2"))
+
+      loadUserState()
+      loadUserState()
+
+      assertEquals(listOf(null, stateA), observed)
+    }
+
+  @Test
+  fun `invalidating a key drops the stored object`() =
+    runTest {
+      val observed = stubRecording(CacheableResult.Fresh(stateA, "v1"), CacheableResult.Fresh(stateB, "v2"))
+
+      loadUserState()
+      cache.invalidate(CacheKeys.USER_STATE)
+      loadUserState()
+
+      assertEquals(listOf(null, null), observed)
     }
 }
