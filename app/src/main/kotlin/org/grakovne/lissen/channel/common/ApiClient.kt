@@ -2,6 +2,7 @@ package org.grakovne.lissen.channel.common
 
 import android.content.Context
 import com.squareup.moshi.Moshi
+import okhttp3.Interceptor
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.domain.fixUriScheme
 import org.grakovne.lissen.persistence.preferences.ConnectionPreferences
@@ -15,8 +16,10 @@ class ApiClient(
   session: SessionPreferences,
   connection: ConnectionPreferences,
   context: Context,
+  interceptors: List<Interceptor> = emptyList(),
 ) {
-  val httpClient = createOkHttpClient(requestHeaders, session = session, connection = connection, context = context)
+  val httpClient =
+    createOkHttpClient(requestHeaders, session = session, connection = connection, context = context, interceptors = interceptors)
 
   val retrofit: Retrofit? =
     runCatching {

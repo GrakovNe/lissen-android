@@ -202,9 +202,8 @@ class AudioBookshelfRepository
 
     suspend fun fetchBookmarks(): OperationResult<BookmarksResponse> =
       audioBookShelfApiService
-        .makeRequest {
-          it.fetchBookmarks()
-        }
+        .makeRequest { it.fetchUserState() }
+        .map { BookmarksResponse(it.bookmarks ?: emptyList()) }
 
     suspend fun createBookmarks(request: CreateBookmarkRequest): OperationResult<BookmarksItemResponse> =
       audioBookShelfApiService
@@ -248,9 +247,9 @@ class AudioBookshelfRepository
       }
 
     suspend fun fetchUserInfoResponse(): OperationResult<UserResponse> =
-      audioBookShelfApiService.makeRequest {
-        it.fetchUserInfo()
-      }
+      audioBookShelfApiService
+        .makeRequest { it.fetchUserState() }
+        .map { UserResponse(it.mediaProgress) }
 
     suspend fun startPlayback(
       itemId: String,

@@ -15,6 +15,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.grakovne.lissen.channel.audiobookshelf.Host
+import org.grakovne.lissen.channel.audiobookshelf.common.api.ConditionalCache
 import org.grakovne.lissen.channel.common.ConnectionInfo
 import org.grakovne.lissen.channel.common.DEFAULT_USER_AGENT
 import org.grakovne.lissen.channel.common.OperationError
@@ -79,6 +80,7 @@ class SettingsViewModelTest {
   private val offlineBookStorageProperties = mockk<OfflineBookStorageProperties>(relaxed = true)
   private val contentCachingManager = mockk<ContentCachingManager>(relaxed = true)
   private val mediaRepository = mockk<MediaRepository>(relaxed = true)
+  private val conditionalCache = mockk<ConditionalCache>(relaxed = true)
   private lateinit var viewModel: SettingsViewModel
 
   @BeforeEach
@@ -132,6 +134,7 @@ class SettingsViewModelTest {
         offlineBookStorageProperties,
         contentCachingManager,
         mediaRepository,
+        conditionalCache,
       )
   }
 
@@ -170,6 +173,7 @@ class SettingsViewModelTest {
         offlineBookStorageProperties,
         contentCachingManager,
         mediaRepository,
+        conditionalCache,
       )
 
     @Test
@@ -340,6 +344,7 @@ class SettingsViewModelTest {
           offlineBookStorageProperties,
           contentCachingManager,
           mediaRepository,
+          conditionalCache,
         )
 
       viewModel.changeAutoDownloadLibraryType(LibraryType.PODCAST, true)
@@ -367,6 +372,7 @@ class SettingsViewModelTest {
           offlineBookStorageProperties,
           contentCachingManager,
           mediaRepository,
+          conditionalCache,
         )
 
       viewModel.changeAutoDownloadLibraryType(LibraryType.PODCAST, false)
@@ -611,6 +617,7 @@ class SettingsViewModelTest {
           offlineBookStorageProperties,
           contentCachingManager,
           mediaRepository,
+          conditionalCache,
         )
       assertEquals("StoredAgent/3.0", viewModel.userAgent.value)
     }
@@ -701,6 +708,7 @@ class SettingsViewModelTest {
           offlineBookStorageProperties,
           contentCachingManager,
           mediaRepository,
+          conditionalCache,
         )
 
       viewModel.fetchLibraries()
@@ -733,6 +741,7 @@ class SettingsViewModelTest {
           offlineBookStorageProperties,
           contentCachingManager,
           mediaRepository,
+          conditionalCache,
         )
 
       viewModel.fetchLibraries()
@@ -763,6 +772,7 @@ class SettingsViewModelTest {
           offlineBookStorageProperties,
           contentCachingManager,
           mediaRepository,
+          conditionalCache,
         )
 
       viewModel.fetchLibraries()

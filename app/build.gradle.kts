@@ -169,6 +169,7 @@ dependencies {
   implementation(libs.logging.interceptor)
   implementation(libs.okhttp)
   implementation(libs.androidx.browser)
+  implementation(libs.androidx.collection)
   
   implementation(libs.coil.compose)
   implementation(libs.coil.svg)
@@ -224,6 +225,7 @@ dependencies {
   testImplementation(libs.junit.jupiter)
   testImplementation(libs.mockk)
   testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation(libs.mockwebserver)
   testRuntimeOnly(libs.junit.platform.launcher)
   
   androidTestImplementation(libs.androidx.room.testing)

@@ -19,6 +19,7 @@ fun createOkHttpClient(
   session: SessionPreferences,
   connection: ConnectionPreferences,
   context: Context,
+  interceptors: List<Interceptor> = emptyList(),
 ): OkHttpClient {
   val clientCertAlias = connection.getClientCertAlias()
 
@@ -31,6 +32,7 @@ fun createOkHttpClient(
     }
 
   return builder
+    .apply { interceptors.forEach { addInterceptor(it) } }
     .addInterceptor(loggingInterceptor())
     .addInterceptor { chain -> authInterceptor(chain, session, requestHeaders) }
     .connectTimeout(20, TimeUnit.SECONDS)
