@@ -15,6 +15,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.LoginResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarksItemResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarksResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.UserResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.UserStateResponse
 import org.grakovne.lissen.channel.common.OperationResult
@@ -213,5 +214,29 @@ class ConditionalCacheIntegrationTest {
       fetchUserState()
 
       assertNull(server.takeRequest().headers["If-None-Match"])
+    }
+
+  @Test
+  fun `a tagged endpoint with path and query params revalidates too`() =
+    runTest {
+      val libraryJson =
+        """
+        {"library":{"id":"lib1","name":"Audio","mediaType":"book","displayOrder":null},
+         "filterdata":{"authors":[],"genres":[],"tags":[],"series":[]}}
+        """.trimIndent()
+
+      server.enqueue(ok(libraryJson, "\"v1\""))
+      val first = repository.fetchLibrary("lib1")
+      assertTrue(first is OperationResult.Success)
+      val firstRequest = server.takeRequest()
+      assertEquals("/api/libraries/lib1", firstRequest.url.encodedPath)
+      assertNull(firstRequest.headers["If-None-Match"])
+
+      server.enqueue(notModified("\"v1\""))
+      val second = repository.fetchLibrary("lib1")
+
+      // The 304 is served from the cache: same object, and the validator went out on the wire.
+      assertEquals(first, second)
+      assertEquals("\"v1\"", server.takeRequest().headers["If-None-Match"])
     }
 }

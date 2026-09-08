@@ -39,12 +39,15 @@ import retrofit2.http.Tag
 
 interface AudiobookshelfApiClient {
   @GET("api/libraries")
-  suspend fun fetchLibraries(): Response<LibrariesResponse>
+  suspend fun fetchLibraries(
+    @Tag cacheable: Cacheable = Cacheable(),
+  ): Response<LibrariesResponse>
 
   @GET("api/libraries/{libraryId}")
   suspend fun fetchLibrary(
     @Path("libraryId") libraryId: String,
     @Query("include") include: String = "filterdata",
+    @Tag cacheable: Cacheable = Cacheable(),
   ): Response<LibraryResponse>
 
   @GET("api/libraries/{libraryId}/personalized")
@@ -87,6 +90,7 @@ interface AudiobookshelfApiClient {
     @Query("minified") minified: String = "1",
     @Query("filter") filter: String?,
     @Query("collapseseries") collapseSeries: String = "0",
+    @Tag cacheable: Cacheable = Cacheable(),
   ): Response<LibraryItemsResponse>
 
   @GET("api/libraries/{libraryId}/items")
@@ -97,6 +101,7 @@ interface AudiobookshelfApiClient {
     @Query("sort") sort: String,
     @Query("desc") desc: String,
     @Query("minified") minified: String = "1",
+    @Tag cacheable: Cacheable = Cacheable(),
   ): Response<PodcastItemsResponse>
 
   @GET("api/libraries/{libraryId}/authors")
@@ -106,6 +111,7 @@ interface AudiobookshelfApiClient {
     @Query("page") page: Int,
     @Query("sort") sort: String,
     @Query("desc") desc: String,
+    @Tag cacheable: Cacheable = Cacheable(),
   ): Response<LibraryAuthorsResponse>
 
   @GET("api/libraries/{libraryId}/search")
@@ -125,16 +131,19 @@ interface AudiobookshelfApiClient {
   @GET("api/items/{itemId}")
   suspend fun fetchLibraryItem(
     @Path("itemId") itemId: String,
+    @Tag cacheable: Cacheable = Cacheable(),
   ): Response<BookResponse>
 
   @GET("api/items/{itemId}")
   suspend fun fetchPodcastEpisode(
     @Path("itemId") itemId: String,
+    @Tag cacheable: Cacheable = Cacheable(),
   ): Response<PodcastResponse>
 
   @GET("api/authors/{authorId}?include=items")
   suspend fun fetchAuthorLibraryItems(
     @Path("authorId") authorId: String,
+    @Tag cacheable: Cacheable = Cacheable(),
   ): Response<AuthorItemsResponse>
 
   @POST("api/items/batch/get")
