@@ -41,6 +41,12 @@
 -keep class * extends androidx.glance.appwidget.GlanceAppWidget { *; }
 -keep class * extends androidx.glance.appwidget.GlanceAppWidgetReceiver { *; }
 
+# WorkManager (pulled in by glance-appwidget) — InputMerger is instantiated via Class.newInstance().
+# work-runtime 2.7.1 consumer rules keep the class but NOT its constructor, so R8 strips it and
+# every widget update dies with "has no zero argument constructor".
+-keep class * extends androidx.work.InputMerger { <init>(); }
+-keep class androidx.work.WorkerParameters { *; }
+
 # Glance ActionCallback — class name is serialized into RemoteViews and instantiated via Class.forName() on click
 -keep class * extends androidx.glance.appwidget.action.ActionCallback { *; }
 
