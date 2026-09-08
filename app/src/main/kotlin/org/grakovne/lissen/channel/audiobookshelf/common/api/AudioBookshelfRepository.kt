@@ -318,9 +318,13 @@ class AudioBookshelfRepository
         return OperationResult.Error(OperationError.InternalError, "not enough disk space")
       }
 
-      val dest = File.createTempFile("cover_", ".img", context.cacheDir)
+      // Creation is inside the try: a full or unwritable cacheDir surfaces as an
+      // OperationResult instead of an IOException escaping to the caller.
+      var dest: File? = null
 
       return try {
+        dest = File.createTempFile("cover_", ".img", context.cacheDir)
+
         val source = body.source()
         val chunk = Buffer()
         var sinceDiskCheck = 0L
@@ -350,7 +354,7 @@ class AudioBookshelfRepository
         }
       } catch (e: IOException) {
         Timber.w("Unable to stream $description to disk due to: ${e.message}")
-        dest.delete()
+        dest?.delete()
         OperationResult.Error(OperationError.NetworkError, e.message)
       }
     }
