@@ -6,7 +6,7 @@ plugins {
   alias(libs.plugins.compose.compiler)
   
   alias(libs.plugins.hilt.android)
-  id("org.jmailen.kotlinter") version "5.6.0"
+  id("org.jmailen.kotlinter") version "5.7.0"
   id("com.google.devtools.ksp")
   id("kotlin-parcelize")
 }
@@ -84,8 +84,8 @@ android {
     applicationId = "org.grakovne.lissen"
     minSdk = 28
     targetSdk = 37
-    versionCode = 11124
-    versionName = "1.11.24-release"
+    versionCode = 11200
+    versionName = "1.12.0-release"
     
     testInstrumentationRunner = "org.grakovne.lissen.HiltTestRunner"
     
