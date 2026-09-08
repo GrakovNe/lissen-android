@@ -57,6 +57,14 @@ class SafeApiCallTest {
     }
 
   @Test
+  fun `304 is an error on the plain path`() =
+    runTest {
+      val result = safeApiCall<String>(preferences) { Response.error(304, "".toResponseBody()) }
+
+      assertEquals(OperationError.InternalError, (result as OperationResult.Error).code)
+    }
+
+  @Test
   fun `cancellation is rethrown instead of being swallowed`() =
     runTest {
       var rethrown = false

@@ -38,37 +38,55 @@ class AudioBookShelfApiService
 
     private val mutex = Mutex()
 
-    suspend fun <T> makeRequest(apiCall: suspend (client: AudiobookshelfApiClient) -> Response<T>): OperationResult<T> {
+    suspend fun <T> makeRequest(apiCall: suspend (client: AudiobookshelfApiClient) -> Response<T>): OperationResult<T> =
+      executeWithRetry(
+        networkError = { OperationResult.Error(OperationError.NetworkError) },
+        call = { client -> safeApiCall(connection) { apiCall.invoke(client) } },
+      )
+
+    /**
+     * Conditional variant of [makeRequest] for weak-`ETag` endpoints: it reuses the
+     * same token refresh-and-retry loop but maps the response through
+     * [safeCacheableApiCall], serving [cached] when the server answers `304`.
+     */
+    suspend fun <T> makeRequestCacheable(
+      cached: T?,
+      apiCall: suspend (client: AudiobookshelfApiClient) -> Response<T>,
+    ): CacheableResult<T> =
+      executeWithRetry(
+        networkError = { CacheableResult.Error(OperationError.NetworkError) },
+        call = { client -> safeCacheableApiCall(connection, cached) { apiCall.invoke(client) } },
+      )
+
+    private suspend fun <R> executeWithRetry(
+      networkError: () -> R,
+      call: suspend (client: AudiobookshelfApiClient) -> R,
+    ): R {
       val accessToken = session.getAccessToken()
 
-      val callResult =
+      val result =
         getClientInstance()
-          ?.let { safeApiCall(connection) { apiCall.invoke(it) } }
-          ?: return OperationResult.Error(OperationError.NetworkError)
+          ?.let { call.invoke(it) }
+          ?: return networkError()
 
-      return when (callResult) {
-        is OperationResult.Error<*> -> {
-          when (callResult.code) {
-            OperationError.Unauthorized -> {
-              Timber.d("Request returned 401, refreshing token and retrying")
-              refreshToken(accessToken)
+      if (failureCode(result) == OperationError.Unauthorized) {
+        Timber.d("Request returned 401, refreshing token and retrying")
+        refreshToken(accessToken)
 
-              getClientInstance()
-                ?.let { safeApiCall(connection) { apiCall.invoke(it) } }
-                ?: OperationResult.Error(OperationError.NetworkError)
-            }
-
-            else -> {
-              callResult
-            }
-          }
-        }
-
-        is OperationResult.Success<*> -> {
-          callResult
-        }
+        return getClientInstance()
+          ?.let { call.invoke(it) }
+          ?: networkError()
       }
+
+      return result
     }
+
+    private fun <R> failureCode(result: R): OperationError? =
+      when (result) {
+        is OperationResult.Error<*> -> result.code
+        is CacheableResult.Error<*> -> result.code
+        else -> null
+      }
 
     private suspend fun refreshToken(usedAccessToken: String?) {
       mutex.withLock {
