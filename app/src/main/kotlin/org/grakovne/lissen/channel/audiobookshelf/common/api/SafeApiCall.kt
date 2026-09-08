@@ -16,8 +16,11 @@ private const val HTTP_NOT_MODIFIED = 304
  * The single entry point for every endpoint. A request tagged [Cacheable] is
  * revalidated on read: the [ConditionalCacheInterceptor] sends the stored weak
  * `ETag`, and here a `304 Not Modified` serves the object from [cache] while a
- * fresh `200` replaces it. Untagged requests take the plain path and never see a
- * `304` (they send no validator). Transport failures become [OperationResult.Error].
+ * fresh `200` replaces it — but only when the response carries an `ETag`, since a
+ * body without a validator could never be revalidated. If a `304` arrives after the
+ * cached object was evicted, the call is transparently re-issued to the network.
+ * Untagged requests take the plain path and never see a `304` (they send no validator).
+ * Transport failures become [OperationResult.Error].
  */
 suspend fun <T> safeApiCall(
   connection: ConnectionPreferences,
@@ -25,19 +28,22 @@ suspend fun <T> safeApiCall(
   apiCall: suspend () -> Response<T>,
 ): OperationResult<T> =
   try {
-    val response = apiCall.invoke()
-    val request = response.raw().request
+    val first = apiCall.invoke()
+    val request = first.raw().request
     val conditional = request.tag(Cacheable::class.java) != null
+    val url = request.url.toString()
 
-    when {
-      response.isSuccessful || response.code() == HTTP_NOT_MODIFIED -> {
-        mapResponse(response, request.url.toString(), conditional, cache)
-      }
+    // A tagged request was revalidated, but the cached object was evicted between the
+    // interceptor sending the validator and us reading it back. Fall back to the network:
+    // the cache no longer holds a validator, so the retry goes out without If-None-Match.
+    val evicted = conditional && first.code() == HTTP_NOT_MODIFIED && cache.value<Any?>(url) == null
+    val response = if (evicted) apiCall.invoke() else first
 
-      else -> {
-        response.errorBody()?.close()
-        errorForCode(response.code())
-      }
+    if (response.isSuccessful || response.code() == HTTP_NOT_MODIFIED) {
+      mapResponse(response, url, conditional, cache)
+    } else {
+      response.errorBody()?.close()
+      errorForCode(response.code())
     }
   } catch (e: SSLHandshakeException) {
     Timber.e("SSL handshake failed: $e")
@@ -75,7 +81,10 @@ private fun <T> mapResponse(
   @Suppress("UNCHECKED_CAST")
   return when {
     body != null -> {
-      if (conditional) cache.put(url, body, response.headers()["ETag"])
+      val etag = response.headers()["ETag"]
+      // An entry without a validator can never answer a 304, so caching it would only
+      // waste room in the LRU. Store only what can actually be revalidated.
+      if (conditional && etag != null) cache.put(url, body, etag)
       OperationResult.Success(body)
     }
 

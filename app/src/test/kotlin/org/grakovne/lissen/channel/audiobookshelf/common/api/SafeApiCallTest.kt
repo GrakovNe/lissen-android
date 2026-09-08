@@ -2,11 +2,14 @@ package org.grakovne.lissen.channel.audiobookshelf.common.api
 
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
+import okhttp3.Protocol
+import okhttp3.Request
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.persistence.preferences.ConnectionPreferences
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import retrofit2.Response
@@ -15,6 +18,7 @@ import kotlin.coroutines.cancellation.CancellationException
 class SafeApiCallTest {
   private val preferences = mockk<ConnectionPreferences>(relaxed = true)
   private val cache = ConditionalCache()
+  private val url = "https://host/api/me"
 
   @Test
   fun `successful response with body returns the body`() =
@@ -78,4 +82,81 @@ class SafeApiCallTest {
 
       assertTrue(rethrown)
     }
+
+  @Test
+  fun `304 with a cached value serves the cached object`() =
+    runTest {
+      cache.put(url, "cached", "v1")
+
+      val result = safeApiCall<String>(preferences, cache) { conditionalResponse(304) }
+
+      assertEquals(OperationResult.Success("cached"), result)
+    }
+
+  @Test
+  fun `304 without a cached value re-fetches from the network`() =
+    runTest {
+      var calls = 0
+
+      val result =
+        safeApiCall<String>(preferences, cache) {
+          calls += 1
+          if (calls == 1) conditionalResponse(304) else Response.success("fresh")
+        }
+
+      assertEquals(OperationResult.Success("fresh"), result)
+      assertEquals(2, calls)
+    }
+
+  @Test
+  fun `a conditional 200 with an etag is cached`() =
+    runTest {
+      val result = safeApiCall<String>(preferences, cache) { conditionalResponse(200, "body", "v1") }
+
+      assertEquals(OperationResult.Success("body"), result)
+      assertEquals("body", cache.value<String>(url))
+      assertEquals("v1", cache.etag(url))
+    }
+
+  @Test
+  fun `a conditional 200 without an etag is not cached`() =
+    runTest {
+      val result = safeApiCall<String>(preferences, cache) { conditionalResponse(200, "body") }
+
+      assertEquals(OperationResult.Success("body"), result)
+      assertNull(cache.value<String>(url))
+      assertNull(cache.etag(url))
+    }
+
+  /**
+   * Builds a [Response] whose underlying request carries the [Cacheable] tag, so
+   * [safeApiCall] treats it as a conditional request the same way the real
+   * [ConditionalCacheInterceptor] would.
+   */
+  private fun conditionalResponse(
+    code: Int,
+    body: String? = null,
+    etag: String? = null,
+  ): Response<String> {
+    val request =
+      Request
+        .Builder()
+        .url(url)
+        .tag(Cacheable::class, Cacheable())
+        .build()
+
+    val raw =
+      okhttp3
+        .Response
+        .Builder()
+        .request(request)
+        .protocol(Protocol.HTTP_1_1)
+        .code(code)
+        .message("")
+        .apply { etag?.let { addHeader("ETag", it) } }
+        .body((body ?: "").toResponseBody())
+        .build()
+
+    return if (code in 200..299) Response.success(body, raw) else Response.error(raw.body, raw)
+  }
 }
