@@ -127,10 +127,8 @@ suspend fun <T> safeCacheableApiCall(
 
     when {
       response.code() == HTTP_NOT_MODIFIED -> {
-        val stale = cached
-
         when {
-          stale != null -> OperationResult.Success(CacheableResult.NotModified(stale, etag))
+          cached != null -> OperationResult.Success(CacheableResult.NotModified(cached, etag))
           else -> OperationResult.Error(OperationError.InternalError)
         }
       }
