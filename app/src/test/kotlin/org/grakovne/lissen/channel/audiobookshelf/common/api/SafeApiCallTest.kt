@@ -14,11 +14,12 @@ import kotlin.coroutines.cancellation.CancellationException
 
 class SafeApiCallTest {
   private val preferences = mockk<ConnectionPreferences>(relaxed = true)
+  private val cache = ConditionalCache()
 
   @Test
   fun `successful response with body returns the body`() =
     runTest {
-      val result = safeApiCall(preferences) { Response.success("data") }
+      val result = safeApiCall(preferences, cache) { Response.success("data") }
 
       assertEquals(OperationResult.Success("data"), result)
     }
@@ -26,7 +27,7 @@ class SafeApiCallTest {
   @Test
   fun `successful response without body is an error instead of a poisoned success`() =
     runTest {
-      val result = safeApiCall<String>(preferences) { Response.success(null) }
+      val result = safeApiCall<String>(preferences, cache) { Response.success(null) }
 
       assertTrue(result is OperationResult.Error)
       assertEquals(OperationError.InternalError, (result as OperationResult.Error).code)
@@ -35,7 +36,7 @@ class SafeApiCallTest {
   @Test
   fun `204 no content stays a success for void endpoints`() =
     runTest {
-      val result = safeApiCall<Unit>(preferences) { Response.success<Unit>(204, null) }
+      val result = safeApiCall<Unit>(preferences, cache) { Response.success<Unit>(204, null) }
 
       assertEquals(OperationResult.Success(Unit), result)
     }
@@ -43,7 +44,7 @@ class SafeApiCallTest {
   @Test
   fun `401 maps to unauthorized`() =
     runTest {
-      val result = safeApiCall<String>(preferences) { Response.error(401, "".toResponseBody()) }
+      val result = safeApiCall<String>(preferences, cache) { Response.error(401, "".toResponseBody()) }
 
       assertEquals(OperationError.Unauthorized, (result as OperationResult.Error).code)
     }
@@ -51,7 +52,7 @@ class SafeApiCallTest {
   @Test
   fun `404 maps to not found`() =
     runTest {
-      val result = safeApiCall<String>(preferences) { Response.error(404, "".toResponseBody()) }
+      val result = safeApiCall<String>(preferences, cache) { Response.error(404, "".toResponseBody()) }
 
       assertEquals(OperationError.NotFoundError, (result as OperationResult.Error).code)
     }
@@ -59,7 +60,7 @@ class SafeApiCallTest {
   @Test
   fun `304 is an error on the plain path`() =
     runTest {
-      val result = safeApiCall<String>(preferences) { Response.error(304, "".toResponseBody()) }
+      val result = safeApiCall<String>(preferences, cache) { Response.error(304, "".toResponseBody()) }
 
       assertEquals(OperationError.InternalError, (result as OperationResult.Error).code)
     }
@@ -70,7 +71,7 @@ class SafeApiCallTest {
       var rethrown = false
 
       try {
-        safeApiCall<String>(preferences) { throw CancellationException("cancelled") }
+        safeApiCall<String>(preferences, cache) { throw CancellationException("cancelled") }
       } catch (e: CancellationException) {
         rethrown = true
       }

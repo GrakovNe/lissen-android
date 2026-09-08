@@ -1,6 +1,7 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.client
 
 import okhttp3.ResponseBody
+import org.grakovne.lissen.channel.audiobookshelf.common.api.Cacheable
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarkRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarksItemResponse
@@ -34,6 +35,7 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 import retrofit2.http.Streaming
+import retrofit2.http.Tag
 
 interface AudiobookshelfApiClient {
   @GET("api/libraries")
@@ -60,7 +62,7 @@ interface AudiobookshelfApiClient {
 
   @GET("api/me")
   suspend fun fetchUserState(
-    @Header("If-None-Match") ifNoneMatch: String?,
+    @Tag cacheable: Cacheable = Cacheable(),
   ): Response<UserStateResponse>
 
   @POST("api/me/item/{libraryItemId}/bookmark")

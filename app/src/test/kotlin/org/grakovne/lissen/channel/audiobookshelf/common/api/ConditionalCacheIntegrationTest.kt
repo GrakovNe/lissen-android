@@ -30,10 +30,11 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
 /**
- * Drives [ConditionalCache] and [AudioBookshelfRepository] through a real
- * Retrofit + Moshi + OkHttp stack against [MockWebServer], so the object
- * deserialization, the `If-None-Match` / `304` handshake and the "readers share
- * a single download" guarantee are exercised end to end rather than mocked.
+ * Drives [ConditionalCache] end to end through a real Retrofit + Moshi + OkHttp stack
+ * against [MockWebServer]. The `@Cacheable` tag on `fetchUserState` makes the
+ * [ConditionalCacheInterceptor] revalidate it, so the `If-None-Match` / `304` handshake,
+ * the "downloaded once, revalidated afterwards" guarantee and [ConditionalCache.invalidateAll]
+ * are exercised rather than mocked.
  */
 class ConditionalCacheIntegrationTest {
   private val server = MockWebServer()
@@ -45,8 +46,9 @@ class ConditionalCacheIntegrationTest {
   private val requestHeadersProvider = mockk<RequestHeadersProvider>()
   private val loginResponseConverter = mockk<LoginResponseConverter>(relaxed = true)
 
+  private val cache = ConditionalCache()
+
   private lateinit var service: AudioBookShelfApiService
-  private lateinit var cache: ConditionalCache
   private lateinit var repository: AudioBookshelfRepository
 
   private val progress = MediaProgressResponse("book-1", null, 42.0, false, 1000L, 0.5)
@@ -77,9 +79,15 @@ class ConditionalCacheIntegrationTest {
         connection = connection,
         requestHeadersProvider = requestHeadersProvider,
         loginResponseConverter = loginResponseConverter,
+        conditionalCache = cache,
       )
 
-    val http = OkHttpClient()
+    val http =
+      OkHttpClient
+        .Builder()
+        .addInterceptor(ConditionalCacheInterceptor(cache))
+        .build()
+
     val api =
       Retrofit
         .Builder()
@@ -91,8 +99,7 @@ class ConditionalCacheIntegrationTest {
 
     service.clientFactory = { AudioBookShelfApiService.ChannelClients(api = api, http = http) }
 
-    cache = ConditionalCache(service)
-    repository = AudioBookshelfRepository(context, service, cache)
+    repository = AudioBookshelfRepository(context, service)
   }
 
   @AfterEach
@@ -100,7 +107,7 @@ class ConditionalCacheIntegrationTest {
     runCatching { server.close() }
   }
 
-  private suspend fun getUserState() = cache.load<UserStateResponse>(CacheKeys.USER_STATE) { client, etag -> client.fetchUserState(etag) }
+  private suspend fun fetchUserState() = service.makeRequest { it.fetchUserState() }
 
   private fun ok(
     body: String,
@@ -125,7 +132,7 @@ class ConditionalCacheIntegrationTest {
     runTest {
       server.enqueue(ok(json, "\"v1\""))
 
-      val result = getUserState()
+      val result = fetchUserState()
 
       assertTrue(result is OperationResult.Success)
       assertEquals(state, (result as OperationResult.Success).data)
@@ -139,11 +146,11 @@ class ConditionalCacheIntegrationTest {
   fun `revalidates with If-None-Match and serves the cached object on 304 without re-downloading`() =
     runTest {
       server.enqueue(ok(json, "\"v1\""))
-      getUserState()
+      fetchUserState()
       server.takeRequest()
 
       server.enqueue(notModified("\"v1\""))
-      val result = getUserState()
+      val result = fetchUserState()
 
       assertEquals(OperationResult.Success(state), result)
 
@@ -161,7 +168,7 @@ class ConditionalCacheIntegrationTest {
 
       val user = repository.fetchUserInfoResponse()
       val bookmarks = repository.fetchBookmarks()
-      val again = getUserState()
+      val again = fetchUserState()
 
       assertEquals(OperationResult.Success(UserResponse(listOf(progress))), user)
       assertEquals(OperationResult.Success(BookmarksResponse(listOf(bookmark))), bookmarks)
@@ -178,7 +185,7 @@ class ConditionalCacheIntegrationTest {
   fun `a changed payload replaces the cached object`() =
     runTest {
       server.enqueue(ok(json, "\"v1\""))
-      getUserState()
+      fetchUserState()
       server.takeRequest()
 
       val changed =
@@ -187,23 +194,23 @@ class ConditionalCacheIntegrationTest {
         """.trimIndent()
       server.enqueue(ok(changed, "\"v2\""))
 
-      val result = getUserState()
+      val result = fetchUserState()
 
       assertEquals(OperationResult.Success(UserStateResponse(emptyList(), emptyList())), result)
       assertEquals("\"v1\"", server.takeRequest().headers["If-None-Match"])
     }
 
   @Test
-  fun `invalidate drops the etag so the next read fetches unconditionally`() =
+  fun `invalidateAll drops the etag so the next read fetches unconditionally`() =
     runTest {
       server.enqueue(ok(json, "\"v1\""))
-      getUserState()
+      fetchUserState()
       server.takeRequest()
 
       cache.invalidateAll()
 
       server.enqueue(ok(json, "\"v2\""))
-      getUserState()
+      fetchUserState()
 
       assertNull(server.takeRequest().headers["If-None-Match"])
     }

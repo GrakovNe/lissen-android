@@ -30,6 +30,7 @@ class AudioBookShelfApiService
     private val connection: ConnectionPreferences,
     private val requestHeadersProvider: RequestHeadersProvider,
     private val loginResponseConverter: LoginResponseConverter,
+    private val conditionalCache: ConditionalCache,
   ) {
     private var cachedConfig: ClientConfig? = null
     private var clientCache: ChannelClients? = null
@@ -41,21 +42,7 @@ class AudioBookShelfApiService
     suspend fun <T> makeRequest(apiCall: suspend (client: AudiobookshelfApiClient) -> Response<T>): OperationResult<T> =
       executeWithRetry(
         networkError = { OperationResult.Error(OperationError.NetworkError) },
-        call = { client -> safeApiCall(connection) { apiCall.invoke(client) } },
-      )
-
-    /**
-     * Conditional variant of [makeRequest] for weak-`ETag` endpoints: it reuses the
-     * same token refresh-and-retry loop but maps the response through
-     * [safeCacheableApiCall], serving [cached] when the server answers `304`.
-     */
-    suspend fun <T> makeRequestCacheable(
-      cached: T?,
-      apiCall: suspend (client: AudiobookshelfApiClient) -> Response<T>,
-    ): CacheableResult<T> =
-      executeWithRetry(
-        networkError = { CacheableResult.Error(OperationError.NetworkError) },
-        call = { client -> safeCacheableApiCall(connection, cached) { apiCall.invoke(client) } },
+        call = { client -> safeApiCall(connection, conditionalCache) { apiCall.invoke(client) } },
       )
 
     private suspend fun <R> executeWithRetry(
@@ -84,7 +71,6 @@ class AudioBookShelfApiService
     private fun <R> failureCode(result: R): OperationError? =
       when (result) {
         is OperationResult.Error<*> -> result.code
-        is CacheableResult.Error<*> -> result.code
         else -> null
       }
 
@@ -99,7 +85,7 @@ class AudioBookShelfApiService
 
         val refreshResult =
           getClientInstance()
-            ?.let { safeApiCall(connection) { it.refreshToken(currentToken) } }
+            ?.let { safeApiCall(connection, conditionalCache) { it.refreshToken(currentToken) } }
             ?.map { loginResponseConverter.apply(it) }
             ?: return
 
@@ -164,6 +150,7 @@ class AudioBookShelfApiService
           connection = connection,
           requestHeaders = headers,
           context = context,
+          interceptors = listOf(ConditionalCacheInterceptor(conditionalCache)),
         )
 
       val api =

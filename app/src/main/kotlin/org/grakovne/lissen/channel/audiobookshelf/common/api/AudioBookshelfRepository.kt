@@ -48,7 +48,6 @@ class AudioBookshelfRepository
   constructor(
     @param:ApplicationContext private val context: Context,
     private val audioBookShelfApiService: AudioBookShelfApiService,
-    private val conditionalCache: ConditionalCache,
   ) {
     fun provideHttpClient(): OkHttpClient? = audioBookShelfApiService.provideHttpClient()
 
@@ -202,8 +201,8 @@ class AudioBookshelfRepository
       }
 
     suspend fun fetchBookmarks(): OperationResult<BookmarksResponse> =
-      conditionalCache
-        .load(CacheKeys.USER_STATE) { client, etag -> client.fetchUserState(etag) }
+      audioBookShelfApiService
+        .makeRequest { it.fetchUserState() }
         .map { BookmarksResponse(it.bookmarks ?: emptyList()) }
 
     suspend fun createBookmarks(request: CreateBookmarkRequest): OperationResult<BookmarksItemResponse> =
@@ -248,8 +247,8 @@ class AudioBookshelfRepository
       }
 
     suspend fun fetchUserInfoResponse(): OperationResult<UserResponse> =
-      conditionalCache
-        .load(CacheKeys.USER_STATE) { client, etag -> client.fetchUserState(etag) }
+      audioBookShelfApiService
+        .makeRequest { it.fetchUserState() }
         .map { UserResponse(it.mediaProgress) }
 
     suspend fun startPlayback(

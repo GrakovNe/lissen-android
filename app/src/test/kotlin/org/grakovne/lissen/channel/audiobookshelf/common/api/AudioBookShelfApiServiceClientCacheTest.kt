@@ -55,6 +55,7 @@ class AudioBookShelfApiServiceClientCacheTest {
         connection = connection,
         requestHeadersProvider = requestHeadersProvider,
         loginResponseConverter = loginResponseConverter,
+        conditionalCache = ConditionalCache(),
       )
 
     service.clientFactory = {
