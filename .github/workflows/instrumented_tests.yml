@@ -43,9 +43,8 @@ jobs:
             adb install -r app/build/outputs/apk/minified/app-minified.apk
             adb install -r -t minifiedTest/build/outputs/apk/minified/minifiedTest-minified.apk
             mkdir -p minifiedTest/build/outputs/androidTest-results
-            minified_test_output="$(adb shell am instrument -w org.grakovne.lissen.minifiedtest/androidx.test.runner.AndroidJUnitRunner)"
-            printf '%s\n' "$minified_test_output" | tee minifiedTest/build/outputs/androidTest-results/minified.txt
-            printf '%s\n' "$minified_test_output" | grep -Eq '^OK \([1-9][0-9]* tests?\)$'
+            adb shell am instrument -w org.grakovne.lissen.minifiedtest/androidx.test.runner.AndroidJUnitRunner | tee minifiedTest/build/outputs/androidTest-results/minified.txt
+            grep -Eq '^OK \([1-9][0-9]* tests?\)$' minifiedTest/build/outputs/androidTest-results/minified.txt
 
       - name: Upload test results
         if: always()

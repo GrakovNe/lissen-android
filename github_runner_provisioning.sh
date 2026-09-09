@@ -40,6 +40,13 @@ apt-get install -y -qq \
 # ---- 2. runner user, with KVM access for the emulator ------------------------
 id "${RUNNER_USER}" &>/dev/null || useradd -m -s /bin/bash "${RUNNER_USER}"
 usermod -aG kvm "${RUNNER_USER}"   # emulator needs /dev/kvm (crw-rw---- root:kvm)
+# inside an LXC container /dev/kvm is bind-mounted from the host and its gid may
+# not match the local kvm group; also join the group that actually owns the node
+if [ -c /dev/kvm ]; then
+  kvm_gid=$(stat -c '%g' /dev/kvm)
+  getent group "${kvm_gid}" &>/dev/null || groupadd -g "${kvm_gid}" kvmhost
+  usermod -aG "${kvm_gid}" "${RUNNER_USER}"
+fi
 
 # ---- 3. Android SDK (system-wide, owned by runner user) ----------------------
 # The bootstrap zip must never be unpacked into cmdline-tools/latest: that path
