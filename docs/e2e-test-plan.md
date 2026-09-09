@@ -39,7 +39,7 @@ lookups used by the UI.
   - `Fixture Series One` — 3+ short chapters (~1 min, Vorbis/Opus) for playback tests;
   - `Fixture Series Two` — many chapters / paging, for library navigation;
   - a title unique enough that a search query returns exactly it;
-  - `Fixture Large Chapter` — one ~500 MB chapter for download tests (nightly lane only);
+  - `Fixture Large Chapter` — one ~500 MB chapter for download tests;
   - `Fixture Broken` — a series with intentionally invalid files: truncated audio, zero-byte
     file, wrong mime/extension, garbage bytes served under an audio name.
 - QA stand API access for assertions that the UI cannot see (sync state, bookmarks on server):
@@ -49,13 +49,11 @@ lookups used by the UI.
 
 ## Suite layout
 
-One test class per area, 2-5 tests each. Every test costs a cold start (~10-15 s), heavy
-scenarios (large download, sync) cost minutes, so the suite runs in two lanes:
-
-- **smoke** — phases 1-4 + widget/shortcut registration checks; runs in every `verify` job,
-  budget ~30 tests / ~10 min;
-- **nightly** — sync batch, large downloads, broken files, rotation/network robustness;
-  runs once a day from a scheduled pipeline with `-e lane nightly`.
+One test class per area, 2-5 tests each. **Invariant: every pipeline runs the whole suite** -
+no smoke/nightly split, no tag filtering, nothing quarantined to a schedule. Expect the `verify`
+job to grow to roughly 30-40 min (~45 tests with cold starts plus sync/large-file scenarios);
+that is the accepted cost. When adding tests keep the runtime in mind, but never move a test
+out of the main run.
 
 ### 1. Login and session (exists, extend)
 
@@ -116,22 +114,22 @@ and resource shrinking can silently break both.
 
 | # | Test | Expected |
 |---|---|---|
-| 6.1 | Widget provider registered | `dumpsys appwidget` lists the Lissen provider |
-| 6.2 | Widget update broadcast does not crash | broadcast + logcat clean |
-| 6.3 | Widget visible on launcher after add | widget host shows playback controls (best-effort, nightly) |
-| 6.4 | App shortcuts listed | `pm get-app-shortcuts` returns the expected shortcut ids |
-| 6.5 | Launch via shortcut intent | lands on the target screen (e.g. player/library) |
+| 6.1 | Widget providers registered | `dumpsys appwidget` lists both Lissen receivers (under the `.minified` package) |
+| 6.2 | Bind widget via Android 14 `cmd appwidget bind` | host view renders, logcat clean (no launcher UI needed) |
+| 6.3 | Playback state reaches the bound widget | start playback, widget shows playing state |
+| 6.4 | App shortcuts listed | `pm get-app-shortcuts <launcher>` returns the continue-playback shortcut |
+| 6.5 | Launch via shortcut intent | lands on the player with the last book |
 
 ### 7. Offline downloads and local playback
 
 | # | Test | Expected |
 |---|---|---|
 | 7.1 | Download a short chapter | completes, shows "downloaded" state |
-| 7.2 | Play downloaded chapter with network off | plays from local storage (airplane mode via `svc data off`) |
+| 7.2 | Play downloaded chapter with network off | plays from local storage (airplane mode via `cmd connectivity airplane-mode enable`) |
 | 7.3 | Cancel download mid-flight | partial state cleaned, chapter back to "download" |
 | 7.4 | Downloaded chapter survives app restart | still listed and playable offline |
 
-### 8. Sync (nightly batch)
+### 8. Sync (batch)
 
 Assertions combine UI and direct QA stand API checks (`E2E_API_TOKEN`).
 
@@ -144,7 +142,7 @@ Assertions combine UI and direct QA stand API checks (`E2E_API_TOKEN`).
 | 8.5 | Repeated sync is idempotent | two syncs -> no duplicate series/chapters |
 | 8.6 | Token refresh / re-auth mid-session | expire token on server side -> app re-logins transparently |
 
-### 9. Large files and invalid input (nightly)
+### 9. Large files and invalid input
 
 | # | Test | Expected |
 |---|---|---|
@@ -158,9 +156,21 @@ Assertions combine UI and direct QA stand API checks (`E2E_API_TOKEN`).
 
 | # | Test | Expected |
 |---|---|---|
-| 10.1 | Rotation during playback | player survives, keeps playing |
-| 10.2 | Network cut during playback, then restore | error handled, playback resumable |
+| 10.1 | Process death during playback (`am kill`) | restart resumes the chapter at the last position |
+| 10.2 | Network cut during playback, then restore | error handled, playback resumable (`cmd connectivity airplane-mode`) |
 | 10.3 | R8 guard: scan logcat after suite | no `ClassNotFoundException` / `NoSuchMethodError` / `Proguard`-related failures |
+
+## Extension candidates (proposed, not yet scheduled)
+
+| Area | Test | Why |
+|---|---|---|
+| Podcasts | browse a podcast, play an episode | `PodcastAudiobookshelfChannel` is a second content type with its own converters - zero e2e coverage |
+| Recent listening | continue-listening shelf shows the last played book | `RecentListeningResponseConverter` path, also backs the shortcut |
+| Media session | `adb shell media dispatch play_pause / fast-forward` controls playback | notification/headset path without UI taps |
+| Locale | switch system locale to `cs-CZ` and `zh-CN`, cold start | translations + Compose resources under R8, cheap to run |
+| Upgrade path | install previous release, then the minified build over it | Room `Migrations` and session survival across update - classic R8/Room breakage; requires signing both APKs with the CI keystore |
+| Storage cleanup | delete a downloaded book frees disk | `ContentCachingManager` removal path, complements 7.x/9.2 |
+| Caching notification | bulk caching shows progress and completes | `ContentCachingNotificationService` |
 
 ## Failure diagnostics
 
@@ -172,9 +182,8 @@ On any failed test capture and upload as CI artifact:
 
 ## CI integration and acceptance
 
-- Smoke lane runs in the existing `verify` job after the debug instrumented suite (already wired).
-- Nightly lane runs from a scheduled GitLab pipeline (schedule with `LANE=nightly`);
-  the suite reads `-e lane` and filters by JUnit `@Tag("nightly")`.
+- The full suite runs in the existing `verify` job after the debug instrumented suite
+  (already wired). Every pipeline, every test - no lane filtering.
 - Pass arguments from GitLab variables (section above); variables are masked, protected.
 - A test is "adopted" only after 3 consecutive green pipelines; flaky-first tests run as
   `retry: 1` for one iteration, then must be fixed or deleted.
@@ -183,9 +192,9 @@ On any failed test capture and upload as CI artifact:
 ## Order of work
 
 1. Provision QA stand data + fixtures (incl. large/broken) -> GitLab variables; drop demo fallbacks.
-2. Phase 1 remainder (1.4-1.6); smoke/nightly lane split + nightly schedule.
+2. Phase 1 remainder (1.4-1.6).
 3. Phase 3 playback (highest risk, biggest value).
 4. Phases 2, 4, 5 (bookmarks), 6 (widgets/shortcuts).
 5. Phase 7 offline downloads, then phase 8 sync batch (needs `E2E_API_TOKEN` helper).
-6. Phase 9 large/invalid files (nightly), phase 10 robustness.
+6. Phase 9 large/invalid files, phase 10 robustness.
 7. Diagnostics/artifacts polish; freeze suite size.
