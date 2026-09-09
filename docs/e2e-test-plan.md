@@ -38,13 +38,24 @@ lookups used by the UI.
 - Account `e2e` with access to a pinned library:
   - `Fixture Series One` — 3+ short chapters (~1 min, Vorbis/Opus) for playback tests;
   - `Fixture Series Two` — many chapters / paging, for library navigation;
-  - a title unique enough that a search query returns exactly it.
+  - a title unique enough that a search query returns exactly it;
+  - `Fixture Large Chapter` — one ~500 MB chapter for download tests (nightly lane only);
+  - `Fixture Broken` — a series with intentionally invalid files: truncated audio, zero-byte
+    file, wrong mime/extension, garbage bytes served under an audio name.
+- QA stand API access for assertions that the UI cannot see (sync state, bookmarks on server):
+  `E2E_API_TOKEN` GitLab variable + a small helper in the test module that queries the server
+  over HTTP directly.
 - Dataset is stable between pipelines; if the QA stand allows, a reset hook runs before the suite.
 
 ## Suite layout
 
-One test class per area, 2-5 tests each. Budget: every test costs a cold start (~10-15 s),
-keep the whole suite under ~30 tests / ~10 min.
+One test class per area, 2-5 tests each. Every test costs a cold start (~10-15 s), heavy
+scenarios (large download, sync) cost minutes, so the suite runs in two lanes:
+
+- **smoke** — phases 1-4 + widget/shortcut registration checks; runs in every `verify` job,
+  budget ~30 tests / ~10 min;
+- **nightly** — sync batch, large downloads, broken files, rotation/network robustness;
+  runs once a day from a scheduled pipeline with `-e lane nightly`.
 
 ### 1. Login and session (exists, extend)
 
@@ -85,14 +96,71 @@ keep the whole suite under ~30 tests / ~10 min.
 | 4.1 | Open settings, change theme | applied immediately |
 | 4.2 | Theme survives restart | cold start uses chosen theme |
 | 4.3 | Equalizer screen opens | no crash (media3 effect classes under R8) |
+| 4.4 | Playback speed change applies to playback | player shows new speed, pitch/audio follow |
+| 4.5 | Sleep timer fires | playback stops after the shortest selectable delay |
+| 4.6 | Every settings sub-screen opens and backs out | no crash on any screen (smoke walk) |
 
-### 5. Robustness
+### 5. Bookmarks
 
 | # | Test | Expected |
 |---|---|---|
-| 5.1 | Rotation during playback | player survives, keeps playing |
-| 5.2 | Network cut during playback, then restore | error handled, playback resumable |
-| 5.3 | R8 guard: scan logcat after suite | no `ClassNotFoundException` / `NoSuchMethodError` / `Proguard`-related failures |
+| 5.1 | Create bookmark during playback | bookmark appears in the list with current timestamp |
+| 5.2 | Tap bookmark | player seeks to the bookmarked position |
+| 5.3 | Delete bookmark | gone from the list, survives restart |
+| 5.4 | Bookmark reaches the server | QA API (`E2E_API_TOKEN`) shows the bookmark for the chapter |
+
+### 6. Widgets and app shortcuts
+
+Widget/shortcut plumbing is registered via manifest and reflection-friendly metadata - R8
+and resource shrinking can silently break both.
+
+| # | Test | Expected |
+|---|---|---|
+| 6.1 | Widget provider registered | `dumpsys appwidget` lists the Lissen provider |
+| 6.2 | Widget update broadcast does not crash | broadcast + logcat clean |
+| 6.3 | Widget visible on launcher after add | widget host shows playback controls (best-effort, nightly) |
+| 6.4 | App shortcuts listed | `pm get-app-shortcuts` returns the expected shortcut ids |
+| 6.5 | Launch via shortcut intent | lands on the target screen (e.g. player/library) |
+
+### 7. Offline downloads and local playback
+
+| # | Test | Expected |
+|---|---|---|
+| 7.1 | Download a short chapter | completes, shows "downloaded" state |
+| 7.2 | Play downloaded chapter with network off | plays from local storage (airplane mode via `svc data off`) |
+| 7.3 | Cancel download mid-flight | partial state cleaned, chapter back to "download" |
+| 7.4 | Downloaded chapter survives app restart | still listed and playable offline |
+
+### 8. Sync (nightly batch)
+
+Assertions combine UI and direct QA stand API checks (`E2E_API_TOKEN`).
+
+| # | Test | Expected |
+|---|---|---|
+| 8.1 | Listen 30 s -> position on server | QA API reports progress > 0 for the chapter |
+| 8.2 | Fresh install resumes server position | clear data, login, player offers server position |
+| 8.3 | Server-side library change syncs | fixture added via API appears after pull/sync |
+| 8.4 | Offline changes flush on reconnect | progress made in airplane mode reaches server after reconnect |
+| 8.5 | Repeated sync is idempotent | two syncs -> no duplicate series/chapters |
+| 8.6 | Token refresh / re-auth mid-session | expire token on server side -> app re-logins transparently |
+
+### 9. Large files and invalid input (nightly)
+
+| # | Test | Expected |
+|---|---|---|
+| 9.1 | Download `Fixture Large Chapter` (~500 MB) | completes within timeout, plays |
+| 9.2 | Cancel large download at ~50% | storage reclaimed (`df` delta), no orphan files |
+| 9.3 | Play truncated audio file | recoverable error shown, app alive |
+| 9.4 | Play zero-byte / garbage-under-audio-mime file | error handled, no crash, other chapters still playable |
+| 9.5 | Storage pressure | fill emulator storage near full -> download fails with a clear error, no crash |
+
+### 10. Robustness
+
+| # | Test | Expected |
+|---|---|---|
+| 10.1 | Rotation during playback | player survives, keeps playing |
+| 10.2 | Network cut during playback, then restore | error handled, playback resumable |
+| 10.3 | R8 guard: scan logcat after suite | no `ClassNotFoundException` / `NoSuchMethodError` / `Proguard`-related failures |
 
 ## Failure diagnostics
 
@@ -104,7 +172,9 @@ On any failed test capture and upload as CI artifact:
 
 ## CI integration and acceptance
 
-- Suite runs in the existing `verify` job after the debug instrumented suite (already wired).
+- Smoke lane runs in the existing `verify` job after the debug instrumented suite (already wired).
+- Nightly lane runs from a scheduled GitLab pipeline (schedule with `LANE=nightly`);
+  the suite reads `-e lane` and filters by JUnit `@Tag("nightly")`.
 - Pass arguments from GitLab variables (section above); variables are masked, protected.
 - A test is "adopted" only after 3 consecutive green pipelines; flaky-first tests run as
   `retry: 1` for one iteration, then must be fixed or deleted.
@@ -112,8 +182,10 @@ On any failed test capture and upload as CI artifact:
 
 ## Order of work
 
-1. Provision QA stand data -> GitLab variables; drop demo fallbacks.
-2. Phase 1 remainder (1.4-1.6).
+1. Provision QA stand data + fixtures (incl. large/broken) -> GitLab variables; drop demo fallbacks.
+2. Phase 1 remainder (1.4-1.6); smoke/nightly lane split + nightly schedule.
 3. Phase 3 playback (highest risk, biggest value).
-4. Phases 2, 4, 5.
-5. Diagnostics/artifacts polish; freeze suite size.
+4. Phases 2, 4, 5 (bookmarks), 6 (widgets/shortcuts).
+5. Phase 7 offline downloads, then phase 8 sync batch (needs `E2E_API_TOKEN` helper).
+6. Phase 9 large/invalid files (nightly), phase 10 robustness.
+7. Diagnostics/artifacts polish; freeze suite size.
