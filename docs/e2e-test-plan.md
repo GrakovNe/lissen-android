@@ -5,8 +5,8 @@
 Black-box UI tests against the **R8-minified** app (`org.grakovne.lissen.minified`), driven by
 UI Automator from the `minifiedTest` module. The point is not feature coverage (the debug
 `androidTest` suite has 147 tests for that) but proving the *shipped artifact* works: R8 must not
-break reflection, kotlinx.serialization, Hilt DI, ExoPlayer/media3 callbacks, or `viewId`
-lookups used by the UI.
+break reflection, kotlinx.serialization, Hilt DI, ExoPlayer/media3 callbacks, or the
+`testTag`-based element lookups the suite relies on.
 
 ## Test environment
 
@@ -43,15 +43,15 @@ lookups used by the UI.
   - `Fixture Broken` — a series with intentionally invalid files: truncated audio, zero-byte
     file, wrong mime/extension, garbage bytes served under an audio name.
 - QA stand API access for assertions that the UI cannot see (sync state, bookmarks on server):
-  `E2E_API_TOKEN` GitLab variable + a small helper in the test module that queries the server
-  over HTTP directly.
+  `E2E_API_TOKEN` GitLab variable + a small helper in the test module that queries the
+  Audiobookshelf REST API directly. 8.3 additionally needs an admin-capable key (library changes).
 - Dataset is stable between pipelines; if the QA stand allows, a reset hook runs before the suite.
 
 ## Suite layout
 
 One test class per area, 2-5 tests each. **Invariant: every pipeline runs the whole suite** -
 no smoke/nightly split, no tag filtering, nothing quarantined to a schedule. Expect the `verify`
-job to grow to roughly 30-40 min (~45 tests with cold starts plus sync/large-file scenarios);
+job to grow to roughly 30-40 min (~48 tests with cold starts plus sync/large-file scenarios);
 that is the accepted cost. When adding tests keep the runtime in mind, but never move a test
 out of the main run.
 
@@ -94,8 +94,8 @@ out of the main run.
 | 4.1 | Open settings, change theme | applied immediately |
 | 4.2 | Theme survives restart | cold start uses chosen theme |
 | 4.3 | Equalizer screen opens | no crash (media3 effect classes under R8) |
-| 4.4 | Playback speed change applies to playback | player shows new speed, pitch/audio follow |
-| 4.5 | Sleep timer fires | playback stops after the shortest selectable delay |
+| 4.4 | Playback speed change applies to playback | player shows the new speed and keeps playing (audio itself is not asserted) |
+| 4.5 | Sleep timer fires | playback stops after the timer; shortest preset is 10 min - budget the test for it |
 | 4.6 | Every settings sub-screen opens and backs out | no crash on any screen (smoke walk) |
 
 ### 5. Bookmarks
@@ -116,8 +116,8 @@ and resource shrinking can silently break both.
 |---|---|---|
 | 6.1 | Widget providers registered | `dumpsys appwidget` lists both Lissen receivers (under the `.minified` package) |
 | 6.2 | Bind widget via Android 14 `cmd appwidget bind` | host view renders, logcat clean (no launcher UI needed) |
-| 6.3 | Playback state reaches the bound widget | start playback, widget shows playing state |
-| 6.4 | App shortcuts listed | `pm get-app-shortcuts <launcher>` returns the continue-playback shortcut |
+| 6.3 | Playback state reaches the bound widget | best-effort: `dumpsys appwidget` view data changes after play/pause; hard assertion is no-crash + Glance update ran |
+| 6.4 | App shortcuts listed | continue-playback is a **dynamic** shortcut: it appears in `pm get-app-shortcuts <launcher>` only after playback has started - login and play first |
 | 6.5 | Launch via shortcut intent | lands on the player with the last book |
 
 ### 7. Offline downloads and local playback
@@ -126,7 +126,7 @@ and resource shrinking can silently break both.
 |---|---|---|
 | 7.1 | Download a short chapter | completes, shows "downloaded" state |
 | 7.2 | Play downloaded chapter with network off | plays from local storage (airplane mode via `cmd connectivity airplane-mode enable`) |
-| 7.3 | Cancel download mid-flight | partial state cleaned, chapter back to "download" |
+| 7.3 | Remove a partially cached book | there is no cancel API - only `dropCache`: kill the app mid-download, remove the book from cache, storage reclaimed, chapter back to "download" |
 | 7.4 | Downloaded chapter survives app restart | still listed and playable offline |
 
 ### 8. Sync (batch)
@@ -135,28 +135,28 @@ Assertions combine UI and direct QA stand API checks (`E2E_API_TOKEN`).
 
 | # | Test | Expected |
 |---|---|---|
-| 8.1 | Listen 30 s -> position on server | QA API reports progress > 0 for the chapter |
+| 8.1 | Listen from the chapter start -> position on server | sync interval is adaptive (`chooseSyncInterval`: short near start/end, long mid-chapter) - play from the start and poll the Audiobookshelf API up to 60 s for progress > 0 |
 | 8.2 | Fresh install resumes server position | clear data, login, player offers server position |
-| 8.3 | Server-side library change syncs | fixture added via API appears after pull/sync |
+| 8.3 | Server-side library change syncs | fixture added via Audiobookshelf API appears after pull/sync; needs an admin-capable API key |
 | 8.4 | Offline changes flush on reconnect | progress made in airplane mode reaches server after reconnect |
 | 8.5 | Repeated sync is idempotent | two syncs -> no duplicate series/chapters |
-| 8.6 | Token refresh / re-auth mid-session | expire token on server side -> app re-logins transparently |
+| 8.6 | Token refresh / re-auth mid-session | expire the access token by advancing the emulator clock (`adb root` + `date`) -> refresh flow retries transparently (`AudioBookShelfApiService`) |
 
 ### 9. Large files and invalid input
 
 | # | Test | Expected |
 |---|---|---|
 | 9.1 | Download `Fixture Large Chapter` (~500 MB) | completes within timeout, plays |
-| 9.2 | Cancel large download at ~50% | storage reclaimed (`df` delta), no orphan files |
+| 9.2 | Interrupt a large download at ~50% and drop the cache | storage reclaimed (`df` delta), no orphan files |
 | 9.3 | Play truncated audio file | recoverable error shown, app alive |
 | 9.4 | Play zero-byte / garbage-under-audio-mime file | error handled, no crash, other chapters still playable |
-| 9.5 | Storage pressure | fill emulator storage near full -> download fails with a clear error, no crash |
+| 9.5 | Storage pressure | fill `/data` near full (`dd`), download fails with a clear error, no crash; run last in the phase and clean up immediately - a full `/data` can wedge the emulator |
 
 ### 10. Robustness
 
 | # | Test | Expected |
 |---|---|---|
-| 10.1 | Process death during playback (`am kill`) | restart resumes the chapter at the last position |
+| 10.1 | Process death during playback | `kill $(pidof ...)` - note `am kill` is a no-op while the playback foreground service holds the process; restart resumes at the last position |
 | 10.2 | Network cut during playback, then restore | error handled, playback resumable (`cmd connectivity airplane-mode`) |
 | 10.3 | R8 guard: scan logcat after suite | no `ClassNotFoundException` / `NoSuchMethodError` / `Proguard`-related failures |
 
@@ -164,11 +164,11 @@ Assertions combine UI and direct QA stand API checks (`E2E_API_TOKEN`).
 
 | Area | Test | Why |
 |---|---|---|
-| Podcasts | browse a podcast, play an episode | `PodcastAudiobookshelfChannel` is a second content type with its own converters - zero e2e coverage |
+| Podcasts | browse a podcast (rendered inside the library), play an episode | `PodcastAudiobookshelfChannel` is a second content type with its own converters - zero e2e coverage |
 | Recent listening | continue-listening shelf shows the last played book | `RecentListeningResponseConverter` path, also backs the shortcut |
 | Media session | `adb shell media dispatch play_pause / fast-forward` controls playback | notification/headset path without UI taps |
 | Locale | switch system locale to `cs-CZ` and `zh-CN`, cold start | translations + Compose resources under R8, cheap to run |
-| Upgrade path | install previous release, then the minified build over it | Room `Migrations` and session survival across update - classic R8/Room breakage; requires signing both APKs with the CI keystore |
+| Upgrade path | build the `minified` variant from the previous release tag, install it, then install the current minified APK over it | Room `Migrations` and session survival across update - classic R8/Room breakage. Both APKs are debug-signed (`minified` uses the debug signingConfig), so the in-place update works without the release keystore |
 | Storage cleanup | delete a downloaded book frees disk | `ContentCachingManager` removal path, complements 7.x/9.2 |
 | Caching notification | bulk caching shows progress and completes | `ContentCachingNotificationService` |
 
