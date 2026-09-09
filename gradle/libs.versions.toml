@@ -38,6 +38,7 @@ androidxTestExtJunit = "1.3.0"
 androidxTestRunner = "1.7.0"
 androidxTestRules = "1.7.0"
 androidxCollection = "1.6.0"
+uiautomator = "2.4.0"
 zip4j = "2.11.6"
 
 [libraries]
@@ -104,6 +105,8 @@ androidx-test-ext-junit = { module = "androidx.test.ext:junit", version.ref = "a
 androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidxTestRunner" }
 androidx-test-rules = { module = "androidx.test:rules", version.ref = "androidxTestRules" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+androidx-test-uiautomator = { module = "androidx.test.uiautomator:uiautomator", version.ref = "uiautomator" }
+androidx-test-uiautomator-shell = { module = "androidx.test.uiautomator:uiautomator-shell", version.ref = "uiautomator" }
 hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "hiltAndroid" }
 
 [plugins]
