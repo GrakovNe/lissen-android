@@ -9,11 +9,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withTimeout
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
@@ -47,9 +45,6 @@ class MediaLibraryTreeTest {
   private lateinit var tree: MediaLibraryTree
   private lateinit var session: MediaLibraryService.MediaLibrarySession
 
-  @OptIn(ExperimentalCoroutinesApi::class)
-  private val testScope = TestScope(UnconfinedTestDispatcher())
-
   @Before
   fun setUp() {
     context = ApplicationProvider.getApplicationContext()
@@ -73,7 +68,6 @@ class MediaLibraryTreeTest {
     coEvery { localCacheRepository.fetchDetailedItems(any(), any()) } returns
       OperationResult.Error(OperationError.InternalError)
     tree = MediaLibraryTree(context, playbackPreferences, libraryPreferences, localCacheRepository, lissenMediaProvider)
-    tree.scope = testScope
   }
 
   @Test
@@ -127,29 +121,22 @@ class MediaLibraryTreeTest {
     }
 
   @Test
-  @OptIn(ExperimentalCoroutinesApi::class)
   fun getChildren_recent_fetchThrows_laterFetchStillRuns() =
     runBlocking {
       every { playbackPreferences.getPlayingItem() } returns makeDetailedItem("book-1", "My Book")
       every { libraryPreferences.getPreferredLibrary() } returns makeLibrary("lib-1")
-      coEvery { lissenMediaProvider.fetchRecentListenedBooks("lib-1") } throws RuntimeException("boom")
-
-      tree.getChildren("root/recent", 0, 100, session).get()
-
-      coEvery { lissenMediaProvider.fetchRecentListenedBooks("lib-1") } returns
+      coEvery { lissenMediaProvider.fetchRecentListenedBooks("lib-1") } throws RuntimeException("boom") andThen
         OperationResult.Success(listOf(makeRecentBook("r-1", "Recent One")))
 
       tree.getChildren("root/recent", 0, 100, session).get()
-      val result = tree.getChildren("root/recent", 0, 100, session).get()
 
       assertEquals(
         listOf("book-1", "r-1").map { MediaLibraryTree.bookPath(it) },
-        result.value!!.map { it.mediaId },
+        awaitRecentIds("book-1", "r-1"),
       )
     }
 
   @Test
-  @OptIn(ExperimentalCoroutinesApi::class)
   fun getChildren_recent_playingItemChanged_dropsStaleCache() =
     runBlocking {
       every { playbackPreferences.getPlayingItem() } returns makeDetailedItem("book-1", "My Book")
@@ -157,17 +144,16 @@ class MediaLibraryTreeTest {
       coEvery { lissenMediaProvider.fetchRecentListenedBooks("lib-1") } returns
         OperationResult.Success(listOf(makeRecentBook("r-1", "Recent One")))
 
-      tree.getChildren("root/recent", 0, 100, session).get()
-      tree.getChildren("root/recent", 0, 100, session).get()
+      assertEquals(
+        listOf("book-1", "r-1").map { MediaLibraryTree.bookPath(it) },
+        awaitRecentIds("book-1", "r-1"),
+      )
 
       every { playbackPreferences.getPlayingItem() } returns makeDetailedItem("book-2", "Other Book")
 
-      tree.getChildren("root/recent", 0, 100, session).get()
-      val result = tree.getChildren("root/recent", 0, 100, session).get()
-
       assertEquals(
         listOf("book-2", "r-1").map { MediaLibraryTree.bookPath(it) },
-        result.value!!.map { it.mediaId },
+        awaitRecentIds("book-2", "r-1"),
       )
     }
 
@@ -238,7 +224,6 @@ class MediaLibraryTreeTest {
     }
 
   @Test
-  @OptIn(ExperimentalCoroutinesApi::class)
   fun getChildren_recent_returnsBookItems() =
     runBlocking {
       every { playbackPreferences.getPlayingItem() } returns makeDetailedItem("book-1", "My Book")
@@ -260,16 +245,12 @@ class MediaLibraryTreeTest {
       val ids = result.value!!.map { it.mediaId }
       assertEquals(expectedIds, ids)
 
-      val result2 = tree.getChildren("root/recent", 0, 100, session).get()
-      assertEquals(SessionResult.RESULT_SUCCESS, result2.resultCode)
-      assertEquals(3, result2.value!!.size)
       val expectedIds2 = listOf("book-1", "r-1", "r-2").map { MediaLibraryTree.bookPath(it) }
-      val ids2 = result2.value!!.map { it.mediaId }
+      val ids2 = awaitRecentIds("book-1", "r-1", "r-2")
       assertEquals(expectedIds2, ids2)
     }
 
   @Test
-  @OptIn(ExperimentalCoroutinesApi::class)
   fun getChildren_recent_mergesBookItems() =
     runBlocking {
       every { playbackPreferences.getPlayingItem() } returns makeDetailedItem("r-1", "Recent One")
@@ -290,11 +271,8 @@ class MediaLibraryTreeTest {
       val ids = result.value!!.map { it.mediaId }
       assertEquals(expectedIds, ids)
 
-      val result2 = tree.getChildren("root/recent", 0, 100, session).get()
-      assertEquals(SessionResult.RESULT_SUCCESS, result2.resultCode)
-      assertEquals(2, result2.value!!.size)
       val expectedIds2 = listOf("r-1", "r-2").map { MediaLibraryTree.bookPath(it) }
-      val ids2 = result2.value!!.map { it.mediaId }
+      val ids2 = awaitRecentIds("r-1", "r-2")
       assertEquals(expectedIds2, ids2)
     }
 
@@ -476,6 +454,19 @@ class MediaLibraryTreeTest {
     }
 
   private fun makeLibrary(id: String) = Library(id = id, title = "Library $id", type = LibraryType.LIBRARY)
+
+  private suspend fun awaitRecentIds(vararg bookIds: String): List<String> {
+    val expectedIds = bookIds.map { MediaLibraryTree.bookPath(it) }
+    return withTimeout(5_000) {
+      while (true) {
+        val result = tree.getChildren("root/recent", 0, 100, session).get()
+        val actualIds = result.value!!.map { it.mediaId }
+        if (actualIds == expectedIds) return@withTimeout actualIds
+        delay(10)
+      }
+      error("Unreachable")
+    }
+  }
 
   private fun makeRecentBook(
     id: String,

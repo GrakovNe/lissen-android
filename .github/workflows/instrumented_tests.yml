@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-java@v5
         with:
           distribution: 'zulu'
-          java-version: '21'
+          java-version: '25'
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
@@ -37,11 +37,21 @@ jobs:
           disk-size: 8192M
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: true
-          script: ./gradlew connectedDebugAndroidTest -Proom.schemaLocation=$GITHUB_WORKSPACE/app/schemas
+          script: |
+            ./gradlew :app:connectedDebugAndroidTest -Proom.schemaLocation=$GITHUB_WORKSPACE/app/schemas
+            ./gradlew :app:assembleMinified :minifiedTest:assembleMinified
+            adb install -r app/build/outputs/apk/minified/app-minified.apk
+            adb install -r -t minifiedTest/build/outputs/apk/minified/minifiedTest-minified.apk
+            mkdir -p minifiedTest/build/outputs/androidTest-results
+            minified_test_output="$(adb shell am instrument -w org.grakovne.lissen.minifiedtest/androidx.test.runner.AndroidJUnitRunner)"
+            printf '%s\n' "$minified_test_output" | tee minifiedTest/build/outputs/androidTest-results/minified.txt
+            printf '%s\n' "$minified_test_output" | grep -Eq '^OK \([1-9][0-9]* tests?\)$'
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v5
         with:
           name: instrumented-test-results
-          path: app/build/outputs/androidTest-results/
+          path: |
+            app/build/outputs/androidTest-results/
+            minifiedTest/build/outputs/androidTest-results/

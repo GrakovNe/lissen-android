@@ -115,6 +115,13 @@ android {
         getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
       )
     }
+    create("minified") {
+      initWith(getByName("release"))
+      applicationIdSuffix = ".minified"
+      versionNameSuffix = " (MINIFIED TEST)"
+      signingConfig = signingConfigs.getByName("debug")
+      matchingFallbacks.add("release")
+    }
     debug {
       applicationIdSuffix = ".debug"
       versionNameSuffix = " (DEBUG)"
@@ -126,8 +133,8 @@ android {
   }
   
   compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
   }
   
   buildFeatures {
@@ -153,6 +160,12 @@ android {
     unitTests.all {
       it.useJUnitPlatform()
     }
+  }
+}
+
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(25)
   }
 }
 

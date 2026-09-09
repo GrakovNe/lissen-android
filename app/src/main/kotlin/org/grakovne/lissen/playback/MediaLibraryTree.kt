@@ -3,7 +3,6 @@ package org.grakovne.lissen.playback
 import android.content.Context
 import android.net.Uri
 import androidx.annotation.OptIn
-import androidx.annotation.VisibleForTesting
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
@@ -129,8 +128,7 @@ class MediaLibraryTree
     private val recentCacheKey = AtomicReference<String?>(null)
     private val recentFetchInFlight = AtomicBoolean(false)
 
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    internal var scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private suspend fun libraries(): List<Library> =
       lissenMediaProvider
