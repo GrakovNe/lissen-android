@@ -193,6 +193,25 @@ class SettingsBackupManagerTest {
     }
 
     @Test
+    fun `maps sleep timer fade settings`() {
+      every { sharedPreferences.getBoolean("sleep_timer_fade_enabled", false) } returns true
+      every { sharedPreferences.getInt("sleep_timer_fade_seconds", 30) } returns 45
+
+      val backup = preferences.exportSettings()
+
+      assertEquals(true, backup.sleepTimerFadeEnabled)
+      assertEquals(45, backup.sleepTimerFadeSeconds)
+    }
+
+    @Test
+    fun `maps sleep timer fade defaults when nothing stored`() {
+      val backup = preferences.exportSettings()
+
+      assertEquals(false, backup.sleepTimerFadeEnabled)
+      assertEquals(30, backup.sleepTimerFadeSeconds)
+    }
+
+    @Test
     fun `maps crash reporting, activity logging, force cache, bypass ssl and user agent`() {
       every { sharedPreferences.getBoolean("acra.enable", true) } returns false
       every { sharedPreferences.getBoolean("activity_logging_enabled", true) } returns false
@@ -420,6 +439,22 @@ class SettingsBackupManagerTest {
       preferences.importSettings(SettingsBackup(defaultSleepTimerType = null))
       verify(exactly = 0) { editor.putString("default_sleep_timer", any()) }
       verify(exactly = 0) { editor.remove("default_sleep_timer") }
+    }
+
+    @Test
+    fun `saves sleep timer fade settings`() {
+      preferences.importSettings(SettingsBackup(sleepTimerFadeEnabled = true, sleepTimerFadeSeconds = 45))
+
+      verify { editor.putBoolean("sleep_timer_fade_enabled", true) }
+      verify { editor.putInt("sleep_timer_fade_seconds", 45) }
+    }
+
+    @Test
+    fun `skips sleep timer fade settings when absent`() {
+      preferences.importSettings(SettingsBackup())
+
+      verify(exactly = 0) { editor.putBoolean("sleep_timer_fade_enabled", any()) }
+      verify(exactly = 0) { editor.putInt("sleep_timer_fade_seconds", any()) }
     }
 
     @Test

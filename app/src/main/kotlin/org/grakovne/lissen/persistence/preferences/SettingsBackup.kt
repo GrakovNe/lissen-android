@@ -30,6 +30,8 @@ data class SettingsBackup(
   val downloadChaptersCount: Int? = null,
   val defaultSleepTimerType: String? = null,
   val defaultSleepTimerMinutes: Int? = null,
+  val sleepTimerFadeEnabled: Boolean? = null,
+  val sleepTimerFadeSeconds: Int? = null,
   val crashReportingEnabled: Boolean? = null,
   val activityLoggingEnabled: Boolean? = null,
   val forceCacheEnabled: Boolean? = null,

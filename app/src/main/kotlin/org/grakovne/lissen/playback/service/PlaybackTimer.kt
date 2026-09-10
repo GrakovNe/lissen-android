@@ -76,6 +76,7 @@ class PlaybackTimer
 
     fun stopTimer() {
       Timber.d("Stopping timer")
+      timer?.let { playbackEventBus.emit(PlaybackEvent.TimerCancelled) }
       timer?.cancel()
       timer = null
 

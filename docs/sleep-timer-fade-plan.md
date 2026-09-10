@@ -229,12 +229,11 @@ interface SleepTimerFadeModule {
 
 ### 1.6 `persistence/preferences/PlaybackPreferences.kt`
 
-Два ключа, геттеры/сеттеры и flow-и (паттерн `store.asFlow` как у `playbackVolumeBoostFlow`):
+Два ключа и геттеры/сеттеры. Flow-и не заводим: fade-сервис читает настройки синхронно на каждом
+тике (чтобы смена настройки подхватывалась мгновенно), а ViewModel использует `MutableStateFlow`
+по образцу `seekTime` — flow из стора был бы мертвым кодом:
 
 ```kotlin
-val sleepTimerFadeEnabledFlow: Flow<Boolean> = store.asFlow(KEY_SLEEP_TIMER_FADE_ENABLED, ::isSleepTimerFadeEnabled)
-val sleepTimerFadeSecondsFlow: Flow<Int> = store.asFlow(KEY_SLEEP_TIMER_FADE_SECONDS, ::getSleepTimerFadeSeconds)
-
 fun isSleepTimerFadeEnabled(): Boolean = store.getBoolean(KEY_SLEEP_TIMER_FADE_ENABLED, false)
 
 fun saveSleepTimerFadeEnabled(value: Boolean) = store.putBoolean(KEY_SLEEP_TIMER_FADE_ENABLED, value)
@@ -573,10 +572,12 @@ backup.sleepTimerFadeSeconds?.let { playback.saveSleepTimerFadeSeconds(it) }
 
 ## Итого файлов
 
-**Новые (4):** `SleepTimerFadeService.kt`, `SleepTimerFadeModule.kt`, `SleepTimerSettingsScreen.kt`,
-`SleepTimerFadeVolumeTest.kt`.
+**Новые (5):** `SleepTimerFadeService.kt`, `SleepTimerFadeModule.kt`, `SleepTimerSettingsScreen.kt`,
+`SleepTimerFadeVolumeTest.kt` (юниты чистой функции), `SleepTimerFadeServiceTest.kt`
+(интеграция: шина + сервис + мок плеера на виртуальном времени).
 
-**Правки (9):** `PlaybackEventBus.kt`, `PlaybackTimer.kt`, `MediaRepository.kt`,
+**Правки (13):** `PlaybackEventBus.kt`, `PlaybackTimer.kt`, `MediaRepository.kt`,
 `PlaybackPreferences.kt`, `SettingsBackup.kt`, `SettingsBackupManager.kt`,
-`AppNavigationService.kt`, `AppNavHost.kt`, `PlaybackPreferencesScreen.kt`,
-`SettingsViewModel.kt`, `values/strings.xml`, `values-ru/strings.xml`, `SettingsBackupManagerTest.kt`.
+`Route.kt`, `AppNavigationService.kt`, `AppNavHost.kt`, `PlaybackPreferencesScreen.kt`,
+`SettingsViewModel.kt`, `values/strings.xml`, `values-ru/strings.xml`;
+тесты: `SettingsBackupManagerTest.kt`, `SettingsViewModelTest.kt`, `PlaybackEventBusTest.kt`.

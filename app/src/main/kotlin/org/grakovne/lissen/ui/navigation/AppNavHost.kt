@@ -35,6 +35,7 @@ import org.grakovne.lissen.ui.screens.settings.advanced.CustomHeadersSettingsScr
 import org.grakovne.lissen.ui.screens.settings.advanced.LocalUrlSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.PlaybackPreferencesScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.SeekSettingsScreen
+import org.grakovne.lissen.ui.screens.settings.advanced.SleepTimerSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.cache.CacheSettingsScreen
 import org.grakovne.lissen.ui.screens.settings.advanced.cache.CachedItemsSettingsScreen
 
@@ -214,6 +215,10 @@ fun AppNavHost(
 
       composable(route = ROUTE_SETTINGS_SEEK) {
         SeekSettingsScreen(onBack = navigationService::goBack)
+      }
+
+      composable(route = ROUTE_SETTINGS_SLEEP_TIMER) {
+        SleepTimerSettingsScreen(onBack = navigationService::goBack)
       }
 
       composable(route = ROUTE_SETTINGS_PLAYBACK) {

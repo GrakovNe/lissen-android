@@ -144,6 +144,18 @@ class PlaybackPreferences
       }
     }
 
+    fun isSleepTimerFadeEnabled(): Boolean = store.getBoolean(KEY_SLEEP_TIMER_FADE_ENABLED, false)
+
+    fun saveSleepTimerFadeEnabled(value: Boolean) = store.putBoolean(KEY_SLEEP_TIMER_FADE_ENABLED, value)
+
+    fun getSleepTimerFadeSeconds(): Int =
+      store
+        .getInt(KEY_SLEEP_TIMER_FADE_SECONDS, DEFAULT_SLEEP_TIMER_FADE_SECONDS)
+        .coerceIn(MIN_SLEEP_TIMER_FADE_SECONDS, MAX_SLEEP_TIMER_FADE_SECONDS)
+
+    fun saveSleepTimerFadeSeconds(seconds: Int) =
+      store.putInt(KEY_SLEEP_TIMER_FADE_SECONDS, seconds.coerceIn(MIN_SLEEP_TIMER_FADE_SECONDS, MAX_SLEEP_TIMER_FADE_SECONDS))
+
     private fun savePlayingItemInternal(
       libraryId: String,
       item: DetailedItem?,
@@ -200,6 +212,12 @@ class PlaybackPreferences
       private const val KEY_AUDIO_FOCUS_LOSS_POLICY = "audio_focus_loss_policy"
       private const val KEY_EQUALIZER = "equalizer"
       private const val KEY_DEFAULT_SLEEP_TIMER = "default_sleep_timer"
+      private const val KEY_SLEEP_TIMER_FADE_ENABLED = "sleep_timer_fade_enabled"
+      private const val KEY_SLEEP_TIMER_FADE_SECONDS = "sleep_timer_fade_seconds"
+
+      const val MIN_SLEEP_TIMER_FADE_SECONDS = 5
+      const val MAX_SLEEP_TIMER_FADE_SECONDS = 60
+      const val DEFAULT_SLEEP_TIMER_FADE_SECONDS = 30
 
       private val playingItemsType =
         Types.newParameterizedType(

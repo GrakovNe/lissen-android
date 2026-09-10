@@ -145,6 +145,11 @@ class MediaRepository
                     pause()
                   }
 
+                  // emitted by PlaybackTimer on any stop: manual cancel, replacement, or expiry.
+                  // Timer state is already cleared by the canceling paths, and a replacement
+                  // re-sets it right after, so there is nothing to reconcile here.
+                  is PlaybackEvent.TimerCancelled -> {}
+
                   is PlaybackEvent.TimerTick -> {
                     _timerRemaining.value = event.remainingSeconds
                   }
