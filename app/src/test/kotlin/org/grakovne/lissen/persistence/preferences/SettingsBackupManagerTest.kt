@@ -19,6 +19,7 @@ import org.grakovne.lissen.domain.AllItemsDownloadOption
 import org.grakovne.lissen.domain.EqualizerSettings
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.SeekTime
+import org.grakovne.lissen.domain.SleepTimerSettings
 import org.grakovne.lissen.domain.connection.LocalUrl
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.domain.makeId
@@ -193,22 +194,20 @@ class SettingsBackupManagerTest {
     }
 
     @Test
-    fun `maps sleep timer fade settings`() {
-      every { sharedPreferences.getBoolean("sleep_timer_fade_enabled", false) } returns true
-      every { sharedPreferences.getInt("sleep_timer_fade_seconds", 30) } returns 45
+    fun `maps sleep timer settings`() {
+      every { sharedPreferences.getString("sleep_timer_settings", null) } returns
+        """{"fadeEnabled":true,"fadeSeconds":45}"""
 
       val backup = preferences.exportSettings()
 
-      assertEquals(true, backup.sleepTimerFadeEnabled)
-      assertEquals(45, backup.sleepTimerFadeSeconds)
+      assertEquals(SleepTimerSettings(fadeEnabled = true, fadeSeconds = 45), backup.sleepTimerSettings)
     }
 
     @Test
-    fun `maps sleep timer fade defaults when nothing stored`() {
+    fun `maps sleep timer settings defaults when nothing stored`() {
       val backup = preferences.exportSettings()
 
-      assertEquals(false, backup.sleepTimerFadeEnabled)
-      assertEquals(30, backup.sleepTimerFadeSeconds)
+      assertEquals(SleepTimerSettings.Default, backup.sleepTimerSettings)
     }
 
     @Test
@@ -442,19 +441,17 @@ class SettingsBackupManagerTest {
     }
 
     @Test
-    fun `saves sleep timer fade settings`() {
-      preferences.importSettings(SettingsBackup(sleepTimerFadeEnabled = true, sleepTimerFadeSeconds = 45))
+    fun `saves sleep timer settings`() {
+      preferences.importSettings(SettingsBackup(sleepTimerSettings = SleepTimerSettings(fadeEnabled = true, fadeSeconds = 45)))
 
-      verify { editor.putBoolean("sleep_timer_fade_enabled", true) }
-      verify { editor.putInt("sleep_timer_fade_seconds", 45) }
+      verify { editor.putString("sleep_timer_settings", """{"fadeEnabled":true,"fadeSeconds":45}""") }
     }
 
     @Test
     fun `skips sleep timer fade settings when absent`() {
       preferences.importSettings(SettingsBackup())
 
-      verify(exactly = 0) { editor.putBoolean("sleep_timer_fade_enabled", any()) }
-      verify(exactly = 0) { editor.putInt("sleep_timer_fade_seconds", any()) }
+      verify(exactly = 0) { editor.putString("sleep_timer_settings", any()) }
     }
 
     @Test

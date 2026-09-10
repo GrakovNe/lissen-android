@@ -37,6 +37,7 @@ import org.grakovne.lissen.domain.EqualizerSettings
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.SeekTime
+import org.grakovne.lissen.domain.SleepTimerSettings
 import org.grakovne.lissen.domain.StoragePath
 import org.grakovne.lissen.domain.connection.LocalUrl
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
@@ -101,8 +102,7 @@ class SettingsViewModelTest {
     every { connection.getCustomHeaders() } returns emptyList()
     every { connection.getLocalUrls() } returns emptyList()
     every { playback.getSeekTime() } returns SeekTime.Default
-    every { playback.isSleepTimerFadeEnabled() } returns false
-    every { playback.getSleepTimerFadeSeconds() } returns PlaybackPreferences.DEFAULT_SLEEP_TIMER_FADE_SECONDS
+    every { playback.getSleepTimerSettings() } returns SleepTimerSettings.Default
     every { playback.getEqualizer() } returns EqualizerSettings.Default
     coEvery { equalizerBandProvider.getCapabilities() } returns EqualizerCapabilities.Unavailable
     every { diagnostics.getAcraEnabled() } returns true
@@ -487,7 +487,7 @@ class SettingsViewModelTest {
     @Test
     fun `fade state is initialized from preferences`() {
       assertFalse(viewModel.sleepTimerFadeEnabled.value)
-      assertEquals(PlaybackPreferences.DEFAULT_SLEEP_TIMER_FADE_SECONDS, viewModel.sleepTimerFadeSeconds.value)
+      assertEquals(SleepTimerSettings.DEFAULT_FADE_SECONDS, viewModel.sleepTimerFadeSeconds.value)
     }
 
     @Test
@@ -495,7 +495,11 @@ class SettingsViewModelTest {
       viewModel.preferSleepTimerFadeEnabled(true)
 
       assertTrue(viewModel.sleepTimerFadeEnabled.value)
-      verify { playback.saveSleepTimerFadeEnabled(true) }
+      verify {
+        playback.saveSleepTimerSettings(
+          SleepTimerSettings(fadeEnabled = true, fadeSeconds = SleepTimerSettings.DEFAULT_FADE_SECONDS),
+        )
+      }
     }
 
     @Test
@@ -503,7 +507,7 @@ class SettingsViewModelTest {
       viewModel.preferSleepTimerFadeSeconds(45)
 
       assertEquals(45, viewModel.sleepTimerFadeSeconds.value)
-      verify { playback.saveSleepTimerFadeSeconds(45) }
+      verify { playback.saveSleepTimerSettings(SleepTimerSettings(fadeEnabled = false, fadeSeconds = 45)) }
     }
   }
 

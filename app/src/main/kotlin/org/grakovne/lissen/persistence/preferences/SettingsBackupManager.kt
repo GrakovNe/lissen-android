@@ -43,8 +43,7 @@ class SettingsBackupManager
         downloadChaptersCount = download.getDownloadChaptersCount(),
         defaultSleepTimerType = timerDto?.type,
         defaultSleepTimerMinutes = timerDto?.minutes,
-        sleepTimerFadeEnabled = playback.isSleepTimerFadeEnabled(),
-        sleepTimerFadeSeconds = playback.getSleepTimerFadeSeconds(),
+        sleepTimerSettings = playback.getSleepTimerSettings(),
         crashReportingEnabled = diagnostics.getAcraEnabled(),
         activityLoggingEnabled = diagnostics.isActivityLoggingEnabled(),
         forceCacheEnabled = library.isForceCache(),
@@ -96,8 +95,7 @@ class SettingsBackupManager
         playback.saveDefaultTimerOption(option)
       }
 
-      backup.sleepTimerFadeEnabled?.let { playback.saveSleepTimerFadeEnabled(it) }
-      backup.sleepTimerFadeSeconds?.let { playback.saveSleepTimerFadeSeconds(it) }
+      backup.sleepTimerSettings?.let { playback.saveSleepTimerSettings(it) }
 
       backup.crashReportingEnabled?.let { diagnostics.saveAcraEnabled(it) }
       backup.activityLoggingEnabled?.let { diagnostics.saveActivityLoggingEnabled(it) }

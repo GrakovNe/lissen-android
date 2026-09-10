@@ -82,10 +82,10 @@ class SleepTimerFadeService
     private fun onTick(remainingSeconds: Long) {
       if (fading) return
 
-      if (!preferences.isSleepTimerFadeEnabled()) return
+      val settings = preferences.getSleepTimerSettings()
+      if (!settings.fadeEnabled) return
 
-      val fadeSeconds = preferences.getSleepTimerFadeSeconds()
-      if (remainingSeconds <= 0L || remainingSeconds > fadeSeconds) return
+      if (remainingSeconds <= 0L || remainingSeconds > settings.fadeSeconds) return
 
       startFade(remainingSeconds)
     }

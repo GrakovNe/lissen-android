@@ -40,7 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
-import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
+import org.grakovne.lissen.domain.SleepTimerSettings
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.slider.CommonSlider
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
@@ -233,7 +233,7 @@ private fun FadeDurationBottomSheet(
   )
 }
 
-private const val FADE_MIN_SECONDS = PlaybackPreferences.MIN_SLEEP_TIMER_FADE_SECONDS
-private const val FADE_MAX_SECONDS = PlaybackPreferences.MAX_SLEEP_TIMER_FADE_SECONDS
+private const val FADE_MIN_SECONDS = SleepTimerSettings.MIN_FADE_SECONDS
+private const val FADE_MAX_SECONDS = SleepTimerSettings.MAX_FADE_SECONDS
 
 private val fadeTimePresets = listOf(5, 10, 15, 30, 60)

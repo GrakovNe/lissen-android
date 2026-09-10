@@ -17,6 +17,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import org.grakovne.lissen.domain.SleepTimerSettings
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -46,8 +47,6 @@ class SleepTimerFadeServiceTest {
     every { player.volume = any() } answers { playerVolume = firstArg() }
     every { player.isPlaying } answers { isPlaying }
     every { player.addListener(capture(playerListener)) } just Runs
-
-    every { preferences.isSleepTimerFadeEnabled() } returns true
   }
 
   @AfterEach
@@ -225,8 +224,7 @@ class SleepTimerFadeServiceTest {
     playerVolume = 1f
     isPlaying = true
 
-    every { preferences.isSleepTimerFadeEnabled() } returns enabled
-    every { preferences.getSleepTimerFadeSeconds() } returns fadeSeconds
+    every { preferences.getSleepTimerSettings() } returns SleepTimerSettings(fadeEnabled = enabled, fadeSeconds = fadeSeconds)
 
     val bus = PlaybackEventBus()
     SleepTimerFadeService(player, bus, preferences).onCreate()
