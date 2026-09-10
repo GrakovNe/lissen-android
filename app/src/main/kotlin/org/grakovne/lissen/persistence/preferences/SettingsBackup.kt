@@ -5,6 +5,7 @@ import com.squareup.moshi.JsonClass
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.domain.EqualizerSettings
 import org.grakovne.lissen.domain.SeekTime
+import org.grakovne.lissen.domain.SleepTimerSettings
 import org.grakovne.lissen.domain.connection.LocalUrl
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
 
@@ -30,6 +31,7 @@ data class SettingsBackup(
   val downloadChaptersCount: Int? = null,
   val defaultSleepTimerType: String? = null,
   val defaultSleepTimerMinutes: Int? = null,
+  val sleepTimerSettings: SleepTimerSettings? = null,
   val crashReportingEnabled: Boolean? = null,
   val activityLoggingEnabled: Boolean? = null,
   val forceCacheEnabled: Boolean? = null,

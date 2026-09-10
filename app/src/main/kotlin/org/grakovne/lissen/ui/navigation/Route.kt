@@ -16,6 +16,7 @@ const val ROUTE_SETTINGS_CONNECTION = "$ROUTE_SETTINGS/connection_settings"
 const val ROUTE_SETTINGS_ADVANCED = "$ROUTE_SETTINGS/advanced_settings"
 const val ROUTE_SETTINGS_CONFIG_BACKUP = "$ROUTE_SETTINGS/config_backup"
 const val ROUTE_SETTINGS_SEEK = "$ROUTE_SETTINGS/seek_settings"
+const val ROUTE_SETTINGS_SLEEP_TIMER = "$ROUTE_SETTINGS/sleep_timer_settings"
 const val ROUTE_SETTINGS_PLAYBACK = "$ROUTE_SETTINGS/playback_preferences"
 const val ROUTE_SETTINGS_APPEARANCE = "$ROUTE_SETTINGS/appearance_preferences"
 

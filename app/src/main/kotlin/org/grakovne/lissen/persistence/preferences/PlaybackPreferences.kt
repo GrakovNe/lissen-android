@@ -9,6 +9,7 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.EqualizerSettings
 import org.grakovne.lissen.domain.SeekTime
+import org.grakovne.lissen.domain.SleepTimerSettings
 import org.grakovne.lissen.domain.TimerOption
 import timber.log.Timber
 import javax.inject.Inject
@@ -144,6 +145,22 @@ class PlaybackPreferences
       }
     }
 
+    fun getSleepTimerSettings(): SleepTimerSettings {
+      val json = store.getString(KEY_SLEEP_TIMER_SETTINGS) ?: return SleepTimerSettings.Default
+      return try {
+        moshi.adapter(SleepTimerSettings::class.java).fromJson(json)?.clamped() ?: SleepTimerSettings.Default
+      } catch (e: com.squareup.moshi.JsonDataException) {
+        Timber.w("Stored sleep timer settings are malformed, resetting due to: ${e.message}")
+        store.remove(KEY_SLEEP_TIMER_SETTINGS, commit = true)
+        SleepTimerSettings.Default
+      }
+    }
+
+    fun saveSleepTimerSettings(settings: SleepTimerSettings) {
+      val json = moshi.adapter(SleepTimerSettings::class.java).toJson(settings.clamped())
+      store.putString(KEY_SLEEP_TIMER_SETTINGS, json, commit = true)
+    }
+
     private fun savePlayingItemInternal(
       libraryId: String,
       item: DetailedItem?,
@@ -200,6 +217,7 @@ class PlaybackPreferences
       private const val KEY_AUDIO_FOCUS_LOSS_POLICY = "audio_focus_loss_policy"
       private const val KEY_EQUALIZER = "equalizer"
       private const val KEY_DEFAULT_SLEEP_TIMER = "default_sleep_timer"
+      private const val KEY_SLEEP_TIMER_SETTINGS = "sleep_timer_settings"
 
       private val playingItemsType =
         Types.newParameterizedType(

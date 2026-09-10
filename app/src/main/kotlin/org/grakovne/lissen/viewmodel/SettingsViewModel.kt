@@ -132,6 +132,12 @@ class SettingsViewModel
     private val _defaultTimerOption = MutableStateFlow<TimerOption?>(playback.getDefaultTimerOption())
     val defaultTimerOption: StateFlow<TimerOption?> = _defaultTimerOption.asStateFlow()
 
+    private val _sleepTimerFadeEnabled = MutableStateFlow(playback.getSleepTimerSettings().fadeEnabled)
+    val sleepTimerFadeEnabled: StateFlow<Boolean> = _sleepTimerFadeEnabled.asStateFlow()
+
+    private val _sleepTimerFadeSeconds = MutableStateFlow(playback.getSleepTimerSettings().fadeSeconds)
+    val sleepTimerFadeSeconds: StateFlow<Int> = _sleepTimerFadeSeconds.asStateFlow()
+
     private val _crashReporting = MutableStateFlow(diagnostics.getAcraEnabled())
     val crashReporting: StateFlow<Boolean> = _crashReporting.asStateFlow()
 
@@ -450,6 +456,18 @@ class SettingsViewModel
 
       playback.saveSeekTime(updated)
       _seekTime.value = updated
+    }
+
+    fun preferSleepTimerFadeEnabled(value: Boolean) {
+      Timber.d("User action: preferSleepTimerFadeEnabled $value")
+      _sleepTimerFadeEnabled.value = value
+      playback.saveSleepTimerSettings(playback.getSleepTimerSettings().copy(fadeEnabled = value))
+    }
+
+    fun preferSleepTimerFadeSeconds(seconds: Int) {
+      Timber.d("User action: preferSleepTimerFadeSeconds $seconds")
+      _sleepTimerFadeSeconds.value = seconds
+      playback.saveSleepTimerSettings(playback.getSleepTimerSettings().copy(fadeSeconds = seconds))
     }
 
     fun updateLocalUrls(urls: List<LocalUrl>) {

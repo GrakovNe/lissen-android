@@ -35,6 +35,8 @@ sealed class PlaybackEvent {
 
   data object TimerExpired : PlaybackEvent()
 
+  data object TimerCancelled : PlaybackEvent()
+
   data class TimerTick(
     val remainingSeconds: Long,
   ) : PlaybackEvent()

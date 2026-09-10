@@ -52,6 +52,8 @@ class AppNavigationService(
 
   fun showSeekSettings() = host.navigate(ROUTE_SETTINGS_SEEK)
 
+  fun showSleepTimerSettings() = host.navigate(ROUTE_SETTINGS_SLEEP_TIMER)
+
   fun showCachedItemsSettings() = host.navigate(ROUTE_SETTINGS_CACHED_ITEMS)
 
   fun showCacheSettings() = host.navigate(ROUTE_SETTINGS_CACHE)

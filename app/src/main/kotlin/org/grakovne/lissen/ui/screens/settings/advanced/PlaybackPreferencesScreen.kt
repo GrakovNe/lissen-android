@@ -91,6 +91,12 @@ fun PlaybackPreferencesScreen(
           onclick = { navController.showSeekSettings() },
         )
 
+        AdvancedSettingsNavigationItemComposable(
+          title = stringResource(R.string.sleep_timer_settings_title),
+          description = stringResource(R.string.sleep_timer_settings_description),
+          onclick = { navController.showSleepTimerSettings() },
+        )
+
         DefaultTimerSettingsComposable(viewModel)
 
         SettingsToggleItem(
