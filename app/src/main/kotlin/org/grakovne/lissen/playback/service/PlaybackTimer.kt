@@ -56,6 +56,9 @@ class PlaybackTimer
           onTickSeconds = { seconds -> broadcastRemaining(seconds) },
           onFinished = {
             Timber.d("Timer expired, broadcasting")
+            // An expiry is not a cancellation: drop the timer first so stopTimer() below
+            // does not emit TimerCancelled and make the fade revert the volume at the pause.
+            timer = null
             playbackEventBus.emit(PlaybackEvent.TimerExpired)
             stopTimer()
           },
