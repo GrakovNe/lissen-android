@@ -174,10 +174,10 @@
     <string name="settings_screen_seek_time_title">Seek settings</string>
     <string name="settings_screen_seek_time_hint">Define seek controls</string>
     <string name="settings_screen_default_sleep_timer_title">Default sleep timer while playing</string>
-    <string name="sleep_timer_settings_title">Sleep timer</string>
-    <string name="sleep_timer_settings_description">Fade out before playback stops</string>
+    <string name="sleep_timer_settings_title">Timer settings</string>
+    <string name="sleep_timer_settings_description">Configure timer controls on the playback screen</string>
     <string name="sleep_timer_fade_title">Fade out</string>
-    <string name="sleep_timer_fade_description">Gradually reduce volume before the sleep timer stops playback</string>
+    <string name="sleep_timer_fade_description">Reduce volume when playback stops</string>
     <string name="sleep_timer_fade_duration_title">Fade duration</string>
     <string name="rewind_interval">Rewind interval</string>
     <string name="forward_interval">Forward interval</string>
