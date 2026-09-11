@@ -82,13 +82,14 @@ class ContentAutoCachingService
       val currentTotalPosition = mediaRepository.totalPosition.value
 
       val playingItemLibraryType =
-        mediaProvider
-          .providePreferredChannel()
-          .fetchLibraries()
-          .fold(
-            onSuccess = { libraries -> libraries.find { it.id == playingMediaItem.libraryId }?.type },
-            onFailure = { null },
-          ) ?: return null
+        playingMediaItem.libraryType
+          ?: mediaProvider
+            .providePreferredChannel()
+            .fetchLibraries()
+            .fold(
+              onSuccess = { libraries -> libraries.find { it.id == playingMediaItem.libraryId }?.type },
+              onFailure = { null },
+            ) ?: return null
 
       val requestedLibraryType =
         downloadPreferences
@@ -112,6 +113,7 @@ class ContentAutoCachingService
             itemId = playingMediaItem.id,
             options = playbackCacheOption,
             currentPosition = currentTotalPosition,
+            libraryType = playingItemLibraryType,
           )
 
         val intent =

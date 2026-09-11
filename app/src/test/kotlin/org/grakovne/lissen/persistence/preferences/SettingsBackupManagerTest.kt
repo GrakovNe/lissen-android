@@ -19,6 +19,7 @@ import org.grakovne.lissen.domain.AllItemsDownloadOption
 import org.grakovne.lissen.domain.EqualizerSettings
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.SeekTime
+import org.grakovne.lissen.domain.SleepTimerSettings
 import org.grakovne.lissen.domain.connection.LocalUrl
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.domain.makeId
@@ -190,6 +191,23 @@ class SettingsBackupManagerTest {
 
       assertNull(backup.defaultSleepTimerType)
       assertNull(backup.defaultSleepTimerMinutes)
+    }
+
+    @Test
+    fun `maps sleep timer settings`() {
+      every { sharedPreferences.getString("sleep_timer_settings", null) } returns
+        """{"fadeEnabled":true,"fadeSeconds":45}"""
+
+      val backup = preferences.exportSettings()
+
+      assertEquals(SleepTimerSettings(fadeEnabled = true, fadeSeconds = 45), backup.sleepTimerSettings)
+    }
+
+    @Test
+    fun `maps sleep timer settings defaults when nothing stored`() {
+      val backup = preferences.exportSettings()
+
+      assertEquals(SleepTimerSettings.Default, backup.sleepTimerSettings)
     }
 
     @Test
@@ -420,6 +438,20 @@ class SettingsBackupManagerTest {
       preferences.importSettings(SettingsBackup(defaultSleepTimerType = null))
       verify(exactly = 0) { editor.putString("default_sleep_timer", any()) }
       verify(exactly = 0) { editor.remove("default_sleep_timer") }
+    }
+
+    @Test
+    fun `saves sleep timer settings`() {
+      preferences.importSettings(SettingsBackup(sleepTimerSettings = SleepTimerSettings(fadeEnabled = true, fadeSeconds = 45)))
+
+      verify { editor.putString("sleep_timer_settings", """{"fadeEnabled":true,"fadeSeconds":45}""") }
+    }
+
+    @Test
+    fun `skips sleep timer fade settings when absent`() {
+      preferences.importSettings(SettingsBackup())
+
+      verify(exactly = 0) { editor.putString("sleep_timer_settings", any()) }
     }
 
     @Test

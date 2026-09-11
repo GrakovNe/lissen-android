@@ -30,6 +30,7 @@ import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DetailedItem.Companion.same
 import org.grakovne.lissen.domain.DurationTimerOption
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.service.DefaultTimerActivator
@@ -152,6 +153,11 @@ class MediaRepository
                     pause()
                   }
 
+                  // emitted by PlaybackTimer on any stop: manual cancel, replacement, or expiry.
+                  // Timer state is already cleared by the canceling paths, and a replacement
+                  // re-sets it right after, so there is nothing to reconcile here.
+                  is PlaybackEvent.TimerCancelled -> {}
+
                   is PlaybackEvent.TimerTick -> {
                     _timerRemaining.value = event.remainingSeconds
                   }
@@ -272,7 +278,8 @@ class MediaRepository
     }
 
     fun clearPlayingBook() {
-      Timber.d("Clearing playing book: ${_playingBook.value?.id}")
+      val bookId = _playingBook.value?.id
+      Timber.d("Clearing playing book: $bookId")
 
       progressPoller.stop()
 
@@ -284,7 +291,7 @@ class MediaRepository
       _isPlaying.value = false
       _isPlaybackReady.value = false
       _playingBook.value = null
-      preferences.clearPlayingItem()
+      preferences.clearPlayingItem(bookId)
     }
 
     fun setTotalPosition(totalPosition: Double) {
@@ -360,11 +367,14 @@ class MediaRepository
       adjustTimer(totalPosition.value)
     }
 
-    suspend fun preparePlayback(bookId: String) {
+    suspend fun preparePlayback(
+      bookId: String,
+      libraryType: LibraryType? = null,
+    ) {
       coroutineScope {
         withContext(Dispatchers.IO) {
           mediaChannel
-            .fetchBook(bookId)
+            .fetchBook(bookId, libraryType)
             .foldAsync(
               onSuccess = { startPreparingPlayback(it) },
               onFailure = { _mediaPreparingError.value = true },

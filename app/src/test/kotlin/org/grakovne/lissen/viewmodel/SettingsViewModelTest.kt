@@ -15,6 +15,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.grakovne.lissen.channel.audiobookshelf.Host
+import org.grakovne.lissen.channel.audiobookshelf.common.api.ConditionalCache
 import org.grakovne.lissen.channel.common.ConnectionInfo
 import org.grakovne.lissen.channel.common.DEFAULT_USER_AGENT
 import org.grakovne.lissen.channel.common.OperationError
@@ -36,6 +37,7 @@ import org.grakovne.lissen.domain.EqualizerSettings
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.SeekTime
+import org.grakovne.lissen.domain.SleepTimerSettings
 import org.grakovne.lissen.domain.StoragePath
 import org.grakovne.lissen.domain.connection.LocalUrl
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
@@ -79,6 +81,7 @@ class SettingsViewModelTest {
   private val offlineBookStorageProperties = mockk<OfflineBookStorageProperties>(relaxed = true)
   private val contentCachingManager = mockk<ContentCachingManager>(relaxed = true)
   private val mediaRepository = mockk<MediaRepository>(relaxed = true)
+  private val conditionalCache = mockk<ConditionalCache>(relaxed = true)
   private lateinit var viewModel: SettingsViewModel
 
   @BeforeEach
@@ -99,6 +102,7 @@ class SettingsViewModelTest {
     every { connection.getCustomHeaders() } returns emptyList()
     every { connection.getLocalUrls() } returns emptyList()
     every { playback.getSeekTime() } returns SeekTime.Default
+    every { playback.getSleepTimerSettings() } returns SleepTimerSettings.Default
     every { playback.getEqualizer() } returns EqualizerSettings.Default
     coEvery { equalizerBandProvider.getCapabilities() } returns EqualizerCapabilities.Unavailable
     every { diagnostics.getAcraEnabled() } returns true
@@ -132,6 +136,7 @@ class SettingsViewModelTest {
         offlineBookStorageProperties,
         contentCachingManager,
         mediaRepository,
+        conditionalCache,
       )
   }
 
@@ -170,6 +175,7 @@ class SettingsViewModelTest {
         offlineBookStorageProperties,
         contentCachingManager,
         mediaRepository,
+        conditionalCache,
       )
 
     @Test
@@ -340,6 +346,7 @@ class SettingsViewModelTest {
           offlineBookStorageProperties,
           contentCachingManager,
           mediaRepository,
+          conditionalCache,
         )
 
       viewModel.changeAutoDownloadLibraryType(LibraryType.PODCAST, true)
@@ -367,6 +374,7 @@ class SettingsViewModelTest {
           offlineBookStorageProperties,
           contentCachingManager,
           mediaRepository,
+          conditionalCache,
         )
 
       viewModel.changeAutoDownloadLibraryType(LibraryType.PODCAST, false)
@@ -471,6 +479,35 @@ class SettingsViewModelTest {
     fun `preferRewind preserves forward value`() {
       viewModel.preferRewind(10)
       assertEquals(SeekTime.Default.forward, viewModel.seekTime.value.forward)
+    }
+  }
+
+  @Nested
+  inner class SleepTimerFadePreference {
+    @Test
+    fun `fade state is initialized from preferences`() {
+      assertFalse(viewModel.sleepTimerFadeEnabled.value)
+      assertEquals(SleepTimerSettings.DEFAULT_FADE_SECONDS, viewModel.sleepTimerFadeSeconds.value)
+    }
+
+    @Test
+    fun `preferSleepTimerFadeEnabled updates state and persists`() {
+      viewModel.preferSleepTimerFadeEnabled(true)
+
+      assertTrue(viewModel.sleepTimerFadeEnabled.value)
+      verify {
+        playback.saveSleepTimerSettings(
+          SleepTimerSettings(fadeEnabled = true, fadeSeconds = SleepTimerSettings.DEFAULT_FADE_SECONDS),
+        )
+      }
+    }
+
+    @Test
+    fun `preferSleepTimerFadeSeconds updates state and persists`() {
+      viewModel.preferSleepTimerFadeSeconds(45)
+
+      assertEquals(45, viewModel.sleepTimerFadeSeconds.value)
+      verify { playback.saveSleepTimerSettings(SleepTimerSettings(fadeEnabled = false, fadeSeconds = 45)) }
     }
   }
 
@@ -611,6 +648,7 @@ class SettingsViewModelTest {
           offlineBookStorageProperties,
           contentCachingManager,
           mediaRepository,
+          conditionalCache,
         )
       assertEquals("StoredAgent/3.0", viewModel.userAgent.value)
     }
@@ -701,6 +739,7 @@ class SettingsViewModelTest {
           offlineBookStorageProperties,
           contentCachingManager,
           mediaRepository,
+          conditionalCache,
         )
 
       viewModel.fetchLibraries()
@@ -733,6 +772,7 @@ class SettingsViewModelTest {
           offlineBookStorageProperties,
           contentCachingManager,
           mediaRepository,
+          conditionalCache,
         )
 
       viewModel.fetchLibraries()
@@ -763,6 +803,7 @@ class SettingsViewModelTest {
           offlineBookStorageProperties,
           contentCachingManager,
           mediaRepository,
+          conditionalCache,
         )
 
       viewModel.fetchLibraries()

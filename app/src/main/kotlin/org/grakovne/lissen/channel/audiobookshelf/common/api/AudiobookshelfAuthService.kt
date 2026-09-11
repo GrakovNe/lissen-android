@@ -87,7 +87,7 @@ class AudiobookshelfAuthService
       }
 
       val response: OperationResult<LoggedUserResponse> =
-        safeApiCall(connection) { apiService.login(CredentialsLoginRequest(username, password)) }
+        safeApiCall(connection, ConditionalCache()) { apiService.login(CredentialsLoginRequest(username, password)) }
 
       return response
         .foldAsync(
@@ -128,6 +128,7 @@ class AudiobookshelfAuthService
           val response = client.newCall(request).execute()
 
           if (!response.isSuccessful) {
+            response.close()
             return@withContext OperationResult.Success(empty)
           }
 

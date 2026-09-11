@@ -72,7 +72,7 @@ fun TrackControlComposable(
 
   LaunchedEffect(currentTrackPosition, currentTrackIndex, currentTrackDuration) {
     if (!isDragging) {
-      sliderPosition = currentTrackPosition
+      sliderPosition = safeSliderPosition(currentTrackPosition, currentTrackDuration)
     }
   }
 
@@ -104,7 +104,7 @@ fun TrackControlComposable(
           isDragging = false
           viewModel.seekTo(sliderPosition)
         },
-        valueRange = 0f..currentTrackDuration.toFloat(),
+        valueRange = 0f..safeSliderDuration(currentTrackDuration),
         colors =
           SliderDefaults.colors(
             thumbColor = colorScheme.primary,
@@ -232,4 +232,20 @@ fun TrackControlComposable(
       }
     }
   }
+}
+
+/**
+ * Corrupted chapter metadata can report a negative or non-finite duration, which made
+ * the slider build an empty range and crash on value coercion. A slider range must
+ * always start at zero and end at a non-negative value.
+ */
+internal fun safeSliderDuration(duration: Double): Float = if (duration.isFinite() && duration > 0) duration.toFloat() else 0f
+
+internal fun safeSliderPosition(
+  position: Double,
+  duration: Double,
+): Double {
+  if (!position.isFinite()) return 0.0
+
+  return position.coerceIn(0.0, safeSliderDuration(duration).toDouble())
 }

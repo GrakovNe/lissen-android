@@ -1,9 +1,15 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.api
 
+import android.content.Context
+import android.os.StatFs
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
+import okhttp3.ResponseBody
 import okio.Buffer
+import okio.buffer
+import okio.sink
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarkRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarksItemResponse
@@ -26,9 +32,13 @@ import org.grakovne.lissen.channel.audiobookshelf.library.model.LibrarySearchRes
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastSearchResponse
+import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.CreateBookmarkRequest
+import timber.log.Timber
+import java.io.File
+import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -36,6 +46,7 @@ import javax.inject.Singleton
 class AudioBookshelfRepository
   @Inject
   constructor(
+    @param:ApplicationContext private val context: Context,
     private val audioBookShelfApiService: AudioBookShelfApiService,
   ) {
     fun provideHttpClient(): OkHttpClient? = audioBookShelfApiService.provideHttpClient()
@@ -131,14 +142,12 @@ class AudioBookshelfRepository
     suspend fun fetchAuthorImage(
       authorId: String,
       width: Int?,
-    ): OperationResult<Buffer> =
+    ): OperationResult<File> =
       audioBookShelfApiService
         .makeRequest { it.getAuthorImage(authorId = authorId, width = width) }
-        .map { response ->
+        .flatMap { response ->
           withContext(Dispatchers.IO) {
-            response.use {
-              Buffer().apply { writeAll(it.source()) }
-            }
+            response.use { writeBounded(it, "image of author $authorId") }
           }
         }
 
@@ -193,9 +202,8 @@ class AudioBookshelfRepository
 
     suspend fun fetchBookmarks(): OperationResult<BookmarksResponse> =
       audioBookShelfApiService
-        .makeRequest {
-          it.fetchBookmarks()
-        }
+        .makeRequest { it.fetchUserState() }
+        .map { BookmarksResponse(it.bookmarks ?: emptyList()) }
 
     suspend fun createBookmarks(request: CreateBookmarkRequest): OperationResult<BookmarksItemResponse> =
       audioBookShelfApiService
@@ -239,9 +247,9 @@ class AudioBookshelfRepository
       }
 
     suspend fun fetchUserInfoResponse(): OperationResult<UserResponse> =
-      audioBookShelfApiService.makeRequest {
-        it.fetchUserInfo()
-      }
+      audioBookShelfApiService
+        .makeRequest { it.fetchUserState() }
+        .map { UserResponse(it.mediaProgress) }
 
     suspend fun startPlayback(
       itemId: String,
@@ -281,18 +289,81 @@ class AudioBookshelfRepository
     suspend fun fetchBookCover(
       itemId: String,
       width: Int?,
-    ): OperationResult<Buffer> =
+    ): OperationResult<File> =
       audioBookShelfApiService
         .makeRequest {
           when (width == null) {
             true -> it.getItemCover(itemId = itemId)
             false -> it.getItemCover(itemId = itemId, width)
           }
-        }.map { response ->
+        }.flatMap { response ->
           withContext(Dispatchers.IO) {
-            response.use {
-              Buffer().apply { writeAll(it.source()) }
+            response.use { writeBounded(it, "cover of item $itemId") }
+          }
+        }
+
+    /**
+     * Streams the response body to a temp file instead of buffering it in the
+     * Java heap: heap usage stays at a single chunk regardless of body size.
+     * The only limit is free disk space, so even very large covers pass
+     * through while infinite or corrupt streams cannot fill the partition.
+     */
+    private fun writeBounded(
+      body: ResponseBody,
+      description: String,
+    ): OperationResult<File> {
+      val declared = body.contentLength()
+      if (declared > freeSpace()) {
+        Timber.w("Refusing $description: declares $declared bytes, only ${freeSpace()} free on disk")
+        return OperationResult.Error(OperationError.InternalError, "not enough disk space")
+      }
+
+      // Creation is inside the try: a full or unwritable cacheDir surfaces as an
+      // OperationResult instead of an IOException escaping to the caller.
+      var dest: File? = null
+
+      return try {
+        dest = File.createTempFile("cover_", ".img", context.cacheDir)
+
+        val source = body.source()
+        val chunk = Buffer()
+        var sinceDiskCheck = 0L
+        var outOfSpace = false
+
+        source.use {
+          dest.sink().buffer().use { fileSink ->
+            while (true) {
+              val read = source.read(chunk, CHUNK_BYTES)
+              if (read == -1L) break
+              sinceDiskCheck += read
+              if (sinceDiskCheck >= DISK_CHECK_INTERVAL && freeSpace() < MIN_FREE_BYTES) {
+                outOfSpace = true
+                break
+              }
+              fileSink.writeAll(chunk)
             }
           }
         }
+
+        if (outOfSpace) {
+          Timber.w("Refusing $description: running out of disk space")
+          dest.delete()
+          OperationResult.Error(OperationError.InternalError, "not enough disk space")
+        } else {
+          OperationResult.Success(dest)
+        }
+      } catch (e: IOException) {
+        Timber.w("Unable to stream $description to disk due to: ${e.message}")
+        dest?.delete()
+        OperationResult.Error(OperationError.NetworkError, e.message)
+      }
+    }
+
+    private fun freeSpace(): Long = StatFs(context.cacheDir.absolutePath).availableBytes
+
+    private companion object {
+      private const val CHUNK_BYTES = 64L * 1024L
+      private const val DISK_CHECK_INTERVAL = 16L * 1024L * 1024L
+      private const val MIN_FREE_BYTES = 100L * 1024L * 1024L
+    }
   }

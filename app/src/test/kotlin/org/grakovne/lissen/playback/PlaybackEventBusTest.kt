@@ -26,4 +26,14 @@ class PlaybackEventBusTest {
 
       assertEquals(PlaybackEvent.TimerTick(42), bus.events.first())
     }
+
+  @Test
+  fun `timer cancelled event reaches the collector`() =
+    runTest {
+      val bus = PlaybackEventBus()
+
+      bus.emit(PlaybackEvent.TimerCancelled)
+
+      assertEquals(PlaybackEvent.TimerCancelled, bus.events.first())
+    }
 }

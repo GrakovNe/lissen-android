@@ -35,7 +35,6 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.components.AsyncShimmeringImage
 import org.grakovne.lissen.ui.components.BookCoverKey
-import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
@@ -67,7 +66,7 @@ fun BookCover(
 
 @Composable
 fun TrackDetailsComposable(
-  libraryViewModel: LibraryViewModel,
+  libraryType: LibraryType,
   viewModel: PlayerViewModel,
   modifier: Modifier = Modifier,
   imageLoader: ImageLoader,
@@ -136,7 +135,7 @@ fun TrackDetailsComposable(
         provideChapterNumberTitle(
           currentTrackIndex = currentTrackIndex,
           book = book,
-          libraryType = libraryViewModel.fetchPreferredLibraryType(),
+          libraryType = libraryType,
           context = context,
         ),
       style = typography.bodyMedium,

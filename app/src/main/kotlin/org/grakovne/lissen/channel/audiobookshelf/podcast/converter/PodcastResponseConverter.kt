@@ -6,6 +6,7 @@ import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
 import org.grakovne.lissen.domain.BookChapterState
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PlayingChapter
 import timber.log.Timber
@@ -75,6 +76,7 @@ class PodcastResponseConverter
         title = item.media.metadata.title,
         subtitle = null,
         libraryId = item.libraryId,
+        libraryType = LibraryType.PODCAST,
         author = item.media.metadata.author,
         narrator = null,
         localProvided = false,
@@ -109,20 +111,32 @@ class PodcastResponseConverter
 
     companion object {
       private const val FINISHED_PROGRESS_THRESHOLD = 0.9
-      private val dateFormat = SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", Locale.ENGLISH)
+      private const val PUB_DATE_PATTERN = "EEE, dd MMM yyyy HH:mm:ss Z"
 
-      private fun List<PodcastEpisodeResponse>.orderEpisode() =
-        this.sortedWith(
-          compareBy<PodcastEpisodeResponse> { item ->
+      private data class EpisodeOrder(
+        val publishedAt: Long?,
+        val season: Int?,
+        val episode: Int?,
+      )
+
+      // SimpleDateFormat is not thread-safe and podcast books are fetched concurrently,
+      // so parsing happens once per sort with a dedicated instance instead of a shared one.
+      private fun List<PodcastEpisodeResponse>.orderEpisode(): List<PodcastEpisodeResponse> {
+        val dateFormat = SimpleDateFormat(PUB_DATE_PATTERN, Locale.ENGLISH)
+
+        return map { item ->
+          val publishedAt =
             try {
               item.pubDate?.let { dateFormat.parse(it)?.time }
             } catch (e: Exception) {
               Timber.w("Unable to parse episode pubDate '${item.pubDate}' due to: ${e.message}")
               null
             }
-          }.thenBy { it.season.safeToInt() }
-            .thenBy { it.episode.safeToInt() },
-        )
+          EpisodeOrder(publishedAt, item.season.safeToInt(), item.episode.safeToInt()) to item
+        }.sortedWith(
+          compareBy({ it.first.publishedAt }, { it.first.season }, { it.first.episode }),
+        ).map { it.second }
+      }
 
       private fun String?.safeToInt(): Int? {
         val maybeNumber = this?.takeIf { it.isNotBlank() }

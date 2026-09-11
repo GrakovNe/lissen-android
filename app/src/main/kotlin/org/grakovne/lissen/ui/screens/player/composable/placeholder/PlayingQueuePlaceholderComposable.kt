@@ -21,19 +21,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.valentinilk.shimmer.shimmer
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
-import org.grakovne.lissen.viewmodel.LibraryViewModel
 
 @Composable
 fun PlayingQueuePlaceholderComposable(
-  libraryViewModel: LibraryViewModel,
+  libraryType: LibraryType,
   modifier: Modifier = Modifier,
 ) {
   val context = LocalContext.current
 
   Column(modifier = modifier.padding(horizontal = 16.dp)) {
     Text(
-      text = provideNowPlayingTitle(libraryViewModel.fetchPreferredLibraryType(), context),
+      text = provideNowPlayingTitle(libraryType, context),
       fontSize = typography.titleMedium.fontSize * 1.25f,
       fontWeight = FontWeight.SemiBold,
       color = MaterialTheme.colorScheme.primary,

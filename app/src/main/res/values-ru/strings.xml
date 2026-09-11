@@ -87,6 +87,12 @@
         <item quantity="many">%d секунд</item>
         <item quantity="other">%d секунды</item>
     </plurals>
+    <plurals name="fade_duration_seconds">
+        <item quantity="one">%d секунда</item>
+        <item quantity="few">%d секунды</item>
+        <item quantity="many">%d секунд</item>
+        <item quantity="other">%d секунды</item>
+    </plurals>
     <plurals name="series_books_count">
         <item quantity="one">%d книга</item>
         <item quantity="few">%d книги</item>
@@ -173,6 +179,11 @@
     <string name="settings_screen_seek_time_title">Настройки перемотки</string>
     <string name="settings_screen_seek_time_hint">Настройте управление перемоткой</string>
     <string name="settings_screen_default_sleep_timer_title">Таймер при воспроизведении по умолчанию</string>
+    <string name="sleep_timer_settings_title">Настройки таймера</string>
+    <string name="sleep_timer_settings_description">Настройте управление таймером</string>
+    <string name="sleep_timer_fade_title">Плавное затухание</string>
+    <string name="sleep_timer_fade_description">Уменьшать громкость перед остановкой</string>
+    <string name="sleep_timer_fade_duration_title">Длительность затухания</string>
     <string name="rewind_interval">Интервал перемотки назад</string>
     <string name="forward_interval">Интервал перемотки вперёд</string>
     <string name="continue_playback_shortcut_title">Продолжить</string>
@@ -286,4 +297,13 @@
     <string name="import_config_title">Импортировать конфигурацию</string>
     <string name="import_config_description">Восстановить настройки приложения</string>
     <string name="import_config_failed_toast">Не удалось импортировать конфигурацию</string>
+    <string name="downloads_menu_download_option_decrease">Уменьшить количество</string>
+    <string name="downloads_menu_download_option_increase">Увеличить количество</string>
+    <string name="tree_node_downloads_offline">Загрузки</string>
+    <string name="tree_node_all_titles">Библиотека</string>
+    <string name="tree_node_series_collapsed">Серии</string>
+    <string name="tree_node_genres">Жанры</string>
+    <string name="tree_node_tags">Теги</string>
+    <string name="tree_node_authors">Авторы</string>
+    <string name="tree_node_series">Серии</string>
 </resources>

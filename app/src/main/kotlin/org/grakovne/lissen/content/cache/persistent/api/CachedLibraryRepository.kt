@@ -18,6 +18,8 @@ class CachedLibraryRepository
 
     suspend fun fetchLibraryType(libraryId: String): LibraryType? = dao.fetchLibrary(libraryId)?.type
 
+    suspend fun fetchLibraryTypes(): Map<String, LibraryType> = dao.fetchLibraries().associate { it.id to it.type }
+
     suspend fun fetchLibraries() =
       dao
         .fetchLibraries()

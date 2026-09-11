@@ -10,6 +10,7 @@ import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryAuthorRes
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryChapterResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryMetadataResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibrarySeriesResponse
+import org.grakovne.lissen.domain.LibraryType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -79,6 +80,7 @@ class BookResponseConverterTest {
     assertEquals("book-1", item.id)
     assertEquals("My Book", item.title)
     assertEquals("lib-1", item.libraryId)
+    assertEquals(LibraryType.LIBRARY, item.libraryType)
     assertEquals(1000L, item.createdAt)
     assertEquals(2000L, item.updatedAt)
   }

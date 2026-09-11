@@ -20,6 +20,7 @@ import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.GroupedEntry
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.MediaProgress
@@ -40,6 +41,7 @@ class CachedBookRepositoryTest {
   private val cachedBookEntityDetailedConverter = mockk<CachedBookEntityDetailedConverter>(relaxed = true)
   private val cachedBookEntityRecentConverter = mockk<CachedBookEntityRecentConverter>(relaxed = true)
   private val mediaProgressEntityConverter = mockk<MediaProgressEntityConverter>(relaxed = true)
+  private val cachedLibraryRepository = mockk<CachedLibraryRepository>(relaxed = true)
   private val preferences = mockk<LibraryPreferences>(relaxed = true)
 
   private lateinit var repository: CachedBookRepository
@@ -57,6 +59,7 @@ class CachedBookRepositoryTest {
         cachedBookEntityDetailedConverter = cachedBookEntityDetailedConverter,
         cachedBookEntityRecentConverter = cachedBookEntityRecentConverter,
         mediaProgressEntityConverter = mediaProgressEntityConverter,
+        cachedLibraryRepository = cachedLibraryRepository,
         preferences = preferences,
       )
   }
@@ -392,10 +395,17 @@ class CachedBookRepositoryTest {
   @Test
   fun `fetchCachedItems maps cached entries through the detailed converter`() =
     runBlocking {
-      val cached = mockk<CachedBookEntity>()
+      val cached = mockk<CachedBookEntity>(relaxed = true)
       val detailed = mockk<DetailedItem>()
       coEvery { bookDao.fetchCachedItems() } returns listOf(cached)
-      every { cachedBookEntityDetailedConverter.apply(cached) } returns detailed
+      every { cached.detailedBook.libraryId } returns LIBRARY_ID
+      coEvery { cachedLibraryRepository.fetchLibraryTypes() } returns mapOf(LIBRARY_ID to LibraryType.LIBRARY)
+      every {
+        cachedBookEntityDetailedConverter.apply(
+          entity = cached,
+          libraryType = LibraryType.LIBRARY,
+        )
+      } returns detailed
 
       assertEquals(listOf(detailed), repository.fetchCachedItems())
     }
@@ -403,12 +413,38 @@ class CachedBookRepositoryTest {
   @Test
   fun `fetchCachedItems with paging maps cached entries through the detailed converter`() =
     runBlocking {
-      val cached = mockk<CachedBookEntity>()
+      val cached = mockk<CachedBookEntity>(relaxed = true)
       val detailed = mockk<DetailedItem>()
       coEvery { bookDao.fetchCachedItems(pageSize = 20, pageNumber = 0) } returns listOf(cached)
-      every { cachedBookEntityDetailedConverter.apply(cached) } returns detailed
+      every { cached.detailedBook.libraryId } returns LIBRARY_ID
+      coEvery { cachedLibraryRepository.fetchLibraryTypes() } returns mapOf(LIBRARY_ID to LibraryType.PODCAST)
+      every {
+        cachedBookEntityDetailedConverter.apply(
+          entity = cached,
+          libraryType = LibraryType.PODCAST,
+        )
+      } returns detailed
 
       assertEquals(listOf(detailed), repository.fetchCachedItems(pageSize = 20, pageNumber = 0))
+    }
+
+  @Test
+  fun `fetchCachedItems falls back to the active library type when the library table misses the library`() =
+    runBlocking {
+      val cached = mockk<CachedBookEntity>(relaxed = true)
+      val detailed = mockk<DetailedItem>()
+      coEvery { bookDao.fetchCachedItems() } returns listOf(cached)
+      every { cached.detailedBook.libraryId } returns LIBRARY_ID
+      coEvery { cachedLibraryRepository.fetchLibraryTypes() } returns emptyMap()
+      every { preferences.getPreferredLibrary() } returns Library(LIBRARY_ID, "Library", LibraryType.PODCAST)
+      every {
+        cachedBookEntityDetailedConverter.apply(
+          entity = cached,
+          libraryType = LibraryType.PODCAST,
+        )
+      } returns detailed
+
+      assertEquals(listOf(detailed), repository.fetchCachedItems())
     }
 
   @Test
@@ -484,10 +520,36 @@ class CachedBookRepositoryTest {
   @Test
   fun `fetchBook maps the cached entity through the detailed converter`() =
     runBlocking {
-      val cached = mockk<CachedBookEntity>()
+      val cached = mockk<CachedBookEntity>(relaxed = true)
       val detailed = mockk<DetailedItem>()
       coEvery { bookDao.fetchCachedBook("b1") } returns cached
-      every { cachedBookEntityDetailedConverter.apply(cached) } returns detailed
+      every { cached.detailedBook.libraryId } returns LIBRARY_ID
+      coEvery { cachedLibraryRepository.fetchLibraryType(LIBRARY_ID) } returns LibraryType.LIBRARY
+      every {
+        cachedBookEntityDetailedConverter.apply(
+          entity = cached,
+          libraryType = LibraryType.LIBRARY,
+        )
+      } returns detailed
+
+      assertEquals(detailed, repository.fetchBook("b1"))
+    }
+
+  @Test
+  fun `fetchBook falls back to the active library type when the library table misses the library`() =
+    runBlocking {
+      val cached = mockk<CachedBookEntity>(relaxed = true)
+      val detailed = mockk<DetailedItem>()
+      coEvery { bookDao.fetchCachedBook("b1") } returns cached
+      every { cached.detailedBook.libraryId } returns LIBRARY_ID
+      coEvery { cachedLibraryRepository.fetchLibraryType(LIBRARY_ID) } returns null
+      every { preferences.getPreferredLibrary() } returns Library(LIBRARY_ID, "Library", LibraryType.PODCAST)
+      every {
+        cachedBookEntityDetailedConverter.apply(
+          entity = cached,
+          libraryType = LibraryType.PODCAST,
+        )
+      } returns detailed
 
       assertEquals(detailed, repository.fetchBook("b1"))
     }

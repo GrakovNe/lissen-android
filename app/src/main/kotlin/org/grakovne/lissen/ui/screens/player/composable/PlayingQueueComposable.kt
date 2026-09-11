@@ -63,15 +63,15 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.components.withScrollbar
 import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
 import org.grakovne.lissen.viewmodel.CachingModelView
-import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
 @Composable
 fun PlayingQueueComposable(
-  libraryViewModel: LibraryViewModel,
+  libraryType: LibraryType,
   cachingModelView: CachingModelView,
   viewModel: PlayerViewModel,
   modifier: Modifier = Modifier,
@@ -245,7 +245,7 @@ fun PlayingQueueComposable(
     ) {
       if (showQueueHeader) {
         Text(
-          text = provideNowPlayingTitle(libraryViewModel.fetchPreferredLibraryType(), context),
+          text = provideNowPlayingTitle(libraryType, context),
           fontSize = fontSize.sp,
           fontWeight = FontWeight.SemiBold,
           color = colorScheme.primary,

@@ -110,7 +110,7 @@ class ContentCachingService : LifecycleService() {
     val job =
       lifecycleScope.launch(start = CoroutineStart.LAZY) {
         mediaProvider
-          .fetchBook(task.itemId)
+          .fetchBook(task.itemId, task.libraryType)
           .foldAsync(
             onSuccess = { item -> cacheFetchedItem(item, task) },
             onFailure = {
@@ -146,7 +146,7 @@ class ContentCachingService : LifecycleService() {
       )
 
     executor
-      .run(mediaProvider.providePreferredChannel())
+      .run(mediaProvider.provideChannelFor(item.libraryType))
       .catch { error ->
         Timber.e(error, "Caching failed for ${item.id}, emitting error state")
         emit(CacheState(CacheStatus.Error))

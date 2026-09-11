@@ -2,6 +2,7 @@ package org.grakovne.lissen.content
 
 import android.net.Uri
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfChannelProvider
+import org.grakovne.lissen.channel.audiobookshelf.common.api.ConditionalCache
 import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
@@ -36,6 +37,7 @@ class LissenMediaProvider
     private val localCacheRepository: LocalCacheRepository,
     private val cachedCoverProvider: CachedCoverProvider,
     private val cachedBookmarkProvider: CachedBookmarkProvider,
+    private val conditionalCache: ConditionalCache,
   ) {
     suspend fun dropBookmark(bookmark: Bookmark) {
       Timber.d("Dropping bookmark for ${bookmark.libraryItemId} at position=${bookmark.totalPosition.toInt()}s")
@@ -106,7 +108,7 @@ class LissenMediaProvider
 
       localCacheRepository.syncProgress(detailedItem, progress)
 
-      return providePreferredChannel()
+      return provideChannelFor(detailedItem.libraryType)
         .syncProgress(sessionId, progress, timeListened)
     }
 
@@ -277,10 +279,11 @@ class LissenMediaProvider
       chapterId: String,
       supportedMimeTypes: List<String>,
       deviceId: String,
+      libraryType: LibraryType? = null,
     ): OperationResult<PlaybackSession> {
-      Timber.d("Starting playback: itemId=$itemId, chapterId=$chapterId, mimeTypes=$supportedMimeTypes")
+      Timber.d("Starting playback: itemId=$itemId, chapterId=$chapterId, mimeTypes=$supportedMimeTypes, libraryType=$libraryType")
 
-      return providePreferredChannel()
+      return provideChannelFor(libraryType)
         .startPlayback(
           bookId = itemId,
           episodeId = chapterId,
@@ -312,8 +315,11 @@ class LissenMediaProvider
       }
     }
 
-    suspend fun fetchBook(bookId: String): OperationResult<DetailedItem> {
-      Timber.d("Fetching book: bookId=$bookId")
+    suspend fun fetchBook(
+      bookId: String,
+      libraryType: LibraryType? = null,
+    ): OperationResult<DetailedItem> {
+      Timber.d("Fetching book: bookId=$bookId, libraryType=$libraryType")
 
       return when (preferences.isForceCache()) {
         true -> {
@@ -324,7 +330,7 @@ class LissenMediaProvider
         }
 
         false -> {
-          providePreferredChannel()
+          provideChannelFor(libraryType)
             .fetchBook(bookId)
             .map { mergeLocalItemProgress(it) }
             .map { trimProgress(it) }
@@ -378,6 +384,8 @@ class LissenMediaProvider
           accessToken = account.accessToken,
           refreshToken = account.refreshToken,
         )
+
+      conditionalCache.invalidateAll()
 
       fetchLibraries()
         .fold(
@@ -485,4 +493,6 @@ class LissenMediaProvider
     fun provideAuthService(): ChannelAuthService = channelProvider.provideChannelAuth()
 
     fun providePreferredChannel(): MediaChannel = channelProvider.provideMediaChannel()
+
+    fun provideChannelFor(libraryType: LibraryType?): MediaChannel = channelProvider.provideMediaChannel(libraryType)
   }

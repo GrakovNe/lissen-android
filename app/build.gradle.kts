@@ -6,7 +6,7 @@ plugins {
   alias(libs.plugins.compose.compiler)
   
   alias(libs.plugins.hilt.android)
-  id("org.jmailen.kotlinter") version "5.6.0"
+  id("org.jmailen.kotlinter") version "5.7.0"
   id("com.google.devtools.ksp")
   id("kotlin-parcelize")
 }
@@ -84,8 +84,8 @@ android {
     applicationId = "org.grakovne.lissen"
     minSdk = 28
     targetSdk = 37
-    versionCode = 11122
-    versionName = "1.11.22-release"
+    versionCode = 11203
+    versionName = "1.12.3-release"
     
     testInstrumentationRunner = "org.grakovne.lissen.HiltTestRunner"
     
@@ -109,11 +109,18 @@ android {
       if (project.hasProperty("RELEASE_STORE_FILE")) {
         signingConfig = signingConfigs.getByName("release")
       }
-      isMinifyEnabled = false
-      isShrinkResources = false
+      isMinifyEnabled = true
+      isShrinkResources = true
       proguardFiles(
         getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
       )
+    }
+    create("minified") {
+      initWith(getByName("release"))
+      applicationIdSuffix = ".minified"
+      versionNameSuffix = " (MINIFIED TEST)"
+      signingConfig = signingConfigs.getByName("debug")
+      matchingFallbacks.add("release")
     }
     debug {
       applicationIdSuffix = ".debug"
@@ -126,8 +133,8 @@ android {
   }
   
   compileOptions {
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
   }
   
   buildFeatures {
@@ -156,6 +163,12 @@ android {
   }
 }
 
+java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(25)
+  }
+}
+
 dependencies {
   implementation(libs.androidx.navigation.compose)
   implementation(libs.material)
@@ -169,6 +182,7 @@ dependencies {
   implementation(libs.logging.interceptor)
   implementation(libs.okhttp)
   implementation(libs.androidx.browser)
+  implementation(libs.androidx.collection)
   
   implementation(libs.coil.compose)
   implementation(libs.coil.svg)
@@ -224,6 +238,7 @@ dependencies {
   testImplementation(libs.junit.jupiter)
   testImplementation(libs.mockk)
   testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation(libs.mockwebserver)
   testRuntimeOnly(libs.junit.platform.launcher)
   
   androidTestImplementation(libs.androidx.room.testing)
@@ -234,6 +249,8 @@ dependencies {
   androidTestImplementation(platform(libs.androidx.compose.bom))
   androidTestImplementation(libs.androidx.ui.test.junit4)
   androidTestImplementation(libs.hilt.android.testing)
+  androidTestImplementation(libs.mockwebserver)
+  androidTestImplementation(libs.okhttp.tls)
   androidTestImplementation(libs.androidx.espresso.core)
   androidTestImplementation(libs.androidx.glance.appwidget.testing)
   kspAndroidTest(libs.hilt.android.compiler)

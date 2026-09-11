@@ -7,6 +7,7 @@ import org.grakovne.lissen.domain.BookAuthor
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.BookSeries
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PlayingChapter
 import javax.inject.Inject
@@ -93,6 +94,7 @@ class BookResponseConverter
             ?: emptyList(),
         chapters = maybeChapters ?: filesAsChapters(),
         libraryId = item.libraryId,
+        libraryType = LibraryType.LIBRARY,
         localProvided = false,
         year = item.media.metadata.publishedYear,
         abstract = item.media.metadata.description,

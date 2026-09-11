@@ -1,10 +1,10 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.client
 
 import okhttp3.ResponseBody
+import org.grakovne.lissen.channel.audiobookshelf.common.api.Cacheable
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarkRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarksItemResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarksResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.connection.ConnectionInfoResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.AuthorItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibrariesResponse
@@ -15,7 +15,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.Progress
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.CredentialsLoginRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.LoggedUserResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.PersonalizedFeedResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.user.UserResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.user.UserStateResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.BookResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryAuthorsResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsBatchRequest
@@ -35,15 +35,19 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 import retrofit2.http.Streaming
+import retrofit2.http.Tag
 
 interface AudiobookshelfApiClient {
   @GET("api/libraries")
-  suspend fun fetchLibraries(): Response<LibrariesResponse>
+  suspend fun fetchLibraries(
+    @Tag cacheable: Cacheable = Cacheable(),
+  ): Response<LibrariesResponse>
 
   @GET("api/libraries/{libraryId}")
   suspend fun fetchLibrary(
     @Path("libraryId") libraryId: String,
     @Query("include") include: String = "filterdata",
+    @Tag cacheable: Cacheable = Cacheable(),
   ): Response<LibraryResponse>
 
   @GET("api/libraries/{libraryId}/personalized")
@@ -60,7 +64,9 @@ interface AudiobookshelfApiClient {
   suspend fun fetchConnectionInfo(): Response<ConnectionInfoResponse>
 
   @GET("api/me")
-  suspend fun fetchBookmarks(): Response<BookmarksResponse>
+  suspend fun fetchUserState(
+    @Tag cacheable: Cacheable = Cacheable(),
+  ): Response<UserStateResponse>
 
   @POST("api/me/item/{libraryItemId}/bookmark")
   suspend fun createBookmarks(
@@ -74,9 +80,6 @@ interface AudiobookshelfApiClient {
     @Path("totalTime") totalTime: Int,
   ): Response<Unit>
 
-  @GET("api/me")
-  suspend fun fetchUserInfo(): Response<UserResponse>
-
   @GET("api/libraries/{libraryId}/items")
   suspend fun fetchLibraryItems(
     @Path("libraryId") libraryId: String,
@@ -87,6 +90,7 @@ interface AudiobookshelfApiClient {
     @Query("minified") minified: String = "1",
     @Query("filter") filter: String?,
     @Query("collapseseries") collapseSeries: String = "0",
+    @Tag cacheable: Cacheable = Cacheable(),
   ): Response<LibraryItemsResponse>
 
   @GET("api/libraries/{libraryId}/items")
@@ -97,6 +101,7 @@ interface AudiobookshelfApiClient {
     @Query("sort") sort: String,
     @Query("desc") desc: String,
     @Query("minified") minified: String = "1",
+    @Tag cacheable: Cacheable = Cacheable(),
   ): Response<PodcastItemsResponse>
 
   @GET("api/libraries/{libraryId}/authors")
@@ -106,6 +111,7 @@ interface AudiobookshelfApiClient {
     @Query("page") page: Int,
     @Query("sort") sort: String,
     @Query("desc") desc: String,
+    @Tag cacheable: Cacheable = Cacheable(),
   ): Response<LibraryAuthorsResponse>
 
   @GET("api/libraries/{libraryId}/search")
@@ -125,16 +131,19 @@ interface AudiobookshelfApiClient {
   @GET("api/items/{itemId}")
   suspend fun fetchLibraryItem(
     @Path("itemId") itemId: String,
+    @Tag cacheable: Cacheable = Cacheable(),
   ): Response<BookResponse>
 
   @GET("api/items/{itemId}")
   suspend fun fetchPodcastEpisode(
     @Path("itemId") itemId: String,
+    @Tag cacheable: Cacheable = Cacheable(),
   ): Response<PodcastResponse>
 
   @GET("api/authors/{authorId}?include=items")
   suspend fun fetchAuthorLibraryItems(
     @Path("authorId") authorId: String,
+    @Tag cacheable: Cacheable = Cacheable(),
   ): Response<AuthorItemsResponse>
 
   @POST("api/items/batch/get")

@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.channel.audiobookshelf.Host
+import org.grakovne.lissen.channel.audiobookshelf.common.api.ConditionalCache
 import org.grakovne.lissen.channel.common.DEFAULT_USER_AGENT
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.common.AudioFocusLossPolicy
@@ -74,6 +75,7 @@ class SettingsViewModel
     private val offlineBookStorageProperties: OfflineBookStorageProperties,
     private val contentCachingManager: ContentCachingManager,
     private val mediaRepository: MediaRepository,
+    private val conditionalCache: ConditionalCache,
   ) : ViewModel() {
     private val _host = MutableStateFlow<Host?>(session.getHost()?.let { Host.external(it) })
     val host: StateFlow<Host?> = _host.asStateFlow()
@@ -129,6 +131,12 @@ class SettingsViewModel
 
     private val _defaultTimerOption = MutableStateFlow<TimerOption?>(playback.getDefaultTimerOption())
     val defaultTimerOption: StateFlow<TimerOption?> = _defaultTimerOption.asStateFlow()
+
+    private val _sleepTimerFadeEnabled = MutableStateFlow(playback.getSleepTimerSettings().fadeEnabled)
+    val sleepTimerFadeEnabled: StateFlow<Boolean> = _sleepTimerFadeEnabled.asStateFlow()
+
+    private val _sleepTimerFadeSeconds = MutableStateFlow(playback.getSleepTimerSettings().fadeSeconds)
+    val sleepTimerFadeSeconds: StateFlow<Int> = _sleepTimerFadeSeconds.asStateFlow()
 
     private val _crashReporting = MutableStateFlow(diagnostics.getAcraEnabled())
     val crashReporting: StateFlow<Boolean> = _crashReporting.asStateFlow()
@@ -237,6 +245,7 @@ class SettingsViewModel
 
     fun logout() {
       Timber.d("User action: logout")
+      conditionalCache.invalidateAll()
       preferencesReset.clearAll()
     }
 
@@ -447,6 +456,18 @@ class SettingsViewModel
 
       playback.saveSeekTime(updated)
       _seekTime.value = updated
+    }
+
+    fun preferSleepTimerFadeEnabled(value: Boolean) {
+      Timber.d("User action: preferSleepTimerFadeEnabled $value")
+      _sleepTimerFadeEnabled.value = value
+      playback.saveSleepTimerSettings(playback.getSleepTimerSettings().copy(fadeEnabled = value))
+    }
+
+    fun preferSleepTimerFadeSeconds(seconds: Int) {
+      Timber.d("User action: preferSleepTimerFadeSeconds $seconds")
+      _sleepTimerFadeSeconds.value = seconds
+      playback.saveSleepTimerSettings(playback.getSleepTimerSettings().copy(fadeSeconds = seconds))
     }
 
     fun updateLocalUrls(urls: List<LocalUrl>) {
