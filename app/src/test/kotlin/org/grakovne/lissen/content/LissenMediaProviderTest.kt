@@ -161,10 +161,10 @@ class LissenMediaProviderTest {
     @Test
     fun `trims progress to null when progress is zero or negative`() =
       runBlocking {
-        val chapter = PlayingChapter("c1", "Intro", 0.0, 100.0, 100.0)
+        val chapter = chapter("c1")
         val item =
           detailedItem("book-1", listOf(chapter)).copy(
-            progress = PlaybackProgress(currentTime = 0.0, lastUpdate = 1000L),
+            progress = MediaProgress(currentTime = 0.0, isFinished = false, lastUpdate = 1000L),
           )
         every { preferences.isForceCache() } returns false
         coEvery { mediaChannel.fetchBook("book-1") } returns OperationResult.Success(item)
@@ -179,10 +179,10 @@ class LissenMediaProviderTest {
     @Test
     fun `trims progress to null when progress exceeds total duration`() =
       runBlocking {
-        val chapter = PlayingChapter("c1", "Intro", 0.0, 100.0, 100.0)
+        val chapter = chapter("c1")
         val item =
           detailedItem("book-1", listOf(chapter)).copy(
-            progress = PlaybackProgress(currentTime = 100.0, lastUpdate = 1000L),
+            progress = MediaProgress(currentTime = 100.0, isFinished = false, lastUpdate = 1000L),
           )
         every { preferences.isForceCache() } returns false
         coEvery { mediaChannel.fetchBook("book-1") } returns OperationResult.Success(item)
@@ -197,8 +197,8 @@ class LissenMediaProviderTest {
     @Test
     fun `preserves valid progress within total duration`() =
       runBlocking {
-        val chapter = PlayingChapter("c1", "Intro", 0.0, 100.0, 100.0)
-        val progress = PlaybackProgress(currentTime = 50.0, lastUpdate = 1000L)
+        val chapter = chapter("c1")
+        val progress = MediaProgress(currentTime = 50.0, isFinished = false, lastUpdate = 1000L)
         val item = detailedItem("book-1", listOf(chapter)).copy(progress = progress)
         every { preferences.isForceCache() } returns false
         coEvery { mediaChannel.fetchBook("book-1") } returns OperationResult.Success(item)
@@ -802,5 +802,20 @@ class LissenMediaProviderTest {
     totalPosition = totalPosition,
     createdAt = createdAt,
     syncState = BookmarkSyncState.SYNCED,
+  )
+
+  private fun chapter(
+    id: String = "c1",
+    start: Double = 0.0,
+    end: Double = 100.0,
+    duration: Double = 100.0,
+  ) = PlayingChapter(
+    id = id,
+    title = "Chapter",
+    start = start,
+    end = end,
+    duration = duration,
+    available = true,
+    podcastEpisodeState = null,
   )
 }
