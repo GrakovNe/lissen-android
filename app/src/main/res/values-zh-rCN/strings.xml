@@ -274,4 +274,12 @@
     <string name="tree_node_tags">标签</string>
     <string name="tree_node_downloads_offline">下载（离线模式）</string>
     <string name="tree_node_series_collapsed">已折叠系列</string>
+    <plurals name="fade_duration_seconds">
+        <item quantity="other">%d 秒</item>
+    </plurals>
+    <string name="sleep_timer_settings_title">定时器设置</string>
+    <string name="sleep_timer_settings_description">配置定时器控制</string>
+    <string name="sleep_timer_fade_title">淡出</string>
+    <string name="sleep_timer_fade_description">停止播放时降低音量</string>
+    <string name="sleep_timer_fade_duration_title">淡出时长</string>
 </resources>
