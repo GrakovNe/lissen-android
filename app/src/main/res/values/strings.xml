@@ -291,4 +291,11 @@
     <string name="import_config_title">Import configuration</string>
     <string name="import_config_description">Restore app preferences from a file</string>
     <string name="import_config_failed_toast">Unable to import configuration, file may be invalid</string>
+    <string name="chapter_skip_settings_description">Configure intro and outro auto-skip</string>
+    <string name="chapter_skip_no_book_playing">Available during playback</string>
+    <string name="chapter_skip_title">Chapter Skip</string>
+    <string name="chapter_skip_enabled">Enable auto-skip</string>
+    <string name="chapter_skip_intro">Intro Skip</string>
+    <string name="chapter_skip_outro">Outro Skip</string>
+    <string name="chapter_skip_disabled">Disabled</string>
 </resources>

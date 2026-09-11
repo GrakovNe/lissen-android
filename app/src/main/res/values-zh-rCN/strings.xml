@@ -274,4 +274,11 @@
     <string name="tree_node_tags">标签</string>
     <string name="tree_node_downloads_offline">下载（离线模式）</string>
     <string name="tree_node_series_collapsed">已折叠系列</string>
+    <string name="chapter_skip_settings_description">设置片头片尾自动跳过</string>
+    <string name="chapter_skip_no_book_playing">播放时可用</string>
+    <string name="chapter_skip_title">章节跳过设置</string>
+    <string name="chapter_skip_enabled">启用自动跳过</string>
+    <string name="chapter_skip_intro">片头跳过</string>
+    <string name="chapter_skip_outro">片尾跳过</string>
+    <string name="chapter_skip_disabled">已禁用</string>
 </resources>

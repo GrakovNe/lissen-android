@@ -34,9 +34,11 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.settings.advanced.AdvancedSettingsNavigationItemComposable
+import org.grakovne.lissen.ui.screens.settings.composable.ChapterSkipSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.GitHubLinkComposable
 import org.grakovne.lissen.ui.screens.settings.composable.LicenseFooterComposable
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
+import org.grakovne.lissen.viewmodel.PlayerViewModel
 import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
@@ -46,6 +48,7 @@ fun SettingsScreen(
   navController: AppNavigationService,
 ) {
   val viewModel: SettingsViewModel = hiltViewModel()
+  val playerViewModel: PlayerViewModel = hiltViewModel()
   val host by viewModel.host.collectAsState()
 
   LaunchedEffect(Unit) {
@@ -98,6 +101,8 @@ fun SettingsScreen(
             description = stringResource(R.string.appearance_preferences_description),
             onclick = { navController.showAppearancePreferences() },
           )
+
+          ChapterSkipSettingsComposable(playerViewModel)
 
           AdvancedSettingsNavigationItemComposable(
             title = stringResource(R.string.download_settings_title),

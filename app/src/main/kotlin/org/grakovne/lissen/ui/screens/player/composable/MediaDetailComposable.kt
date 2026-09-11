@@ -60,7 +60,7 @@ fun MediaDetailComposable(
   navController: AppNavigationService,
 ) {
   val totalPosition by playingViewModel.totalPosition.collectAsState()
-  val totalDuration = playingBook?.chapters?.sumOf { it.duration }
+  val totalDuration = playingBook?.chapters?.maxOf { it.end }
   val preferredLibrary by settingsViewModel.preferredLibrary.collectAsState()
   val libraryType = playingBook?.libraryType ?: preferredLibrary?.type ?: LibraryType.UNKNOWN
 

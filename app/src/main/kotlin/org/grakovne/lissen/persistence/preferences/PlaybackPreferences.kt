@@ -4,6 +4,7 @@ import com.squareup.moshi.Types
 import kotlinx.coroutines.flow.Flow
 import org.grakovne.lissen.common.AudioFocusLossPolicy
 import org.grakovne.lissen.common.moshi
+import org.grakovne.lissen.domain.ChapterSkipConfig
 import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DurationTimerOption
@@ -128,6 +129,25 @@ class PlaybackPreferences
       store.putString(KEY_EQUALIZER, json, commit = true)
     }
 
+    fun getChapterSkipConfig(bookId: String): ChapterSkipConfig {
+      val json = store.getString(KEY_CHAPTER_SKIP_PREFIX + bookId) ?: return ChapterSkipConfig()
+      return try {
+        moshi.adapter(ChapterSkipConfig::class.java).fromJson(json) ?: ChapterSkipConfig()
+      } catch (e: com.squareup.moshi.JsonDataException) {
+        Timber.w("Stored chapter skip config is malformed, resetting due to: ${e.message}")
+        store.remove(KEY_CHAPTER_SKIP_PREFIX + bookId, commit = true)
+        ChapterSkipConfig()
+      }
+    }
+
+    fun saveChapterSkipConfig(
+      bookId: String,
+      config: ChapterSkipConfig,
+    ) {
+      val json = moshi.adapter(ChapterSkipConfig::class.java).toJson(config)
+      store.putString(KEY_CHAPTER_SKIP_PREFIX + bookId, json, commit = true)
+    }
+
     fun getDefaultTimerOption(): TimerOption? {
       val json = store.getString(KEY_DEFAULT_SLEEP_TIMER) ?: return null
       return try {
@@ -218,6 +238,7 @@ class PlaybackPreferences
       private const val KEY_EQUALIZER = "equalizer"
       private const val KEY_DEFAULT_SLEEP_TIMER = "default_sleep_timer"
       private const val KEY_SLEEP_TIMER_SETTINGS = "sleep_timer_settings"
+      private const val KEY_CHAPTER_SKIP_PREFIX = "chapter_skip_"
 
       private val playingItemsType =
         Types.newParameterizedType(
