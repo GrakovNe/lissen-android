@@ -159,7 +159,7 @@
     <string name="notification_content_caching_channel">Content Caching</string>
     <string name="notification_content_caching_title">Content is caching</string>
     <string name="notification_content_caching_error_title">Caching failed</string>
-    <string name="notification_content_caching_error_description">A few files weren鈥檛 saved</string>
+    <string name="notification_content_caching_error_description">A few files weren’t saved</string>
     <string name="login_error_lissen_auth_scheme_must_be_whitelisted">The scheme %1$s://%2$s is not allowed in the server\'s redirect URI settings</string>
     <string name="login_error_lissen_auth_failed">Could not authorize. Please check your server settings</string>
     <string name="login_error_lissen_not_found">URL is not found. Check your Server settings</string>
@@ -225,9 +225,9 @@
     <string name="library_type_podcast">Podcasts</string>
     <string name="library_type_unknown">Unknown</string>
     <string name="settings_screen_internal_connection_url_title">Local network server address</string>
-    <string name="settings_screen_internal_connection_url_description">Define server access for home Wi鈥慒i</string>
+    <string name="settings_screen_internal_connection_url_description">Define server access for home Wi‑Fi</string>
     <string name="local_url_hint_ssid_name">WiFi network name</string>
-    <string name="location_permission_request_hint">The app needs location access to detect Wi鈥慒i name</string>
+    <string name="location_permission_request_hint">The app needs location access to detect Wi‑Fi name</string>
     <string name="local_network_permission_request_hint">The app needs local network access to connect to nearby servers</string>
     <string name="permission_request_grant_button">Allow</string>
     <string name="settings_screen_clear_thumbnail_cache_title">Clear thumbnail cache</string>
