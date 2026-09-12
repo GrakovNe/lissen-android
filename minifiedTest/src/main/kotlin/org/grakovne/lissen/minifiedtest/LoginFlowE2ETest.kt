@@ -3,7 +3,10 @@ package org.grakovne.lissen.minifiedtest
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.shell.Shell
+import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiAutomatorTestScope
+import androidx.test.uiautomator.boundsInScreen
+import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.uiAutomator
 import androidx.test.uiautomator.watcher.PermissionDialog
 import org.junit.Assert.assertNull
@@ -59,6 +62,19 @@ class LoginFlowE2ETest {
     assertNull(onElementOrNull(SHORT_TIMEOUT_MS) { viewIdResourceName == "loginButton" })
   }
 
+  @Test
+  fun disconnectFromServer_returnsToLoginScreen() = withFreshApp {
+    login(password = e2eArgument("e2ePassword", "demo"))
+    onElement(TIMEOUT_MS) { viewIdResourceName == "libraryScreen" }
+    clickElement(By.desc("Menu"))
+    clickElement(By.text("Application settings"))
+    waitForElement(By.res("settingsScreen"))
+    clickElement(By.text("Connection"))
+    scrollUntilVisible(By.text("Disconnect from the server")).click()
+    clickElement(By.text("Disconnect"))
+    waitForElement(By.res("loginScreen"))
+  }
+
   private fun withFreshApp(block: UiAutomatorTestScope.() -> Unit) = uiAutomator {
     Shell.application.clearAppData(TARGET_PACKAGE)
     watchFor(PermissionDialog) { clickAllow() }
@@ -75,6 +91,7 @@ class LoginFlowE2ETest {
     onElement { viewIdResourceName == "passwordInput" }.setText(password)
     onElement { viewIdResourceName == "loginButton" }.click()
   }
+
 
   private fun e2eArgument(name: String, fallback: String): String =
     InstrumentationRegistry.getArguments().getString(name) ?: fallback
