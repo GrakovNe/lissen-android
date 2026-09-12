@@ -48,6 +48,17 @@ class LoginFlowE2ETest {
     onElement { viewIdResourceName == "loginButton" }
   }
 
+  @Test
+  fun sessionSurvivesAppRestart() = withFreshApp {
+    login(password = e2eArgument("e2ePassword", "demo"))
+    onElement(TIMEOUT_MS) { viewIdResourceName == "libraryScreen" }
+    device.executeShellCommand("am force-stop $TARGET_PACKAGE")
+    startApp(TARGET_PACKAGE)
+    waitForAppToBeVisible(TARGET_PACKAGE)
+    onElement(TIMEOUT_MS) { viewIdResourceName == "libraryScreen" }
+    assertNull(onElementOrNull(SHORT_TIMEOUT_MS) { viewIdResourceName == "loginButton" })
+  }
+
   private fun withFreshApp(block: UiAutomatorTestScope.() -> Unit) = uiAutomator {
     Shell.application.clearAppData(TARGET_PACKAGE)
     watchFor(PermissionDialog) { clickAllow() }
