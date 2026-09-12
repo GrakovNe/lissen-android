@@ -1,5 +1,6 @@
 package org.grakovne.lissen.minifiedtest
 
+import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.UiAutomatorTestScope
 import androidx.test.uiautomator.UiObject2
@@ -51,4 +52,32 @@ fun UiAutomatorTestScope.scrollUntilVisible(
     )
   }
   return waitForElement(selector)
+}
+
+const val TARGET_PACKAGE = "org.grakovne.lissen.minified"
+
+fun e2eArgument(name: String, fallback: String): String =
+  androidx.test.platform.app.InstrumentationRegistry.getArguments().getString(name) ?: fallback
+
+fun freshApp(block: UiAutomatorTestScope.() -> Unit) =
+  androidx.test.uiautomator.uiAutomator {
+    androidx.test.shell.Shell.application.clearAppData(TARGET_PACKAGE)
+    watchFor(androidx.test.uiautomator.watcher.PermissionDialog) { clickAllow() }
+    startApp(TARGET_PACKAGE)
+    waitForAppToBeVisible(TARGET_PACKAGE)
+    block()
+  }
+
+fun UiAutomatorTestScope.loginToLibrary(password: String = e2eArgument("e2ePassword", "demo")) {
+  waitForElement(By.res("hostInput"))
+    .setText(e2eArgument("e2eHost", "https://demo.lissenapp.org"))
+  waitForElement(By.res("usernameInput")).setText(e2eArgument("e2eUsername", "demo"))
+  waitForElement(By.res("passwordInput")).setText(password)
+  clickElement(By.res("loginButton"))
+  waitForElement(By.res("libraryScreen"))
+}
+
+fun loggedInApp(block: UiAutomatorTestScope.() -> Unit) = freshApp {
+  loginToLibrary()
+  block()
 }
