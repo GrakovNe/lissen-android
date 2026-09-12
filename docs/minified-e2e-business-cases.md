@@ -13,6 +13,11 @@ same as the debug `androidTest` suite. The QA-stand ideas in `e2e-test-plan.md`
   (`Shell.application.clearAppData`, `Shell.wifi`). No Hilt, no Compose test APIs.
 - Elements are found by `viewIdResourceName` (Compose `testTag`s are exposed as resource
   ids via `TestTagsAsResourceId`) and by visible text / content description.
+  IMPORTANT (verified): `TestTagsAsResourceId` is set on the activity window only —
+  bottom sheets and dialogs are separate windows WITHOUT tags. In sheets/dialogs locate
+  elements by text/description. The DSL `onElement` searches the active window only;
+  the shared helpers in `E2eCommon.kt` (`waitForElement`/`clickElement`/`elementExists`/
+  `scrollUntilVisible`, `BySelector`-based) search all windows — use them everywhere.
 - Target: `org.grakovne.lissen.minified`; server/credentials via instrumentation args
   with demo fallbacks (`e2eHost`/`e2eUsername`/`e2ePassword`, default
   `https://demo.lissenapp.org`, `demo`/`demo`).
