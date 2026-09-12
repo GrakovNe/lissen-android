@@ -70,6 +70,13 @@ class LibraryFlowE2ETest {
     assertFalse(device.findObjects(By.res(Pattern.compile("bookItem_.*"))).isEmpty())
   }
 
+  @Test
+  fun library_openingBook_showsPlayer() = loggedInApp {
+    waitForElement(By.res("libraryGrid"))
+    device.findObjects(By.res(Pattern.compile("bookItem_.*"))).first().click()
+    waitForElement(By.res("playerScreen"))
+  }
+
   private fun UiAutomatorTestScope.firstBookTitle(): String {
     val item = device.findObjects(By.res(Pattern.compile("bookItem_.*"))).first()
     val textNodes = item.findObjects(By.text(Pattern.compile(".+")))
