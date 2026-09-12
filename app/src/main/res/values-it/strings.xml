@@ -280,4 +280,14 @@
     <string name="tree_node_tags">Tag</string>
     <string name="tree_node_authors">Autori</string>
     <string name="tree_node_series">Serie</string>
+    <plurals name="fade_duration_seconds">
+        <item quantity="one">%d secondo</item>
+        <item quantity="many">%d secondi</item>
+        <item quantity="other">%d secondi</item>
+    </plurals>
+    <string name="sleep_timer_settings_title">Impostazioni timer</string>
+    <string name="sleep_timer_settings_description">Configura i controlli del timer</string>
+    <string name="sleep_timer_fade_title">Dissolvenza in uscita</string>
+    <string name="sleep_timer_fade_description">Diminuisci il volume quando la riproduzione si interrompe</string>
+    <string name="sleep_timer_fade_duration_title">Durata dissolvenza</string>
 </resources>
