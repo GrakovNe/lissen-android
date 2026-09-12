@@ -63,7 +63,7 @@ class CacheSettingsE2ETest {
   }
 
   @Test
-  fun cacheSettings_screenIsReachableFromAdvanced() {
+  fun cacheSettings_screenIsReachableFromSettings() {
     navigateToCacheSettings()
 
     composeRule.onNodeWithText("Storage location").assertExists()
