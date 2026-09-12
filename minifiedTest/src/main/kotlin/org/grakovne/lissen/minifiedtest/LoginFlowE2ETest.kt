@@ -39,6 +39,15 @@ class LoginFlowE2ETest {
     onElement { viewIdResourceName == "loginButton" }
   }
 
+  @Test
+  fun settingsButtonOnLoginScreen_opensAndClosesSettings() = withFreshApp {
+    onElement { viewIdResourceName == "loginSettingsButton" }.click()
+    onElement(TIMEOUT_MS) { viewIdResourceName == "settingsScreen" }
+    pressBack()
+    onElement(TIMEOUT_MS) { viewIdResourceName == "loginScreen" }
+    onElement { viewIdResourceName == "loginButton" }
+  }
+
   private fun withFreshApp(block: UiAutomatorTestScope.() -> Unit) = uiAutomator {
     Shell.application.clearAppData(TARGET_PACKAGE)
     watchFor(PermissionDialog) { clickAllow() }
