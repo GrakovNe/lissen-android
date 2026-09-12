@@ -6,6 +6,7 @@ import androidx.test.shell.Shell
 import androidx.test.uiautomator.UiAutomatorTestScope
 import androidx.test.uiautomator.uiAutomator
 import androidx.test.uiautomator.watcher.PermissionDialog
+import org.junit.Assert.assertNull
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -31,6 +32,13 @@ class LoginFlowE2ETest {
     onElement(TIMEOUT_MS) { viewIdResourceName == "loginButton" }
   }
 
+  @Test
+  fun loginWithEmptyCredentials_staysOnLoginScreen() = withFreshApp {
+    onElement { viewIdResourceName == "loginButton" }.click()
+    assertNull(onElementOrNull(SHORT_TIMEOUT_MS) { viewIdResourceName == "libraryScreen" })
+    onElement { viewIdResourceName == "loginButton" }
+  }
+
   private fun withFreshApp(block: UiAutomatorTestScope.() -> Unit) = uiAutomator {
     Shell.application.clearAppData(TARGET_PACKAGE)
     watchFor(PermissionDialog) { clickAllow() }
@@ -54,5 +62,6 @@ class LoginFlowE2ETest {
   private companion object {
     const val TARGET_PACKAGE = "org.grakovne.lissen.minified"
     const val TIMEOUT_MS = 45_000L
+    const val SHORT_TIMEOUT_MS = 5_000L
   }
 }
