@@ -58,7 +58,7 @@ class LoginFlowE2ETest {
     device.executeShellCommand("am force-stop $TARGET_PACKAGE")
     startApp(TARGET_PACKAGE)
     waitForAppToBeVisible(TARGET_PACKAGE)
-    onElement(TIMEOUT_MS) { viewIdResourceName == "libraryScreen" }
+    onElement(TIMEOUT_MS) { viewIdResourceName == "libraryScreen" || viewIdResourceName == "playerScreen" }
     assertNull(onElementOrNull(SHORT_TIMEOUT_MS) { viewIdResourceName == "loginButton" })
   }
 

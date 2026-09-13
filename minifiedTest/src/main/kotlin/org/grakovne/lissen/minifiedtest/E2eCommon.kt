@@ -81,3 +81,13 @@ fun loggedInApp(block: UiAutomatorTestScope.() -> Unit) = freshApp {
   loginToLibrary()
   block()
 }
+
+fun UiAutomatorTestScope.mediaSessionState(): String {
+  val dump = device.executeShellCommand("dumpsys media_session")
+  return Regex("state=PlaybackState \\{state=([A-Z]+\\(\\d+\\))").find(dump)?.groupValues?.get(1) ?: ""
+}
+
+fun UiAutomatorTestScope.mediaSessionPositionMs(): Long {
+  val dump = device.executeShellCommand("dumpsys media_session")
+  return Regex("position=(\\d+), buffered").find(dump)?.groupValues?.get(1)?.toLong() ?: -1L
+}

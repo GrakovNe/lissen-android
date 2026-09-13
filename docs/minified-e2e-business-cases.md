@@ -55,14 +55,22 @@ same as the debug `androidTest` suite. The QA-stand ideas in `e2e-test-plan.md`
 
 ## Phase 3 — Playback (core user story)
 
+> **Clock-independent assertions only.** On the headless CI host there is no audio sink
+> (`Could not init 'pa' audio driver`), so ExoPlayer's position clock does not advance in
+> real time — `media_session` position stays frozen while `state=PLAYING`. Therefore no test
+> may assert "position advances over wall-clock". Position changes are verified through
+> **seek** (an instantaneous `seekTo` jump, observable via `dumpsys media_session`), and
+> playback liveness through `state=PLAYING(3)`. See also the build caveat: `:minifiedTest`
+> incremental builds serve stale APKs and swallow compile errors — always build with
+> `--rerun-tasks --no-build-cache` and install only on build success.
+
 | ID | Case | Assertions |
 |---|---|---|
-| 3.1 | Play a book | open book → wait `chapterList` → `a11y_pause` visible → position text advances |
-| 3.2 | Pause / resume | `a11y_play` ↔ `a11y_pause` toggle; position frozen while paused |
-| 3.3 | Seek forward / back | `a11y_fast_forward_seconds` / `a11y_rewind_seconds` change the position text |
-| 3.4 | Next / previous chapter | `a11y_next_track` changes `playerChapterNumber`; `a11y_previous_track` returns |
-| 3.5 | Background playback | press home, wait ~10 s, reopen app → position advanced; Lissen notification visible in the shade (best-effort) |
-| 3.6 | Resume after app restart | kill + relaunch → "Continue listening" shows the book; reopening resumes near the saved position |
+| 3.1 | Play / pause a book | open book → wait `chapterList` → tap `a11y_play` → `a11y_pause` visible + `media_session` `state=PLAYING(3)`; tap `a11y_pause` → `a11y_play` returns |
+| 3.2 | Seek forward / back | `a11y_fast_forward_seconds` moves `media_session` position by ~+30 s; `a11y_rewind_seconds` by ~-10 s (tolerance ±5 s) |
+| 3.3 | Next / previous chapter | `a11y_next_track` increments `playerChapterNumber`; `a11y_previous_track` returns it |
+| 3.4 | Background playback | press home, reopen app → `media_session` still `state=PLAYING(3)` (clock-independent) |
+| 3.5 | Resume after app restart | kill + relaunch → session restored (library or now-playing), not logged out |
 
 ## Phase 4 — Player tabs and overlays
 
