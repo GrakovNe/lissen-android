@@ -18,7 +18,8 @@ data class PlaybackSession(
   companion object {
     fun local(itemId: String): PlaybackSession =
       PlaybackSession(
-        sessionId = "local-${UUID.randomUUID()}",
+        // A plain UUID, so the server stores an uploaded offline session under this very id.
+        sessionId = UUID.randomUUID().toString(),
         itemId = itemId,
         sessionSource = PlaybackSessionSource.LOCAL,
       )

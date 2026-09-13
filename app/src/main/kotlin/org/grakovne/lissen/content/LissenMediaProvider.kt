@@ -17,6 +17,8 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.OfflinePlaybackSession
+import org.grakovne.lissen.domain.OfflineSessionSyncResult
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
@@ -110,6 +112,40 @@ class LissenMediaProvider
 
       return provideChannelFor(detailedItem.libraryType)
         .syncProgress(sessionId, progress, timeListened)
+    }
+
+    suspend fun recordOfflineSession(
+      sessionId: String,
+      detailedItem: DetailedItem,
+      chapterIndex: Int,
+      progress: PlaybackProgress,
+      timeListened: Double,
+    ): OfflinePlaybackSession {
+      Timber.d(
+        "Recording offline progress: bookId=${detailedItem.id}, totalTime=${progress.currentTotalTime.toInt()}s, listened=${timeListened.toInt()}s",
+      )
+
+      return localCacheRepository.recordOfflineSession(
+        sessionId = sessionId,
+        detailedItem = detailedItem,
+        chapterIndex = chapterIndex,
+        progress = progress,
+        timeListened = timeListened,
+      )
+    }
+
+    suspend fun fetchOfflineSessions(): List<OfflinePlaybackSession> = localCacheRepository.fetchOfflineSessions()
+
+    suspend fun dropOfflineSessions(ids: List<String>) = localCacheRepository.dropOfflineSessions(ids)
+
+    suspend fun syncOfflineSessions(
+      libraryType: LibraryType,
+      sessions: List<OfflinePlaybackSession>,
+      deviceId: String,
+    ): OperationResult<List<OfflineSessionSyncResult>> {
+      Timber.d("Uploading ${sessions.size} offline session(s) for $libraryType")
+
+      return provideChannelFor(libraryType).syncOfflineSessions(sessions, deviceId)
     }
 
     suspend fun fetchBookCover(bookId: String): OperationResult<File> {
