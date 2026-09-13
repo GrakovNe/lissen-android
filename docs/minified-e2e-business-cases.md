@@ -188,6 +188,21 @@ toasts' exact wording, share-sheet internals (only "opens/closes without crash")
 - **Airplane vs wifi**: emulator network is wifi; `Shell.wifi.disable()` is sufficient to
   prove offline behaviour against the remote demo server.
 
+## Headless-emulator limitations (what is NOT covered, and why)
+
+The CI emulator is headless with no host audio and no working large-transfer media pipeline:
+
+- **Audio/position clock is frozen.** `media_session` position does not advance in real time, so
+  "playback progresses over time" cannot be asserted. Playback is covered clock-independently
+  (Play → `PLAYING`, seek moves the position, next/previous change the chapter).
+- **Downloads never complete.** A started chapter download stalls at a fixed percentage (observed
+  stuck at 4% for >2 min). "Manage saved content" is a snapshot taken on open, so an in-flight,
+  stalled download does not reliably appear there. Therefore **Phase 6 is not covered**: the
+  Downloads tab options menu is asserted (4.4), but download→offline→saved-content is not.
+- **Settings toggles expose no `checkable`/`checked` state** (Material toggles render as plain
+  nodes), and **Boosted volume is a continuous dB slider**. Phase 5 therefore covers navigation +
+  the Color scheme dialog reflection only; per-toggle state is not asserted (see Phase 5 note).
+
 ## Definition of done
 
 - Every row of Phases 1–7 is implemented, green, and committed.
