@@ -30,7 +30,9 @@ class LibraryFlowE2ETest {
     val results = device.findObjects(By.res(Pattern.compile("bookItem_.*")))
     assertTrue("search for '$query' should return results", results.isNotEmpty())
     clickElement(By.desc("Clear"))
-    waitForElement(By.res(Pattern.compile("bookItem_.*")))
+    // clearing the query re-fetches the whole library; on a slow link this can exceed the
+    // default timeout, so give the restore a wider budget
+    waitForElement(By.res(Pattern.compile("bookItem_.*")), 90_000)
   }
 
   @Test

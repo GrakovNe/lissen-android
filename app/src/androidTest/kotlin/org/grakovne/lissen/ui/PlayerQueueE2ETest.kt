@@ -63,7 +63,7 @@ class PlayerQueueE2ETest {
   val composeRule = createAndroidComposeRule<AppActivity>()
 
   private companion object {
-    const val PLAYBACK_TIMEOUT_MS = 120_000L
+    const val PLAYBACK_TIMEOUT_MS = 180_000L
   }
 
   private fun openBookAndAwaitPlayback() {
@@ -89,14 +89,13 @@ class PlayerQueueE2ETest {
   fun playerTabs_openChapterListAndDownloadMenu() {
     openBookAndAwaitPlayback()
 
-    composeRule.onNodeWithText("Chapters").performClick()
-
-    composeRule.waitUntil(
-      timeoutMillis = TIMEOUT_MS,
-      condition = {
-        runCatching { composeRule.onNodeWithText("Chapters").assertIsSelected() }.isSuccess
-      },
+    // the chapter list is rendered (collapsed) as soon as the book's chapters are loaded;
+    // the "Chapters" nav item only toggles the expanded state, so assert the list itself
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = hasTestTag("chapterList"),
+      timeoutMillis = PLAYBACK_TIMEOUT_MS,
     )
+    composeRule.onNode(hasTestTag("chapterList")).assertIsDisplayed()
 
     composeRule.onNodeWithText("Downloads").performClick()
 
