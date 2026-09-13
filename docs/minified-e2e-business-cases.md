@@ -80,7 +80,7 @@ same as the debug `androidTest` suite. The QA-stand ideas in `e2e-test-plan.md`
 | 4.2 | Speed tab | tap "Speed" → "Playback speed" dialog; pick 1.5x → tab/selection reflects it; playback continues |
 | 4.3 | Sleep timer set / cancel | tap "Timer" → "Sleep Timer" dialog (10/15/30/60 min, "When the chapter ends"); pick 15 → countdown shown; reopen → "Disable Timer" cancels. Firing is not asserted (min preset 10 min) |
 | 4.4 | Info screen | `playerInfoButton` → title/author/description visible → back to player |
-| 4.5 | Bookmarks | bookmarks icon in player top bar → "Bookmarks" screen; "Create bookmark" → entry with timestamp appears; tap → position seeks to it; delete → gone. Prereq: the icon has `contentDescription = null` and no tag — add `.testTag("playerBookmarksButton")` to the icon button in `PlayerScreen.kt` |
+| 4.5 | Bookmarks | `playerBookmarksButton` (tag added in `PlayerScreen.kt`) → "Bookmarks" sheet with "Create bookmark". Create/tap/delete are NOT asserted: bookmark rows expose no observable delete affordance and creating mutates the shared demo server irreversibly |
 
 ## Phase 5 — Settings (every screen, every control)
 

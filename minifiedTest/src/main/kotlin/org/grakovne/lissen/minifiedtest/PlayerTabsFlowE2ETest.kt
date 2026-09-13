@@ -51,6 +51,14 @@ class PlayerTabsFlowE2ETest {
     assertTrue(elementExists(By.text("Entire book")))
   }
 
+  @Test
+  fun player_bookmarksButton_opensBookmarksSheet() = loggedInApp {
+    openFirstBook()
+    clickElement(By.res("playerBookmarksButton"))
+    waitForElement(By.text("Bookmarks"))
+    assertTrue("bookmarks sheet should offer a create action", elementExists(By.text("Create bookmark")))
+  }
+
   private fun UiAutomatorTestScope.chapterNumber(): Int {
     val text = waitForElement(By.res("playerChapterNumber"), 10_000).text.toString()
     return Regex("Chapter (\\d+) of").find(text)?.groupValues?.get(1)?.toInt() ?: -1
