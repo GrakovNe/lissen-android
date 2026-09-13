@@ -82,6 +82,12 @@ fun loggedInApp(block: UiAutomatorTestScope.() -> Unit) = freshApp {
   block()
 }
 
+fun UiAutomatorTestScope.openFirstBook() {
+  waitForElement(By.res(java.util.regex.Pattern.compile("bookItem_.*")), 60_000).click()
+  waitForElement(By.res("playerScreen"))
+  waitForElement(By.res("chapterList"), 120_000)
+}
+
 fun UiAutomatorTestScope.mediaSessionState(): String {
   val dump = device.executeShellCommand("dumpsys media_session")
   return Regex("state=PlaybackState \\{state=([A-Z]+\\(\\d+\\))").find(dump)?.groupValues?.get(1) ?: ""
