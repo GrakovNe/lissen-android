@@ -87,6 +87,14 @@ same as the debug `androidTest` suite. The QA-stand ideas in `e2e-test-plan.md`
 Walk pattern per sub-screen: open from Settings, assert the control, change it, assert the
 effect (where observable in UI), restore default, back out.
 
+> Implemented (dialogs + navigation only, no app changes): `SettingsFlowE2ETest` covers the
+> top-level category list, opening Appearance/Playback/Downloads/Advanced with their controls,
+> and the Color scheme dialog reflection (System → Black). Toggle controls (Material You, Force
+> software decoding, Crash reporting, Activity Logging, Download automatically, …) expose no
+> `checkable`/`checked` state in accessibility, so their on/off state is NOT asserted — only that
+> the row is present. Boosted volume is a continuous dB slider (0–20) with no discrete selection,
+> so it is not reflected either.
+
 ### 5.x Appearance
 
 | ID | Control | Assertions |
