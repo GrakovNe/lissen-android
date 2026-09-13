@@ -161,9 +161,9 @@ effect (where observable in UI), restore default, back out.
 
 | ID | Case | Assertions |
 |---|---|---|
-| 7.1 | Process kill during playback | `Shell.process` kill mid-play → relaunch → resumes at saved position |
-| 7.2 | Network cut during playback | wifi off mid-play → app alive, error recoverable; wifi on → resume playback |
-| 7.3 | Rotation during playback | rotate → player controls present, playback continues |
+| 7.3 | Rotation during playback | open a book → rotate to landscape → Play/Pause controls present → rotate back → still present. Implemented (`RobustnessFlowE2ETest`) |
+| 7.1 | Process kill during playback | NOT covered: "resume at saved position" needs a live position clock, which is frozen on this emulator (see limitations) |
+| 7.2 | Network cut during playback | NOT covered: playback position cannot be observed here, and the emulator network is already flaky for the remote demo server |
 
 ## Excluded as decorative
 
