@@ -85,7 +85,9 @@ fun loggedInApp(block: UiAutomatorTestScope.() -> Unit) = freshApp {
 fun UiAutomatorTestScope.openFirstBook() {
   waitForElement(By.res(java.util.regex.Pattern.compile("bookItem_.*")), 60_000).click()
   waitForElement(By.res("playerScreen"))
-  waitForElement(By.res("chapterList"), 120_000)
+  // the player is interactive once the chapter number renders; the chapter list is the
+  // content of the "Chapters" tab and is not present until that tab is selected
+  waitForElement(By.res("playerChapterNumber"), 120_000)
 }
 
 fun UiAutomatorTestScope.mediaSessionState(): String {

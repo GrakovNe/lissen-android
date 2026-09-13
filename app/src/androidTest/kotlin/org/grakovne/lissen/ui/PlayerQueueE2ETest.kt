@@ -77,9 +77,10 @@ class PlayerQueueE2ETest {
       timeoutMillis = TIMEOUT_MS,
     )
 
-    // the real chapter list (and the interactive bottom bar) appear only once playback is prepared
+    // the player is interactive once the chapter number renders; the chapter list itself
+    // is the content of the "Chapters" tab and only appears after that tab is selected
     composeRule.waitUntilAtLeastOneExists(
-      matcher = hasTestTag("chapterList"),
+      matcher = hasTestTag("playerChapterNumber"),
       timeoutMillis = PLAYBACK_TIMEOUT_MS,
     )
   }
