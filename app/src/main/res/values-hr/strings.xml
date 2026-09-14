@@ -298,4 +298,8 @@
     <string name="sleep_timer_fade_title">Postupno stišavanje</string>
     <string name="sleep_timer_fade_description">Smanji glasnoću kada se reprodukcija zaustavi</string>
     <string name="sleep_timer_fade_duration_title">Trajanje stišavanja</string>
+    <string name="a11y_rewind">Premotaj</string>
+    <string name="a11y_fast_forward">Premotavaj unaprijed</string>
+    <string name="player_state_widget_label">Trenutno se reproducira</string>
+    <string name="player_cover_widget_label">Trenutno se reproducira (naslovnica)</string>
 </resources>
