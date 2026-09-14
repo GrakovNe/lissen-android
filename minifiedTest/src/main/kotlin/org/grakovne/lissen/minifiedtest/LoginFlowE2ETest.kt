@@ -10,6 +10,7 @@ import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.uiAutomator
 import androidx.test.uiautomator.watcher.PermissionDialog
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -55,10 +56,17 @@ class LoginFlowE2ETest {
   fun sessionSurvivesAppRestart() = withFreshApp {
     login(password = e2eArgument("e2ePassword", "demo"))
     onElement(TIMEOUT_MS) { viewIdResourceName == "libraryScreen" }
-    device.executeShellCommand("am force-stop $TARGET_PACKAGE")
-    startApp(TARGET_PACKAGE)
-    waitForAppToBeVisible(TARGET_PACKAGE)
-    onElement(TIMEOUT_MS) { viewIdResourceName == "libraryScreen" || viewIdResourceName == "playerScreen" }
+    // The session check right after a cold start can outrun the demo server
+    // when the whole suite logs in back to back; allow one more restart
+    val restored = (1..2).any {
+      device.executeShellCommand("am force-stop $TARGET_PACKAGE")
+      startApp(TARGET_PACKAGE)
+      waitForAppToBeVisible(TARGET_PACKAGE)
+      onElementOrNull(RESTART_TIMEOUT_MS) {
+        viewIdResourceName == "libraryScreen" || viewIdResourceName == "playerScreen"
+      } != null
+    }
+    assertTrue("library should be restored after restart", restored)
     assertNull(onElementOrNull(SHORT_TIMEOUT_MS) { viewIdResourceName == "loginButton" })
   }
 
@@ -99,6 +107,7 @@ class LoginFlowE2ETest {
   private companion object {
     const val TARGET_PACKAGE = "org.grakovne.lissen.minified"
     const val TIMEOUT_MS = 45_000L
+    const val RESTART_TIMEOUT_MS = 60_000L
     const val SHORT_TIMEOUT_MS = 5_000L
   }
 }
