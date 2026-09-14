@@ -136,7 +136,10 @@ class PlayerCoverWidget : GlanceAppWidget() {
               true -> ImageProvider(media3_icon_pause)
               false -> ImageProvider(media3_icon_play)
             },
-          contentDescription = null,
+          contentDescription =
+            context.getString(
+              if (isPlayingNow) org.grakovne.lissen.R.string.a11y_pause else org.grakovne.lissen.R.string.a11y_play,
+            ),
           modifier =
             GlanceModifier
               .size(playIconSize)

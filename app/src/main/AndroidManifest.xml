@@ -102,6 +102,7 @@
 
         <receiver
             android:name=".widget.state.PlayerStateWidgetReceiver"
+            android:label="@string/player_state_widget_label"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -114,6 +115,7 @@
 
         <receiver
             android:name=".widget.cover.PlayerCoverWidgetReceiver"
+            android:label="@string/player_cover_widget_label"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
