@@ -12,11 +12,15 @@ const val COVER_WIDGET_LABEL = "Now playing (cover)"
 
 // The swipe must be fast or the gesture system treats it as a home swipe
 fun UiAutomatorTestScope.openAppDrawer() {
-  device.executeShellCommand(
-    "input swipe ${device.displayWidth / 2} ${device.displayHeight - 100} " +
-      "${device.displayWidth / 2} ${device.displayHeight / 3} 200",
-  )
-  Thread.sleep(1_500)
+  val allApps = By.clazz("android.widget.GridView")
+  repeat(3) {
+    device.executeShellCommand(
+      "input swipe ${device.displayWidth / 2} ${device.displayHeight - 100} " +
+        "${device.displayWidth / 2} ${device.displayHeight / 3} 200",
+    )
+    Thread.sleep(1_500)
+    if (device.findObject(allApps) != null) return
+  }
 }
 
 // Injected as a zero-distance swipe because launcher icons ignore
@@ -109,3 +113,15 @@ fun UiAutomatorTestScope.awaitMediaSessionState(
 
 fun UiAutomatorTestScope.shortcutDump(): String =
   device.executeShellCommand("dumpsys shortcut $TARGET_PACKAGE")
+
+fun UiAutomatorTestScope.awaitShortcutRegistered(
+  shortcutId: String,
+  timeoutMs: Long = DEFAULT_TIMEOUT_MS,
+) {
+  val deadline = System.currentTimeMillis() + timeoutMs
+  while (System.currentTimeMillis() < deadline) {
+    if (shortcutDump().contains(shortcutId)) return
+    Thread.sleep(500)
+  }
+  throw AssertionError("dynamic shortcut $shortcutId missing from shortcuts dump")
+}

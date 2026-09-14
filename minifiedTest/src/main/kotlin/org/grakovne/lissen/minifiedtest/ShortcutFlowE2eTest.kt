@@ -4,7 +4,6 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.uiautomator.By
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -22,15 +21,7 @@ class ShortcutFlowE2eTest {
       openFirstBook()
       clickElement(By.desc("Play"))
       waitForElement(By.desc("Pause"))
-
-      val deadline = System.currentTimeMillis() + DEFAULT_TIMEOUT_MS
-      while (System.currentTimeMillis() < deadline && !shortcutDump().contains(SHORTCUT_ID)) {
-        Thread.sleep(500)
-      }
-      assertTrue(
-        "dynamic shortcut $SHORTCUT_ID missing from shortcuts dump",
-        shortcutDump().contains(SHORTCUT_ID),
-      )
+      awaitShortcutRegistered(SHORTCUT_ID)
     }
 
   @Test
@@ -40,10 +31,20 @@ class ShortcutFlowE2eTest {
       openFirstBook()
       clickElement(By.desc("Play"))
       waitForElement(By.desc("Pause"))
+      awaitShortcutRegistered(SHORTCUT_ID)
 
       device.pressHome()
       openAppDrawer()
-      longPressOn(scrollUntilVisible(By.text("Lissen"), 12))
+      scrollUntilVisible(By.text("Lissen"), 12)
+      // The launcher may serve a stale popup right after registration, and a
+      // long-press occasionally misses; retry until the entry shows up
+      var attempts = 0
+      while (device.findObject(By.text(SHORTCUT_LABEL)) == null) {
+        if (++attempts > 3) throw AssertionError("popup never showed '$SHORTCUT_LABEL'")
+        if (device.findObject(By.text("App info")) != null) device.pressBack()
+        if (device.findObject(By.text("Lissen")) == null) openAppDrawer()
+        longPressOn(waitForElement(By.text("Lissen")))
+      }
       clickElement(By.text(SHORTCUT_LABEL), LAUNCHER_WAIT_MS)
 
       waitForElement(By.res("playerScreen"), DEFAULT_TIMEOUT_MS)
