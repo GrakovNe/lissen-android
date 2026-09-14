@@ -59,3 +59,14 @@
 
 # RunningComponent multi-binding — Set<RunningComponent> resolved at runtime by Hilt
 -keep class * implements org.grakovne.lissen.common.RunningComponent { *; }
+
+# jUPnP, Jetty and NanoHTTPD rely on reflection and service loading
+-keep class org.jupnp.** { *; }
+-keep class org.eclipse.jetty.** { *; }
+-keep class javax.servlet.** { *; }
+-keep class fi.iki.elonen.** { *; }
+-dontwarn org.jupnp.**
+-dontwarn org.eclipse.jetty.**
+-dontwarn javax.servlet.**
+-dontwarn org.osgi.**
+-dontwarn org.slf4j.**

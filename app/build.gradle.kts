@@ -216,6 +216,17 @@ dependencies {
   implementation(libs.androidx.media3.database)
   
   implementation(libs.timber)
+
+  // UPnP/DLNA control point (jUPnP, CDDL-1.0) with its Jetty transport (Apache-2.0/EPL-1.0)
+  implementation(libs.jupnp.core)
+  implementation(libs.jupnp.android)
+  implementation(libs.jupnp.support)
+  implementation(libs.jetty.server)
+  implementation(libs.jetty.servlet)
+  implementation(libs.jetty.client)
+  implementation(libs.servlet.api)
+  // Serves downloaded files to renderers on the LAN (BSD-3)
+  implementation(libs.nanohttpd)
   
   implementation(libs.androidx.glance)
   implementation(libs.androidx.glance.appwidget)

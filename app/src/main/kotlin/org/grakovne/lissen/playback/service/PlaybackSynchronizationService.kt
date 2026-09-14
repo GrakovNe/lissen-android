@@ -3,7 +3,6 @@ package org.grakovne.lissen.playback.service
 import android.os.SystemClock
 import androidx.media3.common.C
 import androidx.media3.common.Player
-import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
@@ -19,6 +18,7 @@ import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.PlaybackSessionSource
 import org.grakovne.lissen.persistence.preferences.SessionPreferences
+import org.grakovne.lissen.playback.PlaybackPlayerRouter
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.CHAPTER_START_MS
 import timber.log.Timber
 import javax.inject.Inject
@@ -28,7 +28,7 @@ import javax.inject.Singleton
 class PlaybackSynchronizationService
   @Inject
   constructor(
-    private val exoPlayer: ExoPlayer,
+    private val playerRouter: PlaybackPlayerRouter,
     private val mediaChannel: LissenMediaProvider,
     private val sharedPreferences: SessionPreferences,
   ) {
@@ -40,8 +40,11 @@ class PlaybackSynchronizationService
     private var syncJob: Job? = null
     private val syncRunner = CoalescingRunner<SyncSnapshot>()
 
+    private val exoPlayer: Player
+      get() = playerRouter.current
+
     init {
-      exoPlayer.addListener(
+      playerRouter.addListener(
         object : Player.Listener {
           override fun onEvents(
             player: Player,
@@ -190,7 +193,7 @@ class PlaybackSynchronizationService
             )
         }
 
-    private fun getProgress(exoPlayer: ExoPlayer): PlaybackProgress? =
+    private fun getProgress(exoPlayer: Player): PlaybackProgress? =
       exoPlayer.currentMediaItem
         ?.mediaMetadata
         ?.extras

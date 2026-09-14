@@ -7,7 +7,6 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
@@ -29,13 +28,14 @@ import org.grakovne.lissen.playback.MediaLibrarySessionProvider
 import org.grakovne.lissen.playback.PlaybackCommand
 import org.grakovne.lissen.playback.PlaybackEvent
 import org.grakovne.lissen.playback.PlaybackEventBus
+import org.grakovne.lissen.playback.PlaybackPlayerRouter
 import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class PlaybackService : MediaLibraryService() {
   @Inject
-  lateinit var exoPlayer: ExoPlayer
+  lateinit var playerRouter: PlaybackPlayerRouter
 
   @Inject
   lateinit var mediaLibrarySessionProvider: MediaLibrarySessionProvider
@@ -107,8 +107,9 @@ class PlaybackService : MediaLibraryService() {
     playbackSynchronizationService.cancelSynchronization()
     playerServiceScope.cancel()
 
-    haltPlayback(exoPlayer)
+    haltPlayback(playerRouter.current)
 
+    session?.let { playerRouter.detachSession(it) }
     session?.release()
     session = null
 
@@ -117,7 +118,8 @@ class PlaybackService : MediaLibraryService() {
 
   @OptIn(UnstableApi::class)
   private suspend fun preparePlayback(book: DetailedItem) {
-    exoPlayer.playWhenReady = false
+    val player = playerRouter.current
+    player.playWhenReady = false
 
     withContext(Dispatchers.IO) {
       val prepareQueue =
@@ -131,9 +133,9 @@ class PlaybackService : MediaLibraryService() {
           val itemsWithPosition = bookToChapterMediaItems(book)
 
           withContext(Dispatchers.Main) {
-            exoPlayer.setMediaItems(itemsWithPosition.mediaItems)
-            exoPlayer.prepare()
-            exoPlayer.seekTo(itemsWithPosition.startIndex, itemsWithPosition.startPositionMs)
+            player.setMediaItems(itemsWithPosition.mediaItems)
+            player.prepare()
+            player.seekTo(itemsWithPosition.startIndex, itemsWithPosition.startPositionMs)
           }
         }
 

@@ -3,11 +3,11 @@ package org.grakovne.lissen.playback.service
 import androidx.annotation.OptIn
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
 import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.playback.PlaybackEvent
 import org.grakovne.lissen.playback.PlaybackEventBus
+import org.grakovne.lissen.playback.PlaybackPlayerRouter
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -17,7 +17,7 @@ class PlaybackTimer
   @Inject
   constructor(
     private val playbackEventBus: PlaybackEventBus,
-    private val exoPlayer: ExoPlayer,
+    private val playerRouter: PlaybackPlayerRouter,
   ) {
     private var option: TimerOption? = null
     private var timer: SuspendableCountDownTimer? = null
@@ -64,11 +64,11 @@ class PlaybackTimer
           },
         ).also { it.start() }
 
-      exoPlayer.removeListener(playerListener)
-      exoPlayer.addListener(playerListener)
+      playerRouter.removeListener(playerListener)
+      playerRouter.addListener(playerListener)
 
       this.option = option
-      if (exoPlayer.isPlaying.not() && option == CurrentEpisodeTimerOption) {
+      if (playerRouter.current.isPlaying.not() && option == CurrentEpisodeTimerOption) {
         timer?.pause()
       }
     }
@@ -83,6 +83,6 @@ class PlaybackTimer
       timer?.cancel()
       timer = null
 
-      exoPlayer.removeListener(playerListener)
+      playerRouter.removeListener(playerListener)
     }
   }

@@ -291,4 +291,11 @@
     <string name="import_config_title">Import configuration</string>
     <string name="import_config_description">Restore app preferences from a file</string>
     <string name="import_config_failed_toast">Unable to import configuration, file may be invalid</string>
+    <string name="cast_sheet_title">Play on</string>
+    <string name="cast_this_device">This phone</string>
+    <string name="cast_searching">Looking for devices on your network…</string>
+    <string name="cast_no_devices">No devices found</string>
+    <string name="cast_connecting">Connecting…</string>
+    <string name="cast_connection_failed">Connection failed</string>
+    <string name="cast_protocol_dlna">DLNA / UPnP</string>
 </resources>

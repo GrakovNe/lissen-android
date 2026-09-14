@@ -6,7 +6,6 @@ import android.content.Intent
 import androidx.annotation.OptIn
 import androidx.core.net.toUri
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaLibraryService
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.grakovne.lissen.BuildConfig
@@ -20,7 +19,7 @@ class MediaLibrarySessionProvider
   @Inject
   constructor(
     @param:ApplicationContext private val context: Context,
-    private val exoPlayer: ExoPlayer,
+    private val playerRouter: PlaybackPlayerRouter,
     private val callback: MediaLibrarySessionCallback,
   ) {
     @OptIn(UnstableApi::class)
@@ -47,7 +46,7 @@ class MediaLibrarySessionProvider
         )
       }
       return MediaLibraryService.MediaLibrarySession
-        .Builder(mediaLibraryService, exoPlayer, callback)
+        .Builder(mediaLibraryService, playerRouter.current, callback)
         .setSessionActivity(
           PendingIntent.getActivity(
             context,
@@ -57,5 +56,6 @@ class MediaLibrarySessionProvider
           ),
         ).setPeriodicPositionUpdateEnabled(false)
         .build()
+        .also { playerRouter.attachSession(it) }
     }
   }

@@ -59,14 +59,30 @@ object MediaModule {
   @OptIn(UnstableApi::class)
   @Provides
   @Singleton
-  fun provideExoPlayer(
+  fun provideDataSourceFactory(
     @ApplicationContext context: Context,
-    playbackPreferences: PlaybackPreferences,
     sessionPreferences: SessionPreferences,
     connectionPreferences: ConnectionPreferences,
     mediaCache: Cache,
     requestHeadersProvider: RequestHeadersProvider,
     mediaProvider: LissenMediaProvider,
+  ): LissenDataSourceFactory =
+    LissenDataSourceFactory(
+      baseContext = context,
+      mediaCache = mediaCache,
+      requestHeadersProvider = requestHeadersProvider,
+      session = sessionPreferences,
+      connection = connectionPreferences,
+      mediaProvider = mediaProvider,
+    )
+
+  @OptIn(UnstableApi::class)
+  @Provides
+  @Singleton
+  fun provideExoPlayer(
+    @ApplicationContext context: Context,
+    playbackPreferences: PlaybackPreferences,
+    dataSourceFactory: LissenDataSourceFactory,
   ): ExoPlayer {
     val renderersFactory =
       when (playbackPreferences.getSoftwareCodecsEnabled()) {
@@ -92,17 +108,7 @@ object MediaModule {
         ).setRenderersFactory(renderersFactory)
         .setMediaSourceFactory(
           LissenMediaSourceFactory(
-            mediaSourceFactory =
-              DefaultMediaSourceFactory(
-                LissenDataSourceFactory(
-                  baseContext = context,
-                  mediaCache = mediaCache,
-                  requestHeadersProvider = requestHeadersProvider,
-                  session = sessionPreferences,
-                  connection = connectionPreferences,
-                  mediaProvider = mediaProvider,
-                ),
-              ),
+            mediaSourceFactory = DefaultMediaSourceFactory(dataSourceFactory),
           ),
         ).build()
 

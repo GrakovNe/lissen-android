@@ -66,6 +66,19 @@ class LissenDataSourceFactory(
       local = FileDataSource(),
       mediaProvider = mediaProvider,
     )
+
+  /**
+   * Same resolution and authentication, but bypassing the playback cache. Bulk readers
+   * such as chapter exports gain nothing from caching and would only churn the disk.
+   */
+  fun uncached(): DataSource.Factory =
+    DataSource.Factory {
+      LocalFallbackDataSource(
+        upstream = DefaultDataSource.Factory(baseContext, upstreamFactory).createDataSource(),
+        local = FileDataSource(),
+        mediaProvider = mediaProvider,
+      )
+    }
 }
 
 @OptIn(UnstableApi::class)

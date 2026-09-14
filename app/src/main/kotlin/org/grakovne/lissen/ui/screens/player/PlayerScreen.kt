@@ -28,6 +28,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Bookmarks
+import androidx.compose.material.icons.outlined.Cast
+import androidx.compose.material.icons.outlined.CastConnected
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -65,11 +67,13 @@ import coil3.ImageLoader
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.playback.cast.CastSessionState
 import org.grakovne.lissen.ui.adaptive.isWideLayout
 import org.grakovne.lissen.ui.icons.Search
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.player.composable.BookCover
 import org.grakovne.lissen.ui.screens.player.composable.BookmarksComposable
+import org.grakovne.lissen.ui.screens.player.composable.CastDevicesComposable
 import org.grakovne.lissen.ui.screens.player.composable.MediaDetailComposable
 import org.grakovne.lissen.ui.screens.player.composable.NavigationBarComposable
 import org.grakovne.lissen.ui.screens.player.composable.PlayingQueueComposable
@@ -85,6 +89,7 @@ import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackControl
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackDetailsPlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.provideChapterNumberTitle
 import org.grakovne.lissen.viewmodel.CachingModelView
+import org.grakovne.lissen.viewmodel.CastViewModel
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 import org.grakovne.lissen.viewmodel.SettingsViewModel
@@ -105,6 +110,7 @@ fun PlayerScreen(
 
   val cachingModelView: CachingModelView = hiltViewModel()
   val playerViewModel: PlayerViewModel = hiltViewModel()
+  val castViewModel: CastViewModel = hiltViewModel()
   val libraryViewModel: LibraryViewModel = hiltViewModel()
   val settingsViewModel: SettingsViewModel = hiltViewModel()
 
@@ -136,6 +142,8 @@ fun PlayerScreen(
 
   var itemDetailsSelected by remember { mutableStateOf(false) }
   var bookmarksSelected by remember { mutableStateOf(false) }
+  var castSelected by remember { mutableStateOf(false) }
+  val castSession by castViewModel.session.collectAsState()
 
   val preferredLibraryType by libraryViewModel.preferredLibraryType.collectAsState()
   val libraryType = playingBook?.libraryType ?: preferredLibraryType
@@ -237,6 +245,21 @@ fun PlayerScreen(
                   }
 
                   if (bookActionsVisible) {
+                    IconButton(
+                      onClick = { castSelected = true },
+                      modifier =
+                        Modifier
+                          .padding(end = 4.dp)
+                          .testTag("playerCastButton"),
+                    ) {
+                      val casting = castSession?.state == CastSessionState.CONNECTED
+                      Icon(
+                        imageVector = if (casting) Icons.Outlined.CastConnected else Icons.Outlined.Cast,
+                        contentDescription = null,
+                        tint = if (casting) colorScheme.primary else colorScheme.onSurface,
+                      )
+                    }
+
                     IconButton(
                       onClick = {
                         if (isPlaybackReady) {
@@ -402,6 +425,13 @@ fun PlayerScreen(
     BookmarksComposable(
       playerViewModel = playerViewModel,
       onDismissRequest = { bookmarksSelected = false },
+    )
+  }
+
+  if (castSelected) {
+    CastDevicesComposable(
+      castViewModel = castViewModel,
+      onDismissRequest = { castSelected = false },
     )
   }
 }

@@ -306,4 +306,11 @@
     <string name="tree_node_tags">Теги</string>
     <string name="tree_node_authors">Авторы</string>
     <string name="tree_node_series">Серии</string>
+    <string name="cast_sheet_title">Воспроизвести на</string>
+    <string name="cast_this_device">Этот телефон</string>
+    <string name="cast_searching">Ищем устройства в сети…</string>
+    <string name="cast_no_devices">Устройства не найдены</string>
+    <string name="cast_connecting">Подключение…</string>
+    <string name="cast_connection_failed">Не удалось подключиться</string>
+    <string name="cast_protocol_dlna">DLNA / UPnP</string>
 </resources>
