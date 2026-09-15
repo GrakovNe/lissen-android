@@ -3,7 +3,6 @@ package org.grakovne.lissen.minifiedtest
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiAutomatorTestScope
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -14,10 +13,8 @@ class LibraryFlowE2ETest {
   @Test
   fun library_showsBookGridAfterLogin() = loggedInApp {
     waitForElement(By.res("libraryGrid"))
-    assertFalse(
-      "library grid should contain book items",
-      device.findObjects(By.res(Pattern.compile("bookItem_.*"))).isEmpty(),
-    )
+    // the grid container renders before the first page of books arrives from the server
+    waitForElement(By.res(Pattern.compile("bookItem_.*")), 60_000)
   }
 
   @Test
@@ -73,19 +70,24 @@ class LibraryFlowE2ETest {
     clickElement(By.text("Downloaded only"))
     pressBack()
     waitForElement(By.res("libraryGrid"))
-    assertFalse(device.findObjects(By.res(Pattern.compile("bookItem_.*"))).isEmpty())
+    waitForElement(By.res(Pattern.compile("bookItem_.*")), 90_000)
   }
 
   @Test
   fun library_openingBook_showsPlayer() = loggedInApp {
     waitForElement(By.res("libraryGrid"))
-    device.findObjects(By.res(Pattern.compile("bookItem_.*"))).first().click()
+    waitForElement(By.res(Pattern.compile("bookItem_.*")), 60_000).click()
     waitForElement(By.res("playerScreen"))
   }
 
   private fun UiAutomatorTestScope.firstBookTitle(): String {
-    val item = device.findObjects(By.res(Pattern.compile("bookItem_.*"))).first()
-    val textNodes = item.findObjects(By.text(Pattern.compile(".+")))
-    return textNodes.first().text.toString()
+    val item = waitForElement(By.res(Pattern.compile("bookItem_.*")), 60_000)
+    val deadline = System.currentTimeMillis() + 10_000
+    while (System.currentTimeMillis() < deadline) {
+      val title = item.findObjects(By.text(Pattern.compile(".+"))).firstOrNull()?.text?.toString()
+      if (!title.isNullOrEmpty()) return title
+      Thread.sleep(300)
+    }
+    throw AssertionError("the first book item has no title text")
   }
 }
