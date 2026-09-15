@@ -21,7 +21,7 @@ class LibraryFlowE2ETest {
   }
 
   @Test
-  fun library_searchFiltersBooksAndClearRestores() = loggedInApp {
+  fun library_searchFiltersBooksAndBackRestores() = loggedInApp {
     waitForElement(By.res("libraryGrid"))
     val query = firstBookTitle().take(6)
     clickElement(By.desc("Search"))
@@ -30,7 +30,11 @@ class LibraryFlowE2ETest {
     val results = device.findObjects(By.res(Pattern.compile("bookItem_.*")))
     assertTrue("search for '$query' should return results", results.isNotEmpty())
     clickElement(By.desc("Clear"))
-    // clearing the query re-fetches the whole library; on a slow link this can exceed the
+    // the clear button empties the field but keeps the user in search mode, and a blank
+    // query deliberately has no results, so the grid goes empty rather than showing everything
+    waitUntilAbsent(By.res(Pattern.compile("bookItem_.*")), 15_000)
+    clickElement(By.desc("Back"))
+    // leaving search re-fetches the whole library; on a slow link this can exceed the
     // default timeout, so give the restore a wider budget
     waitForElement(By.res(Pattern.compile("bookItem_.*")), 90_000)
   }

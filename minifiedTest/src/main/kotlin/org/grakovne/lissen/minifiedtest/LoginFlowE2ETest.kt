@@ -2,13 +2,10 @@ package org.grakovne.lissen.minifiedtest
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import androidx.test.shell.Shell
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiAutomatorTestScope
 import androidx.test.uiautomator.boundsInScreen
 import androidx.test.uiautomator.UiObject2
-import androidx.test.uiautomator.uiAutomator
-import androidx.test.uiautomator.watcher.PermissionDialog
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -83,13 +80,7 @@ class LoginFlowE2ETest {
     waitForElement(By.res("loginScreen"))
   }
 
-  private fun withFreshApp(block: UiAutomatorTestScope.() -> Unit) = uiAutomator {
-    Shell.application.clearAppData(TARGET_PACKAGE)
-    watchFor(PermissionDialog) { clickAllow() }
-    startApp(TARGET_PACKAGE)
-    waitForAppToBeVisible(TARGET_PACKAGE)
-    block()
-  }
+  private fun withFreshApp(block: UiAutomatorTestScope.() -> Unit) = freshApp(block)
 
   private fun UiAutomatorTestScope.login(password: String) {
     onElement { viewIdResourceName == "hostInput" }
