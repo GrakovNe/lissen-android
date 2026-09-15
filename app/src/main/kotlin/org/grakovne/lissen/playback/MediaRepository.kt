@@ -25,6 +25,7 @@ import kotlinx.coroutines.withContext
 import org.grakovne.lissen.common.buildBookmarkTitle
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Bookmark
+import org.grakovne.lissen.domain.ChapterSkipConfig
 import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DetailedItem.Companion.same
@@ -85,6 +86,13 @@ class MediaRepository
 
     private val _playbackSpeed = MutableStateFlow(preferences.getPlaybackSpeed())
     val playbackSpeed: StateFlow<Float> = _playbackSpeed.asStateFlow()
+
+    private val _chapterSkipConfig = MutableStateFlow(ChapterSkipConfig())
+    val chapterSkipConfig: StateFlow<ChapterSkipConfig> = _chapterSkipConfig.asStateFlow()
+
+    private var _lastSkippedIntroChapterIndex = -1
+    private var _lastSkippedOutroChapterIndex = -1
+    private var _userSeekedManually = false
 
     private val _currentChapterIndex = MutableStateFlow(0)
     val currentChapterIndex: StateFlow<Int> = _currentChapterIndex.asStateFlow()
@@ -291,6 +299,7 @@ class MediaRepository
     }
 
     fun setChapterPosition(chapterPosition: Double) {
+      _userSeekedManually = true
       val book = playingBook.value ?: return
       val overallPosition = totalPosition.value
 
@@ -381,6 +390,7 @@ class MediaRepository
       Timber.d("Next track: bookId=${book.id}, currentChapter=$currentIndex -> ${currentIndex + 1}")
 
       val nextChapterIndex = currentIndex + 1
+      _userSeekedManually = false
       setChapter(nextChapterIndex)
     }
 
@@ -444,6 +454,11 @@ class MediaRepository
         _playingBook.value = book
         preferences.savePlayingItem(book)
 
+        _chapterSkipConfig.value = preferences.getChapterSkipConfig(book.id)
+        _lastSkippedIntroChapterIndex = -1
+        _lastSkippedOutroChapterIndex = -1
+        _userSeekedManually = false
+
         eventBus.send(PlaybackCommand.PreparePlayback)
       } else {
         _isPlaybackReady.value = true
@@ -452,11 +467,10 @@ class MediaRepository
 
     private fun updateProgress(detailedItem: DetailedItem) {
       val currentIndex = mediaController.currentMediaItemIndex
-      val chapters = detailedItem.chapters
-      val accumulated = chapters.take(currentIndex.coerceIn(0, chapters.size)).sumOf { it.duration }
+      val chapterStart = detailedItem.chapters.getOrNull(currentIndex)?.start ?: 0.0
       val currentFilePosition = mediaController.currentPosition / 1000.0
 
-      val newPosition = accumulated + currentFilePosition
+      val newPosition = chapterStart + currentFilePosition
       _totalPosition.value = newPosition
       updateCurrentTrackData()
     }
@@ -491,10 +505,7 @@ class MediaRepository
         return
       }
 
-      val overallDuration =
-        book
-          .chapters
-          .sumOf { it.duration }
+      val overallDuration = book.chapters.maxOf { it.end }
 
       val current = totalPosition.value
 
@@ -553,14 +564,58 @@ class MediaRepository
 
       val (trackIndex, trackPosition) = calculateChapterIndexAndPosition(book, totalPosition)
 
+      val previousIndex = _currentChapterIndex.value
+
       _currentChapterIndex.value = trackIndex
       _currentChapterPosition.value = trackPosition
-      _currentChapterDuration.value =
+
+      val chapterDuration =
         book
           .chapters
           .getOrNull(trackIndex)
           ?.duration
           ?: 0.0
+
+      _currentChapterDuration.value = chapterDuration
+
+      val skipConfig = _chapterSkipConfig.value
+      if (!skipConfig.enabled) return
+      if (_userSeekedManually) {
+        if (trackIndex != previousIndex) {
+          _userSeekedManually = false
+        } else {
+          return
+        }
+      }
+
+      // Intro skip: when entering a new chapter
+      if (skipConfig.introSeconds > 0 &&
+        trackIndex != _lastSkippedIntroChapterIndex &&
+        trackIndex != previousIndex &&
+        previousIndex >= 0
+      ) {
+        val introTarget = skipConfig.introSeconds.toDouble()
+        if (introTarget < chapterDuration) {
+          _lastSkippedIntroChapterIndex = trackIndex
+          val chapterStart = book.chapters[trackIndex].start
+          seekTo(chapterStart + introTarget)
+          return
+        }
+      }
+
+      // Outro skip: when approaching chapter end (not last chapter)
+      if (skipConfig.outroSeconds > 0 &&
+        trackIndex != _lastSkippedOutroChapterIndex &&
+        trackIndex < book.chapters.size - 1
+      ) {
+        val outroThreshold = skipConfig.outroSeconds.toDouble()
+        val remaining = chapterDuration - trackPosition
+        if (remaining in 0.0..outroThreshold) {
+          _lastSkippedOutroChapterIndex = trackIndex
+          nextTrack()
+          return
+        }
+      }
     }
 
     suspend fun createBookmark(title: String? = null) {
@@ -618,6 +673,14 @@ class MediaRepository
       private const val PROGRESS_UPDATE_INTERVAL_MS = 500L
 
       private fun getSeekTime(seconds: Int?): Long = seconds?.toLong() ?: 30L
+    }
+
+    fun updateChapterSkipConfig(
+      bookId: String,
+      config: ChapterSkipConfig,
+    ) {
+      preferences.saveChapterSkipConfig(bookId, config)
+      _chapterSkipConfig.value = config
     }
   }
 

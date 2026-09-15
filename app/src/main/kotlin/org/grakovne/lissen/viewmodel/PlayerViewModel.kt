@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.domain.Bookmark
+import org.grakovne.lissen.domain.ChapterSkipConfig
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PlayingChapter
@@ -52,6 +53,8 @@ class PlayerViewModel
     val searchToken: StateFlow<String> = _searchToken.asStateFlow()
 
     val isPlaying: StateFlow<Boolean> = mediaRepository.isPlaying
+
+    val chapterSkipConfig: StateFlow<ChapterSkipConfig> = mediaRepository.chapterSkipConfig
 
     val bookmarks: StateFlow<List<Bookmark>> = mediaRepository.bookmarks
 
@@ -185,6 +188,11 @@ class PlayerViewModel
     fun togglePlayPause() {
       Timber.d("User action: togglePlayPause (isPlaying=${isPlaying.value})")
       mediaRepository.togglePlayPause()
+    }
+
+    fun updateChapterSkipConfig(config: ChapterSkipConfig) {
+      val bookId = book.value?.id ?: return
+      mediaRepository.updateChapterSkipConfig(bookId, config)
     }
 
     fun prepareAndPlay() {

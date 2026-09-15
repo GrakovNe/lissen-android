@@ -23,6 +23,7 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
@@ -155,6 +156,58 @@ class LissenMediaProviderTest {
         provider.fetchBook("book-1")
 
         coVerify(exactly = 0) { localCacheRepository.fetchBook(any()) }
+      }
+
+    @Test
+    fun `trims progress to null when progress is zero or negative`() =
+      runBlocking {
+        val chapter = chapter("c1")
+        val item =
+          detailedItem("book-1", listOf(chapter)).copy(
+            progress = MediaProgress(currentTime = 0.0, isFinished = false, lastUpdate = 1000L),
+          )
+        every { preferences.isForceCache() } returns false
+        coEvery { mediaChannel.fetchBook("book-1") } returns OperationResult.Success(item)
+        coEvery { localCacheRepository.fetchPlayingItemProgress("book-1") } returns null
+
+        val result = provider.fetchBook("book-1")
+
+        assertInstanceOf(OperationResult.Success::class.java, result)
+        assertEquals(null, (result as OperationResult.Success).data.progress)
+      }
+
+    @Test
+    fun `trims progress to null when progress exceeds total duration`() =
+      runBlocking {
+        val chapter = chapter("c1")
+        val item =
+          detailedItem("book-1", listOf(chapter)).copy(
+            progress = MediaProgress(currentTime = 100.0, isFinished = false, lastUpdate = 1000L),
+          )
+        every { preferences.isForceCache() } returns false
+        coEvery { mediaChannel.fetchBook("book-1") } returns OperationResult.Success(item)
+        coEvery { localCacheRepository.fetchPlayingItemProgress("book-1") } returns null
+
+        val result = provider.fetchBook("book-1")
+
+        assertInstanceOf(OperationResult.Success::class.java, result)
+        assertEquals(null, (result as OperationResult.Success).data.progress)
+      }
+
+    @Test
+    fun `preserves valid progress within total duration`() =
+      runBlocking {
+        val chapter = chapter("c1")
+        val progress = MediaProgress(currentTime = 50.0, isFinished = false, lastUpdate = 1000L)
+        val item = detailedItem("book-1", listOf(chapter)).copy(progress = progress)
+        every { preferences.isForceCache() } returns false
+        coEvery { mediaChannel.fetchBook("book-1") } returns OperationResult.Success(item)
+        coEvery { localCacheRepository.fetchPlayingItemProgress("book-1") } returns null
+
+        val result = provider.fetchBook("book-1")
+
+        assertInstanceOf(OperationResult.Success::class.java, result)
+        assertEquals(50.0, (result as OperationResult.Success).data.progress?.currentTime)
       }
   }
 
@@ -749,5 +802,20 @@ class LissenMediaProviderTest {
     totalPosition = totalPosition,
     createdAt = createdAt,
     syncState = BookmarkSyncState.SYNCED,
+  )
+
+  private fun chapter(
+    id: String = "c1",
+    start: Double = 0.0,
+    end: Double = 100.0,
+    duration: Double = 100.0,
+  ) = PlayingChapter(
+    id = id,
+    title = "Chapter",
+    start = start,
+    end = end,
+    duration = duration,
+    available = true,
+    podcastEpisodeState = null,
   )
 }
