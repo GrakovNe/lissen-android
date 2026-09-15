@@ -32,6 +32,7 @@ class LibraryAudiobookshelfChannelTest {
       connectionInfoResponseConverter = mockk(relaxed = true),
       bookmarksResponseConverter = mockk(relaxed = true),
       bookmarkItemResponseConverter = mockk(relaxed = true),
+      offlineSessionRequestConverter = mockk(relaxed = true),
       libraryOrderingRequestConverter = mockk(relaxed = true),
       libraryFilteringRequestConverter = mockk(relaxed = true),
       libraryPageResponseConverter = mockk(relaxed = true),
