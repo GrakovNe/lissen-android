@@ -282,4 +282,8 @@
     <string name="sleep_timer_fade_title">淡出</string>
     <string name="sleep_timer_fade_description">停止播放时降低音量</string>
     <string name="sleep_timer_fade_duration_title">淡出时长</string>
+    <string name="a11y_rewind">快退</string>
+    <string name="a11y_fast_forward">快进</string>
+    <string name="player_state_widget_label">正在播放</string>
+    <string name="player_cover_widget_label">正在播放（封面）</string>
 </resources>
