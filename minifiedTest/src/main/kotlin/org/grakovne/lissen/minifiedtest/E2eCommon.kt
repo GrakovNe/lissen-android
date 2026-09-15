@@ -1,12 +1,15 @@
 package org.grakovne.lissen.minifiedtest
 
+import android.util.Log
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.UiAutomatorTestScope
 import androidx.test.uiautomator.UiObject2
+import java.io.File
 
 const val DEFAULT_TIMEOUT_MS = 45_000L
 const val SHORT_MS = 5_000L
+const val E2E_TAG = "LissenE2E"
 
 fun UiAutomatorTestScope.waitForElement(
   selector: BySelector,
@@ -24,6 +27,18 @@ fun UiAutomatorTestScope.clickElement(
   selector: BySelector,
   timeoutMs: Long = DEFAULT_TIMEOUT_MS,
 ): UiObject2 = waitForElement(selector, timeoutMs).also { it.click() }
+
+fun UiAutomatorTestScope.waitUntilAbsent(
+  selector: BySelector,
+  timeoutMs: Long = DEFAULT_TIMEOUT_MS,
+) {
+  val deadline = System.currentTimeMillis() + timeoutMs
+  while (System.currentTimeMillis() < deadline) {
+    if (device.findObject(selector) == null) return
+    Thread.sleep(300)
+  }
+  throw AssertionError("Element matching $selector is still present after ${timeoutMs}ms")
+}
 
 fun UiAutomatorTestScope.elementExists(
   selector: BySelector,
@@ -56,17 +71,89 @@ fun UiAutomatorTestScope.scrollUntilVisible(
 
 const val TARGET_PACKAGE = "org.grakovne.lissen.minified"
 
+const val LOGIN_SCREEN_WAIT_MS = 15_000L
+
 fun e2eArgument(name: String, fallback: String): String =
   androidx.test.platform.app.InstrumentationRegistry.getArguments().getString(name) ?: fallback
 
 fun freshApp(block: UiAutomatorTestScope.() -> Unit) =
   androidx.test.uiautomator.uiAutomator {
+    // the launcher ANRs on the CI emulator often enough that its system dialog covers the
+    // app window and every selector lookup fails behind it
+    device.executeShellCommand("settings put global hide_error_dialogs 1")
     androidx.test.shell.Shell.application.clearAppData(TARGET_PACKAGE)
     watchFor(androidx.test.uiautomator.watcher.PermissionDialog) { clickAllow() }
     startApp(TARGET_PACKAGE)
     waitForAppToBeVisible(TARGET_PACKAGE)
+    ensureLoginScreen()
     block()
   }
+
+// The app renders its first frame behind a system dialog on the CI emulator often enough
+// to fail the whole suite; record what the device was showing at that moment, get rid of
+// the dialog and launch again instead of letting every test time out on the login screen.
+fun UiAutomatorTestScope.ensureLoginScreen() {
+  if (elementExists(By.res("hostInput"), LOGIN_SCREEN_WAIT_MS)) return
+  Log.w(E2E_TAG, "$TARGET_PACKAGE is in the foreground but the login screen is missing")
+  dumpWindowFocus()
+  dumpProcesses()
+  dumpScreen("e2e-missing-login")
+  dismissSystemDialog()
+  if (elementExists(By.res("hostInput"), LOGIN_SCREEN_WAIT_MS)) return
+  device.executeShellCommand("am force-stop $TARGET_PACKAGE")
+  startApp(TARGET_PACKAGE)
+  waitForAppToBeVisible(TARGET_PACKAGE)
+}
+
+private fun UiAutomatorTestScope.dismissSystemDialog() {
+  device.executeShellCommand("settings put global hide_error_dialogs 1")
+  for (label in listOf("Wait", "Close app", "OK")) {
+    device.findObject(By.text(label))?.click()
+  }
+}
+
+private fun UiAutomatorTestScope.dumpWindowFocus() {
+  val focus =
+    device
+      .executeShellCommand("dumpsys window")
+      .lines()
+      .filter { "mCurrentFocus" in it || "mFocusedApp" in it }
+      .joinToString(" | ")
+  Log.i(E2E_TAG, "focus: ${focus.ifEmpty { "none" }}")
+  val resumed =
+    device
+      .executeShellCommand("dumpsys activity activities")
+      .lines()
+      .filter { "ResumedActivity" in it || "topResumedActivity" in it }
+      .joinToString(" | ")
+  Log.i(E2E_TAG, "resumed: ${resumed.ifEmpty { "none" }}")
+}
+
+private fun UiAutomatorTestScope.dumpProcesses() {
+  val processes =
+    device
+      .executeShellCommand("ps -A")
+      .lines()
+      .filter { "lissen" in it }
+      .joinToString(" | ")
+  Log.i(E2E_TAG, "processes: ${processes.ifEmpty { "none" }}")
+}
+
+fun UiAutomatorTestScope.dumpScreen(name: String) {
+  val dir =
+    androidx.test.platform.app.InstrumentationRegistry
+      .getInstrumentation()
+      .context
+      .getExternalFilesDir(null)
+      ?: return
+  val hierarchy = File(dir, "$name.xml")
+  runCatching {
+    device.takeScreenshot(File(dir, "$name.png"))
+    device.dumpWindowHierarchy(hierarchy)
+  }
+  Log.i(E2E_TAG, "screen recorded in ${dir.path}/$name.{png,xml}")
+  runCatching { Log.i(E2E_TAG, "hierarchy: ${hierarchy.readText().take(3_000)}") }
+}
 
 fun UiAutomatorTestScope.loginToLibrary(password: String = e2eArgument("e2ePassword", "demo")) {
   waitForElement(By.res("hostInput"))
