@@ -78,6 +78,9 @@ fun e2eArgument(name: String, fallback: String): String =
 
 fun freshApp(block: UiAutomatorTestScope.() -> Unit) =
   androidx.test.uiautomator.uiAutomator {
+    // the launcher ANRs on the CI emulator often enough that its system dialog covers the
+    // app window and every selector lookup fails behind it
+    device.executeShellCommand("settings put global hide_error_dialogs 1")
     androidx.test.shell.Shell.application.clearAppData(TARGET_PACKAGE)
     watchFor(androidx.test.uiautomator.watcher.PermissionDialog) { clickAllow() }
     startApp(TARGET_PACKAGE)
@@ -86,18 +89,27 @@ fun freshApp(block: UiAutomatorTestScope.() -> Unit) =
     block()
   }
 
-// The app reaches the foreground without rendering its first frame on the CI emulator
-// often enough to fail the whole suite; record what the device was showing at that moment
-// and launch again instead of letting every test time out on the login screen.
+// The app renders its first frame behind a system dialog on the CI emulator often enough
+// to fail the whole suite; record what the device was showing at that moment, get rid of
+// the dialog and launch again instead of letting every test time out on the login screen.
 fun UiAutomatorTestScope.ensureLoginScreen() {
   if (elementExists(By.res("hostInput"), LOGIN_SCREEN_WAIT_MS)) return
   Log.w(E2E_TAG, "$TARGET_PACKAGE is in the foreground but the login screen is missing")
   dumpWindowFocus()
   dumpProcesses()
   dumpScreen("e2e-missing-login")
+  dismissSystemDialog()
+  if (elementExists(By.res("hostInput"), LOGIN_SCREEN_WAIT_MS)) return
   device.executeShellCommand("am force-stop $TARGET_PACKAGE")
   startApp(TARGET_PACKAGE)
   waitForAppToBeVisible(TARGET_PACKAGE)
+}
+
+private fun UiAutomatorTestScope.dismissSystemDialog() {
+  device.executeShellCommand("settings put global hide_error_dialogs 1")
+  for (label in listOf("Wait", "Close app", "OK")) {
+    device.findObject(By.text(label))?.click()
+  }
 }
 
 private fun UiAutomatorTestScope.dumpWindowFocus() {
