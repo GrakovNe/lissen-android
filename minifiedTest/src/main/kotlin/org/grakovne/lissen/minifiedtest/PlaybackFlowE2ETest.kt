@@ -52,11 +52,9 @@ class PlaybackFlowE2ETest {
     if (current.number < current.total) {
       clickElement(By.desc("Next track"))
       assertEquals(current.number + 1, awaitChapterNumber(current.number))
-      clickElement(By.desc("Previous track"))
-      assertEquals(current.number, awaitChapterNumber(current.number + 1))
+      assertEquals(current.number, gotoPreviousChapter(current.number + 1))
     } else {
-      clickElement(By.desc("Previous track"))
-      assertEquals(current.number - 1, awaitChapterNumber(current.number))
+      assertEquals(current.number - 1, gotoPreviousChapter(current.number))
       clickElement(By.desc("Next track"))
       assertEquals(current.number, awaitChapterNumber(current.number - 1))
     }
@@ -75,6 +73,18 @@ class PlaybackFlowE2ETest {
       match?.groupValues?.get(1)?.toInt() ?: -1,
       match?.groupValues?.get(2)?.toInt() ?: -1,
     )
+  }
+
+  // Playback resumes wherever the server left the account. While the position inside the
+  // chapter is past the replay threshold (MediaRepository.CURRENT_TRACK_REPLAY_THRESHOLD),
+  // "Previous track" restarts the current chapter instead of stepping back, so the first
+  // press may leave the chapter number untouched. Press again when that happens.
+  private fun UiAutomatorTestScope.gotoPreviousChapter(from: Int): Int {
+    clickElement(By.desc("Previous track"))
+    val pressed = awaitChapterNumber(from)
+    if (pressed != from) return pressed
+    clickElement(By.desc("Previous track"))
+    return awaitChapterNumber(from)
   }
 
   private fun UiAutomatorTestScope.awaitChapterNumber(from: Int): Int {
