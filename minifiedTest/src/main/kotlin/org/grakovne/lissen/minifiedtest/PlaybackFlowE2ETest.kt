@@ -48,6 +48,12 @@ class PlaybackFlowE2ETest {
     openFirstBookAndReady()
     clickElement(By.desc("Play"))
     waitForElement(By.desc("Pause"))
+    // Freeze the clock before stepping chapters. If playback kept running, the position
+    // inside the chapter would cross the replay threshold again while we wait, and a
+    // second "Previous track" press would restart the chapter once more instead of
+    // stepping back. While paused the position stays exactly where the press left it.
+    clickElement(By.desc("Pause"))
+    waitForElement(By.desc("Play"))
     val current = currentChapter()
     if (current.number < current.total) {
       clickElement(By.desc("Next track"))
@@ -78,7 +84,8 @@ class PlaybackFlowE2ETest {
   // Playback resumes wherever the server left the account. While the position inside the
   // chapter is past the replay threshold (MediaRepository.CURRENT_TRACK_REPLAY_THRESHOLD),
   // "Previous track" restarts the current chapter instead of stepping back, so the first
-  // press may leave the chapter number untouched. Press again when that happens.
+  // press may leave the chapter number untouched. Press again when that happens: the
+  // restart left the position at the chapter start, so the second press steps back.
   private fun UiAutomatorTestScope.gotoPreviousChapter(from: Int): Int {
     clickElement(By.desc("Previous track"))
     val pressed = awaitChapterNumber(from)
