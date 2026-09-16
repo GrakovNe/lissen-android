@@ -40,6 +40,8 @@
     <string name="player_screen_chapter_list_navigation_library">Chapters</string>
     <string name="player_screen_chapter_list_navigation_podcast">Episodes</string>
     <string name="player_screen_library_playing_title">Playing chapters</string>
+    <string name="playback_mode_chapters">Chapters</string>
+    <string name="playback_mode_tracks">Tracks</string>
     <string name="player_screen_podcast_playing_title">Playing episodes</string>
     <string name="player_screen_now_playing_title_chapter_of">Chapter %1$d of %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">Episode %1$d of %2$s</string>

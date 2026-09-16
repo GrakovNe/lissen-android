@@ -26,6 +26,7 @@ import org.grakovne.lissen.domain.BookmarkSyncState
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.PlaybackMode
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
@@ -47,6 +48,7 @@ class PlayerViewModelTest {
   private val testDispatcher = UnconfinedTestDispatcher()
 
   private val playingBook = MutableStateFlow<DetailedItem?>(null)
+  private val playbackMode = MutableStateFlow(PlaybackMode.CHAPTERS)
   private val currentChapterIndex = MutableStateFlow(0)
   private val currentChapterPosition = MutableStateFlow(0.0)
   private val currentChapterDuration = MutableStateFlow(0.0)
@@ -72,6 +74,7 @@ class PlayerViewModelTest {
     preferredLibraryType.value = LibraryType.LIBRARY
 
     every { mediaRepository.playingBook } returns playingBook
+    every { mediaRepository.playbackMode } returns playbackMode
     every { mediaRepository.currentChapterIndex } returns currentChapterIndex
     every { mediaRepository.currentChapterPosition } returns currentChapterPosition
     every { mediaRepository.currentChapterDuration } returns currentChapterDuration
@@ -289,6 +292,12 @@ class PlayerViewModelTest {
     fun `setPlaybackSpeed delegates to mediaRepository`() {
       viewModel.setPlaybackSpeed(1.5f)
       verify { mediaRepository.setPlaybackSpeed(1.5f) }
+    }
+
+    @Test
+    fun `setPlaybackMode delegates to mediaRepository`() {
+      viewModel.setPlaybackMode(PlaybackMode.TRACKS)
+      verify { mediaRepository.setPlaybackMode(PlaybackMode.TRACKS) }
     }
 
     @Test

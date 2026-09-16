@@ -8,12 +8,15 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -25,6 +28,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -64,6 +68,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.PlaybackMode
 import org.grakovne.lissen.ui.components.withScrollbar
 import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
 import org.grakovne.lissen.viewmodel.CachingModelView
@@ -81,6 +86,7 @@ fun PlayingQueueComposable(
   val coroutineScope = rememberCoroutineScope()
 
   val book by viewModel.book.collectAsState()
+  val playbackMode by viewModel.playbackMode.collectAsState()
   val searchToken by viewModel.searchToken.collectAsState()
 
   val showingChapters by remember {
@@ -253,6 +259,37 @@ fun PlayingQueueComposable(
         )
 
         Spacer(modifier = Modifier.height(12.dp))
+      }
+
+      if (libraryType == LibraryType.LIBRARY &&
+        book?.localProvided == false &&
+        book?.sourceChapters?.isNotEmpty() == true &&
+        book?.files?.isNotEmpty() == true
+      ) {
+        Row(
+          horizontalArrangement = Arrangement.spacedBy(8.dp),
+          modifier = Modifier.fillMaxWidth(),
+        ) {
+          PlaybackMode.entries.forEach { mode ->
+            FilterChip(
+              selected = playbackMode == mode,
+              enabled = playbackReady,
+              onClick = { viewModel.setPlaybackMode(mode) },
+              label = {
+                Text(
+                  stringResource(
+                    when (mode) {
+                      PlaybackMode.CHAPTERS -> R.string.playback_mode_chapters
+                      PlaybackMode.TRACKS -> R.string.playback_mode_tracks
+                    },
+                  ),
+                )
+              },
+            )
+          }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
       }
 
       LazyColumn(

@@ -63,10 +63,11 @@ fun NavigationBarComposable(
   val playbackSpeed by playerViewModel.playbackSpeed.collectAsState()
   val playingQueueExpanded by playerViewModel.playingQueueExpanded.collectAsState()
   val hasEpisodes = book.chapters.isNotEmpty()
+  val downloadBook = book.copy(chapters = book.sourceChapters.ifEmpty { book.chapters })
 
   val isMetadataCached by remember(book.id) { contentCachingModelView.provideCacheState(book.id) }.collectAsState(initial = false)
   val totalPosition by playerViewModel.totalPosition.collectAsState()
-  val remainingChapters = (book.chapters.size - calculateChapterIndex(book, totalPosition)).coerceAtLeast(1)
+  val remainingChapters = (downloadBook.chapters.size - calculateChapterIndex(downloadBook, totalPosition)).coerceAtLeast(1)
 
   var playbackSpeedExpanded by remember { mutableStateOf(false) }
   var timerExpanded by remember { mutableStateOf(false) }
@@ -247,7 +248,7 @@ fun NavigationBarComposable(
             playerViewModel.book.value?.let {
               contentCachingModelView
                 .cache(
-                  mediaItem = it,
+                  mediaItem = downloadBook,
                   currentPosition = playerViewModel.totalPosition.value,
                   option = option,
                 )

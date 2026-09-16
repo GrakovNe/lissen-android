@@ -18,6 +18,7 @@ import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.PlaybackMode
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
@@ -41,6 +42,7 @@ class PlayerViewModel
     private val session: SessionPreferences,
   ) : ViewModel() {
     val book: StateFlow<DetailedItem?> = mediaRepository.playingBook
+    val playbackMode: StateFlow<PlaybackMode> = mediaRepository.playbackMode
 
     val preferredLibraryType: StateFlow<LibraryType> =
       libraryPreferences.preferredLibraryTypeFlow
@@ -240,6 +242,10 @@ class PlayerViewModel
     fun setPlaybackSpeed(factor: Float) {
       Timber.d("User action: setPlaybackSpeed $factor")
       mediaRepository.setPlaybackSpeed(factor)
+    }
+
+    fun setPlaybackMode(mode: PlaybackMode) {
+      mediaRepository.setPlaybackMode(mode)
     }
 
     fun nextTrack() {
