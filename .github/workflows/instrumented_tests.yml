@@ -8,6 +8,7 @@ on:
 jobs:
   instrumented-tests:
     runs-on: self-hosted
+    timeout-minutes: 120
     #runs-on: ubuntu-latest
 
     steps:
@@ -49,7 +50,7 @@ jobs:
             adb logcat -c || true
             adb logcat -v threadtime ActivityManager:I ActivityTaskManager:I am_kill:V am_anr:V am_crash:V AndroidRuntime:E System.err:V LissenE2E:V "*":S > minifiedTest/build/outputs/androidTest-results/minified-logcat.txt &
             LOGCAT_PID=$!
-            adb shell am instrument -w org.grakovne.lissen.minifiedtest/androidx.test.runner.AndroidJUnitRunner | tee minifiedTest/build/outputs/androidTest-results/minified.txt
+            timeout --kill-after=60s 2400s adb shell am instrument -w org.grakovne.lissen.minifiedtest/androidx.test.runner.AndroidJUnitRunner | tee minifiedTest/build/outputs/androidTest-results/minified.txt
             adb exec-out screencap -p > minifiedTest/build/outputs/androidTest-results/minified-screen.png || true
             adb pull /sdcard/Android/data/org.grakovne.lissen.minifiedtest/files/ minifiedTest/build/outputs/androidTest-results/e2e-dumps/ || true
             kill $LOGCAT_PID || true
