@@ -82,7 +82,7 @@ class PodcastResponseConverterTest {
   }
 
   @Test
-  fun `orders episodes by pubDate then season then episode number`() {
+  fun `orders episodes by pubDate with undated episodes last`() {
     val episodes =
       listOf(
         episode(id = "e1", pubDate = "Wed, 02 Jan 2024 00:00:00 +0000"),
@@ -93,11 +93,11 @@ class PodcastResponseConverterTest {
 
     val result = converter.apply(podcast(episodes))
 
-    assertEquals(listOf("e4", "e3", "e2", "e1"), result.files.map { it.id })
+    assertEquals(listOf("e2", "e1", "e3", "e4"), result.files.map { it.id })
   }
 
   @Test
-  fun `sorts episode with unparseable pubDate ahead of dated episodes`() {
+  fun `sorts episode with unparseable pubDate behind dated episodes`() {
     val episodes =
       listOf(
         episode(id = "bad", pubDate = "not-a-date"),
@@ -106,7 +106,40 @@ class PodcastResponseConverterTest {
 
     val result = converter.apply(podcast(episodes))
 
-    assertEquals(listOf("bad", "good"), result.files.map { it.id })
+    assertEquals(listOf("good", "bad"), result.files.map { it.id })
+  }
+
+  @Test
+  fun `fills ordering fields on chapters`() {
+    val episodes =
+      listOf(
+        episode(
+          id = "e1",
+          pubDate = "Mon, 01 Jan 2024 00:00:00 +0000",
+          season = "2",
+          episode = "14",
+        ),
+        episode(id = "e2", pubDate = null, season = "special", episode = ""),
+      )
+
+    val result = converter.apply(podcast(episodes))
+
+    val first = result.chapters.first { it.id == "e1" }
+    assertEquals(
+      java.text
+        .SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", java.util.Locale.ENGLISH)
+        .parse("Mon, 01 Jan 2024 00:00:00 +0000")
+        ?.time,
+      first.publishedAt,
+    )
+    assertEquals(2, first.season)
+    assertEquals(14, first.episodeNumber)
+    assertEquals("e1.mp3", first.filename)
+
+    val second = result.chapters.first { it.id == "e2" }
+    assertNull(second.publishedAt)
+    assertNull(second.season)
+    assertNull(second.episodeNumber)
   }
 
   @Test

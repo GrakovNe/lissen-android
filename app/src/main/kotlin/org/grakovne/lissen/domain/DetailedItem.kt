@@ -60,6 +60,10 @@ data class PlayingChapter(
   val end: Double,
   val title: String,
   val id: String,
+  val publishedAt: Long? = null,
+  val season: Int? = null,
+  val episodeNumber: Int? = null,
+  val filename: String? = null,
 ) : Serializable
 
 @Keep
