@@ -22,7 +22,10 @@ import org.grakovne.lissen.domain.DetailedItem.Companion.same
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.MediaProgress
+import org.grakovne.lissen.domain.PlaybackMode
 import org.grakovne.lissen.domain.TimerOption
+import org.grakovne.lissen.domain.forPlayback
+import org.grakovne.lissen.domain.playbackMode
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.autoskip.AutoSkipPreferences
 import org.grakovne.lissen.playback.autoskip.PlaybackSteps
@@ -65,6 +68,9 @@ class MediaRepository
 
     private val _playingBook = MutableStateFlow<DetailedItem?>(null)
     val playingBook: StateFlow<DetailedItem?> = _playingBook.asStateFlow()
+
+    private val _playbackMode = MutableStateFlow(PlaybackMode.CHAPTERS)
+    val playbackMode: StateFlow<PlaybackMode> = _playbackMode.asStateFlow()
 
     private val _mediaPreparingError = MutableStateFlow(false)
     val mediaPreparingError: StateFlow<Boolean> = _mediaPreparingError.asStateFlow()
@@ -303,6 +309,28 @@ class MediaRepository
       adjustTimer(totalPosition.value)
     }
 
+    fun setPlaybackMode(mode: PlaybackMode) {
+      val book = playingBook.value ?: return
+      if (isPlaybackReady.value.not() || book.playbackMode(mode) == playbackMode.value) return
+
+      val wasPlaying = isPlaying.value
+      val position = totalPosition.value.coerceAtMost(book.restartWindowStart() ?: totalPosition.value)
+      val progress = MediaProgress(currentTime = position, isFinished = false, lastUpdate = System.currentTimeMillis())
+      preferences.savePlaybackMode(book, mode)
+
+      pause()
+      _mediaPreparingError.value = false
+      _isPlaybackReady.value = false
+
+      playWhenReady = wasPlaying
+      startPreparingPlayback(book.copy(progress = progress))
+
+      queueRebuildInFlight = true
+
+      _totalPosition.value = position
+      updateCurrentTrackData()
+    }
+
     suspend fun preparePlayback(
       bookId: String,
       libraryType: LibraryType? = null,
@@ -425,6 +453,7 @@ class MediaRepository
         Timber.d("Registering playing book prepared via media session: ${book.id}")
 
         _totalPosition.value = book.progress?.currentTime ?: 0.0
+        _playbackMode.value = book.playbackMode(preferences.getPlaybackMode(book))
         _playingBook.value = book
 
         queueRebuildInFlight = false
@@ -461,7 +490,9 @@ class MediaRepository
       eventBus.send(PlaybackCommand.CancelTimer)
     }
 
-    private fun startPreparingPlayback(book: DetailedItem) {
+    private fun startPreparingPlayback(item: DetailedItem) {
+      val book = item.forPlayback(preferences.getPlaybackMode(item))
+      _playbackMode.value = book.playbackMode(preferences.getPlaybackMode(book))
       val sameBook = _playingBook.value?.same(book) ?: false
       queueRebuildInFlight = false
 

@@ -109,7 +109,7 @@ class PlaybackSynchronizationService
      * it nor overtakes it. The listening time stays with the regular syncs.
      */
     fun reportChapterEnd(chapterIndex: Int) {
-      val currentItem = syncState.value.item ?: return
+      val currentItem = syncState.value.item?.takeIf { it.chapters == it.forSynchronization().chapters } ?: return
       val chapter = currentItem.chapters.getOrNull(chapterIndex) ?: return
 
       val snapshot =
@@ -168,7 +168,7 @@ class PlaybackSynchronizationService
           when (item.id) {
             currentItem.id -> {
               try {
-                performSync(item, snapshot)
+                performSync(item.forSynchronization(), snapshot)
               } catch (e: Exception) {
                 Timber.e(e, "Error during sync")
               }
@@ -261,6 +261,8 @@ class PlaybackSynchronizationService
           onFailure = {},
         )
     }
+
+    private fun DetailedItem.forSynchronization() = copy(chapters = sourceChapters.ifEmpty { chapters })
 
     private fun getProgress(exoPlayer: ExoPlayer): PlaybackProgress? =
       exoPlayer.currentMediaItem

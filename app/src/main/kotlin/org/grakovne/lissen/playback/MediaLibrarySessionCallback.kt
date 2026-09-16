@@ -40,6 +40,7 @@ import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.forPlayback
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.playback.service.PlaybackSynchronizationService
@@ -356,9 +357,10 @@ class MediaLibrarySessionCallback
                 .fetchBook(bookId, libraryType)
                 .foldAsync(
                   onSuccess = {
-                    preferences.savePlayingItem(it)
-                    registerPlayback(it)
-                    PlaybackService.bookToChapterMediaItems(it)
+                    val book = it.forPlayback(preferences.getPlaybackMode(it))
+                    preferences.savePlayingItem(book)
+                    registerPlayback(book)
+                    PlaybackService.bookToChapterMediaItems(book)
                   },
                   onFailure = { MediaItemsWithStartPosition(emptyList(), 0, 0) },
                 )
@@ -382,14 +384,15 @@ class MediaLibrarySessionCallback
               ?: throw IllegalStateException("No last played book stored")
 
           val refreshedBook = refreshBookForResumption(storedBook)
-          val book = refreshedBook ?: storedBookWithLatestProgress(storedBook)
+          val rawBook = refreshedBook ?: storedBookWithLatestProgress(storedBook)
+          val book = rawBook.forPlayback(preferences.getPlaybackMode(rawBook))
 
           if (book.canProducePlaybackQueue().not()) {
             throw IllegalStateException("Book can't produce a playback queue (bookId=${book.id})")
           }
 
           if (isForPlayback) {
-            refreshedBook?.let { preferences.savePlayingItem(it) }
+            refreshedBook?.let { preferences.savePlayingItem(book) }
             registerPlayback(book)
           }
 
