@@ -102,6 +102,7 @@ class BookResponseConverter
         genres = item.media.metadata.genres ?: emptyList(),
         files = files,
         chapters = chapters,
+        sourceChapters = if (maybeChapters == null) emptyList() else chapters,
         libraryId = item.libraryId,
         libraryType = LibraryType.LIBRARY,
         localProvided = false,

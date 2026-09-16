@@ -11,6 +11,8 @@ import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryChapterRe
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryMetadataResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibrarySeriesResponse
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.PlaybackMode
+import org.grakovne.lissen.domain.forPlayback
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -100,6 +102,7 @@ class BookResponseConverterTest {
         )
       assertEquals(1, item.chapters.size)
       assertEquals("c1", item.chapters[0].id)
+      assertEquals(listOf("c1"), item.sourceChapters.map { it.id })
     }
 
     @Test
@@ -112,6 +115,7 @@ class BookResponseConverterTest {
           ),
         )
       assertEquals(2, item.chapters.size)
+      assertTrue(item.sourceChapters.isEmpty())
     }
 
     @Test
@@ -154,6 +158,22 @@ class BookResponseConverterTest {
       assertEquals("a", item.chapters[0].title)
       assertEquals("b", item.chapters[1].title)
       assertEquals("c", item.chapters[2].title)
+    }
+
+    @Test
+    fun `track playback uses complete audio files in index order`() {
+      val item =
+        converter
+          .apply(
+            bookResponse(
+              chapters = listOf(chapter("c1", 0.0, 30.0)),
+              audioFiles = listOf(audioFile(2, 30.0, "c.mp3"), audioFile(0, 10.0, "a.mp3"), audioFile(1, 20.0, "b.mp3")),
+            ),
+          ).forPlayback(PlaybackMode.TRACKS)
+
+      assertEquals(listOf("a", "b", "c"), item.chapters.map { it.title })
+      assertEquals(listOf(0.0, 10.0, 30.0), item.chapters.map { it.start })
+      assertEquals(listOf(10.0, 30.0, 60.0), item.chapters.map { it.end })
     }
 
     @Test

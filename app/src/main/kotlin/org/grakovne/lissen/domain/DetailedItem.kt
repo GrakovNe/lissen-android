@@ -27,11 +27,46 @@ data class DetailedItem(
   val localProvided: Boolean,
   val createdAt: Long,
   val updatedAt: Long,
+  val sourceChapters: List<PlayingChapter> = chapters,
 ) : Serializable {
   companion object {
     fun DetailedItem.same(other: DetailedItem) =
       this.copy(progress = null, libraryType = null, playlists = null) == other.copy(progress = null, libraryType = null, playlists = null)
   }
+}
+
+@Keep
+enum class PlaybackMode {
+  CHAPTERS,
+  TRACKS,
+}
+
+fun DetailedItem.playbackMode(preferred: PlaybackMode): PlaybackMode =
+  when {
+    libraryType != LibraryType.LIBRARY || localProvided -> PlaybackMode.CHAPTERS
+    sourceChapters.isEmpty() -> PlaybackMode.TRACKS
+    else -> preferred
+  }
+
+fun DetailedItem.forPlayback(preferred: PlaybackMode): DetailedItem {
+  if (libraryType != LibraryType.LIBRARY || localProvided || sourceChapters.isEmpty()) return this
+  if (preferred == PlaybackMode.CHAPTERS) return copy(chapters = sourceChapters)
+
+  var start = 0.0
+  return copy(
+    chapters =
+      files.map { file ->
+        PlayingChapter(
+          available = true,
+          podcastEpisodeState = null,
+          duration = file.duration,
+          start = start,
+          end = (start + file.duration).also { start = it },
+          title = file.name,
+          id = file.id,
+        )
+      },
+  )
 }
 
 @Keep

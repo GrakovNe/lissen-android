@@ -8,6 +8,7 @@ import kotlinx.coroutines.test.runTest
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.PlaybackMode
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -117,6 +118,21 @@ class PlayingItemPersistenceTest {
       assertNull(preferences.getLastPlayingItem())
       assertFalse(preferences.hasLastPlayingItemFlow.first())
     }
+
+  @Test
+  fun `playback mode is stored per audiobook and cleared with playback data`() {
+    val first = item(id = "book-1", libraryId = "lib-1")
+    val second = item(id = "book-2", libraryId = "lib-1")
+
+    assertEquals(PlaybackMode.CHAPTERS, preferences.getPlaybackMode(first))
+    preferences.savePlaybackMode(first, PlaybackMode.TRACKS)
+
+    assertEquals(PlaybackMode.TRACKS, preferences.getPlaybackMode(first))
+    assertEquals(PlaybackMode.CHAPTERS, preferences.getPlaybackMode(second))
+
+    preferences.clearPlayingItems()
+    assertEquals(PlaybackMode.CHAPTERS, preferences.getPlaybackMode(first))
+  }
 
   @Test
   fun `clearing by item id removes the stored item from its own library`() {

@@ -8,6 +8,7 @@ import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.EqualizerSettings
+import org.grakovne.lissen.domain.PlaybackMode
 import org.grakovne.lissen.domain.RewindOnPauseSettings
 import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.domain.SleepTimerSettings
@@ -100,9 +101,24 @@ class PlaybackPreferences
     fun clearPlayingItems() {
       synchronized(playingItemLock) {
         playingItems.set(emptyMap())
-        store.remove(listOf(KEY_PLAYING_ITEM, KEY_LAST_PLAYING_LIBRARY_ID))
+        store.remove(
+          listOf(KEY_PLAYING_ITEM, KEY_LAST_PLAYING_LIBRARY_ID) +
+            store.preferences.all.keys
+              .filter { it.startsWith(KEY_PLAYBACK_MODE_PREFIX) },
+        )
       }
     }
+
+    fun getPlaybackMode(item: DetailedItem): PlaybackMode =
+      store
+        .getString(playbackModeKey(item))
+        ?.let { runCatching { PlaybackMode.valueOf(it) }.getOrNull() }
+        ?: PlaybackMode.CHAPTERS
+
+    fun savePlaybackMode(
+      item: DetailedItem,
+      mode: PlaybackMode,
+    ) = store.putString(playbackModeKey(item), mode.name)
 
     fun getSeekTime(): SeekTime {
       val json = store.getString(KEY_PREFERRED_SEEK_TIME) ?: return SeekTime.Default
@@ -222,6 +238,8 @@ class PlaybackPreferences
         emptyMap()
       }
 
+    private fun playbackModeKey(item: DetailedItem) = "$KEY_PLAYBACK_MODE_PREFIX${item.libraryId}/${item.id}"
+
     private fun TimerOption.toDto() =
       when (this) {
         CurrentEpisodeTimerOption -> TimerOptionDto(type = "episode")
@@ -246,6 +264,7 @@ class PlaybackPreferences
       private const val KEY_EQUALIZER = "equalizer"
       private const val KEY_DEFAULT_SLEEP_TIMER = "default_sleep_timer"
       private const val KEY_SLEEP_TIMER_SETTINGS = "sleep_timer_settings"
+      private const val KEY_PLAYBACK_MODE_PREFIX = "playback_mode_"
 
       // 1.4.5 to 1.6.0 left {"enabled":…,"time":"SEEK_5"} under "rewind_on_pause", which would load as enabled
       private const val KEY_REWIND_ON_PAUSE = "rewind_on_pause_settings"
