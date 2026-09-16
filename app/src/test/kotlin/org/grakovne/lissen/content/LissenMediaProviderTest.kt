@@ -26,6 +26,7 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
@@ -211,6 +212,123 @@ class LissenMediaProviderTest {
         provider.fetchBook("book-1")
 
         coVerify(exactly = 0) { localCacheRepository.fetchBook(any()) }
+      }
+  }
+
+  @Nested
+  inner class PodcastOrderingOffline {
+    private val descending = EpisodeOrdering(key = EpisodeSortKey.PUBLISHED_AT, ascending = false)
+
+    private fun episodesAsc() =
+      listOf(
+        chapter("e1", duration = 20.0, start = 0.0, publishedAt = 100L),
+        chapter("e2", duration = 10.0, start = 20.0, publishedAt = 200L),
+      )
+
+    private fun podcast(progress: MediaProgress? = null) =
+      detailedItem(
+        id = "podcast-1",
+        chapters = episodesAsc(),
+        libraryType = LibraryType.PODCAST,
+        progress = progress,
+      )
+
+    @Test
+    fun `force cache applies stored ordering to the cached podcast`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns true
+        coEvery { localCacheRepository.fetchBook("podcast-1") } returns podcast()
+        every { itemPreferencesRepository.observeOrdering("podcast-1") } returns flowOf(descending)
+
+        val data = (provider.fetchBook("podcast-1") as OperationResult.Success).data
+
+        assertEquals(listOf("e2", "e1"), data.chapters.map { it.id })
+        assertEquals(listOf(0.0, 10.0), data.chapters.map { it.start })
+        assertEquals(listOf(10.0, 30.0), data.chapters.map { it.end })
+      }
+
+    @Test
+    fun `force cache keeps default ordering when no preference is stored`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns true
+        coEvery { localCacheRepository.fetchBook("podcast-1") } returns podcast()
+        every { itemPreferencesRepository.observeOrdering("podcast-1") } returns flowOf(EpisodeOrdering.DEFAULT)
+
+        val data = (provider.fetchBook("podcast-1") as OperationResult.Success).data
+
+        assertEquals(listOf("e1", "e2"), data.chapters.map { it.id })
+      }
+
+    @Test
+    fun `offline fallback applies stored ordering to the cached podcast`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns false
+        coEvery { mediaChannel.fetchBook("podcast-1") } returns
+          OperationResult.Error(OperationError.NetworkError)
+        coEvery { localCacheRepository.fetchBook("podcast-1") } returns podcast()
+        every { itemPreferencesRepository.observeOrdering("podcast-1") } returns flowOf(descending)
+
+        val data = (provider.fetchBook("podcast-1") as OperationResult.Success).data
+
+        assertEquals(listOf("e2", "e1"), data.chapters.map { it.id })
+      }
+
+    @Test
+    fun `offline fallback rebases cached progress onto the stored ordering`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns false
+        coEvery { mediaChannel.fetchBook("podcast-1") } returns
+          OperationResult.Error(OperationError.NetworkError)
+        coEvery { localCacheRepository.fetchBook("podcast-1") } returns
+          podcast(progress = MediaProgress(currentTime = 25.0, isFinished = false, lastUpdate = 5L))
+        every { itemPreferencesRepository.observeOrdering("podcast-1") } returns flowOf(descending)
+
+        val data = (provider.fetchBook("podcast-1") as OperationResult.Success).data
+
+        // 25s in the old order is 5s into e2; e2 starts at 0 in the new order
+        assertEquals(5.0, data.progress?.currentTime)
+        assertEquals(5L, data.progress?.lastUpdate)
+      }
+
+    @Test
+    fun `network success rebases the newer local progress onto the stored ordering`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns false
+        coEvery { mediaChannel.fetchBook("podcast-1") } returns
+          OperationResult.Success(podcast(progress = MediaProgress(currentTime = 10.0, isFinished = false, lastUpdate = 1L)))
+        coEvery { localCacheRepository.fetchPlayingItemProgress("podcast-1") } returns
+          MediaProgress(currentTime = 25.0, isFinished = false, lastUpdate = 9L)
+        every { itemPreferencesRepository.observeOrdering("podcast-1") } returns flowOf(descending)
+
+        val data = (provider.fetchBook("podcast-1") as OperationResult.Success).data
+
+        assertEquals(5.0, data.progress?.currentTime)
+        assertEquals(9L, data.progress?.lastUpdate)
+      }
+
+    @Test
+    fun `offline fallback leaves book chapters and progress untouched`() =
+      runBlocking {
+        val item =
+          detailedItem(
+            id = "book-1",
+            chapters =
+              listOf(
+                chapter("c1", duration = 10.0, start = 0.0),
+                chapter("c2", duration = 20.0, start = 10.0),
+              ),
+            progress = MediaProgress(currentTime = 12.0, isFinished = false, lastUpdate = 3L),
+          )
+        every { preferences.isForceCache() } returns false
+        coEvery { mediaChannel.fetchBook("book-1") } returns
+          OperationResult.Error(OperationError.NetworkError)
+        coEvery { localCacheRepository.fetchBook("book-1") } returns item
+
+        val data = (provider.fetchBook("book-1") as OperationResult.Success).data
+
+        assertEquals(listOf("c1", "c2"), data.chapters.map { it.id })
+        assertEquals(12.0, data.progress?.currentTime)
+        coVerify(exactly = 0) { itemPreferencesRepository.observeOrdering(any()) }
       }
   }
 
@@ -767,6 +885,7 @@ class LissenMediaProviderTest {
     id: String = "book-1",
     chapters: List<PlayingChapter> = emptyList(),
     libraryType: LibraryType? = null,
+    progress: MediaProgress? = null,
   ) = DetailedItem(
     id = id,
     title = "Test Book",
@@ -779,7 +898,7 @@ class LissenMediaProviderTest {
     abstract = null,
     files = emptyList(),
     chapters = chapters,
-    progress = null,
+    progress = progress,
     libraryId = "lib-1",
     libraryType = libraryType,
     localProvided = false,

@@ -6,6 +6,7 @@ import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PlayingChapter
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class EpisodeOrderingEngineTest {
@@ -35,6 +36,29 @@ class EpisodeOrderingEngineTest {
     chapters: List<PlayingChapter>,
     ordering: EpisodeOrdering,
   ): List<String> = EpisodeOrderingEngine.sortChapters(chapters, ordering).map { it.id }
+
+  private fun podcast(
+    chapters: List<PlayingChapter>,
+    progress: MediaProgress?,
+  ) = DetailedItem(
+    id = "podcast-1",
+    title = "Podcast",
+    subtitle = null,
+    author = null,
+    narrator = null,
+    publisher = null,
+    series = emptyList(),
+    year = null,
+    abstract = null,
+    files = emptyList(),
+    chapters = chapters,
+    progress = progress,
+    libraryId = "lib-1",
+    libraryType = LibraryType.PODCAST,
+    localProvided = false,
+    createdAt = 0L,
+    updatedAt = 0L,
+  )
 
   @Test
   fun `sorts by published date ascending with nulls last`() {
@@ -283,5 +307,120 @@ class EpisodeOrderingEngineTest {
       EpisodeOrdering(EpisodeSortKey.FILENAME, ascending = false),
       EpisodeOrdering(EpisodeSortKey.FILENAME, ascending = true).selectKey(EpisodeSortKey.FILENAME),
     )
+  }
+
+  @Nested
+  inner class ProgressIntegrity {
+    private val ascending = EpisodeOrdering(EpisodeSortKey.PUBLISHED_AT, ascending = true)
+    private val descending = EpisodeOrdering(EpisodeSortKey.PUBLISHED_AT, ascending = false)
+
+    private val episodes =
+      EpisodeOrderingEngine.recomputeOffsets(
+        listOf(
+          chapter("e1", duration = 100.0, publishedAt = 100L),
+          chapter("e2", duration = 200.0, publishedAt = 200L),
+          chapter("e3", duration = 300.0, publishedAt = 300L),
+        ),
+      )
+
+    private fun progressAt(
+      currentTime: Double,
+      isFinished: Boolean = false,
+      lastUpdate: Long = 1L,
+    ) = MediaProgress(currentTime = currentTime, isFinished = isFinished, lastUpdate = lastUpdate)
+
+    @Test
+    fun `reorder keeps every episode exactly once with its duration intact`() {
+      val reordered = EpisodeOrderingEngine.reorder(podcast(episodes, null), descending)
+
+      assertEquals(episodes.map { it.id }.toSet(), reordered.chapters.map { it.id }.toSet())
+      assertEquals(episodes.size, reordered.chapters.size)
+      episodes.forEach { original ->
+        assertEquals(original.duration, reordered.chapters.first { it.id == original.id }.duration)
+      }
+    }
+
+    @Test
+    fun `reorder preserves total duration and contiguous offsets`() {
+      val reordered = EpisodeOrderingEngine.reorder(podcast(episodes, null), descending)
+
+      assertEquals(600.0, reordered.chapters.sumOf { it.duration })
+      assertEquals(listOf(0.0, 300.0, 500.0), reordered.chapters.map { it.start })
+      assertEquals(listOf(300.0, 500.0, 600.0), reordered.chapters.map { it.end })
+    }
+
+    @Test
+    fun `rebased progress lands in the same episode at the same offset for every episode`() {
+      episodes.forEach { anchor ->
+        val offset = anchor.duration / 2
+
+        val reordered =
+          EpisodeOrderingEngine.reorder(
+            podcast(episodes, progressAt(anchor.start + offset)),
+            descending,
+          )
+
+        val target = reordered.chapters.first { it.id == anchor.id }
+        assertEquals(target.start + offset, reordered.progress?.currentTime)
+      }
+    }
+
+    @Test
+    fun `progress at an episode boundary stays at the same episode boundary`() {
+      val reordered = EpisodeOrderingEngine.reorder(podcast(episodes, progressAt(100.0)), descending)
+
+      val e2 = reordered.chapters.first { it.id == "e2" }
+      assertEquals(e2.start, reordered.progress?.currentTime)
+    }
+
+    @Test
+    fun `progress at the end of the book maps to the end of the same episode`() {
+      val reordered = EpisodeOrderingEngine.reorder(podcast(episodes, progressAt(600.0, isFinished = true)), descending)
+
+      val e3 = reordered.chapters.first { it.id == "e3" }
+      assertEquals(e3.end, reordered.progress?.currentTime)
+    }
+
+    @Test
+    fun `progress beyond the total duration is clamped to the same episode end`() {
+      val reordered = EpisodeOrderingEngine.reorder(podcast(episodes, progressAt(999.0)), descending)
+
+      val e3 = reordered.chapters.first { it.id == "e3" }
+      assertEquals(e3.end, reordered.progress?.currentTime)
+    }
+
+    @Test
+    fun `round trip reordering restores the original progress and offsets`() {
+      val forward = EpisodeOrderingEngine.reorder(podcast(episodes, progressAt(250.0)), descending)
+      val back = EpisodeOrderingEngine.reorder(forward, ascending)
+
+      assertEquals(episodes.map { it.id }, back.chapters.map { it.id })
+      assertEquals(episodes.map { it.start }, back.chapters.map { it.start })
+      assertEquals(250.0, back.progress?.currentTime)
+    }
+
+    @Test
+    fun `reorder preserves finished flag and last update timestamp`() {
+      val reordered =
+        EpisodeOrderingEngine.reorder(
+          podcast(episodes, progressAt(42.0, isFinished = true, lastUpdate = 12345L)),
+          descending,
+        )
+
+      assertEquals(true, reordered.progress?.isFinished)
+      assertEquals(12345L, reordered.progress?.lastUpdate)
+    }
+
+    @Test
+    fun `reorder of an item without chapters keeps progress untouched`() {
+      val reordered =
+        EpisodeOrderingEngine.reorder(
+          podcast(emptyList(), progressAt(42.0, lastUpdate = 7L)),
+          descending,
+        )
+
+      assertEquals(42.0, reordered.progress?.currentTime)
+      assertEquals(7L, reordered.progress?.lastUpdate)
+    }
   }
 }
