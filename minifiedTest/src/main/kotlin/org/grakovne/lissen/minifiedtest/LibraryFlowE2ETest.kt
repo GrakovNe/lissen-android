@@ -3,7 +3,6 @@ package org.grakovne.lissen.minifiedtest
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiAutomatorTestScope
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -14,14 +13,12 @@ class LibraryFlowE2ETest {
   @Test
   fun library_showsBookGridAfterLogin() = loggedInApp {
     waitForElement(By.res("libraryGrid"))
-    assertFalse(
-      "library grid should contain book items",
-      device.findObjects(By.res(Pattern.compile("bookItem_.*"))).isEmpty(),
-    )
+    // the grid container renders before the first page of books arrives from the server
+    waitForElement(By.res(Pattern.compile("bookItem_.*")), 60_000)
   }
 
   @Test
-  fun library_searchFiltersBooksAndClearRestores() = loggedInApp {
+  fun library_searchFiltersBooksAndBackRestores() = loggedInApp {
     waitForElement(By.res("libraryGrid"))
     val query = firstBookTitle().take(6)
     clickElement(By.desc("Search"))
@@ -30,7 +27,11 @@ class LibraryFlowE2ETest {
     val results = device.findObjects(By.res(Pattern.compile("bookItem_.*")))
     assertTrue("search for '$query' should return results", results.isNotEmpty())
     clickElement(By.desc("Clear"))
-    // clearing the query re-fetches the whole library; on a slow link this can exceed the
+    // the clear button empties the field but keeps the user in search mode, and a blank
+    // query deliberately has no results, so the grid goes empty rather than showing everything
+    waitUntilAbsent(By.res(Pattern.compile("bookItem_.*")), 15_000)
+    clickElement(By.desc("Back"))
+    // leaving search re-fetches the whole library; on a slow link this can exceed the
     // default timeout, so give the restore a wider budget
     waitForElement(By.res(Pattern.compile("bookItem_.*")), 90_000)
   }
@@ -69,19 +70,24 @@ class LibraryFlowE2ETest {
     clickElement(By.text("Downloaded only"))
     pressBack()
     waitForElement(By.res("libraryGrid"))
-    assertFalse(device.findObjects(By.res(Pattern.compile("bookItem_.*"))).isEmpty())
+    waitForElement(By.res(Pattern.compile("bookItem_.*")), 90_000)
   }
 
   @Test
   fun library_openingBook_showsPlayer() = loggedInApp {
     waitForElement(By.res("libraryGrid"))
-    device.findObjects(By.res(Pattern.compile("bookItem_.*"))).first().click()
+    waitForElement(By.res(Pattern.compile("bookItem_.*")), 60_000).click()
     waitForElement(By.res("playerScreen"))
   }
 
   private fun UiAutomatorTestScope.firstBookTitle(): String {
-    val item = device.findObjects(By.res(Pattern.compile("bookItem_.*"))).first()
-    val textNodes = item.findObjects(By.text(Pattern.compile(".+")))
-    return textNodes.first().text.toString()
+    val item = waitForElement(By.res(Pattern.compile("bookItem_.*")), 60_000)
+    val deadline = System.currentTimeMillis() + 10_000
+    while (System.currentTimeMillis() < deadline) {
+      val title = item.findObjects(By.text(Pattern.compile(".+"))).firstOrNull()?.text?.toString()
+      if (!title.isNullOrEmpty()) return title
+      Thread.sleep(300)
+    }
+    throw AssertionError("the first book item has no title text")
   }
 }

@@ -43,6 +43,7 @@ import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.domain.SleepTimerSettings
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.slider.CommonSlider
+import org.grakovne.lissen.ui.screens.settings.composable.DefaultTimerSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
 import org.grakovne.lissen.viewmodel.SettingsViewModel
@@ -51,6 +52,17 @@ import kotlin.math.roundToInt
 @Composable
 fun SleepTimerSettingsScreen(onBack: () -> Unit) {
   val viewModel: SettingsViewModel = hiltViewModel()
+  SleepTimerSettingsScreenContent(
+    viewModel = viewModel,
+    onBack = onBack,
+  )
+}
+
+@Composable
+internal fun SleepTimerSettingsScreenContent(
+  viewModel: SettingsViewModel,
+  onBack: () -> Unit,
+) {
   val fadeEnabled by viewModel.sleepTimerFadeEnabled.collectAsState()
   val fadeSeconds by viewModel.sleepTimerFadeSeconds.collectAsState()
 
@@ -87,6 +99,8 @@ fun SleepTimerSettingsScreen(onBack: () -> Unit) {
           enabled = fadeEnabled,
           onClicked = { durationExpanded = true },
         )
+
+        DefaultTimerSettingsComposable(viewModel)
       }
     },
   )
