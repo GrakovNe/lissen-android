@@ -17,27 +17,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.valentinilk.shimmer.shimmer
+import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.LibraryType
-import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
 
 @Composable
 fun PlayingQueuePlaceholderComposable(
   libraryType: LibraryType,
   modifier: Modifier = Modifier,
 ) {
-  val context = LocalContext.current
-
   Column(modifier = modifier.padding(horizontal = 16.dp)) {
     Text(
-      text = provideNowPlayingTitle(libraryType, context),
-      fontSize = typography.titleMedium.fontSize * 1.25f,
+      text = stringResource(R.string.player_toc_title),
+      style = typography.titleMedium,
       fontWeight = FontWeight.SemiBold,
       color = MaterialTheme.colorScheme.primary,
-      modifier = Modifier.padding(horizontal = 6.dp),
+      modifier = Modifier.padding(horizontal = 8.dp),
     )
 
     Spacer(modifier = Modifier.height(12.dp))

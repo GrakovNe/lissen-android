@@ -4,8 +4,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.outlined.CloudDownload
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.SlowMotionVideo
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.CircularProgressIndicator
@@ -61,8 +61,7 @@ fun NavigationBarComposable(
   val timerOption by playerViewModel.timerOption.collectAsState()
   val timerRemaining by playerViewModel.timerRemaining.collectAsState()
   val playbackSpeed by playerViewModel.playbackSpeed.collectAsState()
-  val playingQueueExpanded by playerViewModel.playingQueueExpanded.collectAsState()
-  val hasEpisodes = book.chapters.isNotEmpty()
+  val episodeOrdering by playerViewModel.episodeOrdering.collectAsState()
 
   val isMetadataCached by remember(book.id) { contentCachingModelView.provideCacheState(book.id) }.collectAsState(initial = false)
   val totalPosition by playerViewModel.totalPosition.collectAsState()
@@ -71,6 +70,7 @@ fun NavigationBarComposable(
   var playbackSpeedExpanded by remember { mutableStateOf(false) }
   var timerExpanded by remember { mutableStateOf(false) }
   var downloadsExpanded by remember { mutableStateOf(false) }
+  var settingsExpanded by remember { mutableStateOf(false) }
 
   val scope = rememberCoroutineScope()
 
@@ -87,42 +87,6 @@ fun NavigationBarComposable(
       val labelStyle = typography.labelSmall.copy(fontSize = 10.sp)
 
       NavigationBarItem(
-        enabled = hasEpisodes,
-        icon = {
-          Icon(
-            Icons.AutoMirrored.Rounded.QueueMusic,
-            contentDescription =
-              when (libraryType) {
-                LibraryType.LIBRARY -> stringResource(R.string.player_screen_chapter_list_navigation_library)
-                LibraryType.PODCAST -> stringResource(R.string.player_screen_chapter_list_navigation_podcast)
-                LibraryType.UNKNOWN -> stringResource(R.string.player_screen_chapter_list_navigation_items)
-              },
-            modifier = Modifier.size(iconSize),
-          )
-        },
-        label = {
-          Text(
-            text =
-              when (libraryType) {
-                LibraryType.LIBRARY -> stringResource(R.string.player_screen_chapter_list_navigation_library)
-                LibraryType.PODCAST -> stringResource(R.string.player_screen_chapter_list_navigation_podcast)
-                LibraryType.UNKNOWN -> stringResource(R.string.player_screen_chapter_list_navigation_items)
-              },
-            style = labelStyle,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-          )
-        },
-        selected = playingQueueExpanded,
-        onClick = { playerViewModel.togglePlayingQueue() },
-        colors =
-          NavigationBarItemDefaults.colors(
-            selectedIconColor = colorScheme.primary,
-            indicatorColor = colorScheme.surfaceContainer,
-          ),
-      )
-
-      NavigationBarItem(
         icon = {
           DownloadProgressIcon(
             cacheState = cacheProgress,
@@ -137,7 +101,6 @@ fun NavigationBarComposable(
             overflow = TextOverflow.Ellipsis,
           )
         },
-        enabled = hasEpisodes,
         selected = false,
         onClick = { downloadsExpanded = true },
         colors =
@@ -148,7 +111,6 @@ fun NavigationBarComposable(
       )
 
       NavigationBarItem(
-        enabled = hasEpisodes,
         icon = {
           Icon(
             Icons.Outlined.SlowMotionVideo,
@@ -209,7 +171,6 @@ fun NavigationBarComposable(
             }
           }
         },
-        enabled = hasEpisodes,
         selected = false,
         onClick = { timerExpanded = true },
         colors =
@@ -218,6 +179,33 @@ fun NavigationBarComposable(
             indicatorColor = colorScheme.surfaceContainer,
           ),
       )
+
+      if (libraryType == LibraryType.PODCAST) {
+        NavigationBarItem(
+          icon = {
+            Icon(
+              Icons.Outlined.Settings,
+              contentDescription = stringResource(R.string.player_tile_settings),
+              modifier = Modifier.size(iconSize),
+            )
+          },
+          label = {
+            Text(
+              text = stringResource(R.string.player_tile_settings),
+              style = labelStyle,
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis,
+            )
+          },
+          selected = false,
+          onClick = { settingsExpanded = true },
+          colors =
+            NavigationBarItemDefaults.colors(
+              selectedIconColor = colorScheme.primary,
+              indicatorColor = colorScheme.surfaceContainer,
+            ),
+        )
+      }
 
       if (playbackSpeedExpanded) {
         PlaybackSpeedComposable(
@@ -279,6 +267,14 @@ fun NavigationBarComposable(
               }
           },
           onDismissRequest = { downloadsExpanded = false },
+        )
+      }
+
+      if (settingsExpanded) {
+        ItemSettingsSheet(
+          ordering = episodeOrdering,
+          onOrderingSelected = { playerViewModel.setEpisodeOrdering(it) },
+          onDismissRequest = { settingsExpanded = false },
         )
       }
     }

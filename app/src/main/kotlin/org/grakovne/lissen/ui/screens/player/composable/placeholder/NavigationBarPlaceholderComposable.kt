@@ -4,8 +4,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.outlined.CloudDownload
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.SlowMotionVideo
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -42,41 +42,6 @@ fun NavigationBarPlaceholderComposable(
     ) {
       val iconSize = 24.dp
       val labelStyle = typography.labelSmall.copy(fontSize = 10.sp)
-
-      NavigationBarItem(
-        icon = {
-          Icon(
-            Icons.AutoMirrored.Rounded.QueueMusic,
-            contentDescription =
-              when (libraryType) {
-                LibraryType.LIBRARY -> stringResource(R.string.player_screen_chapter_list_navigation_library)
-                LibraryType.PODCAST -> stringResource(R.string.player_screen_chapter_list_navigation_podcast)
-                LibraryType.UNKNOWN -> stringResource(R.string.player_screen_chapter_list_navigation_items)
-              },
-            modifier = Modifier.size(iconSize),
-          )
-        },
-        label = {
-          Text(
-            text =
-              when (libraryType) {
-                LibraryType.LIBRARY -> stringResource(R.string.player_screen_chapter_list_navigation_library)
-                LibraryType.PODCAST -> stringResource(R.string.player_screen_chapter_list_navigation_podcast)
-                LibraryType.UNKNOWN -> stringResource(R.string.player_screen_chapter_list_navigation_items)
-              },
-            style = labelStyle,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-          )
-        },
-        selected = false,
-        onClick = { },
-        colors =
-          NavigationBarItemDefaults.colors(
-            selectedIconColor = colorScheme.primary,
-            indicatorColor = colorScheme.surfaceContainer,
-          ),
-      )
 
       NavigationBarItem(
         icon = {
@@ -128,6 +93,33 @@ fun NavigationBarPlaceholderComposable(
             indicatorColor = colorScheme.surfaceContainer,
           ),
       )
+
+      if (libraryType == LibraryType.PODCAST) {
+        NavigationBarItem(
+          icon = {
+            Icon(
+              Icons.Outlined.Settings,
+              contentDescription = stringResource(R.string.player_tile_settings),
+              modifier = Modifier.size(iconSize),
+            )
+          },
+          label = {
+            Text(
+              text = stringResource(R.string.player_tile_settings),
+              style = labelStyle,
+              maxLines = 1,
+              overflow = TextOverflow.Ellipsis,
+            )
+          },
+          selected = false,
+          onClick = { },
+          colors =
+            NavigationBarItemDefaults.colors(
+              selectedIconColor = colorScheme.primary,
+              indicatorColor = colorScheme.surfaceContainer,
+            ),
+        )
+      }
 
       NavigationBarItem(
         icon = {

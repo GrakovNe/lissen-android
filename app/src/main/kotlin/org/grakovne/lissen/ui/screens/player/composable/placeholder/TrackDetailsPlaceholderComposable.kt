@@ -4,10 +4,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -18,7 +16,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -45,22 +42,10 @@ fun TrackDetailsPlaceholderComposable(
   bookSubtitle: String?,
   modifier: Modifier = Modifier,
 ) {
-  val configuration = LocalConfiguration.current
-  val maxImageHeight = configuration.screenHeightDp.dp * 0.33f
-
   Column(
     horizontalAlignment = Alignment.CenterHorizontally,
     modifier = modifier,
   ) {
-    BookCoverPlaceholder(
-      modifier =
-        Modifier
-          .heightIn(max = maxImageHeight)
-          .aspectRatio(1f),
-    )
-
-    Spacer(modifier = Modifier.height(12.dp))
-
     Text(
       text = bookTitle,
       style = typography.headlineSmall,

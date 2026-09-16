@@ -6,9 +6,13 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import org.grakovne.lissen.common.EpisodeOrdering
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
@@ -38,18 +42,27 @@ class PlayerViewModel
     val timerOption: StateFlow<TimerOption?> = mediaRepository.timerOption
     val timerRemaining: StateFlow<Long?> = mediaRepository.timerRemaining
 
-    private val _playingQueueExpanded = MutableStateFlow(false)
-    val playingQueueExpanded: StateFlow<Boolean> = _playingQueueExpanded.asStateFlow()
+    private val _tocState = MutableStateFlow(TocState.COLLAPSED)
+    val tocState: StateFlow<TocState> = _tocState.asStateFlow()
+
+    val playingQueueExpanded: StateFlow<Boolean> =
+      _tocState
+        .map { it != TocState.COLLAPSED }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    val searchRequested: StateFlow<Boolean> =
+      _tocState
+        .map { it == TocState.SEARCH }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     val isPlaybackReady: StateFlow<Boolean> = mediaRepository.isPlaybackReady
     val playbackSpeed: StateFlow<Float> = mediaRepository.playbackSpeed
     val preparingError: StateFlow<Boolean> = mediaRepository.mediaPreparingError
 
-    private val _searchRequested = MutableStateFlow(false)
-    val searchRequested: StateFlow<Boolean> = _searchRequested.asStateFlow()
-
     private val _searchToken = MutableStateFlow(EMPTY_SEARCH)
     val searchToken: StateFlow<String> = _searchToken.asStateFlow()
+
+    val episodeOrdering: StateFlow<EpisodeOrdering> = mediaRepository.episodeOrdering
 
     val isPlaying: StateFlow<Boolean> = mediaRepository.isPlaying
 
@@ -91,7 +104,9 @@ class PlayerViewModel
     }
 
     fun expandPlayingQueue() {
-      _playingQueueExpanded.value = true
+      if (_tocState.value == TocState.COLLAPSED) {
+        _tocState.value = TocState.EXPANDED
+      }
     }
 
     fun setTimer(option: TimerOption?) {
@@ -99,20 +114,32 @@ class PlayerViewModel
       mediaRepository.updateTimer(option)
     }
 
+    fun setEpisodeOrdering(ordering: EpisodeOrdering) {
+      Timber.d("User action: setEpisodeOrdering ordering=$ordering")
+      mediaRepository.updateEpisodeOrdering(ordering)
+    }
+
     fun collapsePlayingQueue() {
-      _playingQueueExpanded.value = false
+      _tocState.value = TocState.COLLAPSED
+      _searchToken.value = EMPTY_SEARCH
     }
 
     fun togglePlayingQueue() {
-      _playingQueueExpanded.value = !_playingQueueExpanded.value
+      _tocState.value =
+        when (_tocState.value) {
+          TocState.COLLAPSED -> TocState.EXPANDED
+          else -> TocState.COLLAPSED
+        }
     }
 
     fun requestSearch() {
-      _searchRequested.value = true
+      _tocState.value = TocState.SEARCH
     }
 
     fun dismissSearch() {
-      _searchRequested.value = false
+      if (_tocState.value == TocState.SEARCH) {
+        _tocState.value = TocState.EXPANDED
+      }
       _searchToken.value = EMPTY_SEARCH
     }
 
@@ -159,6 +186,11 @@ class PlayerViewModel
         val index = book.value?.chapters?.indexOf(chapter) ?: -1
         Timber.d("User action: setChapter '${chapter.title}' index=$index")
         mediaRepository.setChapter(index)
+
+        if (_tocState.value == TocState.SEARCH) {
+          _tocState.value = TocState.EXPANDED
+          _searchToken.value = EMPTY_SEARCH
+        }
       }
     }
 
@@ -196,3 +228,9 @@ class PlayerViewModel
       private const val EMPTY_SEARCH = ""
     }
   }
+
+enum class TocState {
+  COLLAPSED,
+  EXPANDED,
+  SEARCH,
+}

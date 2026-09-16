@@ -73,7 +73,7 @@ fun ChapterSearchActionComposable(onSearchRequested: (String) -> Unit) {
         decorationBox = { innerTextField ->
           if (searchText.value.isEmpty()) {
             Text(
-              text = stringResource(R.string.chapter_search_hint),
+              text = stringResource(R.string.player_toc_search_hint),
               color = colorScheme.onSurfaceVariant,
               style = typography.bodyLarge,
             )

@@ -6,14 +6,17 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
@@ -24,6 +27,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
@@ -54,6 +59,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
@@ -65,7 +74,6 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.components.withScrollbar
-import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
 import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
@@ -124,8 +132,6 @@ fun PlayingQueueComposable(
 
   val expanded = playingQueueExpanded || forceExpanded
 
-  val showQueueHeader = playingQueueExpanded.not() || forceExpanded
-
   val density = LocalDensity.current
 
   var collapsedPlayingQueueHeight by remember { mutableIntStateOf(0) }
@@ -149,11 +155,21 @@ fun PlayingQueueComposable(
     animationSpec = tween(durationMillis = 300),
   )
 
-  val fontSize by animateFloatAsState(
-    targetValue = typography.titleMedium.fontSize.value * 1.25f,
-    animationSpec = tween(durationMillis = 500),
-    label = "playing_queue_font_size",
-  )
+  val headerContentDescription =
+    stringResource(
+      when (playingQueueExpanded) {
+        true -> R.string.player_toc_collapse
+        false -> R.string.player_toc_expand
+      },
+    )
+
+  val headerStateDescription =
+    stringResource(
+      when (playingQueueExpanded) {
+        true -> R.string.player_toc_state_expanded
+        false -> R.string.player_toc_state_collapsed
+      },
+    )
 
   var showCollapseFab by remember { mutableStateOf(false) }
 
@@ -243,17 +259,52 @@ fun PlayingQueueComposable(
             }
           }.padding(horizontal = 16.dp),
     ) {
-      if (showQueueHeader) {
+      Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier =
+          Modifier
+            .fillMaxWidth()
+            .height(48.dp)
+            .let {
+              when (forceExpanded) {
+                true -> {
+                  it
+                }
+
+                false -> {
+                  it
+                    .semantics {
+                      contentDescription = headerContentDescription
+                      stateDescription = headerStateDescription
+                    }.clickable(
+                      role = Role.Button,
+                    ) { viewModel.togglePlayingQueue() }
+                }
+              }
+            }.padding(horizontal = 24.dp),
+      ) {
         Text(
-          text = provideNowPlayingTitle(libraryType, context),
-          fontSize = fontSize.sp,
+          text = stringResource(R.string.player_toc_title),
+          style = typography.titleMedium,
           fontWeight = FontWeight.SemiBold,
           color = colorScheme.primary,
-          modifier = Modifier.padding(horizontal = 6.dp),
+          modifier = Modifier.weight(1f),
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        if (!forceExpanded) {
+          Icon(
+            imageVector =
+              when (playingQueueExpanded) {
+                true -> Icons.Filled.ArrowDropUp
+                false -> Icons.Filled.ArrowDropDown
+              },
+            contentDescription = null,
+            tint = colorScheme.primary,
+          )
+        }
       }
+
+      Spacer(modifier = Modifier.height(12.dp))
 
       LazyColumn(
         contentPadding =

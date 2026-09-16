@@ -3,10 +3,8 @@ package org.grakovne.lissen.ui.screens.player.composable
 import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme.colorScheme
@@ -20,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -69,31 +66,16 @@ fun TrackDetailsComposable(
   libraryType: LibraryType,
   viewModel: PlayerViewModel,
   modifier: Modifier = Modifier,
-  imageLoader: ImageLoader,
 ) {
   val currentTrackIndex by viewModel.currentChapterIndex.collectAsState()
   val book by viewModel.book.collectAsState()
 
   val context = LocalContext.current
 
-  val configuration = LocalConfiguration.current
-  val maxImageHeight = configuration.screenHeightDp.dp * 0.33f
-
   Column(
     horizontalAlignment = Alignment.CenterHorizontally,
     modifier = modifier,
   ) {
-    BookCover(
-      book = book,
-      imageLoader = imageLoader,
-      modifier =
-        Modifier
-          .heightIn(max = maxImageHeight)
-          .aspectRatio(1f),
-    )
-
-    Spacer(modifier = Modifier.height(12.dp))
-
     Text(
       text = book?.title.orEmpty(),
       style = typography.headlineSmall,

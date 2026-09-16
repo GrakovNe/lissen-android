@@ -13,14 +13,15 @@ import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
@@ -47,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
@@ -75,7 +77,6 @@ import org.grakovne.lissen.ui.screens.player.composable.NavigationBarComposable
 import org.grakovne.lissen.ui.screens.player.composable.PlayingQueueComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackControlComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackDetailsComposable
-import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
 import org.grakovne.lissen.ui.screens.player.composable.fallback.PlayingQueueFallbackComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.BookCoverPlaceholder
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.ChapterNumberPlaceholder
@@ -99,8 +100,6 @@ fun PlayerScreen(
   bookSubtitle: String?,
   playInstantly: Boolean,
 ) {
-  val context = LocalContext.current
-
   val twoPane = isWideLayout()
 
   val cachingModelView: CachingModelView = hiltViewModel()
@@ -140,16 +139,7 @@ fun PlayerScreen(
   val preferredLibraryType by libraryViewModel.preferredLibraryType.collectAsState()
   val libraryType = playingBook?.libraryType ?: preferredLibraryType
 
-  val screenTitle =
-    when {
-      playingQueueExpanded && twoPane.not() -> {
-        provideNowPlayingTitle(libraryType, context)
-      }
-
-      else -> {
-        stringResource(R.string.player_screen_title)
-      }
-    }
+  val screenTitle = stringResource(R.string.player_screen_title)
 
   fun stepBack() {
     when {
@@ -208,7 +198,7 @@ fun PlayerScreen(
           val bookActionsVisible = playingQueueExpanded.not() || twoPane
 
           AnimatedContent(
-            targetState = searchRequested,
+            targetState = searchRequested && twoPane,
             label = "library_action_animation",
             transitionSpec = {
               fadeIn(animationSpec = keyframes { durationMillis = 150 }) togetherWith
@@ -274,16 +264,26 @@ fun PlayerScreen(
           }
         },
         title = {
-          Text(
-            text = screenTitle,
-            style = titleTextStyle,
-            color = colorScheme.onSurface,
-            maxLines = 1,
-            modifier =
-              Modifier
-                .fillMaxWidth()
-                .semantics { heading() },
-          )
+          when {
+            searchRequested && twoPane.not() -> {
+              ChapterSearchActionComposable(
+                onSearchRequested = { playerViewModel.updateSearch(it) },
+              )
+            }
+
+            else -> {
+              Text(
+                text = screenTitle,
+                style = titleTextStyle,
+                color = colorScheme.onSurface,
+                maxLines = 1,
+                modifier =
+                  Modifier
+                    .fillMaxWidth()
+                    .semantics { heading() },
+              )
+            }
+          }
         },
         navigationIcon = {
           IconButton(
@@ -331,7 +331,6 @@ fun PlayerScreen(
             bookTitle = bookTitle,
             playerViewModel = playerViewModel,
             libraryType = libraryType,
-            imageLoader = imageLoader,
             settingsViewModel = settingsViewModel,
             modifier =
               Modifier
@@ -366,16 +365,22 @@ fun PlayerScreen(
             enter = expandVertically(animationSpec = tween(400)),
             exit = shrinkVertically(animationSpec = tween(400)),
           ) {
-            PlayerArtworkAndControls(
+            PlayerCover(
               isPlaybackReady = isPlaybackReady,
-              bookTitle = bookTitle,
-              bookSubtitle = bookSubtitle,
-              playerViewModel = playerViewModel,
+              playingBook = playingBook,
               imageLoader = imageLoader,
-              libraryType = libraryType,
-              settingsViewModel = settingsViewModel,
             )
           }
+
+          PlayerArtworkAndControls(
+            isPlaybackReady = isPlaybackReady,
+            bookTitle = bookTitle,
+            bookSubtitle = bookSubtitle,
+            playerViewModel = playerViewModel,
+            imageLoader = imageLoader,
+            libraryType = libraryType,
+            settingsViewModel = settingsViewModel,
+          )
 
           Spacer(modifier = Modifier.height(6.dp))
 
@@ -410,6 +415,31 @@ fun PlayerScreen(
 }
 
 @Composable
+private fun PlayerCover(
+  isPlaybackReady: Boolean,
+  playingBook: DetailedItem?,
+  imageLoader: ImageLoader,
+) {
+  val configuration = LocalConfiguration.current
+  val maxImageHeight = configuration.screenHeightDp.dp * 0.33f
+
+  val coverModifier =
+    Modifier
+      .heightIn(max = maxImageHeight)
+      .aspectRatio(1f)
+
+  if (isPlaybackReady) {
+    BookCover(
+      book = playingBook,
+      imageLoader = imageLoader,
+      modifier = coverModifier,
+    )
+  } else {
+    BookCoverPlaceholder(modifier = coverModifier)
+  }
+}
+
+@Composable
 private fun PlayerArtworkAndControls(
   isPlaybackReady: Boolean,
   bookTitle: String,
@@ -429,7 +459,6 @@ private fun PlayerArtworkAndControls(
     } else {
       TrackDetailsComposable(
         viewModel = playerViewModel,
-        imageLoader = imageLoader,
         libraryType = libraryType,
       )
     }
@@ -456,7 +485,6 @@ private fun PlayerArtworkAndControlsWide(
   bookTitle: String,
   playerViewModel: PlayerViewModel,
   libraryType: LibraryType,
-  imageLoader: ImageLoader,
   settingsViewModel: SettingsViewModel,
   modifier: Modifier = Modifier,
 ) {
@@ -468,32 +496,6 @@ private fun PlayerArtworkAndControlsWide(
     verticalArrangement = Arrangement.Center,
     modifier = modifier.testTag("playerArtworkPane"),
   ) {
-    BoxWithConstraints(
-      modifier =
-        Modifier
-          .weight(1f, fill = false)
-          .fillMaxWidth(),
-      contentAlignment = Alignment.Center,
-    ) {
-      val side = minOf(maxWidth, maxHeight)
-
-      if (side >= 110.dp) {
-        if (isPlaybackReady) {
-          BookCover(
-            book = playingBook,
-            imageLoader = imageLoader,
-            modifier = Modifier.size(side),
-          )
-        } else {
-          BookCoverPlaceholder(
-            modifier = Modifier.size(side),
-          )
-        }
-      }
-    }
-
-    Spacer(modifier = Modifier.height(8.dp))
-
     Text(
       text = playingBook?.title ?: bookTitle,
       style = typography.titleMedium,
