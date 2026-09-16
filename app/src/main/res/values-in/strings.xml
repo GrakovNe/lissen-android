@@ -10,12 +10,7 @@
     <string name="login_screen_password_input">Sandi</string>
     <string name="login_screen_connect_button_text">Hubungkan</string>
     <string name="player_screen_playback_speed_navigation">Kecepatan</string>
-    <string name="player_screen_chapter_list_navigation_library">Segmen</string>
-    <string name="player_screen_chapter_list_navigation_podcast">Episode</string>
-    <string name="player_screen_chapter_list_navigation_items">Item</string>
     <string name="player_screen_library_playing_title">Memutar segmen</string>
-    <string name="player_screen_podcast_playing_title">Memutar episode</string>
-    <string name="player_screen_items_playing_title">Memutar item</string>
     <string name="player_screen_now_playing_title_chapter_of">Segmen %1$d dari %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">Episode %1$d dari %2$s</string>
     <string name="player_screen_now_playing_title_item_of">Item %1$d dari %2$s</string>
@@ -60,7 +55,6 @@
     <string name="timer_option_disable_timer">Nonaktifkan Timer</string>
     <string name="timer_title">Timer Tidur</string>
     <string name="player_screen_timer_navigation">Timer</string>
-    <string name="chapter_search_hint">Cari berdasarkan judul segmen</string>
     <string name="widget_placeholder_text">Ketuk untuk buka aplikasi</string>
     <string name="the_offline_podcasts_is_empty">Belum ada podcast tersimpan</string>
     <string name="player_screen_downloads_navigation">Unduhan</string>

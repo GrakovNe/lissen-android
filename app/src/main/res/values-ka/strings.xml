@@ -10,10 +10,7 @@
     <string name="login_screen_password_input">პაროლი</string>
     <string name="login_screen_connect_button_text">დაკავშირება</string>
     <string name="player_screen_playback_speed_navigation">სიჩქარე</string>
-    <string name="player_screen_chapter_list_navigation_library">თავები</string>
     <string name="player_screen_library_playing_title">თავების დაკვრა</string>
-    <string name="player_screen_podcast_playing_title">ეპიზოდების დაკვრა</string>
-    <string name="player_screen_items_playing_title">ელემენტების დაკვრა</string>
     <string name="player_screen_now_playing_title_chapter_of">თავი %1$d %2$s-დან</string>
     <string name="player_screen_now_playing_title_podcast_of">ეპიზოდი %1$d %2$s-დან</string>
     <string name="player_screen_now_playing_title_item_of">ელემენტი %1$d %2$s-დან</string>
@@ -56,7 +53,6 @@
     <string name="timer_option_disable_timer">ტაიმერის გამორთვა</string>
     <string name="timer_title">ძილის ტაიმერი</string>
     <string name="player_screen_timer_navigation">ტაიმერი</string>
-    <string name="chapter_search_hint">ძიება თავის სათაურის მიხედვით</string>
     <string name="widget_placeholder_text">დააჭირეთ აპლიკაციის გასახსნელად</string>
     <string name="the_offline_podcasts_is_empty">შენახული პოდკასტები არ არის</string>
     <string name="player_screen_downloads_navigation">ჩამოტვირთვები</string>

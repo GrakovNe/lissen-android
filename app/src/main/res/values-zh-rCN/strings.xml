@@ -10,15 +10,12 @@
     <string name="hint_server_url_input">服务器 URL</string>
     <string name="login_screen_connect_button_text">连接</string>
     <string name="player_screen_playback_speed_navigation">播放速度</string>
-    <string name="player_screen_chapter_list_navigation_library">章节</string>
     <string name="player_screen_library_playing_title">播放章节</string>
     <string name="settings_screen_title">偏好设置</string>
     <string name="login_error_connection_error">连接错误</string>
     <string name="no_internet_connection">没有互联网连接</string>
     <string name="playback_speed_title">播放速度</string>
     <string name="library_screen_podcast_title">播客</string>
-    <string name="player_screen_podcast_playing_title">播放剧集</string>
-    <string name="player_screen_items_playing_title">播放项目</string>
     <string name="the_offline_library_is_empty">无保存书籍</string>
     <string name="color_scheme_follow_system">系统</string>
     <string name="playing_item_details_author">作者</string>
@@ -30,7 +27,6 @@
     <plurals name="timer_option_after_time">
         <item quantity="other">%d 分钟</item>
     </plurals>
-    <string name="chapter_search_hint">按章节搜索</string>
     <string name="downloads_menu_download_podcast">下载播客</string>
     <string name="the_offline_podcasts_is_empty">无保存播客</string>
     <string name="player_screen_downloads_navigation">下载</string>
@@ -128,8 +124,6 @@
     <string name="settings_screen_crash_report_description">应用崩溃时发送报告</string>
     <string name="settings_screen_advanced_preferences_description">诊断、日志及其他选项</string>
     <string name="login_error_lissen_not_found">未找到该 URL，请检查你的服务器设置</string>
-    <string name="player_screen_chapter_list_navigation_podcast">剧集</string>
-    <string name="player_screen_chapter_list_navigation_items">项目</string>
     <string name="settings_download_automatically_title">自动下载</string>
     <string name="download_settings_title">下载</string>
     <string name="download_settings_description">下载及内容管理</string>

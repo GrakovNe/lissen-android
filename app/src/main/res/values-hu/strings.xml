@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="player_screen_chapter_list_navigation_library">Fejezetek</string>
     <string name="library_screen_library_title">Könyvtár</string>
     <string name="hint_server_url_input">Kiszolgáló URL</string>
     <string name="library_screen_continue_listening_title">Hallgatás folytatása</string>
@@ -12,8 +11,6 @@
     <string name="login_screen_connect_button_text">Csatlakozás</string>
     <string name="player_screen_playback_speed_navigation">Sebesség</string>
     <string name="player_screen_library_playing_title">Fejezetek lejátszása</string>
-    <string name="player_screen_items_playing_title">Elemek lejátszása</string>
-    <string name="player_screen_podcast_playing_title">Részek lejátszása</string>
     <string name="player_screen_now_playing_title_chapter_of">%1$d fejezet a(z) %2$s fejezetből</string>
     <string name="player_screen_now_playing_title_podcast_of">%1$d rész a(z) %2$s részből</string>
     <string name="player_screen_now_playing_title_item_of">%1$d elem a(z) %2$s elemből</string>
@@ -56,7 +53,6 @@
     <string name="timer_option_disable_timer">Időzítő kikapcsolása</string>
     <string name="timer_title">Elalvás időzítő</string>
     <string name="player_screen_timer_navigation">Időzítő</string>
-    <string name="chapter_search_hint">Fejezetcím szerinti keresés</string>
     <string name="widget_placeholder_text">Kattints az alkalmazás megnyitásához</string>
     <string name="the_offline_podcasts_is_empty">Nincs még mentett podcast</string>
     <string name="player_screen_downloads_navigation">Letöltések</string>
@@ -129,8 +125,6 @@
     <string name="settings_screen_advanced_preferences_description">Diagnosztika, naplók és egyéb beállítások</string>
     <string name="settings_screen_crash_report_title">Összeomlási jelentések</string>
     <string name="settings_screen_crash_report_description">Jelentések küldése, ha az alkalmazás összeomlik</string>
-    <string name="player_screen_chapter_list_navigation_podcast">Epizódok</string>
-    <string name="player_screen_chapter_list_navigation_items">Elemek</string>
     <string name="downloads_menu_download_option_disable">Kikapcsolva</string>
     <string name="settings_download_automatically_title">Automatikus lrtöltés</string>
     <string name="download_settings_title">Letöltések</string>

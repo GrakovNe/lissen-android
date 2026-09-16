@@ -10,10 +10,7 @@
     <string name="login_screen_password_input">Mot de passe</string>
     <string name="login_screen_connect_button_text">Se Connecter</string>
     <string name="player_screen_playback_speed_navigation">Vitesse</string>
-    <string name="player_screen_chapter_list_navigation_library">Chapitres</string>
     <string name="player_screen_library_playing_title">Lecture des chapitres</string>
-    <string name="player_screen_podcast_playing_title">Lecture des épisodes</string>
-    <string name="player_screen_items_playing_title">Lecture des éléments</string>
     <string name="player_screen_now_playing_title_chapter_of">Chapitre %1$d de %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">Episode %1$d de %2$s</string>
     <string name="player_screen_now_playing_title_item_of">Élément %1$d de %2$s</string>
@@ -57,7 +54,6 @@
     <string name="timer_option_disable_timer">Désactiver le Timer</string>
     <string name="timer_title">Mise en veille programmée</string>
     <string name="player_screen_timer_navigation">Mise en veille</string>
-    <string name="chapter_search_hint">Rechercher par titre de chapitre</string>
     <string name="widget_placeholder_text">Cliquer pour ouvrir l\'application</string>
     <string name="the_offline_podcasts_is_empty">Pas de podcasts enregistrés pour l\'instant</string>
     <string name="player_screen_downloads_navigation">Téléchargements</string>
@@ -116,8 +112,6 @@
     <string name="notification_content_caching_title">Le contenu est mis en cache</string>
     <string name="login_error_lissen_auth_scheme_must_be_whitelisted">Le schéma %1$s://%2$s n\'est pas autorisé dans les paramètres d\'URI de redirection du serveur</string>
     <string name="settings_screen_library_ordering_modification_date_option">Date de mise à jour</string>
-    <string name="player_screen_chapter_list_navigation_podcast">Épisodes</string>
-    <string name="player_screen_chapter_list_navigation_items">Éléments</string>
     <string name="settings_screen_connection_type">Type de connexion</string>
     <string name="settings_screen_connection_local">Réseau local</string>
     <string name="settings_screen_connection_external">Réseau externe</string>

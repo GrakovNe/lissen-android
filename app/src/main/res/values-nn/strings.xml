@@ -9,12 +9,7 @@
     <string name="login_screen_password_input">Passord</string>
     <string name="login_screen_connect_button_text">Koble til</string>
     <string name="player_screen_playback_speed_navigation">Kobler til server</string>
-    <string name="player_screen_chapter_list_navigation_library">Kapitler</string>
-    <string name="player_screen_chapter_list_navigation_podcast">Episoder</string>
-    <string name="player_screen_chapter_list_navigation_items">Varer</string>
     <string name="player_screen_library_playing_title">Spille kapitler</string>
-    <string name="player_screen_podcast_playing_title">Spille av episoder</string>
-    <string name="player_screen_items_playing_title">Liste over elementer</string>
     <string name="player_screen_now_playing_title_chapter_of">Kapittel %1$d av %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">Episode %1$d av %2$s</string>
     <string name="player_screen_now_playing_title_item_of">Element %1$d av %2$s</string>
@@ -125,7 +120,6 @@
     <string name="timer_option_disable_timer">Deaktiver tidtaker</string>
     <string name="timer_title">Søvntimer</string>
     <string name="player_screen_timer_navigation">Timer</string>
-    <string name="chapter_search_hint">Søk etter kapiteltittel</string>
     <string name="widget_placeholder_text">Klikk for å åpne appen</string>
     <string name="the_offline_podcasts_is_empty">Ingen lagrede podcaster ennå</string>
     <string name="player_screen_downloads_navigation">Nedlastinger</string>

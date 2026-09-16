@@ -10,10 +10,7 @@
     <string name="login_screen_password_input">Şifre</string>
     <string name="login_screen_connect_button_text">Bağlan</string>
     <string name="player_screen_playback_speed_navigation">Hız</string>
-    <string name="player_screen_chapter_list_navigation_library">Bölümler</string>
     <string name="player_screen_library_playing_title">Çalınan bölümler</string>
-    <string name="player_screen_podcast_playing_title">Çalınan bölümler</string>
-    <string name="player_screen_items_playing_title">Çalınan öğeler</string>
     <string name="show_downloaded_content_only">Yalnızca indirilenler</string>
     <string name="player_screen_now_playing_title_chapter_of">%2$s\'nin %1$d. bölümü</string>
     <string name="player_screen_now_playing_title_podcast_of">%2$s\'nin %1$d. bölümü</string>
@@ -56,7 +53,6 @@
     <string name="timer_option_disable_timer">Zamanlayıcıyı Devre Dışı Bırak</string>
     <string name="timer_title">Uyku Zamanlayıcısı</string>
     <string name="player_screen_timer_navigation">Zamanlayıcı</string>
-    <string name="chapter_search_hint">Bölüm başlığına göre ara</string>
     <string name="widget_placeholder_text">Uygulamayı açmak için tıklayın</string>
     <string name="the_offline_podcasts_is_empty">Henüz kaydedilmiş podcast yok</string>
     <string name="player_screen_downloads_navigation">İndirilenler</string>

@@ -10,12 +10,7 @@
     <string name="login_screen_password_input">Senha</string>
     <string name="login_screen_connect_button_text">Conectar</string>
     <string name="player_screen_playback_speed_navigation">Velocidade</string>
-    <string name="player_screen_chapter_list_navigation_library">Capítulos</string>
-    <string name="player_screen_chapter_list_navigation_podcast">Episódios</string>
-    <string name="player_screen_chapter_list_navigation_items">Itens</string>
     <string name="player_screen_library_playing_title">Reproduzindo capítulos</string>
-    <string name="player_screen_podcast_playing_title">Reproduzindo episódios</string>
-    <string name="player_screen_items_playing_title">Reproduzindo itens</string>
     <string name="player_screen_now_playing_title_chapter_of">Capítulo %1$d de %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">Episódio %1$d de %2$s</string>
     <string name="player_screen_now_playing_title_item_of">Item %1$d de %2$s</string>
@@ -65,7 +60,6 @@
     <string name="timer_option_disable_timer">Desativar temporizador</string>
     <string name="timer_title">Temporizador de dormir</string>
     <string name="player_screen_timer_navigation">Temporizador</string>
-    <string name="chapter_search_hint">Pesquisar por título do capítulo</string>
     <string name="widget_placeholder_text">Toque para abrir o aplicativo</string>
     <string name="the_offline_podcasts_is_empty">Ainda não há podcasts salvos</string>
     <string name="player_screen_downloads_navigation">Downloads</string>

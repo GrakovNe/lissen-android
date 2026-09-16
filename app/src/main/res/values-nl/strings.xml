@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="library_screen_library_title">Bibliotheek</string>
-    <string name="player_screen_chapter_list_navigation_library">Hoofdstukken</string>
     <string name="settings_screen_connected_as_title">Verbonden als</string>
     <string name="player_screen_now_playing_title_item_of">Item %1$d van %2$s</string>
     <string name="login_screen_title">Verbinden naar server</string>
@@ -10,8 +9,6 @@
     <string name="login_screen_password_input">Wachtwoord</string>
     <string name="login_screen_connect_button_text">Verbinden</string>
     <string name="player_screen_library_playing_title">Hoofdstukken afspelen</string>
-    <string name="player_screen_podcast_playing_title">Afleveringen afspelen</string>
-    <string name="player_screen_items_playing_title">Items afspelen</string>
     <string name="player_screen_now_playing_title_chapter_of">Hoofdstuk %1$d van %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">Aflevering %1$d van %2$s</string>
     <string name="settings_screen_title">Voorkeuren</string>
@@ -52,7 +49,6 @@
         <item quantity="other">%d minuten</item>
     </plurals>
     <string name="timer_option_disable_timer">Schakel Timer uit</string>
-    <string name="chapter_search_hint">Zoek op hoofdstuktitel</string>
     <string name="the_offline_podcasts_is_empty">Nog geen opgeslagen podcasts</string>
     <string name="downloads_menu_download_podcast">Download podcast</string>
     <string name="downloads_menu_download_option_current_chapter">Huidig hoofdstuk</string>
@@ -121,7 +117,6 @@
     <string name="settings_screen_library_ordering_title">Bibliotheek sorteren</string>
     <string name="settings_screen_seek_time_hint">Zoekbediening instellen</string>
     <string name="forward_interval">Vooruitspoelinterval</string>
-    <string name="player_screen_chapter_list_navigation_podcast">Afleveringen</string>
     <string name="settings_screen_connection_type">Connectietype</string>
     <string name="settings_screen_connection_local">Lokaal netwerk</string>
     <string name="settings_screen_connection_external">Extern netwerk</string>
@@ -137,7 +132,6 @@
     <string name="playback_preferences_description">Volume, zoekbediening en audio</string>
     <string name="appearance_preferences_title">Uiterlijk</string>
     <string name="appearance_preferences_description">Kleurenschema, sortering en thema</string>
-    <string name="player_screen_chapter_list_navigation_items">Artikelen</string>
     <string name="library_quick_settings_filters_title">Filters</string>
     <string name="library_quick_settings_sort_title">Sorteren op</string>
     <string name="settings_screen_material_you_title">Material You-kleuren</string>

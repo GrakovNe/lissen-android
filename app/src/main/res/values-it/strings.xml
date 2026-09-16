@@ -9,10 +9,7 @@
     <string name="login_screen_login_input">Accedi</string>
     <string name="login_screen_show_password_hint">Mostra password</string>
     <string name="login_screen_password_input">Password</string>
-    <string name="player_screen_chapter_list_navigation_library">Capitoli</string>
     <string name="player_screen_library_playing_title">Riproduzione capitoli</string>
-    <string name="player_screen_podcast_playing_title">Riproduzione episodi</string>
-    <string name="player_screen_items_playing_title">Riproduzioni elementi</string>
     <string name="player_screen_now_playing_title_podcast_of">Episodio %1$d di %2$s</string>
     <string name="login_screen_title">Connetti al server</string>
     <string name="player_screen_now_playing_title_item_of">Elemento %1$d di %2$s</string>
@@ -53,7 +50,6 @@
     <string name="timer_option_disable_timer">Disabilita timer</string>
     <string name="timer_title">Timer di riposo</string>
     <string name="player_screen_timer_navigation">Timer</string>
-    <string name="chapter_search_hint">Cerca in base al titolo del capitolo</string>
     <string name="the_offline_podcasts_is_empty">Nessun podcast ancora salvato</string>
     <string name="player_screen_downloads_navigation">Download</string>
     <string name="downloads_menu_download_book">Scarica libro</string>
@@ -129,8 +125,6 @@
     <string name="settings_screen_advanced_preferences_description">Diagnostica, log e altre opzioni</string>
     <string name="settings_screen_crash_report_title">Segnalazione arresti anomali</string>
     <string name="settings_screen_crash_report_description">Invia segnalazioni se l\'app si arresta in modo anomalo</string>
-    <string name="player_screen_chapter_list_navigation_podcast">Episodi</string>
-    <string name="player_screen_chapter_list_navigation_items">Elementi</string>
     <string name="downloads_menu_download_option_disable">Disabilitato</string>
     <string name="settings_download_automatically_title">Scarica automaticamente</string>
     <string name="download_settings_title">Download</string>

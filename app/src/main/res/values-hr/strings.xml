@@ -10,10 +10,7 @@
     <string name="login_screen_password_input">Lozinka</string>
     <string name="login_screen_connect_button_text">Poveži</string>
     <string name="player_screen_playback_speed_navigation">Brzina</string>
-    <string name="player_screen_chapter_list_navigation_library">Poglavlja</string>
     <string name="player_screen_library_playing_title">Trenutna poglavlja</string>
-    <string name="player_screen_podcast_playing_title">Reproduciranje epizoda</string>
-    <string name="player_screen_items_playing_title">Sljedeći elementi</string>
     <string name="player_screen_now_playing_title_chapter_of">Poglavlje %1$d od %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">Epizoda %1$d od %2$s</string>
     <string name="player_screen_now_playing_title_item_of">Stavka %1$d od %2$s</string>
@@ -57,7 +54,6 @@
     <string name="timer_option_disable_timer">Onemogući automatsko isključivanje</string>
     <string name="timer_title">Automatsko isključivanje</string>
     <string name="player_screen_timer_navigation">Tajmer</string>
-    <string name="chapter_search_hint">Pretraži po naslovu poglavlja</string>
     <string name="widget_placeholder_text">Klikni za otvaranje aplikacije</string>
     <string name="the_offline_podcasts_is_empty">Nema preuzetih podcasta</string>
     <string name="player_screen_downloads_navigation">Preuzimanja</string>
@@ -128,7 +124,6 @@
     <string name="offline_cache_is_empty">Nema spremljenog sadržaja</string>
     <string name="settings_screen_cached_items_title">Preuzimanja</string>
     <string name="settings_screen_cached_items_hint">Upravljaj spremljenim sadržajem</string>
-    <string name="player_screen_chapter_list_navigation_items">Stavke</string>
     <string name="settings_screen_connection_type">Vrsta veze</string>
     <string name="settings_screen_connection_local">Lokalna mreža</string>
     <string name="settings_screen_connection_external">Vanjska mreža</string>
@@ -162,7 +157,6 @@
     <string name="settings_screen_delay_autodownload_description">Kratko pričekaj prije početka preuzimanja</string>
     <string name="settings_screen_bypass_ssl_title">Onemogući SSL provjeru</string>
     <string name="settings_screen_bypass_ssl_hint">Poveži se s poslužiteljima s bilo kojim certifikatom</string>
-    <string name="player_screen_chapter_list_navigation_podcast">Epizode</string>
     <string name="login_error_lissen_not_found">URL nije pronađen. Provjerite postavke poslužitelja</string>
     <string name="download_settings_description">Preuzimanja i upravljanje sadržajem</string>
     <string name="settings_screen_advanced_preferences_description">Dijagnostika, dnevnici i ostale mogućnosti</string>

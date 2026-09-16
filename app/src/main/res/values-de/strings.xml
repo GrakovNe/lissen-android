@@ -10,8 +10,6 @@
     <string name="login_screen_connect_button_text">Verbinden</string>
     <string name="login_screen_title">Verbinde zum Server</string>
     <string name="player_screen_library_playing_title">Liste der Kapitel</string>
-    <string name="player_screen_podcast_playing_title">Liste der Episoden</string>
-    <string name="player_screen_items_playing_title">Liste der Elemente</string>
     <string name="player_screen_now_playing_title_chapter_of">Kapitel %1$d von %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">Episode %1$d von %2$s</string>
     <string name="player_screen_now_playing_title_item_of">Element %1$d von %2$s</string>
@@ -73,7 +71,6 @@
     <string name="show_downloaded_content_only">Nur heruntergeladene</string>
     <string name="the_offline_library_is_empty">Keine Bücher vorhanden</string>
     <string name="color_scheme_dark">Dunkel</string>
-    <string name="player_screen_chapter_list_navigation_library">Kapitel</string>
     <string name="settings_screen_server_connection">Server Verbindung</string>
     <string name="login_error_host_is_down">Server ist nicht erreichbar</string>
     <string name="login_error_username_is_missing">Benutzername fehlt</string>
@@ -82,7 +79,6 @@
     <string name="library_screen_podcast_title">Podcasts</string>
     <string name="custom_header_hint_value">Wert</string>
     <string name="timer_title">Schlaf-Timer</string>
-    <string name="chapter_search_hint">Suche nach Titel des Kapitels</string>
     <string name="playing_item_details_year">Jahr</string>
     <string name="playing_item_details_series">Serie</string>
     <string name="downloads_menu_download_unknown">Downloads</string>
@@ -121,8 +117,6 @@
     <string name="downloads_menu_download_option_remaining_chapters">Verbleibende Kapitel</string>
     <string name="downloads_menu_download_option_remaining_episodes">Verbleibende Episoden</string>
     <string name="downloads_menu_download_option_remaining_items">Verbleibende Artikel</string>
-    <string name="player_screen_chapter_list_navigation_podcast">Episoden</string>
-    <string name="player_screen_chapter_list_navigation_items">Elemente</string>
     <string name="downloads_menu_download_option_disable">Deaktiviert</string>
     <string name="login_error_lissen_not_found">URL nicht gefunden. Prüfe die Server Einstellungen</string>
     <string name="volume_boost_disabled">Deaktiviert</string>

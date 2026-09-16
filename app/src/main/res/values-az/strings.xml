@@ -10,12 +10,7 @@
     <string name="login_screen_password_input">Şifrə</string>
     <string name="login_screen_connect_button_text">Qoşul</string>
     <string name="player_screen_playback_speed_navigation">Sürət</string>
-    <string name="player_screen_chapter_list_navigation_library">Bölümlər</string>
-    <string name="player_screen_chapter_list_navigation_podcast">Epizodlar</string>
-    <string name="player_screen_chapter_list_navigation_items">Bəndlər</string>
     <string name="player_screen_library_playing_title">Bölümləri dinləmək</string>
-    <string name="player_screen_podcast_playing_title">Epizodları dinləmək</string>
-    <string name="player_screen_items_playing_title">Bəndləri dinləmək</string>
     <string name="player_screen_now_playing_title_chapter_of">Bölüm %1$d of %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">Epizod %1$d of %2$s</string>
     <string name="player_screen_now_playing_title_item_of">Bənd %1$d of %2$s</string>
@@ -60,7 +55,6 @@
     <string name="timer_option_disable_timer">Taymeri Söndür</string>
     <string name="timer_title">Yuxu Taymeri</string>
     <string name="player_screen_timer_navigation">Taymer</string>
-    <string name="chapter_search_hint">Fəsil başlığına görə axtarış</string>
     <string name="widget_placeholder_text">Tətbiqi açmaq üçün klikləyin</string>
     <string name="the_offline_podcasts_is_empty">Hələ ki, yadda saxlanılmış podkast yoxdur</string>
     <string name="player_screen_downloads_navigation">Yüklənənlər</string>

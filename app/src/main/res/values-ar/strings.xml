@@ -53,7 +53,6 @@
     <string name="settings_screen_library_ordering_creation_date_option">تاريخ الإنشاء</string>
     <string name="login_screen_connect_button_text">اتصال</string>
     <string name="player_screen_playback_speed_navigation">السرعة</string>
-    <string name="player_screen_chapter_list_navigation_library">الفصول</string>
     <string name="player_screen_library_playing_title">تشغيل الفصول</string>
     <string name="settings_screen_title">التفضيلات</string>
     <string name="settings_screen_connected_as_title">متصل باسم</string>
@@ -73,7 +72,6 @@
     </plurals>
     <string name="timer_option_disable_timer">تعطيل المؤقت</string>
     <string name="player_screen_timer_navigation">المؤقت</string>
-    <string name="chapter_search_hint">البحث حسب عنوان الفصل</string>
     <string name="widget_placeholder_text">انقر لفتح التطبيق</string>
     <string name="the_offline_podcasts_is_empty">لم يتم حفظ أي بودكاست بعد</string>
     <string name="player_screen_downloads_navigation">التنزيلات</string>
@@ -103,8 +101,6 @@
     <string name="notification_content_caching_error_description">لم يتم حفظ بعض الملفات</string>
     <string name="login_screen_open_id_button">الاتصال باستخدام OpenID</string>
     <string name="settings_screen_library_ordering_modification_date_option">تاريخ التحديث</string>
-    <string name="player_screen_podcast_playing_title">تشغيل الحلقات</string>
-    <string name="player_screen_items_playing_title">تشغيل العناصر</string>
     <string name="player_screen_now_playing_title_chapter_of">الفصل %1$d من %2$s</string>
     <string name="login_error_connection_error">خطأ في الاتصال</string>
     <string name="show_downloaded_content_only">التي تم تنزيلها فقط</string>
@@ -125,8 +121,6 @@
     <string name="offline_cache_is_empty">لم يتم حفظ أي محتوى</string>
     <string name="downloads_menu_download_option_remaining_items">العناصر المتبقية</string>
     <string name="settings_screen_cached_items_title">التنزيلات</string>
-    <string name="player_screen_chapter_list_navigation_podcast">الحلقات</string>
-    <string name="player_screen_chapter_list_navigation_items">العناصر</string>
     <string name="playing_item_details_time_remaining">الوقت المتبقي</string>
     <string name="settings_screen_advanced_preferences_title">متقدم</string>
     <string name="settings_screen_crash_report_description">ارسال تقارير الاعطال</string>

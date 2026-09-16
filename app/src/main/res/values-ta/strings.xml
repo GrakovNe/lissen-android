@@ -12,10 +12,7 @@
     <string name="login_screen_password_input">கடவுச்சொல்</string>
     <string name="login_screen_connect_button_text">இணை</string>
     <string name="player_screen_playback_speed_navigation">வேகம்</string>
-    <string name="player_screen_chapter_list_navigation_library">பாடங்கள்</string>
     <string name="player_screen_library_playing_title">அத்தியாயங்கள் விளையாடுகின்றன</string>
-    <string name="player_screen_podcast_playing_title">எபிசோடுகளை வாசித்தல்</string>
-    <string name="player_screen_items_playing_title">உருப்படிகளை விளையாடுவது</string>
     <string name="player_screen_now_playing_title_chapter_of">அத்தியாயம் %1$d %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">எபிசோட் %1$d %2$s</string>
     <string name="player_screen_now_playing_title_item_of">பொருள் %1$d %2$s</string>
@@ -57,7 +54,6 @@
     <string name="timer_option_disable_timer">டைமரை முடக்கு</string>
     <string name="timer_title">தூக்க நேரங்குறிகருவி</string>
     <string name="player_screen_timer_navigation">நேரங்குறிகருவி</string>
-    <string name="chapter_search_hint">அத்தியாயம் தலைப்பு மூலம் தேடுங்கள்</string>
     <string name="widget_placeholder_text">பயன்பாட்டைத் திறக்க சொடுக்கு செய்க</string>
     <string name="the_offline_podcasts_is_empty">சேமித்த பாட்காச்ட்கள் இதுவரை இல்லை</string>
     <string name="player_screen_downloads_navigation">பதிவிறக்கங்கள்</string>
@@ -121,8 +117,6 @@
     <string name="settings_screen_library_ordering_creation_date_option">உருவாக்கிய தேதி</string>
     <string name="settings_screen_seek_time_title">அமைப்புகளைத் தேடுங்கள்</string>
     <string name="settings_screen_cached_items_hint">சேமித்த உள்ளடக்கத்தை நிர்வகிக்கவும்</string>
-    <string name="player_screen_chapter_list_navigation_podcast">அத்தியாயங்கள்</string>
-    <string name="player_screen_chapter_list_navigation_items">பொருட்கள்</string>
     <string name="settings_screen_connection_type">இணைப்பு வகை</string>
     <string name="settings_screen_connection_local">உள்ளக பிணையம்</string>
     <string name="settings_screen_connection_external">வெளிப்புற பிணையம்</string>

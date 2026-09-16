@@ -10,12 +10,7 @@
     <string name="login_screen_password_input">סיסמה</string>
     <string name="login_screen_connect_button_text">התחברות</string>
     <string name="player_screen_playback_speed_navigation">מהירות</string>
-    <string name="player_screen_chapter_list_navigation_library">‏פרקים</string>
-    <string name="player_screen_chapter_list_navigation_podcast">פרקים</string>
-    <string name="player_screen_chapter_list_navigation_items">פריטים</string>
     <string name="player_screen_library_playing_title">פרקים מתנגנים</string>
-    <string name="player_screen_podcast_playing_title">פרקים מתנגנים</string>
-    <string name="player_screen_items_playing_title">פריטים מתנגנים</string>
     <string name="player_screen_now_playing_title_chapter_of">פרק %1$d מתוך %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">פרק %1$d מתוך %2$s</string>
     <string name="player_screen_now_playing_title_item_of">פריט %1$d מתוך %2$s</string>
@@ -57,7 +52,6 @@
     <string name="timer_option_disable_timer">ביטול טיימר</string>
     <string name="timer_title">טיימר שינה</string>
     <string name="player_screen_timer_navigation">טיימר</string>
-    <string name="chapter_search_hint">חפש לפי כותרת פרק</string>
     <string name="widget_placeholder_text">לחץ כדי לפתוח את היישומון</string>
     <string name="the_offline_podcasts_is_empty">אין פודקאסטים שמורים עדיין</string>
     <string name="player_screen_downloads_navigation">הורדות</string>

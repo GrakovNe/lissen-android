@@ -10,12 +10,7 @@
     <string name="login_screen_password_input">Hasło</string>
     <string name="login_screen_connect_button_text">Połącz</string>
     <string name="player_screen_playback_speed_navigation">Prędkość</string>
-    <string name="player_screen_chapter_list_navigation_library">Rozdziały</string>
-    <string name="player_screen_chapter_list_navigation_podcast">Odcinki</string>
-    <string name="player_screen_chapter_list_navigation_items">Pozycje</string>
     <string name="player_screen_library_playing_title">Odtwarzane rozdziały</string>
-    <string name="player_screen_podcast_playing_title">Odtwarzane odcinki</string>
-    <string name="player_screen_items_playing_title">Odtwarzane pozycje</string>
     <string name="player_screen_now_playing_title_chapter_of">Rozdział %1$d z %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">Odcinek %1$d z %2$s</string>
     <string name="player_screen_now_playing_title_item_of">Pozycja %1$d z %2$s</string>
@@ -63,7 +58,6 @@
     <string name="timer_option_disable_timer">Wyłącz uśpienie</string>
     <string name="timer_title">Uśpienie</string>
     <string name="player_screen_timer_navigation">Uśpienie</string>
-    <string name="chapter_search_hint">Szukaj po tytule rozdziału</string>
     <string name="widget_placeholder_text">Kliknij aby otworzyć aplikację</string>
     <string name="the_offline_podcasts_is_empty">Brak pobranych podcastów</string>
     <string name="player_screen_downloads_navigation">Pobieranie</string>

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="player_screen_items_playing_title">Reproduciendo artículos</string>
     <string name="player_screen_now_playing_title_podcast_of">Episodio %1$d de %2$s</string>
     <string name="settings_screen_title">Preferencias</string>
     <string name="player_screen_playback_speed_navigation">Velocidad</string>
@@ -12,9 +11,7 @@
     <string name="login_screen_show_password_hint">Mostrar contraseña</string>
     <string name="login_screen_password_input">Contraseña</string>
     <string name="login_screen_connect_button_text">Conectar</string>
-    <string name="player_screen_chapter_list_navigation_library">Capítulos</string>
     <string name="player_screen_library_playing_title">Reproduciendo capítulos</string>
-    <string name="player_screen_podcast_playing_title">Reproduciendo episodios</string>
     <string name="settings_screen_connected_as_title">Conectado como</string>
     <string name="settings_screen_server_connection">Conexión del servidor</string>
     <string name="login_error_host_is_down">El servidor está caído</string>
@@ -54,7 +51,6 @@
     </plurals>
     <string name="timer_title">Temporizador de apagado</string>
     <string name="player_screen_timer_navigation">Temporizador</string>
-    <string name="chapter_search_hint">Buscar por título del capítulo</string>
     <string name="widget_placeholder_text">Pulse para abrir la aplicación</string>
     <string name="the_offline_podcasts_is_empty">Aún no hay pódcasts guardados</string>
     <string name="player_screen_downloads_navigation">Descargas</string>
@@ -118,7 +114,6 @@
     <string name="settings_screen_library_ordering_title">Ordenar biblioteca</string>
     <string name="settings_screen_cached_items_title">Descargas</string>
     <string name="settings_screen_advanced_preferences_title">Avanzado</string>
-    <string name="player_screen_chapter_list_navigation_podcast">Episodios</string>
     <string name="settings_screen_connection_type">Tipo de conexión</string>
     <string name="settings_screen_connection_local">Red local</string>
     <string name="settings_screen_connection_external">Red externa</string>
@@ -141,7 +136,6 @@
     <string name="settings_download_automatically_title">Descargar automáticamente</string>
     <string name="download_settings_title">Descargas</string>
     <string name="download_settings_description">Descargas y gestión de contenido</string>
-    <string name="player_screen_chapter_list_navigation_items">Artículos</string>
     <string name="settings_screen_material_you_title">Colores de Material You</string>
     <string name="downloads_menu_download_option_remaining_items">Artículos restantes</string>
     <string name="settings_screen_advanced_preferences_description">Diagnóstico, registros y otras opciones</string>

@@ -10,12 +10,7 @@
     <string name="login_screen_password_input">Heslo</string>
     <string name="login_screen_connect_button_text">Připojit</string>
     <string name="player_screen_playback_speed_navigation">Rychlost</string>
-    <string name="player_screen_chapter_list_navigation_library">Kapitoly</string>
-    <string name="player_screen_chapter_list_navigation_podcast">Epizody</string>
-    <string name="player_screen_chapter_list_navigation_items">Položky</string>
     <string name="player_screen_library_playing_title">Přehrávané kapitoly</string>
-    <string name="player_screen_podcast_playing_title">Přehrávané epizody</string>
-    <string name="player_screen_items_playing_title">Přehrávané položky</string>
     <string name="player_screen_now_playing_title_chapter_of">Kapitola %1$d z %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">Epizoda %1$d z %2$s</string>
     <string name="player_screen_now_playing_title_item_of">Položka %1$d z %2$s</string>
@@ -66,7 +61,6 @@
     <string name="timer_option_disable_timer">Zakázat časovač</string>
     <string name="timer_title">Časovač vypnutí</string>
     <string name="player_screen_timer_navigation">Časovač</string>
-    <string name="chapter_search_hint">Vyhledat podle názvu kapitoly</string>
     <string name="widget_placeholder_text">Klikněte pro otevření aplikace</string>
     <string name="the_offline_podcasts_is_empty">Zatím žádné uložené podcasty</string>
     <string name="player_screen_downloads_navigation">Stažené</string>

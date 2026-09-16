@@ -10,10 +10,7 @@
     <string name="login_screen_password_input">Geslo</string>
     <string name="login_screen_connect_button_text">Poveži se</string>
     <string name="player_screen_playback_speed_navigation">Hitrost</string>
-    <string name="player_screen_chapter_list_navigation_library">Poglavja</string>
     <string name="player_screen_library_playing_title">Predvajanje poglavij</string>
-    <string name="player_screen_podcast_playing_title">Predvajanje epizod</string>
-    <string name="player_screen_items_playing_title">Predvajanje elementov</string>
     <string name="player_screen_now_playing_title_chapter_of">Poglavje %1$d od %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">Epizoda %1$d od %2$s</string>
     <string name="player_screen_now_playing_title_item_of">Element %1$d od %2$s</string>
@@ -58,7 +55,6 @@
     <string name="timer_option_disable_timer">Onemogoči časovnik</string>
     <string name="timer_title">Časovnik za spanje</string>
     <string name="player_screen_timer_navigation">Časovnik</string>
-    <string name="chapter_search_hint">Iskanje po naslovu poglavja</string>
     <string name="widget_placeholder_text">Klikni da odpreš aplikacijo</string>
     <string name="the_offline_podcasts_is_empty">Ni še shranjenih podcastov</string>
     <string name="player_screen_downloads_navigation">Prenosi</string>
@@ -125,8 +121,6 @@
     <string name="downloads_menu_download_option_remaining_items">Preostali elementi</string>
     <string name="volume_boost_disabled">Onemogočeno</string>
     <string name="volume_boost_title">Povečanje glasnosti</string>
-    <string name="player_screen_chapter_list_navigation_podcast">Epizode</string>
-    <string name="player_screen_chapter_list_navigation_items">Elementi</string>
     <string name="settings_screen_connection_type">Vrsta povezave</string>
     <string name="settings_screen_connection_local">Lokalna mreža</string>
     <string name="settings_screen_connection_external">Zunanja mreža</string>
