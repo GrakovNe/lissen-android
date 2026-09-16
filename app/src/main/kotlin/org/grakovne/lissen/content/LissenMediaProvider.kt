@@ -1,12 +1,14 @@
 package org.grakovne.lissen.content
 
 import android.net.Uri
+import kotlinx.coroutines.flow.first
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfChannelProvider
 import org.grakovne.lissen.channel.audiobookshelf.common.api.ConditionalCache
 import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
+import org.grakovne.lissen.common.EpisodeOrderingEngine
 import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.content.cache.temporary.CachedBookmarkProvider
@@ -22,6 +24,7 @@ import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.domain.UserAccount
+import org.grakovne.lissen.persistence.preferences.ItemPreferencesRepository
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import timber.log.Timber
 import java.io.File
@@ -38,6 +41,7 @@ class LissenMediaProvider
     private val cachedCoverProvider: CachedCoverProvider,
     private val cachedBookmarkProvider: CachedBookmarkProvider,
     private val conditionalCache: ConditionalCache,
+    private val itemPreferencesRepository: ItemPreferencesRepository,
   ) {
     suspend fun dropBookmark(bookmark: Bookmark) {
       Timber.d("Dropping bookmark for ${bookmark.libraryItemId} at position=${bookmark.totalPosition.toInt()}s")
@@ -325,7 +329,7 @@ class LissenMediaProvider
         true -> {
           localCacheRepository
             .fetchBook(bookId)
-            ?.let { OperationResult.Success(it) }
+            ?.let { OperationResult.Success(applyEpisodeOrdering(it)) }
             ?: OperationResult.Error(OperationError.InternalError)
         }
 
@@ -334,18 +338,33 @@ class LissenMediaProvider
             .fetchBook(bookId)
             .map { mergeLocalItemProgress(it) }
             .map { trimProgress(it) }
+            .map { applyEpisodeOrdering(it) }
             .foldAsync(
               onSuccess = { OperationResult.Success(it) },
               onFailure = { error ->
                 localCacheRepository
                   .fetchBook(bookId)
-                  ?.let { OperationResult.Success(it) }
+                  ?.let { OperationResult.Success(applyEpisodeOrdering(it)) }
                   ?: error
               },
             )
         }
       }
     }
+
+    private suspend fun applyEpisodeOrdering(item: DetailedItem): DetailedItem =
+      when (item.libraryType) {
+        LibraryType.PODCAST -> {
+          EpisodeOrderingEngine.reorder(
+            item = item,
+            ordering = itemPreferencesRepository.observeOrdering(item.id).first(),
+          )
+        }
+
+        else -> {
+          item
+        }
+      }
 
     suspend fun authorize(
       host: String,

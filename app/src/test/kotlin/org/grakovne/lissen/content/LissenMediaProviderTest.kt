@@ -6,12 +6,15 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfChannelProvider
 import org.grakovne.lissen.channel.audiobookshelf.common.api.ConditionalCache
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
+import org.grakovne.lissen.common.EpisodeOrdering
+import org.grakovne.lissen.common.EpisodeSortKey
 import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.content.cache.temporary.CachedBookmarkProvider
@@ -29,6 +32,7 @@ import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.PlaybackSessionSource
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.RecentBook
+import org.grakovne.lissen.persistence.preferences.ItemPreferencesRepository
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
@@ -44,6 +48,7 @@ class LissenMediaProviderTest {
   private val cachedCoverProvider = mockk<CachedCoverProvider>(relaxed = true)
   private val cachedBookmarkProvider = mockk<CachedBookmarkProvider>(relaxed = true)
   private val conditionalCache = mockk<ConditionalCache>(relaxed = true)
+  private val itemPreferencesRepository = mockk<ItemPreferencesRepository>(relaxed = true)
   private val mediaChannel = mockk<MediaChannel>(relaxed = true)
 
   private lateinit var provider: LissenMediaProvider
@@ -60,6 +65,7 @@ class LissenMediaProviderTest {
         cachedCoverProvider,
         cachedBookmarkProvider,
         conditionalCache,
+        itemPreferencesRepository,
       )
   }
 
@@ -113,6 +119,56 @@ class LissenMediaProviderTest {
 
         assertInstanceOf(OperationResult.Success::class.java, result)
         coVerify { mediaChannel.fetchBook("book-1") }
+      }
+
+    @Test
+    fun `applies stored episode ordering to podcasts`() =
+      runBlocking {
+        val item =
+          detailedItem(
+            id = "podcast-1",
+            libraryType = LibraryType.PODCAST,
+            chapters =
+              listOf(
+                chapter("e1", duration = 10.0, start = 0.0, publishedAt = 100L),
+                chapter("e2", duration = 20.0, start = 10.0, publishedAt = 200L),
+              ),
+          )
+        every { preferences.isForceCache() } returns false
+        coEvery { mediaChannel.fetchBook("podcast-1") } returns OperationResult.Success(item)
+        coEvery { localCacheRepository.fetchPlayingItemProgress("podcast-1") } returns null
+        every { itemPreferencesRepository.observeOrdering("podcast-1") } returns
+          flowOf(EpisodeOrdering(key = EpisodeSortKey.PUBLISHED_AT, ascending = false))
+
+        val result = provider.fetchBook("podcast-1")
+
+        assertInstanceOf(OperationResult.Success::class.java, result)
+        val chapters = (result as OperationResult.Success).data.chapters
+        assertEquals(listOf("e2", "e1"), chapters.map { it.id })
+        assertEquals(0.0, chapters[0].start)
+        assertEquals(20.0, chapters[1].start)
+      }
+
+    @Test
+    fun `does not reorder books`() =
+      runBlocking {
+        val item =
+          detailedItem(
+            id = "book-1",
+            chapters =
+              listOf(
+                chapter("c1", duration = 10.0, start = 0.0, publishedAt = 100L),
+                chapter("c2", duration = 20.0, start = 10.0, publishedAt = 200L),
+              ),
+          )
+        every { preferences.isForceCache() } returns false
+        coEvery { mediaChannel.fetchBook("book-1") } returns OperationResult.Success(item)
+        coEvery { localCacheRepository.fetchPlayingItemProgress("book-1") } returns null
+
+        val result = provider.fetchBook("book-1")
+
+        val chapters = (result as OperationResult.Success).data.chapters
+        assertEquals(listOf("c1", "c2"), chapters.map { it.id })
       }
 
     @Test
@@ -710,6 +766,7 @@ class LissenMediaProviderTest {
   private fun detailedItem(
     id: String = "book-1",
     chapters: List<PlayingChapter> = emptyList(),
+    libraryType: LibraryType? = null,
   ) = DetailedItem(
     id = id,
     title = "Test Book",
@@ -724,9 +781,26 @@ class LissenMediaProviderTest {
     chapters = chapters,
     progress = null,
     libraryId = "lib-1",
+    libraryType = libraryType,
     localProvided = false,
     createdAt = 0L,
     updatedAt = 0L,
+  )
+
+  private fun chapter(
+    id: String,
+    duration: Double = 10.0,
+    start: Double = 0.0,
+    publishedAt: Long? = null,
+  ) = PlayingChapter(
+    available = true,
+    podcastEpisodeState = null,
+    duration = duration,
+    start = start,
+    end = start + duration,
+    title = "Chapter $id",
+    id = id,
+    publishedAt = publishedAt,
   )
 
   private fun recentBook(id: String) =
