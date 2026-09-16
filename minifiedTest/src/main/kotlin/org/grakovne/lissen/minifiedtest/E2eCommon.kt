@@ -82,12 +82,31 @@ fun freshApp(block: UiAutomatorTestScope.() -> Unit) =
     // app window and every selector lookup fails behind it
     device.executeShellCommand("settings put global hide_error_dialogs 1")
     androidx.test.shell.Shell.application.clearAppData(TARGET_PACKAGE)
+    waitForAppGone()
     watchFor(androidx.test.uiautomator.watcher.PermissionDialog) { clickAllow() }
     startApp(TARGET_PACKAGE)
     waitForAppToBeVisible(TARGET_PACKAGE)
     ensureLoginScreen()
     block()
   }
+
+// Starting the app while the framework is still removing the task of the cleared instance
+// makes it kill the freshly started process, and on the slow CI emulator that race repeats
+// until the launch machinery wedges; wait until both the process and its activity records
+// are gone before launching again.
+private fun UiAutomatorTestScope.waitForAppGone(timeoutMs: Long = 15_000) {
+  val deadline = System.currentTimeMillis() + timeoutMs
+  while (System.currentTimeMillis() < deadline) {
+    val pid = device.executeShellCommand("pidof $TARGET_PACKAGE").trim()
+    val records = device.executeShellCommand("dumpsys activity activities").contains(TARGET_PACKAGE)
+    if (pid.isEmpty() && !records) {
+      Thread.sleep(500)
+      return
+    }
+    Thread.sleep(250)
+  }
+  Log.w(E2E_TAG, "$TARGET_PACKAGE is still present ${timeoutMs}ms after clearing its data")
+}
 
 // The app renders its first frame behind a system dialog on the CI emulator often enough
 // to fail the whole suite; record what the device was showing at that moment, get rid of
