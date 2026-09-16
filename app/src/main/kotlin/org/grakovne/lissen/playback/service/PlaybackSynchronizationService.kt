@@ -63,6 +63,11 @@ class PlaybackSynchronizationService
       listeningMark = listeningMark.copy(playingSince = null)
     }
 
+    fun updateItem(item: DetailedItem) {
+      Timber.d("Updating synchronized item after reorder for ${item.id}")
+      currentItem = item
+    }
+
     fun cancelSynchronization() {
       Timber.d("Cancelling playback synchronization for ${currentItem?.id}")
       serviceScope.coroutineContext.cancelChildren()

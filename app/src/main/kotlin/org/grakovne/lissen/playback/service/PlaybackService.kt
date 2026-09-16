@@ -80,6 +80,11 @@ class PlaybackService : MediaLibraryService() {
             Timber.d("Command received: CANCEL_TIMER")
             cancelTimer()
           }
+
+          is PlaybackCommand.ReorderPlaylist -> {
+            Timber.d("Command received: REORDER_PLAYLIST episode=${command.currentEpisodeId}")
+            reorderPlaylist(command)
+          }
         }
       }
     }
@@ -146,6 +151,23 @@ class PlaybackService : MediaLibraryService() {
 
       playbackEventBus.emit(PlaybackEvent.PlaybackReady)
     }
+  }
+
+  private fun reorderPlaylist(command: PlaybackCommand.ReorderPlaylist) {
+    val book = command.item
+    if (book.chapters.isEmpty()) {
+      Timber.w("Can't reorder playing queue: book has no chapters (bookId=${book.id})")
+      return
+    }
+
+    val items = bookToChapterMediaItems(book).mediaItems
+    val newStartIndex = book.chapters.indexOfFirst { it.id == command.currentEpisodeId }.coerceAtLeast(0)
+    val startPositionMs = (command.positionInSeconds * 1000).toLong().coerceAtLeast(0)
+
+    // reordering a live player: items are swapped in place, play/pause state and
+    // audio focus stay untouched, playback resumes inside the same episode
+    exoPlayer.setMediaItems(items, newStartIndex, startPositionMs)
+    playbackSynchronizationService.updateItem(book)
   }
 
   private fun setTimer(

@@ -15,13 +15,18 @@ import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.grakovne.lissen.common.EpisodeOrdering
+import org.grakovne.lissen.common.EpisodeOrderingEngine
 import org.grakovne.lissen.common.buildBookmarkTitle
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Bookmark
@@ -31,6 +36,7 @@ import org.grakovne.lissen.domain.DetailedItem.Companion.same
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.TimerOption
+import org.grakovne.lissen.persistence.preferences.ItemPreferencesRepository
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.service.DefaultTimerActivator
 import org.grakovne.lissen.playback.service.PlaybackService
@@ -42,6 +48,7 @@ import javax.inject.Singleton
 
 @UnstableApi
 @Singleton
+@OptIn(ExperimentalCoroutinesApi::class)
 class MediaRepository
   @Inject
   constructor(
@@ -50,6 +57,7 @@ class MediaRepository
     private val mediaChannel: LissenMediaProvider,
     private val eventBus: PlaybackEventBus,
     private val defaultTimerActivator: DefaultTimerActivator,
+    private val itemPreferencesRepository: ItemPreferencesRepository,
   ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
     private lateinit var mediaController: MediaController
@@ -97,6 +105,9 @@ class MediaRepository
 
     private val _bookmarks = MutableStateFlow<List<Bookmark>>(emptyList())
     val bookmarks: StateFlow<List<Bookmark>> = _bookmarks.asStateFlow()
+
+    private val _episodeOrdering = MutableStateFlow(EpisodeOrdering.DEFAULT)
+    val episodeOrdering: StateFlow<EpisodeOrdering> = _episodeOrdering.asStateFlow()
 
     private val handler = Handler(Looper.getMainLooper())
 
@@ -211,6 +222,18 @@ class MediaRepository
       )
     }
 
+    init {
+      scope.launch {
+        _playingBook
+          .flatMapLatest { book ->
+            when (book?.libraryType) {
+              LibraryType.PODCAST -> itemPreferencesRepository.observeOrdering(book.id)
+              else -> flowOf(EpisodeOrdering.DEFAULT)
+            }
+          }.collect { ordering -> _episodeOrdering.value = ordering }
+      }
+    }
+
     fun updateTimer(
       timerOption: TimerOption?,
       position: Double? = null,
@@ -267,6 +290,33 @@ class MediaRepository
         Timber.w("Unable to set chapter index=$index for ${book.id} due to: ${ex.message}")
         return
       }
+    }
+
+    fun updateEpisodeOrdering(ordering: EpisodeOrdering) {
+      val book = playingBook.value ?: return
+
+      if (book.libraryType != LibraryType.PODCAST) {
+        Timber.w("Episode ordering requested for a non-podcast item: ${book.id}")
+        return
+      }
+
+      val chapterPosition = calculateChapterIndexAndPosition(book, totalPosition.value)
+      val currentEpisodeId = book.chapters.getOrNull(chapterPosition.index)?.id ?: return
+
+      val reordered = EpisodeOrderingEngine.reorder(book, ordering)
+      val newIndex = reordered.chapters.indexOfFirst { it.id == currentEpisodeId }.coerceAtLeast(0)
+
+      _playingBook.value = reordered
+      preferences.savePlayingItem(reordered)
+
+      _totalPosition.value = reordered.chapters[newIndex].start + chapterPosition.position
+      updateCurrentTrackData()
+
+      scope.launch {
+        itemPreferencesRepository.setOrdering(book.id, ordering)
+      }
+
+      eventBus.send(PlaybackCommand.ReorderPlaylist(reordered, currentEpisodeId, chapterPosition.position))
     }
 
     fun clearPlayingBook() {
