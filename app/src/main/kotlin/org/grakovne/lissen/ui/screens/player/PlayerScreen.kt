@@ -77,7 +77,6 @@ import org.grakovne.lissen.ui.screens.player.composable.PlayerSettingsComposable
 import org.grakovne.lissen.ui.screens.player.composable.PlayingQueueComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackControlComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackDetailsComposable
-import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
 import org.grakovne.lissen.ui.screens.player.composable.fallback.PlayingQueueFallbackComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.BookCoverPlaceholder
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.ChapterNumberPlaceholder
@@ -274,11 +273,7 @@ fun PlayerScreen(
         },
         title = {
           Text(
-            text =
-              when (playingQueueExpanded && twoPane.not()) {
-                true -> provideNowPlayingTitle(libraryType, context)
-                false -> stringResource(R.string.player_screen_title)
-              },
+            text = stringResource(R.string.player_screen_title),
             style = titleTextStyle,
             color = colorScheme.onSurface,
             maxLines = 1,

@@ -35,8 +35,9 @@ fun PlayingQueuePlaceholderComposable(
     PlayingQueueHeaderComposable(
       title = provideNowPlayingTitle(libraryType, context),
       textStyle = typography.titleMedium.copy(fontSize = typography.titleMedium.fontSize * 1.25f, fontWeight = FontWeight.SemiBold),
+      expanded = false,
       expandable = expandable,
-      onExpand = {},
+      onToggle = {},
     )
 
     Spacer(modifier = Modifier.height(12.dp))

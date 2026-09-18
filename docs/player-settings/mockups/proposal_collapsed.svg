@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="2340" viewBox="0 0 1080 2340" font-family="Helvetica, Arial, sans-serif">
+<rect width="1080" height="2340" fill="#f6f6f6"/>
+<text x="80" y="90" font-size="34" font-weight="bold" fill="#111">18:16</text>
+<text x="60" y="270" font-size="46" fill="#111">←</text>
+<text x="150" y="270" font-size="46" font-weight="bold" fill="#111">Сейчас играет</text>
+<path d="M862 232 h46 v62 l-23 -16 l-23 16 z" fill="none" stroke="#111" stroke-width="5"/>
+<circle cx="1000" cy="262" r="24" fill="none" stroke="#111" stroke-width="6"/><circle cx="1000" cy="262" r="8" fill="none" stroke="#111" stroke-width="5"/>
+<line x1="1024" y1="262" x2="1034" y2="262" stroke="#111" stroke-width="7" stroke-linecap="round"/>
+<line x1="1017" y1="279" x2="1024" y2="286" stroke="#111" stroke-width="7" stroke-linecap="round"/>
+<line x1="1000" y1="286" x2="1000" y2="296" stroke="#111" stroke-width="7" stroke-linecap="round"/>
+<line x1="983" y1="279" x2="976" y2="286" stroke="#111" stroke-width="7" stroke-linecap="round"/>
+<line x1="976" y1="262" x2="966" y2="262" stroke="#111" stroke-width="7" stroke-linecap="round"/>
+<line x1="983" y1="245" x2="976" y2="238" stroke="#111" stroke-width="7" stroke-linecap="round"/>
+<line x1="1000" y1="238" x2="1000" y2="228" stroke="#111" stroke-width="7" stroke-linecap="round"/>
+<line x1="1017" y1="245" x2="1024" y2="238" stroke="#111" stroke-width="7" stroke-linecap="round"/>
+<rect x="150" y="340" width="780" height="780" rx="30" fill="#4a5259"/>
+<text x="540" y="640" text-anchor="middle" font-size="120" font-weight="bold" fill="#e6e33c">КОЛОДЕЦ</text>
+<text x="540" y="760" text-anchor="middle" font-size="110" font-weight="bold" fill="#eee">СМЕРТИ</text>
+<text x="540" y="1230" text-anchor="middle" font-size="52" font-weight="bold" fill="#111">Колодец Смерти</text>
+<text x="540" y="1290" text-anchor="middle" font-size="34" fill="#777">Глава 8 из 75</text>
+<line x1="60" y1="1345" x2="1020" y2="1345" stroke="#f9c9b4" stroke-width="8" stroke-linecap="round"/><circle cx="60" cy="1345" r="26" fill="#ff6a3d"/>
+<text x="52" y="1420" font-size="30" fill="#777">00:00:00</text><text x="1020" y="1420" text-anchor="end" font-size="30" fill="#777">00:16:31</text>
+<circle cx="540" cy="1550" r="70" fill="#ff6a3d"/><polygon points="520,1515 520,1585 585,1550" fill="#fff"/>
+<polygon points="135,1530 135,1570 175,1550" fill="#111"/>
+<polygon points="320,1530 320,1570 360,1550" fill="#111"/>
+<polygon points="740,1530 740,1570 780,1550" fill="#111"/>
+<polygon points="920,1530 920,1570 960,1550" fill="#111"/>
+<text x="60" y="1720" font-size="42" font-weight="bold" fill="#ff6a3d">Оглавление</text>
+<polyline points="982,1697 1000,1715 1018,1697" fill="none" stroke="#777" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="40" y="1660" width="1000" height="90" rx="12" fill="none" stroke="#ff6a3d" stroke-width="2" stroke-dasharray="10 8" opacity="0.5"/>
+<text x="120" y="1810" font-size="36" font-weight="normal" fill="#666">07</text>
+<text x="1040" y="1810" text-anchor="end" font-size="36" font-weight="normal" fill="#666">06:58</text>
+<line x1="100" y1="1850" x2="1040" y2="1850" stroke="#ddd" stroke-width="2"/>
+<text x="60" y="1910" font-size="34" fill="#111">♪</text>
+<text x="120" y="1910" font-size="36" font-weight="bold" fill="#111">08</text>
+<text x="1040" y="1910" text-anchor="end" font-size="36" font-weight="bold" fill="#111">16:31</text>
+<line x1="100" y1="1950" x2="1040" y2="1950" stroke="#ddd" stroke-width="2"/>
+<text x="120" y="2010" font-size="36" font-weight="normal" fill="#666">09</text>
+<text x="1040" y="2010" text-anchor="end" font-size="36" font-weight="normal" fill="#666">13:27</text>
+<line x1="100" y1="2050" x2="1040" y2="2050" stroke="#ddd" stroke-width="2"/>
+<line x1="0" y1="2150" x2="1080" y2="2150" stroke="#e5e5e5" stroke-width="2"/>
+<rect x="111" y="2185" width="48" height="48" rx="8" fill="none" stroke="#111" stroke-width="5"/>
+<text x="135" y="2285" text-anchor="middle" font-size="30" fill="#111">Загрузки</text>
+<rect x="381" y="2185" width="48" height="48" rx="8" fill="none" stroke="#111" stroke-width="5"/>
+<text x="405" y="2285" text-anchor="middle" font-size="30" fill="#111">Скорость</text>
+<rect x="651" y="2185" width="48" height="48" rx="8" fill="none" stroke="#111" stroke-width="5"/>
+<text x="675" y="2285" text-anchor="middle" font-size="30" fill="#111">Таймер</text>
+<rect x="921" y="2185" width="48" height="48" rx="8" fill="none" stroke="#111" stroke-width="5"/>
+<text x="945" y="2285" text-anchor="middle" font-size="30" fill="#111">Инфо</text>
+</svg>

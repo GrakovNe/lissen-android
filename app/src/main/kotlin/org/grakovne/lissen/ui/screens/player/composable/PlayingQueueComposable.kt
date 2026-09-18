@@ -110,9 +110,6 @@ fun PlayingQueueComposable(
 
   val expanded = playingQueueExpanded || forceExpanded
 
-  // while expanded on a phone the screen title takes the queue title over
-  val showQueueHeader = playingQueueExpanded.not() || forceExpanded
-
   val density = LocalDensity.current
 
   var collapsedPlayingQueueHeight by remember { mutableIntStateOf(0) }
@@ -180,16 +177,15 @@ fun PlayingQueueComposable(
             }
           }.padding(horizontal = 16.dp),
     ) {
-      if (showQueueHeader) {
-        PlayingQueueHeaderComposable(
-          title = provideNowPlayingTitle(libraryType, context),
-          textStyle = typography.titleMedium.copy(fontSize = fontSize.sp, fontWeight = FontWeight.SemiBold),
-          expandable = forceExpanded.not(),
-          onExpand = { viewModel.expandPlayingQueue() },
-        )
+      PlayingQueueHeaderComposable(
+        title = provideNowPlayingTitle(libraryType, context),
+        textStyle = typography.titleMedium.copy(fontSize = fontSize.sp, fontWeight = FontWeight.SemiBold),
+        expanded = playingQueueExpanded,
+        expandable = forceExpanded.not(),
+        onToggle = { viewModel.togglePlayingQueue() },
+      )
 
-        Spacer(modifier = Modifier.height(12.dp))
-      }
+      Spacer(modifier = Modifier.height(12.dp))
 
       LazyColumn(
         contentPadding =

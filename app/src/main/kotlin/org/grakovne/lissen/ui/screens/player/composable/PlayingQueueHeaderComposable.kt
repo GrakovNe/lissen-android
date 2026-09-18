@@ -7,7 +7,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
+import androidx.compose.material.icons.outlined.ExpandLess
+import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.Text
@@ -22,18 +23,19 @@ import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 
 /**
- * Title of the collapsed playing queue. On a phone the row is an entry point: the trailing
- * chevron is the same "drill in" affordance the settings items use, a tap expands the queue
- * and the screen title takes the queue title over while back collapses it. Where the queue
- * is always expanded (two-pane layout) the row is a plain title.
+ * Title row of the playing queue. On a phone it is a collapsible section header, the same
+ * shape as the picker rows in the quick-settings sheet: label on the left, expand chevron on
+ * the right, a tap toggles the section and the row itself stays in place. Where the queue is
+ * always expanded (two-pane layout) it is a plain title.
  */
 @Composable
 fun PlayingQueueHeaderComposable(
   title: String,
   textStyle: TextStyle,
+  expanded: Boolean,
   expandable: Boolean,
   modifier: Modifier = Modifier,
-  onExpand: () -> Unit,
+  onToggle: () -> Unit,
 ) {
   Row(
     verticalAlignment = Alignment.CenterVertically,
@@ -47,7 +49,7 @@ fun PlayingQueueHeaderComposable(
                 .clickable(
                   interactionSource = remember { MutableInteractionSource() },
                   indication = null,
-                ) { onExpand() }
+                ) { onToggle() }
                 .testTag("playingQueueHeader")
             }
 
@@ -67,10 +69,10 @@ fun PlayingQueueHeaderComposable(
 
     if (expandable) {
       Icon(
-        imageVector = Icons.AutoMirrored.Outlined.ArrowForwardIos,
-        contentDescription = stringResource(R.string.a11y_expand_queue),
+        imageVector = if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+        contentDescription = stringResource(if (expanded) R.string.a11y_collapse_queue else R.string.a11y_expand_queue),
         tint = colorScheme.onSurfaceVariant,
-        modifier = Modifier.size(16.dp),
+        modifier = Modifier.size(20.dp),
       )
     }
   }

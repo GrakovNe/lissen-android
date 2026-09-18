@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="2340" viewBox="0 0 1080 2340" font-family="Helvetica, Arial, sans-serif">
+<rect width="1080" height="2340" fill="#f6f6f6"/>
+<text x="80" y="90" font-size="34" font-weight="bold" fill="#111">18:16</text>
+<text x="60" y="270" font-size="46" fill="#111">←</text>
+<text x="150" y="270" font-size="46" font-weight="bold" fill="#111">Сейчас играет</text>
+<circle cx="990" cy="252" r="22" fill="none" stroke="#111" stroke-width="6"/><line x1="1006" y1="268" x2="1030" y2="292" stroke="#111" stroke-width="7" stroke-linecap="round"/>
+<text x="60" y="440" font-size="42" font-weight="bold" fill="#ff6a3d">Оглавление</text>
+<polyline points="982,435 1000,417 1018,435" fill="none" stroke="#777" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+<rect x="40" y="380" width="1000" height="90" rx="12" fill="none" stroke="#ff6a3d" stroke-width="2" stroke-dasharray="10 8" opacity="0.5"/>
+<text x="120" y="530" font-size="36" font-weight="normal" fill="#666">Часть 05</text>
+<text x="1040" y="530" text-anchor="end" font-size="36" font-weight="normal" fill="#666">08:29</text>
+<line x1="100" y1="570" x2="1040" y2="570" stroke="#ddd" stroke-width="2"/>
+<text x="120" y="630" font-size="36" font-weight="normal" fill="#666">Часть 06</text>
+<text x="1040" y="630" text-anchor="end" font-size="36" font-weight="normal" fill="#666">10:11</text>
+<line x1="100" y1="670" x2="1040" y2="670" stroke="#ddd" stroke-width="2"/>
+<text x="120" y="730" font-size="36" font-weight="normal" fill="#666">Часть 07</text>
+<text x="1040" y="730" text-anchor="end" font-size="36" font-weight="normal" fill="#666">06:58</text>
+<line x1="100" y1="770" x2="1040" y2="770" stroke="#ddd" stroke-width="2"/>
+<text x="60" y="830" font-size="34" fill="#111">♪</text>
+<text x="120" y="830" font-size="36" font-weight="bold" fill="#111">Часть 08</text>
+<text x="1040" y="830" text-anchor="end" font-size="36" font-weight="bold" fill="#111">16:31</text>
+<line x1="100" y1="870" x2="1040" y2="870" stroke="#ddd" stroke-width="2"/>
+<text x="120" y="930" font-size="36" font-weight="normal" fill="#666">Часть 09</text>
+<text x="1040" y="930" text-anchor="end" font-size="36" font-weight="normal" fill="#666">13:27</text>
+<line x1="100" y1="970" x2="1040" y2="970" stroke="#ddd" stroke-width="2"/>
+<text x="120" y="1030" font-size="36" font-weight="normal" fill="#666">Часть 10</text>
+<text x="1040" y="1030" text-anchor="end" font-size="36" font-weight="normal" fill="#666">15:06</text>
+<line x1="100" y1="1070" x2="1040" y2="1070" stroke="#ddd" stroke-width="2"/>
+<text x="120" y="1130" font-size="36" font-weight="normal" fill="#666">Часть 11</text>
+<text x="1040" y="1130" text-anchor="end" font-size="36" font-weight="normal" fill="#666">13:42</text>
+<line x1="100" y1="1170" x2="1040" y2="1170" stroke="#ddd" stroke-width="2"/>
+<text x="120" y="1230" font-size="36" font-weight="normal" fill="#666">Часть 12</text>
+<text x="1040" y="1230" text-anchor="end" font-size="36" font-weight="normal" fill="#666">08:14</text>
+<line x1="100" y1="1270" x2="1040" y2="1270" stroke="#ddd" stroke-width="2"/>
+<text x="120" y="1330" font-size="36" font-weight="normal" fill="#666">Часть 13</text>
+<text x="1040" y="1330" text-anchor="end" font-size="36" font-weight="normal" fill="#666">08:59</text>
+<line x1="100" y1="1370" x2="1040" y2="1370" stroke="#ddd" stroke-width="2"/>
+<text x="120" y="1430" font-size="36" font-weight="normal" fill="#666">Часть 14</text>
+<text x="1040" y="1430" text-anchor="end" font-size="36" font-weight="normal" fill="#666">08:53</text>
+<line x1="100" y1="1470" x2="1040" y2="1470" stroke="#ddd" stroke-width="2"/>
+<text x="120" y="1530" font-size="36" font-weight="normal" fill="#666">Часть 15</text>
+<text x="1040" y="1530" text-anchor="end" font-size="36" font-weight="normal" fill="#666">09:31</text>
+<line x1="100" y1="1570" x2="1040" y2="1570" stroke="#ddd" stroke-width="2"/>
+<text x="120" y="1630" font-size="36" font-weight="normal" fill="#666">Часть 16</text>
+<text x="1040" y="1630" text-anchor="end" font-size="36" font-weight="normal" fill="#666">11:02</text>
+<line x1="100" y1="1670" x2="1040" y2="1670" stroke="#ddd" stroke-width="2"/>
+<line x1="0" y1="2150" x2="1080" y2="2150" stroke="#e5e5e5" stroke-width="2"/>
+<rect x="111" y="2185" width="48" height="48" rx="8" fill="none" stroke="#111" stroke-width="5"/>
+<text x="135" y="2285" text-anchor="middle" font-size="30" fill="#111">Загрузки</text>
+<rect x="381" y="2185" width="48" height="48" rx="8" fill="none" stroke="#111" stroke-width="5"/>
+<text x="405" y="2285" text-anchor="middle" font-size="30" fill="#111">Скорость</text>
+<rect x="651" y="2185" width="48" height="48" rx="8" fill="none" stroke="#111" stroke-width="5"/>
+<text x="675" y="2285" text-anchor="middle" font-size="30" fill="#111">Таймер</text>
+<rect x="921" y="2185" width="48" height="48" rx="8" fill="none" stroke="#111" stroke-width="5"/>
+<text x="945" y="2285" text-anchor="middle" font-size="30" fill="#111">Инфо</text>
+</svg>
