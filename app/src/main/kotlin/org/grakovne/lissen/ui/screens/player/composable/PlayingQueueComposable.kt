@@ -110,9 +110,6 @@ fun PlayingQueueComposable(
 
   val expanded = playingQueueExpanded || forceExpanded
 
-  // while expanded on a phone the title lives in the top bar instead
-  val showQueueHeader = playingQueueExpanded.not() || forceExpanded
-
   val density = LocalDensity.current
 
   var collapsedPlayingQueueHeight by remember { mutableIntStateOf(0) }
@@ -141,6 +138,64 @@ fun PlayingQueueComposable(
     animationSpec = tween(durationMillis = 500),
     label = "playing_queue_font_size",
   )
+
+  /**
+   * Sheet-like gestures on top of the list: a fling up on the collapsed list expands it, a
+   * fling or a pull down past the first item collapses it again. Nothing is intercepted in the
+   * two-pane layout where the list is always expanded.
+   */
+  val sheetScrollConnection =
+    remember(expanded, playingQueueExpanded, forceExpanded, density) {
+      val collapseDragThresholdPx = with(density) { COLLAPSE_DRAG_THRESHOLD.toPx() }
+      var pulledDownPx = 0f
+
+      fun listAtTop() = listState.firstVisibleItemIndex == 0 && listState.firstVisibleItemScrollOffset == 0
+
+      fun collapsible() = playingQueueExpanded && forceExpanded.not()
+
+      object : NestedScrollConnection {
+        override fun onPreScroll(
+          available: Offset,
+          source: NestedScrollSource,
+        ): Offset {
+          if (available.y < 0f) pulledDownPx = 0f
+          return if (expanded) Offset.Zero else available
+        }
+
+        override fun onPostScroll(
+          consumed: Offset,
+          available: Offset,
+          source: NestedScrollSource,
+        ): Offset {
+          if (collapsible() && source == NestedScrollSource.UserInput && available.y > 0f && listAtTop()) {
+            pulledDownPx += available.y
+
+            if (pulledDownPx > collapseDragThresholdPx) {
+              pulledDownPx = 0f
+              viewModel.collapsePlayingQueue()
+            }
+          }
+
+          return Offset.Zero
+        }
+
+        override suspend fun onPreFling(available: Velocity): Velocity {
+          pulledDownPx = 0f
+
+          if (available.y < -expandFlingThreshold && !expanded) {
+            viewModel.expandPlayingQueue()
+            return available
+          }
+
+          if (available.y > collapseFlingThreshold && collapsible() && listAtTop()) {
+            viewModel.collapsePlayingQueue()
+            return available
+          }
+
+          return Velocity.Zero
+        }
+      }
+    }
 
   LaunchedEffect(currentTrackIndex) {
     awaitFrame()
@@ -180,19 +235,15 @@ fun PlayingQueueComposable(
             }
           }.padding(horizontal = 16.dp),
     ) {
-      if (showQueueHeader) {
-        PlayingQueueHeaderComposable(
-          title = provideNowPlayingTitle(libraryType, context),
-          textStyle = typography.titleMedium.copy(fontSize = fontSize.sp, fontWeight = FontWeight.SemiBold),
-          color = colorScheme.primary,
-          expanded = false,
-          switchable = forceExpanded.not(),
-          modifier = Modifier.padding(horizontal = 6.dp),
-          onToggle = { viewModel.expandPlayingQueue() },
-        )
+      PlayingQueueHeaderComposable(
+        title = provideNowPlayingTitle(libraryType, context),
+        textStyle = typography.titleMedium.copy(fontSize = fontSize.sp, fontWeight = FontWeight.SemiBold),
+        expanded = playingQueueExpanded,
+        draggable = forceExpanded.not(),
+        onToggle = { viewModel.togglePlayingQueue() },
+      )
 
-        Spacer(modifier = Modifier.height(12.dp))
-      }
+      Spacer(modifier = Modifier.height(12.dp))
 
       LazyColumn(
         contentPadding =
@@ -224,23 +275,7 @@ fun PlayingQueueComposable(
                   )
                 }
               }
-            }.nestedScroll(
-              object : NestedScrollConnection {
-                override fun onPreScroll(
-                  available: Offset,
-                  source: NestedScrollSource,
-                ): Offset = if (expanded) Offset.Zero else available
-
-                override suspend fun onPreFling(available: Velocity): Velocity {
-                  if (available.y < -expandFlingThreshold && !expanded) {
-                    viewModel.expandPlayingQueue()
-                    return available
-                  }
-
-                  return Velocity.Zero
-                }
-              },
-            ),
+            }.nestedScroll(sheetScrollConnection),
         state = listState,
       ) {
         val maxDuration = showingChapters.maxOfOrNull { it.duration } ?: 0.0
@@ -272,6 +307,8 @@ fun PlayingQueueComposable(
     }
   }
 }
+
+private val COLLAPSE_DRAG_THRESHOLD = 96.dp
 
 private suspend fun scrollPlayingQueue(
   currentTrackIndex: Int,

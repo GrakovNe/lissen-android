@@ -75,10 +75,8 @@ import org.grakovne.lissen.ui.screens.player.composable.MediaDetailComposable
 import org.grakovne.lissen.ui.screens.player.composable.NavigationBarComposable
 import org.grakovne.lissen.ui.screens.player.composable.PlayerSettingsComposable
 import org.grakovne.lissen.ui.screens.player.composable.PlayingQueueComposable
-import org.grakovne.lissen.ui.screens.player.composable.PlayingQueueHeaderComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackControlComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackDetailsComposable
-import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
 import org.grakovne.lissen.ui.screens.player.composable.fallback.PlayingQueueFallbackComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.BookCoverPlaceholder
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.ChapterNumberPlaceholder
@@ -201,6 +199,7 @@ fun PlayerScreen(
       TopAppBar(
         actions = {
           val queueControlsVisible = playingQueueExpanded || twoPane
+          val bookActionsVisible = playingQueueExpanded.not() || twoPane
 
           AnimatedContent(
             targetState = searchRequested,
@@ -231,39 +230,41 @@ fun PlayerScreen(
                     }
                   }
 
-                  IconButton(
-                    onClick = {
-                      if (isPlaybackReady) {
-                        playerViewModel.updateBookmarks()
-                        bookmarksSelected = true
-                      }
-                    },
-                    modifier =
-                      Modifier
-                        .padding(end = 4.dp)
-                        .testTag("playerBookmarksButton"),
-                  ) {
-                    Icon(
-                      imageVector = Icons.Outlined.Bookmarks,
-                      contentDescription = null,
-                    )
-                  }
+                  if (bookActionsVisible) {
+                    IconButton(
+                      onClick = {
+                        if (isPlaybackReady) {
+                          playerViewModel.updateBookmarks()
+                          bookmarksSelected = true
+                        }
+                      },
+                      modifier =
+                        Modifier
+                          .padding(end = 4.dp)
+                          .testTag("playerBookmarksButton"),
+                    ) {
+                      Icon(
+                        imageVector = Icons.Outlined.Bookmarks,
+                        contentDescription = null,
+                      )
+                    }
 
-                  IconButton(
-                    onClick = {
-                      if (isPlaybackReady) {
-                        settingsSelected = true
-                      }
-                    },
-                    modifier =
-                      Modifier
-                        .padding(end = 4.dp)
-                        .testTag("playerSettingsButton"),
-                  ) {
-                    Icon(
-                      imageVector = Icons.Outlined.Settings,
-                      contentDescription = stringResource(R.string.a11y_settings),
-                    )
+                    IconButton(
+                      onClick = {
+                        if (isPlaybackReady) {
+                          settingsSelected = true
+                        }
+                      },
+                      modifier =
+                        Modifier
+                          .padding(end = 4.dp)
+                          .testTag("playerSettingsButton"),
+                    ) {
+                      Icon(
+                        imageVector = Icons.Outlined.Settings,
+                        contentDescription = stringResource(R.string.a11y_settings),
+                      )
+                    }
                   }
                 }
               }
@@ -271,35 +272,16 @@ fun PlayerScreen(
           }
         },
         title = {
-          when (playingQueueExpanded && twoPane.not()) {
-            true -> {
-              PlayingQueueHeaderComposable(
-                title = provideNowPlayingTitle(libraryType, context),
-                textStyle = titleTextStyle,
-                color = colorScheme.onSurface,
-                expanded = true,
-                switchable = true,
-                modifier =
-                  Modifier
-                    .fillMaxWidth()
-                    .semantics { heading() },
-                onToggle = { playerViewModel.collapsePlayingQueue() },
-              )
-            }
-
-            false -> {
-              Text(
-                text = stringResource(R.string.player_screen_title),
-                style = titleTextStyle,
-                color = colorScheme.onSurface,
-                maxLines = 1,
-                modifier =
-                  Modifier
-                    .fillMaxWidth()
-                    .semantics { heading() },
-              )
-            }
-          }
+          Text(
+            text = stringResource(R.string.player_screen_title),
+            style = titleTextStyle,
+            color = colorScheme.onSurface,
+            maxLines = 1,
+            modifier =
+              Modifier
+                .fillMaxWidth()
+                .semantics { heading() },
+          )
         },
         navigationIcon = {
           IconButton(
@@ -595,7 +577,7 @@ private fun PlayerQueueSection(
       PlayingQueuePlaceholderComposable(
         libraryType = libraryType,
         modifier = modifier,
-        switchable = forceExpanded.not(),
+        draggable = forceExpanded.not(),
       )
     }
 

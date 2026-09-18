@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -28,7 +27,7 @@ import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlaying
 fun PlayingQueuePlaceholderComposable(
   libraryType: LibraryType,
   modifier: Modifier = Modifier,
-  switchable: Boolean = true,
+  draggable: Boolean = true,
 ) {
   val context = LocalContext.current
 
@@ -36,10 +35,8 @@ fun PlayingQueuePlaceholderComposable(
     PlayingQueueHeaderComposable(
       title = provideNowPlayingTitle(libraryType, context),
       textStyle = typography.titleMedium.copy(fontSize = typography.titleMedium.fontSize * 1.25f, fontWeight = FontWeight.SemiBold),
-      color = MaterialTheme.colorScheme.primary,
       expanded = false,
-      switchable = switchable,
-      modifier = Modifier.padding(horizontal = 6.dp),
+      draggable = draggable,
       onToggle = {},
     )
 
