@@ -394,7 +394,8 @@ class MediaRepository
       if (reordered.same(book)) return
 
       pause()
-      clearPreparedItem()
+      _mediaPreparingError.value = false
+      _isPlaybackReady.value = false
 
       val restored =
         location

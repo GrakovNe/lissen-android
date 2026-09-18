@@ -132,6 +132,8 @@ class PlaybackSynchronizationService
       val currentItem = currentItem ?: return
 
       if (muted) {
+        // keep the listening mark settled so the paused interval is not counted as listened later
+        listeningMark = accumulateListening(listeningMark, exoPlayer.isPlaying, SystemClock.elapsedRealtime())
         Timber.d("Skipping sync for ${currentItem.id}: it has just been marked as finished")
         return
       }

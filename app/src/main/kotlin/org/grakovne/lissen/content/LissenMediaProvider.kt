@@ -370,11 +370,15 @@ class LissenMediaProvider
      * Channel converters and the cache both hand items over in the canonical order;
      * the user-chosen order is applied here, once, for every consumer of the item.
      */
-    private fun applyOrdering(detailedItem: DetailedItem): DetailedItem =
-      when (detailedItem.libraryType) {
-        LibraryType.PODCAST -> ChapterOrdering.apply(detailedItem, preferences.getEpisodeOrdering(detailedItem.id))
+    private fun applyOrdering(detailedItem: DetailedItem): DetailedItem {
+      val configuration = preferences.getEpisodeOrdering(detailedItem.id)
+
+      return when {
+        configuration != null -> ChapterOrdering.apply(detailedItem, configuration)
+        detailedItem.libraryType == LibraryType.PODCAST -> ChapterOrdering.apply(detailedItem, configuration = null)
         else -> ChapterOrdering.canonical(detailedItem)
       }
+    }
 
     /**
      * A partially downloaded item may hold its progress inside a chapter that is not on the

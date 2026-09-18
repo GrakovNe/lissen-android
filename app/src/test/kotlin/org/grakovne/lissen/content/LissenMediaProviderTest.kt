@@ -172,6 +172,27 @@ class LissenMediaProviderTest {
       }
 
     @Test
+    fun `applies a stored ordering even when the cached item lost its library type`() =
+      runBlocking {
+        val item =
+          detailedItem(
+            chapters =
+              listOf(
+                chapter("c0", 0, 10.0, publishedAt = 1L),
+                chapter("c1", 1, 10.0, publishedAt = 2L),
+              ),
+          ).copy(libraryType = null)
+        every { preferences.isForceCache() } returns true
+        every { preferences.getEpisodeOrdering("book-1") } returns
+          EpisodeOrderingConfiguration(EpisodeOrderingOption.PUBLISHED_AT, LibraryOrderingDirection.DESCENDING)
+        coEvery { localCacheRepository.fetchBook("book-1") } returns item
+
+        val result = provider.fetchBook("book-1") as OperationResult.Success
+
+        assertEquals(listOf("c1", "c0"), result.data.chapters.map { it.id })
+      }
+
+    @Test
     fun `restores the canonical order for books whatever order the cache returns`() =
       runBlocking {
         val item =
