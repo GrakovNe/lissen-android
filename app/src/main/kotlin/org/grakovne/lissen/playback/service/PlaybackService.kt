@@ -159,7 +159,7 @@ class PlaybackService : MediaLibraryService() {
    * and the flag is sent only after any in-flight sync has settled.
    */
   private fun markAsFinished(item: DetailedItem) {
-    playbackSynchronizationService.muteSynchronization(item.id)
+    playbackSynchronizationService.muteSynchronization()
     exoPlayer.pause()
 
     playerServiceScope.launch {

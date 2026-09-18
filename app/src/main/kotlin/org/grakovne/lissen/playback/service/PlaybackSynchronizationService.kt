@@ -44,10 +44,10 @@ class PlaybackSynchronizationService
     private val syncLock = Mutex()
 
     /**
-     * Item whose progress must not be reported until playback starts again, so that a
-     * "mark as finished" is not reverted by the position sync that follows the pause.
+     * Set while the playing item has just been marked as finished: its position must not be
+     * reported until playback starts again, or the sync that follows the pause reverts the flag.
      */
-    private var mutedItemId: String? = null
+    private var muted = false
 
     init {
       exoPlayer.addListener(
@@ -57,7 +57,7 @@ class PlaybackSynchronizationService
             events: Player.Events,
           ) {
             if (player.isPlaying) {
-              mutedItemId = null
+              muted = false
             }
 
             if (syncEvents.any(events::contains)) {
@@ -73,13 +73,13 @@ class PlaybackSynchronizationService
       serviceScope.coroutineContext.cancelChildren()
       syncJob = null
       currentItem = item
-      mutedItemId = null
+      muted = false
       listeningMark = listeningMark.copy(playingSince = null)
     }
 
-    fun muteSynchronization(itemId: String) {
-      Timber.d("Muting playback synchronization for $itemId until playback resumes")
-      mutedItemId = itemId
+    fun muteSynchronization() {
+      Timber.d("Muting playback synchronization for ${currentItem?.id} until playback resumes")
+      muted = true
     }
 
     suspend fun markAsFinished(item: DetailedItem) {
@@ -131,7 +131,7 @@ class PlaybackSynchronizationService
       val overallProgress = getProgress(exoPlayer) ?: return
       val currentItem = currentItem ?: return
 
-      if (mutedItemId == currentItem.id) {
+      if (muted) {
         Timber.d("Skipping sync for ${currentItem.id}: it has just been marked as finished")
         return
       }
