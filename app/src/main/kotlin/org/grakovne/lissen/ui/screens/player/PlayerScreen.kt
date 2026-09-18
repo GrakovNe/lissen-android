@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Bookmarks
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -77,6 +78,7 @@ import org.grakovne.lissen.ui.screens.player.composable.PlayerSettingsComposable
 import org.grakovne.lissen.ui.screens.player.composable.PlayingQueueComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackControlComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackDetailsComposable
+import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
 import org.grakovne.lissen.ui.screens.player.composable.fallback.PlayingQueueFallbackComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.BookCoverPlaceholder
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.ChapterNumberPlaceholder
@@ -144,6 +146,17 @@ fun PlayerScreen(
   val episodeOrdering by playerViewModel.episodeOrdering.collectAsState()
 
   val markedAsFinishedToast = stringResource(R.string.player_settings_marked_as_finished)
+
+  val screenTitle =
+    when {
+      playingQueueExpanded && twoPane.not() -> {
+        provideNowPlayingTitle(libraryType, context)
+      }
+
+      else -> {
+        stringResource(R.string.player_screen_title)
+      }
+    }
 
   fun stepBack() {
     when {
@@ -250,6 +263,19 @@ fun PlayerScreen(
                     }
 
                     IconButton(
+                      onClick = { itemDetailsSelected = true },
+                      modifier =
+                        Modifier
+                          .padding(end = 4.dp)
+                          .testTag("playerInfoButton"),
+                    ) {
+                      Icon(
+                        imageVector = Icons.Outlined.Info,
+                        contentDescription = null,
+                      )
+                    }
+
+                    IconButton(
                       onClick = {
                         if (isPlaybackReady) {
                           settingsSelected = true
@@ -273,7 +299,7 @@ fun PlayerScreen(
         },
         title = {
           Text(
-            text = stringResource(R.string.player_screen_title),
+            text = screenTitle,
             style = titleTextStyle,
             color = colorScheme.onSurface,
             maxLines = 1,
@@ -299,7 +325,7 @@ fun PlayerScreen(
     },
     bottomBar = {
       if (playingBook == null || isPlaybackReady.not()) {
-        NavigationBarPlaceholderComposable()
+        NavigationBarPlaceholderComposable(libraryType = libraryType)
       } else {
         playingBook
           ?.let {
@@ -309,7 +335,6 @@ fun PlayerScreen(
               contentCachingModelView = cachingModelView,
               navController = navController,
               libraryType = libraryType,
-              onInfoRequested = { itemDetailsSelected = true },
             )
           }
       }
@@ -577,7 +602,6 @@ private fun PlayerQueueSection(
       PlayingQueuePlaceholderComposable(
         libraryType = libraryType,
         modifier = modifier,
-        expandable = forceExpanded.not(),
       )
     }
 

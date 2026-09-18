@@ -10,7 +10,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -20,24 +22,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.valentinilk.shimmer.shimmer
 import org.grakovne.lissen.domain.LibraryType
-import org.grakovne.lissen.ui.screens.player.composable.PlayingQueueHeaderComposable
 import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
 
 @Composable
 fun PlayingQueuePlaceholderComposable(
   libraryType: LibraryType,
   modifier: Modifier = Modifier,
-  expandable: Boolean = true,
 ) {
   val context = LocalContext.current
 
   Column(modifier = modifier.padding(horizontal = 16.dp)) {
-    PlayingQueueHeaderComposable(
-      title = provideNowPlayingTitle(libraryType, context),
-      textStyle = typography.titleMedium.copy(fontSize = typography.titleMedium.fontSize * 1.25f, fontWeight = FontWeight.SemiBold),
-      expanded = false,
-      expandable = expandable,
-      onToggle = {},
+    Text(
+      text = provideNowPlayingTitle(libraryType, context),
+      fontSize = typography.titleMedium.fontSize * 1.25f,
+      fontWeight = FontWeight.SemiBold,
+      color = MaterialTheme.colorScheme.primary,
+      modifier = Modifier.padding(horizontal = 6.dp),
     )
 
     Spacer(modifier = Modifier.height(12.dp))
