@@ -24,12 +24,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.common.buildBookmarkTitle
 import org.grakovne.lissen.content.LissenMediaProvider
+import org.grakovne.lissen.content.ordering.ChapterOrdering
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DetailedItem.Companion.same
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.service.DefaultTimerActivator
@@ -374,6 +376,56 @@ class MediaRepository
       }
     }
 
+    /**
+     * Re-fetches the playing item so a changed chapter order is applied, and rebuilds the
+     * queue at the same chapter and offset the listener was at. Playback pauses for the
+     * rebuild and resumes afterwards if it was running.
+     */
+    suspend fun reloadPlayingItem() {
+      val book = playingBook.value ?: return
+      val wasPlaying = isPlaying.value
+      val location = ChapterOrdering.locate(book, totalPosition.value)
+
+      Timber.d("Reloading playing item ${book.id} at $location (wasPlaying=$wasPlaying)")
+
+      pause()
+      clearPreparedItem()
+
+      withContext(Dispatchers.IO) {
+        mediaChannel
+          .fetchBook(book.id, book.libraryType)
+          .foldAsync(
+            onSuccess = { fetched ->
+              val restored =
+                location
+                  ?.let { ChapterOrdering.position(fetched, it) }
+                  ?.let { position ->
+                    fetched.copy(
+                      progress =
+                        MediaProgress(
+                          currentTime = position,
+                          isFinished = false,
+                          lastUpdate = System.currentTimeMillis(),
+                        ),
+                    )
+                  }
+                  ?: fetched
+
+              _playAfterPrepare.value = wasPlaying
+              startPreparingPlayback(restored)
+            },
+            onFailure = { _mediaPreparingError.value = true },
+          )
+      }
+    }
+
+    fun markAsFinished() {
+      val book = playingBook.value ?: return
+      Timber.d("Marking ${book.id} as finished")
+
+      eventBus.send(PlaybackCommand.MarkAsFinished(book))
+    }
+
     fun nextTrack() {
       val book = playingBook.value ?: return
       val overallPosition = totalPosition.value
@@ -585,25 +637,43 @@ class MediaRepository
       mediaChannel
         .createBookmark(
           libraryItemId = playingBook.id,
-          totalPosition = totalPosition,
+          totalPosition = ChapterOrdering.toCanonicalPosition(playingBook, totalPosition),
           title = bookmarkTitle,
         )
 
-      _bookmarks.value = mediaChannel.provideBookmarks(playingBook.id)
+      _bookmarks.value = mediaChannel.provideBookmarks(playingBook.id).inPlayingOrder(playingBook)
     }
 
     suspend fun dropBookmark(bookmark: Bookmark) {
       Timber.d("Dropping bookmark for ${bookmark.libraryItemId} at position=${bookmark.totalPosition.toInt()}s")
-      mediaChannel.dropBookmark(bookmark = bookmark)
+      val playingBook = _playingBook.value
 
-      _bookmarks.value = mediaChannel.provideBookmarks(bookmark.libraryItemId)
+      val stored =
+        when (playingBook?.id == bookmark.libraryItemId) {
+          true -> bookmark.copy(totalPosition = ChapterOrdering.toCanonicalPosition(playingBook, bookmark.totalPosition))
+          false -> bookmark
+        }
+
+      mediaChannel.dropBookmark(bookmark = stored)
+
+      _bookmarks.value = mediaChannel.provideBookmarks(bookmark.libraryItemId).inPlayingOrder(playingBook)
     }
 
     suspend fun updateBookmarks() {
       val book = playingBook.value ?: return
       val bookmarks = withContext(Dispatchers.IO) { mediaChannel.updateAndProvideBookmarks(book.id) }
 
-      _bookmarks.value = bookmarks
+      _bookmarks.value = bookmarks.inPlayingOrder(book)
+    }
+
+    /**
+     * Bookmarks are stored and sent to the server as positions in the canonical order;
+     * the player and the UI work in the order the listener has chosen.
+     */
+    private fun List<Bookmark>.inPlayingOrder(book: DetailedItem?): List<Bookmark> {
+      if (book == null) return this
+
+      return map { it.copy(totalPosition = ChapterOrdering.fromCanonicalPosition(book, it.totalPosition)) }
     }
 
     private fun withMain(action: () -> Unit) {

@@ -379,3 +379,56 @@ val MIGRATION_20_21 =
       db.execSQL("CREATE INDEX IF NOT EXISTS index_detailed_books_seriesId ON detailed_books(seriesId)")
     }
   }
+
+/**
+ * Chapters and files get an explicit canonical position plus the keys the episode ordering
+ * needs. Rows used to be appended on every re-cache (auto-generated key, no delete), so the
+ * duplicates are collapsed first and the position is backfilled from the stored bounds.
+ */
+val MIGRATION_21_22 =
+  object : Migration(21, 22) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+      db.execSQL(
+        """
+        DELETE FROM book_chapters
+        WHERE id NOT IN (
+          SELECT MAX(id) FROM book_chapters GROUP BY bookId, bookChapterId
+        )
+        """.trimIndent(),
+      )
+      db.execSQL(
+        """
+        DELETE FROM book_files
+        WHERE id NOT IN (
+          SELECT MAX(id) FROM book_files GROUP BY bookId, bookFileId
+        )
+        """.trimIndent(),
+      )
+
+      db.execSQL("ALTER TABLE book_chapters ADD COLUMN chapterIndex INTEGER NOT NULL DEFAULT 0")
+      db.execSQL("ALTER TABLE book_chapters ADD COLUMN publishedAt INTEGER")
+      db.execSQL("ALTER TABLE book_chapters ADD COLUMN season TEXT")
+      db.execSQL("ALTER TABLE book_chapters ADD COLUMN episode TEXT")
+      db.execSQL("ALTER TABLE book_chapters ADD COLUMN fileName TEXT")
+      db.execSQL("ALTER TABLE book_files ADD COLUMN fileIndex INTEGER NOT NULL DEFAULT 0")
+
+      db.execSQL(
+        """
+        UPDATE book_chapters SET chapterIndex = (
+          SELECT COUNT(*) FROM book_chapters other
+          WHERE other.bookId = book_chapters.bookId
+            AND (other.start < book_chapters.start
+              OR (other.start = book_chapters.start AND other.id < book_chapters.id))
+        )
+        """.trimIndent(),
+      )
+      db.execSQL(
+        """
+        UPDATE book_files SET fileIndex = (
+          SELECT COUNT(*) FROM book_files other
+          WHERE other.bookId = book_files.bookId AND other.id < book_files.id
+        )
+        """.trimIndent(),
+      )
+    }
+  }

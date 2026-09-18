@@ -78,6 +78,7 @@ data class BookFileEntity(
   val duration: Double,
   val mimeType: String,
   val bookId: String,
+  val fileIndex: Int = 0,
 ) : Serializable
 
 @Keep
@@ -103,6 +104,11 @@ data class BookChapterEntity(
   val title: String,
   val bookId: String,
   val isCached: Boolean,
+  val chapterIndex: Int = 0,
+  val publishedAt: Long? = null,
+  val season: String? = null,
+  val episode: String? = null,
+  val fileName: String? = null,
 ) : Serializable
 
 @Keep

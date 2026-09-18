@@ -3,6 +3,7 @@ package org.grakovne.lissen.channel.audiobookshelf.common.client
 import okhttp3.ResponseBody
 import org.grakovne.lissen.channel.audiobookshelf.common.api.Cacheable
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressUpdateRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarkRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarksItemResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.connection.ConnectionInfoResponse
@@ -31,6 +32,7 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Headers
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -59,6 +61,12 @@ interface AudiobookshelfApiClient {
   suspend fun fetchLibraryItemProgress(
     @Path("itemId") itemId: String,
   ): Response<MediaProgressResponse>
+
+  @PATCH("api/me/progress/{itemId}")
+  suspend fun updateLibraryItemProgress(
+    @Path("itemId") itemId: String,
+    @Body request: MediaProgressUpdateRequest,
+  ): Response<Unit>
 
   @POST("api/authorize")
   suspend fun fetchConnectionInfo(): Response<ConnectionInfoResponse>

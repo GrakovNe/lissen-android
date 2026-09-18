@@ -11,6 +11,7 @@ import okio.Buffer
 import okio.buffer
 import okio.sink
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressUpdateRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarkRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarksItemResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.BookmarksResponse
@@ -237,6 +238,11 @@ class AudioBookshelfRepository
         it.fetchPersonalizedFeed(
           libraryId = libraryId,
         )
+      }
+
+    suspend fun markAsFinished(itemId: String): OperationResult<Unit> =
+      audioBookShelfApiService.makeRequest {
+        it.updateLibraryItemProgress(itemId = itemId, request = MediaProgressUpdateRequest(isFinished = true))
       }
 
     suspend fun fetchLibraryItemProgress(itemId: String): OperationResult<MediaProgressResponse> =

@@ -11,6 +11,8 @@ import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.content.LissenMediaProvider
@@ -39,6 +41,13 @@ class PlaybackSynchronizationService
     private val serviceScope = MainScope()
     private var syncJob: Job? = null
     private val syncRunner = CoalescingRunner<SyncSnapshot>()
+    private val syncLock = Mutex()
+
+    /**
+     * Item whose progress must not be reported until playback starts again, so that a
+     * "mark as finished" is not reverted by the position sync that follows the pause.
+     */
+    private var mutedItemId: String? = null
 
     init {
       exoPlayer.addListener(
@@ -47,6 +56,10 @@ class PlaybackSynchronizationService
             player: Player,
             events: Player.Events,
           ) {
+            if (player.isPlaying) {
+              mutedItemId = null
+            }
+
             if (syncEvents.any(events::contains)) {
               handleSyncEvent()
             }
@@ -60,7 +73,29 @@ class PlaybackSynchronizationService
       serviceScope.coroutineContext.cancelChildren()
       syncJob = null
       currentItem = item
+      mutedItemId = null
       listeningMark = listeningMark.copy(playingSince = null)
+    }
+
+    fun muteSynchronization(itemId: String) {
+      Timber.d("Muting playback synchronization for $itemId until playback resumes")
+      mutedItemId = itemId
+    }
+
+    suspend fun markAsFinished(item: DetailedItem) {
+      serviceScope.coroutineContext.cancelChildren()
+      syncJob = null
+
+      withContext(Dispatchers.IO) {
+        syncLock.withLock {
+          mediaChannel
+            .markAsFinished(item)
+            .fold(
+              onSuccess = { Timber.d("Marked ${item.id} as finished") },
+              onFailure = { Timber.w("Unable to mark ${item.id} as finished on the server: ${it.message}") },
+            )
+        }
+      }
     }
 
     fun cancelSynchronization() {
@@ -96,6 +131,11 @@ class PlaybackSynchronizationService
       val overallProgress = getProgress(exoPlayer) ?: return
       val currentItem = currentItem ?: return
 
+      if (mutedItemId == currentItem.id) {
+        Timber.d("Skipping sync for ${currentItem.id}: it has just been marked as finished")
+        return
+      }
+
       Timber.d("Trying to sync $overallProgress for ${currentItem.id}")
 
       if (overallProgress.currentTotalTime == 0.0) {
@@ -114,7 +154,7 @@ class PlaybackSynchronizationService
       withContext(Dispatchers.IO) {
         syncRunner.submit(snapshot) { value ->
           try {
-            performSync(currentItem, value)
+            syncLock.withLock { performSync(currentItem, value) }
           } catch (e: Exception) {
             Timber.e(e, "Error during sync")
           }

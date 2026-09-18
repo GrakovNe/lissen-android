@@ -80,6 +80,11 @@ class PlaybackService : MediaLibraryService() {
             Timber.d("Command received: CANCEL_TIMER")
             cancelTimer()
           }
+
+          is PlaybackCommand.MarkAsFinished -> {
+            Timber.d("Command received: MARK_AS_FINISHED bookId=${command.item.id}")
+            markAsFinished(command.item)
+          }
         }
       }
     }
@@ -145,6 +150,20 @@ class PlaybackService : MediaLibraryService() {
       awaitAll(prepareSession, prepareQueue)
 
       playbackEventBus.emit(PlaybackEvent.PlaybackReady)
+    }
+  }
+
+  /**
+   * The server drops the finished flag as soon as a session sync reports a position that is
+   * not near the end, so the synchronization is muted for this item before the player pauses
+   * and the flag is sent only after any in-flight sync has settled.
+   */
+  private fun markAsFinished(item: DetailedItem) {
+    playbackSynchronizationService.muteSynchronization(item.id)
+    exoPlayer.pause()
+
+    playerServiceScope.launch {
+      playbackSynchronizationService.markAsFinished(item)
     }
   }
 

@@ -74,7 +74,7 @@ interface CachedBookDao {
     val bookFiles =
       book
         .files
-        .map { file ->
+        .mapIndexed { index, file ->
           BookFileEntity(
             bookFileId = file.id,
             name = file.name,
@@ -82,6 +82,7 @@ interface CachedBookDao {
             mimeType = file.mimeType,
             bookId = book.id,
             size = file.size ?: 0,
+            fileIndex = index,
           )
         }
 
@@ -112,6 +113,11 @@ interface CachedBookDao {
             title = chapter.title,
             bookId = book.id,
             isCached = cached,
+            chapterIndex = chapter.index,
+            publishedAt = chapter.publishedAt,
+            season = chapter.season,
+            episode = chapter.episode,
+            fileName = chapter.fileName,
           )
         }
 
@@ -128,7 +134,9 @@ interface CachedBookDao {
         }
 
     upsertBook(bookEntity)
+    deleteBookFiles(book.id)
     upsertBookFiles(bookFiles)
+    deleteBookChapters(book.id)
     upsertBookChapters(bookChapters)
     mediaProgress?.let { upsertMediaProgress(it) }
   }
@@ -241,6 +249,12 @@ interface CachedBookDao {
 
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   suspend fun upsertBook(book: BookEntity)
+
+  @Query("DELETE FROM book_files WHERE bookId = :bookId")
+  suspend fun deleteBookFiles(bookId: String)
+
+  @Query("DELETE FROM book_chapters WHERE bookId = :bookId")
+  suspend fun deleteBookChapters(bookId: String)
 
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   suspend fun upsertBookFiles(files: List<BookFileEntity>)

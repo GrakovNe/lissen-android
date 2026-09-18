@@ -287,6 +287,8 @@ class LibraryAudiobookshelfChannel
           request = buildPlaybackStartRequest(supportedMimeTypes, deviceId),
         ).map { sessionResponseConverter.apply(it) }
 
+    override suspend fun markAsFinished(bookId: String): OperationResult<Unit> = dataRepository.markAsFinished(bookId)
+
     override suspend fun fetchBook(bookId: String): OperationResult<DetailedItem> =
       coroutineScope {
         val book = async { dataRepository.fetchBook(bookId) }
