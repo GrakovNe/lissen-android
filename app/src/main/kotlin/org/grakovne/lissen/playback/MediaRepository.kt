@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.common.buildBookmarkTitle
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.ordering.ChapterOrdering
@@ -377,46 +378,41 @@ class MediaRepository
     }
 
     /**
-     * Re-fetches the playing item so a changed chapter order is applied, and rebuilds the
-     * queue at the same chapter and offset the listener was at. Playback pauses for the
-     * rebuild and resumes afterwards if it was running.
+     * Applies a new chapter order to the item already in memory and rebuilds the queue at the
+     * same chapter and offset the listener was at. No network involved: the order is a pure
+     * function of the chapter keys the item carries. Playback pauses for the rebuild and
+     * resumes afterwards if it was running.
      */
-    suspend fun reloadPlayingItem() {
+    fun reorderPlayingItem(configuration: EpisodeOrderingConfiguration?) {
       val book = playingBook.value ?: return
       val wasPlaying = isPlaying.value
       val location = ChapterOrdering.locate(book, totalPosition.value)
 
-      Timber.d("Reloading playing item ${book.id} at $location (wasPlaying=$wasPlaying)")
+      Timber.d("Reordering playing item ${book.id} to $configuration at $location (wasPlaying=$wasPlaying)")
+
+      val reordered = ChapterOrdering.apply(book, configuration)
+      if (reordered.same(book)) return
 
       pause()
       clearPreparedItem()
 
-      withContext(Dispatchers.IO) {
-        mediaChannel
-          .fetchBook(book.id, book.libraryType)
-          .foldAsync(
-            onSuccess = { fetched ->
-              val restored =
-                location
-                  ?.let { ChapterOrdering.position(fetched, it) }
-                  ?.let { position ->
-                    fetched.copy(
-                      progress =
-                        MediaProgress(
-                          currentTime = position,
-                          isFinished = false,
-                          lastUpdate = System.currentTimeMillis(),
-                        ),
-                    )
-                  }
-                  ?: fetched
+      val restored =
+        location
+          ?.let { ChapterOrdering.position(reordered, it) }
+          ?.let { position ->
+            reordered.copy(
+              progress =
+                MediaProgress(
+                  currentTime = position,
+                  isFinished = false,
+                  lastUpdate = System.currentTimeMillis(),
+                ),
+            )
+          }
+          ?: reordered
 
-              _playAfterPrepare.value = wasPlaying
-              startPreparingPlayback(restored)
-            },
-            onFailure = { _mediaPreparingError.value = true },
-          )
-      }
+      _playAfterPrepare.value = wasPlaying
+      startPreparingPlayback(restored)
     }
 
     fun markAsFinished() {

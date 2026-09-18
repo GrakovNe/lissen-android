@@ -207,8 +207,7 @@ class PlayerViewModel
       Timber.d("User action: setEpisodeOrdering $configuration for ${playingBook.id}")
 
       libraryPreferences.saveEpisodeOrdering(playingBook.id, configuration)
-
-      viewModelScope.launch { mediaRepository.reloadPlayingItem() }
+      mediaRepository.reorderPlayingItem(configuration)
     }
 
     fun markAsFinished() {
