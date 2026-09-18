@@ -3,9 +3,13 @@ package org.grakovne.lissen.ui.screens.player
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -71,8 +75,10 @@ import org.grakovne.lissen.ui.screens.player.composable.MediaDetailComposable
 import org.grakovne.lissen.ui.screens.player.composable.NavigationBarComposable
 import org.grakovne.lissen.ui.screens.player.composable.PlayerSettingsComposable
 import org.grakovne.lissen.ui.screens.player.composable.PlayingQueueComposable
+import org.grakovne.lissen.ui.screens.player.composable.PlayingQueueHeaderComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackControlComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackDetailsComposable
+import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
 import org.grakovne.lissen.ui.screens.player.composable.fallback.PlayingQueueFallbackComposable
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.BookCoverPlaceholder
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.ChapterNumberPlaceholder
@@ -265,16 +271,35 @@ fun PlayerScreen(
           }
         },
         title = {
-          Text(
-            text = stringResource(R.string.player_screen_title),
-            style = titleTextStyle,
-            color = colorScheme.onSurface,
-            maxLines = 1,
-            modifier =
-              Modifier
-                .fillMaxWidth()
-                .semantics { heading() },
-          )
+          when (playingQueueExpanded && twoPane.not()) {
+            true -> {
+              PlayingQueueHeaderComposable(
+                title = provideNowPlayingTitle(libraryType, context),
+                textStyle = titleTextStyle,
+                color = colorScheme.onSurface,
+                expanded = true,
+                switchable = true,
+                modifier =
+                  Modifier
+                    .fillMaxWidth()
+                    .semantics { heading() },
+                onToggle = { playerViewModel.collapsePlayingQueue() },
+              )
+            }
+
+            false -> {
+              Text(
+                text = stringResource(R.string.player_screen_title),
+                style = titleTextStyle,
+                color = colorScheme.onSurface,
+                maxLines = 1,
+                modifier =
+                  Modifier
+                    .fillMaxWidth()
+                    .semantics { heading() },
+              )
+            }
+          }
         },
         navigationIcon = {
           IconButton(
@@ -353,16 +378,21 @@ fun PlayerScreen(
               .padding(innerPadding),
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-          PlayerArtworkAndControls(
-            isPlaybackReady = isPlaybackReady,
-            bookTitle = bookTitle,
-            bookSubtitle = bookSubtitle,
-            playerViewModel = playerViewModel,
-            imageLoader = imageLoader,
-            libraryType = libraryType,
-            settingsViewModel = settingsViewModel,
-            coverVisible = playingQueueExpanded.not(),
-          )
+          AnimatedVisibility(
+            visible = playingQueueExpanded.not(),
+            enter = expandVertically(animationSpec = tween(400)),
+            exit = shrinkVertically(animationSpec = tween(400)),
+          ) {
+            PlayerArtworkAndControls(
+              isPlaybackReady = isPlaybackReady,
+              bookTitle = bookTitle,
+              bookSubtitle = bookSubtitle,
+              playerViewModel = playerViewModel,
+              imageLoader = imageLoader,
+              libraryType = libraryType,
+              settingsViewModel = settingsViewModel,
+            )
+          }
 
           Spacer(modifier = Modifier.height(6.dp))
 
@@ -421,20 +451,18 @@ private fun PlayerArtworkAndControls(
   libraryType: LibraryType,
   settingsViewModel: SettingsViewModel,
   modifier: Modifier = Modifier,
-  coverVisible: Boolean = true,
 ) {
   Column(
     horizontalAlignment = Alignment.CenterHorizontally,
     modifier = modifier,
   ) {
     if (!isPlaybackReady) {
-      TrackDetailsPlaceholderComposable(bookTitle, bookSubtitle, coverVisible = coverVisible)
+      TrackDetailsPlaceholderComposable(bookTitle, bookSubtitle)
     } else {
       TrackDetailsComposable(
         viewModel = playerViewModel,
         imageLoader = imageLoader,
         libraryType = libraryType,
-        coverVisible = coverVisible,
       )
     }
 

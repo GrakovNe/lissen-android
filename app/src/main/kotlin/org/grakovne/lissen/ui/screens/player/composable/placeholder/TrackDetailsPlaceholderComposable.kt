@@ -44,7 +44,6 @@ fun TrackDetailsPlaceholderComposable(
   bookTitle: String,
   bookSubtitle: String?,
   modifier: Modifier = Modifier,
-  coverVisible: Boolean = true,
 ) {
   val configuration = LocalConfiguration.current
   val maxImageHeight = configuration.screenHeightDp.dp * 0.33f
@@ -53,16 +52,14 @@ fun TrackDetailsPlaceholderComposable(
     horizontalAlignment = Alignment.CenterHorizontally,
     modifier = modifier,
   ) {
-    if (coverVisible) {
-      BookCoverPlaceholder(
-        modifier =
-          Modifier
-            .heightIn(max = maxImageHeight)
-            .aspectRatio(1f),
-      )
+    BookCoverPlaceholder(
+      modifier =
+        Modifier
+          .heightIn(max = maxImageHeight)
+          .aspectRatio(1f),
+    )
 
-      Spacer(modifier = Modifier.height(12.dp))
-    }
+    Spacer(modifier = Modifier.height(12.dp))
 
     Text(
       text = bookTitle,

@@ -10,12 +10,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.valentinilk.shimmer.shimmer
 import org.grakovne.lissen.domain.LibraryType
@@ -33,9 +35,11 @@ fun PlayingQueuePlaceholderComposable(
   Column(modifier = modifier.padding(horizontal = 16.dp)) {
     PlayingQueueHeaderComposable(
       title = provideNowPlayingTitle(libraryType, context),
-      fontSize = typography.titleMedium.fontSize * 1.25f,
+      textStyle = typography.titleMedium.copy(fontSize = typography.titleMedium.fontSize * 1.25f, fontWeight = FontWeight.SemiBold),
+      color = MaterialTheme.colorScheme.primary,
       expanded = false,
       switchable = switchable,
+      modifier = Modifier.padding(horizontal = 6.dp),
       onToggle = {},
     )
 

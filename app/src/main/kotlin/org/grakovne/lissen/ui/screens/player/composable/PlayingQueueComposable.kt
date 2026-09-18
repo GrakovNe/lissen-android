@@ -41,6 +41,7 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -109,6 +110,9 @@ fun PlayingQueueComposable(
 
   val expanded = playingQueueExpanded || forceExpanded
 
+  // while expanded on a phone the title lives in the top bar instead
+  val showQueueHeader = playingQueueExpanded.not() || forceExpanded
+
   val density = LocalDensity.current
 
   var collapsedPlayingQueueHeight by remember { mutableIntStateOf(0) }
@@ -176,15 +180,19 @@ fun PlayingQueueComposable(
             }
           }.padding(horizontal = 16.dp),
     ) {
-      PlayingQueueHeaderComposable(
-        title = provideNowPlayingTitle(libraryType, context),
-        fontSize = fontSize.sp,
-        expanded = playingQueueExpanded,
-        switchable = forceExpanded.not(),
-        onToggle = { viewModel.togglePlayingQueue() },
-      )
+      if (showQueueHeader) {
+        PlayingQueueHeaderComposable(
+          title = provideNowPlayingTitle(libraryType, context),
+          textStyle = typography.titleMedium.copy(fontSize = fontSize.sp, fontWeight = FontWeight.SemiBold),
+          color = colorScheme.primary,
+          expanded = false,
+          switchable = forceExpanded.not(),
+          modifier = Modifier.padding(horizontal = 6.dp),
+          onToggle = { viewModel.expandPlayingQueue() },
+        )
 
-      Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(12.dp))
+      }
 
       LazyColumn(
         contentPadding =
