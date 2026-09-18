@@ -27,7 +27,7 @@ import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlaying
 fun PlayingQueuePlaceholderComposable(
   libraryType: LibraryType,
   modifier: Modifier = Modifier,
-  draggable: Boolean = true,
+  expandable: Boolean = true,
 ) {
   val context = LocalContext.current
 
@@ -35,9 +35,8 @@ fun PlayingQueuePlaceholderComposable(
     PlayingQueueHeaderComposable(
       title = provideNowPlayingTitle(libraryType, context),
       textStyle = typography.titleMedium.copy(fontSize = typography.titleMedium.fontSize * 1.25f, fontWeight = FontWeight.SemiBold),
-      expanded = false,
-      draggable = draggable,
-      onToggle = {},
+      expandable = expandable,
+      onExpand = {},
     )
 
     Spacer(modifier = Modifier.height(12.dp))
