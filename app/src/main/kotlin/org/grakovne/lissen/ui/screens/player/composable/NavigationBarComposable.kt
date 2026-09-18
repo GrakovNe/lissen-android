@@ -4,8 +4,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.outlined.CloudDownload
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.SlowMotionVideo
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material3.CircularProgressIndicator
@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -56,12 +57,12 @@ fun NavigationBarComposable(
   navController: AppNavigationService,
   modifier: Modifier = Modifier,
   libraryType: LibraryType,
+  onInfoRequested: () -> Unit,
 ) {
   val cacheProgress: CacheState by contentCachingModelView.getProgress(book.id).collectAsState()
   val timerOption by playerViewModel.timerOption.collectAsState()
   val timerRemaining by playerViewModel.timerRemaining.collectAsState()
   val playbackSpeed by playerViewModel.playbackSpeed.collectAsState()
-  val playingQueueExpanded by playerViewModel.playingQueueExpanded.collectAsState()
   val hasEpisodes = book.chapters.isNotEmpty()
 
   val isMetadataCached by remember(book.id) { contentCachingModelView.provideCacheState(book.id) }.collectAsState(initial = false)
@@ -85,42 +86,6 @@ fun NavigationBarComposable(
     ) {
       val iconSize = 24.dp
       val labelStyle = typography.labelSmall.copy(fontSize = 10.sp)
-
-      NavigationBarItem(
-        enabled = hasEpisodes,
-        icon = {
-          Icon(
-            Icons.AutoMirrored.Rounded.QueueMusic,
-            contentDescription =
-              when (libraryType) {
-                LibraryType.LIBRARY -> stringResource(R.string.player_screen_chapter_list_navigation_library)
-                LibraryType.PODCAST -> stringResource(R.string.player_screen_chapter_list_navigation_podcast)
-                LibraryType.UNKNOWN -> stringResource(R.string.player_screen_chapter_list_navigation_items)
-              },
-            modifier = Modifier.size(iconSize),
-          )
-        },
-        label = {
-          Text(
-            text =
-              when (libraryType) {
-                LibraryType.LIBRARY -> stringResource(R.string.player_screen_chapter_list_navigation_library)
-                LibraryType.PODCAST -> stringResource(R.string.player_screen_chapter_list_navigation_podcast)
-                LibraryType.UNKNOWN -> stringResource(R.string.player_screen_chapter_list_navigation_items)
-              },
-            style = labelStyle,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-          )
-        },
-        selected = playingQueueExpanded,
-        onClick = { playerViewModel.togglePlayingQueue() },
-        colors =
-          NavigationBarItemDefaults.colors(
-            selectedIconColor = colorScheme.primary,
-            indicatorColor = colorScheme.surfaceContainer,
-          ),
-      )
 
       NavigationBarItem(
         icon = {
@@ -212,6 +177,32 @@ fun NavigationBarComposable(
         enabled = hasEpisodes,
         selected = false,
         onClick = { timerExpanded = true },
+        colors =
+          NavigationBarItemDefaults.colors(
+            selectedIconColor = colorScheme.primary,
+            indicatorColor = colorScheme.surfaceContainer,
+          ),
+      )
+
+      NavigationBarItem(
+        icon = {
+          Icon(
+            Icons.Outlined.Info,
+            contentDescription = stringResource(R.string.player_screen_info_navigation),
+            modifier = Modifier.size(iconSize),
+          )
+        },
+        label = {
+          Text(
+            text = stringResource(R.string.player_screen_info_navigation),
+            style = labelStyle,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+          )
+        },
+        selected = false,
+        onClick = { onInfoRequested() },
+        modifier = Modifier.testTag("playerInfoButton"),
         colors =
           NavigationBarItemDefaults.colors(
             selectedIconColor = colorScheme.primary,

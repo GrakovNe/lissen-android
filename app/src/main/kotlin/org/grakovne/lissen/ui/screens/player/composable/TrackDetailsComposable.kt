@@ -1,6 +1,10 @@
 package org.grakovne.lissen.ui.screens.player.composable
 
 import android.content.Context
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -70,6 +74,7 @@ fun TrackDetailsComposable(
   viewModel: PlayerViewModel,
   modifier: Modifier = Modifier,
   imageLoader: ImageLoader,
+  coverVisible: Boolean = true,
 ) {
   val currentTrackIndex by viewModel.currentChapterIndex.collectAsState()
   val book by viewModel.book.collectAsState()
@@ -83,16 +88,24 @@ fun TrackDetailsComposable(
     horizontalAlignment = Alignment.CenterHorizontally,
     modifier = modifier,
   ) {
-    BookCover(
-      book = book,
-      imageLoader = imageLoader,
-      modifier =
-        Modifier
-          .heightIn(max = maxImageHeight)
-          .aspectRatio(1f),
-    )
+    AnimatedVisibility(
+      visible = coverVisible,
+      enter = expandVertically(animationSpec = tween(400)),
+      exit = shrinkVertically(animationSpec = tween(400)),
+    ) {
+      Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        BookCover(
+          book = book,
+          imageLoader = imageLoader,
+          modifier =
+            Modifier
+              .heightIn(max = maxImageHeight)
+              .aspectRatio(1f),
+        )
 
-    Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(12.dp))
+      }
+    }
 
     Text(
       text = book?.title.orEmpty(),

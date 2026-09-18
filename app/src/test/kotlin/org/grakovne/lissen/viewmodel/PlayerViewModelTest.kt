@@ -18,6 +18,7 @@ import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.TimerOption
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.MediaRepository
 import org.junit.jupiter.api.AfterEach
@@ -47,6 +48,7 @@ class PlayerViewModelTest {
 
   private val mediaRepository = mockk<MediaRepository>(relaxed = true)
   private val preferences = mockk<PlaybackPreferences>(relaxed = true)
+  private val libraryPreferences = mockk<LibraryPreferences>(relaxed = true)
   private lateinit var viewModel: PlayerViewModel
 
   @BeforeEach
@@ -66,7 +68,9 @@ class PlayerViewModelTest {
     every { mediaRepository.timerOption } returns timerOption
     every { mediaRepository.timerRemaining } returns timerRemaining
 
-    viewModel = PlayerViewModel(mediaRepository, preferences)
+    every { libraryPreferences.episodeOrderingFlow } returns MutableStateFlow(emptyMap())
+
+    viewModel = PlayerViewModel(mediaRepository, preferences, libraryPreferences)
   }
 
   @AfterEach

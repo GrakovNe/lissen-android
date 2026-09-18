@@ -10,6 +10,7 @@
     <string name="a11y_delete_from_cache">Delete from cache</string>
     <string name="a11y_available_offline">Available offline</string>
     <string name="a11y_collapse_queue">Collapse queue</string>
+    <string name="a11y_expand_queue">Expand queue</string>
     <string name="a11y_open">Open</string>
     <string name="a11y_previous_track">Previous track</string>
     <string name="a11y_rewind_seconds">Rewind %1$d seconds</string>
@@ -115,6 +116,13 @@
     <string name="player_cover_widget_label">Now playing (cover)</string>
     <string name="the_offline_podcasts_is_empty">No saved podcasts yet</string>
     <string name="player_screen_downloads_navigation">Downloads</string>
+    <string name="player_screen_info_navigation">Info</string>
+    <string name="player_settings_mark_as_finished">Mark as finished</string>
+    <string name="player_settings_marked_as_finished">Marked as finished</string>
+    <string name="episode_ordering_published_at_option">Published date</string>
+    <string name="episode_ordering_season_option">Season</string>
+    <string name="episode_ordering_episode_option">Episode</string>
+    <string name="episode_ordering_file_name_option">File name</string>
     <string name="downloads_menu_download_book">Download book</string>
     <string name="downloads_menu_download_podcast">Download podcast</string>
     <string name="downloads_menu_download_unknown">Downloads</string>

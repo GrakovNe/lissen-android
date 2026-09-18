@@ -6,14 +6,19 @@ import androidx.lifecycle.viewModelScope
 import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.TimerOption
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.MediaRepository
 import timber.log.Timber
@@ -26,8 +31,13 @@ class PlayerViewModel
   constructor(
     private val mediaRepository: MediaRepository,
     private val preferences: PlaybackPreferences,
+    private val libraryPreferences: LibraryPreferences,
   ) : ViewModel() {
     val book: StateFlow<DetailedItem?> = mediaRepository.playingBook
+
+    val episodeOrdering: StateFlow<EpisodeOrderingConfiguration?> =
+      combine(book, libraryPreferences.episodeOrderingFlow) { item, orderings -> item?.let { orderings[it.id] } }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
 
     val currentChapterIndex: StateFlow<Int> = mediaRepository.currentChapterIndex
     val currentChapterPosition: StateFlow<Double> = mediaRepository.currentChapterPosition
@@ -190,6 +200,20 @@ class PlayerViewModel
     fun prepareAndPlay() {
       val playingBook = preferences.getPlayingItem() ?: return
       mediaRepository.prepareAndPlay(playingBook)
+    }
+
+    fun setEpisodeOrdering(configuration: EpisodeOrderingConfiguration) {
+      val playingBook = book.value ?: return
+      Timber.d("User action: setEpisodeOrdering $configuration for ${playingBook.id}")
+
+      libraryPreferences.saveEpisodeOrdering(playingBook.id, configuration)
+
+      viewModelScope.launch { mediaRepository.reloadPlayingItem() }
+    }
+
+    fun markAsFinished() {
+      Timber.d("User action: markAsFinished bookId=${book.value?.id}")
+      mediaRepository.markAsFinished()
     }
 
     companion object {

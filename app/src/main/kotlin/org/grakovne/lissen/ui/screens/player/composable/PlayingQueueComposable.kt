@@ -31,7 +31,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -54,7 +53,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -123,8 +121,6 @@ fun PlayingQueueComposable(
   val playingQueueExpanded by viewModel.playingQueueExpanded.collectAsState()
 
   val expanded = playingQueueExpanded || forceExpanded
-
-  val showQueueHeader = playingQueueExpanded.not() || forceExpanded
 
   val density = LocalDensity.current
 
@@ -243,17 +239,15 @@ fun PlayingQueueComposable(
             }
           }.padding(horizontal = 16.dp),
     ) {
-      if (showQueueHeader) {
-        Text(
-          text = provideNowPlayingTitle(libraryType, context),
-          fontSize = fontSize.sp,
-          fontWeight = FontWeight.SemiBold,
-          color = colorScheme.primary,
-          modifier = Modifier.padding(horizontal = 6.dp),
-        )
+      PlayingQueueHeaderComposable(
+        title = provideNowPlayingTitle(libraryType, context),
+        fontSize = fontSize.sp,
+        expanded = playingQueueExpanded,
+        switchable = forceExpanded.not(),
+        onToggle = { viewModel.togglePlayingQueue() },
+      )
 
-        Spacer(modifier = Modifier.height(12.dp))
-      }
+      Spacer(modifier = Modifier.height(12.dp))
 
       LazyColumn(
         contentPadding =
