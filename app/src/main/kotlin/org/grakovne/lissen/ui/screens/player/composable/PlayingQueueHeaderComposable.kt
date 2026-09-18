@@ -3,9 +3,11 @@ package org.grakovne.lissen.ui.screens.player.composable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
@@ -23,10 +25,9 @@ import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 
 /**
- * Title row of the playing queue. On a phone it is a collapsible section header, the same
- * shape as the picker rows in the quick-settings sheet: label on the left, expand chevron on
- * the right, a tap toggles the section and the row itself stays in place. Where the queue is
- * always expanded (two-pane layout) it is a plain title.
+ * Title row of the playing queue. On a phone it is a collapsible section header: the expand
+ * chevron sits right after the title, a tap toggles the section and the row itself stays in
+ * place. Where the queue is always expanded (two-pane layout) it is a plain title.
  */
 @Composable
 fun PlayingQueueHeaderComposable(
@@ -64,15 +65,16 @@ fun PlayingQueueHeaderComposable(
       style = textStyle,
       color = colorScheme.primary,
       maxLines = 1,
-      modifier = Modifier.weight(1f),
     )
 
     if (expandable) {
+      Spacer(modifier = Modifier.width(4.dp))
+
       Icon(
         imageVector = if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
         contentDescription = stringResource(if (expanded) R.string.a11y_collapse_queue else R.string.a11y_expand_queue),
-        tint = colorScheme.onSurfaceVariant,
-        modifier = Modifier.size(20.dp),
+        tint = colorScheme.primary,
+        modifier = Modifier.size(24.dp),
       )
     }
   }
