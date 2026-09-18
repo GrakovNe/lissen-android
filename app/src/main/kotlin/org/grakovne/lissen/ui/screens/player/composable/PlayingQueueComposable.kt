@@ -1,11 +1,8 @@
 package org.grakovne.lissen.ui.screens.player.composable
 
 import android.view.ViewConfiguration
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
@@ -22,13 +19,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.runtime.Composable
@@ -37,11 +28,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -52,7 +41,6 @@ import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -60,7 +48,6 @@ import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.components.withScrollbar
 import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
@@ -151,55 +138,6 @@ fun PlayingQueueComposable(
     label = "playing_queue_font_size",
   )
 
-  var showCollapseFab by remember { mutableStateOf(false) }
-
-  LaunchedEffect(playingQueueExpanded) {
-    if (!playingQueueExpanded) {
-      showCollapseFab = false
-    }
-  }
-
-  val fabScrollConnection =
-    remember(playingQueueExpanded, density) {
-      val slopPx = with(density) { 4.dp.toPx() }
-
-      object : NestedScrollConnection {
-        override fun onPreScroll(
-          available: Offset,
-          source: NestedScrollSource,
-        ): Offset {
-          if (!playingQueueExpanded) return Offset.Zero
-
-          when {
-            available.y > slopPx -> {
-              if (!showCollapseFab) {
-                showCollapseFab = true
-              }
-            }
-
-            available.y < -slopPx -> {
-              if (showCollapseFab) {
-                showCollapseFab = false
-              }
-            }
-          }
-
-          return Offset.Zero
-        }
-
-        override suspend fun onPreFling(available: Velocity): Velocity {
-          if (!playingQueueExpanded) return Velocity.Zero
-
-          when {
-            available.y > 0f -> showCollapseFab = true
-            available.y < 0f -> showCollapseFab = false
-          }
-
-          return Velocity.Zero
-        }
-      }
-    }
-
   LaunchedEffect(currentTrackIndex) {
     awaitFrame()
     scrollPlayingQueue(
@@ -215,8 +153,7 @@ fun PlayingQueueComposable(
     modifier =
       modifier
         .testTag("chapterList")
-        .fillMaxSize()
-        .nestedScroll(fabScrollConnection),
+        .fillMaxSize(),
   ) {
     Column(
       modifier =
@@ -323,29 +260,6 @@ fun PlayingQueueComposable(
             )
           }
         }
-      }
-    }
-
-    AnimatedVisibility(
-      visible = playingQueueExpanded && showCollapseFab,
-      enter = fadeIn(),
-      exit = fadeOut(),
-      modifier =
-        Modifier
-          .align(Alignment.BottomCenter)
-          .padding(bottom = 16.dp),
-    ) {
-      FloatingActionButton(
-        shape = CircleShape,
-        onClick = { viewModel.collapsePlayingQueue() },
-        containerColor = colorScheme.surfaceContainer,
-        elevation = FloatingActionButtonDefaults.loweredElevation(0.dp),
-      ) {
-        Icon(
-          imageVector = Icons.Filled.KeyboardArrowDown,
-          contentDescription = stringResource(R.string.a11y_collapse_queue),
-          tint = colorScheme.onBackground,
-        )
       }
     }
   }
