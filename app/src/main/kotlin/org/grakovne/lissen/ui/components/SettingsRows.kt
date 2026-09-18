@@ -8,8 +8,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
@@ -20,7 +22,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
 
 /**
@@ -181,6 +186,39 @@ fun SettingsActionRow(
       style = typography.bodyLarge,
       color = contentColor,
       modifier = Modifier.weight(1f),
+    )
+  }
+}
+
+@Composable
+fun ApplicationSettingsItemComposable(onClicked: () -> Unit) {
+  Row(
+    modifier =
+      Modifier
+        .fillMaxWidth()
+        .testTag("appSettingsItem")
+        .clickable { onClicked() }
+        .padding(horizontal = 16.dp, vertical = 16.dp),
+    verticalAlignment = Alignment.CenterVertically,
+  ) {
+    Icon(
+      imageVector = Icons.Outlined.Settings,
+      contentDescription = null,
+      modifier = Modifier.size(20.dp),
+      tint = colorScheme.onSurface,
+    )
+    Spacer(modifier = Modifier.width(12.dp))
+    Text(
+      text = stringResource(R.string.application_settings),
+      style = typography.bodyLarge,
+      color = colorScheme.onSurface,
+      modifier = Modifier.weight(1f),
+    )
+    Icon(
+      imageVector = Icons.AutoMirrored.Outlined.ArrowForwardIos,
+      contentDescription = null,
+      modifier = Modifier.size(16.dp),
+      tint = colorScheme.onSurfaceVariant,
     )
   }
 }

@@ -3,7 +3,10 @@ package org.grakovne.lissen.ui.screens.player.composable
 import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -16,6 +19,7 @@ import androidx.compose.material.icons.outlined.InsertDriveFile
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.SortByAlpha
 import androidx.compose.material.icons.outlined.Tag
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,6 +32,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.common.EpisodeOrderingOption
@@ -35,6 +40,7 @@ import org.grakovne.lissen.common.LibraryOrderingDirection.ASCENDING
 import org.grakovne.lissen.common.LibraryOrderingDirection.DESCENDING
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.ui.components.ApplicationSettingsItemComposable
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.SettingsActionRow
 import org.grakovne.lissen.ui.components.SettingsOptionRow
@@ -46,6 +52,7 @@ fun PlayerSettingsComposable(
   episodeOrdering: EpisodeOrderingConfiguration?,
   onEpisodeOrderingChanged: (EpisodeOrderingConfiguration) -> Unit,
   onMarkAsFinished: () -> Unit,
+  onApplicationSettingsRequested: () -> Unit,
   onDismissRequest: () -> Unit,
 ) {
   val context = LocalContext.current
@@ -116,6 +123,20 @@ fun PlayerSettingsComposable(
           )
         }
       }
+
+      Spacer(modifier = Modifier.height(8.dp))
+
+      HorizontalDivider(
+        thickness = 1.dp,
+        modifier = Modifier.padding(horizontal = 8.dp),
+      )
+
+      ApplicationSettingsItemComposable(
+        onClicked = {
+          onDismissRequest()
+          onApplicationSettingsRequested()
+        },
+      )
     }
   }
 }

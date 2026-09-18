@@ -20,7 +20,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.ArrowDownward
@@ -30,7 +29,6 @@ import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.CollectionsBookmark
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.SortByAlpha
 import androidx.compose.material.icons.outlined.Update
 import androidx.compose.material.icons.outlined.VisibilityOff
@@ -68,6 +66,7 @@ import org.grakovne.lissen.common.LibraryOrderingDirection.DESCENDING
 import org.grakovne.lissen.common.LibraryOrderingOption
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.ui.components.ApplicationSettingsItemComposable
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.SettingsOptionRow
 import org.grakovne.lissen.ui.components.SettingsPickerHeaderRow
@@ -218,39 +217,6 @@ fun QuickSettingsComposable(
         },
       )
     }
-  }
-}
-
-@Composable
-fun ApplicationSettingsItemComposable(onClicked: () -> Unit) {
-  Row(
-    modifier =
-      Modifier
-        .fillMaxWidth()
-        .testTag("appSettingsItem")
-        .clickable { onClicked() }
-        .padding(horizontal = 16.dp, vertical = 16.dp),
-    verticalAlignment = Alignment.CenterVertically,
-  ) {
-    Icon(
-      imageVector = Icons.Outlined.Settings,
-      contentDescription = null,
-      modifier = Modifier.size(20.dp),
-      tint = colorScheme.onSurface,
-    )
-    Spacer(modifier = Modifier.width(12.dp))
-    Text(
-      text = stringResource(R.string.application_settings),
-      style = typography.bodyLarge,
-      color = colorScheme.onSurface,
-      modifier = Modifier.weight(1f),
-    )
-    Icon(
-      imageVector = Icons.AutoMirrored.Outlined.ArrowForwardIos,
-      contentDescription = null,
-      modifier = Modifier.size(16.dp),
-      tint = colorScheme.onSurfaceVariant,
-    )
   }
 }
 

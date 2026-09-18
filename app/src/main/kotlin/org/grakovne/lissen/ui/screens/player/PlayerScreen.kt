@@ -405,6 +405,7 @@ fun PlayerScreen(
         Toast.makeText(context, markedAsFinishedToast, Toast.LENGTH_SHORT).show()
         settingsSelected = false
       },
+      onApplicationSettingsRequested = { navController.showSettings() },
       onDismissRequest = { settingsSelected = false },
     )
   }
