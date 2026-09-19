@@ -11,6 +11,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarksResp
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryListResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.OfflineSessionRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.podcast.converter.PodcastOrderingRequestConverter
@@ -42,6 +43,7 @@ class PodcastAudiobookshelfChannel
     connectionInfoResponseConverter: ConnectionInfoResponseConverter,
     bookmarksResponseConverter: BookmarksResponseConverter,
     bookmarkItemResponseConverter: BookmarkItemResponseConverter,
+    offlineSessionRequestConverter: OfflineSessionRequestConverter,
     private val podcastOrderingRequestConverter: PodcastOrderingRequestConverter,
     private val podcastPageResponseConverter: PodcastPageResponseConverter,
     private val podcastResponseConverter: PodcastResponseConverter,
@@ -58,6 +60,7 @@ class PodcastAudiobookshelfChannel
       connectionInfoResponseConverter = connectionInfoResponseConverter,
       bookmarksResponseConverter = bookmarksResponseConverter,
       bookmarkItemResponseConverter = bookmarkItemResponseConverter,
+      offlineSessionRequestConverter = offlineSessionRequestConverter,
     ) {
     override fun getLibraryType() = LibraryType.PODCAST
 

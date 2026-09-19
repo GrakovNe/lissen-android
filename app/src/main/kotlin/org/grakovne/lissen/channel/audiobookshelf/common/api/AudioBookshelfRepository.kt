@@ -18,6 +18,8 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.connection.Connec
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.AuthorItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibrariesResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.LocalSessionSyncRequest
+import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.LocalSessionSyncResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackSessionResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.ProgressSyncRequest
@@ -274,6 +276,9 @@ class AudioBookshelfRepository
           syncProgressRequest = request,
         )
       }
+
+    suspend fun syncLocalSessions(request: LocalSessionSyncRequest): OperationResult<LocalSessionSyncResponse> =
+      audioBookShelfApiService.makeRequest { it.syncLocalSessions(request) }
 
     suspend fun publishLibraryItemProgress(
       itemId: String,

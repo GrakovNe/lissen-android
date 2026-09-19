@@ -8,12 +8,14 @@ import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookmarkRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedLibraryRepository
+import org.grakovne.lissen.content.cache.persistent.api.OfflinePlaybackSessionRepository
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.MediaProgress
+import org.grakovne.lissen.domain.OfflinePlaybackSession
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.RecentBook
@@ -30,6 +32,7 @@ class LocalCacheRepository
     private val cachedBookRepository: CachedBookRepository,
     private val cachedLibraryRepository: CachedLibraryRepository,
     private val cachedBookmarkRepository: CachedBookmarkRepository,
+    private val offlinePlaybackSessionRepository: OfflinePlaybackSessionRepository,
   ) {
     fun provideFileUri(
       libraryItemId: String,
@@ -50,6 +53,32 @@ class LocalCacheRepository
       cachedBookRepository.syncProgress(detailedItem, progress)
       return OperationResult.Success(Unit)
     }
+
+    /**
+     * Same as [syncProgress], but the listened time is kept in an offline session
+     * row as well, to be replayed to the server once it becomes reachable again.
+     */
+    suspend fun recordOfflineSession(
+      sessionId: String,
+      detailedItem: DetailedItem,
+      chapterIndex: Int,
+      progress: PlaybackProgress,
+      timeListened: Double,
+    ): OfflinePlaybackSession {
+      cachedBookRepository.syncProgress(detailedItem, progress)
+
+      return offlinePlaybackSessionRepository.record(
+        sessionId = sessionId,
+        item = detailedItem,
+        chapterIndex = chapterIndex,
+        progress = progress,
+        timeListened = timeListened,
+      )
+    }
+
+    suspend fun fetchOfflineSessions(): List<OfflinePlaybackSession> = offlinePlaybackSessionRepository.fetchAll()
+
+    suspend fun dropOfflineSessions(ids: List<String>) = offlinePlaybackSessionRepository.drop(ids)
 
     fun fetchBookCover(bookId: String): OperationResult<File> {
       val coverFile = cachedBookRepository.provideBookCover(bookId)

@@ -7,6 +7,9 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import org.grakovne.lissen.domain.NetworkType
 import timber.log.Timber
 import javax.inject.Inject
@@ -23,7 +26,24 @@ class NetworkService
     private var cachedNetworkHandle: Long? = null
     private var cachedSsid: String? = null
 
+    private val _networkAvailable = MutableStateFlow(isNetworkAvailable())
+
+    /** Tracks the default network, so a transition from false to true means the device came back online. */
+    val networkAvailable: StateFlow<Boolean> = _networkAvailable.asStateFlow()
+
     override fun onCreate() {
+      connectivityManager.registerDefaultNetworkCallback(
+        object : ConnectivityManager.NetworkCallback() {
+          override fun onAvailable(network: Network) {
+            _networkAvailable.value = true
+          }
+
+          override fun onLost(network: Network) {
+            _networkAvailable.value = false
+          }
+        },
+      )
+
       val networkRequest =
         NetworkRequest
           .Builder()

@@ -122,6 +122,29 @@ class LocalCacheStorageMigrationTest {
   }
 
   @Test
+  fun migrate21To22_createsOfflinePlaybackSessionTable() {
+    helper.createDatabase(TEST_DB, 21).close()
+
+    val db = helper.runMigrationsAndValidate(TEST_DB, 22, true, MIGRATION_21_22)
+
+    db.execSQL(
+      """
+      INSERT INTO offline_playback_session (
+        id, libraryItemId, episodeId, libraryId, libraryType, displayTitle, displayAuthor,
+        duration, startTime, currentTime, timeListening, startedAt, updatedAt
+      )
+      VALUES ('s1', 'book-1', NULL, 'lib', 'LIBRARY', 'Dune', NULL, 300.0, 10.0, 55.0, 45.0, 1000, 46000)
+      """.trimIndent(),
+    )
+
+    db.query("SELECT libraryItemId, timeListening FROM offline_playback_session WHERE id = 's1'").use { cursor ->
+      assertTrue(cursor.moveToFirst())
+      assertEquals("book-1", cursor.getString(cursor.getColumnIndexOrThrow("libraryItemId")))
+      assertEquals(45.0, cursor.getDouble(cursor.getColumnIndexOrThrow("timeListening")), 0.0)
+    }
+  }
+
+  @Test
   fun migrate14To15_createsCachedBookmarkTable_andKeepsBooks() {
     helper.createDatabase(TEST_DB, 14).use { db ->
       db.execSQL(

@@ -18,6 +18,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryAuthor
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryListResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryPageResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.OfflineSessionRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.BookResponseConverter
@@ -52,6 +53,7 @@ class LibraryAudiobookshelfChannel
     connectionInfoResponseConverter: ConnectionInfoResponseConverter,
     bookmarksResponseConverter: BookmarksResponseConverter,
     bookmarkItemResponseConverter: BookmarkItemResponseConverter,
+    offlineSessionRequestConverter: OfflineSessionRequestConverter,
     private val libraryOrderingRequestConverter: LibraryOrderingRequestConverter,
     private val libraryFilteringRequestConverter: LibraryFilteringRequestConverter,
     private val libraryPageResponseConverter: LibraryPageResponseConverter,
@@ -69,6 +71,7 @@ class LibraryAudiobookshelfChannel
       connectionInfoResponseConverter = connectionInfoResponseConverter,
       bookmarksResponseConverter = bookmarksResponseConverter,
       bookmarkItemResponseConverter = bookmarkItemResponseConverter,
+      offlineSessionRequestConverter = offlineSessionRequestConverter,
       libraryResponseConverter = libraryResponseConverter,
     ) {
     private val concurrentFetchSemaphore = Semaphore(MAX_CONCURRENT_FETCH)

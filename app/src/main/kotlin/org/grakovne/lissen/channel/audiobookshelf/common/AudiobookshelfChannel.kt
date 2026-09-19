@@ -13,9 +13,11 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarksResp
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryListResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.OfflineSessionRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.DeviceInfo
+import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.LocalSessionSyncRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
 import org.grakovne.lissen.channel.common.ConnectionInfo
 import org.grakovne.lissen.channel.common.MediaChannel
@@ -25,6 +27,8 @@ import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.BookmarkSyncState
 import org.grakovne.lissen.domain.CreateBookmarkRequest
 import org.grakovne.lissen.domain.Library
+import org.grakovne.lissen.domain.OfflinePlaybackSession
+import org.grakovne.lissen.domain.OfflineSessionSyncResult
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
@@ -42,6 +46,7 @@ abstract class AudiobookshelfChannel(
   private val connectionInfoResponseConverter: ConnectionInfoResponseConverter,
   private val bookmarksResponseConverter: BookmarksResponseConverter,
   private val bookmarkItemResponseConverter: BookmarkItemResponseConverter,
+  private val offlineSessionRequestConverter: OfflineSessionRequestConverter,
 ) : MediaChannel {
   override fun provideDownloadClient(): OkHttpClient? = dataRepository.provideHttpClient()
 
@@ -68,6 +73,21 @@ abstract class AudiobookshelfChannel(
     progress: PlaybackProgress,
     timeListened: Double,
   ): OperationResult<Unit> = syncService.syncProgress(sessionId, progress, timeListened)
+
+  override suspend fun syncOfflineSessions(
+    sessions: List<OfflinePlaybackSession>,
+    deviceId: String,
+  ): OperationResult<List<OfflineSessionSyncResult>> {
+    val deviceInfo = buildDeviceInfo(deviceId)
+
+    return dataRepository
+      .syncLocalSessions(
+        LocalSessionSyncRequest(
+          deviceInfo = deviceInfo,
+          sessions = sessions.map { offlineSessionRequestConverter.apply(it, deviceInfo, getClientName()) },
+        ),
+      ).map { offlineSessionRequestConverter.apply(it) }
+  }
 
   override suspend fun fetchBookCover(
     bookId: String,
@@ -149,14 +169,16 @@ abstract class AudiobookshelfChannel(
   ): PlaybackStartRequest =
     PlaybackStartRequest(
       supportedMimeTypes = supportedMimeTypes,
-      deviceInfo =
-        DeviceInfo(
-          clientName = getClientName(),
-          deviceId = deviceId,
-          deviceName = getClientName(),
-        ),
+      deviceInfo = buildDeviceInfo(deviceId),
       forceTranscode = false,
       forceDirectPlay = false,
       mediaPlayer = getClientName(),
+    )
+
+  private fun buildDeviceInfo(deviceId: String): DeviceInfo =
+    DeviceInfo(
+      clientName = getClientName(),
+      deviceId = deviceId,
+      deviceName = getClientName(),
     )
 }

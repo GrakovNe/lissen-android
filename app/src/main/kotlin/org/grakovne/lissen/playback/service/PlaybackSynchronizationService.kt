@@ -31,6 +31,7 @@ class PlaybackSynchronizationService
     private val exoPlayer: ExoPlayer,
     private val mediaChannel: LissenMediaProvider,
     private val sharedPreferences: SessionPreferences,
+    private val offlineSessionSyncService: OfflineSessionSyncService,
   ) {
     private var currentItem: DetailedItem? = null
     private var currentChapterIndex: Int? = null
@@ -61,6 +62,7 @@ class PlaybackSynchronizationService
       syncJob = null
       currentItem = item
       listeningMark = listeningMark.copy(playingSince = null)
+      releaseOfflineSession()
     }
 
     fun cancelSynchronization() {
@@ -68,6 +70,20 @@ class PlaybackSynchronizationService
       serviceScope.coroutineContext.cancelChildren()
       syncJob = null
       listeningMark = listeningMark.copy(playingSince = null)
+      releaseOfflineSession()
+    }
+
+    /**
+     * Hands the offline session being written over to the uploader. A new local
+     * session id is generated for whatever plays next, so an uploaded (and dropped)
+     * row is never recreated from zero under the same id.
+     */
+    private fun releaseOfflineSession() {
+      if (playbackSession?.sessionSource != PlaybackSessionSource.LOCAL) return
+
+      playbackSession = null
+      offlineSessionSyncService.activeSessionId = null
+      offlineSessionSyncService.requestUpload()
     }
 
     private fun handleSyncEvent() {
@@ -127,20 +143,25 @@ class PlaybackSynchronizationService
       snapshot: SyncSnapshot,
     ) {
       val currentIndex = calculateChapterIndex(currentItem, snapshot.progress.currentTotalTime)
+      val session = playbackSession
 
-      if (playbackSession == null ||
-        playbackSession?.itemId != currentItem.id ||
-        currentIndex != currentChapterIndex ||
-        playbackSession?.sessionSource == PlaybackSessionSource.LOCAL
-      ) {
-        openPlaybackSession(snapshot.progress)
+      val sessionStale =
+        session == null ||
+          session.itemId != currentItem.id ||
+          currentIndex != currentChapterIndex
+
+      // A local session keeps retrying the server so playback moves back to a remote
+      // session as soon as it is reachable; until then the local one is kept as is.
+      if (sessionStale || session?.sessionSource == PlaybackSessionSource.LOCAL) {
+        openPlaybackSession(snapshot.progress, keepLocal = sessionStale.not())
         currentChapterIndex = currentIndex
       }
 
-      playbackSession?.let { session ->
+      playbackSession?.let {
         requestSync(
           item = currentItem,
-          session = session,
+          session = it,
+          chapterIndex = currentIndex,
           snapshot = snapshot,
         )
       }
@@ -149,46 +170,114 @@ class PlaybackSynchronizationService
     private suspend fun requestSync(
       item: DetailedItem,
       session: PlaybackSession,
+      chapterIndex: Int,
       snapshot: SyncSnapshot,
-    ): Unit? =
-      mediaChannel
-        .syncProgress(
-          sessionId = session.sessionId,
-          detailedItem = item,
-          progress = snapshot.progress,
-          timeListened = snapshot.timeListened,
-        ).foldAsync(
-          onSuccess = {
-            withContext(serviceScope.coroutineContext) {
-              val sentMs = (snapshot.timeListened * 1000).toLong()
-              listeningMark = listeningMark.copy(unsyncedMs = listeningMark.unsyncedMs - sentMs)
-            }
-          },
-          onFailure = {
-            when (it.code) {
-              OperationError.NotFoundError -> openPlaybackSession(snapshot.progress)
-              else -> Unit
-            }
-          },
-        )
+    ) {
+      when (session.sessionSource) {
+        PlaybackSessionSource.LOCAL -> {
+          recordOfflineSession(item, session, chapterIndex, snapshot)
+        }
 
-    private suspend fun openPlaybackSession(overallProgress: PlaybackProgress) =
-      currentItem
-        ?.let { item ->
-          Timber.d("Opening new playback session for ${item.id} at position=${overallProgress.currentTotalTime.toInt()}s")
-          val chapterIndex = calculateChapterIndex(item, overallProgress.currentTotalTime)
+        PlaybackSessionSource.REMOTE -> {
           mediaChannel
-            .startPlayback(
-              itemId = item.id,
-              deviceId = sharedPreferences.getDeviceId(),
-              supportedMimeTypes = MimeTypeProvider.getSupportedMimeTypes(),
-              chapterId = item.chapters[chapterIndex].id,
-              libraryType = item.libraryType,
-            ).fold(
-              onSuccess = { playbackSession = it },
-              onFailure = {},
+            .syncProgress(
+              sessionId = session.sessionId,
+              detailedItem = item,
+              progress = snapshot.progress,
+              timeListened = snapshot.timeListened,
+            ).foldAsync(
+              onSuccess = { markSynced(snapshot) },
+              onFailure = {
+                when (it.code) {
+                  OperationError.NotFoundError -> {
+                    openPlaybackSession(snapshot.progress, keepLocal = false)
+                  }
+
+                  OperationError.NetworkError -> {
+                    Timber.d("Server unreachable, continuing ${item.id} as an offline session")
+                    val local = PlaybackSession.local(item.id)
+                    playbackSession = local
+                    recordOfflineSession(item, local, chapterIndex, snapshot)
+                  }
+
+                  else -> {
+                    Unit
+                  }
+                }
+              },
             )
         }
+      }
+    }
+
+    private suspend fun recordOfflineSession(
+      item: DetailedItem,
+      session: PlaybackSession,
+      chapterIndex: Int,
+      snapshot: SyncSnapshot,
+    ) {
+      offlineSessionSyncService.activeSessionId = session.sessionId
+
+      mediaChannel.recordOfflineSession(
+        sessionId = session.sessionId,
+        detailedItem = item,
+        chapterIndex = chapterIndex,
+        progress = snapshot.progress,
+        timeListened = snapshot.timeListened,
+      )
+
+      markSynced(snapshot)
+    }
+
+    private suspend fun markSynced(snapshot: SyncSnapshot) =
+      withContext(serviceScope.coroutineContext) {
+        val sentMs = (snapshot.timeListened * 1000).toLong()
+        listeningMark = listeningMark.copy(unsyncedMs = listeningMark.unsyncedMs - sentMs)
+      }
+
+    private suspend fun openPlaybackSession(
+      overallProgress: PlaybackProgress,
+      keepLocal: Boolean,
+    ) = currentItem
+      ?.let { item ->
+        Timber.d("Opening new playback session for ${item.id} at position=${overallProgress.currentTotalTime.toInt()}s")
+        val chapterIndex = calculateChapterIndex(item, overallProgress.currentTotalTime)
+        mediaChannel
+          .startPlayback(
+            itemId = item.id,
+            deviceId = sharedPreferences.getDeviceId(),
+            supportedMimeTypes = MimeTypeProvider.getSupportedMimeTypes(),
+            chapterId = item.chapters[chapterIndex].id,
+            libraryType = item.libraryType,
+          ).fold(
+            onSuccess = { opened -> adoptSession(item, opened, keepLocal) },
+            onFailure = {},
+          )
+      }
+
+    private fun adoptSession(
+      item: DetailedItem,
+      opened: PlaybackSession,
+      keepLocal: Boolean,
+    ) {
+      val previous = playbackSession
+
+      val previousLocal =
+        previous
+          ?.takeIf { it.sessionSource == PlaybackSessionSource.LOCAL && it.itemId == item.id }
+
+      playbackSession =
+        when {
+          opened.sessionSource == PlaybackSessionSource.LOCAL && keepLocal -> previousLocal ?: opened
+          else -> opened
+        }
+
+      if (opened.sessionSource == PlaybackSessionSource.REMOTE && previousLocal != null) {
+        Timber.d("Server reachable again, handing offline session ${previousLocal.sessionId} over to upload")
+        offlineSessionSyncService.activeSessionId = null
+        offlineSessionSyncService.requestUpload()
+      }
+    }
 
     private fun getProgress(exoPlayer: ExoPlayer): PlaybackProgress? =
       exoPlayer.currentMediaItem
