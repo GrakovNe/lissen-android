@@ -259,21 +259,9 @@ fun PlayerScreen(
                         contentDescription = null,
                       )
                     }
-
-                    IconButton(
-                      onClick = { itemDetailsSelected = true },
-                      modifier =
-                        Modifier
-                          .padding(end = 4.dp)
-                          .testTag("playerInfoButton"),
-                    ) {
-                      Icon(
-                        imageVector = Icons.Outlined.Info,
-                        contentDescription = null,
-                      )
-                    }
                   }
 
+                  // podcasts only; stays next to search while the queue is expanded
                   if (sortable) {
                     IconButton(
                       onClick = {
@@ -289,6 +277,21 @@ fun PlayerScreen(
                       Icon(
                         imageVector = Icons.AutoMirrored.Outlined.Sort,
                         contentDescription = stringResource(R.string.library_quick_settings_sort_title),
+                      )
+                    }
+                  }
+
+                  if (bookActionsVisible) {
+                    IconButton(
+                      onClick = { itemDetailsSelected = true },
+                      modifier =
+                        Modifier
+                          .padding(end = 4.dp)
+                          .testTag("playerInfoButton"),
+                    ) {
+                      Icon(
+                        imageVector = Icons.Outlined.Info,
+                        contentDescription = null,
                       )
                     }
                   }
