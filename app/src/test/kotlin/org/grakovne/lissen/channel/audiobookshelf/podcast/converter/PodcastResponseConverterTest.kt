@@ -12,7 +12,6 @@ import org.grakovne.lissen.domain.LibraryType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
-import java.util.concurrent.Executors
 
 class PodcastResponseConverterTest {
   private val converter = PodcastResponseConverter()
@@ -32,6 +31,7 @@ class PodcastResponseConverterTest {
     season: String? = null,
     episode: String? = null,
     pubDate: String? = null,
+    publishedAt: Long? = null,
     title: String = "Episode $id",
     duration: Double? = 100.0,
   ) = PodcastEpisodeResponse(
@@ -39,6 +39,7 @@ class PodcastResponseConverterTest {
     season = season,
     episode = episode,
     pubDate = pubDate,
+    publishedAt = publishedAt,
     title = title,
     audioFile = audioFile(id, duration),
   )
@@ -82,57 +83,30 @@ class PodcastResponseConverterTest {
   }
 
   @Test
-  fun `orders episodes by pubDate then season then episode number`() {
+  fun `keeps server order and records it as the canonical index`() {
     val episodes =
       listOf(
-        episode(id = "e1", pubDate = "Wed, 02 Jan 2024 00:00:00 +0000"),
-        episode(id = "e2", pubDate = "Mon, 01 Jan 2024 00:00:00 +0000"),
-        episode(id = "e3", pubDate = null, season = "1", episode = "2"),
-        episode(id = "e4", pubDate = null, season = "1", episode = "1"),
+        episode(id = "e1", publishedAt = 2_000L),
+        episode(id = "e2", publishedAt = 1_000L),
+        episode(id = "e3", publishedAt = null, season = "1", episode = "2"),
       )
 
     val result = converter.apply(podcast(episodes))
 
-    assertEquals(listOf("e4", "e3", "e2", "e1"), result.files.map { it.id })
+    assertEquals(listOf("e1", "e2", "e3"), result.files.map { it.id })
+    assertEquals(listOf("e1", "e2", "e3"), result.chapters.map { it.id })
+    assertEquals(listOf(0, 1, 2), result.chapters.map { it.index })
   }
 
   @Test
-  fun `sorts episode with unparseable pubDate ahead of dated episodes`() {
-    val episodes =
-      listOf(
-        episode(id = "bad", pubDate = "not-a-date"),
-        episode(id = "good", pubDate = "Mon, 01 Jan 2024 00:00:00 +0000"),
-      )
+  fun `exposes ordering keys on chapters`() {
+    val result = converter.apply(podcast(listOf(episode(id = "e1", publishedAt = 42L, season = "3", episode = "7"))))
 
-    val result = converter.apply(podcast(episodes))
-
-    assertEquals(listOf("bad", "good"), result.files.map { it.id })
-  }
-
-  @Test
-  fun `orders episodes consistently when many threads convert at once`() {
-    val episodes =
-      (1..50).map { index ->
-        episode(
-          id = "e$index",
-          pubDate = "Sun, %02d Feb 2024 %02d:00:00 +0000".format(index % 28 + 1, index % 24),
-          season = (index % 4).toString(),
-          episode = (index % 6).toString(),
-        )
-      }
-    val expected = converter.apply(podcast(episodes)).files.map { it.id }
-
-    val executor = Executors.newFixedThreadPool(8)
-    try {
-      val results =
-        (1..100)
-          .map { executor.submit<List<String>> { converter.apply(podcast(episodes)).files.map { file -> file.id } } }
-          .map { future -> future.get() }
-
-      results.forEach { assertEquals(expected, it) }
-    } finally {
-      executor.shutdown()
-    }
+    val chapter = result.chapters.single()
+    assertEquals(42L, chapter.publishedAt)
+    assertEquals("3", chapter.season)
+    assertEquals("7", chapter.episode)
+    assertEquals("e1.mp3", chapter.fileName)
   }
 
   @Test

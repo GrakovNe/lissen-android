@@ -38,6 +38,7 @@ data class PodcastEpisodeResponse(
   val season: String?,
   val episode: String?,
   val pubDate: String?,
+  val publishedAt: Long?,
   val title: String,
   val audioFile: PodcastAudioFileResponse,
 )

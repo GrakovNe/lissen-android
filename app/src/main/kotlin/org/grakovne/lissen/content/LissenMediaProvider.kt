@@ -11,18 +11,21 @@ import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.content.cache.temporary.CachedBookmarkProvider
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
+import org.grakovne.lissen.content.ordering.ChapterOrdering
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
+import org.grakovne.lissen.playback.service.calculateChapterIndex
 import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
@@ -321,30 +324,79 @@ class LissenMediaProvider
     ): OperationResult<DetailedItem> {
       Timber.d("Fetching book: bookId=$bookId, libraryType=$libraryType")
 
-      return when (preferences.isForceCache()) {
-        true -> {
-          localCacheRepository
-            .fetchBook(bookId)
-            ?.let { OperationResult.Success(it) }
-            ?: OperationResult.Error(OperationError.InternalError)
+      val fetched: OperationResult<DetailedItem> =
+        when (preferences.isForceCache()) {
+          true -> {
+            localCacheRepository
+              .fetchBook(bookId)
+              ?.let { OperationResult.Success(it) }
+              ?: OperationResult.Error(OperationError.InternalError)
+          }
+
+          false -> {
+            provideChannelFor(libraryType)
+              .fetchBook(bookId)
+              .map { mergeLocalItemProgress(it) }
+              .foldAsync(
+                onSuccess = { OperationResult.Success(it) },
+                onFailure = { error ->
+                  localCacheRepository
+                    .fetchBook(bookId)
+                    ?.let { OperationResult.Success(it) }
+                    ?: error
+                },
+              )
+          }
         }
 
-        false -> {
-          provideChannelFor(libraryType)
-            .fetchBook(bookId)
-            .map { mergeLocalItemProgress(it) }
-            .map { trimProgress(it) }
-            .foldAsync(
-              onSuccess = { OperationResult.Success(it) },
-              onFailure = { error ->
-                localCacheRepository
-                  .fetchBook(bookId)
-                  ?.let { OperationResult.Success(it) }
-                  ?: error
-              },
-            )
-        }
+      return fetched
+        .map { applyOrdering(it) }
+        .flatMap { moveToAvailableChapter(it) }
+        .map { trimProgress(it) }
+    }
+
+    /**
+     * Channel converters and the cache both hand items over in the canonical order;
+     * the user-chosen order is applied here, once, for every consumer of the item.
+     */
+    private fun applyOrdering(detailedItem: DetailedItem): DetailedItem {
+      val configuration = preferences.getEpisodeOrdering(detailedItem.id)
+
+      return when {
+        configuration != null -> ChapterOrdering.apply(detailedItem, configuration)
+        detailedItem.libraryType == LibraryType.PODCAST -> ChapterOrdering.apply(detailedItem, configuration = null)
+        else -> ChapterOrdering.canonical(detailedItem)
       }
+    }
+
+    /**
+     * A partially downloaded item may hold its progress inside a chapter that is not on the
+     * device. Playback then starts from the first chapter that is, in the order the user sees.
+     */
+    private fun moveToAvailableChapter(detailedItem: DetailedItem): OperationResult<DetailedItem> {
+      if (detailedItem.chapters.isEmpty()) return OperationResult.Success(detailedItem)
+
+      val position = detailedItem.progress?.currentTime ?: 0.0
+      val currentChapter = calculateChapterIndex(detailedItem, position)
+
+      if (detailedItem.chapters.getOrNull(currentChapter)?.available == true) {
+        return OperationResult.Success(detailedItem)
+      }
+
+      val fallback =
+        detailedItem.chapters.firstOrNull { it.available }
+          ?: return OperationResult.Error(OperationError.InternalError)
+
+      return OperationResult.Success(
+        detailedItem.copy(
+          progress =
+            MediaProgress(
+              currentTime = fallback.start,
+              isFinished = false,
+              lastUpdate = FALLBACK_PROGRESS_TIMESTAMP,
+            ),
+        ),
+      )
     }
 
     suspend fun authorize(
@@ -495,4 +547,9 @@ class LissenMediaProvider
     fun providePreferredChannel(): MediaChannel = channelProvider.provideMediaChannel()
 
     fun provideChannelFor(libraryType: LibraryType?): MediaChannel = channelProvider.provideMediaChannel(libraryType)
+
+    private companion object {
+      // 2000-01-01T12:00, deliberately older than any real progress so a merge never prefers it
+      private const val FALLBACK_PROGRESS_TIMESTAMP = 946728000000L
+    }
   }

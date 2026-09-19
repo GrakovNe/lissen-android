@@ -16,6 +16,7 @@ import org.grakovne.lissen.content.cache.persistent.dao.CachedBookDao
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
+import org.grakovne.lissen.content.ordering.ChapterOrdering
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryEntry
@@ -70,12 +71,16 @@ class CachedBookRepository
 
     suspend fun dropCache() = bookDao.dropCache()
 
+    /**
+     * The cache always holds items in the canonical order, so the stored progress stays
+     * meaningful whatever order the item was handed over in.
+     */
     suspend fun cacheBook(
       book: DetailedItem,
       fetchedChapters: List<PlayingChapter>,
       droppedChapters: List<PlayingChapter>,
     ) {
-      bookDao.upsertCachedBook(book, fetchedChapters, droppedChapters)
+      bookDao.upsertCachedBook(ChapterOrdering.canonical(book), fetchedChapters, droppedChapters)
     }
 
     fun provideCacheState(bookId: String) = bookDao.isBookCached(bookId)
@@ -419,10 +424,12 @@ class CachedBookRepository
       progress: PlaybackProgress,
     ) {
       val totalDuration = playingItem.chapters.sumOf { it.duration }
+      val canonicalTime = ChapterOrdering.toCanonicalPosition(playingItem, progress.currentTotalTime)
+
       val entity =
         MediaProgressEntity(
           bookId = playingItem.id,
-          currentTime = progress.currentTotalTime,
+          currentTime = canonicalTime,
           isFinished = progress.currentTotalTime >= totalDuration - FINISHED_POSITION_EPSILON,
           lastUpdate = Instant.now().toEpochMilli(),
         )

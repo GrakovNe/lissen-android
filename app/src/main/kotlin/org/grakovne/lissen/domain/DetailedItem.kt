@@ -60,6 +60,15 @@ data class PlayingChapter(
   val end: Double,
   val title: String,
   val id: String,
+  /**
+   * Position of the chapter in the canonical (server) order. The list order of
+   * [DetailedItem.chapters] may differ from it once the user picks another ordering.
+   */
+  val index: Int = 0,
+  val publishedAt: Long? = null,
+  val season: String? = null,
+  val episode: String? = null,
+  val fileName: String? = null,
 ) : Serializable
 
 @Keep

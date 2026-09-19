@@ -1,7 +1,6 @@
 package org.grakovne.lissen.channel.audiobookshelf.podcast.converter
 
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
-import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastEpisodeResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
 import org.grakovne.lissen.domain.BookChapterState
 import org.grakovne.lissen.domain.BookFile
@@ -9,12 +8,14 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PlayingChapter
-import timber.log.Timber
-import java.text.SimpleDateFormat
-import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Maps the server response as is. Episodes keep the server order, which becomes their
+ * canonical [PlayingChapter.index]; the actual ordering is applied later by
+ * [org.grakovne.lissen.content.ordering.ChapterOrdering].
+ */
 @Singleton
 class PodcastResponseConverter
   @Inject
@@ -23,20 +24,16 @@ class PodcastResponseConverter
       item: PodcastResponse,
       progressResponses: List<MediaProgressResponse> = emptyList(),
     ): DetailedItem {
-      val orderedEpisodes =
-        item
-          .media
-          .episodes
-          ?.orderEpisode()
+      val episodes = item.media.episodes ?: emptyList()
 
       val totalCurrentTime =
         progressResponses
           .maxByOrNull { it.lastUpdate }
           ?.let { progress ->
-            orderedEpisodes
-              ?.takeWhile { it.id != progress.episodeId }
-              ?.sumOf { it.audioFile.duration ?: 0.0 }
-              ?.plus(progress.currentTime)
+            episodes
+              .takeWhile { it.id != progress.episodeId }
+              .sumOf { it.audioFile.duration ?: 0.0 }
+              .plus(progress.currentTime)
           }
 
       val latestEpisodeMediaProgress =
@@ -50,26 +47,32 @@ class PodcastResponseConverter
             )
           }
 
-      val filesAsChapters: List<PlayingChapter> =
-        orderedEpisodes
-          ?.fold(0.0 to mutableListOf<PlayingChapter>()) { (accDuration, chapters), episode ->
-            chapters.add(
-              PlayingChapter(
-                start = accDuration,
-                end = accDuration + (episode.audioFile.duration ?: 0.0),
-                title = episode.title,
-                duration = episode.audioFile.duration ?: 0.0,
-                id = episode.id,
-                available = true,
-                podcastEpisodeState =
-                  progressResponses
-                    .find { it.episodeId == episode.id }
-                    ?.let { hasFinished(it) },
-              ),
-            )
-            accDuration + (episode.audioFile.duration ?: 0.0) to chapters
-          }?.second
-          ?: emptyList()
+      var accumulated = 0.0
+
+      val filesAsChapters =
+        episodes.mapIndexed { index, episode ->
+          val duration = episode.audioFile.duration ?: 0.0
+          val start = accumulated
+          accumulated += duration
+
+          PlayingChapter(
+            start = start,
+            end = accumulated,
+            title = episode.title,
+            duration = duration,
+            id = episode.id,
+            available = true,
+            podcastEpisodeState =
+              progressResponses
+                .find { it.episodeId == episode.id }
+                ?.let { hasFinished(it) },
+            index = index,
+            publishedAt = episode.publishedAt,
+            season = episode.season,
+            episode = episode.episode,
+            fileName = episode.audioFile.metadata.filename,
+          )
+        }
 
       return DetailedItem(
         id = item.id,
@@ -81,17 +84,15 @@ class PodcastResponseConverter
         narrator = null,
         localProvided = false,
         files =
-          orderedEpisodes
-            ?.map {
-              BookFile(
-                id = it.audioFile.ino,
-                name = it.title,
-                duration = it.audioFile.duration ?: 0.0,
-                mimeType = it.audioFile.mimeType,
-                size = it.audioFile.metadata.size,
-              )
-            }
-            ?: emptyList(),
+          episodes.map {
+            BookFile(
+              id = it.audioFile.ino,
+              name = it.title,
+              duration = it.audioFile.duration ?: 0.0,
+              mimeType = it.audioFile.mimeType,
+              size = it.audioFile.metadata.size,
+            )
+          },
         chapters = filesAsChapters,
         progress = latestEpisodeMediaProgress,
         year = null, // we have no "Year" for the ongoing media
@@ -111,42 +112,5 @@ class PodcastResponseConverter
 
     companion object {
       private const val FINISHED_PROGRESS_THRESHOLD = 0.9
-      private const val PUB_DATE_PATTERN = "EEE, dd MMM yyyy HH:mm:ss Z"
-
-      private data class EpisodeOrder(
-        val publishedAt: Long?,
-        val season: Int?,
-        val episode: Int?,
-      )
-
-      // SimpleDateFormat is not thread-safe and podcast books are fetched concurrently,
-      // so parsing happens once per sort with a dedicated instance instead of a shared one.
-      private fun List<PodcastEpisodeResponse>.orderEpisode(): List<PodcastEpisodeResponse> {
-        val dateFormat = SimpleDateFormat(PUB_DATE_PATTERN, Locale.ENGLISH)
-
-        return map { item ->
-          val publishedAt =
-            try {
-              item.pubDate?.let { dateFormat.parse(it)?.time }
-            } catch (e: Exception) {
-              Timber.w("Unable to parse episode pubDate '${item.pubDate}' due to: ${e.message}")
-              null
-            }
-          EpisodeOrder(publishedAt, item.season.safeToInt(), item.episode.safeToInt()) to item
-        }.sortedWith(
-          compareBy({ it.first.publishedAt }, { it.first.season }, { it.first.episode }),
-        ).map { it.second }
-      }
-
-      private fun String?.safeToInt(): Int? {
-        val maybeNumber = this?.takeIf { it.isNotBlank() }
-
-        return try {
-          maybeNumber?.toInt()
-        } catch (ex: Exception) {
-          Timber.w("Unable to parse '$maybeNumber' as season/episode number due to: ${ex.message}")
-          null
-        }
-      }
     }
   }

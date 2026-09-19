@@ -12,7 +12,10 @@ import org.grakovne.lissen.channel.audiobookshelf.common.api.ConditionalCache
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
+import org.grakovne.lissen.common.EpisodeOrderingConfiguration
+import org.grakovne.lissen.common.EpisodeOrderingOption
 import org.grakovne.lissen.common.LibraryGrouping
+import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.content.cache.temporary.CachedBookmarkProvider
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
@@ -23,6 +26,7 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
@@ -113,6 +117,99 @@ class LissenMediaProviderTest {
 
         assertInstanceOf(OperationResult.Success::class.java, result)
         coVerify { mediaChannel.fetchBook("book-1") }
+      }
+
+    @Test
+    fun `moves progress to the first available chapter when the current one is dropped`() =
+      runBlocking {
+        val item =
+          detailedItem(
+            chapters =
+              listOf(
+                chapter("c0", 0, 10.0, available = false),
+                chapter("c1", 1, 10.0, available = false),
+                chapter("c2", 2, 10.0),
+              ),
+          ).copy(progress = MediaProgress(currentTime = 15.0, isFinished = false, lastUpdate = 1L))
+        every { preferences.isForceCache() } returns true
+        coEvery { localCacheRepository.fetchBook("book-1") } returns item
+
+        val result = provider.fetchBook("book-1") as OperationResult.Success
+
+        assertEquals(20.0, result.data.progress?.currentTime)
+        assertEquals(false, result.data.progress?.isFinished)
+      }
+
+    @Test
+    fun `returns Error when no chapter remains available`() =
+      runBlocking {
+        val item = detailedItem(chapters = listOf(chapter("c0", 0, 10.0, available = false)))
+        every { preferences.isForceCache() } returns true
+        coEvery { localCacheRepository.fetchBook("book-1") } returns item
+
+        assertInstanceOf(OperationResult.Error::class.java, provider.fetchBook("book-1"))
+      }
+
+    @Test
+    fun `applies the stored episode ordering to podcasts`() =
+      runBlocking {
+        val item =
+          detailedItem(
+            chapters =
+              listOf(
+                chapter("c0", 0, 10.0, publishedAt = 1L),
+                chapter("c1", 1, 10.0, publishedAt = 2L),
+              ),
+          ).copy(libraryType = LibraryType.PODCAST)
+        every { preferences.isForceCache() } returns false
+        every { preferences.getEpisodeOrdering("book-1") } returns
+          EpisodeOrderingConfiguration(EpisodeOrderingOption.PUBLISHED_AT, LibraryOrderingDirection.DESCENDING)
+        coEvery { mediaChannel.fetchBook("book-1") } returns OperationResult.Success(item)
+
+        val result = provider.fetchBook("book-1") as OperationResult.Success
+
+        assertEquals(listOf("c1", "c0"), result.data.chapters.map { it.id })
+      }
+
+    @Test
+    fun `applies a stored ordering even when the cached item lost its library type`() =
+      runBlocking {
+        val item =
+          detailedItem(
+            chapters =
+              listOf(
+                chapter("c0", 0, 10.0, publishedAt = 1L),
+                chapter("c1", 1, 10.0, publishedAt = 2L),
+              ),
+          ).copy(libraryType = null)
+        every { preferences.isForceCache() } returns true
+        every { preferences.getEpisodeOrdering("book-1") } returns
+          EpisodeOrderingConfiguration(EpisodeOrderingOption.PUBLISHED_AT, LibraryOrderingDirection.DESCENDING)
+        coEvery { localCacheRepository.fetchBook("book-1") } returns item
+
+        val result = provider.fetchBook("book-1") as OperationResult.Success
+
+        assertEquals(listOf("c1", "c0"), result.data.chapters.map { it.id })
+      }
+
+    @Test
+    fun `restores the canonical order for books whatever order the cache returns`() =
+      runBlocking {
+        val item =
+          detailedItem(
+            chapters =
+              listOf(
+                chapter("c1", 1, 10.0),
+                chapter("c0", 0, 10.0),
+              ),
+          ).copy(libraryType = LibraryType.LIBRARY)
+        every { preferences.isForceCache() } returns true
+        coEvery { localCacheRepository.fetchBook("book-1") } returns item
+
+        val result = provider.fetchBook("book-1") as OperationResult.Success
+
+        assertEquals(listOf("c0", "c1"), result.data.chapters.map { it.id })
+        assertEquals(listOf(0.0, 10.0), result.data.chapters.map { it.start })
       }
 
     @Test
@@ -706,6 +803,24 @@ class LissenMediaProviderTest {
         assertEquals(listOf(200.0, 300.0, 100.0), result.map { it.totalPosition })
       }
   }
+
+  private fun chapter(
+    id: String,
+    index: Int,
+    duration: Double,
+    available: Boolean = true,
+    publishedAt: Long? = null,
+  ) = PlayingChapter(
+    available = available,
+    podcastEpisodeState = null,
+    duration = duration,
+    start = index * duration,
+    end = (index + 1) * duration,
+    title = id,
+    id = id,
+    index = index,
+    publishedAt = publishedAt,
+  )
 
   private fun detailedItem(
     id: String = "book-1",

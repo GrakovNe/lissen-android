@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -70,6 +71,7 @@ import org.grakovne.lissen.ui.icons.Search
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.player.composable.BookCover
 import org.grakovne.lissen.ui.screens.player.composable.BookmarksComposable
+import org.grakovne.lissen.ui.screens.player.composable.EpisodeOrderingComposable
 import org.grakovne.lissen.ui.screens.player.composable.MediaDetailComposable
 import org.grakovne.lissen.ui.screens.player.composable.NavigationBarComposable
 import org.grakovne.lissen.ui.screens.player.composable.PlayingQueueComposable
@@ -136,9 +138,12 @@ fun PlayerScreen(
 
   var itemDetailsSelected by remember { mutableStateOf(false) }
   var bookmarksSelected by remember { mutableStateOf(false) }
+  var orderingSelected by remember { mutableStateOf(false) }
 
   val preferredLibraryType by libraryViewModel.preferredLibraryType.collectAsState()
   val libraryType = playingBook?.libraryType ?: preferredLibraryType
+  val episodeOrdering by playerViewModel.episodeOrdering.collectAsState()
+  val sortable = libraryType == LibraryType.PODCAST
 
   val screenTitle =
     when {
@@ -236,6 +241,26 @@ fun PlayerScreen(
                     }
                   }
 
+                  // podcasts only; stays next to search while the queue is expanded
+                  if (sortable) {
+                    IconButton(
+                      onClick = {
+                        if (isPlaybackReady) {
+                          orderingSelected = true
+                        }
+                      },
+                      modifier =
+                        Modifier
+                          .padding(end = 4.dp)
+                          .testTag("episodeOrderingButton"),
+                    ) {
+                      Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.Sort,
+                        contentDescription = stringResource(R.string.library_quick_settings_sort_title),
+                      )
+                    }
+                  }
+
                   if (bookActionsVisible) {
                     IconButton(
                       onClick = {
@@ -254,7 +279,9 @@ fun PlayerScreen(
                         contentDescription = null,
                       )
                     }
+                  }
 
+                  if (bookActionsVisible) {
                     IconButton(
                       onClick = { itemDetailsSelected = true },
                       modifier =
@@ -405,6 +432,14 @@ fun PlayerScreen(
     BookmarksComposable(
       playerViewModel = playerViewModel,
       onDismissRequest = { bookmarksSelected = false },
+    )
+  }
+
+  if (orderingSelected) {
+    EpisodeOrderingComposable(
+      current = episodeOrdering,
+      onOrderingChanged = { playerViewModel.setEpisodeOrdering(it) },
+      onDismissRequest = { orderingSelected = false },
     )
   }
 }
