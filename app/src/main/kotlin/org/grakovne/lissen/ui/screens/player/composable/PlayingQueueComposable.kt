@@ -30,8 +30,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.SwapVert
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -291,11 +291,13 @@ fun PlayingQueueComposable(
 
               Spacer(modifier = Modifier.width(6.dp))
 
+              // symmetric glyph so the right edge of the row stays straight;
+              // sized to the text line so it reads as part of the label
               Icon(
-                imageVector = Icons.AutoMirrored.Outlined.Sort,
+                imageVector = Icons.Outlined.SwapVert,
                 contentDescription = stringResource(R.string.library_quick_settings_sort_title),
                 tint = colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(22.dp),
+                modifier = Modifier.size(with(density) { typography.bodyMedium.lineHeight.toDp() }),
               )
             }
           }
