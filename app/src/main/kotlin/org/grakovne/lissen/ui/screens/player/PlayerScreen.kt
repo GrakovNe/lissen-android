@@ -27,8 +27,8 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.Bookmarks
-import androidx.compose.material.icons.outlined.FormatListNumbered
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -255,7 +255,7 @@ fun PlayerScreen(
                           .testTag("episodeOrderingButton"),
                     ) {
                       Icon(
-                        imageVector = Icons.Outlined.FormatListNumbered,
+                        imageVector = Icons.AutoMirrored.Outlined.Sort,
                         contentDescription = stringResource(R.string.library_quick_settings_sort_title),
                       )
                     }
