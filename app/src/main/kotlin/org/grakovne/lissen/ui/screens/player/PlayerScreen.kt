@@ -64,6 +64,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.withResumed
 import coil3.ImageLoader
 import org.grakovne.lissen.R
+import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.adaptive.isWideLayout
@@ -367,6 +368,7 @@ fun PlayerScreen(
             cachingModelView = cachingModelView,
             playerViewModel = playerViewModel,
             forceExpanded = true,
+            ordering = episodeOrdering,
             onOrderingRequested = { orderingSelected = true }.takeIf { sortable },
             modifier =
               Modifier
@@ -406,6 +408,7 @@ fun PlayerScreen(
             libraryType = libraryType,
             cachingModelView = cachingModelView,
             playerViewModel = playerViewModel,
+            ordering = episodeOrdering,
             onOrderingRequested = { orderingSelected = true }.takeIf { sortable },
           )
         }
@@ -587,6 +590,7 @@ private fun PlayerQueueSection(
   playerViewModel: PlayerViewModel,
   modifier: Modifier = Modifier,
   forceExpanded: Boolean = false,
+  ordering: EpisodeOrderingConfiguration? = null,
   onOrderingRequested: (() -> Unit)? = null,
 ) {
   when {
@@ -611,6 +615,7 @@ private fun PlayerQueueSection(
         viewModel = playerViewModel,
         modifier = modifier,
         forceExpanded = forceExpanded,
+        ordering = ordering,
         onOrderingRequested = onOrderingRequested,
       )
     }

@@ -102,7 +102,7 @@ private fun EpisodeOrderingOption.icon(): ImageVector =
     EpisodeOrderingOption.FILE_NAME -> Icons.Outlined.InsertDriveFile
   }
 
-private fun EpisodeOrderingOption.toLocalizedName(context: Context): String =
+fun EpisodeOrderingOption.toLocalizedName(context: Context): String =
   when (this) {
     EpisodeOrderingOption.PUBLISHED_AT -> context.getString(R.string.episode_ordering_published_at_option)
     EpisodeOrderingOption.TITLE -> context.getString(R.string.settings_screen_library_ordering_title_option)

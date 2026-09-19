@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -70,6 +71,7 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
+import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.components.withScrollbar
 import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
@@ -83,6 +85,7 @@ fun PlayingQueueComposable(
   viewModel: PlayerViewModel,
   modifier: Modifier = Modifier,
   forceExpanded: Boolean = false,
+  ordering: EpisodeOrderingConfiguration? = null,
   onOrderingRequested: (() -> Unit)? = null,
 ) {
   val context = LocalContext.current
@@ -254,29 +257,47 @@ fun PlayingQueueComposable(
       if (showQueueHeader) {
         Row(
           verticalAlignment = Alignment.CenterVertically,
-          modifier = Modifier.padding(horizontal = 6.dp),
+          modifier =
+            Modifier
+              .fillMaxWidth()
+              .padding(horizontal = 6.dp),
         ) {
           Text(
             text = provideNowPlayingTitle(libraryType, context),
             fontSize = fontSize.sp,
             fontWeight = FontWeight.SemiBold,
             color = colorScheme.primary,
+            modifier = Modifier.weight(1f),
           )
 
           onOrderingRequested?.let { onClick ->
-            Spacer(modifier = Modifier.width(8.dp))
+            val current = ordering ?: EpisodeOrderingConfiguration.default
 
-            Icon(
-              imageVector = Icons.AutoMirrored.Outlined.Sort,
-              contentDescription = stringResource(R.string.library_quick_settings_sort_title),
-              tint = colorScheme.primary,
+            Row(
+              verticalAlignment = Alignment.CenterVertically,
               modifier =
                 Modifier
-                  .size(24.dp)
                   .clip(RoundedCornerShape(12.dp))
                   .clickable { onClick() }
+                  .padding(horizontal = 6.dp, vertical = 4.dp)
                   .testTag("episodeOrderingButton"),
-            )
+            ) {
+              Text(
+                text = current.option.toLocalizedName(context),
+                style = typography.bodyMedium,
+                color = colorScheme.onSurfaceVariant,
+                maxLines = 1,
+              )
+
+              Spacer(modifier = Modifier.width(6.dp))
+
+              Icon(
+                imageVector = Icons.AutoMirrored.Outlined.Sort,
+                contentDescription = stringResource(R.string.library_quick_settings_sort_title),
+                tint = colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(22.dp),
+              )
+            }
           }
         }
 
