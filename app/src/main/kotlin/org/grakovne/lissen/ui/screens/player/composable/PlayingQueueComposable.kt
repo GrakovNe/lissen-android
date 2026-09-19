@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -30,8 +31,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.outlined.SwapVert
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -53,6 +54,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -255,12 +257,13 @@ fun PlayingQueueComposable(
           }.padding(horizontal = 16.dp),
     ) {
       if (showQueueHeader) {
+        // same start/end insets as a list row, so the sort control lines up with the durations
         Row(
           verticalAlignment = Alignment.CenterVertically,
           modifier =
             Modifier
               .fillMaxWidth()
-              .padding(horizontal = 6.dp),
+              .padding(start = 6.dp, end = 4.dp),
         ) {
           Text(
             text = provideNowPlayingTitle(libraryType, context),
@@ -273,13 +276,15 @@ fun PlayingQueueComposable(
           onOrderingRequested?.let { onClick ->
             val current = ordering ?: EpisodeOrderingConfiguration.default
 
+            val iconSize = with(density) { typography.bodyMedium.lineHeight.toDp() }
+
             Row(
               verticalAlignment = Alignment.CenterVertically,
               modifier =
                 Modifier
                   .clip(RoundedCornerShape(12.dp))
                   .clickable { onClick() }
-                  .padding(horizontal = 6.dp, vertical = 4.dp)
+                  .padding(vertical = 4.dp)
                   .testTag("episodeOrderingButton"),
             ) {
               Text(
@@ -291,13 +296,17 @@ fun PlayingQueueComposable(
 
               Spacer(modifier = Modifier.width(6.dp))
 
-              // symmetric glyph so the right edge of the row stays straight;
-              // sized to the text line so it reads as part of the label
+              // the sort glyph is mirrored so its lines are flush with the right edge, and the
+              // glyph's own inset is compensated so the longest line lands on the durations' edge
               Icon(
-                imageVector = Icons.Outlined.SwapVert,
+                imageVector = Icons.AutoMirrored.Outlined.Sort,
                 contentDescription = stringResource(R.string.library_quick_settings_sort_title),
                 tint = colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(with(density) { typography.bodyMedium.lineHeight.toDp() }),
+                modifier =
+                  Modifier
+                    .size(iconSize)
+                    .offset(x = iconSize * SORT_GLYPH_INSET)
+                    .graphicsLayer { scaleX = -1f },
               )
             }
           }
@@ -407,6 +416,9 @@ fun PlayingQueueComposable(
     }
   }
 }
+
+// the material `sort` glyph occupies 3/24 of its box on each side
+private const val SORT_GLYPH_INSET = 3f / 24f
 
 private suspend fun scrollPlayingQueue(
   currentTrackIndex: Int,
