@@ -44,12 +44,13 @@ import org.grakovne.lissen.ui.components.LissenModalBottomSheet
  * Sort options of the podcast episode list, laid out exactly like the downloads sheet:
  * centered title, list items with a leading icon and dividers in between. Tapping an option selects it
  * ascending, tapping the selected one flips the direction; the arrow on the selected row shows
- * the current direction.
+ * the current direction. Rows are inert while the queue is being rebuilt for the previous choice.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EpisodeOrderingComposable(
   current: EpisodeOrderingConfiguration?,
+  enabled: Boolean,
   onOrderingChanged: (EpisodeOrderingConfiguration) -> Unit,
   onDismissRequest: () -> Unit,
 ) {
@@ -115,7 +116,7 @@ fun EpisodeOrderingComposable(
               Modifier
                 .fillMaxWidth()
                 .testTag("episodeOrderingOption_${option.name}")
-                .clickable {
+                .clickable(enabled = enabled) {
                   withHaptic(view) {
                     val newDirection =
                       when {

@@ -336,6 +336,7 @@ class LissenMediaProvider
           false -> {
             provideChannelFor(libraryType)
               .fetchBook(bookId)
+              .map { ChapterOrdering.canonical(it) }
               .map { mergeLocalItemProgress(it) }
               .foldAsync(
                 onSuccess = { OperationResult.Success(it) },
@@ -356,17 +357,17 @@ class LissenMediaProvider
     }
 
     /**
-     * Channel converters and the cache both hand items over in the canonical order;
-     * the user-chosen order is applied here, once, for every consumer of the item.
+     * By this point the item is in the canonical order with a canonical progress, whether it
+     * came from the channel (canonicalized above, before the cached progress is merged in) or
+     * from the cache (stored canonical). The user-chosen order is applied here, once, for
+     * every consumer of the item. A stored configuration is trusted regardless of the library
+     * type: it can only ever be written for a podcast, and the cache may not know the type.
      */
     private fun applyOrdering(detailedItem: DetailedItem): DetailedItem {
-      val configuration = preferences.getEpisodeOrdering(detailedItem.id)
+      val canonical = ChapterOrdering.canonical(detailedItem)
+      val configuration = preferences.getEpisodeOrdering(detailedItem.id) ?: return canonical
 
-      return when {
-        configuration != null -> ChapterOrdering.apply(detailedItem, configuration)
-        detailedItem.libraryType == LibraryType.PODCAST -> ChapterOrdering.apply(detailedItem, configuration = null)
-        else -> ChapterOrdering.canonical(detailedItem)
-      }
+      return ChapterOrdering.apply(canonical, configuration)
     }
 
     /**
@@ -517,6 +518,10 @@ class LissenMediaProvider
       }
     }
 
+    /**
+     * Both progresses are canonical positions: the cache only ever stores canonical ones and
+     * the channel item has been canonicalized before getting here.
+     */
     private suspend fun mergeLocalItemProgress(detailedItem: DetailedItem): DetailedItem {
       val cachedProgress = localCacheRepository.fetchPlayingItemProgress(detailedItem.id)
       val channelProgress = detailedItem.progress

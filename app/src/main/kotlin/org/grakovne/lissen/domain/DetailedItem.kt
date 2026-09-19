@@ -61,7 +61,8 @@ data class PlayingChapter(
   val title: String,
   val id: String,
   /**
-   * Position of the chapter in the canonical (server) order. The list order of
+   * Last-resort ordering key: the position the chapter came in with (server order for
+   * channel items, canonical order for cached ones). The list order of
    * [DetailedItem.chapters] may differ from it once the user picks another ordering.
    */
   val index: Int = 0,

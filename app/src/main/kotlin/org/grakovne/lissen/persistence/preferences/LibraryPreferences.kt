@@ -62,14 +62,24 @@ class LibraryPreferences
       configuration: EpisodeOrderingConfiguration,
     ) {
       val updated = getEpisodeOrderings() + (itemId to configuration)
-      store.putString(KEY_EPISODE_ORDERING, episodeOrderingAdapter.toJson(updated))
+      store.putString(KEY_EPISODE_ORDERING, episodeOrderingAdapter.toJson(updated), commit = true)
     }
 
-    private fun getEpisodeOrderings(): Map<String, EpisodeOrderingConfiguration> =
-      store
-        .getString(KEY_EPISODE_ORDERING)
-        ?.let { runCatching { episodeOrderingAdapter.fromJson(it) }.getOrNull() }
-        ?: emptyMap()
+    /**
+     * Entries are parsed one by one so that a single unreadable value (say, an option this
+     * build does not know) drops only itself instead of every podcast's choice on the next save.
+     */
+    private fun getEpisodeOrderings(): Map<String, EpisodeOrderingConfiguration> {
+      val json = store.getString(KEY_EPISODE_ORDERING) ?: return emptyMap()
+      val entries = runCatching { rawEpisodeOrderingAdapter.fromJson(json) }.getOrNull() ?: return emptyMap()
+
+      return entries
+        .mapNotNull { (itemId, value) ->
+          runCatching { episodeOrderingEntryAdapter.fromJsonValue(value) }
+            .getOrNull()
+            ?.let { itemId to it }
+        }.toMap()
+    }
 
     fun getHideCompleted(): Boolean = store.getBoolean(KEY_HIDE_COMPLETED, false)
 
@@ -122,5 +132,12 @@ class LibraryPreferences
         moshi.adapter<Map<String, EpisodeOrderingConfiguration>>(
           Types.newParameterizedType(Map::class.java, String::class.java, EpisodeOrderingConfiguration::class.java),
         )
+
+      private val rawEpisodeOrderingAdapter =
+        moshi.adapter<Map<String, Any>>(
+          Types.newParameterizedType(Map::class.java, String::class.java, Any::class.java),
+        )
+
+      private val episodeOrderingEntryAdapter = moshi.adapter(EpisodeOrderingConfiguration::class.java)
     }
   }

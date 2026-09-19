@@ -204,6 +204,13 @@ class PlayerViewModel
 
     fun setEpisodeOrdering(configuration: EpisodeOrderingConfiguration) {
       val playingBook = book.value ?: return
+
+      // only podcasts are ever reordered; a stored configuration is trusted downstream on that basis
+      if (playingBook.libraryType != LibraryType.PODCAST) {
+        Timber.w("Ignoring setEpisodeOrdering for ${playingBook.id}: libraryType=${playingBook.libraryType}")
+        return
+      }
+
       Timber.d("User action: setEpisodeOrdering $configuration for ${playingBook.id}")
 
       libraryPreferences.saveEpisodeOrdering(playingBook.id, configuration)

@@ -143,9 +143,16 @@ fun PlayerScreen(
   val preferredLibraryType by libraryViewModel.preferredLibraryType.collectAsState()
 
   // while the requested item is still loading, playingBook may hold the previous item of another type
-  val libraryType = playingBook?.takeIf { it.id == bookId }?.libraryType ?: preferredLibraryType
+  val requestedBook = playingBook?.takeIf { it.id == bookId }
+  val libraryType = requestedBook?.libraryType ?: preferredLibraryType
   val episodeOrdering by playerViewModel.episodeOrdering.collectAsState()
-  val sortable = libraryType == LibraryType.PODCAST
+
+  // the placeholder guesses from the library, a loaded item speaks for itself
+  val sortable =
+    when (requestedBook) {
+      null -> preferredLibraryType == LibraryType.PODCAST
+      else -> requestedBook.libraryType == LibraryType.PODCAST
+    }
 
   val screenTitle =
     when {
@@ -440,6 +447,7 @@ fun PlayerScreen(
   if (orderingSelected) {
     EpisodeOrderingComposable(
       current = episodeOrdering,
+      enabled = isPlaybackReady,
       onOrderingChanged = { playerViewModel.setEpisodeOrdering(it) },
       onDismissRequest = { orderingSelected = false },
     )

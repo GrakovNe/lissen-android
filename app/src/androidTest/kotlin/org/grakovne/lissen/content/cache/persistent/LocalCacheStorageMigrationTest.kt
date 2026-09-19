@@ -238,13 +238,15 @@ class LocalCacheStorageMigrationTest {
         VALUES ('book-1', 'Dune', 0, 0, 0)
         """.trimIndent(),
       )
-      // chapters inserted out of start order, "c1" twice (the old append-on-recache behaviour)
+      // two full re-caches of the same item, chapters written out of start order;
+      // the second one marks "c1" as downloaded
       db.execSQL(
         """
         INSERT INTO book_chapters (bookChapterId, duration, start, end, title, bookId, isCached)
         VALUES
           ('c2', 10.0, 10.0, 20.0, 'Two', 'book-1', 0),
           ('c1', 10.0, 0.0, 10.0, 'One', 'book-1', 0),
+          ('c2', 10.0, 10.0, 20.0, 'Two', 'book-1', 0),
           ('c1', 10.0, 0.0, 10.0, 'One', 'book-1', 1)
         """.trimIndent(),
       )
@@ -254,7 +256,8 @@ class LocalCacheStorageMigrationTest {
         VALUES
           ('f1', 'one', 0, 10.0, 'audio/mpeg', 'book-1'),
           ('f2', 'two', 0, 10.0, 'audio/mpeg', 'book-1'),
-          ('f1', 'one', 0, 10.0, 'audio/mpeg', 'book-1')
+          ('f1', 'one', 0, 10.0, 'audio/mpeg', 'book-1'),
+          ('f2', 'two', 0, 10.0, 'audio/mpeg', 'book-1')
         """.trimIndent(),
       )
     }
@@ -275,7 +278,7 @@ class LocalCacheStorageMigrationTest {
         files += cursor.getString(0) to cursor.getInt(1)
       }
     }
-    assertEquals(listOf("f2" to 0, "f1" to 1), files)
+    assertEquals(listOf("f1" to 0, "f2" to 1), files)
 
     db.query("SELECT publishedAt, season, episode, fileName FROM book_chapters WHERE bookChapterId = 'c1'").use { cursor ->
       assertTrue(cursor.moveToFirst())

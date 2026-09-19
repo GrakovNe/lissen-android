@@ -382,8 +382,11 @@ val MIGRATION_20_21 =
 
 /**
  * Chapters and files get an explicit canonical position plus the keys the episode ordering
- * needs. Rows used to be appended on every re-cache (auto-generated key, no delete), so the
- * duplicates are collapsed first and the position is backfilled from the stored bounds.
+ * needs. The position is backfilled from the stored bounds, which is the order the item has
+ * always been shown in, so the stored progress keeps its meaning. Duplicate rows per
+ * (bookId, chapterId) should not exist (replacing the parent row cascades into them), but a
+ * re-cache that ever slipped past that would poison the position, so they are collapsed first,
+ * keeping the latest row.
  */
 val MIGRATION_21_22 =
   object : Migration(21, 22) {

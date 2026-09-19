@@ -67,4 +67,22 @@ class EpisodeOrderingPreferencesTest {
       assertEquals(listOf(emptyMap(), mapOf("podcast-1" to byTitleDesc)), emissions)
       collector.cancel()
     }
+
+  @Test
+  fun `an unreadable entry drops only itself`() {
+    fakePreferences
+      .edit()
+      .putString(
+        "episode_ordering",
+        """{"podcast-1":{"option":"TITLE","direction":"DESCENDING"},"podcast-2":{"option":"NO_SUCH_OPTION","direction":"ASCENDING"}}""",
+      ).commit()
+
+    assertEquals(byTitleDesc, preferences.getEpisodeOrdering("podcast-1"))
+    assertNull(preferences.getEpisodeOrdering("podcast-2"))
+
+    preferences.saveEpisodeOrdering("podcast-3", byFileAsc)
+
+    assertEquals(byTitleDesc, preferences.getEpisodeOrdering("podcast-1"))
+    assertEquals(byFileAsc, preferences.getEpisodeOrdering("podcast-3"))
+  }
 }

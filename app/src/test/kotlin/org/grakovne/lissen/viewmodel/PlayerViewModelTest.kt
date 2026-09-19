@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
+import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.domain.BookChapterState
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.BookmarkSyncState
@@ -109,6 +110,26 @@ class PlayerViewModelTest {
     @Test
     fun `playingQueueExpanded is initially false`() {
       assertFalse(viewModel.playingQueueExpanded.value)
+    }
+
+    @Test
+    fun `setEpisodeOrdering is ignored for anything but a podcast`() {
+      playingBook.value = detailedItem(libraryType = LibraryType.LIBRARY)
+
+      viewModel.setEpisodeOrdering(EpisodeOrderingConfiguration.default)
+
+      verify(exactly = 0) { libraryPreferences.saveEpisodeOrdering(any(), any()) }
+      verify(exactly = 0) { mediaRepository.reorderPlayingItem(any()) }
+    }
+
+    @Test
+    fun `setEpisodeOrdering stores the choice and reorders the playing podcast`() {
+      playingBook.value = detailedItem(libraryType = LibraryType.PODCAST)
+
+      viewModel.setEpisodeOrdering(EpisodeOrderingConfiguration.default)
+
+      verify { libraryPreferences.saveEpisodeOrdering("book-1", EpisodeOrderingConfiguration.default) }
+      verify { mediaRepository.reorderPlayingItem(EpisodeOrderingConfiguration.default) }
     }
   }
 

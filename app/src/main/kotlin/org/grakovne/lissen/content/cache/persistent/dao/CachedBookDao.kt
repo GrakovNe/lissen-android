@@ -94,7 +94,7 @@ interface CachedBookDao {
     val bookChapters =
       book
         .chapters
-        .map { chapter ->
+        .mapIndexed { index, chapter ->
           val fetched = fetchedChapters.any { it.id == chapter.id }
           val exists = cachedBookChapters.any { it.bookChapterId == chapter.id && it.isCached }
           val dropped = droppedChapters.any { it.id == chapter.id }
@@ -113,7 +113,7 @@ interface CachedBookDao {
             title = chapter.title,
             bookId = book.id,
             isCached = cached,
-            chapterIndex = chapter.index,
+            chapterIndex = index,
             publishedAt = chapter.publishedAt,
             season = chapter.season,
             episode = chapter.episode,

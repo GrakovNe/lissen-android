@@ -75,7 +75,7 @@ class ChapterOrderingTest {
     EpisodeOrderingConfiguration(EpisodeOrderingOption.PUBLISHED_AT, LibraryOrderingDirection.DESCENDING)
 
   @Test
-  fun `default ordering sorts by published date then season then episode then server order`() {
+  fun `default ordering sorts by published date then season then episode then incoming order`() {
     val source =
       item(
         listOf(
@@ -89,7 +89,44 @@ class ChapterOrderingTest {
 
     val result = ChapterOrdering.apply(source, configuration = null)
 
-    assertEquals(listOf("e5", "e4", "e3", "e2", "e1"), result.chapters.map { it.id })
+    // undated first (as every version of the app did), unnumbered seasons after numbered ones
+    assertEquals(listOf("e4", "e3", "e5", "e2", "e1"), result.chapters.map { it.id })
+  }
+
+  @Test
+  fun `picking the default configuration is the same as having none`() {
+    val source =
+      item(
+        listOf(
+          chapter("e1", 0, publishedAt = 2_000L, title = "b"),
+          chapter("e2", 1, publishedAt = 1_000L, title = "c"),
+          chapter("e3", 2, title = "Выпуск 10"),
+          chapter("e4", 3, title = "Выпуск 2"),
+        ),
+      )
+
+    val byDefault = ChapterOrdering.apply(source, configuration = null)
+    val byChoice = ChapterOrdering.apply(source, EpisodeOrderingConfiguration.default)
+
+    assertEquals(byDefault.chapters, byChoice.chapters)
+    assertEquals(ChapterOrdering.canonical(source).chapters, byChoice.chapters)
+  }
+
+  @Test
+  fun `canonical order is the default order whatever order the server sends`() {
+    val source =
+      item(
+        listOf(
+          chapter("c", 0, publishedAt = 3L),
+          chapter("a", 1, publishedAt = 1L),
+          chapter("b", 2, publishedAt = 2L),
+        ),
+      )
+
+    val result = ChapterOrdering.canonical(source)
+
+    assertEquals(listOf("a", "b", "c"), result.chapters.map { it.id })
+    assertEquals(listOf("file-a", "file-b", "file-c"), result.files.map { it.id })
   }
 
   @Test
@@ -130,7 +167,7 @@ class ChapterOrderingTest {
   }
 
   @Test
-  fun `canonical order restores the server order from a user ordered item`() {
+  fun `canonical order restores the default order from a user ordered item`() {
     val source =
       item(
         listOf(
@@ -196,7 +233,7 @@ class ChapterOrderingTest {
   }
 
   @Test
-  fun `season and episode compare numerically and title breaks ties`() {
+  fun `season and episode compare numerically and the incoming order breaks ties`() {
     val source =
       item(
         listOf(
@@ -212,7 +249,30 @@ class ChapterOrderingTest {
         EpisodeOrderingConfiguration(EpisodeOrderingOption.SEASON, LibraryOrderingDirection.ASCENDING),
       )
 
-    assertEquals(listOf("b", "c", "a"), result.chapters.map { it.id })
+    assertEquals(listOf("b", "a", "c"), result.chapters.map { it.id })
+  }
+
+  @Test
+  fun `season and episode take their leading number and unnumbered values sort last`() {
+    val source =
+      item(
+        listOf(
+          chapter("a", 0, episode = "bonus"),
+          chapter("b", 1, episode = "10"),
+          chapter("c", 2, episode = "2.5"),
+          chapter("d", 3, episode = "S02E01"),
+          chapter("e", 4, episode = "1"),
+        ),
+      )
+
+    val result =
+      ChapterOrdering.apply(
+        source,
+        EpisodeOrderingConfiguration(EpisodeOrderingOption.EPISODE, LibraryOrderingDirection.ASCENDING),
+      )
+
+    // "2.5" -> 2, "S02E01" -> 2, tie broken by incoming order; "bonus" has no number
+    assertEquals(listOf("e", "c", "d", "b", "a"), result.chapters.map { it.id })
   }
 
   @Test
@@ -264,13 +324,92 @@ class ChapterOrderingTest {
   }
 
   @Test
-  fun `files are left alone when they do not map one to one onto chapters`() {
+  fun `an item whose files do not map one to one onto chapters is not reordered`() {
     val chapters = listOf(chapter("a", 0, publishedAt = 1L), chapter("b", 1, publishedAt = 2L))
     val source = item(chapters).let { it.copy(files = it.files.take(1)) }
 
     val result = ChapterOrdering.apply(source, descendingByDate)
 
-    assertEquals(listOf("b", "a"), result.chapters.map { it.id })
-    assertEquals(source.files, result.files)
+    assertSame(source, result)
+  }
+
+  @Test
+  fun `positions inside the item and on chapter starts survive a round trip`() {
+    val source =
+      item(
+        listOf(
+          chapter("a", 0, duration = 10.0, publishedAt = 1L),
+          chapter("b", 1, duration = 20.0, publishedAt = 2L),
+          chapter("c", 2, duration = 30.0, publishedAt = 3L),
+        ),
+      )
+    val reordered = ChapterOrdering.apply(source, descendingByDate)
+
+    for (position in listOf(0.0, 5.0, 10.0, 25.0, 30.0, 59.9)) {
+      val there = ChapterOrdering.fromCanonicalPosition(reordered, position)
+      assertEquals(position, ChapterOrdering.toCanonicalPosition(reordered, there), "round trip of $position")
+    }
+  }
+
+  @Test
+  fun `positions past the end of the item are not translated`() {
+    val source =
+      item(
+        listOf(
+          chapter("a", 0, duration = 10.0, publishedAt = 1L),
+          chapter("b", 1, duration = 20.0, publishedAt = 2L),
+        ),
+      )
+    val reordered = ChapterOrdering.apply(source, descendingByDate)
+
+    assertEquals(null, ChapterOrdering.locate(source, 30.5))
+    assertEquals(65.0, ChapterOrdering.fromCanonicalPosition(reordered, 65.0))
+    assertEquals(65.0, ChapterOrdering.toCanonicalPosition(reordered, 65.0))
+  }
+
+  @Test
+  fun `stale progress past the end is carried over untouched so it can be trimmed later`() {
+    val source =
+      item(
+        listOf(
+          chapter("a", 0, duration = 10.0, publishedAt = 1L),
+          chapter("b", 1, duration = 20.0, publishedAt = 2L),
+        ),
+        progress = MediaProgress(currentTime = 65.0, isFinished = false, lastUpdate = 1L),
+      )
+
+    val result = ChapterOrdering.apply(source, descendingByDate)
+
+    assertEquals(65.0, result.progress?.currentTime)
+  }
+
+  @Test
+  fun `a zero duration chapter is skipped over and a negative one does not crash`() {
+    val source =
+      item(
+        listOf(
+          chapter("a", 0, duration = 10.0, publishedAt = 1L),
+          chapter("b", 1, duration = 0.0, publishedAt = 2L),
+          chapter("c", 2, duration = 30.0, publishedAt = 3L),
+        ),
+      )
+    val broken = source.copy(chapters = source.chapters.map { it.copy(duration = -1.0) })
+
+    assertEquals(ChapterLocation("c", 0.0), ChapterOrdering.locate(source, 10.0))
+    assertEquals(10.0, ChapterOrdering.position(source, ChapterLocation("b", 0.0)))
+    assertEquals(0.0, ChapterOrdering.locate(broken, 0.0)?.offset)
+  }
+
+  @Test
+  fun `descending order with fully tied keys reverses the incoming order`() {
+    val source = item(listOf(chapter("a", 0), chapter("b", 1), chapter("c", 2)))
+
+    val result =
+      ChapterOrdering.apply(
+        source,
+        EpisodeOrderingConfiguration(EpisodeOrderingOption.PUBLISHED_AT, LibraryOrderingDirection.DESCENDING),
+      )
+
+    assertEquals(listOf("c", "b", "a"), result.chapters.map { it.id })
   }
 }

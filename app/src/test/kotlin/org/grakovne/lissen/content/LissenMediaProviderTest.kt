@@ -20,6 +20,7 @@ import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.content.cache.temporary.CachedBookmarkProvider
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
 import org.grakovne.lissen.domain.Book
+import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.BookmarkSyncState
 import org.grakovne.lissen.domain.DetailedItem
@@ -190,6 +191,61 @@ class LissenMediaProviderTest {
         val result = provider.fetchBook("book-1") as OperationResult.Success
 
         assertEquals(listOf("c1", "c0"), result.data.chapters.map { it.id })
+      }
+
+    @Test
+    fun `channel item is canonicalized before the cached progress is merged in`() =
+      runBlocking {
+        // server order c1, c0; canonical (by date) is c0, c1
+        val item =
+          detailedItem(
+            chapters =
+              listOf(
+                chapter("c1", 0, 10.0, publishedAt = 2L),
+                chapter("c0", 1, 10.0, publishedAt = 1L),
+              ),
+          ).copy(
+            libraryType = LibraryType.PODCAST,
+            // 5s into c1 in server coordinates
+            progress = MediaProgress(currentTime = 5.0, isFinished = false, lastUpdate = 1L),
+          )
+        every { preferences.isForceCache() } returns false
+        every { preferences.getEpisodeOrdering("book-1") } returns null
+        coEvery { mediaChannel.fetchBook("book-1") } returns OperationResult.Success(item)
+        // 5s into c1 in canonical coordinates, newer than the channel's
+        coEvery { localCacheRepository.fetchPlayingItemProgress("book-1") } returns
+          MediaProgress(currentTime = 15.0, isFinished = false, lastUpdate = 2L)
+
+        val result = provider.fetchBook("book-1") as OperationResult.Success
+
+        assertEquals(listOf("c0", "c1"), result.data.chapters.map { it.id })
+        assertEquals(15.0, result.data.progress?.currentTime)
+      }
+
+    @Test
+    fun `channel progress is translated into canonical coordinates when it wins the merge`() =
+      runBlocking {
+        val item =
+          detailedItem(
+            chapters =
+              listOf(
+                chapter("c1", 0, 10.0, publishedAt = 2L),
+                chapter("c0", 1, 10.0, publishedAt = 1L),
+              ),
+          ).copy(
+            libraryType = LibraryType.PODCAST,
+            progress = MediaProgress(currentTime = 5.0, isFinished = false, lastUpdate = 2L),
+          )
+        every { preferences.isForceCache() } returns false
+        every { preferences.getEpisodeOrdering("book-1") } returns null
+        coEvery { mediaChannel.fetchBook("book-1") } returns OperationResult.Success(item)
+        coEvery { localCacheRepository.fetchPlayingItemProgress("book-1") } returns
+          MediaProgress(currentTime = 3.0, isFinished = false, lastUpdate = 1L)
+
+        val result = provider.fetchBook("book-1") as OperationResult.Success
+
+        // 5s into c1, and c1 starts at 10s in the canonical order
+        assertEquals(15.0, result.data.progress?.currentTime)
       }
 
     @Test
@@ -835,7 +891,7 @@ class LissenMediaProviderTest {
     series = emptyList(),
     year = null,
     abstract = null,
-    files = emptyList(),
+    files = chapters.map { BookFile(id = it.id, name = it.id, duration = it.duration, size = 0, mimeType = "audio/mpeg") },
     chapters = chapters,
     progress = null,
     libraryId = "lib-1",

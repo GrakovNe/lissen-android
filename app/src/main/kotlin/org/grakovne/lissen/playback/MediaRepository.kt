@@ -385,6 +385,13 @@ class MediaRepository
      */
     fun reorderPlayingItem(configuration: EpisodeOrderingConfiguration?) {
       val book = playingBook.value ?: return
+
+      // a rebuild is in flight: totalPosition is not the listener's position right now
+      if (isPlaybackReady.value.not()) {
+        Timber.d("Ignoring reorder of ${book.id}: playback is not ready")
+        return
+      }
+
       val wasPlaying = isPlaying.value
       val location = ChapterOrdering.locate(book, totalPosition.value)
 
@@ -397,14 +404,23 @@ class MediaRepository
       _mediaPreparingError.value = false
       _isPlaybackReady.value = false
 
-      val restored =
+      val position =
         location
           ?.let { ChapterOrdering.position(reordered, it) }
           ?.let { position ->
+            // the service treats the last seconds of an item as "finished, start over";
+            // a reorder must never trigger that, whatever chapter ended up last
+            val total = reordered.chapters.sumOf { it.duration }
+            position.coerceAtMost((total - RESTART_GUARD_SECONDS).coerceAtLeast(0.0))
+          }
+
+      val restored =
+        position
+          ?.let {
             reordered.copy(
               progress =
                 MediaProgress(
-                  currentTime = position,
+                  currentTime = it,
                   isFinished = false,
                   lastUpdate = System.currentTimeMillis(),
                 ),
@@ -412,8 +428,10 @@ class MediaRepository
           }
           ?: reordered
 
+      _bookmarks.value = _bookmarks.value.map { it.copy(totalPosition = ChapterOrdering.translate(book, reordered, it.totalPosition)) }
       _playAfterPrepare.value = wasPlaying
       startPreparingPlayback(restored)
+      restored.progress?.let { _totalPosition.value = it.currentTime }
     }
 
     fun nextTrack() {
@@ -663,7 +681,12 @@ class MediaRepository
     private fun List<Bookmark>.inPlayingOrder(book: DetailedItem?): List<Bookmark> {
       if (book == null) return this
 
-      return map { it.copy(totalPosition = ChapterOrdering.fromCanonicalPosition(book, it.totalPosition)) }
+      return map {
+        when (it.libraryItemId == book.id) {
+          true -> it.copy(totalPosition = ChapterOrdering.fromCanonicalPosition(book, it.totalPosition))
+          false -> it
+        }
+      }
     }
 
     private fun withMain(action: () -> Unit) {
@@ -675,6 +698,9 @@ class MediaRepository
 
     private companion object {
       private const val CURRENT_TRACK_REPLAY_THRESHOLD = 5
+
+      // mirrors the restart heuristic in PlaybackService.bookToChapterMediaItems
+      private const val RESTART_GUARD_SECONDS = 5.0
       private const val PROGRESS_UPDATE_INTERVAL_MS = 500L
 
       private fun getSeekTime(seconds: Int?): Long = seconds?.toLong() ?: 30L

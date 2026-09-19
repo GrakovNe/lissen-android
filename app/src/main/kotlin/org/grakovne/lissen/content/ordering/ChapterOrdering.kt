@@ -22,27 +22,39 @@ data class ChapterLocation(
  * and on `start`/`end` being monotonic. Reordering therefore always goes through [reorder],
  * which permutes both lists in lockstep, recomputes the bounds and carries the progress over.
  *
- * The canonical order is the one the channel converters produce, encoded in
- * [PlayingChapter.index]. Ordering is a pure function of chapter keys, so it can be applied to
- * an item coming from the network or from the cache, in any input order, with the same result.
+ * The canonical order is the default one: published date, season, episode, then the position
+ * the chapter came in with ([PlayingChapter.index]). It is the order every version of the app
+ * has shown podcasts in, so positions stored on the server and in the cache (progress,
+ * bookmarks) are canonical positions and stay valid across upgrades. For items without
+ * ordering keys (books, local-file podcasts) the canonical order is the server order.
+ * Ordering is a pure function of chapter keys, so applying it to an item coming from the
+ * network or from the cache, in any input order, gives the same result.
  */
 object ChapterOrdering {
-  fun canonical(item: DetailedItem): DetailedItem = reorder(item, compareBy { it.index })
+  fun canonical(item: DetailedItem): DetailedItem = reorder(item, defaultComparator)
 
   fun apply(
     item: DetailedItem,
     configuration: EpisodeOrderingConfiguration?,
   ): DetailedItem = reorder(item, comparator(configuration))
 
+  /**
+   * Resolves a position to a chapter and an offset. A position on a chapter boundary is the
+   * start of the chapter that begins there, so chapter starts (where playback lands after an
+   * auto-advance) survive a round trip through [position] in any order; the very end of the
+   * item is the end of its last chapter. Positions past the end resolve to nothing: they are
+   * not real positions and must not be turned into one by a translation.
+   */
   fun locate(
     item: DetailedItem,
     position: Double,
   ): ChapterLocation? {
     val chapters = item.chapters
-    if (chapters.isEmpty()) return null
+    val last = chapters.lastOrNull() ?: return null
+    if (position > last.end) return null
 
-    val chapter = chapters.firstOrNull { position < it.end } ?: chapters.last()
-    val offset = (position - chapter.start).coerceIn(0.0, chapter.duration)
+    val chapter = chapters.firstOrNull { position < it.end } ?: last
+    val offset = (position - chapter.start).coerceIn(0.0, chapter.duration.coerceAtLeast(0.0))
 
     return ChapterLocation(chapterId = chapter.id, offset = offset)
   }
@@ -54,11 +66,12 @@ object ChapterOrdering {
     item
       .chapters
       .firstOrNull { it.id == location.chapterId }
-      ?.let { it.start + location.offset.coerceIn(0.0, it.duration) }
+      ?.let { it.start + location.offset.coerceIn(0.0, it.duration.coerceAtLeast(0.0)) }
 
   /**
    * Translates a position expressed in the order of [from] into the order of [to].
-   * Falls back to the raw value when the chapter cannot be found on either side.
+   * Falls back to the raw value when the position is outside the item or the chapter
+   * cannot be found on either side.
    */
   fun translate(
     from: DetailedItem,
@@ -79,12 +92,17 @@ object ChapterOrdering {
     canonicalPosition: Double,
   ): Double = translate(canonical(item), item, canonicalPosition)
 
+  /**
+   * Primary key, then season and episode as tie-breakers, then the incoming position. The
+   * default configuration builds exactly the canonical order, so picking it in the UI is the
+   * same as having no configuration at all.
+   */
   private fun comparator(configuration: EpisodeOrderingConfiguration?): Comparator<PlayingChapter> {
     val config = configuration ?: return defaultComparator
 
     val primary = keyComparator(config.option)
     val tieBreakers =
-      listOf(EpisodeOrderingOption.SEASON, EpisodeOrderingOption.EPISODE, EpisodeOrderingOption.TITLE)
+      listOf(EpisodeOrderingOption.SEASON, EpisodeOrderingOption.EPISODE)
         .filterNot { it == config.option }
         .map { keyComparator(it) }
 
@@ -99,18 +117,24 @@ object ChapterOrdering {
     }
   }
 
-  private val defaultComparator: Comparator<PlayingChapter> =
-    compareBy<PlayingChapter>({ it.publishedAt }, { it.season.asNumber() }, { it.episode.asNumber() }, { it.index })
+  private val defaultComparator: Comparator<PlayingChapter> by lazy {
+    comparator(EpisodeOrderingConfiguration.default)
+  }
 
   private fun keyComparator(option: EpisodeOrderingOption): Comparator<PlayingChapter> =
     when (option) {
       EpisodeOrderingOption.PUBLISHED_AT -> compareBy { it.publishedAt }
       EpisodeOrderingOption.TITLE -> compareBy(String.CASE_INSENSITIVE_ORDER) { it.title }
-      EpisodeOrderingOption.SEASON -> compareBy { it.season.asNumber() }
-      EpisodeOrderingOption.EPISODE -> compareBy { it.episode.asNumber() }
+      EpisodeOrderingOption.SEASON -> compareBy(nullsLast()) { it.season.asNumber() }
+      EpisodeOrderingOption.EPISODE -> compareBy(nullsLast()) { it.episode.asNumber() }
       EpisodeOrderingOption.FILE_NAME -> compareBy(nullsFirst(String.CASE_INSENSITIVE_ORDER)) { it.fileName }
     }
 
+  /**
+   * Chapters and files can only be permuted together. An item whose files do not map one to
+   * one onto its chapters (a book with chapter markers over a different number of audio files)
+   * is left untouched: reordering its chapters alone would play the wrong audio under every title.
+   */
   private fun reorder(
     item: DetailedItem,
     comparator: Comparator<PlayingChapter>,
@@ -120,13 +144,10 @@ object ChapterOrdering {
 
     val order = chapters.indices.sortedWith(compareBy(comparator) { chapters[it] })
     if (order == chapters.indices.toList()) return item
+    if (item.files.size != chapters.size) return item
 
     val reorderedChapters = order.map { chapters[it] }.withRecomputedBounds()
-    val reorderedFiles =
-      when (item.files.size == chapters.size) {
-        true -> order.map { item.files[it] }
-        false -> item.files
-      }
+    val reorderedFiles = order.map { item.files[it] }
 
     val reordered = item.copy(chapters = reorderedChapters, files = reorderedFiles)
 
@@ -148,5 +169,11 @@ object ChapterOrdering {
     }
   }
 
-  private fun String?.asNumber(): Int? = this?.trim()?.takeIf { it.isNotEmpty() }?.toIntOrNull()
+  /**
+   * Season and episode numbers as feeds actually write them: "3", "S03", "1.5", "12a".
+   * The leading number is what counts; values without one sort after the numbered ones.
+   */
+  private fun String?.asNumber(): Int? = this?.let { LEADING_NUMBER.find(it)?.value?.toIntOrNull() }
+
+  private val LEADING_NUMBER = Regex("\\d+")
 }

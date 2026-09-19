@@ -253,6 +253,34 @@ class ContentCachingIntegrationTest {
     }
 
   @Test
+  fun `already cached chapters are recognised by id when the playing item is reordered`() =
+    runBlocking {
+      coEvery { bookRepository.fetchBook("book") } returns
+        book.copy(chapters = chapters.map { it.copy(available = it.id == "c0") })
+      server.enqueue(audio("bytes-f1"))
+      server.enqueue(notFound())
+      server.enqueue(libraries())
+
+      // the listener flipped the order: same chapters, other bounds
+      val reordered =
+        book.copy(
+          chapters =
+            listOf(
+              chapters[1].copy(start = 0.0, end = 10.0),
+              chapters[0].copy(start = 10.0, end = 20.0),
+            ),
+          files = book.files.reversed(),
+        )
+
+      val states = manager.cacheMediaItem(reordered, AllItemsDownloadOption, channel, 0.0).toList()
+
+      assertEquals(CacheState(CacheStatus.Completed), states.last())
+      assertEquals(3, server.requestCount)
+      assertFalse(properties.provideMediaCachePatch("book", "f0").exists())
+      assertEquals("bytes-f1", properties.provideMediaCachePatch("book", "f1").readText())
+    }
+
+  @Test
   fun `reports an error and keeps no media when the download fails`() =
     runBlocking {
       coEvery { bookRepository.fetchBook("book") } returns null
