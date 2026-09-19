@@ -210,11 +210,6 @@ class PlayerViewModel
       mediaRepository.reorderPlayingItem(configuration)
     }
 
-    fun markAsFinished() {
-      Timber.d("User action: markAsFinished bookId=${book.value?.id}")
-      mediaRepository.markAsFinished()
-    }
-
     companion object {
       private const val EMPTY_SEARCH = ""
     }

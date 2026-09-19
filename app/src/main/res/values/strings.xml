@@ -115,8 +115,6 @@
     <string name="player_cover_widget_label">Now playing (cover)</string>
     <string name="the_offline_podcasts_is_empty">No saved podcasts yet</string>
     <string name="player_screen_downloads_navigation">Downloads</string>
-    <string name="player_settings_mark_as_finished">Mark as finished</string>
-    <string name="player_settings_marked_as_finished">Marked as finished</string>
     <string name="episode_ordering_published_at_option">Published date</string>
     <string name="episode_ordering_season_option">Season</string>
     <string name="episode_ordering_episode_option">Episode</string>

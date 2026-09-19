@@ -416,13 +416,6 @@ class MediaRepository
       startPreparingPlayback(restored)
     }
 
-    fun markAsFinished() {
-      val book = playingBook.value ?: return
-      Timber.d("Marking ${book.id} as finished")
-
-      eventBus.send(PlaybackCommand.MarkAsFinished(book))
-    }
-
     fun nextTrack() {
       val book = playingBook.value ?: return
       val overallPosition = totalPosition.value

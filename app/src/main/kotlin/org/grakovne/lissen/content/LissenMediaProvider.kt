@@ -355,17 +355,6 @@ class LissenMediaProvider
         .map { trimProgress(it) }
     }
 
-    suspend fun markAsFinished(detailedItem: DetailedItem): OperationResult<Unit> {
-      Timber.d("Marking as finished: bookId=${detailedItem.id}")
-
-      localCacheRepository.markAsFinished(detailedItem)
-
-      return when (preferences.isForceCache()) {
-        true -> OperationResult.Success(Unit)
-        false -> provideChannelFor(detailedItem.libraryType).markAsFinished(detailedItem.id)
-      }
-    }
-
     /**
      * Channel converters and the cache both hand items over in the canonical order;
      * the user-chosen order is applied here, once, for every consumer of the item.

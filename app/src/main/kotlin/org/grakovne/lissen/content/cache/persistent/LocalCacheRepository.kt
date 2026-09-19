@@ -204,8 +204,6 @@ class LocalCacheRepository
      */
     suspend fun fetchBook(bookId: String): DetailedItem? = cachedBookRepository.fetchBook(bookId)
 
-    suspend fun markAsFinished(detailedItem: DetailedItem) = cachedBookRepository.markAsFinished(detailedItem)
-
     suspend fun fetchBookmarks(libraryItemId: String) =
       cachedBookmarkRepository
         .fetchBookmarks(libraryItemId)

@@ -101,8 +101,6 @@ interface MediaChannel {
 
   suspend fun fetchBook(bookId: String): OperationResult<DetailedItem>
 
-  suspend fun markAsFinished(bookId: String): OperationResult<Unit> = OperationResult.Error(OperationError.InternalError)
-
   suspend fun fetchBookmarks(libraryItemId: String): OperationResult<List<Bookmark>>
 
   suspend fun dropBookmark(bookmark: Bookmark): OperationResult<Unit>

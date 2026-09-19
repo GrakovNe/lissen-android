@@ -804,36 +804,6 @@ class LissenMediaProviderTest {
       }
   }
 
-  @Nested
-  inner class MarkAsFinished {
-    @Test
-    fun `updates local cache only when force cache enabled`() =
-      runBlocking {
-        val item = detailedItem().copy(libraryType = LibraryType.LIBRARY)
-        every { preferences.isForceCache() } returns true
-
-        val result = provider.markAsFinished(item)
-
-        assertInstanceOf(OperationResult.Success::class.java, result)
-        coVerify { localCacheRepository.markAsFinished(item) }
-        coVerify(exactly = 0) { mediaChannel.markAsFinished(any()) }
-      }
-
-    @Test
-    fun `updates local cache and channel when force cache disabled`() =
-      runBlocking {
-        val item = detailedItem().copy(libraryType = LibraryType.LIBRARY)
-        every { preferences.isForceCache() } returns false
-        coEvery { mediaChannel.markAsFinished("book-1") } returns OperationResult.Success(Unit)
-
-        val result = provider.markAsFinished(item)
-
-        assertInstanceOf(OperationResult.Success::class.java, result)
-        coVerify { localCacheRepository.markAsFinished(item) }
-        coVerify { mediaChannel.markAsFinished("book-1") }
-      }
-  }
-
   private fun chapter(
     id: String,
     index: Int,

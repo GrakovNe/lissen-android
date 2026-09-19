@@ -111,8 +111,6 @@
     <string name="widget_placeholder_text">Нажмите чтобы открыть</string>
     <string name="the_offline_podcasts_is_empty">Загруженных подкастов нет</string>
     <string name="player_screen_downloads_navigation">Загрузки</string>
-    <string name="player_settings_mark_as_finished">Отметить прослушанной</string>
-    <string name="player_settings_marked_as_finished">Отмечена прослушанной</string>
     <string name="episode_ordering_published_at_option">Дата выхода</string>
     <string name="episode_ordering_season_option">Сезон</string>
     <string name="episode_ordering_episode_option">Эпизод</string>

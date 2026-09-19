@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.receiveAsFlow
-import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.TimerOption
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -52,8 +51,4 @@ sealed class PlaybackCommand {
   ) : PlaybackCommand()
 
   data object CancelTimer : PlaybackCommand()
-
-  data class MarkAsFinished(
-    val item: DetailedItem,
-  ) : PlaybackCommand()
 }
