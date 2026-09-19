@@ -65,7 +65,7 @@ class LibraryPreferences
       store.putString(KEY_EPISODE_ORDERING, episodeOrderingAdapter.toJson(updated))
     }
 
-    fun getEpisodeOrderings(): Map<String, EpisodeOrderingConfiguration> =
+    private fun getEpisodeOrderings(): Map<String, EpisodeOrderingConfiguration> =
       store
         .getString(KEY_EPISODE_ORDERING)
         ?.let { runCatching { episodeOrderingAdapter.fromJson(it) }.getOrNull() }

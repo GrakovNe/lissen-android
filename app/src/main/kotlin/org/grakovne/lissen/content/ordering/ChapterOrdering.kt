@@ -79,7 +79,7 @@ object ChapterOrdering {
     canonicalPosition: Double,
   ): Double = translate(canonical(item), item, canonicalPosition)
 
-  fun comparator(configuration: EpisodeOrderingConfiguration?): Comparator<PlayingChapter> {
+  private fun comparator(configuration: EpisodeOrderingConfiguration?): Comparator<PlayingChapter> {
     val config = configuration ?: return defaultComparator
 
     val primary = keyComparator(config.option)

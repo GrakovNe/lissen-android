@@ -141,7 +141,9 @@ fun PlayerScreen(
   var orderingSelected by remember { mutableStateOf(false) }
 
   val preferredLibraryType by libraryViewModel.preferredLibraryType.collectAsState()
-  val libraryType = playingBook?.libraryType ?: preferredLibraryType
+
+  // while the requested item is still loading, playingBook may hold the previous item of another type
+  val libraryType = playingBook?.takeIf { it.id == bookId }?.libraryType ?: preferredLibraryType
   val episodeOrdering by playerViewModel.episodeOrdering.collectAsState()
   val sortable = libraryType == LibraryType.PODCAST
 

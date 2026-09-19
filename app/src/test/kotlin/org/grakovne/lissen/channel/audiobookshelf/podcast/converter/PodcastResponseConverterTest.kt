@@ -30,7 +30,6 @@ class PodcastResponseConverterTest {
     id: String,
     season: String? = null,
     episode: String? = null,
-    pubDate: String? = null,
     publishedAt: Long? = null,
     title: String = "Episode $id",
     duration: Double? = 100.0,
@@ -38,7 +37,6 @@ class PodcastResponseConverterTest {
     id = id,
     season = season,
     episode = episode,
-    pubDate = pubDate,
     publishedAt = publishedAt,
     title = title,
     audioFile = audioFile(id, duration),
@@ -113,8 +111,8 @@ class PodcastResponseConverterTest {
   fun `builds chapters with accumulated start and end offsets`() {
     val episodes =
       listOf(
-        episode(id = "e1", pubDate = "Mon, 01 Jan 2024 00:00:00 +0000", duration = 100.0),
-        episode(id = "e2", pubDate = "Tue, 02 Jan 2024 00:00:00 +0000", duration = 50.0),
+        episode(id = "e1", duration = 100.0),
+        episode(id = "e2", duration = 50.0),
       )
 
     val result = converter.apply(podcast(episodes))
@@ -128,7 +126,7 @@ class PodcastResponseConverterTest {
 
   @Test
   fun `treats null episode duration as zero when building files and chapters`() {
-    val episodes = listOf(episode(id = "e1", pubDate = "Mon, 01 Jan 2024 00:00:00 +0000", duration = null))
+    val episodes = listOf(episode(id = "e1", duration = null))
 
     val result = converter.apply(podcast(episodes))
 
@@ -138,7 +136,7 @@ class PodcastResponseConverterTest {
 
   @Test
   fun `marks chapter finished when matching progress isFinished is true`() {
-    val episodes = listOf(episode(id = "e1", pubDate = "Mon, 01 Jan 2024 00:00:00 +0000", duration = 100.0))
+    val episodes = listOf(episode(id = "e1", duration = 100.0))
     val progress =
       listOf(
         MediaProgressResponse(
@@ -158,7 +156,7 @@ class PodcastResponseConverterTest {
 
   @Test
   fun `marks chapter finished when progress ratio exceeds threshold even if isFinished is false`() {
-    val episodes = listOf(episode(id = "e1", pubDate = "Mon, 01 Jan 2024 00:00:00 +0000", duration = 100.0))
+    val episodes = listOf(episode(id = "e1", duration = 100.0))
     val progress =
       listOf(
         MediaProgressResponse(
@@ -178,7 +176,7 @@ class PodcastResponseConverterTest {
 
   @Test
   fun `leaves chapter state null when no progress exists for episode`() {
-    val episodes = listOf(episode(id = "e1", pubDate = "Mon, 01 Jan 2024 00:00:00 +0000", duration = 100.0))
+    val episodes = listOf(episode(id = "e1", duration = 100.0))
 
     val result = converter.apply(podcast(episodes), emptyList())
 
@@ -189,8 +187,8 @@ class PodcastResponseConverterTest {
   fun `computes total current time from latest progress plus durations of preceding episodes`() {
     val episodes =
       listOf(
-        episode(id = "e1", pubDate = "Mon, 01 Jan 2024 00:00:00 +0000", duration = 100.0),
-        episode(id = "e2", pubDate = "Tue, 02 Jan 2024 00:00:00 +0000", duration = 50.0),
+        episode(id = "e1", duration = 100.0),
+        episode(id = "e2", duration = 50.0),
       )
     val progress =
       listOf(
