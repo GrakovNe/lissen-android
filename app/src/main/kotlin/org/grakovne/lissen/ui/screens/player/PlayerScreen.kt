@@ -27,7 +27,6 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -65,10 +64,13 @@ import androidx.lifecycle.withResumed
 import coil3.ImageLoader
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
+import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.adaptive.isWideLayout
 import org.grakovne.lissen.ui.icons.Search
+import org.grakovne.lissen.ui.icons.SortAscending
+import org.grakovne.lissen.ui.icons.SortDescending
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.player.composable.BookCover
 import org.grakovne.lissen.ui.screens.player.composable.BookmarksComposable
@@ -250,7 +252,11 @@ fun PlayerScreen(
                             .testTag("episodeOrderingButton"),
                       ) {
                         Icon(
-                          imageVector = Icons.AutoMirrored.Outlined.Sort,
+                          imageVector =
+                            when ((episodeOrdering ?: EpisodeOrderingConfiguration.default).direction) {
+                              LibraryOrderingDirection.ASCENDING -> SortAscending
+                              LibraryOrderingDirection.DESCENDING -> SortDescending
+                            },
                           contentDescription = stringResource(R.string.library_quick_settings_sort_title),
                         )
                       }

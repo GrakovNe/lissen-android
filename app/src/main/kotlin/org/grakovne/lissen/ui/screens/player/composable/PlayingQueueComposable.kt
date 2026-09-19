@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -31,7 +30,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
@@ -54,7 +52,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -74,8 +71,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
+import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.components.withScrollbar
+import org.grakovne.lissen.ui.icons.SortAscending
+import org.grakovne.lissen.ui.icons.SortDescending
 import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
 import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.PlayerViewModel
@@ -270,43 +270,48 @@ fun PlayingQueueComposable(
             fontSize = fontSize.sp,
             fontWeight = FontWeight.SemiBold,
             color = colorScheme.primary,
-            modifier = Modifier.weight(1f),
+            modifier =
+              Modifier
+                .weight(1f)
+                .alignByBaseline(),
           )
 
           onOrderingRequested?.let { onClick ->
             val current = ordering ?: EpisodeOrderingConfiguration.default
 
-            val iconSize = with(density) { typography.bodyMedium.lineHeight.toDp() }
+            // the label sits on the title's baseline and is nearly its size, so the row reads as
+            // one line; the glyph is as tall as the label and flush with the durations' edge
+            val labelSize = (fontSize * ORDERING_LABEL_SCALE).sp
+            val iconSize = with(density) { labelSize.toDp() }
 
             Row(
               verticalAlignment = Alignment.CenterVertically,
               modifier =
                 Modifier
+                  .alignByBaseline()
                   .clip(RoundedCornerShape(12.dp))
                   .clickable { onClick() }
-                  .padding(vertical = 4.dp)
                   .testTag("episodeOrderingButton"),
             ) {
               Text(
                 text = current.option.toLocalizedName(context),
-                style = typography.bodyMedium,
+                fontSize = labelSize,
                 color = colorScheme.onSurfaceVariant,
                 maxLines = 1,
+                modifier = Modifier.alignByBaseline(),
               )
 
               Spacer(modifier = Modifier.width(6.dp))
 
-              // the glyph is mirrored so its lines are flush with the right side, and its own
-              // inset is compensated so the longest line lands on the durations' right edge
               Icon(
-                imageVector = Icons.AutoMirrored.Outlined.Sort,
+                imageVector =
+                  when (current.direction) {
+                    LibraryOrderingDirection.ASCENDING -> SortAscending
+                    LibraryOrderingDirection.DESCENDING -> SortDescending
+                  },
                 contentDescription = stringResource(R.string.library_quick_settings_sort_title),
                 tint = colorScheme.onSurfaceVariant,
-                modifier =
-                  Modifier
-                    .size(iconSize)
-                    .offset(x = iconSize * SORT_GLYPH_INSET)
-                    .graphicsLayer { scaleX = -1f },
+                modifier = Modifier.size(iconSize),
               )
             }
           }
@@ -417,8 +422,7 @@ fun PlayingQueueComposable(
   }
 }
 
-// the material `sort` glyph occupies 3/24 of its box on each side
-private const val SORT_GLYPH_INSET = 3f / 24f
+private const val ORDERING_LABEL_SCALE = 0.85f
 
 private suspend fun scrollPlayingQueue(
   currentTrackIndex: Int,
