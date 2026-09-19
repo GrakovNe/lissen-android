@@ -241,26 +241,6 @@ fun PlayerScreen(
                     }
                   }
 
-                  if (bookActionsVisible) {
-                    IconButton(
-                      onClick = {
-                        if (isPlaybackReady) {
-                          playerViewModel.updateBookmarks()
-                          bookmarksSelected = true
-                        }
-                      },
-                      modifier =
-                        Modifier
-                          .padding(end = 4.dp)
-                          .testTag("playerBookmarksButton"),
-                    ) {
-                      Icon(
-                        imageVector = Icons.Outlined.Bookmarks,
-                        contentDescription = null,
-                      )
-                    }
-                  }
-
                   // podcasts only; stays next to search while the queue is expanded
                   if (sortable) {
                     IconButton(
@@ -277,6 +257,26 @@ fun PlayerScreen(
                       Icon(
                         imageVector = Icons.Outlined.SwapVert,
                         contentDescription = stringResource(R.string.library_quick_settings_sort_title),
+                      )
+                    }
+                  }
+
+                  if (bookActionsVisible) {
+                    IconButton(
+                      onClick = {
+                        if (isPlaybackReady) {
+                          playerViewModel.updateBookmarks()
+                          bookmarksSelected = true
+                        }
+                      },
+                      modifier =
+                        Modifier
+                          .padding(end = 4.dp)
+                          .testTag("playerBookmarksButton"),
+                    ) {
+                      Icon(
+                        imageVector = Icons.Outlined.Bookmarks,
+                        contentDescription = null,
                       )
                     }
                   }
