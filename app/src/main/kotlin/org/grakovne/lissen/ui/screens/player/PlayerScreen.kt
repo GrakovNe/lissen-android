@@ -1,6 +1,5 @@
 package org.grakovne.lissen.ui.screens.player
 
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -28,9 +27,9 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.Bookmarks
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -72,9 +71,9 @@ import org.grakovne.lissen.ui.icons.Search
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.player.composable.BookCover
 import org.grakovne.lissen.ui.screens.player.composable.BookmarksComposable
+import org.grakovne.lissen.ui.screens.player.composable.EpisodeOrderingComposable
 import org.grakovne.lissen.ui.screens.player.composable.MediaDetailComposable
 import org.grakovne.lissen.ui.screens.player.composable.NavigationBarComposable
-import org.grakovne.lissen.ui.screens.player.composable.PlayerSettingsComposable
 import org.grakovne.lissen.ui.screens.player.composable.PlayingQueueComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackControlComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackDetailsComposable
@@ -139,13 +138,12 @@ fun PlayerScreen(
 
   var itemDetailsSelected by remember { mutableStateOf(false) }
   var bookmarksSelected by remember { mutableStateOf(false) }
-  var settingsSelected by remember { mutableStateOf(false) }
+  var orderingSelected by remember { mutableStateOf(false) }
 
   val preferredLibraryType by libraryViewModel.preferredLibraryType.collectAsState()
   val libraryType = playingBook?.libraryType ?: preferredLibraryType
   val episodeOrdering by playerViewModel.episodeOrdering.collectAsState()
-
-  val markedAsFinishedToast = stringResource(R.string.player_settings_marked_as_finished)
+  val sortable = libraryType == LibraryType.PODCAST
 
   val screenTitle =
     when {
@@ -241,6 +239,21 @@ fun PlayerScreen(
                         contentDescription = null,
                       )
                     }
+
+                    if (sortable && twoPane.not()) {
+                      IconButton(
+                        onClick = { orderingSelected = true },
+                        modifier =
+                          Modifier
+                            .padding(end = 4.dp)
+                            .testTag("episodeOrderingButton"),
+                      ) {
+                        Icon(
+                          imageVector = Icons.AutoMirrored.Outlined.Sort,
+                          contentDescription = stringResource(R.string.library_quick_settings_sort_title),
+                        )
+                      }
+                    }
                   }
 
                   if (bookActionsVisible) {
@@ -272,23 +285,6 @@ fun PlayerScreen(
                       Icon(
                         imageVector = Icons.Outlined.Info,
                         contentDescription = null,
-                      )
-                    }
-
-                    IconButton(
-                      onClick = {
-                        if (isPlaybackReady) {
-                          settingsSelected = true
-                        }
-                      },
-                      modifier =
-                        Modifier
-                          .padding(end = 4.dp)
-                          .testTag("playerSettingsButton"),
-                    ) {
-                      Icon(
-                        imageVector = Icons.Outlined.Settings,
-                        contentDescription = stringResource(R.string.a11y_settings),
                       )
                     }
                   }
@@ -371,6 +367,7 @@ fun PlayerScreen(
             cachingModelView = cachingModelView,
             playerViewModel = playerViewModel,
             forceExpanded = true,
+            onOrderingRequested = { orderingSelected = true }.takeIf { sortable },
             modifier =
               Modifier
                 .weight(0.55f)
@@ -409,6 +406,7 @@ fun PlayerScreen(
             libraryType = libraryType,
             cachingModelView = cachingModelView,
             playerViewModel = playerViewModel,
+            onOrderingRequested = { orderingSelected = true }.takeIf { sortable },
           )
         }
       }
@@ -432,18 +430,11 @@ fun PlayerScreen(
     )
   }
 
-  if (settingsSelected) {
-    PlayerSettingsComposable(
-      libraryType = libraryType,
-      episodeOrdering = episodeOrdering,
-      onEpisodeOrderingChanged = { playerViewModel.setEpisodeOrdering(it) },
-      onMarkAsFinished = {
-        playerViewModel.markAsFinished()
-        Toast.makeText(context, markedAsFinishedToast, Toast.LENGTH_SHORT).show()
-        settingsSelected = false
-      },
-      onApplicationSettingsRequested = { navController.showSettings() },
-      onDismissRequest = { settingsSelected = false },
+  if (orderingSelected) {
+    EpisodeOrderingComposable(
+      current = episodeOrdering,
+      onOrderingChanged = { playerViewModel.setEpisodeOrdering(it) },
+      onDismissRequest = { orderingSelected = false },
     )
   }
 }
@@ -596,6 +587,7 @@ private fun PlayerQueueSection(
   playerViewModel: PlayerViewModel,
   modifier: Modifier = Modifier,
   forceExpanded: Boolean = false,
+  onOrderingRequested: (() -> Unit)? = null,
 ) {
   when {
     isPlaybackReady.not() -> {
@@ -619,6 +611,7 @@ private fun PlayerQueueSection(
         viewModel = playerViewModel,
         modifier = modifier,
         forceExpanded = forceExpanded,
+        onOrderingRequested = onOrderingRequested,
       )
     }
   }

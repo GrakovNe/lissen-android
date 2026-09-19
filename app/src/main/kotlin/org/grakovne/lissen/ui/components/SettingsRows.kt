@@ -19,7 +19,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
@@ -154,39 +153,6 @@ fun SettingsOptionRow(
         tint = colorScheme.onSurface,
       )
     }
-  }
-}
-
-@Composable
-fun SettingsActionRow(
-  title: String,
-  icon: ImageVector,
-  modifier: Modifier = Modifier,
-  contentColor: Color = colorScheme.onSurface,
-  onClick: () -> Unit,
-) {
-  val view = LocalView.current
-  Row(
-    modifier =
-      modifier
-        .fillMaxWidth()
-        .clickable { withHaptic(view) { onClick() } }
-        .padding(horizontal = 16.dp, vertical = 14.dp),
-    verticalAlignment = Alignment.CenterVertically,
-  ) {
-    Icon(
-      imageVector = icon,
-      contentDescription = null,
-      modifier = Modifier.size(20.dp),
-      tint = contentColor,
-    )
-    Spacer(modifier = Modifier.width(12.dp))
-    Text(
-      text = title,
-      style = typography.bodyLarge,
-      color = contentColor,
-      modifier = Modifier.weight(1f),
-    )
   }
 }
 
