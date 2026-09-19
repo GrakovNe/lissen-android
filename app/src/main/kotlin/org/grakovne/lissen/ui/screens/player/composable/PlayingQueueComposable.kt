@@ -53,6 +53,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -285,12 +286,16 @@ fun PlayingQueueComposable(
                   .padding(vertical = 4.dp)
                   .testTag("episodeOrderingButton"),
             ) {
-              // icon first, label last: the label's right edge lines up with the durations
+              // icon first, label last: the label's right edge lines up with the durations;
+              // the glyph is mirrored so its lines lean towards the label
               Icon(
                 imageVector = Icons.AutoMirrored.Outlined.Sort,
                 contentDescription = null,
                 tint = colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(iconSize),
+                modifier =
+                  Modifier
+                    .size(iconSize)
+                    .graphicsLayer { scaleX = -1f },
               )
 
               Spacer(modifier = Modifier.width(6.dp))
