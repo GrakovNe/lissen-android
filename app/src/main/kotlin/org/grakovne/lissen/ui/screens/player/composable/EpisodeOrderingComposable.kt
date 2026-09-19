@@ -2,7 +2,6 @@ package org.grakovne.lissen.ui.screens.player.composable
 
 import android.content.Context
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,11 +11,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
-import androidx.compose.material.icons.outlined.CalendarToday
-import androidx.compose.material.icons.outlined.InsertDriveFile
-import androidx.compose.material.icons.outlined.Layers
-import androidx.compose.material.icons.outlined.SortByAlpha
-import androidx.compose.material.icons.outlined.Tag
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -25,10 +19,8 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -41,8 +33,8 @@ import org.grakovne.lissen.common.LibraryOrderingDirection.DESCENDING
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 
 /**
- * Sort options of the podcast episode list, laid out like the other player sheets: centered
- * title, one list item per option with dividers in between. Tapping an option selects it
+ * Sort options of the podcast episode list, laid out exactly like the downloads sheet:
+ * centered title, plain list items with dividers in between. Tapping an option selects it
  * ascending, tapping the selected one flips the direction; the arrow on the selected row shows
  * the current direction.
  */
@@ -81,17 +73,11 @@ fun EpisodeOrderingComposable(
           val isSelected = ordering.option == option
 
           ListItem(
-            leadingContent = {
-              Icon(
-                imageVector = option.icon(),
-                contentDescription = null,
-                modifier = Modifier.size(24.dp),
-              )
-            },
             headlineContent = {
               Text(
                 text = option.toLocalizedName(context),
-                color = colorScheme.onSurface,
+                style = typography.bodyMedium,
+                color = colorScheme.onBackground,
               )
             },
             trailingContent = {
@@ -103,7 +89,8 @@ fun EpisodeOrderingComposable(
                       DESCENDING -> Icons.Outlined.ArrowDownward
                     },
                   contentDescription = null,
-                  modifier = Modifier.size(24.dp),
+                  tint = colorScheme.onBackground,
+                  modifier = Modifier.size(20.dp),
                 )
               }
             },
@@ -111,10 +98,7 @@ fun EpisodeOrderingComposable(
               Modifier
                 .fillMaxWidth()
                 .testTag("episodeOrderingOption_${option.name}")
-                .clickable(
-                  indication = null,
-                  interactionSource = remember { MutableInteractionSource() },
-                ) {
+                .clickable {
                   val newDirection =
                     when {
                       !isSelected -> ASCENDING
@@ -133,15 +117,6 @@ fun EpisodeOrderingComposable(
     },
   )
 }
-
-private fun EpisodeOrderingOption.icon(): ImageVector =
-  when (this) {
-    EpisodeOrderingOption.PUBLISHED_AT -> Icons.Outlined.CalendarToday
-    EpisodeOrderingOption.TITLE -> Icons.Outlined.SortByAlpha
-    EpisodeOrderingOption.SEASON -> Icons.Outlined.Layers
-    EpisodeOrderingOption.EPISODE -> Icons.Outlined.Tag
-    EpisodeOrderingOption.FILE_NAME -> Icons.Outlined.InsertDriveFile
-  }
 
 fun EpisodeOrderingOption.toLocalizedName(context: Context): String =
   when (this) {
