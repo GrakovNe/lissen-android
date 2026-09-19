@@ -6,22 +6,16 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -29,11 +23,8 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.outlined.ArrowDownward
-import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -53,7 +44,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -73,8 +63,6 @@ import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
-import org.grakovne.lissen.common.EpisodeOrderingConfiguration
-import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.components.withScrollbar
 import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
@@ -88,8 +76,6 @@ fun PlayingQueueComposable(
   viewModel: PlayerViewModel,
   modifier: Modifier = Modifier,
   forceExpanded: Boolean = false,
-  ordering: EpisodeOrderingConfiguration? = null,
-  onOrderingRequested: (() -> Unit)? = null,
 ) {
   val context = LocalContext.current
   val coroutineScope = rememberCoroutineScope()
@@ -258,66 +244,13 @@ fun PlayingQueueComposable(
           }.padding(horizontal = 16.dp),
     ) {
       if (showQueueHeader) {
-        // title row doubles as the table header: the ordering sits on the right like a column
-        // caption and the rule underneath ties both ends into one bar
-        Row(
-          verticalAlignment = Alignment.CenterVertically,
-          modifier =
-            Modifier
-              .fillMaxWidth()
-              .padding(start = 6.dp, end = 4.dp),
-        ) {
-          Text(
-            text = provideNowPlayingTitle(libraryType, context),
-            fontSize = fontSize.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = colorScheme.primary,
-            modifier =
-              Modifier
-                .weight(1f)
-                .alignByBaseline(),
-          )
-
-          onOrderingRequested?.let { onClick ->
-            val current = ordering ?: EpisodeOrderingConfiguration.default
-
-            Row(
-              verticalAlignment = Alignment.CenterVertically,
-              modifier =
-                Modifier
-                  .alignByBaseline()
-                  .clip(RoundedCornerShape(8.dp))
-                  .clickable { onClick() }
-                  .testTag("episodeOrderingButton"),
-            ) {
-              Text(
-                text = current.option.toLocalizedName(context),
-                style = typography.bodyMedium,
-                color = colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                modifier = Modifier.alignByBaseline(),
-              )
-
-              Spacer(modifier = Modifier.width(4.dp))
-
-              // the arrow glyph is inset inside its box; shift it so the visible arrow, not the
-              // box, ends on the durations' right edge
-              Icon(
-                imageVector =
-                  when (current.direction) {
-                    LibraryOrderingDirection.ASCENDING -> Icons.Outlined.ArrowUpward
-                    LibraryOrderingDirection.DESCENDING -> Icons.Outlined.ArrowDownward
-                  },
-                contentDescription = stringResource(R.string.library_quick_settings_sort_title),
-                tint = colorScheme.onSurfaceVariant,
-                modifier =
-                  Modifier
-                    .size(ORDERING_ARROW_SIZE)
-                    .offset(x = ORDERING_ARROW_SIZE * ARROW_GLYPH_INSET),
-              )
-            }
-          }
-        }
+        Text(
+          text = provideNowPlayingTitle(libraryType, context),
+          fontSize = fontSize.sp,
+          fontWeight = FontWeight.SemiBold,
+          color = colorScheme.primary,
+          modifier = Modifier.padding(horizontal = 6.dp),
+        )
 
         Spacer(modifier = Modifier.height(12.dp))
       }
@@ -423,11 +356,6 @@ fun PlayingQueueComposable(
     }
   }
 }
-
-private val ORDERING_ARROW_SIZE = 16.dp
-
-// the material arrow glyph spans 5..19 of its 24-unit box
-private const val ARROW_GLYPH_INSET = 5f / 24f
 
 private suspend fun scrollPlayingQueue(
   currentTrackIndex: Int,

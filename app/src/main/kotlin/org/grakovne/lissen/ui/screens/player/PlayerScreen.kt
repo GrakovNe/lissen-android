@@ -64,7 +64,6 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.withResumed
 import coil3.ImageLoader
 import org.grakovne.lissen.R
-import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.adaptive.isWideLayout
@@ -240,21 +239,6 @@ fun PlayerScreen(
                         contentDescription = null,
                       )
                     }
-
-                    if (sortable && twoPane.not()) {
-                      IconButton(
-                        onClick = { orderingSelected = true },
-                        modifier =
-                          Modifier
-                            .padding(end = 4.dp)
-                            .testTag("episodeOrderingButton"),
-                      ) {
-                        Icon(
-                          imageVector = Icons.AutoMirrored.Outlined.Sort,
-                          contentDescription = stringResource(R.string.library_quick_settings_sort_title),
-                        )
-                      }
-                    }
                   }
 
                   if (bookActionsVisible) {
@@ -286,6 +270,25 @@ fun PlayerScreen(
                       Icon(
                         imageVector = Icons.Outlined.Info,
                         contentDescription = null,
+                      )
+                    }
+                  }
+
+                  if (sortable) {
+                    IconButton(
+                      onClick = {
+                        if (isPlaybackReady) {
+                          orderingSelected = true
+                        }
+                      },
+                      modifier =
+                        Modifier
+                          .padding(end = 4.dp)
+                          .testTag("episodeOrderingButton"),
+                    ) {
+                      Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.Sort,
+                        contentDescription = stringResource(R.string.library_quick_settings_sort_title),
                       )
                     }
                   }
@@ -368,8 +371,6 @@ fun PlayerScreen(
             cachingModelView = cachingModelView,
             playerViewModel = playerViewModel,
             forceExpanded = true,
-            ordering = episodeOrdering,
-            onOrderingRequested = { orderingSelected = true }.takeIf { sortable },
             modifier =
               Modifier
                 .weight(0.55f)
@@ -408,8 +409,6 @@ fun PlayerScreen(
             libraryType = libraryType,
             cachingModelView = cachingModelView,
             playerViewModel = playerViewModel,
-            ordering = episodeOrdering,
-            onOrderingRequested = { orderingSelected = true }.takeIf { sortable },
           )
         }
       }
@@ -590,8 +589,6 @@ private fun PlayerQueueSection(
   playerViewModel: PlayerViewModel,
   modifier: Modifier = Modifier,
   forceExpanded: Boolean = false,
-  ordering: EpisodeOrderingConfiguration? = null,
-  onOrderingRequested: (() -> Unit)? = null,
 ) {
   when {
     isPlaybackReady.not() -> {
@@ -615,8 +612,6 @@ private fun PlayerQueueSection(
         viewModel = playerViewModel,
         modifier = modifier,
         forceExpanded = forceExpanded,
-        ordering = ordering,
-        onOrderingRequested = onOrderingRequested,
       )
     }
   }
