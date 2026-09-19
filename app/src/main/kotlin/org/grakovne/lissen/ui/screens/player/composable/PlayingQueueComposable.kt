@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -286,25 +287,26 @@ fun PlayingQueueComposable(
                   .padding(vertical = 4.dp)
                   .testTag("episodeOrderingButton"),
             ) {
-              // icon first, label last: the label's right edge lines up with the durations;
-              // the glyph is mirrored so its lines lean towards the label
-              Icon(
-                imageVector = Icons.AutoMirrored.Outlined.Sort,
-                contentDescription = null,
-                tint = colorScheme.onSurfaceVariant,
-                modifier =
-                  Modifier
-                    .size(iconSize)
-                    .graphicsLayer { scaleX = -1f },
-              )
-
-              Spacer(modifier = Modifier.width(6.dp))
-
               Text(
                 text = current.option.toLocalizedName(context),
                 style = typography.bodyMedium,
                 color = colorScheme.onSurfaceVariant,
                 maxLines = 1,
+              )
+
+              Spacer(modifier = Modifier.width(6.dp))
+
+              // the glyph is mirrored so its lines are flush with the right side, and its own
+              // inset is compensated so the longest line lands on the durations' right edge
+              Icon(
+                imageVector = Icons.AutoMirrored.Outlined.Sort,
+                contentDescription = stringResource(R.string.library_quick_settings_sort_title),
+                tint = colorScheme.onSurfaceVariant,
+                modifier =
+                  Modifier
+                    .size(iconSize)
+                    .offset(x = iconSize * SORT_GLYPH_INSET)
+                    .graphicsLayer { scaleX = -1f },
               )
             }
           }
@@ -414,6 +416,9 @@ fun PlayingQueueComposable(
     }
   }
 }
+
+// the material `sort` glyph occupies 3/24 of its box on each side
+private const val SORT_GLYPH_INSET = 3f / 24f
 
 private suspend fun scrollPlayingQueue(
   currentTrackIndex: Int,
