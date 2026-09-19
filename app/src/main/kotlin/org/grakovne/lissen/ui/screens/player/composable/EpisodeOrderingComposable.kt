@@ -11,6 +11,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
+import androidx.compose.material.icons.outlined.CalendarToday
+import androidx.compose.material.icons.outlined.InsertDriveFile
+import androidx.compose.material.icons.outlined.Layers
+import androidx.compose.material.icons.outlined.SortByAlpha
+import androidx.compose.material.icons.outlined.Tag
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -21,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -34,7 +40,7 @@ import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 
 /**
  * Sort options of the podcast episode list, laid out exactly like the downloads sheet:
- * centered title, plain list items with dividers in between. Tapping an option selects it
+ * centered title, list items with a leading icon and dividers in between. Tapping an option selects it
  * ascending, tapping the selected one flips the direction; the arrow on the selected row shows
  * the current direction.
  */
@@ -73,6 +79,14 @@ fun EpisodeOrderingComposable(
           val isSelected = ordering.option == option
 
           ListItem(
+            leadingContent = {
+              Icon(
+                imageVector = option.icon(),
+                contentDescription = null,
+                tint = colorScheme.onBackground,
+                modifier = Modifier.size(24.dp),
+              )
+            },
             headlineContent = {
               Text(
                 text = option.toLocalizedName(context),
@@ -117,6 +131,15 @@ fun EpisodeOrderingComposable(
     },
   )
 }
+
+private fun EpisodeOrderingOption.icon(): ImageVector =
+  when (this) {
+    EpisodeOrderingOption.PUBLISHED_AT -> Icons.Outlined.CalendarToday
+    EpisodeOrderingOption.TITLE -> Icons.Outlined.SortByAlpha
+    EpisodeOrderingOption.SEASON -> Icons.Outlined.Layers
+    EpisodeOrderingOption.EPISODE -> Icons.Outlined.Tag
+    EpisodeOrderingOption.FILE_NAME -> Icons.Outlined.InsertDriveFile
+  }
 
 fun EpisodeOrderingOption.toLocalizedName(context: Context): String =
   when (this) {
