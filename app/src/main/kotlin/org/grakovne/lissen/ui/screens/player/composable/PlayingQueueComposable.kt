@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -31,6 +32,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.ArrowDownward
+import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -74,8 +77,6 @@ import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.components.withScrollbar
-import org.grakovne.lissen.ui.icons.SortAscending
-import org.grakovne.lissen.ui.icons.SortDescending
 import org.grakovne.lissen.ui.screens.player.composable.common.provideNowPlayingTitle
 import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.PlayerViewModel
@@ -257,7 +258,8 @@ fun PlayingQueueComposable(
           }.padding(horizontal = 16.dp),
     ) {
       if (showQueueHeader) {
-        // same start/end insets as a list row, so the sort control lines up with the durations
+        // title row doubles as the table header: the ordering sits on the right like a column
+        // caption and the rule underneath ties both ends into one bar
         Row(
           verticalAlignment = Alignment.CenterVertically,
           modifier =
@@ -279,39 +281,39 @@ fun PlayingQueueComposable(
           onOrderingRequested?.let { onClick ->
             val current = ordering ?: EpisodeOrderingConfiguration.default
 
-            // the label sits on the title's baseline and is nearly its size, so the row reads as
-            // one line; the glyph is as tall as the label and flush with the durations' edge
-            val labelSize = (fontSize * ORDERING_LABEL_SCALE).sp
-            val iconSize = with(density) { labelSize.toDp() }
-
             Row(
               verticalAlignment = Alignment.CenterVertically,
               modifier =
                 Modifier
                   .alignByBaseline()
-                  .clip(RoundedCornerShape(12.dp))
+                  .clip(RoundedCornerShape(8.dp))
                   .clickable { onClick() }
                   .testTag("episodeOrderingButton"),
             ) {
               Text(
                 text = current.option.toLocalizedName(context),
-                fontSize = labelSize,
+                style = typography.bodyMedium,
                 color = colorScheme.onSurfaceVariant,
                 maxLines = 1,
                 modifier = Modifier.alignByBaseline(),
               )
 
-              Spacer(modifier = Modifier.width(6.dp))
+              Spacer(modifier = Modifier.width(4.dp))
 
+              // the arrow glyph is inset inside its box; shift it so the visible arrow, not the
+              // box, ends on the durations' right edge
               Icon(
                 imageVector =
                   when (current.direction) {
-                    LibraryOrderingDirection.ASCENDING -> SortAscending
-                    LibraryOrderingDirection.DESCENDING -> SortDescending
+                    LibraryOrderingDirection.ASCENDING -> Icons.Outlined.ArrowUpward
+                    LibraryOrderingDirection.DESCENDING -> Icons.Outlined.ArrowDownward
                   },
                 contentDescription = stringResource(R.string.library_quick_settings_sort_title),
                 tint = colorScheme.onSurfaceVariant,
-                modifier = Modifier.size(iconSize),
+                modifier =
+                  Modifier
+                    .size(ORDERING_ARROW_SIZE)
+                    .offset(x = ORDERING_ARROW_SIZE * ARROW_GLYPH_INSET),
               )
             }
           }
@@ -422,7 +424,10 @@ fun PlayingQueueComposable(
   }
 }
 
-private const val ORDERING_LABEL_SCALE = 0.85f
+private val ORDERING_ARROW_SIZE = 16.dp
+
+// the material arrow glyph spans 5..19 of its 24-unit box
+private const val ARROW_GLYPH_INSET = 5f / 24f
 
 private suspend fun scrollPlayingQueue(
   currentTrackIndex: Int,
