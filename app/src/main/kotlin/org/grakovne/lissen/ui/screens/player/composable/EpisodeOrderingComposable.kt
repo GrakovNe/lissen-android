@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -36,6 +37,7 @@ import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.common.EpisodeOrderingOption
 import org.grakovne.lissen.common.LibraryOrderingDirection.ASCENDING
 import org.grakovne.lissen.common.LibraryOrderingDirection.DESCENDING
+import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 
 /**
@@ -52,6 +54,7 @@ fun EpisodeOrderingComposable(
   onDismissRequest: () -> Unit,
 ) {
   val context = LocalContext.current
+  val view = LocalView.current
   val ordering = current ?: EpisodeOrderingConfiguration.default
 
   LissenModalBottomSheet(
@@ -113,13 +116,15 @@ fun EpisodeOrderingComposable(
                 .fillMaxWidth()
                 .testTag("episodeOrderingOption_${option.name}")
                 .clickable {
-                  val newDirection =
-                    when {
-                      !isSelected -> ASCENDING
-                      ordering.direction == ASCENDING -> DESCENDING
-                      else -> ASCENDING
-                    }
-                  onOrderingChanged(EpisodeOrderingConfiguration(option = option, direction = newDirection))
+                  withHaptic(view) {
+                    val newDirection =
+                      when {
+                        !isSelected -> ASCENDING
+                        ordering.direction == ASCENDING -> DESCENDING
+                        else -> ASCENDING
+                      }
+                    onOrderingChanged(EpisodeOrderingConfiguration(option = option, direction = newDirection))
+                  }
                 },
           )
 
