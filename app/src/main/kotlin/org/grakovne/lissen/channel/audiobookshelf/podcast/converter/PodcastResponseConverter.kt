@@ -2,6 +2,8 @@ package org.grakovne.lissen.channel.audiobookshelf.podcast.converter
 
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
+import org.grakovne.lissen.content.ordering.ChapterLocation
+import org.grakovne.lissen.content.ordering.ChapterOrdering
 import org.grakovne.lissen.domain.BookChapterState
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
@@ -15,11 +17,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Maps the server response as is. Episodes keep the server order, recorded in
- * [PlayingChapter.index]; the actual ordering is applied later by
- * [org.grakovne.lissen.content.ordering.ChapterOrdering]. The published date is parsed from
- * `pubDate` with the very same pattern every earlier version used, deliberately: the canonical
- * order derived from it is the coordinate system of every stored progress and bookmark.
+ * Maps the server response into the canonical order (see [ChapterOrdering]); the listener's
+ * own order is applied later by the provider. The published date is parsed from `pubDate` with
+ * the very same pattern every earlier version used, deliberately: the canonical order derived
+ * from it is the coordinate system of every stored progress and bookmark.
  */
 @Singleton
 class PodcastResponseConverter
@@ -34,26 +35,7 @@ class PodcastResponseConverter
       // SimpleDateFormat is not thread-safe and podcasts are fetched concurrently: one per call
       val dateFormat = SimpleDateFormat(PUB_DATE_PATTERN, Locale.ENGLISH)
 
-      val totalCurrentTime =
-        progressResponses
-          .maxByOrNull { it.lastUpdate }
-          ?.let { progress ->
-            episodes
-              .takeWhile { it.id != progress.episodeId }
-              .sumOf { it.audioFile.duration ?: 0.0 }
-              .plus(progress.currentTime)
-          }
-
-      val latestEpisodeMediaProgress =
-        progressResponses
-          .maxByOrNull { it.lastUpdate }
-          ?.let {
-            MediaProgress(
-              currentTime = totalCurrentTime ?: 0.0,
-              isFinished = it.isFinished,
-              lastUpdate = it.lastUpdate,
-            )
-          }
+      val latestProgress = progressResponses.maxByOrNull { it.lastUpdate }
 
       var accumulated = 0.0
 
@@ -82,33 +64,56 @@ class PodcastResponseConverter
           )
         }
 
-      return DetailedItem(
-        id = item.id,
-        title = item.media.metadata.title,
-        subtitle = null,
-        libraryId = item.libraryId,
-        libraryType = LibraryType.PODCAST,
-        author = item.media.metadata.author,
-        narrator = null,
-        localProvided = false,
-        files =
-          episodes.map {
-            BookFile(
-              id = it.audioFile.ino,
-              name = it.title,
-              duration = it.audioFile.duration ?: 0.0,
-              mimeType = it.audioFile.mimeType,
-              size = it.audioFile.metadata.size,
-            )
-          },
-        chapters = filesAsChapters,
-        progress = latestEpisodeMediaProgress,
-        year = null, // we have no "Year" for the ongoing media
-        abstract = item.media.metadata.description,
-        publisher = item.media.metadata.publisher,
-        series = emptyList(), // there is no series for podcast
-        createdAt = item.addedAt,
-        updatedAt = item.ctimeMs,
+      val raw =
+        DetailedItem(
+          id = item.id,
+          title = item.media.metadata.title,
+          subtitle = null,
+          libraryId = item.libraryId,
+          libraryType = LibraryType.PODCAST,
+          author = item.media.metadata.author,
+          narrator = null,
+          localProvided = false,
+          files =
+            episodes.map {
+              BookFile(
+                id = it.audioFile.ino,
+                name = it.title,
+                duration = it.audioFile.duration ?: 0.0,
+                mimeType = it.audioFile.mimeType,
+                size = it.audioFile.metadata.size,
+              )
+            },
+          chapters = filesAsChapters,
+          progress = null,
+          year = null, // we have no "Year" for the ongoing media
+          abstract = item.media.metadata.description,
+          publisher = item.media.metadata.publisher,
+          series = emptyList(), // there is no series for podcast
+          createdAt = item.addedAt,
+          updatedAt = item.ctimeMs,
+        )
+
+      // The order is settled here so that the progress can be anchored to its episode in the
+      // canonical timeline. A finished episode comes from the server with currentTime equal to
+      // its duration, i.e. exactly on the episode's end; as a bare number in another order that
+      // instant is the start of whatever episode happens to follow there, which is not the
+      // canonical successor the listener should resume with.
+      val canonical = ChapterOrdering.canonical(raw)
+
+      return canonical.copy(progress = latestProgress?.let { canonical.anchoredProgress(it) })
+    }
+
+    private fun DetailedItem.anchoredProgress(progress: MediaProgressResponse): MediaProgress {
+      val position =
+        ChapterOrdering.position(this, ChapterLocation(chapterId = progress.episodeId ?: "", offset = progress.currentTime))
+          // the episode is gone from the item: past the end, so that the progress is trimmed
+          ?: (chapters.lastOrNull()?.end ?: 0.0) + progress.currentTime
+
+      return MediaProgress(
+        currentTime = position,
+        isFinished = progress.isFinished,
+        lastUpdate = progress.lastUpdate,
       )
     }
 

@@ -385,6 +385,28 @@ class MediaRepository
     }
 
     /**
+     * Whether [reorderPlayingItem] would act right now; the UI keeps the ordering sheet inert
+     * otherwise, so that a tap never fails silently.
+     */
+    fun canReorderPlayingItem(): Boolean {
+      val book = playingBook.value ?: return false
+
+      return when {
+        // a rebuild is in flight: totalPosition is not the listener's position right now
+        isPlaybackReady.value.not() -> false
+
+        // savePlayingItem silently keeps the old item for such a book and the queue would not follow
+        book.libraryId == null -> false
+
+        // the service rebuilds the item stored for the active library; if that is not this one
+        // (the listener switched libraries while it played) nothing would ever report ready
+        preferences.getPlayingItem()?.id != book.id -> false
+
+        else -> ChapterOrdering.isReorderable(book)
+      }
+    }
+
+    /**
      * Applies a new chapter order to the item already in memory and rebuilds the queue at the
      * same chapter and offset the listener was at. No network involved: the order is a pure
      * function of the chapter keys the item carries. Playback pauses for the rebuild and
@@ -393,27 +415,8 @@ class MediaRepository
     fun reorderPlayingItem(configuration: EpisodeOrderingConfiguration?): Boolean {
       val book = playingBook.value ?: return false
 
-      // a rebuild is in flight: totalPosition is not the listener's position right now
-      if (isPlaybackReady.value.not()) {
-        Timber.d("Ignoring reorder of ${book.id}: playback is not ready")
-        return false
-      }
-
-      // savePlayingItem silently keeps the old item for such a book and the queue would not follow
-      if (book.libraryId == null) {
-        Timber.w("Ignoring reorder of ${book.id}: the item has no library id")
-        return false
-      }
-
-      // the service rebuilds the item stored for the active library; if that is not this one
-      // (the listener switched libraries while it played) nothing would ever report ready
-      if (preferences.getPlayingItem()?.id != book.id) {
-        Timber.w("Ignoring reorder of ${book.id}: it is not the playing item of the active library")
-        return false
-      }
-
-      if (ChapterOrdering.isReorderable(book).not()) {
-        Timber.w("Ignoring reorder of ${book.id}: chapters and files do not map one to one")
+      if (canReorderPlayingItem().not()) {
+        Timber.w("Ignoring reorder of ${book.id}: not reorderable right now (ready=${isPlaybackReady.value})")
         return false
       }
 
@@ -432,11 +435,12 @@ class MediaRepository
       pause()
       _mediaPreparingError.value = false
       _isPlaybackReady.value = false
-      queueRebuildInFlight = true
 
       _bookmarks.value = plan.bookmarks
       _playAfterPrepare.value = wasPlaying
       startPreparingPlayback(plan.item)
+      // after startPreparingPlayback, which resets the flag for every fresh preparation
+      queueRebuildInFlight = true
 
       plan.item.progress?.let { _totalPosition.value = it.currentTime }
       updateCurrentTrackData()
@@ -501,12 +505,14 @@ class MediaRepository
 
         _totalPosition.value = book.progress?.currentTime ?: 0.0
         _playingBook.value = book
+        queueRebuildInFlight = false
         _isPlaybackReady.value = true
       }
     }
 
     private fun startPreparingPlayback(book: DetailedItem) {
       val sameBook = _playingBook.value?.same(book) ?: false
+      queueRebuildInFlight = false
 
       if (sameBook.not()) {
         _totalPosition.value = 0.0
@@ -674,14 +680,32 @@ class MediaRepository
       _bookmarks.value = mediaChannel.provideBookmarks(playingBook.id).inPlayingOrder(playingBook)
     }
 
+    /**
+     * The bookmark handed in carries a display position. The stored one is found by translating
+     * the stored list the same way the display list was made, so the stored value goes back
+     * exactly as it is, however it translated: a position outside the item or on the very end
+     * has no faithful way back through the numbers alone.
+     */
     suspend fun dropBookmark(bookmark: Bookmark) {
       Timber.d("Dropping bookmark for ${bookmark.libraryItemId} at position=${bookmark.totalPosition.toInt()}s")
       val playingBook = _playingBook.value
 
       val stored =
         when (playingBook?.id == bookmark.libraryItemId) {
-          true -> bookmark.copy(totalPosition = round(ChapterOrdering.toCanonicalPosition(playingBook, bookmark.totalPosition)))
-          false -> bookmark
+          true -> {
+            val candidates = mediaChannel.provideBookmarks(bookmark.libraryItemId)
+            candidates
+              .zip(candidates.inPlayingOrder(playingBook))
+              .firstOrNull { (_, displayed) ->
+                displayed.totalPosition == bookmark.totalPosition &&
+                  displayed.createdAt == bookmark.createdAt
+              }?.first
+              ?: bookmark.copy(totalPosition = round(ChapterOrdering.toCanonicalPosition(playingBook, bookmark.totalPosition)))
+          }
+
+          false -> {
+            bookmark
+          }
         }
 
       mediaChannel.dropBookmark(bookmark = stored)

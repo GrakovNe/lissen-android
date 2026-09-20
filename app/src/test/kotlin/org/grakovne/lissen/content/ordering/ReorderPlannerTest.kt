@@ -80,6 +80,13 @@ class ReorderPlannerTest {
   }
 
   @Test
+  fun `a stored item without ordering keys in its current order needs no rebuild`() {
+    val legacy = book.copy(chapters = book.chapters.map { it.copy(index = 0, publishedAt = null) })
+
+    assertNull(ReorderPlanner.plan(legacy, EpisodeOrderingConfiguration.default, 15.0, emptyList(), now = 1L))
+  }
+
+  @Test
   fun `a stored item without ordering keys is reordered like any other`() {
     // every index 0, keys null: the list order is the canonical one
     val legacy = book.copy(chapters = book.chapters.map { it.copy(index = 0, publishedAt = null) })

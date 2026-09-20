@@ -30,7 +30,9 @@ object ReorderPlanner {
     // from the canonical item, so that a stored item without ordering keys (serialized by a
     // version that did not know them) is reordered like any other instead of standing still
     val reordered = ChapterOrdering.apply(ChapterOrdering.canonical(book), configuration)
-    if (reordered.same(book)) return null
+    // the same sequence is the same order, whatever the indices say (a stored item from a
+    // version without them would otherwise be rebuilt for nothing)
+    if (reordered.chapters.map { it.id } == book.chapters.map { it.id }) return null
 
     // a live position may overshoot the declared end by a little: that is the end, not nowhere
     val position =

@@ -142,9 +142,11 @@ fun PlayerScreen(
 
   val preferredLibraryType by libraryViewModel.preferredLibraryType.collectAsState()
 
-  // while the requested item is still loading, playingBook may hold the previous item of another type
+  // while the requested item is still loading, playingBook may hold the previous item of another
+  // type; the screen keeps rendering that item, so its type drives the labels, but only the
+  // requested item decides whether ordering is offered
   val requestedBook = playingBook?.takeIf { it.id == bookId }
-  val libraryType = requestedBook?.libraryType ?: preferredLibraryType
+  val libraryType = playingBook?.libraryType ?: preferredLibraryType
   val episodeOrdering by playerViewModel.episodeOrdering.collectAsState()
 
   val sortable = isSortable(requestedBook, preferredLibraryType)
@@ -437,10 +439,12 @@ fun PlayerScreen(
   }
 
   if (orderingSelected) {
+    // the same conditions under which the player would act, so a tap never fails silently
+    val canReorder = remember(isPlaybackReady, playingBook) { playerViewModel.canReorderPlayingItem() }
+
     EpisodeOrderingComposable(
       current = episodeOrdering,
-      // the player refuses items it could not persist (no library id): keep the rows inert too
-      enabled = isPlaybackReady && requestedBook?.libraryId != null,
+      enabled = canReorder,
       onOrderingChanged = { playerViewModel.setEpisodeOrdering(bookId, it) },
       onDismissRequest = { orderingSelected = false },
     )

@@ -208,6 +208,8 @@ class PlayerViewModel
      * Only podcasts are ever reordered; a stored configuration is trusted downstream on that
      * basis. The choice is persisted only once the playing item actually follows it.
      */
+    fun canReorderPlayingItem(): Boolean = mediaRepository.canReorderPlayingItem()
+
     fun setEpisodeOrdering(
       itemId: String,
       configuration: EpisodeOrderingConfiguration,

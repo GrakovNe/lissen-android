@@ -82,7 +82,7 @@ class PodcastResponseConverterTest {
   }
 
   @Test
-  fun `keeps server order and records it as the canonical index`() {
+  fun `hands the item over in the canonical order with the canonical index`() {
     val episodes =
       listOf(
         episode(id = "e1", pubDate = "Tue, 02 Jan 2024 00:00:00 +0000"),
@@ -92,9 +92,60 @@ class PodcastResponseConverterTest {
 
     val result = converter.apply(podcast(episodes))
 
-    assertEquals(listOf("e1", "e2", "e3"), result.files.map { it.id })
-    assertEquals(listOf("e1", "e2", "e3"), result.chapters.map { it.id })
+    // undated first, then by date; files follow the chapters
+    assertEquals(listOf("e3", "e2", "e1"), result.chapters.map { it.id })
+    assertEquals(listOf("e3", "e2", "e1"), result.files.map { it.id })
     assertEquals(listOf(0, 1, 2), result.chapters.map { it.index })
+    assertEquals(listOf(0.0, 100.0, 200.0), result.chapters.map { it.start })
+  }
+
+  @Test
+  fun `a finished episode resumes at the start of its canonical successor whatever the server order`() {
+    // server order B, A, C; canonical (by date) A, B, C
+    val episodes =
+      listOf(
+        episode(id = "B", pubDate = "Tue, 02 Jan 2024 00:00:00 +0000", duration = 200.0),
+        episode(id = "A", pubDate = "Mon, 01 Jan 2024 00:00:00 +0000", duration = 100.0),
+        episode(id = "C", pubDate = "Wed, 03 Jan 2024 00:00:00 +0000", duration = 300.0),
+      )
+    // the server reports B as finished: currentTime equals its duration
+    val progress =
+      listOf(
+        MediaProgressResponse(
+          libraryItemId = "podcast-1",
+          episodeId = "B",
+          currentTime = 200.0,
+          isFinished = true,
+          lastUpdate = 999L,
+          progress = 1.0,
+        ),
+      )
+
+    val result = converter.apply(podcast(episodes), progress)
+
+    assertEquals(listOf("A", "B", "C"), result.chapters.map { it.id })
+    // end of B in the canonical timeline, which is where C starts
+    assertEquals(300.0, result.progress?.currentTime)
+  }
+
+  @Test
+  fun `progress on an episode the item no longer has lands past the end`() {
+    val episodes = listOf(episode(id = "e1", duration = 100.0))
+    val progress =
+      listOf(
+        MediaProgressResponse(
+          libraryItemId = "podcast-1",
+          episodeId = "gone",
+          currentTime = 10.0,
+          isFinished = false,
+          lastUpdate = 999L,
+          progress = 0.2,
+        ),
+      )
+
+    val result = converter.apply(podcast(episodes), progress)
+
+    assertEquals(110.0, result.progress?.currentTime)
   }
 
   @Test
@@ -122,9 +173,9 @@ class PodcastResponseConverterTest {
         ),
       )
 
-    assertEquals(1_704_105_000_000L, result.chapters[0].publishedAt)
-    assertNull(result.chapters[1].publishedAt)
-    assertNull(result.chapters[2].publishedAt)
+    assertEquals(1_704_105_000_000L, result.chapters.first { it.id == "e1" }.publishedAt)
+    assertNull(result.chapters.first { it.id == "e2" }.publishedAt)
+    assertNull(result.chapters.first { it.id == "e3" }.publishedAt)
   }
 
   @Test
