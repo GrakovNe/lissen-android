@@ -42,6 +42,7 @@ import org.grakovne.lissen.playback.service.calculateChapterIndexAndPosition
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.round
 
 @UnstableApi
 @Singleton
@@ -101,6 +102,10 @@ class MediaRepository
     private val _bookmarks = MutableStateFlow<List<Bookmark>>(emptyList())
     val bookmarks: StateFlow<List<Bookmark>> = _bookmarks.asStateFlow()
 
+    // set by reorderPlayingItem, cleared when the service reports the rebuilt queue ready
+    @Volatile
+    private var queueRebuildInFlight = false
+
     private val handler = Handler(Looper.getMainLooper())
 
     private val progressPoller =
@@ -125,6 +130,7 @@ class MediaRepository
               eventBus.events.collect { event ->
                 when (event) {
                   is PlaybackEvent.PlaybackReady -> {
+                    queueRebuildInFlight = false
                     val book = preferences.getPlayingItem()
                     book?.let {
                       updateProgress(book)
@@ -195,6 +201,7 @@ class MediaRepository
 
                 override fun onPlayerError(error: PlaybackException) {
                   Timber.e(error, "Playback error: ${error.errorCodeName}")
+                  queueRebuildInFlight = false
                   progressPoller.stop()
                   _isPlaying.value = false
                   _playAfterPrepare.value = false
@@ -413,6 +420,7 @@ class MediaRepository
       pause()
       _mediaPreparingError.value = false
       _isPlaybackReady.value = false
+      queueRebuildInFlight = true
 
       _bookmarks.value = plan.bookmarks
       _playAfterPrepare.value = wasPlaying
@@ -470,6 +478,7 @@ class MediaRepository
       _mediaPreparingError.value = false
       _playAfterPrepare.value = false
       _isPlaybackReady.value = false
+      queueRebuildInFlight = false
     }
 
     fun registerPlayingBook(book: DetailedItem) {
@@ -501,11 +510,13 @@ class MediaRepository
     }
 
     /**
-     * While a queue rebuild is in flight the controller still describes the previous queue,
-     * so a position computed from it against the new item would be meaningless.
+     * While an in-place queue rebuild is in flight the controller still describes the previous
+     * queue, so a position computed from it against the reordered item would be meaningless.
+     * Only that window is skipped: playback that carries on with the previous item while a new
+     * one fails to load, or while the screen waits to resume, keeps its progress live.
      */
     private fun updateProgressWhenReady() {
-      if (_isPlaybackReady.value.not()) return
+      if (queueRebuildInFlight) return
       _playingBook.value?.let { updateProgress(it) }
     }
 
@@ -644,7 +655,7 @@ class MediaRepository
       mediaChannel
         .createBookmark(
           libraryItemId = playingBook.id,
-          totalPosition = ChapterOrdering.toCanonicalPosition(playingBook, totalPosition),
+          totalPosition = round(ChapterOrdering.toCanonicalPosition(playingBook, totalPosition)),
           title = bookmarkTitle,
         )
 
@@ -657,7 +668,7 @@ class MediaRepository
 
       val stored =
         when (playingBook?.id == bookmark.libraryItemId) {
-          true -> bookmark.copy(totalPosition = ChapterOrdering.toCanonicalPosition(playingBook, bookmark.totalPosition))
+          true -> bookmark.copy(totalPosition = round(ChapterOrdering.toCanonicalPosition(playingBook, bookmark.totalPosition)))
           false -> bookmark
         }
 
@@ -670,19 +681,23 @@ class MediaRepository
       val book = playingBook.value ?: return
       val bookmarks = withContext(Dispatchers.IO) { mediaChannel.updateAndProvideBookmarks(book.id) }
 
-      _bookmarks.value = bookmarks.inPlayingOrder(book)
+      // the item may have been reordered meanwhile: translate for the order that is playing now
+      _bookmarks.value = bookmarks.inPlayingOrder(playingBook.value)
     }
 
     /**
      * Bookmarks are stored and sent to the server as positions in the canonical order;
-     * the player and the UI work in the order the listener has chosen.
+     * the player and the UI work in the order the listener has chosen. They are whole seconds
+     * wherever they are stored, so every translation is rounded back to a whole second: a
+     * 1968.9999 left by double arithmetic would become a bookmark that does not exist once
+     * the cache and the server truncate it.
      */
     private fun List<Bookmark>.inPlayingOrder(book: DetailedItem?): List<Bookmark> {
       if (book == null) return this
 
       return map {
         when (it.libraryItemId == book.id) {
-          true -> it.copy(totalPosition = ChapterOrdering.fromCanonicalPosition(book, it.totalPosition))
+          true -> it.copy(totalPosition = round(ChapterOrdering.fromCanonicalPosition(book, it.totalPosition)))
           false -> it
         }
       }

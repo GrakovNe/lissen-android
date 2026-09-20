@@ -115,6 +115,8 @@
     <string name="episode_ordering_season_option">По сезону</string>
     <string name="episode_ordering_episode_option">По эпизоду</string>
     <string name="episode_ordering_file_name_option">По имени файла</string>
+    <string name="episode_ordering_ascending">По возрастанию</string>
+    <string name="episode_ordering_descending">По убыванию</string>
     <string name="downloads_menu_download_book">Скачать</string>
     <string name="downloads_menu_download_podcast">Скачать</string>
     <string name="downloads_menu_download_unknown">Загрузки</string>

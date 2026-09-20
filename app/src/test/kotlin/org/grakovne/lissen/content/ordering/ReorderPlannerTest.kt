@@ -51,6 +51,31 @@ class ReorderPlannerTest {
   }
 
   @Test
+  fun `a live position a little past the end is treated as the end`() {
+    // 60.3s on a 60s item: end of c, which is first in the new order, 30s; then the restart guard
+    val plan = ReorderPlanner.plan(book, descendingByDate, 60.3, emptyList(), now = 1L, restartGuardSeconds = 5.0)!!
+
+    assertEquals(30.0, plan.item.progress?.currentTime)
+  }
+
+  @Test
+  fun `translated bookmarks stay whole seconds`() {
+    val fractional =
+      item(
+        listOf(
+          chapter("a", 0, 900.1, publishedAt = 1L),
+          chapter("b", 1, 1000.3, publishedAt = 2L),
+          chapter("c", 2, 4200.7, publishedAt = 3L),
+        ),
+      )
+    val bookmarks = (0..6000 step 7).map { bookmark("item", totalPosition = it.toDouble()) }
+
+    val plan = ReorderPlanner.plan(fractional, descendingByDate, 0.0, bookmarks, now = 1L)!!
+
+    plan.bookmarks.forEach { assertEquals(Math.rint(it.totalPosition), it.totalPosition, "bookmark ${it.totalPosition}") }
+  }
+
+  @Test
   fun `bookmarks of the item move to the new order and other items are left alone`() {
     val mine = bookmark("item", totalPosition = 15.0)
     val other = bookmark("other-item", totalPosition = 15.0)

@@ -5,6 +5,7 @@ import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DetailedItem.Companion.same
 import org.grakovne.lissen.domain.MediaProgress
+import kotlin.math.round
 
 /**
  * What a reorder of the playing item amounts to: the item in its new order with the progress
@@ -28,9 +29,10 @@ object ReorderPlanner {
     val reordered = ChapterOrdering.apply(book, configuration)
     if (reordered.same(book)) return null
 
+    // a live position may overshoot the declared end by a little: that is the end, not nowhere
     val position =
       ChapterOrdering
-        .locate(book, totalPosition)
+        .locate(book, totalPosition.coerceAtMost(book.chapters.last().end))
         ?.let { ChapterOrdering.position(reordered, it) }
         ?.let { position ->
           // the service treats the last seconds of an item as "finished, start over";
@@ -53,10 +55,12 @@ object ReorderPlanner {
         }
         ?: reordered
 
+    // bookmarks are whole seconds wherever they are stored; a translation must not leave a
+    // 1968.9999 behind that a later toLong() would turn into a bookmark that does not exist
     val movedBookmarks =
       bookmarks.map {
         when (it.libraryItemId == book.id) {
-          true -> it.copy(totalPosition = ChapterOrdering.translate(book, reordered, it.totalPosition))
+          true -> it.copy(totalPosition = round(ChapterOrdering.translate(book, reordered, it.totalPosition)))
           false -> it
         }
       }

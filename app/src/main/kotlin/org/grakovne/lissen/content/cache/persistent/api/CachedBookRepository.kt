@@ -424,10 +424,7 @@ class CachedBookRepository
       progress: PlaybackProgress,
     ) {
       val totalDuration = playingItem.chapters.sumOf { it.duration }
-
-      // a file can run a few hundred ms past its declared duration; past the end there is
-      // nothing to translate, so the position is pinned to the end before the translation
-      val canonicalTime = ChapterOrdering.toCanonicalPosition(playingItem, progress.currentTotalTime.coerceAtMost(totalDuration))
+      val canonicalTime = ChapterOrdering.toCanonicalPosition(playingItem, progress.currentTotalTime)
 
       val entity =
         MediaProgressEntity(

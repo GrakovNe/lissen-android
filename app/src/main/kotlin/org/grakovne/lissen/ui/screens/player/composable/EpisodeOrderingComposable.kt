@@ -1,13 +1,13 @@
 package org.grakovne.lissen.ui.screens.player.composable
 
 import android.content.Context
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
@@ -32,6 +32,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
@@ -107,7 +108,11 @@ fun EpisodeOrderingComposable(
                       ASCENDING -> Icons.Outlined.ArrowUpward
                       DESCENDING -> Icons.Outlined.ArrowDownward
                     },
-                  contentDescription = null,
+                  contentDescription =
+                    when (ordering.direction) {
+                      ASCENDING -> stringResource(R.string.episode_ordering_ascending)
+                      DESCENDING -> stringResource(R.string.episode_ordering_descending)
+                    },
                   tint = colorScheme.onBackground,
                   modifier = Modifier.size(20.dp),
                 )
@@ -118,7 +123,7 @@ fun EpisodeOrderingComposable(
                 .fillMaxWidth()
                 .alpha(if (enabled) 1f else DISABLED_ALPHA)
                 .testTag("episodeOrderingOption_${option.name}")
-                .clickable(enabled = enabled) {
+                .selectable(selected = isSelected, enabled = enabled, role = Role.RadioButton) {
                   withHaptic(view) {
                     val newDirection =
                       when {
@@ -151,7 +156,7 @@ private fun EpisodeOrderingOption.icon(): ImageVector =
     EpisodeOrderingOption.FILE_NAME -> Icons.Outlined.InsertDriveFile
   }
 
-fun EpisodeOrderingOption.toLocalizedName(context: Context): String =
+private fun EpisodeOrderingOption.toLocalizedName(context: Context): String =
   when (this) {
     EpisodeOrderingOption.PUBLISHED_AT -> context.getString(R.string.episode_ordering_published_at_option)
     EpisodeOrderingOption.TITLE -> context.getString(R.string.settings_screen_library_ordering_title_option)

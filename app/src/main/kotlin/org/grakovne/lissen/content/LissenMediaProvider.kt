@@ -365,6 +365,8 @@ class LissenMediaProvider
      */
     private fun applyOrdering(detailedItem: DetailedItem): DetailedItem {
       val canonical = ChapterOrdering.canonical(detailedItem)
+      if (detailedItem.libraryType == LibraryType.LIBRARY) return canonical
+
       val configuration = preferences.getEpisodeOrdering(detailedItem.id) ?: return canonical
 
       return ChapterOrdering.apply(canonical, configuration)

@@ -84,15 +84,22 @@ object ChapterOrdering {
       ?.let { position(to, it) }
       ?: position
 
+  /**
+   * A live position can run a few hundred ms past the declared end of the item (files are
+   * often a little longer than the server says); that is the end of the item, not a position
+   * outside it, so it is pinned to the end before the translation.
+   */
   fun toCanonicalPosition(
     item: DetailedItem,
     position: Double,
-  ): Double = translate(item, canonical(item), position)
+  ): Double = translate(item, canonical(item), position.coerceAtMost(item.end() ?: position))
 
   fun fromCanonicalPosition(
     item: DetailedItem,
     canonicalPosition: Double,
   ): Double = translate(canonical(item), item, canonicalPosition)
+
+  fun DetailedItem.end(): Double? = chapters.lastOrNull()?.end
 
   /**
    * Primary key, then season and episode as tie-breakers, then the incoming position. The
@@ -134,15 +141,16 @@ object ChapterOrdering {
     }
 
   /**
-   * Chapters and files can only be permuted together. An item whose files do not map one to
-   * one onto its chapters (a book with chapter markers over a different number of audio files)
-   * is never permuted: reordering its chapters alone would play the wrong audio under every
-   * title. Its bounds are left as the server sent them for the same reason.
+   * Chapters and files can only be permuted together, so only an item whose chapters are its
+   * files (one file per chapter, same durations: podcast episodes, or a book split into files
+   * without chapter markers) is ever permuted. Anything else, a book with chapter markers above
+   * all, is left exactly as the server described it: its bounds are file offsets and rewriting
+   * them would play the wrong audio under every title. Bounds are recomputed only when a
+   * permutation actually happens; an item that is already in order keeps its bounds.
    *
-   * With [canonicalize] the result is normalized as well: degenerate indices (an item stored by
-   * an app version that did not know them, so every chapter says 0) are taken from the list
-   * order, which for such an item is the canonical one; the output carries `index` = position
-   * and cumulative bounds, so canonicalizing is idempotent whatever the input looked like.
+   * With [canonicalize] the output carries `index` = position. Degenerate indices (an item
+   * stored by an app version that did not know them, so every chapter says 0) are taken from
+   * the list order, which for such an item is the canonical one.
    */
   private fun reorder(
     item: DetailedItem,
@@ -152,8 +160,6 @@ object ChapterOrdering {
     val chapters = item.chapters
     if (chapters.isEmpty()) return item
 
-    val permutable = item.files.size == chapters.size
-
     val keyed =
       when (canonicalize && chapters.hasDegenerateIndices()) {
         true -> chapters.mapIndexed { position, chapter -> chapter.copy(index = position) }
@@ -161,27 +167,23 @@ object ChapterOrdering {
       }
 
     val order = keyed.indices.sortedWith(compareBy(comparator) { keyed[it] })
-    val identity = order == keyed.indices.toList()
 
-    if (identity.not() && permutable.not()) return item
+    if (order == keyed.indices.toList()) {
+      return when (canonicalize && chapters.isRenumbered().not()) {
+        true -> item.copy(chapters = keyed.mapIndexed { position, chapter -> chapter.copy(index = position) })
+        false -> item
+      }
+    }
 
-    val normalized = permutable.not() || chapters.isCumulative()
-    val renumbered = canonicalize.not() || chapters.isRenumbered()
-    if (identity && keyed === chapters && normalized && renumbered) return item
+    if (item.isPermutable().not()) return item
 
     val orderedChapters =
       order
         .map { keyed[it] }
-        .let { if (permutable) it.withRecomputedBounds() else it }
+        .withRecomputedBounds()
         .let { if (canonicalize) it.mapIndexed { position, chapter -> chapter.copy(index = position) } else it }
 
-    val orderedFiles =
-      when (permutable) {
-        true -> order.map { item.files[it] }
-        false -> item.files
-      }
-
-    val reordered = item.copy(chapters = orderedChapters, files = orderedFiles)
+    val reordered = item.copy(chapters = orderedChapters, files = order.map { item.files[it] })
 
     val progress =
       item
@@ -191,6 +193,10 @@ object ChapterOrdering {
     return reordered.copy(progress = progress)
   }
 
+  private fun DetailedItem.isPermutable(): Boolean =
+    files.size == chapters.size &&
+      chapters.zip(files).all { (chapter, file) -> abs(chapter.duration - file.duration) < DURATION_EPSILON }
+
   private fun List<PlayingChapter>.withRecomputedBounds(): List<PlayingChapter> {
     var accumulated = 0.0
 
@@ -198,17 +204,6 @@ object ChapterOrdering {
       val start = accumulated
       accumulated += chapter.duration
       chapter.copy(start = start, end = accumulated)
-    }
-  }
-
-  private fun List<PlayingChapter>.isCumulative(): Boolean {
-    var accumulated = 0.0
-
-    return all { chapter ->
-      val matches =
-        abs(chapter.start - accumulated) < BOUNDS_EPSILON && abs(chapter.end - (accumulated + chapter.duration)) < BOUNDS_EPSILON
-      accumulated += chapter.duration
-      matches
     }
   }
 
@@ -222,5 +217,5 @@ object ChapterOrdering {
    */
   private fun String?.asNumber(): Int? = this?.takeIf { it.isNotBlank() }?.toIntOrNull()
 
-  private const val BOUNDS_EPSILON = 1e-6
+  private const val DURATION_EPSILON = 1e-3
 }

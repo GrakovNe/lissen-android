@@ -166,8 +166,8 @@ class ChapterOrderingTest {
   }
 
   @Test
-  fun `canonical order is the same whether the item comes from the cache or from the network`() {
-    // network: index is the server position; cache: index is the canonical position
+  fun `a configuration with ties orders the same whether the item comes from the cache or from the network`() {
+    // network: server order c, a, b with server positions; cache: canonical order with positions 0..2
     val fromNetwork =
       item(
         listOf(
@@ -176,12 +176,24 @@ class ChapterOrderingTest {
           chapter("b", 2, publishedAt = 2L),
         ),
       )
-    val fromCache = ChapterOrdering.canonical(fromNetwork)
-    val byTitle = EpisodeOrderingConfiguration(EpisodeOrderingOption.SEASON, LibraryOrderingDirection.ASCENDING)
+    val fromCache =
+      item(
+        listOf(
+          chapter("a", 0, publishedAt = 1L),
+          chapter("b", 1, publishedAt = 2L),
+          chapter("c", 2, publishedAt = 3L),
+        ),
+      )
+    // every season is null: the chain falls through to the index tie-break
+    val bySeason = EpisodeOrderingConfiguration(EpisodeOrderingOption.SEASON, LibraryOrderingDirection.DESCENDING)
 
     assertEquals(
-      ChapterOrdering.apply(ChapterOrdering.canonical(fromNetwork), byTitle).chapters.map { it.id },
-      ChapterOrdering.apply(fromCache, byTitle).chapters.map { it.id },
+      listOf("c", "b", "a"),
+      ChapterOrdering.apply(ChapterOrdering.canonical(fromNetwork), bySeason).chapters.map { it.id },
+    )
+    assertEquals(
+      listOf("c", "b", "a"),
+      ChapterOrdering.apply(ChapterOrdering.canonical(fromCache), bySeason).chapters.map { it.id },
     )
   }
 
@@ -207,17 +219,54 @@ class ChapterOrderingTest {
   }
 
   @Test
-  fun `canonical normalizes gapped bounds of a one to one item and leaves a book alone`() {
+  fun `bounds are recomputed only when a permutation happens`() {
     val gapped =
       item(listOf(chapter("a", 0, duration = 10.0, publishedAt = 1L), chapter("b", 1, duration = 20.0, publishedAt = 2L)))
         .let { it.copy(chapters = listOf(it.chapters[0], it.chapters[1].copy(start = 100.0, end = 120.0))) }
 
-    val normalized = ChapterOrdering.canonical(gapped)
-    assertEquals(listOf(0.0, 10.0), normalized.chapters.map { it.start })
-    assertEquals(normalized.chapters, ChapterOrdering.canonical(ChapterOrdering.apply(gapped, descendingByDate)).chapters)
+    // already in order: whatever the bounds, they are the server's business
+    assertSame(gapped, ChapterOrdering.canonical(gapped))
 
-    val book = gapped.copy(files = gapped.files.take(1))
+    val permuted = ChapterOrdering.apply(gapped, descendingByDate)
+    assertEquals(listOf(0.0, 20.0), permuted.chapters.map { it.start })
+  }
+
+  @Test
+  fun `a chaptered book is never permuted even when its chapter count matches its file count`() {
+    // two files of 100s, two chapter markers that do not follow the file boundaries
+    val book =
+      item(listOf(chapter("c1", 0, duration = 100.0), chapter("c2", 1, duration = 100.0)))
+        .let {
+          it.copy(
+            chapters =
+              listOf(
+                it.chapters[0].copy(start = 10.0, end = 130.0, duration = 120.0),
+                it.chapters[1].copy(start = 130.0, end = 200.0, duration = 70.0),
+              ),
+          )
+        }
+
     assertSame(book, ChapterOrdering.canonical(book))
+    assertSame(
+      book,
+      ChapterOrdering.apply(book, EpisodeOrderingConfiguration(EpisodeOrderingOption.TITLE, LibraryOrderingDirection.DESCENDING)),
+    )
+    assertSame(book, ChapterOrdering.apply(book, descendingByDate))
+  }
+
+  @Test
+  fun `a live position a little past the end is the end when translated to canonical`() {
+    val source =
+      item(
+        listOf(
+          chapter("a", 0, duration = 10.0, publishedAt = 1L),
+          chapter("b", 1, duration = 20.0, publishedAt = 2L),
+        ),
+      )
+    val reordered = ChapterOrdering.apply(source, descendingByDate)
+
+    // end of the playing order is the end of "a", which ends at 10s canonically
+    assertEquals(10.0, ChapterOrdering.toCanonicalPosition(reordered, 30.3))
   }
 
   @Test
@@ -455,7 +504,7 @@ class ChapterOrderingTest {
 
     assertEquals(null, ChapterOrdering.locate(source, 30.5))
     assertEquals(65.0, ChapterOrdering.fromCanonicalPosition(reordered, 65.0))
-    assertEquals(65.0, ChapterOrdering.toCanonicalPosition(reordered, 65.0))
+    assertEquals(65.0, ChapterOrdering.translate(reordered, source, 65.0))
   }
 
   @Test

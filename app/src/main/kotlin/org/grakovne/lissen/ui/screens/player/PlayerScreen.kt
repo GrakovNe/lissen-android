@@ -248,11 +248,8 @@ fun PlayerScreen(
                   // podcasts only; stays next to search while the queue is expanded
                   if (sortable) {
                     IconButton(
-                      onClick = {
-                        if (isPlaybackReady) {
-                          orderingSelected = true
-                        }
-                      },
+                      onClick = { orderingSelected = true },
+                      enabled = isPlaybackReady,
                       modifier =
                         Modifier
                           .padding(end = 4.dp)
@@ -442,7 +439,8 @@ fun PlayerScreen(
   if (orderingSelected) {
     EpisodeOrderingComposable(
       current = episodeOrdering,
-      enabled = isPlaybackReady,
+      // the player refuses items it could not persist (no library id): keep the rows inert too
+      enabled = isPlaybackReady && requestedBook?.libraryId != null,
       onOrderingChanged = { playerViewModel.setEpisodeOrdering(bookId, it) },
       onDismissRequest = { orderingSelected = false },
     )

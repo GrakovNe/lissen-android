@@ -117,13 +117,13 @@ class PlaybackService : MediaLibraryService() {
   private suspend fun preparePlayback(book: DetailedItem) {
     exoPlayer.playWhenReady = false
 
-    // the synchronizer must already describe the new item when the new queue's first
-    // transition event arrives, otherwise a sync would pair a new position with the old chapters
-    playbackSynchronizationService.startPlaybackSynchronization(book)
-
     withContext(Dispatchers.IO) {
       if (book.chapters.isEmpty()) {
         Timber.w("Can't build playing queue: book has no chapters (bookId=${book.id})")
+
+        withContext(Dispatchers.Main) {
+          playbackSynchronizationService.startPlaybackSynchronization(book)
+        }
       } else {
         val itemsWithPosition = bookToChapterMediaItems(book)
 
@@ -131,6 +131,10 @@ class PlaybackService : MediaLibraryService() {
           exoPlayer.setMediaItems(itemsWithPosition.mediaItems)
           exoPlayer.prepare()
           exoPlayer.seekTo(itemsWithPosition.startIndex, itemsWithPosition.startPositionMs)
+
+          // same main task as the queue swap: until here every player event still pairs the
+          // previous queue with the previous item, from here on the new queue with the new one
+          playbackSynchronizationService.startPlaybackSynchronization(book)
         }
       }
 
