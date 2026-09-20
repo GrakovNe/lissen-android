@@ -5,6 +5,7 @@ import org.grakovne.lissen.common.EpisodeOrderingOption
 import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PlayingChapter
+import kotlin.math.abs
 
 /**
  * A position inside an item expressed independently of the chapter order:
@@ -22,16 +23,17 @@ data class ChapterLocation(
  * and on `start`/`end` being monotonic. Reordering therefore always goes through [reorder],
  * which permutes both lists in lockstep, recomputes the bounds and carries the progress over.
  *
- * The canonical order is the default one: published date, season, episode, then the position
- * the chapter came in with ([PlayingChapter.index]). It is the order every version of the app
- * has shown podcasts in, so positions stored on the server and in the cache (progress,
- * bookmarks) are canonical positions and stay valid across upgrades. For items without
- * ordering keys (books, local-file podcasts) the canonical order is the server order.
- * Ordering is a pure function of chapter keys, so applying it to an item coming from the
- * network or from the cache, in any input order, gives the same result.
+ * The canonical order is the default one: published date, season, episode (compared exactly
+ * as every earlier version of the app compared them: nulls first, season and episode as whole
+ * numbers or nothing), then the position the chapter came in with ([PlayingChapter.index]).
+ * It is the order every version of the app has shown podcasts in, so positions stored on the
+ * server and in the cache (progress, bookmarks) are canonical positions and stay valid across
+ * upgrades. For items without ordering keys (books, local-file podcasts) the canonical order
+ * is the server order. A canonical item carries `index` = its canonical position, so an item
+ * from the cache and the same item from the network order identically under any configuration.
  */
 object ChapterOrdering {
-  fun canonical(item: DetailedItem): DetailedItem = reorder(item, defaultComparator)
+  fun canonical(item: DetailedItem): DetailedItem = reorder(item, defaultComparator, canonicalize = true)
 
   fun apply(
     item: DetailedItem,
@@ -121,35 +123,65 @@ object ChapterOrdering {
     comparator(EpisodeOrderingConfiguration.default)
   }
 
+  // nulls first everywhere, as Kotlin's compareBy does: that is how the app has always sorted
   private fun keyComparator(option: EpisodeOrderingOption): Comparator<PlayingChapter> =
     when (option) {
       EpisodeOrderingOption.PUBLISHED_AT -> compareBy { it.publishedAt }
       EpisodeOrderingOption.TITLE -> compareBy(String.CASE_INSENSITIVE_ORDER) { it.title }
-      EpisodeOrderingOption.SEASON -> compareBy(nullsLast()) { it.season.asNumber() }
-      EpisodeOrderingOption.EPISODE -> compareBy(nullsLast()) { it.episode.asNumber() }
+      EpisodeOrderingOption.SEASON -> compareBy { it.season.asNumber() }
+      EpisodeOrderingOption.EPISODE -> compareBy { it.episode.asNumber() }
       EpisodeOrderingOption.FILE_NAME -> compareBy(nullsFirst(String.CASE_INSENSITIVE_ORDER)) { it.fileName }
     }
 
   /**
    * Chapters and files can only be permuted together. An item whose files do not map one to
    * one onto its chapters (a book with chapter markers over a different number of audio files)
-   * is left untouched: reordering its chapters alone would play the wrong audio under every title.
+   * is never permuted: reordering its chapters alone would play the wrong audio under every
+   * title. Its bounds are left as the server sent them for the same reason.
+   *
+   * With [canonicalize] the result is normalized as well: degenerate indices (an item stored by
+   * an app version that did not know them, so every chapter says 0) are taken from the list
+   * order, which for such an item is the canonical one; the output carries `index` = position
+   * and cumulative bounds, so canonicalizing is idempotent whatever the input looked like.
    */
   private fun reorder(
     item: DetailedItem,
     comparator: Comparator<PlayingChapter>,
+    canonicalize: Boolean = false,
   ): DetailedItem {
     val chapters = item.chapters
-    if (chapters.size < 2) return item
+    if (chapters.isEmpty()) return item
 
-    val order = chapters.indices.sortedWith(compareBy(comparator) { chapters[it] })
-    if (order == chapters.indices.toList()) return item
-    if (item.files.size != chapters.size) return item
+    val permutable = item.files.size == chapters.size
 
-    val reorderedChapters = order.map { chapters[it] }.withRecomputedBounds()
-    val reorderedFiles = order.map { item.files[it] }
+    val keyed =
+      when (canonicalize && chapters.hasDegenerateIndices()) {
+        true -> chapters.mapIndexed { position, chapter -> chapter.copy(index = position) }
+        false -> chapters
+      }
 
-    val reordered = item.copy(chapters = reorderedChapters, files = reorderedFiles)
+    val order = keyed.indices.sortedWith(compareBy(comparator) { keyed[it] })
+    val identity = order == keyed.indices.toList()
+
+    if (identity.not() && permutable.not()) return item
+
+    val normalized = permutable.not() || chapters.isCumulative()
+    val renumbered = canonicalize.not() || chapters.isRenumbered()
+    if (identity && keyed === chapters && normalized && renumbered) return item
+
+    val orderedChapters =
+      order
+        .map { keyed[it] }
+        .let { if (permutable) it.withRecomputedBounds() else it }
+        .let { if (canonicalize) it.mapIndexed { position, chapter -> chapter.copy(index = position) } else it }
+
+    val orderedFiles =
+      when (permutable) {
+        true -> order.map { item.files[it] }
+        false -> item.files
+      }
+
+    val reordered = item.copy(chapters = orderedChapters, files = orderedFiles)
 
     val progress =
       item
@@ -169,11 +201,26 @@ object ChapterOrdering {
     }
   }
 
-  /**
-   * Season and episode numbers as feeds actually write them: "3", "S03", "1.5", "12a".
-   * The leading number is what counts; values without one sort after the numbered ones.
-   */
-  private fun String?.asNumber(): Int? = this?.let { LEADING_NUMBER.find(it)?.value?.toIntOrNull() }
+  private fun List<PlayingChapter>.isCumulative(): Boolean {
+    var accumulated = 0.0
 
-  private val LEADING_NUMBER = Regex("\\d+")
+    return all { chapter ->
+      val matches =
+        abs(chapter.start - accumulated) < BOUNDS_EPSILON && abs(chapter.end - (accumulated + chapter.duration)) < BOUNDS_EPSILON
+      accumulated += chapter.duration
+      matches
+    }
+  }
+
+  private fun List<PlayingChapter>.isRenumbered(): Boolean = withIndex().all { (position, chapter) -> chapter.index == position }
+
+  private fun List<PlayingChapter>.hasDegenerateIndices(): Boolean = map { it.index }.toSet().size != size
+
+  /**
+   * Season and episode as whole numbers, exactly as they have always been compared: anything
+   * else ("S03", "1.5", "bonus", blank) is no number at all and sorts first.
+   */
+  private fun String?.asNumber(): Int? = this?.takeIf { it.isNotBlank() }?.toIntOrNull()
+
+  private const val BOUNDS_EPSILON = 1e-6
 }

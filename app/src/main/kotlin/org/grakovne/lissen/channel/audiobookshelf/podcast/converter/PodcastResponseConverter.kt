@@ -8,13 +8,18 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PlayingChapter
+import timber.log.Timber
+import java.text.SimpleDateFormat
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Maps the server response as is. Episodes keep the server order, which becomes their
- * canonical [PlayingChapter.index]; the actual ordering is applied later by
- * [org.grakovne.lissen.content.ordering.ChapterOrdering].
+ * Maps the server response as is. Episodes keep the server order, recorded in
+ * [PlayingChapter.index]; the actual ordering is applied later by
+ * [org.grakovne.lissen.content.ordering.ChapterOrdering]. The published date is parsed from
+ * `pubDate` with the very same pattern every earlier version used, deliberately: the canonical
+ * order derived from it is the coordinate system of every stored progress and bookmark.
  */
 @Singleton
 class PodcastResponseConverter
@@ -25,6 +30,9 @@ class PodcastResponseConverter
       progressResponses: List<MediaProgressResponse> = emptyList(),
     ): DetailedItem {
       val episodes = item.media.episodes ?: emptyList()
+
+      // SimpleDateFormat is not thread-safe and podcasts are fetched concurrently: one per call
+      val dateFormat = SimpleDateFormat(PUB_DATE_PATTERN, Locale.ENGLISH)
 
       val totalCurrentTime =
         progressResponses
@@ -67,7 +75,7 @@ class PodcastResponseConverter
                 .find { it.episodeId == episode.id }
                 ?.let { hasFinished(it) },
             index = index,
-            publishedAt = episode.publishedAt,
+            publishedAt = dateFormat.parsePublishedAt(episode.pubDate),
             season = episode.season,
             episode = episode.episode,
             fileName = episode.audioFile.metadata.filename,
@@ -110,7 +118,16 @@ class PodcastResponseConverter
         false -> null
       }
 
+    private fun SimpleDateFormat.parsePublishedAt(pubDate: String?): Long? =
+      try {
+        pubDate?.let { parse(it)?.time }
+      } catch (e: Exception) {
+        Timber.w("Unable to parse episode pubDate '$pubDate' due to: ${e.message}")
+        null
+      }
+
     companion object {
       private const val FINISHED_PROGRESS_THRESHOLD = 0.9
+      private const val PUB_DATE_PATTERN = "EEE, dd MMM yyyy HH:mm:ss Z"
     }
   }

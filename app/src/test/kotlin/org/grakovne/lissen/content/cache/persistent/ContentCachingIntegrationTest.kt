@@ -281,6 +281,25 @@ class ContentCachingIntegrationTest {
     }
 
   @Test
+  fun `a failed download keeps the chapters that were already on disk`() =
+    runBlocking {
+      coEvery { bookRepository.fetchBook("book") } returns
+        book.copy(chapters = chapters.map { it.copy(available = it.id == "c0") })
+      val alreadyThere = properties.provideMediaCachePatch("book", "f0")
+      alreadyThere.parentFile?.mkdirs()
+      alreadyThere.writeText("bytes-f0")
+      server.enqueue(MockResponse.Builder().code(500).build())
+
+      val states = manager.cacheMediaItem(book, AllItemsDownloadOption, channel, 0.0).toList()
+
+      assertEquals(CacheState(CacheStatus.Error), states.last())
+      assertEquals("bytes-f0", alreadyThere.readText())
+      assertFalse(properties.provideMediaCachePatch("book", "f1").exists())
+      // only the chapter that failed is rolled back
+      coVerify(exactly = 0) { bookRepository.cacheBook(any(), any(), match { dropped -> dropped.any { it.id == "c0" } }) }
+    }
+
+  @Test
   fun `reports an error and keeps no media when the download fails`() =
     runBlocking {
       coEvery { bookRepository.fetchBook("book") } returns null

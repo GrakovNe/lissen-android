@@ -147,12 +147,7 @@ fun PlayerScreen(
   val libraryType = requestedBook?.libraryType ?: preferredLibraryType
   val episodeOrdering by playerViewModel.episodeOrdering.collectAsState()
 
-  // the placeholder guesses from the library, a loaded item speaks for itself
-  val sortable =
-    when (requestedBook) {
-      null -> preferredLibraryType == LibraryType.PODCAST
-      else -> requestedBook.libraryType == LibraryType.PODCAST
-    }
+  val sortable = isSortable(requestedBook, preferredLibraryType)
 
   val screenTitle =
     when {
@@ -448,7 +443,7 @@ fun PlayerScreen(
     EpisodeOrderingComposable(
       current = episodeOrdering,
       enabled = isPlaybackReady,
-      onOrderingChanged = { playerViewModel.setEpisodeOrdering(it) },
+      onOrderingChanged = { playerViewModel.setEpisodeOrdering(bookId, it) },
       onDismissRequest = { orderingSelected = false },
     )
   }
@@ -695,3 +690,17 @@ private fun cachePolicyChanged(
   cachingModelView: CachingModelView,
   playingBook: DetailedItem?,
 ) = cachingModelView.localCacheUsing() != playingBook?.localProvided
+
+/**
+ * Whether the top bar offers episode ordering. The placeholder guesses from the library the
+ * item is opened from; a loaded item speaks for itself, and an item of unknown type is not
+ * sortable however the library looks.
+ */
+internal fun isSortable(
+  requestedBook: DetailedItem?,
+  preferredLibraryType: LibraryType?,
+): Boolean =
+  when (requestedBook) {
+    null -> preferredLibraryType == LibraryType.PODCAST
+    else -> requestedBook.libraryType == LibraryType.PODCAST
+  }

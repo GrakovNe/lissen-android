@@ -14,8 +14,6 @@ import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -119,30 +117,22 @@ class PlaybackService : MediaLibraryService() {
   private suspend fun preparePlayback(book: DetailedItem) {
     exoPlayer.playWhenReady = false
 
+    // the synchronizer must already describe the new item when the new queue's first
+    // transition event arrives, otherwise a sync would pair a new position with the old chapters
+    playbackSynchronizationService.startPlaybackSynchronization(book)
+
     withContext(Dispatchers.IO) {
-      val prepareQueue =
-        async {
-          if (book.chapters.isEmpty()) {
-            Timber.w("Can't build playing queue: book has no chapters (bookId=${book.id})")
+      if (book.chapters.isEmpty()) {
+        Timber.w("Can't build playing queue: book has no chapters (bookId=${book.id})")
+      } else {
+        val itemsWithPosition = bookToChapterMediaItems(book)
 
-            return@async
-          }
-
-          val itemsWithPosition = bookToChapterMediaItems(book)
-
-          withContext(Dispatchers.Main) {
-            exoPlayer.setMediaItems(itemsWithPosition.mediaItems)
-            exoPlayer.prepare()
-            exoPlayer.seekTo(itemsWithPosition.startIndex, itemsWithPosition.startPositionMs)
-          }
+        withContext(Dispatchers.Main) {
+          exoPlayer.setMediaItems(itemsWithPosition.mediaItems)
+          exoPlayer.prepare()
+          exoPlayer.seekTo(itemsWithPosition.startIndex, itemsWithPosition.startPositionMs)
         }
-
-      val prepareSession =
-        async {
-          playbackSynchronizationService.startPlaybackSynchronization(book)
-        }
-
-      awaitAll(prepareSession, prepareQueue)
+      }
 
       playbackEventBus.emit(PlaybackEvent.PlaybackReady)
     }

@@ -222,6 +222,8 @@ class LissenMediaProviderTest {
         assertEquals(15.0, result.data.progress?.currentTime)
       }
 
+    // note: this one passes in either pipeline order; the test above is the one pinning
+    // "canonicalize, then merge"
     @Test
     fun `channel progress is translated into canonical coordinates when it wins the merge`() =
       runBlocking {

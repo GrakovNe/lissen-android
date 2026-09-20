@@ -382,9 +382,10 @@ val MIGRATION_20_21 =
 
 /**
  * Chapters and files get an explicit canonical position plus the keys the episode ordering
- * needs. The position is backfilled from the stored bounds, which is the order the item has
- * always been shown in, so the stored progress keeps its meaning. Duplicate rows per
- * (bookId, chapterId) should not exist (replacing the parent row cascades into them), but a
+ * needs. The position is backfilled from the insertion order (the DAO wrote both lists in
+ * list order, in one batch), which is the order the item has always been shown in, so the
+ * stored progress keeps its meaning and chapters and files stay in lockstep. Duplicate rows
+ * per (bookId, chapterId) should not exist (replacing the parent row cascades into them), but a
  * re-cache that ever slipped past that would poison the position, so they are collapsed first,
  * keeping the latest row.
  */
@@ -419,9 +420,7 @@ val MIGRATION_21_22 =
         """
         UPDATE book_chapters SET chapterIndex = (
           SELECT COUNT(*) FROM book_chapters other
-          WHERE other.bookId = book_chapters.bookId
-            AND (other.start < book_chapters.start
-              OR (other.start = book_chapters.start AND other.id < book_chapters.id))
+          WHERE other.bookId = book_chapters.bookId AND other.id < book_chapters.id
         )
         """.trimIndent(),
       )

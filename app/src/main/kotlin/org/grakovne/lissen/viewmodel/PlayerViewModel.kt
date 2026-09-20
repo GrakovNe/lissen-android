@@ -202,10 +202,23 @@ class PlayerViewModel
       mediaRepository.prepareAndPlay(playingBook)
     }
 
-    fun setEpisodeOrdering(configuration: EpisodeOrderingConfiguration) {
+    /**
+     * [itemId] is the item the screen shows; the playing item may still be another one while
+     * it loads, and a choice made for the screen's item must not land on the previous one.
+     * Only podcasts are ever reordered; a stored configuration is trusted downstream on that
+     * basis. The choice is persisted only once the playing item actually follows it.
+     */
+    fun setEpisodeOrdering(
+      itemId: String,
+      configuration: EpisodeOrderingConfiguration,
+    ) {
       val playingBook = book.value ?: return
 
-      // only podcasts are ever reordered; a stored configuration is trusted downstream on that basis
+      if (playingBook.id != itemId) {
+        Timber.w("Ignoring setEpisodeOrdering for $itemId: playing item is ${playingBook.id}")
+        return
+      }
+
       if (playingBook.libraryType != LibraryType.PODCAST) {
         Timber.w("Ignoring setEpisodeOrdering for ${playingBook.id}: libraryType=${playingBook.libraryType}")
         return
@@ -213,8 +226,9 @@ class PlayerViewModel
 
       Timber.d("User action: setEpisodeOrdering $configuration for ${playingBook.id}")
 
-      libraryPreferences.saveEpisodeOrdering(playingBook.id, configuration)
-      mediaRepository.reorderPlayingItem(configuration)
+      if (mediaRepository.reorderPlayingItem(configuration)) {
+        libraryPreferences.saveEpisodeOrdering(playingBook.id, configuration)
+      }
     }
 
     companion object {

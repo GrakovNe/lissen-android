@@ -116,20 +116,41 @@ class PlayerViewModelTest {
     fun `setEpisodeOrdering is ignored for anything but a podcast`() {
       playingBook.value = detailedItem(libraryType = LibraryType.LIBRARY)
 
-      viewModel.setEpisodeOrdering(EpisodeOrderingConfiguration.default)
+      viewModel.setEpisodeOrdering("book-1", EpisodeOrderingConfiguration.default)
 
       verify(exactly = 0) { libraryPreferences.saveEpisodeOrdering(any(), any()) }
       verify(exactly = 0) { mediaRepository.reorderPlayingItem(any()) }
     }
 
     @Test
-    fun `setEpisodeOrdering stores the choice and reorders the playing podcast`() {
+    fun `setEpisodeOrdering is ignored when the screen shows another item than the playing one`() {
+      playingBook.value = detailedItem(id = "previous", libraryType = LibraryType.PODCAST)
+
+      viewModel.setEpisodeOrdering("book-1", EpisodeOrderingConfiguration.default)
+
+      verify(exactly = 0) { libraryPreferences.saveEpisodeOrdering(any(), any()) }
+      verify(exactly = 0) { mediaRepository.reorderPlayingItem(any()) }
+    }
+
+    @Test
+    fun `setEpisodeOrdering reorders the playing podcast and then stores the choice`() {
       playingBook.value = detailedItem(libraryType = LibraryType.PODCAST)
+      every { mediaRepository.reorderPlayingItem(any()) } returns true
 
-      viewModel.setEpisodeOrdering(EpisodeOrderingConfiguration.default)
+      viewModel.setEpisodeOrdering("book-1", EpisodeOrderingConfiguration.default)
 
-      verify { libraryPreferences.saveEpisodeOrdering("book-1", EpisodeOrderingConfiguration.default) }
       verify { mediaRepository.reorderPlayingItem(EpisodeOrderingConfiguration.default) }
+      verify { libraryPreferences.saveEpisodeOrdering("book-1", EpisodeOrderingConfiguration.default) }
+    }
+
+    @Test
+    fun `setEpisodeOrdering does not store a choice the player refused`() {
+      playingBook.value = detailedItem(libraryType = LibraryType.PODCAST)
+      every { mediaRepository.reorderPlayingItem(any()) } returns false
+
+      viewModel.setEpisodeOrdering("book-1", EpisodeOrderingConfiguration.default)
+
+      verify(exactly = 0) { libraryPreferences.saveEpisodeOrdering(any(), any()) }
     }
   }
 

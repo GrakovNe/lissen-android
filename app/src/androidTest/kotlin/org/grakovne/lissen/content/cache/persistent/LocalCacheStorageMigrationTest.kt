@@ -238,16 +238,16 @@ class LocalCacheStorageMigrationTest {
         VALUES ('book-1', 'Dune', 0, 0, 0)
         """.trimIndent(),
       )
-      // two full re-caches of the same item, chapters written out of start order;
+      // two full re-caches of the same item, both written in list order as the DAO did;
       // the second one marks "c1" as downloaded
       db.execSQL(
         """
         INSERT INTO book_chapters (bookChapterId, duration, start, end, title, bookId, isCached)
         VALUES
-          ('c2', 10.0, 10.0, 20.0, 'Two', 'book-1', 0),
           ('c1', 10.0, 0.0, 10.0, 'One', 'book-1', 0),
           ('c2', 10.0, 10.0, 20.0, 'Two', 'book-1', 0),
-          ('c1', 10.0, 0.0, 10.0, 'One', 'book-1', 1)
+          ('c1', 10.0, 0.0, 10.0, 'One', 'book-1', 1),
+          ('c2', 10.0, 10.0, 20.0, 'Two', 'book-1', 0)
         """.trimIndent(),
       )
       db.execSQL(

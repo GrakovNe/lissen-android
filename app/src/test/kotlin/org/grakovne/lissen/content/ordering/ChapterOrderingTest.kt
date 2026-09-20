@@ -89,8 +89,29 @@ class ChapterOrderingTest {
 
     val result = ChapterOrdering.apply(source, configuration = null)
 
-    // undated first (as every version of the app did), unnumbered seasons after numbered ones
-    assertEquals(listOf("e4", "e3", "e5", "e2", "e1"), result.chapters.map { it.id })
+    // nulls first at every level, exactly as every version of the app has sorted
+    assertEquals(listOf("e5", "e4", "e3", "e2", "e1"), result.chapters.map { it.id })
+  }
+
+  @Test
+  fun `canonical order is the order the previous converter produced`() {
+    // the old PodcastResponseConverter.orderEpisode: compareBy(pubDate, season.toInt(), episode.toInt()),
+    // unparseable values null and first, stable over the server order
+    val source =
+      item(
+        listOf(
+          chapter("a", 0, publishedAt = 2L, season = "1", episode = "3"),
+          chapter("b", 1, publishedAt = 2L, season = "1", episode = "S03"),
+          chapter("c", 2, publishedAt = null, season = "bonus"),
+          chapter("d", 3, publishedAt = 1L),
+          chapter("e", 4, publishedAt = 2L, season = "1", episode = "2"),
+          chapter("f", 5, publishedAt = 2L, season = "", episode = "1"),
+        ),
+      )
+
+    val result = ChapterOrdering.canonical(source)
+
+    assertEquals(listOf("c", "d", "f", "b", "e", "a"), result.chapters.map { it.id })
   }
 
   @Test
@@ -109,7 +130,7 @@ class ChapterOrderingTest {
     val byChoice = ChapterOrdering.apply(source, EpisodeOrderingConfiguration.default)
 
     assertEquals(byDefault.chapters, byChoice.chapters)
-    assertEquals(ChapterOrdering.canonical(source).chapters, byChoice.chapters)
+    assertEquals(ChapterOrdering.canonical(source).chapters.map { it.id }, byChoice.chapters.map { it.id })
   }
 
   @Test
@@ -127,6 +148,76 @@ class ChapterOrderingTest {
 
     assertEquals(listOf("a", "b", "c"), result.chapters.map { it.id })
     assertEquals(listOf("file-a", "file-b", "file-c"), result.files.map { it.id })
+    // a canonical item carries its canonical position, whatever position it came in with
+    assertEquals(listOf(0, 1, 2), result.chapters.map { it.index })
+  }
+
+  @Test
+  fun `a stored item that predates the ordering keys is canonical as it is`() {
+    // every chapter says index 0: the item was serialized by a version that did not know indices,
+    // and such a version only ever showed the canonical order
+    val source = item(listOf(chapter("c", 0), chapter("a", 0), chapter("b", 0)))
+
+    val result = ChapterOrdering.canonical(source)
+
+    assertEquals(listOf("c", "a", "b"), result.chapters.map { it.id })
+    assertEquals(listOf(0, 1, 2), result.chapters.map { it.index })
+    assertSame(result, ChapterOrdering.canonical(result))
+  }
+
+  @Test
+  fun `canonical order is the same whether the item comes from the cache or from the network`() {
+    // network: index is the server position; cache: index is the canonical position
+    val fromNetwork =
+      item(
+        listOf(
+          chapter("c", 0, publishedAt = 3L),
+          chapter("a", 1, publishedAt = 1L),
+          chapter("b", 2, publishedAt = 2L),
+        ),
+      )
+    val fromCache = ChapterOrdering.canonical(fromNetwork)
+    val byTitle = EpisodeOrderingConfiguration(EpisodeOrderingOption.SEASON, LibraryOrderingDirection.ASCENDING)
+
+    assertEquals(
+      ChapterOrdering.apply(ChapterOrdering.canonical(fromNetwork), byTitle).chapters.map { it.id },
+      ChapterOrdering.apply(fromCache, byTitle).chapters.map { it.id },
+    )
+  }
+
+  @Test
+  fun `applying a second configuration to a reordered item equals applying it to the source`() {
+    val source =
+      item(
+        listOf(
+          chapter("a", 0, publishedAt = 1L, title = "c"),
+          chapter("b", 1, publishedAt = 2L, title = "a"),
+          chapter("c", 2, publishedAt = 3L, title = "b"),
+        ),
+        progress = MediaProgress(currentTime = 150.0, isFinished = false, lastUpdate = 1L),
+      )
+    val byTitle = EpisodeOrderingConfiguration(EpisodeOrderingOption.TITLE, LibraryOrderingDirection.ASCENDING)
+
+    val direct = ChapterOrdering.apply(source, byTitle)
+    val viaDescending = ChapterOrdering.apply(ChapterOrdering.apply(source, descendingByDate), byTitle)
+
+    assertEquals(direct.chapters, viaDescending.chapters)
+    assertEquals(direct.files, viaDescending.files)
+    assertEquals(direct.progress, viaDescending.progress)
+  }
+
+  @Test
+  fun `canonical normalizes gapped bounds of a one to one item and leaves a book alone`() {
+    val gapped =
+      item(listOf(chapter("a", 0, duration = 10.0, publishedAt = 1L), chapter("b", 1, duration = 20.0, publishedAt = 2L)))
+        .let { it.copy(chapters = listOf(it.chapters[0], it.chapters[1].copy(start = 100.0, end = 120.0))) }
+
+    val normalized = ChapterOrdering.canonical(gapped)
+    assertEquals(listOf(0.0, 10.0), normalized.chapters.map { it.start })
+    assertEquals(normalized.chapters, ChapterOrdering.canonical(ChapterOrdering.apply(gapped, descendingByDate)).chapters)
+
+    val book = gapped.copy(files = gapped.files.take(1))
+    assertSame(book, ChapterOrdering.canonical(book))
   }
 
   @Test
@@ -253,7 +344,7 @@ class ChapterOrderingTest {
   }
 
   @Test
-  fun `season and episode take their leading number and unnumbered values sort last`() {
+  fun `season and episode compare as whole numbers and anything else sorts first`() {
     val source =
       item(
         listOf(
@@ -271,8 +362,8 @@ class ChapterOrderingTest {
         EpisodeOrderingConfiguration(EpisodeOrderingOption.EPISODE, LibraryOrderingDirection.ASCENDING),
       )
 
-    // "2.5" -> 2, "S02E01" -> 2, tie broken by incoming order; "bonus" has no number
-    assertEquals(listOf("e", "c", "d", "b", "a"), result.chapters.map { it.id })
+    // "bonus", "2.5" and "S02E01" are not whole numbers: null, first, in incoming order
+    assertEquals(listOf("a", "c", "d", "e", "b"), result.chapters.map { it.id })
   }
 
   @Test

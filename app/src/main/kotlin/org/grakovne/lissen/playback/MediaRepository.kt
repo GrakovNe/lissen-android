@@ -26,13 +26,13 @@ import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.common.buildBookmarkTitle
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.ordering.ChapterOrdering
+import org.grakovne.lissen.content.ordering.ReorderPlanner
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DetailedItem.Companion.same
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.LibraryType
-import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.service.DefaultTimerActivator
@@ -108,7 +108,7 @@ class MediaRepository
         intervalMs = PROGRESS_UPDATE_INTERVAL_MS,
         schedule = { runnable, delay -> handler.postDelayed(runnable, delay) },
         cancel = { runnable -> handler.removeCallbacks(runnable) },
-        onTick = { _playingBook.value?.let { updateProgress(it) } },
+        onTick = { updateProgressWhenReady() },
       )
 
     init {
@@ -173,7 +173,7 @@ class MediaRepository
 
                     else -> {
                       progressPoller.stop()
-                      _playingBook.value?.let { updateProgress(it) }
+                      updateProgressWhenReady()
                     }
                   }
                 }
@@ -183,7 +183,7 @@ class MediaRepository
                   newPosition: Player.PositionInfo,
                   reason: Int,
                 ) {
-                  _playingBook.value?.let { updateProgress(it) }
+                  updateProgressWhenReady()
                 }
 
                 override fun onPlaybackStateChanged(playbackState: Int) {
@@ -381,57 +381,47 @@ class MediaRepository
      * Applies a new chapter order to the item already in memory and rebuilds the queue at the
      * same chapter and offset the listener was at. No network involved: the order is a pure
      * function of the chapter keys the item carries. Playback pauses for the rebuild and
-     * resumes afterwards if it was running.
+     * resumes afterwards if it was running. Returns whether the order is now the requested one.
      */
-    fun reorderPlayingItem(configuration: EpisodeOrderingConfiguration?) {
-      val book = playingBook.value ?: return
+    fun reorderPlayingItem(configuration: EpisodeOrderingConfiguration?): Boolean {
+      val book = playingBook.value ?: return false
 
       // a rebuild is in flight: totalPosition is not the listener's position right now
       if (isPlaybackReady.value.not()) {
         Timber.d("Ignoring reorder of ${book.id}: playback is not ready")
-        return
+        return false
+      }
+
+      // savePlayingItem silently keeps the old item for such a book and the queue would not follow
+      if (book.libraryId == null) {
+        Timber.w("Ignoring reorder of ${book.id}: the item has no library id")
+        return false
       }
 
       val wasPlaying = isPlaying.value
-      val location = ChapterOrdering.locate(book, totalPosition.value)
+      val plan =
+        ReorderPlanner.plan(
+          book = book,
+          configuration = configuration,
+          totalPosition = totalPosition.value,
+          bookmarks = _bookmarks.value,
+          now = System.currentTimeMillis(),
+        ) ?: return true
 
-      Timber.d("Reordering playing item ${book.id} to $configuration at $location (wasPlaying=$wasPlaying)")
-
-      val reordered = ChapterOrdering.apply(book, configuration)
-      if (reordered.same(book)) return
+      Timber.d("Reordering playing item ${book.id} to $configuration at ${plan.item.progress?.currentTime} (wasPlaying=$wasPlaying)")
 
       pause()
       _mediaPreparingError.value = false
       _isPlaybackReady.value = false
 
-      val position =
-        location
-          ?.let { ChapterOrdering.position(reordered, it) }
-          ?.let { position ->
-            // the service treats the last seconds of an item as "finished, start over";
-            // a reorder must never trigger that, whatever chapter ended up last
-            val total = reordered.chapters.sumOf { it.duration }
-            position.coerceAtMost((total - RESTART_GUARD_SECONDS).coerceAtLeast(0.0))
-          }
-
-      val restored =
-        position
-          ?.let {
-            reordered.copy(
-              progress =
-                MediaProgress(
-                  currentTime = it,
-                  isFinished = false,
-                  lastUpdate = System.currentTimeMillis(),
-                ),
-            )
-          }
-          ?: reordered
-
-      _bookmarks.value = _bookmarks.value.map { it.copy(totalPosition = ChapterOrdering.translate(book, reordered, it.totalPosition)) }
+      _bookmarks.value = plan.bookmarks
       _playAfterPrepare.value = wasPlaying
-      startPreparingPlayback(restored)
-      restored.progress?.let { _totalPosition.value = it.currentTime }
+      startPreparingPlayback(plan.item)
+
+      plan.item.progress?.let { _totalPosition.value = it.currentTime }
+      updateCurrentTrackData()
+
+      return true
     }
 
     fun nextTrack() {
@@ -508,6 +498,15 @@ class MediaRepository
       } else {
         _isPlaybackReady.value = true
       }
+    }
+
+    /**
+     * While a queue rebuild is in flight the controller still describes the previous queue,
+     * so a position computed from it against the new item would be meaningless.
+     */
+    private fun updateProgressWhenReady() {
+      if (_isPlaybackReady.value.not()) return
+      _playingBook.value?.let { updateProgress(it) }
     }
 
     private fun updateProgress(detailedItem: DetailedItem) {
@@ -698,9 +697,6 @@ class MediaRepository
 
     private companion object {
       private const val CURRENT_TRACK_REPLAY_THRESHOLD = 5
-
-      // mirrors the restart heuristic in PlaybackService.bookToChapterMediaItems
-      private const val RESTART_GUARD_SECONDS = 5.0
       private const val PROGRESS_UPDATE_INTERVAL_MS = 500L
 
       private fun getSeekTime(seconds: Int?): Long = seconds?.toLong() ?: 30L

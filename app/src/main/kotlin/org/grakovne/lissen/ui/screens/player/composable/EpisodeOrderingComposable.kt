@@ -26,6 +26,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -115,6 +116,7 @@ fun EpisodeOrderingComposable(
             modifier =
               Modifier
                 .fillMaxWidth()
+                .alpha(if (enabled) 1f else DISABLED_ALPHA)
                 .testTag("episodeOrderingOption_${option.name}")
                 .clickable(enabled = enabled) {
                   withHaptic(view) {
@@ -137,6 +139,8 @@ fun EpisodeOrderingComposable(
     },
   )
 }
+
+private const val DISABLED_ALPHA = 0.38f
 
 private fun EpisodeOrderingOption.icon(): ImageVector =
   when (this) {

@@ -7,6 +7,7 @@ import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastEpisodeRe
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastMedia
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastMediaMetadataResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
+import org.grakovne.lissen.common.moshi
 import org.grakovne.lissen.domain.BookChapterState
 import org.grakovne.lissen.domain.LibraryType
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -30,14 +31,14 @@ class PodcastResponseConverterTest {
     id: String,
     season: String? = null,
     episode: String? = null,
-    publishedAt: Long? = null,
+    pubDate: String? = null,
     title: String = "Episode $id",
     duration: Double? = 100.0,
   ) = PodcastEpisodeResponse(
     id = id,
     season = season,
     episode = episode,
-    publishedAt = publishedAt,
+    pubDate = pubDate,
     title = title,
     audioFile = audioFile(id, duration),
   )
@@ -84,9 +85,9 @@ class PodcastResponseConverterTest {
   fun `keeps server order and records it as the canonical index`() {
     val episodes =
       listOf(
-        episode(id = "e1", publishedAt = 2_000L),
-        episode(id = "e2", publishedAt = 1_000L),
-        episode(id = "e3", publishedAt = null, season = "1", episode = "2"),
+        episode(id = "e1", pubDate = "Tue, 02 Jan 2024 00:00:00 +0000"),
+        episode(id = "e2", pubDate = "Mon, 01 Jan 2024 00:00:00 +0000"),
+        episode(id = "e3", pubDate = null, season = "1", episode = "2"),
       )
 
     val result = converter.apply(podcast(episodes))
@@ -98,13 +99,53 @@ class PodcastResponseConverterTest {
 
   @Test
   fun `exposes ordering keys on chapters`() {
-    val result = converter.apply(podcast(listOf(episode(id = "e1", publishedAt = 42L, season = "3", episode = "7"))))
+    val result =
+      converter.apply(podcast(listOf(episode(id = "e1", pubDate = "Mon, 01 Jan 2024 00:00:00 +0000", season = "3", episode = "7"))))
 
     val chapter = result.chapters.single()
-    assertEquals(42L, chapter.publishedAt)
+    assertEquals(1_704_067_200_000L, chapter.publishedAt)
     assertEquals("3", chapter.season)
     assertEquals("7", chapter.episode)
     assertEquals("e1.mp3", chapter.fileName)
+  }
+
+  @Test
+  fun `published date is parsed from pubDate with the pattern every version used`() {
+    val result =
+      converter.apply(
+        podcast(
+          listOf(
+            episode(id = "e1", pubDate = "Mon, 01 Jan 2024 12:30:00 +0200"),
+            episode(id = "e2", pubDate = "01 Jan 2024"),
+            episode(id = "e3", pubDate = null),
+          ),
+        ),
+      )
+
+    assertEquals(1_704_105_000_000L, result.chapters[0].publishedAt)
+    assertNull(result.chapters[1].publishedAt)
+    assertNull(result.chapters[2].publishedAt)
+  }
+
+  @Test
+  fun `pubDate is read from the episode payload`() {
+    val json =
+      """
+      {"id":"e1","season":"1","episode":"2","pubDate":"Mon, 01 Jan 2024 00:00:00 +0000","publishedAt":1704067200000,
+       "title":"One","audioFile":{"ino":"f1","duration":10.0,"mimeType":"audio/mpeg","metadata":{"filename":"f1.mp3","ext":"mp3","size":1}}}
+      """.trimIndent()
+
+    val episode = moshi.adapter(PodcastEpisodeResponse::class.java).fromJson(json)!!
+
+    assertEquals("Mon, 01 Jan 2024 00:00:00 +0000", episode.pubDate)
+    assertEquals(
+      1_704_067_200_000L,
+      converter
+        .apply(podcast(listOf(episode)))
+        .chapters
+        .single()
+        .publishedAt,
+    )
   }
 
   @Test
