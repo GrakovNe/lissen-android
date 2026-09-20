@@ -405,6 +405,18 @@ class MediaRepository
         return false
       }
 
+      // the service rebuilds the item stored for the active library; if that is not this one
+      // (the listener switched libraries while it played) nothing would ever report ready
+      if (preferences.getPlayingItem()?.id != book.id) {
+        Timber.w("Ignoring reorder of ${book.id}: it is not the playing item of the active library")
+        return false
+      }
+
+      if (ChapterOrdering.isReorderable(book).not()) {
+        Timber.w("Ignoring reorder of ${book.id}: chapters and files do not map one to one")
+        return false
+      }
+
       val wasPlaying = isPlaying.value
       val plan =
         ReorderPlanner.plan(
@@ -655,7 +667,7 @@ class MediaRepository
       mediaChannel
         .createBookmark(
           libraryItemId = playingBook.id,
-          totalPosition = round(ChapterOrdering.toCanonicalPosition(playingBook, totalPosition)),
+          totalPosition = ChapterOrdering.toCanonicalPosition(playingBook, totalPosition),
           title = bookmarkTitle,
         )
 
@@ -686,18 +698,21 @@ class MediaRepository
     }
 
     /**
-     * Bookmarks are stored and sent to the server as positions in the canonical order;
-     * the player and the UI work in the order the listener has chosen. They are whole seconds
-     * wherever they are stored, so every translation is rounded back to a whole second: a
-     * 1968.9999 left by double arithmetic would become a bookmark that does not exist once
-     * the cache and the server truncate it.
+     * Bookmarks are stored and sent to the server as positions in the canonical order, whole
+     * seconds; the player and the UI work in the order the listener has chosen. Display
+     * positions are translated exactly and never rounded: rounding could push one onto a
+     * chapter boundary, which belongs to the next chapter. Only the way back to canonical
+     * (see [dropBookmark]) rounds, because there the true value is a whole second and double
+     * arithmetic may have left 1968.9999 of it.
      */
     private fun List<Bookmark>.inPlayingOrder(book: DetailedItem?): List<Bookmark> {
       if (book == null) return this
 
+      val canonical = ChapterOrdering.canonical(book)
+
       return map {
         when (it.libraryItemId == book.id) {
-          true -> it.copy(totalPosition = round(ChapterOrdering.fromCanonicalPosition(book, it.totalPosition)))
+          true -> it.copy(totalPosition = ChapterOrdering.translate(canonical, book, it.totalPosition))
           false -> it
         }
       }

@@ -62,7 +62,7 @@ class LibraryPreferences
       configuration: EpisodeOrderingConfiguration,
     ) {
       val updated = getEpisodeOrderings() + (itemId to configuration)
-      store.putString(KEY_EPISODE_ORDERING, episodeOrderingAdapter.toJson(updated), commit = true)
+      store.putString(KEY_EPISODE_ORDERING, episodeOrderingAdapter.toJson(updated))
     }
 
     /**

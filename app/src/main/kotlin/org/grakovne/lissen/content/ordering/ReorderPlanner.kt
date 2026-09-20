@@ -5,12 +5,13 @@ import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DetailedItem.Companion.same
 import org.grakovne.lissen.domain.MediaProgress
-import kotlin.math.round
 
 /**
  * What a reorder of the playing item amounts to: the item in its new order with the progress
  * pointing at the chapter and offset the listener was at, and the in-memory bookmarks moved
- * to the same order. `null` when the configuration does not change the order at all.
+ * to the same order. `null` when the item is already in the requested order. Callers check
+ * [ChapterOrdering.isReorderable] first: an item that cannot be permuted has no plan either,
+ * and must not be mistaken for one that is already in order.
  */
 data class ReorderPlan(
   val item: DetailedItem,
@@ -26,7 +27,9 @@ object ReorderPlanner {
     now: Long,
     restartGuardSeconds: Double = RESTART_GUARD_SECONDS,
   ): ReorderPlan? {
-    val reordered = ChapterOrdering.apply(book, configuration)
+    // from the canonical item, so that a stored item without ordering keys (serialized by a
+    // version that did not know them) is reordered like any other instead of standing still
+    val reordered = ChapterOrdering.apply(ChapterOrdering.canonical(book), configuration)
     if (reordered.same(book)) return null
 
     // a live position may overshoot the declared end by a little: that is the end, not nowhere
@@ -55,12 +58,12 @@ object ReorderPlanner {
         }
         ?: reordered
 
-    // bookmarks are whole seconds wherever they are stored; a translation must not leave a
-    // 1968.9999 behind that a later toLong() would turn into a bookmark that does not exist
+    // display positions are translated exactly; rounding them could push one onto a chapter
+    // boundary, and the boundary belongs to the next chapter
     val movedBookmarks =
       bookmarks.map {
         when (it.libraryItemId == book.id) {
-          true -> it.copy(totalPosition = round(ChapterOrdering.translate(book, reordered, it.totalPosition)))
+          true -> it.copy(totalPosition = ChapterOrdering.translate(book, reordered, it.totalPosition))
           false -> it
         }
       }

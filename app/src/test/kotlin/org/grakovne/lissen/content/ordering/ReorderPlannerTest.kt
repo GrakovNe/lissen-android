@@ -59,7 +59,7 @@ class ReorderPlannerTest {
   }
 
   @Test
-  fun `translated bookmarks stay whole seconds`() {
+  fun `translated bookmarks come back to their canonical second whatever the fractional bounds`() {
     val fractional =
       item(
         listOf(
@@ -68,11 +68,29 @@ class ReorderPlannerTest {
           chapter("c", 2, 4200.7, publishedAt = 3L),
         ),
       )
-    val bookmarks = (0..6000 step 7).map { bookmark("item", totalPosition = it.toDouble()) }
+    // canonical positions are whole seconds; 1900 and 6101 sit within half a second of a chapter end
+    val bookmarks = (0..6101).map { bookmark("item", totalPosition = it.toDouble()) }
 
     val plan = ReorderPlanner.plan(fractional, descendingByDate, 0.0, bookmarks, now = 1L)!!
 
-    plan.bookmarks.forEach { assertEquals(Math.rint(it.totalPosition), it.totalPosition, "bookmark ${it.totalPosition}") }
+    plan.bookmarks.forEachIndexed { index, moved ->
+      val backToCanonical = ChapterOrdering.toCanonicalPosition(plan.item, moved.totalPosition)
+      assertEquals(bookmarks[index].totalPosition, Math.rint(backToCanonical), "bookmark ${bookmarks[index].totalPosition}")
+    }
+  }
+
+  @Test
+  fun `a stored item without ordering keys is reordered like any other`() {
+    // every index 0, keys null: the list order is the canonical one
+    val legacy = book.copy(chapters = book.chapters.map { it.copy(index = 0, publishedAt = null) })
+    val reversed = EpisodeOrderingConfiguration(EpisodeOrderingOption.PUBLISHED_AT, LibraryOrderingDirection.DESCENDING)
+
+    val plan = ReorderPlanner.plan(legacy, reversed, 15.0, emptyList(), now = 1L)!!
+
+    assertEquals(listOf("c", "b", "a"), plan.item.chapters.map { it.id })
+    // indices now carry the canonical position, which the legacy item lacked
+    assertEquals(listOf(2, 1, 0), plan.item.chapters.map { it.index })
+    assertEquals(35.0, plan.item.progress?.currentTime)
   }
 
   @Test

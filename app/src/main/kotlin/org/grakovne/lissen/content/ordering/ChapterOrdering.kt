@@ -101,6 +101,9 @@ object ChapterOrdering {
 
   fun DetailedItem.end(): Double? = chapters.lastOrNull()?.end
 
+  /** Whether the item can be permuted at all, see [reorder]. */
+  fun isReorderable(item: DetailedItem): Boolean = item.isPermutable()
+
   /**
    * Primary key, then season and episode as tie-breakers, then the incoming position. The
    * default configuration builds exactly the canonical order, so picking it in the UI is the

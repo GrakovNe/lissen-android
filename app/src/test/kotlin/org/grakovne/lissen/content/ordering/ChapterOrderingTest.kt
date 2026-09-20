@@ -252,6 +252,8 @@ class ChapterOrderingTest {
       ChapterOrdering.apply(book, EpisodeOrderingConfiguration(EpisodeOrderingOption.TITLE, LibraryOrderingDirection.DESCENDING)),
     )
     assertSame(book, ChapterOrdering.apply(book, descendingByDate))
+    assertEquals(false, ChapterOrdering.isReorderable(book))
+    assertEquals(true, ChapterOrdering.isReorderable(item(listOf(chapter("a", 0), chapter("b", 1)))))
   }
 
   @Test
