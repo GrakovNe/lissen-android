@@ -430,9 +430,10 @@ class CachedBookRepository
         MediaProgressEntity(
           bookId = playingItem.id,
           currentTime = canonicalTime,
-          // in the same coordinates as currentTime: the end of the listener's order is not the
-          // end of the item unless the same episode is last in both
-          isFinished = canonicalTime >= totalDuration - FINISHED_POSITION_EPSILON,
+          // "finished" is reaching the end of the item in the listener's order, whatever episode
+          // is last there; read only for LibraryType.LIBRARY today (hide completed), where the
+          // listener's order is the canonical one
+          isFinished = progress.currentTotalTime >= totalDuration - FINISHED_POSITION_EPSILON,
           lastUpdate = Instant.now().toEpochMilli(),
         )
 

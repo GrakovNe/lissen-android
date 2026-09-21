@@ -514,6 +514,28 @@ class ChapterOrderingTest {
   }
 
   @Test
+  fun `a bookmark is stored as a whole second inside its own canonical chapter`() {
+    // canonical a(0-100.5) b(100.5-201); descending: b(0-100.5) a(100.5-201)
+    val source =
+      item(
+        listOf(
+          chapter("a", 0, duration = 100.5, publishedAt = 1L),
+          chapter("b", 1, duration = 100.5, publishedAt = 2L),
+        ),
+      )
+    val reordered = ChapterOrdering.apply(source, descendingByDate)
+
+    // 0.2s into b (displayed at 0.2): canonically 100.7, and 100 would be inside a
+    assertEquals(101.0, ChapterOrdering.storedBookmarkPosition(reordered, 0.2))
+    // 40s into b: canonically 140.5, truncated to 140, still inside b
+    assertEquals(140.0, ChapterOrdering.storedBookmarkPosition(reordered, 40.0))
+    // 0.2s into a (displayed at 100.7): canonically 0.2, truncated to 0
+    assertEquals(0.0, ChapterOrdering.storedBookmarkPosition(reordered, 100.7))
+    // a live overshoot is the end of the listener's order: the end of a, 100 canonically
+    assertEquals(100.0, ChapterOrdering.storedBookmarkPosition(reordered, 201.3))
+  }
+
+  @Test
   fun `positions past the end of the item are not translated`() {
     val source =
       item(

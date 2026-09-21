@@ -6,6 +6,8 @@ import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PlayingChapter
 import kotlin.math.abs
+import kotlin.math.ceil
+import kotlin.math.floor
 
 /**
  * A position inside an item expressed independently of the chapter order:
@@ -100,6 +102,30 @@ object ChapterOrdering {
   ): Double = translate(canonical(item), item, canonicalPosition)
 
   fun DetailedItem.end(): Double? = chapters.lastOrNull()?.end
+
+  /**
+   * The whole canonical second a bookmark at [position] (in the order of [item]) is stored as.
+   * Storage keeps whole seconds; simply truncating the exact canonical value can fall below the
+   * chapter's fractional canonical start, i.e. into the previous canonical episode, which in the
+   * listener's order may be anywhere. The second is therefore chosen inside the chapter.
+   */
+  fun storedBookmarkPosition(
+    item: DetailedItem,
+    position: Double,
+  ): Double {
+    val canonical = canonical(item)
+    val exact = translate(item, canonical, position.coerceAtMost(item.end() ?: position))
+    val chapter =
+      locate(item, position.coerceAtMost(item.end() ?: position))
+        ?.let { location -> canonical.chapters.firstOrNull { it.id == location.chapterId } }
+        ?: return floor(exact)
+
+    val truncated = floor(exact)
+    return when (truncated >= chapter.start) {
+      true -> truncated
+      false -> ceil(exact).coerceAtMost(floor(chapter.end))
+    }
+  }
 
   /** Whether the item can be permuted at all, see [reorder]. */
   fun isReorderable(item: DetailedItem): Boolean = item.isPermutable()

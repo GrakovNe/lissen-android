@@ -107,6 +107,10 @@ class MediaRepository
     @Volatile
     private var queueRebuildInFlight = false
 
+    // the item (and order) the displayed bookmark positions were translated for
+    @Volatile
+    private var bookmarksItem: DetailedItem? = null
+
     private val handler = Handler(Looper.getMainLooper())
 
     private val progressPoller =
@@ -392,29 +396,13 @@ class MediaRepository
      * Whether [reorderPlayingItem] would act right now; the UI keeps the ordering sheet inert
      * otherwise, so that a tap never fails silently.
      */
-    fun canReorderPlayingItem(itemId: String): Boolean {
-      val book = playingBook.value ?: return false
-
-      return when {
-        // the screen's item, not whatever happens to be playing while it loads
-        book.id != itemId -> false
-
-        // only podcasts are ever reordered; a stored configuration is trusted downstream on that basis
-        book.libraryType != LibraryType.PODCAST -> false
-
-        // a rebuild is in flight: totalPosition is not the listener's position right now
-        isPlaybackReady.value.not() -> false
-
-        // savePlayingItem silently keeps the old item for such a book and the queue would not follow
-        book.libraryId == null -> false
-
-        // the service rebuilds the item stored for the active library; if that is not this one
-        // (the listener switched libraries while it played) nothing would ever report ready
-        preferences.getPlayingItem()?.id != book.id -> false
-
-        else -> ChapterOrdering.isReorderable(book)
-      }
-    }
+    fun canReorderPlayingItem(itemId: String): Boolean =
+      ReorderPlanner.canReorder(
+        book = playingBook.value,
+        itemId = itemId,
+        playbackReady = isPlaybackReady.value,
+        storedPlayingItemId = preferences.getPlayingItem()?.id,
+      )
 
     /**
      * Applies a new chapter order to the item already in memory and rebuilds the queue at the
@@ -450,7 +438,11 @@ class MediaRepository
 
       _playAfterPrepare.value = wasPlaying
       startPreparingPlayback(plan.item)
-      // the stored bookmarks translated for the new order, the same way every other read does it
+
+      // the list in memory follows at once, so nothing can act on positions of the old order;
+      // the exact stored values, translated for the new order, replace it as soon as they are read
+      _bookmarks.value = _bookmarks.value.map { it.copy(totalPosition = ChapterOrdering.translate(book, plan.item, it.totalPosition)) }
+      bookmarksItem = plan.item
       scope.launch { refreshBookmarksFromCache(book.id) }
       // after startPreparingPlayback, which resets the flag for every fresh preparation
       queueRebuildInFlight = true
@@ -518,9 +510,11 @@ class MediaRepository
 
         _totalPosition.value = book.progress?.currentTime ?: 0.0
         _playingBook.value = book
-        queueRebuildInFlight = false
         _isPlaybackReady.value = true
       }
+
+      // readiness arrived outside the service: whatever rebuild was in flight is over
+      queueRebuildInFlight = false
     }
 
     private fun startPreparingPlayback(book: DetailedItem) {
@@ -669,24 +663,26 @@ class MediaRepository
       val playingBook = _playingBook.value ?: return
       val totalPosition = _totalPosition.value
 
-      val chapterIndex = calculateChapterIndex(playingBook, totalPosition)
-      if (chapterIndex !in playingBook.chapters.indices) {
-        Timber.w("Unable to create bookmark: chapter index $chapterIndex out of bounds")
+      // the same boundary rule as the stored position, so the title names the episode the
+      // bookmark is actually in, however far apart neighbours are in the listener's order
+      val location = ChapterOrdering.locate(playingBook, totalPosition)
+      val currentChapter = location?.let { l -> playingBook.chapters.firstOrNull { it.id == l.chapterId } }
+      if (currentChapter == null) {
+        Timber.w("Unable to create bookmark: no chapter at position=${totalPosition.toInt()}s")
         return
       }
-      val currentChapter = playingBook.chapters[chapterIndex].title
-      val chapterPosition = _currentChapterPosition.value
+      val chapterPosition = location.offset
 
       val bookmarkTitle =
         when (title) {
-          null -> buildBookmarkTitle(currentChapter, chapterPosition)
+          null -> buildBookmarkTitle(currentChapter.title, chapterPosition)
           else -> title
         }
 
       mediaChannel
         .createBookmark(
           libraryItemId = playingBook.id,
-          totalPosition = ChapterOrdering.toCanonicalPosition(playingBook, totalPosition),
+          totalPosition = ChapterOrdering.storedBookmarkPosition(playingBook, totalPosition),
           title = bookmarkTitle,
         )
 
@@ -701,10 +697,11 @@ class MediaRepository
      */
     suspend fun dropBookmark(bookmark: Bookmark) {
       Timber.d("Dropping bookmark for ${bookmark.libraryItemId} at position=${bookmark.totalPosition.toInt()}s")
-      val playingBook = _playingBook.value
+      // the item the displayed list was built for, which is not necessarily the one playing now
+      val playingBook = bookmarksItem?.takeIf { it.id == bookmark.libraryItemId }
 
       val stored =
-        when (playingBook?.id == bookmark.libraryItemId) {
+        when (playingBook != null) {
           true -> {
             val candidates = mediaChannel.provideBookmarks(bookmark.libraryItemId)
             val displayed = candidates.zip(candidates.inPlayingOrder(playingBook))
@@ -738,7 +735,9 @@ class MediaRepository
      */
     private suspend fun refreshBookmarksFromCache(itemId: String) {
       val stored = withContext(Dispatchers.IO) { mediaChannel.provideBookmarks(itemId) }
-      _bookmarks.value = stored.inPlayingOrder(_playingBook.value)
+      val book = _playingBook.value
+      bookmarksItem = book
+      _bookmarks.value = stored.inPlayingOrder(book)
     }
 
     private fun Double.isSameSecondAs(other: Double): Boolean = abs(this - other) < BOOKMARK_MATCH_EPSILON
@@ -748,7 +747,9 @@ class MediaRepository
       val bookmarks = withContext(Dispatchers.IO) { mediaChannel.updateAndProvideBookmarks(book.id) }
 
       // the item may have been reordered meanwhile: translate for the order that is playing now
-      _bookmarks.value = bookmarks.inPlayingOrder(playingBook.value)
+      val current = playingBook.value
+      bookmarksItem = current
+      _bookmarks.value = bookmarks.inPlayingOrder(current)
     }
 
     /**

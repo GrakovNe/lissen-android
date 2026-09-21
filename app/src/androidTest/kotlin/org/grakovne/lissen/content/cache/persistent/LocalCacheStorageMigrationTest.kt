@@ -289,6 +289,57 @@ class LocalCacheStorageMigrationTest {
     }
   }
 
+  @Test
+  fun migrate21To22_backfillsPositionsPerBook() {
+    helper.createDatabase(TEST_DB, 21).use { db ->
+      db.execSQL(
+        """
+        INSERT INTO detailed_books (id, title, duration, createdAt, updatedAt)
+        VALUES ('book-1', 'One', 0, 0, 0), ('book-2', 'Two', 0, 0, 0)
+        """.trimIndent(),
+      )
+      // rows of the two books interleaved by rowid
+      db.execSQL(
+        """
+        INSERT INTO book_chapters (bookChapterId, duration, start, end, title, bookId, isCached)
+        VALUES
+          ('a1', 10.0, 0.0, 10.0, 'A1', 'book-1', 0),
+          ('b1', 10.0, 0.0, 10.0, 'B1', 'book-2', 0),
+          ('a2', 10.0, 10.0, 20.0, 'A2', 'book-1', 0),
+          ('b2', 10.0, 10.0, 20.0, 'B2', 'book-2', 0)
+        """.trimIndent(),
+      )
+      db.execSQL(
+        """
+        INSERT INTO book_files (bookFileId, name, size, duration, mimeType, bookId)
+        VALUES
+          ('fa1', 'a1', 0, 10.0, 'audio/mpeg', 'book-1'),
+          ('fb1', 'b1', 0, 10.0, 'audio/mpeg', 'book-2'),
+          ('fa2', 'a2', 0, 10.0, 'audio/mpeg', 'book-1'),
+          ('fb2', 'b2', 0, 10.0, 'audio/mpeg', 'book-2')
+        """.trimIndent(),
+      )
+    }
+
+    val db = helper.runMigrationsAndValidate(TEST_DB, 22, true, MIGRATION_21_22)
+
+    val chapters = mutableListOf<Pair<String, Int>>()
+    db.query("SELECT bookChapterId, chapterIndex FROM book_chapters ORDER BY bookId, chapterIndex").use { cursor ->
+      while (cursor.moveToNext()) {
+        chapters += cursor.getString(0) to cursor.getInt(1)
+      }
+    }
+    assertEquals(listOf("a1" to 0, "a2" to 1, "b1" to 0, "b2" to 1), chapters)
+
+    val files = mutableListOf<Pair<String, Int>>()
+    db.query("SELECT bookFileId, fileIndex FROM book_files ORDER BY bookId, fileIndex").use { cursor ->
+      while (cursor.moveToNext()) {
+        files += cursor.getString(0) to cursor.getInt(1)
+      }
+    }
+    assertEquals(listOf("fa1" to 0, "fa2" to 1, "fb1" to 0, "fb2" to 1), files)
+  }
+
   companion object {
     private const val TEST_DB = "local-cache-migration-test"
   }

@@ -2,6 +2,7 @@ package org.grakovne.lissen.content.ordering
 
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.playback.restartWindowStart
 
@@ -16,6 +17,39 @@ data class ReorderPlan(
 )
 
 object ReorderPlanner {
+  /**
+   * Whether a reorder of [book] may be attempted for the screen showing [itemId]. One predicate
+   * for the sheet's rows and for the action, so that a tap never fails silently.
+   */
+  fun canReorder(
+    book: DetailedItem?,
+    itemId: String,
+    playbackReady: Boolean,
+    storedPlayingItemId: String?,
+  ): Boolean {
+    if (book == null) return false
+
+    return when {
+      // the screen's item, not whatever happens to be playing while it loads
+      book.id != itemId -> false
+
+      // only podcasts are ever reordered; a stored configuration is trusted downstream on that basis
+      book.libraryType != LibraryType.PODCAST -> false
+
+      // a rebuild is in flight: totalPosition is not the listener's position right now
+      playbackReady.not() -> false
+
+      // savePlayingItem silently keeps the old item for such a book and the queue would not follow
+      book.libraryId == null -> false
+
+      // the service rebuilds the item stored for the active library; if that is not this one
+      // (the listener switched libraries while it played) nothing would ever report ready
+      storedPlayingItemId != book.id -> false
+
+      else -> ChapterOrdering.isReorderable(book)
+    }
+  }
+
   fun plan(
     book: DetailedItem,
     configuration: EpisodeOrderingConfiguration?,

@@ -8,8 +8,11 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PlayingChapter
+import org.grakovne.lissen.playback.isInRestartWindow
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class ReorderPlannerTest {
@@ -65,11 +68,43 @@ class ReorderPlannerTest {
 
     assertEquals(listOf("a", "b", "trailer"), plan.item.chapters.map { it.id })
     assertEquals(1200.0, plan.item.progress?.currentTime)
+    assertFalse(plan.item.isInRestartWindow(plan.item.progress!!.currentTime))
+  }
+
+  @Test
+  fun `a restored position never falls into the restart window`() {
+    // 8s into a, which becomes the last chapter: 58s of 60s, inside the 5s window
+    val plan = ReorderPlanner.plan(book, descendingByDate, 8.0, now = 1L)!!
+
+    assertFalse(plan.item.isInRestartWindow(plan.item.progress!!.currentTime))
+  }
+
+  @Test
+  fun `a reorder may be attempted only for the ready playing podcast of the screen`() {
+    fun can(
+      candidate: DetailedItem? = book,
+      screen: String = "item",
+      ready: Boolean = true,
+      stored: String? = book.id,
+    ) = ReorderPlanner.canReorder(candidate, screen, playbackReady = ready, storedPlayingItemId = stored)
+
+    assertTrue(can())
+
+    assertFalse(can(candidate = null))
+    assertFalse(can(screen = "another-screen"))
+    assertFalse(can(candidate = book.copy(libraryType = LibraryType.LIBRARY)))
+    assertFalse(can(candidate = book.copy(libraryType = null)))
+    assertFalse(can(ready = false))
+    assertFalse(can(candidate = book.copy(libraryId = null)))
+    assertFalse(can(stored = "other-library-item"))
+    assertFalse(can(stored = null))
+    // a chaptered book shape: two chapters over one file
+    assertFalse(can(candidate = book.copy(files = book.files.take(1))))
   }
 
   @Test
   fun `a live position a little past the end is treated as the end`() {
-    // 60.3s on a 60s item: end of c, which is first in the new order, 30s; then the restart guard
+    // 60.3s on a 60s item: end of c, which is first in the new order, 30s (well before the window)
     val plan = ReorderPlanner.plan(book, descendingByDate, 60.3, now = 1L)!!
 
     assertEquals(30.0, plan.item.progress?.currentTime)
