@@ -1,0 +1,17 @@
+{
+  "name": "gen",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "generate": "tsx gen.ts"
+  },
+  "dependencies": {
+    "typescript": "^7.0.2",
+    "tsx": "^4.23.15"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.2"
+  }
+}
