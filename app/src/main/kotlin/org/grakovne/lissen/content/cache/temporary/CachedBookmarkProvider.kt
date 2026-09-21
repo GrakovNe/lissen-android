@@ -84,7 +84,17 @@ class CachedBookmarkProvider
             onFailure = { return@foldAsync null },
           ) ?: return provideBookmarks(libraryItemId)
 
-      remote.forEach { localCacheRepository.upsertBookmark(it.copy(syncState = BookmarkSyncState.SYNCED)) }
+      // a delete may still be on its way to the server (dropBookmark sends it in the background,
+      // and the push above may have failed): the remote list can still carry the bookmark, and
+      // writing it back as synced would resurrect it and lose the delete
+      val pendingDeletes =
+        localCacheRepository
+          .fetchBookmarks(libraryItemId)
+          .filter { it.syncState == BookmarkSyncState.PENDING_DELETE }
+
+      remote
+        .filter { r -> pendingDeletes.none { it.isSame(r) } }
+        .forEach { localCacheRepository.upsertBookmark(it.copy(syncState = BookmarkSyncState.SYNCED)) }
 
       val afterSyncLocal = localCacheRepository.fetchBookmarks(libraryItemId)
 

@@ -386,7 +386,10 @@ class MediaRepository
           mediaChannel
             .fetchBook(bookId, libraryType)
             .foldAsync(
-              onSuccess = { startPreparingPlayback(it) },
+              onSuccess = {
+                startPreparingPlayback(it)
+                refreshBookmarksFromServer()
+              },
               onFailure = { _mediaPreparingError.value = true },
             )
         }
@@ -528,7 +531,18 @@ class MediaRepository
         // readiness arrived outside the service: whatever rebuild was in flight is over
         queueRebuildInFlight = false
         _isPlaybackReady.value = true
+        refreshBookmarksFromServer()
       }
+    }
+
+    /**
+     * Every freshly prepared item pulls its bookmarks from the server, so that ones added from
+     * another device show up whichever way the item arrived (the screen, the widget, the media
+     * session). A reorder goes through [startPreparingPlayback] directly and is not a fresh
+     * item: it translates the list it already has and re-reads the cache.
+     */
+    private fun refreshBookmarksFromServer() {
+      scope.launch { updateBookmarks() }
     }
 
     private fun startPreparingPlayback(book: DetailedItem) {
