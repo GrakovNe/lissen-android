@@ -19,6 +19,7 @@ import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
+import org.grakovne.lissen.playback.MediaLibrarySessionCallback
 import org.grakovne.lissen.playback.MediaRepository
 import timber.log.Timber
 import javax.inject.Inject
@@ -31,6 +32,7 @@ class PlayerViewModel
     private val mediaRepository: MediaRepository,
     private val preferences: PlaybackPreferences,
     private val libraryPreferences: LibraryPreferences,
+    private val mediaLibrarySessionCallback: MediaLibrarySessionCallback,
   ) : ViewModel() {
     val book: StateFlow<DetailedItem?> = mediaRepository.playingBook
 
@@ -178,6 +180,7 @@ class PlayerViewModel
     fun setPlaybackSpeed(factor: Float) {
       Timber.d("User action: setPlaybackSpeed $factor")
       mediaRepository.setPlaybackSpeed(factor)
+      mediaLibrarySessionCallback.refreshMediaButtons()
     }
 
     fun nextTrack() {

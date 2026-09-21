@@ -50,6 +50,7 @@ import org.grakovne.lissen.persistence.preferences.PreferencesReset
 import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.grakovne.lissen.playback.EqualizerBandProvider
 import org.grakovne.lissen.playback.EqualizerCapabilities
+import org.grakovne.lissen.playback.MediaLibrarySessionCallback
 import org.grakovne.lissen.playback.MediaRepository
 import timber.log.Timber
 import java.io.File
@@ -76,6 +77,7 @@ class SettingsViewModel
     private val contentCachingManager: ContentCachingManager,
     private val mediaRepository: MediaRepository,
     private val conditionalCache: ConditionalCache,
+    private val mediaLibrarySessionCallback: MediaLibrarySessionCallback,
   ) : ViewModel() {
     private val _host = MutableStateFlow<Host?>(session.getHost()?.let { Host.external(it) })
     val host: StateFlow<Host?> = _host.asStateFlow()
@@ -447,6 +449,7 @@ class SettingsViewModel
 
       playback.saveSeekTime(updated)
       _seekTime.value = updated
+      mediaLibrarySessionCallback.refreshMediaButtons()
     }
 
     fun preferRewind(seconds: Int) {
@@ -456,6 +459,7 @@ class SettingsViewModel
 
       playback.saveSeekTime(updated)
       _seekTime.value = updated
+      mediaLibrarySessionCallback.refreshMediaButtons()
     }
 
     fun preferSleepTimerFadeEnabled(value: Boolean) {

@@ -40,6 +40,7 @@ import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.math.roundToInt
 
 @OptIn(UnstableApi::class)
 @Singleton
@@ -57,6 +58,7 @@ class MediaLibrarySessionCallback
     private val futureScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     internal var searchCache = LruCache<String, ListenableFuture<List<MediaItem>>>(5)
+    private val connectedSessions = mutableMapOf<MediaSession.ControllerInfo, MediaSession>()
 
     private fun searchFutureFor(query: String): ListenableFuture<List<MediaItem>> {
       val key = query.trim().lowercase()
@@ -102,25 +104,14 @@ class MediaLibrarySessionCallback
       }
     }
 
-    override fun onConnect(
-      session: MediaSession,
-      controller: MediaSession.ControllerInfo,
-    ): MediaSession.ConnectionResult {
-      val prevChapterCommand = SessionCommand(PREV_CHAPTER_COMMAND, Bundle.EMPTY)
-      val rewindCommand = SessionCommand(REWIND_COMMAND, Bundle.EMPTY)
-      val forwardCommand = SessionCommand(FORWARD_COMMAND, Bundle.EMPTY)
-      val nextChapterCommand = SessionCommand(NEXT_CHAPTER_COMMAND, Bundle.EMPTY)
+    val prevChapterCommand = SessionCommand(PREV_CHAPTER_COMMAND, Bundle.EMPTY)
+    val rewindCommand = SessionCommand(REWIND_COMMAND, Bundle.EMPTY)
+    val forwardCommand = SessionCommand(FORWARD_COMMAND, Bundle.EMPTY)
+    val nextChapterCommand = SessionCommand(NEXT_CHAPTER_COMMAND, Bundle.EMPTY)
+    val speedCommand = SessionCommand(SPEED_COMMAND, Bundle.EMPTY)
 
+    fun buildMediaButtons(): List<CommandButton> {
       val seekTime = preferences.getSeekTime()
-
-      val sessionCommands =
-        MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS
-          .buildUpon()
-          .add(prevChapterCommand)
-          .add(rewindCommand)
-          .add(forwardCommand)
-          .add(nextChapterCommand)
-          .build()
 
       val previousChapterButton =
         CommandButton
@@ -142,34 +133,71 @@ class MediaLibrarySessionCallback
 
       val rewindButton =
         CommandButton
-          .Builder(
-            when (seekTime.rewind) {
-              5 -> CommandButton.ICON_SKIP_BACK_5
-              10 -> CommandButton.ICON_SKIP_BACK_10
-              15 -> CommandButton.ICON_SKIP_BACK_15
-              30 -> CommandButton.ICON_SKIP_BACK_30
-              else -> CommandButton.ICON_SKIP_BACK
-            },
+          .Builder(CommandButton.ICON_UNDEFINED)
+          .setCustomIconResId(
+            context.resources
+              .getIdentifier(
+                "ic_skip_back_${seekTime.rewind.coerceIn(1, 60)}",
+                "drawable",
+                context.packageName,
+              ),
           ).setSessionCommand(rewindCommand)
-          .setDisplayName("Rewind")
-          .setEnabled(true)
+          .setDisplayName("Rewind ${seekTime.rewind.coerceIn(1, 60)}s")
           .setSlots(CommandButton.SLOT_BACK)
+          .setEnabled(true)
           .build()
 
       val forwardButton =
         CommandButton
-          .Builder(
-            when (seekTime.forward) {
-              5 -> CommandButton.ICON_SKIP_FORWARD_5
-              10 -> CommandButton.ICON_SKIP_FORWARD_10
-              15 -> CommandButton.ICON_SKIP_FORWARD_15
-              30 -> CommandButton.ICON_SKIP_FORWARD_30
-              else -> CommandButton.ICON_SKIP_FORWARD
-            },
+          .Builder(CommandButton.ICON_UNDEFINED)
+          .setCustomIconResId(
+            context.resources
+              .getIdentifier(
+                "ic_skip_forward_${seekTime.forward.coerceIn(1, 60)}",
+                "drawable",
+                context.packageName,
+              ),
           ).setSessionCommand(forwardCommand)
-          .setDisplayName("Forward")
+          .setDisplayName("Forward ${seekTime.forward.coerceIn(1, 60)}s")
           .setSlots(CommandButton.SLOT_FORWARD)
           .setEnabled(true)
+          .build()
+
+      val roundedSpeed = mediaRepository.playbackSpeed.value.roundTo005()
+      val speedInHundredths = (roundedSpeed * 100f).roundToInt()
+      val speedButton =
+        CommandButton
+          .Builder(CommandButton.ICON_UNDEFINED)
+          .setCustomIconResId(
+            context.resources
+              .getIdentifier(
+                "ic_speed_%d_%02dx".format(speedInHundredths / 100, speedInHundredths % 100),
+                "drawable",
+                context.packageName,
+              ),
+          ).setSessionCommand(speedCommand)
+          .setDisplayName("Speed ${roundedSpeed}x")
+          .setSlots(CommandButton.SLOT_OVERFLOW)
+          .setEnabled(true)
+          .build()
+
+      return listOf(rewindButton, forwardButton, previousChapterButton, nextChapterButton, speedButton)
+    }
+
+    override fun onConnect(
+      session: MediaSession,
+      controller: MediaSession.ControllerInfo,
+    ): MediaSession.ConnectionResult {
+      connectedSessions[controller] = session
+
+      val sessionCommands =
+        MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS
+          .buildUpon()
+          .add(prevChapterCommand)
+          .add(rewindCommand)
+          .add(forwardCommand)
+          .add(nextChapterCommand)
+          .add(speedCommand)
           .build()
 
       // every controller gets the full player command set, trusted or not, as before media3
@@ -179,8 +207,15 @@ class MediaLibrarySessionCallback
         .AcceptedResultBuilder()
         .setAvailablePlayerCommands(MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS)
         .setAvailableSessionCommands(sessionCommands)
-        .setMediaButtonPreferences(listOf(previousChapterButton, rewindButton, forwardButton, nextChapterButton))
+        .setMediaButtonPreferences(buildMediaButtons())
         .build()
+    }
+
+    override fun onDisconnected(
+      session: MediaSession,
+      controller: MediaSession.ControllerInfo,
+    ) {
+      connectedSessions.remove(controller)
     }
 
     override fun onCustomCommand(
@@ -192,13 +227,35 @@ class MediaLibrarySessionCallback
       Timber.d("Executing: ${customCommand.customAction}")
 
       when (customCommand.customAction) {
-        PREV_CHAPTER_COMMAND -> mediaRepository.previousTrack(rewindRequired = true)
-        REWIND_COMMAND -> mediaRepository.rewind()
-        FORWARD_COMMAND -> mediaRepository.forward()
-        NEXT_CHAPTER_COMMAND -> mediaRepository.nextTrack()
+        PREV_CHAPTER_COMMAND -> {
+          mediaRepository.previousTrack(rewindRequired = true)
+        }
+
+        REWIND_COMMAND -> {
+          mediaRepository.rewind()
+        }
+
+        FORWARD_COMMAND -> {
+          mediaRepository.forward()
+        }
+
+        NEXT_CHAPTER_COMMAND -> {
+          mediaRepository.nextTrack()
+        }
+
+        SPEED_COMMAND -> {
+          mediaRepository.setPlaybackSpeed(nextPlaybackSpeed(mediaRepository.playbackSpeed.value))
+          refreshMediaButtons()
+        }
       }
 
       return super.onCustomCommand(session, controller, customCommand, args)
+    }
+
+    fun refreshMediaButtons() {
+      connectedSessions.forEach { (controller, session) ->
+        session.setMediaButtonPreferences(controller, buildMediaButtons())
+      }
     }
 
     override fun onGetLibraryRoot(
@@ -363,6 +420,13 @@ class MediaLibrarySessionCallback
       internal const val REWIND_COMMAND = "notification_rewind"
       internal const val FORWARD_COMMAND = "notification_forward"
       internal const val NEXT_CHAPTER_COMMAND = "notification_next_chapter"
+      internal const val SPEED_COMMAND = "notification_playback_speed"
+
+      private val playbackSpeedPresets = floatArrayOf(0.5f, 0.75f, 1.0f, 1.2f, 1.5f, 2.0f, 3.0f)
+
+      internal fun nextPlaybackSpeed(currentSpeed: Float): Float = playbackSpeedPresets.firstOrNull { it > currentSpeed + 0.001f } ?: 0.5f
+
+      internal fun Float.roundTo005(): Float = (this * 20f).roundToInt() / 20f
 
       private const val REFRESH_TIMEOUT_MS = 2_000L
     }
