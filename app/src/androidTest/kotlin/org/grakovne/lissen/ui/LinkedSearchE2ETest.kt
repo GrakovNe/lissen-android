@@ -83,6 +83,12 @@ class LinkedSearchE2ETest {
       timeoutMillis = TIMEOUT_MS,
     )
 
+    // the top bar ignores taps until playback is ready; the track controls appear at that moment
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = hasTestTag("trackControls"),
+      timeoutMillis = TIMEOUT_MS,
+    )
+
     composeRule.onNodeWithTag("playerInfoButton").performClick()
 
     composeRule.waitUntilAtLeastOneExists(

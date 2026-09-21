@@ -230,10 +230,12 @@ fun PlayerScreen(
               }
 
               else -> {
+                // the actions stay drawn as they are while the item loads or its queue is rebuilt,
+                // no dimmed state: a tap simply does nothing until playback is ready
                 Row {
                   if (queueControlsVisible) {
                     IconButton(
-                      onClick = { playerViewModel.requestSearch() },
+                      onClick = { if (isPlaybackReady) playerViewModel.requestSearch() },
                       modifier = Modifier.padding(end = 4.dp),
                     ) {
                       Icon(
@@ -246,8 +248,7 @@ fun PlayerScreen(
                   // podcasts only; stays next to search while the queue is expanded
                   if (sortable) {
                     IconButton(
-                      onClick = { orderingSelected = true },
-                      enabled = isPlaybackReady,
+                      onClick = { if (isPlaybackReady) orderingSelected = true },
                       modifier =
                         Modifier
                           .padding(end = 4.dp)
@@ -282,7 +283,7 @@ fun PlayerScreen(
 
                   if (bookActionsVisible) {
                     IconButton(
-                      onClick = { itemDetailsSelected = true },
+                      onClick = { if (isPlaybackReady) itemDetailsSelected = true },
                       modifier =
                         Modifier
                           .padding(end = 4.dp)
