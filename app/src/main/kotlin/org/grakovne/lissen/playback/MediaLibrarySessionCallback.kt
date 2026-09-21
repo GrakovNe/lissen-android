@@ -4,6 +4,8 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.os.Parcelable
 import android.util.LruCache
 import android.view.KeyEvent
@@ -28,7 +30,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import org.grakovne.lissen.R
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.DetailedItem
@@ -59,6 +63,10 @@ class MediaLibrarySessionCallback
 
     internal var searchCache = LruCache<String, ListenableFuture<List<MediaItem>>>(5)
     private val connectedSessions = mutableMapOf<MediaSession.ControllerInfo, MediaSession>()
+    private val mainHandler = Handler(Looper.getMainLooper())
+
+    @Volatile
+    private var bookmarkButtonConfirmationInProgress = false
 
     private fun searchFutureFor(query: String): ListenableFuture<List<MediaItem>> {
       val key = query.trim().lowercase()
@@ -109,6 +117,7 @@ class MediaLibrarySessionCallback
     val forwardCommand = SessionCommand(FORWARD_COMMAND, Bundle.EMPTY)
     val nextChapterCommand = SessionCommand(NEXT_CHAPTER_COMMAND, Bundle.EMPTY)
     val speedCommand = SessionCommand(SPEED_COMMAND, Bundle.EMPTY)
+    val bookmarkCommand = SessionCommand(BOOKMARK_COMMAND, Bundle.EMPTY)
 
     fun buildMediaButtons(): List<CommandButton> {
       val seekTime = preferences.getSeekTime()
@@ -181,7 +190,22 @@ class MediaLibrarySessionCallback
           .setEnabled(true)
           .build()
 
-      return listOf(rewindButton, forwardButton, previousChapterButton, nextChapterButton, speedButton)
+      val bookmarkButton =
+        CommandButton
+          .Builder(CommandButton.ICON_UNDEFINED)
+          .setCustomIconResId(
+            if (bookmarkButtonConfirmationInProgress) {
+              R.drawable.ic_check
+            } else {
+              R.drawable.ic_add_bookmark
+            },
+          ).setSessionCommand(bookmarkCommand)
+          .setDisplayName("Create bookmark")
+          .setSlots(CommandButton.SLOT_OVERFLOW)
+          .setEnabled(true)
+          .build()
+
+      return listOf(rewindButton, forwardButton, previousChapterButton, nextChapterButton, speedButton, bookmarkButton)
     }
 
     override fun onConnect(
@@ -198,6 +222,7 @@ class MediaLibrarySessionCallback
           .add(forwardCommand)
           .add(nextChapterCommand)
           .add(speedCommand)
+          .add(bookmarkCommand)
           .build()
 
       // every controller gets the full player command set, trusted or not, as before media3
@@ -247,6 +272,10 @@ class MediaLibrarySessionCallback
           mediaRepository.setPlaybackSpeed(nextPlaybackSpeed(mediaRepository.playbackSpeed.value))
           refreshMediaButtons()
         }
+
+        BOOKMARK_COMMAND -> {
+          createBookmark()
+        }
       }
 
       return super.onCustomCommand(session, controller, customCommand, args)
@@ -256,6 +285,32 @@ class MediaLibrarySessionCallback
       connectedSessions.forEach { (controller, session) ->
         session.setMediaButtonPreferences(controller, buildMediaButtons())
       }
+    }
+
+    private fun createBookmark() {
+      synchronized(this) {
+        if (bookmarkButtonConfirmationInProgress) {
+          return
+        }
+        bookmarkButtonConfirmationInProgress = true
+      }
+
+      refreshMediaButtons()
+      futureScope.launch {
+        try {
+          mediaRepository.createBookmark()
+        } catch (ex: Exception) {
+          Timber.w(ex, "Unable to create bookmark from Android Auto")
+        }
+      }
+
+      mainHandler.postDelayed(
+        {
+          bookmarkButtonConfirmationInProgress = false
+          refreshMediaButtons()
+        },
+        BOOKMARK_BUTTON_FEEDBACK_DURATION_MS,
+      )
     }
 
     override fun onGetLibraryRoot(
@@ -421,6 +476,7 @@ class MediaLibrarySessionCallback
       internal const val FORWARD_COMMAND = "notification_forward"
       internal const val NEXT_CHAPTER_COMMAND = "notification_next_chapter"
       internal const val SPEED_COMMAND = "notification_playback_speed"
+      internal const val BOOKMARK_COMMAND = "notification_bookmark"
 
       private val playbackSpeedPresets = floatArrayOf(0.5f, 0.75f, 1.0f, 1.2f, 1.5f, 2.0f, 3.0f)
 
@@ -429,6 +485,7 @@ class MediaLibrarySessionCallback
       internal fun Float.roundTo005(): Float = (this * 20f).roundToInt() / 20f
 
       private const val REFRESH_TIMEOUT_MS = 2_000L
+      private const val BOOKMARK_BUTTON_FEEDBACK_DURATION_MS = 3_000L
     }
   }
 
