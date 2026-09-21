@@ -53,6 +53,7 @@ import org.grakovne.lissen.persistence.preferences.PreferencesReset
 import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.grakovne.lissen.playback.EqualizerBandProvider
 import org.grakovne.lissen.playback.EqualizerCapabilities
+import org.grakovne.lissen.playback.MediaLibrarySessionCallback
 import org.grakovne.lissen.playback.MediaRepository
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -82,6 +83,7 @@ class SettingsViewModelTest {
   private val contentCachingManager = mockk<ContentCachingManager>(relaxed = true)
   private val mediaRepository = mockk<MediaRepository>(relaxed = true)
   private val conditionalCache = mockk<ConditionalCache>(relaxed = true)
+  private val mediaLibrarySessionCallback = mockk<MediaLibrarySessionCallback>(relaxed = true)
   private lateinit var viewModel: SettingsViewModel
 
   @BeforeEach
@@ -137,6 +139,7 @@ class SettingsViewModelTest {
         contentCachingManager,
         mediaRepository,
         conditionalCache,
+        mediaLibrarySessionCallback,
       )
   }
 
@@ -176,6 +179,7 @@ class SettingsViewModelTest {
         contentCachingManager,
         mediaRepository,
         conditionalCache,
+        mediaLibrarySessionCallback,
       )
 
     @Test
@@ -347,6 +351,7 @@ class SettingsViewModelTest {
           contentCachingManager,
           mediaRepository,
           conditionalCache,
+          mediaLibrarySessionCallback,
         )
 
       viewModel.changeAutoDownloadLibraryType(LibraryType.PODCAST, true)
@@ -375,6 +380,7 @@ class SettingsViewModelTest {
           contentCachingManager,
           mediaRepository,
           conditionalCache,
+          mediaLibrarySessionCallback,
         )
 
       viewModel.changeAutoDownloadLibraryType(LibraryType.PODCAST, false)
@@ -649,6 +655,7 @@ class SettingsViewModelTest {
           contentCachingManager,
           mediaRepository,
           conditionalCache,
+          mediaLibrarySessionCallback,
         )
       assertEquals("StoredAgent/3.0", viewModel.userAgent.value)
     }
@@ -740,6 +747,7 @@ class SettingsViewModelTest {
           contentCachingManager,
           mediaRepository,
           conditionalCache,
+          mediaLibrarySessionCallback,
         )
 
       viewModel.fetchLibraries()
@@ -773,6 +781,7 @@ class SettingsViewModelTest {
           contentCachingManager,
           mediaRepository,
           conditionalCache,
+          mediaLibrarySessionCallback,
         )
 
       viewModel.fetchLibraries()
@@ -804,6 +813,7 @@ class SettingsViewModelTest {
           contentCachingManager,
           mediaRepository,
           conditionalCache,
+          mediaLibrarySessionCallback,
         )
 
       viewModel.fetchLibraries()
