@@ -19,10 +19,13 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.GrantPermissionRule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
+import kotlinx.coroutines.runBlocking
 import org.grakovne.lissen.domain.EqualizerSettings
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.persistence.preferences.PreferencesReset
+import org.grakovne.lissen.playback.EqualizerBandProvider
 import org.grakovne.lissen.ui.activity.AppActivity
+import org.junit.Assume.assumeTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExternalResource
@@ -48,6 +51,9 @@ class SettingsE2ETest {
 
   @Inject
   lateinit var playbackPreferences: PlaybackPreferences
+
+  @Inject
+  lateinit var equalizerBandProvider: EqualizerBandProvider
 
   @get:Rule(order = 2)
   val setupRule =
@@ -139,8 +145,16 @@ class SettingsE2ETest {
     )
   }
 
+  // the row is hidden on a device whose AudioFlinger cannot create an Equalizer effect
+  // (some emulator images); that is the app working as designed, not a failure
+  private fun assumeEqualizerAvailable() {
+    val capabilities = runBlocking { equalizerBandProvider.getCapabilities() }
+    assumeTrue("equalizer effect unavailable on this device", capabilities.available)
+  }
+
   @Test
   fun playbackSettings_equalizerRowIsVisible() {
+    assumeEqualizerAvailable()
     navigateToPlaybackSettings()
 
     composeRule.waitUntilAtLeastOneExists(
@@ -153,6 +167,7 @@ class SettingsE2ETest {
 
   @Test
   fun equalizer_adjustedBandPersists() {
+    assumeEqualizerAvailable()
     playbackPreferences.saveEqualizer(EqualizerSettings.Default)
     navigateToPlaybackSettings()
 
