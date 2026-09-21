@@ -30,7 +30,6 @@ internal val E2E_SEARCH_QUERY: String
   get() = InstrumentationRegistry.getArguments().getString("e2eSearchQuery") ?: "a"
 
 internal const val TIMEOUT_MS = 45_000L
-
 internal val bookItemMatcher =
   SemanticsMatcher("hasBookItemTag") { node ->
     node.config

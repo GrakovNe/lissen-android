@@ -2,7 +2,7 @@ package org.grakovne.lissen.ui
 
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
@@ -33,6 +33,9 @@ class LibrarySearchE2ETest {
   @Inject
   lateinit var preferencesReset: PreferencesReset
 
+  @Inject
+  lateinit var playbackTeardown: PlaybackGraphTeardown
+
   @get:Rule(order = 2)
   val setupRule =
     object : ExternalResource() {
@@ -40,6 +43,10 @@ class LibrarySearchE2ETest {
         hiltRule.inject()
         preferencesReset.clearAll()
         E2ESession.restore()
+      }
+
+      override fun after() {
+        playbackTeardown.run()
       }
     }
 

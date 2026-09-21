@@ -7,7 +7,7 @@ import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -43,6 +43,9 @@ class SleepTimerSettingsE2ETest {
   lateinit var preferencesReset: PreferencesReset
 
   @Inject
+  lateinit var playbackTeardown: PlaybackGraphTeardown
+
+  @Inject
   lateinit var playbackPreferences: PlaybackPreferences
 
   @get:Rule(order = 2)
@@ -52,6 +55,10 @@ class SleepTimerSettingsE2ETest {
         hiltRule.inject()
         preferencesReset.clearAll()
         E2ESession.restore()
+      }
+
+      override fun after() {
+        playbackTeardown.run()
       }
     }
 

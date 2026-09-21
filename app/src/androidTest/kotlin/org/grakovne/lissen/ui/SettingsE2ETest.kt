@@ -6,7 +6,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -44,6 +44,9 @@ class SettingsE2ETest {
   lateinit var preferencesReset: PreferencesReset
 
   @Inject
+  lateinit var playbackTeardown: PlaybackGraphTeardown
+
+  @Inject
   lateinit var playbackPreferences: PlaybackPreferences
 
   @get:Rule(order = 2)
@@ -53,6 +56,10 @@ class SettingsE2ETest {
         hiltRule.inject()
         preferencesReset.clearAll()
         E2ESession.restore()
+      }
+
+      override fun after() {
+        playbackTeardown.run()
       }
     }
 

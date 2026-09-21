@@ -112,6 +112,7 @@ class NetworkServiceTest {
   }
 
   @Nested
+  @Suppress("DEPRECATION") // the service reads WifiManager.connectionInfo, so the mocks do too
   inner class WifiSsid {
     @Test
     fun `returns null when the active network is not wifi`() {

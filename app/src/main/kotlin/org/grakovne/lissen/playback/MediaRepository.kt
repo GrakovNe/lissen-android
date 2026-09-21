@@ -4,6 +4,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import androidx.annotation.VisibleForTesting
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
@@ -11,6 +12,7 @@ import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
 import com.google.common.util.concurrent.FutureCallback
 import com.google.common.util.concurrent.Futures
+import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -122,10 +124,10 @@ class MediaRepository
         onTick = { updateProgressWhenReady() },
       )
 
-    init {
-      val controllerBuilder = MediaController.Builder(context, token)
-      val futureController = controllerBuilder.buildAsync()
+    private val futureController: ListenableFuture<MediaController> =
+      MediaController.Builder(context, token).buildAsync()
 
+    init {
       Futures.addCallback(
         futureController,
         object : FutureCallback<MediaController> {
@@ -814,6 +816,17 @@ class MediaRepository
           false -> it
         }
       }
+    }
+
+    /**
+     * Drops the session binding. The service stays alive for as long as any controller is bound
+     * to it, and a repository that is discarded without this call keeps it alive until it is
+     * garbage collected. Only test graphs discard repositories: the app has one for its lifetime.
+     */
+    @VisibleForTesting
+    fun release() {
+      progressPoller.stop()
+      MediaController.releaseFuture(futureController)
     }
 
     private fun withMain(action: () -> Unit) {

@@ -83,7 +83,7 @@ class LibraryFlowE2ETest {
     val item = waitForElement(By.res(Pattern.compile("bookItem_.*")), 60_000)
     val deadline = System.currentTimeMillis() + 10_000
     while (System.currentTimeMillis() < deadline) {
-      val title = item.findObjects(By.text(Pattern.compile(".+"))).firstOrNull()?.text?.toString()
+      val title = item.findObjects(By.text(Pattern.compile(".+"))).firstOrNull()?.text
       if (!title.isNullOrEmpty()) return title
       Thread.sleep(300)
     }

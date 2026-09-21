@@ -9,10 +9,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.InsertDriveFile
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material.icons.outlined.CalendarToday
-import androidx.compose.material.icons.outlined.InsertDriveFile
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.SortByAlpha
 import androidx.compose.material.icons.outlined.Tag
@@ -153,7 +153,7 @@ private fun EpisodeOrderingOption.icon(): ImageVector =
     EpisodeOrderingOption.TITLE -> Icons.Outlined.SortByAlpha
     EpisodeOrderingOption.SEASON -> Icons.Outlined.Layers
     EpisodeOrderingOption.EPISODE -> Icons.Outlined.Tag
-    EpisodeOrderingOption.FILE_NAME -> Icons.Outlined.InsertDriveFile
+    EpisodeOrderingOption.FILE_NAME -> Icons.AutoMirrored.Outlined.InsertDriveFile
   }
 
 private fun EpisodeOrderingOption.toLocalizedName(context: Context): String =

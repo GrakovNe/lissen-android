@@ -85,6 +85,10 @@ fun UiAutomatorTestScope.setTextOf(
  * lost on the CI emulator; waiting for the outcome and tapping again is what a person would
  * do. [settleMs] is longer than any sheet or dialog animation, so a second tap can only
  * follow a tap that did nothing.
+ *
+ * A tap is sometimes not lost but merely late: the screen is busy loading and acts on it
+ * after [settleMs] has passed. [expected] is then already up and covers [trigger], so every
+ * lookup for the next tap also watches for [expected] and takes it as the outcome.
  */
 fun UiAutomatorTestScope.clickUntil(
   trigger: BySelector,
@@ -94,13 +98,37 @@ fun UiAutomatorTestScope.clickUntil(
 ) {
   val deadline = System.currentTimeMillis() + timeoutMs
   while (true) {
-    clickElement(trigger, timeoutMs)
+    if (tapTriggerUnlessExpected(trigger, expected, timeoutMs)) return
     if (elementExists(expected, settleMs)) return
     if (System.currentTimeMillis() >= deadline) {
       throw AssertionError("Tapping $trigger never brought up $expected within ${timeoutMs}ms")
     }
     Log.w(E2E_TAG, "tap on $trigger did not bring up $expected, tapping again")
   }
+}
+
+/** Taps [trigger]; returns true when [expected] turned up before a tap could be made. */
+private fun UiAutomatorTestScope.tapTriggerUnlessExpected(
+  trigger: BySelector,
+  expected: BySelector,
+  timeoutMs: Long,
+): Boolean {
+  val deadline = System.currentTimeMillis() + timeoutMs
+  while (System.currentTimeMillis() < deadline) {
+    if (device.findObject(expected) != null) return true
+    val element = device.findObject(trigger)
+    if (element == null) {
+      Thread.sleep(300)
+      continue
+    }
+    try {
+      element.click()
+      return false
+    } catch (_: StaleObjectException) {
+      Thread.sleep(300)
+    }
+  }
+  throw AssertionError("No element matching $trigger within ${timeoutMs}ms")
 }
 
 fun UiAutomatorTestScope.waitUntilAbsent(

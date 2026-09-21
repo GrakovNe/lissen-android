@@ -1,6 +1,6 @@
 package org.grakovne.lissen.playback
 
-import androidx.core.os.bundleOf
+import android.os.Bundle
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
@@ -37,7 +37,7 @@ class LissenMediaSourceFactoryTest {
           .setRequestMetadata(
             MediaItem.RequestMetadata
               .Builder()
-              .setExtras(bundleOf(FILE_SEGMENTS to arrayListOf<FileClip>()))
+              .setExtras(Bundle().apply { putParcelableArrayList(FILE_SEGMENTS, arrayListOf<FileClip>()) })
               .build(),
           ).setMediaMetadata(
             MediaMetadata
@@ -49,7 +49,7 @@ class LissenMediaSourceFactoryTest {
               .setIsPlayable(true)
               .setArtworkUri(ExternalCoverProvider.bookCoverUri("book-id"))
               .setMediaType(MediaMetadata.MEDIA_TYPE_AUDIO_BOOK_CHAPTER)
-              .setExtras(bundleOf(CHAPTER_START_MS to (500 * 1000).toLong()))
+              .setExtras(Bundle().apply { putLong(CHAPTER_START_MS, (500 * 1000).toLong()) })
               .build(),
           ).build(),
       )
