@@ -310,4 +310,10 @@
     <string name="sleep_timer_fade_title">Zanikanie</string>
     <string name="sleep_timer_fade_description">Zmniejsz głośność, gdy odtwarzanie się zatrzyma</string>
     <string name="sleep_timer_fade_duration_title">Długość zanikania</string>
+    <string name="episode_ordering_published_at_option">Data publikacji</string>
+    <string name="episode_ordering_season_option">Sezon</string>
+    <string name="episode_ordering_episode_option">Odcinek</string>
+    <string name="episode_ordering_file_name_option">Nazwa pliku</string>
+    <string name="episode_ordering_ascending">Rosnąco</string>
+    <string name="episode_ordering_descending">Malejąco</string>
 </resources>
