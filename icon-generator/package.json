@@ -1,11 +1,11 @@
 {
-  "name": "gen",
+  "name": "icon-generator",
   "version": "1.0.0",
   "description": "",
   "type": "module",
-  "main": "index.js",
+  "main": "generator.js",
   "scripts": {
-    "generate": "tsx gen.ts"
+    "generate": "tsx generator.ts"
   },
   "dependencies": {
     "typescript": "^7.0.2",
