@@ -42,6 +42,7 @@ import org.grakovne.lissen.playback.service.calculateChapterIndexAndPosition
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.math.abs
 import kotlin.math.round
 
 @UnstableApi
@@ -130,10 +131,13 @@ class MediaRepository
               eventBus.events.collect { event ->
                 when (event) {
                   is PlaybackEvent.PlaybackReady -> {
+                    // after an in-place rebuild the seeded position is the truth; the controller
+                    // may still describe the previous queue for one more hop
+                    val rebuilt = queueRebuildInFlight
                     queueRebuildInFlight = false
                     val book = preferences.getPlayingItem()
                     book?.let {
-                      updateProgress(book)
+                      if (rebuilt.not()) updateProgress(book)
 
                       if (mediaController.isPlaying) {
                         progressPoller.start()
@@ -388,10 +392,16 @@ class MediaRepository
      * Whether [reorderPlayingItem] would act right now; the UI keeps the ordering sheet inert
      * otherwise, so that a tap never fails silently.
      */
-    fun canReorderPlayingItem(): Boolean {
+    fun canReorderPlayingItem(itemId: String): Boolean {
       val book = playingBook.value ?: return false
 
       return when {
+        // the screen's item, not whatever happens to be playing while it loads
+        book.id != itemId -> false
+
+        // only podcasts are ever reordered; a stored configuration is trusted downstream on that basis
+        book.libraryType != LibraryType.PODCAST -> false
+
         // a rebuild is in flight: totalPosition is not the listener's position right now
         isPlaybackReady.value.not() -> false
 
@@ -412,10 +422,13 @@ class MediaRepository
      * function of the chapter keys the item carries. Playback pauses for the rebuild and
      * resumes afterwards if it was running. Returns whether the order is now the requested one.
      */
-    fun reorderPlayingItem(configuration: EpisodeOrderingConfiguration?): Boolean {
+    fun reorderPlayingItem(
+      itemId: String,
+      configuration: EpisodeOrderingConfiguration?,
+    ): Boolean {
       val book = playingBook.value ?: return false
 
-      if (canReorderPlayingItem().not()) {
+      if (canReorderPlayingItem(itemId).not()) {
         Timber.w("Ignoring reorder of ${book.id}: not reorderable right now (ready=${isPlaybackReady.value})")
         return false
       }
@@ -426,7 +439,6 @@ class MediaRepository
           book = book,
           configuration = configuration,
           totalPosition = totalPosition.value,
-          bookmarks = _bookmarks.value,
           now = System.currentTimeMillis(),
         ) ?: return true
 
@@ -436,9 +448,10 @@ class MediaRepository
       _mediaPreparingError.value = false
       _isPlaybackReady.value = false
 
-      _bookmarks.value = plan.bookmarks
       _playAfterPrepare.value = wasPlaying
       startPreparingPlayback(plan.item)
+      // the stored bookmarks translated for the new order, the same way every other read does it
+      scope.launch { refreshBookmarksFromCache(book.id) }
       // after startPreparingPlayback, which resets the flag for every fresh preparation
       queueRebuildInFlight = true
 
@@ -677,7 +690,7 @@ class MediaRepository
           title = bookmarkTitle,
         )
 
-      _bookmarks.value = mediaChannel.provideBookmarks(playingBook.id).inPlayingOrder(playingBook)
+      refreshBookmarksFromCache(playingBook.id)
     }
 
     /**
@@ -694,12 +707,17 @@ class MediaRepository
         when (playingBook?.id == bookmark.libraryItemId) {
           true -> {
             val candidates = mediaChannel.provideBookmarks(bookmark.libraryItemId)
-            candidates
-              .zip(candidates.inPlayingOrder(playingBook))
-              .firstOrNull { (_, displayed) ->
-                displayed.totalPosition == bookmark.totalPosition &&
-                  displayed.createdAt == bookmark.createdAt
+            val displayed = candidates.zip(candidates.inPlayingOrder(playingBook))
+
+            // the display value may have been made by another translation path (one ulp off),
+            // and a draft's createdAt is replaced by the server's once synced: match loosely
+            displayed
+              .firstOrNull { (_, shown) ->
+                shown.totalPosition.isSameSecondAs(bookmark.totalPosition) &&
+                  shown.createdAt == bookmark.createdAt
               }?.first
+              ?: displayed.firstOrNull { (_, shown) -> shown.totalPosition.isSameSecondAs(bookmark.totalPosition) }?.first
+              ?: displayed.firstOrNull { (_, shown) -> shown.createdAt == bookmark.createdAt }?.first
               ?: bookmark.copy(totalPosition = round(ChapterOrdering.toCanonicalPosition(playingBook, bookmark.totalPosition)))
           }
 
@@ -710,8 +728,20 @@ class MediaRepository
 
       mediaChannel.dropBookmark(bookmark = stored)
 
-      _bookmarks.value = mediaChannel.provideBookmarks(bookmark.libraryItemId).inPlayingOrder(playingBook)
+      refreshBookmarksFromCache(bookmark.libraryItemId)
     }
+
+    /**
+     * The stored (canonical) bookmarks of [itemId], translated for whatever order is playing at
+     * the moment of the write, so that a reorder landing during the read cannot leave the list
+     * in the previous order.
+     */
+    private suspend fun refreshBookmarksFromCache(itemId: String) {
+      val stored = withContext(Dispatchers.IO) { mediaChannel.provideBookmarks(itemId) }
+      _bookmarks.value = stored.inPlayingOrder(_playingBook.value)
+    }
+
+    private fun Double.isSameSecondAs(other: Double): Boolean = abs(this - other) < BOOKMARK_MATCH_EPSILON
 
     suspend fun updateBookmarks() {
       val book = playingBook.value ?: return
@@ -751,6 +781,9 @@ class MediaRepository
 
     private companion object {
       private const val CURRENT_TRACK_REPLAY_THRESHOLD = 5
+
+      // two translations of the same stored second differ by an ulp at most
+      private const val BOOKMARK_MATCH_EPSILON = 1e-3
       private const val PROGRESS_UPDATE_INTERVAL_MS = 500L
 
       private fun getSeekTime(seconds: Int?): Long = seconds?.toLong() ?: 30L

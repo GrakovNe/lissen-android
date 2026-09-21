@@ -421,10 +421,10 @@ class CachedBookRepositoryTest {
       assertFalse(progressSlot.captured.isFinished)
 
       // the file ran 300ms past the declared duration: end of the playing order, which is the
-      // end of c0 and therefore 10s canonically; finished either way
+      // end of c0 and therefore 10s canonically; not the end of the item, so not finished
       repository.syncProgress(playing, PlaybackProgress(currentChapterTime = 10.3, currentTotalTime = 20.3))
       assertEquals(10.0, progressSlot.captured.currentTime)
-      assertTrue(progressSlot.captured.isFinished)
+      assertFalse(progressSlot.captured.isFinished)
     }
 
   private fun orderedChapter(

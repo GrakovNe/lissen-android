@@ -276,7 +276,7 @@ class PodcastResponseConverterTest {
   }
 
   @Test
-  fun `computes total current time from latest progress plus durations of preceding episodes`() {
+  fun `progress is the canonical offset of the latest episode progress`() {
     val episodes =
       listOf(
         episode(id = "e1", duration = 100.0),

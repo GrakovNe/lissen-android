@@ -27,6 +27,7 @@ import org.grakovne.lissen.playback.MediaLibrarySessionProvider
 import org.grakovne.lissen.playback.PlaybackCommand
 import org.grakovne.lissen.playback.PlaybackEvent
 import org.grakovne.lissen.playback.PlaybackEventBus
+import org.grakovne.lissen.playback.isInRestartWindow
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -222,10 +223,7 @@ class PlaybackService : MediaLibraryService() {
           ?: ChapterPosition(0, 0.0)
 
       val negativeChapter = chapterIndex < 0
-      val lastMoments =
-        !negativeChapter &&
-          book.chapters.isNotEmpty() &&
-          (book.chapters.last().end - 5) < (book.progress?.currentTime ?: 0.0)
+      val lastMoments = !negativeChapter && book.isInRestartWindow(book.progress?.currentTime ?: 0.0)
 
       if (negativeChapter || lastMoments) {
         chapterIndex = 0

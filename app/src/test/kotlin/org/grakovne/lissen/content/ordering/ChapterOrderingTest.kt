@@ -494,6 +494,26 @@ class ChapterOrderingTest {
   }
 
   @Test
+  fun `stored whole seconds come back to themselves through any fractional order`() {
+    val fractional =
+      item(
+        listOf(
+          chapter("a", 0, duration = 900.1, publishedAt = 1L),
+          chapter("b", 1, duration = 1000.3, publishedAt = 2L),
+          chapter("c", 2, duration = 4200.7, publishedAt = 3L),
+        ),
+      )
+    val reordered = ChapterOrdering.apply(fractional, descendingByDate)
+    val canonical = ChapterOrdering.canonical(reordered)
+
+    // every whole second inside the item: 1900 and 6101 sit within half a second of a chapter end
+    for (stored in 0..6101) {
+      val displayed = ChapterOrdering.translate(canonical, reordered, stored.toDouble())
+      assertEquals(stored.toDouble(), Math.rint(ChapterOrdering.toCanonicalPosition(reordered, displayed)), "second $stored")
+    }
+  }
+
+  @Test
   fun `positions past the end of the item are not translated`() {
     val source =
       item(

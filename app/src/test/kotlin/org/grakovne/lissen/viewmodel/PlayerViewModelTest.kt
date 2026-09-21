@@ -7,8 +7,10 @@ import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.domain.BookChapterState
@@ -113,45 +115,34 @@ class PlayerViewModelTest {
     }
 
     @Test
-    fun `setEpisodeOrdering is ignored for anything but a podcast`() {
-      playingBook.value = detailedItem(libraryType = LibraryType.LIBRARY)
+    fun `setEpisodeOrdering asks the player for the screen's item and then stores the choice`() {
+      every { mediaRepository.reorderPlayingItem("book-1", any()) } returns true
 
       viewModel.setEpisodeOrdering("book-1", EpisodeOrderingConfiguration.default)
 
-      verify(exactly = 0) { libraryPreferences.saveEpisodeOrdering(any(), any()) }
-      verify(exactly = 0) { mediaRepository.reorderPlayingItem(any()) }
-    }
-
-    @Test
-    fun `setEpisodeOrdering is ignored when the screen shows another item than the playing one`() {
-      playingBook.value = detailedItem(id = "previous", libraryType = LibraryType.PODCAST)
-
-      viewModel.setEpisodeOrdering("book-1", EpisodeOrderingConfiguration.default)
-
-      verify(exactly = 0) { libraryPreferences.saveEpisodeOrdering(any(), any()) }
-      verify(exactly = 0) { mediaRepository.reorderPlayingItem(any()) }
-    }
-
-    @Test
-    fun `setEpisodeOrdering reorders the playing podcast and then stores the choice`() {
-      playingBook.value = detailedItem(libraryType = LibraryType.PODCAST)
-      every { mediaRepository.reorderPlayingItem(any()) } returns true
-
-      viewModel.setEpisodeOrdering("book-1", EpisodeOrderingConfiguration.default)
-
-      verify { mediaRepository.reorderPlayingItem(EpisodeOrderingConfiguration.default) }
+      verify { mediaRepository.reorderPlayingItem("book-1", EpisodeOrderingConfiguration.default) }
       verify { libraryPreferences.saveEpisodeOrdering("book-1", EpisodeOrderingConfiguration.default) }
     }
 
     @Test
     fun `setEpisodeOrdering does not store a choice the player refused`() {
-      playingBook.value = detailedItem(libraryType = LibraryType.PODCAST)
-      every { mediaRepository.reorderPlayingItem(any()) } returns false
+      every { mediaRepository.reorderPlayingItem(any(), any()) } returns false
 
       viewModel.setEpisodeOrdering("book-1", EpisodeOrderingConfiguration.default)
 
       verify(exactly = 0) { libraryPreferences.saveEpisodeOrdering(any(), any()) }
     }
+
+    @Test
+    fun `episodeOrdering follows the screen's item, not the playing one`() =
+      runTest {
+        val stored = MutableStateFlow(mapOf("book-1" to EpisodeOrderingConfiguration.default))
+        every { libraryPreferences.episodeOrderingFlow } returns stored
+        playingBook.value = detailedItem(id = "previous", libraryType = LibraryType.PODCAST)
+
+        assertEquals(EpisodeOrderingConfiguration.default, viewModel.episodeOrdering("book-1").first())
+        assertEquals(null, viewModel.episodeOrdering("previous").first())
+      }
   }
 
   @Nested

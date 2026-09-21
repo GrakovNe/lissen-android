@@ -5,12 +5,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.domain.Bookmark
@@ -35,9 +34,8 @@ class PlayerViewModel
   ) : ViewModel() {
     val book: StateFlow<DetailedItem?> = mediaRepository.playingBook
 
-    val episodeOrdering: StateFlow<EpisodeOrderingConfiguration?> =
-      combine(book, libraryPreferences.episodeOrderingFlow) { item, orderings -> item?.let { orderings[it.id] } }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(), null)
+    /** The stored ordering of the item the screen shows, which may not be the playing one yet. */
+    fun episodeOrdering(itemId: String): Flow<EpisodeOrderingConfiguration?> = libraryPreferences.episodeOrderingFlow.map { it[itemId] }
 
     val currentChapterIndex: StateFlow<Int> = mediaRepository.currentChapterIndex
     val currentChapterPosition: StateFlow<Double> = mediaRepository.currentChapterPosition
@@ -202,34 +200,17 @@ class PlayerViewModel
       mediaRepository.prepareAndPlay(playingBook)
     }
 
-    /**
-     * [itemId] is the item the screen shows; the playing item may still be another one while
-     * it loads, and a choice made for the screen's item must not land on the previous one.
-     * Only podcasts are ever reordered; a stored configuration is trusted downstream on that
-     * basis. The choice is persisted only once the playing item actually follows it.
-     */
-    fun canReorderPlayingItem(): Boolean = mediaRepository.canReorderPlayingItem()
+    /** One predicate for the sheet's rows and for the action, so a tap never fails silently. */
+    fun canReorderPlayingItem(itemId: String): Boolean = mediaRepository.canReorderPlayingItem(itemId)
 
     fun setEpisodeOrdering(
       itemId: String,
       configuration: EpisodeOrderingConfiguration,
     ) {
-      val playingBook = book.value ?: return
+      Timber.d("User action: setEpisodeOrdering $configuration for $itemId")
 
-      if (playingBook.id != itemId) {
-        Timber.w("Ignoring setEpisodeOrdering for $itemId: playing item is ${playingBook.id}")
-        return
-      }
-
-      if (playingBook.libraryType != LibraryType.PODCAST) {
-        Timber.w("Ignoring setEpisodeOrdering for ${playingBook.id}: libraryType=${playingBook.libraryType}")
-        return
-      }
-
-      Timber.d("User action: setEpisodeOrdering $configuration for ${playingBook.id}")
-
-      if (mediaRepository.reorderPlayingItem(configuration)) {
-        libraryPreferences.saveEpisodeOrdering(playingBook.id, configuration)
+      if (mediaRepository.reorderPlayingItem(itemId, configuration)) {
+        libraryPreferences.saveEpisodeOrdering(itemId, configuration)
       }
     }
 

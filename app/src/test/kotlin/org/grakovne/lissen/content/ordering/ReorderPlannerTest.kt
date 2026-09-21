@@ -4,8 +4,6 @@ import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.common.EpisodeOrderingOption
 import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.domain.BookFile
-import org.grakovne.lissen.domain.Bookmark
-import org.grakovne.lissen.domain.BookmarkSyncState
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.MediaProgress
@@ -30,12 +28,12 @@ class ReorderPlannerTest {
 
   @Test
   fun `no plan when the configuration does not change the order`() {
-    assertNull(ReorderPlanner.plan(book, EpisodeOrderingConfiguration.default, 15.0, emptyList(), now = 1L))
+    assertNull(ReorderPlanner.plan(book, EpisodeOrderingConfiguration.default, 15.0, now = 1L))
   }
 
   @Test
   fun `the listener stays in the same chapter at the same offset`() {
-    val plan = ReorderPlanner.plan(book, descendingByDate, 15.0, emptyList(), now = 7L)!!
+    val plan = ReorderPlanner.plan(book, descendingByDate, 15.0, now = 7L)!!
 
     assertEquals(listOf("c", "b", "a"), plan.item.chapters.map { it.id })
     // 15s = 5s into b; b now starts at 30s
@@ -45,45 +43,43 @@ class ReorderPlannerTest {
   @Test
   fun `a position in the last seconds of the new last chapter is kept clear of the restart heuristic`() {
     // 8s into a, which becomes the last chapter: 58s of 60s
-    val plan = ReorderPlanner.plan(book, descendingByDate, 8.0, emptyList(), now = 1L, restartGuardSeconds = 5.0)!!
+    val plan = ReorderPlanner.plan(book, descendingByDate, 8.0, now = 1L)!!
 
     assertEquals(55.0, plan.item.progress?.currentTime)
   }
 
   @Test
-  fun `a live position a little past the end is treated as the end`() {
-    // 60.3s on a 60s item: end of c, which is first in the new order, 30s; then the restart guard
-    val plan = ReorderPlanner.plan(book, descendingByDate, 60.3, emptyList(), now = 1L, restartGuardSeconds = 5.0)!!
+  fun `the restart guard never leaves the chapter the listener is in`() {
+    // a 3s trailer first by date; descending it becomes the last chapter, shorter than the guard
+    val withTrailer =
+      item(
+        listOf(
+          chapter("trailer", 0, 3.0, publishedAt = 1L),
+          chapter("b", 1, 600.0, publishedAt = 2L),
+          chapter("a", 2, 600.0, publishedAt = 3L),
+        ),
+      )
 
-    assertEquals(30.0, plan.item.progress?.currentTime)
+    // 1s into the trailer; descending: a(0-600) b(600-1200) trailer(1200-1203)
+    val plan = ReorderPlanner.plan(withTrailer, descendingByDate, 1.0, now = 1L)!!
+
+    assertEquals(listOf("a", "b", "trailer"), plan.item.chapters.map { it.id })
+    assertEquals(1200.0, plan.item.progress?.currentTime)
   }
 
   @Test
-  fun `translated bookmarks come back to their canonical second whatever the fractional bounds`() {
-    val fractional =
-      item(
-        listOf(
-          chapter("a", 0, 900.1, publishedAt = 1L),
-          chapter("b", 1, 1000.3, publishedAt = 2L),
-          chapter("c", 2, 4200.7, publishedAt = 3L),
-        ),
-      )
-    // canonical positions are whole seconds; 1900 and 6101 sit within half a second of a chapter end
-    val bookmarks = (0..6101).map { bookmark("item", totalPosition = it.toDouble()) }
+  fun `a live position a little past the end is treated as the end`() {
+    // 60.3s on a 60s item: end of c, which is first in the new order, 30s; then the restart guard
+    val plan = ReorderPlanner.plan(book, descendingByDate, 60.3, now = 1L)!!
 
-    val plan = ReorderPlanner.plan(fractional, descendingByDate, 0.0, bookmarks, now = 1L)!!
-
-    plan.bookmarks.forEachIndexed { index, moved ->
-      val backToCanonical = ChapterOrdering.toCanonicalPosition(plan.item, moved.totalPosition)
-      assertEquals(bookmarks[index].totalPosition, Math.rint(backToCanonical), "bookmark ${bookmarks[index].totalPosition}")
-    }
+    assertEquals(30.0, plan.item.progress?.currentTime)
   }
 
   @Test
   fun `a stored item without ordering keys in its current order needs no rebuild`() {
     val legacy = book.copy(chapters = book.chapters.map { it.copy(index = 0, publishedAt = null) })
 
-    assertNull(ReorderPlanner.plan(legacy, EpisodeOrderingConfiguration.default, 15.0, emptyList(), now = 1L))
+    assertNull(ReorderPlanner.plan(legacy, EpisodeOrderingConfiguration.default, 15.0, now = 1L))
   }
 
   @Test
@@ -92,34 +88,13 @@ class ReorderPlannerTest {
     val legacy = book.copy(chapters = book.chapters.map { it.copy(index = 0, publishedAt = null) })
     val reversed = EpisodeOrderingConfiguration(EpisodeOrderingOption.PUBLISHED_AT, LibraryOrderingDirection.DESCENDING)
 
-    val plan = ReorderPlanner.plan(legacy, reversed, 15.0, emptyList(), now = 1L)!!
+    val plan = ReorderPlanner.plan(legacy, reversed, 15.0, now = 1L)!!
 
     assertEquals(listOf("c", "b", "a"), plan.item.chapters.map { it.id })
     // indices now carry the canonical position, which the legacy item lacked
     assertEquals(listOf(2, 1, 0), plan.item.chapters.map { it.index })
     assertEquals(35.0, plan.item.progress?.currentTime)
   }
-
-  @Test
-  fun `bookmarks of the item move to the new order and other items are left alone`() {
-    val mine = bookmark("item", totalPosition = 15.0)
-    val other = bookmark("other-item", totalPosition = 15.0)
-
-    val plan = ReorderPlanner.plan(book, descendingByDate, 0.0, listOf(mine, other), now = 1L)!!
-
-    assertEquals(listOf(35.0, 15.0), plan.bookmarks.map { it.totalPosition })
-  }
-
-  private fun bookmark(
-    itemId: String,
-    totalPosition: Double,
-  ) = Bookmark(
-    libraryItemId = itemId,
-    title = "Bookmark",
-    totalPosition = totalPosition,
-    createdAt = 0L,
-    syncState = BookmarkSyncState.SYNCED,
-  )
 
   private fun chapter(
     id: String,

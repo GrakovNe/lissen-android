@@ -147,7 +147,7 @@ fun PlayerScreen(
   // requested item decides whether ordering is offered
   val requestedBook = playingBook?.takeIf { it.id == bookId }
   val libraryType = playingBook?.libraryType ?: preferredLibraryType
-  val episodeOrdering by playerViewModel.episodeOrdering.collectAsState()
+  val episodeOrdering by remember(bookId) { playerViewModel.episodeOrdering(bookId) }.collectAsState(initial = null)
 
   val sortable = isSortable(requestedBook, preferredLibraryType)
 
@@ -440,7 +440,7 @@ fun PlayerScreen(
 
   if (orderingSelected) {
     // the same conditions under which the player would act, so a tap never fails silently
-    val canReorder = remember(isPlaybackReady, playingBook) { playerViewModel.canReorderPlayingItem() }
+    val canReorder = remember(isPlaybackReady, playingBook, bookId) { playerViewModel.canReorderPlayingItem(bookId) }
 
     EpisodeOrderingComposable(
       current = episodeOrdering,
