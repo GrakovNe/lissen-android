@@ -26,15 +26,16 @@ class BookResponseConverter
           .media
           .chapters
           ?.takeIf { it.isNotEmpty() }
-          ?.map {
+          ?.mapIndexed { index, chapter ->
             PlayingChapter(
-              start = it.start,
-              end = it.end,
-              title = it.title,
+              start = chapter.start,
+              end = chapter.end,
+              title = chapter.title,
               available = true,
-              id = it.id,
-              duration = it.end - it.start,
+              id = chapter.id,
+              duration = chapter.end - chapter.start,
               podcastEpisodeState = null,
+              index = index,
             )
           }
 
@@ -43,7 +44,7 @@ class BookResponseConverter
           .media
           .audioFiles
           ?.sortedBy { it.index }
-          ?.fold(0.0 to mutableListOf<PlayingChapter>()) { (accDuration, chapters), file ->
+          ?.foldIndexed(0.0 to mutableListOf<PlayingChapter>()) { index, (accDuration, chapters), file ->
             chapters.add(
               PlayingChapter(
                 available = true,
@@ -53,6 +54,8 @@ class BookResponseConverter
                 duration = file.duration ?: 0.0,
                 id = file.ino,
                 podcastEpisodeState = null,
+                index = index,
+                fileName = file.metadata.filename,
               ),
             )
             accDuration + (file.duration ?: 0.0) to chapters

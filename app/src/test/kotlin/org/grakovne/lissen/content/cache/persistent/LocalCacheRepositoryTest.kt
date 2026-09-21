@@ -164,42 +164,6 @@ class LocalCacheRepositoryTest {
 
         assertSame(book, repository.fetchBook("book"))
       }
-
-    @Test
-    fun `moves progress to the first available chapter when the current one is dropped`() =
-      runBlocking {
-        val book =
-          cachedItem(
-            chapters =
-              listOf(
-                chapter("c0", 0.0, 10.0, available = false),
-                chapter("c1", 10.0, 20.0, available = false),
-                chapter("c2", 20.0, 30.0),
-              ),
-            currentTime = 15.0,
-          )
-
-        coEvery { cachedBookRepository.fetchBook("book") } returns book
-
-        val result = repository.fetchBook("book")
-
-        assertEquals(20.0, result?.progress?.currentTime)
-        assertEquals(false, result?.progress?.isFinished)
-      }
-
-    @Test
-    fun `returns null when no chapter remains available`() =
-      runBlocking {
-        val book =
-          cachedItem(
-            chapters = listOf(chapter("c0", 0.0, 10.0, available = false)),
-            currentTime = 5.0,
-          )
-
-        coEvery { cachedBookRepository.fetchBook("book") } returns book
-
-        assertNull(repository.fetchBook("book"))
-      }
   }
 
   @Nested

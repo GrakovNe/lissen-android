@@ -167,6 +167,46 @@ class CachedBookmarkProviderTest {
       }
 
     @Test
+    fun `does not resurrect a pending delete the remote still carries`() =
+      runBlocking {
+        // the delete has not reached the server yet (in flight, or failed): the remote list still has it
+        val pendingDelete = bookmark(10.0, 1L, BookmarkSyncState.PENDING_DELETE)
+        store += pendingDelete
+
+        coEvery { channel.dropBookmark(any()) } returns OperationResult.Error(OperationError.NetworkError)
+        coEvery { channel.fetchBookmarks("book") } returns
+          OperationResult.Success(listOf(bookmark(10.0, 1L, BookmarkSyncState.SYNCED)))
+
+        val result = provider.fetchBookmarks("book")
+
+        assertEquals(emptyList<Bookmark>(), result)
+        assertEquals(listOf(BookmarkSyncState.PENDING_DELETE), store.map { it.syncState })
+      }
+
+    @Test
+    fun `stores the other remote bookmarks next to a pending delete`() =
+      runBlocking {
+        store += bookmark(10.0, 1L, BookmarkSyncState.PENDING_DELETE)
+
+        coEvery { channel.dropBookmark(any()) } returns OperationResult.Error(OperationError.NetworkError)
+        coEvery { channel.fetchBookmarks("book") } returns
+          OperationResult.Success(
+            listOf(
+              bookmark(10.0, 1L, BookmarkSyncState.SYNCED),
+              bookmark(20.0, 2L, BookmarkSyncState.SYNCED),
+            ),
+          )
+
+        val result = provider.fetchBookmarks("book")
+
+        assertEquals(listOf(20.0), result.map { it.totalPosition })
+        assertEquals(
+          mapOf(10.0 to BookmarkSyncState.PENDING_DELETE, 20.0 to BookmarkSyncState.SYNCED),
+          store.associate { it.totalPosition to it.syncState },
+        )
+      }
+
+    @Test
     fun `stores remote bookmarks as synced`() =
       runBlocking {
         val remote = bookmark(20.0, 1L, BookmarkSyncState.SYNCED)

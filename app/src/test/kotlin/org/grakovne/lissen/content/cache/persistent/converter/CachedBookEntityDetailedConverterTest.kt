@@ -104,6 +104,89 @@ class CachedBookEntityDetailedConverterTest {
   }
 
   @Test
+  fun `chapters and files come back in their stored positions whatever order the relation returns`() {
+    val chapters =
+      listOf(
+        BookChapterEntity(
+          bookChapterId = "c1",
+          duration = 20.0,
+          start = 10.0,
+          end = 30.0,
+          title = "Two",
+          bookId = "book-1",
+          isCached = false,
+          chapterIndex = 1,
+        ),
+        BookChapterEntity(
+          bookChapterId = "c0",
+          duration = 10.0,
+          start = 0.0,
+          end = 10.0,
+          title = "One",
+          bookId = "book-1",
+          isCached = true,
+          chapterIndex = 0,
+        ),
+      )
+    val files =
+      listOf(
+        BookFileEntity(
+          bookFileId = "f1",
+          name = "two",
+          size = 0L,
+          duration = 20.0,
+          mimeType = "audio/mpeg",
+          bookId = "book-1",
+          fileIndex = 1,
+        ),
+        BookFileEntity(
+          bookFileId = "f0",
+          name = "one",
+          size = 0L,
+          duration = 10.0,
+          mimeType = "audio/mpeg",
+          bookId = "book-1",
+          fileIndex = 0,
+        ),
+      )
+
+    val result = converter.apply(entity(chapters = chapters, files = files))
+
+    assertEquals(listOf("c0", "c1"), result.chapters.map { it.id })
+    assertEquals(listOf("f0", "f1"), result.files.map { it.id })
+    assertEquals(listOf(0, 1), result.chapters.map { it.index })
+    result.chapters.zip(result.files).forEach { (chapter, file) -> assertEquals(chapter.duration, file.duration) }
+  }
+
+  @Test
+  fun `maps the ordering keys onto the chapters`() {
+    val chapters =
+      listOf(
+        BookChapterEntity(
+          bookChapterId = "c0",
+          duration = 10.0,
+          start = 0.0,
+          end = 10.0,
+          title = "One",
+          bookId = "book-1",
+          isCached = false,
+          chapterIndex = 0,
+          publishedAt = 42L,
+          season = "2",
+          episode = "7",
+          fileName = "one.mp3",
+        ),
+      )
+
+    val chapter = converter.apply(entity(chapters = chapters)).chapters.single()
+
+    assertEquals(42L, chapter.publishedAt)
+    assertEquals("2", chapter.season)
+    assertEquals("7", chapter.episode)
+    assertEquals("one.mp3", chapter.fileName)
+  }
+
+  @Test
   fun `maps progress through MediaProgressEntityConverter when present`() {
     val progress = MediaProgressEntity(bookId = "book-1", currentTime = 42.0, isFinished = false, lastUpdate = 999L)
 

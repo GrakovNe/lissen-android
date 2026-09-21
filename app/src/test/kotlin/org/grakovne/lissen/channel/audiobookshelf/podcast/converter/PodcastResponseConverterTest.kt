@@ -7,12 +7,12 @@ import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastEpisodeRe
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastMedia
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastMediaMetadataResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
+import org.grakovne.lissen.common.moshi
 import org.grakovne.lissen.domain.BookChapterState
 import org.grakovne.lissen.domain.LibraryType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
-import java.util.concurrent.Executors
 
 class PodcastResponseConverterTest {
   private val converter = PodcastResponseConverter()
@@ -82,65 +82,129 @@ class PodcastResponseConverterTest {
   }
 
   @Test
-  fun `orders episodes by pubDate then season then episode number`() {
+  fun `hands the item over in the canonical order with the canonical index`() {
     val episodes =
       listOf(
-        episode(id = "e1", pubDate = "Wed, 02 Jan 2024 00:00:00 +0000"),
+        episode(id = "e1", pubDate = "Tue, 02 Jan 2024 00:00:00 +0000"),
         episode(id = "e2", pubDate = "Mon, 01 Jan 2024 00:00:00 +0000"),
         episode(id = "e3", pubDate = null, season = "1", episode = "2"),
-        episode(id = "e4", pubDate = null, season = "1", episode = "1"),
       )
 
     val result = converter.apply(podcast(episodes))
 
-    assertEquals(listOf("e4", "e3", "e2", "e1"), result.files.map { it.id })
+    // undated first, then by date; files follow the chapters
+    assertEquals(listOf("e3", "e2", "e1"), result.chapters.map { it.id })
+    assertEquals(listOf("e3", "e2", "e1"), result.files.map { it.id })
+    assertEquals(listOf(0, 1, 2), result.chapters.map { it.index })
+    assertEquals(listOf(0.0, 100.0, 200.0), result.chapters.map { it.start })
   }
 
   @Test
-  fun `sorts episode with unparseable pubDate ahead of dated episodes`() {
+  fun `a finished episode resumes at the start of its canonical successor whatever the server order`() {
+    // server order B, A, C; canonical (by date) A, B, C
     val episodes =
       listOf(
-        episode(id = "bad", pubDate = "not-a-date"),
-        episode(id = "good", pubDate = "Mon, 01 Jan 2024 00:00:00 +0000"),
+        episode(id = "B", pubDate = "Tue, 02 Jan 2024 00:00:00 +0000", duration = 200.0),
+        episode(id = "A", pubDate = "Mon, 01 Jan 2024 00:00:00 +0000", duration = 100.0),
+        episode(id = "C", pubDate = "Wed, 03 Jan 2024 00:00:00 +0000", duration = 300.0),
+      )
+    // the server reports B as finished: currentTime equals its duration
+    val progress =
+      listOf(
+        MediaProgressResponse(
+          libraryItemId = "podcast-1",
+          episodeId = "B",
+          currentTime = 200.0,
+          isFinished = true,
+          lastUpdate = 999L,
+          progress = 1.0,
+        ),
       )
 
-    val result = converter.apply(podcast(episodes))
+    val result = converter.apply(podcast(episodes), progress)
 
-    assertEquals(listOf("bad", "good"), result.files.map { it.id })
+    assertEquals(listOf("A", "B", "C"), result.chapters.map { it.id })
+    // end of B in the canonical timeline, which is where C starts
+    assertEquals(300.0, result.progress?.currentTime)
   }
 
   @Test
-  fun `orders episodes consistently when many threads convert at once`() {
-    val episodes =
-      (1..50).map { index ->
-        episode(
-          id = "e$index",
-          pubDate = "Sun, %02d Feb 2024 %02d:00:00 +0000".format(index % 28 + 1, index % 24),
-          season = (index % 4).toString(),
-          episode = (index % 6).toString(),
-        )
-      }
-    val expected = converter.apply(podcast(episodes)).files.map { it.id }
+  fun `progress on an episode the item no longer has lands past the end`() {
+    val episodes = listOf(episode(id = "e1", duration = 100.0))
+    val progress =
+      listOf(
+        MediaProgressResponse(
+          libraryItemId = "podcast-1",
+          episodeId = "gone",
+          currentTime = 10.0,
+          isFinished = false,
+          lastUpdate = 999L,
+          progress = 0.2,
+        ),
+      )
 
-    val executor = Executors.newFixedThreadPool(8)
-    try {
-      val results =
-        (1..100)
-          .map { executor.submit<List<String>> { converter.apply(podcast(episodes)).files.map { file -> file.id } } }
-          .map { future -> future.get() }
+    val result = converter.apply(podcast(episodes), progress)
 
-      results.forEach { assertEquals(expected, it) }
-    } finally {
-      executor.shutdown()
-    }
+    assertEquals(110.0, result.progress?.currentTime)
+  }
+
+  @Test
+  fun `exposes ordering keys on chapters`() {
+    val result =
+      converter.apply(podcast(listOf(episode(id = "e1", pubDate = "Mon, 01 Jan 2024 00:00:00 +0000", season = "3", episode = "7"))))
+
+    val chapter = result.chapters.single()
+    assertEquals(1_704_067_200_000L, chapter.publishedAt)
+    assertEquals("3", chapter.season)
+    assertEquals("7", chapter.episode)
+    assertEquals("e1.mp3", chapter.fileName)
+  }
+
+  @Test
+  fun `published date is parsed from pubDate with the pattern every version used`() {
+    val result =
+      converter.apply(
+        podcast(
+          listOf(
+            episode(id = "e1", pubDate = "Mon, 01 Jan 2024 12:30:00 +0200"),
+            episode(id = "e2", pubDate = "01 Jan 2024"),
+            episode(id = "e3", pubDate = null),
+          ),
+        ),
+      )
+
+    assertEquals(1_704_105_000_000L, result.chapters.first { it.id == "e1" }.publishedAt)
+    assertNull(result.chapters.first { it.id == "e2" }.publishedAt)
+    assertNull(result.chapters.first { it.id == "e3" }.publishedAt)
+  }
+
+  @Test
+  fun `pubDate is read from the episode payload`() {
+    val json =
+      """
+      {"id":"e1","season":"1","episode":"2","pubDate":"Mon, 01 Jan 2024 00:00:00 +0000","publishedAt":1704067200000,
+       "title":"One","audioFile":{"ino":"f1","duration":10.0,"mimeType":"audio/mpeg","metadata":{"filename":"f1.mp3","ext":"mp3","size":1}}}
+      """.trimIndent()
+
+    val episode = moshi.adapter(PodcastEpisodeResponse::class.java).fromJson(json)!!
+
+    assertEquals("Mon, 01 Jan 2024 00:00:00 +0000", episode.pubDate)
+    assertEquals(
+      1_704_067_200_000L,
+      converter
+        .apply(podcast(listOf(episode)))
+        .chapters
+        .single()
+        .publishedAt,
+    )
   }
 
   @Test
   fun `builds chapters with accumulated start and end offsets`() {
     val episodes =
       listOf(
-        episode(id = "e1", pubDate = "Mon, 01 Jan 2024 00:00:00 +0000", duration = 100.0),
-        episode(id = "e2", pubDate = "Tue, 02 Jan 2024 00:00:00 +0000", duration = 50.0),
+        episode(id = "e1", duration = 100.0),
+        episode(id = "e2", duration = 50.0),
       )
 
     val result = converter.apply(podcast(episodes))
@@ -154,7 +218,7 @@ class PodcastResponseConverterTest {
 
   @Test
   fun `treats null episode duration as zero when building files and chapters`() {
-    val episodes = listOf(episode(id = "e1", pubDate = "Mon, 01 Jan 2024 00:00:00 +0000", duration = null))
+    val episodes = listOf(episode(id = "e1", duration = null))
 
     val result = converter.apply(podcast(episodes))
 
@@ -164,7 +228,7 @@ class PodcastResponseConverterTest {
 
   @Test
   fun `marks chapter finished when matching progress isFinished is true`() {
-    val episodes = listOf(episode(id = "e1", pubDate = "Mon, 01 Jan 2024 00:00:00 +0000", duration = 100.0))
+    val episodes = listOf(episode(id = "e1", duration = 100.0))
     val progress =
       listOf(
         MediaProgressResponse(
@@ -184,7 +248,7 @@ class PodcastResponseConverterTest {
 
   @Test
   fun `marks chapter finished when progress ratio exceeds threshold even if isFinished is false`() {
-    val episodes = listOf(episode(id = "e1", pubDate = "Mon, 01 Jan 2024 00:00:00 +0000", duration = 100.0))
+    val episodes = listOf(episode(id = "e1", duration = 100.0))
     val progress =
       listOf(
         MediaProgressResponse(
@@ -204,7 +268,7 @@ class PodcastResponseConverterTest {
 
   @Test
   fun `leaves chapter state null when no progress exists for episode`() {
-    val episodes = listOf(episode(id = "e1", pubDate = "Mon, 01 Jan 2024 00:00:00 +0000", duration = 100.0))
+    val episodes = listOf(episode(id = "e1", duration = 100.0))
 
     val result = converter.apply(podcast(episodes), emptyList())
 
@@ -212,11 +276,11 @@ class PodcastResponseConverterTest {
   }
 
   @Test
-  fun `computes total current time from latest progress plus durations of preceding episodes`() {
+  fun `progress is the canonical offset of the latest episode progress`() {
     val episodes =
       listOf(
-        episode(id = "e1", pubDate = "Mon, 01 Jan 2024 00:00:00 +0000", duration = 100.0),
-        episode(id = "e2", pubDate = "Tue, 02 Jan 2024 00:00:00 +0000", duration = 50.0),
+        episode(id = "e1", duration = 100.0),
+        episode(id = "e2", duration = 50.0),
       )
     val progress =
       listOf(

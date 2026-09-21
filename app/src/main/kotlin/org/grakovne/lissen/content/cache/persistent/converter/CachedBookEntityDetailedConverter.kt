@@ -41,7 +41,7 @@ class CachedBookEntityDetailedConverter
         libraryType = libraryType,
         localProvided = true,
         files =
-          entity.files.map { fileEntity ->
+          entity.files.sortedBy { it.fileIndex }.map { fileEntity ->
             BookFile(
               id = fileEntity.bookFileId,
               name = fileEntity.name,
@@ -51,7 +51,7 @@ class CachedBookEntityDetailedConverter
             )
           },
         chapters =
-          entity.chapters.map { chapterEntity ->
+          entity.chapters.sortedBy { it.chapterIndex }.map { chapterEntity ->
             PlayingChapter(
               duration = chapterEntity.duration,
               start = chapterEntity.start,
@@ -60,6 +60,11 @@ class CachedBookEntityDetailedConverter
               available = chapterEntity.isCached,
               id = chapterEntity.bookChapterId,
               podcastEpisodeState = null, // currently state is not available for local mode
+              index = chapterEntity.chapterIndex,
+              publishedAt = chapterEntity.publishedAt,
+              season = chapterEntity.season,
+              episode = chapterEntity.episode,
+              fileName = chapterEntity.fileName,
             )
           },
         abstract = entity.detailedBook.abstract,

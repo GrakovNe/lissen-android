@@ -14,8 +14,6 @@ import androidx.media3.session.MediaSession.MediaItemsWithStartPosition
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -29,6 +27,7 @@ import org.grakovne.lissen.playback.MediaLibrarySessionProvider
 import org.grakovne.lissen.playback.PlaybackCommand
 import org.grakovne.lissen.playback.PlaybackEvent
 import org.grakovne.lissen.playback.PlaybackEventBus
+import org.grakovne.lissen.playback.isInRestartWindow
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -120,29 +119,25 @@ class PlaybackService : MediaLibraryService() {
     exoPlayer.playWhenReady = false
 
     withContext(Dispatchers.IO) {
-      val prepareQueue =
-        async {
-          if (book.chapters.isEmpty()) {
-            Timber.w("Can't build playing queue: book has no chapters (bookId=${book.id})")
+      if (book.chapters.isEmpty()) {
+        Timber.w("Can't build playing queue: book has no chapters (bookId=${book.id})")
 
-            return@async
-          }
-
-          val itemsWithPosition = bookToChapterMediaItems(book)
-
-          withContext(Dispatchers.Main) {
-            exoPlayer.setMediaItems(itemsWithPosition.mediaItems)
-            exoPlayer.prepare()
-            exoPlayer.seekTo(itemsWithPosition.startIndex, itemsWithPosition.startPositionMs)
-          }
-        }
-
-      val prepareSession =
-        async {
+        withContext(Dispatchers.Main) {
           playbackSynchronizationService.startPlaybackSynchronization(book)
         }
+      } else {
+        val itemsWithPosition = bookToChapterMediaItems(book)
 
-      awaitAll(prepareSession, prepareQueue)
+        withContext(Dispatchers.Main) {
+          exoPlayer.setMediaItems(itemsWithPosition.mediaItems)
+          exoPlayer.prepare()
+          exoPlayer.seekTo(itemsWithPosition.startIndex, itemsWithPosition.startPositionMs)
+
+          // same main task as the queue swap: until here every player event still pairs the
+          // previous queue with the previous item, from here on the new queue with the new one
+          playbackSynchronizationService.startPlaybackSynchronization(book)
+        }
+      }
 
       playbackEventBus.emit(PlaybackEvent.PlaybackReady)
     }
@@ -228,10 +223,7 @@ class PlaybackService : MediaLibraryService() {
           ?: ChapterPosition(0, 0.0)
 
       val negativeChapter = chapterIndex < 0
-      val lastMoments =
-        !negativeChapter &&
-          book.chapters.isNotEmpty() &&
-          (book.chapters.last().end - 5) < (book.progress?.currentTime ?: 0.0)
+      val lastMoments = !negativeChapter && book.isInRestartWindow(book.progress?.currentTime ?: 0.0)
 
       if (negativeChapter || lastMoments) {
         chapterIndex = 0

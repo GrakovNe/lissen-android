@@ -7,9 +7,14 @@ import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import org.grakovne.lissen.common.EpisodeOrderingConfiguration
+import org.grakovne.lissen.common.EpisodeOrderingOption
+import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.domain.BookChapterState
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.BookmarkSyncState
@@ -18,6 +23,7 @@ import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.TimerOption
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.MediaRepository
 import org.junit.jupiter.api.AfterEach
@@ -47,6 +53,7 @@ class PlayerViewModelTest {
 
   private val mediaRepository = mockk<MediaRepository>(relaxed = true)
   private val preferences = mockk<PlaybackPreferences>(relaxed = true)
+  private val libraryPreferences = mockk<LibraryPreferences>(relaxed = true)
   private lateinit var viewModel: PlayerViewModel
 
   @BeforeEach
@@ -66,7 +73,9 @@ class PlayerViewModelTest {
     every { mediaRepository.timerOption } returns timerOption
     every { mediaRepository.timerRemaining } returns timerRemaining
 
-    viewModel = PlayerViewModel(mediaRepository, preferences)
+    every { libraryPreferences.episodeOrderingFlow } returns MutableStateFlow(emptyMap())
+
+    viewModel = PlayerViewModel(mediaRepository, preferences, libraryPreferences)
   }
 
   @AfterEach
@@ -106,6 +115,50 @@ class PlayerViewModelTest {
     fun `playingQueueExpanded is initially false`() {
       assertFalse(viewModel.playingQueueExpanded.value)
     }
+
+    @Test
+    fun `setEpisodeOrdering asks the player for the screen's item and then stores the choice`() {
+      every { mediaRepository.reorderPlayingItem("book-1", any()) } returns true
+
+      viewModel.setEpisodeOrdering("book-1", EpisodeOrderingConfiguration.default)
+
+      verify { mediaRepository.reorderPlayingItem("book-1", EpisodeOrderingConfiguration.default) }
+      verify { libraryPreferences.saveEpisodeOrdering("book-1", EpisodeOrderingConfiguration.default) }
+    }
+
+    @Test
+    fun `setEpisodeOrdering stores the choice before the rebuild and clears it when the player refuses`() {
+      every { libraryPreferences.getEpisodeOrdering("book-1") } returns null
+      every { mediaRepository.reorderPlayingItem(any(), any()) } returns false
+
+      viewModel.setEpisodeOrdering("book-1", EpisodeOrderingConfiguration.default)
+
+      verify { libraryPreferences.saveEpisodeOrdering("book-1", EpisodeOrderingConfiguration.default) }
+      verify { libraryPreferences.clearEpisodeOrdering("book-1") }
+    }
+
+    @Test
+    fun `setEpisodeOrdering restores the previous choice when the player refuses`() {
+      val previous = EpisodeOrderingConfiguration(EpisodeOrderingOption.TITLE, LibraryOrderingDirection.DESCENDING)
+      every { libraryPreferences.getEpisodeOrdering("book-1") } returns previous
+      every { mediaRepository.reorderPlayingItem(any(), any()) } returns false
+
+      viewModel.setEpisodeOrdering("book-1", EpisodeOrderingConfiguration.default)
+
+      verify { libraryPreferences.saveEpisodeOrdering("book-1", previous) }
+      verify(exactly = 0) { libraryPreferences.clearEpisodeOrdering(any()) }
+    }
+
+    @Test
+    fun `episodeOrdering follows the screen's item, not the playing one`() =
+      runTest {
+        val stored = MutableStateFlow(mapOf("book-1" to EpisodeOrderingConfiguration.default))
+        every { libraryPreferences.episodeOrderingFlow } returns stored
+        playingBook.value = detailedItem(id = "previous", libraryType = LibraryType.PODCAST)
+
+        assertEquals(EpisodeOrderingConfiguration.default, viewModel.episodeOrdering("book-1").first())
+        assertEquals(null, viewModel.episodeOrdering("previous").first())
+      }
   }
 
   @Nested

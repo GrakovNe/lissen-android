@@ -1,6 +1,8 @@
 package org.grakovne.lissen.persistence.preferences
 
+import com.squareup.moshi.Types
 import kotlinx.coroutines.flow.Flow
+import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.moshi
@@ -20,6 +22,8 @@ class LibraryPreferences
     val hideCompletedFlow: Flow<Boolean> = store.asFlow(KEY_HIDE_COMPLETED, ::getHideCompleted)
     val libraryGroupingFlow: Flow<LibraryGrouping> = store.asFlow(KEY_LIBRARY_GROUPING, ::getLibraryGrouping)
     val forceCacheFlow: Flow<Boolean> = store.asFlow(CACHE_FORCE_ENABLED, ::isForceCache)
+    val episodeOrderingFlow: Flow<Map<String, EpisodeOrderingConfiguration>> =
+      store.asFlow(KEY_EPISODE_ORDERING, ::getEpisodeOrderings)
 
     fun getPreferredLibrary(): Library? {
       val id = activeLibraryId() ?: return null
@@ -49,6 +53,37 @@ class LibraryPreferences
       val json = store.getString(KEY_PREFERRED_LIBRARY_ORDERING) ?: return LibraryOrderingConfiguration.default
       val adapter = moshi.adapter(LibraryOrderingConfiguration::class.java)
       return adapter.fromJson(json) ?: LibraryOrderingConfiguration.default
+    }
+
+    fun getEpisodeOrdering(itemId: String): EpisodeOrderingConfiguration? = getEpisodeOrderings()[itemId]
+
+    fun saveEpisodeOrdering(
+      itemId: String,
+      configuration: EpisodeOrderingConfiguration,
+    ) {
+      val updated = getEpisodeOrderings() + (itemId to configuration)
+      store.putString(KEY_EPISODE_ORDERING, episodeOrderingAdapter.toJson(updated))
+    }
+
+    fun clearEpisodeOrdering(itemId: String) {
+      val updated = getEpisodeOrderings() - itemId
+      store.putString(KEY_EPISODE_ORDERING, episodeOrderingAdapter.toJson(updated))
+    }
+
+    /**
+     * Entries are parsed one by one so that a single unreadable value (say, an option this
+     * build does not know) drops only itself instead of every podcast's choice on the next save.
+     */
+    private fun getEpisodeOrderings(): Map<String, EpisodeOrderingConfiguration> {
+      val json = store.getString(KEY_EPISODE_ORDERING) ?: return emptyMap()
+      val entries = runCatching { rawEpisodeOrderingAdapter.fromJson(json) }.getOrNull() ?: return emptyMap()
+
+      return entries
+        .mapNotNull { (itemId, value) ->
+          runCatching { episodeOrderingEntryAdapter.fromJsonValue(value) }
+            .getOrNull()
+            ?.let { itemId to it }
+        }.toMap()
     }
 
     fun getHideCompleted(): Boolean = store.getBoolean(KEY_HIDE_COMPLETED, false)
@@ -96,5 +131,18 @@ class LibraryPreferences
       private const val KEY_PREFERRED_LIBRARY_ORDERING = "preferred_library_ordering"
       private const val KEY_HIDE_COMPLETED = "hide_completed"
       private const val KEY_LIBRARY_GROUPING = "library_grouping"
+      private const val KEY_EPISODE_ORDERING = "episode_ordering"
+
+      private val episodeOrderingAdapter =
+        moshi.adapter<Map<String, EpisodeOrderingConfiguration>>(
+          Types.newParameterizedType(Map::class.java, String::class.java, EpisodeOrderingConfiguration::class.java),
+        )
+
+      private val rawEpisodeOrderingAdapter =
+        moshi.adapter<Map<String, Any>>(
+          Types.newParameterizedType(Map::class.java, String::class.java, Any::class.java),
+        )
+
+      private val episodeOrderingEntryAdapter = moshi.adapter(EpisodeOrderingConfiguration::class.java)
     }
   }

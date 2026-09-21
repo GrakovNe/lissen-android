@@ -13,12 +13,10 @@ import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
-import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.domain.asLibraryEntries
-import org.grakovne.lissen.playback.service.calculateChapterIndex
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -193,53 +191,11 @@ class LocalCacheRepository
     suspend fun fetchLatestUpdate(libraryId: String) = cachedBookRepository.fetchLatestUpdate(libraryId)
 
     /**
-     * Fetches a detailed book item by its ID from the cached repository.
-     * If the book is not found in the cache, returns `null`.
-     *
-     * The method ensures that the book's playback position points to an available chapter:
-     * - If the current chapter is available, the cached book is returned as is.
-     * - If the current chapter is unavailable, the playback progress is adjusted to the first available chapter.
-     *
-     * @param bookId the unique identifier of the book to fetch.
-     * @return the detailed book item with updated playback progress if necessary,
-     *         or `null` if the book is not found in the cache.
+     * Fetches a detailed book item by its ID from the cache, in the canonical order, or `null`
+     * when it is not cached. Moving the progress onto an available chapter is the provider's
+     * job (`LissenMediaProvider.moveToAvailableChapter`), after the user's order is applied.
      */
-    suspend fun fetchBook(bookId: String): DetailedItem? {
-      val cachedBook =
-        cachedBookRepository
-          .fetchBook(bookId)
-          ?: return null
-
-      val cachedPosition =
-        cachedBook
-          .progress
-          ?.currentTime
-          ?: 0.0
-
-      val currentChapter = calculateChapterIndex(cachedBook, cachedPosition)
-
-      return when (currentChapter in cachedBook.chapters.indices && cachedBook.chapters[currentChapter].available) {
-        true -> {
-          cachedBook
-        }
-
-        false -> {
-          cachedBook
-            .copy(
-              progress =
-                MediaProgress(
-                  currentTime =
-                    cachedBook.chapters
-                      .firstOrNull { it.available }
-                      ?.start
-                      ?: return null,
-                  isFinished = false,
-                  lastUpdate = 946728000000, // 2000-01-01T12:00
-                ),
-            )
-        }
-      }
-    }
+    suspend fun fetchBook(bookId: String): DetailedItem? = cachedBookRepository.fetchBook(bookId)
 
     suspend fun fetchBookmarks(libraryItemId: String) =
       cachedBookmarkRepository
