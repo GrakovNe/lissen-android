@@ -67,13 +67,14 @@ class PlaybackFlowE2ETest {
   }
 
   private fun UiAutomatorTestScope.openFirstBookAndReady() {
-    waitForElement(By.res(Pattern.compile("bookItem_.*")), 60_000).click()
+    clickElement(By.res(Pattern.compile("bookItem_.*")), 60_000)
     waitForElement(By.res("playerScreen"))
+    waitForElement(By.res("trackControls"), PLAYBACK_TIMEOUT_MS)
     waitForElement(By.res("chapterList"), PLAYBACK_TIMEOUT_MS)
   }
 
   private fun UiAutomatorTestScope.currentChapter(): ChapterNumber {
-    val text = waitForElement(By.res("playerChapterNumber"), 10_000).text.toString()
+    val text = textOf(By.res("playerChapterNumber"), 10_000)
     val match = Regex("Chapter (\\d+) of (\\d+)").find(text)
     return ChapterNumber(
       match?.groupValues?.get(1)?.toInt() ?: -1,

@@ -71,11 +71,12 @@ class LoginFlowE2ETest {
   fun disconnectFromServer_returnsToLoginScreen() = withFreshApp {
     login(password = e2eArgument("e2ePassword", "demo"))
     onElement(TIMEOUT_MS) { viewIdResourceName == "libraryScreen" }
-    clickElement(By.desc("Menu"))
+    clickUntil(By.desc("Menu"), By.text("Application settings"))
     clickElement(By.text("Application settings"))
     waitForElement(By.res("settingsScreen"))
     clickElement(By.text("Connection"))
-    scrollUntilVisible(By.text("Disconnect from the server")).click()
+    scrollUntilVisible(By.text("Disconnect from the server"))
+    clickElement(By.text("Disconnect from the server"))
     clickElement(By.text("Disconnect"))
     waitForElement(By.res("loginScreen"))
   }

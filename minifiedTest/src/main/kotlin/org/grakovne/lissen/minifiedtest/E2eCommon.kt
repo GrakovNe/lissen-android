@@ -3,6 +3,7 @@ package org.grakovne.lissen.minifiedtest
 import android.util.Log
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
+import androidx.test.uiautomator.StaleObjectException
 import androidx.test.uiautomator.UiAutomatorTestScope
 import androidx.test.uiautomator.UiObject2
 import java.io.File
@@ -23,10 +24,84 @@ fun UiAutomatorTestScope.waitForElement(
   throw AssertionError("No element matching $selector within ${timeoutMs}ms")
 }
 
+/**
+ * A [UiObject2] is a snapshot of one accessibility node; Compose replaces nodes on every
+ * recomposition, so anything done to an object found a moment ago can hit a node that no
+ * longer exists ([StaleObjectException]). Every interaction therefore looks the element up
+ * again and retries while the node keeps changing under it, until [timeoutMs] runs out.
+ */
+fun <T> UiAutomatorTestScope.onFreshElement(
+  selector: BySelector,
+  timeoutMs: Long = DEFAULT_TIMEOUT_MS,
+  action: (UiObject2) -> T,
+): T {
+  val deadline = System.currentTimeMillis() + timeoutMs
+  var stale: StaleObjectException? = null
+  while (System.currentTimeMillis() < deadline) {
+    val element = device.findObject(selector)
+    if (element == null) {
+      Thread.sleep(300)
+      continue
+    }
+    try {
+      return action(element)
+    } catch (ex: StaleObjectException) {
+      stale = ex
+      Thread.sleep(300)
+    }
+  }
+  throw AssertionError(
+    when (stale) {
+      null -> "No element matching $selector within ${timeoutMs}ms"
+      else -> "Element matching $selector kept changing for ${timeoutMs}ms"
+    },
+    stale,
+  )
+}
+
 fun UiAutomatorTestScope.clickElement(
   selector: BySelector,
   timeoutMs: Long = DEFAULT_TIMEOUT_MS,
-): UiObject2 = waitForElement(selector, timeoutMs).also { it.click() }
+) {
+  onFreshElement(selector, timeoutMs) { it.click() }
+}
+
+fun UiAutomatorTestScope.textOf(
+  selector: BySelector,
+  timeoutMs: Long = DEFAULT_TIMEOUT_MS,
+): String = onFreshElement(selector, timeoutMs) { it.text.toString() }
+
+fun UiAutomatorTestScope.setTextOf(
+  selector: BySelector,
+  text: String,
+  timeoutMs: Long = DEFAULT_TIMEOUT_MS,
+) {
+  onFreshElement(selector, timeoutMs) { it.setText(text) }
+}
+
+/**
+ * Taps [trigger] until [expected] shows up. A tap that lands while the screen is still
+ * settling (a navigation transition, the first frame of a freshly loaded list) is silently
+ * lost on the CI emulator; waiting for the outcome and tapping again is what a person would
+ * do. [settleMs] is longer than any sheet or dialog animation, so a second tap can only
+ * follow a tap that did nothing.
+ */
+fun UiAutomatorTestScope.clickUntil(
+  trigger: BySelector,
+  expected: BySelector,
+  timeoutMs: Long = DEFAULT_TIMEOUT_MS,
+  settleMs: Long = 8_000L,
+) {
+  val deadline = System.currentTimeMillis() + timeoutMs
+  while (true) {
+    clickElement(trigger, timeoutMs)
+    if (elementExists(expected, settleMs)) return
+    if (System.currentTimeMillis() >= deadline) {
+      throw AssertionError("Tapping $trigger never brought up $expected within ${timeoutMs}ms")
+    }
+    Log.w(E2E_TAG, "tap on $trigger did not bring up $expected, tapping again")
+  }
+}
 
 fun UiAutomatorTestScope.waitUntilAbsent(
   selector: BySelector,
@@ -174,13 +249,34 @@ fun UiAutomatorTestScope.dumpScreen(name: String) {
   runCatching { Log.i(E2E_TAG, "hierarchy: ${hierarchy.readText().take(3_000)}") }
 }
 
+const val LOGIN_TIMEOUT_MS = 120_000L
+const val LOGIN_ATTEMPT_MS = 30_000L
+
+/**
+ * A login round trip takes a second; an attempt that has not reached the library in
+ * [LOGIN_ATTEMPT_MS] has lost its tap or its input on the way (the emulator drops both while
+ * the keyboard or the screen is still settling), so the form is filled in and submitted
+ * again. A failed attempt only shows a toast and leaves the form in place, so a second
+ * submit is always safe; what the device showed at that moment is recorded for the CI logs.
+ */
 fun UiAutomatorTestScope.loginToLibrary(password: String = e2eArgument("e2ePassword", "demo")) {
-  waitForElement(By.res("hostInput"))
-    .setText(e2eArgument("e2eHost", "https://demo.lissenapp.org"))
-  waitForElement(By.res("usernameInput")).setText(e2eArgument("e2eUsername", "demo"))
-  waitForElement(By.res("passwordInput")).setText(password)
-  clickElement(By.res("loginButton"))
-  waitForElement(By.res("libraryScreen"))
+  val deadline = System.currentTimeMillis() + LOGIN_TIMEOUT_MS
+  var attempt = 0
+  while (true) {
+    attempt++
+    setTextOf(By.res("hostInput"), e2eArgument("e2eHost", "https://demo.lissenapp.org"))
+    setTextOf(By.res("usernameInput"), e2eArgument("e2eUsername", "demo"))
+    setTextOf(By.res("passwordInput"), password)
+    clickElement(By.res("loginButton"))
+    if (elementExists(By.res("libraryScreen"), LOGIN_ATTEMPT_MS)) return
+    if (System.currentTimeMillis() >= deadline) {
+      throw AssertionError("login did not reach the library in $attempt attempts within ${LOGIN_TIMEOUT_MS}ms")
+    }
+    Log.w(E2E_TAG, "login attempt $attempt did not reach the library, submitting again")
+    dumpScreen("e2e-login-attempt-$attempt")
+    // the form is the only place the button exists; without it the app is on its way somewhere
+    if (elementExists(By.res("loginButton"), 2_000).not() && elementExists(By.res("libraryScreen"), LOGIN_ATTEMPT_MS)) return
+  }
 }
 
 fun loggedInApp(block: UiAutomatorTestScope.() -> Unit) = freshApp {
@@ -189,11 +285,13 @@ fun loggedInApp(block: UiAutomatorTestScope.() -> Unit) = freshApp {
 }
 
 fun UiAutomatorTestScope.openFirstBook() {
-  waitForElement(By.res(java.util.regex.Pattern.compile("bookItem_.*")), 60_000).click()
+  clickElement(By.res(java.util.regex.Pattern.compile("bookItem_.*")), 60_000)
   waitForElement(By.res("playerScreen"))
-  // the player is interactive once the chapter number renders; the chapter list is the
-  // content of the "Chapters" tab and is not present until that tab is selected
-  waitForElement(By.res("playerChapterNumber"), 120_000)
+  // the player draws a placeholder (same chapter-number tag, same tab labels, none of it
+  // interactive) until playback is ready; the track controls are the first thing that only
+  // the ready player has. The chapter list is the content of the "Chapters" tab and is not
+  // present until that tab is selected
+  waitForElement(By.res("trackControls"), 120_000)
 }
 
 fun UiAutomatorTestScope.mediaSessionState(): String {

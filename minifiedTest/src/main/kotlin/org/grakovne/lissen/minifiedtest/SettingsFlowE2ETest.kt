@@ -67,7 +67,7 @@ class SettingsFlowE2ETest {
   }
 
   private fun UiAutomatorTestScope.openSettings() {
-    clickElement(By.desc("Menu"))
+    clickUntil(By.desc("Menu"), By.text("Application settings"))
     clickElement(By.text("Application settings"))
     waitForElement(By.res("settingsScreen"))
   }
