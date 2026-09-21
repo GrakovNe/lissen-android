@@ -175,13 +175,14 @@ class LissenMediaProviderTest {
     @Test
     fun `a stored item without indices is reordered like any other`() =
       runBlocking {
-        // every index 0, keys present: serialized by a version that did not know indices
+        // every index 0 and no keys: serialized by a version that did not know indices; only
+        // the position taken from the list order can tell the two apart
         val item =
           detailedItem(
             chapters =
               listOf(
-                chapter("c0", 0, 10.0, publishedAt = 1L),
-                chapter("c1", 0, 10.0, publishedAt = 2L).copy(start = 10.0, end = 20.0),
+                chapter("c0", 0, 10.0),
+                chapter("c1", 0, 10.0).copy(start = 10.0, end = 20.0),
               ),
           ).copy(libraryType = LibraryType.PODCAST)
         every { preferences.isForceCache() } returns true

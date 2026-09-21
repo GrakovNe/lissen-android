@@ -65,6 +65,11 @@ class LibraryPreferences
       store.putString(KEY_EPISODE_ORDERING, episodeOrderingAdapter.toJson(updated))
     }
 
+    fun clearEpisodeOrdering(itemId: String) {
+      val updated = getEpisodeOrderings() - itemId
+      store.putString(KEY_EPISODE_ORDERING, episodeOrderingAdapter.toJson(updated))
+    }
+
     /**
      * Entries are parsed one by one so that a single unreadable value (say, an option this
      * build does not know) drops only itself instead of every podcast's choice on the next save.

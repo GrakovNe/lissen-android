@@ -32,8 +32,14 @@ class PlaybackSynchronizationService
     private val mediaChannel: LissenMediaProvider,
     private val sharedPreferences: SessionPreferences,
   ) {
+    // written from the main thread and from the media session's and the sync's own dispatchers
+    @Volatile
     private var currentItem: DetailedItem? = null
+
+    @Volatile
     private var currentChapterIndex: Int? = null
+
+    @Volatile
     private var playbackSession: PlaybackSession? = null
     private var listeningMark = ListeningMark(playingSince = null, unsyncedMs = 0)
     private val serviceScope = MainScope()

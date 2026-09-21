@@ -26,6 +26,7 @@ import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.common.buildBookmarkTitle
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.ordering.ChapterOrdering
+import org.grakovne.lissen.content.ordering.ChapterOrdering.end
 import org.grakovne.lissen.content.ordering.ReorderPlanner
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
@@ -441,7 +442,13 @@ class MediaRepository
 
       // the list in memory follows at once, so nothing can act on positions of the old order;
       // the exact stored values, translated for the new order, replace it as soon as they are read
-      _bookmarks.value = _bookmarks.value.map { it.copy(totalPosition = ChapterOrdering.translate(book, plan.item, it.totalPosition)) }
+      _bookmarks.value =
+        _bookmarks.value.map {
+          when (it.libraryItemId == book.id) {
+            true -> it.copy(totalPosition = ChapterOrdering.translate(book, plan.item, it.totalPosition))
+            false -> it
+          }
+        }
       bookmarksItem = plan.item
       scope.launch { refreshBookmarksFromCache(book.id) }
       // after startPreparingPlayback, which resets the flag for every fresh preparation
@@ -503,18 +510,25 @@ class MediaRepository
     }
 
     fun registerPlayingBook(book: DetailedItem) {
-      val sameBook = _playingBook.value?.same(book) ?: false
+      val current = _playingBook.value
+      val sameBook = current?.same(book) ?: false
+
+      // the same item in another order while its queue is being rebuilt in place: the session
+      // fetched it before the new order was stored; the rebuild in flight is the truth
+      if (sameBook.not() && queueRebuildInFlight && current?.id == book.id) {
+        Timber.w("Ignoring registration of ${book.id} in another order: a rebuild is in flight")
+        return
+      }
 
       if (sameBook.not()) {
         Timber.d("Registering playing book prepared via media session: ${book.id}")
 
         _totalPosition.value = book.progress?.currentTime ?: 0.0
         _playingBook.value = book
+        // readiness arrived outside the service: whatever rebuild was in flight is over
+        queueRebuildInFlight = false
         _isPlaybackReady.value = true
       }
-
-      // readiness arrived outside the service: whatever rebuild was in flight is over
-      queueRebuildInFlight = false
     }
 
     private fun startPreparingPlayback(book: DetailedItem) {
@@ -586,6 +600,13 @@ class MediaRepository
         return
       }
 
+      // the controller still holds the previous queue: a seek computed for the new order would
+      // land in the wrong episode, and the position read back would be meaningless
+      if (queueRebuildInFlight) {
+        Timber.d("Ignoring seek to ${position.toInt()}s: the queue is being rebuilt")
+        return
+      }
+
       val overallDuration =
         book
           .chapters
@@ -620,7 +641,7 @@ class MediaRepository
       withMain {
         if (::mediaController.isInitialized) {
           mediaController.seekTo(chapterIndex, (chapterPosition * 1000).toLong())
-          _playingBook.value?.let { updateProgress(it) }
+          updateProgressWhenReady()
         }
       }
 
@@ -661,7 +682,8 @@ class MediaRepository
     suspend fun createBookmark(title: String? = null) {
       Timber.d("Creating bookmark for ${_playingBook.value?.id} at position=${_totalPosition.value.toInt()}s")
       val playingBook = _playingBook.value ?: return
-      val totalPosition = _totalPosition.value
+      // a live position may overshoot the declared end by a little: that is the end, not nowhere
+      val totalPosition = _totalPosition.value.coerceAtMost(playingBook.end() ?: _totalPosition.value)
 
       // the same boundary rule as the stored position, so the title names the episode the
       // bookmark is actually in, however far apart neighbours are in the listener's order
@@ -736,6 +758,10 @@ class MediaRepository
     private suspend fun refreshBookmarksFromCache(itemId: String) {
       val stored = withContext(Dispatchers.IO) { mediaChannel.provideBookmarks(itemId) }
       val book = _playingBook.value
+
+      // another item started playing meanwhile: its own refresh will follow, these rows are not its
+      if (book?.id != itemId) return
+
       bookmarksItem = book
       _bookmarks.value = stored.inPlayingOrder(book)
     }
@@ -746,8 +772,11 @@ class MediaRepository
       val book = playingBook.value ?: return
       val bookmarks = withContext(Dispatchers.IO) { mediaChannel.updateAndProvideBookmarks(book.id) }
 
-      // the item may have been reordered meanwhile: translate for the order that is playing now
+      // the item may have been reordered meanwhile: translate for the order that is playing now;
+      // another item playing meanwhile means these rows are not its
       val current = playingBook.value
+      if (current?.id != book.id) return
+
       bookmarksItem = current
       _bookmarks.value = bookmarks.inPlayingOrder(current)
     }

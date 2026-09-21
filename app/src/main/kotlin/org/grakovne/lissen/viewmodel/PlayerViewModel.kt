@@ -209,8 +209,16 @@ class PlayerViewModel
     ) {
       Timber.d("User action: setEpisodeOrdering $configuration for $itemId")
 
-      if (mediaRepository.reorderPlayingItem(itemId, configuration)) {
-        libraryPreferences.saveEpisodeOrdering(itemId, configuration)
+      // stored before the rebuild starts, so that anything fetching the item meanwhile (the
+      // media session, Android Auto) already gets the new order; rolled back if the player refuses
+      val previous = libraryPreferences.getEpisodeOrdering(itemId)
+      libraryPreferences.saveEpisodeOrdering(itemId, configuration)
+
+      if (mediaRepository.reorderPlayingItem(itemId, configuration).not()) {
+        when (previous) {
+          null -> libraryPreferences.clearEpisodeOrdering(itemId)
+          else -> libraryPreferences.saveEpisodeOrdering(itemId, previous)
+        }
       }
     }
 

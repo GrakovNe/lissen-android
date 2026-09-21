@@ -85,4 +85,15 @@ class EpisodeOrderingPreferencesTest {
     assertEquals(byTitleDesc, preferences.getEpisodeOrdering("podcast-1"))
     assertEquals(byFileAsc, preferences.getEpisodeOrdering("podcast-3"))
   }
+
+  @Test
+  fun `clearing an item removes only its choice`() {
+    preferences.saveEpisodeOrdering("podcast-1", byTitleDesc)
+    preferences.saveEpisodeOrdering("podcast-2", byFileAsc)
+
+    preferences.clearEpisodeOrdering("podcast-1")
+
+    assertNull(preferences.getEpisodeOrdering("podcast-1"))
+    assertEquals(byFileAsc, preferences.getEpisodeOrdering("podcast-2"))
+  }
 }

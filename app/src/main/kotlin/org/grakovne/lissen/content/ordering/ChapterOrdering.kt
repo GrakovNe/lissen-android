@@ -73,18 +73,23 @@ object ChapterOrdering {
       ?.let { it.start + location.offset.coerceIn(0.0, it.duration.coerceAtLeast(0.0)) }
 
   /**
-   * Translates a position expressed in the order of [from] into the order of [to].
-   * Falls back to the raw value when the position is outside the item or the chapter
-   * cannot be found on either side.
+   * Translates a position expressed in the order of [from] into the order of [to]. The end of
+   * the item is the end of the item in any order: as a chapter-relative location it would be
+   * the end of some chapter, which as a bare number in another order is the start of whatever
+   * chapter follows there. Falls back to the raw value when the chapter cannot be found.
    */
   fun translate(
     from: DetailedItem,
     to: DetailedItem,
     position: Double,
-  ): Double =
-    locate(from, position)
+  ): Double {
+    val fromEnd = from.end()
+    if (fromEnd != null && position >= fromEnd) return to.end() ?: position
+
+    return locate(from, position)
       ?.let { position(to, it) }
       ?: position
+  }
 
   /**
    * A live position can run a few hundred ms past the declared end of the item (files are
@@ -105,25 +110,30 @@ object ChapterOrdering {
 
   /**
    * The whole canonical second a bookmark at [position] (in the order of [item]) is stored as.
-   * Storage keeps whole seconds; simply truncating the exact canonical value can fall below the
-   * chapter's fractional canonical start, i.e. into the previous canonical episode, which in the
-   * listener's order may be anywhere. The second is therefore chosen inside the chapter.
+   * Storage keeps whole seconds; simply truncating the exact canonical value can fall outside
+   * the chapter's fractional canonical bounds (below its start, or exactly onto its end, which
+   * belongs to the next chapter), i.e. into a neighbouring canonical episode, which in the
+   * listener's order may be anywhere. The second is therefore chosen strictly inside the
+   * chapter; a chapter without a whole second inside keeps the truncated value.
    */
   fun storedBookmarkPosition(
     item: DetailedItem,
     position: Double,
   ): Double {
     val canonical = canonical(item)
-    val exact = translate(item, canonical, position.coerceAtMost(item.end() ?: position))
+    val pinned = position.coerceAtMost(item.end() ?: position)
+    val exact = translate(item, canonical, pinned)
     val chapter =
-      locate(item, position.coerceAtMost(item.end() ?: position))
+      locate(item, pinned)
         ?.let { location -> canonical.chapters.firstOrNull { it.id == location.chapterId } }
         ?: return floor(exact)
 
-    val truncated = floor(exact)
-    return when (truncated >= chapter.start) {
-      true -> truncated
-      false -> ceil(exact).coerceAtMost(floor(chapter.end))
+    val lowest = ceil(chapter.start)
+    val highest = ceil(chapter.end) - 1
+
+    return when (highest >= lowest) {
+      true -> floor(exact).coerceIn(lowest, highest)
+      false -> floor(exact)
     }
   }
 

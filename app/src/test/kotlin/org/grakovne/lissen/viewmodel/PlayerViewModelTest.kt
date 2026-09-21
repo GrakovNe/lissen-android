@@ -13,6 +13,8 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
+import org.grakovne.lissen.common.EpisodeOrderingOption
+import org.grakovne.lissen.common.LibraryOrderingDirection
 import org.grakovne.lissen.domain.BookChapterState
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.BookmarkSyncState
@@ -125,12 +127,26 @@ class PlayerViewModelTest {
     }
 
     @Test
-    fun `setEpisodeOrdering does not store a choice the player refused`() {
+    fun `setEpisodeOrdering stores the choice before the rebuild and clears it when the player refuses`() {
+      every { libraryPreferences.getEpisodeOrdering("book-1") } returns null
       every { mediaRepository.reorderPlayingItem(any(), any()) } returns false
 
       viewModel.setEpisodeOrdering("book-1", EpisodeOrderingConfiguration.default)
 
-      verify(exactly = 0) { libraryPreferences.saveEpisodeOrdering(any(), any()) }
+      verify { libraryPreferences.saveEpisodeOrdering("book-1", EpisodeOrderingConfiguration.default) }
+      verify { libraryPreferences.clearEpisodeOrdering("book-1") }
+    }
+
+    @Test
+    fun `setEpisodeOrdering restores the previous choice when the player refuses`() {
+      val previous = EpisodeOrderingConfiguration(EpisodeOrderingOption.TITLE, LibraryOrderingDirection.DESCENDING)
+      every { libraryPreferences.getEpisodeOrdering("book-1") } returns previous
+      every { mediaRepository.reorderPlayingItem(any(), any()) } returns false
+
+      viewModel.setEpisodeOrdering("book-1", EpisodeOrderingConfiguration.default)
+
+      verify { libraryPreferences.saveEpisodeOrdering("book-1", previous) }
+      verify(exactly = 0) { libraryPreferences.clearEpisodeOrdering(any()) }
     }
 
     @Test

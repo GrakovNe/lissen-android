@@ -267,8 +267,8 @@ class ChapterOrderingTest {
       )
     val reordered = ChapterOrdering.apply(source, descendingByDate)
 
-    // end of the playing order is the end of "a", which ends at 10s canonically
-    assertEquals(10.0, ChapterOrdering.toCanonicalPosition(reordered, 30.3))
+    // the end of the item, in any order
+    assertEquals(30.0, ChapterOrdering.toCanonicalPosition(reordered, 30.3))
   }
 
   @Test
@@ -360,7 +360,7 @@ class ChapterOrderingTest {
   }
 
   @Test
-  fun `end of item stays at end of the same chapter after translation`() {
+  fun `the end of the item is the end of the item in any order`() {
     val source =
       item(
         listOf(
@@ -370,8 +370,9 @@ class ChapterOrderingTest {
       )
     val reordered = ChapterOrdering.apply(source, descendingByDate)
 
-    // full duration in canonical order = end of "b"; "b" is first in user order
-    assertEquals(20.0, ChapterOrdering.fromCanonicalPosition(reordered, 30.0))
+    // the end of "b" as a number in user order would be the start of "a": not the same instant
+    assertEquals(30.0, ChapterOrdering.fromCanonicalPosition(reordered, 30.0))
+    assertEquals(30.0, ChapterOrdering.toCanonicalPosition(reordered, 30.0))
   }
 
   @Test
@@ -531,12 +532,32 @@ class ChapterOrderingTest {
     assertEquals(140.0, ChapterOrdering.storedBookmarkPosition(reordered, 40.0))
     // 0.2s into a (displayed at 100.7): canonically 0.2, truncated to 0
     assertEquals(0.0, ChapterOrdering.storedBookmarkPosition(reordered, 100.7))
-    // a live overshoot is the end of the listener's order: the end of a, 100 canonically
+    // a live overshoot is the end of the listener's order, inside a: its last whole second, 100
     assertEquals(100.0, ChapterOrdering.storedBookmarkPosition(reordered, 201.3))
   }
 
   @Test
-  fun `positions past the end of the item are not translated`() {
+  fun `a bookmark never lands on a whole second that belongs to the next canonical chapter`() {
+    // canonical a(0-10) b(10-30); descending: b(0-20) a(20-30): integral bounds everywhere
+    val source =
+      item(
+        listOf(
+          chapter("a", 0, duration = 10.0, publishedAt = 1L),
+          chapter("b", 1, duration = 20.0, publishedAt = 2L),
+        ),
+      )
+    val reordered = ChapterOrdering.apply(source, descendingByDate)
+
+    // the very end of the listener's order is the end of a: 10 would be the start of b
+    assertEquals(9.0, ChapterOrdering.storedBookmarkPosition(reordered, 30.0))
+    // the start of the listener's order is the start of b
+    assertEquals(10.0, ChapterOrdering.storedBookmarkPosition(reordered, 0.0))
+    // the last moment of b in the listener's order: 30 would be past the end
+    assertEquals(29.0, ChapterOrdering.storedBookmarkPosition(reordered, 19.99))
+  }
+
+  @Test
+  fun `positions past the end of the item land on the end`() {
     val source =
       item(
         listOf(
@@ -547,12 +568,12 @@ class ChapterOrderingTest {
     val reordered = ChapterOrdering.apply(source, descendingByDate)
 
     assertEquals(null, ChapterOrdering.locate(source, 30.5))
-    assertEquals(65.0, ChapterOrdering.fromCanonicalPosition(reordered, 65.0))
-    assertEquals(65.0, ChapterOrdering.translate(reordered, source, 65.0))
+    assertEquals(30.0, ChapterOrdering.fromCanonicalPosition(reordered, 65.0))
+    assertEquals(30.0, ChapterOrdering.translate(reordered, source, 65.0))
   }
 
   @Test
-  fun `stale progress past the end is carried over untouched so it can be trimmed later`() {
+  fun `stale progress past the end lands on the end so it is trimmed later`() {
     val source =
       item(
         listOf(
@@ -564,7 +585,7 @@ class ChapterOrderingTest {
 
     val result = ChapterOrdering.apply(source, descendingByDate)
 
-    assertEquals(65.0, result.progress?.currentTime)
+    assertEquals(30.0, result.progress?.currentTime)
   }
 
   @Test

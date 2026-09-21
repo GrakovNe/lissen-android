@@ -207,7 +207,9 @@ fun PlayerScreen(
     }
   }
 
-  LaunchedEffect(playingBook) {
+  // per item, not per instance: a reorder replaces the instance and refreshes the list itself,
+  // and a server round trip on every reorder could resurrect a bookmark deleted meanwhile
+  LaunchedEffect(playingBook?.id) {
     playerViewModel.updateBookmarks()
   }
 
