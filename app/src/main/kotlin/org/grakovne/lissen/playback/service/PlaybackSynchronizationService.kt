@@ -16,6 +16,7 @@ import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PlaybackProgress
+import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.CHAPTER_START_MS
 import timber.log.Timber
@@ -130,27 +131,7 @@ class PlaybackSynchronizationService
       }
 
       syncState.value.session?.let { session ->
-        mediaProvider
-          .syncProgress(
-            session = session,
-            detailedItem = currentItem,
-            chapterIndex = chapterIndex,
-            progress = snapshot.progress,
-            timeListened = snapshot.timeListened,
-          ).foldAsync(
-            onSuccess = { markSynced(snapshot) },
-            onFailure = { error ->
-              when (error.code) {
-                // A dead or unreachable server session is replaced; while the server is
-                // unreachable the provider answers with a local one and the next tick records.
-                OperationError.NotFoundError,
-                OperationError.NetworkError,
-                -> openPlaybackSession(currentItem, snapshot.progress, chapterIndex)
-
-                else -> Unit
-              }
-            },
-          )
+        syncSnapshot(session, currentItem, chapterIndex, snapshot)
       }
 
       // Nothing retries the server while paused, so the offline row is handed over for
@@ -159,6 +140,42 @@ class PlaybackSynchronizationService
         syncState.update { it.releaseLocal() }
       }
     }
+
+    /**
+     * A dead or unreachable server session is replaced. While the server is unreachable the
+     * provider answers with a local session, and the snapshot goes there right away so the
+     * offline row starts where the connection was lost.
+     */
+    private suspend fun syncSnapshot(
+      session: PlaybackSession,
+      item: DetailedItem,
+      chapterIndex: Int,
+      snapshot: SyncSnapshot,
+    ): Unit =
+      mediaProvider
+        .syncProgress(
+          session = session,
+          detailedItem = item,
+          chapterIndex = chapterIndex,
+          progress = snapshot.progress,
+          timeListened = snapshot.timeListened,
+        ).foldAsync(
+          onSuccess = { markSynced(snapshot) },
+          onFailure = { error ->
+            when (error.code) {
+              OperationError.NotFoundError,
+              OperationError.NetworkError,
+              -> {
+                openPlaybackSession(item, snapshot.progress, chapterIndex)
+                syncState.value.localSession?.let { local -> syncSnapshot(local, item, chapterIndex, snapshot) }
+              }
+
+              else -> {
+                Unit
+              }
+            }
+          },
+        )
 
     private suspend fun markSynced(snapshot: SyncSnapshot) =
       withContext(serviceScope.coroutineContext) {
