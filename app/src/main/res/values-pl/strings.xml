@@ -295,4 +295,19 @@
     <string name="tree_node_tags">Tagi</string>
     <string name="tree_node_authors">Autorzy</string>
     <string name="tree_node_series">Serie</string>
+    <string name="a11y_rewind">Przewiń</string>
+    <string name="a11y_fast_forward">Do przodu</string>
+    <plurals name="fade_duration_seconds">
+        <item quantity="one">%d sekunda</item>
+        <item quantity="few">%d sekundy</item>
+        <item quantity="many">%d sekund</item>
+        <item quantity="other">%d sekund</item>
+    </plurals>
+    <string name="player_state_widget_label">Teraz odtwarzane</string>
+    <string name="player_cover_widget_label">Teraz odtwarzane (okładka)</string>
+    <string name="sleep_timer_settings_title">Ustawienia uśpienia</string>
+    <string name="sleep_timer_settings_description">Skonfiguruj zegar uśpienia</string>
+    <string name="sleep_timer_fade_title">Zanikanie</string>
+    <string name="sleep_timer_fade_description">Zmniejsz głośność, gdy odtwarzanie się zatrzyma</string>
+    <string name="sleep_timer_fade_duration_title">Długość zanikania</string>
 </resources>

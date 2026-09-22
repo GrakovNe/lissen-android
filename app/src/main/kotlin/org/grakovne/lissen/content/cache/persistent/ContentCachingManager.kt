@@ -51,14 +51,17 @@ class ContentCachingManager
           currentTotalPosition = currentTotalPosition,
         )
 
-      val existingChapters =
+      // by id: the cached item is canonical, the playing one may be reordered with other bounds
+      val existingChapterIds =
         bookRepository
           .fetchBook(bookId = mediaItem.id)
           ?.chapters
           ?.filter { it.available }
-          ?: emptyList()
+          ?.map { it.id }
+          ?.toSet()
+          ?: emptySet()
 
-      val cachingChapters = requestedChapters - existingChapters.toSet()
+      val cachingChapters = requestedChapters.filterNot { it.id in existingChapterIds }
 
       val requestedFiles = findRequestedFiles(mediaItem, cachingChapters)
 

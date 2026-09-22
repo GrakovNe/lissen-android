@@ -266,4 +266,29 @@
     <string name="equalizer_restore_default">Auf Standard zurücksetzen</string>
     <string name="a11y_equalizer_band">%s-Hertz-Band</string>
     <string name="a11y_equalizer_restore">Equalizer-Standardeinstellungen wiederherstellen</string>
+    <string name="player_cover_widget_label">Aktuell läuft (Cover)</string>
+    <string name="a11y_rewind">Zurückspulen</string>
+    <string name="a11y_fast_forward">Schnellvorlauf</string>
+    <plurals name="fade_duration_seconds">
+        <item quantity="one">%d Sekunde</item>
+        <item quantity="other">%d Sekunden</item>
+    </plurals>
+    <string name="player_state_widget_label">Aktuell läuft</string>
+    <string name="sleep_timer_settings_title">Timer-Einstellungen</string>
+    <string name="sleep_timer_settings_description">Timer-Steuerung konfigurieren</string>
+    <string name="sleep_timer_fade_title">Ausblenden</string>
+    <string name="sleep_timer_fade_description">Lautstärke verringern, wenn die Wiedergabe stoppt</string>
+    <string name="sleep_timer_fade_duration_title">Ausblenddauer</string>
+    <string name="download_settings_storage_title">Speicherort</string>
+    <string name="download_settings_storage_unavailable">Nicht verfügbar</string>
+    <string name="download_settings_storage_switch_failed_toast">Speicherort kann nicht gewechselt werden</string>
+    <string name="download_settings_storage_confirmation_message">Heruntergeladene Inhalte werden von diesem Gerät gelöscht. Ihre Serverdaten bleiben davon unberührt</string>
+    <string name="download_settings_storage_confirm">Standort wechseln</string>
+    <string name="tree_node_downloads_offline">Downloads (Offline-Modus)</string>
+    <string name="tree_node_all_titles">Alle Titel</string>
+    <string name="tree_node_series_collapsed">Zusammengefasste Reihen</string>
+    <string name="tree_node_genres">Genres</string>
+    <string name="tree_node_tags">Tags</string>
+    <string name="tree_node_authors">Autoren</string>
+    <string name="tree_node_series">Serien</string>
 </resources>

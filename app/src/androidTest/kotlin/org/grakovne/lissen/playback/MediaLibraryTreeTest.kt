@@ -32,9 +32,8 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import kotlin.OptIn
 
-@OptIn(UnstableApi::class)
+@UnstableApi
 @RunWith(AndroidJUnit4::class)
 class MediaLibraryTreeTest {
   private lateinit var context: Context

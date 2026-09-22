@@ -27,7 +27,8 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.Bookmarks
+import androidx.compose.material.icons.automirrored.outlined.Sort
+import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -70,6 +71,7 @@ import org.grakovne.lissen.ui.icons.Search
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.player.composable.BookCover
 import org.grakovne.lissen.ui.screens.player.composable.BookmarksComposable
+import org.grakovne.lissen.ui.screens.player.composable.EpisodeOrderingComposable
 import org.grakovne.lissen.ui.screens.player.composable.MediaDetailComposable
 import org.grakovne.lissen.ui.screens.player.composable.NavigationBarComposable
 import org.grakovne.lissen.ui.screens.player.composable.PlayingQueueComposable
@@ -136,9 +138,18 @@ fun PlayerScreen(
 
   var itemDetailsSelected by remember { mutableStateOf(false) }
   var bookmarksSelected by remember { mutableStateOf(false) }
+  var orderingSelected by remember { mutableStateOf(false) }
 
   val preferredLibraryType by libraryViewModel.preferredLibraryType.collectAsState()
+
+  // while the requested item is still loading, playingBook may hold the previous item of another
+  // type; the screen keeps rendering that item, so its type drives the labels, but only the
+  // requested item decides whether ordering is offered
+  val requestedBook = playingBook?.takeIf { it.id == bookId }
   val libraryType = playingBook?.libraryType ?: preferredLibraryType
+  val episodeOrdering by remember(bookId) { playerViewModel.episodeOrdering(bookId) }.collectAsState(initial = null)
+
+  val sortable = isSortable(requestedBook, preferredLibraryType)
 
   val screenTitle =
     when {
@@ -196,10 +207,6 @@ fun PlayerScreen(
     }
   }
 
-  LaunchedEffect(playingBook) {
-    playerViewModel.updateBookmarks()
-  }
-
   Scaffold(
     topBar = {
       TopAppBar(
@@ -223,15 +230,33 @@ fun PlayerScreen(
               }
 
               else -> {
+                // the actions stay drawn as they are while the item loads or its queue is rebuilt,
+                // no dimmed state: a tap simply does nothing until playback is ready
                 Row {
                   if (queueControlsVisible) {
                     IconButton(
-                      onClick = { playerViewModel.requestSearch() },
+                      onClick = { if (isPlaybackReady) playerViewModel.requestSearch() },
                       modifier = Modifier.padding(end = 4.dp),
                     ) {
                       Icon(
                         imageVector = Search,
                         contentDescription = null,
+                      )
+                    }
+                  }
+
+                  // podcasts only; stays next to search while the queue is expanded
+                  if (sortable) {
+                    IconButton(
+                      onClick = { if (isPlaybackReady) orderingSelected = true },
+                      modifier =
+                        Modifier
+                          .padding(end = 4.dp)
+                          .testTag("episodeOrderingButton"),
+                    ) {
+                      Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.Sort,
+                        contentDescription = stringResource(R.string.library_quick_settings_sort_title),
                       )
                     }
                   }
@@ -244,16 +269,21 @@ fun PlayerScreen(
                           bookmarksSelected = true
                         }
                       },
-                      modifier = Modifier.padding(end = 4.dp),
+                      modifier =
+                        Modifier
+                          .padding(end = 4.dp)
+                          .testTag("playerBookmarksButton"),
                     ) {
                       Icon(
-                        imageVector = Icons.Outlined.Bookmarks,
+                        imageVector = Icons.Outlined.BookmarkBorder,
                         contentDescription = null,
                       )
                     }
+                  }
 
+                  if (bookActionsVisible) {
                     IconButton(
-                      onClick = { itemDetailsSelected = true },
+                      onClick = { if (isPlaybackReady) itemDetailsSelected = true },
                       modifier =
                         Modifier
                           .padding(end = 4.dp)
@@ -402,6 +432,18 @@ fun PlayerScreen(
     BookmarksComposable(
       playerViewModel = playerViewModel,
       onDismissRequest = { bookmarksSelected = false },
+    )
+  }
+
+  if (orderingSelected) {
+    // the same conditions under which the player would act, so a tap never fails silently
+    val canReorder = remember(isPlaybackReady, playingBook, bookId) { playerViewModel.canReorderPlayingItem(bookId) }
+
+    EpisodeOrderingComposable(
+      current = episodeOrdering,
+      enabled = canReorder,
+      onOrderingChanged = { playerViewModel.setEpisodeOrdering(bookId, it) },
+      onDismissRequest = { orderingSelected = false },
     )
   }
 }
@@ -647,3 +689,17 @@ private fun cachePolicyChanged(
   cachingModelView: CachingModelView,
   playingBook: DetailedItem?,
 ) = cachingModelView.localCacheUsing() != playingBook?.localProvided
+
+/**
+ * Whether the top bar offers episode ordering. The placeholder guesses from the library the
+ * item is opened from; a loaded item speaks for itself, and an item of unknown type is not
+ * sortable however the library looks.
+ */
+internal fun isSortable(
+  requestedBook: DetailedItem?,
+  preferredLibraryType: LibraryType?,
+): Boolean =
+  when (requestedBook) {
+    null -> preferredLibraryType == LibraryType.PODCAST
+    else -> requestedBook.libraryType == LibraryType.PODCAST
+  }

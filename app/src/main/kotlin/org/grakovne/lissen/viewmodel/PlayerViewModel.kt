@@ -5,15 +5,19 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.TimerOption
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.MediaRepository
 import timber.log.Timber
@@ -26,8 +30,12 @@ class PlayerViewModel
   constructor(
     private val mediaRepository: MediaRepository,
     private val preferences: PlaybackPreferences,
+    private val libraryPreferences: LibraryPreferences,
   ) : ViewModel() {
     val book: StateFlow<DetailedItem?> = mediaRepository.playingBook
+
+    /** The stored ordering of the item the screen shows, which may not be the playing one yet. */
+    fun episodeOrdering(itemId: String): Flow<EpisodeOrderingConfiguration?> = libraryPreferences.episodeOrderingFlow.map { it[itemId] }
 
     val currentChapterIndex: StateFlow<Int> = mediaRepository.currentChapterIndex
     val currentChapterPosition: StateFlow<Double> = mediaRepository.currentChapterPosition
@@ -190,6 +198,28 @@ class PlayerViewModel
     fun prepareAndPlay() {
       val playingBook = preferences.getPlayingItem() ?: return
       mediaRepository.prepareAndPlay(playingBook)
+    }
+
+    /** One predicate for the sheet's rows and for the action, so a tap never fails silently. */
+    fun canReorderPlayingItem(itemId: String): Boolean = mediaRepository.canReorderPlayingItem(itemId)
+
+    fun setEpisodeOrdering(
+      itemId: String,
+      configuration: EpisodeOrderingConfiguration,
+    ) {
+      Timber.d("User action: setEpisodeOrdering $configuration for $itemId")
+
+      // stored before the rebuild starts, so that anything fetching the item meanwhile (the
+      // media session, Android Auto) already gets the new order; rolled back if the player refuses
+      val previous = libraryPreferences.getEpisodeOrdering(itemId)
+      libraryPreferences.saveEpisodeOrdering(itemId, configuration)
+
+      if (mediaRepository.reorderPlayingItem(itemId, configuration).not()) {
+        when (previous) {
+          null -> libraryPreferences.clearEpisodeOrdering(itemId)
+          else -> libraryPreferences.saveEpisodeOrdering(itemId, previous)
+        }
+      }
     }
 
     companion object {

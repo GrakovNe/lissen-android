@@ -12,10 +12,16 @@ import com.squareup.moshi.JsonClass
   tableName = "offline_playback_session",
   indices = [
     Index(value = ["libraryItemId"], name = "index_offline_playback_session_libraryItemId"),
+    Index(
+      value = ["serverHost", "username", "startedAt"],
+      name = "index_offline_playback_session_owner_startedAt",
+    ),
   ],
 )
 data class OfflinePlaybackSessionEntity(
   @PrimaryKey val id: String,
+  val serverHost: String,
+  val username: String,
   val libraryItemId: String,
   val episodeId: String?,
   val libraryId: String?,

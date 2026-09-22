@@ -172,9 +172,12 @@ class MediaLibrarySessionCallback
           .setEnabled(true)
           .build()
 
+      // every controller gets the full player command set, trusted or not, as before media3
+      // started restricting untrusted controllers by default
       return MediaSession
         .ConnectionResult
-        .AcceptedResultBuilder(session)
+        .AcceptedResultBuilder()
+        .setAvailablePlayerCommands(MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS)
         .setAvailableSessionCommands(sessionCommands)
         .setMediaButtonPreferences(listOf(previousChapterButton, rewindButton, forwardButton, nextChapterButton))
         .build()

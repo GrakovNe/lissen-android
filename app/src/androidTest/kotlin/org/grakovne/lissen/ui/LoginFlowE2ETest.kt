@@ -3,7 +3,7 @@ package org.grakovne.lissen.ui
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -34,12 +34,19 @@ class LoginFlowE2ETest {
   @Inject
   lateinit var preferencesReset: PreferencesReset
 
+  @Inject
+  lateinit var playbackTeardown: PlaybackGraphTeardown
+
   @get:Rule(order = 2)
   val setupRule =
     object : ExternalResource() {
       override fun before() {
         hiltRule.inject()
         preferencesReset.clearAll()
+      }
+
+      override fun after() {
+        playbackTeardown.run()
       }
     }
 

@@ -1,10 +1,9 @@
 package org.grakovne.lissen.ui
 
-import android.content.Intent
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -13,7 +12,6 @@ import androidx.test.rule.GrantPermissionRule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.grakovne.lissen.persistence.preferences.PreferencesReset
-import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.ui.activity.AppActivity
 import org.junit.FixMethodOrder
 import org.junit.Rule
@@ -38,6 +36,9 @@ class LibraryE2ETest {
   @Inject
   lateinit var preferencesReset: PreferencesReset
 
+  @Inject
+  lateinit var playbackTeardown: PlaybackGraphTeardown
+
   @get:Rule(order = 2)
   val setupRule =
     object : ExternalResource() {
@@ -48,8 +49,7 @@ class LibraryE2ETest {
       }
 
       override fun after() {
-        val ctx = InstrumentationRegistry.getInstrumentation().targetContext
-        ctx.stopService(Intent(ctx, PlaybackService::class.java))
+        playbackTeardown.run()
       }
     }
 

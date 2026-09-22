@@ -4,6 +4,7 @@ import org.grakovne.lissen.content.cache.persistent.converter.OfflinePlaybackSes
 import org.grakovne.lissen.content.cache.persistent.dao.OfflinePlaybackSessionDao
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.OfflinePlaybackSession
+import org.grakovne.lissen.domain.OfflineSessionOwner
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.accumulateOfflineSession
 import timber.log.Timber
@@ -20,6 +21,7 @@ class OfflinePlaybackSessionRepository
   ) {
     suspend fun record(
       sessionId: String,
+      owner: OfflineSessionOwner,
       item: DetailedItem,
       chapterIndex: Int,
       progress: PlaybackProgress,
@@ -31,6 +33,7 @@ class OfflinePlaybackSessionRepository
         accumulateOfflineSession(
           existing = existing,
           sessionId = sessionId,
+          owner = owner,
           item = item,
           chapterIndex = chapterIndex,
           progress = progress,
@@ -46,7 +49,10 @@ class OfflinePlaybackSessionRepository
       return session
     }
 
-    suspend fun fetchAll(): List<OfflinePlaybackSession> = dao.fetchAll().map { converter.apply(it) }
+    suspend fun fetch(owner: OfflineSessionOwner): List<OfflinePlaybackSession> =
+      dao
+        .fetchByOwner(owner.serverHost, owner.username)
+        .map(converter::apply)
 
     suspend fun drop(ids: List<String>) {
       if (ids.isEmpty()) return

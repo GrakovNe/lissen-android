@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 22,
-    "identityHash": "c6fbcc786d7a18fe2a0cc4a8a18d23bd",
+    "identityHash": "9756f29b408199a1ae93776a3fc0c77e",
     "entities": [
       {
         "tableName": "detailed_books",
@@ -123,7 +123,7 @@
       },
       {
         "tableName": "book_files",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `bookFileId` TEXT NOT NULL, `name` TEXT NOT NULL, `size` INTEGER NOT NULL, `duration` REAL NOT NULL, `mimeType` TEXT NOT NULL, `bookId` TEXT NOT NULL, FOREIGN KEY(`bookId`) REFERENCES `detailed_books`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `bookFileId` TEXT NOT NULL, `name` TEXT NOT NULL, `size` INTEGER NOT NULL, `duration` REAL NOT NULL, `mimeType` TEXT NOT NULL, `bookId` TEXT NOT NULL, `fileIndex` INTEGER NOT NULL, FOREIGN KEY(`bookId`) REFERENCES `detailed_books`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -166,6 +166,12 @@
             "columnName": "bookId",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "fileIndex",
+            "columnName": "fileIndex",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -201,7 +207,7 @@
       },
       {
         "tableName": "book_chapters",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `bookChapterId` TEXT NOT NULL, `duration` REAL NOT NULL, `start` REAL NOT NULL, `end` REAL NOT NULL, `title` TEXT NOT NULL, `bookId` TEXT NOT NULL, `isCached` INTEGER NOT NULL, FOREIGN KEY(`bookId`) REFERENCES `detailed_books`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `bookChapterId` TEXT NOT NULL, `duration` REAL NOT NULL, `start` REAL NOT NULL, `end` REAL NOT NULL, `title` TEXT NOT NULL, `bookId` TEXT NOT NULL, `isCached` INTEGER NOT NULL, `chapterIndex` INTEGER NOT NULL, `publishedAt` INTEGER, `season` TEXT, `episode` TEXT, `fileName` TEXT, FOREIGN KEY(`bookId`) REFERENCES `detailed_books`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -250,6 +256,32 @@
             "columnName": "isCached",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "chapterIndex",
+            "columnName": "chapterIndex",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "publishedAt",
+            "columnName": "publishedAt",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "season",
+            "columnName": "season",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "episode",
+            "columnName": "episode",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "fileName",
+            "columnName": "fileName",
+            "affinity": "TEXT"
           }
         ],
         "primaryKey": {
@@ -427,109 +459,11 @@
             "createSql": "CREATE INDEX IF NOT EXISTS `index_cached_bookmark_createdAt` ON `${TABLE_NAME}` (`createdAt`)"
           }
         ]
-      },
-      {
-        "tableName": "offline_playback_session",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `libraryItemId` TEXT NOT NULL, `episodeId` TEXT, `libraryId` TEXT, `libraryType` TEXT NOT NULL, `displayTitle` TEXT NOT NULL, `displayAuthor` TEXT, `duration` REAL NOT NULL, `startTime` REAL NOT NULL, `currentTime` REAL NOT NULL, `timeListening` REAL NOT NULL, `startedAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
-        "fields": [
-          {
-            "fieldPath": "id",
-            "columnName": "id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "libraryItemId",
-            "columnName": "libraryItemId",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "episodeId",
-            "columnName": "episodeId",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "libraryId",
-            "columnName": "libraryId",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "libraryType",
-            "columnName": "libraryType",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "displayTitle",
-            "columnName": "displayTitle",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "displayAuthor",
-            "columnName": "displayAuthor",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "duration",
-            "columnName": "duration",
-            "affinity": "REAL",
-            "notNull": true
-          },
-          {
-            "fieldPath": "startTime",
-            "columnName": "startTime",
-            "affinity": "REAL",
-            "notNull": true
-          },
-          {
-            "fieldPath": "currentTime",
-            "columnName": "currentTime",
-            "affinity": "REAL",
-            "notNull": true
-          },
-          {
-            "fieldPath": "timeListening",
-            "columnName": "timeListening",
-            "affinity": "REAL",
-            "notNull": true
-          },
-          {
-            "fieldPath": "startedAt",
-            "columnName": "startedAt",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "updatedAt",
-            "columnName": "updatedAt",
-            "affinity": "INTEGER",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": false,
-          "columnNames": [
-            "id"
-          ]
-        },
-        "indices": [
-          {
-            "name": "index_offline_playback_session_libraryItemId",
-            "unique": false,
-            "columnNames": [
-              "libraryItemId"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_offline_playback_session_libraryItemId` ON `${TABLE_NAME}` (`libraryItemId`)"
-          }
-        ]
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c6fbcc786d7a18fe2a0cc4a8a18d23bd')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9756f29b408199a1ae93776a3fc0c77e')"
     ]
   }
 }

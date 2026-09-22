@@ -11,13 +11,16 @@ import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.content.cache.persistent.LocalCacheRepository
 import org.grakovne.lissen.content.cache.temporary.CachedBookmarkProvider
 import org.grakovne.lissen.content.cache.temporary.CachedCoverProvider
+import org.grakovne.lissen.content.ordering.ChapterOrdering
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.OfflinePlaybackSession
+import org.grakovne.lissen.domain.OfflineSessionOwner
 import org.grakovne.lissen.domain.OfflineSessionSyncResult
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
@@ -25,6 +28,7 @@ import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
+import org.grakovne.lissen.playback.service.calculateChapterIndex
 import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
@@ -116,6 +120,7 @@ class LissenMediaProvider
 
     suspend fun recordOfflineSession(
       sessionId: String,
+      owner: OfflineSessionOwner,
       detailedItem: DetailedItem,
       chapterIndex: Int,
       progress: PlaybackProgress,
@@ -127,6 +132,7 @@ class LissenMediaProvider
 
       return localCacheRepository.recordOfflineSession(
         sessionId = sessionId,
+        owner = owner,
         detailedItem = detailedItem,
         chapterIndex = chapterIndex,
         progress = progress,
@@ -134,7 +140,8 @@ class LissenMediaProvider
       )
     }
 
-    suspend fun fetchOfflineSessions(): List<OfflinePlaybackSession> = localCacheRepository.fetchOfflineSessions()
+    suspend fun fetchOfflineSessions(owner: OfflineSessionOwner): List<OfflinePlaybackSession> =
+      localCacheRepository.fetchOfflineSessions(owner)
 
     suspend fun dropOfflineSessions(ids: List<String>) = localCacheRepository.dropOfflineSessions(ids)
 
@@ -357,30 +364,82 @@ class LissenMediaProvider
     ): OperationResult<DetailedItem> {
       Timber.d("Fetching book: bookId=$bookId, libraryType=$libraryType")
 
-      return when (preferences.isForceCache()) {
-        true -> {
-          localCacheRepository
-            .fetchBook(bookId)
-            ?.let { OperationResult.Success(it) }
-            ?: OperationResult.Error(OperationError.InternalError)
+      val fetched: OperationResult<DetailedItem> =
+        when (preferences.isForceCache()) {
+          true -> {
+            localCacheRepository
+              .fetchBook(bookId)
+              ?.let { OperationResult.Success(it) }
+              ?: OperationResult.Error(OperationError.InternalError)
+          }
+
+          false -> {
+            provideChannelFor(libraryType)
+              .fetchBook(bookId)
+              .map { ChapterOrdering.canonical(it) }
+              .map { mergeLocalItemProgress(it) }
+              .foldAsync(
+                onSuccess = { OperationResult.Success(it) },
+                onFailure = { error ->
+                  localCacheRepository
+                    .fetchBook(bookId)
+                    ?.let { OperationResult.Success(it) }
+                    ?: error
+                },
+              )
+          }
         }
 
-        false -> {
-          provideChannelFor(libraryType)
-            .fetchBook(bookId)
-            .map { mergeLocalItemProgress(it) }
-            .map { trimProgress(it) }
-            .foldAsync(
-              onSuccess = { OperationResult.Success(it) },
-              onFailure = { error ->
-                localCacheRepository
-                  .fetchBook(bookId)
-                  ?.let { OperationResult.Success(it) }
-                  ?: error
-              },
-            )
-        }
+      return fetched
+        .map { applyOrdering(it) }
+        .flatMap { moveToAvailableChapter(it) }
+        .map { trimProgress(it) }
+    }
+
+    /**
+     * By this point the item is in the canonical order with a canonical progress, whether it
+     * came from the channel (canonicalized above, before the cached progress is merged in) or
+     * from the cache (stored canonical). The user-chosen order is applied here, once, for
+     * every consumer of the item. A stored configuration is trusted regardless of the library
+     * type: it can only ever be written for a podcast, and the cache may not know the type.
+     */
+    private fun applyOrdering(detailedItem: DetailedItem): DetailedItem {
+      val canonical = ChapterOrdering.canonical(detailedItem)
+      if (detailedItem.libraryType == LibraryType.LIBRARY) return canonical
+
+      val configuration = preferences.getEpisodeOrdering(detailedItem.id) ?: return canonical
+
+      return ChapterOrdering.apply(canonical, configuration)
+    }
+
+    /**
+     * A partially downloaded item may hold its progress inside a chapter that is not on the
+     * device. Playback then starts from the first chapter that is, in the order the user sees.
+     */
+    private fun moveToAvailableChapter(detailedItem: DetailedItem): OperationResult<DetailedItem> {
+      if (detailedItem.chapters.isEmpty()) return OperationResult.Success(detailedItem)
+
+      val position = detailedItem.progress?.currentTime ?: 0.0
+      val currentChapter = calculateChapterIndex(detailedItem, position)
+
+      if (detailedItem.chapters.getOrNull(currentChapter)?.available == true) {
+        return OperationResult.Success(detailedItem)
       }
+
+      val fallback =
+        detailedItem.chapters.firstOrNull { it.available }
+          ?: return OperationResult.Error(OperationError.InternalError)
+
+      return OperationResult.Success(
+        detailedItem.copy(
+          progress =
+            MediaProgress(
+              currentTime = fallback.start,
+              isFinished = false,
+              lastUpdate = FALLBACK_PROGRESS_TIMESTAMP,
+            ),
+        ),
+      )
     }
 
     suspend fun authorize(
@@ -501,6 +560,10 @@ class LissenMediaProvider
       }
     }
 
+    /**
+     * Both progresses are canonical positions: the cache only ever stores canonical ones and
+     * the channel item has been canonicalized before getting here.
+     */
     private suspend fun mergeLocalItemProgress(detailedItem: DetailedItem): DetailedItem {
       val cachedProgress = localCacheRepository.fetchPlayingItemProgress(detailedItem.id)
       val channelProgress = detailedItem.progress
@@ -531,4 +594,9 @@ class LissenMediaProvider
     fun providePreferredChannel(): MediaChannel = channelProvider.provideMediaChannel()
 
     fun provideChannelFor(libraryType: LibraryType?): MediaChannel = channelProvider.provideMediaChannel(libraryType)
+
+    private companion object {
+      // 2000-01-01T12:00, deliberately older than any real progress so a merge never prefers it
+      private const val FALLBACK_PROGRESS_TIMESTAMP = 946728000000L
+    }
   }

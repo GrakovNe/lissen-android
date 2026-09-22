@@ -5,7 +5,7 @@ import androidx.media3.common.util.UnstableApi
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-@OptIn(UnstableApi::class)
+@UnstableApi
 class LissenMediaSourceFactoryTest {
   @Test
   fun `converts valid clip bounds to microseconds`() {

@@ -8,6 +8,7 @@ on:
 jobs:
   instrumented-tests:
     runs-on: self-hosted
+    timeout-minutes: 120
     #runs-on: ubuntu-latest
 
     steps:
@@ -38,12 +39,21 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           disable-animations: true
           script: |
+            adb shell settings put global hide_error_dialogs 1
             ./gradlew :app:connectedDebugAndroidTest -Proom.schemaLocation=$GITHUB_WORKSPACE/app/schemas
             ./gradlew :app:assembleMinified :minifiedTest:assembleMinified
             adb install -r app/build/outputs/apk/minified/app-minified.apk
             adb install -r -t minifiedTest/build/outputs/apk/minified/minifiedTest-minified.apk
             mkdir -p minifiedTest/build/outputs/androidTest-results
-            adb shell am instrument -w org.grakovne.lissen.minifiedtest/androidx.test.runner.AndroidJUnitRunner | tee minifiedTest/build/outputs/androidTest-results/minified.txt
+            adb shell input keyevent KEYCODE_WAKEUP || true
+            adb shell wm dismiss-keyguard || true
+            adb logcat -c || true
+            adb logcat -v threadtime ActivityManager:I ActivityTaskManager:I am_kill:V am_anr:V am_crash:V AndroidRuntime:E System.err:V LissenE2E:V "*":S > minifiedTest/build/outputs/androidTest-results/minified-logcat.txt &
+            LOGCAT_PID=$!
+            timeout --kill-after=60s 2400s adb shell am instrument -w org.grakovne.lissen.minifiedtest/androidx.test.runner.AndroidJUnitRunner | tee minifiedTest/build/outputs/androidTest-results/minified.txt
+            adb exec-out screencap -p > minifiedTest/build/outputs/androidTest-results/minified-screen.png || true
+            adb pull /sdcard/Android/data/org.grakovne.lissen.minifiedtest/files/ minifiedTest/build/outputs/androidTest-results/e2e-dumps/ || true
+            kill $LOGCAT_PID || true
             grep -Eq '^OK \([1-9][0-9]* tests?\)$' minifiedTest/build/outputs/androidTest-results/minified.txt
 
       - name: Upload test results

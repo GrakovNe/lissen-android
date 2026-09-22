@@ -1,11 +1,10 @@
 package org.grakovne.lissen.ui
 
-import android.content.Intent
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasTestTag
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToIndex
@@ -16,7 +15,6 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.grakovne.lissen.persistence.preferences.PreferencesReset
 import org.grakovne.lissen.playback.MediaRepository
-import org.grakovne.lissen.playback.service.PlaybackService
 import org.grakovne.lissen.ui.activity.AppActivity
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
@@ -46,6 +44,9 @@ class PlayerE2ETest {
   @Inject
   lateinit var mediaRepository: MediaRepository
 
+  @Inject
+  lateinit var playbackTeardown: PlaybackGraphTeardown
+
   @get:Rule(order = 2)
   val setupRule =
     object : ExternalResource() {
@@ -59,8 +60,7 @@ class PlayerE2ETest {
       }
 
       override fun after() {
-        val ctx = InstrumentationRegistry.getInstrumentation().targetContext
-        ctx.stopService(Intent(ctx, PlaybackService::class.java))
+        playbackTeardown.run()
       }
     }
 

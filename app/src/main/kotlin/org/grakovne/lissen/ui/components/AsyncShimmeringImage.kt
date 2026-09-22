@@ -4,7 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -30,9 +30,15 @@ fun AsyncShimmeringImage(
   onLoadingStateChanged: (Boolean) -> Unit = {},
 ) {
   var isLoading by remember { mutableStateOf(true) }
+  val reportedLoading = remember { mutableStateOf<Boolean?>(null) }
 
-  LaunchedEffect(isLoading) {
-    onLoadingStateChanged(isLoading)
+  // reported right after the composition that produced the state, so a request that resolves
+  // before any coroutine gets to run still reports its loading phase first
+  SideEffect {
+    if (reportedLoading.value != isLoading) {
+      reportedLoading.value = isLoading
+      onLoadingStateChanged(isLoading)
+    }
   }
 
   Box(

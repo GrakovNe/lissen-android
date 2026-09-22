@@ -10,6 +10,7 @@ package org.grakovne.lissen.domain
 fun accumulateOfflineSession(
   existing: OfflinePlaybackSession?,
   sessionId: String,
+  owner: OfflineSessionOwner,
   item: DetailedItem,
   chapterIndex: Int,
   progress: PlaybackProgress,
@@ -39,6 +40,7 @@ fun accumulateOfflineSession(
     )
     ?: OfflinePlaybackSession(
       id = sessionId,
+      owner = owner,
       libraryItemId = item.id,
       episodeId = chapter?.id?.takeIf { isPodcast },
       libraryId = item.libraryId,

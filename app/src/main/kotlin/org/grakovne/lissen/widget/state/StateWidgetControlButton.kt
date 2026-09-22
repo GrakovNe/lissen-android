@@ -22,6 +22,7 @@ fun StateWidgetControlButton(
   onClick: Action,
   modifier: GlanceModifier,
   size: Dp,
+  contentDescription: String,
 ) {
   Row(
     modifier = modifier,
@@ -30,7 +31,7 @@ fun StateWidgetControlButton(
   ) {
     Image(
       provider = icon,
-      contentDescription = null,
+      contentDescription = contentDescription,
       colorFilter = ColorFilter.tint(contentColor),
       modifier =
         GlanceModifier

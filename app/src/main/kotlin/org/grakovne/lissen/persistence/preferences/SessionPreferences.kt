@@ -1,5 +1,9 @@
 package org.grakovne.lissen.persistence.preferences
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import org.grakovne.lissen.domain.OfflineSessionOwner
 import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
@@ -17,6 +21,22 @@ class SessionPreferences
     private val accessTokenCache = CachedValue { store.readSecret(KEY_ACCESS_TOKEN) }
     private val refreshTokenCache = CachedValue { store.readSecret(KEY_REFRESH_TOKEN) }
 
+    private val authenticatedFlow: Flow<Boolean> =
+      combine(
+        store.asFlow(KEY_TOKEN) { store.readSecret(KEY_TOKEN) != null },
+        store.asFlow(KEY_ACCESS_TOKEN) { store.readSecret(KEY_ACCESS_TOKEN) != null },
+      ) { hasLegacyToken, hasAccessToken -> hasLegacyToken || hasAccessToken }
+        .distinctUntilChanged()
+
+    val authenticatedOfflineSessionOwnerFlow: Flow<OfflineSessionOwner?> =
+      combine(
+        store.asFlow(KEY_HOST, ::getHost),
+        store.asFlow(KEY_USERNAME, ::getUsername),
+        authenticatedFlow,
+      ) { host, username, authenticated ->
+        OfflineSessionOwner.from(host, username).takeIf { authenticated }
+      }.distinctUntilChanged()
+
     fun getDeviceId(): String =
       synchronized(deviceIdLock) {
         store.getString(KEY_DEVICE_ID)
@@ -31,6 +51,11 @@ class SessionPreferences
     fun saveHost(host: String) = store.putString(KEY_HOST, host)
 
     fun getUsername(): String? = store.getString(KEY_USERNAME)
+
+    fun getAuthenticatedOfflineSessionOwner(): OfflineSessionOwner? =
+      OfflineSessionOwner
+        .from(getHost(), getUsername())
+        .takeIf { hasCredentials() }
 
     fun saveUsername(username: String) = store.putString(KEY_USERNAME, username)
 
@@ -50,18 +75,17 @@ class SessionPreferences
 
     fun getRefreshToken(): String? = refreshTokenCache.get()
 
-    fun hasCredentials(): Boolean {
-      val host = getHost()
-      val username = getUsername()
-      val hasToken = getToken() != null || getAccessToken() != null
+    fun hasCredentials(): Boolean =
+      try {
+        val host = getHost()
+        val username = getUsername()
+        val hasToken = getToken() != null || getAccessToken() != null
 
-      return try {
         host != null && username != null && hasToken
       } catch (ex: Exception) {
         Timber.w("Unable to resolve credentials state due to: ${ex.message}")
         false
       }
-    }
 
     fun clearCredentials() {
       store.remove(listOf(KEY_TOKEN, KEY_ACCESS_TOKEN, KEY_REFRESH_TOKEN))

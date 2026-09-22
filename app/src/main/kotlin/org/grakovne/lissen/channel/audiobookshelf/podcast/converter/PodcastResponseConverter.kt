@@ -1,8 +1,9 @@
 package org.grakovne.lissen.channel.audiobookshelf.podcast.converter
 
 import org.grakovne.lissen.channel.audiobookshelf.common.model.MediaProgressResponse
-import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastEpisodeResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
+import org.grakovne.lissen.content.ordering.ChapterLocation
+import org.grakovne.lissen.content.ordering.ChapterOrdering
 import org.grakovne.lissen.domain.BookChapterState
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
@@ -15,6 +16,12 @@ import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Maps the server response into the canonical order (see [ChapterOrdering]); the listener's
+ * own order is applied later by the provider. The published date is parsed from `pubDate` with
+ * the very same pattern every earlier version used, deliberately: the canonical order derived
+ * from it is the coordinate system of every stored progress and bookmark.
+ */
 @Singleton
 class PodcastResponseConverter
   @Inject
@@ -23,66 +30,52 @@ class PodcastResponseConverter
       item: PodcastResponse,
       progressResponses: List<MediaProgressResponse> = emptyList(),
     ): DetailedItem {
-      val orderedEpisodes =
-        item
-          .media
-          .episodes
-          ?.orderEpisode()
+      val episodes = item.media.episodes ?: emptyList()
 
-      val totalCurrentTime =
-        progressResponses
-          .maxByOrNull { it.lastUpdate }
-          ?.let { progress ->
-            orderedEpisodes
-              ?.takeWhile { it.id != progress.episodeId }
-              ?.sumOf { it.audioFile.duration ?: 0.0 }
-              ?.plus(progress.currentTime)
-          }
+      // SimpleDateFormat is not thread-safe and podcasts are fetched concurrently: one per call
+      val dateFormat = SimpleDateFormat(PUB_DATE_PATTERN, Locale.ENGLISH)
 
-      val latestEpisodeMediaProgress =
-        progressResponses
-          .maxByOrNull { it.lastUpdate }
-          ?.let {
-            MediaProgress(
-              currentTime = totalCurrentTime ?: 0.0,
-              isFinished = it.isFinished,
-              lastUpdate = it.lastUpdate,
-            )
-          }
+      val latestProgress = progressResponses.maxByOrNull { it.lastUpdate }
 
-      val filesAsChapters: List<PlayingChapter> =
-        orderedEpisodes
-          ?.fold(0.0 to mutableListOf<PlayingChapter>()) { (accDuration, chapters), episode ->
-            chapters.add(
-              PlayingChapter(
-                start = accDuration,
-                end = accDuration + (episode.audioFile.duration ?: 0.0),
-                title = episode.title,
-                duration = episode.audioFile.duration ?: 0.0,
-                id = episode.id,
-                available = true,
-                podcastEpisodeState =
-                  progressResponses
-                    .find { it.episodeId == episode.id }
-                    ?.let { hasFinished(it) },
-              ),
-            )
-            accDuration + (episode.audioFile.duration ?: 0.0) to chapters
-          }?.second
-          ?: emptyList()
+      var accumulated = 0.0
 
-      return DetailedItem(
-        id = item.id,
-        title = item.media.metadata.title,
-        subtitle = null,
-        libraryId = item.libraryId,
-        libraryType = LibraryType.PODCAST,
-        author = item.media.metadata.author,
-        narrator = null,
-        localProvided = false,
-        files =
-          orderedEpisodes
-            ?.map {
+      val filesAsChapters =
+        episodes.mapIndexed { index, episode ->
+          val duration = episode.audioFile.duration ?: 0.0
+          val start = accumulated
+          accumulated += duration
+
+          PlayingChapter(
+            start = start,
+            end = accumulated,
+            title = episode.title,
+            duration = duration,
+            id = episode.id,
+            available = true,
+            podcastEpisodeState =
+              progressResponses
+                .find { it.episodeId == episode.id }
+                ?.let { hasFinished(it) },
+            index = index,
+            publishedAt = dateFormat.parsePublishedAt(episode.pubDate),
+            season = episode.season,
+            episode = episode.episode,
+            fileName = episode.audioFile.metadata.filename,
+          )
+        }
+
+      val raw =
+        DetailedItem(
+          id = item.id,
+          title = item.media.metadata.title,
+          subtitle = null,
+          libraryId = item.libraryId,
+          libraryType = LibraryType.PODCAST,
+          author = item.media.metadata.author,
+          narrator = null,
+          localProvided = false,
+          files =
+            episodes.map {
               BookFile(
                 id = it.audioFile.ino,
                 name = it.title,
@@ -90,16 +83,37 @@ class PodcastResponseConverter
                 mimeType = it.audioFile.mimeType,
                 size = it.audioFile.metadata.size,
               )
-            }
-            ?: emptyList(),
-        chapters = filesAsChapters,
-        progress = latestEpisodeMediaProgress,
-        year = null, // we have no "Year" for the ongoing media
-        abstract = item.media.metadata.description,
-        publisher = item.media.metadata.publisher,
-        series = emptyList(), // there is no series for podcast
-        createdAt = item.addedAt,
-        updatedAt = item.ctimeMs,
+            },
+          chapters = filesAsChapters,
+          progress = null,
+          year = null, // we have no "Year" for the ongoing media
+          abstract = item.media.metadata.description,
+          publisher = item.media.metadata.publisher,
+          series = emptyList(), // there is no series for podcast
+          createdAt = item.addedAt,
+          updatedAt = item.ctimeMs,
+        )
+
+      // The order is settled here so that the progress can be anchored to its episode in the
+      // canonical timeline. A finished episode comes from the server with currentTime equal to
+      // its duration, i.e. exactly on the episode's end; as a bare number in another order that
+      // instant is the start of whatever episode happens to follow there, which is not the
+      // canonical successor the listener should resume with.
+      val canonical = ChapterOrdering.canonical(raw)
+
+      return canonical.copy(progress = latestProgress?.let { canonical.anchoredProgress(it) })
+    }
+
+    private fun DetailedItem.anchoredProgress(progress: MediaProgressResponse): MediaProgress {
+      val position =
+        ChapterOrdering.position(this, ChapterLocation(chapterId = progress.episodeId ?: "", offset = progress.currentTime))
+          // the episode is gone from the item: past the end, so that the progress is trimmed
+          ?: (chapters.lastOrNull()?.end ?: 0.0) + progress.currentTime
+
+      return MediaProgress(
+        currentTime = position,
+        isFinished = progress.isFinished,
+        lastUpdate = progress.lastUpdate,
       )
     }
 
@@ -109,44 +123,16 @@ class PodcastResponseConverter
         false -> null
       }
 
+    private fun SimpleDateFormat.parsePublishedAt(pubDate: String?): Long? =
+      try {
+        pubDate?.let { parse(it)?.time }
+      } catch (e: Exception) {
+        Timber.w("Unable to parse episode pubDate '$pubDate' due to: ${e.message}")
+        null
+      }
+
     companion object {
       private const val FINISHED_PROGRESS_THRESHOLD = 0.9
       private const val PUB_DATE_PATTERN = "EEE, dd MMM yyyy HH:mm:ss Z"
-
-      private data class EpisodeOrder(
-        val publishedAt: Long?,
-        val season: Int?,
-        val episode: Int?,
-      )
-
-      // SimpleDateFormat is not thread-safe and podcast books are fetched concurrently,
-      // so parsing happens once per sort with a dedicated instance instead of a shared one.
-      private fun List<PodcastEpisodeResponse>.orderEpisode(): List<PodcastEpisodeResponse> {
-        val dateFormat = SimpleDateFormat(PUB_DATE_PATTERN, Locale.ENGLISH)
-
-        return map { item ->
-          val publishedAt =
-            try {
-              item.pubDate?.let { dateFormat.parse(it)?.time }
-            } catch (e: Exception) {
-              Timber.w("Unable to parse episode pubDate '${item.pubDate}' due to: ${e.message}")
-              null
-            }
-          EpisodeOrder(publishedAt, item.season.safeToInt(), item.episode.safeToInt()) to item
-        }.sortedWith(
-          compareBy({ it.first.publishedAt }, { it.first.season }, { it.first.episode }),
-        ).map { it.second }
-      }
-
-      private fun String?.safeToInt(): Int? {
-        val maybeNumber = this?.takeIf { it.isNotBlank() }
-
-        return try {
-          maybeNumber?.toInt()
-        } catch (ex: Exception) {
-          Timber.w("Unable to parse '$maybeNumber' as season/episode number due to: ${ex.message}")
-          null
-        }
-      }
     }
   }

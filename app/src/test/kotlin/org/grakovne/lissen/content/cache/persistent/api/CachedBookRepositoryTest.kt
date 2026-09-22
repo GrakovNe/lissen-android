@@ -19,6 +19,7 @@ import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.GroupedEntry
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
+import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
@@ -375,6 +376,110 @@ class CachedBookRepositoryTest {
 
       coVerify { bookDao.upsertCachedBook(item, emptyList(), emptyList()) }
     }
+
+  @Test
+  fun `cacheBook stores the item in the canonical order with the progress translated`() =
+    runBlocking {
+      // playing order c1, c0 (descending by date), listener 5s into c0 = 15s
+      val playing =
+        orderedItem(
+          listOf(
+            orderedChapter("c1", index = 1, publishedAt = 2L),
+            orderedChapter("c0", index = 0, publishedAt = 1L),
+          ),
+          currentTime = 15.0,
+        )
+      val bookSlot = slot<DetailedItem>()
+      coEvery { bookDao.upsertCachedBook(capture(bookSlot), any(), any()) } returns Unit
+
+      repository.cacheBook(playing, emptyList(), emptyList())
+
+      assertEquals(listOf("c0", "c1"), bookSlot.captured.chapters.map { it.id })
+      assertEquals(listOf("f-c0", "f-c1"), bookSlot.captured.files.map { it.id })
+      assertEquals(listOf(0.0, 10.0), bookSlot.captured.chapters.map { it.start })
+      // 5s into c0, which starts at 0s in the canonical order
+      assertEquals(5.0, bookSlot.captured.progress?.currentTime)
+    }
+
+  @Test
+  fun `syncProgress writes the canonical position and pins an overshoot to the end`() =
+    runBlocking {
+      val playing =
+        orderedItem(
+          listOf(
+            orderedChapter("c1", index = 1, publishedAt = 2L),
+            orderedChapter("c0", index = 0, publishedAt = 1L),
+          ),
+          currentTime = null,
+        )
+      val progressSlot = slot<MediaProgressEntity>()
+      coEvery { bookDao.upsertMediaProgress(capture(progressSlot)) } returns Unit
+
+      // 5s into c1 in playing order; c1 starts at 10s canonically
+      repository.syncProgress(playing, PlaybackProgress(currentChapterTime = 5.0, currentTotalTime = 5.0))
+      assertEquals(15.0, progressSlot.captured.currentTime)
+      assertFalse(progressSlot.captured.isFinished)
+
+      // the file ran 300ms past the declared duration: the end of the item, in any order, and
+      // finished, so that the item starts over next time instead of resuming mid-list
+      repository.syncProgress(playing, PlaybackProgress(currentChapterTime = 10.3, currentTotalTime = 20.3))
+      assertEquals(20.0, progressSlot.captured.currentTime)
+      assertTrue(progressSlot.captured.isFinished)
+
+      // almost through the canonically newest episode, the first thing played in this order: not finished
+      repository.syncProgress(playing, PlaybackProgress(currentChapterTime = 9.9, currentTotalTime = 9.9))
+      assertEquals(19.9, progressSlot.captured.currentTime, 1e-9)
+      assertFalse(progressSlot.captured.isFinished)
+    }
+
+  private fun orderedChapter(
+    id: String,
+    index: Int,
+    publishedAt: Long?,
+  ) = PlayingChapter(
+    id = id,
+    title = id,
+    start = 0.0,
+    end = 10.0,
+    duration = 10.0,
+    available = true,
+    podcastEpisodeState = null,
+    index = index,
+    publishedAt = publishedAt,
+  )
+
+  private fun orderedItem(
+    chapters: List<PlayingChapter>,
+    currentTime: Double?,
+  ): DetailedItem {
+    var accumulated = 0.0
+    val bounded =
+      chapters.map {
+        val start = accumulated
+        accumulated += it.duration
+        it.copy(start = start, end = accumulated)
+      }
+
+    return DetailedItem(
+      id = "b1",
+      title = "Title",
+      subtitle = null,
+      author = null,
+      narrator = null,
+      publisher = null,
+      series = emptyList(),
+      year = null,
+      abstract = null,
+      files = bounded.map { BookFile(id = "f-${it.id}", name = it.id, duration = it.duration, size = 0, mimeType = "audio/mpeg") },
+      chapters = bounded,
+      progress = currentTime?.let { MediaProgress(currentTime = it, isFinished = false, lastUpdate = 1L) },
+      libraryId = LIBRARY_ID,
+      localProvided = false,
+      createdAt = 0L,
+      updatedAt = 0L,
+      libraryType = LibraryType.PODCAST,
+    )
+  }
 
   @Test
   fun `provideCacheState by book id delegates to the dao`() {

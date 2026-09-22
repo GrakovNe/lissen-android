@@ -186,6 +186,7 @@ class PlayerStateWidget : GlanceAppWidget() {
                 actionParametersOf(bookIdKey to bookId),
               ),
             modifier = GlanceModifier.defaultWeight(),
+            contentDescription = context.getString(org.grakovne.lissen.R.string.a11y_previous_track),
           )
 
           StateWidgetControlButton(
@@ -197,6 +198,7 @@ class PlayerStateWidget : GlanceAppWidget() {
                 actionParametersOf(bookIdKey to bookId),
               ),
             modifier = GlanceModifier.defaultWeight(),
+            contentDescription = context.getString(org.grakovne.lissen.R.string.a11y_rewind),
           )
 
           StateWidgetControlButton(
@@ -213,6 +215,10 @@ class PlayerStateWidget : GlanceAppWidget() {
                 actionParametersOf(bookIdKey to bookId),
               ),
             modifier = GlanceModifier.defaultWeight(),
+            contentDescription =
+              context.getString(
+                if (isPlaying) org.grakovne.lissen.R.string.a11y_pause else org.grakovne.lissen.R.string.a11y_play,
+              ),
           )
 
           StateWidgetControlButton(
@@ -224,6 +230,7 @@ class PlayerStateWidget : GlanceAppWidget() {
                 actionParametersOf(bookIdKey to bookId),
               ),
             modifier = GlanceModifier.defaultWeight(),
+            contentDescription = context.getString(org.grakovne.lissen.R.string.a11y_fast_forward),
           )
 
           StateWidgetControlButton(
@@ -235,6 +242,7 @@ class PlayerStateWidget : GlanceAppWidget() {
                 actionParametersOf(bookIdKey to bookId),
               ),
             modifier = GlanceModifier.defaultWeight(),
+            contentDescription = context.getString(org.grakovne.lissen.R.string.a11y_next_track),
           )
         }
       }

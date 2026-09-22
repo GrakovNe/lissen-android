@@ -36,7 +36,7 @@
     <string name="color_scheme_dark">Scuro</string>
     <string name="settings_screen_color_scheme_title">Schema colore</string>
     <string name="library_search_hint">Cerca in base al titolo, all\'autore o alla serie</string>
-    <string name="player_screen_title">In riproduzione</string>
+    <string name="player_screen_title">In ascolto ora</string>
     <string name="settings_screen_custom_headers_title">Testate personalizzate</string>
     <string name="settings_screen_custom_header_hint">Specificare le intestazioni per le connessioni al server</string>
     <string name="custom_header_hint_name">Chiave</string>
@@ -290,4 +290,8 @@
     <string name="sleep_timer_fade_title">Dissolvenza in uscita</string>
     <string name="sleep_timer_fade_description">Diminuisci il volume quando la riproduzione si interrompe</string>
     <string name="sleep_timer_fade_duration_title">Durata dissolvenza</string>
+    <string name="a11y_rewind">Torna indietro</string>
+    <string name="a11y_fast_forward">Avanti veloce</string>
+    <string name="player_state_widget_label">In riproduzione</string>
+    <string name="player_cover_widget_label">In riproduzione (copertina)</string>
 </resources>

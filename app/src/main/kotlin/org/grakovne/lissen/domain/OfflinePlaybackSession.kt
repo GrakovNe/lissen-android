@@ -1,6 +1,7 @@
 package org.grakovne.lissen.domain
 
 import androidx.annotation.Keep
+import java.net.URI
 
 /**
  * A listening session recorded while the server was unreachable. Rows are
@@ -11,6 +12,7 @@ import androidx.annotation.Keep
 @Keep
 data class OfflinePlaybackSession(
   val id: String,
+  val owner: OfflineSessionOwner,
   val libraryItemId: String,
   val episodeId: String?,
   val libraryId: String?,
@@ -24,6 +26,44 @@ data class OfflinePlaybackSession(
   val startedAt: Long,
   val updatedAt: Long,
 )
+
+@Keep
+data class OfflineSessionOwner(
+  val serverHost: String,
+  val username: String,
+) {
+  companion object {
+    fun from(
+      serverHost: String?,
+      username: String?,
+    ): OfflineSessionOwner? {
+      val normalizedHost = serverHost?.normalizeServerHost() ?: return null
+      val normalizedUsername = username?.trim()?.takeIf(String::isNotEmpty) ?: return null
+
+      return OfflineSessionOwner(
+        serverHost = normalizedHost,
+        username = normalizedUsername,
+      )
+    }
+  }
+}
+
+private fun String.normalizeServerHost(): String? {
+  val source = trim().trimEnd('/').takeIf(String::isNotEmpty) ?: return null
+
+  return runCatching {
+    val uri = URI(source)
+    URI(
+      uri.scheme?.lowercase(),
+      uri.userInfo,
+      uri.host?.lowercase(),
+      uri.port,
+      uri.path?.trimEnd('/').orEmpty(),
+      uri.query,
+      uri.fragment,
+    ).toString()
+  }.getOrDefault(source)
+}
 
 @Keep
 data class OfflineSessionSyncResult(

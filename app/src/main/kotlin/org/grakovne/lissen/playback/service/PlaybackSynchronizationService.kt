@@ -15,6 +15,7 @@ import kotlinx.coroutines.withContext
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.OfflineSessionOwner
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.PlaybackSessionSource
@@ -33,9 +34,18 @@ class PlaybackSynchronizationService
     private val sharedPreferences: SessionPreferences,
     private val offlineSessionSyncService: OfflineSessionSyncService,
   ) {
+    // written from the main thread and from the media session's and the sync's own dispatchers
+    @Volatile
     private var currentItem: DetailedItem? = null
+
+    @Volatile
     private var currentChapterIndex: Int? = null
+
+    @Volatile
     private var playbackSession: PlaybackSession? = null
+
+    @Volatile
+    private var currentOfflineOwner: OfflineSessionOwner? = null
     private var listeningMark = ListeningMark(playingSince = null, unsyncedMs = 0)
     private val serviceScope = MainScope()
     private var syncJob: Job? = null
@@ -60,9 +70,10 @@ class PlaybackSynchronizationService
       Timber.d("Starting playback synchronization for ${item.id}")
       serviceScope.coroutineContext.cancelChildren()
       syncJob = null
-      currentItem = item
-      listeningMark = listeningMark.copy(playingSince = null)
       releaseOfflineSession()
+      currentItem = item
+      currentOfflineOwner = sharedPreferences.getAuthenticatedOfflineSessionOwner()
+      listeningMark = listeningMark.copy(playingSince = null)
     }
 
     fun cancelSynchronization() {
@@ -71,6 +82,7 @@ class PlaybackSynchronizationService
       syncJob = null
       listeningMark = listeningMark.copy(playingSince = null)
       releaseOfflineSession()
+      currentOfflineOwner = null
     }
 
     /**
@@ -79,11 +91,10 @@ class PlaybackSynchronizationService
      * row is never recreated from zero under the same id.
      */
     private fun releaseOfflineSession() {
-      if (playbackSession?.sessionSource != PlaybackSessionSource.LOCAL) return
+      val localSession = playbackSession?.takeIf { it.sessionSource == PlaybackSessionSource.LOCAL } ?: return
 
       playbackSession = null
-      offlineSessionSyncService.activeSessionId = null
-      offlineSessionSyncService.requestUpload()
+      offlineSessionSyncService.releaseSession(localSession.sessionId)
     }
 
     private fun handleSyncEvent() {
@@ -216,10 +227,15 @@ class PlaybackSynchronizationService
       chapterIndex: Int,
       snapshot: SyncSnapshot,
     ) {
-      offlineSessionSyncService.activeSessionId = session.sessionId
+      val owner =
+        currentOfflineOwner
+          ?: return Timber.w("Unable to record offline session ${session.sessionId}: no authenticated server owner")
+
+      offlineSessionSyncService.activateSession(session.sessionId)
 
       mediaChannel.recordOfflineSession(
         sessionId = session.sessionId,
+        owner = owner,
         detailedItem = item,
         chapterIndex = chapterIndex,
         progress = snapshot.progress,
@@ -260,22 +276,20 @@ class PlaybackSynchronizationService
       opened: PlaybackSession,
       keepLocal: Boolean,
     ) {
-      val previous = playbackSession
+      val adoption = choosePlaybackSession(playbackSession, opened, item.id, keepLocal)
+      playbackSession = adoption.session
 
-      val previousLocal =
-        previous
-          ?.takeIf { it.sessionSource == PlaybackSessionSource.LOCAL && it.itemId == item.id }
-
-      playbackSession =
-        when {
-          opened.sessionSource == PlaybackSessionSource.LOCAL && keepLocal -> previousLocal ?: opened
-          else -> opened
+      when (adoption.session.sessionSource) {
+        PlaybackSessionSource.LOCAL -> {
+          offlineSessionSyncService.activateSession(adoption.session.sessionId)
         }
 
-      if (opened.sessionSource == PlaybackSessionSource.REMOTE && previousLocal != null) {
-        Timber.d("Server reachable again, handing offline session ${previousLocal.sessionId} over to upload")
-        offlineSessionSyncService.activeSessionId = null
-        offlineSessionSyncService.requestUpload()
+        PlaybackSessionSource.REMOTE -> {
+          adoption.completedOfflineSessionId?.let { sessionId ->
+            Timber.d("Server reachable again, handing offline session $sessionId over to upload")
+            offlineSessionSyncService.releaseSession(sessionId)
+          }
+        }
       }
     }
 
@@ -306,6 +320,30 @@ private data class SyncSnapshot(
   val progress: PlaybackProgress,
   val timeListened: Double,
 )
+
+internal data class PlaybackSessionAdoption(
+  val session: PlaybackSession,
+  val completedOfflineSessionId: String?,
+)
+
+internal fun choosePlaybackSession(
+  previous: PlaybackSession?,
+  opened: PlaybackSession,
+  itemId: String,
+  keepLocal: Boolean,
+): PlaybackSessionAdoption {
+  val previousLocal = previous?.takeIf { it.sessionSource == PlaybackSessionSource.LOCAL && it.itemId == itemId }
+  val selected =
+    when {
+      opened.sessionSource == PlaybackSessionSource.LOCAL && keepLocal -> previousLocal ?: opened
+      else -> opened
+    }
+
+  return PlaybackSessionAdoption(
+    session = selected,
+    completedOfflineSessionId = previousLocal?.sessionId?.takeIf { opened.sessionSource == PlaybackSessionSource.REMOTE },
+  )
+}
 
 internal const val SYNC_INTERVAL_LONG = 45_000L
 internal const val SYNC_INTERVAL_SHORT = 5_000L

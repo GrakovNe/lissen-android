@@ -3,6 +3,7 @@ package org.grakovne.lissen.content.cache.persistent.converter
 import org.grakovne.lissen.content.cache.persistent.entity.OfflinePlaybackSessionEntity
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.OfflinePlaybackSession
+import org.grakovne.lissen.domain.OfflineSessionOwner
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -13,6 +14,11 @@ class OfflinePlaybackSessionEntityConverter
     fun apply(entity: OfflinePlaybackSessionEntity): OfflinePlaybackSession =
       OfflinePlaybackSession(
         id = entity.id,
+        owner =
+          OfflineSessionOwner(
+            serverHost = entity.serverHost,
+            username = entity.username,
+          ),
         libraryItemId = entity.libraryItemId,
         episodeId = entity.episodeId,
         libraryId = entity.libraryId,
@@ -30,6 +36,8 @@ class OfflinePlaybackSessionEntityConverter
     fun apply(session: OfflinePlaybackSession): OfflinePlaybackSessionEntity =
       OfflinePlaybackSessionEntity(
         id = session.id,
+        serverHost = session.owner.serverHost,
+        username = session.owner.username,
         libraryItemId = session.libraryItemId,
         episodeId = session.episodeId,
         libraryId = session.libraryId,
