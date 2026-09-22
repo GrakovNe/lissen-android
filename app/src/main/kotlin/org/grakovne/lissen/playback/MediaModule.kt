@@ -23,6 +23,7 @@ import dagger.hilt.components.SingletonComponent
 import org.grakovne.lissen.R
 import org.grakovne.lissen.channel.audiobookshelf.common.api.RequestHeadersProvider
 import org.grakovne.lissen.common.AudioFocusLossPolicy
+import org.grakovne.lissen.common.preferredCacheDir
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.persistence.preferences.ConnectionPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
@@ -43,11 +44,7 @@ object MediaModule {
   fun provideMediaCache(
     @ApplicationContext context: Context,
   ): Cache {
-    val baseFolder =
-      context
-        .externalCacheDir
-        ?.takeIf { it.exists() && it.canWrite() }
-        ?: context.cacheDir
+    val baseFolder = context.preferredCacheDir()
 
     return SimpleCache(
       File(baseFolder, "playback_cache"),
@@ -111,11 +108,7 @@ object MediaModule {
   }
 
   private fun buildPlaybackCacheLimit(ctx: Context): Long {
-    val baseFolder =
-      ctx
-        .externalCacheDir
-        ?.takeIf { it.exists() && it.canWrite() }
-        ?: ctx.cacheDir
+    val baseFolder = ctx.preferredCacheDir()
 
     val stat = android.os.StatFs(baseFolder.path)
     val available = stat.availableBytes

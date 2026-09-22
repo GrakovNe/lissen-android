@@ -12,27 +12,17 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.restartApplication
 import org.grakovne.lissen.common.shareFile
@@ -52,8 +42,8 @@ fun AdvancedSettingsComposable(
   val cachingModelView: CachingModelView = hiltViewModel()
   val viewModel: SettingsViewModel = hiltViewModel()
 
-  val crashReporting by viewModel.crashReporting.collectAsState()
-  val activityLoggingEnabled by viewModel.activityLoggingEnabled.collectAsState()
+  val crashReporting by viewModel.crashReporting.collectAsStateWithLifecycle()
+  val activityLoggingEnabled by viewModel.activityLoggingEnabled.collectAsStateWithLifecycle()
   val activityLoggingEnabledOnStart = viewModel.activityLoggingEnabledOnStart
 
   val context = LocalContext.current

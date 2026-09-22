@@ -114,7 +114,6 @@
     <string name="login_screen_open_id_button">Poveži se s OpenID-jem</string>
     <string name="source_code_on_github_title">Izvorni kod na GitHubu</string>
     <string name="source_code_on_github_subtitle">Prijavi greške ili predloži poboljšanja</string>
-    <string name="settings_screen_library_ordering_title">Sortiranje knjižnice</string>
     <string name="settings_screen_library_ordering_title_option">Naslov</string>
     <string name="settings_screen_library_ordering_author_option">Autor</string>
     <string name="settings_screen_library_ordering_creation_date_option">Datum stvaranja</string>

@@ -80,7 +80,6 @@
     <string name="notification_content_caching_error_description">Jotkin tiedostot eivät tallentuneet</string>
     <string name="login_screen_open_id_button">Yhdistä OpenID:llä</string>
     <string name="source_code_on_github_title">Lähdekoodi GitHubissa</string>
-    <string name="settings_screen_library_ordering_title">Kirjaston järjestysperuste</string>
     <string name="settings_screen_library_ordering_title_option">Otsikko</string>
     <string name="settings_screen_library_ordering_creation_date_option">Luontipäivä</string>
     <string name="settings_screen_seek_time_title">Kelausasetukset</string>

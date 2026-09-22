@@ -13,7 +13,6 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,6 +32,7 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.EqualizerSettings
 import org.grakovne.lissen.playback.EqualizerCapabilities
@@ -46,8 +46,8 @@ import kotlin.math.roundToInt
 @Composable
 fun EqualizerSettingsComposable(viewModel: SettingsViewModel) {
   var equalizerExpanded by remember { mutableStateOf(false) }
-  val settings by viewModel.equalizer.collectAsState()
-  val capabilities by viewModel.equalizerCapabilities.collectAsState()
+  val settings by viewModel.equalizer.collectAsStateWithLifecycle()
+  val capabilities by viewModel.equalizerCapabilities.collectAsStateWithLifecycle()
 
   EqualizerSettingsRow(
     capabilities = capabilities,

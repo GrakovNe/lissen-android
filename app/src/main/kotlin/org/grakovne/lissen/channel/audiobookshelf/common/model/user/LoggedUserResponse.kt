@@ -13,7 +13,6 @@ data class LoggedUserResponse(
 @Keep
 @JsonClass(generateAdapter = true)
 data class User(
-  val id: String,
   val token: String?,
   val refreshToken: String?,
   val accessToken: String?,

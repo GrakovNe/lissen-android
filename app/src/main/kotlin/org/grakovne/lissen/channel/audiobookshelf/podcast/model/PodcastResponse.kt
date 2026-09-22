@@ -8,7 +8,6 @@ import org.grakovne.lissen.channel.audiobookshelf.library.model.AudioFileMetadat
 @JsonClass(generateAdapter = true)
 data class PodcastResponse(
   val id: String,
-  val ino: String,
   val libraryId: String,
   val media: PodcastMedia,
   val addedAt: Long,

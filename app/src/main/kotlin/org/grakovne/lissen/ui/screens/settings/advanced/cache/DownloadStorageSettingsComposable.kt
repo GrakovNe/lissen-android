@@ -12,7 +12,6 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,6 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.StoragePath
@@ -37,10 +37,10 @@ fun DownloadStorageSettingsComposable(viewModel: SettingsViewModel) {
   val scope = rememberCoroutineScope()
   var storageExpanded by remember { mutableStateOf(false) }
   var pendingStorage by remember { mutableStateOf<StoragePath?>(null) }
-  val downloadStorage by viewModel.downloadStorage.collectAsState()
-  val downloadStoragePath by viewModel.downloadStoragePath.collectAsState()
-  val availableStorages by viewModel.availableStorages.collectAsState()
-  val clearing by viewModel.downloadStorageClearing.collectAsState()
+  val downloadStorage by viewModel.downloadStorage.collectAsStateWithLifecycle()
+  val downloadStoragePath by viewModel.downloadStoragePath.collectAsStateWithLifecycle()
+  val availableStorages by viewModel.availableStorages.collectAsStateWithLifecycle()
+  val clearing by viewModel.downloadStorageClearing.collectAsStateWithLifecycle()
 
   LaunchedEffect(storageExpanded) { viewModel.fetchDownloadStorages() }
 

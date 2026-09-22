@@ -5,7 +5,6 @@ import android.net.Uri
 import android.os.SystemClock
 import android.text.TextUtils
 import androidx.media3.common.MediaItem
-import androidx.media3.session.LibraryResult
 import androidx.media3.session.MediaLibraryService.MediaLibrarySession
 import androidx.media3.session.SessionError
 import io.mockk.coEvery
@@ -25,10 +24,8 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.FilterData
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryType
-import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.NamedId
 import org.grakovne.lissen.domain.PagedItems
-import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences

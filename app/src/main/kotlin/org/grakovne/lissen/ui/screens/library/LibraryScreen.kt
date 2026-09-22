@@ -18,14 +18,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -44,7 +42,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -63,6 +60,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil3.ImageLoader
@@ -115,7 +113,7 @@ fun LibraryScreen(
   val coroutineScope = rememberCoroutineScope()
 
   val activity = LocalActivity.current
-  val recentBooks: List<RecentBook> by libraryViewModel.recentBooks.collectAsState()
+  val recentBooks: List<RecentBook> by libraryViewModel.recentBooks.collectAsStateWithLifecycle()
 
   var currentLibraryId by rememberSaveable { mutableStateOf("") }
   var localCacheUpdatedAt by rememberSaveable { mutableStateOf(0L) }
@@ -123,23 +121,23 @@ fun LibraryScreen(
     mutableStateOf(LibraryOrderingConfiguration.default)
   }
   var pullRefreshing by remember { mutableStateOf(false) }
-  val recentBookRefreshing by libraryViewModel.recentBookUpdating.collectAsState()
-  val searchRequested by libraryViewModel.searchRequested.collectAsState()
-  val searchToken by libraryViewModel.searchToken.collectAsState()
-  val preparingError by playerViewModel.preparingError.collectAsState()
+  val recentBookRefreshing by libraryViewModel.recentBookUpdating.collectAsStateWithLifecycle()
+  val searchRequested by libraryViewModel.searchRequested.collectAsStateWithLifecycle()
+  val searchToken by libraryViewModel.searchToken.collectAsStateWithLifecycle()
+  val preparingError by playerViewModel.preparingError.collectAsStateWithLifecycle()
 
-  val preferredLibrary by settingsViewModel.preferredLibrary.collectAsState()
-  val libraries by settingsViewModel.libraries.collectAsState()
+  val preferredLibrary by settingsViewModel.preferredLibrary.collectAsStateWithLifecycle()
+  val libraries by settingsViewModel.libraries.collectAsStateWithLifecycle()
 
   var preferredLibraryExpanded by remember { mutableStateOf(false) }
   var preferencesExpanded by remember { mutableStateOf(false) }
 
   val library = libraryViewModel.getPager(searchRequested).collectAsLazyPagingItems()
-  val libraryCount by libraryViewModel.totalCount.collectAsState()
-  val expandedGroups by libraryViewModel.expandedGroups.collectAsState()
+  val libraryCount by libraryViewModel.totalCount.collectAsStateWithLifecycle()
+  val expandedGroups by libraryViewModel.expandedGroups.collectAsStateWithLifecycle()
   val groupBooks = libraryViewModel.groupBooks
   val groupLoading = libraryViewModel.groupLoading
-  val libraryGrouping by settingsViewModel.libraryGrouping.collectAsState(LibraryGrouping.NONE)
+  val libraryGrouping by settingsViewModel.libraryGrouping.collectAsStateWithLifecycle(LibraryGrouping.NONE)
 
   val libraryListState = rememberLazyGridState()
 
@@ -221,7 +219,7 @@ fun LibraryScreen(
   val titleTextStyle = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
   val titleHeightDp = with(LocalDensity.current) { titleTextStyle.lineHeight.toPx().toDp() }
 
-  val playingBook by playerViewModel.book.collectAsState()
+  val playingBook by playerViewModel.book.collectAsStateWithLifecycle()
   val context = LocalContext.current
 
   fun isRecentVisible(): Boolean {

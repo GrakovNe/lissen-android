@@ -13,7 +13,7 @@ class LoginResponseConverterTest {
   fun `maps user tokens, username and preferred library`() {
     val response =
       LoggedUserResponse(
-        user = User(id = "u1", token = "token", refreshToken = "refresh", accessToken = "access", username = "alice"),
+        user = User(token = "token", refreshToken = "refresh", accessToken = "access", username = "alice"),
         userDefaultLibraryId = "lib-1",
       )
 
@@ -30,7 +30,7 @@ class LoginResponseConverterTest {
   fun `null userDefaultLibraryId produces null preferred library`() {
     val response =
       LoggedUserResponse(
-        user = User(id = "u1", token = null, refreshToken = null, accessToken = null, username = "alice"),
+        user = User(token = null, refreshToken = null, accessToken = null, username = "alice"),
         userDefaultLibraryId = null,
       )
 

@@ -24,7 +24,6 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +39,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.ui.extensions.formatTime
@@ -55,14 +55,14 @@ fun TrackControlComposable(
   settingsViewModel: SettingsViewModel,
   modifier: Modifier = Modifier,
 ) {
-  val isPlaying by viewModel.isPlaying.collectAsState()
-  val currentTrackIndex by viewModel.currentChapterIndex.collectAsState()
-  val currentTrackPosition by viewModel.currentChapterPosition.collectAsState()
-  val currentTrackDuration by viewModel.currentChapterDuration.collectAsState()
+  val isPlaying by viewModel.isPlaying.collectAsStateWithLifecycle()
+  val currentTrackIndex by viewModel.currentChapterIndex.collectAsStateWithLifecycle()
+  val currentTrackPosition by viewModel.currentChapterPosition.collectAsStateWithLifecycle()
+  val currentTrackDuration by viewModel.currentChapterDuration.collectAsStateWithLifecycle()
 
-  val seekTime by settingsViewModel.seekTime.collectAsState()
+  val seekTime by settingsViewModel.seekTime.collectAsStateWithLifecycle()
 
-  val book by viewModel.book.collectAsState()
+  val book by viewModel.book.collectAsStateWithLifecycle()
   val chapters = book?.chapters ?: emptyList()
 
   val view: View = LocalView.current

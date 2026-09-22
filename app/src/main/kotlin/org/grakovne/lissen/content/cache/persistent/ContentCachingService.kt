@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
 import androidx.core.app.ServiceCompat
+import androidx.core.content.IntentCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
@@ -21,7 +22,6 @@ import org.grakovne.lissen.domain.CacheStatus
 import org.grakovne.lissen.domain.ContentCachingTask
 import org.grakovne.lissen.domain.DetailedItem
 import timber.log.Timber
-import java.io.Serializable
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -75,7 +75,7 @@ class ContentCachingService : LifecycleService() {
   }
 
   private fun rejectStart(intent: Intent) {
-    val task = intent.getSerializableExtraCompat<ContentCachingTask>(CACHING_TASK_EXTRA)
+    val task = IntentCompat.getSerializableExtra(intent, CACHING_TASK_EXTRA, ContentCachingTask::class.java)
     abortCaching(rejectedItemId = task?.itemId)
   }
 
@@ -94,7 +94,7 @@ class ContentCachingService : LifecycleService() {
   }
 
   private fun cacheItem(intent: Intent) {
-    val task = intent.getSerializableExtraCompat<ContentCachingTask>(CACHING_TASK_EXTRA)
+    val task = IntentCompat.getSerializableExtra(intent, CACHING_TASK_EXTRA, ContentCachingTask::class.java)
 
     if (task == null) {
       Timber.w("Received caching intent without a task, stopping")
@@ -236,11 +236,3 @@ class ContentCachingService : LifecycleService() {
       Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && ex is ForegroundServiceStartNotAllowedException
   }
 }
-
-@Suppress("DEPRECATION")
-private inline fun <reified T : Serializable> Intent.getSerializableExtraCompat(key: String): T? =
-  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-    getSerializableExtra(key, T::class.java)
-  } else {
-    getSerializableExtra(key) as? T
-  }

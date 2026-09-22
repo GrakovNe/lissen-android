@@ -26,11 +26,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,6 +48,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.buildBookmarkTitle
 import org.grakovne.lissen.common.withHaptic
@@ -68,10 +67,10 @@ fun BookmarksComposable(
   val focusManager = LocalFocusManager.current
   val createBookmarkFocusRequester = remember { FocusRequester() }
 
-  val currentPlayingItem by playerViewModel.book.collectAsState()
-  val currentPosition by playerViewModel.currentChapterPosition.collectAsState()
-  val currentTrackIndex by playerViewModel.currentChapterIndex.collectAsState()
-  val bookmarks by playerViewModel.bookmarks.collectAsState()
+  val currentPlayingItem by playerViewModel.book.collectAsStateWithLifecycle()
+  val currentPosition by playerViewModel.currentChapterPosition.collectAsStateWithLifecycle()
+  val currentTrackIndex by playerViewModel.currentChapterIndex.collectAsStateWithLifecycle()
+  val bookmarks by playerViewModel.bookmarks.collectAsStateWithLifecycle()
 
   var isEditingCreateBookmark by remember { mutableStateOf(false) }
   var createBookmarkField by remember { mutableStateOf(TextFieldValue("")) }

@@ -3,7 +3,6 @@ package org.grakovne.lissen.minifiedtest
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
-import androidx.test.uiautomator.UiAutomatorTestScope
 import androidx.test.uiautomator.UiObject2
 import org.junit.Assert.assertEquals
 import org.junit.FixMethodOrder

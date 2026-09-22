@@ -114,7 +114,6 @@
     <string name="login_screen_open_id_button">OpenID ilə qoşulun</string>
     <string name="source_code_on_github_title">GitHub-da mənbə kodu</string>
     <string name="source_code_on_github_subtitle">Problemləri bildirin və ya təkmilləşdirmələr təklif edin</string>
-    <string name="settings_screen_library_ordering_title">Kitabxana çeşidlənməsi</string>
     <string name="settings_screen_library_ordering_title_option">Başlıq</string>
     <string name="settings_screen_library_ordering_author_option">Müəllif</string>
     <string name="settings_screen_library_ordering_creation_date_option">Yaradılma tarixi</string>

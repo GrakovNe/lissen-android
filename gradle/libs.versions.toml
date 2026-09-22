@@ -27,6 +27,7 @@ media3Session = "1.11.1"
 media3DatasourceOkhttp = "1.11.1"
 lifecycleService = "2.11.0"
 lifecycleProcess = "2.11.0"
+lifecycleRuntimeCompose = "2.11.0"
 timber = "5.0.1"
 moshi = "1.15.2"
 converterMoshi = "3.0.0"
@@ -90,6 +91,7 @@ androidx-media3-session = { group = "androidx.media3", name = "media3-session", 
 androidx-media3-datasource-okhttp = { group = "androidx.media3", name = "media3-datasource-okhttp", version.ref = "media3DatasourceOkhttp" }
 androidx-lifecycle-service = { group = "androidx.lifecycle", name = "lifecycle-service", version.ref = "lifecycleService" }
 androidx-lifecycle-process = { group = "androidx.lifecycle", name = "lifecycle-process", version.ref = "lifecycleProcess" }
+androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycleRuntimeCompose" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 converter-moshi = { module = "com.squareup.retrofit2:converter-moshi", version.ref = "converterMoshi" }
 moshi = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }

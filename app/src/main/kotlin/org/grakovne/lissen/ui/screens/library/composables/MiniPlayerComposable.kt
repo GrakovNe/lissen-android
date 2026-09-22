@@ -34,7 +34,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,6 +55,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.ImageLoader
 import coil3.request.ImageRequest
 import org.grakovne.lissen.R
@@ -231,8 +231,8 @@ private fun PlaybackProgressButton(
   libraryType: LibraryType?,
   onClick: () -> Unit,
 ) {
-  val isPlaying by playerViewModel.isPlaying.collectAsState()
-  val totalPosition by playerViewModel.totalPosition.collectAsState()
+  val isPlaying by playerViewModel.isPlaying.collectAsStateWithLifecycle()
+  val totalPosition by playerViewModel.totalPosition.collectAsStateWithLifecycle()
 
   val totalDuration = remember(book.id) { book.chapters.sumOf { it.duration } }
 

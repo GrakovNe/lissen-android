@@ -31,7 +31,6 @@ class BookResponseConverterTest {
     audioFiles: List<BookAudioFileResponse>? = null,
   ) = BookResponse(
     id = id,
-    ino = "ino-1",
     libraryId = "lib-1",
     addedAt = 1000L,
     ctimeMs = 2000L,

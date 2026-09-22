@@ -110,7 +110,6 @@
     <string name="login_screen_open_id_button">OpenID-ით დაკავშირება</string>
     <string name="source_code_on_github_title">წყაროს კოდი GitHub-ზე</string>
     <string name="source_code_on_github_subtitle">პრობლემების შესახებ შეტყობინება ან გაუმჯობესებების შეთავაზება</string>
-    <string name="settings_screen_library_ordering_title">ბიბლიოთეკის დალაგება</string>
     <string name="settings_screen_library_ordering_title_option">სახელი</string>
     <string name="settings_screen_library_ordering_author_option">ავტორი</string>
     <string name="settings_screen_library_ordering_creation_date_option">შექმნის თარიღი</string>

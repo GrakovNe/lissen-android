@@ -2,14 +2,13 @@ package org.grakovne.lissen.playback
 
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
-import android.os.Parcelable
 import android.util.LruCache
 import android.view.KeyEvent
 import android.view.KeyEvent.KEYCODE_MEDIA_NEXT
 import android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS
 import androidx.annotation.OptIn
+import androidx.core.content.IntentCompat
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
@@ -75,8 +74,7 @@ class MediaLibrarySessionCallback
       Timber.d("Executing media button event from: $controllerInfo")
 
       val keyEvent =
-        intent
-          .getParcelable<KeyEvent>(Intent.EXTRA_KEY_EVENT)
+        IntentCompat.getParcelableExtra(intent, Intent.EXTRA_KEY_EVENT, KeyEvent::class.java)
           ?: return super.onMediaButtonEvent(session, controllerInfo, intent)
 
       Timber.d("Got media key event: $keyEvent")
@@ -366,12 +364,4 @@ class MediaLibrarySessionCallback
 
       private const val REFRESH_TIMEOUT_MS = 2_000L
     }
-  }
-
-@Suppress("DEPRECATION")
-private inline fun <reified T : Parcelable> Intent.getParcelable(key: String): T? =
-  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-    getParcelableExtra(key, T::class.java)
-  } else {
-    getParcelableExtra(key)
   }

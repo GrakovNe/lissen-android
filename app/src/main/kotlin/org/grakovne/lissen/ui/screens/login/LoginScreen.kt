@@ -38,7 +38,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,6 +59,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import org.grakovne.lissen.R
@@ -80,14 +80,14 @@ fun LoginScreen(
   navController: AppNavigationService,
   viewModel: LoginViewModel = hiltViewModel(),
 ) {
-  val loginState by viewModel.loginState.collectAsState()
+  val loginState by viewModel.loginState.collectAsStateWithLifecycle()
 
-  val host by viewModel.host.collectAsState()
-  val username by viewModel.username.collectAsState()
-  val password by viewModel.password.collectAsState()
+  val host by viewModel.host.collectAsStateWithLifecycle()
+  val username by viewModel.username.collectAsStateWithLifecycle()
+  val password by viewModel.password.collectAsStateWithLifecycle()
 
-  val authMethods by viewModel.authMethods.collectAsState()
-  val customOAuthLoginButton by viewModel.customOAuthLoginButtonText.collectAsState()
+  val authMethods by viewModel.authMethods.collectAsStateWithLifecycle()
+  val customOAuthLoginButton by viewModel.customOAuthLoginButtonText.collectAsStateWithLifecycle()
 
   var showPassword by remember { mutableStateOf(false) }
 

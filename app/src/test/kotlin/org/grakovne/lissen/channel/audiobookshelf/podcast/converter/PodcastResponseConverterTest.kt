@@ -46,7 +46,6 @@ class PodcastResponseConverterTest {
   private fun podcast(episodes: List<PodcastEpisodeResponse>?) =
     PodcastResponse(
       id = "podcast-1",
-      ino = "ino-1",
       libraryId = "lib-1",
       media =
         PodcastMedia(

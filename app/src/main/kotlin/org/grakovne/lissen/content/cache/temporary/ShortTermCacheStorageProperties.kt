@@ -2,6 +2,7 @@ package org.grakovne.lissen.content.cache.temporary
 
 import android.content.Context
 import dagger.hilt.android.qualifiers.ApplicationContext
+import org.grakovne.lissen.common.preferredCacheDir
 import org.grakovne.lissen.content.cache.common.toFileKey
 import java.io.File
 import javax.inject.Inject
@@ -31,11 +32,7 @@ class ShortTermCacheStorageProperties
         .resolve(SHORT_TERM_CACHE_FOLDER)
         .resolve(SERIES_COVER_CACHE_FOLDER_NAME)
 
-    private fun baseFolder(): File =
-      context
-        .externalCacheDir
-        ?.takeIf { it.exists() && it.canWrite() }
-        ?: context.cacheDir
+    private fun baseFolder(): File = context.preferredCacheDir()
 
     companion object {
       const val SHORT_TERM_CACHE_FOLDER = "short_term_cache"

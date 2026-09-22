@@ -3,8 +3,6 @@ package org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark
 import androidx.annotation.Keep
 import com.squareup.moshi.JsonClass
 
-@Keep
-@JsonClass(generateAdapter = true)
 data class BookmarksResponse(
   val bookmarks: List<BookmarksItemResponse>,
 )

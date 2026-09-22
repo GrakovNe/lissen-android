@@ -23,10 +23,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -40,6 +38,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.text.HtmlCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
@@ -59,9 +58,9 @@ fun MediaDetailComposable(
   settingsViewModel: SettingsViewModel,
   navController: AppNavigationService,
 ) {
-  val totalPosition by playingViewModel.totalPosition.collectAsState()
+  val totalPosition by playingViewModel.totalPosition.collectAsStateWithLifecycle()
   val totalDuration = playingBook?.chapters?.sumOf { it.duration }
-  val preferredLibrary by settingsViewModel.preferredLibrary.collectAsState()
+  val preferredLibrary by settingsViewModel.preferredLibrary.collectAsStateWithLifecycle()
   val libraryType = playingBook?.libraryType ?: preferredLibrary?.type ?: LibraryType.UNKNOWN
 
   LissenModalBottomSheet(
@@ -238,11 +237,13 @@ fun MediaDetailComposable(
         ?.abstract
         ?.takeIf { it.isNotEmpty() }
         ?.let {
-          val html: String = it.replace("\n", "<br>")
-          val spanned = HtmlCompat.fromHtml(html, HtmlCompat.FROM_HTML_MODE_LEGACY)
+          val abstractText =
+            remember(it) {
+              HtmlCompat.fromHtml(it.replace("\n", "<br>"), HtmlCompat.FROM_HTML_MODE_LEGACY).toString()
+            }
 
           Text(
-            text = spanned.toString(),
+            text = abstractText,
             style = typography.bodyMedium.copy(lineHeight = 22.sp),
             color = colorScheme.onSurface,
             textAlign = TextAlign.Justify,

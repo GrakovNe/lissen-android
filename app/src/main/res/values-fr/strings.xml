@@ -109,7 +109,6 @@
     <string name="continue_playback_shortcut_title">Continuer</string>
     <string name="settings_screen_library_ordering_author_option">Auteur</string>
     <string name="settings_screen_library_ordering_creation_date_option">Date de création</string>
-    <string name="settings_screen_library_ordering_title">Tri de la bibliothèque</string>
     <string name="settings_screen_library_ordering_title_option">Titre</string>
     <string name="items_list_empty">Aucun article disponible</string>
     <string name="notification_content_caching_channel">Mise en cache du contenu</string>

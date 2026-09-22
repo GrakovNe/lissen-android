@@ -18,10 +18,8 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -36,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.domain.AllItemsDownloadOption
@@ -61,9 +60,9 @@ private val sliderLabeledIndexes = listOf(OFF_VALUE, 1) + (5..MAX_VALUE step 5)
 fun AutoCacheSettingsComposable(viewModel: SettingsViewModel) {
   val context = LocalContext.current
   var autoCacheExpanded by remember { mutableStateOf(false) }
-  val preferredDownloadOption by viewModel.preferredAutoDownloadOption.collectAsState()
+  val preferredDownloadOption by viewModel.preferredAutoDownloadOption.collectAsStateWithLifecycle()
 
-  val preferredLibrary by viewModel.preferredLibrary.collectAsState()
+  val preferredLibrary by viewModel.preferredLibrary.collectAsStateWithLifecycle()
   val libraryType = preferredLibrary?.type ?: LibraryType.LIBRARY
 
   Row(

@@ -120,7 +120,6 @@
     <string name="login_screen_open_id_button">Přihlásit pomocí OpenID</string>
     <string name="source_code_on_github_title">Zdrojový kód na GitHub</string>
     <string name="source_code_on_github_subtitle">Nahlásit problém nebo navrhnout vylepšení</string>
-    <string name="settings_screen_library_ordering_title">Řazení knihovny</string>
     <string name="settings_screen_library_ordering_title_option">Název</string>
     <string name="settings_screen_library_ordering_author_option">Autor</string>
     <string name="settings_screen_library_ordering_creation_date_option">Datum vytvoření</string>

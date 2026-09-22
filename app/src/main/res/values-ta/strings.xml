@@ -104,7 +104,6 @@
     <string name="continue_playback_shortcut_description">தொடர்ந்து கேட்பது</string>
     <string name="downloads_menu_download_option_remaining_episodes">மீதமுள்ள அத்தியாயங்கள்</string>
     <string name="downloads_menu_download_option_remaining_items">மீதமுள்ள உருப்படிகள்</string>
-    <string name="settings_screen_library_ordering_title">நூலக வரிசையாக்கம்</string>
     <string name="settings_screen_library_ordering_modification_date_option">புதுப்பித்த தேதி</string>
     <string name="login_screen_open_id_button">OpenID உடன் இணைக்கவும்</string>
     <string name="episodes_list_empty">எந்த போட்காச்டுக்கும் அத்தியாயங்கள் இல்லை</string>

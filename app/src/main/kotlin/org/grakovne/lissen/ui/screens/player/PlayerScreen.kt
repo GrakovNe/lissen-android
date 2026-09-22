@@ -40,7 +40,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -61,6 +60,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.withResumed
 import coil3.ImageLoader
 import org.grakovne.lissen.R
@@ -112,11 +112,11 @@ fun PlayerScreen(
 
   val titleTextStyle = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
 
-  val playingBook by playerViewModel.book.collectAsState()
-  val isPlaybackReady by playerViewModel.isPlaybackReady.collectAsState()
-  val playingQueueExpanded by playerViewModel.playingQueueExpanded.collectAsState()
-  val searchRequested by playerViewModel.searchRequested.collectAsState()
-  val preparingError by playerViewModel.preparingError.collectAsState()
+  val playingBook by playerViewModel.book.collectAsStateWithLifecycle()
+  val isPlaybackReady by playerViewModel.isPlaybackReady.collectAsStateWithLifecycle()
+  val playingQueueExpanded by playerViewModel.playingQueueExpanded.collectAsStateWithLifecycle()
+  val searchRequested by playerViewModel.searchRequested.collectAsStateWithLifecycle()
+  val preparingError by playerViewModel.preparingError.collectAsStateWithLifecycle()
 
   val view = LocalView.current
   val bufferingAnnouncement = stringResource(R.string.a11y_buffering)
@@ -140,14 +140,14 @@ fun PlayerScreen(
   var bookmarksSelected by remember { mutableStateOf(false) }
   var orderingSelected by remember { mutableStateOf(false) }
 
-  val preferredLibraryType by libraryViewModel.preferredLibraryType.collectAsState()
+  val preferredLibraryType by libraryViewModel.preferredLibraryType.collectAsStateWithLifecycle()
 
   // while the requested item is still loading, playingBook may hold the previous item of another
   // type; the screen keeps rendering that item, so its type drives the labels, but only the
   // requested item decides whether ordering is offered
   val requestedBook = playingBook?.takeIf { it.id == bookId }
   val libraryType = playingBook?.libraryType ?: preferredLibraryType
-  val episodeOrdering by remember(bookId) { playerViewModel.episodeOrdering(bookId) }.collectAsState(initial = null)
+  val episodeOrdering by remember(bookId) { playerViewModel.episodeOrdering(bookId) }.collectAsStateWithLifecycle(initialValue = null)
 
   val sortable = isSortable(requestedBook, preferredLibraryType)
 
@@ -500,7 +500,7 @@ private fun PlayerArtworkAndControlsWide(
   modifier: Modifier = Modifier,
 ) {
   val context = LocalContext.current
-  val currentChapterIndex by playerViewModel.currentChapterIndex.collectAsState()
+  val currentChapterIndex by playerViewModel.currentChapterIndex.collectAsStateWithLifecycle()
 
   Column(
     horizontalAlignment = Alignment.CenterHorizontally,

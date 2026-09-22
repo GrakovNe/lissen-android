@@ -19,7 +19,6 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,6 +32,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.content.cache.persistent.CacheState
@@ -57,15 +57,17 @@ fun NavigationBarComposable(
   modifier: Modifier = Modifier,
   libraryType: LibraryType,
 ) {
-  val cacheProgress: CacheState by contentCachingModelView.getProgress(book.id).collectAsState()
-  val timerOption by playerViewModel.timerOption.collectAsState()
-  val timerRemaining by playerViewModel.timerRemaining.collectAsState()
-  val playbackSpeed by playerViewModel.playbackSpeed.collectAsState()
-  val playingQueueExpanded by playerViewModel.playingQueueExpanded.collectAsState()
+  val cacheProgress: CacheState by contentCachingModelView.getProgress(book.id).collectAsStateWithLifecycle()
+  val timerOption by playerViewModel.timerOption.collectAsStateWithLifecycle()
+  val timerRemaining by playerViewModel.timerRemaining.collectAsStateWithLifecycle()
+  val playbackSpeed by playerViewModel.playbackSpeed.collectAsStateWithLifecycle()
+  val playingQueueExpanded by playerViewModel.playingQueueExpanded.collectAsStateWithLifecycle()
   val hasEpisodes = book.chapters.isNotEmpty()
 
-  val isMetadataCached by remember(book.id) { contentCachingModelView.provideCacheState(book.id) }.collectAsState(initial = false)
-  val totalPosition by playerViewModel.totalPosition.collectAsState()
+  val isMetadataCached by remember(book.id) {
+    contentCachingModelView.provideCacheState(book.id)
+  }.collectAsStateWithLifecycle(initialValue = false)
+  val totalPosition by playerViewModel.totalPosition.collectAsStateWithLifecycle()
   val remainingChapters = (book.chapters.size - calculateChapterIndex(book, totalPosition)).coerceAtLeast(1)
 
   var playbackSpeedExpanded by remember { mutableStateOf(false) }

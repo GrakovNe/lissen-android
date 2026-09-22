@@ -102,7 +102,6 @@
     <string name="notification_content_caching_title">Inhalt wird zwischengespeichert</string>
     <string name="source_code_on_github_title">Quellcode auf GitHub</string>
     <string name="source_code_on_github_subtitle">Probleme melden oder Verbesserungen vorschlagen</string>
-    <string name="settings_screen_library_ordering_title">Bibliothekssortierung</string>
     <string name="settings_screen_library_ordering_title_option">Titel</string>
     <string name="settings_screen_library_ordering_author_option">Autor</string>
     <string name="settings_screen_library_ordering_creation_date_option">Zeitpunkt der Erstellung</string>

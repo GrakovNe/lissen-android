@@ -7,7 +7,6 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class BookResponse(
   val id: String,
-  val ino: String,
   val libraryId: String,
   val media: BookMedia,
   val addedAt: Long,

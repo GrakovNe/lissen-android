@@ -10,7 +10,6 @@ import mockwebserver3.MockResponse
 import mockwebserver3.MockResponseBody
 import mockwebserver3.MockWebServer
 import mockwebserver3.RecordedRequest
-import okhttp3.OkHttpClient
 import okhttp3.Protocol
 import okhttp3.Request
 import okhttp3.Response

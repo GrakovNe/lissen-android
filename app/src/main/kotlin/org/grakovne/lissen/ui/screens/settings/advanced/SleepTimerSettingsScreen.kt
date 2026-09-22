@@ -23,7 +23,6 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -38,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.domain.SleepTimerSettings
@@ -63,8 +63,8 @@ internal fun SleepTimerSettingsScreenContent(
   viewModel: SettingsViewModel,
   onBack: () -> Unit,
 ) {
-  val fadeEnabled by viewModel.sleepTimerFadeEnabled.collectAsState()
-  val fadeSeconds by viewModel.sleepTimerFadeSeconds.collectAsState()
+  val fadeEnabled by viewModel.sleepTimerFadeEnabled.collectAsStateWithLifecycle()
+  val fadeSeconds by viewModel.sleepTimerFadeSeconds.collectAsStateWithLifecycle()
 
   var durationExpanded by remember { mutableStateOf(false) }
 

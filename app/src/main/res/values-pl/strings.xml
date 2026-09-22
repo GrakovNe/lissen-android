@@ -108,7 +108,6 @@
     <string name="login_screen_open_id_button">Połącz się z użyciem OpenID</string>
     <string name="source_code_on_github_title">Kod źródłowy na GitHubie</string>
     <string name="source_code_on_github_subtitle">Zglaszaj błędy albo sugestie</string>
-    <string name="settings_screen_library_ordering_title">Sortowanie biblioteki</string>
     <string name="settings_screen_library_ordering_title_option">Tytuł</string>
     <string name="settings_screen_library_ordering_author_option">Autor</string>
     <string name="settings_screen_library_ordering_creation_date_option">Data utworzenia</string>

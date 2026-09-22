@@ -17,6 +17,21 @@ import kotlin.math.max
 import kotlin.math.roundToInt
 
 /**
+ * Stores the square (blurred-backdrop) variant of this cover at [dest] and removes this
+ * source file along with any intermediate blurred file.
+ */
+fun File.installBlurredTo(
+  dest: File,
+  context: Context,
+) {
+  val blurred = withBlur(context)
+  dest.parentFile?.mkdirs()
+  blurred.copyTo(dest, overwrite = true)
+  if (blurred != this) blurred.delete()
+  delete()
+}
+
+/**
  * Returns a square cover for this image: the file itself when it is already
  * square, otherwise a temp file with a blurred square backdrop.
  */

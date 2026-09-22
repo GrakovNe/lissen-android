@@ -99,7 +99,6 @@
     <string name="login_screen_open_id_button">Kapcsolódás OpenID-val</string>
     <string name="source_code_on_github_title">Forráskód a GitHubon</string>
     <string name="source_code_on_github_subtitle">Problémák vagy fejlesztési javaslatok beküldése</string>
-    <string name="settings_screen_library_ordering_title">Könyvtár rendszerezése</string>
     <string name="settings_screen_library_ordering_title_option">Cím</string>
     <string name="settings_screen_library_ordering_author_option">Szerző</string>
     <string name="settings_screen_library_ordering_creation_date_option">Létrehozás dátuma</string>

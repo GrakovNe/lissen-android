@@ -2,11 +2,6 @@ package org.grakovne.lissen.playback.service
 
 import org.grakovne.lissen.domain.DetailedItem
 
-fun calculateChapterPosition(
-  book: DetailedItem,
-  overallPosition: Double,
-) = calculateChapterIndexAndPosition(book, overallPosition).position
-
 fun calculateChapterIndex(
   item: DetailedItem,
   totalPosition: Double,

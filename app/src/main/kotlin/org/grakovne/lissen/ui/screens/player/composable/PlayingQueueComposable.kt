@@ -34,7 +34,6 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -58,6 +57,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.android.awaitFrame
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -80,8 +80,8 @@ fun PlayingQueueComposable(
   val context = LocalContext.current
   val coroutineScope = rememberCoroutineScope()
 
-  val book by viewModel.book.collectAsState()
-  val searchToken by viewModel.searchToken.collectAsState()
+  val book by viewModel.book.collectAsStateWithLifecycle()
+  val searchToken by viewModel.searchToken.collectAsStateWithLifecycle()
 
   val showingChapters by remember {
     derivedStateOf {
@@ -102,7 +102,7 @@ fun PlayingQueueComposable(
     }
   }
 
-  val currentTrackIndex by viewModel.currentChapterIndex.collectAsState()
+  val currentTrackIndex by viewModel.currentChapterIndex.collectAsStateWithLifecycle()
   val currentTrackId by remember {
     derivedStateOf {
       book?.chapters?.getOrNull(currentTrackIndex)
@@ -117,10 +117,10 @@ fun PlayingQueueComposable(
         false -> cachingModelView.provideCachedChapterIds(bookId).map { it.toSet() }
       }
     }
-  val cachedChapterIds by cachedChapterIdsFlow.collectAsState(initial = emptySet())
+  val cachedChapterIds by cachedChapterIdsFlow.collectAsStateWithLifecycle(initialValue = emptySet())
 
-  val playbackReady by viewModel.isPlaybackReady.collectAsState()
-  val playingQueueExpanded by viewModel.playingQueueExpanded.collectAsState()
+  val playbackReady by viewModel.isPlaybackReady.collectAsStateWithLifecycle()
+  val playingQueueExpanded by viewModel.playingQueueExpanded.collectAsStateWithLifecycle()
 
   val expanded = playingQueueExpanded || forceExpanded
 

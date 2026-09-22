@@ -9,7 +9,7 @@ import kotlinx.coroutines.withContext
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
-import org.grakovne.lissen.content.cache.common.withBlur
+import org.grakovne.lissen.content.cache.common.installBlurredTo
 import timber.log.Timber
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
@@ -69,11 +69,7 @@ class CachedCoverProvider
         fetch()
           .fold(
             onSuccess = { source ->
-              val blurred = source.withBlur(context)
-              dest.parentFile?.mkdirs()
-              blurred.copyTo(dest, overwrite = true)
-              if (blurred != source) blurred.delete()
-              source.delete()
+              source.installBlurredTo(dest, context)
               OperationResult.Success(dest)
             },
             onFailure = { OperationResult.Error(OperationError.InternalError, it.message) },

@@ -47,7 +47,6 @@
     <string name="continue_playback_shortcut_description">متابعة الاستماع</string>
     <string name="login_error_lissen_auth_scheme_must_be_whitelisted">النسق %1$s://%2$s غير مسموح به في إعدادات عنوان URI لإعادة التوجيه بالخادم</string>
     <string name="login_error_lissen_auth_failed">تعذر التفويض. يرجى التحقق من إعدادات الخادم</string>
-    <string name="settings_screen_library_ordering_title">ترتيب المكتبة</string>
     <string name="settings_screen_library_ordering_title_option">العنوان</string>
     <string name="settings_screen_library_ordering_author_option">المؤلف</string>
     <string name="settings_screen_library_ordering_creation_date_option">تاريخ الإنشاء</string>
