@@ -382,23 +382,25 @@ class LissenMediaProvider
           }
         }
 
-      return fetched
-        .map { applyOrdering(it) }
-        .flatMap { moveToAvailableChapter(it) }
-        .map { trimProgress(it) }
+      return fetched.flatMap { prepareForPlayback(it) }
     }
 
     /**
      * The stored playing item carries the progress of the moment it was stored, while the local
      * cache has every sync tick since. Playback resuming from the stored item, say when the
-     * server cannot be reached in time, starts from the fresher of the two.
+     * server cannot be reached in time, starts from the fresher of the two. An item that has no
+     * chapter left to play is returned as it was, for the caller to reject on its own terms.
      */
     suspend fun withLatestProgress(item: DetailedItem): DetailedItem =
       ChapterOrdering
         .canonical(item)
         .let { mergeLocalItemProgress(it) }
-        .let { applyOrdering(it) }
-        .let { trimProgress(it) }
+        .let { prepareForPlayback(it) }
+        .fold(onSuccess = { it }, onFailure = { item })
+
+    /** The last steps every item takes on its way to a consumer, whatever its source. */
+    private suspend fun prepareForPlayback(canonical: DetailedItem): OperationResult<DetailedItem> =
+      moveToAvailableChapter(applyOrdering(canonical)).map { trimProgress(it) }
 
     /**
      * By this point the item is in the canonical order with a canonical progress, whether it

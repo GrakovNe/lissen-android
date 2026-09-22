@@ -265,7 +265,7 @@ class MediaLibrarySessionCallback
               ?: throw IllegalStateException("No last played book stored")
 
           val refreshedBook = refreshBookForResumption(storedBook)
-          val book = refreshedBook ?: lissenMediaProvider.withLatestProgress(storedBook)
+          val book = refreshedBook ?: storedBookWithLatestProgress(storedBook)
 
           if (book.canProducePlaybackQueue().not()) {
             throw IllegalStateException("Book can't produce a playback queue (bookId=${book.id})")
@@ -279,6 +279,17 @@ class MediaLibrarySessionCallback
 
           PlaybackService.bookToChapterMediaItems(book)
         }
+
+    /** The stored item is always playable as it was; a cache failure must not take that away. */
+    private suspend fun storedBookWithLatestProgress(storedBook: DetailedItem): DetailedItem =
+      try {
+        lissenMediaProvider.withLatestProgress(storedBook)
+      } catch (e: CancellationException) {
+        throw e
+      } catch (e: Exception) {
+        Timber.w("Unable to read the latest local progress for resumption (bookId=${storedBook.id}) due to: ${e.message}")
+        storedBook
+      }
 
     private suspend fun refreshBookForResumption(storedBook: DetailedItem): DetailedItem? {
       val refreshed =
