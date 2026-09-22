@@ -286,4 +286,10 @@
     <string name="a11y_fast_forward">快进</string>
     <string name="player_state_widget_label">正在播放</string>
     <string name="player_cover_widget_label">正在播放（封面）</string>
+    <string name="episode_ordering_published_at_option">发布日期</string>
+    <string name="episode_ordering_file_name_option">文件名</string>
+    <string name="episode_ordering_ascending">升序</string>
+    <string name="episode_ordering_descending">降序</string>
+    <string name="episode_ordering_season_option">季数</string>
+    <string name="episode_ordering_episode_option">集数</string>
 </resources>
