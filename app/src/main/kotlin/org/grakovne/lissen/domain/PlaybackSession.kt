@@ -15,10 +15,14 @@ data class PlaybackSession(
   val itemId: String,
   val sessionSource: PlaybackSessionSource,
 ) {
+  val isLocal: Boolean
+    get() = sessionSource == PlaybackSessionSource.LOCAL
+
   companion object {
     fun local(itemId: String): PlaybackSession =
       PlaybackSession(
-        sessionId = "local-${UUID.randomUUID()}",
+        // A plain UUID, so the server stores an uploaded offline session under this very id.
+        sessionId = UUID.randomUUID().toString(),
         itemId = itemId,
         sessionSource = PlaybackSessionSource.LOCAL,
       )

@@ -4,17 +4,9 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryI
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryResponse
 import org.grakovne.lissen.domain.FilterData
 import org.grakovne.lissen.domain.Library
-import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.NamedId
 import javax.inject.Inject
 import javax.inject.Singleton
-
-private fun String.toLibraryType() =
-  when (this) {
-    "podcast" -> LibraryType.PODCAST
-    "book" -> LibraryType.LIBRARY
-    else -> LibraryType.UNKNOWN
-  }
 
 @Singleton
 class LibraryListResponseConverter

@@ -9,6 +9,8 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.connection.Connec
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.AuthorItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibrariesResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryResponse
+import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.LocalSessionSyncRequest
+import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.LocalSessionSyncResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackSessionResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.PlaybackStartRequest
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.ProgressSyncRequest
@@ -156,6 +158,11 @@ interface AudiobookshelfApiClient {
     @Path("itemId") itemId: String,
     @Body syncProgressRequest: ProgressSyncRequest,
   ): Response<Unit>
+
+  @POST("api/session/local-all")
+  suspend fun syncLocalSessions(
+    @Body request: LocalSessionSyncRequest,
+  ): Response<LocalSessionSyncResponse>
 
   @POST("api/items/{itemId}/play/{episodeId}")
   suspend fun startPodcastPlayback(

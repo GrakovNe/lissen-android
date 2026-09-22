@@ -1,5 +1,8 @@
 package org.grakovne.lissen.persistence.preferences
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
@@ -16,6 +19,14 @@ class SessionPreferences
     private val tokenCache = CachedValue { store.readSecret(KEY_TOKEN) }
     private val accessTokenCache = CachedValue { store.readSecret(KEY_ACCESS_TOKEN) }
     private val refreshTokenCache = CachedValue { store.readSecret(KEY_REFRESH_TOKEN) }
+
+    /** True while any token is stored; a logout or an expired refresh turns it false. */
+    val authenticatedFlow: Flow<Boolean> =
+      combine(
+        store.asFlow(KEY_TOKEN) { hasStoredSecret(KEY_TOKEN) },
+        store.asFlow(KEY_ACCESS_TOKEN) { hasStoredSecret(KEY_ACCESS_TOKEN) },
+      ) { hasLegacyToken, hasAccessToken -> hasLegacyToken || hasAccessToken }
+        .distinctUntilChanged()
 
     fun getDeviceId(): String =
       synchronized(deviceIdLock) {
@@ -50,18 +61,17 @@ class SessionPreferences
 
     fun getRefreshToken(): String? = refreshTokenCache.get()
 
-    fun hasCredentials(): Boolean {
-      val host = getHost()
-      val username = getUsername()
-      val hasToken = getToken() != null || getAccessToken() != null
+    fun hasCredentials(): Boolean =
+      try {
+        val host = getHost()
+        val username = getUsername()
+        val hasToken = getToken() != null || getAccessToken() != null
 
-      return try {
         host != null && username != null && hasToken
       } catch (ex: Exception) {
         Timber.w("Unable to resolve credentials state due to: ${ex.message}")
         false
       }
-    }
 
     fun clearCredentials() {
       store.remove(listOf(KEY_TOKEN, KEY_ACCESS_TOKEN, KEY_REFRESH_TOKEN))
@@ -90,6 +100,9 @@ class SessionPreferences
       store.writeSecret(key, value)
       cache.invalidate()
     }
+
+    /** Runs on the preferences listener thread: presence is answered without decrypting. */
+    private fun hasStoredSecret(key: String): Boolean = store.getString(key) != null
 
     private fun invalidateTokenCaches() {
       tokenCache.invalidate()

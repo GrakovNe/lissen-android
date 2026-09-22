@@ -340,6 +340,39 @@ class LocalCacheStorageMigrationTest {
     assertEquals(listOf("fa1" to 0, "fa2" to 1, "fb1" to 0, "fb2" to 1), files)
   }
 
+  @Test
+  fun migrate22To23_createsOfflineSessionTable() {
+    helper.createDatabase(TEST_DB, 22).close()
+
+    val db = helper.runMigrationsAndValidate(TEST_DB, 23, true, MIGRATION_22_23)
+
+    db.execSQL(
+      """
+      INSERT INTO offline_playback_session (
+        id, libraryItemId, episodeId, libraryType,
+        displayTitle, displayAuthor, duration, startTime, currentTime, timeListening,
+        startedAt, updatedAt
+      )
+      VALUES (
+        's1', 'book-1', NULL, 'LIBRARY',
+        'Dune', NULL, 300.0, 10.0, 55.0, 45.0, 1000, 46000
+      )
+      """.trimIndent(),
+    )
+
+    db
+      .query(
+        """
+        SELECT libraryItemId, timeListening
+        FROM offline_playback_session WHERE id = 's1'
+        """.trimIndent(),
+      ).use { cursor ->
+        assertTrue(cursor.moveToFirst())
+        assertEquals("book-1", cursor.getString(cursor.getColumnIndexOrThrow("libraryItemId")))
+        assertEquals(45.0, cursor.getDouble(cursor.getColumnIndexOrThrow("timeListening")), 0.0)
+      }
+  }
+
   companion object {
     private const val TEST_DB = "local-cache-migration-test"
   }

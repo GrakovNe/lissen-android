@@ -3,12 +3,14 @@ package org.grakovne.lissen.content
 import android.net.Uri
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfChannelProvider
 import org.grakovne.lissen.channel.audiobookshelf.common.api.ConditionalCache
+import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
@@ -28,12 +30,14 @@ import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.MediaProgress
+import org.grakovne.lissen.domain.OfflineSession
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.PlaybackSessionSource
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.RecentBook
+import org.grakovne.lissen.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
@@ -695,68 +699,106 @@ class LissenMediaProviderTest {
 
   @Nested
   inner class SyncProgress {
-    @Test
-    fun `syncs local cache and channel when force cache enabled`() =
-      runBlocking {
-        val item = detailedItem("book-1")
-        val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
-        every { preferences.isForceCache() } returns true
-        coEvery { mediaChannel.syncProgress("session-1", progress, 42.0) } returns
-          OperationResult.Success(Unit)
+    private val item = detailedItem("book-1")
+    private val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
+    private val remote = PlaybackSession.remote("session-1", "book-1")
+    private val local = PlaybackSession.local("book-1")
 
-        val result = provider.syncProgress("session-1", item, progress, 42.0)
+    @Test
+    fun `a remote session writes the local cache and reports to the channel`() =
+      runBlocking {
+        coEvery { mediaChannel.syncProgress("session-1", progress, 42.0) } returns OperationResult.Success(Unit)
+
+        val result = provider.syncProgress(remote, item, 0, progress, 42.0)
 
         assertInstanceOf(OperationResult.Success::class.java, result)
         coVerify { localCacheRepository.syncProgress(item, progress) }
         coVerify(exactly = 1) { mediaChannel.syncProgress("session-1", progress, 42.0) }
+        coVerify(exactly = 0) { localCacheRepository.recordOfflineSession(any(), any(), any(), any(), any(), any()) }
       }
 
     @Test
-    fun `keeps local progress and reports channel failure when force cache enabled`() =
+    fun `a channel failure is reported after the local cache was written`() =
       runBlocking {
-        val item = detailedItem("book-1")
-        val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
-        every { preferences.isForceCache() } returns true
-        coEvery { mediaChannel.syncProgress("session-1", progress, 42.0) } returns
-          OperationResult.Error(OperationError.NetworkError)
+        coEvery { mediaChannel.syncProgress("session-1", progress, 42.0) } returns OperationResult.Error(OperationError.NetworkError)
 
-        val result = provider.syncProgress("session-1", item, progress, 42.0)
+        val result = provider.syncProgress(remote, item, 0, progress, 42.0)
 
-        assertInstanceOf(OperationResult.Error::class.java, result)
         assertEquals(OperationError.NetworkError, (result as OperationResult.Error).code)
         coVerify { localCacheRepository.syncProgress(item, progress) }
       }
 
     @Test
-    fun `syncs local cache when force cache disabled`() =
+    fun `a local session writes the local cache and the offline row with the item's own library type`() =
       runBlocking {
-        val item = detailedItem("book-1")
-        val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
-        every { preferences.isForceCache() } returns false
-        coEvery { mediaChannel.syncProgress("session-1", progress, 42.0) } returns
-          OperationResult.Success(Unit)
+        val podcast = item.copy(libraryType = LibraryType.PODCAST)
+        every { channelProvider.resolveLibraryType(LibraryType.PODCAST) } returns LibraryType.PODCAST
 
-        provider.syncProgress("session-1", item, progress, 42.0)
+        val result = provider.syncProgress(local, podcast, 2, progress, 42.0)
 
-        coVerify { localCacheRepository.syncProgress(item, progress) }
-        coVerify { mediaChannel.syncProgress("session-1", progress, 42.0) }
+        assertInstanceOf(OperationResult.Success::class.java, result)
+        coVerify { localCacheRepository.syncProgress(podcast, progress) }
+        coVerify { localCacheRepository.recordOfflineSession(local.sessionId, podcast, LibraryType.PODCAST, 2, progress, 42.0) }
+        coVerify(exactly = 0) { mediaChannel.syncProgress(any(), any(), any()) }
       }
 
     @Test
-    fun `uses channel result when force cache disabled`() =
+    fun `a local session of an item without a library type takes the active library's`() =
       runBlocking {
-        val item = detailedItem("book-1")
-        val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
-        every { preferences.isForceCache() } returns false
-        coEvery {
-          mediaChannel.syncProgress("session-1", progress, 42.0)
-        } returns OperationResult.Error(OperationError.NetworkError)
+        every { channelProvider.resolveLibraryType(null) } returns LibraryType.PODCAST
 
-        val result = provider.syncProgress("session-1", item, progress, 42.0)
+        provider.syncProgress(local, item, 0, progress, 42.0)
 
-        assertInstanceOf(OperationResult.Error::class.java, result)
-        assertEquals(OperationError.NetworkError, (result as OperationResult.Error).code)
+        coVerify { localCacheRepository.recordOfflineSession(local.sessionId, item, LibraryType.PODCAST, 0, progress, 42.0) }
       }
+  }
+
+  @Nested
+  inner class OfflineSessions {
+    @Test
+    fun `offline sessions are uploaded through the preferred channel`() =
+      runBlocking {
+        val sessions = listOf(offlineSession("s1"))
+        coEvery { mediaChannel.syncOfflineSessions(sessions, "device") } returns OperationResult.Success(emptyList())
+
+        val result = provider.syncOfflineSessions(sessions, "device")
+
+        assertInstanceOf(OperationResult.Success::class.java, result)
+        coVerify(exactly = 1) { mediaChannel.syncOfflineSessions(sessions, "device") }
+      }
+
+    @Test
+    fun `login drops the offline sessions before the credentials are stored`() =
+      runBlocking {
+        val authService = mockk<ChannelAuthService>(relaxed = true)
+        every { channelProvider.provideChannelAuth() } returns authService
+        every { preferences.isForceCache() } returns false
+        coEvery { mediaChannel.fetchLibraries() } returns OperationResult.Success(emptyList())
+        val account = UserAccount(token = "jwt", accessToken = null, refreshToken = null, username = "reader", preferredLibraryId = null)
+
+        provider.onPostLogin("https://abs.example", account)
+
+        coVerifyOrder {
+          localCacheRepository.dropAllOfflineSessions()
+          authService.persistCredentials("https://abs.example", "reader", "jwt", null, null)
+        }
+      }
+
+    private fun offlineSession(id: String) =
+      OfflineSession(
+        id = id,
+        libraryItemId = "book-1",
+        episodeId = null,
+        libraryType = LibraryType.LIBRARY,
+        displayTitle = "Test Book",
+        displayAuthor = "Author",
+        duration = 300.0,
+        startTime = 0.0,
+        currentTime = 10.0,
+        timeListening = 10.0,
+        startedAt = 0L,
+        updatedAt = 1L,
+      )
   }
 
   @Nested

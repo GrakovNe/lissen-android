@@ -51,6 +51,7 @@ import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.grakovne.lissen.playback.EqualizerBandProvider
 import org.grakovne.lissen.playback.EqualizerCapabilities
 import org.grakovne.lissen.playback.MediaRepository
+import org.grakovne.lissen.playback.service.OfflineSessionSyncService
 import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
@@ -69,6 +70,7 @@ class SettingsViewModel
     private val download: DownloadPreferences,
     private val diagnostics: DiagnosticsPreferences,
     private val preferencesReset: PreferencesReset,
+    private val offlineSessionSyncService: OfflineSessionSyncService,
     private val logProvider: LissenLogProvider,
     private val configProvider: LissenConfigProvider,
     private val equalizerBandProvider: EqualizerBandProvider,
@@ -245,8 +247,12 @@ class SettingsViewModel
 
     fun logout() {
       Timber.d("User action: logout")
+
       conditionalCache.invalidateAll()
       preferencesReset.clearAll()
+
+      // No account is left to upload the offline rows for, so they go with it.
+      offlineSessionSyncService.dropAllSessions()
     }
 
     fun refreshConnectionInfo() {

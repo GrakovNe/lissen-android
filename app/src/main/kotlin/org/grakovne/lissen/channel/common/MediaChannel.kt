@@ -11,6 +11,8 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.OfflineSession
+import org.grakovne.lissen.domain.OfflineSessionSyncResult
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
@@ -33,6 +35,11 @@ interface MediaChannel {
     progress: PlaybackProgress,
     timeListened: Double,
   ): OperationResult<Unit>
+
+  suspend fun syncOfflineSessions(
+    sessions: List<OfflineSession>,
+    deviceId: String,
+  ): OperationResult<List<OfflineSessionSyncResult>>
 
   suspend fun fetchBookCover(
     bookId: String,

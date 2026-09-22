@@ -7,6 +7,9 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import org.grakovne.lissen.domain.NetworkType
 import timber.log.Timber
 import javax.inject.Inject
@@ -23,7 +26,19 @@ class NetworkService
     private var cachedNetworkHandle: Long? = null
     private var cachedSsid: String? = null
 
+    @Volatile
+    private var defaultNetworkHandle: Long? = null
+
+    // Registering the callback reports the current default network right away, so the flow
+    // starts pessimistic instead of querying connectivity while the singleton is built.
+    private val _networkAvailable = MutableStateFlow(false)
+
+    /** Tracks the default network, so a transition from false to true means the device came back online. */
+    val networkAvailable: StateFlow<Boolean> = _networkAvailable.asStateFlow()
+
     override fun onCreate() {
+      connectivityManager.registerDefaultNetworkCallback(defaultNetworkCallback)
+
       val networkRequest =
         NetworkRequest
           .Builder()
@@ -41,6 +56,35 @@ class NetworkService
 
       connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
     }
+
+    /**
+     * On a handover (say Wi-Fi to cellular) the system reports the new default network
+     * before it reports the old one lost, so only losing the current default means offline.
+     * A network behind a captive portal reports as available first and validated later.
+     */
+    internal val defaultNetworkCallback =
+      object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) {
+          defaultNetworkHandle = network.networkHandle
+          _networkAvailable.value = true
+        }
+
+        override fun onCapabilitiesChanged(
+          network: Network,
+          networkCapabilities: NetworkCapabilities,
+        ) {
+          if (defaultNetworkHandle != network.networkHandle) return
+
+          _networkAvailable.value = networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+        }
+
+        override fun onLost(network: Network) {
+          if (defaultNetworkHandle != network.networkHandle) return
+
+          defaultNetworkHandle = null
+          _networkAvailable.value = false
+        }
+      }
 
     fun isNetworkAvailable(): Boolean {
       val network = connectivityManager.activeNetwork ?: return false

@@ -19,9 +19,12 @@ import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.MediaProgress
+import org.grakovne.lissen.domain.OfflineSession
+import org.grakovne.lissen.domain.OfflineSessionSyncResult
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
+import org.grakovne.lissen.domain.PlaybackSessionSource
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
@@ -99,20 +102,49 @@ class LissenMediaProvider
       }
     }
 
+    /**
+     * Reports the position to the session's home: the server for a remote session, the
+     * offline row for a local one. The local cache gets it either way.
+     */
     suspend fun syncProgress(
-      sessionId: String,
+      session: PlaybackSession,
       detailedItem: DetailedItem,
+      chapterIndex: Int,
       progress: PlaybackProgress,
       timeListened: Double,
     ): OperationResult<Unit> {
       Timber.d(
-        "Syncing progress: bookId=${detailedItem.id}, totalTime=${progress.currentTotalTime.toInt()}s, listened=${timeListened.toInt()}s",
+        "Syncing progress: bookId=${detailedItem.id}, session=${session.sessionSource}, totalTime=${progress.currentTotalTime.toInt()}s, listened=${timeListened.toInt()}s",
       )
 
       localCacheRepository.syncProgress(detailedItem, progress)
 
-      return provideChannelFor(detailedItem.libraryType)
-        .syncProgress(sessionId, progress, timeListened)
+      return when (session.sessionSource) {
+        PlaybackSessionSource.REMOTE -> {
+          provideChannelFor(detailedItem.libraryType).syncProgress(session.sessionId, progress, timeListened)
+        }
+
+        PlaybackSessionSource.LOCAL -> {
+          localCacheRepository.recordOfflineSession(
+            sessionId = session.sessionId,
+            detailedItem = detailedItem,
+            libraryType = channelProvider.resolveLibraryType(detailedItem.libraryType),
+            chapterIndex = chapterIndex,
+            progress = progress,
+            timeListened = timeListened,
+          )
+          OperationResult.Success(Unit)
+        }
+      }
+    }
+
+    suspend fun syncOfflineSessions(
+      sessions: List<OfflineSession>,
+      deviceId: String,
+    ): OperationResult<List<OfflineSessionSyncResult>> {
+      Timber.d("Uploading ${sessions.size} offline session(s)")
+
+      return providePreferredChannel().syncOfflineSessions(sessions, deviceId)
     }
 
     suspend fun fetchBookCover(bookId: String): OperationResult<File> {
@@ -431,6 +463,11 @@ class LissenMediaProvider
       account: UserAccount,
     ) {
       Timber.d("Post-login setup for $host")
+
+      // Offline rows recorded before this login belong to whatever account was there
+      // before; they go before the credentials land, so none is uploaded to this one.
+      localCacheRepository.dropAllOfflineSessions()
+
       provideAuthService()
         .persistCredentials(
           host = host,

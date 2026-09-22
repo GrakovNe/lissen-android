@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class NetworkServiceTest {
-  private val connectivityManager = mockk<ConnectivityManager>()
+  private val connectivityManager = mockk<ConnectivityManager>(relaxed = true)
   private val wifiManager = mockk<WifiManager>()
   private val wifiInfo = mockk<WifiInfo>(relaxed = true)
 
@@ -71,6 +71,61 @@ class NetworkServiceTest {
       every { connectivityManager.getNetworkCapabilities(network) } returns capabilities()
 
       assertTrue(networkService.isNetworkAvailable())
+    }
+  }
+
+  @Nested
+  inner class DefaultNetworkTracking {
+    private fun network(handle: Long) = mockk<Network> { every { networkHandle } returns handle }
+
+    private fun capabilities(validated: Boolean) =
+      mockk<NetworkCapabilities> { every { hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) } returns validated }
+
+    @Test
+    fun `losing the default network means offline`() {
+      val wifi = network(1L)
+
+      networkService.defaultNetworkCallback.onAvailable(wifi)
+      assertTrue(networkService.networkAvailable.value)
+
+      networkService.defaultNetworkCallback.onLost(wifi)
+      assertFalse(networkService.networkAvailable.value)
+    }
+
+    @Test
+    fun `a captive portal counts as offline until the network is validated`() {
+      val wifi = network(1L)
+      networkService.defaultNetworkCallback.onAvailable(wifi)
+      networkService.defaultNetworkCallback.onCapabilitiesChanged(wifi, capabilities(validated = false))
+      assertFalse(networkService.networkAvailable.value)
+
+      networkService.defaultNetworkCallback.onCapabilitiesChanged(wifi, capabilities(validated = true))
+      assertTrue(networkService.networkAvailable.value)
+    }
+
+    @Test
+    fun `capabilities of a network that is not the default are ignored`() {
+      val wifi = network(1L)
+      val other = network(2L)
+      networkService.defaultNetworkCallback.onAvailable(wifi)
+      networkService.defaultNetworkCallback.onCapabilitiesChanged(other, capabilities(validated = false))
+
+      assertTrue(networkService.networkAvailable.value)
+    }
+
+    @Test
+    fun `losing the previous network after a handover keeps the device online`() {
+      val wifi = network(1L)
+      val cellular = network(2L)
+
+      networkService.defaultNetworkCallback.onAvailable(wifi)
+      networkService.defaultNetworkCallback.onAvailable(cellular)
+      networkService.defaultNetworkCallback.onLost(wifi)
+
+      assertTrue(networkService.networkAvailable.value)
+
+      networkService.defaultNetworkCallback.onLost(cellular)
+      assertFalse(networkService.networkAvailable.value)
     }
   }
 

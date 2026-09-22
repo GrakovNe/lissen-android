@@ -15,6 +15,7 @@ import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookmarkRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedLibraryRepository
+import org.grakovne.lissen.content.cache.persistent.api.OfflineSessionRepository
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.BookmarkSyncState
@@ -41,6 +42,7 @@ class LocalCacheRepositoryTest {
   private val cachedBookRepository = mockk<CachedBookRepository>(relaxed = true)
   private val cachedLibraryRepository = mockk<CachedLibraryRepository>(relaxed = true)
   private val cachedBookmarkRepository = mockk<CachedBookmarkRepository>(relaxed = true)
+  private val offlineSessionRepository = mockk<OfflineSessionRepository>(relaxed = true)
 
   private lateinit var repository: LocalCacheRepository
 
@@ -51,6 +53,7 @@ class LocalCacheRepositoryTest {
         cachedBookRepository = cachedBookRepository,
         cachedLibraryRepository = cachedLibraryRepository,
         cachedBookmarkRepository = cachedBookmarkRepository,
+        offlineSessionRepository = offlineSessionRepository,
       )
   }
 

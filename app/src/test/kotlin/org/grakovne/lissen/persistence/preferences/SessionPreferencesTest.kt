@@ -4,6 +4,9 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -141,6 +144,29 @@ class SessionPreferencesTest {
       preferences.saveAccessToken("oauth-access")
       assertTrue(preferences.hasCredentials())
     }
+
+    @Test
+    fun `authenticated flow is false without a stored token`() =
+      runBlocking {
+        every { store.asFlow<Any?>(any(), any()) } answers { flowOf(secondArg<() -> Any?>()()) }
+        every { store.getString("token") } returns null
+        every { store.getString("access_token") } returns null
+
+        // the flows are wired at construction, so the instance is built after the stubs
+        assertFalse(SessionPreferences(store).authenticatedFlow.first())
+      }
+
+    @Test
+    fun `authenticated flow checks token presence without decrypting it`() =
+      runBlocking {
+        every { store.asFlow<Any?>(any(), any()) } answers { flowOf(secondArg<() -> Any?>()()) }
+        every { store.getString("token") } returns null
+        every { store.getString("access_token") } returns "encrypted-blob"
+        every { store.readSecret(any()) } throws IllegalStateException("key invalidated")
+
+        assertTrue(SessionPreferences(store).authenticatedFlow.first())
+        verify(exactly = 0) { store.readSecret(any()) }
+      }
 
     @Test
     fun `clearCredentials removes secrets and keeps host and username`() {

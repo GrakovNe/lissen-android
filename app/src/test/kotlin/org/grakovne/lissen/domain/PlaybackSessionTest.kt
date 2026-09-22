@@ -2,15 +2,15 @@ package org.grakovne.lissen.domain
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.util.UUID
 
 class PlaybackSessionTest {
   @Test
-  fun `local creates a session with a generated id prefixed local- and LOCAL source`() {
+  fun `local creates a session with a generated uuid id and LOCAL source`() {
     val session = PlaybackSession.local("item-1")
 
-    assertTrue(session.sessionId.startsWith("local-"))
+    assertEquals(session.sessionId, UUID.fromString(session.sessionId).toString())
     assertEquals("item-1", session.itemId)
     assertEquals(PlaybackSessionSource.LOCAL, session.sessionSource)
   }

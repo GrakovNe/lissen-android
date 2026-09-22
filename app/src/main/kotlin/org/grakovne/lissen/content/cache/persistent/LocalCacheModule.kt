@@ -10,6 +10,7 @@ import dagger.hilt.components.SingletonComponent
 import org.grakovne.lissen.content.cache.persistent.dao.CachedBookDao
 import org.grakovne.lissen.content.cache.persistent.dao.CachedBookmarkDao
 import org.grakovne.lissen.content.cache.persistent.dao.CachedLibraryDao
+import org.grakovne.lissen.content.cache.persistent.dao.OfflineSessionDao
 import javax.inject.Singleton
 
 @Module
@@ -51,6 +52,7 @@ object LocalCacheModule {
       .addMigrations(MIGRATION_19_20)
       .addMigrations(MIGRATION_20_21)
       .addMigrations(MIGRATION_21_22)
+      .addMigrations(MIGRATION_22_23)
       .build()
   }
 
@@ -65,4 +67,8 @@ object LocalCacheModule {
   @Provides
   @Singleton
   fun provideCachedLibraryDao(appDatabase: LocalCacheStorage): CachedLibraryDao = appDatabase.cachedLibraryDao()
+
+  @Provides
+  @Singleton
+  fun provideOfflineSessionDao(appDatabase: LocalCacheStorage): OfflineSessionDao = appDatabase.offlineSessionDao()
 }

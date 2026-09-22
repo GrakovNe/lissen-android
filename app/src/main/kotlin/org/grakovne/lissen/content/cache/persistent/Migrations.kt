@@ -434,3 +434,27 @@ val MIGRATION_21_22 =
       )
     }
   }
+
+val MIGRATION_22_23 =
+  object : Migration(22, 23) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+      db.execSQL(
+        """
+        CREATE TABLE offline_playback_session (
+            id TEXT NOT NULL PRIMARY KEY,
+            libraryItemId TEXT NOT NULL,
+            episodeId TEXT,
+            libraryType TEXT NOT NULL,
+            displayTitle TEXT NOT NULL,
+            displayAuthor TEXT,
+            duration REAL NOT NULL,
+            startTime REAL NOT NULL,
+            currentTime REAL NOT NULL,
+            timeListening REAL NOT NULL,
+            startedAt INTEGER NOT NULL,
+            updatedAt INTEGER NOT NULL
+        )
+        """.trimIndent(),
+      )
+    }
+  }

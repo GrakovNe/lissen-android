@@ -8,11 +8,13 @@ import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookmarkRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedLibraryRepository
+import org.grakovne.lissen.content.cache.persistent.api.OfflineSessionRepository
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.RecentBook
@@ -28,6 +30,7 @@ class LocalCacheRepository
     private val cachedBookRepository: CachedBookRepository,
     private val cachedLibraryRepository: CachedLibraryRepository,
     private val cachedBookmarkRepository: CachedBookmarkRepository,
+    private val offlineSessionRepository: OfflineSessionRepository,
   ) {
     fun provideFileUri(
       libraryItemId: String,
@@ -48,6 +51,24 @@ class LocalCacheRepository
       cachedBookRepository.syncProgress(detailedItem, progress)
       return OperationResult.Success(Unit)
     }
+
+    suspend fun recordOfflineSession(
+      sessionId: String,
+      detailedItem: DetailedItem,
+      libraryType: LibraryType,
+      chapterIndex: Int,
+      progress: PlaybackProgress,
+      timeListened: Double,
+    ) = offlineSessionRepository.record(
+      sessionId = sessionId,
+      item = detailedItem,
+      libraryType = libraryType,
+      chapterIndex = chapterIndex,
+      progress = progress,
+      timeListened = timeListened,
+    )
+
+    suspend fun dropAllOfflineSessions() = offlineSessionRepository.dropAll()
 
     fun fetchBookCover(bookId: String): OperationResult<File> {
       val coverFile = cachedBookRepository.provideBookCover(bookId)
