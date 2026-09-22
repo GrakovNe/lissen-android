@@ -7,14 +7,18 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.content.LissenMediaProvider
@@ -27,6 +31,7 @@ import timber.log.Timber
 import java.util.concurrent.atomic.AtomicReference
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.cancellation.CancellationException
 
 /** Uploads completed offline playback sessions belonging to the current server account. */
 @Singleton
@@ -89,16 +94,32 @@ class OfflineSessionSyncService
 
       while (currentCoroutineContext().isActive) {
         val result =
-          runCatching { uploadOnce(owner) }
-            .getOrElse { throwable ->
-              Timber.w(throwable, "Unable to upload offline sessions")
-              UploadAttempt.RETRY
-            }
+          try {
+            uploadOnce(owner)
+          } catch (cancelled: CancellationException) {
+            throw cancelled
+          } catch (error: Exception) {
+            Timber.e(error, "Unexpected offline session upload failure; waiting for the next sync trigger")
+            UploadAttempt.PAUSED
+          }
 
-        if (result == UploadAttempt.SETTLED) return
+        when (result) {
+          UploadAttempt.SETTLED,
+          UploadAttempt.PAUSED,
+          -> {
+            return
+          }
 
-        delay(retryDelayMillis(retryAttempt))
-        retryAttempt++
+          UploadAttempt.RETRY -> {
+            val retryDelay =
+              retryDelayMillis(retryAttempt)
+                ?: return Timber.w(
+                  "Offline session upload retry limit reached; waiting for the next sync trigger",
+                )
+            delay(retryDelay)
+            retryAttempt++
+          }
+        }
       }
     }
 
@@ -114,11 +135,14 @@ class OfflineSessionSyncService
         val batches = planOfflineSessionUploads(pending)
         Timber.d("Uploading ${pending.size} pending offline session(s) in ${batches.size} batch(es)")
 
-        val allComplete = batches.map { uploadBatch(it) }.all { it }
-        if (allComplete) UploadAttempt.SETTLED else UploadAttempt.RETRY
+        batches
+          .asFlow()
+          .map { uploadBatch(it) }
+          .firstOrNull { it != UploadAttempt.SETTLED }
+          ?: UploadAttempt.SETTLED
       }
 
-    private suspend fun uploadBatch(batch: OfflineSessionUploadBatch): Boolean =
+    private suspend fun uploadBatch(batch: OfflineSessionUploadBatch): UploadAttempt =
       mediaProvider
         .syncOfflineSessions(
           libraryType = batch.libraryType,
@@ -134,11 +158,17 @@ class OfflineSessionSyncService
             val respondedIds = results.mapNotNullTo(mutableSetOf()) { it.id.takeIf(expectedIds::contains) }
             mediaProvider.dropOfflineSessions(respondedIds.toList())
 
-            expectedIds == respondedIds
+            when (expectedIds == respondedIds) {
+              true -> UploadAttempt.SETTLED
+              false -> UploadAttempt.RETRY
+            }
           },
-          onFailure = {
-            Timber.w("Unable to upload offline sessions for ${batch.libraryType}: ${it.code}")
-            false
+          onFailure = { error ->
+            val nextAttempt = uploadAttemptFor(error.code)
+            Timber.w(
+              "Unable to upload offline sessions for ${batch.libraryType}: ${error.code}; next=$nextAttempt",
+            )
+            nextAttempt
           },
         )
   }
@@ -146,6 +176,7 @@ class OfflineSessionSyncService
 internal enum class UploadAttempt {
   SETTLED,
   RETRY,
+  PAUSED,
 }
 
 internal data class OfflineSessionUploadBatch(
@@ -196,9 +227,32 @@ private fun OfflinePlaybackSession.estimatedPayloadBytes(): Int =
   listOfNotNull(id, libraryItemId, episodeId, displayTitle, displayAuthor)
     .sumOf { it.toByteArray(Charsets.UTF_8).size } + ESTIMATED_FIXED_SESSION_BYTES
 
-internal fun retryDelayMillis(attempt: Int): Long =
-  (INITIAL_RETRY_DELAY_MS * (1L shl attempt.coerceIn(0, MAX_RETRY_EXPONENT)))
-    .coerceAtMost(MAX_RETRY_DELAY_MS)
+internal fun uploadAttemptFor(error: OperationError): UploadAttempt =
+  when (error) {
+    OperationError.NetworkError,
+    OperationError.InternalError,
+    -> UploadAttempt.RETRY
+
+    OperationError.Unauthorized,
+    OperationError.InvalidCredentialsHost,
+    OperationError.MissingCredentialsHost,
+    OperationError.MissingCredentialsUsername,
+    OperationError.MissingCredentialsPassword,
+    OperationError.NotFoundError,
+    OperationError.InvalidRedirectUri,
+    OperationError.OAuthFlowFailed,
+    OperationError.UnsupportedError,
+    OperationError.ClientCertificateError,
+    -> UploadAttempt.PAUSED
+  }
+
+internal fun retryDelayMillis(attempt: Int): Long? =
+  attempt
+    .takeIf { it in 0 until MAX_RETRY_ATTEMPTS }
+    ?.let {
+      (INITIAL_RETRY_DELAY_MS * (1L shl it.coerceAtMost(MAX_RETRY_EXPONENT)))
+        .coerceAtMost(MAX_RETRY_DELAY_MS)
+    }
 
 private const val MAX_SESSIONS_PER_BATCH = 20
 private const val MAX_ESTIMATED_BATCH_BYTES = 64 * 1024
@@ -206,3 +260,4 @@ private const val ESTIMATED_FIXED_SESSION_BYTES = 512
 private const val INITIAL_RETRY_DELAY_MS = 5_000L
 private const val MAX_RETRY_DELAY_MS = 5 * 60_000L
 private const val MAX_RETRY_EXPONENT = 6
+private const val MAX_RETRY_ATTEMPTS = 8

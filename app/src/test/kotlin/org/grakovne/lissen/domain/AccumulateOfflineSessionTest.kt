@@ -92,6 +92,8 @@ class AccumulateOfflineSessionTest {
     assertEquals(200.0, session.duration)
     assertEquals(50.0, session.startTime)
     assertEquals(50.0, session.currentTime)
+    assertEquals("Chapter 1", session.displayTitle)
+    assertEquals("Frank Herbert", session.displayAuthor)
   }
 
   @Test

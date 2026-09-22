@@ -45,7 +45,7 @@ fun accumulateOfflineSession(
       episodeId = chapter?.id?.takeIf { isPodcast },
       libraryId = item.libraryId,
       libraryType = item.libraryType ?: LibraryType.LIBRARY,
-      displayTitle = item.title,
+      displayTitle = chapter?.title?.takeIf { isPodcast } ?: item.title,
       displayAuthor = item.author,
       duration = duration,
       startTime = currentTime,

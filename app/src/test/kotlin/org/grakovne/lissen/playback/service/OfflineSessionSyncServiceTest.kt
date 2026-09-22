@@ -85,6 +85,32 @@ class OfflineSessionSyncServiceTest {
     }
 
   @Test
+  fun `permanent failure pauses uploads and keeps the batch`() =
+    runTest {
+      val pending = listOf(session("a"))
+      coEvery { mediaProvider.fetchOfflineSessions(owner) } returns pending
+      coEvery { mediaProvider.syncOfflineSessions(any(), any(), any()) } returns
+        OperationResult.Error(OperationError.NotFoundError)
+
+      assertEquals(UploadAttempt.PAUSED, service.uploadOnce(owner))
+
+      coVerify(exactly = 0) { mediaProvider.dropOfflineSessions(any()) }
+    }
+
+  @Test
+  fun `permanent failure stops processing later batches`() =
+    runTest {
+      val sessions = (1..21).map { session("book-$it") }
+      coEvery { mediaProvider.fetchOfflineSessions(owner) } returns sessions
+      coEvery { mediaProvider.syncOfflineSessions(any(), any(), any()) } returns
+        OperationResult.Error(OperationError.Unauthorized)
+
+      assertEquals(UploadAttempt.PAUSED, service.uploadOnce(owner))
+
+      coVerify(exactly = 1) { mediaProvider.syncOfflineSessions(any(), any(), any()) }
+    }
+
+  @Test
   fun `incomplete server response removes acknowledged rows and retries the remainder`() =
     runTest {
       val sessions = listOf(session("a"), session("b"))
@@ -126,7 +152,30 @@ class OfflineSessionSyncServiceTest {
   fun `retry delay grows exponentially and is capped`() {
     assertEquals(5_000L, retryDelayMillis(0))
     assertEquals(10_000L, retryDelayMillis(1))
-    assertEquals(300_000L, retryDelayMillis(20))
+    assertEquals(300_000L, retryDelayMillis(6))
+    assertEquals(300_000L, retryDelayMillis(7))
+    assertEquals(null, retryDelayMillis(8))
+  }
+
+  @Test
+  fun `only transient operation errors are retried`() {
+    val transient = listOf(OperationError.NetworkError, OperationError.InternalError)
+    val permanent =
+      listOf(
+        OperationError.Unauthorized,
+        OperationError.InvalidCredentialsHost,
+        OperationError.MissingCredentialsHost,
+        OperationError.MissingCredentialsUsername,
+        OperationError.MissingCredentialsPassword,
+        OperationError.NotFoundError,
+        OperationError.InvalidRedirectUri,
+        OperationError.OAuthFlowFailed,
+        OperationError.UnsupportedError,
+        OperationError.ClientCertificateError,
+      )
+
+    transient.forEach { assertEquals(UploadAttempt.RETRY, uploadAttemptFor(it), it.toString()) }
+    permanent.forEach { assertEquals(UploadAttempt.PAUSED, uploadAttemptFor(it), it.toString()) }
   }
 
   private fun session(
