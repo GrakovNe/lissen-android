@@ -68,6 +68,7 @@ class MediaLibrarySessionCallbackTest {
 
     session = mockk(relaxed = true)
     controller = mockk(relaxed = true)
+    coEvery { lissenMediaProvider.withLatestProgress(any()) } answers { firstArg() }
 
     callback =
       MediaLibrarySessionCallback(
@@ -316,6 +317,30 @@ class MediaLibrarySessionCallbackTest {
       verify(exactly = 0) { preferences.savePlayingItem(any()) }
       verify(exactly = 1) { playbackSynchronizationService.startPlaybackSynchronization(storedBook) }
       verify(exactly = 1) { mediaRepository.registerPlayingBook(storedBook) }
+    }
+
+  @Test
+  fun onPlaybackResumption_fetchBookStalls_resumesFromLatestLocalProgress() =
+    runBlocking {
+      val storedBook = makeDetailedItem("book-1", "My Book", MediaProgress(170.0, false, 0L))
+      val freshBook = storedBook.copy(progress = MediaProgress(190.0, false, 5_000L))
+      every { preferences.getPlayingItem() } returns storedBook
+      coEvery { lissenMediaProvider.fetchBook("book-1") } coAnswers {
+        delay(5_000)
+        OperationResult.Success(storedBook)
+      }
+      coEvery { lissenMediaProvider.withLatestProgress(storedBook) } returns freshBook
+
+      val result =
+        callback
+          .onPlaybackResumption(session, controller, isForPlayback = true)
+          .get(10, TimeUnit.SECONDS)
+
+      assertEquals(1, result.startIndex)
+      assertEquals(40000, result.startPositionMs)
+      verify(exactly = 0) { preferences.savePlayingItem(any()) }
+      verify(exactly = 1) { playbackSynchronizationService.startPlaybackSynchronization(freshBook) }
+      verify(exactly = 1) { mediaRepository.registerPlayingBook(freshBook) }
     }
 
   @Test

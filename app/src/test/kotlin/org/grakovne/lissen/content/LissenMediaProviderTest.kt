@@ -341,6 +341,58 @@ class LissenMediaProviderTest {
   }
 
   @Nested
+  inner class LatestProgress {
+    private val item = detailedItem("book-1", chapters = listOf(chapter("c0", 0, 100.0), chapter("c1", 1, 100.0)))
+
+    @Test
+    fun `a fresher cached progress replaces the stored one`() =
+      runBlocking {
+        val stored = item.copy(progress = MediaProgress(currentTime = 30.0, isFinished = false, lastUpdate = 1_000L))
+        coEvery { localCacheRepository.fetchPlayingItemProgress("book-1") } returns
+          MediaProgress(currentTime = 150.0, isFinished = false, lastUpdate = 2_000L)
+
+        val result = provider.withLatestProgress(stored)
+
+        assertEquals(150.0, result.progress?.currentTime)
+      }
+
+    @Test
+    fun `an older cached progress is ignored`() =
+      runBlocking {
+        val stored = item.copy(progress = MediaProgress(currentTime = 30.0, isFinished = false, lastUpdate = 2_000L))
+        coEvery { localCacheRepository.fetchPlayingItemProgress("book-1") } returns
+          MediaProgress(currentTime = 150.0, isFinished = false, lastUpdate = 1_000L)
+
+        val result = provider.withLatestProgress(stored)
+
+        assertEquals(30.0, result.progress?.currentTime)
+      }
+
+    @Test
+    fun `without a cached progress the stored one stays`() =
+      runBlocking {
+        val stored = item.copy(progress = MediaProgress(currentTime = 30.0, isFinished = false, lastUpdate = 1_000L))
+        coEvery { localCacheRepository.fetchPlayingItemProgress("book-1") } returns null
+
+        val result = provider.withLatestProgress(stored)
+
+        assertEquals(30.0, result.progress?.currentTime)
+      }
+
+    @Test
+    fun `a cached progress at the very end is trimmed like a fetched one`() =
+      runBlocking {
+        val stored = item.copy(progress = MediaProgress(currentTime = 30.0, isFinished = false, lastUpdate = 1_000L))
+        coEvery { localCacheRepository.fetchPlayingItemProgress("book-1") } returns
+          MediaProgress(currentTime = 200.0, isFinished = true, lastUpdate = 2_000L)
+
+        val result = provider.withLatestProgress(stored)
+
+        assertEquals(null, result.progress)
+      }
+  }
+
+  @Nested
   inner class FetchLibraries {
     @Test
     fun `uses local cache when force cache enabled`() =

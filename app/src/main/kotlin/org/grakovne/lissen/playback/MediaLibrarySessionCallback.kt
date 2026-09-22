@@ -265,7 +265,7 @@ class MediaLibrarySessionCallback
               ?: throw IllegalStateException("No last played book stored")
 
           val refreshedBook = refreshBookForResumption(storedBook)
-          val book = refreshedBook ?: storedBook
+          val book = refreshedBook ?: lissenMediaProvider.withLatestProgress(storedBook)
 
           if (book.canProducePlaybackQueue().not()) {
             throw IllegalStateException("Book can't produce a playback queue (bookId=${book.id})")

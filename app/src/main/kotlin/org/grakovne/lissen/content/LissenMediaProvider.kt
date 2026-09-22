@@ -389,6 +389,18 @@ class LissenMediaProvider
     }
 
     /**
+     * The stored playing item carries the progress of the moment it was stored, while the local
+     * cache has every sync tick since. Playback resuming from the stored item, say when the
+     * server cannot be reached in time, starts from the fresher of the two.
+     */
+    suspend fun withLatestProgress(item: DetailedItem): DetailedItem =
+      ChapterOrdering
+        .canonical(item)
+        .let { mergeLocalItemProgress(it) }
+        .let { applyOrdering(it) }
+        .let { trimProgress(it) }
+
+    /**
      * By this point the item is in the canonical order with a canonical progress, whether it
      * came from the channel (canonicalized above, before the cached progress is merged in) or
      * from the cache (stored canonical). The user-chosen order is applied here, once, for
