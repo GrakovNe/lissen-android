@@ -25,10 +25,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
-import org.grakovne.lissen.common.buildBookmarkTitle
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.content.ordering.ChapterOrdering
-import org.grakovne.lissen.content.ordering.ChapterOrdering.end
 import org.grakovne.lissen.content.ordering.ReorderPlanner
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
@@ -45,8 +42,6 @@ import org.grakovne.lissen.playback.service.calculateChapterIndexAndPosition
 import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.math.abs
-import kotlin.math.round
 
 @UnstableApi
 @Singleton
@@ -103,16 +98,12 @@ class MediaRepository
     private val _currentChapterDuration = MutableStateFlow(0.0)
     val currentChapterDuration: StateFlow<Double> = _currentChapterDuration.asStateFlow()
 
-    private val _bookmarks = MutableStateFlow<List<Bookmark>>(emptyList())
-    val bookmarks: StateFlow<List<Bookmark>> = _bookmarks.asStateFlow()
+    private val playbackBookmarks = PlaybackBookmarks(mediaChannel, playingBook)
+    val bookmarks: StateFlow<List<Bookmark>> = playbackBookmarks.bookmarks
 
     // set by reorderPlayingItem, cleared when the service reports the rebuilt queue ready
     @Volatile
     private var queueRebuildInFlight = false
-
-    // the item (and order) the displayed bookmark positions were translated for
-    @Volatile
-    private var bookmarksItem: DetailedItem? = null
 
     private val handler = Handler(Looper.getMainLooper())
 
@@ -445,17 +436,8 @@ class MediaRepository
       _playAfterPrepare.value = wasPlaying
       startPreparingPlayback(plan.item)
 
-      // the list in memory follows at once, so nothing can act on positions of the old order;
-      // the exact stored values, translated for the new order, replace it as soon as they are read
-      _bookmarks.value =
-        _bookmarks.value.map {
-          when (it.libraryItemId == book.id) {
-            true -> it.copy(totalPosition = ChapterOrdering.translate(book, plan.item, it.totalPosition))
-            false -> it
-          }
-        }
-      bookmarksItem = plan.item
-      scope.launch { refreshBookmarksFromCache(book.id) }
+      playbackBookmarks.followReorder(from = book, to = plan.item)
+      scope.launch { playbackBookmarks.refreshFromCache(book.id) }
       // after startPreparingPlayback, which resets the flag for every fresh preparation
       queueRebuildInFlight = true
 
@@ -544,7 +526,7 @@ class MediaRepository
      * item: it translates the list it already has and re-reads the cache.
      */
     private fun refreshBookmarksFromServer() {
-      scope.launch { updateBookmarks() }
+      scope.launch { playbackBookmarks.refreshFromServer() }
     }
 
     private fun startPreparingPlayback(book: DetailedItem) {
@@ -695,128 +677,11 @@ class MediaRepository
           ?: 0.0
     }
 
-    suspend fun createBookmark(title: String? = null) {
-      Timber.d("Creating bookmark for ${_playingBook.value?.id} at position=${_totalPosition.value.toInt()}s")
-      val playingBook = _playingBook.value ?: return
-      // a live position may overshoot the declared end by a little: that is the end, not nowhere
-      val totalPosition = _totalPosition.value.coerceAtMost(playingBook.end() ?: _totalPosition.value)
+    suspend fun createBookmark(title: String? = null) = playbackBookmarks.create(_totalPosition.value, title)
 
-      // the same boundary rule as the stored position, so the title names the episode the
-      // bookmark is actually in, however far apart neighbours are in the listener's order
-      val location = ChapterOrdering.locate(playingBook, totalPosition)
-      val currentChapter = location?.let { l -> playingBook.chapters.firstOrNull { it.id == l.chapterId } }
-      if (currentChapter == null) {
-        Timber.w("Unable to create bookmark: no chapter at position=${totalPosition.toInt()}s")
-        return
-      }
-      val chapterPosition = location.offset
+    suspend fun dropBookmark(bookmark: Bookmark) = playbackBookmarks.drop(bookmark)
 
-      val bookmarkTitle =
-        when (title) {
-          null -> buildBookmarkTitle(currentChapter.title, chapterPosition)
-          else -> title
-        }
-
-      mediaChannel
-        .createBookmark(
-          libraryItemId = playingBook.id,
-          totalPosition = ChapterOrdering.storedBookmarkPosition(playingBook, totalPosition),
-          title = bookmarkTitle,
-        )
-
-      refreshBookmarksFromCache(playingBook.id)
-    }
-
-    /**
-     * The bookmark handed in carries a display position. The stored one is found by translating
-     * the stored list the same way the display list was made, so the stored value goes back
-     * exactly as it is, however it translated: a position outside the item or on the very end
-     * has no faithful way back through the numbers alone.
-     */
-    suspend fun dropBookmark(bookmark: Bookmark) {
-      Timber.d("Dropping bookmark for ${bookmark.libraryItemId} at position=${bookmark.totalPosition.toInt()}s")
-      // the item the displayed list was built for, which is not necessarily the one playing now
-      val playingBook = bookmarksItem?.takeIf { it.id == bookmark.libraryItemId }
-
-      val stored =
-        when (playingBook != null) {
-          true -> {
-            val candidates = mediaChannel.provideBookmarks(bookmark.libraryItemId)
-            val displayed = candidates.zip(candidates.inPlayingOrder(playingBook))
-
-            // the display value may have been made by another translation path (one ulp off),
-            // and a draft's createdAt is replaced by the server's once synced: match loosely
-            displayed
-              .firstOrNull { (_, shown) ->
-                shown.totalPosition.isSameSecondAs(bookmark.totalPosition) &&
-                  shown.createdAt == bookmark.createdAt
-              }?.first
-              ?: displayed.firstOrNull { (_, shown) -> shown.totalPosition.isSameSecondAs(bookmark.totalPosition) }?.first
-              ?: displayed.firstOrNull { (_, shown) -> shown.createdAt == bookmark.createdAt }?.first
-              ?: bookmark.copy(totalPosition = round(ChapterOrdering.toCanonicalPosition(playingBook, bookmark.totalPosition)))
-          }
-
-          false -> {
-            bookmark
-          }
-        }
-
-      mediaChannel.dropBookmark(bookmark = stored)
-
-      refreshBookmarksFromCache(bookmark.libraryItemId)
-    }
-
-    /**
-     * The stored (canonical) bookmarks of [itemId], translated for whatever order is playing at
-     * the moment of the write, so that a reorder landing during the read cannot leave the list
-     * in the previous order.
-     */
-    private suspend fun refreshBookmarksFromCache(itemId: String) {
-      val stored = withContext(Dispatchers.IO) { mediaChannel.provideBookmarks(itemId) }
-      val book = _playingBook.value
-
-      // another item started playing meanwhile: its own refresh will follow, these rows are not its
-      if (book?.id != itemId) return
-
-      bookmarksItem = book
-      _bookmarks.value = stored.inPlayingOrder(book)
-    }
-
-    private fun Double.isSameSecondAs(other: Double): Boolean = abs(this - other) < BOOKMARK_MATCH_EPSILON
-
-    suspend fun updateBookmarks() {
-      val book = playingBook.value ?: return
-      val bookmarks = withContext(Dispatchers.IO) { mediaChannel.updateAndProvideBookmarks(book.id) }
-
-      // the item may have been reordered meanwhile: translate for the order that is playing now;
-      // another item playing meanwhile means these rows are not its
-      val current = playingBook.value
-      if (current?.id != book.id) return
-
-      bookmarksItem = current
-      _bookmarks.value = bookmarks.inPlayingOrder(current)
-    }
-
-    /**
-     * Bookmarks are stored and sent to the server as positions in the canonical order, whole
-     * seconds; the player and the UI work in the order the listener has chosen. Display
-     * positions are translated exactly and never rounded: rounding could push one onto a
-     * chapter boundary, which belongs to the next chapter. Only the way back to canonical
-     * (see [dropBookmark]) rounds, because there the true value is a whole second and double
-     * arithmetic may have left 1968.9999 of it.
-     */
-    private fun List<Bookmark>.inPlayingOrder(book: DetailedItem?): List<Bookmark> {
-      if (book == null) return this
-
-      val canonical = ChapterOrdering.canonical(book)
-
-      return map {
-        when (it.libraryItemId == book.id) {
-          true -> it.copy(totalPosition = ChapterOrdering.translate(canonical, book, it.totalPosition))
-          false -> it
-        }
-      }
-    }
+    suspend fun updateBookmarks() = playbackBookmarks.refreshFromServer()
 
     /**
      * Drops the session binding. The service stays alive for as long as any controller is bound
@@ -839,8 +704,6 @@ class MediaRepository
     private companion object {
       private const val CURRENT_TRACK_REPLAY_THRESHOLD = 5
 
-      // two translations of the same stored second differ by an ulp at most
-      private const val BOOKMARK_MATCH_EPSILON = 1e-3
       private const val PROGRESS_UPDATE_INTERVAL_MS = 500L
 
       private fun getSeekTime(seconds: Int?): Long = seconds?.toLong() ?: 30L
