@@ -15,7 +15,6 @@ data class OfflineSession(
   val owner: OfflineSessionOwner,
   val libraryItemId: String,
   val episodeId: String?,
-  val libraryId: String?,
   val libraryType: LibraryType,
   val displayTitle: String,
   val displayAuthor: String?,

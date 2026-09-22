@@ -38,7 +38,7 @@ class SyncStateTest {
     )
 
   private fun playing(session: PlaybackSession? = null) =
-    SyncState().start(book, owner).let { state ->
+    SyncState().withOwner(owner).start(book).let { state ->
       session?.let { state.adopt(it, LocalSessionPolicy.REPLACE) }
         ?: state
     }
@@ -46,8 +46,8 @@ class SyncStateTest {
   @Nested
   inner class Transitions {
     @Test
-    fun `start remembers the item and the owner and forgets the previous session`() {
-      val started = playing(PlaybackSession.local("book")).start(other, owner)
+    fun `start remembers the item, keeps the owner and forgets the previous session`() {
+      val started = playing(PlaybackSession.local("book")).start(other)
 
       assertSame(other, started.item)
       assertEquals(owner, started.owner)
@@ -56,8 +56,35 @@ class SyncStateTest {
     }
 
     @Test
-    fun `cancel drops everything`() {
-      assertEquals(SyncState(), playing(PlaybackSession.local("book")).withChapter(2).cancel())
+    fun `cancel drops the playback but keeps the owner`() {
+      assertEquals(SyncState(owner = owner), playing(PlaybackSession.local("book")).withChapter(2).cancel())
+    }
+
+    @Test
+    fun `losing the owner releases the local session and keeps the item playing`() {
+      val state = playing(PlaybackSession.local("book")).withChapter(2).withOwner(null)
+
+      assertSame(book, state.item)
+      assertEquals(2, state.chapterIndex)
+      assertNull(state.owner)
+      assertNull(state.session)
+    }
+
+    @Test
+    fun `losing the owner keeps a remote session`() {
+      val remote = PlaybackSession.remote("remote", "book")
+
+      assertEquals(remote, playing(remote).withOwner(null).session)
+    }
+
+    @Test
+    fun `a new owner is picked up mid playback`() {
+      val another = OfflineSessionOwner("https://other.example", "reader")
+
+      val state = playing(PlaybackSession.remote("remote", "book")).withOwner(null).withOwner(another)
+
+      assertEquals(another, state.owner)
+      assertSame(book, state.item)
     }
 
     @Test
@@ -176,7 +203,8 @@ class SyncStateTest {
 
       assertEquals(release, uploaderEffects(before, before.releaseLocal()))
       assertEquals(release, uploaderEffects(before, before.cancel()))
-      assertEquals(release, uploaderEffects(before, before.start(other, owner)))
+      assertEquals(release, uploaderEffects(before, before.start(other)))
+      assertEquals(release, uploaderEffects(before, before.withOwner(null)))
     }
 
     @Test

@@ -38,7 +38,6 @@ class OfflineSessionEntityConverterTest {
       owner = OfflineSessionOwner("https://abs.example", "reader"),
       libraryItemId = "item",
       episodeId = "episode",
-      libraryId = "library",
       libraryType = LibraryType.PODCAST,
       displayTitle = "Episode",
       displayAuthor = "Author",

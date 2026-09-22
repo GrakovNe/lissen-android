@@ -74,6 +74,8 @@ class LocalCacheRepository
 
     suspend fun dropOfflineSessions(ids: List<String>) = offlineSessionRepository.drop(ids)
 
+    suspend fun dropAllOfflineSessions() = offlineSessionRepository.dropAll()
+
     fun fetchBookCover(bookId: String): OperationResult<File> {
       val coverFile = cachedBookRepository.provideBookCover(bookId)
 

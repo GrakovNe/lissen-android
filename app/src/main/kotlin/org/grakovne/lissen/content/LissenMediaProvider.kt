@@ -161,6 +161,8 @@ class LissenMediaProvider
 
     suspend fun dropOfflineSessions(ids: List<String>) = localCacheRepository.dropOfflineSessions(ids)
 
+    suspend fun dropAllOfflineSessions() = localCacheRepository.dropAllOfflineSessions()
+
     suspend fun syncOfflineSessions(
       libraryType: LibraryType,
       sessions: List<OfflineSession>,

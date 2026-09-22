@@ -149,15 +149,23 @@ class OfflineSessionSyncServiceTest {
   }
 
   @Test
-  fun `retry delays grow exponentially, are capped and bounded in number`() {
-    val delays = retryDelaysMillis()
-
-    assertEquals(8, delays.size)
-    assertEquals(5_000L, delays[0])
-    assertEquals(10_000L, delays[1])
-    assertEquals(300_000L, delays[6])
-    assertEquals(300_000L, delays[7])
+  fun `retry delay grows exponentially and is capped`() {
+    assertEquals(5_000L, retryDelayMillis(0))
+    assertEquals(10_000L, retryDelayMillis(1))
+    assertEquals(300_000L, retryDelayMillis(6))
+    assertEquals(300_000L, retryDelayMillis(7))
+    assertEquals(300_000L, retryDelayMillis(1_000))
   }
+
+  @Test
+  fun `dropping all sessions delegates to the provider on the service scope`() =
+    runTest {
+      coEvery { mediaProvider.dropAllOfflineSessions() } returns Unit
+
+      service.dropAllSessions().join()
+
+      coVerify(exactly = 1) { mediaProvider.dropAllOfflineSessions() }
+    }
 
   @Test
   fun `only transient operation errors are retried`() {
@@ -189,7 +197,6 @@ class OfflineSessionSyncServiceTest {
     owner = owner,
     libraryItemId = "item-$id",
     episodeId = "episode-$id".takeIf { libraryType == LibraryType.PODCAST },
-    libraryId = "library",
     libraryType = libraryType,
     displayTitle = title,
     displayAuthor = "Author",

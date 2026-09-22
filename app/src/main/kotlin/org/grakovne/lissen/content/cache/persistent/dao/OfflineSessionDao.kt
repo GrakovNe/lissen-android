@@ -41,4 +41,7 @@ interface OfflineSessionDao {
     """,
   )
   suspend fun deleteByIds(ids: List<String>): Int
+
+  @Query("DELETE FROM offline_playback_session")
+  suspend fun deleteAll(): Int
 }

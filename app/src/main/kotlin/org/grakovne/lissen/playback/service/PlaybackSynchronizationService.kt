@@ -42,6 +42,9 @@ class PlaybackSynchronizationService
 
     private var listeningMark = ListeningMark(playingSince = null, unsyncedMs = 0)
     private val serviceScope = MainScope()
+
+    // Outlives the per-item children of serviceScope, which are cancelled on every start.
+    private val accountScope = MainScope()
     private var syncJob: Job? = null
     private val syncRunner = CoalescingRunner<SyncSnapshot>()
 
@@ -58,13 +61,21 @@ class PlaybackSynchronizationService
           }
         },
       )
+
+      // A logout releases the local session and stops offline recording while cached
+      // progress keeps being written; a login lets the next tick record again.
+      accountScope.launch {
+        sharedPreferences.authenticatedOfflineSessionOwnerFlow.collect { owner ->
+          transition { it.withOwner(owner) }
+        }
+      }
     }
 
     fun startPlaybackSynchronization(item: DetailedItem) {
       Timber.d("Starting playback synchronization for ${item.id}")
       serviceScope.coroutineContext.cancelChildren()
       syncJob = null
-      transition { it.start(item, sharedPreferences.getAuthenticatedOfflineSessionOwner()) }
+      transition { it.start(item) }
       listeningMark = listeningMark.copy(playingSince = null)
     }
 

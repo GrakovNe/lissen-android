@@ -446,7 +446,6 @@ val MIGRATION_22_23 =
             username TEXT NOT NULL,
             libraryItemId TEXT NOT NULL,
             episodeId TEXT,
-            libraryId TEXT,
             libraryType TEXT NOT NULL,
             displayTitle TEXT NOT NULL,
             displayAuthor TEXT,

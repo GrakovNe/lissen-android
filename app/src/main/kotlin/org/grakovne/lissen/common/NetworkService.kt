@@ -58,12 +58,22 @@ class NetworkService
     /**
      * On a handover (say Wi-Fi to cellular) the system reports the new default network
      * before it reports the old one lost, so only losing the current default means offline.
+     * A network behind a captive portal reports as available first and validated later.
      */
     internal val defaultNetworkCallback =
       object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {
           defaultNetworkHandle = network.networkHandle
           _networkAvailable.value = true
+        }
+
+        override fun onCapabilitiesChanged(
+          network: Network,
+          networkCapabilities: NetworkCapabilities,
+        ) {
+          if (defaultNetworkHandle != network.networkHandle) return
+
+          _networkAvailable.value = networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
         }
 
         override fun onLost(network: Network) {

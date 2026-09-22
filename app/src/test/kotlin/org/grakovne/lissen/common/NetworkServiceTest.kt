@@ -90,6 +90,32 @@ class NetworkServiceTest {
     }
 
     @Test
+    fun `a captive portal counts as offline until the network is validated`() {
+      val wifi = network(1L)
+      val unvalidated = mockk<NetworkCapabilities> { every { hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) } returns false }
+      val validated = mockk<NetworkCapabilities> { every { hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) } returns true }
+
+      networkService.defaultNetworkCallback.onAvailable(wifi)
+      networkService.defaultNetworkCallback.onCapabilitiesChanged(wifi, unvalidated)
+      assertFalse(networkService.networkAvailable.value)
+
+      networkService.defaultNetworkCallback.onCapabilitiesChanged(wifi, validated)
+      assertTrue(networkService.networkAvailable.value)
+    }
+
+    @Test
+    fun `capabilities of a network that is not the default are ignored`() {
+      val wifi = network(1L)
+      val other = network(2L)
+      val unvalidated = mockk<NetworkCapabilities> { every { hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) } returns false }
+
+      networkService.defaultNetworkCallback.onAvailable(wifi)
+      networkService.defaultNetworkCallback.onCapabilitiesChanged(other, unvalidated)
+
+      assertTrue(networkService.networkAvailable.value)
+    }
+
+    @Test
     fun `losing the previous network after a handover keeps the device online`() {
       val wifi = network(1L)
       val cellular = network(2L)

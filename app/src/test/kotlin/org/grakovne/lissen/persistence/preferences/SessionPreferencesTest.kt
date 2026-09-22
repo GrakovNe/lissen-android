@@ -108,27 +108,6 @@ class SessionPreferencesTest {
   @Nested
   inner class Credentials {
     @Test
-    fun `authenticated owner contains the normalized server and username`() {
-      every { store.getString("host") } returns " HTTPS://ABS.EXAMPLE/ "
-      every { store.getString("username") } returns " Reader "
-      every { store.readSecret("token") } returns "jwt"
-
-      assertEquals(
-        OfflineSessionOwner("https://abs.example", "Reader"),
-        preferences.getAuthenticatedOfflineSessionOwner(),
-      )
-    }
-
-    @Test
-    fun `owner is absent without authentication`() {
-      every { store.getString("host") } returns "https://abs.example"
-      every { store.getString("username") } returns "reader"
-      every { store.readSecret(any()) } returns null
-
-      assertNull(preferences.getAuthenticatedOfflineSessionOwner())
-    }
-
-    @Test
     fun `requires host, username and any token`() {
       var host: String? = null
       var username: String? = null
@@ -198,23 +177,18 @@ class SessionPreferencesTest {
       }
 
     @Test
-    fun `owner flow and the synchronous getter agree`() =
+    fun `owner flow normalizes the server and the username`() =
       runBlocking {
         every { store.asFlow<Any?>(any(), any()) } answers { flowOf(secondArg<() -> Any?>()()) }
         every { store.getString("host") } returns " HTTPS://ABS.EXAMPLE/ "
         every { store.getString("username") } returns " Reader "
         every { store.getString("token") } returns "encrypted-jwt"
         every { store.getString("access_token") } returns null
-        every { store.readSecret("token") } returns "jwt"
-        every { store.readSecret("access_token") } returns null
-
-        val preferences = SessionPreferences(store)
 
         assertEquals(
-          preferences.getAuthenticatedOfflineSessionOwner(),
-          preferences.authenticatedOfflineSessionOwnerFlow.first(),
+          OfflineSessionOwner("https://abs.example", "Reader"),
+          SessionPreferences(store).authenticatedOfflineSessionOwnerFlow.first(),
         )
-        assertEquals(OfflineSessionOwner("https://abs.example", "Reader"), preferences.getAuthenticatedOfflineSessionOwner())
       }
 
     @Test

@@ -3,6 +3,7 @@ package org.grakovne.lissen.playback.service
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
@@ -93,8 +94,12 @@ class OfflineSessionSyncService
       uploadRevision.update { it + 1 }
     }
 
+    /** For a logout: no account is left to upload the rows for, whoever they belonged to. */
+    fun dropAllSessions(): Job = scope.launch { mediaProvider.dropAllOfflineSessions() }
+
+    /** Retries are bounded by connectivity, not by count: losing the network cancels this. */
     private suspend fun retryUntilSettled(owner: OfflineSessionOwner) {
-      for (retryDelay in retryDelaysMillis()) {
+      for (attempt in generateSequence(0) { it + 1 }) {
         currentCoroutineContext().ensureActive()
 
         when (attemptUpload(owner)) {
@@ -102,12 +107,8 @@ class OfflineSessionSyncService
           UploadAttempt.PAUSED,
           -> return
 
-          UploadAttempt.RETRY -> delay(retryDelay)
+          UploadAttempt.RETRY -> delay(retryDelayMillis(attempt))
         }
-      }
-
-      if (attemptUpload(owner) == UploadAttempt.RETRY) {
-        Timber.w("Offline session upload retry limit reached; waiting for the next sync trigger")
       }
     }
 
@@ -247,12 +248,9 @@ internal fun uploadAttemptFor(error: OperationError): UploadAttempt =
     -> UploadAttempt.PAUSED
   }
 
-/** Delays between consecutive upload attempts; one more attempt follows the last delay. */
-internal fun retryDelaysMillis(): List<Long> =
-  (0 until MAX_RETRY_ATTEMPTS).map { attempt ->
-    (INITIAL_RETRY_DELAY_MS * (1L shl attempt.coerceAtMost(MAX_RETRY_EXPONENT)))
-      .coerceAtMost(MAX_RETRY_DELAY_MS)
-  }
+internal fun retryDelayMillis(attempt: Int): Long =
+  (INITIAL_RETRY_DELAY_MS * (1L shl attempt.coerceIn(0, MAX_RETRY_EXPONENT)))
+    .coerceAtMost(MAX_RETRY_DELAY_MS)
 
 private const val MAX_SESSIONS_PER_BATCH = 20
 private const val MAX_ESTIMATED_BATCH_BYTES = 64 * 1024
@@ -260,4 +258,3 @@ private const val ESTIMATED_FIXED_SESSION_BYTES = 512
 private const val INITIAL_RETRY_DELAY_MS = 5_000L
 private const val MAX_RETRY_DELAY_MS = 5 * 60_000L
 private const val MAX_RETRY_EXPONENT = 6
-private const val MAX_RETRY_ATTEMPTS = 8

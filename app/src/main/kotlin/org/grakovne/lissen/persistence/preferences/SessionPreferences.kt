@@ -34,7 +34,7 @@ class SessionPreferences
         store.asFlow(KEY_USERNAME, ::getUsername),
         authenticatedFlow,
       ) { host, username, authenticated ->
-        resolveOfflineSessionOwner(host, username, authenticated)
+        OfflineSessionOwner.from(host, username).takeIf { authenticated }
       }.distinctUntilChanged()
 
     fun getDeviceId(): String =
@@ -51,8 +51,6 @@ class SessionPreferences
     fun saveHost(host: String) = store.putString(KEY_HOST, host)
 
     fun getUsername(): String? = store.getString(KEY_USERNAME)
-
-    fun getAuthenticatedOfflineSessionOwner(): OfflineSessionOwner? = resolveOfflineSessionOwner(getHost(), getUsername(), hasCredentials())
 
     fun saveUsername(username: String) = store.putString(KEY_USERNAME, username)
 
@@ -111,12 +109,6 @@ class SessionPreferences
       store.writeSecret(key, value)
       cache.invalidate()
     }
-
-    private fun resolveOfflineSessionOwner(
-      host: String?,
-      username: String?,
-      authenticated: Boolean,
-    ): OfflineSessionOwner? = OfflineSessionOwner.from(host, username).takeIf { authenticated }
 
     /** Runs on the preferences listener thread: presence is answered without decrypting. */
     private fun hasStoredSecret(key: String): Boolean = store.getString(key) != null

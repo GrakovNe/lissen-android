@@ -68,4 +68,10 @@ class OfflineSessionRepository
       if (ids.isEmpty()) return
       dao.deleteByIds(ids)
     }
+
+    /** For a logout: no account is left to upload the rows for, whoever they belonged to. */
+    suspend fun dropAll() {
+      val dropped = dao.deleteAll()
+      Timber.d("Dropped $dropped offline session(s)")
+    }
   }

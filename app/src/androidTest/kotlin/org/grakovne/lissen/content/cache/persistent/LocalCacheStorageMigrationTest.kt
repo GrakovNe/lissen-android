@@ -349,12 +349,12 @@ class LocalCacheStorageMigrationTest {
     db.execSQL(
       """
       INSERT INTO offline_playback_session (
-        id, serverHost, username, libraryItemId, episodeId, libraryId, libraryType,
+        id, serverHost, username, libraryItemId, episodeId, libraryType,
         displayTitle, displayAuthor, duration, startTime, currentTime, timeListening,
         startedAt, updatedAt
       )
       VALUES (
-        's1', 'https://abs.example', 'reader', 'book-1', NULL, 'lib', 'LIBRARY',
+        's1', 'https://abs.example', 'reader', 'book-1', NULL, 'LIBRARY',
         'Dune', NULL, 300.0, 10.0, 55.0, 45.0, 1000, 46000
       )
       """.trimIndent(),

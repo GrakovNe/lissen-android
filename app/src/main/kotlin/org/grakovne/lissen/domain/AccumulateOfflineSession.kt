@@ -30,7 +30,6 @@ fun accumulateOfflineSession(
       owner = owner,
       libraryItemId = item.id,
       episodeId = scope.episodeId,
-      libraryId = item.libraryId,
       libraryType = item.libraryType ?: LibraryType.LIBRARY,
       displayTitle = scope.title,
       displayAuthor = item.author,

@@ -67,6 +67,16 @@ class OfflineSessionRepositoryTest {
     }
 
   @Test
+  fun `dropAll clears the table regardless of owner`() =
+    runTest {
+      coEvery { dao.deleteAll() } returns 3
+
+      repository.dropAll()
+
+      coVerify(exactly = 1) { dao.deleteAll() }
+    }
+
+  @Test
   fun `drop with no ids does not query room`() =
     runTest {
       repository.drop(emptyList())
@@ -102,7 +112,6 @@ class OfflineSessionRepositoryTest {
       username = "reader",
       libraryItemId = "item",
       episodeId = null,
-      libraryId = "library",
       libraryType = LibraryType.LIBRARY.name,
       displayTitle = "Book",
       displayAuthor = "Author",

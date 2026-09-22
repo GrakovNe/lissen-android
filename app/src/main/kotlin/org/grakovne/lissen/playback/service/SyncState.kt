@@ -19,12 +19,17 @@ internal data class SyncState(
   val localSession: PlaybackSession?
     get() = session?.takeIf { it.sessionSource == PlaybackSessionSource.LOCAL }
 
-  fun start(
-    item: DetailedItem,
-    owner: OfflineSessionOwner?,
-  ): SyncState = SyncState(item = item, owner = owner)
+  /** The owner is account state, not playback state, so it survives item changes. */
+  fun start(item: DetailedItem): SyncState = SyncState(item = item, owner = owner)
 
-  fun cancel(): SyncState = SyncState()
+  fun cancel(): SyncState = SyncState(owner = owner)
+
+  /** Without an account nothing can be recorded, so the local session is handed over as well. */
+  fun withOwner(owner: OfflineSessionOwner?): SyncState =
+    when (owner) {
+      null -> releaseLocal().copy(owner = null)
+      else -> copy(owner = owner)
+    }
 
   fun withChapter(chapterIndex: Int): SyncState = copy(chapterIndex = chapterIndex)
 
@@ -34,7 +39,7 @@ internal data class SyncState(
     localSession: LocalSessionPolicy,
   ): SyncState =
     when (item?.id == opened.itemId) {
-      true -> copy(session = choosePlaybackSession(session, opened, opened.itemId, localSession))
+      true -> copy(session = choosePlaybackSession(session, opened, localSession))
       false -> this
     }
 
@@ -59,10 +64,9 @@ internal enum class LocalSessionPolicy {
 internal fun choosePlaybackSession(
   previous: PlaybackSession?,
   opened: PlaybackSession,
-  itemId: String,
   localSession: LocalSessionPolicy,
 ): PlaybackSession {
-  val previousLocal = previous?.takeIf { it.sessionSource == PlaybackSessionSource.LOCAL && it.itemId == itemId }
+  val previousLocal = previous?.takeIf { it.sessionSource == PlaybackSessionSource.LOCAL && it.itemId == opened.itemId }
 
   return when {
     opened.sessionSource == PlaybackSessionSource.LOCAL && localSession == LocalSessionPolicy.KEEP -> previousLocal ?: opened

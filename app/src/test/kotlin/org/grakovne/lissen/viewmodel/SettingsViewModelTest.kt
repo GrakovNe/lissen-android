@@ -6,6 +6,7 @@ import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import io.mockk.verifyOrder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,6 +55,7 @@ import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.grakovne.lissen.playback.EqualizerBandProvider
 import org.grakovne.lissen.playback.EqualizerCapabilities
 import org.grakovne.lissen.playback.MediaRepository
+import org.grakovne.lissen.playback.service.OfflineSessionSyncService
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -74,6 +76,7 @@ class SettingsViewModelTest {
   private val download = mockk<DownloadPreferences>(relaxed = true)
   private val diagnostics = mockk<DiagnosticsPreferences>(relaxed = true)
   private val preferencesReset = mockk<PreferencesReset>(relaxed = true)
+  private val offlineSessionSyncService = mockk<OfflineSessionSyncService>(relaxed = true)
   private val mediaChannel = mockk<LissenMediaProvider>(relaxed = true)
   private val logProvider = mockk<LissenLogProvider>(relaxed = true)
   private val configProvider = mockk<LissenConfigProvider>(relaxed = true)
@@ -130,6 +133,7 @@ class SettingsViewModelTest {
         download,
         diagnostics,
         preferencesReset,
+        offlineSessionSyncService,
         logProvider,
         configProvider,
         equalizerBandProvider,
@@ -169,6 +173,7 @@ class SettingsViewModelTest {
         download,
         diagnostics,
         preferencesReset,
+        offlineSessionSyncService,
         logProvider,
         configProvider,
         equalizerBandProvider,
@@ -340,6 +345,7 @@ class SettingsViewModelTest {
           download,
           diagnostics,
           preferencesReset,
+          offlineSessionSyncService,
           logProvider,
           configProvider,
           equalizerBandProvider,
@@ -368,6 +374,7 @@ class SettingsViewModelTest {
           download,
           diagnostics,
           preferencesReset,
+          offlineSessionSyncService,
           logProvider,
           configProvider,
           equalizerBandProvider,
@@ -642,6 +649,7 @@ class SettingsViewModelTest {
           download,
           diagnostics,
           preferencesReset,
+          offlineSessionSyncService,
           logProvider,
           configProvider,
           equalizerBandProvider,
@@ -678,6 +686,16 @@ class SettingsViewModelTest {
     fun `logout calls clearPreferences`() {
       viewModel.logout()
       verify { preferencesReset.clearAll() }
+    }
+
+    @Test
+    fun `logout drops the offline rows after the account is cleared`() {
+      viewModel.logout()
+
+      verifyOrder {
+        preferencesReset.clearAll()
+        offlineSessionSyncService.dropAllSessions()
+      }
     }
   }
 
@@ -733,6 +751,7 @@ class SettingsViewModelTest {
           download,
           diagnostics,
           preferencesReset,
+          offlineSessionSyncService,
           logProvider,
           configProvider,
           equalizerBandProvider,
@@ -766,6 +785,7 @@ class SettingsViewModelTest {
           download,
           diagnostics,
           preferencesReset,
+          offlineSessionSyncService,
           logProvider,
           configProvider,
           equalizerBandProvider,
@@ -797,6 +817,7 @@ class SettingsViewModelTest {
           download,
           diagnostics,
           preferencesReset,
+          offlineSessionSyncService,
           logProvider,
           configProvider,
           equalizerBandProvider,

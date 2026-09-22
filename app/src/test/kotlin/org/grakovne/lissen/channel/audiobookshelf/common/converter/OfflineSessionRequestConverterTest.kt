@@ -22,7 +22,6 @@ class OfflineSessionRequestConverterTest {
       owner = OfflineSessionOwner("https://abs.example", "reader"),
       libraryItemId = "item",
       episodeId = "ep".takeIf { libraryType == LibraryType.PODCAST },
-      libraryId = "lib",
       libraryType = libraryType,
       displayTitle = "Dune",
       displayAuthor = "Frank Herbert",
