@@ -23,16 +23,16 @@ class ShortTermCacheStorageProperties
     fun provideSeriesCoverPath(key: String): File = seriesCoverCacheFolder().resolve(key.toFileKey())
 
     private fun coverCacheFolder(): File =
-      baseFolder()
+      context
+        .preferredCacheDir()
         .resolve(SHORT_TERM_CACHE_FOLDER)
         .resolve(COVER_CACHE_FOLDER_NAME)
 
     private fun seriesCoverCacheFolder(): File =
-      baseFolder()
+      context
+        .preferredCacheDir()
         .resolve(SHORT_TERM_CACHE_FOLDER)
         .resolve(SERIES_COVER_CACHE_FOLDER_NAME)
-
-    private fun baseFolder(): File = context.preferredCacheDir()
 
     companion object {
       const val SHORT_TERM_CACHE_FOLDER = "short_term_cache"

@@ -25,10 +25,13 @@ fun File.installBlurredTo(
   context: Context,
 ) {
   val blurred = withBlur(context)
-  dest.parentFile?.mkdirs()
-  blurred.copyTo(dest, overwrite = true)
-  if (blurred != this) blurred.delete()
-  delete()
+  try {
+    dest.parentFile?.mkdirs()
+    blurred.copyTo(dest, overwrite = true)
+  } finally {
+    if (blurred != this) blurred.delete()
+    delete()
+  }
 }
 
 /**

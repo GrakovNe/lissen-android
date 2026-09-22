@@ -61,8 +61,10 @@ fun ClearThumbnailCacheComposable(cachingModelView: CachingModelView) {
       confirmLabel = stringResource(R.string.clear_thumbnail_cache_confirm),
       onConfirm = {
         showConfirmation = false
-        scope.launch { cachingModelView.clearShortTermCache() }
-        showClearedToast(context)
+        scope.launch {
+          cachingModelView.clearShortTermCache()
+          showClearedToast(context)
+        }
       },
       onDismissRequest = { showConfirmation = false },
     )

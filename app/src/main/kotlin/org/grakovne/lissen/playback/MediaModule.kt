@@ -48,7 +48,7 @@ object MediaModule {
 
     return SimpleCache(
       File(baseFolder, "playback_cache"),
-      LeastRecentlyUsedCacheEvictor(buildPlaybackCacheLimit(context)),
+      LeastRecentlyUsedCacheEvictor(buildPlaybackCacheLimit(baseFolder)),
       StandaloneDatabaseProvider(context),
     )
   }
@@ -107,9 +107,7 @@ object MediaModule {
     return player
   }
 
-  private fun buildPlaybackCacheLimit(ctx: Context): Long {
-    val baseFolder = ctx.preferredCacheDir()
-
+  private fun buildPlaybackCacheLimit(baseFolder: File): Long {
     val stat = android.os.StatFs(baseFolder.path)
     val available = stat.availableBytes
     val dynamicCap = (available - KEEP_FREE_BYTES).coerceAtLeast(MIN_CACHE_BYTES)
