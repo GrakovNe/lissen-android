@@ -1,7 +1,6 @@
 package org.grakovne.lissen.playback.service
 
 import org.grakovne.lissen.domain.DetailedItem
-import org.grakovne.lissen.domain.OfflineSessionOwner
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.PlaybackSessionSource
 
@@ -14,21 +13,21 @@ internal data class SyncState(
   val item: DetailedItem? = null,
   val chapterIndex: Int? = null,
   val session: PlaybackSession? = null,
-  val owner: OfflineSessionOwner? = null,
+  val authenticated: Boolean = false,
 ) {
   val localSession: PlaybackSession?
     get() = session?.takeIf { it.sessionSource == PlaybackSessionSource.LOCAL }
 
-  /** The owner is account state, not playback state, so it survives item changes. */
-  fun start(item: DetailedItem): SyncState = SyncState(item = item, owner = owner)
+  /** Being logged in is account state, not playback state, so it survives item changes. */
+  fun start(item: DetailedItem): SyncState = SyncState(item = item, authenticated = authenticated)
 
-  fun cancel(): SyncState = SyncState(owner = owner)
+  fun cancel(): SyncState = SyncState(authenticated = authenticated)
 
   /** Without an account nothing can be recorded, so the local session is handed over as well. */
-  fun withOwner(owner: OfflineSessionOwner?): SyncState =
-    when (owner) {
-      null -> releaseLocal().copy(owner = null)
-      else -> copy(owner = owner)
+  fun withAccount(authenticated: Boolean): SyncState =
+    when (authenticated) {
+      true -> copy(authenticated = true)
+      false -> releaseLocal().copy(authenticated = false)
     }
 
   fun withChapter(chapterIndex: Int): SyncState = copy(chapterIndex = chapterIndex)

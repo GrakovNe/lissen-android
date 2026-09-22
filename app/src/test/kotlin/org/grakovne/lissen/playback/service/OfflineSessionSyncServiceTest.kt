@@ -11,7 +11,6 @@ import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.OfflineSession
-import org.grakovne.lissen.domain.OfflineSessionOwner
 import org.grakovne.lissen.domain.OfflineSessionSyncResult
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.SessionPreferences
@@ -19,7 +18,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class OfflineSessionSyncServiceTest {
-  private val owner = OfflineSessionOwner("https://abs.example", "reader")
   private val mediaProvider = mockk<LissenMediaProvider>()
   private val networkService = mockk<NetworkService>(relaxed = true)
   private val sessionPreferences =
@@ -39,7 +37,7 @@ class OfflineSessionSyncServiceTest {
   fun `upload sends only sessions owned by the requested account and removes acknowledged ids`() =
     runTest {
       val sessions = listOf(session("a"), session("b"))
-      coEvery { mediaProvider.fetchOfflineSessions(owner) } returns sessions
+      coEvery { mediaProvider.fetchOfflineSessions() } returns sessions
       coEvery { mediaProvider.syncOfflineSessions(LibraryType.LIBRARY, sessions, "device") } returns
         OperationResult.Success(
           listOf(
@@ -49,9 +47,9 @@ class OfflineSessionSyncServiceTest {
         )
       coEvery { mediaProvider.dropOfflineSessions(any()) } returns Unit
 
-      assertEquals(UploadAttempt.SETTLED, service.uploadOnce(owner))
+      assertEquals(UploadAttempt.SETTLED, service.uploadOnce())
 
-      coVerify(exactly = 1) { mediaProvider.fetchOfflineSessions(owner) }
+      coVerify(exactly = 1) { mediaProvider.fetchOfflineSessions() }
       coVerify(exactly = 1) { mediaProvider.dropOfflineSessions(match { it.toSet() == setOf("a", "b") }) }
     }
 
@@ -61,12 +59,12 @@ class OfflineSessionSyncServiceTest {
       val active = session("active")
       val completed = session("completed")
       service.activateSession(active.id)
-      coEvery { mediaProvider.fetchOfflineSessions(owner) } returns listOf(active, completed)
+      coEvery { mediaProvider.fetchOfflineSessions() } returns listOf(active, completed)
       coEvery { mediaProvider.syncOfflineSessions(LibraryType.LIBRARY, listOf(completed), "device") } returns
         OperationResult.Success(listOf(OfflineSessionSyncResult(completed.id, true, null)))
       coEvery { mediaProvider.dropOfflineSessions(any()) } returns Unit
 
-      assertEquals(UploadAttempt.SETTLED, service.uploadOnce(owner))
+      assertEquals(UploadAttempt.SETTLED, service.uploadOnce())
 
       coVerify(exactly = 0) { mediaProvider.syncOfflineSessions(any(), match { active in it }, any()) }
     }
@@ -75,11 +73,11 @@ class OfflineSessionSyncServiceTest {
   fun `transport failure keeps the batch for retry`() =
     runTest {
       val pending = listOf(session("a"))
-      coEvery { mediaProvider.fetchOfflineSessions(owner) } returns pending
+      coEvery { mediaProvider.fetchOfflineSessions() } returns pending
       coEvery { mediaProvider.syncOfflineSessions(any(), any(), any()) } returns
         OperationResult.Error(OperationError.NetworkError)
 
-      assertEquals(UploadAttempt.RETRY, service.uploadOnce(owner))
+      assertEquals(UploadAttempt.RETRY, service.uploadOnce())
 
       coVerify(exactly = 0) { mediaProvider.dropOfflineSessions(any()) }
     }
@@ -88,11 +86,11 @@ class OfflineSessionSyncServiceTest {
   fun `permanent failure pauses uploads and keeps the batch`() =
     runTest {
       val pending = listOf(session("a"))
-      coEvery { mediaProvider.fetchOfflineSessions(owner) } returns pending
+      coEvery { mediaProvider.fetchOfflineSessions() } returns pending
       coEvery { mediaProvider.syncOfflineSessions(any(), any(), any()) } returns
         OperationResult.Error(OperationError.NotFoundError)
 
-      assertEquals(UploadAttempt.PAUSED, service.uploadOnce(owner))
+      assertEquals(UploadAttempt.PAUSED, service.uploadOnce())
 
       coVerify(exactly = 0) { mediaProvider.dropOfflineSessions(any()) }
     }
@@ -101,11 +99,11 @@ class OfflineSessionSyncServiceTest {
   fun `permanent failure stops processing later batches`() =
     runTest {
       val sessions = (1..21).map { session("book-$it") }
-      coEvery { mediaProvider.fetchOfflineSessions(owner) } returns sessions
+      coEvery { mediaProvider.fetchOfflineSessions() } returns sessions
       coEvery { mediaProvider.syncOfflineSessions(any(), any(), any()) } returns
         OperationResult.Error(OperationError.Unauthorized)
 
-      assertEquals(UploadAttempt.PAUSED, service.uploadOnce(owner))
+      assertEquals(UploadAttempt.PAUSED, service.uploadOnce())
 
       coVerify(exactly = 1) { mediaProvider.syncOfflineSessions(any(), any(), any()) }
     }
@@ -114,12 +112,12 @@ class OfflineSessionSyncServiceTest {
   fun `incomplete server response removes acknowledged rows and retries the remainder`() =
     runTest {
       val sessions = listOf(session("a"), session("b"))
-      coEvery { mediaProvider.fetchOfflineSessions(owner) } returns sessions
+      coEvery { mediaProvider.fetchOfflineSessions() } returns sessions
       coEvery { mediaProvider.syncOfflineSessions(any(), any(), any()) } returns
         OperationResult.Success(listOf(OfflineSessionSyncResult("a", true, null)))
       coEvery { mediaProvider.dropOfflineSessions(any()) } returns Unit
 
-      assertEquals(UploadAttempt.RETRY, service.uploadOnce(owner))
+      assertEquals(UploadAttempt.RETRY, service.uploadOnce())
 
       coVerify { mediaProvider.dropOfflineSessions(listOf("a")) }
     }
@@ -194,7 +192,6 @@ class OfflineSessionSyncServiceTest {
     title: String = "Book",
   ) = OfflineSession(
     id = id,
-    owner = owner,
     libraryItemId = "item-$id",
     episodeId = "episode-$id".takeIf { libraryType == LibraryType.PODCAST },
     libraryType = libraryType,

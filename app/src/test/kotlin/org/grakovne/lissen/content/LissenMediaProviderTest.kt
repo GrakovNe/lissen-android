@@ -3,12 +3,14 @@ package org.grakovne.lissen.content
 import android.net.Uri
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.runBlocking
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfChannelProvider
 import org.grakovne.lissen.channel.audiobookshelf.common.api.ConditionalCache
+import org.grakovne.lissen.channel.common.ChannelAuthService
 import org.grakovne.lissen.channel.common.MediaChannel
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
@@ -28,13 +30,13 @@ import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.MediaProgress
-import org.grakovne.lissen.domain.OfflineSessionOwner
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
 import org.grakovne.lissen.domain.PlaybackSessionSource
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.RecentBook
+import org.grakovne.lissen.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
@@ -762,7 +764,6 @@ class LissenMediaProviderTest {
 
   @Nested
   inner class OfflineSessions {
-    private val owner = OfflineSessionOwner("https://abs.example", "reader")
     private val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
 
     @Test
@@ -777,14 +778,31 @@ class LissenMediaProviderTest {
       }
 
     @Test
+    fun `login drops the offline sessions before the credentials are stored`() =
+      runBlocking {
+        val authService = mockk<ChannelAuthService>(relaxed = true)
+        every { channelProvider.provideChannelAuth() } returns authService
+        every { preferences.isForceCache() } returns false
+        coEvery { mediaChannel.fetchLibraries() } returns OperationResult.Success(emptyList())
+        val account = UserAccount(token = "jwt", accessToken = null, refreshToken = null, username = "reader", preferredLibraryId = null)
+
+        provider.onPostLogin("https://abs.example", account)
+
+        coVerifyOrder {
+          localCacheRepository.dropAllOfflineSessions()
+          authService.persistCredentials("https://abs.example", "reader", "jwt", null, null)
+        }
+      }
+
+    @Test
     fun `records the session with the item's own library type`() =
       runBlocking {
         val item = detailedItem("book-1").copy(libraryType = LibraryType.PODCAST)
         every { preferences.getPreferredLibrary() } returns Library("lib-1", "Books", LibraryType.LIBRARY)
 
-        provider.recordOfflineSession("s1", owner, item, 0, progress, 5.0)
+        provider.recordOfflineSession("s1", item, 0, progress, 5.0)
 
-        coVerify { localCacheRepository.recordOfflineSession("s1", owner, item, 0, progress, 5.0) }
+        coVerify { localCacheRepository.recordOfflineSession("s1", item, 0, progress, 5.0) }
       }
 
     @Test
@@ -793,12 +811,11 @@ class LissenMediaProviderTest {
         val item = detailedItem("book-1")
         every { preferences.getPreferredLibrary() } returns Library("lib-1", "Podcasts", LibraryType.PODCAST)
 
-        provider.recordOfflineSession("s1", owner, item, 0, progress, 5.0)
+        provider.recordOfflineSession("s1", item, 0, progress, 5.0)
 
         coVerify {
           localCacheRepository.recordOfflineSession(
             "s1",
-            owner,
             item.copy(libraryType = LibraryType.PODCAST),
             0,
             progress,
@@ -813,9 +830,9 @@ class LissenMediaProviderTest {
         val item = detailedItem("book-1")
         every { preferences.getPreferredLibrary() } returns Library("lib-1", "Mixed", LibraryType.UNKNOWN)
 
-        provider.recordOfflineSession("s1", owner, item, 0, progress, 5.0)
+        provider.recordOfflineSession("s1", item, 0, progress, 5.0)
 
-        coVerify { localCacheRepository.recordOfflineSession("s1", owner, item, 0, progress, 5.0) }
+        coVerify { localCacheRepository.recordOfflineSession("s1", item, 0, progress, 5.0) }
       }
   }
 

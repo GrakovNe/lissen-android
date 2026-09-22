@@ -5,8 +5,6 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 class AccumulateOfflineSessionTest {
-  private val owner = OfflineSessionOwner("https://abs.example", "reader")
-
   private fun item(
     libraryType: LibraryType,
     vararg durations: Double,
@@ -50,7 +48,6 @@ class AccumulateOfflineSessionTest {
       accumulateOfflineSession(
         existing = null,
         sessionId = "s1",
-        owner = owner,
         item = item(LibraryType.LIBRARY, 100.0, 200.0),
         chapterIndex = 1,
         progress = PlaybackProgress(currentTotalTime = 150.0, currentChapterTime = 50.0),
@@ -59,7 +56,6 @@ class AccumulateOfflineSessionTest {
       )
 
     assertEquals("s1", session.id)
-    assertEquals(owner, session.owner)
     assertEquals("item", session.libraryItemId)
     assertNull(session.episodeId)
     assertEquals(LibraryType.LIBRARY, session.libraryType)
@@ -79,7 +75,6 @@ class AccumulateOfflineSessionTest {
       accumulateOfflineSession(
         existing = null,
         sessionId = "s1",
-        owner = owner,
         item = item(LibraryType.PODCAST, 100.0, 200.0),
         chapterIndex = 1,
         progress = PlaybackProgress(currentTotalTime = 150.0, currentChapterTime = 50.0),
@@ -104,7 +99,6 @@ class AccumulateOfflineSessionTest {
       accumulateOfflineSession(
         existing = null,
         sessionId = "s1",
-        owner = owner,
         item = item,
         chapterIndex = 0,
         progress = PlaybackProgress(currentTotalTime = 10.0, currentChapterTime = 10.0),
@@ -116,7 +110,6 @@ class AccumulateOfflineSessionTest {
       accumulateOfflineSession(
         existing = first,
         sessionId = "s1",
-        owner = owner,
         item = item,
         chapterIndex = 0,
         progress = PlaybackProgress(currentTotalTime = 55.0, currentChapterTime = 55.0),
@@ -129,7 +122,6 @@ class AccumulateOfflineSessionTest {
     assertEquals(50.0, second.timeListening)
     assertEquals(1_000L, second.startedAt)
     assertEquals(46_000L, second.updatedAt)
-    assertEquals(owner, second.owner)
   }
 
   @Test
@@ -138,7 +130,6 @@ class AccumulateOfflineSessionTest {
       accumulateOfflineSession(
         existing = null,
         sessionId = "s1",
-        owner = owner,
         item = item(LibraryType.LIBRARY, 100.0).copy(libraryType = null),
         chapterIndex = 0,
         progress = PlaybackProgress(currentTotalTime = 1.0, currentChapterTime = 1.0),
@@ -156,7 +147,6 @@ class AccumulateOfflineSessionTest {
       accumulateOfflineSession(
         existing = null,
         sessionId = "s1",
-        owner = owner,
         item = item(LibraryType.PODCAST, 100.0, 200.0),
         chapterIndex = 5,
         progress = PlaybackProgress(currentTotalTime = 150.0, currentChapterTime = 50.0),
@@ -177,7 +167,6 @@ class AccumulateOfflineSessionTest {
       accumulateOfflineSession(
         existing = null,
         sessionId = "s1",
-        owner = owner,
         item = item,
         chapterIndex = 1,
         progress = PlaybackProgress(currentTotalTime = 110.0, currentChapterTime = 10.0),
@@ -189,7 +178,6 @@ class AccumulateOfflineSessionTest {
       accumulateOfflineSession(
         existing = first,
         sessionId = "s1",
-        owner = owner,
         item = item,
         chapterIndex = 1,
         progress = PlaybackProgress(currentTotalTime = 160.0, currentChapterTime = 60.0),

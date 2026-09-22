@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 23,
-    "identityHash": "dcf2b6624fe619f4dbe2ae25abe035ff",
+    "identityHash": "10c1aa60f6f015b153f7c7dd8b78c81b",
     "entities": [
       {
         "tableName": "detailed_books",
@@ -462,23 +462,11 @@
       },
       {
         "tableName": "offline_playback_session",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `serverHost` TEXT NOT NULL, `username` TEXT NOT NULL, `libraryItemId` TEXT NOT NULL, `episodeId` TEXT, `libraryType` TEXT NOT NULL, `displayTitle` TEXT NOT NULL, `displayAuthor` TEXT, `duration` REAL NOT NULL, `startTime` REAL NOT NULL, `currentTime` REAL NOT NULL, `timeListening` REAL NOT NULL, `startedAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `libraryItemId` TEXT NOT NULL, `episodeId` TEXT, `libraryType` TEXT NOT NULL, `displayTitle` TEXT NOT NULL, `displayAuthor` TEXT, `duration` REAL NOT NULL, `startTime` REAL NOT NULL, `currentTime` REAL NOT NULL, `timeListening` REAL NOT NULL, `startedAt` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
             "columnName": "id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "serverHost",
-            "columnName": "serverHost",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "username",
-            "columnName": "username",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -552,34 +540,12 @@
           "columnNames": [
             "id"
           ]
-        },
-        "indices": [
-          {
-            "name": "index_offline_playback_session_libraryItemId",
-            "unique": false,
-            "columnNames": [
-              "libraryItemId"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_offline_playback_session_libraryItemId` ON `${TABLE_NAME}` (`libraryItemId`)"
-          },
-          {
-            "name": "index_offline_playback_session_owner_startedAt",
-            "unique": false,
-            "columnNames": [
-              "serverHost",
-              "username",
-              "startedAt"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_offline_playback_session_owner_startedAt` ON `${TABLE_NAME}` (`serverHost`, `username`, `startedAt`)"
-          }
-        ]
+        }
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'dcf2b6624fe619f4dbe2ae25abe035ff')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '10c1aa60f6f015b153f7c7dd8b78c81b')"
     ]
   }
 }

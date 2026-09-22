@@ -22,7 +22,6 @@ import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.OfflineSession
-import org.grakovne.lissen.domain.OfflineSessionOwner
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import timber.log.Timber
@@ -59,12 +58,12 @@ class OfflineSessionSyncService
         combine(
           networkService.networkAvailable,
           libraryPreferences.forceCacheFlow,
-          sessionPreferences.authenticatedOfflineSessionOwnerFlow,
-        ) { networkAvailable, forceCache, owner ->
-          owner?.takeIf { networkAvailable && forceCache.not() }
+          sessionPreferences.authenticatedFlow,
+        ) { networkAvailable, forceCache, authenticated ->
+          networkAvailable && forceCache.not() && authenticated
         }.distinctUntilChanged()
-          .collectLatest { owner ->
-            owner?.let { uploadOnEveryRequest(it) }
+          .collectLatest { canUpload ->
+            if (canUpload) uploadOnEveryRequest()
           }
       }
     }
@@ -73,8 +72,8 @@ class OfflineSessionSyncService
      * Only a lost network or account cancels a pass. A request that arrives while one is
      * running is conflated by the state flow into a single further pass once it finishes.
      */
-    private suspend fun uploadOnEveryRequest(owner: OfflineSessionOwner) {
-      uploadRevision.collect { retryUntilSettled(owner) }
+    private suspend fun uploadOnEveryRequest() {
+      uploadRevision.collect { retryUntilSettled() }
     }
 
     fun activateSession(sessionId: String) {
@@ -94,15 +93,15 @@ class OfflineSessionSyncService
       uploadRevision.update { it + 1 }
     }
 
-    /** For a logout: no account is left to upload the rows for, whoever they belonged to. */
+    /** For a logout: no account is left to upload the rows for. */
     fun dropAllSessions(): Job = scope.launch { mediaProvider.dropAllOfflineSessions() }
 
     /** Retries are bounded by connectivity, not by count: losing the network cancels this. */
-    private suspend fun retryUntilSettled(owner: OfflineSessionOwner) {
+    private suspend fun retryUntilSettled() {
       for (attempt in generateSequence(0) { it + 1 }) {
         currentCoroutineContext().ensureActive()
 
-        when (attemptUpload(owner)) {
+        when (attemptUpload()) {
           UploadAttempt.SETTLED,
           UploadAttempt.PAUSED,
           -> return
@@ -112,9 +111,9 @@ class OfflineSessionSyncService
       }
     }
 
-    private suspend fun attemptUpload(owner: OfflineSessionOwner): UploadAttempt =
+    private suspend fun attemptUpload(): UploadAttempt =
       try {
-        uploadOnce(owner)
+        uploadOnce()
       } catch (cancelled: CancellationException) {
         throw cancelled
       } catch (error: Exception) {
@@ -122,11 +121,11 @@ class OfflineSessionSyncService
         UploadAttempt.PAUSED
       }
 
-    internal suspend fun uploadOnce(owner: OfflineSessionOwner): UploadAttempt =
+    internal suspend fun uploadOnce(): UploadAttempt =
       uploadMutex.withLock {
         val pending =
           mediaProvider
-            .fetchOfflineSessions(owner)
+            .fetchOfflineSessions()
             .filterNot { it.id == activeSessionId.get() }
 
         if (pending.isEmpty()) return@withLock UploadAttempt.SETTLED

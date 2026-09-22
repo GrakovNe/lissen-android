@@ -3,7 +3,6 @@ package org.grakovne.lissen.persistence.preferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import org.grakovne.lissen.domain.OfflineSessionOwner
 import timber.log.Timber
 import java.util.UUID
 import javax.inject.Inject
@@ -21,21 +20,13 @@ class SessionPreferences
     private val accessTokenCache = CachedValue { store.readSecret(KEY_ACCESS_TOKEN) }
     private val refreshTokenCache = CachedValue { store.readSecret(KEY_REFRESH_TOKEN) }
 
-    private val authenticatedFlow: Flow<Boolean> =
+    /** True while any token is stored; a logout or an expired refresh turns it false. */
+    val authenticatedFlow: Flow<Boolean> =
       combine(
         store.asFlow(KEY_TOKEN) { hasStoredSecret(KEY_TOKEN) },
         store.asFlow(KEY_ACCESS_TOKEN) { hasStoredSecret(KEY_ACCESS_TOKEN) },
       ) { hasLegacyToken, hasAccessToken -> hasLegacyToken || hasAccessToken }
         .distinctUntilChanged()
-
-    val authenticatedOfflineSessionOwnerFlow: Flow<OfflineSessionOwner?> =
-      combine(
-        store.asFlow(KEY_HOST, ::getHost),
-        store.asFlow(KEY_USERNAME, ::getUsername),
-        authenticatedFlow,
-      ) { host, username, authenticated ->
-        OfflineSessionOwner.from(host, username).takeIf { authenticated }
-      }.distinctUntilChanged()
 
     fun getDeviceId(): String =
       synchronized(deviceIdLock) {

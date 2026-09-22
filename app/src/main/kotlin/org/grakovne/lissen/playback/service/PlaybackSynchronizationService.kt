@@ -65,8 +65,8 @@ class PlaybackSynchronizationService
       // A logout releases the local session and stops offline recording while cached
       // progress keeps being written; a login lets the next tick record again.
       accountScope.launch {
-        sharedPreferences.authenticatedOfflineSessionOwnerFlow.collect { owner ->
-          transition { it.withOwner(owner) }
+        sharedPreferences.authenticatedFlow.collect { authenticated ->
+          transition { it.withAccount(authenticated) }
         }
       }
     }
@@ -263,16 +263,13 @@ class PlaybackSynchronizationService
       chapterIndex: Int,
       snapshot: SyncSnapshot,
     ) {
-      val owner = state.owner
-
-      if (owner == null) {
-        Timber.w("Unable to record offline session ${session.sessionId}: no authenticated server owner")
+      if (state.authenticated.not()) {
+        Timber.w("Unable to record offline session ${session.sessionId}: not logged in")
         return
       }
 
       mediaProvider.recordOfflineSession(
         sessionId = session.sessionId,
-        owner = owner,
         detailedItem = item,
         chapterIndex = chapterIndex,
         progress = snapshot.progress,

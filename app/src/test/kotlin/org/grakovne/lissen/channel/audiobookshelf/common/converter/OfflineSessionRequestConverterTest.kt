@@ -3,7 +3,6 @@ package org.grakovne.lissen.channel.audiobookshelf.common.converter
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.DeviceInfo
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.OfflineSession
-import org.grakovne.lissen.domain.OfflineSessionOwner
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -19,7 +18,6 @@ class OfflineSessionRequestConverterTest {
   private fun session(libraryType: LibraryType) =
     OfflineSession(
       id = "s1",
-      owner = OfflineSessionOwner("https://abs.example", "reader"),
       libraryItemId = "item",
       episodeId = "ep".takeIf { libraryType == LibraryType.PODCAST },
       libraryType = libraryType,

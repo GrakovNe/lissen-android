@@ -15,7 +15,6 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.OfflineSession
-import org.grakovne.lissen.domain.OfflineSessionOwner
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.RecentBook
@@ -55,7 +54,6 @@ class LocalCacheRepository
 
     suspend fun recordOfflineSession(
       sessionId: String,
-      owner: OfflineSessionOwner,
       detailedItem: DetailedItem,
       chapterIndex: Int,
       progress: PlaybackProgress,
@@ -63,14 +61,13 @@ class LocalCacheRepository
     ): OfflineSession? =
       offlineSessionRepository.record(
         sessionId = sessionId,
-        owner = owner,
         item = detailedItem,
         chapterIndex = chapterIndex,
         progress = progress,
         timeListened = timeListened,
       )
 
-    suspend fun fetchOfflineSessions(owner: OfflineSessionOwner): List<OfflineSession> = offlineSessionRepository.fetch(owner)
+    suspend fun fetchOfflineSessions(): List<OfflineSession> = offlineSessionRepository.fetch()
 
     suspend fun dropOfflineSessions(ids: List<String>) = offlineSessionRepository.drop(ids)
 

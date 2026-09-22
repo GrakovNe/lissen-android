@@ -442,8 +442,6 @@ val MIGRATION_22_23 =
         """
         CREATE TABLE offline_playback_session (
             id TEXT NOT NULL PRIMARY KEY,
-            serverHost TEXT NOT NULL,
-            username TEXT NOT NULL,
             libraryItemId TEXT NOT NULL,
             episodeId TEXT,
             libraryType TEXT NOT NULL,
@@ -456,15 +454,6 @@ val MIGRATION_22_23 =
             startedAt INTEGER NOT NULL,
             updatedAt INTEGER NOT NULL
         )
-        """.trimIndent(),
-      )
-      db.execSQL(
-        "CREATE INDEX index_offline_playback_session_libraryItemId ON offline_playback_session(libraryItemId)",
-      )
-      db.execSQL(
-        """
-        CREATE INDEX index_offline_playback_session_owner_startedAt
-        ON offline_playback_session(serverHost, username, startedAt)
         """.trimIndent(),
       )
     }

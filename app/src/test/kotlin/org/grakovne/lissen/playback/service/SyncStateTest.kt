@@ -1,7 +1,6 @@
 package org.grakovne.lissen.playback.service
 
 import org.grakovne.lissen.domain.DetailedItem
-import org.grakovne.lissen.domain.OfflineSessionOwner
 import org.grakovne.lissen.domain.PlaybackSession
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -12,7 +11,6 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class SyncStateTest {
-  private val owner = OfflineSessionOwner("https://abs.example", "reader")
   private val book = item("book")
   private val other = item("other-book")
 
@@ -38,7 +36,7 @@ class SyncStateTest {
     )
 
   private fun playing(session: PlaybackSession? = null) =
-    SyncState().withOwner(owner).start(book).let { state ->
+    SyncState().withAccount(true).start(book).let { state ->
       session?.let { state.adopt(it, LocalSessionPolicy.REPLACE) }
         ?: state
     }
@@ -46,44 +44,42 @@ class SyncStateTest {
   @Nested
   inner class Transitions {
     @Test
-    fun `start remembers the item, keeps the owner and forgets the previous session`() {
+    fun `start remembers the item, keeps the login and forgets the previous session`() {
       val started = playing(PlaybackSession.local("book")).start(other)
 
       assertSame(other, started.item)
-      assertEquals(owner, started.owner)
+      assertTrue(started.authenticated)
       assertNull(started.session)
       assertNull(started.chapterIndex)
     }
 
     @Test
-    fun `cancel drops the playback but keeps the owner`() {
-      assertEquals(SyncState(owner = owner), playing(PlaybackSession.local("book")).withChapter(2).cancel())
+    fun `cancel drops the playback but keeps the login`() {
+      assertEquals(SyncState(authenticated = true), playing(PlaybackSession.local("book")).withChapter(2).cancel())
     }
 
     @Test
-    fun `losing the owner releases the local session and keeps the item playing`() {
-      val state = playing(PlaybackSession.local("book")).withChapter(2).withOwner(null)
+    fun `a logout releases the local session and keeps the item playing`() {
+      val state = playing(PlaybackSession.local("book")).withChapter(2).withAccount(false)
 
       assertSame(book, state.item)
       assertEquals(2, state.chapterIndex)
-      assertNull(state.owner)
+      assertFalse(state.authenticated)
       assertNull(state.session)
     }
 
     @Test
-    fun `losing the owner keeps a remote session`() {
+    fun `a logout keeps a remote session`() {
       val remote = PlaybackSession.remote("remote", "book")
 
-      assertEquals(remote, playing(remote).withOwner(null).session)
+      assertEquals(remote, playing(remote).withAccount(false).session)
     }
 
     @Test
-    fun `a new owner is picked up mid playback`() {
-      val another = OfflineSessionOwner("https://other.example", "reader")
+    fun `a login is picked up mid playback`() {
+      val state = playing(PlaybackSession.remote("remote", "book")).withAccount(false).withAccount(true)
 
-      val state = playing(PlaybackSession.remote("remote", "book")).withOwner(null).withOwner(another)
-
-      assertEquals(another, state.owner)
+      assertTrue(state.authenticated)
       assertSame(book, state.item)
     }
 
@@ -204,7 +200,7 @@ class SyncStateTest {
       assertEquals(release, uploaderEffects(before, before.releaseLocal()))
       assertEquals(release, uploaderEffects(before, before.cancel()))
       assertEquals(release, uploaderEffects(before, before.start(other)))
-      assertEquals(release, uploaderEffects(before, before.withOwner(null)))
+      assertEquals(release, uploaderEffects(before, before.withAccount(false)))
     }
 
     @Test

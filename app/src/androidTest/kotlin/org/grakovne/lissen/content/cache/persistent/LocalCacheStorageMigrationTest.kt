@@ -341,7 +341,7 @@ class LocalCacheStorageMigrationTest {
   }
 
   @Test
-  fun migrate22To23_createsAccountScopedOfflineSessionTable() {
+  fun migrate22To23_createsOfflineSessionTable() {
     helper.createDatabase(TEST_DB, 22).close()
 
     val db = helper.runMigrationsAndValidate(TEST_DB, 23, true, MIGRATION_22_23)
@@ -349,12 +349,12 @@ class LocalCacheStorageMigrationTest {
     db.execSQL(
       """
       INSERT INTO offline_playback_session (
-        id, serverHost, username, libraryItemId, episodeId, libraryType,
+        id, libraryItemId, episodeId, libraryType,
         displayTitle, displayAuthor, duration, startTime, currentTime, timeListening,
         startedAt, updatedAt
       )
       VALUES (
-        's1', 'https://abs.example', 'reader', 'book-1', NULL, 'LIBRARY',
+        's1', 'book-1', NULL, 'LIBRARY',
         'Dune', NULL, 300.0, 10.0, 55.0, 45.0, 1000, 46000
       )
       """.trimIndent(),
@@ -363,13 +363,11 @@ class LocalCacheStorageMigrationTest {
     db
       .query(
         """
-        SELECT serverHost, username, libraryItemId, timeListening
+        SELECT libraryItemId, timeListening
         FROM offline_playback_session WHERE id = 's1'
         """.trimIndent(),
       ).use { cursor ->
         assertTrue(cursor.moveToFirst())
-        assertEquals("https://abs.example", cursor.getString(cursor.getColumnIndexOrThrow("serverHost")))
-        assertEquals("reader", cursor.getString(cursor.getColumnIndexOrThrow("username")))
         assertEquals("book-1", cursor.getString(cursor.getColumnIndexOrThrow("libraryItemId")))
         assertEquals(45.0, cursor.getDouble(cursor.getColumnIndexOrThrow("timeListening")), 0.0)
       }

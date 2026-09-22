@@ -12,14 +12,10 @@ interface OfflineSessionDao {
     """
     SELECT *
     FROM offline_playback_session
-    WHERE serverHost = :serverHost AND username = :username
     ORDER BY startedAt ASC
     """,
   )
-  suspend fun fetchByOwner(
-    serverHost: String,
-    username: String,
-  ): List<OfflineSessionEntity>
+  suspend fun fetchAll(): List<OfflineSessionEntity>
 
   @Query(
     """

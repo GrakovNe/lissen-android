@@ -9,27 +9,24 @@ import org.grakovne.lissen.content.cache.persistent.dao.OfflineSessionDao
 import org.grakovne.lissen.content.cache.persistent.entity.OfflineSessionEntity
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
-import org.grakovne.lissen.domain.OfflineSessionOwner
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 class OfflineSessionRepositoryTest {
-  private val owner = OfflineSessionOwner("https://abs.example", "reader")
   private val dao = mockk<OfflineSessionDao>(relaxed = true)
   private val repository = OfflineSessionRepository(dao, OfflineSessionEntityConverter())
 
   @Test
-  fun `fetch scopes rows to server and username`() =
+  fun `fetch converts every stored row`() =
     runTest {
-      coEvery { dao.fetchByOwner(owner.serverHost, owner.username) } returns listOf(entity())
+      coEvery { dao.fetchAll() } returns listOf(entity())
 
-      val result = repository.fetch(owner)
+      val result = repository.fetch()
 
       assertEquals(listOf("session"), result.map { it.id })
-      assertEquals(listOf(owner), result.map { it.owner })
-      coVerify(exactly = 1) { dao.fetchByOwner("https://abs.example", "reader") }
+      assertEquals(listOf(LibraryType.LIBRARY), result.map { it.libraryType })
     }
 
   @Test
@@ -37,7 +34,7 @@ class OfflineSessionRepositoryTest {
     runTest {
       coEvery { dao.fetchById("session") } returns null
 
-      val recorded = repository.record("session", owner, item(), 0, PlaybackProgress(5.0, 5.0), timeListened = 0.0)
+      val recorded = repository.record("session", item(), 0, PlaybackProgress(5.0, 5.0), timeListened = 0.0)
 
       assertNull(recorded)
       coVerify(exactly = 0) { dao.upsert(any()) }
@@ -48,7 +45,7 @@ class OfflineSessionRepositoryTest {
     runTest {
       coEvery { dao.fetchById("session") } returns null
 
-      val recorded = repository.record("session", owner, item(), 0, PlaybackProgress(5.0, 5.0), timeListened = 4.0)
+      val recorded = repository.record("session", item(), 0, PlaybackProgress(5.0, 5.0), timeListened = 4.0)
 
       assertEquals(4.0, recorded?.timeListening)
       coVerify(exactly = 1) { dao.upsert(any()) }
@@ -59,7 +56,7 @@ class OfflineSessionRepositoryTest {
     runTest {
       coEvery { dao.fetchById("session") } returns entity()
 
-      val recorded = repository.record("session", owner, item(), 0, PlaybackProgress(30.0, 30.0), timeListened = 0.0)
+      val recorded = repository.record("session", item(), 0, PlaybackProgress(30.0, 30.0), timeListened = 0.0)
 
       assertEquals(30.0, recorded?.currentTime)
       assertEquals(10.0, recorded?.timeListening)
@@ -67,7 +64,7 @@ class OfflineSessionRepositoryTest {
     }
 
   @Test
-  fun `dropAll clears the table regardless of owner`() =
+  fun `dropAll clears the table`() =
     runTest {
       coEvery { dao.deleteAll() } returns 3
 
@@ -108,8 +105,6 @@ class OfflineSessionRepositoryTest {
   private fun entity() =
     OfflineSessionEntity(
       id = "session",
-      serverHost = "https://abs.example",
-      username = "reader",
       libraryItemId = "item",
       episodeId = null,
       libraryType = LibraryType.LIBRARY.name,

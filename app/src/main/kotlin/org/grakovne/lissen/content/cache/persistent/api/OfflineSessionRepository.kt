@@ -5,7 +5,6 @@ import org.grakovne.lissen.content.cache.persistent.converter.toEntity
 import org.grakovne.lissen.content.cache.persistent.dao.OfflineSessionDao
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.OfflineSession
-import org.grakovne.lissen.domain.OfflineSessionOwner
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.accumulateOfflineSession
 import timber.log.Timber
@@ -26,7 +25,6 @@ class OfflineSessionRepository
      */
     suspend fun record(
       sessionId: String,
-      owner: OfflineSessionOwner,
       item: DetailedItem,
       chapterIndex: Int,
       progress: PlaybackProgress,
@@ -43,7 +41,6 @@ class OfflineSessionRepository
         accumulateOfflineSession(
           existing = existing,
           sessionId = sessionId,
-          owner = owner,
           item = item,
           chapterIndex = chapterIndex,
           progress = progress,
@@ -59,17 +56,14 @@ class OfflineSessionRepository
       return session
     }
 
-    suspend fun fetch(owner: OfflineSessionOwner): List<OfflineSession> =
-      dao
-        .fetchByOwner(owner.serverHost, owner.username)
-        .map(converter::apply)
+    suspend fun fetch(): List<OfflineSession> = dao.fetchAll().map(converter::apply)
 
     suspend fun drop(ids: List<String>) {
       if (ids.isEmpty()) return
       dao.deleteByIds(ids)
     }
 
-    /** For a logout: no account is left to upload the rows for, whoever they belonged to. */
+    /** The rows belong to one login: both a logout and a login drop them. */
     suspend fun dropAll() {
       val dropped = dao.deleteAll()
       Timber.d("Dropped $dropped offline session(s)")

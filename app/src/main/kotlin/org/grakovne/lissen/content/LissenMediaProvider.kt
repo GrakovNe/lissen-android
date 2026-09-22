@@ -20,7 +20,6 @@ import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.OfflineSession
-import org.grakovne.lissen.domain.OfflineSessionOwner
 import org.grakovne.lissen.domain.OfflineSessionSyncResult
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
@@ -133,7 +132,6 @@ class LissenMediaProvider
      */
     suspend fun recordOfflineSession(
       sessionId: String,
-      owner: OfflineSessionOwner,
       detailedItem: DetailedItem,
       chapterIndex: Int,
       progress: PlaybackProgress,
@@ -149,7 +147,6 @@ class LissenMediaProvider
 
       return localCacheRepository.recordOfflineSession(
         sessionId = sessionId,
-        owner = owner,
         detailedItem = detailedItem.copy(libraryType = libraryType),
         chapterIndex = chapterIndex,
         progress = progress,
@@ -157,7 +154,7 @@ class LissenMediaProvider
       )
     }
 
-    suspend fun fetchOfflineSessions(owner: OfflineSessionOwner): List<OfflineSession> = localCacheRepository.fetchOfflineSessions(owner)
+    suspend fun fetchOfflineSessions(): List<OfflineSession> = localCacheRepository.fetchOfflineSessions()
 
     suspend fun dropOfflineSessions(ids: List<String>) = localCacheRepository.dropOfflineSessions(ids)
 
@@ -489,6 +486,11 @@ class LissenMediaProvider
       account: UserAccount,
     ) {
       Timber.d("Post-login setup for $host")
+
+      // Offline rows recorded before this login belong to whatever account was there
+      // before; they go before the credentials land, so none is uploaded to this one.
+      localCacheRepository.dropAllOfflineSessions()
+
       provideAuthService()
         .persistCredentials(
           host = host,

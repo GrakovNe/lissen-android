@@ -2,7 +2,6 @@ package org.grakovne.lissen.content.cache.persistent.converter
 
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.OfflineSession
-import org.grakovne.lissen.domain.OfflineSessionOwner
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -17,12 +16,8 @@ class OfflineSessionEntityConverterTest {
   }
 
   @Test
-  fun `entity carries the owner as two columns`() {
-    val entity = session().toEntity()
-
-    assertEquals("https://abs.example", entity.serverHost)
-    assertEquals("reader", entity.username)
-    assertEquals("PODCAST", entity.libraryType)
+  fun `entity stores the library type by name`() {
+    assertEquals("PODCAST", session().toEntity().libraryType)
   }
 
   @Test
@@ -35,7 +30,6 @@ class OfflineSessionEntityConverterTest {
   private fun session() =
     OfflineSession(
       id = "session",
-      owner = OfflineSessionOwner("https://abs.example", "reader"),
       libraryItemId = "item",
       episodeId = "episode",
       libraryType = LibraryType.PODCAST,

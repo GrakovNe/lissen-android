@@ -7,7 +7,6 @@ import io.mockk.verify
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
-import org.grakovne.lissen.domain.OfflineSessionOwner
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -147,48 +146,26 @@ class SessionPreferencesTest {
     }
 
     @Test
-    fun `owner flow reports no authentication without a stored token`() =
+    fun `authenticated flow is false without a stored token`() =
       runBlocking {
         every { store.asFlow<Any?>(any(), any()) } answers { flowOf(secondArg<() -> Any?>()()) }
-        every { store.getString("host") } returns "https://abs.example"
-        every { store.getString("username") } returns "reader"
         every { store.getString("token") } returns null
         every { store.getString("access_token") } returns null
 
         // the flows are wired at construction, so the instance is built after the stubs
-        assertNull(SessionPreferences(store).authenticatedOfflineSessionOwnerFlow.first())
+        assertFalse(SessionPreferences(store).authenticatedFlow.first())
       }
 
     @Test
-    fun `owner flow checks token presence without decrypting it`() =
+    fun `authenticated flow checks token presence without decrypting it`() =
       runBlocking {
         every { store.asFlow<Any?>(any(), any()) } answers { flowOf(secondArg<() -> Any?>()()) }
-        every { store.getString("host") } returns "https://abs.example"
-        every { store.getString("username") } returns "reader"
         every { store.getString("token") } returns null
         every { store.getString("access_token") } returns "encrypted-blob"
         every { store.readSecret(any()) } throws IllegalStateException("key invalidated")
 
-        assertEquals(
-          OfflineSessionOwner("https://abs.example", "reader"),
-          SessionPreferences(store).authenticatedOfflineSessionOwnerFlow.first(),
-        )
+        assertTrue(SessionPreferences(store).authenticatedFlow.first())
         verify(exactly = 0) { store.readSecret(any()) }
-      }
-
-    @Test
-    fun `owner flow normalizes the server and the username`() =
-      runBlocking {
-        every { store.asFlow<Any?>(any(), any()) } answers { flowOf(secondArg<() -> Any?>()()) }
-        every { store.getString("host") } returns " HTTPS://ABS.EXAMPLE/ "
-        every { store.getString("username") } returns " Reader "
-        every { store.getString("token") } returns "encrypted-jwt"
-        every { store.getString("access_token") } returns null
-
-        assertEquals(
-          OfflineSessionOwner("https://abs.example", "Reader"),
-          SessionPreferences(store).authenticatedOfflineSessionOwnerFlow.first(),
-        )
       }
 
     @Test

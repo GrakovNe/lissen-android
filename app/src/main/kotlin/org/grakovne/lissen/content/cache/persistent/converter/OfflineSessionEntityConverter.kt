@@ -3,7 +3,6 @@ package org.grakovne.lissen.content.cache.persistent.converter
 import org.grakovne.lissen.content.cache.persistent.entity.OfflineSessionEntity
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.OfflineSession
-import org.grakovne.lissen.domain.OfflineSessionOwner
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -14,11 +13,6 @@ class OfflineSessionEntityConverter
     fun apply(entity: OfflineSessionEntity): OfflineSession =
       OfflineSession(
         id = entity.id,
-        owner =
-          OfflineSessionOwner(
-            serverHost = entity.serverHost,
-            username = entity.username,
-          ),
         libraryItemId = entity.libraryItemId,
         episodeId = entity.episodeId,
         libraryType = runCatching { LibraryType.valueOf(entity.libraryType) }.getOrDefault(LibraryType.UNKNOWN),
@@ -36,8 +30,6 @@ class OfflineSessionEntityConverter
 internal fun OfflineSession.toEntity(): OfflineSessionEntity =
   OfflineSessionEntity(
     id = id,
-    serverHost = owner.serverHost,
-    username = owner.username,
     libraryItemId = libraryItemId,
     episodeId = episodeId,
     libraryType = libraryType.name,
