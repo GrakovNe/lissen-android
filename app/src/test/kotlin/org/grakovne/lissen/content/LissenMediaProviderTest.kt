@@ -30,6 +30,7 @@ import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.MediaProgress
+import org.grakovne.lissen.domain.OfflineSession
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
@@ -776,6 +777,34 @@ class LissenMediaProviderTest {
         coVerify { localCacheRepository.syncProgress(item, progress) }
         coVerify(exactly = 0) { mediaChannel.syncProgress(any(), any(), any()) }
       }
+
+    @Test
+    fun `offline sessions are uploaded through the preferred channel`() =
+      runBlocking {
+        val sessions = listOf(offlineSession("s1"))
+        coEvery { mediaChannel.syncOfflineSessions(sessions, "device") } returns OperationResult.Success(emptyList())
+
+        val result = provider.syncOfflineSessions(sessions, "device")
+
+        assertInstanceOf(OperationResult.Success::class.java, result)
+        coVerify(exactly = 1) { mediaChannel.syncOfflineSessions(sessions, "device") }
+      }
+
+    private fun offlineSession(id: String) =
+      OfflineSession(
+        id = id,
+        libraryItemId = "book-1",
+        episodeId = null,
+        libraryType = LibraryType.LIBRARY,
+        displayTitle = "Test Book",
+        displayAuthor = "Author",
+        duration = 300.0,
+        startTime = 0.0,
+        currentTime = 10.0,
+        timeListening = 10.0,
+        startedAt = 0L,
+        updatedAt = 1L,
+      )
 
     @Test
     fun `login drops the offline sessions before the credentials are stored`() =

@@ -15,6 +15,8 @@ import org.grakovne.lissen.domain.OfflineSessionSyncResult
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class OfflineSessionSyncServiceTest {
@@ -34,11 +36,11 @@ class OfflineSessionSyncServiceTest {
     )
 
   @Test
-  fun `upload sends only sessions owned by the requested account and removes acknowledged ids`() =
+  fun `upload removes every acknowledged row, rejected ones included`() =
     runTest {
       val sessions = listOf(session("a"), session("b"))
       coEvery { mediaProvider.fetchOfflineSessions() } returns sessions
-      coEvery { mediaProvider.syncOfflineSessions(LibraryType.LIBRARY, sessions, "device") } returns
+      coEvery { mediaProvider.syncOfflineSessions(sessions, "device") } returns
         OperationResult.Success(
           listOf(
             OfflineSessionSyncResult("a", success = true, error = null),
@@ -47,10 +49,19 @@ class OfflineSessionSyncServiceTest {
         )
       coEvery { mediaProvider.dropOfflineSessions(any()) } returns Unit
 
-      assertEquals(UploadAttempt.SETTLED, service.uploadOnce())
+      assertFalse(service.uploadOnce())
 
-      coVerify(exactly = 1) { mediaProvider.fetchOfflineSessions() }
       coVerify(exactly = 1) { mediaProvider.dropOfflineSessions(match { it.toSet() == setOf("a", "b") }) }
+    }
+
+  @Test
+  fun `nothing pending needs no request`() =
+    runTest {
+      coEvery { mediaProvider.fetchOfflineSessions() } returns emptyList()
+
+      assertFalse(service.uploadOnce())
+
+      coVerify(exactly = 0) { mediaProvider.syncOfflineSessions(any(), any()) }
     }
 
   @Test
@@ -60,52 +71,65 @@ class OfflineSessionSyncServiceTest {
       val completed = session("completed")
       service.activateSession(active.id)
       coEvery { mediaProvider.fetchOfflineSessions() } returns listOf(active, completed)
-      coEvery { mediaProvider.syncOfflineSessions(LibraryType.LIBRARY, listOf(completed), "device") } returns
-        OperationResult.Success(listOf(OfflineSessionSyncResult(completed.id, true, null)))
+      coEvery { mediaProvider.syncOfflineSessions(listOf(completed), "device") } returns
+        OperationResult.Success(listOf(OfflineSessionSyncResult("completed", success = true, error = null)))
       coEvery { mediaProvider.dropOfflineSessions(any()) } returns Unit
 
-      assertEquals(UploadAttempt.SETTLED, service.uploadOnce())
+      assertFalse(service.uploadOnce())
 
-      coVerify(exactly = 0) { mediaProvider.syncOfflineSessions(any(), match { active in it }, any()) }
+      coVerify(exactly = 0) { mediaProvider.syncOfflineSessions(match { active in it }, any()) }
     }
 
   @Test
-  fun `transport failure keeps the batch for retry`() =
+  fun `book and podcast sessions travel in one batch`() =
     runTest {
-      val pending = listOf(session("a"))
-      coEvery { mediaProvider.fetchOfflineSessions() } returns pending
-      coEvery { mediaProvider.syncOfflineSessions(any(), any(), any()) } returns
-        OperationResult.Error(OperationError.NetworkError)
-
-      assertEquals(UploadAttempt.RETRY, service.uploadOnce())
-
-      coVerify(exactly = 0) { mediaProvider.dropOfflineSessions(any()) }
-    }
-
-  @Test
-  fun `permanent failure pauses uploads and keeps the batch`() =
-    runTest {
-      val pending = listOf(session("a"))
-      coEvery { mediaProvider.fetchOfflineSessions() } returns pending
-      coEvery { mediaProvider.syncOfflineSessions(any(), any(), any()) } returns
-        OperationResult.Error(OperationError.NotFoundError)
-
-      assertEquals(UploadAttempt.PAUSED, service.uploadOnce())
-
-      coVerify(exactly = 0) { mediaProvider.dropOfflineSessions(any()) }
-    }
-
-  @Test
-  fun `permanent failure stops processing later batches`() =
-    runTest {
-      val sessions = (1..21).map { session("book-$it") }
+      val sessions = listOf(session("a"), session("b", LibraryType.PODCAST))
       coEvery { mediaProvider.fetchOfflineSessions() } returns sessions
-      coEvery { mediaProvider.syncOfflineSessions(any(), any(), any()) } returns
-        OperationResult.Error(OperationError.Unauthorized)
+      coEvery { mediaProvider.syncOfflineSessions(sessions, "device") } returns OperationResult.Success(emptyList())
+      coEvery { mediaProvider.dropOfflineSessions(any()) } returns Unit
 
-      assertEquals(UploadAttempt.PAUSED, service.uploadOnce())
+      service.uploadOnce()
 
-      coVerify(exactly = 1) { mediaProvider.syncOfflineSessions(any(), any(), any()) }
+      coVerify(exactly = 1) { mediaProvider.syncOfflineSessions(any(), any()) }
+    }
+
+  @Test
+  fun `batches are capped in size and keep the order`() =
+    runTest {
+      val sessions = (1..45).map { session("s$it") }
+      val batches = mutableListOf<List<OfflineSession>>()
+      coEvery { mediaProvider.fetchOfflineSessions() } returns sessions
+      coEvery { mediaProvider.syncOfflineSessions(capture(batches), "device") } answers {
+        OperationResult.Success(firstArg<List<OfflineSession>>().map { OfflineSessionSyncResult(it.id, success = true, error = null) })
+      }
+      coEvery { mediaProvider.dropOfflineSessions(any()) } returns Unit
+
+      assertFalse(service.uploadOnce())
+
+      assertEquals(listOf(20, 20, 5), batches.map { it.size })
+      assertEquals(sessions, batches.flatten())
+    }
+
+  @Test
+  fun `transient failure ends the pass and asks for a retry`() =
+    runTest {
+      coEvery { mediaProvider.fetchOfflineSessions() } returns (1..25).map { session("s$it") }
+      coEvery { mediaProvider.syncOfflineSessions(any(), any()) } returns OperationResult.Error(OperationError.NetworkError)
+
+      assertTrue(service.uploadOnce())
+
+      coVerify(exactly = 1) { mediaProvider.syncOfflineSessions(any(), any()) }
+    }
+
+  @Test
+  fun `permanent failure moves on to the next batch and does not retry`() =
+    runTest {
+      coEvery { mediaProvider.fetchOfflineSessions() } returns (1..25).map { session("s$it") }
+      coEvery { mediaProvider.syncOfflineSessions(any(), any()) } returns OperationResult.Error(OperationError.Unauthorized)
+
+      assertFalse(service.uploadOnce())
+
+      coVerify(exactly = 2) { mediaProvider.syncOfflineSessions(any(), any()) }
     }
 
   @Test
@@ -113,37 +137,22 @@ class OfflineSessionSyncServiceTest {
     runTest {
       val sessions = listOf(session("a"), session("b"))
       coEvery { mediaProvider.fetchOfflineSessions() } returns sessions
-      coEvery { mediaProvider.syncOfflineSessions(any(), any(), any()) } returns
-        OperationResult.Success(listOf(OfflineSessionSyncResult("a", true, null)))
+      coEvery { mediaProvider.syncOfflineSessions(sessions, "device") } returns
+        OperationResult.Success(listOf(OfflineSessionSyncResult("a", success = true, error = null)))
       coEvery { mediaProvider.dropOfflineSessions(any()) } returns Unit
 
-      assertEquals(UploadAttempt.RETRY, service.uploadOnce())
+      assertTrue(service.uploadOnce())
 
-      coVerify { mediaProvider.dropOfflineSessions(listOf("a")) }
+      coVerify(exactly = 1) { mediaProvider.dropOfflineSessions(listOf("a")) }
     }
 
   @Test
-  fun `planner separates media types and bounds batch count`() {
-    val sessions =
-      (1..5).map { session("book-$it") } +
-        (1..3).map { session("podcast-$it", LibraryType.PODCAST) }
-
-    val batches = planOfflineSessionUploads(sessions, maxSessions = 2, maxEstimatedBytes = Int.MAX_VALUE)
-
-    assertEquals(listOf(2, 2, 1, 2, 1), batches.map { it.sessions.size })
-    assertEquals(
-      listOf(LibraryType.LIBRARY, LibraryType.LIBRARY, LibraryType.LIBRARY, LibraryType.PODCAST, LibraryType.PODCAST),
-      batches.map { it.libraryType },
-    )
-  }
-
-  @Test
-  fun `planner starts a new batch when byte budget is exhausted`() {
-    val sessions = listOf(session("a", title = "x".repeat(300)), session("b", title = "y".repeat(300)))
-
-    val batches = planOfflineSessionUploads(sessions, maxSessions = 20, maxEstimatedBytes = 1_000)
-
-    assertEquals(listOf(1, 1), batches.map { it.sessions.size })
+  fun `only network and server errors are transient`() {
+    assertTrue(OperationError.NetworkError.isTransient())
+    assertTrue(OperationError.InternalError.isTransient())
+    assertFalse(OperationError.Unauthorized.isTransient())
+    assertFalse(OperationError.NotFoundError.isTransient())
+    assertFalse(OperationError.UnsupportedError.isTransient())
   }
 
   @Test
@@ -165,43 +174,21 @@ class OfflineSessionSyncServiceTest {
       coVerify(exactly = 1) { mediaProvider.dropAllOfflineSessions() }
     }
 
-  @Test
-  fun `only transient operation errors are retried`() {
-    val transient = listOf(OperationError.NetworkError, OperationError.InternalError)
-    val permanent =
-      listOf(
-        OperationError.Unauthorized,
-        OperationError.InvalidCredentialsHost,
-        OperationError.MissingCredentialsHost,
-        OperationError.MissingCredentialsUsername,
-        OperationError.MissingCredentialsPassword,
-        OperationError.NotFoundError,
-        OperationError.InvalidRedirectUri,
-        OperationError.OAuthFlowFailed,
-        OperationError.UnsupportedError,
-        OperationError.ClientCertificateError,
-      )
-
-    transient.forEach { assertEquals(UploadAttempt.RETRY, uploadAttemptFor(it), it.toString()) }
-    permanent.forEach { assertEquals(UploadAttempt.PAUSED, uploadAttemptFor(it), it.toString()) }
-  }
-
   private fun session(
     id: String,
     libraryType: LibraryType = LibraryType.LIBRARY,
-    title: String = "Book",
   ) = OfflineSession(
     id = id,
     libraryItemId = "item-$id",
     episodeId = "episode-$id".takeIf { libraryType == LibraryType.PODCAST },
     libraryType = libraryType,
-    displayTitle = title,
+    displayTitle = "Title $id",
     displayAuthor = "Author",
-    duration = 100.0,
+    duration = 300.0,
     startTime = 10.0,
-    currentTime = 20.0,
-    timeListening = 10.0,
+    currentTime = 55.0,
+    timeListening = 45.0,
     startedAt = 1_000L,
-    updatedAt = 2_000L,
+    updatedAt = 46_000L,
   )
 }

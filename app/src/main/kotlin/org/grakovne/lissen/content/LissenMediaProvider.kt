@@ -161,13 +161,12 @@ class LissenMediaProvider
     suspend fun dropAllOfflineSessions() = localCacheRepository.dropAllOfflineSessions()
 
     suspend fun syncOfflineSessions(
-      libraryType: LibraryType,
       sessions: List<OfflineSession>,
       deviceId: String,
     ): OperationResult<List<OfflineSessionSyncResult>> {
-      Timber.d("Uploading ${sessions.size} offline session(s) for $libraryType")
+      Timber.d("Uploading ${sessions.size} offline session(s)")
 
-      return provideChannelFor(libraryType).syncOfflineSessions(sessions, deviceId)
+      return providePreferredChannel().syncOfflineSessions(sessions, deviceId)
     }
 
     suspend fun fetchBookCover(bookId: String): OperationResult<File> {

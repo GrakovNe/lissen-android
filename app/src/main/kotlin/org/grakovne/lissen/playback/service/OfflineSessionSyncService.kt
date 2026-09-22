@@ -14,13 +14,10 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.content.LissenMediaProvider
-import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.OfflineSession
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.SessionPreferences
@@ -44,7 +41,6 @@ class OfflineSessionSyncService
 
     /** Bumped to re-run an upload while network, mode and account stay the same. */
     private val uploadRevision = MutableStateFlow(0L)
-    private val uploadMutex = Mutex()
     private val scope =
       CoroutineScope(
         SupervisorJob() + Dispatchers.IO +
@@ -101,150 +97,71 @@ class OfflineSessionSyncService
       for (attempt in generateSequence(0) { it + 1 }) {
         currentCoroutineContext().ensureActive()
 
-        when (attemptUpload()) {
-          UploadAttempt.SETTLED,
-          UploadAttempt.PAUSED,
-          -> return
+        if (attemptUpload().not()) return
 
-          UploadAttempt.RETRY -> delay(retryDelayMillis(attempt))
-        }
+        delay(retryDelayMillis(attempt))
       }
     }
 
-    private suspend fun attemptUpload(): UploadAttempt =
+    private suspend fun attemptUpload(): Boolean =
       try {
         uploadOnce()
       } catch (cancelled: CancellationException) {
         throw cancelled
       } catch (error: Exception) {
         Timber.e(error, "Unexpected offline session upload failure; waiting for the next sync trigger")
-        UploadAttempt.PAUSED
+        false
       }
 
-    internal suspend fun uploadOnce(): UploadAttempt =
-      uploadMutex.withLock {
-        val pending =
-          mediaProvider
-            .fetchOfflineSessions()
-            .filterNot { it.id == activeSessionId.get() }
+    /**
+     * Uploads what is pending in batches and drops what the server acknowledged.
+     * Returns true when a later attempt may still deliver something: the pass ends at the
+     * first batch that hit a transient failure, while a permanent one moves on to the next.
+     */
+    internal suspend fun uploadOnce(): Boolean {
+      val pending =
+        mediaProvider
+          .fetchOfflineSessions()
+          .filterNot { it.id == activeSessionId.get() }
 
-        if (pending.isEmpty()) return@withLock UploadAttempt.SETTLED
+      if (pending.isEmpty()) return false
 
-        val batches = planOfflineSessionUploads(pending)
-        Timber.d("Uploading ${pending.size} pending offline session(s) in ${batches.size} batch(es)")
+      val batches = pending.chunked(MAX_SESSIONS_PER_BATCH)
+      Timber.d("Uploading ${pending.size} pending offline session(s) in ${batches.size} batch(es)")
 
-        // Batches go up one at a time; the first one that cannot be settled stops the pass.
-        for (batch in batches) {
-          val attempt = uploadBatch(batch)
-          if (attempt != UploadAttempt.SETTLED) return@withLock attempt
-        }
+      return batches.any { uploadBatch(it) }
+    }
 
-        UploadAttempt.SETTLED
-      }
-
-    private suspend fun uploadBatch(batch: OfflineSessionUploadBatch): UploadAttempt =
+    private suspend fun uploadBatch(batch: List<OfflineSession>): Boolean =
       mediaProvider
-        .syncOfflineSessions(
-          libraryType = batch.libraryType,
-          sessions = batch.sessions,
-          deviceId = sessionPreferences.getDeviceId(),
-        ).foldAsync(
+        .syncOfflineSessions(batch, sessionPreferences.getDeviceId())
+        .foldAsync(
           onSuccess = { results ->
             results
               .filterNot { it.success }
               .forEach { Timber.w("Server rejected offline session ${it.id}: ${it.error}") }
 
-            val expectedIds = batch.sessions.mapTo(mutableSetOf()) { it.id }
+            val expectedIds = batch.mapTo(mutableSetOf()) { it.id }
             val respondedIds = results.mapNotNullTo(mutableSetOf()) { it.id.takeIf(expectedIds::contains) }
             mediaProvider.dropOfflineSessions(respondedIds.toList())
 
-            when (expectedIds == respondedIds) {
-              true -> UploadAttempt.SETTLED
-              false -> UploadAttempt.RETRY
-            }
+            expectedIds != respondedIds
           },
           onFailure = { error ->
-            val nextAttempt = uploadAttemptFor(error.code)
-            Timber.w(
-              "Unable to upload offline sessions for ${batch.libraryType}: ${error.code}; next=$nextAttempt",
-            )
-            nextAttempt
+            Timber.w("Unable to upload offline sessions: ${error.code}; retry=${error.code.isTransient()}")
+            error.code.isTransient()
           },
         )
   }
 
-internal enum class UploadAttempt {
-  SETTLED,
-  RETRY,
-  PAUSED,
-}
-
-internal data class OfflineSessionUploadBatch(
-  val libraryType: LibraryType,
-  val sessions: List<OfflineSession>,
-)
-
-internal fun planOfflineSessionUploads(
-  sessions: List<OfflineSession>,
-  maxSessions: Int = MAX_SESSIONS_PER_BATCH,
-  maxEstimatedBytes: Int = MAX_ESTIMATED_BATCH_BYTES,
-): List<OfflineSessionUploadBatch> {
-  require(maxSessions > 0)
-  require(maxEstimatedBytes > 0)
-
-  return sessions
-    .groupBy(OfflineSession::libraryType)
-    .flatMap { (libraryType, typedSessions) ->
-      typedSessions
-        .chunkedByBudget(maxSessions, maxEstimatedBytes)
-        .map { OfflineSessionUploadBatch(libraryType, it) }
-    }
-}
-
-private fun List<OfflineSession>.chunkedByBudget(
-  maxSessions: Int,
-  maxEstimatedBytes: Int,
-): List<List<OfflineSession>> {
-  val batches = mutableListOf<MutableList<OfflineSession>>()
-  var currentBytes = 0
-
-  for (session in this) {
-    val sessionBytes = session.estimatedPayloadBytes()
-    val current = batches.lastOrNull()
-
-    if (current != null && current.size < maxSessions && currentBytes + sessionBytes <= maxEstimatedBytes) {
-      current.add(session)
-      currentBytes += sessionBytes
-    } else {
-      batches.add(mutableListOf(session))
-      currentBytes = sessionBytes
-    }
-  }
-
-  return batches
-}
-
-private fun OfflineSession.estimatedPayloadBytes(): Int =
-  listOfNotNull(id, libraryItemId, episodeId, displayTitle, displayAuthor)
-    .sumOf { it.toByteArray(Charsets.UTF_8).size } + ESTIMATED_FIXED_SESSION_BYTES
-
-internal fun uploadAttemptFor(error: OperationError): UploadAttempt =
-  when (error) {
+/** Only these are worth retrying on their own; anything else waits for the next sync trigger. */
+internal fun OperationError.isTransient(): Boolean =
+  when (this) {
     OperationError.NetworkError,
     OperationError.InternalError,
-    -> UploadAttempt.RETRY
+    -> true
 
-    OperationError.Unauthorized,
-    OperationError.InvalidCredentialsHost,
-    OperationError.MissingCredentialsHost,
-    OperationError.MissingCredentialsUsername,
-    OperationError.MissingCredentialsPassword,
-    OperationError.NotFoundError,
-    OperationError.InvalidRedirectUri,
-    OperationError.OAuthFlowFailed,
-    OperationError.UnsupportedError,
-    OperationError.ClientCertificateError,
-    -> UploadAttempt.PAUSED
+    else -> false
   }
 
 internal fun retryDelayMillis(attempt: Int): Long =
@@ -252,8 +169,6 @@ internal fun retryDelayMillis(attempt: Int): Long =
     .coerceAtMost(MAX_RETRY_DELAY_MS)
 
 private const val MAX_SESSIONS_PER_BATCH = 20
-private const val MAX_ESTIMATED_BATCH_BYTES = 64 * 1024
-private const val ESTIMATED_FIXED_SESSION_BYTES = 512
 private const val INITIAL_RETRY_DELAY_MS = 5_000L
 private const val MAX_RETRY_DELAY_MS = 5 * 60_000L
 private const val MAX_RETRY_EXPONENT = 6
