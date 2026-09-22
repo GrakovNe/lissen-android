@@ -28,10 +28,8 @@ import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.content.ordering.ReorderPlanner
 import org.grakovne.lissen.domain.Bookmark
-import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DetailedItem.Companion.same
-import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
@@ -67,11 +65,9 @@ class MediaRepository
     private val _isPlaying = MutableStateFlow(false)
     val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
 
-    private val _timerOption = MutableStateFlow<TimerOption?>(null)
-    val timerOption: StateFlow<TimerOption?> = _timerOption.asStateFlow()
-
-    private val _timerRemaining = MutableStateFlow<Long?>(null)
-    val timerRemaining: StateFlow<Long?> = _timerRemaining.asStateFlow()
+    private val sleepTimer = SleepTimerController(eventBus, defaultTimerActivator) { preferences.getPlaybackSpeed() }
+    val timerOption: StateFlow<TimerOption?> = sleepTimer.timerOption
+    val timerRemaining: StateFlow<Long?> = sleepTimer.timerRemaining
 
     private val _playAfterPrepare = MutableStateFlow(false)
     private val _isPlaybackReady = MutableStateFlow(false)
@@ -151,8 +147,7 @@ class MediaRepository
                   }
 
                   is PlaybackEvent.TimerExpired -> {
-                    defaultTimerActivator.onTimerExpired()
-                    _timerOption.value = null
+                    sleepTimer.onExpired()
                     pause()
                   }
 
@@ -162,7 +157,7 @@ class MediaRepository
                   is PlaybackEvent.TimerCancelled -> {}
 
                   is PlaybackEvent.TimerTick -> {
-                    _timerRemaining.value = event.remainingSeconds
+                    sleepTimer.onTick(event.remainingSeconds)
                   }
                 }
               }
@@ -176,7 +171,7 @@ class MediaRepository
                   when {
                     isPlaying -> {
                       progressPoller.start()
-                      defaultTimerActivator.onPlaybackStarted { updateTimer(it) }
+                      sleepTimer.onPlaybackStarted(playingBook.value, totalPosition.value)
                     }
 
                     else -> {
@@ -223,40 +218,7 @@ class MediaRepository
       )
     }
 
-    fun updateTimer(
-      timerOption: TimerOption?,
-      position: Double? = null,
-    ) {
-      defaultTimerActivator.onTimerManuallySet()
-      _timerOption.value = timerOption
-
-      when (timerOption) {
-        is DurationTimerOption -> {
-          scheduleServiceTimer(timerOption.duration * 60.0, timerOption)
-        }
-
-        is CurrentEpisodeTimerOption -> {
-          val playingBook = playingBook.value ?: return
-          val currentPosition = position ?: totalPosition.value
-
-          val (chapterIndex, chapterPosition) = calculateChapterIndexAndPosition(playingBook, currentPosition)
-          val chapterDuration =
-            chapterIndex
-              .takeIf { it in playingBook.chapters.indices }
-              ?.let { playingBook.chapters[it].duration }
-              ?: return
-
-          scheduleServiceTimer(
-            delay = (chapterDuration - chapterPosition) / preferences.getPlaybackSpeed(),
-            option = timerOption,
-          )
-        }
-
-        null -> {
-          cancelServiceTimer()
-        }
-      }
-    }
+    fun updateTimer(timerOption: TimerOption?) = sleepTimer.set(timerOption, playingBook.value, totalPosition.value)
 
     fun rewind() {
       seekTo(totalPosition.value - getSeekTime(preferences.getSeekTime().rewind))
@@ -367,7 +329,7 @@ class MediaRepository
       _playbackSpeed.value = speed
       preferences.savePlaybackSpeed(speed)
 
-      adjustTimer(totalPosition.value)
+      sleepTimer.adjust(playingBook.value, totalPosition.value)
     }
 
     suspend fun preparePlayback(
@@ -472,24 +434,8 @@ class MediaRepository
       }
     }
 
-    private fun scheduleServiceTimer(
-      delay: Double,
-      option: TimerOption,
-    ) {
-      eventBus.send(PlaybackCommand.SetTimer(delay, option))
-    }
-
-    private fun cancelServiceTimer() {
-      eventBus.send(PlaybackCommand.CancelTimer)
-    }
-
     fun clearPreparedItem() {
-      if (timerOption.value != null) {
-        _timerOption.value = null
-        cancelServiceTimer()
-      }
-
-      defaultTimerActivator.onNewBookPrepared()
+      sleepTimer.onNewItemPrepared()
       _mediaPreparingError.value = false
       _playAfterPrepare.value = false
       _isPlaybackReady.value = false
@@ -643,22 +589,7 @@ class MediaRepository
         }
       }
 
-      adjustTimer(safePosition)
-    }
-
-    private fun adjustTimer(position: Double) {
-      when (_timerOption.value) {
-        is CurrentEpisodeTimerOption -> {
-          updateTimer(
-            timerOption = _timerOption.value,
-            position = position,
-          )
-        }
-
-        is DurationTimerOption -> {}
-
-        null -> {}
-      }
+      sleepTimer.adjust(book, safePosition)
     }
 
     private fun updateCurrentTrackData() {
