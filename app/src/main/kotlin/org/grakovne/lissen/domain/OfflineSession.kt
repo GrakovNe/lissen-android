@@ -10,7 +10,7 @@ import java.net.URI
  * listening statistics for the offline period.
  */
 @Keep
-data class OfflinePlaybackSession(
+data class OfflineSession(
   val id: String,
   val owner: OfflineSessionOwner,
   val libraryItemId: String,

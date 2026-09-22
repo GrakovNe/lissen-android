@@ -75,6 +75,37 @@ class NetworkServiceTest {
   }
 
   @Nested
+  inner class DefaultNetworkTracking {
+    private fun network(handle: Long) = mockk<Network> { every { networkHandle } returns handle }
+
+    @Test
+    fun `losing the default network means offline`() {
+      val wifi = network(1L)
+
+      networkService.defaultNetworkCallback.onAvailable(wifi)
+      assertTrue(networkService.networkAvailable.value)
+
+      networkService.defaultNetworkCallback.onLost(wifi)
+      assertFalse(networkService.networkAvailable.value)
+    }
+
+    @Test
+    fun `losing the previous network after a handover keeps the device online`() {
+      val wifi = network(1L)
+      val cellular = network(2L)
+
+      networkService.defaultNetworkCallback.onAvailable(wifi)
+      networkService.defaultNetworkCallback.onAvailable(cellular)
+      networkService.defaultNetworkCallback.onLost(wifi)
+
+      assertTrue(networkService.networkAvailable.value)
+
+      networkService.defaultNetworkCallback.onLost(cellular)
+      assertFalse(networkService.networkAvailable.value)
+    }
+  }
+
+  @Nested
   inner class NetworkTypeDetection {
     @Test
     fun `detects wifi`() {

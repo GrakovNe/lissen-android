@@ -26,23 +26,16 @@ class NetworkService
     private var cachedNetworkHandle: Long? = null
     private var cachedSsid: String? = null
 
+    @Volatile
+    private var defaultNetworkHandle: Long? = null
+
     private val _networkAvailable = MutableStateFlow(isNetworkAvailable())
 
     /** Tracks the default network, so a transition from false to true means the device came back online. */
     val networkAvailable: StateFlow<Boolean> = _networkAvailable.asStateFlow()
 
     override fun onCreate() {
-      connectivityManager.registerDefaultNetworkCallback(
-        object : ConnectivityManager.NetworkCallback() {
-          override fun onAvailable(network: Network) {
-            _networkAvailable.value = true
-          }
-
-          override fun onLost(network: Network) {
-            _networkAvailable.value = false
-          }
-        },
-      )
+      connectivityManager.registerDefaultNetworkCallback(defaultNetworkCallback)
 
       val networkRequest =
         NetworkRequest
@@ -61,6 +54,25 @@ class NetworkService
 
       connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
     }
+
+    /**
+     * On a handover (say Wi-Fi to cellular) the system reports the new default network
+     * before it reports the old one lost, so only losing the current default means offline.
+     */
+    internal val defaultNetworkCallback =
+      object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) {
+          defaultNetworkHandle = network.networkHandle
+          _networkAvailable.value = true
+        }
+
+        override fun onLost(network: Network) {
+          if (defaultNetworkHandle != network.networkHandle) return
+
+          defaultNetworkHandle = null
+          _networkAvailable.value = false
+        }
+      }
 
     fun isNetworkAvailable(): Boolean {
       val network = connectivityManager.activeNetwork ?: return false

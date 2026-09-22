@@ -11,7 +11,7 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
-import org.grakovne.lissen.domain.OfflinePlaybackSession
+import org.grakovne.lissen.domain.OfflineSession
 import org.grakovne.lissen.domain.OfflineSessionSyncResult
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
@@ -37,7 +37,7 @@ interface MediaChannel {
   ): OperationResult<Unit>
 
   suspend fun syncOfflineSessions(
-    sessions: List<OfflinePlaybackSession>,
+    sessions: List<OfflineSession>,
     deviceId: String,
   ): OperationResult<List<OfflineSessionSyncResult>>
 

@@ -18,7 +18,7 @@ import com.squareup.moshi.JsonClass
     ),
   ],
 )
-data class OfflinePlaybackSessionEntity(
+data class OfflineSessionEntity(
   @PrimaryKey val id: String,
   val serverHost: String,
   val username: String,

@@ -5,14 +5,14 @@ import androidx.room.RoomDatabase
 import org.grakovne.lissen.content.cache.persistent.dao.CachedBookDao
 import org.grakovne.lissen.content.cache.persistent.dao.CachedBookmarkDao
 import org.grakovne.lissen.content.cache.persistent.dao.CachedLibraryDao
-import org.grakovne.lissen.content.cache.persistent.dao.OfflinePlaybackSessionDao
+import org.grakovne.lissen.content.cache.persistent.dao.OfflineSessionDao
 import org.grakovne.lissen.content.cache.persistent.entity.BookChapterEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookFileEntity
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookmarkEntity
 import org.grakovne.lissen.content.cache.persistent.entity.CachedLibraryEntity
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
-import org.grakovne.lissen.content.cache.persistent.entity.OfflinePlaybackSessionEntity
+import org.grakovne.lissen.content.cache.persistent.entity.OfflineSessionEntity
 
 @Database(
   entities = [
@@ -22,7 +22,7 @@ import org.grakovne.lissen.content.cache.persistent.entity.OfflinePlaybackSessio
     MediaProgressEntity::class,
     CachedLibraryEntity::class,
     CachedBookmarkEntity::class,
-    OfflinePlaybackSessionEntity::class,
+    OfflineSessionEntity::class,
   ],
   version = 23,
   exportSchema = true,
@@ -34,5 +34,5 @@ abstract class LocalCacheStorage : RoomDatabase() {
 
   abstract fun cachedLibraryDao(): CachedLibraryDao
 
-  abstract fun offlinePlaybackSessionDao(): OfflinePlaybackSessionDao
+  abstract fun offlineSessionDao(): OfflineSessionDao
 }

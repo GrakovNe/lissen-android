@@ -341,7 +341,7 @@ class LocalCacheStorageMigrationTest {
   }
 
   @Test
-  fun migrate22To23_createsAccountScopedOfflinePlaybackSessionTable() {
+  fun migrate22To23_createsAccountScopedOfflineSessionTable() {
     helper.createDatabase(TEST_DB, 22).close()
 
     val db = helper.runMigrationsAndValidate(TEST_DB, 23, true, MIGRATION_22_23)

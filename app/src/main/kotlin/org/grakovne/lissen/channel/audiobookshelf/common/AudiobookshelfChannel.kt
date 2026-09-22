@@ -13,6 +13,7 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarksResp
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryListResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LocalSessionSyncResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.OfflineSessionRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.RecentListeningResponseConverter
@@ -27,7 +28,7 @@ import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.BookmarkSyncState
 import org.grakovne.lissen.domain.CreateBookmarkRequest
 import org.grakovne.lissen.domain.Library
-import org.grakovne.lissen.domain.OfflinePlaybackSession
+import org.grakovne.lissen.domain.OfflineSession
 import org.grakovne.lissen.domain.OfflineSessionSyncResult
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.RecentBook
@@ -47,6 +48,7 @@ abstract class AudiobookshelfChannel(
   private val bookmarksResponseConverter: BookmarksResponseConverter,
   private val bookmarkItemResponseConverter: BookmarkItemResponseConverter,
   private val offlineSessionRequestConverter: OfflineSessionRequestConverter,
+  private val localSessionSyncResponseConverter: LocalSessionSyncResponseConverter,
 ) : MediaChannel {
   override fun provideDownloadClient(): OkHttpClient? = dataRepository.provideHttpClient()
 
@@ -75,7 +77,7 @@ abstract class AudiobookshelfChannel(
   ): OperationResult<Unit> = syncService.syncProgress(sessionId, progress, timeListened)
 
   override suspend fun syncOfflineSessions(
-    sessions: List<OfflinePlaybackSession>,
+    sessions: List<OfflineSession>,
     deviceId: String,
   ): OperationResult<List<OfflineSessionSyncResult>> {
     val deviceInfo = buildDeviceInfo(deviceId)
@@ -86,7 +88,7 @@ abstract class AudiobookshelfChannel(
           deviceInfo = deviceInfo,
           sessions = sessions.map { offlineSessionRequestConverter.apply(it, deviceInfo, getClientName()) },
         ),
-      ).map { offlineSessionRequestConverter.apply(it) }
+      ).map { localSessionSyncResponseConverter.apply(it) }
   }
 
   override suspend fun fetchBookCover(

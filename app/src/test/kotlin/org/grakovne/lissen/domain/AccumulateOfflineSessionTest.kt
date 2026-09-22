@@ -149,4 +149,57 @@ class AccumulateOfflineSessionTest {
     assertEquals(LibraryType.LIBRARY, session.libraryType)
     assertNull(session.episodeId)
   }
+
+  @Test
+  fun `podcast without a chapter at the index falls back to the whole item`() {
+    val session =
+      accumulateOfflineSession(
+        existing = null,
+        sessionId = "s1",
+        owner = owner,
+        item = item(LibraryType.PODCAST, 100.0, 200.0),
+        chapterIndex = 5,
+        progress = PlaybackProgress(currentTotalTime = 150.0, currentChapterTime = 50.0),
+        timeListened = 1.0,
+        now = 0L,
+      )
+
+    assertNull(session.episodeId)
+    assertEquals("Dune", session.displayTitle)
+    assertEquals(300.0, session.duration)
+    assertEquals(150.0, session.currentTime)
+  }
+
+  @Test
+  fun `later podcast snapshots advance the episode position`() {
+    val item = item(LibraryType.PODCAST, 100.0, 200.0)
+    val first =
+      accumulateOfflineSession(
+        existing = null,
+        sessionId = "s1",
+        owner = owner,
+        item = item,
+        chapterIndex = 1,
+        progress = PlaybackProgress(currentTotalTime = 110.0, currentChapterTime = 10.0),
+        timeListened = 5.0,
+        now = 1_000L,
+      )
+
+    val second =
+      accumulateOfflineSession(
+        existing = first,
+        sessionId = "s1",
+        owner = owner,
+        item = item,
+        chapterIndex = 1,
+        progress = PlaybackProgress(currentTotalTime = 160.0, currentChapterTime = 60.0),
+        timeListened = 50.0,
+        now = 51_000L,
+      )
+
+    assertEquals(10.0, second.startTime)
+    assertEquals(60.0, second.currentTime)
+    assertEquals("c1", second.episodeId)
+    assertEquals(55.0, second.timeListening)
+  }
 }

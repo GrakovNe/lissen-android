@@ -23,8 +23,8 @@ class SessionPreferences
 
     private val authenticatedFlow: Flow<Boolean> =
       combine(
-        store.asFlow(KEY_TOKEN) { store.readSecret(KEY_TOKEN) != null },
-        store.asFlow(KEY_ACCESS_TOKEN) { store.readSecret(KEY_ACCESS_TOKEN) != null },
+        store.asFlow(KEY_TOKEN) { hasStoredSecret(KEY_TOKEN) },
+        store.asFlow(KEY_ACCESS_TOKEN) { hasStoredSecret(KEY_ACCESS_TOKEN) },
       ) { hasLegacyToken, hasAccessToken -> hasLegacyToken || hasAccessToken }
         .distinctUntilChanged()
 
@@ -34,7 +34,7 @@ class SessionPreferences
         store.asFlow(KEY_USERNAME, ::getUsername),
         authenticatedFlow,
       ) { host, username, authenticated ->
-        OfflineSessionOwner.from(host, username).takeIf { authenticated }
+        resolveOfflineSessionOwner(host, username, authenticated)
       }.distinctUntilChanged()
 
     fun getDeviceId(): String =
@@ -52,10 +52,7 @@ class SessionPreferences
 
     fun getUsername(): String? = store.getString(KEY_USERNAME)
 
-    fun getAuthenticatedOfflineSessionOwner(): OfflineSessionOwner? =
-      OfflineSessionOwner
-        .from(getHost(), getUsername())
-        .takeIf { hasCredentials() }
+    fun getAuthenticatedOfflineSessionOwner(): OfflineSessionOwner? = resolveOfflineSessionOwner(getHost(), getUsername(), hasCredentials())
 
     fun saveUsername(username: String) = store.putString(KEY_USERNAME, username)
 
@@ -114,6 +111,15 @@ class SessionPreferences
       store.writeSecret(key, value)
       cache.invalidate()
     }
+
+    private fun resolveOfflineSessionOwner(
+      host: String?,
+      username: String?,
+      authenticated: Boolean,
+    ): OfflineSessionOwner? = OfflineSessionOwner.from(host, username).takeIf { authenticated }
+
+    /** Runs on the preferences listener thread: presence is answered without decrypting. */
+    private fun hasStoredSecret(key: String): Boolean = store.getString(key) != null
 
     private fun invalidateTokenCaches() {
       tokenCache.invalidate()

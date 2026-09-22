@@ -10,7 +10,7 @@ import dagger.hilt.components.SingletonComponent
 import org.grakovne.lissen.content.cache.persistent.dao.CachedBookDao
 import org.grakovne.lissen.content.cache.persistent.dao.CachedBookmarkDao
 import org.grakovne.lissen.content.cache.persistent.dao.CachedLibraryDao
-import org.grakovne.lissen.content.cache.persistent.dao.OfflinePlaybackSessionDao
+import org.grakovne.lissen.content.cache.persistent.dao.OfflineSessionDao
 import javax.inject.Singleton
 
 @Module
@@ -70,5 +70,5 @@ object LocalCacheModule {
 
   @Provides
   @Singleton
-  fun provideOfflinePlaybackSessionDao(appDatabase: LocalCacheStorage): OfflinePlaybackSessionDao = appDatabase.offlinePlaybackSessionDao()
+  fun provideOfflineSessionDao(appDatabase: LocalCacheStorage): OfflineSessionDao = appDatabase.offlineSessionDao()
 }

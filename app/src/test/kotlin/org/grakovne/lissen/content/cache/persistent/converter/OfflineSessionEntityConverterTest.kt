@@ -1,30 +1,39 @@
 package org.grakovne.lissen.content.cache.persistent.converter
 
 import org.grakovne.lissen.domain.LibraryType
-import org.grakovne.lissen.domain.OfflinePlaybackSession
+import org.grakovne.lissen.domain.OfflineSession
 import org.grakovne.lissen.domain.OfflineSessionOwner
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-class OfflinePlaybackSessionEntityConverterTest {
-  private val converter = OfflinePlaybackSessionEntityConverter()
+class OfflineSessionEntityConverterTest {
+  private val converter = OfflineSessionEntityConverter()
 
   @Test
   fun `round trip preserves session ownership and payload`() {
     val session = session()
 
-    assertEquals(session, converter.apply(converter.apply(session)))
+    assertEquals(session, converter.apply(session.toEntity()))
+  }
+
+  @Test
+  fun `entity carries the owner as two columns`() {
+    val entity = session().toEntity()
+
+    assertEquals("https://abs.example", entity.serverHost)
+    assertEquals("reader", entity.username)
+    assertEquals("PODCAST", entity.libraryType)
   }
 
   @Test
   fun `unknown stored library type has a safe fallback`() {
-    val entity = converter.apply(session()).copy(libraryType = "REMOVED_TYPE")
+    val entity = session().toEntity().copy(libraryType = "REMOVED_TYPE")
 
     assertEquals(LibraryType.UNKNOWN, converter.apply(entity).libraryType)
   }
 
   private fun session() =
-    OfflinePlaybackSession(
+    OfflineSession(
       id = "session",
       owner = OfflineSessionOwner("https://abs.example", "reader"),
       libraryItemId = "item",

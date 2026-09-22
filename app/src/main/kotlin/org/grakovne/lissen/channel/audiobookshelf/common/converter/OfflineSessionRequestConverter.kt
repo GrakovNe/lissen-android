@@ -2,10 +2,8 @@ package org.grakovne.lissen.channel.audiobookshelf.common.converter
 
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.DeviceInfo
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.LocalSessionRequest
-import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.LocalSessionSyncResponse
 import org.grakovne.lissen.domain.LibraryType
-import org.grakovne.lissen.domain.OfflinePlaybackSession
-import org.grakovne.lissen.domain.OfflineSessionSyncResult
+import org.grakovne.lissen.domain.OfflineSession
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -19,7 +17,7 @@ class OfflineSessionRequestConverter
   @Inject
   constructor() {
     fun apply(
-      session: OfflinePlaybackSession,
+      session: OfflineSession,
       deviceInfo: DeviceInfo,
       mediaPlayer: String,
     ): LocalSessionRequest {
@@ -49,15 +47,6 @@ class OfflineSessionRequestConverter
         updatedAt = session.updatedAt,
       )
     }
-
-    fun apply(response: LocalSessionSyncResponse): List<OfflineSessionSyncResult> =
-      response.results.map {
-        OfflineSessionSyncResult(
-          id = it.id,
-          success = it.success,
-          error = it.error,
-        )
-      }
 
     companion object {
       private const val MEDIA_TYPE_BOOK = "book"

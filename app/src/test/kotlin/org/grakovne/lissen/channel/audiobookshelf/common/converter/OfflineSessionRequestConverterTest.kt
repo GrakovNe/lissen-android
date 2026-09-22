@@ -1,13 +1,10 @@
 package org.grakovne.lissen.channel.audiobookshelf.common.converter
 
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.DeviceInfo
-import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.LocalSessionSyncResponse
-import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.LocalSessionSyncResultResponse
 import org.grakovne.lissen.domain.LibraryType
-import org.grakovne.lissen.domain.OfflinePlaybackSession
+import org.grakovne.lissen.domain.OfflineSession
 import org.grakovne.lissen.domain.OfflineSessionOwner
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -20,7 +17,7 @@ class OfflineSessionRequestConverterTest {
   private val deviceInfo = DeviceInfo(clientName = "Lissen", deviceId = "dev", deviceName = "Lissen")
 
   private fun session(libraryType: LibraryType) =
-    OfflinePlaybackSession(
+    OfflineSession(
       id = "s1",
       owner = OfflineSessionOwner("https://abs.example", "reader"),
       libraryItemId = "item",
@@ -71,25 +68,5 @@ class OfflineSessionRequestConverterTest {
 
     assertEquals(updatedAt.format(DateTimeFormatter.ISO_LOCAL_DATE), request.date)
     assertTrue(request.dayOfWeek.isNotBlank())
-  }
-
-  @Test
-  fun `response results are mapped one to one`() {
-    val results =
-      converter.apply(
-        LocalSessionSyncResponse(
-          results =
-            listOf(
-              LocalSessionSyncResultResponse(id = "a", success = true, progressSynced = true),
-              LocalSessionSyncResultResponse(id = "b", success = false, error = "Media item not found"),
-            ),
-        ),
-      )
-
-    assertEquals(2, results.size)
-    assertTrue(results[0].success)
-    assertNull(results[0].error)
-    assertFalse(results[1].success)
-    assertEquals("Media item not found", results[1].error)
   }
 }

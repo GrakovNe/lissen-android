@@ -36,18 +36,3 @@ data class LocalSessionRequest(
   val startedAt: Long,
   val updatedAt: Long,
 )
-
-@Keep
-@JsonClass(generateAdapter = true)
-data class LocalSessionSyncResponse(
-  val results: List<LocalSessionSyncResultResponse>,
-)
-
-@Keep
-@JsonClass(generateAdapter = true)
-data class LocalSessionSyncResultResponse(
-  val id: String,
-  val success: Boolean,
-  val error: String? = null,
-  val progressSynced: Boolean? = null,
-)

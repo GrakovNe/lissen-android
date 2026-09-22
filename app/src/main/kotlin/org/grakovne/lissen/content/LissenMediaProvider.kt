@@ -19,7 +19,7 @@ import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.MediaProgress
-import org.grakovne.lissen.domain.OfflinePlaybackSession
+import org.grakovne.lissen.domain.OfflineSession
 import org.grakovne.lissen.domain.OfflineSessionOwner
 import org.grakovne.lissen.domain.OfflineSessionSyncResult
 import org.grakovne.lissen.domain.PagedItems
@@ -118,6 +118,19 @@ class LissenMediaProvider
         .syncProgress(sessionId, progress, timeListened)
     }
 
+    /** Persists the position locally only, for playback that has no server session to report to. */
+    suspend fun cacheProgress(
+      detailedItem: DetailedItem,
+      progress: PlaybackProgress,
+    ) {
+      Timber.d("Caching progress: bookId=${detailedItem.id}, totalTime=${progress.currentTotalTime.toInt()}s")
+      localCacheRepository.syncProgress(detailedItem, progress)
+    }
+
+    /**
+     * A cached item may not know its library type; the session is then recorded against the
+     * active library's type, the same way the online sync picks its channel.
+     */
     suspend fun recordOfflineSession(
       sessionId: String,
       owner: OfflineSessionOwner,
@@ -125,29 +138,32 @@ class LissenMediaProvider
       chapterIndex: Int,
       progress: PlaybackProgress,
       timeListened: Double,
-    ): OfflinePlaybackSession {
+    ): OfflineSession? {
       Timber.d(
         "Recording offline progress: bookId=${detailedItem.id}, totalTime=${progress.currentTotalTime.toInt()}s, listened=${timeListened.toInt()}s",
       )
 
+      val libraryType =
+        detailedItem.libraryType
+          ?: preferences.getPreferredLibrary()?.type?.takeIf { it != LibraryType.UNKNOWN }
+
       return localCacheRepository.recordOfflineSession(
         sessionId = sessionId,
         owner = owner,
-        detailedItem = detailedItem,
+        detailedItem = detailedItem.copy(libraryType = libraryType),
         chapterIndex = chapterIndex,
         progress = progress,
         timeListened = timeListened,
       )
     }
 
-    suspend fun fetchOfflineSessions(owner: OfflineSessionOwner): List<OfflinePlaybackSession> =
-      localCacheRepository.fetchOfflineSessions(owner)
+    suspend fun fetchOfflineSessions(owner: OfflineSessionOwner): List<OfflineSession> = localCacheRepository.fetchOfflineSessions(owner)
 
     suspend fun dropOfflineSessions(ids: List<String>) = localCacheRepository.dropOfflineSessions(ids)
 
     suspend fun syncOfflineSessions(
       libraryType: LibraryType,
-      sessions: List<OfflinePlaybackSession>,
+      sessions: List<OfflineSession>,
       deviceId: String,
     ): OperationResult<List<OfflineSessionSyncResult>> {
       Timber.d("Uploading ${sessions.size} offline session(s) for $libraryType")

@@ -8,13 +8,13 @@ import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedBookmarkRepository
 import org.grakovne.lissen.content.cache.persistent.api.CachedLibraryRepository
-import org.grakovne.lissen.content.cache.persistent.api.OfflinePlaybackSessionRepository
+import org.grakovne.lissen.content.cache.persistent.api.OfflineSessionRepository
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
-import org.grakovne.lissen.domain.OfflinePlaybackSession
+import org.grakovne.lissen.domain.OfflineSession
 import org.grakovne.lissen.domain.OfflineSessionOwner
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
@@ -31,7 +31,7 @@ class LocalCacheRepository
     private val cachedBookRepository: CachedBookRepository,
     private val cachedLibraryRepository: CachedLibraryRepository,
     private val cachedBookmarkRepository: CachedBookmarkRepository,
-    private val offlinePlaybackSessionRepository: OfflinePlaybackSessionRepository,
+    private val offlineSessionRepository: OfflineSessionRepository,
   ) {
     fun provideFileUri(
       libraryItemId: String,
@@ -60,10 +60,8 @@ class LocalCacheRepository
       chapterIndex: Int,
       progress: PlaybackProgress,
       timeListened: Double,
-    ): OfflinePlaybackSession {
-      cachedBookRepository.syncProgress(detailedItem, progress)
-
-      return offlinePlaybackSessionRepository.record(
+    ): OfflineSession? =
+      offlineSessionRepository.record(
         sessionId = sessionId,
         owner = owner,
         item = detailedItem,
@@ -71,12 +69,10 @@ class LocalCacheRepository
         progress = progress,
         timeListened = timeListened,
       )
-    }
 
-    suspend fun fetchOfflineSessions(owner: OfflineSessionOwner): List<OfflinePlaybackSession> =
-      offlinePlaybackSessionRepository.fetch(owner)
+    suspend fun fetchOfflineSessions(owner: OfflineSessionOwner): List<OfflineSession> = offlineSessionRepository.fetch(owner)
 
-    suspend fun dropOfflineSessions(ids: List<String>) = offlinePlaybackSessionRepository.drop(ids)
+    suspend fun dropOfflineSessions(ids: List<String>) = offlineSessionRepository.drop(ids)
 
     fun fetchBookCover(bookId: String): OperationResult<File> {
       val coverFile = cachedBookRepository.provideBookCover(bookId)

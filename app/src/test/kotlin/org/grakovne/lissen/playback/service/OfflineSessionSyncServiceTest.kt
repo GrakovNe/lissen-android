@@ -10,7 +10,7 @@ import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.LibraryType
-import org.grakovne.lissen.domain.OfflinePlaybackSession
+import org.grakovne.lissen.domain.OfflineSession
 import org.grakovne.lissen.domain.OfflineSessionOwner
 import org.grakovne.lissen.domain.OfflineSessionSyncResult
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
@@ -149,12 +149,14 @@ class OfflineSessionSyncServiceTest {
   }
 
   @Test
-  fun `retry delay grows exponentially and is capped`() {
-    assertEquals(5_000L, retryDelayMillis(0))
-    assertEquals(10_000L, retryDelayMillis(1))
-    assertEquals(300_000L, retryDelayMillis(6))
-    assertEquals(300_000L, retryDelayMillis(7))
-    assertEquals(null, retryDelayMillis(8))
+  fun `retry delays grow exponentially, are capped and bounded in number`() {
+    val delays = retryDelaysMillis()
+
+    assertEquals(8, delays.size)
+    assertEquals(5_000L, delays[0])
+    assertEquals(10_000L, delays[1])
+    assertEquals(300_000L, delays[6])
+    assertEquals(300_000L, delays[7])
   }
 
   @Test
@@ -182,7 +184,7 @@ class OfflineSessionSyncServiceTest {
     id: String,
     libraryType: LibraryType = LibraryType.LIBRARY,
     title: String = "Book",
-  ) = OfflinePlaybackSession(
+  ) = OfflineSession(
     id = id,
     owner = owner,
     libraryItemId = "item-$id",

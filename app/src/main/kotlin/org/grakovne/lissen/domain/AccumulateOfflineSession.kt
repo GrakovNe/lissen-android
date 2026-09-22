@@ -8,7 +8,7 @@ package org.grakovne.lissen.domain
  * matching what the online sync sends.
  */
 fun accumulateOfflineSession(
-  existing: OfflinePlaybackSession?,
+  existing: OfflineSession?,
   sessionId: String,
   owner: OfflineSessionOwner,
   item: DetailedItem,
@@ -16,42 +16,68 @@ fun accumulateOfflineSession(
   progress: PlaybackProgress,
   timeListened: Double,
   now: Long,
-): OfflinePlaybackSession {
-  val chapter = item.chapters.getOrNull(chapterIndex)
-  val isPodcast = item.libraryType == LibraryType.PODCAST
-
-  val currentTime =
-    when (isPodcast) {
-      true -> progress.currentChapterTime
-      false -> progress.currentTotalTime
-    }
-
-  val duration =
-    when (isPodcast) {
-      true -> chapter?.duration ?: item.chapters.sumOf { it.duration }
-      false -> item.chapters.sumOf { it.duration }
-    }
+): OfflineSession {
+  val scope = sessionScope(item, chapterIndex, progress)
 
   return existing
     ?.copy(
-      currentTime = currentTime,
+      currentTime = scope.currentTime,
       timeListening = existing.timeListening + timeListened,
       updatedAt = now,
     )
-    ?: OfflinePlaybackSession(
+    ?: OfflineSession(
       id = sessionId,
       owner = owner,
       libraryItemId = item.id,
-      episodeId = chapter?.id?.takeIf { isPodcast },
+      episodeId = scope.episodeId,
       libraryId = item.libraryId,
       libraryType = item.libraryType ?: LibraryType.LIBRARY,
-      displayTitle = chapter?.title?.takeIf { isPodcast } ?: item.title,
+      displayTitle = scope.title,
       displayAuthor = item.author,
-      duration = duration,
-      startTime = currentTime,
-      currentTime = currentTime,
+      duration = scope.duration,
+      startTime = scope.currentTime,
+      currentTime = scope.currentTime,
       timeListening = timeListened,
       startedAt = now,
       updatedAt = now,
     )
+}
+
+/** What the session is reported against: a single podcast episode or the whole item. */
+private data class SessionScope(
+  val episodeId: String?,
+  val title: String,
+  val duration: Double,
+  val currentTime: Double,
+)
+
+private fun sessionScope(
+  item: DetailedItem,
+  chapterIndex: Int,
+  progress: PlaybackProgress,
+): SessionScope {
+  val episode =
+    item.chapters
+      .getOrNull(chapterIndex)
+      ?.takeIf { item.libraryType == LibraryType.PODCAST }
+
+  return when (episode) {
+    null -> {
+      SessionScope(
+        episodeId = null,
+        title = item.title,
+        duration = item.chapters.sumOf { it.duration },
+        currentTime = progress.currentTotalTime,
+      )
+    }
+
+    else -> {
+      SessionScope(
+        episodeId = episode.id,
+        title = episode.title,
+        duration = episode.duration,
+        currentTime = progress.currentChapterTime,
+      )
+    }
+  }
 }

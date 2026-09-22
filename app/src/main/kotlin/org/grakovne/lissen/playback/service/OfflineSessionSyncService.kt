@@ -6,15 +6,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -23,7 +20,7 @@ import org.grakovne.lissen.common.NetworkService
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.LibraryType
-import org.grakovne.lissen.domain.OfflinePlaybackSession
+import org.grakovne.lissen.domain.OfflineSession
 import org.grakovne.lissen.domain.OfflineSessionOwner
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.SessionPreferences
@@ -44,6 +41,8 @@ class OfflineSessionSyncService
     private val libraryPreferences: LibraryPreferences,
   ) : RunningComponent {
     private val activeSessionId = AtomicReference<String?>(null)
+
+    /** Bumped to re-run an upload while network, mode and account stay the same. */
     private val uploadRevision = MutableStateFlow(0L)
     private val uploadMutex = Mutex()
     private val scope =
@@ -60,16 +59,21 @@ class OfflineSessionSyncService
           networkService.networkAvailable,
           libraryPreferences.forceCacheFlow,
           sessionPreferences.authenticatedOfflineSessionOwnerFlow,
-          uploadRevision,
-        ) { networkAvailable, forceCache, owner, revision ->
-          owner
-            ?.takeIf { networkAvailable && forceCache.not() }
-            ?.let { UploadRequest(owner = it, revision = revision) }
+        ) { networkAvailable, forceCache, owner ->
+          owner?.takeIf { networkAvailable && forceCache.not() }
         }.distinctUntilChanged()
-          .collectLatest { request ->
-            request?.let { retryUntilSettled(it.owner) }
+          .collectLatest { owner ->
+            owner?.let { uploadOnEveryRequest(it) }
           }
       }
+    }
+
+    /**
+     * Only a lost network or account cancels a pass. A request that arrives while one is
+     * running is conflated by the state flow into a single further pass once it finishes.
+     */
+    private suspend fun uploadOnEveryRequest(owner: OfflineSessionOwner) {
+      uploadRevision.collect { retryUntilSettled(owner) }
     }
 
     fun activateSession(sessionId: String) {
@@ -90,38 +94,32 @@ class OfflineSessionSyncService
     }
 
     private suspend fun retryUntilSettled(owner: OfflineSessionOwner) {
-      var retryAttempt = 0
+      for (retryDelay in retryDelaysMillis()) {
+        currentCoroutineContext().ensureActive()
 
-      while (currentCoroutineContext().isActive) {
-        val result =
-          try {
-            uploadOnce(owner)
-          } catch (cancelled: CancellationException) {
-            throw cancelled
-          } catch (error: Exception) {
-            Timber.e(error, "Unexpected offline session upload failure; waiting for the next sync trigger")
-            UploadAttempt.PAUSED
-          }
-
-        when (result) {
+        when (attemptUpload(owner)) {
           UploadAttempt.SETTLED,
           UploadAttempt.PAUSED,
-          -> {
-            return
-          }
+          -> return
 
-          UploadAttempt.RETRY -> {
-            val retryDelay =
-              retryDelayMillis(retryAttempt)
-                ?: return Timber.w(
-                  "Offline session upload retry limit reached; waiting for the next sync trigger",
-                )
-            delay(retryDelay)
-            retryAttempt++
-          }
+          UploadAttempt.RETRY -> delay(retryDelay)
         }
       }
+
+      if (attemptUpload(owner) == UploadAttempt.RETRY) {
+        Timber.w("Offline session upload retry limit reached; waiting for the next sync trigger")
+      }
     }
+
+    private suspend fun attemptUpload(owner: OfflineSessionOwner): UploadAttempt =
+      try {
+        uploadOnce(owner)
+      } catch (cancelled: CancellationException) {
+        throw cancelled
+      } catch (error: Exception) {
+        Timber.e(error, "Unexpected offline session upload failure; waiting for the next sync trigger")
+        UploadAttempt.PAUSED
+      }
 
     internal suspend fun uploadOnce(owner: OfflineSessionOwner): UploadAttempt =
       uploadMutex.withLock {
@@ -135,11 +133,13 @@ class OfflineSessionSyncService
         val batches = planOfflineSessionUploads(pending)
         Timber.d("Uploading ${pending.size} pending offline session(s) in ${batches.size} batch(es)")
 
-        batches
-          .asFlow()
-          .map { uploadBatch(it) }
-          .firstOrNull { it != UploadAttempt.SETTLED }
-          ?: UploadAttempt.SETTLED
+        // Batches go up one at a time; the first one that cannot be settled stops the pass.
+        for (batch in batches) {
+          val attempt = uploadBatch(batch)
+          if (attempt != UploadAttempt.SETTLED) return@withLock attempt
+        }
+
+        UploadAttempt.SETTLED
       }
 
     private suspend fun uploadBatch(batch: OfflineSessionUploadBatch): UploadAttempt =
@@ -181,16 +181,11 @@ internal enum class UploadAttempt {
 
 internal data class OfflineSessionUploadBatch(
   val libraryType: LibraryType,
-  val sessions: List<OfflinePlaybackSession>,
-)
-
-private data class UploadRequest(
-  val owner: OfflineSessionOwner,
-  val revision: Long,
+  val sessions: List<OfflineSession>,
 )
 
 internal fun planOfflineSessionUploads(
-  sessions: List<OfflinePlaybackSession>,
+  sessions: List<OfflineSession>,
   maxSessions: Int = MAX_SESSIONS_PER_BATCH,
   maxEstimatedBytes: Int = MAX_ESTIMATED_BATCH_BYTES,
 ): List<OfflineSessionUploadBatch> {
@@ -198,7 +193,7 @@ internal fun planOfflineSessionUploads(
   require(maxEstimatedBytes > 0)
 
   return sessions
-    .groupBy(OfflinePlaybackSession::libraryType)
+    .groupBy(OfflineSession::libraryType)
     .flatMap { (libraryType, typedSessions) ->
       typedSessions
         .chunkedByBudget(maxSessions, maxEstimatedBytes)
@@ -206,24 +201,30 @@ internal fun planOfflineSessionUploads(
     }
 }
 
-private fun List<OfflinePlaybackSession>.chunkedByBudget(
+private fun List<OfflineSession>.chunkedByBudget(
   maxSessions: Int,
   maxEstimatedBytes: Int,
-): List<List<OfflinePlaybackSession>> =
-  fold(emptyList()) { batches, session ->
-    val current = batches.lastOrNull().orEmpty()
-    val fitsCurrent =
-      current.isNotEmpty() &&
-        current.size < maxSessions &&
-        current.sumOf(OfflinePlaybackSession::estimatedPayloadBytes) + session.estimatedPayloadBytes() <= maxEstimatedBytes
+): List<List<OfflineSession>> {
+  val batches = mutableListOf<MutableList<OfflineSession>>()
+  var currentBytes = 0
 
-    when (fitsCurrent) {
-      true -> batches.dropLast(1) + listOf(current + session)
-      false -> batches + listOf(listOf(session))
+  for (session in this) {
+    val sessionBytes = session.estimatedPayloadBytes()
+    val current = batches.lastOrNull()
+
+    if (current != null && current.size < maxSessions && currentBytes + sessionBytes <= maxEstimatedBytes) {
+      current.add(session)
+      currentBytes += sessionBytes
+    } else {
+      batches.add(mutableListOf(session))
+      currentBytes = sessionBytes
     }
   }
 
-private fun OfflinePlaybackSession.estimatedPayloadBytes(): Int =
+  return batches
+}
+
+private fun OfflineSession.estimatedPayloadBytes(): Int =
   listOfNotNull(id, libraryItemId, episodeId, displayTitle, displayAuthor)
     .sumOf { it.toByteArray(Charsets.UTF_8).size } + ESTIMATED_FIXED_SESSION_BYTES
 
@@ -246,13 +247,12 @@ internal fun uploadAttemptFor(error: OperationError): UploadAttempt =
     -> UploadAttempt.PAUSED
   }
 
-internal fun retryDelayMillis(attempt: Int): Long? =
-  attempt
-    .takeIf { it in 0 until MAX_RETRY_ATTEMPTS }
-    ?.let {
-      (INITIAL_RETRY_DELAY_MS * (1L shl it.coerceAtMost(MAX_RETRY_EXPONENT)))
-        .coerceAtMost(MAX_RETRY_DELAY_MS)
-    }
+/** Delays between consecutive upload attempts; one more attempt follows the last delay. */
+internal fun retryDelaysMillis(): List<Long> =
+  (0 until MAX_RETRY_ATTEMPTS).map { attempt ->
+    (INITIAL_RETRY_DELAY_MS * (1L shl attempt.coerceAtMost(MAX_RETRY_EXPONENT)))
+      .coerceAtMost(MAX_RETRY_DELAY_MS)
+  }
 
 private const val MAX_SESSIONS_PER_BATCH = 20
 private const val MAX_ESTIMATED_BATCH_BYTES = 64 * 1024

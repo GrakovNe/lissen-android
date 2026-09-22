@@ -28,6 +28,7 @@ import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.MediaProgress
+import org.grakovne.lissen.domain.OfflineSessionOwner
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
@@ -756,6 +757,65 @@ class LissenMediaProviderTest {
 
         assertInstanceOf(OperationResult.Error::class.java, result)
         assertEquals(OperationError.NetworkError, (result as OperationResult.Error).code)
+      }
+  }
+
+  @Nested
+  inner class OfflineSessions {
+    private val owner = OfflineSessionOwner("https://abs.example", "reader")
+    private val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
+
+    @Test
+    fun `cacheProgress writes the local cache only`() =
+      runBlocking {
+        val item = detailedItem("book-1")
+
+        provider.cacheProgress(item, progress)
+
+        coVerify { localCacheRepository.syncProgress(item, progress) }
+        coVerify(exactly = 0) { mediaChannel.syncProgress(any(), any(), any()) }
+      }
+
+    @Test
+    fun `records the session with the item's own library type`() =
+      runBlocking {
+        val item = detailedItem("book-1").copy(libraryType = LibraryType.PODCAST)
+        every { preferences.getPreferredLibrary() } returns Library("lib-1", "Books", LibraryType.LIBRARY)
+
+        provider.recordOfflineSession("s1", owner, item, 0, progress, 5.0)
+
+        coVerify { localCacheRepository.recordOfflineSession("s1", owner, item, 0, progress, 5.0) }
+      }
+
+    @Test
+    fun `resolves a missing library type from the active library`() =
+      runBlocking {
+        val item = detailedItem("book-1")
+        every { preferences.getPreferredLibrary() } returns Library("lib-1", "Podcasts", LibraryType.PODCAST)
+
+        provider.recordOfflineSession("s1", owner, item, 0, progress, 5.0)
+
+        coVerify {
+          localCacheRepository.recordOfflineSession(
+            "s1",
+            owner,
+            item.copy(libraryType = LibraryType.PODCAST),
+            0,
+            progress,
+            5.0,
+          )
+        }
+      }
+
+    @Test
+    fun `leaves the library type unresolved when the active library type is unknown`() =
+      runBlocking {
+        val item = detailedItem("book-1")
+        every { preferences.getPreferredLibrary() } returns Library("lib-1", "Mixed", LibraryType.UNKNOWN)
+
+        provider.recordOfflineSession("s1", owner, item, 0, progress, 5.0)
+
+        coVerify { localCacheRepository.recordOfflineSession("s1", owner, item, 0, progress, 5.0) }
       }
   }
 

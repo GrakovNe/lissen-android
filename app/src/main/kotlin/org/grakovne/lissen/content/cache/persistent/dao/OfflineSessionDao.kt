@@ -4,10 +4,10 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import org.grakovne.lissen.content.cache.persistent.entity.OfflinePlaybackSessionEntity
+import org.grakovne.lissen.content.cache.persistent.entity.OfflineSessionEntity
 
 @Dao
-interface OfflinePlaybackSessionDao {
+interface OfflineSessionDao {
   @Query(
     """
     SELECT *
@@ -19,7 +19,7 @@ interface OfflinePlaybackSessionDao {
   suspend fun fetchByOwner(
     serverHost: String,
     username: String,
-  ): List<OfflinePlaybackSessionEntity>
+  ): List<OfflineSessionEntity>
 
   @Query(
     """
@@ -28,10 +28,10 @@ interface OfflinePlaybackSessionDao {
     WHERE id = :id
     """,
   )
-  suspend fun fetchById(id: String): OfflinePlaybackSessionEntity?
+  suspend fun fetchById(id: String): OfflineSessionEntity?
 
   @Insert(onConflict = OnConflictStrategy.REPLACE)
-  suspend fun upsert(session: OfflinePlaybackSessionEntity)
+  suspend fun upsert(session: OfflineSessionEntity)
 
   @Query(
     """
