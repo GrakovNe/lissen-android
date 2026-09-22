@@ -344,6 +344,24 @@ class MediaLibrarySessionCallbackTest {
     }
 
   @Test
+  fun onPlaybackResumption_latestProgressFails_fallsBackToStoredBook() =
+    runBlocking {
+      val storedBook = makeDetailedItem("book-1", "My Book", MediaProgress(170.0, false, 0L))
+      every { preferences.getPlayingItem() } returns storedBook
+      coEvery { lissenMediaProvider.fetchBook("book-1") } returns OperationResult.Error(OperationError.NetworkError)
+      coEvery { lissenMediaProvider.withLatestProgress(storedBook) } throws IllegalStateException("cache locked")
+
+      val result =
+        callback
+          .onPlaybackResumption(session, controller, isForPlayback = true)
+          .get(10, TimeUnit.SECONDS)
+
+      assertEquals(1, result.startIndex)
+      assertEquals(20000, result.startPositionMs)
+      verify(exactly = 1) { playbackSynchronizationService.startPlaybackSynchronization(storedBook) }
+    }
+
+  @Test
   fun onPlaybackResumption_refreshedBookUnusable_fallsBackToStoredBook() =
     runBlocking {
       val storedBook = makeDetailedItem("book-1", "My Book", MediaProgress(170.0, false, 0L))

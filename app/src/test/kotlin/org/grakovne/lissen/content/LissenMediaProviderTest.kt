@@ -380,6 +380,45 @@ class LissenMediaProviderTest {
       }
 
     @Test
+    fun `a stored podcast in the user's order gets the cached position translated into that order`() =
+      runBlocking {
+        // stored in DESCENDING order: c1 (published later) first, c0 second; 5s into c1
+        val stored =
+          detailedItem(
+            chapters =
+              listOf(
+                chapter("c1", 1, 10.0, publishedAt = 2L).copy(start = 0.0, end = 10.0),
+                chapter("c0", 0, 10.0, publishedAt = 1L).copy(start = 10.0, end = 20.0),
+              ),
+          ).copy(libraryType = LibraryType.PODCAST, progress = MediaProgress(currentTime = 5.0, isFinished = false, lastUpdate = 1_000L))
+        every { preferences.getEpisodeOrdering("book-1") } returns
+          EpisodeOrderingConfiguration(EpisodeOrderingOption.PUBLISHED_AT, LibraryOrderingDirection.DESCENDING)
+        // the cache holds canonical positions: 3s into c0, which is the second episode in the user's order
+        coEvery { localCacheRepository.fetchPlayingItemProgress("book-1") } returns
+          MediaProgress(currentTime = 3.0, isFinished = false, lastUpdate = 2_000L)
+
+        val result = provider.withLatestProgress(stored)
+
+        assertEquals(listOf("c1", "c0"), result.chapters.map { it.id })
+        assertEquals(13.0, result.progress?.currentTime)
+      }
+
+    @Test
+    fun `a cached progress inside a chapter that is not on the device moves to one that is`() =
+      runBlocking {
+        val partial =
+          detailedItem(
+            chapters = listOf(chapter("c0", 0, 100.0), chapter("c1", 1, 100.0, available = false)),
+          ).copy(progress = MediaProgress(currentTime = 30.0, isFinished = false, lastUpdate = 1_000L))
+        coEvery { localCacheRepository.fetchPlayingItemProgress("book-1") } returns
+          MediaProgress(currentTime = 150.0, isFinished = false, lastUpdate = 2_000L)
+
+        val result = provider.withLatestProgress(partial)
+
+        assertEquals(0.0, result.progress?.currentTime ?: 0.0)
+      }
+
+    @Test
     fun `a cached progress at the very end is trimmed like a fetched one`() =
       runBlocking {
         val stored = item.copy(progress = MediaProgress(currentTime = 30.0, isFinished = false, lastUpdate = 1_000L))
