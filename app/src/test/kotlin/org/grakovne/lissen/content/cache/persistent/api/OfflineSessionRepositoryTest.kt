@@ -3,20 +3,19 @@ package org.grakovne.lissen.content.cache.persistent.api
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import io.mockk.slot
 import kotlinx.coroutines.test.runTest
-import org.grakovne.lissen.content.cache.persistent.converter.OfflineSessionEntityConverter
 import org.grakovne.lissen.content.cache.persistent.dao.OfflineSessionDao
 import org.grakovne.lissen.content.cache.persistent.entity.OfflineSessionEntity
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 class OfflineSessionRepositoryTest {
   private val dao = mockk<OfflineSessionDao>(relaxed = true)
-  private val repository = OfflineSessionRepository(dao, OfflineSessionEntityConverter())
+  private val repository = OfflineSessionRepository(dao)
 
   @Test
   fun `fetch converts every stored row`() =
@@ -34,33 +33,53 @@ class OfflineSessionRepositoryTest {
     runTest {
       coEvery { dao.fetchById("session") } returns null
 
-      val recorded = repository.record("session", item(), 0, PlaybackProgress(5.0, 5.0), timeListened = 0.0)
+      repository.record("session", item(), LibraryType.LIBRARY, 0, PlaybackProgress(5.0, 5.0), timeListened = 0.0)
 
-      assertNull(recorded)
       coVerify(exactly = 0) { dao.upsert(any()) }
     }
 
   @Test
   fun `a first snapshot with listened time opens the row`() =
     runTest {
+      val stored = slot<OfflineSessionEntity>()
       coEvery { dao.fetchById("session") } returns null
+      coEvery { dao.upsert(capture(stored)) } returns Unit
 
-      val recorded = repository.record("session", item(), 0, PlaybackProgress(5.0, 5.0), timeListened = 4.0)
+      repository.record("session", item(), LibraryType.LIBRARY, 0, PlaybackProgress(5.0, 5.0), timeListened = 4.0)
 
-      assertEquals(4.0, recorded?.timeListening)
-      coVerify(exactly = 1) { dao.upsert(any()) }
+      assertEquals("session", stored.captured.id)
+      assertEquals(4.0, stored.captured.timeListening)
+      assertEquals(5.0, stored.captured.startTime)
     }
 
   @Test
-  fun `an existing row is advanced even when nothing new was listened`() =
+  fun `an existing row is advanced in place`() =
     runTest {
+      val stored = slot<OfflineSessionEntity>()
       coEvery { dao.fetchById("session") } returns entity()
+      coEvery { dao.upsert(capture(stored)) } returns Unit
 
-      val recorded = repository.record("session", item(), 0, PlaybackProgress(30.0, 30.0), timeListened = 0.0)
+      repository.record("session", item(), LibraryType.LIBRARY, 0, PlaybackProgress(30.0, 30.0), timeListened = 5.0)
 
-      assertEquals(30.0, recorded?.currentTime)
-      assertEquals(10.0, recorded?.timeListening)
-      coVerify(exactly = 1) { dao.upsert(any()) }
+      assertEquals(30.0, stored.captured.currentTime)
+      assertEquals(15.0, stored.captured.timeListening)
+      assertEquals(10.0, stored.captured.startTime)
+    }
+
+  @Test
+  fun `drop removes the given rows`() =
+    runTest {
+      repository.drop(setOf("a", "b"))
+
+      coVerify(exactly = 1) { dao.deleteByIds(match { it.toSet() == setOf("a", "b") }) }
+    }
+
+  @Test
+  fun `drop with no ids does not query room`() =
+    runTest {
+      repository.drop(emptyList())
+
+      coVerify(exactly = 0) { dao.deleteByIds(any()) }
     }
 
   @Test
@@ -71,14 +90,6 @@ class OfflineSessionRepositoryTest {
       repository.dropAll()
 
       coVerify(exactly = 1) { dao.deleteAll() }
-    }
-
-  @Test
-  fun `drop with no ids does not query room`() =
-    runTest {
-      repository.drop(emptyList())
-
-      coVerify(exactly = 0) { dao.deleteByIds(any()) }
     }
 
   private fun item() =
@@ -107,7 +118,7 @@ class OfflineSessionRepositoryTest {
       id = "session",
       libraryItemId = "item",
       episodeId = null,
-      libraryType = LibraryType.LIBRARY.name,
+      libraryType = LibraryType.LIBRARY,
       displayTitle = "Book",
       displayAuthor = "Author",
       duration = 300.0,

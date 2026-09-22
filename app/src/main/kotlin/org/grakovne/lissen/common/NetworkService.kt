@@ -29,7 +29,9 @@ class NetworkService
     @Volatile
     private var defaultNetworkHandle: Long? = null
 
-    private val _networkAvailable = MutableStateFlow(isNetworkAvailable())
+    // Registering the callback reports the current default network right away, so the flow
+    // starts pessimistic instead of querying connectivity while the singleton is built.
+    private val _networkAvailable = MutableStateFlow(false)
 
     /** Tracks the default network, so a transition from false to true means the device came back online. */
     val networkAvailable: StateFlow<Boolean> = _networkAvailable.asStateFlow()

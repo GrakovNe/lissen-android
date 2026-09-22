@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class SyncStateTest {
@@ -35,181 +34,115 @@ class SyncStateTest {
       updatedAt = 0L,
     )
 
-  private fun playing(session: PlaybackSession? = null) =
-    SyncState().withAccount(true).start(book).let { state ->
-      session?.let { state.adopt(it, LocalSessionPolicy.REPLACE) }
-        ?: state
-    }
+  private fun playing(
+    session: PlaybackSession? = null,
+    chapterIndex: Int = 1,
+  ) = SyncState().start(book).let { state -> session?.let { state.adopt(it, chapterIndex) } ?: state }
 
-  @Nested
-  inner class Transitions {
-    @Test
-    fun `start remembers the item, keeps the login and forgets the previous session`() {
-      val started = playing(PlaybackSession.local("book")).start(other)
+  @Test
+  fun `start remembers the item and forgets the previous session and chapter`() {
+    val started = playing(PlaybackSession.local("book")).start(other)
 
-      assertSame(other, started.item)
-      assertTrue(started.authenticated)
-      assertNull(started.session)
-      assertNull(started.chapterIndex)
-    }
-
-    @Test
-    fun `cancel drops the playback but keeps the login`() {
-      assertEquals(SyncState(authenticated = true), playing(PlaybackSession.local("book")).withChapter(2).cancel())
-    }
-
-    @Test
-    fun `a logout releases the local session and keeps the item playing`() {
-      val state = playing(PlaybackSession.local("book")).withChapter(2).withAccount(false)
-
-      assertSame(book, state.item)
-      assertEquals(2, state.chapterIndex)
-      assertFalse(state.authenticated)
-      assertNull(state.session)
-    }
-
-    @Test
-    fun `a logout keeps a remote session`() {
-      val remote = PlaybackSession.remote("remote", "book")
-
-      assertEquals(remote, playing(remote).withAccount(false).session)
-    }
-
-    @Test
-    fun `a login is picked up mid playback`() {
-      val state = playing(PlaybackSession.remote("remote", "book")).withAccount(false).withAccount(true)
-
-      assertTrue(state.authenticated)
-      assertSame(book, state.item)
-    }
-
-    @Test
-    fun `adopting a session for another item is ignored`() {
-      val state = playing()
-
-      assertSame(state, state.adopt(PlaybackSession.local("other-book"), LocalSessionPolicy.REPLACE))
-    }
-
-    @Test
-    fun `adopting on an empty state is ignored`() {
-      assertEquals(SyncState(), SyncState().adopt(PlaybackSession.remote("r", "book"), LocalSessionPolicy.REPLACE))
-    }
-
-    @Test
-    fun `failed retry keeps the existing local session`() {
-      val previous = PlaybackSession.local("book")
-
-      val state = playing(previous).adopt(PlaybackSession.local("book"), LocalSessionPolicy.KEEP)
-
-      assertEquals(previous, state.session)
-    }
-
-    @Test
-    fun `chapter transition adopts a fresh local session`() {
-      val next = PlaybackSession.local("book")
-
-      val state = playing(PlaybackSession.local("book")).adopt(next, LocalSessionPolicy.REPLACE)
-
-      assertEquals(next, state.session)
-    }
-
-    @Test
-    fun `remote recovery replaces the local session`() {
-      val remote = PlaybackSession.remote("remote", "book")
-
-      val state = playing(PlaybackSession.local("book")).adopt(remote, LocalSessionPolicy.KEEP)
-
-      assertEquals(remote, state.session)
-    }
-
-    @Test
-    fun `releaseLocal clears a local session and keeps a remote one`() {
-      val remote = PlaybackSession.remote("remote", "book")
-
-      assertNull(playing(PlaybackSession.local("book")).releaseLocal().session)
-      assertEquals(remote, playing(remote).releaseLocal().session)
-    }
-
-    @Test
-    fun `session is stale without a session, for another item or another chapter`() {
-      val state = playing(PlaybackSession.remote("remote", "book")).withChapter(1)
-
-      assertTrue(playing().sessionStale("book", 1))
-      assertTrue(state.sessionStale("other-book", 1))
-      assertTrue(state.sessionStale("book", 2))
-      assertFalse(state.sessionStale("book", 1))
-    }
+    assertEquals(SyncState(item = other), started)
   }
 
-  @Nested
-  inner class Effects {
-    @Test
-    fun `nothing changes for the uploader between remote sessions`() {
-      val before = playing(PlaybackSession.remote("a", "book"))
-      val after = before.adopt(PlaybackSession.remote("b", "book"), LocalSessionPolicy.REPLACE)
+  @Test
+  fun `cancel drops everything`() {
+    assertEquals(SyncState(), playing(PlaybackSession.local("book")).cancel())
+  }
 
-      assertEquals(emptyList<UploaderEffect>(), uploaderEffects(before, after))
-    }
+  @Test
+  fun `adopting a session for another item is ignored`() {
+    val state = playing()
 
-    @Test
-    fun `a new local session is activated`() {
-      val local = PlaybackSession.local("book")
-      val before = playing()
-      val after = before.adopt(local, LocalSessionPolicy.REPLACE)
+    assertSame(state, state.adopt(PlaybackSession.local("other-book"), 1))
+  }
 
-      assertEquals(listOf(UploaderEffect.Activate(local.sessionId)), uploaderEffects(before, after))
-    }
+  @Test
+  fun `adopting on an empty state is ignored`() {
+    assertEquals(SyncState(), SyncState().adopt(PlaybackSession.remote("r", "book"), 1))
+  }
 
-    @Test
-    fun `keeping the local session on a retry has no effect`() {
-      val local = PlaybackSession.local("book")
-      val before = playing(local)
-      val after = before.adopt(PlaybackSession.local("book"), LocalSessionPolicy.KEEP)
+  @Test
+  fun `adopting records the chapter the session was opened for`() {
+    val remote = PlaybackSession.remote("remote", "book")
 
-      assertEquals(emptyList<UploaderEffect>(), uploaderEffects(before, after))
-    }
+    val state = playing().adopt(remote, 3)
 
-    @Test
-    fun `remote recovery releases the local session`() {
-      val local = PlaybackSession.local("book")
-      val before = playing(local)
-      val after = before.adopt(PlaybackSession.remote("remote", "book"), LocalSessionPolicy.KEEP)
+    assertEquals(remote, state.session)
+    assertEquals(3, state.chapterIndex)
+  }
 
-      assertEquals(listOf(UploaderEffect.Release(local.sessionId)), uploaderEffects(before, after))
-    }
+  @Test
+  fun `failed retry on the same chapter keeps the existing local session`() {
+    val previous = PlaybackSession.local("book")
+    val state = playing(previous, chapterIndex = 1)
 
-    @Test
-    fun `chapter change releases the old row before activating the new one`() {
-      val previous = PlaybackSession.local("book")
-      val next = PlaybackSession.local("book")
-      val before = playing(previous)
-      val after = before.adopt(next, LocalSessionPolicy.REPLACE)
+    assertSame(state, state.adopt(PlaybackSession.local("book"), 1))
+  }
 
-      assertEquals(
-        listOf(UploaderEffect.Release(previous.sessionId), UploaderEffect.Activate(next.sessionId)),
-        uploaderEffects(before, after),
-      )
-    }
+  @Test
+  fun `chapter transition adopts a fresh local session`() {
+    val next = PlaybackSession.local("book")
 
-    @Test
-    fun `pause, cancel and a new item all release the local session`() {
-      val local = PlaybackSession.local("book")
-      val before = playing(local)
-      val release = listOf(UploaderEffect.Release(local.sessionId))
+    val state = playing(PlaybackSession.local("book"), chapterIndex = 1).adopt(next, 2)
 
-      assertEquals(release, uploaderEffects(before, before.releaseLocal()))
-      assertEquals(release, uploaderEffects(before, before.cancel()))
-      assertEquals(release, uploaderEffects(before, before.start(other)))
-      assertEquals(release, uploaderEffects(before, before.withAccount(false)))
-    }
+    assertEquals(next, state.session)
+    assertEquals(2, state.chapterIndex)
+  }
 
-    @Test
-    fun `a release that ran before a late activation is not undone`() {
-      // the cancel from the main thread wins: the late adoption sees no item and stays a no-op
-      val cancelled = playing().cancel()
-      val late = cancelled.adopt(PlaybackSession.local("book"), LocalSessionPolicy.REPLACE)
+  @Test
+  fun `remote recovery replaces the local session`() {
+    val remote = PlaybackSession.remote("remote", "book")
 
-      assertEquals(emptyList<UploaderEffect>(), uploaderEffects(cancelled, late))
-    }
+    val state = playing(PlaybackSession.local("book"), chapterIndex = 1).adopt(remote, 1)
+
+    assertEquals(remote, state.session)
+  }
+
+  @Test
+  fun `a dead remote session is replaced by a local one even on the same chapter`() {
+    val local = PlaybackSession.local("book")
+
+    val state = playing(PlaybackSession.remote("remote", "book"), chapterIndex = 1).adopt(local, 1)
+
+    assertEquals(local, state.session)
+  }
+
+  @Test
+  fun `releaseLocal clears a local session and keeps a remote one`() {
+    val remote = PlaybackSession.remote("remote", "book")
+
+    assertNull(playing(PlaybackSession.local("book")).releaseLocal().session)
+    assertEquals(remote, playing(remote).releaseLocal().session)
+  }
+
+  @Test
+  fun `localSession is only a local one`() {
+    val local = PlaybackSession.local("book")
+
+    assertEquals(local, playing(local).localSession)
+    assertNull(playing(PlaybackSession.remote("remote", "book")).localSession)
+  }
+
+  @Test
+  fun `session is stale without a session, for another item or another chapter`() {
+    val state = playing(PlaybackSession.remote("remote", "book"), chapterIndex = 1)
+
+    assertTrue(playing().sessionStale("book", 1))
+    assertTrue(state.sessionStale("other-book", 1))
+    assertTrue(state.sessionStale("book", 2))
+    assertFalse(state.sessionStale("book", 1))
+  }
+
+  @Test
+  fun `store applies transitions and exposes the result`() {
+    val store = SyncStateStore()
+
+    val updated = store.update { it.start(book) }
+
+    assertEquals(SyncState(item = book), updated)
+    assertEquals(updated, store.value)
+    assertEquals(updated, store.state.value)
   }
 }

@@ -2,7 +2,6 @@ package org.grakovne.lissen.channel.audiobookshelf.common.converter
 
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.DeviceInfo
 import org.grakovne.lissen.channel.audiobookshelf.common.model.playback.LocalSessionRequest
-import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.OfflineSession
 import java.time.Instant
 import java.time.ZoneId
@@ -27,11 +26,7 @@ class OfflineSessionRequestConverter
         id = session.id,
         libraryItemId = session.libraryItemId,
         episodeId = session.episodeId,
-        mediaType =
-          when (session.libraryType) {
-            LibraryType.PODCAST -> MEDIA_TYPE_PODCAST
-            LibraryType.LIBRARY, LibraryType.UNKNOWN -> MEDIA_TYPE_BOOK
-          },
+        mediaType = session.libraryType.toMediaType(),
         displayTitle = session.displayTitle,
         displayAuthor = session.displayAuthor,
         duration = session.duration,
@@ -49,9 +44,6 @@ class OfflineSessionRequestConverter
     }
 
     companion object {
-      private const val MEDIA_TYPE_BOOK = "book"
-      private const val MEDIA_TYPE_PODCAST = "podcast"
-
       // PlayMethod.LOCAL in the Audiobookshelf server: media played from a device-side copy.
       private const val PLAY_METHOD_LOCAL = 3
     }

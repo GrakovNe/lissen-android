@@ -5,26 +5,17 @@ import org.grakovne.lissen.domain.OfflineSession
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-class OfflineSessionEntityConverterTest {
-  private val converter = OfflineSessionEntityConverter()
-
+class OfflineSessionEntityMappingTest {
   @Test
-  fun `round trip preserves session ownership and payload`() {
+  fun `round trip preserves the session`() {
     val session = session()
 
-    assertEquals(session, converter.apply(session.toEntity()))
+    assertEquals(session, session.toEntity().toDomain())
   }
 
   @Test
-  fun `entity stores the library type by name`() {
-    assertEquals("PODCAST", session().toEntity().libraryType)
-  }
-
-  @Test
-  fun `unknown stored library type has a safe fallback`() {
-    val entity = session().toEntity().copy(libraryType = "REMOVED_TYPE")
-
-    assertEquals(LibraryType.UNKNOWN, converter.apply(entity).libraryType)
+  fun `entity keeps the library type as is`() {
+    assertEquals(LibraryType.PODCAST, session().toEntity().libraryType)
   }
 
   private fun session() =

@@ -699,85 +699,62 @@ class LissenMediaProviderTest {
 
   @Nested
   inner class SyncProgress {
-    @Test
-    fun `syncs local cache and channel when force cache enabled`() =
-      runBlocking {
-        val item = detailedItem("book-1")
-        val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
-        every { preferences.isForceCache() } returns true
-        coEvery { mediaChannel.syncProgress("session-1", progress, 42.0) } returns
-          OperationResult.Success(Unit)
+    private val item = detailedItem("book-1")
+    private val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
+    private val remote = PlaybackSession.remote("session-1", "book-1")
+    private val local = PlaybackSession.local("book-1")
 
-        val result = provider.syncProgress("session-1", item, progress, 42.0)
+    @Test
+    fun `a remote session writes the local cache and reports to the channel`() =
+      runBlocking {
+        coEvery { mediaChannel.syncProgress("session-1", progress, 42.0) } returns OperationResult.Success(Unit)
+
+        val result = provider.syncProgress(remote, item, 0, progress, 42.0)
 
         assertInstanceOf(OperationResult.Success::class.java, result)
         coVerify { localCacheRepository.syncProgress(item, progress) }
         coVerify(exactly = 1) { mediaChannel.syncProgress("session-1", progress, 42.0) }
+        coVerify(exactly = 0) { localCacheRepository.recordOfflineSession(any(), any(), any(), any(), any(), any()) }
       }
 
     @Test
-    fun `keeps local progress and reports channel failure when force cache enabled`() =
+    fun `a channel failure is reported after the local cache was written`() =
       runBlocking {
-        val item = detailedItem("book-1")
-        val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
-        every { preferences.isForceCache() } returns true
-        coEvery { mediaChannel.syncProgress("session-1", progress, 42.0) } returns
-          OperationResult.Error(OperationError.NetworkError)
+        coEvery { mediaChannel.syncProgress("session-1", progress, 42.0) } returns OperationResult.Error(OperationError.NetworkError)
 
-        val result = provider.syncProgress("session-1", item, progress, 42.0)
+        val result = provider.syncProgress(remote, item, 0, progress, 42.0)
 
-        assertInstanceOf(OperationResult.Error::class.java, result)
         assertEquals(OperationError.NetworkError, (result as OperationResult.Error).code)
         coVerify { localCacheRepository.syncProgress(item, progress) }
       }
 
     @Test
-    fun `syncs local cache when force cache disabled`() =
+    fun `a local session writes the local cache and the offline row with the item's own library type`() =
       runBlocking {
-        val item = detailedItem("book-1")
-        val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
-        every { preferences.isForceCache() } returns false
-        coEvery { mediaChannel.syncProgress("session-1", progress, 42.0) } returns
-          OperationResult.Success(Unit)
+        val podcast = item.copy(libraryType = LibraryType.PODCAST)
+        every { channelProvider.resolveLibraryType(LibraryType.PODCAST) } returns LibraryType.PODCAST
 
-        provider.syncProgress("session-1", item, progress, 42.0)
+        val result = provider.syncProgress(local, podcast, 2, progress, 42.0)
 
-        coVerify { localCacheRepository.syncProgress(item, progress) }
-        coVerify { mediaChannel.syncProgress("session-1", progress, 42.0) }
+        assertInstanceOf(OperationResult.Success::class.java, result)
+        coVerify { localCacheRepository.syncProgress(podcast, progress) }
+        coVerify { localCacheRepository.recordOfflineSession(local.sessionId, podcast, LibraryType.PODCAST, 2, progress, 42.0) }
+        coVerify(exactly = 0) { mediaChannel.syncProgress(any(), any(), any()) }
       }
 
     @Test
-    fun `uses channel result when force cache disabled`() =
+    fun `a local session of an item without a library type takes the active library's`() =
       runBlocking {
-        val item = detailedItem("book-1")
-        val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
-        every { preferences.isForceCache() } returns false
-        coEvery {
-          mediaChannel.syncProgress("session-1", progress, 42.0)
-        } returns OperationResult.Error(OperationError.NetworkError)
+        every { channelProvider.resolveLibraryType(null) } returns LibraryType.PODCAST
 
-        val result = provider.syncProgress("session-1", item, progress, 42.0)
+        provider.syncProgress(local, item, 0, progress, 42.0)
 
-        assertInstanceOf(OperationResult.Error::class.java, result)
-        assertEquals(OperationError.NetworkError, (result as OperationResult.Error).code)
+        coVerify { localCacheRepository.recordOfflineSession(local.sessionId, item, LibraryType.PODCAST, 0, progress, 42.0) }
       }
   }
 
   @Nested
   inner class OfflineSessions {
-    private val progress = PlaybackProgress(currentChapterTime = 10.0, currentTotalTime = 100.0)
-
-    @Test
-    fun `cacheProgress writes the local cache only`() =
-      runBlocking {
-        val item = detailedItem("book-1")
-
-        provider.cacheProgress(item, progress)
-
-        coVerify { localCacheRepository.syncProgress(item, progress) }
-        coVerify(exactly = 0) { mediaChannel.syncProgress(any(), any(), any()) }
-      }
-
     @Test
     fun `offline sessions are uploaded through the preferred channel`() =
       runBlocking {
@@ -789,22 +766,6 @@ class LissenMediaProviderTest {
         assertInstanceOf(OperationResult.Success::class.java, result)
         coVerify(exactly = 1) { mediaChannel.syncOfflineSessions(sessions, "device") }
       }
-
-    private fun offlineSession(id: String) =
-      OfflineSession(
-        id = id,
-        libraryItemId = "book-1",
-        episodeId = null,
-        libraryType = LibraryType.LIBRARY,
-        displayTitle = "Test Book",
-        displayAuthor = "Author",
-        duration = 300.0,
-        startTime = 0.0,
-        currentTime = 10.0,
-        timeListening = 10.0,
-        startedAt = 0L,
-        updatedAt = 1L,
-      )
 
     @Test
     fun `login drops the offline sessions before the credentials are stored`() =
@@ -823,46 +784,21 @@ class LissenMediaProviderTest {
         }
       }
 
-    @Test
-    fun `records the session with the item's own library type`() =
-      runBlocking {
-        val item = detailedItem("book-1").copy(libraryType = LibraryType.PODCAST)
-        every { preferences.getPreferredLibrary() } returns Library("lib-1", "Books", LibraryType.LIBRARY)
-
-        provider.recordOfflineSession("s1", item, 0, progress, 5.0)
-
-        coVerify { localCacheRepository.recordOfflineSession("s1", item, 0, progress, 5.0) }
-      }
-
-    @Test
-    fun `resolves a missing library type from the active library`() =
-      runBlocking {
-        val item = detailedItem("book-1")
-        every { preferences.getPreferredLibrary() } returns Library("lib-1", "Podcasts", LibraryType.PODCAST)
-
-        provider.recordOfflineSession("s1", item, 0, progress, 5.0)
-
-        coVerify {
-          localCacheRepository.recordOfflineSession(
-            "s1",
-            item.copy(libraryType = LibraryType.PODCAST),
-            0,
-            progress,
-            5.0,
-          )
-        }
-      }
-
-    @Test
-    fun `leaves the library type unresolved when the active library type is unknown`() =
-      runBlocking {
-        val item = detailedItem("book-1")
-        every { preferences.getPreferredLibrary() } returns Library("lib-1", "Mixed", LibraryType.UNKNOWN)
-
-        provider.recordOfflineSession("s1", item, 0, progress, 5.0)
-
-        coVerify { localCacheRepository.recordOfflineSession("s1", item, 0, progress, 5.0) }
-      }
+    private fun offlineSession(id: String) =
+      OfflineSession(
+        id = id,
+        libraryItemId = "book-1",
+        episodeId = null,
+        libraryType = LibraryType.LIBRARY,
+        displayTitle = "Test Book",
+        displayAuthor = "Author",
+        duration = 300.0,
+        startTime = 0.0,
+        currentTime = 10.0,
+        timeListening = 10.0,
+        startedAt = 0L,
+        updatedAt = 1L,
+      )
   }
 
   @Nested

@@ -78,6 +78,9 @@ class NetworkServiceTest {
   inner class DefaultNetworkTracking {
     private fun network(handle: Long) = mockk<Network> { every { networkHandle } returns handle }
 
+    private fun capabilities(validated: Boolean) =
+      mockk<NetworkCapabilities> { every { hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) } returns validated }
+
     @Test
     fun `losing the default network means offline`() {
       val wifi = network(1L)
@@ -92,14 +95,11 @@ class NetworkServiceTest {
     @Test
     fun `a captive portal counts as offline until the network is validated`() {
       val wifi = network(1L)
-      val unvalidated = mockk<NetworkCapabilities> { every { hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) } returns false }
-      val validated = mockk<NetworkCapabilities> { every { hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) } returns true }
-
       networkService.defaultNetworkCallback.onAvailable(wifi)
-      networkService.defaultNetworkCallback.onCapabilitiesChanged(wifi, unvalidated)
+      networkService.defaultNetworkCallback.onCapabilitiesChanged(wifi, capabilities(validated = false))
       assertFalse(networkService.networkAvailable.value)
 
-      networkService.defaultNetworkCallback.onCapabilitiesChanged(wifi, validated)
+      networkService.defaultNetworkCallback.onCapabilitiesChanged(wifi, capabilities(validated = true))
       assertTrue(networkService.networkAvailable.value)
     }
 
@@ -107,10 +107,8 @@ class NetworkServiceTest {
     fun `capabilities of a network that is not the default are ignored`() {
       val wifi = network(1L)
       val other = network(2L)
-      val unvalidated = mockk<NetworkCapabilities> { every { hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) } returns false }
-
       networkService.defaultNetworkCallback.onAvailable(wifi)
-      networkService.defaultNetworkCallback.onCapabilitiesChanged(other, unvalidated)
+      networkService.defaultNetworkCallback.onCapabilitiesChanged(other, capabilities(validated = false))
 
       assertTrue(networkService.networkAvailable.value)
     }

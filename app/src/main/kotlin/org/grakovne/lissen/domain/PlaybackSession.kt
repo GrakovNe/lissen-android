@@ -15,6 +15,9 @@ data class PlaybackSession(
   val itemId: String,
   val sessionSource: PlaybackSessionSource,
 ) {
+  val isLocal: Boolean
+    get() = sessionSource == PlaybackSessionSource.LOCAL
+
   companion object {
     fun local(itemId: String): PlaybackSession =
       PlaybackSession(

@@ -16,5 +16,4 @@ data class LocalSessionSyncResultResponse(
   val id: String,
   val success: Boolean,
   val error: String? = null,
-  val progressSynced: Boolean? = null,
 )

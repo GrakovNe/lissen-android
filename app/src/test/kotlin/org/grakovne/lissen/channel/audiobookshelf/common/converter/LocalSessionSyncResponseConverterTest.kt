@@ -17,7 +17,7 @@ class LocalSessionSyncResponseConverterTest {
         LocalSessionSyncResponse(
           results =
             listOf(
-              LocalSessionSyncResultResponse(id = "a", success = true, progressSynced = true),
+              LocalSessionSyncResultResponse(id = "a", success = true),
               LocalSessionSyncResultResponse(id = "b", success = false, error = "Media item not found"),
             ),
         ),

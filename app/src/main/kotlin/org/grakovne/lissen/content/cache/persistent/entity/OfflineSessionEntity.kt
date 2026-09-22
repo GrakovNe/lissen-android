@@ -4,6 +4,7 @@ import androidx.annotation.Keep
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.squareup.moshi.JsonClass
+import org.grakovne.lissen.domain.LibraryType
 
 @Keep
 @JsonClass(generateAdapter = true)
@@ -12,7 +13,7 @@ data class OfflineSessionEntity(
   @PrimaryKey val id: String,
   val libraryItemId: String,
   val episodeId: String?,
-  val libraryType: String,
+  val libraryType: LibraryType,
   val displayTitle: String,
   val displayAuthor: String?,
   val duration: Double,

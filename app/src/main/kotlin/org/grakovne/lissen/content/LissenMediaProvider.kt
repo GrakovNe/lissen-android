@@ -24,6 +24,7 @@ import org.grakovne.lissen.domain.OfflineSessionSyncResult
 import org.grakovne.lissen.domain.PagedItems
 import org.grakovne.lissen.domain.PlaybackProgress
 import org.grakovne.lissen.domain.PlaybackSession
+import org.grakovne.lissen.domain.PlaybackSessionSource
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.domain.UserAccount
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
@@ -101,64 +102,41 @@ class LissenMediaProvider
       }
     }
 
-    suspend fun syncProgress(
-      sessionId: String,
-      detailedItem: DetailedItem,
-      progress: PlaybackProgress,
-      timeListened: Double,
-    ): OperationResult<Unit> {
-      Timber.d(
-        "Syncing progress: bookId=${detailedItem.id}, totalTime=${progress.currentTotalTime.toInt()}s, listened=${timeListened.toInt()}s",
-      )
-
-      localCacheRepository.syncProgress(detailedItem, progress)
-
-      return provideChannelFor(detailedItem.libraryType)
-        .syncProgress(sessionId, progress, timeListened)
-    }
-
-    /** Persists the position locally only, for playback that has no server session to report to. */
-    suspend fun cacheProgress(
-      detailedItem: DetailedItem,
-      progress: PlaybackProgress,
-    ) {
-      Timber.d("Caching progress: bookId=${detailedItem.id}, totalTime=${progress.currentTotalTime.toInt()}s")
-      localCacheRepository.syncProgress(detailedItem, progress)
-    }
-
     /**
-     * A cached item may not know its library type; the session is then recorded against the
-     * active library's type, the same way the online sync picks its channel.
+     * Reports the position to the session's home: the server for a remote session, the
+     * offline row for a local one. The local cache gets it either way.
      */
-    suspend fun recordOfflineSession(
-      sessionId: String,
+    suspend fun syncProgress(
+      session: PlaybackSession,
       detailedItem: DetailedItem,
       chapterIndex: Int,
       progress: PlaybackProgress,
       timeListened: Double,
-    ): OfflineSession? {
+    ): OperationResult<Unit> {
       Timber.d(
-        "Recording offline progress: bookId=${detailedItem.id}, totalTime=${progress.currentTotalTime.toInt()}s, listened=${timeListened.toInt()}s",
+        "Syncing progress: bookId=${detailedItem.id}, session=${session.sessionSource}, totalTime=${progress.currentTotalTime.toInt()}s, listened=${timeListened.toInt()}s",
       )
 
-      val libraryType =
-        detailedItem.libraryType
-          ?: preferences.getPreferredLibrary()?.type?.takeIf { it != LibraryType.UNKNOWN }
+      localCacheRepository.syncProgress(detailedItem, progress)
 
-      return localCacheRepository.recordOfflineSession(
-        sessionId = sessionId,
-        detailedItem = detailedItem.copy(libraryType = libraryType),
-        chapterIndex = chapterIndex,
-        progress = progress,
-        timeListened = timeListened,
-      )
+      return when (session.sessionSource) {
+        PlaybackSessionSource.REMOTE -> {
+          provideChannelFor(detailedItem.libraryType).syncProgress(session.sessionId, progress, timeListened)
+        }
+
+        PlaybackSessionSource.LOCAL -> {
+          localCacheRepository.recordOfflineSession(
+            sessionId = session.sessionId,
+            detailedItem = detailedItem,
+            libraryType = channelProvider.resolveLibraryType(detailedItem.libraryType),
+            chapterIndex = chapterIndex,
+            progress = progress,
+            timeListened = timeListened,
+          )
+          OperationResult.Success(Unit)
+        }
+      }
     }
-
-    suspend fun fetchOfflineSessions(): List<OfflineSession> = localCacheRepository.fetchOfflineSessions()
-
-    suspend fun dropOfflineSessions(ids: List<String>) = localCacheRepository.dropOfflineSessions(ids)
-
-    suspend fun dropAllOfflineSessions() = localCacheRepository.dropAllOfflineSessions()
 
     suspend fun syncOfflineSessions(
       sessions: List<OfflineSession>,
