@@ -302,4 +302,10 @@
     <string name="a11y_fast_forward">Premotavaj unaprijed</string>
     <string name="player_state_widget_label">Trenutno se reproducira</string>
     <string name="player_cover_widget_label">Trenutno se reproducira (naslovnica)</string>
+    <string name="episode_ordering_published_at_option">Datum objave</string>
+    <string name="episode_ordering_season_option">Sezona</string>
+    <string name="episode_ordering_episode_option">Epizoda</string>
+    <string name="episode_ordering_file_name_option">Naziv datoteke</string>
+    <string name="episode_ordering_ascending">Uzlazni</string>
+    <string name="episode_ordering_descending">Silazni</string>
 </resources>
