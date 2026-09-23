@@ -84,9 +84,7 @@ class CachedBookmarkProvider
             onFailure = { return@foldAsync null },
           ) ?: return provideBookmarks(libraryItemId)
 
-      // a delete may still be on its way to the server (dropBookmark sends it in the background,
-      // and the push above may have failed): the remote list can still carry the bookmark, and
-      // writing it back as synced would resurrect it and lose the delete
+      // a delete may still be in flight or have failed: writing the remote copy back as synced would resurrect it
       val pendingDeletes =
         localCacheRepository
           .fetchBookmarks(libraryItemId)

@@ -42,9 +42,7 @@ class SettingsBackupManagerTest {
     every { context.getSharedPreferences(any(), any()) } returns sharedPreferences
     every { sharedPreferences.edit() } returns editor
 
-    // Echo the requested default value back for any key that isn't explicitly stubbed by a
-    // test, so every getter falls through to its own documented default instead of a bare
-    // MockK relaxed value (which would trip enum .valueOf() calls on an empty string).
+    // unstubbed keys echo their default, so no getter sees a relaxed empty string
     every { sharedPreferences.getString(any(), any()) } answers { secondArg() }
     every { sharedPreferences.getBoolean(any(), any()) } answers { secondArg() }
     every { sharedPreferences.getInt(any(), any()) } answers { secondArg() }

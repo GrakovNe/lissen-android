@@ -25,12 +25,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-/**
- * Exercises [AudiobookshelfAuthService] credential login and auth-method discovery
- * against [MockWebServer] through the real [ApiClient] Retrofit/Moshi stack.
- * The OAuth browser round trip is out of scope here; everything up to the
- * first server exchange is real.
- */
+/** Real Retrofit stack against [MockWebServer]; the OAuth browser round trip is out of scope. */
 class AudiobookshelfAuthServiceIntegrationTest {
   private val server = MockWebServer()
 

@@ -12,13 +12,10 @@
     <string name="player_screen_playback_speed_navigation">Hastighed</string>
     <string name="player_screen_chapter_list_navigation_library">Kapitler</string>
     <string name="player_screen_chapter_list_navigation_podcast">Afsnit</string>
-    <string name="player_screen_chapter_list_navigation_items">Elementer</string>
     <string name="player_screen_library_playing_title">Kapitler</string>
     <string name="player_screen_podcast_playing_title">Afsnit</string>
-    <string name="player_screen_items_playing_title">Elementer</string>
     <string name="player_screen_now_playing_title_chapter_of">Kapitel %1$d af %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">Afsnit %1$d af %2$s</string>
-    <string name="player_screen_now_playing_title_item_of">Element %1$d af %2$s</string>
     <string name="settings_screen_title">Indstillinger</string>
     <string name="settings_screen_connected_as_title">Forbundet som</string>
     <string name="settings_screen_server_connection">Serverforbindelse</string>
@@ -66,32 +63,23 @@
     <string name="player_screen_downloads_navigation">Hentede</string>
     <string name="downloads_menu_download_book">Hentede bøger</string>
     <string name="downloads_menu_download_podcast">Hent podcast</string>
-    <string name="downloads_menu_download_unknown">Hentede</string>
     <string name="downloads_menu_download_option_disable">Deaktiveret</string>
     <string name="downloads_menu_download_option_current_chapter">Igangværende kapitel</string>
     <string name="downloads_menu_download_option_current_episode">Igangværende afsnit</string>
-    <string name="downloads_menu_download_option_current_item">Igangværende element</string>
     <string name="downloads_menu_download_option_entire_book">Hele bogen</string>
     <string name="downloads_menu_download_option_entire_podcast">Hele podcasten</string>
-    <string name="downloads_menu_download_option_entire_item">Hele elementet</string>
     <string name="downloads_menu_download_option_remaining_chapters">Tilbageværende kapitler</string>
     <string name="downloads_menu_download_option_remaining_episodes">Tilbageværende afsnit</string>
-    <string name="downloads_menu_download_option_remaining_items">Tilbageværende elementer</string>
     <plurals name="downloads_menu_download_option_next_chapters">
         <item quantity="other">Næste %1$d kapitler</item>
     </plurals>
     <plurals name="downloads_menu_download_option_next_episodes">
         <item quantity="other">Næste %1$d afsnit</item>
     </plurals>
-    <plurals name="downloads_menu_download_option_next_items">
-        <item quantity="other">Næste %1$d elementer</item>
-    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Næste kapitler</string>
     <string name="downloads_menu_download_option_next_episodes_label">Næste afsnit</string>
-    <string name="downloads_menu_download_option_next_items_label">Næste elementer</string>
     <string name="downloads_menu_download_option_clear_chapters">Slet hentede kapitler</string>
     <string name="downloads_menu_download_option_clear_episodes">Slet hentede afsnit</string>
-    <string name="downloads_menu_download_option_clear_items">Slet hentede elementer</string>
     <string name="downloads_menu_download_option_stop_downloads">Stop hentning</string>
     <string name="mini_player_action_close">Luk</string>
     <string name="playing_item_details_author">Forfatter</string>
@@ -103,7 +91,6 @@
     <string name="color_scheme_black">Sort</string>
     <string name="chapters_list_empty">Bogen har ingen kapitler</string>
     <string name="episodes_list_empty">Podcasten har ingen afsnit</string>
-    <string name="items_list_empty">Ingen tilgængelige elementer</string>
     <string name="notification_content_caching_channel">Mellemlagring af indhold</string>
     <string name="notification_content_caching_title">Mellemlagrer indhold</string>
     <string name="notification_content_caching_error_title">Mellemlagring mislykkedes</string>
@@ -114,7 +101,6 @@
     <string name="login_screen_open_id_button">Forbind med OpenID</string>
     <string name="source_code_on_github_title">Kildekode på GitHub</string>
     <string name="source_code_on_github_subtitle">Indrapporter problemer og foreslå forbedringer</string>
-    <string name="settings_screen_library_ordering_title">Bibliotekssortering</string>
     <string name="settings_screen_library_ordering_title_option">Titel</string>
     <string name="settings_screen_library_ordering_author_option">Forfatter</string>
     <string name="settings_screen_library_ordering_creation_date_option">Oprettelsesdato</string>
@@ -145,7 +131,6 @@
     <string name="wifi_or_cellular_settings_option">Wi-Fi eller mobildata</string>
     <string name="library_type_library">bøger</string>
     <string name="library_type_podcast">podcast</string>
-    <string name="library_type_unknown">Ukendt</string>
     <string name="settings_screen_internal_connection_url_title">Lokal serveradresse på lokal-wifi</string>
     <string name="settings_screen_internal_connection_url_description">Angiv serveradgang for hjemmenetværk</string>
     <string name="local_url_hint_ssid_name">Wi-Fi-netværksnavn</string>

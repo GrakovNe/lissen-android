@@ -1,13 +1,9 @@
 package org.grakovne.lissen.domain
 
 /**
- * Folds one sync snapshot into the offline session identified by [sessionId].
- * The first snapshot with listened time creates the row and pins its start
- * position; every later one advances the position and adds the listened time.
- * Podcast episodes are reported against the episode (the playing chapter)
- * rather than the whole feed, matching what the online sync sends. Nothing is
- * created for a snapshot with nothing listened: a paused player syncs too, and
- * an empty session is noise in the server's listening history.
+ * Folds a sync snapshot into session [sessionId]: the first listened snapshot creates the row,
+ * later ones advance it. Podcast episodes are reported per episode, as the online sync does.
+ * Nothing listened, nothing recorded.
  */
 fun accumulateOfflineSession(
   existing: OfflineSession?,

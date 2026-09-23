@@ -3,7 +3,6 @@
     <string name="library_screen_continue_listening_title">Jatka kuuntelua</string>
     <string name="player_screen_podcast_playing_title">Toistettavat jaksot</string>
     <string name="settings_screen_title">Asetukset</string>
-    <string name="player_screen_now_playing_title_item_of">Kohde %1$d / %2$s</string>
     <string name="library_screen_library_title">Kirjasto</string>
     <string name="login_screen_show_password_hint">Näytä salasana</string>
     <string name="mini_player_action_close">Sulje</string>
@@ -15,7 +14,6 @@
     <string name="login_screen_password_input">Salasana</string>
     <string name="player_screen_chapter_list_navigation_library">Luvut</string>
     <string name="player_screen_library_playing_title">Toistettavat luvut</string>
-    <string name="player_screen_items_playing_title">Toistettavat kohteet</string>
     <string name="player_screen_now_playing_title_podcast_of">Jakso %1$d / %2$s</string>
     <string name="settings_screen_connected_as_title">Yhdistettynä</string>
     <string name="settings_screen_server_connection">Palvelinyhteys</string>
@@ -49,24 +47,17 @@
     <string name="chapter_search_hint">Etsi luvun otsikolla</string>
     <string name="the_offline_podcasts_is_empty">Ei Offline-tilaan tallennettuja podcasteja</string>
     <string name="player_screen_downloads_navigation">Lataukset</string>
-    <string name="downloads_menu_download_unknown">Lataukset</string>
     <string name="downloads_menu_download_option_current_chapter">Nykyinen luku</string>
     <string name="downloads_menu_download_option_current_episode">Nykyinen jakso</string>
-    <string name="downloads_menu_download_option_entire_item">Koko kohde</string>
     <plurals name="downloads_menu_download_option_next_chapters">
         <item quantity="other">Seuraavat %1$d lukua</item>
     </plurals>
     <plurals name="downloads_menu_download_option_next_episodes">
         <item quantity="other">Seuraavat %1$d jaksoa</item>
     </plurals>
-    <plurals name="downloads_menu_download_option_next_items">
-        <item quantity="other">Seuraavat %1$d kohdetta</item>
-    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Seuraavat luvut</string>
     <string name="downloads_menu_download_option_next_episodes_label">Seuraavat jaksot</string>
-    <string name="downloads_menu_download_option_next_items_label">Seuraavat kohteet</string>
     <string name="downloads_menu_download_option_clear_episodes">Tyhjennä ladatut jaksot</string>
-    <string name="downloads_menu_download_option_clear_items">Tyhjennä ladatut kohteet</string>
     <string name="playing_item_details_author">Kirjailija</string>
     <string name="playing_item_details_publisher">Julkaisija</string>
     <string name="playing_item_details_duration">Kesto</string>
@@ -74,13 +65,11 @@
     <string name="playing_item_details_year">Vuosi</string>
     <string name="chapters_list_empty">Kirja ei sisällä lukuja</string>
     <string name="episodes_list_empty">Mikään podcast ei sisällä jaksoja</string>
-    <string name="items_list_empty">Ei saatavilla olevia kohteita</string>
     <string name="notification_content_caching_channel">Sisältövälimuisti</string>
     <string name="notification_content_caching_error_title">Välimuistiin tallennus epäonnistui</string>
     <string name="notification_content_caching_error_description">Jotkin tiedostot eivät tallentuneet</string>
     <string name="login_screen_open_id_button">Yhdistä OpenID:llä</string>
     <string name="source_code_on_github_title">Lähdekoodi GitHubissa</string>
-    <string name="settings_screen_library_ordering_title">Kirjaston järjestysperuste</string>
     <string name="settings_screen_library_ordering_title_option">Otsikko</string>
     <string name="settings_screen_library_ordering_creation_date_option">Luontipäivä</string>
     <string name="settings_screen_seek_time_title">Kelausasetukset</string>
@@ -104,7 +93,6 @@
     <string name="player_screen_timer_navigation">Ajastin</string>
     <string name="source_code_on_github_subtitle">Raportoi ongelmia tai ehdota parannuksia</string>
     <string name="downloads_menu_download_option_clear_chapters">Tyhjennä ladatut luvut</string>
-    <string name="downloads_menu_download_option_current_item">Nykyinen kohde</string>
     <string name="downloads_menu_download_podcast">Lataa podcast</string>
     <string name="downloads_menu_download_option_entire_book">Koko kirja</string>
     <string name="playing_item_details_series">Sarja</string>
@@ -116,7 +104,6 @@
     <string name="settings_screen_seek_time_hint">Määrittele kelauksen valinnat</string>
     <string name="forward_interval">Pikakelaus eteenpäin</string>
     <string name="player_screen_chapter_list_navigation_podcast">Jaksot</string>
-    <string name="player_screen_chapter_list_navigation_items">Kohteet</string>
     <string name="settings_screen_connection_type">Yhteyden tyyppi</string>
     <string name="settings_screen_connection_local">Paikallinen verkko</string>
     <string name="settings_screen_connection_external">Ulkoverkko</string>
@@ -126,7 +113,6 @@
     <string name="downloads_menu_download_option_disable">Pois</string>
     <string name="downloads_menu_download_option_remaining_chapters">Jäljellä olevat luvut</string>
     <string name="downloads_menu_download_option_remaining_episodes">Jäljellä olevat jaksot</string>
-    <string name="downloads_menu_download_option_remaining_items">Jäljellä olevat kohteet</string>
     <string name="downloads_menu_download_option_stop_downloads">Lopeta lataaminen</string>
     <string name="login_error_lissen_not_found">URL-osoitetta ei löytynyt. Tarkista palvelimen asetukset</string>
     <string name="offline_cache_is_empty">Ei vielä tallennettuja sisältöjä</string>
@@ -151,7 +137,6 @@
     <string name="wifi_or_cellular_settings_option">WiFi tai mobiilidata</string>
     <string name="library_type_library">Kirjat</string>
     <string name="library_type_podcast">Podcastit</string>
-    <string name="library_type_unknown">Tuntematon</string>
     <string name="settings_screen_internal_connection_url_title">Paikallisen palvelimen osoite</string>
     <string name="settings_screen_internal_connection_url_description">Määritä palvelinyhteys kotiverkossa</string>
     <string name="local_url_hint_ssid_name">WiFi-verkon nimi</string>

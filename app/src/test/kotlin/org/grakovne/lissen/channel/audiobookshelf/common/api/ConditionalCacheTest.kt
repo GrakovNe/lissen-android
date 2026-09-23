@@ -7,8 +7,7 @@ import org.junit.jupiter.api.Test
 class ConditionalCacheTest {
   private val cache = ConditionalCache()
 
-  // Weight under ConditionalCache.sizeOf is the element count of a top-level
-  // collection, so payloads are wrapped in a single-list holder.
+  // weight is the element count of a top-level collection
   private data class Bag(
     val items: List<String>,
   )

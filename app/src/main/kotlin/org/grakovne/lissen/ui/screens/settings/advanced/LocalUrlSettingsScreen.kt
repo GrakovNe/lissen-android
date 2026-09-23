@@ -53,13 +53,13 @@ import org.grakovne.lissen.ui.screens.common.localNetworkPermission
 import org.grakovne.lissen.ui.screens.common.locationPermission
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsInfoBanner
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
-import org.grakovne.lissen.viewmodel.SettingsViewModel
+import org.grakovne.lissen.viewmodel.ConnectionSettingsViewModel
 import kotlin.math.max
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LocalUrlSettingsScreen(onBack: () -> Unit) {
-  val settingsViewModel: SettingsViewModel = hiltViewModel()
+  val settingsViewModel: ConnectionSettingsViewModel = hiltViewModel()
   val localUrls = settingsViewModel.localUrls.collectAsState()
 
   val context = LocalContext.current

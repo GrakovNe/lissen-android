@@ -12,13 +12,10 @@
     <string name="player_screen_playback_speed_navigation">Kecepatan</string>
     <string name="player_screen_chapter_list_navigation_library">Segmen</string>
     <string name="player_screen_chapter_list_navigation_podcast">Episode</string>
-    <string name="player_screen_chapter_list_navigation_items">Item</string>
     <string name="player_screen_library_playing_title">Memutar segmen</string>
     <string name="player_screen_podcast_playing_title">Memutar episode</string>
-    <string name="player_screen_items_playing_title">Memutar item</string>
     <string name="player_screen_now_playing_title_chapter_of">Segmen %1$d dari %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">Episode %1$d dari %2$s</string>
-    <string name="player_screen_now_playing_title_item_of">Item %1$d dari %2$s</string>
     <string name="settings_screen_title">Preferensi</string>
     <string name="settings_screen_connected_as_title">Terhubung sebagai</string>
     <string name="settings_screen_server_connection">Koneksi server</string>
@@ -66,32 +63,23 @@
     <string name="player_screen_downloads_navigation">Unduhan</string>
     <string name="downloads_menu_download_book">Unduh buku</string>
     <string name="downloads_menu_download_podcast">Unduh podcast</string>
-    <string name="downloads_menu_download_unknown">Unduhan</string>
     <string name="downloads_menu_download_option_disable">Dinonaktifkan</string>
     <string name="downloads_menu_download_option_current_chapter">Segmen saat ini</string>
     <string name="downloads_menu_download_option_current_episode">Episode saat ini</string>
-    <string name="downloads_menu_download_option_current_item">Item saat ini</string>
     <string name="downloads_menu_download_option_entire_book">Seluruh buku</string>
     <string name="downloads_menu_download_option_entire_podcast">Seluruh podcast</string>
-    <string name="downloads_menu_download_option_entire_item">Seluruh item</string>
     <string name="downloads_menu_download_option_remaining_chapters">Segmen tersisa</string>
     <string name="downloads_menu_download_option_remaining_episodes">Episode tersisa</string>
-    <string name="downloads_menu_download_option_remaining_items">Item tersisa</string>
     <plurals name="downloads_menu_download_option_next_chapters">
         <item quantity="other">%d segmen berikutnya</item>
     </plurals>
     <plurals name="downloads_menu_download_option_next_episodes">
         <item quantity="other">%d episode berikutnya</item>
     </plurals>
-    <plurals name="downloads_menu_download_option_next_items">
-        <item quantity="other">%d item berikutnya</item>
-    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Segmen berikutnya</string>
     <string name="downloads_menu_download_option_next_episodes_label">Episode berikutnya</string>
-    <string name="downloads_menu_download_option_next_items_label">Item berikutnya</string>
     <string name="downloads_menu_download_option_clear_chapters">Hapus segmen terunduh</string>
     <string name="downloads_menu_download_option_clear_episodes">Hapus episode terunduh</string>
-    <string name="downloads_menu_download_option_clear_items">Hapus item terunduh</string>
     <string name="downloads_menu_download_option_stop_downloads">Batalkan unduhan</string>
     <string name="mini_player_action_close">Tutup</string>
     <string name="playing_item_details_author">Penulis</string>
@@ -103,7 +91,6 @@
     <string name="color_scheme_black">Hitam</string>
     <string name="chapters_list_empty">Buku ini tidak memiliki segmen</string>
     <string name="episodes_list_empty">Podcast ini tidak memiliki episode</string>
-    <string name="items_list_empty">Tidak ada konten tersedia</string>
     <string name="notification_content_caching_channel">Caching Konten</string>
     <string name="notification_content_caching_title">Konten sedang disimpan dalam cache</string>
     <string name="notification_content_caching_error_title">Gagal caching konten</string>
@@ -114,7 +101,6 @@
     <string name="login_screen_open_id_button">Hubungkan dengan OpenID</string>
     <string name="source_code_on_github_title">Lihat kode sumber di GitHub</string>
     <string name="source_code_on_github_subtitle">Laporkan masalah atau sarankan perbaikan</string>
-    <string name="settings_screen_library_ordering_title">Urutan koleksi</string>
     <string name="settings_screen_library_ordering_title_option">Judul</string>
     <string name="settings_screen_library_ordering_author_option">Penulis</string>
     <string name="settings_screen_library_ordering_creation_date_option">Tanggal dibuat</string>
@@ -145,7 +131,6 @@
     <string name="wifi_or_cellular_settings_option">Semua jaringan</string>
     <string name="library_type_library">Buku</string>
     <string name="library_type_podcast">Podcast</string>
-    <string name="library_type_unknown">Tidak diketahui</string>
     <string name="settings_screen_internal_connection_url_title">Alamat server jaringan lokal</string>
     <string name="settings_screen_internal_connection_url_description">Atur akses server untuk Wi-Fi rumah</string>
     <string name="local_url_hint_ssid_name">Nama jaringan Wi-Fi</string>

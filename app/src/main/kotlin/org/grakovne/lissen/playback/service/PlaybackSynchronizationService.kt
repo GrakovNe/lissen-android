@@ -124,8 +124,7 @@ class PlaybackSynchronizationService
       val chapterIndex = calculateChapterIndex(currentItem, snapshot.progress.currentTotalTime)
       val current = syncState.value
 
-      // A local session keeps retrying the server so playback moves back to a remote
-      // session as soon as it is reachable; until then the local one is kept as is.
+      // a local session keeps retrying the server to move back to a remote one
       if (current.sessionStale(currentItem.id, chapterIndex) || current.localSession != null) {
         openPlaybackSession(currentItem, snapshot.progress, chapterIndex)
       }
@@ -134,18 +133,13 @@ class PlaybackSynchronizationService
         syncSnapshot(session, currentItem, chapterIndex, snapshot)
       }
 
-      // Nothing retries the server while paused, so the offline row is handed over for
-      // upload right away instead of waiting for the next item or the service end.
+      // nothing retries while paused, so the offline row is handed over now
       if (snapshot.paused) {
         syncState.update { it.releaseLocal() }
       }
     }
 
-    /**
-     * A dead or unreachable server session is replaced. While the server is unreachable the
-     * provider answers with a local session, and the snapshot goes there right away so the
-     * offline row starts where the connection was lost.
-     */
+    /** A dead session is replaced; while the server is unreachable the local one starts where the connection was lost. */
     private suspend fun syncSnapshot(
       session: PlaybackSession,
       item: DetailedItem,

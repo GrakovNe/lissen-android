@@ -37,7 +37,7 @@ class LocalFallbackDataSourceTest {
     val localFile = writeTempFile(payload)
     val localUri = Uri.fromFile(localFile)
 
-    // open() resolves to the remote stream (not yet downloaded), the recovery resolves to the file.
+    // open() resolves to the remote stream, the recovery to the file
     every { mediaProvider.provideFileUri("book-1", "file-1") } returnsMany
       listOf(
         OperationResult.Success(remoteUri),
@@ -54,7 +54,6 @@ class LocalFallbackDataSourceTest {
 
     val read = drainFully(dataSource)
 
-    // The whole chapter is delivered without ExoPlayer ever seeing the network error.
     assertArrayEquals(payload, read)
   }
 
@@ -85,7 +84,7 @@ class LocalFallbackDataSourceTest {
 
   @Test
   fun rethrows_network_error_when_local_file_is_not_available() {
-    // The file is still not downloaded, so the recovery also resolves to the remote stream.
+    // still not downloaded: the recovery resolves to the remote stream again
     every { mediaProvider.provideFileUri("book-1", "file-1") } returns
       OperationResult.Success(remoteUri)
 
@@ -109,7 +108,7 @@ class LocalFallbackDataSourceTest {
     every { mediaProvider.provideFileUri("book-1", "file-1") } returns
       OperationResult.Success(localUri)
 
-    // Any read from this upstream blows up — it must never be used.
+    // must never be read
     val poisonedUpstream = FakeNetworkDataSource(payload, serveBeforeFailure = 0)
     val dataSource =
       LocalFallbackDataSource(
@@ -159,11 +158,7 @@ class LocalFallbackDataSourceTest {
       deleteOnExit()
     }
 
-  /**
-   * Emulates a streamed source that delivers [serveBeforeFailure] bytes of [payload] (starting at
-   * the requested [DataSpec.position]) and then fails every subsequent read with an [IOException],
-   * as a dropped network connection would.
-   */
+  /** Serves [serveBeforeFailure] bytes of [payload] and then fails every read, like a dropped connection. */
   private class FakeNetworkDataSource(
     private val payload: ByteArray,
     private val serveBeforeFailure: Int,

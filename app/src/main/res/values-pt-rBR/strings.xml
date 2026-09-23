@@ -12,13 +12,10 @@
     <string name="player_screen_playback_speed_navigation">Velocidade</string>
     <string name="player_screen_chapter_list_navigation_library">Capítulos</string>
     <string name="player_screen_chapter_list_navigation_podcast">Episódios</string>
-    <string name="player_screen_chapter_list_navigation_items">Itens</string>
     <string name="player_screen_library_playing_title">Reproduzindo capítulos</string>
     <string name="player_screen_podcast_playing_title">Reproduzindo episódios</string>
-    <string name="player_screen_items_playing_title">Reproduzindo itens</string>
     <string name="player_screen_now_playing_title_chapter_of">Capítulo %1$d de %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">Episódio %1$d de %2$s</string>
-    <string name="player_screen_now_playing_title_item_of">Item %1$d de %2$s</string>
     <string name="settings_screen_title">Preferências</string>
     <string name="settings_screen_connected_as_title">Conectado como</string>
     <string name="settings_screen_server_connection">Conexão do servidor</string>
@@ -71,32 +68,23 @@
     <string name="player_screen_downloads_navigation">Downloads</string>
     <string name="downloads_menu_download_book">Fazer download</string>
     <string name="downloads_menu_download_podcast">Fazer download</string>
-    <string name="downloads_menu_download_unknown">Downloads</string>
     <string name="downloads_menu_download_option_disable">Desativado</string>
     <string name="downloads_menu_download_option_current_chapter">Capítulo atual</string>
     <string name="downloads_menu_download_option_current_episode">Episódio atual</string>
-    <string name="downloads_menu_download_option_current_item">Item atual</string>
     <string name="downloads_menu_download_option_entire_book">Livro completo</string>
     <string name="downloads_menu_download_option_entire_podcast">Podcast completo</string>
-    <string name="downloads_menu_download_option_entire_item">Item completo</string>
     <string name="downloads_menu_download_option_remaining_chapters">Capítulos restantes</string>
     <string name="downloads_menu_download_option_remaining_episodes">Episódios restantes</string>
-    <string name="downloads_menu_download_option_remaining_items">Itens restantes</string>
     <plurals name="downloads_menu_download_option_next_chapters">
         <item quantity="other">Próximos %1$d capítulos</item>
     </plurals>
     <plurals name="downloads_menu_download_option_next_episodes">
         <item quantity="other">Próximos %1$d episódios</item>
     </plurals>
-    <plurals name="downloads_menu_download_option_next_items">
-        <item quantity="other">Próximos %1$d itens</item>
-    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Próximos capítulos</string>
     <string name="downloads_menu_download_option_next_episodes_label">Próximos episódios</string>
-    <string name="downloads_menu_download_option_next_items_label">Próximos itens</string>
     <string name="downloads_menu_download_option_clear_chapters">Excluir capítulos baixados</string>
     <string name="downloads_menu_download_option_clear_episodes">Excluir episódios baixados</string>
-    <string name="downloads_menu_download_option_clear_items">Excluir itens baixados</string>
     <string name="downloads_menu_download_option_stop_downloads">Parar download</string>
     <string name="mini_player_action_close">Fechar</string>
     <string name="playing_item_details_author">Autor</string>
@@ -108,7 +96,6 @@
     <string name="color_scheme_black">Preto</string>
     <string name="chapters_list_empty">Não há capítulos neste livro</string>
     <string name="episodes_list_empty">Não há episódios para este podcast</string>
-    <string name="items_list_empty">Não há itens disponíveis</string>
     <string name="notification_content_caching_channel">Cache de conteúdo</string>
     <string name="notification_content_caching_title">Armazenando conteúdo em cache</string>
     <string name="notification_content_caching_error_title">Erro de armazenamento em cache</string>
@@ -119,7 +106,6 @@
     <string name="login_screen_open_id_button">Entrar com OpenID</string>
     <string name="source_code_on_github_title">Código fonte no GitHub</string>
     <string name="source_code_on_github_subtitle">Relatar problemas ou sugerir melhorias</string>
-    <string name="settings_screen_library_ordering_title">Ordem da biblioteca</string>
     <string name="settings_screen_library_ordering_title_option">Título</string>
     <string name="settings_screen_library_ordering_author_option">Autor</string>
     <string name="settings_screen_library_ordering_creation_date_option">Data de criação</string>
@@ -151,7 +137,6 @@
     <string name="wifi_or_cellular_settings_option">Wi-Fi e dados móveis</string>
     <string name="library_type_library">Livros</string>
     <string name="library_type_podcast">Podcasts</string>
-    <string name="library_type_unknown">Desconhecido</string>
     <string name="settings_screen_internal_connection_url_title">Endereço do servidor na rede local</string>
     <string name="settings_screen_internal_connection_url_description">Configurar acesso ao servidor via Wi-Fi doméstica</string>
     <string name="local_url_hint_ssid_name">Nome da rede Wi-Fi</string>

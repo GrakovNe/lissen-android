@@ -3,7 +3,6 @@
     <string name="library_screen_library_title">Bibliotheek</string>
     <string name="player_screen_chapter_list_navigation_library">Hoofdstukken</string>
     <string name="settings_screen_connected_as_title">Verbonden als</string>
-    <string name="player_screen_now_playing_title_item_of">Item %1$d van %2$s</string>
     <string name="login_screen_title">Verbinden naar server</string>
     <string name="hint_server_url_input">Serveradres</string>
     <string name="login_screen_login_input">Login</string>
@@ -11,7 +10,6 @@
     <string name="login_screen_connect_button_text">Verbinden</string>
     <string name="player_screen_library_playing_title">Hoofdstukken afspelen</string>
     <string name="player_screen_podcast_playing_title">Afleveringen afspelen</string>
-    <string name="player_screen_items_playing_title">Items afspelen</string>
     <string name="player_screen_now_playing_title_chapter_of">Hoofdstuk %1$d van %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">Aflevering %1$d van %2$s</string>
     <string name="settings_screen_title">Voorkeuren</string>
@@ -57,19 +55,16 @@
     <string name="downloads_menu_download_podcast">Download podcast</string>
     <string name="downloads_menu_download_option_current_chapter">Huidig hoofdstuk</string>
     <string name="downloads_menu_download_option_current_episode">Huidige aflevering</string>
-    <string name="downloads_menu_download_option_current_item">Huidig item</string>
     <string name="downloads_menu_download_option_entire_podcast">Hele podcast</string>
     <plurals name="downloads_menu_download_option_next_chapters">
         <item quantity="other">Volgende %1$d hoofdstukken</item>
     </plurals>
     <string name="downloads_menu_download_option_clear_chapters">Wis gedownloade hoofdstukken</string>
-    <string name="downloads_menu_download_option_clear_items">Wis gedownloade items</string>
     <string name="mini_player_action_close">Sluit</string>
     <string name="playing_item_details_author">Auteur</string>
     <string name="playing_item_details_publisher">Uitgever</string>
     <string name="the_library_is_empty">De bibliotheek is leeg</string>
     <string name="player_screen_downloads_navigation">Downloads</string>
-    <string name="downloads_menu_download_unknown">Downloads</string>
     <string name="settings_screen_color_scheme_title">Kleurenschema</string>
     <string name="audiobookshelf_server_is_required">Audiobookshelf server is vereist</string>
     <string name="color_scheme_light">Licht</string>
@@ -77,29 +72,22 @@
     <string name="widget_placeholder_text">Tik om de app te openen</string>
     <string name="downloads_menu_download_book">Download boek</string>
     <string name="downloads_menu_download_option_clear_episodes">Wis gedownloade afleveringen</string>
-    <string name="downloads_menu_download_option_entire_item">Hele item</string>
     <plurals name="downloads_menu_download_option_next_episodes">
         <item quantity="other">Volgende %1$d afleveringen</item>
     </plurals>
-    <plurals name="downloads_menu_download_option_next_items">
-        <item quantity="other">Volgende %1$d items</item>
-    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Volgende hoofdstukken</string>
     <string name="downloads_menu_download_option_next_episodes_label">Volgende afleveringen</string>
-    <string name="downloads_menu_download_option_next_items_label">Volgende items</string>
     <string name="playing_item_details_year">Jaar</string>
     <string name="playing_item_details_series">Serie</string>
     <string name="color_scheme_black">Zwart</string>
     <string name="chapters_list_empty">Het boek heeft geen hoofdstukken</string>
     <string name="episodes_list_empty">Geen enkele podcast heeft geen afleveringen</string>
-    <string name="items_list_empty">Geen beschikbare items</string>
     <string name="notification_content_caching_error_title">Caching mislykkedes</string>
     <string name="notification_content_caching_error_description">Een paar bestanden zijn niet opgeslagen</string>
     <string name="playing_item_details_narrator">Verteller</string>
     <string name="playing_item_details_duration">Duur</string>
     <string name="downloads_menu_download_option_remaining_chapters">Resterende hoofdstukken</string>
     <string name="downloads_menu_download_option_remaining_episodes">Resterende afleveringen</string>
-    <string name="downloads_menu_download_option_remaining_items">Resterende items</string>
     <string name="notification_content_caching_title">Inhoud wordt gecached</string>
     <string name="login_error_lissen_auth_scheme_must_be_whitelisted">Het schema %1$s://%2$s is niet toegestaan in de omleidings-URL-instellingen van de server</string>
     <string name="login_error_lissen_auth_failed">Kan niet autoriseren. Controleer uw serverinstellingen</string>
@@ -118,7 +106,6 @@
     <string name="settings_screen_cached_items_title">Downloads</string>
     <string name="settings_screen_cached_items_hint">Opgeslagen inhoud beheren</string>
     <string name="notification_content_caching_channel">Caching van inhoud</string>
-    <string name="settings_screen_library_ordering_title">Bibliotheek sorteren</string>
     <string name="settings_screen_seek_time_hint">Zoekbediening instellen</string>
     <string name="forward_interval">Vooruitspoelinterval</string>
     <string name="player_screen_chapter_list_navigation_podcast">Afleveringen</string>
@@ -137,7 +124,6 @@
     <string name="playback_preferences_description">Volume, zoekbediening en audio</string>
     <string name="appearance_preferences_title">Uiterlijk</string>
     <string name="appearance_preferences_description">Kleurenschema, sortering en thema</string>
-    <string name="player_screen_chapter_list_navigation_items">Artikelen</string>
     <string name="library_quick_settings_filters_title">Filters</string>
     <string name="library_quick_settings_sort_title">Sorteren op</string>
     <string name="settings_screen_material_you_title">Material You-kleuren</string>
@@ -167,7 +153,6 @@
     <string name="wifi_or_cellular_settings_option">Wifi of mobiel netwerk</string>
     <string name="library_type_library">Boeken</string>
     <string name="library_type_podcast">Podcasts</string>
-    <string name="library_type_unknown">Onbekend</string>
     <string name="settings_screen_internal_connection_url_title">Adres van de lokale netwerkserver</string>
     <string name="settings_screen_internal_connection_url_description">Servertoegang voor thuis-wifi instellen</string>
     <string name="local_url_hint_ssid_name">Naam van het wifi-netwerk</string>

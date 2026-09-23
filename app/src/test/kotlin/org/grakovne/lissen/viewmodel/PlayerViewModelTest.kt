@@ -75,7 +75,7 @@ class PlayerViewModelTest {
 
     every { libraryPreferences.episodeOrderingFlow } returns MutableStateFlow(emptyMap())
 
-    viewModel = PlayerViewModel(mediaRepository, preferences, libraryPreferences)
+    viewModel = PlayerViewModel(mediaRepository, preferences, libraryPreferences, mockk(relaxed = true))
   }
 
   @AfterEach

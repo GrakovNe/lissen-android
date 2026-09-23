@@ -41,12 +41,12 @@ import org.grakovne.lissen.common.restartApplication
 import org.grakovne.lissen.common.shareFile
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsInfoBanner
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
-import org.grakovne.lissen.viewmodel.SettingsViewModel
+import org.grakovne.lissen.viewmodel.DiagnosticsSettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConfigBackupSettingsScreen(onBack: () -> Unit) {
-  val viewModel: SettingsViewModel = hiltViewModel()
+  val viewModel: DiagnosticsSettingsViewModel = hiltViewModel()
   val context = LocalContext.current
 
   var importSucceeded by remember { mutableStateOf(false) }

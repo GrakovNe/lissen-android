@@ -171,12 +171,4 @@ fun provideChapterNumberTitle(
         book?.chapters?.size ?: "?",
       )
     }
-
-    LibraryType.UNKNOWN -> {
-      context.getString(
-        R.string.player_screen_now_playing_title_item_of,
-        currentTrackIndex + 1,
-        book?.chapters?.size ?: "?",
-      )
-    }
   }

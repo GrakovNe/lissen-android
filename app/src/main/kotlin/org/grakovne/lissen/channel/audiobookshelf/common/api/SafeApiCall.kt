@@ -13,14 +13,8 @@ import kotlin.coroutines.cancellation.CancellationException
 private const val HTTP_NOT_MODIFIED = 304
 
 /**
- * The single entry point for every endpoint. A request tagged [Cacheable] is
- * revalidated on read: the [ConditionalCacheInterceptor] sends the stored weak
- * `ETag`, and here a `304 Not Modified` serves the object from [cache] while a
- * fresh `200` replaces it — but only when the response carries an `ETag`, since a
- * body without a validator could never be revalidated. If a `304` arrives after the
- * cached object was evicted, the call is transparently re-issued to the network.
- * Untagged requests take the plain path and never see a `304` (they send no validator).
- * Transport failures become [OperationResult.Error].
+ * Every endpoint goes through here. A [Cacheable] request is served from [cache] on a 304 and
+ * replaces the entry on a 200 that carries an ETag; transport failures become [OperationResult.Error].
  */
 suspend fun <T> safeApiCall(
   connection: ConnectionPreferences,
@@ -33,9 +27,7 @@ suspend fun <T> safeApiCall(
     val conditional = request.tag(Cacheable::class.java) != null
     val url = request.url.toString()
 
-    // A tagged request was revalidated, but the cached object was evicted between the
-    // interceptor sending the validator and us reading it back. Fall back to the network:
-    // the cache no longer holds a validator, so the retry goes out without If-None-Match.
+    // evicted between sending the validator and reading it back: retry without one
     val evicted = conditional && first.code() == HTTP_NOT_MODIFIED && cache.value<Any?>(url) == null
     val response = if (evicted) apiCall.invoke() else first
 
@@ -56,7 +48,7 @@ suspend fun <T> safeApiCall(
     OperationResult.Error(OperationError.NetworkError)
   } catch (e: CancellationException) {
     Timber.d("Api call was cancelled. Skipping")
-    // https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines/-coroutine-exception-handler/
+    // cancellation must propagate
     throw e
   } catch (e: Exception) {
     Timber.e("Unable to make network api call due to: $e")
@@ -82,8 +74,7 @@ private fun <T> mapResponse(
   return when {
     body != null -> {
       val etag = response.headers()["ETag"]
-      // An entry without a validator can never answer a 304, so caching it would only
-      // waste room in the LRU. Store only what can actually be revalidated.
+      // without a validator the entry could never answer a 304
       if (conditional && etag != null) cache.put(url, body, etag)
       OperationResult.Success(body)
     }

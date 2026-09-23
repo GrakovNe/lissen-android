@@ -4,10 +4,8 @@
     <string name="library_screen_continue_listening_title">متابعة الاستماع</string>
     <string name="notification_content_caching_channel">تخزين المحتوى مؤقتاً</string>
     <string name="playing_item_details_series">السلسلة</string>
-    <string name="downloads_menu_download_unknown">التنزيلات</string>
     <string name="downloads_menu_download_option_clear_chapters">مسح الفصول التي تم تنزيلها</string>
     <string name="downloads_menu_download_option_clear_episodes">مسح الحلقات التي تم تنزيلها</string>
-    <string name="downloads_menu_download_option_clear_items">مسح العناصر التي تم تنزيلها</string>
     <string name="mini_player_action_close">إغلاق</string>
     <string name="playing_item_details_author">المؤلف</string>
     <string name="source_code_on_github_title">الكود المصدري على GitHub</string>
@@ -25,7 +23,6 @@
     <string name="login_screen_show_password_hint">إظهار كلمة المرور</string>
     <string name="login_screen_password_input">كلمة المرور</string>
     <string name="player_screen_now_playing_title_podcast_of">الحلقة %1$d من %2$s</string>
-    <string name="player_screen_now_playing_title_item_of">العنصر %1$d من %2$s</string>
     <string name="login_error_credentials_are_invalid">بيانات الاعتماد غير صالحة</string>
     <string name="login_error_host_url_is_missing">رابط المضيف مفقود</string>
     <string name="login_error_host_is_down">الخادم غير متوفر</string>
@@ -47,7 +44,6 @@
     <string name="continue_playback_shortcut_description">متابعة الاستماع</string>
     <string name="login_error_lissen_auth_scheme_must_be_whitelisted">النسق %1$s://%2$s غير مسموح به في إعدادات عنوان URI لإعادة التوجيه بالخادم</string>
     <string name="login_error_lissen_auth_failed">تعذر التفويض. يرجى التحقق من إعدادات الخادم</string>
-    <string name="settings_screen_library_ordering_title">ترتيب المكتبة</string>
     <string name="settings_screen_library_ordering_title_option">العنوان</string>
     <string name="settings_screen_library_ordering_author_option">المؤلف</string>
     <string name="settings_screen_library_ordering_creation_date_option">تاريخ الإنشاء</string>
@@ -79,32 +75,24 @@
     <string name="player_screen_downloads_navigation">التنزيلات</string>
     <string name="downloads_menu_download_option_current_chapter">الفصل الحالي</string>
     <string name="downloads_menu_download_option_current_episode">الحلقة الحالية</string>
-    <string name="downloads_menu_download_option_current_item">العنصر الحالي</string>
     <string name="downloads_menu_download_option_entire_book">الكتاب بأكمله</string>
     <string name="downloads_menu_download_option_entire_podcast">البودكاست بأكمله</string>
-    <string name="downloads_menu_download_option_entire_item">العنصر بأكمله</string>
     <plurals name="downloads_menu_download_option_next_episodes">
         <item quantity="other">الحلقات %1$d التالية</item>
     </plurals>
-    <plurals name="downloads_menu_download_option_next_items">
-        <item quantity="other">العناصر %1$d التالية</item>
-    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">الفصول التالية</string>
     <string name="downloads_menu_download_option_next_episodes_label">الحلقات التالية</string>
-    <string name="downloads_menu_download_option_next_items_label">العناصر التالية</string>
     <string name="playing_item_details_publisher">الناشر</string>
     <string name="playing_item_details_narrator">الراوي</string>
     <string name="playing_item_details_duration">المدة</string>
     <string name="chapters_list_empty">الكتاب لا يحتوي على فصول</string>
     <string name="episodes_list_empty">لا يحتوي البودكاست على حلقات</string>
-    <string name="items_list_empty">لا توجد عناصر متاحة</string>
     <string name="notification_content_caching_title">يتم تخزين المحتوى مؤقتاً</string>
     <string name="notification_content_caching_error_title">فشل التخزين المؤقت</string>
     <string name="notification_content_caching_error_description">لم يتم حفظ بعض الملفات</string>
     <string name="login_screen_open_id_button">الاتصال باستخدام OpenID</string>
     <string name="settings_screen_library_ordering_modification_date_option">تاريخ التحديث</string>
     <string name="player_screen_podcast_playing_title">تشغيل الحلقات</string>
-    <string name="player_screen_items_playing_title">تشغيل العناصر</string>
     <string name="player_screen_now_playing_title_chapter_of">الفصل %1$d من %2$s</string>
     <string name="login_error_connection_error">خطأ في الاتصال</string>
     <string name="show_downloaded_content_only">التي تم تنزيلها فقط</string>
@@ -123,10 +111,8 @@
     <string name="downloads_menu_download_option_remaining_episodes">الحلقات المتبقية</string>
     <string name="settings_screen_cached_items_hint">إدارة المحتوى المحفوظ</string>
     <string name="offline_cache_is_empty">لم يتم حفظ أي محتوى</string>
-    <string name="downloads_menu_download_option_remaining_items">العناصر المتبقية</string>
     <string name="settings_screen_cached_items_title">التنزيلات</string>
     <string name="player_screen_chapter_list_navigation_podcast">الحلقات</string>
-    <string name="player_screen_chapter_list_navigation_items">العناصر</string>
     <string name="playing_item_details_time_remaining">الوقت المتبقي</string>
     <string name="settings_screen_advanced_preferences_title">متقدم</string>
     <string name="settings_screen_crash_report_description">ارسال تقارير الاعطال</string>
@@ -146,7 +132,6 @@
     <string name="wifi_or_cellular_settings_option">WiFi أو شبكة خلوية</string>
     <string name="library_type_library">كتب</string>
     <string name="library_type_podcast">بودكاست</string>
-    <string name="library_type_unknown">غير معروف</string>
     <string name="settings_screen_internal_connection_url_title">عنوان خادم الشبكة المحلية</string>
     <string name="local_url_hint_ssid_name">اسم شبكة WiFi</string>
     <string name="location_permission_request_hint">التطبيق يحتاج صلاحيات الموقع للتعرف على اسم شبكة الـWiFi</string>

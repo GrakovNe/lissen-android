@@ -47,7 +47,7 @@ import org.grakovne.lissen.ui.screens.settings.composable.DisconnectServerCompos
 import org.grakovne.lissen.ui.screens.settings.composable.ServerInfoComposable
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
-import org.grakovne.lissen.viewmodel.SettingsViewModel
+import org.grakovne.lissen.viewmodel.ConnectionSettingsViewModel
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,7 +55,7 @@ fun ConnectionSettingsScreen(
   onBack: () -> Unit,
   navController: AppNavigationService,
 ) {
-  val viewModel: SettingsViewModel = hiltViewModel()
+  val viewModel: ConnectionSettingsViewModel = hiltViewModel()
   val host by viewModel.host.collectAsState()
   val bypassSsl by viewModel.bypassSsl.collectAsState()
 

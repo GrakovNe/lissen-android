@@ -48,7 +48,7 @@ import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.slider.CommonSlider
 import org.grakovne.lissen.ui.screens.common.makeText
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItem
-import org.grakovne.lissen.viewmodel.SettingsViewModel
+import org.grakovne.lissen.viewmodel.DownloadSettingsViewModel
 import kotlin.math.roundToInt
 
 private const val OFF_VALUE = 0
@@ -58,13 +58,13 @@ private val presetButtons = listOf<Int?>(null) + presetCounts
 private val sliderLabeledIndexes = listOf(OFF_VALUE, 1) + (5..MAX_VALUE step 5)
 
 @Composable
-fun AutoCacheSettingsComposable(viewModel: SettingsViewModel) {
+fun AutoCacheSettingsComposable(
+  viewModel: DownloadSettingsViewModel,
+  libraryType: LibraryType,
+) {
   val context = LocalContext.current
   var autoCacheExpanded by remember { mutableStateOf(false) }
   val preferredDownloadOption by viewModel.preferredAutoDownloadOption.collectAsState()
-
-  val preferredLibrary by viewModel.preferredLibrary.collectAsState()
-  val libraryType = preferredLibrary?.type ?: LibraryType.LIBRARY
 
   Row(
     modifier =

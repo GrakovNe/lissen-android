@@ -12,10 +12,8 @@
     <string name="player_screen_chapter_list_navigation_library">Capitoli</string>
     <string name="player_screen_library_playing_title">Riproduzione capitoli</string>
     <string name="player_screen_podcast_playing_title">Riproduzione episodi</string>
-    <string name="player_screen_items_playing_title">Riproduzioni elementi</string>
     <string name="player_screen_now_playing_title_podcast_of">Episodio %1$d di %2$s</string>
     <string name="login_screen_title">Connetti al server</string>
-    <string name="player_screen_now_playing_title_item_of">Elemento %1$d di %2$s</string>
     <string name="settings_screen_title">Preferenze</string>
     <string name="settings_screen_connected_as_title">Connesso come</string>
     <string name="settings_screen_server_connection">Connessione server</string>
@@ -62,28 +60,20 @@
     <string name="player_screen_now_playing_title_chapter_of">Capitolo %1$d di %2$s</string>
     <string name="login_error_host_url_shall_be_https_or_http">L\'URL host deve iniziare con https:// o http://</string>
     <string name="widget_placeholder_text">Clicca per aprire l\'app</string>
-    <string name="downloads_menu_download_unknown">Download</string>
     <string name="downloads_menu_download_option_current_chapter">Capitolo attuale</string>
     <string name="downloads_menu_download_option_current_episode">Episodio attuale</string>
-    <string name="downloads_menu_download_option_current_item">Elemento attuale</string>
     <string name="downloads_menu_download_option_entire_book">Libro intero</string>
     <string name="downloads_menu_download_option_entire_podcast">Podcast intero</string>
-    <string name="downloads_menu_download_option_entire_item">Elemento intero</string>
     <plurals name="downloads_menu_download_option_next_chapters">
         <item quantity="other">Prossimi %1$d capitoli</item>
     </plurals>
     <plurals name="downloads_menu_download_option_next_episodes">
         <item quantity="other">Prossimi %1$d episodi</item>
     </plurals>
-    <plurals name="downloads_menu_download_option_next_items">
-        <item quantity="other">Prossimi %1$d elementi</item>
-    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Prossimi capitoli</string>
     <string name="downloads_menu_download_option_next_episodes_label">Prossimi episodi</string>
-    <string name="downloads_menu_download_option_next_items_label">Prossimi elementi</string>
     <string name="downloads_menu_download_option_clear_chapters">Cancella i capitoli scaricati</string>
     <string name="downloads_menu_download_option_clear_episodes">Cancella gli episodi scaricati</string>
-    <string name="downloads_menu_download_option_clear_items">Cancella gli elementi scaricati</string>
     <string name="mini_player_action_close">Chiudi</string>
     <string name="playing_item_details_author">Autore</string>
     <string name="playing_item_details_publisher">Editore</string>
@@ -91,7 +81,6 @@
     <string name="playing_item_details_series">Serie</string>
     <string name="color_scheme_black">Nero</string>
     <string name="episodes_list_empty">Nessun podcast ha episodi</string>
-    <string name="items_list_empty">Nessun elemento disponibile</string>
     <string name="chapters_list_empty">Il libro non ha capitoli</string>
     <string name="notification_content_caching_error_title">Memorizzazione nella cache non riuscita</string>
     <string name="notification_content_caching_error_description">Alcuni file non sono stati salvati</string>
@@ -105,7 +94,6 @@
     <string name="settings_screen_library_ordering_creation_date_option">Data di creazione</string>
     <string name="settings_screen_library_ordering_title_option">Titolo</string>
     <string name="settings_screen_library_ordering_author_option">Autore</string>
-    <string name="settings_screen_library_ordering_title">Ordinamento della libreria</string>
     <string name="settings_screen_library_ordering_modification_date_option">Data di aggiornamento</string>
     <string name="settings_screen_seek_time_title">Impostazioni di avanzamento</string>
     <string name="forward_interval">Intervallo di avanzamento</string>
@@ -120,7 +108,6 @@
     <string name="offline_cache_is_empty">Nessun contenuto salvato</string>
     <string name="downloads_menu_download_option_remaining_episodes">Episodi rimanenti</string>
     <string name="downloads_menu_download_option_remaining_chapters">Capitoli rimanenti</string>
-    <string name="downloads_menu_download_option_remaining_items">Elementi rimanenti</string>
     <string name="login_error_lissen_not_found">URL non trovato. Controlla le impostazioni del server</string>
     <string name="volume_boost_disabled">Disabilitato</string>
     <string name="volume_boost_title">Volume aumentato</string>
@@ -130,7 +117,6 @@
     <string name="settings_screen_crash_report_title">Segnalazione arresti anomali</string>
     <string name="settings_screen_crash_report_description">Invia segnalazioni se l\'app si arresta in modo anomalo</string>
     <string name="player_screen_chapter_list_navigation_podcast">Episodi</string>
-    <string name="player_screen_chapter_list_navigation_items">Elementi</string>
     <string name="downloads_menu_download_option_disable">Disabilitato</string>
     <string name="settings_download_automatically_title">Scarica automaticamente</string>
     <string name="download_settings_title">Download</string>
@@ -142,7 +128,6 @@
     <string name="download_settings_library_type_no_items_selected">Nessuna tipologia definita</string>
     <string name="library_type_library">Libri</string>
     <string name="library_type_podcast">Podcast</string>
-    <string name="library_type_unknown">Sconosciuti</string>
     <string name="settings_screen_internal_connection_url_title">Indirizzo server rete locale</string>
     <string name="local_url_hint_ssid_name">Nome rete WiFi</string>
     <string name="location_permission_request_hint">L\'app necessita dell\'accesso alla posizione per rilevare il nome del Wi-Fi</string>

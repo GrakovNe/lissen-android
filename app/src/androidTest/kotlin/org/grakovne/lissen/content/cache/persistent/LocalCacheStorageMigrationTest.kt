@@ -138,7 +138,6 @@ class LocalCacheStorageMigrationTest {
       assertTrue(cursor.moveToFirst())
     }
 
-    // The new table is present and usable.
     db.execSQL(
       """
       INSERT INTO cached_bookmark (id, title, libraryItemId, createdAt, totalPosition)
@@ -238,8 +237,7 @@ class LocalCacheStorageMigrationTest {
         VALUES ('book-1', 'Dune', 0, 0, 0)
         """.trimIndent(),
       )
-      // two full re-caches of the same item, both written in list order as the DAO did;
-      // the second one marks "c1" as downloaded
+      // two re-caches of the same item in list order; the second marks c1 as downloaded
       db.execSQL(
         """
         INSERT INTO book_chapters (bookChapterId, duration, start, end, title, bookId, isCached)
@@ -371,6 +369,37 @@ class LocalCacheStorageMigrationTest {
         assertEquals("book-1", cursor.getString(cursor.getColumnIndexOrThrow("libraryItemId")))
         assertEquals(45.0, cursor.getDouble(cursor.getColumnIndexOrThrow("timeListening")), 0.0)
       }
+  }
+
+  @Test
+  fun migrate23To24_rewritesUnknownLibraryTypeAsLibrary() {
+    helper.createDatabase(TEST_DB, 23).use { db ->
+      db.execSQL("INSERT INTO libraries (id, title, type) VALUES ('lib-1', 'Mixed', 'UNKNOWN')")
+      db.execSQL("INSERT INTO libraries (id, title, type) VALUES ('lib-2', 'Shows', 'PODCAST')")
+      db.execSQL(
+        """
+        INSERT INTO offline_playback_session (
+          id, libraryItemId, episodeId, libraryType,
+          displayTitle, displayAuthor, duration, startTime, currentTime, timeListening,
+          startedAt, updatedAt
+        )
+        VALUES ('s1', 'book-1', NULL, 'UNKNOWN', 'Dune', NULL, 300.0, 10.0, 55.0, 45.0, 1000, 46000)
+        """.trimIndent(),
+      )
+    }
+
+    val db = helper.runMigrationsAndValidate(TEST_DB, 24, true, MIGRATION_23_24)
+
+    db.query("SELECT id, type FROM libraries ORDER BY id").use { cursor ->
+      assertTrue(cursor.moveToFirst())
+      assertEquals("LIBRARY", cursor.getString(cursor.getColumnIndexOrThrow("type")))
+      assertTrue(cursor.moveToNext())
+      assertEquals("PODCAST", cursor.getString(cursor.getColumnIndexOrThrow("type")))
+    }
+    db.query("SELECT libraryType FROM offline_playback_session WHERE id = 's1'").use { cursor ->
+      assertTrue(cursor.moveToFirst())
+      assertEquals("LIBRARY", cursor.getString(cursor.getColumnIndexOrThrow("libraryType")))
+    }
   }
 
   companion object {

@@ -66,8 +66,7 @@ fun AppNavHost(
   imageLoader: ImageLoader,
   appLaunchAction: AppLaunchAction,
 ) {
-  // Only consumed once, when the graph is first laid out, so resolve it a single time rather
-  // than re-reading preferences on every recomposition.
+  // consumed only on the first layout, so read once
   val startDestination =
     remember {
       val book = playbackPreferences.getPlayingItem()

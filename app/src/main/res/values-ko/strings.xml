@@ -13,7 +13,6 @@
     <string name="player_screen_chapter_list_navigation_library">챕터</string>
     <string name="player_screen_library_playing_title">재생중인 챕터</string>
     <string name="player_screen_podcast_playing_title">재생중인 에피소드</string>
-    <string name="player_screen_items_playing_title">재생중인 아이템</string>
     <string name="player_screen_now_playing_title_chapter_of">챕터 %1$d / %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">에피소드 %1$d/%2$s</string>
     <string name="settings_screen_title">설정</string>
@@ -57,7 +56,6 @@
     <string name="player_screen_downloads_navigation">다운로드</string>
     <string name="downloads_menu_download_book">다운로드</string>
     <string name="downloads_menu_download_podcast">다운로드</string>
-    <string name="downloads_menu_download_unknown">다운로드</string>
     <string name="downloads_menu_download_option_current_chapter">현재 챕터</string>
     <string name="downloads_menu_download_option_current_episode">현재 에피소드</string>
     <string name="downloads_menu_download_option_entire_book">책 전체</string>
@@ -81,19 +79,10 @@
     <string name="custom_header_hint_value">값</string>
     <string name="source_code_on_github_title">GitHub 페이지</string>
     <string name="source_code_on_github_subtitle">오류 보고 또는 기능 개선 제안</string>
-    <string name="player_screen_now_playing_title_item_of">아이템 %1$d/%2$s</string>
     <string name="show_downloaded_content_only">다운로드만 보기</string>
     <string name="settings_screen_server_version">서버 버전</string>
-    <string name="downloads_menu_download_option_current_item">현재 아이템</string>
-    <string name="downloads_menu_download_option_entire_item">아이템 전체</string>
-    <string name="downloads_menu_download_option_remaining_items">남아있는 아이템</string>
-    <plurals name="downloads_menu_download_option_next_items">
-        <item quantity="other">다음 %1$d 아이템</item>
-    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">다음 챕터</string>
     <string name="downloads_menu_download_option_next_episodes_label">다음 에피소드</string>
-    <string name="downloads_menu_download_option_next_items_label">다음 아이템</string>
-    <string name="downloads_menu_download_option_clear_items">다운로드 아이템 지우기</string>
     <string name="playing_item_details_publisher">출판사</string>
     <string name="playing_item_details_narrator">낭독</string>
     <string name="playing_item_details_duration">재생시간</string>
@@ -101,12 +90,10 @@
     <string name="playing_item_details_series">시리즈</string>
     <string name="color_scheme_black">블랙</string>
     <string name="chapters_list_empty">챕터가 없습니다</string>
-    <string name="items_list_empty">아이템이 없습니다</string>
     <string name="notification_content_caching_channel">콘텐츠 캐싱</string>
     <string name="notification_content_caching_title">콘텐츠 캐싱 중</string>
     <string name="notification_content_caching_error_title">캐싱 실패</string>
     <string name="notification_content_caching_error_description">일부 파일이 저장되지 않았습니다</string>
-    <string name="settings_screen_library_ordering_title">라이브러리 정렬</string>
     <string name="settings_screen_library_ordering_title_option">제목</string>
     <string name="settings_screen_library_ordering_author_option">저자</string>
     <string name="settings_screen_library_ordering_creation_date_option">생성일</string>
@@ -121,7 +108,6 @@
     <string name="settings_screen_cached_items_title">다운로드</string>
     <string name="settings_screen_cached_items_hint">저장된 콘텐츠 관리</string>
     <string name="player_screen_chapter_list_navigation_podcast">에피소드</string>
-    <string name="player_screen_chapter_list_navigation_items">아이템</string>
     <string name="settings_screen_connection_type">연결 종류</string>
     <string name="settings_screen_connection_local">로컬 네트워크</string>
     <string name="settings_screen_connection_external">외부 네트워크</string>
@@ -145,7 +131,6 @@
     <string name="wifi_or_cellular_settings_option">WiFi 및 셀룰러 네트워크</string>
     <string name="library_type_library">오디오북</string>
     <string name="library_type_podcast">팟캐스트</string>
-    <string name="library_type_unknown">알 수 없음</string>
     <string name="settings_screen_internal_connection_url_title">로컬 네트워크 주소</string>
     <string name="settings_screen_internal_connection_url_description">홈 WiFi 서버 설정</string>
     <string name="local_url_hint_ssid_name">WiFi 네트워크 이름</string>

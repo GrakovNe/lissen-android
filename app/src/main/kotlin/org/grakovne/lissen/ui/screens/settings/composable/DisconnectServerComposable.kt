@@ -21,12 +21,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.navigation.AppNavigationService
-import org.grakovne.lissen.viewmodel.SettingsViewModel
+import org.grakovne.lissen.viewmodel.ConnectionSettingsViewModel
 
 @Composable
 fun DisconnectServerComposable(
   navController: AppNavigationService,
-  viewModel: SettingsViewModel,
+  viewModel: ConnectionSettingsViewModel,
 ) {
   var showConfirmation by remember { mutableStateOf(false) }
 

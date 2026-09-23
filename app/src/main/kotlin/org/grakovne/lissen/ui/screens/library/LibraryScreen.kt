@@ -95,9 +95,9 @@ import org.grakovne.lissen.ui.screens.library.composables.fallback.LibraryFallba
 import org.grakovne.lissen.ui.screens.library.composables.placeholder.LibraryPlaceholderComposable
 import org.grakovne.lissen.ui.screens.library.composables.placeholder.RecentBooksPlaceholderComposable
 import org.grakovne.lissen.viewmodel.CachingModelView
+import org.grakovne.lissen.viewmodel.LibrarySettingsViewModel
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
-import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
@@ -105,7 +105,7 @@ fun LibraryScreen(
   navController: AppNavigationService,
   libraryViewModel: LibraryViewModel = hiltViewModel(),
   playerViewModel: PlayerViewModel = hiltViewModel(),
-  settingsViewModel: SettingsViewModel = hiltViewModel(),
+  settingsViewModel: LibrarySettingsViewModel = hiltViewModel(),
   cachingModelView: CachingModelView = hiltViewModel(),
   imageLoader: ImageLoader,
   networkService: NetworkService,
@@ -153,7 +153,7 @@ fun LibraryScreen(
 
   fun refreshContent(showPullRefreshing: Boolean) {
     coroutineScope.launch {
-      if (settingsViewModel.hasCredentials().not()) {
+      if (libraryViewModel.hasCredentials().not()) {
         navController.showLogin()
         return@launch
       }
@@ -197,8 +197,8 @@ fun LibraryScreen(
   }
 
   LaunchedEffect(preparingError) {
-    // in force-cache mode a preparation failure just means the book is not downloaded yet;
-    // keeping it selected allows playback to recover when the policy is toggled back
+    // in force-cache mode a failed preparation only means the book is not downloaded;
+    // it stays selected so playback recovers once the policy flips back
     if (preparingError && cachingModelView.localCacheUsing().not()) {
       playerViewModel.clearPlayingBook()
     }
@@ -251,7 +251,7 @@ fun LibraryScreen(
     playerViewModel.updatePlayingItem()
     settingsViewModel.fetchLibraries()
 
-    if (settingsViewModel.hasCredentials().not()) {
+    if (libraryViewModel.hasCredentials().not()) {
       navController.showLogin()
     }
   }
@@ -270,10 +270,6 @@ fun LibraryScreen(
         libraryViewModel
           .fetchPreferredLibraryTitle()
           ?: context.getString(R.string.library_screen_podcast_title)
-      }
-
-      LibraryType.UNKNOWN -> {
-        ""
       }
     }
   }

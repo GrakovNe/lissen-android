@@ -30,13 +30,7 @@ import org.junit.jupiter.api.Test
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
-/**
- * Drives [ConditionalCache] end to end through a real Retrofit + Moshi + OkHttp stack
- * against [MockWebServer]. The `@Cacheable` tag on `fetchUserState` makes the
- * [ConditionalCacheInterceptor] revalidate it, so the `If-None-Match` / `304` handshake,
- * the "downloaded once, revalidated afterwards" guarantee and [ConditionalCache.invalidateAll]
- * are exercised rather than mocked.
- */
+/** The If-None-Match / 304 handshake through the real Retrofit stack against [MockWebServer]. */
 class ConditionalCacheIntegrationTest {
   private val server = MockWebServer()
 
@@ -175,8 +169,7 @@ class ConditionalCacheIntegrationTest {
       assertEquals(OperationResult.Success(BookmarksResponse(listOf(bookmark))), bookmarks)
       assertEquals(OperationResult.Success(state), again)
 
-      // Only the very first read transfers the body; every later read is a
-      // conditional request answered with 304, so the JSON is never re-downloaded.
+      // only the first read transfers the body
       assertNull(server.takeRequest().headers["If-None-Match"])
       assertEquals("\"v1\"", server.takeRequest().headers["If-None-Match"])
       assertEquals("\"v1\"", server.takeRequest().headers["If-None-Match"])
@@ -235,7 +228,7 @@ class ConditionalCacheIntegrationTest {
       server.enqueue(notModified("\"v1\""))
       val second = repository.fetchLibrary("lib1")
 
-      // The 304 is served from the cache: same object, and the validator went out on the wire.
+      // served from the cache, validator on the wire
       assertEquals(first, second)
       assertEquals("\"v1\"", server.takeRequest().headers["If-None-Match"])
     }

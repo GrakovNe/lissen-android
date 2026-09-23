@@ -24,16 +24,17 @@ import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.screens.player.composable.TimerComposable
-import org.grakovne.lissen.viewmodel.SettingsViewModel
+import org.grakovne.lissen.viewmodel.PlaybackSettingsViewModel
 
 @Composable
-fun DefaultTimerSettingsComposable(viewModel: SettingsViewModel) {
+fun DefaultTimerSettingsComposable(
+  viewModel: PlaybackSettingsViewModel,
+  libraryType: LibraryType,
+) {
   var timerExpanded by remember { mutableStateOf(false) }
   val defaultTimerOption by viewModel.defaultTimerOption.collectAsState()
-  val preferredLibrary by viewModel.preferredLibrary.collectAsState()
 
   val context = LocalContext.current
-  val libraryType = preferredLibrary?.type ?: LibraryType.LIBRARY
 
   val timerDescription =
     when (val opt = defaultTimerOption) {

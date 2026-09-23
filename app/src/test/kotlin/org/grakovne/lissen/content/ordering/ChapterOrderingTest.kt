@@ -95,8 +95,7 @@ class ChapterOrderingTest {
 
   @Test
   fun `canonical order is the order the previous converter produced`() {
-    // the old PodcastResponseConverter.orderEpisode: compareBy(pubDate, season.toInt(), episode.toInt()),
-    // unparseable values null and first, stable over the server order
+    // the old comparator: pubDate, season.toInt(), episode.toInt(), unparseable first
     val source =
       item(
         listOf(
@@ -154,8 +153,7 @@ class ChapterOrderingTest {
 
   @Test
   fun `a stored item that predates the ordering keys is canonical as it is`() {
-    // every chapter says index 0: the item was serialized by a version that did not know indices,
-    // and such a version only ever showed the canonical order
+    // every index 0: serialized by a version without indices, which only showed the canonical order
     val source = item(listOf(chapter("c", 0), chapter("a", 0), chapter("b", 0)))
 
     val result = ChapterOrdering.canonical(source)

@@ -41,7 +41,7 @@ import org.grakovne.lissen.ui.screens.settings.composable.SettingsInfoBanner
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
 import org.grakovne.lissen.viewmodel.CachingModelView
-import org.grakovne.lissen.viewmodel.SettingsViewModel
+import org.grakovne.lissen.viewmodel.DiagnosticsSettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,7 +50,7 @@ fun AdvancedSettingsComposable(
   navController: AppNavigationService,
 ) {
   val cachingModelView: CachingModelView = hiltViewModel()
-  val viewModel: SettingsViewModel = hiltViewModel()
+  val viewModel: DiagnosticsSettingsViewModel = hiltViewModel()
 
   val crashReporting by viewModel.crashReporting.collectAsState()
   val activityLoggingEnabled by viewModel.activityLoggingEnabled.collectAsState()
@@ -138,7 +138,7 @@ fun ActivityLoggingPreferenceBanner(modifier: Modifier = Modifier) {
 
 private fun shareLogs(
   context: Context,
-  viewModel: SettingsViewModel,
+  viewModel: DiagnosticsSettingsViewModel,
 ) {
   viewModel
     .provideLogArchive()

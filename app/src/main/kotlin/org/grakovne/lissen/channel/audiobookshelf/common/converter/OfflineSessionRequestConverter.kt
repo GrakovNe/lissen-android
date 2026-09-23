@@ -44,7 +44,7 @@ class OfflineSessionRequestConverter
     }
 
     companion object {
-      // PlayMethod.LOCAL in the Audiobookshelf server: media played from a device-side copy.
+      // PlayMethod.LOCAL on the server
       private const val PLAY_METHOD_LOCAL = 3
     }
   }

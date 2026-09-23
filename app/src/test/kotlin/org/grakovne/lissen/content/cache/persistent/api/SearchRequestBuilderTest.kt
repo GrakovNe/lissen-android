@@ -22,7 +22,6 @@ class SearchRequestBuilderTest {
   @Test
   fun `search query is wrapped in percent wildcards`() {
     val query = builder().libraryId("lib").searchQuery("hobbit").build()
-    // The pattern %hobbit% should be bound as args (not inline in SQL)
     assertTrue(query.sql.contains("LIKE ?"), "Expected LIKE ? parameter, got: ${query.sql}")
     // 4 args: libraryId + 3 LIKE patterns
     assertEquals(4, query.argCount)

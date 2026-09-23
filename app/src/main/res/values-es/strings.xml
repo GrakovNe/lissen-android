@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="player_screen_items_playing_title">Reproduciendo artículos</string>
     <string name="player_screen_now_playing_title_podcast_of">Episodio %1$d de %2$s</string>
     <string name="settings_screen_title">Preferencias</string>
     <string name="player_screen_playback_speed_navigation">Velocidad</string>
@@ -29,7 +28,6 @@
     <string name="app_crach_toast">Lamentamos el fallo de la aplicación\nLos registros se han enviado para su análisis</string>
     <string name="library_screen_continue_listening_title">Seguir escuchando</string>
     <string name="player_screen_now_playing_title_chapter_of">Capítulo %1$d de %2$s</string>
-    <string name="player_screen_now_playing_title_item_of">Artículo %1$d de %2$s</string>
     <string name="audiobookshelf_server_is_required">Se requiere el servidor de Audiobookshelf</string>
     <string name="no_internet_connection">Sin conexión a internet</string>
     <string name="color_scheme_dark">Oscuro</string>
@@ -61,25 +59,18 @@
     <string name="downloads_menu_download_podcast">Descargar pódcast</string>
     <string name="downloads_menu_download_option_current_chapter">Capítulo actual</string>
     <string name="downloads_menu_download_option_current_episode">Episodio actual</string>
-    <string name="downloads_menu_download_option_current_item">Artículo actual</string>
     <string name="downloads_menu_download_option_entire_book">Libro completo</string>
     <string name="downloads_menu_download_option_entire_podcast">Pódcast completo</string>
-    <string name="downloads_menu_download_option_entire_item">Artículo completo</string>
     <plurals name="downloads_menu_download_option_next_chapters">
         <item quantity="other">Siguientes %1$d capitulos</item>
     </plurals>
     <plurals name="downloads_menu_download_option_next_episodes">
         <item quantity="other">Siguientes %1$d episodios</item>
     </plurals>
-    <plurals name="downloads_menu_download_option_next_items">
-        <item quantity="other">Siguientes %1$d artículos</item>
-    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Siguientes capítulos</string>
     <string name="downloads_menu_download_option_next_episodes_label">Siguientes episodios</string>
-    <string name="downloads_menu_download_option_next_items_label">Siguientes artículos</string>
     <string name="downloads_menu_download_option_clear_chapters">Borrar capítulos descargados</string>
     <string name="downloads_menu_download_option_clear_episodes">Borrar episodios descargados</string>
-    <string name="downloads_menu_download_option_clear_items">Borrar artículos descargados</string>
     <string name="playing_item_details_year">Año</string>
     <string name="playing_item_details_series">Serie</string>
     <string name="color_scheme_black">Negro</string>
@@ -92,12 +83,10 @@
     <string name="login_screen_open_id_button">Conectar con OpenID</string>
     <string name="source_code_on_github_title">Código fuente en GitHub</string>
     <string name="playing_item_details_publisher">Editorial</string>
-    <string name="items_list_empty">No hay artículos disponibles</string>
     <string name="notification_content_caching_error_description">Algunos archivos no se guardaron</string>
     <string name="mini_player_action_close">Cerrar</string>
     <string name="color_scheme_follow_system">Sistema</string>
     <string name="color_scheme_light">Claro</string>
-    <string name="downloads_menu_download_unknown">Descargas</string>
     <string name="downloads_menu_download_book">Descargar libro</string>
     <string name="playing_item_details_author">Autor</string>
     <string name="episodes_list_empty">Ningún pódcast tiene episodios</string>
@@ -115,7 +104,6 @@
     <string name="rewind_interval">Rebobinar</string>
     <string name="settings_screen_library_ordering_creation_date_option">Fecha de creación</string>
     <string name="settings_screen_library_ordering_modification_date_option">Fecha de actualización</string>
-    <string name="settings_screen_library_ordering_title">Ordenar biblioteca</string>
     <string name="settings_screen_cached_items_title">Descargas</string>
     <string name="settings_screen_advanced_preferences_title">Avanzado</string>
     <string name="player_screen_chapter_list_navigation_podcast">Episodios</string>
@@ -141,9 +129,7 @@
     <string name="settings_download_automatically_title">Descargar automáticamente</string>
     <string name="download_settings_title">Descargas</string>
     <string name="download_settings_description">Descargas y gestión de contenido</string>
-    <string name="player_screen_chapter_list_navigation_items">Artículos</string>
     <string name="settings_screen_material_you_title">Colores de Material You</string>
-    <string name="downloads_menu_download_option_remaining_items">Artículos restantes</string>
     <string name="settings_screen_advanced_preferences_description">Diagnóstico, registros y otras opciones</string>
     <string name="download_settings_network_type_title">Usar para descargas automáticas</string>
     <string name="download_settings_library_type_title">Descargar automáticamente</string>
@@ -152,7 +138,6 @@
     <string name="wifi_or_cellular_settings_option">Red WiFi o móvil</string>
     <string name="library_type_library">Libros</string>
     <string name="library_type_podcast">Podcasts</string>
-    <string name="library_type_unknown">Desconocido</string>
     <string name="settings_screen_internal_connection_url_title">Dirección del servidor de red local</string>
     <string name="settings_screen_internal_connection_url_description">Define el acceso al servidor para tu Wi-Fi de casa</string>
     <string name="local_url_hint_ssid_name">Nombre de la red WiFi</string>

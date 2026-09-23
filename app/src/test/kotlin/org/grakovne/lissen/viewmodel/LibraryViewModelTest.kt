@@ -38,7 +38,7 @@ class LibraryViewModelTest {
   @BeforeEach
   fun setup() {
     Dispatchers.setMain(testDispatcher)
-    viewModel = LibraryViewModel(mediaChannel, preferences)
+    viewModel = LibraryViewModel(mediaChannel, preferences, mockk(relaxed = true))
     viewModel.dispatcher = testDispatcher
   }
 
@@ -106,15 +106,14 @@ class LibraryViewModelTest {
     }
 
     @Test
-    fun `fetchPreferredLibraryType returns UNKNOWN when no library set`() {
-      every { preferences.getPreferredLibrary() } returns null
-      assertEquals(LibraryType.UNKNOWN, viewModel.fetchPreferredLibraryType())
+    fun `fetchPreferredLibraryType delegates to preferences`() {
+      every { preferences.getPreferredLibraryType() } returns LibraryType.LIBRARY
+      assertEquals(LibraryType.LIBRARY, viewModel.fetchPreferredLibraryType())
     }
 
     @Test
-    fun `fetchPreferredLibraryType returns library type when library exists`() {
-      val library = Library(id = "lib-1", title = "Podcasts", type = LibraryType.PODCAST)
-      every { preferences.getPreferredLibrary() } returns library
+    fun `fetchPreferredLibraryType returns the stored library type`() {
+      every { preferences.getPreferredLibraryType() } returns LibraryType.PODCAST
       assertEquals(LibraryType.PODCAST, viewModel.fetchPreferredLibraryType())
     }
   }

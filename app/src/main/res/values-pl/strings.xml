@@ -12,13 +12,10 @@
     <string name="player_screen_playback_speed_navigation">Prędkość</string>
     <string name="player_screen_chapter_list_navigation_library">Rozdziały</string>
     <string name="player_screen_chapter_list_navigation_podcast">Odcinki</string>
-    <string name="player_screen_chapter_list_navigation_items">Pozycje</string>
     <string name="player_screen_library_playing_title">Odtwarzane rozdziały</string>
     <string name="player_screen_podcast_playing_title">Odtwarzane odcinki</string>
-    <string name="player_screen_items_playing_title">Odtwarzane pozycje</string>
     <string name="player_screen_now_playing_title_chapter_of">Rozdział %1$d z %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">Odcinek %1$d z %2$s</string>
-    <string name="player_screen_now_playing_title_item_of">Pozycja %1$d z %2$s</string>
     <string name="settings_screen_title">Ustawienia</string>
     <string name="settings_screen_connected_as_title">Połączone jako</string>
     <string name="settings_screen_server_connection">Połączenie z serwerem</string>
@@ -69,23 +66,17 @@
     <string name="player_screen_downloads_navigation">Pobieranie</string>
     <string name="downloads_menu_download_book">Pobieranie książki</string>
     <string name="downloads_menu_download_podcast">Pobieranie podcastu</string>
-    <string name="downloads_menu_download_unknown">Pobieranie</string>
     <string name="downloads_menu_download_option_disable">Wyłączone</string>
     <string name="downloads_menu_download_option_current_chapter">Obecny rozdział</string>
     <string name="downloads_menu_download_option_current_episode">Obecny odcinek</string>
-    <string name="downloads_menu_download_option_current_item">Obecną pozycję</string>
     <string name="downloads_menu_download_option_entire_book">Całą książkę</string>
     <string name="downloads_menu_download_option_entire_podcast">Cały podcast</string>
-    <string name="downloads_menu_download_option_entire_item">Całą pozycję</string>
     <string name="downloads_menu_download_option_remaining_chapters">Pozostałe rozdziały</string>
     <string name="downloads_menu_download_option_remaining_episodes">Pozostałe odcinki</string>
-    <string name="downloads_menu_download_option_remaining_items">Pozostałe pozycje</string>
     <string name="downloads_menu_download_option_next_chapters_label">Następne rozdziały</string>
     <string name="downloads_menu_download_option_next_episodes_label">Następne odcinki</string>
-    <string name="downloads_menu_download_option_next_items_label">Następne pozycje</string>
     <string name="downloads_menu_download_option_clear_chapters">Usuń pobrane rozdziały</string>
     <string name="downloads_menu_download_option_clear_episodes">Usuń pobrane odcinki</string>
-    <string name="downloads_menu_download_option_clear_items">Usuń pobrane pozycje</string>
     <string name="downloads_menu_download_option_stop_downloads">Zatrzymaj pobieranie</string>
     <string name="mini_player_action_close">Zamknij</string>
     <string name="playing_item_details_author">Autor</string>
@@ -97,7 +88,6 @@
     <string name="color_scheme_black">Czarny</string>
     <string name="chapters_list_empty">Książka nie ma żadnych rozdziałów</string>
     <string name="episodes_list_empty">Podcast nie ma żadnych odcinków</string>
-    <string name="items_list_empty">Brak dostępnych pozycji</string>
     <string name="notification_content_caching_channel">Pobieranie</string>
     <string name="notification_content_caching_title">Pobieranie treści</string>
     <string name="notification_content_caching_error_title">Pobieranie nieudane</string>
@@ -108,7 +98,6 @@
     <string name="login_screen_open_id_button">Połącz się z użyciem OpenID</string>
     <string name="source_code_on_github_title">Kod źródłowy na GitHubie</string>
     <string name="source_code_on_github_subtitle">Zglaszaj błędy albo sugestie</string>
-    <string name="settings_screen_library_ordering_title">Sortowanie biblioteki</string>
     <string name="settings_screen_library_ordering_title_option">Tytuł</string>
     <string name="settings_screen_library_ordering_author_option">Autor</string>
     <string name="settings_screen_library_ordering_creation_date_option">Data utworzenia</string>
@@ -139,7 +128,6 @@
     <string name="wifi_or_cellular_settings_option">WiFi albo sieć komórkowa</string>
     <string name="library_type_library">Książki</string>
     <string name="library_type_podcast">Podcasty</string>
-    <string name="library_type_unknown">Nieznana</string>
     <string name="settings_screen_internal_connection_url_title">Adres serwera w sieci lokalnej</string>
     <string name="settings_screen_internal_connection_url_description">Zdefiniuj adres serwera dla domowego WiFi</string>
     <string name="local_url_hint_ssid_name">Nazwa sieci WiFi</string>
@@ -224,12 +212,6 @@
         <item quantity="few">Następne %d odcinki</item>
         <item quantity="many">Następnych %d odcinków</item>
         <item quantity="other">Następnych %d odcinków</item>
-    </plurals>
-    <plurals name="downloads_menu_download_option_next_items">
-        <item quantity="one">Następny element</item>
-        <item quantity="few">Następne %d elementy</item>
-        <item quantity="many">Następnych %d elementów</item>
-        <item quantity="other">Następnych %d elementów</item>
     </plurals>
     <string name="downloads_menu_download_option_decrease">Zmniejsz liczbę</string>
     <string name="downloads_menu_download_option_increase">Zwiększ liczbę</string>

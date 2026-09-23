@@ -51,12 +51,12 @@ import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.slider.SeekTimeSlider
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
-import org.grakovne.lissen.viewmodel.SettingsViewModel
+import org.grakovne.lissen.viewmodel.PlaybackSettingsViewModel
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun SeekSettingsScreen(onBack: () -> Unit) {
-  val viewModel: SettingsViewModel = hiltViewModel()
+  val viewModel: PlaybackSettingsViewModel = hiltViewModel()
   val preferredSeekTime by viewModel.seekTime.collectAsState()
 
   var rewindExpanded by remember { mutableStateOf(false) }

@@ -34,16 +34,19 @@ import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.settings.advanced.AdvancedSettingsNavigationItemComposable
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
-import org.grakovne.lissen.viewmodel.SettingsViewModel
+import org.grakovne.lissen.viewmodel.DownloadSettingsViewModel
+import org.grakovne.lissen.viewmodel.LibrarySettingsViewModel
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun CacheSettingsScreen(
   onBack: () -> Unit,
   navController: AppNavigationService,
-  viewModel: SettingsViewModel = hiltViewModel(),
+  viewModel: DownloadSettingsViewModel = hiltViewModel(),
+  librarySettingsViewModel: LibrarySettingsViewModel = hiltViewModel(),
 ) {
   val preferredDownloadOption by viewModel.preferredAutoDownloadOption.collectAsState()
+  val libraryType by librarySettingsViewModel.preferredLibraryType.collectAsState()
   val autoDownloadDelayed by viewModel.autoDownloadDelayed.collectAsState()
 
   Scaffold(
@@ -74,7 +77,7 @@ fun CacheSettingsScreen(
               .verticalScroll(rememberScrollState()),
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-          AutoCacheSettingsComposable(viewModel)
+          AutoCacheSettingsComposable(viewModel, libraryType = libraryType)
 
           NetworkTypeAutoCacheSettingsComposable(viewModel, preferredDownloadOption != null)
 

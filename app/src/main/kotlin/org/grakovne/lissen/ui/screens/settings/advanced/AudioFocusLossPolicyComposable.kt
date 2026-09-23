@@ -24,10 +24,10 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.common.AudioFocusLossPolicy
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItem
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItemComposable
-import org.grakovne.lissen.viewmodel.SettingsViewModel
+import org.grakovne.lissen.viewmodel.PlaybackSettingsViewModel
 
 @Composable
-fun AudioFocusLossPolicyComposable(viewModel: SettingsViewModel) {
+fun AudioFocusLossPolicyComposable(viewModel: PlaybackSettingsViewModel) {
   val context = LocalContext.current
   var expanded by remember { mutableStateOf(false) }
   val policy by viewModel.audioFocusLossPolicy.collectAsState()

@@ -45,8 +45,7 @@ fun LibrarySearchActionComposable(
     onSearchRequested(searchText.value)
   }
 
-  // Linked search arrives pre-filled, so the user is reading results, not typing — don't
-  // grab focus / pop the keyboard in that case. They can still tap the field to edit.
+  // a linked search arrives pre-filled: reading, not typing, so no focus and no keyboard
   LaunchedEffect(autoFocus) {
     if (autoFocus) {
       focusRequester.requestFocus()

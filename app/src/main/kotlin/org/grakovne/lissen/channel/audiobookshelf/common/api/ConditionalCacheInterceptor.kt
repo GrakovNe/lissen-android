@@ -4,11 +4,7 @@ import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
 
-/**
- * Adds `If-None-Match` to requests tagged [Cacheable] when [ConditionalCache] holds a
- * validator for the URL, turning them into revalidate-on-read conditional `GET`s.
- * Untagged requests pass through untouched.
- */
+/** Adds If-None-Match to [Cacheable] requests whose URL has a stored validator. */
 class ConditionalCacheInterceptor(
   private val cache: ConditionalCache,
 ) : Interceptor {

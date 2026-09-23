@@ -81,15 +81,6 @@ class AccumulateOfflineSessionTest {
   }
 
   @Test
-  fun `an unknown library type is reported over the whole item`() {
-    val session = accumulate(libraryType = LibraryType.UNKNOWN)!!
-
-    assertNull(session.episodeId)
-    assertEquals(LibraryType.UNKNOWN, session.libraryType)
-    assertEquals(150.0, session.currentTime)
-  }
-
-  @Test
   fun `podcast without a chapter at the index falls back to the whole item`() {
     val session = accumulate(libraryType = LibraryType.PODCAST, chapterIndex = 5)!!
 

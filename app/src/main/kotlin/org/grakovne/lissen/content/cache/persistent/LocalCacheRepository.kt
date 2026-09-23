@@ -40,10 +40,7 @@ class LocalCacheRepository
         .provideFileUri(libraryItemId, fileId)
         .takeIf { it.toFile().exists() }
 
-    /**
-     * For the local cache we're avoiding to create intermediary entity like Session and using BookId
-     * as a Playback Session Key
-     */
+    /** The book id doubles as the session key: the cache has no session entity. */
     suspend fun syncProgress(
       detailedItem: DetailedItem,
       progress: PlaybackProgress,
@@ -211,11 +208,7 @@ class LocalCacheRepository
 
     suspend fun fetchLatestUpdate(libraryId: String) = cachedBookRepository.fetchLatestUpdate(libraryId)
 
-    /**
-     * Fetches a detailed book item by its ID from the cache, in the canonical order, or `null`
-     * when it is not cached. Moving the progress onto an available chapter is the provider's
-     * job (`LissenMediaProvider.moveToAvailableChapter`), after the user's order is applied.
-     */
+    /** Canonical order; moving the progress onto an available chapter is the provider's job. */
     suspend fun fetchBook(bookId: String): DetailedItem? = cachedBookRepository.fetchBook(bookId)
 
     suspend fun fetchBookmarks(libraryItemId: String) =

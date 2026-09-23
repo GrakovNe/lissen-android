@@ -72,7 +72,6 @@ class LissenDataSourceFactoryIntegrationTest {
   fun unapply_returns_null_for_lissen_uri_with_three_segments() {
     val uri = Uri.parse("lissen://host/book1/file1/extra")
     val result = parseLissenUri(uri)
-    // 3 segments → null
     assertNull(result)
   }
 

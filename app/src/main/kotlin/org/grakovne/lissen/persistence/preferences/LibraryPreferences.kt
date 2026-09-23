@@ -18,7 +18,7 @@ class LibraryPreferences
     private val store: SecurePreferenceStore,
   ) {
     val preferredLibraryTypeFlow: Flow<LibraryType> =
-      store.asFlow(KEY_PREFERRED_LIBRARY_TYPE) { getPreferredLibrary()?.type ?: LibraryType.UNKNOWN }
+      store.asFlow(KEY_PREFERRED_LIBRARY_TYPE, ::getPreferredLibraryType)
     val hideCompletedFlow: Flow<Boolean> = store.asFlow(KEY_HIDE_COMPLETED, ::getHideCompleted)
     val libraryGroupingFlow: Flow<LibraryGrouping> = store.asFlow(KEY_LIBRARY_GROUPING, ::getLibraryGrouping)
     val forceCacheFlow: Flow<Boolean> = store.asFlow(CACHE_FORCE_ENABLED, ::isForceCache)
@@ -70,10 +70,7 @@ class LibraryPreferences
       store.putString(KEY_EPISODE_ORDERING, episodeOrderingAdapter.toJson(updated))
     }
 
-    /**
-     * Entries are parsed one by one so that a single unreadable value (say, an option this
-     * build does not know) drops only itself instead of every podcast's choice on the next save.
-     */
+    /** Parsed entry by entry, so one unreadable value drops only itself. */
     private fun getEpisodeOrderings(): Map<String, EpisodeOrderingConfiguration> {
       val json = store.getString(KEY_EPISODE_ORDERING) ?: return emptyMap()
       val entries = runCatching { rawEpisodeOrderingAdapter.fromJson(json) }.getOrNull() ?: return emptyMap()
@@ -117,7 +114,7 @@ class LibraryPreferences
 
     private fun getPreferredLibraryName(): String? = store.getString(KEY_PREFERRED_LIBRARY_NAME)
 
-    private fun getPreferredLibraryType(): LibraryType =
+    fun getPreferredLibraryType(): LibraryType =
       store
         .getString(KEY_PREFERRED_LIBRARY_TYPE)
         ?.let { runCatching { LibraryType.valueOf(it) }.getOrNull() }

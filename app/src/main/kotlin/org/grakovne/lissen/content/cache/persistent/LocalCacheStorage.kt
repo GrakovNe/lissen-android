@@ -24,7 +24,7 @@ import org.grakovne.lissen.content.cache.persistent.entity.OfflineSessionEntity
     CachedBookmarkEntity::class,
     OfflineSessionEntity::class,
   ],
-  version = 23,
+  version = 24,
   exportSchema = true,
 )
 abstract class LocalCacheStorage : RoomDatabase() {

@@ -26,17 +26,12 @@ class AudiobookshelfChannelProvider
       when (resolveLibraryType(libraryType)) {
         LibraryType.LIBRARY -> libraryAudiobookshelfChannel
         LibraryType.PODCAST -> podcastAudiobookshelfChannel
-        LibraryType.UNKNOWN -> libraryAudiobookshelfChannel
       }
 
     override fun provideChannelAuth(): ChannelAuthService = audiobookshelfAuthService
 
-    /** An item that does not know its library type is taken to belong to the active library. */
+    /** An item without a library type belongs to the active library. */
     fun resolveLibraryType(libraryType: LibraryType?): LibraryType = libraryType ?: activeLibraryType()
 
-    private fun activeLibraryType(): LibraryType =
-      sharedPreferences
-        .getPreferredLibrary()
-        ?.type
-        ?: LibraryType.UNKNOWN
+    private fun activeLibraryType(): LibraryType = sharedPreferences.getPreferredLibraryType()
   }

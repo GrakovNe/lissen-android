@@ -307,12 +307,7 @@ class AudioBookshelfRepository
           }
         }
 
-    /**
-     * Streams the response body to a temp file instead of buffering it in the
-     * Java heap: heap usage stays at a single chunk regardless of body size.
-     * The only limit is free disk space, so even very large covers pass
-     * through while infinite or corrupt streams cannot fill the partition.
-     */
+    /** Streamed to a temp file: the heap holds one chunk, only disk space bounds the body. */
     private fun writeBounded(
       body: ResponseBody,
       description: String,
@@ -323,8 +318,7 @@ class AudioBookshelfRepository
         return OperationResult.Error(OperationError.InternalError, "not enough disk space")
       }
 
-      // Creation is inside the try: a full or unwritable cacheDir surfaces as an
-      // OperationResult instead of an IOException escaping to the caller.
+      // created inside the try, so a full cacheDir becomes an OperationResult
       var dest: File? = null
 
       return try {

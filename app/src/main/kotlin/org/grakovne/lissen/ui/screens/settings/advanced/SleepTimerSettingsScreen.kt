@@ -40,27 +40,34 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.SleepTimerSettings
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.slider.CommonSlider
 import org.grakovne.lissen.ui.screens.settings.composable.DefaultTimerSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
-import org.grakovne.lissen.viewmodel.SettingsViewModel
+import org.grakovne.lissen.viewmodel.LibrarySettingsViewModel
+import org.grakovne.lissen.viewmodel.PlaybackSettingsViewModel
 import kotlin.math.roundToInt
 
 @Composable
 fun SleepTimerSettingsScreen(onBack: () -> Unit) {
-  val viewModel: SettingsViewModel = hiltViewModel()
+  val viewModel: PlaybackSettingsViewModel = hiltViewModel()
+  val librarySettingsViewModel: LibrarySettingsViewModel = hiltViewModel()
+  val libraryType by librarySettingsViewModel.preferredLibraryType.collectAsState()
+
   SleepTimerSettingsScreenContent(
     viewModel = viewModel,
+    libraryType = libraryType,
     onBack = onBack,
   )
 }
 
 @Composable
 internal fun SleepTimerSettingsScreenContent(
-  viewModel: SettingsViewModel,
+  viewModel: PlaybackSettingsViewModel,
+  libraryType: LibraryType,
   onBack: () -> Unit,
 ) {
   val fadeEnabled by viewModel.sleepTimerFadeEnabled.collectAsState()
@@ -100,7 +107,7 @@ internal fun SleepTimerSettingsScreenContent(
           onClicked = { durationExpanded = true },
         )
 
-        DefaultTimerSettingsComposable(viewModel)
+        DefaultTimerSettingsComposable(viewModel, libraryType)
       }
     },
   )

@@ -25,11 +25,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-/**
- * Wires the real event bus and the fade service together, with the player volume backed
- * by a mutable field and the play state backed by [isPlaying]. Virtual time drives the
- * ramp: time is advanced in [STEP_MILLIS] increments so every volume write is observed.
- */
+/** Real bus and fade service; virtual time advances in [STEP_MILLIS] so every volume write is seen. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class SleepTimerFadeServiceTest {
   private val player = mockk<ExoPlayer>(relaxed = true)
@@ -108,8 +104,7 @@ class SleepTimerFadeServiceTest {
           runCurrent()
 
           if (second == 3) {
-            // a fade of a fixed short length would already be silent here for every
-            // configured N > 6; a fade that really lasts N seconds is still audible
+            // a fixed short fade would already be silent here for every N > 6
             assertTrue(playerVolume > 0f, "the fade finished earlier than $fadeSeconds s before the pause")
           }
         }
@@ -135,8 +130,7 @@ class SleepTimerFadeServiceTest {
       runCurrent()
       assertEquals(0f, playerVolume, "volume must be zero at the moment of the pause")
 
-      // playback is still running: nothing may be heard at the original volume until it stops,
-      // not even a cancellation event that trails the expiry may bring the volume back
+      // still playing: not even a trailing cancellation may bring the volume back
       bus.emit(PlaybackEvent.TimerCancelled)
       advanceUntilIdle()
       assertEquals(0f, playerVolume, "volume must stay zero until playback stops")

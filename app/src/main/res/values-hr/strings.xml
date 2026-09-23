@@ -13,10 +13,8 @@
     <string name="player_screen_chapter_list_navigation_library">Poglavlja</string>
     <string name="player_screen_library_playing_title">Trenutna poglavlja</string>
     <string name="player_screen_podcast_playing_title">Reproduciranje epizoda</string>
-    <string name="player_screen_items_playing_title">Sljedeći elementi</string>
     <string name="player_screen_now_playing_title_chapter_of">Poglavlje %1$d od %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">Epizoda %1$d od %2$s</string>
-    <string name="player_screen_now_playing_title_item_of">Stavka %1$d od %2$s</string>
     <string name="settings_screen_title">Postavke</string>
     <string name="settings_screen_connected_as_title">Spojen kao</string>
     <string name="settings_screen_server_connection">Veza s poslužiteljem</string>
@@ -63,16 +61,12 @@
     <string name="player_screen_downloads_navigation">Preuzimanja</string>
     <string name="downloads_menu_download_book">Preuzmi knjigu</string>
     <string name="downloads_menu_download_podcast">Preuzmi podcast</string>
-    <string name="downloads_menu_download_unknown">Preuzimanja</string>
     <string name="downloads_menu_download_option_current_chapter">Trenutno poglavlje</string>
     <string name="downloads_menu_download_option_current_episode">Trenutna epizoda</string>
-    <string name="downloads_menu_download_option_current_item">Trenutna stavka</string>
     <string name="downloads_menu_download_option_entire_book">Cijela knjiga</string>
     <string name="downloads_menu_download_option_entire_podcast">Sve epizode</string>
-    <string name="downloads_menu_download_option_entire_item">Svi elementi</string>
     <string name="downloads_menu_download_option_remaining_chapters">Preostala poglavlja</string>
     <string name="downloads_menu_download_option_remaining_episodes">Preostale epizode</string>
-    <string name="downloads_menu_download_option_remaining_items">Preostali elementi</string>
     <plurals name="downloads_menu_download_option_next_chapters">
         <item quantity="one">Sljedeće %d poglavlje</item>
         <item quantity="few">Sljedećeih %d poglavlja</item>
@@ -83,17 +77,10 @@
         <item quantity="few">Sljedećih %d epizoda</item>
         <item quantity="other">Sljedećih %d epizoda</item>
     </plurals>
-    <plurals name="downloads_menu_download_option_next_items">
-        <item quantity="one">Sljedeća %d stavka</item>
-        <item quantity="few">Sljedeće %d stavke</item>
-        <item quantity="other">Sljedećih %d stavki</item>
-    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Sljedeća poglavlja</string>
     <string name="downloads_menu_download_option_next_episodes_label">Sljedeće epizode</string>
-    <string name="downloads_menu_download_option_next_items_label">Sljedeće stavke</string>
     <string name="downloads_menu_download_option_clear_chapters">Obriši preuzeta poglavlja</string>
     <string name="downloads_menu_download_option_clear_episodes">Obriši preuzete epizode</string>
-    <string name="downloads_menu_download_option_clear_items">Obriši preuzete stavke</string>
     <string name="mini_player_action_close">Zatvori</string>
     <string name="playing_item_details_author">Autor</string>
     <string name="playing_item_details_publisher">Izdavač</string>
@@ -104,7 +91,6 @@
     <string name="color_scheme_black">Crna</string>
     <string name="chapters_list_empty">Knjiga nema poglavlja</string>
     <string name="episodes_list_empty">Podcast nema epizoda</string>
-    <string name="items_list_empty">Nema dostupnih stavki</string>
     <string name="notification_content_caching_channel">Predmemoriranje sadržaja</string>
     <string name="notification_content_caching_title">Sadržaj se sprema</string>
     <string name="notification_content_caching_error_title">Neuspješno predmemoriranje</string>
@@ -114,7 +100,6 @@
     <string name="login_screen_open_id_button">Poveži se s OpenID-jem</string>
     <string name="source_code_on_github_title">Izvorni kod na GitHubu</string>
     <string name="source_code_on_github_subtitle">Prijavi greške ili predloži poboljšanja</string>
-    <string name="settings_screen_library_ordering_title">Sortiranje knjižnice</string>
     <string name="settings_screen_library_ordering_title_option">Naslov</string>
     <string name="settings_screen_library_ordering_author_option">Autor</string>
     <string name="settings_screen_library_ordering_creation_date_option">Datum stvaranja</string>
@@ -128,7 +113,6 @@
     <string name="offline_cache_is_empty">Nema spremljenog sadržaja</string>
     <string name="settings_screen_cached_items_title">Preuzimanja</string>
     <string name="settings_screen_cached_items_hint">Upravljaj spremljenim sadržajem</string>
-    <string name="player_screen_chapter_list_navigation_items">Stavke</string>
     <string name="settings_screen_connection_type">Vrsta veze</string>
     <string name="settings_screen_connection_local">Lokalna mreža</string>
     <string name="settings_screen_connection_external">Vanjska mreža</string>
@@ -149,7 +133,6 @@
     <string name="wifi_or_cellular_settings_option">WiFi ili mobilna mreža</string>
     <string name="library_type_library">Knjige</string>
     <string name="library_type_podcast">Podcasti</string>
-    <string name="library_type_unknown">Nepoznato</string>
     <string name="settings_screen_internal_connection_url_title">Adresa lokalnog mrežnog poslužitelja</string>
     <string name="settings_screen_internal_connection_url_description">Definiranje pristupa poslužitelju za kućni Wi-Fi</string>
     <string name="location_permission_request_hint">Aplikaciji je potreban pristup lokaciji kako bi otkrila naziv Wi-Fi mreže</string>

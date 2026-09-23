@@ -24,18 +24,18 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItem
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsMultiItemComposable
-import org.grakovne.lissen.viewmodel.SettingsViewModel
+import org.grakovne.lissen.viewmodel.DownloadSettingsViewModel
 
 @Composable
 fun LibraryTypeAutoCacheSettingsComposable(
-  viewModel: SettingsViewModel,
+  viewModel: DownloadSettingsViewModel,
   enabled: Boolean,
 ) {
   val context = LocalContext.current
   var libraryTypeExpanded by remember { mutableStateOf(false) }
   val preferredDownloadOption by viewModel.preferredAutoDownloadOption.collectAsState()
   val preferredLibraryTypes by viewModel.preferredAutoDownloadLibraryTypes.collectAsState()
-  val libraryTypesState = LibraryType.meaningfulTypes.map { it to preferredLibraryTypes.contains(it) }
+  val libraryTypesState = LibraryType.entries.map { it to preferredLibraryTypes.contains(it) }
 
   Row(
     modifier =
@@ -96,7 +96,6 @@ private fun LibraryType.toItem(context: Context): CommonSettingsItem {
     when (this) {
       LibraryType.LIBRARY -> context.getString(R.string.library_type_library)
       LibraryType.PODCAST -> context.getString(R.string.library_type_podcast)
-      LibraryType.UNKNOWN -> context.getString(R.string.library_type_unknown)
     }
 
   return CommonSettingsItem(id, name, null)

@@ -12,14 +12,9 @@ import org.grakovne.lissen.playback.service.PlaybackService
 import javax.inject.Inject
 
 /**
- * Every test gets its own Hilt graph, but [PlaybackService] is an Android component that lives
- * as long as something is bound to it: the service created by one test keeps that test's
- * [org.grakovne.lissen.playback.PlaybackEventBus], so the next test's [MediaRepository] would
- * never hear its `PlaybackReady`. Unbinding this graph's controller lets `stopService` actually
- * destroy it, and the wait makes sure the next test starts against a fresh one.
- *
- * The graph's playback [Cache] locks its folder for as long as it is alive; releasing it once
- * the service is gone lets the next graph open the same folder.
+ * The service outlives a test's Hilt graph while a controller is bound, and would keep that
+ * graph's event bus; unbinding lets stopService destroy it. The cache locks its folder for as
+ * long as it is alive.
  */
 @UnstableApi
 class PlaybackGraphTeardown
