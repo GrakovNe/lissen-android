@@ -38,7 +38,7 @@ class EqualizerSettingsComposableTest {
       BandInfo(centerFreqHz = 14000, upperFreqHz = 20000),
     )
 
-  private val capabilities = EqualizerCapabilities(bands = bands, minDb = -6, maxDb = 6)
+  private val capabilities = EqualizerCapabilities.Available(bands = bands, minDb = -6, maxDb = 6)
 
   private fun bandDescription(freq: String): String = context.getString(R.string.a11y_equalizer_band, freq)
 

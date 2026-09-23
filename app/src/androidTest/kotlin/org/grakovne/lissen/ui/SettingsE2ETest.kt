@@ -24,6 +24,7 @@ import org.grakovne.lissen.domain.EqualizerSettings
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.persistence.preferences.PreferencesReset
 import org.grakovne.lissen.playback.EqualizerBandProvider
+import org.grakovne.lissen.playback.EqualizerCapabilities
 import org.grakovne.lissen.ui.activity.AppActivity
 import org.junit.Assume.assumeTrue
 import org.junit.Rule
@@ -149,7 +150,7 @@ class SettingsE2ETest {
   // DynamicsProcessing effect (some emulator images); that is the app working as designed, not a failure
   private fun assumeEqualizerAvailable() {
     val capabilities = runBlocking { equalizerBandProvider.getCapabilities() }
-    assumeTrue("equalizer effect unavailable on this device", capabilities.available)
+    assumeTrue("equalizer effect unavailable on this device", capabilities is EqualizerCapabilities.Available)
   }
 
   @Test

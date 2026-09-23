@@ -2,7 +2,6 @@ package org.grakovne.lissen.playback
 
 import android.content.Context
 import android.media.AudioManager
-import android.media.audiofx.DynamicsProcessing
 import android.media.audiofx.Equalizer
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -20,17 +19,14 @@ data class BandInfo(
   val upperFreqHz: Int,
 )
 
-data class EqualizerCapabilities(
-  val bands: List<BandInfo>,
-  val minDb: Int,
-  val maxDb: Int,
-) {
-  val available: Boolean
-    get() = bands.isNotEmpty()
+sealed interface EqualizerCapabilities {
+  data object Unavailable : EqualizerCapabilities
 
-  companion object {
-    val Unavailable = EqualizerCapabilities(bands = emptyList(), minDb = 0, maxDb = 0)
-  }
+  data class Available(
+    val bands: List<BandInfo>,
+    val minDb: Int,
+    val maxDb: Int,
+  ) : EqualizerCapabilities
 }
 
 @Singleton
@@ -40,54 +36,51 @@ class EqualizerBandProvider
     @ApplicationContext private val context: Context,
   ) {
     private val mutex = Mutex()
-    private var cached: EqualizerCapabilities? = null
+    private var cached: EqualizerCapabilities.Available? = null
 
     // a failed probe is not cached: AudioFlinger may refuse an effect momentarily, and the
     // equalizer should come back on the next attempt rather than stay hidden for the process
     suspend fun getCapabilities(): EqualizerCapabilities =
       mutex.withLock {
-        cached ?: probeCapabilities().also { if (it.available) cached = it }
+        cached ?: probeCapabilities().also { cached = it as? EqualizerCapabilities.Available }
       }
 
     // the band layout and the gain range come from the platform equalizer, the audio itself is
-    // shaped by DynamicsProcessing (see PlaybackEnhancerService), so both effects must exist
+    // shaped by DynamicsProcessing, so both effects must exist on this device
     private suspend fun probeCapabilities(): EqualizerCapabilities =
       withContext(Dispatchers.IO) {
-        var equalizer: Equalizer? = null
-        var processing: DynamicsProcessing? = null
-
         try {
           val audioManager = requireNotNull(context.getSystemService(AudioManager::class.java))
           val sessionId = audioManager.generateAudioSessionId()
           check(sessionId != AudioManager.ERROR)
 
-          equalizer = Equalizer(0, sessionId)
-          val range = equalizer.bandLevelRange
-          val bands =
-            (0 until equalizer.numberOfBands.toInt())
-              .map { band ->
-                BandInfo(
-                  centerFreqHz = equalizer.getCenterFreq(band.toShort()) / 1000,
-                  upperFreqHz = equalizer.getBandFreqRange(band.toShort())[1] / 1000,
-                )
-              }
-
-          val capabilities =
-            EqualizerCapabilities(
-              bands = bands,
-              minDb = range[0] / 100,
-              maxDb = range[1] / 100,
-            )
-
-          processing = equalizerProcessing(sessionId, capabilities)
-
-          capabilities
+          Equalizer(0, sessionId).use { equalizer ->
+            equalizer.capabilities().also { DynamicsProcessingEqualizer(sessionId, it).close() }
+          }
         } catch (ex: Exception) {
           Timber.e("Unable to probe equalizer capabilities due to ${ex.message}")
           EqualizerCapabilities.Unavailable
-        } finally {
-          runCatching { processing?.release() }
-          runCatching { equalizer?.release() }
         }
+      }
+
+    private fun Equalizer.capabilities(): EqualizerCapabilities.Available =
+      EqualizerCapabilities.Available(
+        bands =
+          (0 until numberOfBands.toInt())
+            .map { band ->
+              BandInfo(
+                centerFreqHz = getCenterFreq(band.toShort()) / 1000,
+                upperFreqHz = getBandFreqRange(band.toShort())[1] / 1000,
+              )
+            },
+        minDb = bandLevelRange[0] / 100,
+        maxDb = bandLevelRange[1] / 100,
+      )
+
+    private inline fun <R> Equalizer.use(block: (Equalizer) -> R): R =
+      try {
+        block(this)
+      } finally {
+        runCatching { release() }
       }
   }

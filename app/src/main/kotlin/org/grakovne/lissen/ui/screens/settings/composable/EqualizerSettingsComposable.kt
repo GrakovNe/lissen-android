@@ -56,8 +56,7 @@ fun EqualizerSettingsComposable(viewModel: SettingsViewModel) {
   )
 
   if (equalizerExpanded) {
-    capabilities
-      ?.takeIf { it.available }
+    (capabilities as? EqualizerCapabilities.Available)
       ?.let { deviceCapabilities ->
         LissenModalBottomSheet(
           containerColor = colorScheme.background,
@@ -83,7 +82,7 @@ internal fun EqualizerSettingsRow(
   active: Boolean,
   onClick: () -> Unit,
 ) {
-  if (capabilities?.available != true) return
+  if (capabilities !is EqualizerCapabilities.Available) return
 
   Row(
     modifier =
@@ -114,7 +113,7 @@ internal fun EqualizerSettingsRow(
 @Composable
 internal fun EqualizerSettingsContent(
   settings: EqualizerSettings,
-  capabilities: EqualizerCapabilities,
+  capabilities: EqualizerCapabilities.Available,
   onGainChange: (Int, Int) -> Unit,
   onReset: () -> Unit,
   modifier: Modifier = Modifier,
