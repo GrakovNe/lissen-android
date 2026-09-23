@@ -62,7 +62,6 @@ fun LibraryFallbackComposable(
             when (libraryViewModel.fetchPreferredLibraryType()) {
               LibraryType.PODCAST -> stringResource(R.string.the_offline_podcasts_is_empty)
               LibraryType.LIBRARY -> stringResource(R.string.the_offline_library_is_empty)
-              else -> null
             }
           }
 
