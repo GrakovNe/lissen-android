@@ -12,13 +12,10 @@
     <string name="player_screen_playback_speed_navigation">מהירות</string>
     <string name="player_screen_chapter_list_navigation_library">‏פרקים</string>
     <string name="player_screen_chapter_list_navigation_podcast">פרקים</string>
-    <string name="player_screen_chapter_list_navigation_items">פריטים</string>
     <string name="player_screen_library_playing_title">פרקים מתנגנים</string>
     <string name="player_screen_podcast_playing_title">פרקים מתנגנים</string>
-    <string name="player_screen_items_playing_title">פריטים מתנגנים</string>
     <string name="player_screen_now_playing_title_chapter_of">פרק %1$d מתוך %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">פרק %1$d מתוך %2$s</string>
-    <string name="player_screen_now_playing_title_item_of">פריט %1$d מתוך %2$s</string>
     <string name="settings_screen_title">העדפות</string>
     <string name="settings_screen_connected_as_title">מחובר בתור</string>
     <string name="settings_screen_server_connection">חיבור שרת</string>
@@ -63,29 +60,21 @@
     <string name="player_screen_downloads_navigation">הורדות</string>
     <string name="downloads_menu_download_book">הורד ספר</string>
     <string name="downloads_menu_download_podcast">הורד פודקאסט</string>
-    <string name="downloads_menu_download_unknown">הורדות</string>
     <string name="downloads_menu_download_option_disable">כבוי</string>
     <string name="downloads_menu_download_option_current_chapter">פרק נוכחי</string>
     <string name="downloads_menu_download_option_current_episode">פרק נוכחי</string>
-    <string name="downloads_menu_download_option_current_item">פריט נוכחי</string>
     <string name="downloads_menu_download_option_entire_book">ספר מלא</string>
     <string name="downloads_menu_download_option_entire_podcast">פודקאסט מלא</string>
-    <string name="downloads_menu_download_option_entire_item">פריט מלא</string>
     <string name="downloads_menu_download_option_remaining_chapters">פרקים שנותרו</string>
     <string name="downloads_menu_download_option_remaining_episodes">פרקים שנותרו</string>
-    <string name="downloads_menu_download_option_remaining_items">פריטים שנותרו</string>
     <plurals name="downloads_menu_download_option_next_chapters">
         <item quantity="other">%1$d הפרקים הבאים</item>
     </plurals>
     <plurals name="downloads_menu_download_option_next_episodes">
         <item quantity="other">%1$d הפרקים הבאים</item>
     </plurals>
-    <plurals name="downloads_menu_download_option_next_items">
-        <item quantity="other">%1$d הפריטים הבאים</item>
-    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">הפרקים הבאים</string>
     <string name="downloads_menu_download_option_next_episodes_label">הפרקים הבאים</string>
-    <string name="downloads_menu_download_option_next_items_label">הפריטים הבאים</string>
     <string name="downloads_menu_download_option_clear_chapters">נקה פרקים שהורדת</string>
     <string name="downloads_menu_download_option_clear_episodes">נקה פרקים שהורדת</string>
     <string name="connection_settings_title">חיבור</string>

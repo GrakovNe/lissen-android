@@ -11,10 +11,8 @@
     <string name="login_screen_title">Verbinde zum Server</string>
     <string name="player_screen_library_playing_title">Liste der Kapitel</string>
     <string name="player_screen_podcast_playing_title">Liste der Episoden</string>
-    <string name="player_screen_items_playing_title">Liste der Elemente</string>
     <string name="player_screen_now_playing_title_chapter_of">Kapitel %1$d von %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">Episode %1$d von %2$s</string>
-    <string name="player_screen_now_playing_title_item_of">Element %1$d von %2$s</string>
     <string name="settings_screen_title">Einstellungen</string>
     <string name="settings_screen_connected_as_title">Verbunden als</string>
     <string name="login_error_password_is_missing">Passwort fehlt</string>
@@ -53,14 +51,9 @@
     <plurals name="downloads_menu_download_option_next_episodes">
         <item quantity="other">Nächste %1$d Episoden</item>
     </plurals>
-    <plurals name="downloads_menu_download_option_next_items">
-        <item quantity="other">Nächste %1$d Elemente</item>
-    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Nächste Kapitel</string>
     <string name="downloads_menu_download_option_next_episodes_label">Nächste Episoden</string>
-    <string name="downloads_menu_download_option_next_items_label">Nächste Elemente</string>
     <string name="downloads_menu_download_option_clear_episodes">Heruntergeladene Episoden löschen</string>
-    <string name="downloads_menu_download_option_clear_items">Heruntergeladene Elemente löschen</string>
     <string name="mini_player_action_close">Schließen</string>
     <string name="playing_item_details_author">Autor</string>
     <string name="color_scheme_black">Schwarz</string>
@@ -77,7 +70,6 @@
     <string name="settings_screen_server_connection">Server Verbindung</string>
     <string name="login_error_host_is_down">Server ist nicht erreichbar</string>
     <string name="login_error_username_is_missing">Benutzername fehlt</string>
-    <string name="downloads_menu_download_option_entire_item">Ganzes Element</string>
     <string name="settings_screen_custom_headers_title">Benutzerdefinierte Kopfzeilen</string>
     <string name="library_screen_podcast_title">Podcasts</string>
     <string name="custom_header_hint_value">Wert</string>
@@ -85,14 +77,11 @@
     <string name="chapter_search_hint">Suche nach Titel des Kapitels</string>
     <string name="playing_item_details_year">Jahr</string>
     <string name="playing_item_details_series">Serie</string>
-    <string name="downloads_menu_download_unknown">Downloads</string>
-    <string name="downloads_menu_download_option_current_item">Aktuelles Element</string>
     <string name="downloads_menu_download_option_entire_podcast">Ganzer Podcast</string>
     <string name="downloads_menu_download_option_clear_chapters">Heruntergeladene Kapitel löschen</string>
     <string name="playing_item_details_publisher">Herausgeber</string>
     <string name="chapters_list_empty">Dieses Buch hat keine Kapitel</string>
     <string name="episodes_list_empty">Dieser Podcast hat keine Episoden</string>
-    <string name="items_list_empty">Keine Elemente verfügbar</string>
     <string name="notification_content_caching_error_title">Zwischenspeicherung fehlgeschlagen</string>
     <string name="notification_content_caching_error_description">Einige Dateien wurden nicht gespeichert</string>
     <string name="notification_content_caching_channel">Zwischenspeicherung von Inhalten</string>
@@ -120,9 +109,7 @@
     <string name="settings_screen_cached_items_title">Downloads</string>
     <string name="downloads_menu_download_option_remaining_chapters">Verbleibende Kapitel</string>
     <string name="downloads_menu_download_option_remaining_episodes">Verbleibende Episoden</string>
-    <string name="downloads_menu_download_option_remaining_items">Verbleibende Artikel</string>
     <string name="player_screen_chapter_list_navigation_podcast">Episoden</string>
-    <string name="player_screen_chapter_list_navigation_items">Elemente</string>
     <string name="downloads_menu_download_option_disable">Deaktiviert</string>
     <string name="login_error_lissen_not_found">URL nicht gefunden. Prüfe die Server Einstellungen</string>
     <string name="volume_boost_disabled">Deaktiviert</string>
@@ -142,7 +129,6 @@
     <string name="wifi_or_cellular_settings_option">WLAN oder Mobile Daten</string>
     <string name="library_type_library">Bücher</string>
     <string name="library_type_podcast">Podcasts</string>
-    <string name="library_type_unknown">Unbekannt</string>
     <string name="settings_screen_clear_thumbnail_cache_success_toast">Vorschaubild-Cache gelöscht</string>
     <string name="settings_screen_internal_connection_url_title">Lokale Netzwerkserveradresse</string>
     <string name="settings_screen_internal_connection_url_description">Serverzugriff für Heim-WLAN definieren</string>

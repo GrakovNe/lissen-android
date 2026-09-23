@@ -29,10 +29,10 @@ class LibraryResponseConverterTest {
   }
 
   @Test
-  fun `maps unrecognized media type to UNKNOWN`() {
+  fun `maps unrecognized media type to LIBRARY`() {
     val result = converter.apply(listOf(item("l1", "Mystery", "video")))
 
-    assertEquals(LibraryType.UNKNOWN, result[0].type)
+    assertEquals(LibraryType.LIBRARY, result[0].type)
   }
 
   @Test

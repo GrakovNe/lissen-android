@@ -13,10 +13,8 @@
     <string name="player_screen_chapter_list_navigation_library">Chapitres</string>
     <string name="player_screen_library_playing_title">Lecture des chapitres</string>
     <string name="player_screen_podcast_playing_title">Lecture des épisodes</string>
-    <string name="player_screen_items_playing_title">Lecture des éléments</string>
     <string name="player_screen_now_playing_title_chapter_of">Chapitre %1$d de %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">Episode %1$d de %2$s</string>
-    <string name="player_screen_now_playing_title_item_of">Élément %1$d de %2$s</string>
     <string name="settings_screen_title">Préférences</string>
     <string name="settings_screen_connected_as_title">Se connecter comme</string>
     <string name="settings_screen_server_connection">Connexion au serveur</string>
@@ -63,28 +61,20 @@
     <string name="player_screen_downloads_navigation">Téléchargements</string>
     <string name="downloads_menu_download_book">Télécharger le livre</string>
     <string name="downloads_menu_download_podcast">Télécharger le podcast</string>
-    <string name="downloads_menu_download_unknown">Téléchargements</string>
     <string name="downloads_menu_download_option_current_chapter">Chapitre en cours</string>
     <string name="downloads_menu_download_option_current_episode">Episode en cours</string>
-    <string name="downloads_menu_download_option_current_item">Élément en cours</string>
     <string name="downloads_menu_download_option_entire_book">Livre entier</string>
     <string name="downloads_menu_download_option_entire_podcast">Podcast entier</string>
-    <string name="downloads_menu_download_option_entire_item">Objet entier</string>
     <plurals name="downloads_menu_download_option_next_chapters">
         <item quantity="other">Prochains %1$d chapitres</item>
     </plurals>
     <plurals name="downloads_menu_download_option_next_episodes">
         <item quantity="other">Prochains %1$d épisodes</item>
     </plurals>
-    <plurals name="downloads_menu_download_option_next_items">
-        <item quantity="other">Prochains %1$d objets</item>
-    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Prochains chapitres</string>
     <string name="downloads_menu_download_option_next_episodes_label">Prochains épisodes</string>
-    <string name="downloads_menu_download_option_next_items_label">Prochains objets</string>
     <string name="downloads_menu_download_option_clear_chapters">Vider les chapitres téléchargés</string>
     <string name="downloads_menu_download_option_clear_episodes">Vider les épisodes téléchargés</string>
-    <string name="downloads_menu_download_option_clear_items">Vider les objets téléchargés</string>
     <string name="mini_player_action_close">Fermer</string>
     <string name="playing_item_details_author">Auteur</string>
     <string name="playing_item_details_publisher">Éditeur</string>
@@ -111,20 +101,17 @@
     <string name="settings_screen_library_ordering_creation_date_option">Date de création</string>
     <string name="settings_screen_library_ordering_title">Tri de la bibliothèque</string>
     <string name="settings_screen_library_ordering_title_option">Titre</string>
-    <string name="items_list_empty">Aucun article disponible</string>
     <string name="notification_content_caching_channel">Mise en cache du contenu</string>
     <string name="notification_content_caching_title">Le contenu est mis en cache</string>
     <string name="login_error_lissen_auth_scheme_must_be_whitelisted">Le schéma %1$s://%2$s n\'est pas autorisé dans les paramètres d\'URI de redirection du serveur</string>
     <string name="settings_screen_library_ordering_modification_date_option">Date de mise à jour</string>
     <string name="player_screen_chapter_list_navigation_podcast">Épisodes</string>
-    <string name="player_screen_chapter_list_navigation_items">Éléments</string>
     <string name="settings_screen_connection_type">Type de connexion</string>
     <string name="settings_screen_connection_local">Réseau local</string>
     <string name="settings_screen_connection_external">Réseau externe</string>
     <string name="downloads_menu_download_option_disable">Désactiver</string>
     <string name="downloads_menu_download_option_remaining_chapters">Chapitres restants</string>
     <string name="downloads_menu_download_option_remaining_episodes">Épisodes restants</string>
-    <string name="downloads_menu_download_option_remaining_items">Éléments restants</string>
     <string name="downloads_menu_download_option_stop_downloads">Arrêter le téléchargement</string>
     <string name="login_error_lissen_not_found">URL non trouvée. Vérifier vos paramètres serveur</string>
     <string name="offline_cache_is_empty">Aucun contenu enregistré pour le moment</string>
@@ -147,7 +134,6 @@
     <string name="wifi_or_cellular_settings_option">Réseau WiFi ou cellulaire</string>
     <string name="library_type_library">Livres</string>
     <string name="library_type_podcast">Podcasts</string>
-    <string name="library_type_unknown">Inconnu</string>
     <string name="settings_screen_internal_connection_url_title">Adresse serveur réseau local</string>
     <string name="settings_screen_internal_connection_url_description">Définir l\'accès au serveur pour le Wi-Fi domestique</string>
     <string name="local_url_hint_ssid_name">Nom du réseau WiFi</string>

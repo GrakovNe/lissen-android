@@ -458,3 +458,12 @@ val MIGRATION_22_23 =
       )
     }
   }
+
+// LibraryType.UNKNOWN is gone: whatever is not a podcast is a book
+val MIGRATION_23_24 =
+  object : Migration(23, 24) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+      db.execSQL("UPDATE libraries SET type = 'LIBRARY' WHERE type = 'UNKNOWN'")
+      db.execSQL("UPDATE offline_playback_session SET libraryType = 'LIBRARY' WHERE libraryType = 'UNKNOWN'")
+    }
+  }

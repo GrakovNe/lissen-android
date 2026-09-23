@@ -308,7 +308,6 @@ class MediaLibraryTree
           when (library.type) {
             LibraryType.LIBRARY -> MediaMetadata.MEDIA_TYPE_FOLDER_AUDIO_BOOKS
             LibraryType.PODCAST -> MediaMetadata.MEDIA_TYPE_FOLDER_PODCASTS
-            LibraryType.UNKNOWN -> MediaMetadata.MEDIA_TYPE_FOLDER_MIXED
           },
         isPlayable = false,
         isBrowsable = true,

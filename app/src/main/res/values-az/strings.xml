@@ -12,13 +12,10 @@
     <string name="player_screen_playback_speed_navigation">Sürət</string>
     <string name="player_screen_chapter_list_navigation_library">Bölümlər</string>
     <string name="player_screen_chapter_list_navigation_podcast">Epizodlar</string>
-    <string name="player_screen_chapter_list_navigation_items">Bəndlər</string>
     <string name="player_screen_library_playing_title">Bölümləri dinləmək</string>
     <string name="player_screen_podcast_playing_title">Epizodları dinləmək</string>
-    <string name="player_screen_items_playing_title">Bəndləri dinləmək</string>
     <string name="player_screen_now_playing_title_chapter_of">Bölüm %1$d of %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">Epizod %1$d of %2$s</string>
-    <string name="player_screen_now_playing_title_item_of">Bənd %1$d of %2$s</string>
     <string name="settings_screen_title">Seçimlər</string>
     <string name="settings_screen_connected_as_title">Qoşulmuşdur</string>
     <string name="settings_screen_server_connection">Server bağlantısı</string>
@@ -66,32 +63,23 @@
     <string name="player_screen_downloads_navigation">Yüklənənlər</string>
     <string name="downloads_menu_download_book">Kitabı yüklə</string>
     <string name="downloads_menu_download_podcast">Podkastı yüklə</string>
-    <string name="downloads_menu_download_unknown">Yüklənənlər</string>
     <string name="downloads_menu_download_option_disable">Söndürülüb</string>
     <string name="downloads_menu_download_option_current_chapter">Cari fəsil</string>
     <string name="downloads_menu_download_option_current_episode">Cari epizod</string>
-    <string name="downloads_menu_download_option_current_item">Cari element</string>
     <string name="downloads_menu_download_option_entire_book">Bütün kitab</string>
     <string name="downloads_menu_download_option_entire_podcast">Bütün podkast</string>
-    <string name="downloads_menu_download_option_entire_item">Bütün element</string>
     <string name="downloads_menu_download_option_remaining_chapters">Qalan fəsillər</string>
     <string name="downloads_menu_download_option_remaining_episodes">Qalan epizodlar</string>
-    <string name="downloads_menu_download_option_remaining_items">Qalan elementlər</string>
     <plurals name="downloads_menu_download_option_next_chapters">
         <item quantity="other">Növbəti %1$d fəsil</item>
     </plurals>
     <plurals name="downloads_menu_download_option_next_episodes">
         <item quantity="other">Növbəti %1$d epizod</item>
     </plurals>
-    <plurals name="downloads_menu_download_option_next_items">
-        <item quantity="other">Növbəti %1$d element</item>
-    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Növbəti fəsillər</string>
     <string name="downloads_menu_download_option_next_episodes_label">Növbəti epizodlar</string>
-    <string name="downloads_menu_download_option_next_items_label">Növbəti elementlər</string>
     <string name="downloads_menu_download_option_clear_chapters">Yüklənmiş fəsilləri təmizləyin</string>
     <string name="downloads_menu_download_option_clear_episodes">Yüklənmiş epizodları təmizləyin</string>
-    <string name="downloads_menu_download_option_clear_items">Yüklənmiş elementləri silin</string>
     <string name="downloads_menu_download_option_stop_downloads">Yükləməni dayandırın</string>
     <string name="mini_player_action_close">Bağla</string>
     <string name="playing_item_details_author">Müəllif</string>
@@ -103,7 +91,6 @@
     <string name="color_scheme_black">Qara</string>
     <string name="chapters_list_empty">Kitabın fəsli yoxdur</string>
     <string name="episodes_list_empty">Heç bir podkastın bölümü yoxdur</string>
-    <string name="items_list_empty">Mövcud element yoxdur</string>
     <string name="notification_content_caching_channel">Məzmun Keşlənməsi</string>
     <string name="notification_content_caching_title">Məzmun keşlənir</string>
     <string name="notification_content_caching_error_title">Keşləmə uğursuz oldu</string>
@@ -147,7 +134,6 @@
     <string name="wifi_or_cellular_settings_option">WiFi və ya mobil şəbəkə</string>
     <string name="library_type_library">Kitablar</string>
     <string name="library_type_podcast">Podkastlar</string>
-    <string name="library_type_unknown">Naməlum</string>
     <string name="settings_screen_internal_connection_url_title">Yerli şəbəkə server ünvanı</string>
     <string name="settings_screen_internal_connection_url_description">Ev Wi-Fi üçün server girişini təyin edin</string>
     <string name="local_url_hint_ssid_name">WiFi şəbəkəsinin adı</string>

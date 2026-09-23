@@ -106,9 +106,9 @@ class LibraryViewModelTest {
     }
 
     @Test
-    fun `fetchPreferredLibraryType returns UNKNOWN when no library set`() {
+    fun `fetchPreferredLibraryType falls back to LIBRARY when no library set`() {
       every { preferences.getPreferredLibrary() } returns null
-      assertEquals(LibraryType.UNKNOWN, viewModel.fetchPreferredLibraryType())
+      assertEquals(LibraryType.LIBRARY, viewModel.fetchPreferredLibraryType())
     }
 
     @Test

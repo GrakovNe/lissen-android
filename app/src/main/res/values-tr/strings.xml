@@ -13,11 +13,9 @@
     <string name="player_screen_chapter_list_navigation_library">Bölümler</string>
     <string name="player_screen_library_playing_title">Çalınan bölümler</string>
     <string name="player_screen_podcast_playing_title">Çalınan bölümler</string>
-    <string name="player_screen_items_playing_title">Çalınan öğeler</string>
     <string name="show_downloaded_content_only">Yalnızca indirilenler</string>
     <string name="player_screen_now_playing_title_chapter_of">%2$s\'nin %1$d. bölümü</string>
     <string name="player_screen_now_playing_title_podcast_of">%2$s\'nin %1$d. bölümü</string>
-    <string name="player_screen_now_playing_title_item_of">%2$s\'nin %1$d. öğesi</string>
     <string name="settings_screen_title">Tercihler</string>
     <string name="settings_screen_connected_as_title">Şu şekilde bağlı</string>
     <string name="settings_screen_server_connection">Sunucu bağlantısı</string>
@@ -62,28 +60,20 @@
     <string name="player_screen_downloads_navigation">İndirilenler</string>
     <string name="downloads_menu_download_book">Kitabı indir</string>
     <string name="downloads_menu_download_podcast">Podcast\'i indir</string>
-    <string name="downloads_menu_download_unknown">İndirilenler</string>
     <string name="downloads_menu_download_option_current_chapter">Geçerli bölüm</string>
     <string name="downloads_menu_download_option_current_episode">Geçerli bölüm</string>
-    <string name="downloads_menu_download_option_current_item">Geçerli öğe</string>
     <string name="downloads_menu_download_option_entire_book">Tüm kitap</string>
     <string name="downloads_menu_download_option_entire_podcast">Tüm podcast</string>
-    <string name="downloads_menu_download_option_entire_item">Tüm öğe</string>
     <plurals name="downloads_menu_download_option_next_chapters">
         <item quantity="other">Sonraki %1$d bölüm</item>
     </plurals>
     <plurals name="downloads_menu_download_option_next_episodes">
         <item quantity="other">Sonraki %1$d bölüm</item>
     </plurals>
-    <plurals name="downloads_menu_download_option_next_items">
-        <item quantity="other">Sonraki %1$d öğe</item>
-    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Sonraki bölümler</string>
     <string name="downloads_menu_download_option_next_episodes_label">Sonraki bölümler</string>
-    <string name="downloads_menu_download_option_next_items_label">Sonraki öğeler</string>
     <string name="downloads_menu_download_option_clear_chapters">İndirilen bölümleri temizle</string>
     <string name="downloads_menu_download_option_clear_episodes">İndirilen bölümleri temizle</string>
-    <string name="downloads_menu_download_option_clear_items">İndirilen öğeleri temizle</string>
     <string name="mini_player_action_close">Kapat</string>
     <string name="playing_item_details_author">Yazar</string>
     <string name="playing_item_details_publisher">Yayıncı</string>
@@ -92,7 +82,6 @@
     <string name="color_scheme_black">Siyah</string>
     <string name="chapters_list_empty">Kitabın bölümleri yok</string>
     <string name="episodes_list_empty">Podcast\'in bölümleri yok</string>
-    <string name="items_list_empty">Kullanılabilir öğe yok</string>
     <string name="notification_content_caching_channel">İçerik Önbelleğe Alma</string>
     <string name="notification_content_caching_title">İçerik önbelleğe alınıyor</string>
     <string name="notification_content_caching_error_title">Önbelleğe alma başarısız</string>

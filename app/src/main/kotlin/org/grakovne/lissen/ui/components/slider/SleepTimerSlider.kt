@@ -12,7 +12,6 @@ import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.LibraryType.LIBRARY
 import org.grakovne.lissen.domain.LibraryType.PODCAST
-import org.grakovne.lissen.domain.LibraryType.UNKNOWN
 import org.grakovne.lissen.domain.TimerOption
 import kotlin.math.roundToInt
 
@@ -68,7 +67,7 @@ private fun Float.toLabelText(
     INTERNAL_CHAPTER_END -> {
       when (libraryType) {
         LIBRARY -> context.getString(R.string.timer_option_after_current_chapter)
-        PODCAST, UNKNOWN -> context.getString(R.string.timer_option_after_current_episode)
+        PODCAST -> context.getString(R.string.timer_option_after_current_episode)
       }
     }
 

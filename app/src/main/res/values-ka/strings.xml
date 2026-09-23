@@ -13,10 +13,8 @@
     <string name="player_screen_chapter_list_navigation_library">თავები</string>
     <string name="player_screen_library_playing_title">თავების დაკვრა</string>
     <string name="player_screen_podcast_playing_title">ეპიზოდების დაკვრა</string>
-    <string name="player_screen_items_playing_title">ელემენტების დაკვრა</string>
     <string name="player_screen_now_playing_title_chapter_of">თავი %1$d %2$s-დან</string>
     <string name="player_screen_now_playing_title_podcast_of">ეპიზოდი %1$d %2$s-დან</string>
-    <string name="player_screen_now_playing_title_item_of">ელემენტი %1$d %2$s-დან</string>
     <string name="settings_screen_title">მორგება</string>
     <string name="settings_screen_connected_as_title">დაკავშირებულია როგორც</string>
     <string name="settings_screen_server_connection">სერვერის კავშირი</string>
@@ -62,16 +60,12 @@
     <string name="player_screen_downloads_navigation">ჩამოტვირთვები</string>
     <string name="downloads_menu_download_book">წიგნის ჩამოტვირთვა</string>
     <string name="downloads_menu_download_podcast">პოდკასტის ჩამოტვირთვა</string>
-    <string name="downloads_menu_download_unknown">ჩამოტვირთვები</string>
     <string name="downloads_menu_download_option_current_chapter">მიმდინარე თავი</string>
     <string name="downloads_menu_download_option_current_episode">მიმდინარე ეპიზოდი</string>
-    <string name="downloads_menu_download_option_current_item">მიმდინარე ელემენტი</string>
     <string name="downloads_menu_download_option_entire_book">სრული წიგნი</string>
     <string name="downloads_menu_download_option_entire_podcast">სრული პოდკასტი</string>
-    <string name="downloads_menu_download_option_entire_item">სრული ელემენტი</string>
     <string name="downloads_menu_download_option_remaining_chapters">დარჩენილი თავები</string>
     <string name="downloads_menu_download_option_remaining_episodes">დარჩენილი ეპიზოდები</string>
-    <string name="downloads_menu_download_option_remaining_items">დარჩენილი ელემენტები</string>
     <plurals name="downloads_menu_download_option_next_chapters">
         <item quantity="one">შემდეგი %d თავი</item>
         <item quantity="other">შემდეგი %d თავი</item>
@@ -80,16 +74,10 @@
         <item quantity="one">შემდეგი %d ეპიზოდი</item>
         <item quantity="other">შემდეგი %d ეპიზოდი</item>
     </plurals>
-    <plurals name="downloads_menu_download_option_next_items">
-        <item quantity="one">შემდეგი %d ელემენტი</item>
-        <item quantity="other">შემდეგი %d ელემენტი</item>
-    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">შემდეგი თავები</string>
     <string name="downloads_menu_download_option_next_episodes_label">შემდეგი ეპიზოდები</string>
-    <string name="downloads_menu_download_option_next_items_label">შემდეგი ელემენტები</string>
     <string name="downloads_menu_download_option_clear_chapters">ჩამოტვირთული თავების გასუფთავება</string>
     <string name="downloads_menu_download_option_clear_episodes">ჩამოტვირთული ეპიზოდების გასუფთავება</string>
-    <string name="downloads_menu_download_option_clear_items">ჩამოტვირთული ელემენტების გასუფთავება</string>
     <string name="mini_player_action_close">დახურვა</string>
     <string name="playing_item_details_author">ავტორი</string>
     <string name="playing_item_details_publisher">გამომცემელი</string>
@@ -100,7 +88,6 @@
     <string name="color_scheme_black">შავი</string>
     <string name="chapters_list_empty">წიგნს არ აქვს თავი</string>
     <string name="episodes_list_empty">პოდკასტებს არ აქვს ეპიზოდი</string>
-    <string name="items_list_empty">ხელმისაწვდომი ელემენტები არ არის</string>
     <string name="notification_content_caching_channel">კონტენტის ქეშირება</string>
     <string name="notification_content_caching_title">მიმდინარეობს კონტენტის ქეშირება</string>
     <string name="notification_content_caching_error_title">ქეშირება ვერ მოხერხდა</string>

@@ -273,10 +273,6 @@ fun LibraryScreen(
           .fetchPreferredLibraryTitle()
           ?: context.getString(R.string.library_screen_podcast_title)
       }
-
-      LibraryType.UNKNOWN -> {
-        ""
-      }
     }
   }
 

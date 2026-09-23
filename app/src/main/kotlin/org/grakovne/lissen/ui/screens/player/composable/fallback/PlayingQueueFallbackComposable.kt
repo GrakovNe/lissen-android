@@ -35,7 +35,6 @@ fun PlayingQueueFallbackComposable(
         when (libraryType) {
           LibraryType.LIBRARY -> stringResource(R.string.chapters_list_empty)
           LibraryType.PODCAST -> stringResource(R.string.episodes_list_empty)
-          LibraryType.UNKNOWN -> stringResource(R.string.items_list_empty)
         },
       style = MaterialTheme.typography.headlineSmall.copy(fontSize = 20.sp),
     )

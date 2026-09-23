@@ -31,10 +31,10 @@ class DownloadPreferences
       store.putString(KEY_PREFERRED_AUTO_DOWNLOAD_NETWORK_TYPE, networkTypeAutoCache.name)
 
     fun getAutoDownloadLibraryTypes(): List<LibraryType> {
-      val json = store.getString(KEY_PREFERRED_AUTO_DOWNLOAD_LIBRARY_TYPE) ?: return LibraryType.meaningfulTypes
+      val json = store.getString(KEY_PREFERRED_AUTO_DOWNLOAD_LIBRARY_TYPE) ?: return LibraryType.entries
       val type = Types.newParameterizedType(List::class.java, LibraryType::class.java)
       val adapter = moshi.adapter<List<LibraryType>>(type)
-      return adapter.fromJson(json) ?: LibraryType.meaningfulTypes
+      return adapter.fromJson(json) ?: LibraryType.entries
     }
 
     fun saveAutoDownloadLibraryTypes(types: List<LibraryType>) {

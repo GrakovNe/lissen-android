@@ -12,13 +12,10 @@
     <string name="player_screen_playback_speed_navigation">Rychlost</string>
     <string name="player_screen_chapter_list_navigation_library">Kapitoly</string>
     <string name="player_screen_chapter_list_navigation_podcast">Epizody</string>
-    <string name="player_screen_chapter_list_navigation_items">Položky</string>
     <string name="player_screen_library_playing_title">Přehrávané kapitoly</string>
     <string name="player_screen_podcast_playing_title">Přehrávané epizody</string>
-    <string name="player_screen_items_playing_title">Přehrávané položky</string>
     <string name="player_screen_now_playing_title_chapter_of">Kapitola %1$d z %2$s</string>
     <string name="player_screen_now_playing_title_podcast_of">Epizoda %1$d z %2$s</string>
-    <string name="player_screen_now_playing_title_item_of">Položka %1$d z %2$s</string>
     <string name="settings_screen_title">Nastavení</string>
     <string name="settings_screen_connected_as_title">Uživatel</string>
     <string name="settings_screen_server_connection">Připojení k serveru</string>
@@ -72,32 +69,23 @@
     <string name="player_screen_downloads_navigation">Stažené</string>
     <string name="downloads_menu_download_book">Stáhnout knihu</string>
     <string name="downloads_menu_download_podcast">Stáhnout podcast</string>
-    <string name="downloads_menu_download_unknown">Stáhnout</string>
     <string name="downloads_menu_download_option_disable">Zakázáno</string>
     <string name="downloads_menu_download_option_current_chapter">Současná kapitola</string>
     <string name="downloads_menu_download_option_current_episode">Současná epizoda</string>
-    <string name="downloads_menu_download_option_current_item">Současná položka</string>
     <string name="downloads_menu_download_option_entire_book">Celá kniha</string>
     <string name="downloads_menu_download_option_entire_podcast">Celý podcast</string>
-    <string name="downloads_menu_download_option_entire_item">Celá položka</string>
     <string name="downloads_menu_download_option_remaining_chapters">Zbývající kapitoly</string>
     <string name="downloads_menu_download_option_remaining_episodes">Zbývající epizody</string>
-    <string name="downloads_menu_download_option_remaining_items">Zbývající položky</string>
     <plurals name="downloads_menu_download_option_next_chapters">
         <item quantity="other">Dalších %1$d kapitol</item>
     </plurals>
     <plurals name="downloads_menu_download_option_next_episodes">
         <item quantity="other">Dalších %1$d epizod</item>
     </plurals>
-    <plurals name="downloads_menu_download_option_next_items">
-        <item quantity="other">Dalších %1$d položek</item>
-    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Další kapitoly</string>
     <string name="downloads_menu_download_option_next_episodes_label">Další epizody</string>
-    <string name="downloads_menu_download_option_next_items_label">Další položky</string>
     <string name="downloads_menu_download_option_clear_chapters">Vyčistit stažené kapitoly</string>
     <string name="downloads_menu_download_option_clear_episodes">Vyčistit stažené epizody</string>
-    <string name="downloads_menu_download_option_clear_items">Vyčistit stažené položky</string>
     <string name="downloads_menu_download_option_stop_downloads">Zastavit stahování</string>
     <string name="mini_player_action_close">Zavřít</string>
     <string name="playing_item_details_author">Autor</string>
@@ -109,7 +97,6 @@
     <string name="color_scheme_black">Černá</string>
     <string name="chapters_list_empty">Kniha nemá žádné kapitoly</string>
     <string name="episodes_list_empty">Podcast nemá žádné epizody</string>
-    <string name="items_list_empty">Žádné dostupné položky</string>
     <string name="notification_content_caching_channel">Ukládání obsahu do mezipaměti</string>
     <string name="notification_content_caching_title">Obsah se ukládá do mezipaměti</string>
     <string name="notification_content_caching_error_title">Uložení obsahu do mezipaměti selhalo</string>
@@ -153,7 +140,6 @@
     <string name="wifi_or_cellular_settings_option">WiFi nebo data</string>
     <string name="library_type_library">Knihy</string>
     <string name="library_type_podcast">Podcasty</string>
-    <string name="library_type_unknown">Neznámé</string>
     <string name="settings_screen_internal_connection_url_title">Adresa serveru na lokální síti</string>
     <string name="settings_screen_internal_connection_url_description">Definovat přístup k serveru z domácí WiFi</string>
     <string name="local_url_hint_ssid_name">Název WiFi sítě</string>

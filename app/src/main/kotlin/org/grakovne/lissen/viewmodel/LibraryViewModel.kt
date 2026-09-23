@@ -236,7 +236,7 @@ class LibraryViewModel
       preferences
         .getPreferredLibrary()
         ?.type
-        ?: LibraryType.UNKNOWN
+        ?: LibraryType.LIBRARY
 
     fun refreshRecentListening() {
       Timber.d("User action: refreshRecentListening")

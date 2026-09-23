@@ -47,7 +47,7 @@ class DownloadSettingsViewModelTest {
     Dispatchers.setMain(UnconfinedTestDispatcher())
 
     every { download.getAutoDownloadNetworkType() } returns NetworkTypeAutoCache.WIFI_ONLY
-    every { download.getAutoDownloadLibraryTypes() } returns LibraryType.meaningfulTypes
+    every { download.getAutoDownloadLibraryTypes() } returns LibraryType.entries
     every { download.getAutoDownloadOption() } returns null
     every { download.getAutoDownloadDelayed() } returns false
     every { mediaRepository.playingBook } returns MutableStateFlow(null)
@@ -191,7 +191,7 @@ class DownloadSettingsViewModelTest {
     @Test
     fun `changeAutoDownloadLibraryType saves updated list to preferences`() {
       viewModel.changeAutoDownloadLibraryType(LibraryType.LIBRARY, false)
-      verify { download.saveAutoDownloadLibraryTypes(LibraryType.meaningfulTypes - LibraryType.LIBRARY) }
+      verify { download.saveAutoDownloadLibraryTypes(LibraryType.entries - LibraryType.LIBRARY) }
     }
   }
 

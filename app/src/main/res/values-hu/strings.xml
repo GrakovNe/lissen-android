@@ -12,11 +12,9 @@
     <string name="login_screen_connect_button_text">Csatlakozás</string>
     <string name="player_screen_playback_speed_navigation">Sebesség</string>
     <string name="player_screen_library_playing_title">Fejezetek lejátszása</string>
-    <string name="player_screen_items_playing_title">Elemek lejátszása</string>
     <string name="player_screen_podcast_playing_title">Részek lejátszása</string>
     <string name="player_screen_now_playing_title_chapter_of">%1$d fejezet a(z) %2$s fejezetből</string>
     <string name="player_screen_now_playing_title_podcast_of">%1$d rész a(z) %2$s részből</string>
-    <string name="player_screen_now_playing_title_item_of">%1$d elem a(z) %2$s elemből</string>
     <string name="settings_screen_title">Beállítások</string>
     <string name="settings_screen_connected_as_title">Csatlakozva mint</string>
     <string name="settings_screen_server_connection">Kiszolgálókapcsolat</string>
@@ -64,7 +62,6 @@
     <string name="downloads_menu_download_podcast">Podcast letöltése</string>
     <string name="downloads_menu_download_option_current_chapter">Jelenlegi fejezet</string>
     <string name="downloads_menu_download_option_current_episode">Jelenlegi epizód</string>
-    <string name="downloads_menu_download_option_current_item">Jelenlegi elem</string>
     <string name="downloads_menu_download_option_entire_book">Teljes könyv</string>
     <plurals name="downloads_menu_download_option_next_chapters">
         <item quantity="other">Következő %1$d fejezet</item>
@@ -72,15 +69,10 @@
     <plurals name="downloads_menu_download_option_next_episodes">
         <item quantity="other">Következő %1$d rész</item>
     </plurals>
-    <plurals name="downloads_menu_download_option_next_items">
-        <item quantity="other">Következő %1$d elem</item>
-    </plurals>
     <string name="downloads_menu_download_option_next_chapters_label">Következő fejezetek</string>
     <string name="downloads_menu_download_option_next_episodes_label">Következő részek</string>
-    <string name="downloads_menu_download_option_next_items_label">Következő elemek</string>
     <string name="downloads_menu_download_option_clear_chapters">Letöltött fejezetek törlése</string>
     <string name="downloads_menu_download_option_clear_episodes">Letöltött részek törlése</string>
-    <string name="downloads_menu_download_option_clear_items">Letöltött elemek törlése</string>
     <string name="mini_player_action_close">Bezárás</string>
     <string name="playing_item_details_author">Szerző</string>
     <string name="playing_item_details_publisher">Kiadó</string>
@@ -89,7 +81,6 @@
     <string name="color_scheme_black">Fekete</string>
     <string name="chapters_list_empty">Ennek a könyvnek nincsenek fejezetei</string>
     <string name="episodes_list_empty">Ennek a podcastnek nincsenek részei</string>
-    <string name="items_list_empty">Nincsenek elérhető elemek</string>
     <string name="notification_content_caching_channel">Tartalom gyorsítótárazása</string>
     <string name="notification_content_caching_title">A tartalom gyorsítótárazása folyamatban</string>
     <string name="notification_content_caching_error_title">A gyorsítótárazás sikertelen</string>
@@ -110,13 +101,10 @@
     <string name="forward_interval">Előretekerés időköze</string>
     <string name="continue_playback_shortcut_title">Folytatás</string>
     <string name="continue_playback_shortcut_description">Hallgatás folytatása</string>
-    <string name="downloads_menu_download_unknown">Letöltések</string>
     <string name="downloads_menu_download_option_entire_podcast">Teljes podcast</string>
-    <string name="downloads_menu_download_option_entire_item">Teljes elem</string>
     <string name="playing_item_details_narrator">Előadó</string>
     <string name="playing_item_details_duration">Időtartam</string>
     <string name="offline_cache_is_empty">Még nincs mentett tartalom</string>
-    <string name="downloads_menu_download_option_remaining_items">Hátralévő elemek</string>
     <string name="downloads_menu_download_option_remaining_episodes">Hátralévő epizódok</string>
     <string name="settings_screen_cached_items_title">Letöltések</string>
     <string name="settings_screen_cached_items_hint">Mentett tartalom kezelése</string>
@@ -130,7 +118,6 @@
     <string name="settings_screen_crash_report_title">Összeomlási jelentések</string>
     <string name="settings_screen_crash_report_description">Jelentések küldése, ha az alkalmazás összeomlik</string>
     <string name="player_screen_chapter_list_navigation_podcast">Epizódok</string>
-    <string name="player_screen_chapter_list_navigation_items">Elemek</string>
     <string name="downloads_menu_download_option_disable">Kikapcsolva</string>
     <string name="settings_download_automatically_title">Automatikus lrtöltés</string>
     <string name="download_settings_title">Letöltések</string>
@@ -142,7 +129,6 @@
     <string name="wifi_or_cellular_settings_option">WiFi vagy mobilhálózat</string>
     <string name="library_type_library">Könyvek</string>
     <string name="library_type_podcast">Podcastek</string>
-    <string name="library_type_unknown">Ismeretlen</string>
     <string name="settings_screen_internal_connection_url_title">Helyi hálózaton található kiszolgáló címe</string>
     <string name="settings_screen_internal_connection_url_description">Kiszolgáló-hozzáférés meghatározása az otthoni WiFi-hez</string>
     <string name="local_url_hint_ssid_name">WiFi hálózat neve</string>

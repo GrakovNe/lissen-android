@@ -26,7 +26,6 @@ class AudiobookshelfChannelProvider
       when (resolveLibraryType(libraryType)) {
         LibraryType.LIBRARY -> libraryAudiobookshelfChannel
         LibraryType.PODCAST -> podcastAudiobookshelfChannel
-        LibraryType.UNKNOWN -> libraryAudiobookshelfChannel
       }
 
     override fun provideChannelAuth(): ChannelAuthService = audiobookshelfAuthService
@@ -38,5 +37,5 @@ class AudiobookshelfChannelProvider
       sharedPreferences
         .getPreferredLibrary()
         ?.type
-        ?: LibraryType.UNKNOWN
+        ?: LibraryType.LIBRARY
   }
