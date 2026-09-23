@@ -89,17 +89,11 @@ class LissenMediaProvider
           .provideFileUri(libraryItemId, chapterId)
           ?.let { OperationResult.Success(it) }
 
-      return cached ?: when (preferences.isForceCache()) {
-        true -> {
-          OperationResult.Error(OperationError.InternalError)
-        }
-
-        false -> {
-          providePreferredChannel()
-            .provideFileUri(libraryItemId, chapterId)
-            .let { OperationResult.Success(it) }
-        }
-      }
+      return cached
+        ?: cacheOrChannel(
+          local = { OperationResult.Error(OperationError.InternalError) },
+          remote = { OperationResult.Success(providePreferredChannel().provideFileUri(libraryItemId, chapterId)) },
+        )
     }
 
     /**
@@ -149,34 +143,18 @@ class LissenMediaProvider
 
     suspend fun fetchBookCover(bookId: String): OperationResult<File> {
       Timber.d("Fetching book cover: bookId=$bookId")
-      return when (preferences.isForceCache()) {
-        true -> {
-          localCacheRepository.fetchBookCover(bookId)
-        }
-
-        false -> {
-          cachedCoverProvider.provideCover(
-            channel = providePreferredChannel(),
-            itemId = bookId,
-          )
-        }
-      }
+      return cacheOrChannel(
+        local = { localCacheRepository.fetchBookCover(bookId) },
+        remote = { cachedCoverProvider.provideCover(channel = providePreferredChannel(), itemId = bookId) },
+      )
     }
 
     suspend fun fetchAuthorCover(authorId: String): OperationResult<File> {
       Timber.d("Fetching author cover: authorId=$authorId")
-      return when (preferences.isForceCache()) {
-        true -> {
-          localCacheRepository.fetchAuthorCover(authorId)
-        }
-
-        false -> {
-          cachedCoverProvider.provideAuthorCover(
-            channel = providePreferredChannel(),
-            authorId = authorId,
-          )
-        }
-      }
+      return cacheOrChannel(
+        local = { localCacheRepository.fetchAuthorCover(authorId) },
+        remote = { cachedCoverProvider.provideAuthorCover(channel = providePreferredChannel(), authorId = authorId) },
+      )
     }
 
     suspend fun searchBooks(
@@ -186,20 +164,10 @@ class LissenMediaProvider
     ): OperationResult<List<Book>> {
       Timber.d("Searching books: libraryId=$libraryId, query='$query'")
 
-      return when (preferences.isForceCache()) {
-        true -> {
-          localCacheRepository.searchBooks(libraryId = libraryId, query = query, limit = limit)
-        }
-
-        false -> {
-          providePreferredChannel()
-            .searchBooks(
-              libraryId = libraryId,
-              query = query,
-              limit = limit,
-            )
-        }
-      }
+      return cacheOrChannel(
+        local = { localCacheRepository.searchBooks(libraryId = libraryId, query = query, limit = limit) },
+        remote = { providePreferredChannel().searchBooks(libraryId = libraryId, query = query, limit = limit) },
+      )
     }
 
     suspend fun fetchBooks(
@@ -210,10 +178,10 @@ class LissenMediaProvider
     ): OperationResult<PagedItems<Book>> {
       Timber.d("Fetching books: libraryId=$libraryId, page=$pageNumber, pageSize=$pageSize")
 
-      return when (preferences.isForceCache()) {
-        true -> localCacheRepository.fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
-        false -> providePreferredChannel().fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber, extraFilter)
-      }
+      return cacheOrChannel(
+        local = { localCacheRepository.fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber) },
+        remote = { providePreferredChannel().fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber, extraFilter) },
+      )
     }
 
     suspend fun fetchLibrary(
@@ -230,26 +198,24 @@ class LissenMediaProvider
     ): OperationResult<PagedItems<LibraryEntry>> {
       Timber.d("Fetching library: libraryId=$libraryId, page=$pageNumber, pageSize=$pageSize, grouping=$grouping")
 
-      return when (preferences.isForceCache()) {
-        true -> {
+      return cacheOrChannel(
+        local = {
           localCacheRepository.fetchLibrary(
             libraryId = libraryId,
             pageSize = pageSize,
             pageNumber = pageNumber,
             libraryGrouping = grouping,
           )
-        }
-
-        false -> {
-          providePreferredChannel()
-            .fetchLibrary(
-              libraryId = libraryId,
-              pageSize = pageSize,
-              pageNumber = pageNumber,
-              libraryGrouping = grouping,
-            )
-        }
-      }
+        },
+        remote = {
+          providePreferredChannel().fetchLibrary(
+            libraryId = libraryId,
+            pageSize = pageSize,
+            pageNumber = pageNumber,
+            libraryGrouping = grouping,
+          )
+        },
+      )
     }
 
     suspend fun fetchSeriesItems(
@@ -258,10 +224,10 @@ class LissenMediaProvider
     ): OperationResult<List<Book>> {
       Timber.d("Fetching series items: libraryId=$libraryId, seriesId=$seriesId")
 
-      return when (preferences.isForceCache()) {
-        true -> localCacheRepository.fetchSeriesItems(libraryId = libraryId, seriesId = seriesId)
-        false -> providePreferredChannel().fetchSeriesItems(libraryId = libraryId, seriesId = seriesId)
-      }
+      return cacheOrChannel(
+        local = { localCacheRepository.fetchSeriesItems(libraryId = libraryId, seriesId = seriesId) },
+        remote = { providePreferredChannel().fetchSeriesItems(libraryId = libraryId, seriesId = seriesId) },
+      )
     }
 
     suspend fun fetchAuthorBooks(
@@ -270,21 +236,18 @@ class LissenMediaProvider
     ): OperationResult<List<Book>> {
       Timber.d("Fetching author books: libraryId=$libraryId, authorId=$authorId")
 
-      return when (preferences.isForceCache()) {
-        true -> localCacheRepository.fetchAuthorItems(libraryId = libraryId, authorId = authorId)
-        false -> providePreferredChannel().fetchAuthorBooks(libraryId = libraryId, authorId = authorId)
-      }
+      return cacheOrChannel(
+        local = { localCacheRepository.fetchAuthorItems(libraryId = libraryId, authorId = authorId) },
+        remote = { providePreferredChannel().fetchAuthorBooks(libraryId = libraryId, authorId = authorId) },
+      )
     }
 
     suspend fun fetchLibraries(): OperationResult<List<Library>> {
       Timber.d("Fetching libraries: source=${if (preferences.isForceCache()) "cache" else "network"}")
 
-      return when (preferences.isForceCache()) {
-        true -> {
-          localCacheRepository.fetchLibraries()
-        }
-
-        false -> {
+      return cacheOrChannel(
+        local = { localCacheRepository.fetchLibraries() },
+        remote = {
           providePreferredChannel()
             .fetchLibraries()
             .also {
@@ -293,21 +256,15 @@ class LissenMediaProvider
                 onFailure = {},
               )
             }
-        }
-      }
+        },
+      )
     }
 
     suspend fun fetchLibrary(libraryId: String): OperationResult<Library> =
-      when (preferences.isForceCache()) {
-        true -> {
-          OperationResult.Error(OperationError.UnsupportedError)
-        }
-
-        false -> {
-          providePreferredChannel()
-            .fetchLibrary(libraryId)
-        }
-      }
+      cacheOrChannel(
+        local = { OperationResult.Error(OperationError.UnsupportedError) },
+        remote = { providePreferredChannel().fetchLibrary(libraryId) },
+      )
 
     suspend fun startPlayback(
       itemId: String,
@@ -337,17 +294,14 @@ class LissenMediaProvider
     suspend fun fetchRecentListenedBooks(libraryId: String): OperationResult<List<RecentBook>> {
       Timber.d("Fetching recent books: libraryId=$libraryId")
 
-      return when (preferences.isForceCache()) {
-        true -> {
-          localCacheRepository.fetchRecentListenedBooks(libraryId)
-        }
-
-        false -> {
+      return cacheOrChannel(
+        local = { localCacheRepository.fetchRecentListenedBooks(libraryId) },
+        remote = {
           providePreferredChannel()
             .fetchRecentListenedBooks(libraryId)
             .map { items -> mergeLocalRecentProgress(libraryId = libraryId, recentBooks = items) }
-        }
-      }
+        },
+      )
     }
 
     suspend fun fetchBook(
@@ -357,33 +311,25 @@ class LissenMediaProvider
       Timber.d("Fetching book: bookId=$bookId, libraryType=$libraryType")
 
       val fetched: OperationResult<DetailedItem> =
-        when (preferences.isForceCache()) {
-          true -> {
-            localCacheRepository
-              .fetchBook(bookId)
-              ?.let { OperationResult.Success(it) }
-              ?: OperationResult.Error(OperationError.InternalError)
-          }
-
-          false -> {
+        cacheOrChannel(
+          local = { fetchCachedBook(bookId) ?: OperationResult.Error(OperationError.InternalError) },
+          remote = {
             provideChannelFor(libraryType)
               .fetchBook(bookId)
               .map { ChapterOrdering.canonical(it) }
               .map { mergeLocalItemProgress(it) }
               .foldAsync(
                 onSuccess = { OperationResult.Success(it) },
-                onFailure = { error ->
-                  localCacheRepository
-                    .fetchBook(bookId)
-                    ?.let { OperationResult.Success(it) }
-                    ?: error
-                },
+                onFailure = { error -> fetchCachedBook(bookId) ?: error },
               )
-          }
-        }
+          },
+        )
 
       return fetched.flatMap { prepareForPlayback(it) }
     }
+
+    private suspend fun fetchCachedBook(bookId: String): OperationResult<DetailedItem>? =
+      localCacheRepository.fetchBook(bookId)?.let { OperationResult.Success(it) }
 
     /**
      * The stored playing item carries the progress of the moment it was stored, while the local
@@ -595,6 +541,16 @@ class LissenMediaProvider
 
       return detailedItem.copy(progress = updatedProgress)
     }
+
+    /** Offline mode, forced by the user, reads everything from the local cache; otherwise the channel answers. */
+    private inline fun <T> cacheOrChannel(
+      local: () -> T,
+      remote: () -> T,
+    ): T =
+      when (preferences.isForceCache()) {
+        true -> local()
+        false -> remote()
+      }
 
     fun fetchConnectionHost() = providePreferredChannel().fetchConnectionHost()
 
