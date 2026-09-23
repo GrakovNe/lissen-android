@@ -37,7 +37,7 @@ import org.grakovne.lissen.ui.screens.settings.advanced.AdvancedSettingsNavigati
 import org.grakovne.lissen.ui.screens.settings.composable.GitHubLinkComposable
 import org.grakovne.lissen.ui.screens.settings.composable.LicenseFooterComposable
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
-import org.grakovne.lissen.viewmodel.SettingsViewModel
+import org.grakovne.lissen.viewmodel.ConnectionSettingsViewModel
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,7 +45,7 @@ fun SettingsScreen(
   onBack: () -> Unit,
   navController: AppNavigationService,
 ) {
-  val viewModel: SettingsViewModel = hiltViewModel()
+  val viewModel: ConnectionSettingsViewModel = hiltViewModel()
   val host by viewModel.host.collectAsState()
 
   LaunchedEffect(Unit) {

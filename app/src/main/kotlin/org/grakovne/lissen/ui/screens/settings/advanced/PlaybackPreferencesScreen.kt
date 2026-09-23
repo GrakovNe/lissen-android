@@ -39,7 +39,7 @@ import org.grakovne.lissen.ui.screens.settings.composable.PlaybackVolumeBoostSet
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsInfoBanner
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
-import org.grakovne.lissen.viewmodel.SettingsViewModel
+import org.grakovne.lissen.viewmodel.PlaybackSettingsViewModel
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,7 +47,7 @@ fun PlaybackPreferencesScreen(
   onBack: () -> Unit,
   navController: AppNavigationService,
 ) {
-  val viewModel: SettingsViewModel = hiltViewModel()
+  val viewModel: PlaybackSettingsViewModel = hiltViewModel()
   val softwareCodecsEnabled by viewModel.softwareCodecsEnabled.collectAsState()
   val softwareCodecsEnabledOnStart = viewModel.softwareCodecsEnabledOnStart
   val context = LocalContext.current

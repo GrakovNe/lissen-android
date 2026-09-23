@@ -34,13 +34,13 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.channel.audiobookshelf.HostType
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.navigation.AppNavigationService
-import org.grakovne.lissen.viewmodel.SettingsViewModel
+import org.grakovne.lissen.viewmodel.ConnectionSettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ServerInfoComposable(
   navController: AppNavigationService,
-  viewModel: SettingsViewModel,
+  viewModel: ConnectionSettingsViewModel,
 ) {
   var connectionInfoExpanded by remember { mutableStateOf(false) }
 

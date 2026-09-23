@@ -42,25 +42,23 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
+import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.ui.extensions.formatTime
 import org.grakovne.lissen.ui.extensions.spokenDuration
 import org.grakovne.lissen.ui.screens.player.composable.common.provideForwardIcon
 import org.grakovne.lissen.ui.screens.player.composable.common.provideReplayIcon
 import org.grakovne.lissen.viewmodel.PlayerViewModel
-import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
 fun TrackControlComposable(
   viewModel: PlayerViewModel,
-  settingsViewModel: SettingsViewModel,
+  seekTime: SeekTime,
   modifier: Modifier = Modifier,
 ) {
   val isPlaying by viewModel.isPlaying.collectAsState()
   val currentTrackIndex by viewModel.currentChapterIndex.collectAsState()
   val currentTrackPosition by viewModel.currentChapterPosition.collectAsState()
   val currentTrackDuration by viewModel.currentChapterDuration.collectAsState()
-
-  val seekTime by settingsViewModel.seekTime.collectAsState()
 
   val book by viewModel.book.collectAsState()
   val chapters = book?.chapters ?: emptyList()

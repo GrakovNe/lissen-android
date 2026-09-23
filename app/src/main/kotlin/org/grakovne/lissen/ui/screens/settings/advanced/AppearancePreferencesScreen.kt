@@ -34,12 +34,12 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.screens.settings.composable.ColorSchemeSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
-import org.grakovne.lissen.viewmodel.SettingsViewModel
+import org.grakovne.lissen.viewmodel.AppearanceSettingsViewModel
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun AppearancePreferencesScreen(onBack: () -> Unit) {
-  val viewModel: SettingsViewModel = hiltViewModel()
+  val viewModel: AppearanceSettingsViewModel = hiltViewModel()
   val materialYouColorsEnabled by viewModel.materialYouEnabled.collectAsState()
 
   Scaffold(

@@ -66,6 +66,7 @@ import coil3.ImageLoader
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.ui.adaptive.isWideLayout
 import org.grakovne.lissen.ui.icons.Search
 import org.grakovne.lissen.ui.navigation.AppNavigationService
@@ -87,9 +88,10 @@ import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackControl
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackDetailsPlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.provideChapterNumberTitle
 import org.grakovne.lissen.viewmodel.CachingModelView
+import org.grakovne.lissen.viewmodel.ConnectionSettingsViewModel
 import org.grakovne.lissen.viewmodel.LibraryViewModel
+import org.grakovne.lissen.viewmodel.PlaybackSettingsViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
-import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -108,7 +110,8 @@ fun PlayerScreen(
   val cachingModelView: CachingModelView = hiltViewModel()
   val playerViewModel: PlayerViewModel = hiltViewModel()
   val libraryViewModel: LibraryViewModel = hiltViewModel()
-  val settingsViewModel: SettingsViewModel = hiltViewModel()
+  val connectionSettingsViewModel: ConnectionSettingsViewModel = hiltViewModel()
+  val playbackSettingsViewModel: PlaybackSettingsViewModel = hiltViewModel()
 
   val titleTextStyle = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
 
@@ -141,6 +144,7 @@ fun PlayerScreen(
   var orderingSelected by remember { mutableStateOf(false) }
 
   val preferredLibraryType by libraryViewModel.preferredLibraryType.collectAsState()
+  val seekTime by playbackSettingsViewModel.seekTime.collectAsState()
 
   // while the requested item is still loading, playingBook may hold the previous item of another
   // type; the screen keeps rendering that item, so its type drives the labels, but only the
@@ -182,7 +186,7 @@ fun PlayerScreen(
       playingItemChanged(bookId, playingBook) || cachePolicyChanged(cachingModelView, playingBook)
 
     if (needsPreparation) {
-      if (settingsViewModel.hasCredentials().not()) {
+      if (connectionSettingsViewModel.hasCredentials().not()) {
         navController.showLogin()
         return@LaunchedEffect
       }
@@ -359,7 +363,7 @@ fun PlayerScreen(
             playerViewModel = playerViewModel,
             libraryType = libraryType,
             imageLoader = imageLoader,
-            settingsViewModel = settingsViewModel,
+            seekTime = seekTime,
             modifier =
               Modifier
                 .weight(0.45f)
@@ -400,7 +404,7 @@ fun PlayerScreen(
               playerViewModel = playerViewModel,
               imageLoader = imageLoader,
               libraryType = libraryType,
-              settingsViewModel = settingsViewModel,
+              seekTime = seekTime,
             )
           }
 
@@ -422,7 +426,7 @@ fun PlayerScreen(
     MediaDetailComposable(
       playingBook = playingBook,
       playingViewModel = playerViewModel,
-      settingsViewModel = settingsViewModel,
+      libraryType = libraryType,
       onDismissRequest = { itemDetailsSelected = false },
       navController = navController,
     )
@@ -456,7 +460,7 @@ private fun PlayerArtworkAndControls(
   playerViewModel: PlayerViewModel,
   imageLoader: ImageLoader,
   libraryType: LibraryType,
-  settingsViewModel: SettingsViewModel,
+  seekTime: SeekTime,
   modifier: Modifier = Modifier,
 ) {
   Column(
@@ -476,13 +480,13 @@ private fun PlayerArtworkAndControls(
     if (!isPlaybackReady) {
       TrackControlPlaceholderComposable(
         modifier = Modifier,
-        settingsViewModel = settingsViewModel,
+        seekTime = seekTime,
       )
     } else {
       TrackControlComposable(
         viewModel = playerViewModel,
         modifier = Modifier,
-        settingsViewModel = settingsViewModel,
+        seekTime = seekTime,
       )
     }
   }
@@ -496,7 +500,7 @@ private fun PlayerArtworkAndControlsWide(
   playerViewModel: PlayerViewModel,
   libraryType: LibraryType,
   imageLoader: ImageLoader,
-  settingsViewModel: SettingsViewModel,
+  seekTime: SeekTime,
   modifier: Modifier = Modifier,
 ) {
   val context = LocalContext.current
@@ -576,12 +580,12 @@ private fun PlayerArtworkAndControlsWide(
       TrackControlComposable(
         viewModel = playerViewModel,
         modifier = Modifier,
-        settingsViewModel = settingsViewModel,
+        seekTime = seekTime,
       )
     } else {
       TrackControlPlaceholderComposable(
         modifier = Modifier,
-        settingsViewModel = settingsViewModel,
+        seekTime = seekTime,
       )
     }
   }

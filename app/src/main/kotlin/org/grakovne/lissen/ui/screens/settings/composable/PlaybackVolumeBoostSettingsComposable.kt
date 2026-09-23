@@ -35,10 +35,10 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.slider.VolumeBoostSlider
-import org.grakovne.lissen.viewmodel.SettingsViewModel
+import org.grakovne.lissen.viewmodel.PlaybackSettingsViewModel
 
 @Composable
-fun PlaybackVolumeBoostSettingsComposable(viewModel: SettingsViewModel) {
+fun PlaybackVolumeBoostSettingsComposable(viewModel: PlaybackSettingsViewModel) {
   var volumeBoostExpanded by remember { mutableStateOf(false) }
   val preferredDb by viewModel.preferredPlaybackVolumeBoost.collectAsState()
 

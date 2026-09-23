@@ -29,10 +29,10 @@ import org.grakovne.lissen.domain.StoragePath
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItem
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItemComposable
 import org.grakovne.lissen.ui.screens.settings.composable.ConfirmationBottomSheetComposable
-import org.grakovne.lissen.viewmodel.SettingsViewModel
+import org.grakovne.lissen.viewmodel.DownloadSettingsViewModel
 
 @Composable
-fun DownloadStorageSettingsComposable(viewModel: SettingsViewModel) {
+fun DownloadStorageSettingsComposable(viewModel: DownloadSettingsViewModel) {
   val context = LocalContext.current
   val scope = rememberCoroutineScope()
   var storageExpanded by remember { mutableStateOf(false) }

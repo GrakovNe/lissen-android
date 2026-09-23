@@ -14,9 +14,9 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.grakovne.lissen.domain.DurationTimerOption
-import org.grakovne.lissen.domain.Library
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.TimerOption
-import org.grakovne.lissen.viewmodel.SettingsViewModel
+import org.grakovne.lissen.viewmodel.PlaybackSettingsViewModel
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -31,12 +31,11 @@ class SleepTimerSettingsScreenTest {
   @get:Rule
   val composeRule = createComposeRule()
 
-  private fun viewModelWith(defaultTimerOption: TimerOption?): SettingsViewModel {
-    val viewModel = mockk<SettingsViewModel>(relaxed = true)
+  private fun viewModelWith(defaultTimerOption: TimerOption?): PlaybackSettingsViewModel {
+    val viewModel = mockk<PlaybackSettingsViewModel>(relaxed = true)
     every { viewModel.sleepTimerFadeEnabled } returns MutableStateFlow(false)
     every { viewModel.sleepTimerFadeSeconds } returns MutableStateFlow(30)
     every { viewModel.defaultTimerOption } returns MutableStateFlow(defaultTimerOption)
-    every { viewModel.preferredLibrary } returns MutableStateFlow<Library?>(null)
     return viewModel
   }
 
@@ -45,6 +44,7 @@ class SleepTimerSettingsScreenTest {
     composeRule.setContent {
       SleepTimerSettingsScreenContent(
         viewModel = viewModelWith(null),
+        libraryType = LibraryType.LIBRARY,
         onBack = {},
       )
     }
@@ -60,6 +60,7 @@ class SleepTimerSettingsScreenTest {
     composeRule.setContent {
       SleepTimerSettingsScreenContent(
         viewModel = viewModelWith(DurationTimerOption(45)),
+        libraryType = LibraryType.LIBRARY,
         onBack = {},
       )
     }
@@ -75,6 +76,7 @@ class SleepTimerSettingsScreenTest {
     composeRule.setContent {
       SleepTimerSettingsScreenContent(
         viewModel = viewModel,
+        libraryType = LibraryType.LIBRARY,
         onBack = {},
       )
     }

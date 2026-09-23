@@ -22,10 +22,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.ColorScheme
-import org.grakovne.lissen.viewmodel.SettingsViewModel
+import org.grakovne.lissen.viewmodel.AppearanceSettingsViewModel
 
 @Composable
-fun ColorSchemeSettingsComposable(viewModel: SettingsViewModel) {
+fun ColorSchemeSettingsComposable(viewModel: AppearanceSettingsViewModel) {
   val context = LocalContext.current
   var colorSchemeExpanded by remember { mutableStateOf(false) }
   val preferredColorScheme by viewModel.preferredColorScheme.collectAsState()

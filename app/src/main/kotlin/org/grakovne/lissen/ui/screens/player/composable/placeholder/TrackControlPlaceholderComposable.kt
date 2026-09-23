@@ -21,23 +21,19 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.ui.extensions.formatTime
 import org.grakovne.lissen.ui.screens.player.composable.common.provideForwardIcon
 import org.grakovne.lissen.ui.screens.player.composable.common.provideReplayIcon
-import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @Composable
 fun TrackControlPlaceholderComposable(
-  settingsViewModel: SettingsViewModel,
+  seekTime: SeekTime,
   modifier: Modifier = Modifier,
 ) {
-  val seekTime by settingsViewModel.seekTime.collectAsState()
-
   Column(
     modifier =
       modifier

@@ -24,11 +24,11 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.common.NetworkTypeAutoCache
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItem
 import org.grakovne.lissen.ui.screens.settings.composable.CommonSettingsItemComposable
-import org.grakovne.lissen.viewmodel.SettingsViewModel
+import org.grakovne.lissen.viewmodel.DownloadSettingsViewModel
 
 @Composable
 fun NetworkTypeAutoCacheSettingsComposable(
-  viewModel: SettingsViewModel,
+  viewModel: DownloadSettingsViewModel,
   enabled: Boolean,
 ) {
   val context = LocalContext.current

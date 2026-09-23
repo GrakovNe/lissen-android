@@ -74,8 +74,8 @@ import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.LissenToggle
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.CachingModelView
+import org.grakovne.lissen.viewmodel.LibrarySettingsViewModel
 import org.grakovne.lissen.viewmodel.LibraryViewModel
-import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,13 +87,13 @@ fun QuickSettingsComposable(
   onGroupingSelected: (LibraryGrouping) -> Unit,
   onSortingChanged: () -> Unit,
   navController: AppNavigationService,
-  settingsModelView: SettingsViewModel = hiltViewModel(),
+  librarySettingsViewModel: LibrarySettingsViewModel = hiltViewModel(),
   libraryViewModel: LibraryViewModel = hiltViewModel(),
 ) {
   val forceCache by cachingModelView.forceCache.collectAsState(false)
-  val hideCompleted by settingsModelView.hideCompleted.collectAsState(false)
-  val grouping by settingsModelView.libraryGrouping.collectAsState(LibraryGrouping.NONE)
-  val ordering by settingsModelView.preferredLibraryOrdering.collectAsState()
+  val hideCompleted by librarySettingsViewModel.hideCompleted.collectAsState(false)
+  val grouping by librarySettingsViewModel.libraryGrouping.collectAsState(LibraryGrouping.NONE)
+  val ordering by librarySettingsViewModel.preferredLibraryOrdering.collectAsState()
   val context = LocalContext.current
   val view = LocalView.current
   val isLibrary = libraryViewModel.fetchPreferredLibraryType() == LibraryType.LIBRARY
@@ -194,7 +194,7 @@ fun QuickSettingsComposable(
                     ordering.direction == ASCENDING -> DESCENDING
                     else -> ASCENDING
                   }
-                settingsModelView.preferLibraryOrdering(
+                librarySettingsViewModel.preferLibraryOrdering(
                   LibraryOrderingConfiguration(option = option, direction = newDirection),
                 )
                 onSortingChanged()

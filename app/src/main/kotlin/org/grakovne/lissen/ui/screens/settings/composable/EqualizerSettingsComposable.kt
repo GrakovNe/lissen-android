@@ -40,11 +40,11 @@ import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.slider.EQUALIZER_SLIDER_HEIGHT
 import org.grakovne.lissen.ui.components.slider.EQUALIZER_THUMB_RADIUS
 import org.grakovne.lissen.ui.components.slider.EqualizerBandSlider
-import org.grakovne.lissen.viewmodel.SettingsViewModel
+import org.grakovne.lissen.viewmodel.PlaybackSettingsViewModel
 import kotlin.math.roundToInt
 
 @Composable
-fun EqualizerSettingsComposable(viewModel: SettingsViewModel) {
+fun EqualizerSettingsComposable(viewModel: PlaybackSettingsViewModel) {
   var equalizerExpanded by remember { mutableStateOf(false) }
   val settings by viewModel.equalizer.collectAsState()
   val capabilities by viewModel.equalizerCapabilities.collectAsState()

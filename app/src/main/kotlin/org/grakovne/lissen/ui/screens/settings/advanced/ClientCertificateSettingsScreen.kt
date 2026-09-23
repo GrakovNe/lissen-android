@@ -41,12 +41,12 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
-import org.grakovne.lissen.viewmodel.SettingsViewModel
+import org.grakovne.lissen.viewmodel.ConnectionSettingsViewModel
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun ClientCertificateSettingsScreen(onBack: () -> Unit) {
-  val viewModel: SettingsViewModel = hiltViewModel()
+  val viewModel: ConnectionSettingsViewModel = hiltViewModel()
   val clientCertAlias by viewModel.clientCertAlias.collectAsState(initial = null)
   val activity = LocalActivity.current
 

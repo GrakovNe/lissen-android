@@ -95,9 +95,10 @@ import org.grakovne.lissen.ui.screens.library.composables.fallback.LibraryFallba
 import org.grakovne.lissen.ui.screens.library.composables.placeholder.LibraryPlaceholderComposable
 import org.grakovne.lissen.ui.screens.library.composables.placeholder.RecentBooksPlaceholderComposable
 import org.grakovne.lissen.viewmodel.CachingModelView
+import org.grakovne.lissen.viewmodel.ConnectionSettingsViewModel
+import org.grakovne.lissen.viewmodel.LibrarySettingsViewModel
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
-import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
@@ -105,7 +106,8 @@ fun LibraryScreen(
   navController: AppNavigationService,
   libraryViewModel: LibraryViewModel = hiltViewModel(),
   playerViewModel: PlayerViewModel = hiltViewModel(),
-  settingsViewModel: SettingsViewModel = hiltViewModel(),
+  settingsViewModel: LibrarySettingsViewModel = hiltViewModel(),
+  connectionSettingsViewModel: ConnectionSettingsViewModel = hiltViewModel(),
   cachingModelView: CachingModelView = hiltViewModel(),
   imageLoader: ImageLoader,
   networkService: NetworkService,
@@ -153,7 +155,7 @@ fun LibraryScreen(
 
   fun refreshContent(showPullRefreshing: Boolean) {
     coroutineScope.launch {
-      if (settingsViewModel.hasCredentials().not()) {
+      if (connectionSettingsViewModel.hasCredentials().not()) {
         navController.showLogin()
         return@launch
       }
@@ -251,7 +253,7 @@ fun LibraryScreen(
     playerViewModel.updatePlayingItem()
     settingsViewModel.fetchLibraries()
 
-    if (settingsViewModel.hasCredentials().not()) {
+    if (connectionSettingsViewModel.hasCredentials().not()) {
       navController.showLogin()
     }
   }

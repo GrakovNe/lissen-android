@@ -48,7 +48,6 @@ import org.grakovne.lissen.ui.extensions.formatTime
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.player.InfoRow
 import org.grakovne.lissen.viewmodel.PlayerViewModel
-import org.grakovne.lissen.viewmodel.SettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,13 +55,11 @@ fun MediaDetailComposable(
   playingBook: DetailedItem?,
   onDismissRequest: () -> Unit,
   playingViewModel: PlayerViewModel,
-  settingsViewModel: SettingsViewModel,
+  libraryType: LibraryType,
   navController: AppNavigationService,
 ) {
   val totalPosition by playingViewModel.totalPosition.collectAsState()
   val totalDuration = playingBook?.chapters?.sumOf { it.duration }
-  val preferredLibrary by settingsViewModel.preferredLibrary.collectAsState()
-  val libraryType = playingBook?.libraryType ?: preferredLibrary?.type ?: LibraryType.UNKNOWN
 
   LissenModalBottomSheet(
     onDismissRequest = onDismissRequest,

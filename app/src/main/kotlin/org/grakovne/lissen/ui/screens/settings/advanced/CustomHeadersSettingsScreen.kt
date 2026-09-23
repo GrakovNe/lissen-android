@@ -39,13 +39,13 @@ import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
-import org.grakovne.lissen.viewmodel.SettingsViewModel
+import org.grakovne.lissen.viewmodel.ConnectionSettingsViewModel
 import kotlin.math.max
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CustomHeadersSettingsScreen(onBack: () -> Unit) {
-  val settingsViewModel: SettingsViewModel = hiltViewModel()
+  val settingsViewModel: ConnectionSettingsViewModel = hiltViewModel()
   val headers = settingsViewModel.customHeaders.collectAsState()
 
   val fabHeight = 56.dp
