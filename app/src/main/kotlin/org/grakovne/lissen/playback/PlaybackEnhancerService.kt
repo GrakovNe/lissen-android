@@ -1,6 +1,6 @@
 package org.grakovne.lissen.playback
 
-import android.media.audiofx.Equalizer
+import android.media.audiofx.DynamicsProcessing
 import android.media.audiofx.LoudnessEnhancer
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
@@ -30,12 +30,15 @@ class PlaybackEnhancerService
   constructor(
     private val player: ExoPlayer,
     private val sharedPreferences: PlaybackPreferences,
+    private val equalizerBandProvider: EqualizerBandProvider,
   ) : RunningComponent {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private var enhancer: LoudnessEnhancer? = null
 
-    private var equalizer: Equalizer? = null
+    private var equalizer: DynamicsProcessing? = null
+
+    private var equalizerCapabilities: EqualizerCapabilities? = null
 
     @OptIn(UnstableApi::class)
     override fun onCreate() {
@@ -43,12 +46,12 @@ class PlaybackEnhancerService
         object : Player.Listener {
           override fun onAudioSessionIdChanged(id: Int) {
             attachEnhancer(id, sharedPreferences.getPlaybackVolumeBoost())
-            attachEqualizer(id, sharedPreferences.getEqualizer())
+            attachEqualizer(id)
           }
         },
       )
       attachEnhancer(player.audioSessionId, sharedPreferences.getPlaybackVolumeBoost())
-      attachEqualizer(player.audioSessionId, sharedPreferences.getEqualizer())
+      attachEqualizer(player.audioSessionId)
 
       scope.launch {
         sharedPreferences.playbackVolumeBoostFlow.collectLatest {
@@ -101,26 +104,39 @@ class PlaybackEnhancerService
     }
 
     @OptIn(UnstableApi::class)
-    private fun attachEqualizer(
-      sessionId: Int,
-      settings: EqualizerSettings,
-    ) {
+    private fun attachEqualizer(sessionId: Int) {
       equalizer?.release()
       equalizer = null
 
       if (sessionId == C.AUDIO_SESSION_ID_UNSET) return
 
-      try {
-        equalizer = Equalizer(0, sessionId)
-        applyEqualizer(settings)
-      } catch (ex: Exception) {
-        Timber.e("Unable to attach Equalizer due to ${ex.message}")
+      // the band layout comes from the device, so the effect is built once the probe has run
+      scope.launch {
+        val capabilities = equalizerBandProvider.getCapabilities()
+        if (capabilities.available.not()) return@launch
+
+        withContext(Dispatchers.Main) {
+          if (player.audioSessionId != sessionId) return@withContext
+
+          equalizer?.release()
+
+          try {
+            equalizerCapabilities = capabilities
+            equalizer = DynamicsProcessing(0, sessionId, equalizerProcessingConfig(capabilities.bands))
+            applyEqualizer(sharedPreferences.getEqualizer())
+            Timber.d("Equalizer attached to audio session $sessionId with ${capabilities.bands.size} bands")
+          } catch (ex: Exception) {
+            equalizer = null
+            Timber.e("Unable to attach equalizer due to ${ex.message}")
+          }
+        }
       }
     }
 
     private fun applyEqualizer(settings: EqualizerSettings) {
       try {
         val eq = equalizer ?: return
+        val capabilities = equalizerCapabilities ?: return
 
         if (!eq.hasControl()) {
           Timber.w("Equalizer lost control of the audio session, settings may not apply")
@@ -131,12 +147,10 @@ class PlaybackEnhancerService
           return
         }
 
+        eq.setPreEqAllChannelsTo(
+          equalizerProcessingEq(capabilities.bands, settings.gains, capabilities.minDb, capabilities.maxDb),
+        )
         eq.enabled = true
-        val range = eq.bandLevelRange
-
-        for (band in 0 until eq.numberOfBands.toInt()) {
-          eq.setBandLevel(band.toShort(), equalizerBandLevel(settings.gains, band, range[0], range[1]))
-        }
       } catch (ex: Exception) {
         Timber.e("Unable to apply equalizer due to: $ex")
       }

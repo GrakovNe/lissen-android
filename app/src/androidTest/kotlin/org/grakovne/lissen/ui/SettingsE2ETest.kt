@@ -145,8 +145,8 @@ class SettingsE2ETest {
     )
   }
 
-  // the row is hidden on a device whose AudioFlinger cannot create an Equalizer effect
-  // (some emulator images); that is the app working as designed, not a failure
+  // the row is hidden on a device whose AudioFlinger cannot create the Equalizer or the
+  // DynamicsProcessing effect (some emulator images); that is the app working as designed, not a failure
   private fun assumeEqualizerAvailable() {
     val capabilities = runBlocking { equalizerBandProvider.getCapabilities() }
     assumeTrue("equalizer effect unavailable on this device", capabilities.available)

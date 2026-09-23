@@ -1,13 +1,11 @@
 package org.grakovne.lissen.playback
 
-fun equalizerBandLevel(
+fun equalizerBandGain(
   gains: List<Int>,
   band: Int,
-  minLevel: Short,
-  maxLevel: Short,
-): Short =
+  minDb: Int,
+  maxDb: Int,
+): Int =
   gains
     .getOrElse(band) { 0 }
-    .times(100)
-    .coerceIn(minLevel.toInt(), maxLevel.toInt())
-    .toShort()
+    .coerceIn(minDb, maxDb)
