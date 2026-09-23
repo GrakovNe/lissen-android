@@ -28,12 +28,7 @@ import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * The playing item as the app sees it: what is playing, where, whether it is ready, and the
- * sleep timer over it. Commands go to the player through [PlayerConnection] and to the
- * service through [PlaybackEventBus]; positions are computed by [PlaybackGeometry] and the
- * bookmarks of the item live in [PlayingBookmarks]. All state is confined to the main thread.
- */
+/** All state is confined to the main thread. */
 @UnstableApi
 @Singleton
 class MediaRepository
@@ -422,11 +417,7 @@ class MediaRepository
       }
     }
 
-    /**
-     * Records a bookmark at the current position, see [PlayingBookmarks.create]. Callers may
-     * come from any dispatcher: the position is main-confined like the rest of the repository,
-     * so the work hops to the main thread first.
-     */
+    /** Callers may come from any dispatcher: the position is main-confined, so the work hops there first. */
     suspend fun createBookmark(title: String? = null): Bookmark? =
       withContext(Dispatchers.Main.immediate) {
         val book = _playingBook.value ?: return@withContext null

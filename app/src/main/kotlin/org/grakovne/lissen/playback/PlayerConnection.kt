@@ -3,10 +3,9 @@ package org.grakovne.lissen.playback
 import androidx.media3.common.PlaybackException
 
 /**
- * The player behind the media session, reduced to what [MediaRepository] asks of it. Every
- * query answers a neutral value until the session is bound, and every command is either
- * queued until then ([play]) or dropped ([pause], [seekTo], [setPlaybackSpeed], [clear]):
- * there is nothing to pause or seek in before a queue exists.
+ * Until the session is bound every query answers a neutral value and every command is
+ * dropped: there is nothing to play, pause or seek in before a queue exists. A command that
+ * must survive the wait goes through [whenConnected].
  */
 interface PlayerConnection {
   val isConnected: Boolean
@@ -14,16 +13,13 @@ interface PlayerConnection {
   val currentMediaItemIndex: Int
   val currentPositionMs: Long
 
-  /** Binds the session once; [listener] hears the player and [onConnected] runs when it is bound. */
   fun connect(
     listener: Listener,
     onConnected: () -> Unit,
   )
 
-  /** Runs [action] at once when the session is bound, otherwise once it binds. */
   fun whenConnected(action: () -> Unit)
 
-  /** Prepares the queue and starts playing it at [speed]. */
   fun play(speed: Float)
 
   fun pause()
@@ -35,10 +31,8 @@ interface PlayerConnection {
 
   fun setPlaybackSpeed(speed: Float)
 
-  /** Stops playback and drops the queue. */
   fun clear()
 
-  /** Drops the session binding, see [MediaRepository.release]. */
   fun release()
 
   interface Listener {

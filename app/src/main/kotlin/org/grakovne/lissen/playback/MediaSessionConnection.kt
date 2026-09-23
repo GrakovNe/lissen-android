@@ -17,7 +17,6 @@ import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** [PlayerConnection] over a media3 [MediaController] bound to [PlaybackService]. */
 @UnstableApi
 @Singleton
 class MediaSessionConnection

@@ -14,10 +14,8 @@ import org.grakovne.lissen.domain.DetailedItem
 import timber.log.Timber
 
 /**
- * The bookmarks of the playing item, shown in the order it is playing in. The list follows
- * [playingBook]: a refresh whose item is no longer the playing one is dropped, since that
- * item's own refresh follows. Storage and the server speak canonical positions; the
- * translations live in [BookmarkCoordinates].
+ * The bookmarks of the playing item, shown in the order it is playing in. A refresh whose
+ * item is no longer the playing one is dropped, since that item's own refresh follows.
  */
 class PlayingBookmarks(
   private val mediaChannel: LissenMediaProvider,
@@ -48,11 +46,6 @@ class PlayingBookmarks(
     show(fetched, itemId = book.id)
   }
 
-  /**
-   * Records a bookmark at [totalPosition] of [book]. It is kept locally right away and reaches
-   * the server on its own later, so the returned bookmark is the local record. `null` when the
-   * position falls outside every chapter.
-   */
   suspend fun create(
     book: DetailedItem,
     totalPosition: Double,

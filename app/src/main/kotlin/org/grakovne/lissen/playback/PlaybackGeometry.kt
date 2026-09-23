@@ -4,14 +4,12 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.playback.service.calculateChapterIndexAndPosition
 
-/** The chapter a total position falls into, with the offset inside it and its length. */
 data class ChapterProgress(
   val index: Int,
   val position: Double,
   val duration: Double,
 )
 
-/** A resolved seek: where the item lands as a total position and as a queue coordinate. */
 data class SeekTarget(
   val totalPosition: Double,
   val chapterIndex: Int,
@@ -23,15 +21,10 @@ enum class ScrollingDirection {
   BACKWARD,
 }
 
-/**
- * Pure arithmetic over an item's chapters: every position [MediaRepository] shows or hands to
- * the player is computed here, from the item and the numbers alone.
- */
 object PlaybackGeometry {
   const val MIN_PLAYBACK_SPEED = 0.5f
   const val MAX_PLAYBACK_SPEED = 3f
 
-  /** A position inside a chapter counts as a replay of it beyond this offset. */
   const val CURRENT_TRACK_REPLAY_THRESHOLD = 5.0
 
   fun chapterProgress(
@@ -47,7 +40,6 @@ object PlaybackGeometry {
     )
   }
 
-  /** The total position the player is at, given its queue index and its offset in that file. */
   fun totalPosition(
     book: DetailedItem,
     mediaItemIndex: Int,
@@ -61,7 +53,6 @@ object PlaybackGeometry {
 
   fun totalDuration(book: DetailedItem): Double = book.chapters.sumOf { it.duration }
 
-  /** The total position [chapterPosition] seconds into the chapter [totalPosition] is in. */
   fun absolutePosition(
     book: DetailedItem,
     totalPosition: Double,
@@ -73,10 +64,8 @@ object PlaybackGeometry {
       ?.let { it.start + chapterPosition }
 
   /**
-   * Where a seek from [from] to [to] actually lands. The request is clamped to the item, and
-   * a request into a chapter that is not on the device moves on to the nearest one that is,
-   * in the direction of the seek first and the other way round when nothing lies ahead.
-   * `null` for an item without chapters: there is nothing to seek in.
+   * A seek into a chapter that is not on the device moves on to the nearest one that is, in
+   * the direction of the seek first and the other way round when nothing lies ahead.
    */
   fun resolveSeek(
     book: DetailedItem,
@@ -129,11 +118,7 @@ object PlaybackGeometry {
     totalPosition: Double,
   ): Int = calculateChapterIndex(book, totalPosition) + 1
 
-  /**
-   * The chapter a "previous" press goes to: the current one again when the listener is a few
-   * seconds into it (or it is the first), the one before it otherwise. `null` when the press
-   * changes nothing, that is at the very start of the first chapter without a rewind.
-   */
+  /** A "previous" press a few seconds into a chapter (or in the first one) replays it instead of leaving it. */
   fun previousChapter(
     book: DetailedItem,
     totalPosition: Double,
@@ -149,7 +134,6 @@ object PlaybackGeometry {
     }
   }
 
-  /** Seconds of playback left in the chapter [totalPosition] is in, at [speed]; `null` outside every chapter. */
   fun remainingInChapter(
     book: DetailedItem,
     totalPosition: Double,

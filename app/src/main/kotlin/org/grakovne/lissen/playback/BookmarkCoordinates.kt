@@ -8,7 +8,6 @@ import org.grakovne.lissen.domain.DetailedItem
 import kotlin.math.abs
 import kotlin.math.round
 
-/** What a new bookmark is stored as: its title and its position in the canonical order. */
 data class BookmarkDraft(
   val title: String,
   val storedPosition: Double,
@@ -26,13 +25,11 @@ object BookmarkCoordinates {
   // two translations of the same stored second differ by an ulp at most
   private const val MATCH_EPSILON = 1e-3
 
-  /** The stored (canonical) [bookmarks] of [book] in its playing order; other items' pass through. */
   fun inPlayingOrder(
     bookmarks: List<Bookmark>,
     book: DetailedItem,
   ): List<Bookmark> = translated(bookmarks, from = ChapterOrdering.canonical(book), to = book)
 
-  /** [bookmarks] shown for [from] moved to the order of [to]; other items' pass through. */
   fun translated(
     bookmarks: List<Bookmark>,
     from: DetailedItem,
@@ -46,10 +43,9 @@ object BookmarkCoordinates {
     }
 
   /**
-   * The bookmark to store for [totalPosition] in the order of [book]. A live position may
-   * overshoot the declared end by a little: that is the end, not nowhere. `null` when the
-   * position falls outside every chapter. The title names the episode the bookmark is
-   * actually in, by the same boundary rule as the stored position.
+   * A live position may overshoot the declared end by a little: that is the end, not nowhere.
+   * The title names the episode the bookmark is actually in, by the same boundary rule as the
+   * stored position.
    */
   fun draft(
     book: DetailedItem,
