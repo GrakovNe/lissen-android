@@ -59,19 +59,21 @@ private suspend fun buildEffect(
 ): EqualizerEffect? {
   if (sessionId == C.AUDIO_SESSION_ID_UNSET) return null
 
-  val available =
-    capabilities() as? EqualizerCapabilities.Available
-      ?: run {
-        Timber.w("Equalizer is unavailable on this device, audio session $sessionId plays unshaped")
-        return null
-      }
-
-  return try {
-    attach(sessionId, available).also {
-      Timber.d("Equalizer attached to audio session $sessionId with ${available.bands.size} bands")
+  return when (val available = capabilities()) {
+    EqualizerCapabilities.Unavailable -> {
+      Timber.w("Equalizer is unavailable on this device, audio session $sessionId plays unshaped")
+      null
     }
-  } catch (ex: Exception) {
-    Timber.e("Unable to attach equalizer due to ${ex.message}")
-    null
+
+    is EqualizerCapabilities.Available -> {
+      try {
+        attach(sessionId, available).also {
+          Timber.d("Equalizer attached to audio session $sessionId with ${available.bands.size} bands")
+        }
+      } catch (ex: Exception) {
+        Timber.e("Unable to attach equalizer due to ${ex.message}")
+        null
+      }
+    }
   }
 }

@@ -42,12 +42,12 @@ class EqualizerBandProvider
     // equalizer should come back on the next attempt rather than stay hidden for the process
     suspend fun getCapabilities(): EqualizerCapabilities =
       mutex.withLock {
-        cached ?: probeCapabilities().also { cached = it as? EqualizerCapabilities.Available }
+        cached ?: probeCapabilities()?.also { cached = it } ?: EqualizerCapabilities.Unavailable
       }
 
     // the band layout and the gain range come from the platform equalizer, the audio itself is
     // shaped by DynamicsProcessing, so both effects must exist on this device
-    private suspend fun probeCapabilities(): EqualizerCapabilities =
+    private suspend fun probeCapabilities(): EqualizerCapabilities.Available? =
       withContext(Dispatchers.IO) {
         try {
           val audioManager = requireNotNull(context.getSystemService(AudioManager::class.java))
@@ -59,7 +59,7 @@ class EqualizerBandProvider
           }
         } catch (ex: Exception) {
           Timber.e("Unable to probe equalizer capabilities due to ${ex.message}")
-          EqualizerCapabilities.Unavailable
+          null
         }
       }
 

@@ -55,24 +55,23 @@ fun EqualizerSettingsComposable(viewModel: SettingsViewModel) {
     onClick = { equalizerExpanded = true },
   )
 
-  if (equalizerExpanded) {
-    (capabilities as? EqualizerCapabilities.Available)
-      ?.let { deviceCapabilities ->
-        LissenModalBottomSheet(
-          containerColor = colorScheme.background,
-          scrollable = false,
-          onDismissRequest = { equalizerExpanded = false },
-          content = {
-            EqualizerSettingsContent(
-              settings = settings,
-              capabilities = deviceCapabilities,
-              onGainChange = viewModel::preferEqualizerGain,
-              onReset = viewModel::resetEqualizer,
-              modifier = Modifier.fillMaxWidth(),
-            )
-          },
+  val deviceCapabilities = capabilities
+
+  if (equalizerExpanded && deviceCapabilities is EqualizerCapabilities.Available) {
+    LissenModalBottomSheet(
+      containerColor = colorScheme.background,
+      scrollable = false,
+      onDismissRequest = { equalizerExpanded = false },
+      content = {
+        EqualizerSettingsContent(
+          settings = settings,
+          capabilities = deviceCapabilities,
+          onGainChange = viewModel::preferEqualizerGain,
+          onReset = viewModel::resetEqualizer,
+          modifier = Modifier.fillMaxWidth(),
         )
-      }
+      },
+    )
   }
 }
 
