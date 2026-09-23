@@ -695,9 +695,10 @@ class MediaRepository
           ?: 0.0
     }
 
-    suspend fun createBookmark(title: String? = null) {
+    /** Returns the stored bookmark, or null when there is nothing playing to bookmark. */
+    suspend fun createBookmark(title: String? = null): Bookmark? {
       Timber.d("Creating bookmark for ${_playingBook.value?.id} at position=${_totalPosition.value.toInt()}s")
-      val playingBook = _playingBook.value ?: return
+      val playingBook = _playingBook.value ?: return null
       // a live position may overshoot the declared end by a little: that is the end, not nowhere
       val totalPosition = _totalPosition.value.coerceAtMost(playingBook.end() ?: _totalPosition.value)
 
@@ -707,7 +708,7 @@ class MediaRepository
       val currentChapter = location?.let { l -> playingBook.chapters.firstOrNull { it.id == l.chapterId } }
       if (currentChapter == null) {
         Timber.w("Unable to create bookmark: no chapter at position=${totalPosition.toInt()}s")
-        return
+        return null
       }
       val chapterPosition = location.offset
 
@@ -717,14 +718,16 @@ class MediaRepository
           else -> title
         }
 
-      mediaChannel
-        .createBookmark(
-          libraryItemId = playingBook.id,
-          totalPosition = ChapterOrdering.storedBookmarkPosition(playingBook, totalPosition),
-          title = bookmarkTitle,
-        )
+      val created =
+        mediaChannel
+          .createBookmark(
+            libraryItemId = playingBook.id,
+            totalPosition = ChapterOrdering.storedBookmarkPosition(playingBook, totalPosition),
+            title = bookmarkTitle,
+          )
 
       refreshBookmarksFromCache(playingBook.id)
+      return created
     }
 
     /**

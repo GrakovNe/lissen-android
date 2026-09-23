@@ -4,8 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.os.Parcelable
 import android.util.LruCache
 import android.view.KeyEvent
@@ -29,7 +27,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import org.grakovne.lissen.channel.common.OperationResult
@@ -60,11 +60,9 @@ class MediaLibrarySessionCallback
     private val futureScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     internal var searchCache = LruCache<String, ListenableFuture<List<MediaItem>>>(5)
-    private val connectedSessions = mutableMapOf<MediaSession.ControllerInfo, MediaSession>()
-    private val mainHandler = Handler(Looper.getMainLooper())
 
-    @Volatile
-    private var bookmarkButtonConfirmationInProgress = false
+    /** The bookmark press being handled, from creating the bookmark to the end of its confirmation. */
+    private var bookmarkFeedback: Job? = null
 
     private fun searchFutureFor(query: String): ListenableFuture<List<MediaItem>> {
       val key = query.trim().lowercase()
@@ -110,13 +108,13 @@ class MediaLibrarySessionCallback
       }
     }
 
-    val prevChapterCommand = SessionCommand(PREV_CHAPTER_COMMAND, Bundle.EMPTY)
-    val rewindCommand = SessionCommand(REWIND_COMMAND, Bundle.EMPTY)
-    val forwardCommand = SessionCommand(FORWARD_COMMAND, Bundle.EMPTY)
-    val nextChapterCommand = SessionCommand(NEXT_CHAPTER_COMMAND, Bundle.EMPTY)
-    val bookmarkCommand = SessionCommand(BOOKMARK_COMMAND, Bundle.EMPTY)
+    private val prevChapterCommand = SessionCommand(PREV_CHAPTER_COMMAND, Bundle.EMPTY)
+    private val rewindCommand = SessionCommand(REWIND_COMMAND, Bundle.EMPTY)
+    private val forwardCommand = SessionCommand(FORWARD_COMMAND, Bundle.EMPTY)
+    private val nextChapterCommand = SessionCommand(NEXT_CHAPTER_COMMAND, Bundle.EMPTY)
+    private val bookmarkCommand = SessionCommand(BOOKMARK_COMMAND, Bundle.EMPTY)
 
-    fun buildMediaButtons(): List<CommandButton> {
+    private fun buildMediaButtons(bookmarkIcon: Int = CommandButton.ICON_BOOKMARK_UNFILLED): List<CommandButton> {
       val seekTime = preferences.getSeekTime()
 
       val rewindButton =
@@ -171,13 +169,8 @@ class MediaLibrarySessionCallback
 
       val bookmarkButton =
         CommandButton
-          .Builder(
-            if (bookmarkButtonConfirmationInProgress) {
-              CommandButton.ICON_CHECK_CIRCLE_UNFILLED
-            } else {
-              CommandButton.ICON_BOOKMARK_UNFILLED
-            },
-          ).setSessionCommand(bookmarkCommand)
+          .Builder(bookmarkIcon)
+          .setSessionCommand(bookmarkCommand)
           .setDisplayName("Create bookmark")
           .setEnabled(true)
           .setSlots(CommandButton.SLOT_OVERFLOW)
@@ -190,8 +183,6 @@ class MediaLibrarySessionCallback
       session: MediaSession,
       controller: MediaSession.ControllerInfo,
     ): MediaSession.ConnectionResult {
-      connectedSessions[controller] = session
-
       val sessionCommands =
         MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS
           .buildUpon()
@@ -213,13 +204,6 @@ class MediaLibrarySessionCallback
         .build()
     }
 
-    override fun onDisconnected(
-      session: MediaSession,
-      controller: MediaSession.ControllerInfo,
-    ) {
-      connectedSessions.remove(controller)
-    }
-
     override fun onCustomCommand(
       session: MediaSession,
       controller: MediaSession.ControllerInfo,
@@ -233,42 +217,42 @@ class MediaLibrarySessionCallback
         REWIND_COMMAND -> mediaRepository.rewind()
         FORWARD_COMMAND -> mediaRepository.forward()
         NEXT_CHAPTER_COMMAND -> mediaRepository.nextTrack()
-        BOOKMARK_COMMAND -> createBookmark()
+        BOOKMARK_COMMAND -> createBookmark(session)
       }
 
       return super.onCustomCommand(session, controller, customCommand, args)
     }
 
-    fun refreshMediaButtons() {
-      connectedSessions.forEach { (controller, session) ->
-        session.setMediaButtonPreferences(controller, buildMediaButtons())
+    /**
+     * Creates a bookmark at the current position and, only once it is actually stored, swaps the
+     * bookmark icon for a check mark for a moment on every controller of the session. Presses
+     * arriving while an earlier one is still being handled are ignored.
+     */
+    private fun createBookmark(session: MediaSession) {
+      if (bookmarkFeedback?.isActive == true) {
+        return
       }
-    }
 
-    private fun createBookmark() {
-      synchronized(this) {
-        if (bookmarkButtonConfirmationInProgress) {
-          return
+      bookmarkFeedback =
+        futureScope.launch {
+          val created =
+            try {
+              mediaRepository.createBookmark()
+            } catch (e: CancellationException) {
+              throw e
+            } catch (e: Exception) {
+              Timber.w("Unable to create bookmark from the media session due to: ${e.message}")
+              null
+            }
+
+          if (created == null) {
+            return@launch
+          }
+
+          session.setMediaButtonPreferences(buildMediaButtons(bookmarkIcon = CommandButton.ICON_CHECK_CIRCLE_UNFILLED))
+          delay(BOOKMARK_BUTTON_FEEDBACK_DURATION_MS)
+          session.setMediaButtonPreferences(buildMediaButtons())
         }
-        bookmarkButtonConfirmationInProgress = true
-      }
-
-      refreshMediaButtons()
-      futureScope.launch {
-        try {
-          mediaRepository.createBookmark()
-        } catch (ex: Exception) {
-          Timber.w(ex, "Unable to create bookmark from Android Auto")
-        }
-      }
-
-      mainHandler.postDelayed(
-        {
-          bookmarkButtonConfirmationInProgress = false
-          refreshMediaButtons()
-        },
-        BOOKMARK_BUTTON_FEEDBACK_DURATION_MS,
-      )
     }
 
     override fun onGetLibraryRoot(
