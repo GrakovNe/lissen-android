@@ -1,6 +1,5 @@
 package org.grakovne.lissen.playback
 
-import android.media.audiofx.Equalizer
 import android.media.audiofx.LoudnessEnhancer
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
@@ -11,12 +10,16 @@ import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.grakovne.lissen.common.AudioFocusLossPolicy
 import org.grakovne.lissen.common.RunningComponent
-import org.grakovne.lissen.domain.EqualizerSettings
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import timber.log.Timber
 import javax.inject.Inject
@@ -30,12 +33,11 @@ class PlaybackEnhancerService
   constructor(
     private val player: ExoPlayer,
     private val sharedPreferences: PlaybackPreferences,
+    private val equalizerBandProvider: EqualizerBandProvider,
   ) : RunningComponent {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     private var enhancer: LoudnessEnhancer? = null
-
-    private var equalizer: Equalizer? = null
 
     @OptIn(UnstableApi::class)
     override fun onCreate() {
@@ -43,12 +45,10 @@ class PlaybackEnhancerService
         object : Player.Listener {
           override fun onAudioSessionIdChanged(id: Int) {
             attachEnhancer(id, sharedPreferences.getPlaybackVolumeBoost())
-            attachEqualizer(id, sharedPreferences.getEqualizer())
           }
         },
       )
       attachEnhancer(player.audioSessionId, sharedPreferences.getPlaybackVolumeBoost())
-      attachEqualizer(player.audioSessionId, sharedPreferences.getEqualizer())
 
       scope.launch {
         sharedPreferences.playbackVolumeBoostFlow.collectLatest {
@@ -57,9 +57,10 @@ class PlaybackEnhancerService
       }
 
       scope.launch {
-        sharedPreferences.equalizerFlow.collectLatest {
-          withContext(Dispatchers.Main) { applyEqualizer(it) }
-        }
+        equalizerEffects(audioSessionIds(), equalizerBandProvider::getCapabilities, ::DynamicsProcessingEqualizer)
+          .flowOn(Dispatchers.IO)
+          .applying(sharedPreferences.equalizerFlow)
+          .collect()
       }
 
       scope.launch {
@@ -101,46 +102,19 @@ class PlaybackEnhancerService
     }
 
     @OptIn(UnstableApi::class)
-    private fun attachEqualizer(
-      sessionId: Int,
-      settings: EqualizerSettings,
-    ) {
-      equalizer?.release()
-      equalizer = null
+    private fun audioSessionIds(): Flow<Int> =
+      callbackFlow {
+        val listener =
+          object : Player.Listener {
+            override fun onAudioSessionIdChanged(id: Int) {
+              trySend(id)
+            }
+          }
 
-      if (sessionId == C.AUDIO_SESSION_ID_UNSET) return
-
-      try {
-        equalizer = Equalizer(0, sessionId)
-        applyEqualizer(settings)
-      } catch (ex: Exception) {
-        Timber.e("Unable to attach Equalizer due to ${ex.message}")
-      }
-    }
-
-    private fun applyEqualizer(settings: EqualizerSettings) {
-      try {
-        val eq = equalizer ?: return
-
-        if (!eq.hasControl()) {
-          Timber.w("Equalizer lost control of the audio session, settings may not apply")
-        }
-
-        if (!settings.isActive) {
-          eq.enabled = false
-          return
-        }
-
-        eq.enabled = true
-        val range = eq.bandLevelRange
-
-        for (band in 0 until eq.numberOfBands.toInt()) {
-          eq.setBandLevel(band.toShort(), equalizerBandLevel(settings.gains, band, range[0], range[1]))
-        }
-      } catch (ex: Exception) {
-        Timber.e("Unable to apply equalizer due to: $ex")
-      }
-    }
+        player.addListener(listener)
+        trySend(player.audioSessionId)
+        awaitClose { player.removeListener(listener) }
+      }.flowOn(Dispatchers.Main)
 
     @OptIn(UnstableApi::class)
     private suspend fun applyAudioFocusLossPolicy(policy: AudioFocusLossPolicy) {

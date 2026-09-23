@@ -31,14 +31,14 @@ class EqualizerSettingsComposableTest {
 
   private val bands =
     listOf(
-      BandInfo(centerFreqHz = 60),
-      BandInfo(centerFreqHz = 230),
-      BandInfo(centerFreqHz = 910),
-      BandInfo(centerFreqHz = 3600),
-      BandInfo(centerFreqHz = 14000),
+      BandInfo(centerFreqHz = 60, upperFreqHz = 120),
+      BandInfo(centerFreqHz = 230, upperFreqHz = 460),
+      BandInfo(centerFreqHz = 910, upperFreqHz = 1800),
+      BandInfo(centerFreqHz = 3600, upperFreqHz = 7000),
+      BandInfo(centerFreqHz = 14000, upperFreqHz = 20000),
     )
 
-  private val capabilities = EqualizerCapabilities(bands = bands, minDb = -6, maxDb = 6)
+  private val capabilities = EqualizerCapabilities.Available(bands = bands, minDb = -6, maxDb = 6)
 
   private fun bandDescription(freq: String): String = context.getString(R.string.a11y_equalizer_band, freq)
 
