@@ -1,6 +1,9 @@
 package org.grakovne.lissen.playback
 
+import androidx.annotation.OptIn
 import androidx.media3.common.C
+import androidx.media3.common.util.UnstableApi
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -16,6 +19,7 @@ interface EqualizerEffect : AutoCloseable {
 
 // One effect per audio session: it is built when a session appears and closed when the session is
 // replaced, so no effect outlives the audio it shapes. A session without an effect yields null.
+@kotlin.OptIn(ExperimentalCoroutinesApi::class)
 fun equalizerEffects(
   sessionIds: Flow<Int>,
   capabilities: suspend () -> EqualizerCapabilities,
@@ -52,6 +56,7 @@ fun Flow<EqualizerEffect?>.applying(settings: Flow<EqualizerSettings>): Flow<Uni
     }
   }
 
+@OptIn(UnstableApi::class)
 private suspend fun buildEffect(
   sessionId: Int,
   capabilities: suspend () -> EqualizerCapabilities,
