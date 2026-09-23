@@ -53,6 +53,8 @@ class MediaRepositoryTest {
       onConnected()
     }
 
+    override fun whenConnected(action: () -> Unit) = action()
+
     override fun play(speed: Float) {
       calls.add("play")
     }
@@ -117,7 +119,9 @@ class MediaRepositoryTest {
     every { preferences.getDefaultTimerOption() } returns null
     every { preferences.getPlayingItem() } returns null
 
-    repository = MediaRepository(preferences, mediaChannel, eventBus, DefaultTimerActivator(preferences), player, mainThread)
+    repository =
+      MediaRepository(preferences, mediaChannel, eventBus, DefaultTimerActivator(preferences), player, mainThread)
+        .apply { ioDispatcher = UnconfinedTestDispatcher() }
   }
 
   @AfterEach
@@ -265,12 +269,14 @@ class MediaRepositoryTest {
         coEvery { mediaChannel.updateAndProvideBookmarks("podcast") } returns listOf(bookmark(position = 28.0))
         coEvery { mediaChannel.provideBookmarks("podcast") } returns listOf(bookmark(position = 28.0))
         playing(podcast(progress = progress(35.0)))
-        assertEquals(listOf(28.0), repository.bookmarks.value.map { it.totalPosition })
+        assertEquals(listOf(28.0), repository.bookmarks.first { it.isNotEmpty() }.map { it.totalPosition })
 
         repository.reorderPlayingItem("podcast", descending())
 
-        // 28s into c0, which the descending order moves to the end of the item
+        // 28s into c0, which the descending order moves to the end of the item: at once from the
+        // list in memory, and again once the stored list is re-read
         assertEquals(listOf(118.0), repository.bookmarks.value.map { it.totalPosition })
+        assertEquals(listOf(118.0), repository.bookmarks.first { it.isNotEmpty() }.map { it.totalPosition })
       }
   }
 
@@ -282,7 +288,6 @@ class MediaRepositoryTest {
         playing(podcast(progress = progress(35.0)), playing = true)
         repository.clearPreparedItem()
         repository.prepareAndPlay(podcast(id = "next"))
-        assertTrue(mainThread.polling)
         assertTrue(player.calls.isEmpty())
 
         player.listener.onError(mockk<PlaybackException>(relaxed = true))

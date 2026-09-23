@@ -1,10 +1,13 @@
 package org.grakovne.lissen.playback
 
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
@@ -20,6 +23,7 @@ class PlayingBookmarks(
   private val mediaChannel: LissenMediaProvider,
   private val playingBook: StateFlow<DetailedItem?>,
   private val scope: CoroutineScope,
+  private val io: CoroutineDispatcher = Dispatchers.IO,
 ) {
   private val _bookmarks = MutableStateFlow<List<Bookmark>>(emptyList())
   val bookmarks: StateFlow<List<Bookmark>> = _bookmarks.asStateFlow()
@@ -39,7 +43,7 @@ class PlayingBookmarks(
 
   suspend fun refreshFromServer() {
     val book = playingBook.value ?: return
-    val fetched = mediaChannel.updateAndProvideBookmarks(book.id)
+    val fetched = withContext(io) { mediaChannel.updateAndProvideBookmarks(book.id) }
 
     show(fetched, itemId = book.id)
   }
@@ -103,7 +107,7 @@ class PlayingBookmarks(
   }
 
   private suspend fun refreshFromCache(itemId: String) {
-    val stored = mediaChannel.provideBookmarks(itemId)
+    val stored = withContext(io) { mediaChannel.provideBookmarks(itemId) }
 
     show(stored, itemId = itemId)
   }

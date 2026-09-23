@@ -59,17 +59,25 @@ class MediaSessionConnection
       )
     }
 
-    override fun play(speed: Float) {
-      val player = controller
-      if (player == null) {
-        Timber.w("play() requested before media controller connected; deferring until connected")
-        deferredActions.defer { play(speed) }
-        return
-      }
+    override fun whenConnected(action: () -> Unit) {
+      when (controller) {
+        null -> {
+          Timber.w("Command requested before media controller connected; deferring until connected")
+          deferredActions.defer(action)
+        }
 
-      player.prepare()
-      player.setPlaybackSpeed(speed)
-      player.play()
+        else -> {
+          action()
+        }
+      }
+    }
+
+    override fun play(speed: Float) {
+      controller?.apply {
+        prepare()
+        setPlaybackSpeed(speed)
+        play()
+      }
     }
 
     override fun pause() {

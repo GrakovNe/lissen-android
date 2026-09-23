@@ -26,7 +26,8 @@ class PlayingBookmarksTest {
   private val mediaChannel = mockk<LissenMediaProvider>(relaxed = true)
   private val playingBook = MutableStateFlow<DetailedItem?>(reordered)
 
-  private fun subject(scope: kotlinx.coroutines.CoroutineScope) = PlayingBookmarks(mediaChannel, playingBook, scope)
+  private fun subject(scope: kotlinx.coroutines.CoroutineScope) =
+    PlayingBookmarks(mediaChannel, playingBook, scope, UnconfinedTestDispatcher())
 
   @Test
   fun `a server refresh shows the stored bookmarks in the playing order`() =

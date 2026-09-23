@@ -3,6 +3,7 @@ package org.grakovne.lissen.playback
 import androidx.annotation.VisibleForTesting
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.util.UnstableApi
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -81,8 +82,12 @@ class MediaRepository
     private val _currentChapterDuration = MutableStateFlow(0.0)
     val currentChapterDuration: StateFlow<Double> = _currentChapterDuration.asStateFlow()
 
-    private val playingBookmarks = PlayingBookmarks(mediaChannel, playingBook, scope)
-    val bookmarks: StateFlow<List<Bookmark>> = playingBookmarks.bookmarks
+    // the bookmark reads hop here; a test replaces it before the first read, as LibraryViewModel does
+    @VisibleForTesting
+    internal var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+
+    private val playingBookmarks by lazy { PlayingBookmarks(mediaChannel, playingBook, scope, ioDispatcher) }
+    val bookmarks: StateFlow<List<Bookmark>> get() = playingBookmarks.bookmarks
 
     // set by reorderPlayingItem, cleared when the service reports the rebuilt queue ready
     @Volatile
@@ -487,6 +492,9 @@ class MediaRepository
     }
 
     private fun updateProgress(book: DetailedItem) {
+      // an unbound session has no queue to read a position from
+      if (player.isConnected.not()) return
+
       _totalPosition.value =
         PlaybackGeometry.totalPosition(
           book = book,
@@ -507,7 +515,7 @@ class MediaRepository
     }
 
     private fun play() {
-      mainThread.run { player.play(preferences.getPlaybackSpeed()) }
+      mainThread.run { player.whenConnected { player.play(preferences.getPlaybackSpeed()) } }
     }
 
     private fun pause() {
@@ -531,10 +539,8 @@ class MediaRepository
       }
 
       mainThread.run {
-        if (player.isConnected) {
-          player.seekTo(target.chapterIndex, target.chapterPositionMs)
-          updateProgressWhenReady()
-        }
+        player.seekTo(target.chapterIndex, target.chapterPositionMs)
+        updateProgressWhenReady()
       }
 
       adjustTimer(target.totalPosition)

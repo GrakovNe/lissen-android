@@ -29,12 +29,8 @@ object BookmarkCoordinates {
   /** The stored (canonical) [bookmarks] of [book] in its playing order; other items' pass through. */
   fun inPlayingOrder(
     bookmarks: List<Bookmark>,
-    book: DetailedItem?,
-  ): List<Bookmark> {
-    if (book == null) return bookmarks
-
-    return translated(bookmarks, from = ChapterOrdering.canonical(book), to = book)
-  }
+    book: DetailedItem,
+  ): List<Bookmark> = translated(bookmarks, from = ChapterOrdering.canonical(book), to = book)
 
   /** [bookmarks] shown for [from] moved to the order of [to]; other items' pass through. */
   fun translated(

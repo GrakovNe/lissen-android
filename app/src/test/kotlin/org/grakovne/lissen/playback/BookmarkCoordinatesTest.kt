@@ -24,13 +24,6 @@ class BookmarkCoordinatesTest {
     }
 
     @Test
-    fun `without a playing item the stored list is shown as it is`() {
-      val stored = listOf(bookmark(position = 15.0))
-
-      assertEquals(stored, BookmarkCoordinates.inPlayingOrder(stored, null))
-    }
-
-    @Test
     fun `bookmarks move with the chapters they point at on a reorder`() {
       // 28s into c0, which the descending order moves to the end of the item
       val moved = BookmarkCoordinates.translated(listOf(bookmark(position = 28.0)), from = canonical, to = reordered)

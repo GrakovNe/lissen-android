@@ -86,7 +86,7 @@ object PlaybackGeometry {
     val chapters = book.chapters
     if (chapters.isEmpty()) return null
 
-    val clamped = to.coerceIn(0.0, totalDuration(book))
+    val clamped = to.coerceAtLeast(0.0).coerceAtMost(totalDuration(book))
     val direction =
       when (from > clamped) {
         true -> ScrollingDirection.BACKWARD

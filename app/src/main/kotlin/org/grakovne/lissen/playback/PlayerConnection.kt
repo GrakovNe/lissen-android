@@ -20,7 +20,10 @@ interface PlayerConnection {
     onConnected: () -> Unit,
   )
 
-  /** Prepares the queue and starts playing it at [speed]; queued until the session is bound. */
+  /** Runs [action] at once when the session is bound, otherwise once it binds. */
+  fun whenConnected(action: () -> Unit)
+
+  /** Prepares the queue and starts playing it at [speed]. */
   fun play(speed: Float)
 
   fun pause()
