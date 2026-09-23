@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
+import org.grakovne.lissen.playback.PlaybackGeometry
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.slider.PlaybackSpeedSlider
 import java.util.Locale
@@ -63,7 +64,7 @@ fun PlaybackSpeedComposable(
 
         PlaybackSpeedSlider(
           speed = selectedPlaybackSpeed,
-          speedRange = (0.5f..3f),
+          speedRange = (PlaybackGeometry.MIN_PLAYBACK_SPEED..PlaybackGeometry.MAX_PLAYBACK_SPEED),
           modifier =
             Modifier
               .fillMaxWidth()
