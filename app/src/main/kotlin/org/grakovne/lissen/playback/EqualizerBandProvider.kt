@@ -15,8 +15,8 @@ import javax.inject.Singleton
 
 data class BandInfo(
   val centerFreqHz: Int,
-  // upper edge of the band as the device reports it; the processing effect is cut at the same
-  // frequencies, so the bands the listener sees are the bands that get shaped
+  // the processing effect is cut at the same edges, so the bands the listener sees are the bands
+  // that get shaped
   val upperFreqHz: Int,
 )
 
@@ -79,7 +79,7 @@ class EqualizerBandProvider
               maxDb = range[1] / 100,
             )
 
-          processing = DynamicsProcessing(0, sessionId, equalizerProcessingConfig(capabilities, emptyList()))
+          processing = equalizerProcessing(sessionId, capabilities)
 
           capabilities
         } catch (ex: Exception) {

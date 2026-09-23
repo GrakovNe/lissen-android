@@ -108,35 +108,37 @@ class PlaybackEnhancerService
 
       if (sessionId == C.AUDIO_SESSION_ID_UNSET) return
 
-      // the band layout comes from the device, so the effect is built once the probe has run
       scope.launch {
-        val capabilities = equalizerBandProvider.getCapabilities()
-
-        if (capabilities.available.not()) {
-          Timber.w("Equalizer is unavailable on this device, audio session $sessionId plays unshaped")
-          return@launch
-        }
-
-        val effect =
-          try {
-            DynamicsProcessing(0, sessionId, equalizerProcessingConfig(capabilities, sharedPreferences.getEqualizer().gains))
-          } catch (ex: Exception) {
-            Timber.e("Unable to attach equalizer due to ${ex.message}")
-            return@launch
-          }
+        val attached = buildEqualizer(sessionId) ?: return@launch
 
         withContext(Dispatchers.Main) {
           if (player.audioSessionId != sessionId) {
-            effect.release()
+            attached.effect.release()
             return@withContext
           }
 
           equalizer?.effect?.release()
-          equalizer = AttachedEqualizer(effect, capabilities)
-
-          // settings may have changed while the effect was being built
+          equalizer = attached
           applyEqualizer(sharedPreferences.getEqualizer())
-          Timber.d("Equalizer attached to audio session $sessionId with ${capabilities.bands.size} bands")
+          Timber.d("Equalizer attached to audio session $sessionId with ${attached.capabilities.bands.size} bands")
+        }
+      }
+    }
+
+    private suspend fun buildEqualizer(sessionId: Int): AttachedEqualizer? {
+      val capabilities = equalizerBandProvider.getCapabilities()
+
+      if (!capabilities.available) {
+        Timber.w("Equalizer is unavailable on this device, audio session $sessionId plays unshaped")
+        return null
+      }
+
+      return withContext(Dispatchers.IO) {
+        try {
+          AttachedEqualizer(equalizerProcessing(sessionId, capabilities), capabilities)
+        } catch (ex: Exception) {
+          Timber.e("Unable to attach equalizer due to ${ex.message}")
+          null
         }
       }
     }
