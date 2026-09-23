@@ -70,10 +70,7 @@ class LibraryPreferences
       store.putString(KEY_EPISODE_ORDERING, episodeOrderingAdapter.toJson(updated))
     }
 
-    /**
-     * Entries are parsed one by one so that a single unreadable value (say, an option this
-     * build does not know) drops only itself instead of every podcast's choice on the next save.
-     */
+    /** Parsed entry by entry, so one unreadable value drops only itself. */
     private fun getEpisodeOrderings(): Map<String, EpisodeOrderingConfiguration> {
       val json = store.getString(KEY_EPISODE_ORDERING) ?: return emptyMap()
       val entries = runCatching { rawEpisodeOrderingAdapter.fromJson(json) }.getOrNull() ?: return emptyMap()
@@ -117,7 +114,6 @@ class LibraryPreferences
 
     private fun getPreferredLibraryName(): String? = store.getString(KEY_PREFERRED_LIBRARY_NAME)
 
-    /** The type of the preferred library; a book library when none is chosen. */
     fun getPreferredLibraryType(): LibraryType =
       store
         .getString(KEY_PREFERRED_LIBRARY_TYPE)

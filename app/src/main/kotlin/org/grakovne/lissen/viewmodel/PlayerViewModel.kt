@@ -36,7 +36,7 @@ class PlayerViewModel
   ) : ViewModel() {
     val book: StateFlow<DetailedItem?> = mediaRepository.playingBook
 
-    /** The stored ordering of the item the screen shows, which may not be the playing one yet. */
+    /** The stored ordering of the item the screen shows, not necessarily the playing one. */
     fun episodeOrdering(itemId: String): Flow<EpisodeOrderingConfiguration?> = libraryPreferences.episodeOrderingFlow.map { it[itemId] }
 
     val currentChapterIndex: StateFlow<Int> = mediaRepository.currentChapterIndex
@@ -204,7 +204,7 @@ class PlayerViewModel
       mediaRepository.prepareAndPlay(playingBook)
     }
 
-    /** One predicate for the sheet's rows and for the action, so a tap never fails silently. */
+    /** One predicate for the sheet's rows and the action, so a tap never fails silently. */
     fun canReorderPlayingItem(itemId: String): Boolean = mediaRepository.canReorderPlayingItem(itemId)
 
     fun setEpisodeOrdering(
@@ -213,8 +213,8 @@ class PlayerViewModel
     ) {
       Timber.d("User action: setEpisodeOrdering $configuration for $itemId")
 
-      // stored before the rebuild starts, so that anything fetching the item meanwhile (the
-      // media session, Android Auto) already gets the new order; rolled back if the player refuses
+      // stored first, so the media session and Android Auto already see the new order;
+      // rolled back if the player refuses
       val previous = libraryPreferences.getEpisodeOrdering(itemId)
       libraryPreferences.saveEpisodeOrdering(itemId, configuration)
 

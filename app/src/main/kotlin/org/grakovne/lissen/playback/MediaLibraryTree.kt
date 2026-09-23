@@ -38,8 +38,6 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.cancellation.CancellationException
 
-// --- Media Tree DSL ---
-
 @DslMarker
 annotation class MediaTreeDsl
 
@@ -87,8 +85,6 @@ fun mediaTreeNode(
   item: MediaItem,
   block: MediaTreeBuilder.() -> Unit = {},
 ): MediaTreeNode = MediaTreeBuilder().apply(block).build(item)
-
-// --- MediaLibraryTree ---
 
 @Singleton
 class MediaLibraryTree
@@ -279,8 +275,6 @@ class MediaLibraryTree
           } ?: emptyList()
         }
 
-    // --- Navigation ---
-
     private suspend fun navigateTo(path: String): MediaTreeNode? {
       val segments = path.split("/")
       if (segments.isEmpty() || segments[0] != ROOT) return null
@@ -288,8 +282,6 @@ class MediaLibraryTree
         node?.child(segment)
       }
     }
-
-    // --- Item builders ---
 
     private fun folderItem(
       id: String,
@@ -376,8 +368,6 @@ class MediaLibraryTree
     private fun bookItem(book: DetailedItem) = bookItem(book.id, book.title, book.author)
 
     private fun bookItem(book: RecentBook) = bookItem(book.id, book.title, book.author)
-
-    // --- Data fetchers ---
 
     private fun recentBooksItems(session: MediaLibrarySession): List<MediaItem> {
       val playingItem = playbackPreferences.getPlayingItem()

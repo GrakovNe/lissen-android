@@ -21,11 +21,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
-/**
- * Acceptance tests for the default sleep timer relocation: the default timer row must live
- * on the timer settings screen together with the fade controls, show the stored option,
- * and persist the option picked in the opened sheet through the view model.
- */
 @OptIn(ExperimentalTestApi::class)
 class SleepTimerSettingsScreenTest {
   @get:Rule

@@ -138,7 +138,6 @@ class LocalCacheStorageMigrationTest {
       assertTrue(cursor.moveToFirst())
     }
 
-    // The new table is present and usable.
     db.execSQL(
       """
       INSERT INTO cached_bookmark (id, title, libraryItemId, createdAt, totalPosition)
@@ -238,8 +237,7 @@ class LocalCacheStorageMigrationTest {
         VALUES ('book-1', 'Dune', 0, 0, 0)
         """.trimIndent(),
       )
-      // two full re-caches of the same item, both written in list order as the DAO did;
-      // the second one marks "c1" as downloaded
+      // two re-caches of the same item in list order; the second marks c1 as downloaded
       db.execSQL(
         """
         INSERT INTO book_chapters (bookChapterId, duration, start, end, title, bookId, isCached)

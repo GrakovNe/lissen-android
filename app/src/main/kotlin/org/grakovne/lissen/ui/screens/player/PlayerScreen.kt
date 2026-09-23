@@ -144,9 +144,8 @@ fun PlayerScreen(
   val preferredLibraryType by libraryViewModel.preferredLibraryType.collectAsState()
   val seekTime by playbackSettingsViewModel.seekTime.collectAsState()
 
-  // while the requested item is still loading, playingBook may hold the previous item of another
-  // type; the screen keeps rendering that item, so its type drives the labels, but only the
-  // requested item decides whether ordering is offered
+  // playingBook may still be the previous item while the requested one loads: it drives
+  // the labels, but only the requested item decides whether ordering is offered
   val requestedBook = playingBook?.takeIf { it.id == bookId }
   val libraryType = playingBook?.libraryType ?: preferredLibraryType
   val episodeOrdering by remember(bookId) { playerViewModel.episodeOrdering(bookId) }.collectAsState(initial = null)
@@ -232,8 +231,7 @@ fun PlayerScreen(
               }
 
               else -> {
-                // the actions stay drawn as they are while the item loads or its queue is rebuilt,
-                // no dimmed state: a tap simply does nothing until playback is ready
+                // no dimmed state while the item loads or its queue is rebuilt: a tap does nothing
                 Row {
                   if (queueControlsVisible) {
                     IconButton(
@@ -438,7 +436,7 @@ fun PlayerScreen(
   }
 
   if (orderingSelected) {
-    // the same conditions under which the player would act, so a tap never fails silently
+    // the same conditions the player checks, so a tap never fails silently
     val canReorder = remember(isPlaybackReady, playingBook, bookId) { playerViewModel.canReorderPlayingItem(bookId) }
 
     EpisodeOrderingComposable(
@@ -692,11 +690,7 @@ private fun cachePolicyChanged(
   playingBook: DetailedItem?,
 ) = cachingModelView.localCacheUsing() != playingBook?.localProvided
 
-/**
- * Whether the top bar offers episode ordering. The placeholder guesses from the library the
- * item is opened from; a loaded item speaks for itself, and an item of unknown type is not
- * sortable however the library looks.
- */
+/** The placeholder guesses from the library the item is opened from; a loaded item speaks for itself. */
 internal fun isSortable(
   requestedBook: DetailedItem?,
   preferredLibraryType: LibraryType?,

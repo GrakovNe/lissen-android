@@ -381,13 +381,9 @@ val MIGRATION_20_21 =
   }
 
 /**
- * Chapters and files get an explicit canonical position plus the keys the episode ordering
- * needs. The position is backfilled from the insertion order (the DAO wrote both lists in
- * list order, in one batch), which is the order the item has always been shown in, so the
- * stored progress keeps its meaning and chapters and files stay in lockstep. Duplicate rows
- * per (bookId, chapterId) should not exist (replacing the parent row cascades into them), but a
- * re-cache that ever slipped past that would poison the position, so they are collapsed first,
- * keeping the latest row.
+ * Backfills the canonical position from insertion order, which is the order the item was
+ * always shown in. Duplicate (bookId, chapterId) rows would poison it, so they are collapsed
+ * first, latest wins.
  */
 val MIGRATION_21_22 =
   object : Migration(21, 22) {
@@ -459,7 +455,7 @@ val MIGRATION_22_23 =
     }
   }
 
-// LibraryType.UNKNOWN is gone: whatever is not a podcast is a book
+// UNKNOWN left the enum; earlier versions may have stored it
 val MIGRATION_23_24 =
   object : Migration(23, 24) {
     override fun migrate(db: SupportSQLiteDatabase) {

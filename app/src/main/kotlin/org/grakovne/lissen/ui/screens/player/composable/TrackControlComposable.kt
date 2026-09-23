@@ -232,11 +232,7 @@ fun TrackControlComposable(
   }
 }
 
-/**
- * Corrupted chapter metadata can report a negative or non-finite duration, which made
- * the slider build an empty range and crash on value coercion. A slider range must
- * always start at zero and end at a non-negative value.
- */
+/** Corrupted metadata can report a negative or non-finite duration, and an empty slider range crashes on coercion. */
 internal fun safeSliderDuration(duration: Double): Float = if (duration.isFinite() && duration > 0) duration.toFloat() else 0f
 
 internal fun safeSliderPosition(
