@@ -695,8 +695,20 @@ class MediaRepository
           ?: 0.0
     }
 
-    /** Returns the stored bookmark, or null when there is nothing playing to bookmark. */
-    suspend fun createBookmark(title: String? = null): Bookmark? {
+    /**
+     * Records a bookmark at the current position. It is kept locally right away and reaches the
+     * server on its own later, so the returned bookmark is the local record. Null when nothing is
+     * playing or the position falls outside every chapter.
+     *
+     * Callers may come from any dispatcher: the bookmark state is main-confined like the rest of
+     * the repository, so the work hops to the main thread first.
+     */
+    suspend fun createBookmark(title: String? = null): Bookmark? =
+      withContext(Dispatchers.Main.immediate) {
+        createBookmarkOnMain(title)
+      }
+
+    private suspend fun createBookmarkOnMain(title: String?): Bookmark? {
       Timber.d("Creating bookmark for ${_playingBook.value?.id} at position=${_totalPosition.value.toInt()}s")
       val playingBook = _playingBook.value ?: return null
       // a live position may overshoot the declared end by a little: that is the end, not nowhere
