@@ -55,25 +55,23 @@ fun EqualizerSettingsComposable(viewModel: SettingsViewModel) {
     onClick = { equalizerExpanded = true },
   )
 
-  if (equalizerExpanded) {
-    capabilities
-      ?.takeIf { it.available }
-      ?.let { deviceCapabilities ->
-        LissenModalBottomSheet(
-          containerColor = colorScheme.background,
-          scrollable = false,
-          onDismissRequest = { equalizerExpanded = false },
-          content = {
-            EqualizerSettingsContent(
-              settings = settings,
-              capabilities = deviceCapabilities,
-              onGainChange = viewModel::preferEqualizerGain,
-              onReset = viewModel::resetEqualizer,
-              modifier = Modifier.fillMaxWidth(),
-            )
-          },
+  val deviceCapabilities = capabilities
+
+  if (equalizerExpanded && deviceCapabilities is EqualizerCapabilities.Available) {
+    LissenModalBottomSheet(
+      containerColor = colorScheme.background,
+      scrollable = false,
+      onDismissRequest = { equalizerExpanded = false },
+      content = {
+        EqualizerSettingsContent(
+          settings = settings,
+          capabilities = deviceCapabilities,
+          onGainChange = viewModel::preferEqualizerGain,
+          onReset = viewModel::resetEqualizer,
+          modifier = Modifier.fillMaxWidth(),
         )
-      }
+      },
+    )
   }
 }
 
@@ -83,7 +81,7 @@ internal fun EqualizerSettingsRow(
   active: Boolean,
   onClick: () -> Unit,
 ) {
-  if (capabilities?.available != true) return
+  if (capabilities !is EqualizerCapabilities.Available) return
 
   Row(
     modifier =
@@ -114,7 +112,7 @@ internal fun EqualizerSettingsRow(
 @Composable
 internal fun EqualizerSettingsContent(
   settings: EqualizerSettings,
-  capabilities: EqualizerCapabilities,
+  capabilities: EqualizerCapabilities.Available,
   onGainChange: (Int, Int) -> Unit,
   onReset: () -> Unit,
   modifier: Modifier = Modifier,
