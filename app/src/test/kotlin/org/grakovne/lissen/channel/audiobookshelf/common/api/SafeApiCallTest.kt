@@ -128,11 +128,7 @@ class SafeApiCallTest {
       assertNull(cache.etag(url))
     }
 
-  /**
-   * Builds a [Response] whose underlying request carries the [Cacheable] tag, so
-   * [safeApiCall] treats it as a conditional request the same way the real
-   * [ConditionalCacheInterceptor] would.
-   */
+  /** A [Response] whose request carries the [Cacheable] tag. */
   private fun conditionalResponse(
     code: Int,
     body: String? = null,

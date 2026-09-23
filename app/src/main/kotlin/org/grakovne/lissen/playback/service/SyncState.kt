@@ -9,10 +9,7 @@ import org.grakovne.lissen.domain.PlaybackSession
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Everything the playback synchronization knows about what is being synced.
- * Transitions are pure; the uploader derives the session still being written from it.
- */
+/** What the synchronization is syncing; transitions are pure. */
 data class SyncState(
   val item: DetailedItem? = null,
   val chapterIndex: Int? = null,
@@ -25,11 +22,7 @@ data class SyncState(
 
   fun cancel(): SyncState = SyncState()
 
-  /**
-   * A session opened for another item, say after a late server reply, is ignored. A local
-   * session opened for the chapter already being written locally is a failed retry of the
-   * server: the existing row keeps accumulating. Anything else replaces the session.
-   */
+  /** A session for another item is ignored; a local one for the chapter already written locally is a failed server retry and keeps the row. */
   fun adopt(
     opened: PlaybackSession,
     chapterIndex: Int,
@@ -49,7 +42,6 @@ data class SyncState(
   ): Boolean = session == null || session.itemId != itemId || chapterIndex != this.chapterIndex
 }
 
-/** The single place the state lives, shared by the playback synchronization and the uploader. */
 @Singleton
 class SyncStateStore
   @Inject

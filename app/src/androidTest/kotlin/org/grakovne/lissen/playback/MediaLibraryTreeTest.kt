@@ -369,8 +369,6 @@ class MediaLibraryTreeTest {
       assertEquals(expectedIds, ids)
     }
 
-  // --- getChildren invalid path ---
-
   @Test
   fun getChildren_invalidPaths_returnError() =
     runBlocking {

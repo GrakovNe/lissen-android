@@ -60,11 +60,7 @@ class OfflineSessionSyncService
       }
     }
 
-    /**
-     * The session still being written is never uploaded, so every change of it means the
-     * previous one is complete and a pass is due. Only losing the network or the account
-     * cancels a pass; a change during one is conflated into a single further pass.
-     */
+    /** The session still being written is never uploaded, so any change means the previous one is complete. */
     private suspend fun uploadOnEverySessionChange() {
       syncState.state
         .map { it.localSession?.sessionId }
@@ -95,11 +91,7 @@ class OfflineSessionSyncService
         false
       }
 
-    /**
-     * Uploads what is pending in batches and drops what the server acknowledged.
-     * Returns true when a later attempt may still deliver something: the pass ends at the
-     * first batch that hit a transient failure, while a permanent one moves on to the next.
-     */
+    /** True when a later attempt may still deliver: the pass stops at the first transient failure and skips permanent ones. */
     internal suspend fun uploadOnce(excluding: String?): Boolean {
       val pending = offlineSessions.fetch().filterNot { it.id == excluding }
 

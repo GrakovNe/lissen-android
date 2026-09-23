@@ -169,7 +169,7 @@ class CachedBookmarkProviderTest {
     @Test
     fun `does not resurrect a pending delete the remote still carries`() =
       runBlocking {
-        // the delete has not reached the server yet (in flight, or failed): the remote list still has it
+        // the delete has not reached the server yet: the remote list still has it
         val pendingDelete = bookmark(10.0, 1L, BookmarkSyncState.PENDING_DELETE)
         store += pendingDelete
 

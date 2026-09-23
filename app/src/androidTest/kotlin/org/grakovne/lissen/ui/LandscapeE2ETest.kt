@@ -173,7 +173,7 @@ class LandscapeE2ETest {
     login()
     openFirstBook()
 
-    // the top bar ignores taps until playback is ready; the track controls appear at that moment
+    // the top bar ignores taps until playback is ready
     composeRule.waitUntilAtLeastOneExists(
       matcher = hasTestTag("trackControls"),
       timeoutMillis = TIMEOUT_MS,

@@ -2,13 +2,7 @@ package org.grakovne.lissen.domain
 
 import androidx.annotation.Keep
 
-/**
- * A listening session recorded while the server was unreachable. Rows are
- * accumulated locally by the playback synchronization and uploaded in a batch
- * once connectivity returns, so the server gets both the position and the
- * listening statistics for the offline period. Rows belong to the account
- * that is logged in while they are recorded: a login or a logout drops them.
- */
+/** Recorded while the server was unreachable, uploaded in a batch once it is back. Rows belong to the account logged in at the time. */
 @Keep
 data class OfflineSession(
   val id: String,

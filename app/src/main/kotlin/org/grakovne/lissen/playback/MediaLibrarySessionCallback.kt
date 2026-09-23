@@ -182,8 +182,7 @@ class MediaLibrarySessionCallback
           .add(bookmarkCommand)
           .build()
 
-      // every controller gets the full player command set, trusted or not, as before media3
-      // started restricting untrusted controllers by default
+      // every controller gets the full command set, as before media3 restricted untrusted ones
       return MediaSession
         .ConnectionResult
         .AcceptedResultBuilder()
@@ -217,13 +216,8 @@ class MediaLibrarySessionCallback
     }
 
     /**
-     * Creates a bookmark at the current position and, once it is recorded, shows a check mark in
-     * place of the bookmark icon for a moment on every controller of the session. Presses arriving
-     * while an earlier one is still being handled, check mark included, are ignored: the button is
-     * a single tap, not a way to stack near-identical bookmarks.
-     *
-     * The session calls back on its application thread, and the handling coroutine stays on the
-     * main dispatcher, so [bookmarkFeedback] is only ever touched from one thread.
+     * Creates a bookmark and flashes a check mark on every controller; presses during the handling
+     * are ignored. Runs on the main dispatcher only, so [bookmarkFeedback] is single-threaded.
      */
     private fun createBookmark(session: MediaSession) {
       if (bookmarkFeedback?.isActive == true) {

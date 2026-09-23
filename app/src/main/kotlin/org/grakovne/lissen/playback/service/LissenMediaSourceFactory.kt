@@ -125,14 +125,7 @@ class LissenMediaSourceFactory(
   }
 
   internal companion object {
-    /**
-     * Converts clip bounds in seconds to microseconds, tolerating corrupted metadata.
-     *
-     * Durations coming from the server can be NaN or negative, which previously produced
-     * end positions smaller than start positions and made media3 reject the clip with
-     * "IllegalArgumentException". Invalid bounds degrade to playing from the start
-     * position until the end of the file instead of crashing the playback service.
-     */
+    /** NaN or negative bounds from the server would make media3 reject the clip; they degrade to start-to-end-of-file. */
     internal fun clipBoundsUs(
       clipStart: Double,
       clipEnd: Double,

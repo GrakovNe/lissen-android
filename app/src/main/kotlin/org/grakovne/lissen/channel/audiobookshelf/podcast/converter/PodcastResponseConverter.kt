@@ -17,10 +17,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Maps the server response into the canonical order (see [ChapterOrdering]); the listener's
- * own order is applied later by the provider. The published date is parsed from `pubDate` with
- * the very same pattern every earlier version used, deliberately: the canonical order derived
- * from it is the coordinate system of every stored progress and bookmark.
+ * Maps into the canonical order, see [ChapterOrdering]. pubDate keeps the pattern every earlier
+ * version used: stored positions are expressed in the order derived from it.
  */
 @Singleton
 class PodcastResponseConverter
@@ -32,7 +30,7 @@ class PodcastResponseConverter
     ): DetailedItem {
       val episodes = item.media.episodes ?: emptyList()
 
-      // SimpleDateFormat is not thread-safe and podcasts are fetched concurrently: one per call
+      // SimpleDateFormat is not thread-safe: one per call
       val dateFormat = SimpleDateFormat(PUB_DATE_PATTERN, Locale.ENGLISH)
 
       val latestProgress = progressResponses.maxByOrNull { it.lastUpdate }
@@ -94,11 +92,8 @@ class PodcastResponseConverter
           updatedAt = item.ctimeMs,
         )
 
-      // The order is settled here so that the progress can be anchored to its episode in the
-      // canonical timeline. A finished episode comes from the server with currentTime equal to
-      // its duration, i.e. exactly on the episode's end; as a bare number in another order that
-      // instant is the start of whatever episode happens to follow there, which is not the
-      // canonical successor the listener should resume with.
+      // a finished episode arrives with currentTime on its end, which in another order is the start
+      // of an unrelated episode: anchor it in the canonical timeline first
       val canonical = ChapterOrdering.canonical(raw)
 
       return canonical.copy(progress = latestProgress?.let { canonical.anchoredProgress(it) })

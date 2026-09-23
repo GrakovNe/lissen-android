@@ -31,18 +31,7 @@ import org.junit.runner.RunWith
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-/**
- * Research reproduction for the ACRA report a78bf35f:
- * java.lang.OutOfMemoryError on the OkHttp HTTP/2 reader thread
- * (Http2Stream$FramingSource.receive -> okio Buffer.write -> Segment.<init>).
- *
- * The reader thread copies DATA frames into a per-stream receive buffer of
- * OkHttp's client window size (16 MiB). The app's fetchBookCover()/fetchAuthorCover()
- * path reads the WHOLE response body into an in-memory okio Buffer with no size
- * limit (AudioBookshelfRepository.fetchBookCover -> Buffer().writeAll(source)).
- * A server that returns a huge file on /api/items/{id}/cover?raw=1 therefore
- * fills the Java heap while the reader thread keeps feeding it -> OOM.
- */
+/** Reproduces ACRA a78bf35f: covers were buffered whole into the heap while the HTTP/2 reader kept feeding a 16 MiB window. */
 @HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class CoverOomReproTest {
@@ -130,13 +119,7 @@ class CoverOomReproTest {
     previousHandler?.let { Thread.setDefaultUncaughtExceptionHandler(it) }
   }
 
-  /**
-   * Regression for ACRA a78bf35f: an unbounded body on
-   * /api/items/{id}/cover?raw=1 used to be buffered entirely into the Java
-   * heap (Buffer().writeAll) and OOM-killed the process with the OkHttp
-   * HTTP/2 reader thread on the stack. The body is now streamed to disk, so
-   * even a 2 GB stream must not touch the heap beyond a chunk.
-   */
+  /** A 2 GB body must stream to disk and never hold more than a chunk in the heap. */
   @Test
   fun hugeRawCoverStreamsToDiskWithoutHeapGrowth() {
     val runtime = Runtime.getRuntime()
@@ -163,10 +146,6 @@ class CoverOomReproTest {
     file?.delete()
   }
 
-  /**
-   * A legitimately large cover (30 MB) must succeed and must never be held
-   * in the Java heap: it is streamed straight to a temp file.
-   */
   @Test
   fun largeCoverStreamsToDiskWithoutHeapGrowth() {
     bodyBytes.set(LARGE_COVER_BYTES)
@@ -191,12 +170,7 @@ class CoverOomReproTest {
     file?.delete()
   }
 
-  /**
-   * Quantifies the per-stream cost of an opened-but-never-consumed HTTP/2
-   * response on ART: OkHttp buffers up to the 16 MiB client window per stream
-   * on the reader thread. ~30 leaked streams are enough to exhaust a 512 MB
-   * largeHeap budget on a Pixel-class device.
-   */
+  /** An opened but unconsumed HTTP/2 response holds up to 16 MiB; ~30 leaked streams exhaust a 512 MB largeHeap. */
   @Test
   fun leakedStreamsCostClientWindowEach() {
     val client =

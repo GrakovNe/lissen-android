@@ -26,7 +26,6 @@ const val ARG_BOOK_TITLE = "bookTitle"
 const val ARG_BOOK_SUBTITLE = "bookSubtitle"
 const val ARG_START_INSTANTLY = "startInstantly"
 
-/** Route patterns with argument placeholders. Used to declare destinations in the NavHost. */
 const val ROUTE_LIBRARY_PATTERN =
   "$ROUTE_LIBRARY?$ARG_LINKED_SEARCH_TOKEN={$ARG_LINKED_SEARCH_TOKEN}"
 
@@ -36,21 +35,13 @@ const val ROUTE_PLAYER_PATTERN =
     "&$ARG_BOOK_SUBTITLE={$ARG_BOOK_SUBTITLE}" +
     "&$ARG_START_INSTANTLY={$ARG_START_INSTANTLY}"
 
-/**
- * Builds a concrete library route. Arguments are URL-encoded here; the Navigation component
- * decodes them automatically when reading from the back stack entry, so destinations must not
- * decode again.
- */
+/** Arguments are URL-encoded here and decoded by Navigation; destinations must not decode again. */
 fun libraryRoute(linkedSearchToken: String? = null): String =
   when (linkedSearchToken) {
     null -> ROUTE_LIBRARY
     else -> "$ROUTE_LIBRARY?$ARG_LINKED_SEARCH_TOKEN=${Uri.encode(linkedSearchToken)}"
   }
 
-/**
- * Builds a concrete player route with all arguments URL-encoded. This is the single place that
- * assembles the player route, so callers never have to escape values by hand.
- */
 fun playerRoute(
   bookId: String,
   bookTitle: String,

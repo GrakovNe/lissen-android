@@ -420,8 +420,7 @@ class CachedBookRepositoryTest {
       assertEquals(15.0, progressSlot.captured.currentTime)
       assertFalse(progressSlot.captured.isFinished)
 
-      // the file ran 300ms past the declared duration: the end of the item, in any order, and
-      // finished, so that the item starts over next time instead of resuming mid-list
+      // 300ms past the declared duration: the end of the item and finished, so it starts over next time
       repository.syncProgress(playing, PlaybackProgress(currentChapterTime = 10.3, currentTotalTime = 20.3))
       assertEquals(20.0, progressSlot.captured.currentTime)
       assertTrue(progressSlot.captured.isFinished)

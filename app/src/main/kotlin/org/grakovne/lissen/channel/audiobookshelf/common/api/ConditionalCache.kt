@@ -7,16 +7,7 @@ import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * In-memory store behind [Cacheable] endpoints, keyed by request URL. Each entry
- * holds the last deserialized object and its weak `ETag`; the [ConditionalCacheInterceptor]
- * reads the validator to revalidate, and [safeApiCall] writes the fresh object.
- *
- * Backed by [androidx.collection.LruCache]: every entry carries a weight ([sizeOf]) and
- * the total is kept under the budget by evicting the least-recently-used entries first.
- * Reads count as use, so a resource served even on a `304` stays hot while cold pages
- * fall out. Nothing is persisted; [invalidateAll] drops everything on an identity change.
- */
+/** LRU store of the last object and its weak ETag per URL, weighted by [sizeOf]; nothing is persisted. */
 @Singleton
 class ConditionalCache
   internal constructor(
@@ -25,8 +16,7 @@ class ConditionalCache
     @Inject
     constructor() : this(DEFAULT_MAX_WEIGHT)
 
-    // The weight is computed once on write and frozen onto the entry, so LruCache's
-    // accounting never re-measures a value that could have mutated underneath it.
+    // weighed once on write: LruCache must never re-measure a value that mutated
     private val entries =
       object : LruCache<String, Entry>(maxWeight) {
         override fun sizeOf(
@@ -35,8 +25,6 @@ class ConditionalCache
         ): Int = value.weight
       }
 
-    // Per-class list of the collection-valued fields used by the reflective weight
-    // estimate; resolved once per type so a cache write does no field discovery.
     private val collectionFields = ConcurrentHashMap<Class<*>, List<Field>>()
 
     fun etag(url: String): String? = entries.get(url)?.etag
@@ -60,15 +48,7 @@ class ConditionalCache
       entries.evictAll()
     }
 
-    /**
-     * Approximate footprint of a cached object, measured as the number of elements in
-     * its top-level collections. These responses wrap one big list (`results`,
-     * `mediaProgress`, ...), and within a single endpoint the element size is roughly
-     * constant, so element count tracks retained memory while allocating nothing per
-     * element — unlike `toString()`, which materializes the whole graph just to measure
-     * it. The set of collection fields is resolved once per class and cached. Measured
-     * on write and stored on the entry; the budget is expressed in elements.
-     */
+    /** Element count of the top-level collections: tracks retained memory without allocating, unlike toString(). */
     private fun sizeOf(value: Any?): Int {
       if (value == null) return 1
       val direct = collectionSize(value)
@@ -88,7 +68,6 @@ class ConditionalCache
       return total.coerceAtLeast(1)
     }
 
-    // Size of a collection-like value, or -1 when it is not one.
     private fun collectionSize(value: Any?): Int =
       when (value) {
         is Collection<*> -> value.size
@@ -110,8 +89,7 @@ class ConditionalCache
                   Map::class.java.isAssignableFrom(fieldType) ||
                   fieldType.isArray
               if (!isCollectionLike) continue
-              // JDK-internal classes (e.g. java.lang.String's byte[]) reject setAccessible;
-              // skip such fields rather than let the estimate throw on a cache write.
+              // JDK-internal classes reject setAccessible: skip rather than throw on a cache write
               val accessible =
                 try {
                   field.isAccessible = true
@@ -133,9 +111,7 @@ class ConditionalCache
     )
 
     private companion object {
-      // Budget in elements (see [sizeOf]). A library page is a few dozen to a few
-      // hundred items and [sizeOf] counts elements, so this holds on the order of a
-      // handful of pages plus user state. Tunable; retained heap is a multiple of it.
+      // in elements, see sizeOf: a handful of library pages plus user state
       const val DEFAULT_MAX_WEIGHT = 2000
     }
   }

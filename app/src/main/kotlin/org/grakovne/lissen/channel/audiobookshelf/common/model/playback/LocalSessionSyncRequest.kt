@@ -3,11 +3,7 @@ package org.grakovne.lissen.channel.audiobookshelf.common.model.playback
 import androidx.annotation.Keep
 import com.squareup.moshi.JsonClass
 
-/**
- * Payload of `POST /api/session/local-all`, the endpoint the official clients
- * use to upload sessions that were played while disconnected. The server keys
- * sessions by [LocalSessionRequest.id], so a retried upload updates the same row.
- */
+/** Payload of POST /api/session/local-all; the server keys sessions by id, so a retry updates the same row. */
 @Keep
 @JsonClass(generateAdapter = true)
 data class LocalSessionSyncRequest(

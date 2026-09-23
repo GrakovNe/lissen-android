@@ -26,23 +26,13 @@ class ClientCertKeyManagerTest {
       certChainLoader = { certChain },
     )
 
-  /**
-   * Pins the bug fix for the original mTLS implementation: the inherited
-   * X509ExtendedKeyManager.chooseEngineClientAlias returns null by default,
-   * which silently prevents the cert from being offered when SSLEngine
-   * (Conscrypt's default on modern Android) drives the handshake.
-   */
+  /** chooseEngineClientAlias returns null by default, silently withholding the cert when SSLEngine drives the handshake. */
   @Test
   fun `chooseEngineClientAlias returns the configured alias`() {
     assertEquals(alias, keyManagerWithCert().chooseEngineClientAlias(null, null, null))
   }
 
-  /**
-   * KeyChain may return null if the user revoked permission or the cert was
-   * removed after the alias was saved. The key manager must not offer the
-   * alias in that case, otherwise the SSL layer would call getPrivateKey and
-   * crash on a null. These tests pin the gating logic.
-   */
+  /** KeyChain answers null once the cert is revoked or removed; offering the alias then would crash in getPrivateKey. */
   @Test
   fun `chooseEngineClientAlias returns null when private key load fails`() {
     val km =

@@ -29,11 +29,9 @@ class NetworkService
     @Volatile
     private var defaultNetworkHandle: Long? = null
 
-    // Registering the callback reports the current default network right away, so the flow
-    // starts pessimistic instead of querying connectivity while the singleton is built.
+    // the callback reports the current default network at once, so start pessimistic
     private val _networkAvailable = MutableStateFlow(false)
 
-    /** Tracks the default network, so a transition from false to true means the device came back online. */
     val networkAvailable: StateFlow<Boolean> = _networkAvailable.asStateFlow()
 
     override fun onCreate() {
@@ -57,11 +55,7 @@ class NetworkService
       connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
     }
 
-    /**
-     * On a handover (say Wi-Fi to cellular) the system reports the new default network
-     * before it reports the old one lost, so only losing the current default means offline.
-     * A network behind a captive portal reports as available first and validated later.
-     */
+    /** On a handover the new default is reported before the old one is lost, so only losing the current default means offline. */
     internal val defaultNetworkCallback =
       object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {

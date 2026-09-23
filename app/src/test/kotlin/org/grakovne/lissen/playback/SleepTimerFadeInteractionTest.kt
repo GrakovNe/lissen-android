@@ -25,16 +25,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-/**
- * Integration acceptance tests: the real event bus and the real fade service are wired
- * together and driven with the exact event sequences [org.grakovne.lissen.playback.service.PlaybackTimer]
- * produces when the user interacts with the app while the volume is fading:
- * cancelling the timer, replacing it with a new one, pausing and resuming playback.
- *
- * Every fade segment must stay monotonic, land on zero at the pause, and the volume may
- * return to the original level only when playback continues (cancel/replace) or after
- * the player reports it stopped.
- */
+/** The real bus and fade service driven with the event sequences PlaybackTimer produces. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class SleepTimerFadeInteractionTest {
   private val player = mockk<ExoPlayer>(relaxed = true)
@@ -162,7 +153,7 @@ class SleepTimerFadeInteractionTest {
       advanceTimeBy(5_000L)
       runCurrent()
 
-      // user resumes: the ramp keeps running in the background, and resuming itself must not lift the volume
+      // resuming must not lift the volume
       isPlaying = true
       val atResume = playerVolume
       assertTrue(atResume <= midway, "the volume lifted during the pause from $midway to $atResume")

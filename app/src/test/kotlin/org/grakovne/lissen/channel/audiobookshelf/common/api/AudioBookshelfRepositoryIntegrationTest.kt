@@ -30,12 +30,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.io.File
 
-/**
- * Drives [AudioBookshelfRepository] through the real Retrofit + Moshi + OkHttp stack
- * against [MockWebServer]: endpoint error mapping, library payloads and the bounded
- * cover download into the cache directory ([writeBounded] with a stubbed [StatFs])
- * are executed for real instead of mocked.
- */
+/** Real Retrofit, Moshi and OkHttp against [MockWebServer]. */
 class AudioBookshelfRepositoryIntegrationTest {
   private val server = MockWebServer()
 

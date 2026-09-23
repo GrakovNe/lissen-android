@@ -63,14 +63,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.io.File
 
-/**
- * Drives [ContentCachingManager] against a real Audiobookshelf stack:
- * Retrofit + Moshi + OkHttp on top of [MockWebServer], the real
- * [LibraryAudiobookshelfChannel], the real [OfflineBookStorageProperties] file layout
- * and the real chapter-to-file resolution. Only the Room-backed repositories are mocked,
- * so downloading media, writing it to hashed cache paths, resuming already cached
- * chapters and dropping a chapter from the disk are exercised end to end.
- */
+/** Real channel, file layout and chapter resolution against [MockWebServer]; only the Room repositories are mocked. */
 class ContentCachingIntegrationTest {
   private val server = MockWebServer()
 
