@@ -695,9 +695,22 @@ class MediaRepository
           ?: 0.0
     }
 
-    suspend fun createBookmark(title: String? = null) {
+    /**
+     * Records a bookmark at the current position. It is kept locally right away and reaches the
+     * server on its own later, so the returned bookmark is the local record. Null when nothing is
+     * playing or the position falls outside every chapter.
+     *
+     * Callers may come from any dispatcher: the bookmark state is main-confined like the rest of
+     * the repository, so the work hops to the main thread first.
+     */
+    suspend fun createBookmark(title: String? = null): Bookmark? =
+      withContext(Dispatchers.Main.immediate) {
+        createBookmarkOnMain(title)
+      }
+
+    private suspend fun createBookmarkOnMain(title: String?): Bookmark? {
       Timber.d("Creating bookmark for ${_playingBook.value?.id} at position=${_totalPosition.value.toInt()}s")
-      val playingBook = _playingBook.value ?: return
+      val playingBook = _playingBook.value ?: return null
       // a live position may overshoot the declared end by a little: that is the end, not nowhere
       val totalPosition = _totalPosition.value.coerceAtMost(playingBook.end() ?: _totalPosition.value)
 
@@ -707,7 +720,7 @@ class MediaRepository
       val currentChapter = location?.let { l -> playingBook.chapters.firstOrNull { it.id == l.chapterId } }
       if (currentChapter == null) {
         Timber.w("Unable to create bookmark: no chapter at position=${totalPosition.toInt()}s")
-        return
+        return null
       }
       val chapterPosition = location.offset
 
@@ -717,14 +730,16 @@ class MediaRepository
           else -> title
         }
 
-      mediaChannel
-        .createBookmark(
-          libraryItemId = playingBook.id,
-          totalPosition = ChapterOrdering.storedBookmarkPosition(playingBook, totalPosition),
-          title = bookmarkTitle,
-        )
+      val created =
+        mediaChannel
+          .createBookmark(
+            libraryItemId = playingBook.id,
+            totalPosition = ChapterOrdering.storedBookmarkPosition(playingBook, totalPosition),
+            title = bookmarkTitle,
+          )
 
       refreshBookmarksFromCache(playingBook.id)
+      return created
     }
 
     /**

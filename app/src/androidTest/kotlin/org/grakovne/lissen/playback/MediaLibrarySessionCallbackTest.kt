@@ -1,14 +1,17 @@
 package org.grakovne.lissen.playback
 
 import android.content.Context
+import android.os.Bundle
 import androidx.annotation.OptIn
 import androidx.core.os.BundleCompat
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.session.CommandButton
 import androidx.media3.session.MediaLibraryService
 import androidx.media3.session.MediaSession
+import androidx.media3.session.SessionCommand
 import androidx.media3.session.SessionResult
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -26,6 +29,8 @@ import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.BookFile
+import org.grakovne.lissen.domain.Bookmark
+import org.grakovne.lissen.domain.BookmarkSyncState
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PlayingChapter
@@ -446,6 +451,98 @@ class MediaLibrarySessionCallbackTest {
 
       assertEquals(listOf("chapter:book-2:0", "chapter:book-2:1"), result.mediaItems.map { it.mediaId })
     }
+
+  @Test
+  fun onConnect_offersBookmarkAsTheLastMediaButton() {
+    val result = callback.onConnect(session, controller)
+
+    val buttons = result.mediaButtonPreferences!!
+    assertEquals(5, buttons.size)
+    assertEquals(CommandButton.ICON_BOOKMARK_UNFILLED, buttons.last().icon)
+    assertTrue(result.availableSessionCommands!!.contains(bookmarkCommand))
+  }
+
+  @Test
+  fun onCustomCommand_bookmark_acceptsTheCommand() {
+    coEvery { mediaRepository.createBookmark(any()) } returns makeBookmark()
+
+    val result = callback.onCustomCommand(session, controller, bookmarkCommand, Bundle.EMPTY).get(5, TimeUnit.SECONDS)
+
+    assertEquals(SessionResult.RESULT_SUCCESS, result.resultCode)
+  }
+
+  @Test
+  fun onCustomCommand_bookmark_showsCheckMarkOnceRecorded() {
+    coEvery { mediaRepository.createBookmark(any()) } returns makeBookmark()
+
+    callback.onCustomCommand(session, controller, bookmarkCommand, Bundle.EMPTY)
+
+    verify(timeout = 2_000) {
+      session.setMediaButtonPreferences(
+        match<List<CommandButton>> {
+          it.last().icon ==
+            CommandButton.ICON_CHECK_CIRCLE_UNFILLED
+        },
+      )
+    }
+  }
+
+  @Test
+  fun onCustomCommand_bookmark_restoresBookmarkIconAfterTheFeedback() {
+    coEvery { mediaRepository.createBookmark(any()) } returns makeBookmark()
+
+    callback.onCustomCommand(session, controller, bookmarkCommand, Bundle.EMPTY)
+
+    verify(timeout = 6_000) {
+      session.setMediaButtonPreferences(
+        match<List<CommandButton>> {
+          it.last().icon ==
+            CommandButton.ICON_BOOKMARK_UNFILLED
+        },
+      )
+    }
+  }
+
+  @Test
+  fun onCustomCommand_bookmark_nothingRecorded_keepsTheBookmarkIcon() {
+    coEvery { mediaRepository.createBookmark(any()) } returns null
+
+    callback.onCustomCommand(session, controller, bookmarkCommand, Bundle.EMPTY)
+
+    Thread.sleep(500)
+    coVerify(exactly = 1) { mediaRepository.createBookmark(any()) }
+    verify(exactly = 0) { session.setMediaButtonPreferences(any<List<CommandButton>>()) }
+  }
+
+  @Test
+  fun onCustomCommand_bookmark_pressedAgainDuringTheFeedback_isIgnored() {
+    coEvery { mediaRepository.createBookmark(any()) } returns makeBookmark()
+
+    callback.onCustomCommand(session, controller, bookmarkCommand, Bundle.EMPTY)
+    verify(timeout = 2_000) {
+      session.setMediaButtonPreferences(
+        match<List<CommandButton>> {
+          it.last().icon ==
+            CommandButton.ICON_CHECK_CIRCLE_UNFILLED
+        },
+      )
+    }
+    callback.onCustomCommand(session, controller, bookmarkCommand, Bundle.EMPTY)
+
+    Thread.sleep(500)
+    coVerify(exactly = 1) { mediaRepository.createBookmark(any()) }
+  }
+
+  private val bookmarkCommand = SessionCommand(MediaLibrarySessionCallback.BOOKMARK_COMMAND, Bundle.EMPTY)
+
+  private fun makeBookmark() =
+    Bookmark(
+      libraryItemId = "book-1",
+      title = "Chapter 1 at 00:10",
+      totalPosition = 10.0,
+      createdAt = 0L,
+      syncState = BookmarkSyncState.PENDING_CREATE,
+    )
 
   private fun makePlayableMediaItem(id: String) =
     MediaItem

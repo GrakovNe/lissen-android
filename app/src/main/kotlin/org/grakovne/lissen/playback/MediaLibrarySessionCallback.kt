@@ -27,10 +27,14 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
+import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.service.PlaybackService
@@ -57,6 +61,9 @@ class MediaLibrarySessionCallback
     private val futureScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     internal var searchCache = LruCache<String, ListenableFuture<List<MediaItem>>>(5)
+
+    /** The bookmark press being handled, from creating the bookmark to the end of its confirmation. */
+    private var bookmarkFeedback: Job? = null
 
     private fun searchFutureFor(query: String): ListenableFuture<List<MediaItem>> {
       val key = query.trim().lowercase()
@@ -102,17 +109,69 @@ class MediaLibrarySessionCallback
       }
     }
 
+    private val prevChapterCommand = SessionCommand(PREV_CHAPTER_COMMAND, Bundle.EMPTY)
+    private val rewindCommand = SessionCommand(REWIND_COMMAND, Bundle.EMPTY)
+    private val forwardCommand = SessionCommand(FORWARD_COMMAND, Bundle.EMPTY)
+    private val nextChapterCommand = SessionCommand(NEXT_CHAPTER_COMMAND, Bundle.EMPTY)
+    private val bookmarkCommand = SessionCommand(BOOKMARK_COMMAND, Bundle.EMPTY)
+
+    private data class MediaButtonSpec(
+      val icon: Int,
+      val command: SessionCommand,
+      val displayName: String,
+      val slot: Int,
+    )
+
+    private fun mediaButtons(bookmarkConfirmed: Boolean = false): List<CommandButton> {
+      val seekTime = preferences.getSeekTime()
+
+      return listOf(
+        MediaButtonSpec(
+          icon = SKIP_BACK_ICONS[seekTime.rewind] ?: CommandButton.ICON_SKIP_BACK,
+          command = rewindCommand,
+          displayName = "Rewind",
+          slot = CommandButton.SLOT_BACK,
+        ),
+        MediaButtonSpec(
+          icon = SKIP_FORWARD_ICONS[seekTime.forward] ?: CommandButton.ICON_SKIP_FORWARD,
+          command = forwardCommand,
+          displayName = "Forward",
+          slot = CommandButton.SLOT_FORWARD,
+        ),
+        MediaButtonSpec(
+          icon = CommandButton.ICON_PREVIOUS,
+          command = prevChapterCommand,
+          displayName = "Previous Chapter",
+          slot = CommandButton.SLOT_OVERFLOW,
+        ),
+        MediaButtonSpec(
+          icon = CommandButton.ICON_NEXT,
+          command = nextChapterCommand,
+          displayName = "Next Chapter",
+          slot = CommandButton.SLOT_OVERFLOW,
+        ),
+        MediaButtonSpec(
+          icon = if (bookmarkConfirmed) CommandButton.ICON_CHECK_CIRCLE_UNFILLED else CommandButton.ICON_BOOKMARK_UNFILLED,
+          command = bookmarkCommand,
+          displayName = "Create bookmark",
+          slot = CommandButton.SLOT_OVERFLOW,
+        ),
+      ).map { it.toCommandButton() }
+    }
+
+    private fun MediaButtonSpec.toCommandButton(): CommandButton =
+      CommandButton
+        .Builder(icon)
+        .setSessionCommand(command)
+        .setDisplayName(displayName)
+        .setEnabled(true)
+        .setSlots(slot)
+        .build()
+
     override fun onConnect(
       session: MediaSession,
       controller: MediaSession.ControllerInfo,
     ): MediaSession.ConnectionResult {
-      val prevChapterCommand = SessionCommand(PREV_CHAPTER_COMMAND, Bundle.EMPTY)
-      val rewindCommand = SessionCommand(REWIND_COMMAND, Bundle.EMPTY)
-      val forwardCommand = SessionCommand(FORWARD_COMMAND, Bundle.EMPTY)
-      val nextChapterCommand = SessionCommand(NEXT_CHAPTER_COMMAND, Bundle.EMPTY)
-
-      val seekTime = preferences.getSeekTime()
-
       val sessionCommands =
         MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS
           .buildUpon()
@@ -120,56 +179,7 @@ class MediaLibrarySessionCallback
           .add(rewindCommand)
           .add(forwardCommand)
           .add(nextChapterCommand)
-          .build()
-
-      val previousChapterButton =
-        CommandButton
-          .Builder(CommandButton.ICON_PREVIOUS)
-          .setSessionCommand(prevChapterCommand)
-          .setDisplayName("Previous Chapter")
-          .setEnabled(true)
-          .setSlots(CommandButton.SLOT_OVERFLOW)
-          .build()
-
-      val nextChapterButton =
-        CommandButton
-          .Builder(CommandButton.ICON_NEXT)
-          .setSessionCommand(nextChapterCommand)
-          .setDisplayName("Next Chapter")
-          .setSlots(CommandButton.SLOT_OVERFLOW)
-          .setEnabled(true)
-          .build()
-
-      val rewindButton =
-        CommandButton
-          .Builder(
-            when (seekTime.rewind) {
-              5 -> CommandButton.ICON_SKIP_BACK_5
-              10 -> CommandButton.ICON_SKIP_BACK_10
-              15 -> CommandButton.ICON_SKIP_BACK_15
-              30 -> CommandButton.ICON_SKIP_BACK_30
-              else -> CommandButton.ICON_SKIP_BACK
-            },
-          ).setSessionCommand(rewindCommand)
-          .setDisplayName("Rewind")
-          .setEnabled(true)
-          .setSlots(CommandButton.SLOT_BACK)
-          .build()
-
-      val forwardButton =
-        CommandButton
-          .Builder(
-            when (seekTime.forward) {
-              5 -> CommandButton.ICON_SKIP_FORWARD_5
-              10 -> CommandButton.ICON_SKIP_FORWARD_10
-              15 -> CommandButton.ICON_SKIP_FORWARD_15
-              30 -> CommandButton.ICON_SKIP_FORWARD_30
-              else -> CommandButton.ICON_SKIP_FORWARD
-            },
-          ).setSessionCommand(forwardCommand)
-          .setDisplayName("Forward")
-          .setSlots(CommandButton.SLOT_FORWARD)
-          .setEnabled(true)
+          .add(bookmarkCommand)
           .build()
 
       // every controller gets the full player command set, trusted or not, as before media3
@@ -179,7 +189,7 @@ class MediaLibrarySessionCallback
         .AcceptedResultBuilder()
         .setAvailablePlayerCommands(MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS)
         .setAvailableSessionCommands(sessionCommands)
-        .setMediaButtonPreferences(listOf(previousChapterButton, rewindButton, forwardButton, nextChapterButton))
+        .setMediaButtonPreferences(mediaButtons())
         .build()
     }
 
@@ -191,14 +201,55 @@ class MediaLibrarySessionCallback
     ): ListenableFuture<SessionResult> {
       Timber.d("Executing: ${customCommand.customAction}")
 
-      when (customCommand.customAction) {
-        PREV_CHAPTER_COMMAND -> mediaRepository.previousTrack(rewindRequired = true)
-        REWIND_COMMAND -> mediaRepository.rewind()
-        FORWARD_COMMAND -> mediaRepository.forward()
-        NEXT_CHAPTER_COMMAND -> mediaRepository.nextTrack()
+      return when (customCommand.customAction) {
+        PREV_CHAPTER_COMMAND -> accepted { mediaRepository.previousTrack(rewindRequired = true) }
+        REWIND_COMMAND -> accepted { mediaRepository.rewind() }
+        FORWARD_COMMAND -> accepted { mediaRepository.forward() }
+        NEXT_CHAPTER_COMMAND -> accepted { mediaRepository.nextTrack() }
+        BOOKMARK_COMMAND -> accepted { createBookmark(session) }
+        else -> super.onCustomCommand(session, controller, customCommand, args)
+      }
+    }
+
+    private inline fun accepted(action: () -> Unit): ListenableFuture<SessionResult> {
+      action()
+      return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+    }
+
+    /**
+     * Creates a bookmark at the current position and, once it is recorded, shows a check mark in
+     * place of the bookmark icon for a moment on every controller of the session. Presses arriving
+     * while an earlier one is still being handled, check mark included, are ignored: the button is
+     * a single tap, not a way to stack near-identical bookmarks.
+     *
+     * The session calls back on its application thread, and the handling coroutine stays on the
+     * main dispatcher, so [bookmarkFeedback] is only ever touched from one thread.
+     */
+    private fun createBookmark(session: MediaSession) {
+      if (bookmarkFeedback?.isActive == true) {
+        return
       }
 
-      return super.onCustomCommand(session, controller, customCommand, args)
+      bookmarkFeedback =
+        futureScope.launch(Dispatchers.Main) {
+          createBookmarkOrNull()?.let { showBookmarkConfirmation(session) }
+        }
+    }
+
+    private suspend fun createBookmarkOrNull(): Bookmark? =
+      try {
+        mediaRepository.createBookmark()
+      } catch (e: CancellationException) {
+        throw e
+      } catch (e: Exception) {
+        Timber.w(e, "Unable to create bookmark from the media session")
+        null
+      }
+
+    private suspend fun showBookmarkConfirmation(session: MediaSession) {
+      session.setMediaButtonPreferences(mediaButtons(bookmarkConfirmed = true))
+      delay(BOOKMARK_BUTTON_FEEDBACK_DURATION_MS)
+      session.setMediaButtonPreferences(mediaButtons(bookmarkConfirmed = false))
     }
 
     override fun onGetLibraryRoot(
@@ -374,8 +425,26 @@ class MediaLibrarySessionCallback
       internal const val REWIND_COMMAND = "notification_rewind"
       internal const val FORWARD_COMMAND = "notification_forward"
       internal const val NEXT_CHAPTER_COMMAND = "notification_next_chapter"
+      internal const val BOOKMARK_COMMAND = "notification_bookmark"
 
       private const val REFRESH_TIMEOUT_MS = 2_000L
+      private const val BOOKMARK_BUTTON_FEEDBACK_DURATION_MS = 3_000L
+
+      private val SKIP_BACK_ICONS =
+        mapOf(
+          5 to CommandButton.ICON_SKIP_BACK_5,
+          10 to CommandButton.ICON_SKIP_BACK_10,
+          15 to CommandButton.ICON_SKIP_BACK_15,
+          30 to CommandButton.ICON_SKIP_BACK_30,
+        )
+
+      private val SKIP_FORWARD_ICONS =
+        mapOf(
+          5 to CommandButton.ICON_SKIP_FORWARD_5,
+          10 to CommandButton.ICON_SKIP_FORWARD_10,
+          15 to CommandButton.ICON_SKIP_FORWARD_15,
+          30 to CommandButton.ICON_SKIP_FORWARD_30,
+        )
     }
   }
 
