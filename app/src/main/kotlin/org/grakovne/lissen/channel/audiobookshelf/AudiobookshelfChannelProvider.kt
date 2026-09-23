@@ -33,9 +33,5 @@ class AudiobookshelfChannelProvider
     /** An item that does not know its library type is taken to belong to the active library. */
     fun resolveLibraryType(libraryType: LibraryType?): LibraryType = libraryType ?: activeLibraryType()
 
-    private fun activeLibraryType(): LibraryType =
-      sharedPreferences
-        .getPreferredLibrary()
-        ?.type
-        ?: LibraryType.LIBRARY
+    private fun activeLibraryType(): LibraryType = sharedPreferences.getPreferredLibraryType()
   }

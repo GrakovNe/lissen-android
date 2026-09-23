@@ -101,7 +101,6 @@
     <string name="login_screen_open_id_button">Hubungkan dengan OpenID</string>
     <string name="source_code_on_github_title">Lihat kode sumber di GitHub</string>
     <string name="source_code_on_github_subtitle">Laporkan masalah atau sarankan perbaikan</string>
-    <string name="settings_screen_library_ordering_title">Urutan koleksi</string>
     <string name="settings_screen_library_ordering_title_option">Judul</string>
     <string name="settings_screen_library_ordering_author_option">Penulis</string>
     <string name="settings_screen_library_ordering_creation_date_option">Tanggal dibuat</string>

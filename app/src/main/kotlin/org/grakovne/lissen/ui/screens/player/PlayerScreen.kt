@@ -88,7 +88,6 @@ import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackControl
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackDetailsPlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.provideChapterNumberTitle
 import org.grakovne.lissen.viewmodel.CachingModelView
-import org.grakovne.lissen.viewmodel.ConnectionSettingsViewModel
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlaybackSettingsViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
@@ -110,7 +109,6 @@ fun PlayerScreen(
   val cachingModelView: CachingModelView = hiltViewModel()
   val playerViewModel: PlayerViewModel = hiltViewModel()
   val libraryViewModel: LibraryViewModel = hiltViewModel()
-  val connectionSettingsViewModel: ConnectionSettingsViewModel = hiltViewModel()
   val playbackSettingsViewModel: PlaybackSettingsViewModel = hiltViewModel()
 
   val titleTextStyle = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
@@ -186,7 +184,7 @@ fun PlayerScreen(
       playingItemChanged(bookId, playingBook) || cachePolicyChanged(cachingModelView, playingBook)
 
     if (needsPreparation) {
-      if (connectionSettingsViewModel.hasCredentials().not()) {
+      if (playerViewModel.hasCredentials().not()) {
         navController.showLogin()
         return@LaunchedEffect
       }

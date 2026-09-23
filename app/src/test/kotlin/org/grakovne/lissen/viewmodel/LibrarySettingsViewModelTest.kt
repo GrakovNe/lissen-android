@@ -44,6 +44,8 @@ class LibrarySettingsViewModelTest {
     every { libraryPreferences.getPreferredLibrary() } returns null
     every { libraryPreferences.getLibraryOrdering() } returns LibraryOrderingConfiguration.default
     every { libraryPreferences.hideCompletedFlow } returns flowOf(false)
+    every { libraryPreferences.getPreferredLibraryType() } returns LibraryType.LIBRARY
+    every { libraryPreferences.preferredLibraryTypeFlow } returns flowOf(LibraryType.LIBRARY)
 
     viewModel = buildViewModel()
   }

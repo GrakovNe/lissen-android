@@ -19,6 +19,7 @@ import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
+import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.grakovne.lissen.playback.MediaRepository
 import timber.log.Timber
 import javax.inject.Inject
@@ -31,6 +32,7 @@ class PlayerViewModel
     private val mediaRepository: MediaRepository,
     private val preferences: PlaybackPreferences,
     private val libraryPreferences: LibraryPreferences,
+    private val session: SessionPreferences,
   ) : ViewModel() {
     val book: StateFlow<DetailedItem?> = mediaRepository.playingBook
 
@@ -80,6 +82,8 @@ class PlayerViewModel
     fun updateBookmarks() {
       viewModelScope.launch { mediaRepository.updateBookmarks() }
     }
+
+    fun hasCredentials() = session.hasCredentials()
 
     fun updatePlayingItem() {
       if (mediaRepository.playingBook.value != null) {

@@ -34,7 +34,7 @@ class DownloadPreferences
       val json = store.getString(KEY_PREFERRED_AUTO_DOWNLOAD_LIBRARY_TYPE) ?: return LibraryType.entries
       val type = Types.newParameterizedType(List::class.java, LibraryType::class.java)
       val adapter = moshi.adapter<List<LibraryType>>(type)
-      return adapter.fromJson(json) ?: LibraryType.entries
+      return runCatching { adapter.fromJson(json) }.getOrNull() ?: LibraryType.entries
     }
 
     fun saveAutoDownloadLibraryTypes(types: List<LibraryType>) {

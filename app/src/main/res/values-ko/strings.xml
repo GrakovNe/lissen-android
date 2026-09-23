@@ -94,7 +94,6 @@
     <string name="notification_content_caching_title">콘텐츠 캐싱 중</string>
     <string name="notification_content_caching_error_title">캐싱 실패</string>
     <string name="notification_content_caching_error_description">일부 파일이 저장되지 않았습니다</string>
-    <string name="settings_screen_library_ordering_title">라이브러리 정렬</string>
     <string name="settings_screen_library_ordering_title_option">제목</string>
     <string name="settings_screen_library_ordering_author_option">저자</string>
     <string name="settings_screen_library_ordering_creation_date_option">생성일</string>

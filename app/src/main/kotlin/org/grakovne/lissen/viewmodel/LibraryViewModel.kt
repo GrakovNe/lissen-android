@@ -36,6 +36,7 @@ import org.grakovne.lissen.domain.LibraryEntry
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
+import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.grakovne.lissen.ui.screens.library.paging.LibraryDefaultPagingSource
 import org.grakovne.lissen.ui.screens.library.paging.LibrarySearchPagingSource
 import timber.log.Timber
@@ -48,6 +49,7 @@ class LibraryViewModel
   constructor(
     private val mediaChannel: LissenMediaProvider,
     private val preferences: LibraryPreferences,
+    private val session: SessionPreferences,
   ) : ViewModel() {
     internal var dispatcher: CoroutineDispatcher = Dispatchers.IO
 
@@ -232,11 +234,9 @@ class LibraryViewModel
         .preferredLibraryTypeFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), fetchPreferredLibraryType())
 
-    fun fetchPreferredLibraryType() =
-      preferences
-        .getPreferredLibrary()
-        ?.type
-        ?: LibraryType.LIBRARY
+    fun fetchPreferredLibraryType() = preferences.getPreferredLibraryType()
+
+    fun hasCredentials() = session.hasCredentials()
 
     fun refreshRecentListening() {
       Timber.d("User action: refreshRecentListening")

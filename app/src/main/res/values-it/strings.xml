@@ -94,7 +94,6 @@
     <string name="settings_screen_library_ordering_creation_date_option">Data di creazione</string>
     <string name="settings_screen_library_ordering_title_option">Titolo</string>
     <string name="settings_screen_library_ordering_author_option">Autore</string>
-    <string name="settings_screen_library_ordering_title">Ordinamento della libreria</string>
     <string name="settings_screen_library_ordering_modification_date_option">Data di aggiornamento</string>
     <string name="settings_screen_seek_time_title">Impostazioni di avanzamento</string>
     <string name="forward_interval">Intervallo di avanzamento</string>

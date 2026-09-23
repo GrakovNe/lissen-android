@@ -55,11 +55,11 @@ import kotlin.math.roundToInt
 fun SleepTimerSettingsScreen(onBack: () -> Unit) {
   val viewModel: PlaybackSettingsViewModel = hiltViewModel()
   val librarySettingsViewModel: LibrarySettingsViewModel = hiltViewModel()
-  val preferredLibrary by librarySettingsViewModel.preferredLibrary.collectAsState()
+  val libraryType by librarySettingsViewModel.preferredLibraryType.collectAsState()
 
   SleepTimerSettingsScreenContent(
     viewModel = viewModel,
-    libraryType = preferredLibrary?.type ?: LibraryType.LIBRARY,
+    libraryType = libraryType,
     onBack = onBack,
   )
 }

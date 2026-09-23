@@ -4,14 +4,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Library
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import timber.log.Timber
 import javax.inject.Inject
@@ -31,6 +34,9 @@ class LibrarySettingsViewModel
 
     private val _preferredLibraryOrdering = MutableStateFlow(library.getLibraryOrdering())
     val preferredLibraryOrdering: StateFlow<LibraryOrderingConfiguration> = _preferredLibraryOrdering.asStateFlow()
+
+    val preferredLibraryType: StateFlow<LibraryType> =
+      library.preferredLibraryTypeFlow.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), library.getPreferredLibraryType())
 
     val hideCompleted = library.hideCompletedFlow
 

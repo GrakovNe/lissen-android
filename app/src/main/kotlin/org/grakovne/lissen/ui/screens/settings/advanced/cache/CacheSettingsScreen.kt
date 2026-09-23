@@ -30,7 +30,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
-import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.settings.advanced.AdvancedSettingsNavigationItemComposable
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
@@ -47,7 +46,7 @@ fun CacheSettingsScreen(
   librarySettingsViewModel: LibrarySettingsViewModel = hiltViewModel(),
 ) {
   val preferredDownloadOption by viewModel.preferredAutoDownloadOption.collectAsState()
-  val preferredLibrary by librarySettingsViewModel.preferredLibrary.collectAsState()
+  val libraryType by librarySettingsViewModel.preferredLibraryType.collectAsState()
   val autoDownloadDelayed by viewModel.autoDownloadDelayed.collectAsState()
 
   Scaffold(
@@ -78,7 +77,7 @@ fun CacheSettingsScreen(
               .verticalScroll(rememberScrollState()),
           horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-          AutoCacheSettingsComposable(viewModel, libraryType = preferredLibrary?.type ?: LibraryType.LIBRARY)
+          AutoCacheSettingsComposable(viewModel, libraryType = libraryType)
 
           NetworkTypeAutoCacheSettingsComposable(viewModel, preferredDownloadOption != null)
 

@@ -106,7 +106,6 @@
     <string name="login_screen_open_id_button">Entrar com OpenID</string>
     <string name="source_code_on_github_title">Código fonte no GitHub</string>
     <string name="source_code_on_github_subtitle">Relatar problemas ou sugerir melhorias</string>
-    <string name="settings_screen_library_ordering_title">Ordem da biblioteca</string>
     <string name="settings_screen_library_ordering_title_option">Título</string>
     <string name="settings_screen_library_ordering_author_option">Autor</string>
     <string name="settings_screen_library_ordering_creation_date_option">Data de criação</string>

@@ -18,7 +18,7 @@ class LibraryPreferences
     private val store: SecurePreferenceStore,
   ) {
     val preferredLibraryTypeFlow: Flow<LibraryType> =
-      store.asFlow(KEY_PREFERRED_LIBRARY_TYPE) { getPreferredLibrary()?.type ?: LibraryType.LIBRARY }
+      store.asFlow(KEY_PREFERRED_LIBRARY_TYPE, ::getPreferredLibraryType)
     val hideCompletedFlow: Flow<Boolean> = store.asFlow(KEY_HIDE_COMPLETED, ::getHideCompleted)
     val libraryGroupingFlow: Flow<LibraryGrouping> = store.asFlow(KEY_LIBRARY_GROUPING, ::getLibraryGrouping)
     val forceCacheFlow: Flow<Boolean> = store.asFlow(CACHE_FORCE_ENABLED, ::isForceCache)
@@ -117,7 +117,8 @@ class LibraryPreferences
 
     private fun getPreferredLibraryName(): String? = store.getString(KEY_PREFERRED_LIBRARY_NAME)
 
-    private fun getPreferredLibraryType(): LibraryType =
+    /** The type of the preferred library; a book library when none is chosen. */
+    fun getPreferredLibraryType(): LibraryType =
       store
         .getString(KEY_PREFERRED_LIBRARY_TYPE)
         ?.let { runCatching { LibraryType.valueOf(it) }.getOrNull() }

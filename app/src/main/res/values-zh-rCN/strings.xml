@@ -88,7 +88,6 @@
     <string name="login_screen_open_id_button">使用 OpenID 连接</string>
     <string name="source_code_on_github_title">访问 GitHub 查看源代码</string>
     <string name="source_code_on_github_subtitle">报告问题或提出改进意见</string>
-    <string name="settings_screen_library_ordering_title">媒体库排序</string>
     <string name="settings_screen_library_ordering_title_option">标题</string>
     <string name="settings_screen_library_ordering_author_option">作者</string>
     <string name="settings_screen_library_ordering_creation_date_option">添加日期</string>
