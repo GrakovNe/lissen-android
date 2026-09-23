@@ -6,41 +6,63 @@ import android.media.audiofx.DynamicsProcessing
 // equalizer reports, and the limiter. Unlike the platform equalizer it applies no headroom
 // attenuation when bands are boosted (issue #486), so the limiter is what keeps a large boost from
 // clipping.
-fun equalizerProcessingConfig(bands: List<BandInfo>): DynamicsProcessing.Config =
+fun equalizerProcessingConfig(
+  capabilities: EqualizerCapabilities,
+  gains: List<Int>,
+): DynamicsProcessing.Config =
   DynamicsProcessing.Config
     .Builder(
       DynamicsProcessing.VARIANT_FAVOR_FREQUENCY_RESOLUTION,
       PROCESSING_CHANNEL_COUNT,
       true,
-      bands.size,
+      capabilities.bands.size,
       false,
       0,
       false,
       0,
       true,
-    ).setPreEqAllChannelsTo(equalizerProcessingEq(bands, emptyList(), 0, 0))
+    ).setPreEqAllChannelsTo(equalizerProcessingEq(capabilities, gains))
+    .setLimiterAllChannelsTo(equalizerLimiter())
     .build()
 
 fun equalizerProcessingEq(
-  bands: List<BandInfo>,
+  capabilities: EqualizerCapabilities,
   gains: List<Int>,
-  minDb: Int,
-  maxDb: Int,
 ): DynamicsProcessing.Eq =
   DynamicsProcessing
-    .Eq(true, true, bands.size)
+    .Eq(true, true, capabilities.bands.size)
     .apply {
-      bands.forEachIndexed { index, band ->
+      capabilities.bands.forEachIndexed { index, band ->
         setBand(
           index,
           DynamicsProcessing.EqBand(
             true,
             band.upperFreqHz.toFloat(),
-            equalizerBandGain(gains, index, minDb, maxDb).toFloat(),
+            equalizerBandGain(gains, index, capabilities.minDb, capabilities.maxDb).toFloat(),
           ),
         )
       }
     }
 
+// the platform defaults, spelled out so the clipping guard does not depend on them
+private fun equalizerLimiter(): DynamicsProcessing.Limiter =
+  DynamicsProcessing.Limiter(
+    true,
+    true,
+    LIMITER_LINK_GROUP,
+    LIMITER_ATTACK_MS,
+    LIMITER_RELEASE_MS,
+    LIMITER_RATIO,
+    LIMITER_THRESHOLD_DB,
+    LIMITER_POST_GAIN_DB,
+  )
+
 // the effect resizes the configuration to the channel count of the session it is attached to
 private const val PROCESSING_CHANNEL_COUNT = 1
+
+private const val LIMITER_LINK_GROUP = 0
+private const val LIMITER_ATTACK_MS = 1f
+private const val LIMITER_RELEASE_MS = 60f
+private const val LIMITER_RATIO = 10f
+private const val LIMITER_THRESHOLD_DB = -2f
+private const val LIMITER_POST_GAIN_DB = 0f

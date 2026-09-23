@@ -36,9 +36,7 @@ class PlaybackEnhancerService
 
     private var enhancer: LoudnessEnhancer? = null
 
-    private var equalizer: DynamicsProcessing? = null
-
-    private var equalizerCapabilities: EqualizerCapabilities? = null
+    private var equalizer: AttachedEqualizer? = null
 
     @OptIn(UnstableApi::class)
     override fun onCreate() {
@@ -105,7 +103,7 @@ class PlaybackEnhancerService
 
     @OptIn(UnstableApi::class)
     private fun attachEqualizer(sessionId: Int) {
-      equalizer?.release()
+      equalizer?.effect?.release()
       equalizer = null
 
       if (sessionId == C.AUDIO_SESSION_ID_UNSET) return
@@ -113,44 +111,51 @@ class PlaybackEnhancerService
       // the band layout comes from the device, so the effect is built once the probe has run
       scope.launch {
         val capabilities = equalizerBandProvider.getCapabilities()
-        if (capabilities.available.not()) return@launch
+
+        if (capabilities.available.not()) {
+          Timber.w("Equalizer is unavailable on this device, audio session $sessionId plays unshaped")
+          return@launch
+        }
+
+        val effect =
+          try {
+            DynamicsProcessing(0, sessionId, equalizerProcessingConfig(capabilities, sharedPreferences.getEqualizer().gains))
+          } catch (ex: Exception) {
+            Timber.e("Unable to attach equalizer due to ${ex.message}")
+            return@launch
+          }
 
         withContext(Dispatchers.Main) {
-          if (player.audioSessionId != sessionId) return@withContext
-
-          equalizer?.release()
-
-          try {
-            equalizerCapabilities = capabilities
-            equalizer = DynamicsProcessing(0, sessionId, equalizerProcessingConfig(capabilities.bands))
-            applyEqualizer(sharedPreferences.getEqualizer())
-            Timber.d("Equalizer attached to audio session $sessionId with ${capabilities.bands.size} bands")
-          } catch (ex: Exception) {
-            equalizer = null
-            Timber.e("Unable to attach equalizer due to ${ex.message}")
+          if (player.audioSessionId != sessionId) {
+            effect.release()
+            return@withContext
           }
+
+          equalizer?.effect?.release()
+          equalizer = AttachedEqualizer(effect, capabilities)
+
+          // settings may have changed while the effect was being built
+          applyEqualizer(sharedPreferences.getEqualizer())
+          Timber.d("Equalizer attached to audio session $sessionId with ${capabilities.bands.size} bands")
         }
       }
     }
 
     private fun applyEqualizer(settings: EqualizerSettings) {
-      try {
-        val eq = equalizer ?: return
-        val capabilities = equalizerCapabilities ?: return
+      val attached = equalizer ?: return
 
-        if (!eq.hasControl()) {
+      try {
+        if (!attached.effect.hasControl()) {
           Timber.w("Equalizer lost control of the audio session, settings may not apply")
         }
 
         if (!settings.isActive) {
-          eq.enabled = false
+          attached.effect.enabled = false
           return
         }
 
-        eq.setPreEqAllChannelsTo(
-          equalizerProcessingEq(capabilities.bands, settings.gains, capabilities.minDb, capabilities.maxDb),
-        )
-        eq.enabled = true
+        attached.effect.setPreEqAllChannelsTo(equalizerProcessingEq(attached.capabilities, settings.gains))
+        attached.effect.enabled = true
       } catch (ex: Exception) {
         Timber.e("Unable to apply equalizer due to: $ex")
       }
@@ -176,4 +181,9 @@ class PlaybackEnhancerService
     }
 
     private fun dbToMb(db: Float): Int = (db * 100f).roundToInt()
+
+    private class AttachedEqualizer(
+      val effect: DynamicsProcessing,
+      val capabilities: EqualizerCapabilities,
+    )
   }

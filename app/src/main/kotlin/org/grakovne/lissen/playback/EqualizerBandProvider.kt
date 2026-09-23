@@ -42,9 +42,11 @@ class EqualizerBandProvider
     private val mutex = Mutex()
     private var cached: EqualizerCapabilities? = null
 
+    // a failed probe is not cached: AudioFlinger may refuse an effect momentarily, and the
+    // equalizer should come back on the next attempt rather than stay hidden for the process
     suspend fun getCapabilities(): EqualizerCapabilities =
       mutex.withLock {
-        cached ?: probeCapabilities().also { cached = it }
+        cached ?: probeCapabilities().also { if (it.available) cached = it }
       }
 
     // the band layout and the gain range come from the platform equalizer, the audio itself is
@@ -70,13 +72,16 @@ class EqualizerBandProvider
                 )
               }
 
-          processing = DynamicsProcessing(0, sessionId, equalizerProcessingConfig(bands))
+          val capabilities =
+            EqualizerCapabilities(
+              bands = bands,
+              minDb = range[0] / 100,
+              maxDb = range[1] / 100,
+            )
 
-          EqualizerCapabilities(
-            bands = bands,
-            minDb = range[0] / 100,
-            maxDb = range[1] / 100,
-          )
+          processing = DynamicsProcessing(0, sessionId, equalizerProcessingConfig(capabilities, emptyList()))
+
+          capabilities
         } catch (ex: Exception) {
           Timber.e("Unable to probe equalizer capabilities due to ${ex.message}")
           EqualizerCapabilities.Unavailable
