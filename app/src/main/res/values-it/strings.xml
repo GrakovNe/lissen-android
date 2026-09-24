@@ -279,4 +279,10 @@
     <string name="a11y_fast_forward">Avanti veloce</string>
     <string name="player_state_widget_label">In riproduzione</string>
     <string name="player_cover_widget_label">In riproduzione (copertina)</string>
+    <string name="episode_ordering_published_at_option">Data di pubblicazione</string>
+    <string name="episode_ordering_season_option">Stagione</string>
+    <string name="episode_ordering_episode_option">Episodio</string>
+    <string name="episode_ordering_file_name_option">Nome file</string>
+    <string name="episode_ordering_ascending">Ascendente</string>
+    <string name="episode_ordering_descending">Discendente</string>
 </resources>
