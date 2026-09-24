@@ -29,6 +29,7 @@ import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.grakovne.lissen.playback.service.LissenDataSourceFactory
 import org.grakovne.lissen.playback.service.LissenMediaSourceFactory
+import org.grakovne.lissen.playback.service.playbackExtractorsFactory
 import timber.log.Timber
 import java.io.File
 import javax.inject.Singleton
@@ -102,6 +103,7 @@ object MediaModule {
                   connection = connectionPreferences,
                   mediaProvider = mediaProvider,
                 ),
+                playbackExtractorsFactory(),
               ),
           ),
         ).build()
