@@ -276,4 +276,10 @@
     <string name="tree_node_tags">Tags</string>
     <string name="tree_node_authors">Autoren</string>
     <string name="tree_node_series">Serien</string>
+    <string name="episode_ordering_descending">Absteigend</string>
+    <string name="episode_ordering_published_at_option">Veröffentlichungsdatum</string>
+    <string name="episode_ordering_season_option">Saison</string>
+    <string name="episode_ordering_episode_option">Episode</string>
+    <string name="episode_ordering_file_name_option">Dateiname</string>
+    <string name="episode_ordering_ascending">Aufsteigend</string>
 </resources>
