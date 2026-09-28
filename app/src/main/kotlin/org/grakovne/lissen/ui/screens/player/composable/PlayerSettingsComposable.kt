@@ -15,6 +15,7 @@ import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material.icons.outlined.CalendarToday
+import androidx.compose.material.icons.outlined.ContentCut
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.SortByAlpha
 import androidx.compose.material.icons.outlined.Tag
@@ -23,6 +24,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -41,6 +43,8 @@ import org.grakovne.lissen.ui.components.ApplicationSettingsItemComposable
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.SettingsOptionRow
 import org.grakovne.lissen.ui.components.SettingsPickerRow
+import org.grakovne.lissen.ui.components.slider.IntroOutroSlider
+import org.grakovne.lissen.ui.components.slider.toClock
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 
 /**
@@ -52,6 +56,7 @@ import org.grakovne.lissen.ui.navigation.AppNavigationService
 @Composable
 fun PlayerSettingsComposable(
   ordering: EpisodeOrderingConfiguration?,
+  orderingVisible: Boolean,
   orderingEnabled: Boolean,
   onOrderingChanged: (EpisodeOrderingConfiguration) -> Unit,
   onDismissRequest: () -> Unit,
@@ -61,6 +66,11 @@ fun PlayerSettingsComposable(
   val current = ordering ?: EpisodeOrderingConfiguration.default
 
   var sortExpanded by remember { mutableStateOf(false) }
+
+  // UI-only mock: the values live in the sheet until the playback side exists
+  var skipExpanded by remember { mutableStateOf(false) }
+  var introSeconds by remember { mutableIntStateOf(0) }
+  var outroSeconds by remember { mutableIntStateOf(0) }
 
   LissenModalBottomSheet(
     containerColor = colorScheme.surface,
@@ -74,42 +84,72 @@ fun PlayerSettingsComposable(
           .fillMaxWidth()
           .verticalScroll(rememberScrollState()),
     ) {
-      SettingsPickerRow(
-        label = stringResource(R.string.library_quick_settings_sort_title),
-        icon = Icons.AutoMirrored.Outlined.Sort,
-        value = current.option.toLocalizedName(context),
-        expanded = sortExpanded,
-        enabled = orderingEnabled,
-        modifier = Modifier.testTag("episodeOrderingPicker"),
-        onClick = { sortExpanded = !sortExpanded },
-      )
+      if (orderingVisible) {
+        SettingsPickerRow(
+          label = stringResource(R.string.library_quick_settings_sort_title),
+          icon = Icons.AutoMirrored.Outlined.Sort,
+          value = current.option.toLocalizedName(context),
+          expanded = sortExpanded,
+          enabled = orderingEnabled,
+          modifier = Modifier.testTag("episodeOrderingPicker"),
+          onClick = { sortExpanded = !sortExpanded },
+        )
 
-      AnimatedVisibility(visible = sortExpanded && orderingEnabled) {
-        Column {
-          EpisodeOrderingOption.entries.forEach { option ->
-            val isSelected = current.option == option
-            SettingsOptionRow(
-              title = option.toLocalizedName(context),
-              icon = option.icon(),
-              selected = isSelected,
-              trailing =
-                when (current.direction) {
-                  ASCENDING -> Icons.Outlined.ArrowUpward
-                  DESCENDING -> Icons.Outlined.ArrowDownward
+        AnimatedVisibility(visible = sortExpanded && orderingEnabled) {
+          Column {
+            EpisodeOrderingOption.entries.forEach { option ->
+              val isSelected = current.option == option
+              SettingsOptionRow(
+                title = option.toLocalizedName(context),
+                icon = option.icon(),
+                selected = isSelected,
+                trailing =
+                  when (current.direction) {
+                    ASCENDING -> Icons.Outlined.ArrowUpward
+                    DESCENDING -> Icons.Outlined.ArrowDownward
+                  },
+                modifier = Modifier.testTag("episodeOrderingOption_${option.name}"),
+                onClick = {
+                  val newDirection =
+                    when {
+                      !isSelected -> ASCENDING
+                      current.direction == ASCENDING -> DESCENDING
+                      else -> ASCENDING
+                    }
+                  onOrderingChanged(EpisodeOrderingConfiguration(option = option, direction = newDirection))
                 },
-              modifier = Modifier.testTag("episodeOrderingOption_${option.name}"),
-              onClick = {
-                val newDirection =
-                  when {
-                    !isSelected -> ASCENDING
-                    current.direction == ASCENDING -> DESCENDING
-                    else -> ASCENDING
-                  }
-                onOrderingChanged(EpisodeOrderingConfiguration(option = option, direction = newDirection))
-              },
-            )
+              )
+            }
           }
         }
+      }
+
+      SettingsPickerRow(
+        label = stringResource(R.string.player_settings_skip_intro_outro),
+        icon = Icons.Outlined.ContentCut,
+        value =
+          when {
+            introSeconds == 0 && outroSeconds == 0 -> stringResource(R.string.player_settings_skip_off)
+            else -> "${introSeconds.toClock()} · ${outroSeconds.toClock()}"
+          },
+        expanded = skipExpanded,
+        modifier = Modifier.testTag("introOutroPicker"),
+        onClick = { skipExpanded = !skipExpanded },
+      )
+
+      AnimatedVisibility(visible = skipExpanded) {
+        IntroOutroSlider(
+          introSeconds = introSeconds,
+          outroSeconds = outroSeconds,
+          modifier =
+            Modifier
+              .padding(horizontal = 16.dp, vertical = 8.dp)
+              .testTag("introOutroSlider"),
+          onUpdate = { intro, outro ->
+            introSeconds = intro
+            outroSeconds = outro
+          },
+        )
       }
 
       Spacer(modifier = Modifier.height(8.dp))

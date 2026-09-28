@@ -245,8 +245,8 @@ fun PlayerScreen(
                     }
                   }
 
-                  // podcasts only; stays next to search while the queue is expanded
-                  if (sortable) {
+                  // stays next to search while the queue is expanded
+                  run {
                     IconButton(
                       onClick = { if (isPlaybackReady) settingsSelected = true },
                       modifier =
@@ -441,6 +441,7 @@ fun PlayerScreen(
 
     PlayerSettingsComposable(
       ordering = episodeOrdering,
+      orderingVisible = sortable,
       orderingEnabled = canReorder,
       onOrderingChanged = { playerViewModel.setEpisodeOrdering(bookId, it) },
       onDismissRequest = { settingsSelected = false },
