@@ -1,6 +1,5 @@
-package org.grakovne.lissen.playback
+package org.grakovne.lissen.playback.autoskip
 
-import org.grakovne.lissen.common.AutoSkipConfiguration
 import org.grakovne.lissen.playback.PlaybackFixtures.chapter
 import org.grakovne.lissen.playback.PlaybackFixtures.podcast
 import org.junit.jupiter.api.Assertions.assertEquals

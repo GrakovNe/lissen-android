@@ -1,8 +1,8 @@
 package org.grakovne.lissen.playback
 
-import org.grakovne.lissen.common.AutoSkipConfiguration
 import org.grakovne.lissen.playback.PlaybackFixtures.chapter
 import org.grakovne.lissen.playback.PlaybackFixtures.podcast
+import org.grakovne.lissen.playback.autoskip.AutoSkipConfiguration
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Nested

@@ -1,6 +1,7 @@
 package org.grakovne.lissen.playback
 
 import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -12,18 +13,19 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import org.grakovne.lissen.common.AutoSkipConfiguration
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.SeekTime
-import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.PlaybackFixtures.bookmark
 import org.grakovne.lissen.playback.PlaybackFixtures.descending
 import org.grakovne.lissen.playback.PlaybackFixtures.podcast
 import org.grakovne.lissen.playback.PlaybackFixtures.progress
+import org.grakovne.lissen.playback.autoskip.AutoSkipConfiguration
+import org.grakovne.lissen.playback.autoskip.AutoSkipPreferences
+import org.grakovne.lissen.playback.autoskip.PlaybackSteps
 import org.grakovne.lissen.playback.service.DefaultTimerActivator
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -109,7 +111,7 @@ class MediaRepositoryTest {
   private val mainThread = InlineMainThread()
   private val eventBus = PlaybackEventBus()
   private val preferences = mockk<PlaybackPreferences>(relaxed = true)
-  private val libraryPreferences = mockk<LibraryPreferences>(relaxed = true)
+  private val autoSkipPreferences = mockk<AutoSkipPreferences>(relaxed = true)
   private val mediaChannel = mockk<LissenMediaProvider>(relaxed = true)
   private val steps = PlaybackSteps()
 
@@ -123,12 +125,12 @@ class MediaRepositoryTest {
     every { preferences.getSeekTime() } returns SeekTime.Default
     every { preferences.getDefaultTimerOption() } returns null
     every { preferences.getPlayingItem() } returns null
-    every { libraryPreferences.getAutoSkip(any()) } returns AutoSkipConfiguration.disabled
+    every { autoSkipPreferences.get(any()) } returns AutoSkipConfiguration.disabled
 
     repository =
       MediaRepository(
         preferences,
-        libraryPreferences,
+        autoSkipPreferences,
         mediaChannel,
         eventBus,
         DefaultTimerActivator(preferences),
@@ -142,6 +144,11 @@ class MediaRepositoryTest {
   fun tearDown() {
     Dispatchers.resetMain()
   }
+
+  private fun position(
+    mediaItemIndex: Int,
+    positionMs: Long,
+  ) = Player.PositionInfo(null, mediaItemIndex, null, null, mediaItemIndex, positionMs, positionMs, -1, -1)
 
   /** The book as the media session would report it: playing, ready, at its stored progress. */
   private fun playing(
@@ -428,7 +435,7 @@ class MediaRepositoryTest {
     @Test
     fun `an episode timer ends where the auto-skipped outro begins`() =
       runTest {
-        every { libraryPreferences.getAutoSkip("podcast") } returns AutoSkipConfiguration(introSeconds = 0, outroSeconds = 10)
+        every { autoSkipPreferences.get("podcast") } returns AutoSkipConfiguration(introSeconds = 0, outroSeconds = 10)
         playing(podcast(progress = progress(35.0)))
 
         repository.updateTimer(CurrentEpisodeTimerOption)
@@ -439,7 +446,7 @@ class MediaRepositoryTest {
     @Test
     fun `an episode timer armed inside the intro counts from where playback is`() =
       runTest {
-        every { libraryPreferences.getAutoSkip("podcast") } returns AutoSkipConfiguration(introSeconds = 8, outroSeconds = 10)
+        every { autoSkipPreferences.get("podcast") } returns AutoSkipConfiguration(introSeconds = 8, outroSeconds = 10)
         playing(podcast(progress = progress(33.0)))
 
         repository.updateTimer(CurrentEpisodeTimerOption)
@@ -452,14 +459,15 @@ class MediaRepositoryTest {
       runTest {
         playing(podcast(progress = progress(35.0)))
 
+        // 35s is 5s into c1; the step lands 30s later, at 35s into it
         repository.forward()
-        assertTrue(steps.take())
+        assertTrue(steps.take(position(1, 35_000L)))
 
         repository.setChapterPosition(20.0)
-        assertFalse(steps.take())
+        assertFalse(steps.take(position(1, 20_000L)))
 
         repository.rewind()
-        assertFalse(steps.take())
+        assertFalse(steps.take(position(0, 0L)))
       }
 
     @Test
@@ -480,7 +488,7 @@ class MediaRepositoryTest {
     @Test
     fun `inside the outro an episode timer runs to the real end of the chapter`() =
       runTest {
-        every { libraryPreferences.getAutoSkip("podcast") } returns AutoSkipConfiguration(introSeconds = 0, outroSeconds = 10)
+        every { autoSkipPreferences.get("podcast") } returns AutoSkipConfiguration(introSeconds = 0, outroSeconds = 10)
         playing(podcast(progress = progress(65.0)))
 
         repository.updateTimer(CurrentEpisodeTimerOption)
@@ -503,7 +511,7 @@ class MediaRepositoryTest {
     @Test
     fun `previous replays the chapter from past the replay threshold, intro or not`() =
       runTest {
-        every { libraryPreferences.getAutoSkip("podcast") } returns AutoSkipConfiguration(introSeconds = 20, outroSeconds = 0)
+        every { autoSkipPreferences.get("podcast") } returns AutoSkipConfiguration(introSeconds = 20, outroSeconds = 0)
         playing(podcast(progress = progress(52.0)))
 
         repository.previousTrack()
@@ -518,7 +526,7 @@ class MediaRepositoryTest {
         repository.updateTimer(CurrentEpisodeTimerOption)
         assertEquals(PlaybackCommand.SetTimer(35.0, CurrentEpisodeTimerOption), eventBus.commands.first())
 
-        every { libraryPreferences.getAutoSkip("podcast") } returns AutoSkipConfiguration(introSeconds = 0, outroSeconds = 15)
+        every { autoSkipPreferences.get("podcast") } returns AutoSkipConfiguration(introSeconds = 0, outroSeconds = 15)
         repository.refreshTimer()
 
         assertEquals(PlaybackCommand.SetTimer(20.0, CurrentEpisodeTimerOption), eventBus.commands.first())

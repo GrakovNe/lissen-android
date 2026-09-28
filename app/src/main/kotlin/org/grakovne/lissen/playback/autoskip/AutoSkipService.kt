@@ -1,4 +1,4 @@
-package org.grakovne.lissen.playback
+package org.grakovne.lissen.playback.autoskip
 
 import android.os.Looper
 import androidx.annotation.OptIn
@@ -11,10 +11,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import org.grakovne.lissen.common.AutoSkipConfiguration
 import org.grakovne.lissen.common.RunningComponent
 import org.grakovne.lissen.domain.DetailedItem
-import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.playback.service.PlaybackSynchronizationService
 import org.grakovne.lissen.playback.service.PlaybackTimer
 import org.grakovne.lissen.playback.service.SyncStateStore
@@ -43,7 +41,7 @@ class AutoSkipService
   @Inject
   constructor(
     private val player: ExoPlayer,
-    private val libraryPreferences: LibraryPreferences,
+    private val preferences: AutoSkipPreferences,
     private val syncState: SyncStateStore,
     private val playbackTimer: PlaybackTimer,
     private val synchronization: PlaybackSynchronizationService,
@@ -87,10 +85,10 @@ class AutoSkipService
               if (another) reach(newPosition.mediaItemIndex)
             }
 
-            // "next", a pick from the list, the headset: the very start of another chapter is
-            // entered; a "forward" step is the player's own; anywhere else is the listener's
+            // "next" and a pick from the list: the very start of another chapter is entered;
+            // a "forward" step is the player's own; anywhere else is the listener's
             Player.DISCONTINUITY_REASON_SEEK -> {
-              val step = steps.take()
+              val step = steps.take(newPosition)
               if (step || (another && newPosition.positionMs == 0L)) reach(newPosition.mediaItemIndex) else owed = null
             }
 
@@ -105,7 +103,7 @@ class AutoSkipService
 
     override fun onCreate() {
       player.addListener(listener)
-      scope.launch { libraryPreferences.autoSkipFlow.collect { plantOutroMessages() } }
+      scope.launch { preferences.flow.collect { plantOutroMessages() } }
     }
 
     private fun reach(index: Int) {
@@ -196,7 +194,7 @@ class AutoSkipService
      * every send sorts the player's message list.
      */
     private fun plantOutroMessages() {
-      val wanted = currentBook()?.let { OutroPlan(it, libraryPreferences.getAutoSkip(it.id)) }
+      val wanted = currentBook()?.let { OutroPlan(it, preferences.get(it.id)) }
       if (wanted == planted?.plan) return
 
       planted?.messages?.forEach { it.cancel() }
@@ -230,7 +228,7 @@ class AutoSkipService
     private fun chapterAt(
       book: DetailedItem,
       index: Int,
-    ): SkippableChapter? = book.chapters.getOrNull(index)?.let { libraryPreferences.getAutoSkip(book.id).skippable(it.durationMs) }
+    ): SkippableChapter? = book.chapters.getOrNull(index)?.let { preferences.get(book.id).skippable(it.durationMs) }
 
     /** What the planted messages describe; a queue of the same item in the same order with the same configuration needs no new ones. */
     private data class OutroPlan(

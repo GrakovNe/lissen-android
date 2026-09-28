@@ -1,4 +1,4 @@
-package org.grakovne.lissen.playback
+package org.grakovne.lissen.playback.autoskip
 
 import dagger.Binds
 import dagger.Module

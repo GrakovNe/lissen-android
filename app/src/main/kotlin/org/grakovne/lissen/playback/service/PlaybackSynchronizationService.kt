@@ -93,8 +93,8 @@ class PlaybackSynchronizationService
     }
 
     /**
-     * Chapter [chapterIndex] is being left before its end (an outro is skipped): the server gets it
-     * played out, under its own index and item, before the player moves on. Queued right here as a
+     * Chapter [chapterIndex] is left before playback runs out of it: the server gets it played
+     * out, under its own index and item, before the player moves on. Queued right here as a
      * mandatory sync, so a regular sync of the next chapter neither drops it nor overtakes it.
      * The listening time stays with the regular syncs, which report it once.
      */

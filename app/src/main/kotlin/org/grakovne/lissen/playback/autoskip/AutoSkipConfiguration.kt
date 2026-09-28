@@ -1,4 +1,4 @@
-package org.grakovne.lissen.common
+package org.grakovne.lissen.playback.autoskip
 
 import androidx.annotation.Keep
 import com.squareup.moshi.JsonClass

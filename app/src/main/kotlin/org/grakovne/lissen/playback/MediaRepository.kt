@@ -22,8 +22,9 @@ import org.grakovne.lissen.domain.DetailedItem.Companion.same
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.TimerOption
-import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
+import org.grakovne.lissen.playback.autoskip.AutoSkipPreferences
+import org.grakovne.lissen.playback.autoskip.PlaybackSteps
 import org.grakovne.lissen.playback.service.DefaultTimerActivator
 import timber.log.Timber
 import javax.inject.Inject
@@ -36,7 +37,7 @@ class MediaRepository
   @Inject
   constructor(
     private val preferences: PlaybackPreferences,
-    private val libraryPreferences: LibraryPreferences,
+    private val autoSkipPreferences: AutoSkipPreferences,
     private val mediaChannel: LissenMediaProvider,
     private val eventBus: PlaybackEventBus,
     private val defaultTimerActivator: DefaultTimerActivator,
@@ -207,7 +208,7 @@ class MediaRepository
               book = book,
               totalPosition = position ?: totalPosition.value,
               speed = preferences.getPlaybackSpeed(),
-              autoSkip = libraryPreferences.getAutoSkip(book.id),
+              autoSkip = autoSkipPreferences.get(book.id),
             ) ?: return
 
           scheduleServiceTimer(delay, timerOption)
@@ -543,7 +544,7 @@ class MediaRepository
       }
 
       mainThread.run {
-        if (step) steps.expect()
+        if (step) steps.expect(target.chapterIndex, target.chapterPositionMs)
         player.seekTo(target.chapterIndex, target.chapterPositionMs)
         updateProgressWhenReady()
       }

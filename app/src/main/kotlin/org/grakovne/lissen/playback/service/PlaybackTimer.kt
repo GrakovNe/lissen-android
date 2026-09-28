@@ -73,10 +73,7 @@ class PlaybackTimer
       }
     }
 
-    /**
-     * An armed countdown to the end of the episode. While it runs the end of the episode is its to
-     * take, and a skip that moves to another episode has to re-arm it.
-     */
+    /** An armed countdown to the end of the episode: while it runs, the end of the episode is its to take. */
     val isEpisodeTimerRunning: Boolean
       get() = timer != null && option == CurrentEpisodeTimerOption
 

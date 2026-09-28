@@ -1,7 +1,8 @@
 package org.grakovne.lissen.playback
 
-import org.grakovne.lissen.common.AutoSkipConfiguration
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.playback.autoskip.AutoSkipConfiguration
+import org.grakovne.lissen.playback.autoskip.chapterEndSeconds
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.playback.service.calculateChapterIndexAndPosition
 
@@ -137,9 +138,8 @@ object PlaybackGeometry {
 
   /**
    * Wall-clock seconds until the chapter is over, from where playback is: whatever moves the
-   * position, a seek of the listener or a skip, re-arms the timer from there. With auto-skip the
-   * chapter ends where its outro begins, unless the position is already inside the outro: that
-   * one is the listener's, or one the skip is about to leave, so it runs to the real end.
+   * position, a seek of the listener or a skip, re-arms the timer from there. Where the chapter
+   * is over is the auto-skip's to say.
    */
   fun remainingInChapter(
     book: DetailedItem,
@@ -150,10 +150,7 @@ object PlaybackGeometry {
     val (index, position) = calculateChapterIndexAndPosition(book, totalPosition)
     val chapter = book.chapters.getOrNull(index) ?: return null
 
-    val outroStart = autoSkip.skippable(chapter.durationMs)?.outroStartMs?.let { it / 1000.0 } ?: chapter.duration
-    val end = if (position >= outroStart) chapter.duration else outroStart
-
-    return (end - position).coerceAtLeast(0.0) / speed
+    return (autoSkip.chapterEndSeconds(chapter, position) - position).coerceAtLeast(0.0) / speed
   }
 
   fun clampPlaybackSpeed(factor: Float): Float = factor.coerceIn(MIN_PLAYBACK_SPEED, MAX_PLAYBACK_SPEED)

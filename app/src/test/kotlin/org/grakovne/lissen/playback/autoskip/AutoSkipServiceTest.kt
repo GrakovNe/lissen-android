@@ -1,4 +1,4 @@
-package org.grakovne.lissen.playback
+package org.grakovne.lissen.playback.autoskip
 
 import android.os.Looper
 import androidx.media3.common.Player
@@ -21,9 +21,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
-import org.grakovne.lissen.common.AutoSkipConfiguration
 import org.grakovne.lissen.domain.DetailedItem
-import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.playback.PlaybackFixtures.chapter
 import org.grakovne.lissen.playback.PlaybackFixtures.podcast
 import org.grakovne.lissen.playback.service.PlaybackSynchronizationService
@@ -47,7 +45,7 @@ import org.junit.jupiter.api.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class AutoSkipServiceTest {
   private val player = mockk<ExoPlayer>(relaxed = true)
-  private val libraryPreferences = mockk<LibraryPreferences>()
+  private val preferences = mockk<AutoSkipPreferences>()
   private val syncState = SyncStateStore()
   private val playbackTimer = mockk<PlaybackTimer>()
   private val synchronization = mockk<PlaybackSynchronizationService>(relaxed = true)
@@ -118,14 +116,14 @@ class AutoSkipServiceTest {
       message
     }
 
-    every { libraryPreferences.autoSkipFlow } returns configurations
-    every { libraryPreferences.getAutoSkip(any()) } answers { configurations.value[firstArg()] ?: AutoSkipConfiguration.disabled }
+    every { preferences.flow } returns configurations
+    every { preferences.get(any()) } answers { configurations.value[firstArg()] ?: AutoSkipConfiguration.disabled }
     every { playbackTimer.isEpisodeTimerRunning } returns false
 
     configure(AutoSkipConfiguration(introSeconds = 10, outroSeconds = 10))
 
     service =
-      AutoSkipService(player, libraryPreferences, syncState, playbackTimer, synchronization, steps).also {
+      AutoSkipService(player, preferences, syncState, playbackTimer, synchronization, steps).also {
         it.onCreate()
       }
     buildQueue(book, at = 0, positionMs = 15_000L)
@@ -160,7 +158,7 @@ class AutoSkipServiceTest {
 
     @Test
     fun `the very start of another chapter is entered once playback runs again`() {
-      // "next", a pick from the list, the headset: all land at zero
+      // "next" and a pick from the list land at zero
       userSeeks(to = 2, at = 0L)
       assertTrue(seeks.isEmpty())
 
@@ -531,7 +529,7 @@ class AutoSkipServiceTest {
     fun `a forward step into the outro moves on once playback runs`() {
       index = 1
       positionMs = 5_000L
-      steps.expect()
+      steps.expect(1, 35_000L)
       userSeeks(to = 1, at = 35_000L)
       playbackRuns()
 
@@ -539,10 +537,22 @@ class AutoSkipServiceTest {
     }
 
     @Test
+    fun `a step whose seek never came does not turn the next scrub into one`() {
+      // the step was refused by a controller not yet connected; the listener then scrubs into the outro
+      index = 1
+      positionMs = 5_000L
+      steps.expect(1, 35_000L)
+      userSeeks(to = 1, at = 36_000L)
+      playbackRuns()
+
+      assertTrue(seeks.isEmpty())
+    }
+
+    @Test
     fun `a forward step into the intro of the next chapter skips it`() {
       index = 0
       positionMs = 28_000L
-      steps.expect()
+      steps.expect(1, 3_000L)
       userSeeks(to = 1, at = 3_000L)
       playbackRuns()
 
@@ -553,7 +563,7 @@ class AutoSkipServiceTest {
     fun `a forward step is spent by its own seek`() {
       index = 1
       positionMs = 5_000L
-      steps.expect()
+      steps.expect(1, 20_000L)
       userSeeks(to = 1, at = 20_000L)
       userSeeks(to = 1, at = 35_000L)
       playbackRuns()

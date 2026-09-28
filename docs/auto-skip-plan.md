@@ -74,7 +74,7 @@ PlayerSettingsComposable (линейка)
    │ onUpdateFinished — один save на жест
    v
 PlayerViewModel.setAutoSkip(itemId, config)
-   ├─> LibraryPreferences.saveAutoSkip ──(autoSkipFlow: триггер перепланирования)──> AutoSkipService
+   ├─> AutoSkipPreferences.save ──(flow: триггер перепланирования)──> AutoSkipService
    └─> MediaRepository.refreshTimer()                                                                   │
                                                                                                         v
                                      PlayerMessage на outroStart каждой главы; pending intro на старте воспроизведения
@@ -88,13 +88,13 @@ PlayerViewModel.setAutoSkip(itemId, config)
 
 ## 1. Модель и хранение (сделано)
 
-- `common/AutoSkipConfiguration(introSeconds, outroSeconds)`: `enabled`, `sanitized()`, `disabled`.
-- `LibraryPreferences`: карта `auto_skip` per item, `autoSkipFlow`, `getAutoSkip`, `saveAutoSkip`
+- `playback/autoskip/AutoSkipConfiguration(introSeconds, outroSeconds)`: `enabled`, `sanitized()`, `disabled`.
+- `playback/autoskip/AutoSkipPreferences`: карта `auto_skip` per item, `flow`, `flow(itemId)`, `get`, `save`
   (`0/0` удаляет запись, это и есть сброс); разбор запись-за-записью.
 - Известное: карта не чистится при удалении элемента и не переносится бэкапом, как и порядок
   выпусков.
 
-## 2. Чистая логика: `playback/AutoSkipPlanner.kt` (сделано)
+## 2. Чистая логика: `playback/autoskip/AutoSkipPlanner.kt` (сделано)
 
 Правила живут здесь, сервис только применяет их к плееру:
 
@@ -111,10 +111,11 @@ PlayerViewModel.setAutoSkip(itemId, config)
 
 ---
 
-## 3. Бэкенд: `playback/AutoSkipService.kt` (`RunningComponent`, сделано)
+## 3. Бэкенд: `playback/autoskip/AutoSkipService.kt` (`RunningComponent`, сделано)
 
-Зависимости: `ExoPlayer`, `LibraryPreferences`, `SyncStateStore`, `PlaybackTimer`,
-`PlaybackSynchronizationService`. Регистрация `playback/AutoSkipModule.kt` (`@Binds @IntoSet`).
+Зависимости: `ExoPlayer`, `AutoSkipPreferences`, `SyncStateStore`, `PlaybackTimer`,
+`PlaybackSynchronizationService`, `PlaybackSteps`. Регистрация `playback/autoskip/AutoSkipModule.kt`
+(`@Binds @IntoSet`).
 
 ### 3.1 Состояние
 
@@ -126,8 +127,8 @@ PlayerViewModel.setAutoSkip(itemId, config)
 - `messages` + `planted(book, config)` — сообщения outro и ключ, по которому они не
   пересоздаются зря.
 
-Конфиг читается синхронно `libraryPreferences.getAutoSkip(book.id)` в момент решения;
-`autoSkipFlow` только перепланирует сообщения (на старте процесса flow может не успеть до
+Конфиг читается синхронно `preferences.get(book.id)` в момент решения;
+`preferences.flow` только перепланирует сообщения (на старте процесса flow может не успеть до
 первой главы).
 
 ### 3.2 Вход в главу — intro
@@ -140,7 +141,8 @@ PlayerViewModel.setAutoSkip(itemId, config)
 - `onPositionDiscontinuity(AUTO_TRANSITION)` с **другим** индексом — глава пошла сама; та же
   глава (граница файлов) — ничего;
 - `onPositionDiscontinuity(SEEK)` ровно в **ноль другой главы** — «следующая», выбор из списка,
-  «вперёд» на гарнитуре: `MediaRepository.setChapter` и `seekToNext` ExoPlayer сажают ровно в 0;
+  `seekToNext` сессии: `MediaRepository.setChapter` и `seekToNext` ExoPlayer сажают ровно в 0
+  (кнопка «вперёд» гарнитуры в Lissen — это шаг «+N секунд», см. ниже);
 - `onTimelineChanged(PLAYLIST_CHANGED)` → пост: пересадить сообщения и `owed = currentIndex`.
   К моменту поста `seekTo(start)` из `preparePlayback` уже выполнен (та же main-задача), а
   очередь из Android Auto без сика читается так же.
@@ -288,8 +290,20 @@ PlayerViewModel.setAutoSkip(itemId, config)
   паузе не прыгает), outro 0:30 (переход за 30 с до конца, сразу на 0:30 следующей),
   таймер «после выпуска» гаснет на границе outro, resume после него уводит дальше, конец
   книги не перетирает прогресс; на ABS у выпуска подкаста с outro стоит `isFinished`.
-  Инструментальный тест с настоящим `ExoPlayer` (`lissen_ci_api34`) — желателен, отдельным
-  шагом.
+- `AutoSkipAcceptanceTest` (androidTest) — приёмка на настоящем `ExoPlayer` с главами тишины
+  (`SilenceMediaSource`, 6/16/20/6 с, скорость 4x, пропуск 2 с с обоих концов), потому что
+  юнит-тесты имитируют media3 руками. Проверяет ровно то, на чём держится сервис: сообщение
+  доставляется при живом пересечении и не доставляется при прыжке мимо; свой сик и автопереход
+  видны как discontinuity; пауза таймера доходит до плеера раньше сообщения. Шесть сценариев:
+  intro первой главы, пересечение outro с отчётом и уходом за intro следующей, сик слушателя в
+  outro играет до конца, шаг «+N» в outro уводит дальше, таймер забирает outro и утренний play
+  уводит дальше, outro последней главы завершает элемент. Каждый сик сценария делается в той
+  же main-задаче, что и проверка позиции. Проходит на `Pixel_8_API_35` и `lissen_ci_api34`
+  с опциями пайплайна (`-noaudio`).
+- `AutoSkipPreferencesTest`, `AutoSkipPlannerTest`, `AutoSkipServiceTest` лежат в
+  `test/.../playback/autoskip/`; метка шага покрыта в `MediaRepositoryTest` (ставится только
+  шагом вперёд) и в `AutoSkipServiceTest` (шаг в outro, шаг в intro следующей главы, метка
+  тратится своим сиком, метка без сика не делает шагом следующий скраб).
 
 ---
 
@@ -444,3 +458,29 @@ outro-сообщение поставлены на одну и ту же точ�
 | — | Отложено: действия TalkBack для ползунка (`customActions ±5 с`) | Известное ограничение, как и было в разделе 5 |
 | — | Отложено: `getAutoSkip` в `PlayerScreen` собирается на весь экран | Так же, как `episodeOrdering` рядом |
 | — | Шаг «+N секунд» кнопкой, улетевший в outro, должен пропускать; слайдер — нет (решение 2026-09-29) | Сделано: `PlaybackSteps` — метка, которую `MediaRepository.forward()` ставит перед своим сиком, а сервис забирает на этом discontinuity и ставит `owed`; дальше обычный выход из outro, шаг в intro следующей главы режет его. Только вперёд: «−N» в intro не режется, иначе в intro не попасть |
+
+## Ревью 10: изоляция в пакет и приёмка
+
+Фича собрана в `playback/autoskip`: `AutoSkipConfiguration`, `AutoSkipPreferences` (свой
+класс поверх общих расширений `SecurePreferenceStore.getPerItem/putPerItem`, которые теперь
+делит с порядком выпусков), `AutoSkipPlanner`, `AutoSkipService`, `AutoSkipModule`,
+`PlaybackSteps`. Снаружи остались крючки, каждый на одну строку: `MediaRepository.forward()`
+ставит метку шага, `updateTimer` берёт конфиг элемента, `PlaybackGeometry.remainingInChapter`
+спрашивает у пакета `chapterEndSeconds`, view-model и экран плеера. `PlaybackTimer` и
+`PlaybackSynchronizationService` про фичу не знают: у них общие способности
+`isEpisodeTimerRunning` и `reportChapterEnd`.
+
+| # | Замечание | Решение |
+|---|-----------|---------|
+| 1 | Метка шага без адресата: если контроллер ещё не подключён, сик не случается, метка живёт и следующий скраб слушателя сходит за шаг; сик сервиса между меткой и сиком забирал бы её | `PlaybackSteps.expect(index, positionMs)` и `take(landing)`: метка совпадает только с посадкой своего сика, тратится любым сиком |
+| 2 | В приёмке проверка позиции и сик шли разными main-задачами, окно 1–1.5 с; `single` прятал причину | Проверка и сик в одной задаче (`inChapterBeforeOutro`), главы 16 и 20 с, явный `fail` при упущенном окне |
+| 3 | Первый инструментальный тест, который реально играет, а CI гонит эмулятор с `-noaudio` | Прогнано на `lissen_ci_api34` с опциями пайплайна |
+| 4 | Геометрия импортировала `internal` помощники пакета и знала правило про outro | Публичная `AutoSkipConfiguration.chapterEndSeconds(chapter, position)`, геометрия импортирует только её |
+| 5 | KDoc таймера и синка упоминали пропуск | Переписаны без фичи |
+| 6 | `PlayerViewModel` дублировал `?: disabled` | `AutoSkipPreferences.flow(itemId)` |
+| 7 | `PerItemPreferences` назывался как класс настроек и только читал | Расширения `getPerItem/putPerItem` на `SecurePreferenceStore`, карточные адаптеры у обоих клиентов убраны |
+| 8 | Сервисы приёмки не останавливаются между тестами и переплантируют сообщения на отпущенном плеере | Свой id элемента на тест: чужой план не меняется, сервисы молчат |
+| 9 | Настоящий `PlaybackTimer` в приёмке не использовался | Сценарий «таймер забирает outro, утренний play уводит дальше» |
+| 10 | Допуски: сообщение «на 100 мс раньше», конец элемента без объяснения | `4000 until 6000` для пересечения, комментарий про посадку на миллисекунду раньше конца |
+| 11 | «Гарнитура» в комментариях как посадка в ноль главы | Кнопка гарнитуры в Lissen — шаг `forward()`, комментарии и план поправлены |
+| — | Принято как есть: короткие имена `get/save/flow` внутри пакета вместо `getAutoSkip/...` | Класс уже говорит, что хранит; конвенция пакета |

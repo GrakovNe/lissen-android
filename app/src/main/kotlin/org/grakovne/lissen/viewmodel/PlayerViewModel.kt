@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import org.grakovne.lissen.common.AutoSkipConfiguration
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
@@ -22,6 +21,8 @@ import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.grakovne.lissen.playback.MediaRepository
+import org.grakovne.lissen.playback.autoskip.AutoSkipConfiguration
+import org.grakovne.lissen.playback.autoskip.AutoSkipPreferences
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -33,6 +34,7 @@ class PlayerViewModel
     private val mediaRepository: MediaRepository,
     private val preferences: PlaybackPreferences,
     private val libraryPreferences: LibraryPreferences,
+    private val autoSkipPreferences: AutoSkipPreferences,
     private val session: SessionPreferences,
   ) : ViewModel() {
     val book: StateFlow<DetailedItem?> = mediaRepository.playingBook
@@ -41,15 +43,14 @@ class PlayerViewModel
     fun episodeOrdering(itemId: String): Flow<EpisodeOrderingConfiguration?> = libraryPreferences.episodeOrderingFlow.map { it[itemId] }
 
     /** The stored auto-skip of the item the screen shows; nothing is skipped unless the user set something. */
-    fun autoSkip(itemId: String): Flow<AutoSkipConfiguration> =
-      libraryPreferences.autoSkipFlow.map { it[itemId] ?: AutoSkipConfiguration.disabled }
+    fun autoSkip(itemId: String): Flow<AutoSkipConfiguration> = autoSkipPreferences.flow(itemId)
 
     fun setAutoSkip(
       itemId: String,
       configuration: AutoSkipConfiguration,
     ) {
       Timber.d("User action: setAutoSkip $configuration for $itemId")
-      libraryPreferences.saveAutoSkip(itemId, configuration)
+      autoSkipPreferences.save(itemId, configuration)
 
       // a sleep timer armed for the end of the playing episode now ends at the new outro
       if (mediaRepository.playingBook.value?.id == itemId) mediaRepository.refreshTimer()
