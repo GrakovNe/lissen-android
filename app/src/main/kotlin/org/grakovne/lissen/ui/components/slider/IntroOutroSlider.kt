@@ -19,6 +19,7 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerInput
@@ -27,10 +28,8 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import org.grakovne.lissen.common.withHaptic
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -69,8 +68,9 @@ fun IntroOutroSlider(
       accent = colorScheme.primary,
     )
 
-  val labelStyle = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = palette.onSurface)
-  val tickStyle = TextStyle(fontSize = 10.sp, color = palette.variant)
+  // the same header the other rulers use: headlineSmall value with a drop-down marker pointing at the position
+  val valueStyle = MaterialTheme.typography.headlineSmall.copy(color = palette.onSurface)
+  val tickStyle = MaterialTheme.typography.bodySmall.copy(color = palette.variant)
 
   Canvas(
     modifier =
@@ -141,20 +141,33 @@ fun IntroOutroSlider(
         IntroOutroSliderStyle.RULER -> drawPillThumb(x, active, palette)
         else -> drawRoundThumb(x, active, palette)
       }
+    }
 
+    // the value follows its thumb like the header follows the centre of the other rulers,
+    // and each stays on its own half so the two never collide
+    val markerTop = TRACK_Y.toPx() - THUMB_RADIUS.toPx() - MARKER_GAP.toPx() - MARKER_HEIGHT.toPx()
+    val mid = size.width / 2f
+    listOf(Thumb.INTRO to introX, Thumb.OUTRO to outroX).forEach { (thumb, x) ->
       val seconds = if (thumb == Thumb.INTRO) introSeconds else outroSeconds
-      val label = textMeasurer.measure(seconds.toClock(), labelStyle)
-      // the labels stay on their own side of the middle, so they never overlap when both thumbs meet
-      val centered = x - label.size.width / 2f
-      val mid = size.width / 2f
-      val labelX =
+      val value = textMeasurer.measure(seconds.toClock(), valueStyle)
+      val centered = x - value.size.width / 2f
+      val left =
         when (thumb) {
-          Thumb.INTRO -> centered.coerceIn(0f, mid - label.size.width - LABEL_GAP.toPx())
-          Thumb.OUTRO -> centered.coerceIn(mid + LABEL_GAP.toPx(), size.width - label.size.width)
+          Thumb.INTRO -> centered.coerceIn(0f, mid - value.size.width - MARKER_GAP.toPx())
+          Thumb.OUTRO -> centered.coerceIn(mid + MARKER_GAP.toPx(), size.width - value.size.width)
         }
-      drawText(
-        textLayoutResult = label,
-        topLeft = Offset(labelX, TRACK_Y.toPx() - THUMB_RADIUS.toPx() - LABEL_GAP.toPx() - label.size.height),
+      drawText(textLayoutResult = value, topLeft = Offset(left, markerTop - VALUE_GAP.toPx() - value.size.height))
+
+      val markerHalf = MARKER_WIDTH.toPx() / 2f
+      drawPath(
+        path =
+          Path().apply {
+            moveTo(x - markerHalf, markerTop)
+            lineTo(x + markerHalf, markerTop)
+            lineTo(x, markerTop + MARKER_HEIGHT.toPx())
+            close()
+          },
+        color = palette.onSurface,
       )
     }
   }
@@ -212,7 +225,7 @@ private fun DrawScope.drawRuler(
         color = if (cut) palette.accent.copy(alpha = alpha) else palette.onSurface.copy(alpha = alpha * 0.7f),
         start = Offset(x, trackY - length),
         end = Offset(x, trackY + length),
-        strokeWidth = 1.5.dp.toPx(),
+        strokeWidth = 2.dp.toPx(),
         cap = StrokeCap.Round,
       )
     }
@@ -338,10 +351,13 @@ private const val RULER_TICK_SECONDS = 10
 private const val LABEL_SECONDS = 60
 private const val MIN_TICK_ALPHA = 0.15f
 
-private val TOTAL_HEIGHT = 88.dp
-private val TRACK_Y = 42.dp
+private val TOTAL_HEIGHT = 114.dp
+private val TRACK_Y = 68.dp
 private val THUMB_RADIUS = 10.dp
-private val LABEL_GAP = 6.dp
+private val MARKER_GAP = 8.dp
+private val VALUE_GAP = 2.dp
+private val MARKER_WIDTH = 10.dp
+private val MARKER_HEIGHT = 5.dp
 private val MAJOR_TICK = 10.dp
 private val MINOR_TICK = 5.dp
 private val INSET = 12.dp

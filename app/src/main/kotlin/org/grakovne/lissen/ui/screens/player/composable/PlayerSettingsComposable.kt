@@ -15,7 +15,6 @@ import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.ArrowDownward
 import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material.icons.outlined.CalendarToday
-import androidx.compose.material.icons.outlined.ContentCut
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.SortByAlpha
 import androidx.compose.material.icons.outlined.Tag
@@ -45,6 +44,7 @@ import org.grakovne.lissen.ui.components.SettingsOptionRow
 import org.grakovne.lissen.ui.components.SettingsPickerRow
 import org.grakovne.lissen.ui.components.slider.IntroOutroSlider
 import org.grakovne.lissen.ui.components.slider.toClock
+import org.grakovne.lissen.ui.icons.SkipEdges
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 
 /**
@@ -125,13 +125,9 @@ fun PlayerSettingsComposable(
       }
 
       SettingsPickerRow(
-        label = stringResource(R.string.player_settings_skip_intro_outro),
-        icon = Icons.Outlined.ContentCut,
-        value =
-          when {
-            introSeconds == 0 && outroSeconds == 0 -> stringResource(R.string.player_settings_skip_off)
-            else -> "${introSeconds.toClock()} · ${outroSeconds.toClock()}"
-          },
+        label = stringResource(R.string.player_settings_auto_skip),
+        icon = SkipEdges,
+        value = skipSummary(introSeconds, outroSeconds),
         expanded = skipExpanded,
         modifier = Modifier.testTag("introOutroPicker"),
         onClick = { skipExpanded = !skipExpanded },
@@ -166,6 +162,21 @@ fun PlayerSettingsComposable(
         },
       )
     }
+  }
+}
+
+@Composable
+private fun skipSummary(
+  introSeconds: Int,
+  outroSeconds: Int,
+): String {
+  val intro = stringResource(R.string.player_settings_intro_value, introSeconds.toClock())
+  val outro = stringResource(R.string.player_settings_outro_value, outroSeconds.toClock())
+  return when {
+    introSeconds == 0 && outroSeconds == 0 -> stringResource(R.string.player_settings_skip_disabled)
+    outroSeconds == 0 -> intro
+    introSeconds == 0 -> outro
+    else -> "$intro \u00b7 $outro"
   }
 }
 
