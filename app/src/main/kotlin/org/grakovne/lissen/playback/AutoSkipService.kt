@@ -32,7 +32,8 @@ import javax.inject.Singleton
  * pending, and the first moment of playback seeks past it. The outro is a [PlayerMessage]
  * planted where it begins; reaching it ends the chapter for the server, then moves on to the
  * next chapter straight past its own intro, or to the very end when nothing follows. A user who
- * moves back into an outro keeps it. Every decision is posted to the main looper and re-checked
+ * moves back into an outro keeps it, and a sleep timer armed for the end of the episode takes
+ * it instead. Every decision is posted to the main looper and re-checked
  * there, because player callbacks arrive synchronously inside the call that caused them.
  */
 @Singleton
@@ -185,8 +186,9 @@ class AutoSkipService
       val book = currentBook() ?: return
       val chapter = chapterAt(book, index) ?: return
 
-      // a sleep timer set to the end of this episode ends where the outro begins
-      if (playbackTimer.expireEpisodeTimer()) {
+      // a sleep timer set to the end of this episode is armed for this very moment and wins: it
+      // pauses the player itself, whichever of the two fires first
+      if (playbackTimer.isEpisodeTimerRunning) {
         Timber.d("Auto-skip outro: chapter=$index, takenBy=episodeTimer")
         return
       }

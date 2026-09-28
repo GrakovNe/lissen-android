@@ -121,7 +121,6 @@ class AutoSkipServiceTest {
 
     every { libraryPreferences.autoSkipFlow } returns configurations
     every { libraryPreferences.getAutoSkip(any()) } answers { configurations.value[firstArg()] ?: AutoSkipConfiguration.disabled }
-    every { playbackTimer.expireEpisodeTimer() } returns false
     every { playbackTimer.isEpisodeTimerRunning } returns false
 
     configure(AutoSkipConfiguration(introSeconds = 10, outroSeconds = 10))
@@ -621,18 +620,17 @@ class AutoSkipServiceTest {
     }
 
     @Test
-    fun `an episode timer takes the end of the chapter and the resume moves on`() {
-      every { playbackTimer.expireEpisodeTimer() } returns true
+    fun `an armed episode timer takes the end of the chapter and the resume moves on`() {
+      every { playbackTimer.isEpisodeTimerRunning } returns true
       reachOutroOf(1)
       assertTrue(seeks.isEmpty())
       verify(exactly = 0) { synchronization.reportChapterEnd(any()) }
 
       // the morning after: the timer is gone, the position is still inside the outro
-      every { playbackTimer.expireEpisodeTimer() } returns false
+      every { playbackTimer.isEpisodeTimerRunning } returns false
       playbackRuns()
 
       verifyOrder {
-        playbackTimer.expireEpisodeTimer()
         synchronization.reportChapterEnd(1)
         player.seekTo(2, 10_000L)
       }
@@ -640,14 +638,12 @@ class AutoSkipServiceTest {
     }
 
     @Test
-    fun `playback resumed inside the outro does not ask the timer to end the episode`() {
-      every { playbackTimer.expireEpisodeTimer() } returns true
-      index = 1
-      positionMs = 33_000L
-      playbackRuns()
+    fun `a timer that ran out first has paused the player and the crossing changes nothing`() {
+      playing = false
+      reachOutroOf(1)
 
-      assertEquals(listOf(2 to 10_000L), seeks)
-      verify(exactly = 0) { playbackTimer.expireEpisodeTimer() }
+      assertTrue(seeks.isEmpty())
+      verify(exactly = 0) { synchronization.reportChapterEnd(any()) }
     }
 
     @Test
@@ -665,7 +661,6 @@ class AutoSkipServiceTest {
 
     @Test
     fun `an episode timer that crosses into the outro is not re-armed by the skip it prevents`() {
-      every { playbackTimer.expireEpisodeTimer() } returns true
       every { playbackTimer.isEpisodeTimerRunning } returns true
       reachOutroOf(1)
 

@@ -22,26 +22,12 @@ class PlaybackTimer
   ) {
     private var option: TimerOption? = null
     private var timer: Countdown? = null
-    private var expiredAtNanos: Long? = null
 
-    // the Android countdown and the clock; a test replaces them, neither runs on the JVM
-    @VisibleForTesting
-    internal var nanoTime: () -> Long = System::nanoTime
-
+    // the Android countdown; a test replaces it, it does not run on the JVM
     @VisibleForTesting
     internal var countdownFactory =
       CountdownFactory { totalMillis, intervalMillis, onTickSeconds, onFinished ->
         SuspendableCountDownTimer(totalMillis, intervalMillis, onTickSeconds, onFinished).also { it.start() }
-      }
-
-    /** The pause an expiry asks for has happened: the timer no longer owns the end of the episode. */
-    private val pauseWatcher =
-      object : Player.Listener {
-        override fun onIsPlayingChanged(isPlaying: Boolean) {
-          if (isPlaying) return
-          expiredAtNanos = null
-          exoPlayer.removeListener(this)
-        }
       }
 
     private val playerListener =
@@ -87,44 +73,22 @@ class PlaybackTimer
       }
     }
 
-    /** An armed countdown to the end of the episode, which a skip that moves to another episode has to re-arm. */
+    /**
+     * An armed countdown to the end of the episode. While it runs the end of the episode is its to
+     * take, and a skip that moves to another episode has to re-arm it.
+     */
     val isEpisodeTimerRunning: Boolean
       get() = timer != null && option == CurrentEpisodeTimerOption
 
-    /**
-     * The end of the episode came early (an outro is skipped): a timer waiting for it expires now.
-     * True as well when it ran out by itself a moment ago and the pause is still on its way.
-     */
-    fun expireEpisodeTimer(): Boolean {
-      val running = timer
-
-      return when {
-        option != CurrentEpisodeTimerOption -> {
-          false
-        }
-
-        running == null -> {
-          pauseStillOwned(expiredAtNanos, nanoTime())
-        }
-
-        else -> {
-          running.stop()
-          expire()
-          true
-        }
-      }
-    }
-
     private fun expire() {
-      Timber.d("Timer expired, broadcasting")
+      Timber.d("Timer expired, pausing and broadcasting")
       // an expiry is not a cancellation: no TimerCancelled, or the fade would revert at the pause
       timer = null
+      // paused here and now, not by whoever picks the event up later: anything that watches the
+      // player and would act on this very moment sees it paused already
+      exoPlayer.pause()
       playbackEventBus.emit(PlaybackEvent.TimerExpired)
       stopTimer()
-      // after the stop, which forgets an earlier expiry: a cancel by the user closes the window too
-      expiredAtNanos = nanoTime()
-      exoPlayer.removeListener(pauseWatcher)
-      exoPlayer.addListener(pauseWatcher)
     }
 
     private fun broadcastRemaining(seconds: Long) {
@@ -136,20 +100,7 @@ class PlaybackTimer
       timer?.let { playbackEventBus.emit(PlaybackEvent.TimerCancelled) }
       timer?.stop()
       timer = null
-      expiredAtNanos = null
 
       exoPlayer.removeListener(playerListener)
-      exoPlayer.removeListener(pauseWatcher)
-    }
-
-    private companion object {
-      /** How long after its own expiry the timer still owns the pause that follows. */
-      const val PAUSE_ON_ITS_WAY_NANOS = 3_000_000_000L
-
-      /** An expiry at [expiredAtNanos] still owns the pause on its way at [nowNanos]. */
-      fun pauseStillOwned(
-        expiredAtNanos: Long?,
-        nowNanos: Long,
-      ): Boolean = expiredAtNanos?.let { nowNanos - it < PAUSE_ON_ITS_WAY_NANOS } ?: false
     }
   }
