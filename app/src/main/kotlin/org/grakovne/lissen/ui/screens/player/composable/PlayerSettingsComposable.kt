@@ -43,14 +43,17 @@ import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.SettingsOptionRow
 import org.grakovne.lissen.ui.components.SettingsPickerRow
 import org.grakovne.lissen.ui.components.slider.IntroOutroSlider
-import org.grakovne.lissen.ui.components.slider.toClock
+import org.grakovne.lissen.ui.extensions.formatTime
+import org.grakovne.lissen.ui.extensions.spokenDuration
 import org.grakovne.lissen.ui.icons.SkipEdges
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 
 /**
- * The player's counterpart of the library quick settings: the same sheet layout, holding the
- * per-item episode ordering. Tapping an option selects it ascending, tapping it again flips the
- * direction. The picker is inert while the queue is rebuilt.
+ * The player's counterpart of the library quick settings, in the same sheet layout.
+ *
+ * Episode ordering (podcasts only): tapping an option selects it ascending, tapping it again flips
+ * the direction; the picker is inert while the queue is rebuilt. Auto-skip: a ruler with the intro
+ * and outro lengths, for now a UI-only mock whose values live in the sheet.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -137,6 +140,7 @@ fun PlayerSettingsComposable(
         IntroOutroSlider(
           introSeconds = introSeconds,
           outroSeconds = outroSeconds,
+          stateDescription = skipSummary(introSeconds, outroSeconds, spoken = true),
           modifier =
             Modifier
               .padding(horizontal = 16.dp, vertical = 8.dp)
@@ -165,18 +169,20 @@ fun PlayerSettingsComposable(
   }
 }
 
+/** "Intro 01:20 · Outro 02:25", or the same read out in words for accessibility. */
 @Composable
 private fun skipSummary(
   introSeconds: Int,
   outroSeconds: Int,
+  spoken: Boolean = false,
 ): String {
-  val intro = stringResource(R.string.player_settings_intro_value, introSeconds.toClock())
-  val outro = stringResource(R.string.player_settings_outro_value, outroSeconds.toClock())
+  val intro = stringResource(R.string.player_settings_intro_value, if (spoken) spokenDuration(introSeconds) else introSeconds.formatTime())
+  val outro = stringResource(R.string.player_settings_outro_value, if (spoken) spokenDuration(outroSeconds) else outroSeconds.formatTime())
   return when {
     introSeconds == 0 && outroSeconds == 0 -> stringResource(R.string.player_settings_skip_disabled)
     outroSeconds == 0 -> intro
     introSeconds == 0 -> outro
-    else -> "$intro \u00b7 $outro"
+    else -> if (spoken) "$intro, $outro" else "$intro \u00b7 $outro"
   }
 }
 

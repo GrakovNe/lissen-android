@@ -25,28 +25,30 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextMeasurer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import org.grakovne.lissen.common.withHaptic
+import org.grakovne.lissen.ui.extensions.formatTime
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-enum class IntroOutroSliderStyle { THIN, RULER }
-
 /**
- * Two thumbs on one track: the left one measures seconds from the start of the episode,
- * the right one seconds from its end. Each half of the track spans [0, maxSeconds] from its edge.
+ * Two thumbs on one ruler: the left one measures seconds from the start of the episode,
+ * the right one seconds from its end. Each half spans five minutes from its edge. Tapping
+ * grabs the nearer thumb, so the thumbs can be reached wherever they sit.
  */
 @Composable
 fun IntroOutroSlider(
   introSeconds: Int,
   outroSeconds: Int,
   modifier: Modifier = Modifier,
-  style: IntroOutroSliderStyle = IntroOutroSliderStyle.RULER,
-  maxSeconds: Int = MAX_SECONDS,
+  stateDescription: String? = null,
   onUpdate: (introSeconds: Int, outroSeconds: Int) -> Unit,
 ) {
   val view = LocalView.current
@@ -70,7 +72,8 @@ fun IntroOutroSlider(
 
   // the header of the other rulers, a size down so two of them stay quiet inside a settings sheet
   val valueStyle = MaterialTheme.typography.titleMedium.copy(color = palette.onSurface)
-  val tickStyle = MaterialTheme.typography.bodySmall.copy(color = palette.variant)
+  // numerals sit tighter without the body letter spacing, which keeps five-character labels a minute apart
+  val tickStyle = MaterialTheme.typography.bodySmall.copy(color = palette.variant, letterSpacing = 0.sp)
 
   Canvas(
     modifier =
@@ -78,10 +81,11 @@ fun IntroOutroSlider(
         .fillMaxWidth()
         .height(TOTAL_HEIGHT)
         .systemGestureExclusion()
-        .pointerInput(maxSeconds) {
+        .semantics { stateDescription?.let { this.stateDescription = it } }
+        .pointerInput(Unit) {
           awaitEachGesture {
             val down = awaitFirstDown()
-            val geometry = Geometry(size.width.toFloat(), INSET.toPx(), maxSeconds)
+            val geometry = Geometry(size.width.toFloat(), INSET.toPx())
             val introX = geometry.introX(currentIntro)
             val outroX = geometry.outroX(currentOutro)
 
@@ -120,27 +124,14 @@ fun IntroOutroSlider(
           }
         },
   ) {
-    val geometry = Geometry(size.width, INSET.toPx(), maxSeconds)
+    val geometry = Geometry(size.width, INSET.toPx())
     val introX = geometry.introX(introSeconds)
     val outroX = geometry.outroX(outroSeconds)
 
-    when (style) {
-      IntroOutroSliderStyle.THIN -> {
-        drawThin(geometry, introX, outroX, palette)
-        drawScale(geometry, palette, textMeasurer, tickStyle)
-      }
-
-      IntroOutroSliderStyle.RULER -> {
-        drawRuler(geometry, introX, outroX, palette, textMeasurer, tickStyle)
-      }
-    }
+    drawRuler(geometry, introX, outroX, palette, textMeasurer, tickStyle)
 
     listOf(Thumb.INTRO to introX, Thumb.OUTRO to outroX).forEach { (thumb, x) ->
-      val active = dragging == thumb
-      when (style) {
-        IntroOutroSliderStyle.RULER -> drawPillThumb(x, active, palette)
-        else -> drawRoundThumb(x, active, palette)
-      }
+      drawPillThumb(x, active = dragging == thumb, palette)
     }
 
     // the value follows its thumb like the header follows the centre of the other rulers,
@@ -149,7 +140,7 @@ fun IntroOutroSlider(
     val mid = size.width / 2f
     listOf(Thumb.INTRO to introX, Thumb.OUTRO to outroX).forEach { (thumb, x) ->
       val seconds = if (thumb == Thumb.INTRO) introSeconds else outroSeconds
-      val value = textMeasurer.measure(seconds.toClock(), valueStyle)
+      val value = textMeasurer.measure(seconds.formatTime(), valueStyle)
       val centered = x - value.size.width / 2f
       val left =
         when (thumb) {
@@ -173,34 +164,7 @@ fun IntroOutroSlider(
   }
 }
 
-/** Variant B: a thin quiet track, only the cut-off parts get the accent. */
-private fun DrawScope.drawThin(
-  geometry: Geometry,
-  introX: Float,
-  outroX: Float,
-  palette: Palette,
-) {
-  val trackY = TRACK_Y.toPx()
-  val trackHeight = 4.dp.toPx()
-
-  drawRoundRect(
-    color = palette.onSurface.copy(alpha = 0.16f),
-    topLeft = Offset(geometry.start, trackY - trackHeight / 2),
-    size = Size(geometry.length, trackHeight),
-    cornerRadius = CornerRadius(trackHeight / 2),
-  )
-  listOf(geometry.start to introX, outroX to geometry.end).forEach { (from, to) ->
-    if (to - from <= 0f) return@forEach
-    drawRoundRect(
-      color = palette.accent,
-      topLeft = Offset(from, trackY - trackHeight / 2),
-      size = Size(to - from, trackHeight),
-      cornerRadius = CornerRadius(trackHeight / 2),
-    )
-  }
-}
-
-/** Variant C: the ruler of the volume slider, cut-off ticks tinted, the middle fading out. */
+/** The ruler of the volume slider: cut-off ticks tinted, the middle fading out, where the scale means nothing. */
 private fun DrawScope.drawRuler(
   geometry: Geometry,
   introX: Float,
@@ -213,7 +177,7 @@ private fun DrawScope.drawRuler(
   val majorHalf = MAJOR_TICK_HALF.toPx()
   val minorHalf = MINOR_TICK_HALF.toPx()
 
-  for (seconds in 0..geometry.maxSeconds step RULER_TICK_SECONDS) {
+  for (seconds in 0..MAX_SECONDS step TICK_SECONDS) {
     val major = seconds % LABEL_SECONDS == 0
     val distance = seconds * geometry.pxPerSecond
     val alpha = (1f - distance / geometry.half).coerceIn(MIN_TICK_ALPHA, 1f)
@@ -230,8 +194,8 @@ private fun DrawScope.drawRuler(
       )
     }
 
-    if (major && seconds != 0 && seconds != geometry.maxSeconds) {
-      val label = textMeasurer.measure(seconds.toClock(), tickStyle)
+    if (major && seconds != 0 && seconds != MAX_SECONDS) {
+      val label = textMeasurer.measure(seconds.formatTime(), tickStyle)
       listOf(geometry.start + distance, geometry.end - distance).forEach { x ->
         drawText(
           textLayoutResult = label,
@@ -241,52 +205,6 @@ private fun DrawScope.drawRuler(
       }
     }
   }
-}
-
-private fun DrawScope.drawScale(
-  geometry: Geometry,
-  palette: Palette,
-  textMeasurer: TextMeasurer,
-  tickStyle: TextStyle,
-) {
-  val top = TRACK_Y.toPx() + 10.dp.toPx()
-  for (seconds in 0..geometry.maxSeconds step TICK_SECONDS) {
-    val major = seconds % LABEL_SECONDS == 0
-    val distance = seconds * geometry.pxPerSecond
-    val alpha = (1f - distance / geometry.half).coerceIn(MIN_TICK_ALPHA, 1f)
-    val tickHeight = (if (major) MAJOR_TICK else MINOR_TICK).toPx()
-
-    listOf(geometry.start + distance, geometry.end - distance).forEach { x ->
-      drawLine(
-        color = palette.variant.copy(alpha = alpha * 0.6f),
-        start = Offset(x, top),
-        end = Offset(x, top + tickHeight),
-        strokeWidth = 1.5.dp.toPx(),
-      )
-    }
-
-    if (major && seconds != 0 && seconds != geometry.maxSeconds) {
-      val label = textMeasurer.measure(seconds.toClock(), tickStyle)
-      listOf(geometry.start + distance, geometry.end - distance).forEach { x ->
-        drawText(
-          textLayoutResult = label,
-          color = palette.variant.copy(alpha = alpha),
-          topLeft = Offset(x - label.size.width / 2f, top + MAJOR_TICK.toPx() + 2.dp.toPx()),
-        )
-      }
-    }
-  }
-}
-
-private fun DrawScope.drawRoundThumb(
-  x: Float,
-  active: Boolean,
-  palette: Palette,
-) {
-  val trackY = TRACK_Y.toPx()
-  val radius = THUMB_RADIUS.toPx() * if (active) 1.15f else 1f
-  drawCircle(color = palette.surface, radius = radius + 2.dp.toPx(), center = Offset(x, trackY))
-  drawCircle(color = palette.onSurface, radius = radius, center = Offset(x, trackY))
 }
 
 private fun DrawScope.drawPillThumb(
@@ -314,21 +232,19 @@ private fun DrawScope.drawPillThumb(
 private class Geometry(
   width: Float,
   inset: Float,
-  val maxSeconds: Int,
 ) {
   val start = inset
   val end = width - inset
-  val length = end - start
-  val half = length / 2f
-  val pxPerSecond = half / maxSeconds
+  val half = (end - start) / 2f
+  val pxPerSecond = half / MAX_SECONDS
 
   fun introX(seconds: Int) = start + seconds * pxPerSecond
 
   fun outroX(seconds: Int) = end - seconds * pxPerSecond
 
-  fun introSeconds(x: Float) = ((x - start) / pxPerSecond).toSteppedSeconds(maxSeconds)
+  fun introSeconds(x: Float) = ((x - start) / pxPerSecond).toSteppedSeconds()
 
-  fun outroSeconds(x: Float) = ((end - x) / pxPerSecond).toSteppedSeconds(maxSeconds)
+  fun outroSeconds(x: Float) = ((end - x) / pxPerSecond).toSteppedSeconds()
 }
 
 private class Palette(
@@ -340,20 +256,19 @@ private class Palette(
 
 private enum class Thumb { INTRO, OUTRO }
 
-private fun Float.toSteppedSeconds(maxSeconds: Int): Int = ((this / STEP_SECONDS).roundToInt() * STEP_SECONDS).coerceIn(0, maxSeconds)
-
-internal fun Int.toClock(): String = "%d:%02d".format(this / 60, this % 60)
+private fun Float.toSteppedSeconds(): Int = ((this / STEP_SECONDS).roundToInt() * STEP_SECONDS).coerceIn(0, MAX_SECONDS)
 
 private const val MAX_SECONDS = 300
 private const val STEP_SECONDS = 5
-private const val TICK_SECONDS = 15
-private const val RULER_TICK_SECONDS = 10
+private const val TICK_SECONDS = 10
 private const val LABEL_SECONDS = 60
 private const val MIN_TICK_ALPHA = 0.15f
+private const val TICK_ALPHA = 0.55f
+private const val CUT_TICK_ALPHA = 0.85f
 
 private val TOTAL_HEIGHT = 90.dp
 private val TRACK_Y = 52.dp
-private val THUMB_RADIUS = 10.dp
+private val INSET = 12.dp
 private val MARKER_GAP = 8.dp
 private val VALUE_GAP = 2.dp
 private val MARKER_WIDTH = 8.dp
@@ -363,8 +278,3 @@ private val PILL_HALF = 14.dp
 private val MAJOR_TICK_HALF = 11.dp
 private val MINOR_TICK_HALF = 5.5.dp
 private val TICK_WIDTH = 1.5.dp
-private const val TICK_ALPHA = 0.55f
-private const val CUT_TICK_ALPHA = 0.85f
-private val MAJOR_TICK = 10.dp
-private val MINOR_TICK = 5.dp
-private val INSET = 12.dp

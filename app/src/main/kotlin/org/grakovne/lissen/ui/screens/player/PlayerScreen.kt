@@ -246,19 +246,17 @@ fun PlayerScreen(
                   }
 
                   // stays next to search while the queue is expanded
-                  run {
-                    IconButton(
-                      onClick = { if (isPlaybackReady) settingsSelected = true },
-                      modifier =
-                        Modifier
-                          .padding(end = 4.dp)
-                          .testTag("playerSettingsButton"),
-                    ) {
-                      Icon(
-                        imageVector = Icons.Outlined.Settings,
-                        contentDescription = stringResource(R.string.a11y_settings),
-                      )
-                    }
+                  IconButton(
+                    onClick = { if (isPlaybackReady) settingsSelected = true },
+                    modifier =
+                      Modifier
+                        .padding(end = 4.dp)
+                        .testTag("playerSettingsButton"),
+                  ) {
+                    Icon(
+                      imageVector = Icons.Outlined.Settings,
+                      contentDescription = stringResource(R.string.a11y_settings),
+                    )
                   }
 
                   if (bookActionsVisible) {
