@@ -27,9 +27,9 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -72,9 +72,9 @@ import org.grakovne.lissen.ui.icons.Search
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.ui.screens.player.composable.BookCover
 import org.grakovne.lissen.ui.screens.player.composable.BookmarksComposable
-import org.grakovne.lissen.ui.screens.player.composable.EpisodeOrderingComposable
 import org.grakovne.lissen.ui.screens.player.composable.MediaDetailComposable
 import org.grakovne.lissen.ui.screens.player.composable.NavigationBarComposable
+import org.grakovne.lissen.ui.screens.player.composable.PlayerSettingsComposable
 import org.grakovne.lissen.ui.screens.player.composable.PlayingQueueComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackControlComposable
 import org.grakovne.lissen.ui.screens.player.composable.TrackDetailsComposable
@@ -139,7 +139,7 @@ fun PlayerScreen(
 
   var itemDetailsSelected by remember { mutableStateOf(false) }
   var bookmarksSelected by remember { mutableStateOf(false) }
-  var orderingSelected by remember { mutableStateOf(false) }
+  var settingsSelected by remember { mutableStateOf(false) }
 
   val preferredLibraryType by libraryViewModel.preferredLibraryType.collectAsState()
   val seekTime by playbackSettingsViewModel.seekTime.collectAsState()
@@ -248,15 +248,15 @@ fun PlayerScreen(
                   // podcasts only; stays next to search while the queue is expanded
                   if (sortable) {
                     IconButton(
-                      onClick = { if (isPlaybackReady) orderingSelected = true },
+                      onClick = { if (isPlaybackReady) settingsSelected = true },
                       modifier =
                         Modifier
                           .padding(end = 4.dp)
-                          .testTag("episodeOrderingButton"),
+                          .testTag("playerSettingsButton"),
                     ) {
                       Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.Sort,
-                        contentDescription = stringResource(R.string.library_quick_settings_sort_title),
+                        imageVector = Icons.Outlined.Settings,
+                        contentDescription = stringResource(R.string.a11y_settings),
                       )
                     }
                   }
@@ -435,15 +435,16 @@ fun PlayerScreen(
     )
   }
 
-  if (orderingSelected) {
+  if (settingsSelected) {
     // the same conditions the player checks, so a tap never fails silently
     val canReorder = remember(isPlaybackReady, playingBook, bookId) { playerViewModel.canReorderPlayingItem(bookId) }
 
-    EpisodeOrderingComposable(
-      current = episodeOrdering,
-      enabled = canReorder,
+    PlayerSettingsComposable(
+      ordering = episodeOrdering,
+      orderingEnabled = canReorder,
       onOrderingChanged = { playerViewModel.setEpisodeOrdering(bookId, it) },
-      onDismissRequest = { orderingSelected = false },
+      onDismissRequest = { settingsSelected = false },
+      navController = navController,
     )
   }
 }
