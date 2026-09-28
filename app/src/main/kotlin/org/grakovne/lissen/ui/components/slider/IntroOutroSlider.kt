@@ -68,8 +68,8 @@ fun IntroOutroSlider(
       accent = colorScheme.primary,
     )
 
-  // the same header the other rulers use: headlineSmall value with a drop-down marker pointing at the position
-  val valueStyle = MaterialTheme.typography.headlineSmall.copy(color = palette.onSurface)
+  // the header of the other rulers, a size down so two of them stay quiet inside a settings sheet
+  val valueStyle = MaterialTheme.typography.titleMedium.copy(color = palette.onSurface)
   val tickStyle = MaterialTheme.typography.bodySmall.copy(color = palette.variant)
 
   Canvas(
@@ -145,7 +145,7 @@ fun IntroOutroSlider(
 
     // the value follows its thumb like the header follows the centre of the other rulers,
     // and each stays on its own half so the two never collide
-    val markerTop = TRACK_Y.toPx() - THUMB_RADIUS.toPx() - MARKER_GAP.toPx() - MARKER_HEIGHT.toPx()
+    val markerTop = TRACK_Y.toPx() - PILL_HALF.toPx() - MARKER_GAP.toPx() - MARKER_HEIGHT.toPx()
     val mid = size.width / 2f
     listOf(Thumb.INTRO to introX, Thumb.OUTRO to outroX).forEach { (thumb, x) ->
       val seconds = if (thumb == Thumb.INTRO) introSeconds else outroSeconds
@@ -210,8 +210,8 @@ private fun DrawScope.drawRuler(
   tickStyle: TextStyle,
 ) {
   val trackY = TRACK_Y.toPx()
-  val majorHalf = 14.dp.toPx()
-  val minorHalf = 7.dp.toPx()
+  val majorHalf = MAJOR_TICK_HALF.toPx()
+  val minorHalf = MINOR_TICK_HALF.toPx()
 
   for (seconds in 0..geometry.maxSeconds step RULER_TICK_SECONDS) {
     val major = seconds % LABEL_SECONDS == 0
@@ -222,10 +222,10 @@ private fun DrawScope.drawRuler(
     listOf(geometry.start + distance, geometry.end - distance).forEach { x ->
       val cut = x < introX || x > outroX
       drawLine(
-        color = if (cut) palette.accent.copy(alpha = alpha) else palette.onSurface.copy(alpha = alpha * 0.7f),
+        color = if (cut) palette.accent.copy(alpha = alpha * CUT_TICK_ALPHA) else palette.onSurface.copy(alpha = alpha * TICK_ALPHA),
         start = Offset(x, trackY - length),
         end = Offset(x, trackY + length),
-        strokeWidth = 2.dp.toPx(),
+        strokeWidth = TICK_WIDTH.toPx(),
         cap = StrokeCap.Round,
       )
     }
@@ -295,8 +295,8 @@ private fun DrawScope.drawPillThumb(
   palette: Palette,
 ) {
   val trackY = TRACK_Y.toPx()
-  val pillWidth = (if (active) 6.dp else 4.dp).toPx()
-  val pillHalf = 18.dp.toPx()
+  val pillWidth = (if (active) PILL_WIDTH + 2.dp else PILL_WIDTH).toPx()
+  val pillHalf = PILL_HALF.toPx()
   drawRoundRect(
     color = palette.surface,
     topLeft = Offset(x - pillWidth / 2 - 2.dp.toPx(), trackY - pillHalf - 2.dp.toPx()),
@@ -351,13 +351,20 @@ private const val RULER_TICK_SECONDS = 10
 private const val LABEL_SECONDS = 60
 private const val MIN_TICK_ALPHA = 0.15f
 
-private val TOTAL_HEIGHT = 114.dp
-private val TRACK_Y = 68.dp
+private val TOTAL_HEIGHT = 90.dp
+private val TRACK_Y = 52.dp
 private val THUMB_RADIUS = 10.dp
 private val MARKER_GAP = 8.dp
 private val VALUE_GAP = 2.dp
-private val MARKER_WIDTH = 10.dp
-private val MARKER_HEIGHT = 5.dp
+private val MARKER_WIDTH = 8.dp
+private val MARKER_HEIGHT = 4.dp
+private val PILL_WIDTH = 3.dp
+private val PILL_HALF = 14.dp
+private val MAJOR_TICK_HALF = 11.dp
+private val MINOR_TICK_HALF = 5.5.dp
+private val TICK_WIDTH = 1.5.dp
+private const val TICK_ALPHA = 0.55f
+private const val CUT_TICK_ALPHA = 0.85f
 private val MAJOR_TICK = 10.dp
 private val MINOR_TICK = 5.dp
 private val INSET = 12.dp
