@@ -3,42 +3,8 @@ package org.grakovne.lissen.playback
 import org.grakovne.lissen.common.AutoSkipConfiguration
 import org.grakovne.lissen.domain.DetailedItem
 
-/** The arithmetic and the rules of auto-skip, kept away from the player so they can be checked on a table. */
+/** The arithmetic of auto-skip, kept away from the player so it can be checked on a table. */
 internal object AutoSkipPlanner {
-  /** A seek this close to the start of a chapter is taken as landing at its start. */
-  const val CHAPTER_ENTRY_TOLERANCE_MS = 500L
-
-  /** A restart from within this far past the intro is a "previous" press, not a return to the chapter. */
-  const val RESTART_TOLERANCE_MS = 3_500L
-
-  /**
-   * What a seek from ([fromIndex], [fromMs]) to ([toIndex], [toMs]) means for the chapter it
-   * lands in. Another chapter's start is entered. The start of the same chapter is entered only
-   * from well beyond its intro, so a rewind that touches the start, or a "previous" that restarts
-   * the chapter from just past the intro, plays the chapter as it is. Moving back into an outro
-   * keeps it, moving forward inside one changes nothing. Anything else is neutral.
-   */
-  fun landing(
-    fromIndex: Int,
-    fromMs: Long,
-    toIndex: Int,
-    toMs: Long,
-    chapter: SkippableChapter?,
-  ): SeekLanding {
-    val atStart = toMs < CHAPTER_ENTRY_TOLERANCE_MS
-    val backwards = toIndex < fromIndex || (toIndex == fromIndex && toMs < fromMs)
-    val inOutro = chapter?.outroReached(toMs) == true
-
-    return when {
-      atStart && toIndex != fromIndex -> SeekLanding.ENTRY
-      atStart && chapter != null && fromMs > chapter.introEndMs + RESTART_TOLERANCE_MS -> SeekLanding.ENTRY
-      atStart -> SeekLanding.START_KEPT
-      inOutro && backwards -> SeekLanding.OUTRO_KEPT
-      inOutro -> SeekLanding.OUTRO_FORWARD
-      else -> SeekLanding.ELSEWHERE
-    }
-  }
-
   /** Where playback goes when the outro of chapter [index] is left: the next chapter on the device past its intro, or the end. */
   fun outroExit(
     book: DetailedItem,
@@ -72,23 +38,6 @@ internal object AutoSkipPlanner {
         emptyList()
       }
     }
-}
-
-internal enum class SeekLanding {
-  /** The chapter is entered at its start: its intro is skipped once playback runs. */
-  ENTRY,
-
-  /** The start of the chapter is meant, intro included. */
-  START_KEPT,
-
-  /** The listener moved back into the outro on purpose: it is played. */
-  OUTRO_KEPT,
-
-  /** The listener moved forward into the outro: a kept one stays kept, an unclaimed one is skipped once playback runs. */
-  OUTRO_FORWARD,
-
-  /** Somewhere in the middle: nothing pending, nothing kept. */
-  ELSEWHERE,
 }
 
 internal sealed interface OutroExit {

@@ -82,60 +82,6 @@ class AutoSkipPlannerTest {
 
   /** The fixture podcast: c0 30s, c1 40s, c2 50s, skipping 10s at both ends. */
   @Nested
-  inner class Landing {
-    private val skip = AutoSkipConfiguration(introSeconds = 10, outroSeconds = 10)
-    private val c1 = skip.skippable(40_000L)
-
-    private fun landing(
-      from: Pair<Int, Long>,
-      to: Pair<Int, Long>,
-    ) = AutoSkipPlanner.landing(from.first, from.second, to.first, to.second, c1)
-
-    @Test
-    fun `the start of another chapter is entered`() {
-      assertEquals(SeekLanding.ENTRY, landing(from = 0 to 15_000L, to = 1 to 0L))
-      assertEquals(SeekLanding.ENTRY, landing(from = 0 to 15_000L, to = 1 to 499L))
-    }
-
-    @Test
-    fun `the start of the same chapter is entered only from well past the intro`() {
-      assertEquals(SeekLanding.ENTRY, landing(from = 1 to 13_501L, to = 1 to 0L))
-      assertEquals(SeekLanding.START_KEPT, landing(from = 1 to 13_500L, to = 1 to 0L))
-      assertEquals(SeekLanding.START_KEPT, landing(from = 1 to 8_000L, to = 1 to 0L))
-    }
-
-    @Test
-    fun `just past the tolerance is not the start`() {
-      assertEquals(SeekLanding.ELSEWHERE, landing(from = 0 to 15_000L, to = 1 to 500L))
-    }
-
-    @Test
-    fun `moving back into the outro keeps it`() {
-      assertEquals(SeekLanding.OUTRO_KEPT, landing(from = 1 to 38_000L, to = 1 to 35_000L))
-      assertEquals(SeekLanding.OUTRO_KEPT, landing(from = 2 to 5_000L, to = 1 to 35_000L))
-    }
-
-    @Test
-    fun `moving forward into the outro changes nothing`() {
-      assertEquals(SeekLanding.OUTRO_FORWARD, landing(from = 1 to 5_000L, to = 1 to 35_000L))
-      assertEquals(SeekLanding.OUTRO_FORWARD, landing(from = 1 to 33_000L, to = 1 to 37_000L))
-    }
-
-    @Test
-    fun `anywhere else is neutral`() {
-      assertEquals(SeekLanding.ELSEWHERE, landing(from = 1 to 20_000L, to = 1 to 4_000L))
-      assertEquals(SeekLanding.ELSEWHERE, landing(from = 0 to 15_000L, to = 1 to 25_000L))
-    }
-
-    @Test
-    fun `without a fitting configuration only another chapter's start is entered`() {
-      assertEquals(SeekLanding.ENTRY, AutoSkipPlanner.landing(0, 15_000L, 1, 0L, chapter = null))
-      assertEquals(SeekLanding.START_KEPT, AutoSkipPlanner.landing(1, 30_000L, 1, 0L, chapter = null))
-      assertEquals(SeekLanding.ELSEWHERE, AutoSkipPlanner.landing(1, 38_000L, 1, 35_000L, chapter = null))
-    }
-  }
-
-  @Nested
   inner class Exit {
     private val skip = AutoSkipConfiguration(introSeconds = 10, outroSeconds = 10)
 

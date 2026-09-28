@@ -160,7 +160,8 @@ class AutoSkipServiceTest {
     }
 
     @Test
-    fun `a seek to the start of another chapter enters it once playback runs again`() {
+    fun `the very start of another chapter is entered once playback runs again`() {
+      // "next", a pick from the list, the headset: all land at zero
       userSeeks(to = 2, at = 0L)
       assertTrue(seeks.isEmpty())
 
@@ -170,16 +171,8 @@ class AutoSkipServiceTest {
     }
 
     @Test
-    fun `a seek to the start of another chapter enters it from within the tolerance`() {
-      userSeeks(to = 2, at = 499L)
-      playbackRuns()
-
-      assertEquals(listOf(2 to 10_000L), seeks)
-    }
-
-    @Test
-    fun `a seek just past the tolerance is not an entry`() {
-      userSeeks(to = 2, at = 500L)
+    fun `a seek a hair past the start of another chapter is the listener's`() {
+      userSeeks(to = 2, at = 1L)
       playbackRuns()
 
       assertTrue(seeks.isEmpty())
@@ -194,40 +187,10 @@ class AutoSkipServiceTest {
     }
 
     @Test
-    fun `a restart from far into the chapter skips the intro again`() {
+    fun `a restart of the same chapter plays it from its true start`() {
+      // "previous" from deep inside the chapter, or a rewind that touches the start: the intro is the listener's
       index = 1
       positionMs = 30_000L
-      userSeeks(to = 1, at = 0L)
-      playbackRuns()
-
-      assertEquals(listOf(1 to 10_000L), seeks)
-    }
-
-    @Test
-    fun `a restart from just past the restart tolerance skips the intro again`() {
-      index = 1
-      positionMs = 13_501L
-      userSeeks(to = 1, at = 0L)
-      playbackRuns()
-
-      assertEquals(listOf(1 to 10_000L), seeks)
-    }
-
-    @Test
-    fun `a restart from just past the intro plays the chapter from its true start`() {
-      // the standard "previous" of a media controller: from within the restart tolerance back to zero
-      index = 1
-      positionMs = 13_500L
-      userSeeks(to = 1, at = 0L)
-      playbackRuns()
-
-      assertTrue(seeks.isEmpty())
-    }
-
-    @Test
-    fun `a rewind that touches the start of the chapter is left alone`() {
-      index = 1
-      positionMs = 8_000L
       userSeeks(to = 1, at = 0L)
       playbackRuns()
 
@@ -328,31 +291,36 @@ class AutoSkipServiceTest {
     }
 
     @Test
-    fun `the seek that places the player into a fresh queue is not read as a user seek`() {
+    fun `a queue placed inside the intro skips the rest of it`() {
       playing = false
-      // preparePlayback: the queue is set, then the player is seeked to the stored position, in one task;
-      // read as a user seek this landing would look like a move back into the outro and keep it
+      buildQueue(book, at = 1, positionMs = 4_000L)
+      playbackRuns()
+
+      assertEquals(listOf(1 to 10_000L), seeks)
+    }
+
+    @Test
+    fun `a stored position inside the outro is resumed by moving on`() {
+      playing = false
+      // preparePlayback: the queue is set, then the player is seeked to the stored position, in one task
       buildQueue(book, at = 1, positionMs = 35_000L) {
         listener.captured.onPositionDiscontinuity(position(2, 45_000L), position(1, 35_000L), Player.DISCONTINUITY_REASON_SEEK)
       }
 
       playbackRuns()
 
-      // a stored position inside the outro is resumed by moving on, it was never chosen
       assertEquals(listOf(2 to 10_000L), seeks)
     }
 
     @Test
-    fun `a new queue forgets the exceptions of the old one`() {
-      index = 1
-      positionMs = 38_000L
-      userSeeks(to = 1, at = 35_000L)
+    fun `a new queue forgets what the old one was owed`() {
+      playing = false
+      arriveAutomatically(at = 1)
 
-      buildQueue(book, at = 1, positionMs = 20_000L)
+      buildQueue(book, at = 2, positionMs = 20_000L)
       playbackRuns()
-      reachOutroOf(1)
 
-      assertEquals(listOf(2 to 10_000L), seeks)
+      assertTrue(seeks.isEmpty())
     }
 
     @Test
@@ -464,7 +432,8 @@ class AutoSkipServiceTest {
 
     @Test
     fun `playback resumed inside the outro of the last chapter plays it out`() {
-      index = 2
+      playing = false
+      reachOutroOf(2)
       positionMs = 45_000L
       playbackRuns()
 
@@ -509,15 +478,6 @@ class AutoSkipServiceTest {
     }
 
     @Test
-    fun `a paused player is not moved`() {
-      playing = false
-      reachOutroOf(1)
-
-      assertTrue(seeks.isEmpty())
-      verify(exactly = 0) { synchronization.reportChapterEnd(any()) }
-    }
-
-    @Test
     fun `a stale message for another chapter is ignored`() {
       index = 2
       positionMs = 5_000L
@@ -538,85 +498,54 @@ class AutoSkipServiceTest {
     }
 
     @Test
-    fun `moving back into the outro keeps it`() {
+    fun `a seek back into the outro plays it`() {
       index = 1
       positionMs = 38_000L
       userSeeks(to = 1, at = 35_000L)
       playbackRuns()
-      fire(1)
 
       assertTrue(seeks.isEmpty())
     }
 
     @Test
-    fun `a rewind across the chapter boundary lands in the outro and stays there`() {
+    fun `a rewind across the chapter boundary into the outro plays it`() {
       index = 2
       positionMs = 5_000L
       userSeeks(to = 1, at = 35_000L)
       playbackRuns()
-      fire(1)
 
       assertTrue(seeks.isEmpty())
     }
 
     @Test
-    fun `a file boundary inside a kept outro does not give it up`() {
-      index = 1
-      positionMs = 38_000L
-      userSeeks(to = 1, at = 35_000L)
-      listener.captured.onPositionDiscontinuity(position(1, 36_000L), position(1, 36_000L), Player.DISCONTINUITY_REASON_AUTO_TRANSITION)
-      positionMs = 36_000L
-      playbackRuns()
-
-      assertTrue(seeks.isEmpty())
-    }
-
-    @Test
-    fun `a seek forward inside a kept outro keeps it too`() {
-      index = 1
-      positionMs = 38_000L
-      userSeeks(to = 1, at = 33_000L)
-      userSeeks(to = 1, at = 37_000L)
-      playbackRuns()
-
-      assertTrue(seeks.isEmpty())
-    }
-
-    @Test
-    fun `a seek forward into the outro is skipped once playback runs`() {
+    fun `a seek forward into the outro plays it`() {
       index = 1
       positionMs = 5_000L
       userSeeks(to = 1, at = 35_000L)
-      // the seek buffers and playback resumes; no message is crossed on the way
       playbackRuns()
 
-      assertEquals(listOf(2 to 10_000L), seeks)
+      assertTrue(seeks.isEmpty())
     }
 
     @Test
-    fun `leaving the outro again lifts the exception`() {
+    fun `a file boundary inside the outro is not a chapter reached`() {
+      index = 1
+      positionMs = 36_000L
+      listener.captured.onPositionDiscontinuity(position(1, 36_000L), position(1, 36_000L), Player.DISCONTINUITY_REASON_AUTO_TRANSITION)
+      playbackRuns()
+
+      assertTrue(seeks.isEmpty())
+    }
+
+    @Test
+    fun `a crossing after a seek back before the outro skips it`() {
       index = 1
       positionMs = 38_000L
-      userSeeks(to = 1, at = 35_000L)
       userSeeks(to = 1, at = 15_000L)
       playbackRuns()
       reachOutroOf(1)
 
       assertEquals(listOf(2 to 10_000L), seeks)
-    }
-
-    @Test
-    fun `following on to the next chapter lifts the exception of the one left behind`() {
-      index = 1
-      positionMs = 38_000L
-      userSeeks(to = 1, at = 35_000L)
-      playbackRuns()
-      arriveAutomatically(at = 2)
-      userSeeks(to = 1, at = 20_000L)
-      playbackRuns()
-      reachOutroOf(1)
-
-      assertEquals(listOf(2 to 10_000L, 2 to 10_000L), seeks)
     }
 
     @Test
@@ -638,21 +567,33 @@ class AutoSkipServiceTest {
     }
 
     @Test
-    fun `a timer that ran out first has paused the player and the crossing changes nothing`() {
+    fun `a timer that ran out first has paused the player and the crossing waits for playback`() {
       playing = false
       reachOutroOf(1)
-
       assertTrue(seeks.isEmpty())
       verify(exactly = 0) { synchronization.reportChapterEnd(any()) }
+
+      playbackRuns()
+
+      assertEquals(listOf(2 to 10_000L), seeks)
     }
 
     @Test
-    fun `an episode timer armed inside the outro follows the skip to the next chapter`() {
+    fun `a seek by the listener drops the skip the timer held back`() {
+      every { playbackTimer.isEpisodeTimerRunning } returns true
+      reachOutroOf(1)
+      userSeeks(to = 1, at = 20_000L)
+      playbackRuns()
+
+      assertTrue(seeks.isEmpty())
+    }
+
+    @Test
+    fun `an episode timer armed again at the resume follows the skip to the next chapter`() {
       every { playbackTimer.isEpisodeTimerRunning } returns true
       every { playbackTimer.startTimer(any(), any()) } just Runs
       every { player.playbackParameters } returns PlaybackParameters(2f)
-      index = 1
-      positionMs = 33_000L
+      reachOutroOf(1)
       playbackRuns()
 
       // c2 is 50s, entered at 10s, its outro starts at 40s: 30s of chapter at double speed
@@ -660,7 +601,7 @@ class AutoSkipServiceTest {
     }
 
     @Test
-    fun `an episode timer that crosses into the outro is not re-armed by the skip it prevents`() {
+    fun `an episode timer that crosses into the outro is not re-armed by the skip it holds back`() {
       every { playbackTimer.isEpisodeTimerRunning } returns true
       reachOutroOf(1)
 
