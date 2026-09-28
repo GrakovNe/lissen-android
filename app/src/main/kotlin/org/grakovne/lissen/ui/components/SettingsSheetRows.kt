@@ -17,12 +17,17 @@ import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
@@ -64,6 +69,10 @@ fun SettingsToggleRow(
   }
 }
 
+/**
+ * A row that opens a picker: label, current value, chevron. The label is never broken onto a
+ * second line: when it would be, the value gives way to [compactValue], if one is given.
+ */
 @Composable
 fun SettingsPickerRow(
   label: String,
@@ -71,12 +80,14 @@ fun SettingsPickerRow(
   value: String,
   expanded: Boolean,
   enabled: Boolean = true,
+  compactValue: String? = null,
   modifier: Modifier = Modifier,
   onClick: () -> Unit,
 ) {
   val view = LocalView.current
   val labelColor = colorScheme.onSurface.copy(alpha = if (enabled) 1f else SETTINGS_DISABLED_ALPHA)
   val valueColor = colorScheme.onSurfaceVariant.copy(alpha = if (enabled) 1f else SETTINGS_DISABLED_ALPHA)
+  var compact by remember(value, compactValue) { mutableStateOf(false) }
   Row(
     modifier =
       modifier
@@ -97,11 +108,13 @@ fun SettingsPickerRow(
       style = typography.bodyLarge,
       color = labelColor,
       modifier = Modifier.weight(1f),
+      onTextLayout = { if (it.lineCount > 1 && compactValue != null) compact = true },
     )
     Text(
-      text = value,
+      text = if (compact) compactValue ?: value else value,
       style = typography.bodyMedium,
       color = valueColor,
+      textAlign = TextAlign.End,
     )
     Spacer(modifier = Modifier.width(4.dp))
     Icon(

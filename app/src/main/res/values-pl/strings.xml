@@ -296,6 +296,4 @@
     <string name="episode_ordering_season_option">Sezon</string>
     <string name="episode_ordering_episode_option">Odcinek</string>
     <string name="episode_ordering_file_name_option">Nazwa pliku</string>
-    <string name="episode_ordering_ascending">Rosnąco</string>
-    <string name="episode_ordering_descending">Malejąco</string>
 </resources>

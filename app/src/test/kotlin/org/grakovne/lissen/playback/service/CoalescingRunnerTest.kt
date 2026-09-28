@@ -14,25 +14,27 @@ import org.junit.jupiter.api.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class CoalescingRunnerTest {
   @Test
-  fun `submitted value is processed`() =
+  fun `an offered value is processed by the drain`() =
     runTest {
       val runner = CoalescingRunner<Int>()
       val processed = mutableListOf<Int>()
 
-      runner.submit(1) { processed += it }
+      runner.offer(1)
+      runner.drain { processed += it }
 
       assertEquals(listOf(1), processed)
     }
 
   @Test
-  fun `value submitted during a running action is not dropped`() =
+  fun `a value offered during a running action is not dropped`() =
     runTest {
       val runner = CoalescingRunner<Int>()
       val processed = mutableListOf<Int>()
       val gate = CompletableDeferred<Unit>()
 
       launch {
-        runner.submit(1) {
+        runner.offer(1)
+        runner.drain {
           processed += it
           if (it == 1) gate.await()
         }
@@ -40,7 +42,11 @@ class CoalescingRunnerTest {
       runCurrent()
       assertEquals(listOf(1), processed)
 
-      val second = launch { runner.submit(2) { processed += it } }
+      val second =
+        launch {
+          runner.offer(2)
+          runner.drain { processed += it }
+        }
       runCurrent()
       assertTrue(second.isCompleted)
 
@@ -51,22 +57,100 @@ class CoalescingRunnerTest {
     }
 
   @Test
-  fun `only the latest of several pending values is processed`() =
+  fun `a mandatory value is never dropped and runs ahead of the plain one submitted after it`() =
     runTest {
       val runner = CoalescingRunner<Int>()
       val processed = mutableListOf<Int>()
       val gate = CompletableDeferred<Unit>()
 
       launch {
-        runner.submit(1) {
+        runner.offer(1)
+        runner.drain {
           processed += it
           if (it == 1) gate.await()
         }
       }
       runCurrent()
 
-      launch { runner.submit(2) { processed += it } }
-      launch { runner.submit(3) { processed += it } }
+      runner.enqueueMandatory(3)
+      launch {
+        runner.offer(4)
+        runner.drain { processed += it }
+      }
+      runCurrent()
+
+      gate.complete(Unit)
+      advanceUntilIdle()
+
+      assertEquals(listOf(1, 3, 4), processed)
+    }
+
+  @Test
+  fun `a mandatory value supersedes the plain value waiting before it`() =
+    runTest {
+      val runner = CoalescingRunner<Int>()
+      val processed = mutableListOf<Int>()
+      val gate = CompletableDeferred<Unit>()
+
+      launch {
+        runner.offer(1)
+        runner.drain {
+          processed += it
+          if (it == 1) gate.await()
+        }
+      }
+      runCurrent()
+
+      launch {
+        runner.offer(2)
+        runner.drain { processed += it }
+      }
+      runCurrent()
+      runner.enqueueMandatory(3)
+
+      gate.complete(Unit)
+      advanceUntilIdle()
+
+      assertEquals(listOf(1, 3), processed)
+    }
+
+  @Test
+  fun `mandatory values run in the order they were queued`() =
+    runTest {
+      val runner = CoalescingRunner<Int>()
+      val processed = mutableListOf<Int>()
+
+      runner.enqueueMandatory(3)
+      runner.enqueueMandatory(5)
+      runner.drain { processed += it }
+
+      assertEquals(listOf(3, 5), processed)
+    }
+
+  @Test
+  fun `only the latest of several waiting values is processed`() =
+    runTest {
+      val runner = CoalescingRunner<Int>()
+      val processed = mutableListOf<Int>()
+      val gate = CompletableDeferred<Unit>()
+
+      launch {
+        runner.offer(1)
+        runner.drain {
+          processed += it
+          if (it == 1) gate.await()
+        }
+      }
+      runCurrent()
+
+      launch {
+        runner.offer(2)
+        runner.drain { processed += it }
+      }
+      launch {
+        runner.offer(3)
+        runner.drain { processed += it }
+      }
       runCurrent()
 
       gate.complete(Unit)
@@ -84,7 +168,8 @@ class CoalescingRunnerTest {
 
       repeat(10) { index ->
         launch {
-          runner.submit(index) {
+          runner.offer(index)
+          runner.drain {
             active++
             maxActive = maxOf(maxActive, active)
             yield()

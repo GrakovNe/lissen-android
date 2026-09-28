@@ -12,10 +12,13 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import org.grakovne.lissen.common.AutoSkipConfiguration
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.SeekTime
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.PlaybackFixtures.bookmark
 import org.grakovne.lissen.playback.PlaybackFixtures.descending
@@ -106,6 +109,7 @@ class MediaRepositoryTest {
   private val mainThread = InlineMainThread()
   private val eventBus = PlaybackEventBus()
   private val preferences = mockk<PlaybackPreferences>(relaxed = true)
+  private val libraryPreferences = mockk<LibraryPreferences>(relaxed = true)
   private val mediaChannel = mockk<LissenMediaProvider>(relaxed = true)
 
   private lateinit var repository: MediaRepository
@@ -118,9 +122,10 @@ class MediaRepositoryTest {
     every { preferences.getSeekTime() } returns SeekTime.Default
     every { preferences.getDefaultTimerOption() } returns null
     every { preferences.getPlayingItem() } returns null
+    every { libraryPreferences.getAutoSkip(any()) } returns AutoSkipConfiguration.disabled
 
     repository =
-      MediaRepository(preferences, mediaChannel, eventBus, DefaultTimerActivator(preferences), player, mainThread)
+      MediaRepository(preferences, libraryPreferences, mediaChannel, eventBus, DefaultTimerActivator(preferences), player, mainThread)
         .apply { ioDispatcher = UnconfinedTestDispatcher() }
   }
 
@@ -409,6 +414,75 @@ class MediaRepositoryTest {
         repository.setTotalPosition(60.0)
 
         assertEquals(PlaybackCommand.SetTimer(10.0, CurrentEpisodeTimerOption), eventBus.commands.first())
+      }
+
+    @Test
+    fun `an episode timer ends where the auto-skipped outro begins`() =
+      runTest {
+        every { libraryPreferences.getAutoSkip("podcast") } returns AutoSkipConfiguration(introSeconds = 0, outroSeconds = 10)
+        playing(podcast(progress = progress(35.0)))
+
+        repository.updateTimer(CurrentEpisodeTimerOption)
+
+        assertEquals(PlaybackCommand.SetTimer(25.0, CurrentEpisodeTimerOption), eventBus.commands.first())
+      }
+
+    @Test
+    fun `an episode timer armed before the intro is skipped counts from the end of the intro`() =
+      runTest {
+        every { libraryPreferences.getAutoSkip("podcast") } returns AutoSkipConfiguration(introSeconds = 8, outroSeconds = 10)
+        playing(podcast(progress = progress(30.0)))
+
+        repository.updateTimer(CurrentEpisodeTimerOption)
+
+        assertEquals(PlaybackCommand.SetTimer(22.0, CurrentEpisodeTimerOption), eventBus.commands.first())
+      }
+
+    @Test
+    fun `inside the outro an episode timer runs to the real end of the chapter`() =
+      runTest {
+        every { libraryPreferences.getAutoSkip("podcast") } returns AutoSkipConfiguration(introSeconds = 0, outroSeconds = 10)
+        playing(podcast(progress = progress(65.0)))
+
+        repository.updateTimer(CurrentEpisodeTimerOption)
+
+        assertEquals(PlaybackCommand.SetTimer(5.0, CurrentEpisodeTimerOption), eventBus.commands.first())
+      }
+
+    @Test
+    fun `a refresh without an episode timer sends nothing`() =
+      runTest {
+        playing(podcast(progress = progress(35.0)))
+
+        val minutes = DurationTimerOption(5)
+        repository.refreshTimer()
+        repository.updateTimer(minutes)
+
+        assertEquals(PlaybackCommand.SetTimer(300.0, minutes), eventBus.commands.first())
+      }
+
+    @Test
+    fun `previous goes back a chapter from just past a skipped intro`() =
+      runTest {
+        every { libraryPreferences.getAutoSkip("podcast") } returns AutoSkipConfiguration(introSeconds = 20, outroSeconds = 0)
+        playing(podcast(progress = progress(52.0)))
+
+        repository.previousTrack()
+
+        assertEquals(listOf("seekTo(0, 0)"), player.calls)
+      }
+
+    @Test
+    fun `changing the outro re-arms an episode timer`() =
+      runTest {
+        playing(podcast(progress = progress(35.0)))
+        repository.updateTimer(CurrentEpisodeTimerOption)
+        assertEquals(PlaybackCommand.SetTimer(35.0, CurrentEpisodeTimerOption), eventBus.commands.first())
+
+        every { libraryPreferences.getAutoSkip("podcast") } returns AutoSkipConfiguration(introSeconds = 0, outroSeconds = 15)
+        repository.refreshTimer()
+
+        assertEquals(PlaybackCommand.SetTimer(20.0, CurrentEpisodeTimerOption), eventBus.commands.first())
       }
   }
 }

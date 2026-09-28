@@ -4,6 +4,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import io.mockk.verifyOrder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,6 +13,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import org.grakovne.lissen.common.AutoSkipConfiguration
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.common.EpisodeOrderingOption
 import org.grakovne.lissen.common.LibraryOrderingDirection
@@ -26,6 +28,7 @@ import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.MediaRepository
+import org.grakovne.lissen.playback.PlaybackFixtures.podcast
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -115,6 +118,39 @@ class PlayerViewModelTest {
     fun `playingQueueExpanded is initially false`() {
       assertFalse(viewModel.playingQueueExpanded.value)
     }
+
+    @Test
+    fun `setAutoSkip stores the values and re-arms the timer of the playing item`() {
+      playingBook.value = podcast(id = "book-1")
+      val configuration = AutoSkipConfiguration(introSeconds = 30, outroSeconds = 60)
+
+      viewModel.setAutoSkip("book-1", configuration)
+
+      verifyOrder {
+        libraryPreferences.saveAutoSkip("book-1", configuration)
+        mediaRepository.refreshTimer()
+      }
+    }
+
+    @Test
+    fun `setAutoSkip for another item leaves the timer of the playing one alone`() {
+      playingBook.value = podcast(id = "book-1")
+
+      viewModel.setAutoSkip("book-2", AutoSkipConfiguration(introSeconds = 30, outroSeconds = 0))
+
+      verify { libraryPreferences.saveAutoSkip("book-2", any()) }
+      verify(exactly = 0) { mediaRepository.refreshTimer() }
+    }
+
+    @Test
+    fun `autoSkip follows the screen's item, not the playing one`() =
+      runTest {
+        val configuration = AutoSkipConfiguration(introSeconds = 30, outroSeconds = 60)
+        every { libraryPreferences.autoSkipFlow } returns MutableStateFlow(mapOf("book-2" to configuration))
+
+        assertEquals(configuration, viewModel.autoSkip("book-2").first())
+        assertEquals(AutoSkipConfiguration.disabled, viewModel.autoSkip("book-1").first())
+      }
 
     @Test
     fun `setEpisodeOrdering asks the player for the screen's item and then stores the choice`() {

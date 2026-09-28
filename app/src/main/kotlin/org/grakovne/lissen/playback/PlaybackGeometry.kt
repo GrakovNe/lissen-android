@@ -1,6 +1,8 @@
 package org.grakovne.lissen.playback
 
+import org.grakovne.lissen.common.AutoSkipConfiguration
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.playback.service.calculateChapterIndexAndPosition
 
@@ -118,14 +120,19 @@ object PlaybackGeometry {
     totalPosition: Double,
   ): Int = calculateChapterIndex(book, totalPosition) + 1
 
-  /** A "previous" press a few seconds into a chapter (or in the first one) replays it instead of leaving it. */
+  /**
+   * A "previous" press a few seconds into a chapter (or in the first one) replays it instead of
+   * leaving it. Those seconds count from the end of a skipped intro, where playback really began.
+   */
   fun previousChapter(
     book: DetailedItem,
     totalPosition: Double,
     rewindRequired: Boolean,
+    autoSkip: AutoSkipConfiguration = AutoSkipConfiguration.disabled,
   ): Int? {
     val (index, position) = calculateChapterIndexAndPosition(book, totalPosition)
-    val replay = position > CURRENT_TRACK_REPLAY_THRESHOLD || index == 0
+    val playedFrom = skippable(book, index, autoSkip)?.configuration?.introSeconds ?: 0
+    val replay = position > playedFrom + CURRENT_TRACK_REPLAY_THRESHOLD || index == 0
 
     return when {
       replay && rewindRequired -> index
@@ -134,16 +141,37 @@ object PlaybackGeometry {
     }
   }
 
+  /**
+   * Wall-clock seconds until the chapter is over. With auto-skip the chapter ends where its outro
+   * begins, and a position still inside the intro counts from the end of the intro, because the
+   * intro is about to be skipped. A position already inside the outro is one the listener chose
+   * (or one the skip is about to leave), so it counts to the real end of the chapter.
+   */
   fun remainingInChapter(
     book: DetailedItem,
     totalPosition: Double,
     speed: Float,
+    autoSkip: AutoSkipConfiguration = AutoSkipConfiguration.disabled,
   ): Double? {
     val (index, position) = calculateChapterIndexAndPosition(book, totalPosition)
     val duration = book.chapters.getOrNull(index)?.duration ?: return null
+    val skip = skippable(book, index, autoSkip)?.configuration ?: AutoSkipConfiguration.disabled
 
-    return (duration - position) / speed
+    val outroStart = duration - skip.outroSeconds
+    val end = if (position >= outroStart) duration else outroStart
+    val from = maxOf(position, skip.introSeconds.toDouble())
+
+    return (end - from).coerceAtLeast(0.0) / speed
   }
+
+  private fun skippable(
+    book: DetailedItem,
+    index: Int,
+    autoSkip: AutoSkipConfiguration,
+  ): SkippableChapter? = book.chapters.getOrNull(index)?.let { autoSkip.skippable(it.durationMs) }
 
   fun clampPlaybackSpeed(factor: Float): Float = factor.coerceIn(MIN_PLAYBACK_SPEED, MAX_PLAYBACK_SPEED)
 }
+
+internal val PlayingChapter.durationMs: Long
+  get() = (duration * 1000).toLong()

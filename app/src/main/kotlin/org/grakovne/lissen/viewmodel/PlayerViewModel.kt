@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import org.grakovne.lissen.common.AutoSkipConfiguration
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.DetailedItem
@@ -38,6 +39,21 @@ class PlayerViewModel
 
     /** The stored ordering of the item the screen shows, not necessarily the playing one. */
     fun episodeOrdering(itemId: String): Flow<EpisodeOrderingConfiguration?> = libraryPreferences.episodeOrderingFlow.map { it[itemId] }
+
+    /** The stored auto-skip of the item the screen shows; nothing is skipped unless the user set something. */
+    fun autoSkip(itemId: String): Flow<AutoSkipConfiguration> =
+      libraryPreferences.autoSkipFlow.map { it[itemId] ?: AutoSkipConfiguration.disabled }
+
+    fun setAutoSkip(
+      itemId: String,
+      configuration: AutoSkipConfiguration,
+    ) {
+      Timber.d("User action: setAutoSkip $configuration for $itemId")
+      libraryPreferences.saveAutoSkip(itemId, configuration)
+
+      // a sleep timer armed for the end of the playing episode now ends at the new outro
+      if (mediaRepository.playingBook.value?.id == itemId) mediaRepository.refreshTimer()
+    }
 
     val currentChapterIndex: StateFlow<Int> = mediaRepository.currentChapterIndex
     val currentChapterPosition: StateFlow<Double> = mediaRepository.currentChapterPosition

@@ -1,7 +1,9 @@
 package org.grakovne.lissen.persistence.preferences
 
+import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Types
 import kotlinx.coroutines.flow.Flow
+import org.grakovne.lissen.common.AutoSkipConfiguration
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
@@ -24,6 +26,8 @@ class LibraryPreferences
     val forceCacheFlow: Flow<Boolean> = store.asFlow(CACHE_FORCE_ENABLED, ::isForceCache)
     val episodeOrderingFlow: Flow<Map<String, EpisodeOrderingConfiguration>> =
       store.asFlow(KEY_EPISODE_ORDERING, ::getEpisodeOrderings)
+    val autoSkipFlow: Flow<Map<String, AutoSkipConfiguration>> =
+      store.asFlow(KEY_AUTO_SKIP, ::getAutoSkips)
 
     fun getPreferredLibrary(): Library? {
       val id = activeLibraryId() ?: return null
@@ -70,18 +74,43 @@ class LibraryPreferences
       store.putString(KEY_EPISODE_ORDERING, episodeOrderingAdapter.toJson(updated))
     }
 
-    /** Parsed entry by entry, so one unreadable value drops only itself. */
-    private fun getEpisodeOrderings(): Map<String, EpisodeOrderingConfiguration> {
-      val json = store.getString(KEY_EPISODE_ORDERING) ?: return emptyMap()
-      val entries = runCatching { rawEpisodeOrderingAdapter.fromJson(json) }.getOrNull() ?: return emptyMap()
+    private fun getEpisodeOrderings(): Map<String, EpisodeOrderingConfiguration> =
+      readPerItem(KEY_EPISODE_ORDERING, episodeOrderingEntryAdapter)
+
+    /** A per-item map, parsed entry by entry so one unreadable value drops only itself. */
+    private fun <T> readPerItem(
+      key: String,
+      entryAdapter: JsonAdapter<T>,
+    ): Map<String, T> {
+      val json = store.getString(key) ?: return emptyMap()
+      val entries = runCatching { rawPerItemAdapter.fromJson(json) }.getOrNull() ?: return emptyMap()
 
       return entries
         .mapNotNull { (itemId, value) ->
-          runCatching { episodeOrderingEntryAdapter.fromJsonValue(value) }
+          runCatching { entryAdapter.fromJsonValue(value) }
             .getOrNull()
             ?.let { itemId to it }
         }.toMap()
     }
+
+    /** What is skipped for the item; nothing, unless the user set something. */
+    fun getAutoSkip(itemId: String): AutoSkipConfiguration = getAutoSkips()[itemId] ?: AutoSkipConfiguration.disabled
+
+    /** Nothing to skip is the same as no entry, so a reset leaves no trace behind. */
+    fun saveAutoSkip(
+      itemId: String,
+      configuration: AutoSkipConfiguration,
+    ) {
+      val sanitized = configuration.sanitized()
+      val updated =
+        when (sanitized.enabled) {
+          true -> getAutoSkips() + (itemId to sanitized)
+          false -> getAutoSkips() - itemId
+        }
+      store.putString(KEY_AUTO_SKIP, autoSkipAdapter.toJson(updated))
+    }
+
+    private fun getAutoSkips(): Map<String, AutoSkipConfiguration> = readPerItem(KEY_AUTO_SKIP, autoSkipEntryAdapter)
 
     fun getHideCompleted(): Boolean = store.getBoolean(KEY_HIDE_COMPLETED, false)
 
@@ -129,17 +158,25 @@ class LibraryPreferences
       private const val KEY_HIDE_COMPLETED = "hide_completed"
       private const val KEY_LIBRARY_GROUPING = "library_grouping"
       private const val KEY_EPISODE_ORDERING = "episode_ordering"
+      private const val KEY_AUTO_SKIP = "auto_skip"
 
       private val episodeOrderingAdapter =
         moshi.adapter<Map<String, EpisodeOrderingConfiguration>>(
           Types.newParameterizedType(Map::class.java, String::class.java, EpisodeOrderingConfiguration::class.java),
         )
 
-      private val rawEpisodeOrderingAdapter =
+      private val rawPerItemAdapter =
         moshi.adapter<Map<String, Any>>(
           Types.newParameterizedType(Map::class.java, String::class.java, Any::class.java),
         )
 
       private val episodeOrderingEntryAdapter = moshi.adapter(EpisodeOrderingConfiguration::class.java)
+
+      private val autoSkipAdapter =
+        moshi.adapter<Map<String, AutoSkipConfiguration>>(
+          Types.newParameterizedType(Map::class.java, String::class.java, AutoSkipConfiguration::class.java),
+        )
+
+      private val autoSkipEntryAdapter = moshi.adapter(AutoSkipConfiguration::class.java)
     }
   }

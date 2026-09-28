@@ -35,7 +35,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -46,7 +45,7 @@ import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.LibraryOrderingDirection.ASCENDING
 import org.grakovne.lissen.common.LibraryOrderingDirection.DESCENDING
 import org.grakovne.lissen.common.LibraryOrderingOption
-import org.grakovne.lissen.common.withHaptic
+import org.grakovne.lissen.common.nextOnTap
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.components.ApplicationSettingsItemComposable
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
@@ -76,7 +75,6 @@ fun QuickSettingsComposable(
   val grouping by librarySettingsViewModel.libraryGrouping.collectAsState(LibraryGrouping.NONE)
   val ordering by librarySettingsViewModel.preferredLibraryOrdering.collectAsState()
   val context = LocalContext.current
-  val view = LocalView.current
   val isLibrary = libraryViewModel.fetchPreferredLibraryType() == LibraryType.LIBRARY
 
   var groupingExpanded by remember { mutableStateOf(false) }
@@ -98,7 +96,7 @@ fun QuickSettingsComposable(
         title = stringResource(R.string.show_downloaded_content_only),
         icon = Icons.Outlined.CloudOff,
         checked = forceCache,
-        onClick = { onForceLocalToggled() },
+        onClick = onForceLocalToggled,
       )
 
       SettingsToggleRow(
@@ -106,7 +104,7 @@ fun QuickSettingsComposable(
         icon = Icons.Outlined.VisibilityOff,
         checked = isLibrary && hideCompleted,
         enabled = isLibrary,
-        onClick = { onHideCompletedToggled() },
+        onClick = onHideCompletedToggled,
       )
 
       Spacer(modifier = Modifier.height(8.dp))
@@ -126,7 +124,7 @@ fun QuickSettingsComposable(
         value = displayedGrouping.toLocalizedName(context),
         expanded = groupingExpanded,
         enabled = isLibrary,
-        onClick = { withHaptic(view) { groupingExpanded = !groupingExpanded } },
+        onClick = { groupingExpanded = !groupingExpanded },
       )
 
       AnimatedVisibility(visible = groupingExpanded && isLibrary) {
@@ -152,7 +150,7 @@ fun QuickSettingsComposable(
         value = displayedSortOption.toLocalizedName(context),
         expanded = sortExpanded,
         enabled = !sortRequired,
-        onClick = { withHaptic(view) { sortExpanded = !sortExpanded } },
+        onClick = { sortExpanded = !sortExpanded },
       )
 
       AnimatedVisibility(visible = sortExpanded && !sortRequired) {
@@ -169,14 +167,8 @@ fun QuickSettingsComposable(
                   DESCENDING -> Icons.Outlined.ArrowDownward
                 },
               onClick = {
-                val newDirection =
-                  when {
-                    !isSelected -> ASCENDING
-                    ordering.direction == ASCENDING -> DESCENDING
-                    else -> ASCENDING
-                  }
                 librarySettingsViewModel.preferLibraryOrdering(
-                  LibraryOrderingConfiguration(option = option, direction = newDirection),
+                  LibraryOrderingConfiguration(option = option, direction = ordering.direction.nextOnTap(isSelected)),
                 )
                 onSortingChanged()
               },

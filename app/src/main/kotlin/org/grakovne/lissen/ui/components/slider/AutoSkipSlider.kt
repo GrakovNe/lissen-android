@@ -39,16 +39,17 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
- * Two thumbs on one ruler: the left one measures seconds from the start of the episode,
+ * Two thumbs on one ruler: the left one measures seconds from the start of the chapter,
  * the right one seconds from its end. Each half spans five minutes from its edge. Tapping
  * grabs the nearer thumb, so the thumbs can be reached wherever they sit.
  */
 @Composable
-fun IntroOutroSlider(
+fun AutoSkipSlider(
   introSeconds: Int,
   outroSeconds: Int,
   modifier: Modifier = Modifier,
   stateDescription: String? = null,
+  onUpdateFinished: () -> Unit = {},
   onUpdate: (introSeconds: Int, outroSeconds: Int) -> Unit,
 ) {
   val view = LocalView.current
@@ -61,9 +62,10 @@ fun IntroOutroSlider(
   val currentIntro by rememberUpdatedState(introSeconds)
   val currentOutro by rememberUpdatedState(outroSeconds)
   val currentOnUpdate by rememberUpdatedState(onUpdate)
+  val currentOnUpdateFinished by rememberUpdatedState(onUpdateFinished)
 
-  val palette =
-    Palette(
+  val colors =
+    RulerColors(
       surface = colorScheme.surface,
       onSurface = colorScheme.onSurface,
       variant = colorScheme.onSurfaceVariant,
@@ -71,9 +73,9 @@ fun IntroOutroSlider(
     )
 
   // the header of the other rulers, a size down so two of them stay quiet inside a settings sheet
-  val valueStyle = MaterialTheme.typography.titleMedium.copy(color = palette.onSurface)
+  val valueStyle = MaterialTheme.typography.titleMedium.copy(color = colors.onSurface)
   // numerals sit tighter without the body letter spacing, which keeps five-character labels a minute apart
-  val tickStyle = MaterialTheme.typography.bodySmall.copy(color = palette.variant, letterSpacing = 0.sp)
+  val tickStyle = MaterialTheme.typography.bodySmall.copy(color = colors.variant, letterSpacing = 0.sp)
 
   Canvas(
     modifier =
@@ -85,7 +87,7 @@ fun IntroOutroSlider(
         .pointerInput(Unit) {
           awaitEachGesture {
             val down = awaitFirstDown()
-            val geometry = Geometry(size.width.toFloat(), INSET.toPx())
+            val geometry = RulerScale(size.width.toFloat(), INSET.toPx())
             val introX = geometry.introX(currentIntro)
             val outroX = geometry.outroX(currentOutro)
 
@@ -99,7 +101,7 @@ fun IntroOutroSlider(
             var intro = currentIntro
             var outro = currentOutro
 
-            fun apply(x: Float) {
+            fun moveTo(x: Float) {
               val (newIntro, newOutro) =
                 when (thumb) {
                   Thumb.INTRO -> geometry.introSeconds(x) to outro
@@ -112,33 +114,38 @@ fun IntroOutroSlider(
               }
             }
 
-            apply(down.position.x)
+            moveTo(down.position.x)
             down.consume()
 
-            horizontalDrag(down.id) { change ->
-              apply(change.position.x)
-              if (change.positionChange() != Offset.Zero) change.consume()
+            try {
+              horizontalDrag(down.id) { change ->
+                moveTo(change.position.x)
+                if (change.positionChange() != Offset.Zero) change.consume()
+              }
+            } finally {
+              // a sheet that closes mid-drag cancels the gesture; what was dragged so far still counts
+              dragging = null
+              currentOnUpdateFinished()
             }
-
-            dragging = null
           }
         },
   ) {
-    val geometry = Geometry(size.width, INSET.toPx())
+    val geometry = RulerScale(size.width, INSET.toPx())
     val introX = geometry.introX(introSeconds)
     val outroX = geometry.outroX(outroSeconds)
 
-    drawRuler(geometry, introX, outroX, palette, textMeasurer, tickStyle)
+    drawRuler(geometry, introX, outroX, colors, textMeasurer, tickStyle)
 
-    listOf(Thumb.INTRO to introX, Thumb.OUTRO to outroX).forEach { (thumb, x) ->
-      drawPillThumb(x, active = dragging == thumb, palette)
+    val thumbs = listOf(Thumb.INTRO to introX, Thumb.OUTRO to outroX)
+    thumbs.forEach { (thumb, x) ->
+      drawPillThumb(x, active = dragging == thumb, colors)
     }
 
     // the value follows its thumb like the header follows the centre of the other rulers,
     // and each stays on its own half so the two never collide
     val markerTop = TRACK_Y.toPx() - PILL_HALF.toPx() - MARKER_GAP.toPx() - MARKER_HEIGHT.toPx()
     val mid = size.width / 2f
-    listOf(Thumb.INTRO to introX, Thumb.OUTRO to outroX).forEach { (thumb, x) ->
+    thumbs.forEach { (thumb, x) ->
       val seconds = if (thumb == Thumb.INTRO) introSeconds else outroSeconds
       val value = textMeasurer.measure(seconds.formatTime(), valueStyle)
       val centered = x - value.size.width / 2f
@@ -158,18 +165,18 @@ fun IntroOutroSlider(
             lineTo(x, markerTop + MARKER_HEIGHT.toPx())
             close()
           },
-        color = palette.onSurface,
+        color = colors.onSurface,
       )
     }
   }
 }
 
-/** The ruler of the volume slider: cut-off ticks tinted, the middle fading out, where the scale means nothing. */
+/** The ruler itself: cut-off ticks tinted, the middle fading out, where the scale means nothing. */
 private fun DrawScope.drawRuler(
-  geometry: Geometry,
+  geometry: RulerScale,
   introX: Float,
   outroX: Float,
-  palette: Palette,
+  colors: RulerColors,
   textMeasurer: TextMeasurer,
   tickStyle: TextStyle,
 ) {
@@ -186,7 +193,7 @@ private fun DrawScope.drawRuler(
     listOf(geometry.start + distance, geometry.end - distance).forEach { x ->
       val cut = x < introX || x > outroX
       drawLine(
-        color = if (cut) palette.accent.copy(alpha = alpha * CUT_TICK_ALPHA) else palette.onSurface.copy(alpha = alpha * TICK_ALPHA),
+        color = if (cut) colors.accent.copy(alpha = alpha * CUT_TICK_ALPHA) else colors.onSurface.copy(alpha = alpha * TICK_ALPHA),
         start = Offset(x, trackY - length),
         end = Offset(x, trackY + length),
         strokeWidth = TICK_WIDTH.toPx(),
@@ -199,8 +206,8 @@ private fun DrawScope.drawRuler(
       listOf(geometry.start + distance, geometry.end - distance).forEach { x ->
         drawText(
           textLayoutResult = label,
-          color = palette.variant.copy(alpha = alpha),
-          topLeft = Offset(x - label.size.width / 2f, trackY + majorHalf + 4.dp.toPx()),
+          color = colors.variant.copy(alpha = alpha),
+          topLeft = Offset(x - label.size.width / 2f, trackY + majorHalf + TICK_LABEL_GAP.toPx()),
         )
       }
     }
@@ -210,26 +217,26 @@ private fun DrawScope.drawRuler(
 private fun DrawScope.drawPillThumb(
   x: Float,
   active: Boolean,
-  palette: Palette,
+  colors: RulerColors,
 ) {
   val trackY = TRACK_Y.toPx()
-  val pillWidth = (if (active) PILL_WIDTH + 2.dp else PILL_WIDTH).toPx()
+  val pillWidth = (if (active) PILL_WIDTH + PILL_GRIP else PILL_WIDTH).toPx()
   val pillHalf = PILL_HALF.toPx()
   drawRoundRect(
-    color = palette.surface,
-    topLeft = Offset(x - pillWidth / 2 - 2.dp.toPx(), trackY - pillHalf - 2.dp.toPx()),
-    size = Size(pillWidth + 4.dp.toPx(), pillHalf * 2 + 4.dp.toPx()),
+    color = colors.surface,
+    topLeft = Offset(x - pillWidth / 2 - PILL_HALO.toPx(), trackY - pillHalf - PILL_HALO.toPx()),
+    size = Size(pillWidth + PILL_HALO.toPx() * 2, pillHalf * 2 + PILL_HALO.toPx() * 2),
     cornerRadius = CornerRadius(pillWidth),
   )
   drawRoundRect(
-    color = palette.onSurface,
+    color = colors.onSurface,
     topLeft = Offset(x - pillWidth / 2, trackY - pillHalf),
     size = Size(pillWidth, pillHalf * 2),
     cornerRadius = CornerRadius(pillWidth / 2),
   )
 }
 
-private class Geometry(
+private class RulerScale(
   width: Float,
   inset: Float,
 ) {
@@ -247,7 +254,7 @@ private class Geometry(
   fun outroSeconds(x: Float) = ((end - x) / pxPerSecond).toSteppedSeconds()
 }
 
-private class Palette(
+private class RulerColors(
   val surface: Color,
   val onSurface: Color,
   val variant: Color,
@@ -275,6 +282,9 @@ private val MARKER_WIDTH = 8.dp
 private val MARKER_HEIGHT = 4.dp
 private val PILL_WIDTH = 3.dp
 private val PILL_HALF = 14.dp
+private val PILL_GRIP = 2.dp
+private val PILL_HALO = 2.dp
+private val TICK_LABEL_GAP = 4.dp
 private val MAJOR_TICK_HALF = 11.dp
 private val MINOR_TICK_HALF = 5.5.dp
 private val TICK_WIDTH = 1.5.dp

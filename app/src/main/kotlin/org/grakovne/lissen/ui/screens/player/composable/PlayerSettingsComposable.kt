@@ -23,7 +23,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -34,15 +33,17 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
+import org.grakovne.lissen.common.AutoSkipConfiguration
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.common.EpisodeOrderingOption
 import org.grakovne.lissen.common.LibraryOrderingDirection.ASCENDING
 import org.grakovne.lissen.common.LibraryOrderingDirection.DESCENDING
+import org.grakovne.lissen.common.nextOnTap
 import org.grakovne.lissen.ui.components.ApplicationSettingsItemComposable
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.SettingsOptionRow
 import org.grakovne.lissen.ui.components.SettingsPickerRow
-import org.grakovne.lissen.ui.components.slider.IntroOutroSlider
+import org.grakovne.lissen.ui.components.slider.AutoSkipSlider
 import org.grakovne.lissen.ui.extensions.formatTime
 import org.grakovne.lissen.ui.extensions.spokenDuration
 import org.grakovne.lissen.ui.icons.SkipEdges
@@ -53,7 +54,7 @@ import org.grakovne.lissen.ui.navigation.AppNavigationService
  *
  * Episode ordering (podcasts only): tapping an option selects it ascending, tapping it again flips
  * the direction; the picker is inert while the queue is rebuilt. Auto-skip: a ruler with the intro
- * and outro lengths, for now a UI-only mock whose values live in the sheet.
+ * and outro lengths of the item, stored once per gesture when the thumb is released.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,6 +63,8 @@ fun PlayerSettingsComposable(
   orderingVisible: Boolean,
   orderingEnabled: Boolean,
   onOrderingChanged: (EpisodeOrderingConfiguration) -> Unit,
+  autoSkip: AutoSkipConfiguration,
+  onAutoSkipChanged: (AutoSkipConfiguration) -> Unit,
   onDismissRequest: () -> Unit,
   navController: AppNavigationService,
 ) {
@@ -70,10 +73,10 @@ fun PlayerSettingsComposable(
 
   var sortExpanded by remember { mutableStateOf(false) }
 
-  // UI-only mock: the values live in the sheet until the playback side exists
   var skipExpanded by remember { mutableStateOf(false) }
-  var introSeconds by remember { mutableIntStateOf(0) }
-  var outroSeconds by remember { mutableIntStateOf(0) }
+
+  // the ruler edits a local copy and hands it over when the thumb is released
+  var draft by remember(autoSkip) { mutableStateOf(autoSkip) }
 
   LissenModalBottomSheet(
     containerColor = colorScheme.surface,
@@ -113,13 +116,7 @@ fun PlayerSettingsComposable(
                   },
                 modifier = Modifier.testTag("episodeOrderingOption_${option.name}"),
                 onClick = {
-                  val newDirection =
-                    when {
-                      !isSelected -> ASCENDING
-                      current.direction == ASCENDING -> DESCENDING
-                      else -> ASCENDING
-                    }
-                  onOrderingChanged(EpisodeOrderingConfiguration(option = option, direction = newDirection))
+                  onOrderingChanged(EpisodeOrderingConfiguration(option = option, direction = current.direction.nextOnTap(isSelected)))
                 },
               )
             }
@@ -130,25 +127,26 @@ fun PlayerSettingsComposable(
       SettingsPickerRow(
         label = stringResource(R.string.player_settings_auto_skip),
         icon = SkipEdges,
-        value = skipSummary(introSeconds, outroSeconds),
+        value = draft.summary(),
+        // where the title leaves no room for the words, the two numbers alone
+        compactValue = draft.compactSummary(),
         expanded = skipExpanded,
-        modifier = Modifier.testTag("introOutroPicker"),
+        modifier = Modifier.testTag("autoSkipPicker"),
         onClick = { skipExpanded = !skipExpanded },
       )
 
       AnimatedVisibility(visible = skipExpanded) {
-        IntroOutroSlider(
-          introSeconds = introSeconds,
-          outroSeconds = outroSeconds,
-          stateDescription = skipSummary(introSeconds, outroSeconds, spoken = true),
+        AutoSkipSlider(
+          introSeconds = draft.introSeconds,
+          outroSeconds = draft.outroSeconds,
+          stateDescription = draft.summary(spoken = true),
+          // the ruler starts where the icons of the nested option rows do, one nesting level in
           modifier =
             Modifier
-              .padding(horizontal = 16.dp, vertical = 8.dp)
-              .testTag("introOutroSlider"),
-          onUpdate = { intro, outro ->
-            introSeconds = intro
-            outroSeconds = outro
-          },
+              .padding(horizontal = 12.dp, vertical = 8.dp)
+              .testTag("autoSkipSlider"),
+          onUpdate = { intro, outro -> draft = AutoSkipConfiguration(introSeconds = intro, outroSeconds = outro) },
+          onUpdateFinished = { if (draft != autoSkip) onAutoSkipChanged(draft) },
         )
       }
 
@@ -169,22 +167,24 @@ fun PlayerSettingsComposable(
   }
 }
 
-/** "Intro 01:20 · Outro 02:25", or the same read out in words for accessibility. */
+/** "Intro 01:20 · Outro 02:25", or the same read out in words for accessibility; what is not skipped is not mentioned. */
 @Composable
-private fun skipSummary(
-  introSeconds: Int,
-  outroSeconds: Int,
-  spoken: Boolean = false,
-): String {
-  val intro = stringResource(R.string.player_settings_intro_value, if (spoken) spokenDuration(introSeconds) else introSeconds.formatTime())
-  val outro = stringResource(R.string.player_settings_outro_value, if (spoken) spokenDuration(outroSeconds) else outroSeconds.formatTime())
-  return when {
-    introSeconds == 0 && outroSeconds == 0 -> stringResource(R.string.player_settings_skip_disabled)
-    outroSeconds == 0 -> intro
-    introSeconds == 0 -> outro
-    else -> if (spoken) "$intro, $outro" else "$intro \u00b7 $outro"
-  }
+private fun AutoSkipConfiguration.summary(spoken: Boolean = false): String {
+  val format: @Composable (Int) -> String = { if (spoken) spokenDuration(it) else it.formatTime() }
+  val parts =
+    buildList {
+      if (introSeconds > 0) add(stringResource(R.string.player_settings_intro_value, format(introSeconds)))
+      if (outroSeconds > 0) add(stringResource(R.string.player_settings_outro_value, format(outroSeconds)))
+    }
+
+  return parts.joinToString(if (spoken) ", " else SUMMARY_SEPARATOR).ifEmpty { stringResource(R.string.player_settings_skip_disabled) }
 }
+
+/** The two numbers alone, for a row whose title leaves no room for the words. */
+private fun AutoSkipConfiguration.compactSummary(): String? =
+  "${introSeconds.formatTime()}$SUMMARY_SEPARATOR${outroSeconds.formatTime()}".takeIf { enabled }
+
+private const val SUMMARY_SEPARATOR = " · "
 
 private fun EpisodeOrderingOption.icon(): ImageVector =
   when (this) {

@@ -22,6 +22,7 @@ import org.grakovne.lissen.domain.DetailedItem.Companion.same
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.TimerOption
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.service.DefaultTimerActivator
 import timber.log.Timber
@@ -35,6 +36,7 @@ class MediaRepository
   @Inject
   constructor(
     private val preferences: PlaybackPreferences,
+    private val libraryPreferences: LibraryPreferences,
     private val mediaChannel: LissenMediaProvider,
     private val eventBus: PlaybackEventBus,
     private val defaultTimerActivator: DefaultTimerActivator,
@@ -197,6 +199,7 @@ class MediaRepository
               book = book,
               totalPosition = position ?: totalPosition.value,
               speed = preferences.getPlaybackSpeed(),
+              autoSkip = libraryPreferences.getAutoSkip(book.id),
             ) ?: return
 
           scheduleServiceTimer(delay, timerOption)
@@ -377,7 +380,7 @@ class MediaRepository
       Timber.d("Previous track: bookId=${book.id}, position=${position.toInt()}s, rewind=$rewindRequired")
 
       PlaybackGeometry
-        .previousChapter(book, position, rewindRequired)
+        .previousChapter(book, position, rewindRequired, libraryPreferences.getAutoSkip(book.id))
         ?.let { setChapter(it) }
     }
 
@@ -536,6 +539,9 @@ class MediaRepository
 
       adjustTimer(target.totalPosition)
     }
+
+    /** Re-arms a timer that ends with the episode, after something that moves that end. */
+    fun refreshTimer() = adjustTimer(totalPosition.value)
 
     private fun adjustTimer(position: Double) {
       when (val option = _timerOption.value) {

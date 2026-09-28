@@ -64,6 +64,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.withResumed
 import coil3.ImageLoader
 import org.grakovne.lissen.R
+import org.grakovne.lissen.common.AutoSkipConfiguration
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.SeekTime
@@ -149,6 +150,7 @@ fun PlayerScreen(
   val requestedBook = playingBook?.takeIf { it.id == bookId }
   val libraryType = playingBook?.libraryType ?: preferredLibraryType
   val episodeOrdering by remember(bookId) { playerViewModel.episodeOrdering(bookId) }.collectAsState(initial = null)
+  val autoSkip by remember(bookId) { playerViewModel.autoSkip(bookId) }.collectAsState(initial = AutoSkipConfiguration.disabled)
 
   val sortable = isSortable(requestedBook, preferredLibraryType)
 
@@ -442,6 +444,8 @@ fun PlayerScreen(
       orderingVisible = sortable,
       orderingEnabled = canReorder,
       onOrderingChanged = { playerViewModel.setEpisodeOrdering(bookId, it) },
+      autoSkip = autoSkip,
+      onAutoSkipChanged = { playerViewModel.setAutoSkip(bookId, it) },
       onDismissRequest = { settingsSelected = false },
       navController = navController,
     )

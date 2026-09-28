@@ -283,6 +283,4 @@
     <string name="episode_ordering_season_option">Stagione</string>
     <string name="episode_ordering_episode_option">Episodio</string>
     <string name="episode_ordering_file_name_option">Nome file</string>
-    <string name="episode_ordering_ascending">Ascendente</string>
-    <string name="episode_ordering_descending">Discendente</string>
 </resources>

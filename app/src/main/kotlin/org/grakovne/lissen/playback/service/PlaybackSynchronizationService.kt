@@ -1,9 +1,11 @@
 package org.grakovne.lissen.playback.service
 
 import android.os.SystemClock
+import androidx.annotation.VisibleForTesting
 import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
@@ -34,6 +36,10 @@ class PlaybackSynchronizationService
   ) {
     private var listeningMark = ListeningMark(playingSince = null, unsyncedMs = 0)
     private val serviceScope = MainScope()
+
+    // the syncs hop here; a test replaces it before the first one
+    @VisibleForTesting
+    internal var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
     private var syncJob: Job? = null
     private val syncRunner = CoalescingRunner<SyncSnapshot>()
 
@@ -86,6 +92,30 @@ class PlaybackSynchronizationService
           }
     }
 
+    /**
+     * Chapter [chapterIndex] is being left before its end (an outro is skipped): the server gets it
+     * played out, under its own index and item, before the player moves on. Queued right here as a
+     * mandatory sync, so a regular sync of the next chapter neither drops it nor overtakes it.
+     * The listening time stays with the regular syncs, which report it once.
+     */
+    fun reportChapterEnd(chapterIndex: Int) {
+      val currentItem = syncState.value.item ?: return
+      val chapter = currentItem.chapters.getOrNull(chapterIndex) ?: return
+
+      val snapshot =
+        SyncSnapshot(
+          progress = PlaybackProgress(currentTotalTime = chapter.end, currentChapterTime = chapter.duration),
+          timeListened = 0.0,
+          paused = false,
+          chapter = ReportedChapter(currentItem, chapterIndex),
+        )
+
+      Timber.d("Reporting the end of chapter $chapterIndex of ${currentItem.id}")
+
+      syncRunner.enqueueMandatory(snapshot)
+      serviceScope.launch { drainSyncs(currentItem) }
+    }
+
     private suspend fun runSync() {
       val overallProgress = getProgress(exoPlayer) ?: return
       val currentItem = syncState.value.item ?: return
@@ -106,22 +136,27 @@ class PlaybackSynchronizationService
           paused = exoPlayer.syncTicking.not(),
         )
 
-      withContext(Dispatchers.IO) {
-        syncRunner.submit(snapshot) { value ->
+      // offered here, in order with the mandatory reports of the same thread, before the hop
+      syncRunner.offer(snapshot)
+      drainSyncs(currentItem)
+    }
+
+    private suspend fun drainSyncs(currentItem: DetailedItem) =
+      withContext(ioDispatcher) {
+        syncRunner.drain { snapshot ->
           try {
-            performSync(currentItem, value)
+            performSync(snapshot.itemOr(currentItem), snapshot)
           } catch (e: Exception) {
             Timber.e(e, "Error during sync")
           }
         }
       }
-    }
 
     private suspend fun performSync(
       currentItem: DetailedItem,
       snapshot: SyncSnapshot,
     ) {
-      val chapterIndex = calculateChapterIndex(currentItem, snapshot.progress.currentTotalTime)
+      val chapterIndex = snapshot.chapterIndexIn(currentItem)
       val current = syncState.value
 
       // a local session keeps retrying the server to move back to a remote one
@@ -228,6 +263,17 @@ private data class SyncSnapshot(
   val progress: PlaybackProgress,
   val timeListened: Double,
   val paused: Boolean,
+  /** Set when the snapshot speaks for a chapter other than the one the player is at by the time it runs. */
+  val chapter: ReportedChapter? = null,
+) {
+  fun itemOr(current: DetailedItem): DetailedItem = chapter?.item ?: current
+
+  fun chapterIndexIn(item: DetailedItem): Int = chapter?.index ?: calculateChapterIndex(item, progress.currentTotalTime)
+}
+
+private data class ReportedChapter(
+  val item: DetailedItem,
+  val index: Int,
 )
 
 internal const val SYNC_INTERVAL_LONG = 45_000L
