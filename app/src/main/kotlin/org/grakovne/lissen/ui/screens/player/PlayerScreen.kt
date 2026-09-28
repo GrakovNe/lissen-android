@@ -247,20 +247,6 @@ fun PlayerScreen(
                     }
                   }
 
-                  // stays next to search while the queue is expanded
-                  IconButton(
-                    onClick = { if (isPlaybackReady) settingsSelected = true },
-                    modifier =
-                      Modifier
-                        .padding(end = 4.dp)
-                        .testTag("playerSettingsButton"),
-                  ) {
-                    Icon(
-                      imageVector = Icons.Outlined.Settings,
-                      contentDescription = stringResource(R.string.a11y_settings),
-                    )
-                  }
-
                   if (bookActionsVisible) {
                     IconButton(
                       onClick = {
@@ -294,6 +280,20 @@ fun PlayerScreen(
                         contentDescription = null,
                       )
                     }
+                  }
+
+                  // last in the row whatever the queue state
+                  IconButton(
+                    onClick = { if (isPlaybackReady) settingsSelected = true },
+                    modifier =
+                      Modifier
+                        .padding(end = 4.dp)
+                        .testTag("playerSettingsButton"),
+                  ) {
+                    Icon(
+                      imageVector = Icons.Outlined.Settings,
+                      contentDescription = stringResource(R.string.a11y_settings),
+                    )
                   }
                 }
               }
