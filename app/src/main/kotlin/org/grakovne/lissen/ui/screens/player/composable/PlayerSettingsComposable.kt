@@ -141,10 +141,11 @@ fun PlayerSettingsComposable(
           introSeconds = draft.introSeconds,
           outroSeconds = draft.outroSeconds,
           stateDescription = draft.summary(spoken = true),
-          // the ruler starts where the icons of the nested option rows do, one nesting level in
+          // nested one level in like the option rows: nothing of the ruler, its value labels
+          // included, is drawn left of where their icons start or right of where their arrows end
           modifier =
             Modifier
-              .padding(horizontal = 12.dp, vertical = 8.dp)
+              .padding(horizontal = 24.dp, vertical = 8.dp)
               .testTag("autoSkipSlider"),
           onUpdate = { intro, outro -> draft = AutoSkipConfiguration(introSeconds = intro, outroSeconds = outro) },
           onUpdateFinished = { if (draft != autoSkip) onAutoSkipChanged(draft) },
