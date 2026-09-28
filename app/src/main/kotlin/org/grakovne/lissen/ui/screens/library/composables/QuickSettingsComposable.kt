@@ -45,7 +45,6 @@ import org.grakovne.lissen.common.LibraryOrderingConfiguration
 import org.grakovne.lissen.common.LibraryOrderingDirection.ASCENDING
 import org.grakovne.lissen.common.LibraryOrderingDirection.DESCENDING
 import org.grakovne.lissen.common.LibraryOrderingOption
-import org.grakovne.lissen.common.nextOnTap
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.components.ApplicationSettingsItemComposable
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
@@ -168,7 +167,7 @@ fun QuickSettingsComposable(
                 },
               onClick = {
                 librarySettingsViewModel.preferLibraryOrdering(
-                  LibraryOrderingConfiguration(option = option, direction = ordering.direction.nextOnTap(isSelected)),
+                  LibraryOrderingConfiguration(option = option, direction = if (isSelected) ordering.direction.opposite else ASCENDING),
                 )
                 onSortingChanged()
               },

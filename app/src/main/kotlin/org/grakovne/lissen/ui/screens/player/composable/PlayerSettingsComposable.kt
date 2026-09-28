@@ -38,7 +38,6 @@ import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.common.EpisodeOrderingOption
 import org.grakovne.lissen.common.LibraryOrderingDirection.ASCENDING
 import org.grakovne.lissen.common.LibraryOrderingDirection.DESCENDING
-import org.grakovne.lissen.common.nextOnTap
 import org.grakovne.lissen.ui.components.ApplicationSettingsItemComposable
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.SettingsOptionRow
@@ -116,7 +115,9 @@ fun PlayerSettingsComposable(
                   },
                 modifier = Modifier.testTag("episodeOrderingOption_${option.name}"),
                 onClick = {
-                  onOrderingChanged(EpisodeOrderingConfiguration(option = option, direction = current.direction.nextOnTap(isSelected)))
+                  onOrderingChanged(
+                    EpisodeOrderingConfiguration(option = option, direction = if (isSelected) current.direction.opposite else ASCENDING),
+                  )
                 },
               )
             }
