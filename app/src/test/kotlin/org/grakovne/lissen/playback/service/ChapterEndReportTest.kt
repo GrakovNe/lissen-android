@@ -99,6 +99,23 @@ class ChapterEndReportTest {
   }
 
   @Test
+  fun `a report for an item that is no longer playing is dropped, not written into the new one`() {
+    val other = podcast(id = "other")
+    val otherSession = PlaybackSession(sessionId = "s2", itemId = other.id, sessionSource = PlaybackSessionSource.REMOTE)
+    coEvery { mediaProvider.startPlayback(other.id, any(), any(), any(), any()) } returns OperationResult.Success(otherSession)
+
+    // the report is queued, the drain has not run yet, and another item starts
+    service.reportChapterEnd(1)
+    service.startPlaybackSynchronization(other)
+    service.reportChapterEnd(0)
+    scheduler.advanceUntilIdle()
+
+    coVerify(exactly = 0) { mediaProvider.startPlayback(item.id, any(), any(), any(), any()) }
+    coVerify(exactly = 0) { mediaProvider.syncProgress(any(), item, any(), any(), any()) }
+    coVerify(exactly = 1) { mediaProvider.syncProgress(otherSession, other, 0, any(), 0.0) }
+  }
+
+  @Test
   fun `a chapter the item does not have is not reported`() {
     service.reportChapterEnd(7)
     scheduler.advanceUntilIdle()

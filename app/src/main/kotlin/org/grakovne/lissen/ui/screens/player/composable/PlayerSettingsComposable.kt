@@ -113,6 +113,11 @@ fun PlayerSettingsComposable(
                     ASCENDING -> Icons.Outlined.ArrowUpward
                     DESCENDING -> Icons.Outlined.ArrowDownward
                   },
+                trailingDescription =
+                  when (current.direction) {
+                    ASCENDING -> stringResource(R.string.episode_ordering_ascending)
+                    DESCENDING -> stringResource(R.string.episode_ordering_descending)
+                  },
                 modifier = Modifier.testTag("episodeOrderingOption_${option.name}"),
                 onClick = {
                   onOrderingChanged(
@@ -172,14 +177,20 @@ fun PlayerSettingsComposable(
 /** "Intro 01:20 · Outro 02:25", or the same read out in words for accessibility; what is not skipped is not mentioned. */
 @Composable
 private fun AutoSkipConfiguration.summary(spoken: Boolean = false): String {
-  val format: @Composable (Int) -> String = { if (spoken) spokenDuration(it) else it.formatTime() }
-  val parts =
-    buildList {
-      if (introSeconds > 0) add(stringResource(R.string.player_settings_intro_value, format(introSeconds)))
-      if (outroSeconds > 0) add(stringResource(R.string.player_settings_outro_value, format(outroSeconds)))
-    }
+  val intro =
+    introSeconds
+      .takeIf {
+        it > 0
+      }?.let { stringResource(R.string.player_settings_intro_value, if (spoken) spokenDuration(it) else it.formatTime()) }
+  val outro =
+    outroSeconds
+      .takeIf {
+        it > 0
+      }?.let { stringResource(R.string.player_settings_outro_value, if (spoken) spokenDuration(it) else it.formatTime()) }
 
-  return parts.joinToString(if (spoken) ", " else SUMMARY_SEPARATOR).ifEmpty { stringResource(R.string.player_settings_skip_disabled) }
+  return listOfNotNull(intro, outro).joinToString(if (spoken) ", " else SUMMARY_SEPARATOR).ifEmpty {
+    stringResource(R.string.player_settings_skip_disabled)
+  }
 }
 
 /** The two numbers alone, for a row whose title leaves no room for the words. */

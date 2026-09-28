@@ -144,10 +144,22 @@ class PlaybackSynchronizationService
     private suspend fun drainSyncs(currentItem: DetailedItem) =
       withContext(ioDispatcher) {
         syncRunner.drain { snapshot ->
-          try {
-            performSync(snapshot.itemOr(currentItem), snapshot)
-          } catch (e: Exception) {
-            Timber.e(e, "Error during sync")
+          val item = snapshot.itemOr(currentItem)
+
+          when (item.id) {
+            currentItem.id -> {
+              try {
+                performSync(item, snapshot)
+              } catch (e: Exception) {
+                Timber.e(e, "Error during sync")
+              }
+            }
+
+            // the end of a chapter of an item that was left before the report went out: a
+            // session for it cannot be adopted any more, so it would only leak on the server
+            else -> {
+              Timber.d("Dropping a report for ${item.id}: ${currentItem.id} is playing now")
+            }
           }
         }
       }

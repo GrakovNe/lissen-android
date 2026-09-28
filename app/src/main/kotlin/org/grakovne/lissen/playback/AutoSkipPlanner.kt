@@ -2,6 +2,7 @@ package org.grakovne.lissen.playback
 
 import org.grakovne.lissen.common.AutoSkipConfiguration
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.PlayingChapter
 
 /** The arithmetic of auto-skip, kept away from the player so it can be checked on a table. */
 internal object AutoSkipPlanner {
@@ -26,12 +27,7 @@ internal object AutoSkipPlanner {
   ): List<Pair<Int, Long>> =
     when (configuration.outroSeconds > 0) {
       true -> {
-        book.chapters.mapIndexedNotNull { index, chapter ->
-          configuration.skippable(chapter.durationMs)?.let {
-            index to
-              it.outroStartMs
-          }
-        }
+        book.chapters.mapIndexedNotNull { index, chapter -> configuration.skippable(chapter.durationMs)?.let { index to it.outroStartMs } }
       }
 
       false -> {
@@ -72,5 +68,8 @@ internal data class SkippableChapter(
 /** The configuration as it applies to a chapter of [durationMs]: nothing when there is nothing to skip or the skips would swallow the chapter. */
 internal fun AutoSkipConfiguration.skippable(durationMs: Long): SkippableChapter? =
   takeIf { enabled && durationMs > 0L && (introSeconds + outroSeconds) * MILLIS < durationMs }?.let { SkippableChapter(it, durationMs) }
+
+internal val PlayingChapter.durationMs: Long
+  get() = (duration * MILLIS).toLong()
 
 private const val MILLIS = 1000L

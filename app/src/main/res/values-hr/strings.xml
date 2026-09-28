@@ -289,4 +289,6 @@
     <string name="episode_ordering_season_option">Sezona</string>
     <string name="episode_ordering_episode_option">Epizoda</string>
     <string name="episode_ordering_file_name_option">Naziv datoteke</string>
+    <string name="episode_ordering_ascending">Uzlazni</string>
+    <string name="episode_ordering_descending">Silazni</string>
 </resources>

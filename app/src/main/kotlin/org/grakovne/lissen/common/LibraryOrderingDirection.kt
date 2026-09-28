@@ -1,10 +1,17 @@
 package org.grakovne.lissen.common
 
+import androidx.annotation.Keep
+
+@Keep
 enum class LibraryOrderingDirection {
   ASCENDING,
   DESCENDING,
   ;
 
   val opposite: LibraryOrderingDirection
-    get() = if (this == ASCENDING) DESCENDING else ASCENDING
+    get() =
+      when (this) {
+        ASCENDING -> DESCENDING
+        DESCENDING -> ASCENDING
+      }
 }

@@ -111,6 +111,7 @@ class MediaRepositoryTest {
   private val preferences = mockk<PlaybackPreferences>(relaxed = true)
   private val libraryPreferences = mockk<LibraryPreferences>(relaxed = true)
   private val mediaChannel = mockk<LissenMediaProvider>(relaxed = true)
+  private val steps = PlaybackSteps()
 
   private lateinit var repository: MediaRepository
 
@@ -125,8 +126,16 @@ class MediaRepositoryTest {
     every { libraryPreferences.getAutoSkip(any()) } returns AutoSkipConfiguration.disabled
 
     repository =
-      MediaRepository(preferences, libraryPreferences, mediaChannel, eventBus, DefaultTimerActivator(preferences), player, mainThread)
-        .apply { ioDispatcher = UnconfinedTestDispatcher() }
+      MediaRepository(
+        preferences,
+        libraryPreferences,
+        mediaChannel,
+        eventBus,
+        DefaultTimerActivator(preferences),
+        player,
+        mainThread,
+        steps,
+      ).apply { ioDispatcher = UnconfinedTestDispatcher() }
   }
 
   @AfterEach
@@ -428,14 +437,44 @@ class MediaRepositoryTest {
       }
 
     @Test
-    fun `an episode timer armed before the intro is skipped counts from the end of the intro`() =
+    fun `an episode timer armed inside the intro counts from where playback is`() =
       runTest {
         every { libraryPreferences.getAutoSkip("podcast") } returns AutoSkipConfiguration(introSeconds = 8, outroSeconds = 10)
-        playing(podcast(progress = progress(30.0)))
+        playing(podcast(progress = progress(33.0)))
 
         repository.updateTimer(CurrentEpisodeTimerOption)
 
-        assertEquals(PlaybackCommand.SetTimer(22.0, CurrentEpisodeTimerOption), eventBus.commands.first())
+        assertEquals(PlaybackCommand.SetTimer(27.0, CurrentEpisodeTimerOption), eventBus.commands.first())
+      }
+
+    @Test
+    fun `the forward step marks its seek as the player's own, a scrub does not`() =
+      runTest {
+        playing(podcast(progress = progress(35.0)))
+
+        repository.forward()
+        assertTrue(steps.take())
+
+        repository.setChapterPosition(20.0)
+        assertFalse(steps.take())
+
+        repository.rewind()
+        assertFalse(steps.take())
+      }
+
+    @Test
+    fun `a discontinuity re-arms an episode timer from the new position`() =
+      runTest {
+        playing(podcast(progress = progress(35.0)))
+        repository.updateTimer(CurrentEpisodeTimerOption)
+        assertEquals(PlaybackCommand.SetTimer(35.0, CurrentEpisodeTimerOption), eventBus.commands.first())
+
+        // the auto-skip service moved playback into c2 (50s) on its own, 5s in
+        player.currentMediaItemIndex = 2
+        player.currentPositionMs = 5_000L
+        player.listener.onPositionDiscontinuity()
+
+        assertEquals(PlaybackCommand.SetTimer(45.0, CurrentEpisodeTimerOption), eventBus.commands.first())
       }
 
     @Test
@@ -462,14 +501,14 @@ class MediaRepositoryTest {
       }
 
     @Test
-    fun `previous goes back a chapter from just past a skipped intro`() =
+    fun `previous replays the chapter from past the replay threshold, intro or not`() =
       runTest {
         every { libraryPreferences.getAutoSkip("podcast") } returns AutoSkipConfiguration(introSeconds = 20, outroSeconds = 0)
         playing(podcast(progress = progress(52.0)))
 
         repository.previousTrack()
 
-        assertEquals(listOf("seekTo(0, 0)"), player.calls)
+        assertEquals(listOf("seekTo(1, 0)"), player.calls)
       }
 
     @Test

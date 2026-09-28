@@ -165,6 +165,11 @@ fun QuickSettingsComposable(
                   ASCENDING -> Icons.Outlined.ArrowUpward
                   DESCENDING -> Icons.Outlined.ArrowDownward
                 },
+              trailingDescription =
+                when (ordering.direction) {
+                  ASCENDING -> stringResource(R.string.episode_ordering_ascending)
+                  DESCENDING -> stringResource(R.string.episode_ordering_descending)
+                },
               onClick = {
                 librarySettingsViewModel.preferLibraryOrdering(
                   LibraryOrderingConfiguration(option = option, direction = if (isSelected) ordering.direction.opposite else ASCENDING),

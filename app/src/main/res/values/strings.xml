@@ -116,6 +116,8 @@
     <string name="episode_ordering_season_option">Season</string>
     <string name="episode_ordering_episode_option">Episode</string>
     <string name="episode_ordering_file_name_option">File name</string>
+    <string name="episode_ordering_ascending">Ascending</string>
+    <string name="episode_ordering_descending">Descending</string>
     <string name="player_settings_auto_skip">Auto-skip</string>
     <string name="player_settings_skip_disabled">Disabled</string>
     <string name="player_settings_intro_value">Intro %1$s</string>

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
 import androidx.compose.material.icons.outlined.ExpandLess
@@ -27,19 +28,21 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
 
-/** Rows shared by the quick-settings sheets of the library and the player, so both sheets look the same. */
+// Rows shared by the quick-settings sheets of the library and the player, so both sheets look the same.
+
 @Composable
 fun SettingsToggleRow(
   title: String,
   icon: ImageVector,
   checked: Boolean,
-  enabled: Boolean = true,
   modifier: Modifier = Modifier,
+  enabled: Boolean = true,
   onClick: () -> Unit,
 ) {
   val view = LocalView.current
@@ -79,15 +82,17 @@ fun SettingsPickerRow(
   icon: ImageVector,
   value: String,
   expanded: Boolean,
+  modifier: Modifier = Modifier,
   enabled: Boolean = true,
   compactValue: String? = null,
-  modifier: Modifier = Modifier,
   onClick: () -> Unit,
 ) {
   val view = LocalView.current
   val labelColor = colorScheme.onSurface.copy(alpha = if (enabled) 1f else SETTINGS_DISABLED_ALPHA)
   val valueColor = colorScheme.onSurfaceVariant.copy(alpha = if (enabled) 1f else SETTINGS_DISABLED_ALPHA)
-  var compact by remember(value, compactValue) { mutableStateOf(false) }
+  // decided once per row, not per value: a value that changes under a wrapped label would flip
+  // the row between its two forms on every change
+  var compact by remember(compactValue != null) { mutableStateOf(false) }
   Row(
     modifier =
       modifier
@@ -126,14 +131,16 @@ fun SettingsPickerRow(
   }
 }
 
+/** One of the options under a picker; [trailingDescription] says what the trailing icon of the selected one means. */
 @Composable
 fun SettingsOptionRow(
   title: String,
   icon: ImageVector,
   selected: Boolean,
   trailing: ImageVector,
-  enabled: Boolean = true,
   modifier: Modifier = Modifier,
+  trailingDescription: String? = null,
+  enabled: Boolean = true,
   onClick: () -> Unit,
 ) {
   val view = LocalView.current
@@ -142,7 +149,7 @@ fun SettingsOptionRow(
     modifier =
       modifier
         .fillMaxWidth()
-        .then(if (enabled) Modifier.clickable { withHaptic(view) { onClick() } } else Modifier)
+        .selectable(selected = selected, enabled = enabled, role = Role.RadioButton) { withHaptic(view) { onClick() } }
         .padding(start = 24.dp, end = 16.dp, top = 12.dp, bottom = 12.dp),
     verticalAlignment = Alignment.CenterVertically,
   ) {
@@ -162,7 +169,7 @@ fun SettingsOptionRow(
     if (selected) {
       Icon(
         imageVector = trailing,
-        contentDescription = null,
+        contentDescription = trailingDescription,
         modifier = Modifier.size(20.dp),
         tint = colorScheme.onSurface.copy(alpha = alpha),
       )

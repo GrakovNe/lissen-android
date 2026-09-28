@@ -1,7 +1,6 @@
 package org.grakovne.lissen.playback
 
 import android.os.Looper
-import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.exoplayer.ExoPlayer
@@ -23,7 +22,6 @@ import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import org.grakovne.lissen.common.AutoSkipConfiguration
-import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.playback.PlaybackFixtures.chapter
@@ -53,6 +51,7 @@ class AutoSkipServiceTest {
   private val syncState = SyncStateStore()
   private val playbackTimer = mockk<PlaybackTimer>()
   private val synchronization = mockk<PlaybackSynchronizationService>(relaxed = true)
+  private val steps = PlaybackSteps()
   private val mainLooper = mockk<Looper>()
 
   private val scheduler = TestCoroutineScheduler()
@@ -126,7 +125,7 @@ class AutoSkipServiceTest {
     configure(AutoSkipConfiguration(introSeconds = 10, outroSeconds = 10))
 
     service =
-      AutoSkipService(player, libraryPreferences, syncState, playbackTimer, synchronization).also {
+      AutoSkipService(player, libraryPreferences, syncState, playbackTimer, synchronization, steps).also {
         it.onCreate()
       }
     buildQueue(book, at = 0, positionMs = 15_000L)
@@ -348,7 +347,7 @@ class AutoSkipServiceTest {
     }
 
     @Test
-    fun `the messages fire on every crossing and on the main looper`() {
+    fun `the messages are kept after delivery and delivered on the main looper`() {
       val live = planted.filter { !it.dropped }
       assertEquals(3, live.size)
       live.forEach {
@@ -397,6 +396,7 @@ class AutoSkipServiceTest {
 
     @Test
     fun `a message delivered a hair early still counts`() {
+      // the position is not re-read at delivery: the message is the proof of the crossing
       index = 1
       positionMs = 29_900L
       fire(1)
@@ -528,6 +528,40 @@ class AutoSkipServiceTest {
     }
 
     @Test
+    fun `a forward step into the outro moves on once playback runs`() {
+      index = 1
+      positionMs = 5_000L
+      steps.expect()
+      userSeeks(to = 1, at = 35_000L)
+      playbackRuns()
+
+      assertEquals(listOf(2 to 10_000L), seeks)
+    }
+
+    @Test
+    fun `a forward step into the intro of the next chapter skips it`() {
+      index = 0
+      positionMs = 28_000L
+      steps.expect()
+      userSeeks(to = 1, at = 3_000L)
+      playbackRuns()
+
+      assertEquals(listOf(1 to 10_000L), seeks)
+    }
+
+    @Test
+    fun `a forward step is spent by its own seek`() {
+      index = 1
+      positionMs = 5_000L
+      steps.expect()
+      userSeeks(to = 1, at = 20_000L)
+      userSeeks(to = 1, at = 35_000L)
+      playbackRuns()
+
+      assertTrue(seeks.isEmpty())
+    }
+
+    @Test
     fun `a file boundary inside the outro is not a chapter reached`() {
       index = 1
       positionMs = 36_000L
@@ -589,23 +623,12 @@ class AutoSkipServiceTest {
     }
 
     @Test
-    fun `an episode timer armed again at the resume follows the skip to the next chapter`() {
-      every { playbackTimer.isEpisodeTimerRunning } returns true
-      every { playbackTimer.startTimer(any(), any()) } just Runs
-      every { player.playbackParameters } returns PlaybackParameters(2f)
+    fun `the own seek to the start of a chapter without an intro owes nothing`() {
+      configure(AutoSkipConfiguration(introSeconds = 0, outroSeconds = 10))
       reachOutroOf(1)
       playbackRuns()
 
-      // c2 is 50s, entered at 10s, its outro starts at 40s: 30s of chapter at double speed
-      verify(exactly = 1) { playbackTimer.startTimer(15.0, CurrentEpisodeTimerOption) }
-    }
-
-    @Test
-    fun `an episode timer that crosses into the outro is not re-armed by the skip it holds back`() {
-      every { playbackTimer.isEpisodeTimerRunning } returns true
-      reachOutroOf(1)
-
-      verify(exactly = 0) { playbackTimer.startTimer(any(), any()) }
+      assertEquals(listOf(2 to 0L), seeks)
     }
 
     @Test

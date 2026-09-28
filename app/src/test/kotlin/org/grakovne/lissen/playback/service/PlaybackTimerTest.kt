@@ -56,29 +56,47 @@ class PlaybackTimerTest {
     }
 
   @Test
-  fun `an armed episode timer owns the end of the episode`() =
-    runTest {
-      timer.startTimer(35.0, CurrentEpisodeTimerOption)
+  fun `an armed episode timer owns the end of the episode`() {
+    timer.startTimer(35.0, CurrentEpisodeTimerOption)
 
-      assertTrue(timer.isEpisodeTimerRunning)
-    }
-
-  @Test
-  fun `a duration timer does not own the end of the episode`() =
-    runTest {
-      timer.startTimer(300.0, DurationTimerOption(5))
-
-      assertFalse(timer.isEpisodeTimerRunning)
-    }
+    assertTrue(timer.isEpisodeTimerRunning)
+  }
 
   @Test
-  fun `a cancelled episode timer owns nothing`() =
-    runTest {
-      timer.startTimer(35.0, CurrentEpisodeTimerOption)
-      timer.stopTimer()
+  fun `a duration timer does not own the end of the episode`() {
+    timer.startTimer(300.0, DurationTimerOption(5))
 
-      assertFalse(timer.isEpisodeTimerRunning)
-    }
+    assertFalse(timer.isEpisodeTimerRunning)
+  }
+
+  @Test
+  fun `a cancelled episode timer is stopped and owns nothing`() {
+    timer.startTimer(35.0, CurrentEpisodeTimerOption)
+    timer.stopTimer()
+
+    assertTrue(countdowns.single().stopped)
+    assertFalse(timer.isEpisodeTimerRunning)
+  }
+
+  @Test
+  fun `an episode timer pauses with the player and resumes with it`() {
+    timer.startTimer(35.0, CurrentEpisodeTimerOption)
+
+    listeners.forEach { it.onIsPlayingChanged(false) }
+    assertTrue(countdowns.single().paused)
+
+    listeners.forEach { it.onIsPlayingChanged(true) }
+    assertTrue(countdowns.single().resumed)
+  }
+
+  @Test
+  fun `a duration timer runs through a pause`() {
+    timer.startTimer(300.0, DurationTimerOption(5))
+
+    listeners.forEach { it.onIsPlayingChanged(false) }
+
+    assertFalse(countdowns.single().paused)
+  }
 
   @Test
   fun `nothing left to wait for expires at once`() =
@@ -116,6 +134,8 @@ class PlaybackTimerTest {
     private val onFinished: () -> Unit,
   ) : Countdown {
     var stopped = false
+    var paused = false
+    var resumed = false
 
     fun finish() = onFinished()
 
@@ -123,8 +143,14 @@ class PlaybackTimerTest {
       stopped = true
     }
 
-    override fun pause(): Long = remainingMillis
+    override fun pause(): Long {
+      paused = true
+      return remainingMillis
+    }
 
-    override fun resume(): Countdown = this
+    override fun resume(): Countdown {
+      resumed = true
+      return this
+    }
   }
 }

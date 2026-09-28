@@ -141,6 +141,25 @@ class SleepTimerFadeServiceTest {
     }
 
   @Test
+  fun `an expiry that finds the player already paused restores the volume at once`() =
+    fadeTest(fadeSeconds = 30) { bus ->
+      playerVolume = 0.8f
+
+      bus.emit(PlaybackEvent.TimerTick(30L))
+      advanceUntilIdle()
+      assertEquals(0f, playerVolume)
+
+      // the timer pauses the player itself before it broadcasts the expiry
+      isPlaying = false
+      playerListener.captured.onIsPlayingChanged(false)
+      assertEquals(0f, playerVolume, "volume must stay zero until the expiry is heard")
+
+      bus.emit(PlaybackEvent.TimerExpired)
+      runCurrent()
+      assertEquals(0.8f, playerVolume, "volume must be restored once the expiry finds playback stopped")
+    }
+
+  @Test
   fun `timer cancelled during a fade restores the volume because playback continues`() =
     fadeTest(fadeSeconds = 30) { bus ->
       playerVolume = 0.8f

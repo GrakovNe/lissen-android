@@ -3,6 +3,7 @@ package org.grakovne.lissen.ui.components.slider
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitHorizontalTouchSlopOrCancellation
 import androidx.compose.foundation.gestures.horizontalDrag
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,13 +23,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.text.TextMeasurer
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
@@ -76,6 +76,11 @@ fun AutoSkipSlider(
   val valueStyle = MaterialTheme.typography.titleMedium.copy(color = colors.onSurface)
   // numerals sit tighter without the body letter spacing, which keeps five-character labels a minute apart
   val tickStyle = MaterialTheme.typography.bodySmall.copy(color = colors.variant, letterSpacing = 0.sp)
+  // the labels never change: laid out once, not on every frame of a drag
+  val tickLabels =
+    remember(textMeasurer, tickStyle) {
+      (LABEL_SECONDS until MAX_SECONDS step LABEL_SECONDS).associateWith { textMeasurer.measure(it.formatTime(), tickStyle) }
+    }
 
   Canvas(
     modifier =
@@ -90,13 +95,16 @@ fun AutoSkipSlider(
             val geometry = RulerScale(size.width.toFloat(), INSET.toPx())
             val introX = geometry.introX(currentIntro)
             val outroX = geometry.outroX(currentOutro)
+            val x = down.position.x
 
+            // the nearer thumb; when both sit on the same spot, the side of the touch tells them apart
             val thumb =
               when {
-                abs(down.position.x - introX) <= abs(down.position.x - outroX) -> Thumb.INTRO
+                abs(x - introX) < abs(x - outroX) -> Thumb.INTRO
+                abs(x - introX) > abs(x - outroX) -> Thumb.OUTRO
+                x <= (introX + outroX) / 2f -> Thumb.INTRO
                 else -> Thumb.OUTRO
               }
-            dragging = thumb
 
             var intro = currentIntro
             var outro = currentOutro
@@ -114,18 +122,35 @@ fun AutoSkipSlider(
               }
             }
 
-            moveTo(down.position.x)
-            down.consume()
-
-            try {
-              horizontalDrag(down.id) { change ->
+            // nothing moves before the touch slop is passed sideways: a vertical pull belongs to the
+            // sheet, a touch that ends where it began is a tap that jumps the thumb there
+            val drag =
+              awaitHorizontalTouchSlopOrCancellation(down.id) { change, _ ->
+                change.consume()
                 moveTo(change.position.x)
-                if (change.positionChange() != Offset.Zero) change.consume()
               }
-            } finally {
-              // a sheet that closes mid-drag cancels the gesture; what was dragged so far still counts
-              dragging = null
-              currentOnUpdateFinished()
+
+            when {
+              drag != null -> {
+                dragging = thumb
+                try {
+                  horizontalDrag(drag.id) { change ->
+                    change.consume()
+                    moveTo(change.position.x)
+                  }
+                } finally {
+                  // a sheet that closes mid-drag cancels the gesture; what was dragged so far still counts
+                  dragging = null
+                  currentOnUpdateFinished()
+                }
+              }
+
+              currentEvent.changes.any { it.id == down.id && it.changedToUpIgnoreConsumed() } -> {
+                moveTo(x)
+                currentOnUpdateFinished()
+              }
+
+              else -> {}
             }
           }
         },
@@ -134,7 +159,7 @@ fun AutoSkipSlider(
     val introX = geometry.introX(introSeconds)
     val outroX = geometry.outroX(outroSeconds)
 
-    drawRuler(geometry, introX, outroX, colors, textMeasurer, tickStyle)
+    drawRuler(geometry, introX, outroX, colors, tickLabels)
 
     val thumbs = listOf(Thumb.INTRO to introX, Thumb.OUTRO to outroX)
     thumbs.forEach { (thumb, x) ->
@@ -177,39 +202,49 @@ private fun DrawScope.drawRuler(
   introX: Float,
   outroX: Float,
   colors: RulerColors,
-  textMeasurer: TextMeasurer,
-  tickStyle: TextStyle,
+  tickLabels: Map<Int, TextLayoutResult>,
 ) {
   val trackY = TRACK_Y.toPx()
   val majorHalf = MAJOR_TICK_HALF.toPx()
   val minorHalf = MINOR_TICK_HALF.toPx()
 
+  fun drawTick(
+    x: Float,
+    length: Float,
+    alpha: Float,
+  ) {
+    val cut = x < introX || x > outroX
+    drawLine(
+      color = if (cut) colors.accent.copy(alpha = alpha * CUT_TICK_ALPHA) else colors.onSurface.copy(alpha = alpha * TICK_ALPHA),
+      start = Offset(x, trackY - length),
+      end = Offset(x, trackY + length),
+      strokeWidth = TICK_WIDTH.toPx(),
+      cap = StrokeCap.Round,
+    )
+  }
+
+  fun drawLabel(
+    x: Float,
+    label: TextLayoutResult,
+    alpha: Float,
+  ) = drawText(
+    textLayoutResult = label,
+    color = colors.variant.copy(alpha = alpha),
+    topLeft = Offset(x - label.size.width / 2f, trackY + majorHalf + TICK_LABEL_GAP.toPx()),
+  )
+
+  // the same tick on both halves: so far from the start, and so far from the end
   for (seconds in 0..MAX_SECONDS step TICK_SECONDS) {
-    val major = seconds % LABEL_SECONDS == 0
     val distance = seconds * geometry.pxPerSecond
     val alpha = (1f - distance / geometry.half).coerceIn(MIN_TICK_ALPHA, 1f)
-    val length = if (major) majorHalf else minorHalf
+    val length = if (seconds % LABEL_SECONDS == 0) majorHalf else minorHalf
 
-    listOf(geometry.start + distance, geometry.end - distance).forEach { x ->
-      val cut = x < introX || x > outroX
-      drawLine(
-        color = if (cut) colors.accent.copy(alpha = alpha * CUT_TICK_ALPHA) else colors.onSurface.copy(alpha = alpha * TICK_ALPHA),
-        start = Offset(x, trackY - length),
-        end = Offset(x, trackY + length),
-        strokeWidth = TICK_WIDTH.toPx(),
-        cap = StrokeCap.Round,
-      )
-    }
+    drawTick(geometry.start + distance, length, alpha)
+    drawTick(geometry.end - distance, length, alpha)
 
-    if (major && seconds != 0 && seconds != MAX_SECONDS) {
-      val label = textMeasurer.measure(seconds.formatTime(), tickStyle)
-      listOf(geometry.start + distance, geometry.end - distance).forEach { x ->
-        drawText(
-          textLayoutResult = label,
-          color = colors.variant.copy(alpha = alpha),
-          topLeft = Offset(x - label.size.width / 2f, trackY + majorHalf + TICK_LABEL_GAP.toPx()),
-        )
-      }
+    tickLabels[seconds]?.let { label ->
+      drawLabel(geometry.start + distance, label, alpha)
+      drawLabel(geometry.end - distance, label, alpha)
     }
   }
 }

@@ -42,6 +42,7 @@ class MediaRepository
     private val defaultTimerActivator: DefaultTimerActivator,
     private val player: PlayerConnection,
     private val mainThread: MainThread,
+    private val steps: PlaybackSteps,
   ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
@@ -116,7 +117,14 @@ class MediaRepository
           }
         }
 
-        override fun onPositionDiscontinuity() = updateProgressWhenReady()
+        override fun onPositionDiscontinuity() {
+          if (queueRebuildInFlight) return
+
+          updateProgressWhenReady()
+          // the end of the episode moved with the position, and the seeks of the auto-skip
+          // service never pass through seekTo
+          adjustTimer(totalPosition.value)
+        }
 
         override fun onEnded() {
           player.seekTo(0, 0)
@@ -216,7 +224,7 @@ class MediaRepository
     }
 
     fun forward() {
-      seekTo(totalPosition.value + getSeekTime(preferences.getSeekTime().forward))
+      seekTo(totalPosition.value + getSeekTime(preferences.getSeekTime().forward), step = true)
     }
 
     fun setChapter(index: Int) {
@@ -379,9 +387,7 @@ class MediaRepository
       val position = totalPosition.value
       Timber.d("Previous track: bookId=${book.id}, position=${position.toInt()}s, rewind=$rewindRequired")
 
-      PlaybackGeometry
-        .previousChapter(book, position, rewindRequired, libraryPreferences.getAutoSkip(book.id))
-        ?.let { setChapter(it) }
+      PlaybackGeometry.previousChapter(book, position, rewindRequired)?.let { setChapter(it) }
     }
 
     fun clearPreparedItem() {
@@ -516,7 +522,11 @@ class MediaRepository
       mainThread.run { player.pause() }
     }
 
-    private fun seekTo(position: Double) {
+    /** A [step] is the player's own movement, and auto-skip treats what it lands in accordingly. */
+    private fun seekTo(
+      position: Double,
+      step: Boolean = false,
+    ) {
       val book = playingBook.value ?: return
 
       // the controller still holds the previous queue: a seek computed for the new order would
@@ -533,6 +543,7 @@ class MediaRepository
       }
 
       mainThread.run {
+        if (step) steps.expect()
         player.seekTo(target.chapterIndex, target.chapterPositionMs)
         updateProgressWhenReady()
       }

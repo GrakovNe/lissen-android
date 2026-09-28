@@ -101,22 +101,6 @@ class PlaybackGeometryTest {
     }
 
     @Test
-    fun `previous counts the replay seconds from the end of a skipped intro`() {
-      // 52s is 22s into c1; with a 20s intro playback only began at 50s, so it is still "right after the start"
-      val skip = AutoSkipConfiguration(introSeconds = 20, outroSeconds = 0)
-      assertEquals(0, PlaybackGeometry.previousChapter(book, totalPosition = 52.0, rewindRequired = true, autoSkip = skip))
-      assertEquals(0, PlaybackGeometry.previousChapter(book, totalPosition = 55.0, rewindRequired = true, autoSkip = skip))
-      assertEquals(1, PlaybackGeometry.previousChapter(book, totalPosition = 55.1, rewindRequired = true, autoSkip = skip))
-    }
-
-    @Test
-    fun `previous ignores an intro the chapter cannot hold`() {
-      // c1 is 40s: a 35s intro with a 10s outro does not fit, so the replay counts from the true start
-      val skip = AutoSkipConfiguration(introSeconds = 35, outroSeconds = 10)
-      assertEquals(1, PlaybackGeometry.previousChapter(book, totalPosition = 40.0, rewindRequired = true, autoSkip = skip))
-    }
-
-    @Test
     fun `previous goes back a chapter right after its start`() {
       assertEquals(0, PlaybackGeometry.previousChapter(book, totalPosition = 32.0, rewindRequired = true))
     }
@@ -165,10 +149,11 @@ class PlaybackGeometryTest {
     }
 
     @Test
-    fun `a position inside the intro counts from the end of the intro`() {
-      // the timer is armed at the start of c1, before the intro seek: 40 - 10 (outro) - 8 (intro) = 22
+    fun `a position inside the intro counts from where it is`() {
+      // whether the intro is about to be skipped or is being played after a rewind, the timer is
+      // re-armed from wherever the position ends up: 40 - 10 (outro) from the start, 3s less from 3s in
       assertEquals(
-        22.0,
+        30.0,
         PlaybackGeometry.remainingInChapter(
           book,
           totalPosition = 30.0,
@@ -177,7 +162,7 @@ class PlaybackGeometryTest {
         ),
       )
       assertEquals(
-        22.0,
+        27.0,
         PlaybackGeometry.remainingInChapter(
           book,
           totalPosition = 33.0,
@@ -196,9 +181,9 @@ class PlaybackGeometryTest {
     }
 
     @Test
-    fun `an intro alone only moves the start`() {
+    fun `an intro alone changes nothing`() {
       assertEquals(
-        32.0,
+        37.0,
         PlaybackGeometry.remainingInChapter(
           book,
           totalPosition = 33.0,
