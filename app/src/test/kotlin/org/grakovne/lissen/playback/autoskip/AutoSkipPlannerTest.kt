@@ -106,15 +106,15 @@ class AutoSkipPlannerTest {
     }
 
     @Test
-    fun `the last chapter ends at its own end`() {
-      assertEquals(OutroExit.End(atMs = 50_000L), AutoSkipPlanner.outroExit(podcast(), 2, skip))
+    fun `the last chapter ends the item`() {
+      assertEquals(OutroExit.End, AutoSkipPlanner.outroExit(podcast(), 2, skip))
     }
 
     @Test
     fun `nothing on the device after the chapter ends it like the last one`() {
       val book = podcast(chapters = listOf(chapter("c0", 0, 30.0, 1L), chapter("c1", 1, 40.0, 2L, available = false)))
 
-      assertEquals(OutroExit.End(atMs = 30_000L), AutoSkipPlanner.outroExit(book, 0, skip))
+      assertEquals(OutroExit.End, AutoSkipPlanner.outroExit(book, 0, skip))
     }
   }
 

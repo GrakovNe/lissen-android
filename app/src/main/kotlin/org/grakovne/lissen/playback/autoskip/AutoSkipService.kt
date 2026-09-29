@@ -163,7 +163,7 @@ class AutoSkipService
       configuration: AutoSkipConfiguration,
     ) {
       val exit = AutoSkipPlanner.outroExit(book, index, configuration)
-      if (exit is OutroExit.Next) leaveOutro(index, exit)
+      if (exit is OutroExit.Next) leaveOutro(book, index, exit)
     }
 
     /** Playback crossed into the outro of [index]: a delivered message is the proof, the position is not re-read. */
@@ -181,13 +181,14 @@ class AutoSkipService
         }
 
         else -> {
-          leaveOutro(index, AutoSkipPlanner.outroExit(book, index, chapter.configuration))
+          leaveOutro(book, index, AutoSkipPlanner.outroExit(book, index, chapter.configuration))
         }
       }
     }
 
     /** The seeks are the player's own: an episode timer is re-armed by the repository on the discontinuity they cause. */
     private fun leaveOutro(
+      book: DetailedItem,
       index: Int,
       exit: OutroExit,
     ) {
@@ -200,8 +201,9 @@ class AutoSkipService
         }
 
         is OutroExit.End -> {
-          Timber.d("Auto-skip outro: chapter=$index, next=none, endMs=${exit.atMs}")
-          player.seekTo(index, exit.atMs)
+          val endMs = book.chapters[index].durationMs
+          Timber.d("Auto-skip outro: chapter=$index, next=none, endMs=$endMs")
+          player.seekTo(index, endMs)
           // after the seek: its own discontinuity reads as the listener's and clears the mark
           ended = index
         }

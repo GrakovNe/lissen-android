@@ -14,7 +14,7 @@ internal object AutoSkipPlanner {
     val next = (index + 1..book.chapters.lastIndex).firstOrNull { book.chapters[it].available }
 
     return when (next) {
-      null -> OutroExit.End(book.chapters[index].durationMs)
+      null -> OutroExit.End
       else -> OutroExit.Next(next, configuration.skippable(book.chapters[next].durationMs)?.introTargetMs(0L) ?: 0L)
     }
   }
@@ -41,9 +41,7 @@ internal sealed interface OutroExit {
     val startMs: Long,
   ) : OutroExit
 
-  data class End(
-    val atMs: Long,
-  ) : OutroExit
+  data object End : OutroExit
 }
 
 /** A chapter of [durationMs] with a configuration that leaves something of it. */

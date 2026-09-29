@@ -27,10 +27,9 @@ class AutoSkipPreferences
       itemId: String,
       configuration: AutoSkipConfiguration,
     ) {
-      val sanitized = configuration.sanitized()
       val updated =
-        when (sanitized.enabled) {
-          true -> all() + (itemId to sanitized)
+        when (configuration.enabled) {
+          true -> all() + (itemId to configuration)
           false -> all() - itemId
         }
       store.putPerItem(KEY, updated, entryAdapter)

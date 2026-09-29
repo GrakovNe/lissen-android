@@ -71,13 +71,6 @@ class AutoSkipPreferencesTest {
   }
 
   @Test
-  fun `negative lengths are stored as zero`() {
-    preferences.save("podcast-1", AutoSkipConfiguration(introSeconds = -5, outroSeconds = 20))
-
-    assertEquals(AutoSkipConfiguration(introSeconds = 0, outroSeconds = 20), preferences.get("podcast-1"))
-  }
-
-  @Test
   fun `an unreadable entry drops only itself`() {
     fakePreferences
       .edit()

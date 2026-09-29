@@ -16,8 +16,6 @@ data class AutoSkipConfiguration(
   val enabled: Boolean
     get() = introSeconds > 0 || outroSeconds > 0
 
-  fun sanitized(): AutoSkipConfiguration = copy(introSeconds = introSeconds.coerceAtLeast(0), outroSeconds = outroSeconds.coerceAtLeast(0))
-
   companion object {
     val disabled = AutoSkipConfiguration(introSeconds = 0, outroSeconds = 0)
   }
