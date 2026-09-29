@@ -97,14 +97,7 @@ fun AutoSkipSlider(
             val outroX = geometry.outroX(currentOutro)
             val x = down.position.x
 
-            // the nearer thumb; when both sit on the same spot, the side of the touch tells them apart
-            val thumb =
-              when {
-                abs(x - introX) < abs(x - outroX) -> Thumb.INTRO
-                abs(x - introX) > abs(x - outroX) -> Thumb.OUTRO
-                x <= (introX + outroX) / 2f -> Thumb.INTRO
-                else -> Thumb.OUTRO
-              }
+            val thumb = pickThumb(x, introX, outroX, mid = geometry.start + geometry.half, reach = THUMB_REACH.toPx())
 
             var intro = currentIntro
             var outro = currentOutro
@@ -176,8 +169,10 @@ fun AutoSkipSlider(
       val centered = x - value.size.width / 2f
       val left =
         when (thumb) {
-          Thumb.INTRO -> centered.coerceIn(0f, mid - value.size.width - MARKER_GAP.toPx())
-          Thumb.OUTRO -> centered.coerceIn(mid + MARKER_GAP.toPx(), size.width - value.size.width)
+          // a canvas too narrow for both values leaves an empty range, which coerceIn rejects
+          Thumb.INTRO -> centered.coerceIn(0f, maxOf(0f, mid - value.size.width - MARKER_GAP.toPx()))
+
+          Thumb.OUTRO -> centered.coerceIn(mid + MARKER_GAP.toPx(), maxOf(mid + MARKER_GAP.toPx(), size.width - value.size.width))
         }
       drawText(textLayoutResult = value, topLeft = Offset(left, markerTop - VALUE_GAP.toPx() - value.size.height))
 
@@ -296,7 +291,26 @@ private class RulerColors(
   val accent: Color,
 )
 
-private enum class Thumb { INTRO, OUTRO }
+internal enum class Thumb { INTRO, OUTRO }
+
+/**
+ * The thumb a touch at [x] takes: the one whose half of the ruler it is, since the other could
+ * not follow it there. The other one only when the touch is within [reach] of it and nearer to
+ * it, so a thumb parked at the middle can still be picked up from the far side.
+ */
+internal fun pickThumb(
+  x: Float,
+  introX: Float,
+  outroX: Float,
+  mid: Float,
+  reach: Float,
+): Thumb {
+  val own = if (x <= mid) Thumb.INTRO else Thumb.OUTRO
+  val (ownX, otherX) = if (own == Thumb.INTRO) introX to outroX else outroX to introX
+  val other = if (own == Thumb.INTRO) Thumb.OUTRO else Thumb.INTRO
+
+  return if (abs(x - otherX) <= reach && abs(x - otherX) < abs(x - ownX)) other else own
+}
 
 private fun Float.toSteppedSeconds(): Int = ((this / STEP_SECONDS).roundToInt() * STEP_SECONDS).coerceIn(0, MAX_SECONDS)
 
@@ -311,6 +325,7 @@ private const val CUT_TICK_ALPHA = 0.85f
 private val TOTAL_HEIGHT = 90.dp
 private val TRACK_Y = 52.dp
 private val INSET = 12.dp
+private val THUMB_REACH = 24.dp
 private val MARKER_GAP = 8.dp
 private val VALUE_GAP = 2.dp
 private val MARKER_WIDTH = 8.dp

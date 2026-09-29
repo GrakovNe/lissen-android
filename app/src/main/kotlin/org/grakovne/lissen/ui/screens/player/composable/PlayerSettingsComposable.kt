@@ -100,7 +100,8 @@ fun PlayerSettingsComposable(
           onClick = { sortExpanded = !sortExpanded },
         )
 
-        AnimatedVisibility(visible = sortExpanded && orderingEnabled) {
+        // kept open while the queue is rebuilt after a pick: dimmed, not folded under the finger
+        AnimatedVisibility(visible = sortExpanded) {
           Column {
             EpisodeOrderingOption.entries.forEach { option ->
               val isSelected = current.option == option
@@ -118,6 +119,7 @@ fun PlayerSettingsComposable(
                     ASCENDING -> stringResource(R.string.episode_ordering_ascending)
                     DESCENDING -> stringResource(R.string.episode_ordering_descending)
                   },
+                enabled = orderingEnabled,
                 modifier = Modifier.testTag("episodeOrderingOption_${option.name}"),
                 onClick = {
                   onOrderingChanged(
