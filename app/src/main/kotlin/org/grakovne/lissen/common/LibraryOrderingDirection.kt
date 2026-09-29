@@ -6,4 +6,12 @@ import androidx.annotation.Keep
 enum class LibraryOrderingDirection {
   ASCENDING,
   DESCENDING,
+  ;
+
+  val opposite: LibraryOrderingDirection
+    get() =
+      when (this) {
+        ASCENDING -> DESCENDING
+        DESCENDING -> ASCENDING
+      }
 }

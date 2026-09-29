@@ -1,6 +1,7 @@
 package org.grakovne.lissen.playback.service
 
 import androidx.annotation.OptIn
+import androidx.annotation.VisibleForTesting
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
@@ -20,7 +21,13 @@ class PlaybackTimer
     private val exoPlayer: ExoPlayer,
   ) {
     private var option: TimerOption? = null
-    private var timer: SuspendableCountDownTimer? = null
+    private var timer: Countdown? = null
+
+    @VisibleForTesting
+    internal var countdownFactory =
+      CountdownFactory { totalMillis, intervalMillis, onTickSeconds, onFinished ->
+        SuspendableCountDownTimer(totalMillis, intervalMillis, onTickSeconds, onFinished).also { it.start() }
+      }
 
     private val playerListener =
       object : Player.Listener {
@@ -34,6 +41,19 @@ class PlaybackTimer
             }
           }
         }
+
+        // the countdown is armed from a position polled a moment earlier and can be behind
+        override fun onPositionDiscontinuity(
+          oldPosition: Player.PositionInfo,
+          newPosition: Player.PositionInfo,
+          reason: Int,
+        ) {
+          if (timer == null || option != CurrentEpisodeTimerOption) return
+          if (reason != Player.DISCONTINUITY_REASON_AUTO_TRANSITION) return
+          if (newPosition.mediaItemIndex == oldPosition.mediaItemIndex) return
+
+          expire()
+        }
       }
 
     @OptIn(UnstableApi::class)
@@ -45,23 +65,14 @@ class PlaybackTimer
       stopTimer()
 
       val totalMillis = (delayInSeconds * 1000).toLong()
-      if (totalMillis <= 0L) return
+      if (totalMillis <= 0L) {
+        expire()
+        return
+      }
 
       broadcastRemaining(delayInSeconds.toLong())
 
-      timer =
-        SuspendableCountDownTimer(
-          totalMillis = totalMillis,
-          intervalMillis = 500L,
-          onTickSeconds = { seconds -> broadcastRemaining(seconds) },
-          onFinished = {
-            Timber.d("Timer expired, broadcasting")
-            // an expiry is not a cancellation: no TimerCancelled, or the fade would revert at the pause
-            timer = null
-            playbackEventBus.emit(PlaybackEvent.TimerExpired)
-            stopTimer()
-          },
-        ).also { it.start() }
+      timer = countdownFactory.create(totalMillis, 500L, { seconds -> broadcastRemaining(seconds) }, { expire() })
 
       exoPlayer.removeListener(playerListener)
       exoPlayer.addListener(playerListener)
@@ -72,6 +83,20 @@ class PlaybackTimer
       }
     }
 
+    val isEpisodeTimerRunning: Boolean
+      get() = timer != null && option == CurrentEpisodeTimerOption
+
+    private fun expire() {
+      Timber.d("Timer expired, pausing and broadcasting")
+      // an expiry is not a cancellation: no TimerCancelled, or the fade would revert at the pause
+      timer?.stop()
+      timer = null
+      // before the event: auto-skip must see the player paused at this very moment
+      exoPlayer.pause()
+      playbackEventBus.emit(PlaybackEvent.TimerExpired)
+      stopTimer()
+    }
+
     private fun broadcastRemaining(seconds: Long) {
       playbackEventBus.emit(PlaybackEvent.TimerTick(seconds))
     }
@@ -79,7 +104,7 @@ class PlaybackTimer
     fun stopTimer() {
       Timber.d("Stopping timer")
       timer?.let { playbackEventBus.emit(PlaybackEvent.TimerCancelled) }
-      timer?.cancel()
+      timer?.stop()
       timer = null
 
       exoPlayer.removeListener(playerListener)

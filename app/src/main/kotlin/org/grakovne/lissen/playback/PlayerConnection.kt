@@ -38,7 +38,8 @@ interface PlayerConnection {
   interface Listener {
     fun onIsPlayingChanged(isPlaying: Boolean)
 
-    fun onPositionDiscontinuity()
+    /** [byPlayback]: playback ran on into the next file or chapter by itself, nothing moved it. */
+    fun onPositionDiscontinuity(byPlayback: Boolean)
 
     fun onEnded()
 

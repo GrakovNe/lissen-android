@@ -2,76 +2,52 @@ package org.grakovne.lissen.ui.screens.library.composables
 
 import android.content.Context
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.automirrored.outlined.Sort
-import androidx.compose.material.icons.outlined.ArrowDownward
-import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.CollectionsBookmark
-import androidx.compose.material.icons.outlined.ExpandLess
-import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.SortByAlpha
 import androidx.compose.material.icons.outlined.Update
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material.icons.outlined.Workspaces
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme.colorScheme
-import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
-import org.grakovne.lissen.common.LibraryOrderingDirection.ASCENDING
-import org.grakovne.lissen.common.LibraryOrderingDirection.DESCENDING
 import org.grakovne.lissen.common.LibraryOrderingOption
-import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.ui.components.ApplicationSettingsItemComposable
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
-import org.grakovne.lissen.ui.components.LissenToggle
+import org.grakovne.lissen.ui.components.SettingsOptionRow
+import org.grakovne.lissen.ui.components.SettingsPickerRow
+import org.grakovne.lissen.ui.components.SettingsSortOptionRow
+import org.grakovne.lissen.ui.components.SettingsToggleRow
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.LibrarySettingsViewModel
@@ -95,7 +71,6 @@ fun QuickSettingsComposable(
   val grouping by librarySettingsViewModel.libraryGrouping.collectAsState(LibraryGrouping.NONE)
   val ordering by librarySettingsViewModel.preferredLibraryOrdering.collectAsState()
   val context = LocalContext.current
-  val view = LocalView.current
   val isLibrary = libraryViewModel.fetchPreferredLibraryType() == LibraryType.LIBRARY
 
   var groupingExpanded by remember { mutableStateOf(false) }
@@ -113,19 +88,19 @@ fun QuickSettingsComposable(
           .fillMaxWidth()
           .verticalScroll(rememberScrollState()),
     ) {
-      ToggleRow(
+      SettingsToggleRow(
         title = stringResource(R.string.show_downloaded_content_only),
         icon = Icons.Outlined.CloudOff,
         checked = forceCache,
-        onClick = { onForceLocalToggled() },
+        onClick = onForceLocalToggled,
       )
 
-      ToggleRow(
+      SettingsToggleRow(
         title = stringResource(R.string.hide_completed_items),
         icon = Icons.Outlined.VisibilityOff,
         checked = isLibrary && hideCompleted,
         enabled = isLibrary,
-        onClick = { onHideCompletedToggled() },
+        onClick = onHideCompletedToggled,
       )
 
       Spacer(modifier = Modifier.height(8.dp))
@@ -139,19 +114,19 @@ fun QuickSettingsComposable(
 
       val displayedGrouping = if (isLibrary) grouping else LibraryGrouping.NONE
 
-      PickerHeaderRow(
+      SettingsPickerRow(
         label = stringResource(R.string.library_quick_settings_grouping_title),
         icon = Icons.Outlined.Workspaces,
         value = displayedGrouping.toLocalizedName(context),
         expanded = groupingExpanded,
         enabled = isLibrary,
-        onClick = { withHaptic(view) { groupingExpanded = !groupingExpanded } },
+        onClick = { groupingExpanded = !groupingExpanded },
       )
 
       AnimatedVisibility(visible = groupingExpanded && isLibrary) {
         Column {
           LibraryGrouping.entries.forEach { option ->
-            OptionRow(
+            SettingsOptionRow(
               title = option.toLocalizedName(context),
               icon = option.icon(),
               selected = grouping == option,
@@ -165,38 +140,25 @@ fun QuickSettingsComposable(
       val sortRequired = isLibrary && grouping == LibraryGrouping.AUTHOR
       val displayedSortOption = if (sortRequired) LibraryOrderingOption.AUTHOR else ordering.option
 
-      PickerHeaderRow(
+      SettingsPickerRow(
         label = stringResource(R.string.library_quick_settings_sort_title),
         icon = Icons.AutoMirrored.Outlined.Sort,
         value = displayedSortOption.toLocalizedName(context),
         expanded = sortExpanded,
         enabled = !sortRequired,
-        onClick = { withHaptic(view) { sortExpanded = !sortExpanded } },
+        onClick = { sortExpanded = !sortExpanded },
       )
 
       AnimatedVisibility(visible = sortExpanded && !sortRequired) {
         Column {
           LibraryOrderingOption.entries.forEach { option ->
-            val isSelected = ordering.option == option
-            OptionRow(
+            SettingsSortOptionRow(
               title = option.toLocalizedName(context),
               icon = option.icon(),
-              selected = isSelected,
-              trailing =
-                when (ordering.direction) {
-                  ASCENDING -> Icons.Outlined.ArrowUpward
-                  DESCENDING -> Icons.Outlined.ArrowDownward
-                },
-              onClick = {
-                val newDirection =
-                  when {
-                    !isSelected -> ASCENDING
-                    ordering.direction == ASCENDING -> DESCENDING
-                    else -> ASCENDING
-                  }
-                librarySettingsViewModel.preferLibraryOrdering(
-                  LibraryOrderingConfiguration(option = option, direction = newDirection),
-                )
+              selected = ordering.option == option,
+              direction = ordering.direction,
+              onSelected = { direction ->
+                librarySettingsViewModel.preferLibraryOrdering(LibraryOrderingConfiguration(option = option, direction = direction))
                 onSortingChanged()
               },
             )
@@ -220,165 +182,6 @@ fun QuickSettingsComposable(
     }
   }
 }
-
-@Composable
-private fun ToggleRow(
-  title: String,
-  icon: ImageVector,
-  checked: Boolean,
-  enabled: Boolean = true,
-  onClick: () -> Unit,
-) {
-  val view = LocalView.current
-  val contentColor = colorScheme.onSurface.copy(alpha = if (enabled) 1f else DISABLED_ALPHA)
-  Row(
-    modifier =
-      Modifier
-        .fillMaxWidth()
-        .then(if (enabled) Modifier.clickable { withHaptic(view) { onClick() } } else Modifier)
-        .padding(horizontal = 16.dp, vertical = 10.dp),
-    verticalAlignment = Alignment.CenterVertically,
-  ) {
-    Icon(
-      imageVector = icon,
-      contentDescription = null,
-      modifier = Modifier.size(20.dp),
-      tint = contentColor,
-    )
-    Spacer(modifier = Modifier.width(12.dp))
-    Text(
-      text = title,
-      style = typography.bodyLarge,
-      color = contentColor,
-      modifier = Modifier.weight(1f),
-    )
-    LissenToggle(checked = checked, enabled = enabled)
-  }
-}
-
-@Composable
-private fun PickerHeaderRow(
-  label: String,
-  icon: ImageVector,
-  value: String,
-  expanded: Boolean,
-  enabled: Boolean = true,
-  onClick: () -> Unit,
-) {
-  val view = LocalView.current
-  val labelColor = colorScheme.onSurface.copy(alpha = if (enabled) 1f else DISABLED_ALPHA)
-  val valueColor = colorScheme.onSurfaceVariant.copy(alpha = if (enabled) 1f else DISABLED_ALPHA)
-  Row(
-    modifier =
-      Modifier
-        .fillMaxWidth()
-        .then(if (enabled) Modifier.clickable { withHaptic(view) { onClick() } } else Modifier)
-        .padding(horizontal = 16.dp, vertical = 14.dp),
-    verticalAlignment = Alignment.CenterVertically,
-  ) {
-    Icon(
-      imageVector = icon,
-      contentDescription = null,
-      modifier = Modifier.size(20.dp),
-      tint = labelColor,
-    )
-    Spacer(modifier = Modifier.width(12.dp))
-    Text(
-      text = label,
-      style = typography.bodyLarge,
-      color = labelColor,
-      modifier = Modifier.weight(1f),
-    )
-    Text(
-      text = value,
-      style = typography.bodyMedium,
-      color = valueColor,
-    )
-    Spacer(modifier = Modifier.width(4.dp))
-    Icon(
-      imageVector = if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
-      contentDescription = null,
-      modifier = Modifier.size(20.dp),
-      tint = valueColor,
-    )
-  }
-}
-
-@Composable
-private fun OptionRow(
-  title: String,
-  icon: ImageVector,
-  selected: Boolean,
-  trailing: ImageVector,
-  onClick: () -> Unit,
-) {
-  val view = LocalView.current
-  Row(
-    modifier =
-      Modifier
-        .fillMaxWidth()
-        .clickable { withHaptic(view) { onClick() } }
-        .padding(start = 24.dp, end = 16.dp, top = 12.dp, bottom = 12.dp),
-    verticalAlignment = Alignment.CenterVertically,
-  ) {
-    Icon(
-      imageVector = icon,
-      contentDescription = null,
-      modifier = Modifier.size(20.dp),
-      tint = colorScheme.onSurfaceVariant,
-    )
-    Spacer(modifier = Modifier.width(12.dp))
-    Text(
-      text = title,
-      style = typography.bodyLarge,
-      color = if (selected) colorScheme.onSurface else colorScheme.onSurfaceVariant,
-      modifier = Modifier.weight(1f),
-    )
-    if (selected) {
-      Icon(
-        imageVector = trailing,
-        contentDescription = null,
-        modifier = Modifier.size(20.dp),
-        tint = colorScheme.onSurface,
-      )
-    }
-  }
-}
-
-@Composable
-fun ApplicationSettingsItemComposable(onClicked: () -> Unit) {
-  Row(
-    modifier =
-      Modifier
-        .fillMaxWidth()
-        .testTag("appSettingsItem")
-        .clickable { onClicked() }
-        .padding(horizontal = 16.dp, vertical = 16.dp),
-    verticalAlignment = Alignment.CenterVertically,
-  ) {
-    Icon(
-      imageVector = Icons.Outlined.Settings,
-      contentDescription = null,
-      modifier = Modifier.size(20.dp),
-      tint = colorScheme.onSurface,
-    )
-    Spacer(modifier = Modifier.width(12.dp))
-    Text(
-      text = stringResource(R.string.application_settings),
-      style = typography.bodyLarge,
-      color = colorScheme.onSurface,
-      modifier = Modifier.weight(1f),
-    )
-    Icon(
-      imageVector = Icons.AutoMirrored.Outlined.ArrowForwardIos,
-      contentDescription = null,
-      modifier = Modifier.size(16.dp),
-      tint = colorScheme.onSurfaceVariant,
-    )
-  }
-}
-
-private const val DISABLED_ALPHA = 0.38f
 
 private fun LibraryOrderingOption.icon(): ImageVector =
   when (this) {

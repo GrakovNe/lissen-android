@@ -21,6 +21,8 @@ import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.grakovne.lissen.playback.MediaRepository
+import org.grakovne.lissen.playback.autoskip.AutoSkipConfiguration
+import org.grakovne.lissen.playback.autoskip.AutoSkipPreferences
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -32,12 +34,25 @@ class PlayerViewModel
     private val mediaRepository: MediaRepository,
     private val preferences: PlaybackPreferences,
     private val libraryPreferences: LibraryPreferences,
+    private val autoSkipPreferences: AutoSkipPreferences,
     private val session: SessionPreferences,
   ) : ViewModel() {
     val book: StateFlow<DetailedItem?> = mediaRepository.playingBook
 
     /** The stored ordering of the item the screen shows, not necessarily the playing one. */
     fun episodeOrdering(itemId: String): Flow<EpisodeOrderingConfiguration?> = libraryPreferences.episodeOrderingFlow.map { it[itemId] }
+
+    fun autoSkip(itemId: String): Flow<AutoSkipConfiguration> = autoSkipPreferences.flow(itemId)
+
+    fun setAutoSkip(
+      itemId: String,
+      configuration: AutoSkipConfiguration,
+    ) {
+      Timber.d("User action: setAutoSkip $configuration for $itemId")
+      autoSkipPreferences.save(itemId, configuration)
+
+      if (mediaRepository.playingBook.value?.id == itemId) mediaRepository.refreshTimer()
+    }
 
     val currentChapterIndex: StateFlow<Int> = mediaRepository.currentChapterIndex
     val currentChapterPosition: StateFlow<Double> = mediaRepository.currentChapterPosition

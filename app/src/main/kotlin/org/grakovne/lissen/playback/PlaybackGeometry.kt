@@ -1,6 +1,8 @@
 package org.grakovne.lissen.playback
 
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.playback.autoskip.AutoSkipConfiguration
+import org.grakovne.lissen.playback.autoskip.chapterEndSeconds
 import org.grakovne.lissen.playback.service.calculateChapterIndex
 import org.grakovne.lissen.playback.service.calculateChapterIndexAndPosition
 
@@ -138,11 +140,12 @@ object PlaybackGeometry {
     book: DetailedItem,
     totalPosition: Double,
     speed: Float,
+    autoSkip: AutoSkipConfiguration = AutoSkipConfiguration.disabled,
   ): Double? {
     val (index, position) = calculateChapterIndexAndPosition(book, totalPosition)
-    val duration = book.chapters.getOrNull(index)?.duration ?: return null
+    val chapter = book.chapters.getOrNull(index) ?: return null
 
-    return (duration - position) / speed
+    return (autoSkip.chapterEndSeconds(chapter, position) - position).coerceAtLeast(0.0) / speed
   }
 
   fun clampPlaybackSpeed(factor: Float): Float = factor.coerceIn(MIN_PLAYBACK_SPEED, MAX_PLAYBACK_SPEED)

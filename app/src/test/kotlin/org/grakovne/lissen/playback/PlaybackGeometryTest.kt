@@ -2,6 +2,7 @@ package org.grakovne.lissen.playback
 
 import org.grakovne.lissen.playback.PlaybackFixtures.chapter
 import org.grakovne.lissen.playback.PlaybackFixtures.podcast
+import org.grakovne.lissen.playback.autoskip.AutoSkipConfiguration
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Nested
@@ -122,6 +123,64 @@ class PlaybackGeometryTest {
     fun `the rest of the chapter shrinks with the playback speed`() {
       assertEquals(35.0, PlaybackGeometry.remainingInChapter(book, totalPosition = 35.0, speed = 1f))
       assertEquals(17.5, PlaybackGeometry.remainingInChapter(book, totalPosition = 35.0, speed = 2f))
+    }
+
+    @Test
+    fun `an auto-skipped outro ends the chapter early`() {
+      // 5 s into c1 (40 s)
+      assertEquals(
+        25.0,
+        PlaybackGeometry.remainingInChapter(
+          book,
+          totalPosition = 35.0,
+          speed = 1f,
+          autoSkip = AutoSkipConfiguration(introSeconds = 0, outroSeconds = 10),
+        ),
+      )
+    }
+
+    @Test
+    fun `a position inside the intro counts from where it is`() {
+      // the start of c1 and 3 s into it
+      assertEquals(
+        30.0,
+        PlaybackGeometry.remainingInChapter(
+          book,
+          totalPosition = 30.0,
+          speed = 1f,
+          autoSkip = AutoSkipConfiguration(introSeconds = 8, outroSeconds = 10),
+        ),
+      )
+      assertEquals(
+        27.0,
+        PlaybackGeometry.remainingInChapter(
+          book,
+          totalPosition = 33.0,
+          speed = 1f,
+          autoSkip = AutoSkipConfiguration(introSeconds = 8, outroSeconds = 10),
+        ),
+      )
+    }
+
+    @Test
+    fun `inside the outro the chapter runs to its real end`() {
+      // 35 s and 39 s into c1 (40 s)
+      val skip = AutoSkipConfiguration(introSeconds = 0, outroSeconds = 10)
+      assertEquals(5.0, PlaybackGeometry.remainingInChapter(book, totalPosition = 65.0, speed = 1f, autoSkip = skip))
+      assertEquals(1.0, PlaybackGeometry.remainingInChapter(book, totalPosition = 69.0, speed = 1f, autoSkip = skip))
+    }
+
+    @Test
+    fun `a configuration the chapter cannot hold is ignored`() {
+      assertEquals(
+        35.0,
+        PlaybackGeometry.remainingInChapter(
+          book,
+          totalPosition = 35.0,
+          speed = 1f,
+          autoSkip = AutoSkipConfiguration(introSeconds = 30, outroSeconds = 10),
+        ),
+      )
     }
 
     @Test

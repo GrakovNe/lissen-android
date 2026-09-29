@@ -1,6 +1,5 @@
 package org.grakovne.lissen.persistence.preferences
 
-import com.squareup.moshi.Types
 import kotlinx.coroutines.flow.Flow
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.common.LibraryGrouping
@@ -62,26 +61,16 @@ class LibraryPreferences
       configuration: EpisodeOrderingConfiguration,
     ) {
       val updated = getEpisodeOrderings() + (itemId to configuration)
-      store.putString(KEY_EPISODE_ORDERING, episodeOrderingAdapter.toJson(updated))
+      store.putPerItem(KEY_EPISODE_ORDERING, updated, episodeOrderingEntryAdapter)
     }
 
     fun clearEpisodeOrdering(itemId: String) {
       val updated = getEpisodeOrderings() - itemId
-      store.putString(KEY_EPISODE_ORDERING, episodeOrderingAdapter.toJson(updated))
+      store.putPerItem(KEY_EPISODE_ORDERING, updated, episodeOrderingEntryAdapter)
     }
 
-    /** Parsed entry by entry, so one unreadable value drops only itself. */
-    private fun getEpisodeOrderings(): Map<String, EpisodeOrderingConfiguration> {
-      val json = store.getString(KEY_EPISODE_ORDERING) ?: return emptyMap()
-      val entries = runCatching { rawEpisodeOrderingAdapter.fromJson(json) }.getOrNull() ?: return emptyMap()
-
-      return entries
-        .mapNotNull { (itemId, value) ->
-          runCatching { episodeOrderingEntryAdapter.fromJsonValue(value) }
-            .getOrNull()
-            ?.let { itemId to it }
-        }.toMap()
-    }
+    private fun getEpisodeOrderings(): Map<String, EpisodeOrderingConfiguration> =
+      store.getPerItem(KEY_EPISODE_ORDERING, episodeOrderingEntryAdapter)
 
     fun getHideCompleted(): Boolean = store.getBoolean(KEY_HIDE_COMPLETED, false)
 
@@ -129,16 +118,6 @@ class LibraryPreferences
       private const val KEY_HIDE_COMPLETED = "hide_completed"
       private const val KEY_LIBRARY_GROUPING = "library_grouping"
       private const val KEY_EPISODE_ORDERING = "episode_ordering"
-
-      private val episodeOrderingAdapter =
-        moshi.adapter<Map<String, EpisodeOrderingConfiguration>>(
-          Types.newParameterizedType(Map::class.java, String::class.java, EpisodeOrderingConfiguration::class.java),
-        )
-
-      private val rawEpisodeOrderingAdapter =
-        moshi.adapter<Map<String, Any>>(
-          Types.newParameterizedType(Map::class.java, String::class.java, Any::class.java),
-        )
 
       private val episodeOrderingEntryAdapter = moshi.adapter(EpisodeOrderingConfiguration::class.java)
     }

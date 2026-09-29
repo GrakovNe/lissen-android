@@ -23,6 +23,8 @@ import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
+import org.grakovne.lissen.playback.autoskip.AutoSkipPreferences
+import org.grakovne.lissen.playback.autoskip.PlaybackSteps
 import org.grakovne.lissen.playback.service.DefaultTimerActivator
 import timber.log.Timber
 import javax.inject.Inject
@@ -35,11 +37,13 @@ class MediaRepository
   @Inject
   constructor(
     private val preferences: PlaybackPreferences,
+    private val autoSkipPreferences: AutoSkipPreferences,
     private val mediaChannel: LissenMediaProvider,
     private val eventBus: PlaybackEventBus,
     private val defaultTimerActivator: DefaultTimerActivator,
     private val player: PlayerConnection,
     private val mainThread: MainThread,
+    private val steps: PlaybackSteps,
   ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
@@ -114,7 +118,14 @@ class MediaRepository
           }
         }
 
-        override fun onPositionDiscontinuity() = updateProgressWhenReady()
+        override fun onPositionDiscontinuity(byPlayback: Boolean) {
+          if (queueRebuildInFlight) return
+
+          updateProgressWhenReady()
+          // any seek moves the end of the episode, the auto-skip's too; running on into the next
+          // chapter is the end the timer counts to, and the timer takes it itself
+          if (byPlayback.not()) adjustTimer(totalPosition.value)
+        }
 
         override fun onEnded() {
           player.seekTo(0, 0)
@@ -197,6 +208,7 @@ class MediaRepository
               book = book,
               totalPosition = position ?: totalPosition.value,
               speed = preferences.getPlaybackSpeed(),
+              autoSkip = autoSkipPreferences.get(book.id),
             ) ?: return
 
           scheduleServiceTimer(delay, timerOption)
@@ -213,7 +225,7 @@ class MediaRepository
     }
 
     fun forward() {
-      seekTo(totalPosition.value + getSeekTime(preferences.getSeekTime().forward))
+      seekTo(totalPosition.value + getSeekTime(preferences.getSeekTime().forward), step = true)
     }
 
     fun setChapter(index: Int) {
@@ -376,9 +388,7 @@ class MediaRepository
       val position = totalPosition.value
       Timber.d("Previous track: bookId=${book.id}, position=${position.toInt()}s, rewind=$rewindRequired")
 
-      PlaybackGeometry
-        .previousChapter(book, position, rewindRequired)
-        ?.let { setChapter(it) }
+      PlaybackGeometry.previousChapter(book, position, rewindRequired)?.let { setChapter(it) }
     }
 
     fun clearPreparedItem() {
@@ -513,7 +523,10 @@ class MediaRepository
       mainThread.run { player.pause() }
     }
 
-    private fun seekTo(position: Double) {
+    private fun seekTo(
+      position: Double,
+      step: Boolean = false,
+    ) {
       val book = playingBook.value ?: return
 
       // the controller still holds the previous queue: a seek computed for the new order would
@@ -530,12 +543,13 @@ class MediaRepository
       }
 
       mainThread.run {
+        if (step) steps.expect(target.chapterIndex, target.chapterPositionMs)
         player.seekTo(target.chapterIndex, target.chapterPositionMs)
         updateProgressWhenReady()
       }
-
-      adjustTimer(target.totalPosition)
     }
+
+    fun refreshTimer() = adjustTimer(totalPosition.value)
 
     private fun adjustTimer(position: Double) {
       when (val option = _timerOption.value) {

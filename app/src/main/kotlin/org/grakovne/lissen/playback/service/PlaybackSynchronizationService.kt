@@ -1,9 +1,11 @@
 package org.grakovne.lissen.playback.service
 
 import android.os.SystemClock
+import androidx.annotation.VisibleForTesting
 import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
@@ -34,6 +36,9 @@ class PlaybackSynchronizationService
   ) {
     private var listeningMark = ListeningMark(playingSince = null, unsyncedMs = 0)
     private val serviceScope = MainScope()
+
+    @VisibleForTesting
+    internal var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
     private var syncJob: Job? = null
     private val syncRunner = CoalescingRunner<SyncSnapshot>()
 
@@ -86,6 +91,29 @@ class PlaybackSynchronizationService
           }
     }
 
+    /**
+     * Reports chapter [chapterIndex] played out, for a chapter left before its end. Queued on the
+     * caller's thread as mandatory, so the sync of the next chapter neither drops nor overtakes
+     * it; the listening time stays with the regular syncs.
+     */
+    fun reportChapterEnd(chapterIndex: Int) {
+      val currentItem = syncState.value.item ?: return
+      val chapter = currentItem.chapters.getOrNull(chapterIndex) ?: return
+
+      val snapshot =
+        SyncSnapshot(
+          progress = PlaybackProgress(currentTotalTime = chapter.end, currentChapterTime = chapter.duration),
+          timeListened = 0.0,
+          paused = false,
+          chapter = ReportedChapter(currentItem, chapterIndex),
+        )
+
+      Timber.d("Reporting the end of chapter $chapterIndex of ${currentItem.id}")
+
+      syncRunner.enqueueMandatory(snapshot)
+      serviceScope.launch { drainSyncs(currentItem) }
+    }
+
     private suspend fun runSync() {
       val overallProgress = getProgress(exoPlayer) ?: return
       val currentItem = syncState.value.item ?: return
@@ -106,22 +134,38 @@ class PlaybackSynchronizationService
           paused = exoPlayer.syncTicking.not(),
         )
 
-      withContext(Dispatchers.IO) {
-        syncRunner.submit(snapshot) { value ->
-          try {
-            performSync(currentItem, value)
-          } catch (e: Exception) {
-            Timber.e(e, "Error during sync")
+      // before the hop, in order with the mandatory reports
+      syncRunner.offer(snapshot)
+      drainSyncs(currentItem)
+    }
+
+    private suspend fun drainSyncs(currentItem: DetailedItem) =
+      withContext(ioDispatcher) {
+        syncRunner.drain { snapshot ->
+          val item = snapshot.itemOr(currentItem)
+
+          when (item.id) {
+            currentItem.id -> {
+              try {
+                performSync(item, snapshot)
+              } catch (e: Exception) {
+                Timber.e(e, "Error during sync")
+              }
+            }
+
+            // the item was left before its report went out: a session opened for it would leak
+            else -> {
+              Timber.d("Dropping a report for ${item.id}: ${currentItem.id} is playing now")
+            }
           }
         }
       }
-    }
 
     private suspend fun performSync(
       currentItem: DetailedItem,
       snapshot: SyncSnapshot,
     ) {
-      val chapterIndex = calculateChapterIndex(currentItem, snapshot.progress.currentTotalTime)
+      val chapterIndex = snapshot.chapterIndexIn(currentItem)
       val current = syncState.value
 
       // a local session keeps retrying the server to move back to a remote one
@@ -228,6 +272,16 @@ private data class SyncSnapshot(
   val progress: PlaybackProgress,
   val timeListened: Double,
   val paused: Boolean,
+  val chapter: ReportedChapter? = null,
+) {
+  fun itemOr(current: DetailedItem): DetailedItem = chapter?.item ?: current
+
+  fun chapterIndexIn(item: DetailedItem): Int = chapter?.index ?: calculateChapterIndex(item, progress.currentTotalTime)
+}
+
+private data class ReportedChapter(
+  val item: DetailedItem,
+  val index: Int,
 )
 
 internal const val SYNC_INTERVAL_LONG = 45_000L
