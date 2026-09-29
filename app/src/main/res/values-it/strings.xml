@@ -285,4 +285,8 @@
     <string name="episode_ordering_file_name_option">Nome file</string>
     <string name="episode_ordering_ascending">Ascendente</string>
     <string name="episode_ordering_descending">Discendente</string>
+    <string name="player_settings_auto_skip">Salta automaticamente</string>
+    <string name="player_settings_skip_disabled">Disabilitato</string>
+    <string name="player_settings_intro_value">Introduzione %1$s</string>
+    <string name="player_settings_outro_value">Finale %1$s</string>
 </resources>
