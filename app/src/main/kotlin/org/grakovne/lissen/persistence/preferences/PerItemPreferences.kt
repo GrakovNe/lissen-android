@@ -4,8 +4,6 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Types
 import org.grakovne.lissen.common.moshi
 
-// A JSON map of item id to a value under one key, for what the user sets per book or podcast.
-
 /** Parsed entry by entry, so one unreadable value drops only itself. */
 fun <T> SecurePreferenceStore.getPerItem(
   key: String,

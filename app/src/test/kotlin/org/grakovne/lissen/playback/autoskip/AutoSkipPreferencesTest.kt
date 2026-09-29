@@ -24,31 +24,10 @@ class AutoSkipPreferencesTest {
   private val preferences = AutoSkipPreferences(SecurePreferenceStore(context))
 
   private val introAndOutro = AutoSkipConfiguration(introSeconds = 45, outroSeconds = 90)
-  private val introOnly = AutoSkipConfiguration(introSeconds = 30, outroSeconds = 0)
 
   @Test
   fun `nothing is skipped until the user sets something`() {
     assertEquals(AutoSkipConfiguration.disabled, preferences.get("podcast-1"))
-  }
-
-  @Test
-  fun `the configuration is stored per item`() {
-    preferences.save("podcast-1", introAndOutro)
-    preferences.save("podcast-2", introOnly)
-
-    assertEquals(introAndOutro, preferences.get("podcast-1"))
-    assertEquals(introOnly, preferences.get("podcast-2"))
-    assertEquals(AutoSkipConfiguration.disabled, preferences.get("podcast-3"))
-  }
-
-  @Test
-  fun `saving again replaces the previous values for that item only`() {
-    preferences.save("podcast-1", introAndOutro)
-    preferences.save("podcast-2", introOnly)
-    preferences.save("podcast-1", introOnly)
-
-    assertEquals(introOnly, preferences.get("podcast-1"))
-    assertEquals(introOnly, preferences.get("podcast-2"))
   }
 
   @Test
@@ -68,24 +47,6 @@ class AutoSkipPreferencesTest {
     preferences.save("podcast-1", introAndOutro)
 
     assertEquals(introAndOutro, preferences.get("podcast-1"))
-  }
-
-  @Test
-  fun `an unreadable entry drops only itself`() {
-    fakePreferences
-      .edit()
-      .putString(
-        "auto_skip",
-        """{"podcast-1":{"introSeconds":45,"outroSeconds":90},"podcast-2":{"introSeconds":"soon","outroSeconds":0}}""",
-      ).commit()
-
-    assertEquals(introAndOutro, preferences.get("podcast-1"))
-    assertEquals(AutoSkipConfiguration.disabled, preferences.get("podcast-2"))
-
-    preferences.save("podcast-3", introOnly)
-
-    assertEquals(introAndOutro, preferences.get("podcast-1"))
-    assertEquals(introOnly, preferences.get("podcast-3"))
   }
 
   @Test

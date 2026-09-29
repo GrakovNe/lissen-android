@@ -136,11 +136,6 @@ object PlaybackGeometry {
     }
   }
 
-  /**
-   * Wall-clock seconds until the chapter is over, from where playback is: whatever moves the
-   * position, a seek of the listener or a skip, re-arms the timer from there. Where the chapter
-   * is over is the auto-skip's to say.
-   */
   fun remainingInChapter(
     book: DetailedItem,
     totalPosition: Double,

@@ -25,10 +25,9 @@ import org.junit.Before
 import java.util.concurrent.CopyOnWriteArrayList
 
 /**
- * The auto-skip service on a real ExoPlayer, playing [item] from its first chapter, fourfold, with
- * [configuration] skipped at both ends; every discontinuity the player reports is recorded. The
- * synchronization is a mock that only counts the chapter ends. Every seek a scenario makes is made
- * in the same main-thread task as the check that playback is where the scenario needs it.
+ * The auto-skip service on a real ExoPlayer playing [item] fourfold, recording every
+ * discontinuity. A scenario seeks in the same main-thread task as the check that playback is
+ * where it needs it.
  */
 @OptIn(UnstableApi::class)
 abstract class AutoSkipOnRealPlayer {
@@ -46,12 +45,12 @@ abstract class AutoSkipOnRealPlayer {
   protected lateinit var player: ExoPlayer
   protected lateinit var timer: PlaybackTimer
 
-  /** Its own id per test: the services of the earlier tests, which nothing stops, keep their plan and stay quiet. */
+  // an id per test: the services of the earlier tests, never stopped, stay quiet on another item
   protected abstract val item: DetailedItem
 
   protected abstract val mediaSourceFactory: MediaSource.Factory
 
-  /** The queue of [item], with whatever it reads from made ready; called before the player is built. */
+  // called before the player is built, so the media it reads can be made ready
   protected abstract fun prepareQueue(): List<MediaItem>
 
   @Before
@@ -76,7 +75,7 @@ abstract class AutoSkipOnRealPlayer {
       timer = PlaybackTimer(PlaybackEventBus(), player)
       AutoSkipService(player, preferences, syncState, timer, synchronization, steps).onCreate()
 
-      // the way the playback service does it: the item is known to the synchronization, then the queue is set
+      // in the order the playback service does it
       syncState.update { it.start(item) }
       player.setMediaItems(queue)
       player.setPlaybackSpeed(SPEED)
@@ -94,7 +93,6 @@ abstract class AutoSkipOnRealPlayer {
     preferences.save(item.id, AutoSkipConfiguration.disabled)
   }
 
-  /** What an episode timer armed right now would count, on the main thread. */
   protected fun remainingInChapter(): Double =
     PlaybackGeometry.remainingInChapter(
       item,
@@ -103,7 +101,7 @@ abstract class AutoSkipOnRealPlayer {
       autoSkip = configuration,
     )!!
 
-  /** True, with [action] done, once playback runs in [index] and is still well before its outro; false to keep waiting. */
+  /** Does [action] once playback runs in [index] well before its outro; false to keep waiting. */
   protected fun inChapterBeforeOutro(
     index: Int,
     action: () -> Unit,
@@ -138,7 +136,6 @@ abstract class AutoSkipOnRealPlayer {
   protected companion object {
     const val SPEED = 4f
 
-    /** An item of back-to-back chapters of these lengths, over [files]. */
     fun item(
       id: String,
       chapterSeconds: List<Int>,

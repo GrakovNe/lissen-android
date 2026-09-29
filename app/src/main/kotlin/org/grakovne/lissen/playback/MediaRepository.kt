@@ -122,9 +122,8 @@ class MediaRepository
           if (queueRebuildInFlight) return
 
           updateProgressWhenReady()
-          // the end of the episode moved with the position, and the seeks of the auto-skip
-          // service never pass through seekTo. Playback that ran on by itself has reached the
-          // end the timer counts to: the timer takes it, not a new count over the next chapter
+          // any seek moves the end of the episode, the auto-skip's too; running on into the next
+          // chapter is the end the timer counts to, and the timer takes it itself
           if (byPlayback.not()) adjustTimer(totalPosition.value)
         }
 
@@ -524,7 +523,6 @@ class MediaRepository
       mainThread.run { player.pause() }
     }
 
-    /** A [step] is the player's own movement, and auto-skip treats what it lands in accordingly. */
     private fun seekTo(
       position: Double,
       step: Boolean = false,
@@ -549,11 +547,8 @@ class MediaRepository
         player.seekTo(target.chapterIndex, target.chapterPositionMs)
         updateProgressWhenReady()
       }
-
-      adjustTimer(target.totalPosition)
     }
 
-    /** Re-arms a timer that ends with the episode, after something that moves that end. */
     fun refreshTimer() = adjustTimer(totalPosition.value)
 
     private fun adjustTimer(position: Double) {

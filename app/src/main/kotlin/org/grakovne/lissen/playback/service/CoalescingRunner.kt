@@ -5,27 +5,23 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicReference
 
 /**
- * Runs one action at a time. A plain value only keeps the latest of those submitted while a run
- * is in progress; a mandatory value is queued at once, always runs, and supersedes the plain value
- * waiting at that moment, which was taken before it.
+ * Runs one action at a time. Of the plain values submitted meanwhile only the latest runs; a
+ * mandatory one always runs, in order, and drops the plain value waiting before it.
  */
 internal class CoalescingRunner<T : Any> {
   private val pending = AtomicReference<T?>(null)
   private val mandatoryQueue = ConcurrentLinkedQueue<T>()
   private val mutex = Mutex()
 
-  /** Queues [value] right here, on the caller's thread, so nothing submitted later gets ahead of it. */
   fun enqueueMandatory(value: T) {
     mandatoryQueue.add(value)
     pending.set(null)
   }
 
-  /** Offers a plain value right here, on the caller's thread; only the latest one waits. */
   fun offer(value: T) {
     pending.set(value)
   }
 
-  /** Runs whatever is queued, if nobody else is already doing that. */
   suspend fun drain(action: suspend (T) -> Unit) {
     while (true) {
       if (mutex.tryLock().not()) {

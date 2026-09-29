@@ -42,7 +42,6 @@ class PlayerViewModel
     /** The stored ordering of the item the screen shows, not necessarily the playing one. */
     fun episodeOrdering(itemId: String): Flow<EpisodeOrderingConfiguration?> = libraryPreferences.episodeOrderingFlow.map { it[itemId] }
 
-    /** The stored auto-skip of the item the screen shows; nothing is skipped unless the user set something. */
     fun autoSkip(itemId: String): Flow<AutoSkipConfiguration> = autoSkipPreferences.flow(itemId)
 
     fun setAutoSkip(
@@ -52,7 +51,6 @@ class PlayerViewModel
       Timber.d("User action: setAutoSkip $configuration for $itemId")
       autoSkipPreferences.save(itemId, configuration)
 
-      // a sleep timer armed for the end of the playing episode now ends at the new outro
       if (mediaRepository.playingBook.value?.id == itemId) mediaRepository.refreshTimer()
     }
 

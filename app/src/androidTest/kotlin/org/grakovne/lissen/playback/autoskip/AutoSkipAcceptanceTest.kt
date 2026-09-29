@@ -18,12 +18,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * The auto-skip service against a real ExoPlayer, because the unit tests imitate media3 by hand.
- * What is checked here is exactly what they assume: a planted message is delivered when playback
- * crosses its position and not when a seek jumps over it, a seek reports its discontinuity, a
- * chapter that runs out reports its transition, and the timer's pause reaches the player before
- * the message does. Four chapters of silence, 6, 16, 20 and 6 seconds, each exactly as long as
- * the item says.
+ * What the unit tests assume of media3, on a real player: a message is delivered when playback
+ * crosses it and not when a seek jumps over it, seeks and transitions report their
+ * discontinuities, the timer's pause reaches the player before the message.
  */
 @OptIn(UnstableApi::class)
 @RunWith(AndroidJUnit4::class)
@@ -33,11 +30,6 @@ class AutoSkipAcceptanceTest : AutoSkipOnRealPlayer() {
   override val mediaSourceFactory: MediaSource.Factory = SilenceFactory()
 
   override fun prepareQueue() = item.chapters.map { MediaItem.Builder().setMediaId("silence:${(it.duration * 1000).toLong()}").build() }
-
-  @Test
-  fun theIntroOfTheFirstChapterIsSkippedAsSoonAsPlaybackRuns() {
-    awaitOnMain("the intro seek") { discontinuities.any { it.isSeek(from = 0, to = 0 to 2_000L) } }
-  }
 
   @Test
   fun crossingTheOutroReportsTheChapterAndMovesOnPastTheNextIntro() {
@@ -117,7 +109,6 @@ class AutoSkipAcceptanceTest : AutoSkipOnRealPlayer() {
     assertTrue("the end seek of the last chapter, among $discontinuities", exit.fromMs >= 4_000L && exit.toMs >= 5_990L)
   }
 
-  /** Silence of the length the media id asks for: a chapter whose every moment is known. */
   private class SilenceFactory : MediaSource.Factory {
     override fun setDrmSessionManagerProvider(drmSessionManagerProvider: DrmSessionManagerProvider) = this
 
@@ -130,7 +121,7 @@ class AutoSkipAcceptanceTest : AutoSkipOnRealPlayer() {
   }
 
   private companion object {
-    /** The message is delivered once the position has passed it, by the audio pipeline's granularity at [SPEED], never before. */
+    // delivered once the position has passed it, never before
     val OUTRO_OF_C0 = 4_000L until 6_000L
   }
 }

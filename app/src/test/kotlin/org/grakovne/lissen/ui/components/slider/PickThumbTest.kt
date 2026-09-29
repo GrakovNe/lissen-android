@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 class PickThumbTest {
   @Test
   fun `a touch on the intro half takes the intro even when the outro is nearer`() {
-    // intro 0:00, outro 2:00: a tap at the intro's 4:30 is nearer the outro, which cannot go there
+    // intro 0:00, outro 2:00: a touch at the intro's 4:30 is nearer the outro, which cannot go there
     assertEquals(Thumb.INTRO, pick(x = 270f, introX = 0f, outroX = 480f))
   }
 

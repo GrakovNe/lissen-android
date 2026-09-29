@@ -9,7 +9,6 @@ import org.grakovne.lissen.persistence.preferences.putPerItem
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** What is skipped, per item. Nothing, unless the user set something. The short names are the package's: the class already says what it holds. */
 @Singleton
 class AutoSkipPreferences
   @Inject
@@ -22,7 +21,6 @@ class AutoSkipPreferences
 
     fun get(itemId: String): AutoSkipConfiguration = all()[itemId] ?: AutoSkipConfiguration.disabled
 
-    /** Nothing to skip is the same as no entry, so a reset leaves no trace behind. */
     fun save(
       itemId: String,
       configuration: AutoSkipConfiguration,

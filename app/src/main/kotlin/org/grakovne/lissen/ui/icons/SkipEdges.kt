@@ -9,7 +9,6 @@ import androidx.compose.ui.graphics.vector.VectorPath
 import androidx.compose.ui.graphics.vector.group
 import androidx.compose.ui.unit.dp
 
-/** Material "compress" turned on its side: two arrows pushing in from the ends of a timeline. */
 val SkipEdges: ImageVector by lazy {
   val source = Icons.Outlined.Compress
   ImageVector

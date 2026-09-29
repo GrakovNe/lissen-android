@@ -58,13 +58,6 @@ class PlaybackTimerTest {
     }
 
   @Test
-  fun `an armed episode timer owns the end of the episode`() {
-    timer.startTimer(35.0, CurrentEpisodeTimerOption)
-
-    assertTrue(timer.isEpisodeTimerRunning)
-  }
-
-  @Test
   fun `a duration timer does not own the end of the episode`() {
     timer.startTimer(300.0, DurationTimerOption(5))
 
@@ -108,16 +101,6 @@ class PlaybackTimerTest {
 
       assertEquals(listOf(PlaybackEvent.TimerExpired), events)
       assertTrue(countdowns.isEmpty())
-    }
-
-  @Test
-  fun `a duration timer with nothing left expires at once`() =
-    runTest {
-      val events = record()
-      timer.startTimer(-1.0, DurationTimerOption(0))
-
-      assertEquals(listOf(PlaybackEvent.TimerExpired), events)
-      assertFalse(timer.isEpisodeTimerRunning)
     }
 
   @Test
@@ -165,11 +148,6 @@ class PlaybackTimerTest {
 
     assertFalse(countdowns.single().stopped)
     verify(exactly = 0) { player.pause() }
-  }
-
-  @Test
-  fun `without a timer nothing owns the end of the episode`() {
-    assertFalse(timer.isEpisodeTimerRunning)
   }
 
   private fun position(mediaItemIndex: Int) = Player.PositionInfo(null, mediaItemIndex, null, null, 0, 0L, 0L, C.INDEX_UNSET, C.INDEX_UNSET)

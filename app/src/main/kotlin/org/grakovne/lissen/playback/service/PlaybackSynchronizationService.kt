@@ -37,7 +37,6 @@ class PlaybackSynchronizationService
     private var listeningMark = ListeningMark(playingSince = null, unsyncedMs = 0)
     private val serviceScope = MainScope()
 
-    // the syncs hop here; a test replaces it before the first one
     @VisibleForTesting
     internal var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
     private var syncJob: Job? = null
@@ -93,10 +92,9 @@ class PlaybackSynchronizationService
     }
 
     /**
-     * Chapter [chapterIndex] is left before playback runs out of it: the server gets it played
-     * out, under its own index and item, before the player moves on. Queued right here as a
-     * mandatory sync, so a regular sync of the next chapter neither drops it nor overtakes it.
-     * The listening time stays with the regular syncs, which report it once.
+     * Reports chapter [chapterIndex] played out, for a chapter left before its end. Queued on the
+     * caller's thread as mandatory, so the sync of the next chapter neither drops nor overtakes
+     * it; the listening time stays with the regular syncs.
      */
     fun reportChapterEnd(chapterIndex: Int) {
       val currentItem = syncState.value.item ?: return
@@ -136,7 +134,7 @@ class PlaybackSynchronizationService
           paused = exoPlayer.syncTicking.not(),
         )
 
-      // offered here, in order with the mandatory reports of the same thread, before the hop
+      // before the hop, in order with the mandatory reports
       syncRunner.offer(snapshot)
       drainSyncs(currentItem)
     }
@@ -155,8 +153,7 @@ class PlaybackSynchronizationService
               }
             }
 
-            // the end of a chapter of an item that was left before the report went out: a
-            // session for it cannot be adopted any more, so it would only leak on the server
+            // the item was left before its report went out: a session opened for it would leak
             else -> {
               Timber.d("Dropping a report for ${item.id}: ${currentItem.id} is playing now")
             }
@@ -275,7 +272,6 @@ private data class SyncSnapshot(
   val progress: PlaybackProgress,
   val timeListened: Double,
   val paused: Boolean,
-  /** Set when the snapshot speaks for a chapter other than the one the player is at by the time it runs. */
   val chapter: ReportedChapter? = null,
 ) {
   fun itemOr(current: DetailedItem): DetailedItem = chapter?.item ?: current

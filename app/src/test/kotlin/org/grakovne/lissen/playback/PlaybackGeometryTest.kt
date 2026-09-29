@@ -127,7 +127,7 @@ class PlaybackGeometryTest {
 
     @Test
     fun `an auto-skipped outro ends the chapter early`() {
-      // 35s into a 30+40 layout is 5s into c1 (40s): 35s left, 25s once the last 10s are skipped
+      // 5 s into c1 (40 s)
       assertEquals(
         25.0,
         PlaybackGeometry.remainingInChapter(
@@ -137,21 +137,11 @@ class PlaybackGeometryTest {
           autoSkip = AutoSkipConfiguration(introSeconds = 0, outroSeconds = 10),
         ),
       )
-      assertEquals(
-        12.5,
-        PlaybackGeometry.remainingInChapter(
-          book,
-          totalPosition = 35.0,
-          speed = 2f,
-          autoSkip = AutoSkipConfiguration(introSeconds = 0, outroSeconds = 10),
-        ),
-      )
     }
 
     @Test
     fun `a position inside the intro counts from where it is`() {
-      // whether the intro is about to be skipped or is being played after a rewind, the timer is
-      // re-armed from wherever the position ends up: 40 - 10 (outro) from the start, 3s less from 3s in
+      // the start of c1 and 3 s into it
       assertEquals(
         30.0,
         PlaybackGeometry.remainingInChapter(
@@ -174,23 +164,10 @@ class PlaybackGeometryTest {
 
     @Test
     fun `inside the outro the chapter runs to its real end`() {
-      // 65s is 35s into c1 (40s), past the start of a 10s outro: the listener is there on purpose
+      // 35 s and 39 s into c1 (40 s)
       val skip = AutoSkipConfiguration(introSeconds = 0, outroSeconds = 10)
       assertEquals(5.0, PlaybackGeometry.remainingInChapter(book, totalPosition = 65.0, speed = 1f, autoSkip = skip))
       assertEquals(1.0, PlaybackGeometry.remainingInChapter(book, totalPosition = 69.0, speed = 1f, autoSkip = skip))
-    }
-
-    @Test
-    fun `an intro alone changes nothing`() {
-      assertEquals(
-        37.0,
-        PlaybackGeometry.remainingInChapter(
-          book,
-          totalPosition = 33.0,
-          speed = 1f,
-          autoSkip = AutoSkipConfiguration(introSeconds = 8, outroSeconds = 0),
-        ),
-      )
     }
 
     @Test

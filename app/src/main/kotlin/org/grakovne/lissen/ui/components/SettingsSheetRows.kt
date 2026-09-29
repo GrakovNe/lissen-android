@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForwardIos
+import androidx.compose.material.icons.outlined.ArrowDownward
+import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Settings
@@ -32,9 +34,10 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
+import org.grakovne.lissen.common.LibraryOrderingDirection
+import org.grakovne.lissen.common.LibraryOrderingDirection.ASCENDING
+import org.grakovne.lissen.common.LibraryOrderingDirection.DESCENDING
 import org.grakovne.lissen.common.withHaptic
-
-// Rows shared by the quick-settings sheets of the library and the player, so both sheets look the same.
 
 @Composable
 fun SettingsToggleRow(
@@ -72,10 +75,7 @@ fun SettingsToggleRow(
   }
 }
 
-/**
- * A row that opens a picker: label, current value, chevron. The label is never broken onto a
- * second line: when it would be, the value gives way to [compactValue], if one is given.
- */
+/** The value gives way to [compactValue] when the label would wrap. */
 @Composable
 fun SettingsPickerRow(
   label: String,
@@ -90,8 +90,7 @@ fun SettingsPickerRow(
   val view = LocalView.current
   val labelColor = colorScheme.onSurface.copy(alpha = if (enabled) 1f else SETTINGS_DISABLED_ALPHA)
   val valueColor = colorScheme.onSurfaceVariant.copy(alpha = if (enabled) 1f else SETTINGS_DISABLED_ALPHA)
-  // decided once per row, not per value: a value that changes under a wrapped label would flip
-  // the row between its two forms on every change
+  // decided once per row, not per value, or the row would flip between its forms on every change
   var compact by remember(compactValue != null) { mutableStateOf(false) }
   Row(
     modifier =
@@ -131,7 +130,6 @@ fun SettingsPickerRow(
   }
 }
 
-/** One of the options under a picker; [trailingDescription] says what the trailing icon of the selected one means. */
 @Composable
 fun SettingsOptionRow(
   title: String,
@@ -175,6 +173,37 @@ fun SettingsOptionRow(
       )
     }
   }
+}
+
+/** Tapping the selected option flips its direction, tapping another one picks it ascending. */
+@Composable
+fun SettingsSortOptionRow(
+  title: String,
+  icon: ImageVector,
+  selected: Boolean,
+  direction: LibraryOrderingDirection,
+  modifier: Modifier = Modifier,
+  enabled: Boolean = true,
+  onSelected: (LibraryOrderingDirection) -> Unit,
+) {
+  SettingsOptionRow(
+    title = title,
+    icon = icon,
+    selected = selected,
+    trailing =
+      when (direction) {
+        ASCENDING -> Icons.Outlined.ArrowUpward
+        DESCENDING -> Icons.Outlined.ArrowDownward
+      },
+    trailingDescription =
+      when (direction) {
+        ASCENDING -> stringResource(R.string.episode_ordering_ascending)
+        DESCENDING -> stringResource(R.string.episode_ordering_descending)
+      },
+    modifier = modifier,
+    enabled = enabled,
+    onClick = { onSelected(if (selected) direction.opposite else ASCENDING) },
+  )
 }
 
 @Composable

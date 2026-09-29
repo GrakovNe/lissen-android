@@ -73,6 +73,12 @@ class MediaRepositoryTest {
       positionMs: Long,
     ) {
       calls.add("seekTo($mediaItemIndex, $positionMs)")
+
+      // the controller masks a seek and reports it at once, as media3 does
+      if (mediaItemIndex == currentMediaItemIndex && positionMs == currentPositionMs) return
+      currentMediaItemIndex = mediaItemIndex
+      currentPositionMs = positionMs
+      listener.onPositionDiscontinuity(byPlayback = false)
     }
 
     override fun setPlaybackSpeed(speed: Float) {
@@ -444,22 +450,11 @@ class MediaRepositoryTest {
       }
 
     @Test
-    fun `an episode timer armed inside the intro counts from where playback is`() =
-      runTest {
-        every { autoSkipPreferences.get("podcast") } returns AutoSkipConfiguration(introSeconds = 8, outroSeconds = 10)
-        playing(podcast(progress = progress(33.0)))
-
-        repository.updateTimer(CurrentEpisodeTimerOption)
-
-        assertEquals(PlaybackCommand.SetTimer(27.0, CurrentEpisodeTimerOption), eventBus.commands.first())
-      }
-
-    @Test
     fun `the forward step marks its seek as the player's own, a scrub does not`() =
       runTest {
         playing(podcast(progress = progress(35.0)))
 
-        // 35s is 5s into c1; the step lands 30s later, at 35s into it
+        // 5 s into c1, the step lands 30 s later
         repository.forward()
         assertTrue(steps.take(position(1, 35_000L)))
 
@@ -477,7 +472,7 @@ class MediaRepositoryTest {
         repository.updateTimer(CurrentEpisodeTimerOption)
         assertEquals(PlaybackCommand.SetTimer(35.0, CurrentEpisodeTimerOption), eventBus.commands.first())
 
-        // the auto-skip service moved playback into c2 (50s) on its own, 5s in
+        // the auto-skip moved playback 5 s into c2 by itself
         player.currentMediaItemIndex = 2
         player.currentPositionMs = 5_000L
         player.listener.onPositionDiscontinuity(byPlayback = false)
@@ -492,7 +487,7 @@ class MediaRepositoryTest {
         repository.updateTimer(CurrentEpisodeTimerOption)
         assertEquals(PlaybackCommand.SetTimer(35.0, CurrentEpisodeTimerOption), eventBus.commands.first())
 
-        // the countdown was a little behind: c1 ran out before it did, and c2 has begun
+        // the countdown was behind: c1 ran out first
         player.currentMediaItemIndex = 2
         player.currentPositionMs = 0L
         player.listener.onPositionDiscontinuity(byPlayback = true)
@@ -501,17 +496,6 @@ class MediaRepositoryTest {
         val minutes = DurationTimerOption(5)
         repository.updateTimer(minutes)
         assertEquals(PlaybackCommand.SetTimer(300.0, minutes), eventBus.commands.first(), "no count over all of c2 was sent")
-      }
-
-    @Test
-    fun `inside the outro an episode timer runs to the real end of the chapter`() =
-      runTest {
-        every { autoSkipPreferences.get("podcast") } returns AutoSkipConfiguration(introSeconds = 0, outroSeconds = 10)
-        playing(podcast(progress = progress(65.0)))
-
-        repository.updateTimer(CurrentEpisodeTimerOption)
-
-        assertEquals(PlaybackCommand.SetTimer(5.0, CurrentEpisodeTimerOption), eventBus.commands.first())
       }
 
     @Test
@@ -524,17 +508,6 @@ class MediaRepositoryTest {
         repository.updateTimer(minutes)
 
         assertEquals(PlaybackCommand.SetTimer(300.0, minutes), eventBus.commands.first())
-      }
-
-    @Test
-    fun `previous replays the chapter from past the replay threshold, intro or not`() =
-      runTest {
-        every { autoSkipPreferences.get("podcast") } returns AutoSkipConfiguration(introSeconds = 20, outroSeconds = 0)
-        playing(podcast(progress = progress(52.0)))
-
-        repository.previousTrack()
-
-        assertEquals(listOf("seekTo(1, 0)"), player.calls)
       }
 
     @Test

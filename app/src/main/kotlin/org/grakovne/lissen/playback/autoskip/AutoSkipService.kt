@@ -21,19 +21,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Skips the intro and the outro of every chapter of an item, as configured for that item. The
- * arithmetic lives in [AutoSkipPlanner]; this is the part that listens to the player and acts.
- *
- * Whatever playback reaches by itself is skipped. A chapter that follows on its own, or is
- * entered at its very start, or holds the position a queue was placed at, is owed its skips:
- * the first moment of playback seeks past the intro, or on out of the outro. The outro is a
- * [PlayerMessage] planted where it begins; reaching it ends the chapter for the server, then
- * moves on to the next chapter straight past its own intro, or to the very end when nothing
- * follows. A seek by the listener is theirs: whatever it lands in is played as it is, except
- * the "forward" step, which is the player's own movement ([PlaybackSteps]). A sleep
- * timer armed for the end of the episode takes the outro instead, and the skip it held back is
- * done when playback runs again. Every decision is posted to the main looper and re-checked
- * there, because player callbacks arrive synchronously inside the call that caused them.
+ * Skips the intro and the outro of every chapter, as configured per item. Whatever playback
+ * reaches by itself is skipped: a chapter it runs into, the start of a chapter, the position a
+ * new queue is placed at, the "forward" step ([PlaybackSteps]). Where the listener seeks to is
+ * played as it is. An armed "end of episode" timer takes the outro instead of the skip.
  */
 @Singleton
 @OptIn(UnstableApi::class)
@@ -49,15 +40,15 @@ class AutoSkipService
   ) : RunningComponent {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
-    /** The chapter playback reached by itself, whose skips are done once playback runs. */
     private var owed: Int? = null
     private var planted: PlantedOutros? = null
 
-    /**
-     * The chapter whose outro ended the item. A chapter with less audio than the server says has
-     * its outro message at the very end of the audio, and the seek to the end lands a hair short
-     * of it: crossed again, the message would end the item again, and again.
-     */
+    // an outro the episode timer is about to pause in: owed once the player is really paused,
+    // a stall that drops isPlaying for a moment must not move on under the timer
+    private var held: Int? = null
+
+    // the end seek lands a hair short of an outro message clamped to the end of the audio
+    // (a chapter with less audio than the server says), which would fire again and again
     private var ended: Int? = null
 
     private val listener =
@@ -68,15 +59,15 @@ class AutoSkipService
         ) {
           if (reason != Player.TIMELINE_CHANGE_REASON_PLAYLIST_CHANGED) return
 
-          // a new queue: nothing of the old one applies, the player has already dropped the old
-          // messages with the old items, and the seek that places the player in the queue is still
-          // to come inside this same main task, so the chapter is read afterwards
-          owed = null
+          val previous = planted?.plan?.book?.id
+          forget()
           planted = null
-          ended = null
+
+          // the seek that places the player in the new queue comes later in this same task; a
+          // queue rebuilt for the same item (a new episode order) continues where it was
           post {
             plantOutroMessages()
-            reach(player.currentMediaItemIndex)
+            if (currentBook()?.id != previous) reach(player.currentMediaItemIndex)
           }
         }
 
@@ -88,23 +79,31 @@ class AutoSkipService
           val another = newPosition.mediaItemIndex != oldPosition.mediaItemIndex
 
           when (reason) {
-            // a file boundary inside a chapter is a transition too, but not into another chapter
+            // a file boundary inside a chapter is a transition too
             Player.DISCONTINUITY_REASON_AUTO_TRANSITION -> {
               if (another) reach(newPosition.mediaItemIndex)
             }
 
-            // "next" and a pick from the list: the very start of another chapter is entered;
-            // a "forward" step is the player's own; anywhere else is the listener's
             Player.DISCONTINUITY_REASON_SEEK -> {
               val step = steps.take(newPosition)
               when (step || (another && newPosition.positionMs == 0L)) {
                 true -> reach(newPosition.mediaItemIndex)
-                false -> listenerMoved()
+                false -> forget()
               }
             }
 
             else -> {}
           }
+        }
+
+        override fun onPlayWhenReadyChanged(
+          playWhenReady: Boolean,
+          reason: Int,
+        ) {
+          if (playWhenReady) return
+
+          held?.let { owed = it }
+          held = null
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
@@ -118,25 +117,24 @@ class AutoSkipService
     }
 
     private fun reach(index: Int) {
+      forget()
       owed = index
-      ended = null
       post { settleOwed() }
     }
 
-    /** Wherever the listener moved to is theirs: nothing is owed, and an outro crossed after it is skipped again. */
-    private fun listenerMoved() {
+    private fun forget() {
       owed = null
+      held = null
       ended = null
     }
 
-    /** Playback runs in the chapter it is owed to: past the intro, or on out of the outro. */
     private fun settleOwed() {
       val index = owed ?: return
       if (!player.isPlaying) return
 
       owed = null
       if (player.currentMediaItemIndex != index) return
-      val book = currentBook() ?: return
+      val book = plannedBook() ?: return
       val chapter = chapterAt(book, index) ?: return
       val position = player.currentPosition
 
@@ -152,11 +150,8 @@ class AutoSkipService
       }
     }
 
-    /**
-     * Resumed inside an outro the timer took, or one a queue was placed in: moved on when
-     * something follows. The outro of the last chapter is played, because ending the item under
-     * a listener who just pressed play would leave nothing playing.
-     */
+    // the outro of the last chapter is played: ending the item under a listener who just pressed
+    // play would leave nothing playing
     private fun leaveOutroOnResume(
       book: DetailedItem,
       index: Int,
@@ -166,18 +161,21 @@ class AutoSkipService
       if (exit is OutroExit.Next) leaveOutro(book, index, exit)
     }
 
-    /** Playback crossed into the outro of [index]: a delivered message is the proof, the position is not re-read. */
+    // the delivered message is the proof: the position is not re-read, it may be a hair short
     private fun onOutroCrossed(index: Int) {
       if (player.currentMediaItemIndex != index || ended == index) return
-      val book = currentBook() ?: return
+      val book = plannedBook() ?: return
       val chapter = chapterAt(book, index) ?: return
 
       when {
-        // a sleep timer armed for the end of this episode wins: it pauses the player itself,
-        // whichever of the two fires first, and the skip waits for the listener to come back
-        playbackTimer.isEpisodeTimerRunning || !player.isPlaying -> {
+        !player.isPlaying -> {
           Timber.d("Auto-skip outro: chapter=$index, takenBy=pause")
           owed = index
+        }
+
+        playbackTimer.isEpisodeTimerRunning -> {
+          Timber.d("Auto-skip outro: chapter=$index, takenBy=timer")
+          held = index
         }
 
         else -> {
@@ -186,7 +184,6 @@ class AutoSkipService
       }
     }
 
-    /** The seeks are the player's own: an episode timer is re-armed by the repository on the discontinuity they cause. */
     private fun leaveOutro(
       book: DetailedItem,
       index: Int,
@@ -204,17 +201,14 @@ class AutoSkipService
           val endMs = book.chapters[index].durationMs
           Timber.d("Auto-skip outro: chapter=$index, next=none, endMs=$endMs")
           player.seekTo(index, endMs)
-          // after the seek: its own discontinuity reads as the listener's and clears the mark
+          // after the seek, whose discontinuity forgets everything
           ended = index
         }
       }
     }
 
-    /**
-     * One message per chapter with an outro. Planted again only when the queue, the item or the
-     * configuration changed: a cancelled message lingers in the player until it is crossed, and
-     * every send sorts the player's message list.
-     */
+    // planted again only when the plan changed: a cancelled message lingers in the player until
+    // it is crossed, and every send sorts the player's message list
     private fun plantOutroMessages() {
       val wanted = currentBook()?.let { OutroPlan(it, preferences.get(it.id)) }
       if (wanted == planted?.plan) return
@@ -236,23 +230,24 @@ class AutoSkipService
       Timber.d("Auto-skip outro messages: count=${planted?.messages?.size ?: 0}, item=${wanted?.book?.id}")
     }
 
+    // player callbacks arrive inside the call that caused them: decisions are taken afterwards
     private fun post(action: () -> Unit) {
       scope.launch { action() }
     }
 
-    /**
-     * The item behind the queue, as the synchronization knows it: the queue is built from it in
-     * the same breath, one media item per chapter. The media items themselves carry neither the
-     * item (no tag without a URI) nor an id (the source factory rebuilds them without one).
-     */
+    // the queue items carry neither the item nor an id (the source factory rebuilds them), so the
+    // item is the one the synchronization was started with, together with the queue
     private fun currentBook(): DetailedItem? = syncState.value.item?.takeIf { it.chapters.size == player.mediaItemCount }
+
+    // the session starts the synchronization of the next item before its queue arrives: until
+    // then the queue and its messages are still the previous item's
+    private fun plannedBook(): DetailedItem? = currentBook()?.takeIf { it.id == planted?.plan?.book?.id }
 
     private fun chapterAt(
       book: DetailedItem,
       index: Int,
     ): SkippableChapter? = book.chapters.getOrNull(index)?.let { preferences.get(book.id).skippable(it.durationMs) }
 
-    /** What the planted messages describe; a queue of the same item in the same order with the same configuration needs no new ones. */
     private data class OutroPlan(
       val book: DetailedItem,
       val configuration: AutoSkipConfiguration,

@@ -2,7 +2,6 @@ package org.grakovne.lissen.playback.service
 
 import android.os.CountDownTimer
 
-/** What the playback timer needs of a countdown; lets tests stand in for the Android one. */
 internal interface Countdown {
   fun stop()
 
@@ -11,7 +10,6 @@ internal interface Countdown {
   fun resume(): Countdown
 }
 
-/** Creates and starts a countdown; a test hands in one that does not need a looper. */
 internal fun interface CountdownFactory {
   fun create(
     totalMillis: Long,

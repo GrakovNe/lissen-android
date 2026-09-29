@@ -38,18 +38,14 @@ import org.grakovne.lissen.ui.extensions.formatTime
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-/**
- * Two thumbs on one ruler: the left one measures seconds from the start of the chapter,
- * the right one seconds from its end. Each half spans five minutes from its edge. Tapping
- * grabs the nearer thumb, so the thumbs can be reached wherever they sit.
- */
+/** Two thumbs on one ruler: the intro counted from the left edge, the outro from the right, five minutes each. */
 @Composable
 fun AutoSkipSlider(
   introSeconds: Int,
   outroSeconds: Int,
   modifier: Modifier = Modifier,
-  stateDescription: String? = null,
-  onUpdateFinished: () -> Unit = {},
+  stateDescription: String,
+  onUpdateFinished: () -> Unit,
   onUpdate: (introSeconds: Int, outroSeconds: Int) -> Unit,
 ) {
   val view = LocalView.current
@@ -58,7 +54,6 @@ fun AutoSkipSlider(
 
   var dragging by remember { mutableStateOf<Thumb?>(null) }
 
-  // the gesture block outlives recompositions, so it must read the latest values, not the captured ones
   val currentIntro by rememberUpdatedState(introSeconds)
   val currentOutro by rememberUpdatedState(outroSeconds)
   val currentOnUpdate by rememberUpdatedState(onUpdate)
@@ -72,11 +67,8 @@ fun AutoSkipSlider(
       accent = colorScheme.primary,
     )
 
-  // the header of the other rulers, a size down so two of them stay quiet inside a settings sheet
   val valueStyle = MaterialTheme.typography.titleMedium.copy(color = colors.onSurface)
-  // numerals sit tighter without the body letter spacing, which keeps five-character labels a minute apart
   val tickStyle = MaterialTheme.typography.bodySmall.copy(color = colors.variant, letterSpacing = 0.sp)
-  // the labels never change: laid out once, not on every frame of a drag
   val tickLabels =
     remember(textMeasurer, tickStyle) {
       (LABEL_SECONDS until MAX_SECONDS step LABEL_SECONDS).associateWith { textMeasurer.measure(it.formatTime(), tickStyle) }
@@ -88,7 +80,7 @@ fun AutoSkipSlider(
         .fillMaxWidth()
         .height(TOTAL_HEIGHT)
         .systemGestureExclusion()
-        .semantics { stateDescription?.let { this.stateDescription = it } }
+        .semantics { this.stateDescription = stateDescription }
         .pointerInput(Unit) {
           awaitEachGesture {
             val down = awaitFirstDown()
@@ -97,16 +89,20 @@ fun AutoSkipSlider(
             val outroX = geometry.outroX(currentOutro)
             val x = down.position.x
 
-            val thumb = pickThumb(x, introX, outroX, mid = geometry.start + geometry.half, reach = THUMB_REACH.toPx())
+            val mid = geometry.start + geometry.half
+            val thumb = pickThumb(x, introX, outroX, mid, reach = THUMB_REACH.toPx())
 
             var intro = currentIntro
             var outro = currentOutro
 
-            fun moveTo(x: Float) {
+            fun moveTo(
+              moved: Thumb,
+              at: Float,
+            ) {
               val (newIntro, newOutro) =
-                when (thumb) {
-                  Thumb.INTRO -> geometry.introSeconds(x) to outro
-                  Thumb.OUTRO -> intro to geometry.outroSeconds(x)
+                when (moved) {
+                  Thumb.INTRO -> geometry.introSeconds(at) to outro
+                  Thumb.OUTRO -> intro to geometry.outroSeconds(at)
                 }
               if (newIntro != intro || newOutro != outro) {
                 intro = newIntro
@@ -115,12 +111,11 @@ fun AutoSkipSlider(
               }
             }
 
-            // nothing moves before the touch slop is passed sideways: a vertical pull belongs to the
-            // sheet, a touch that ends where it began is a tap that jumps the thumb there
+            // a vertical pull belongs to the sheet
             val drag =
               awaitHorizontalTouchSlopOrCancellation(down.id) { change, _ ->
                 change.consume()
-                moveTo(change.position.x)
+                moveTo(thumb, change.position.x)
               }
 
             when {
@@ -129,17 +124,18 @@ fun AutoSkipSlider(
                 try {
                   horizontalDrag(drag.id) { change ->
                     change.consume()
-                    moveTo(change.position.x)
+                    moveTo(thumb, change.position.x)
                   }
                 } finally {
-                  // a sheet that closes mid-drag cancels the gesture; what was dragged so far still counts
+                  // a sheet closed mid-drag cancels the gesture: what was dragged still counts
                   dragging = null
                   currentOnUpdateFinished()
                 }
               }
 
               currentEvent.changes.any { it.id == down.id && it.changedToUpIgnoreConsumed() } -> {
-                moveTo(x)
+                // only the thumb of the tapped half can land there
+                moveTo(halfOf(x, mid), x)
                 currentOnUpdateFinished()
               }
 
@@ -159,8 +155,7 @@ fun AutoSkipSlider(
       drawPillThumb(x, active = dragging == thumb, colors)
     }
 
-    // the value follows its thumb like the header follows the centre of the other rulers,
-    // and each stays on its own half so the two never collide
+    // each value stays on its own half so the two never collide
     val markerTop = TRACK_Y.toPx() - PILL_HALF.toPx() - MARKER_GAP.toPx() - MARKER_HEIGHT.toPx()
     val mid = size.width / 2f
     thumbs.forEach { (thumb, x) ->
@@ -169,7 +164,7 @@ fun AutoSkipSlider(
       val centered = x - value.size.width / 2f
       val left =
         when (thumb) {
-          // a canvas too narrow for both values leaves an empty range, which coerceIn rejects
+          // maxOf: a canvas too narrow for both values leaves an empty range
           Thumb.INTRO -> centered.coerceIn(0f, maxOf(0f, mid - value.size.width - MARKER_GAP.toPx()))
 
           Thumb.OUTRO -> centered.coerceIn(mid + MARKER_GAP.toPx(), maxOf(mid + MARKER_GAP.toPx(), size.width - value.size.width))
@@ -191,7 +186,6 @@ fun AutoSkipSlider(
   }
 }
 
-/** The ruler itself: cut-off ticks tinted, the middle fading out, where the scale means nothing. */
 private fun DrawScope.drawRuler(
   geometry: RulerScale,
   introX: Float,
@@ -228,14 +222,14 @@ private fun DrawScope.drawRuler(
     topLeft = Offset(x - label.size.width / 2f, trackY + majorHalf + TICK_LABEL_GAP.toPx()),
   )
 
-  // the same tick on both halves: so far from the start, and so far from the end
   for (seconds in 0..MAX_SECONDS step TICK_SECONDS) {
     val distance = seconds * geometry.pxPerSecond
     val alpha = (1f - distance / geometry.half).coerceIn(MIN_TICK_ALPHA, 1f)
     val length = if (seconds % LABEL_SECONDS == 0) majorHalf else minorHalf
 
     drawTick(geometry.start + distance, length, alpha)
-    drawTick(geometry.end - distance, length, alpha)
+    // both halves share the tick in the middle
+    if (seconds < MAX_SECONDS) drawTick(geometry.end - distance, length, alpha)
 
     tickLabels[seconds]?.let { label ->
       drawLabel(geometry.start + distance, label, alpha)
@@ -293,11 +287,7 @@ private class RulerColors(
 
 internal enum class Thumb { INTRO, OUTRO }
 
-/**
- * The thumb a touch at [x] takes: the one whose half of the ruler it is, since the other could
- * not follow it there. The other one only when the touch is within [reach] of it and nearer to
- * it, so a thumb parked at the middle can still be picked up from the far side.
- */
+/** The thumb of the touched half, or the other one within [reach]: one parked at the middle is picked up from either side. */
 internal fun pickThumb(
   x: Float,
   introX: Float,
@@ -305,12 +295,17 @@ internal fun pickThumb(
   mid: Float,
   reach: Float,
 ): Thumb {
-  val own = if (x <= mid) Thumb.INTRO else Thumb.OUTRO
+  val own = halfOf(x, mid)
   val (ownX, otherX) = if (own == Thumb.INTRO) introX to outroX else outroX to introX
   val other = if (own == Thumb.INTRO) Thumb.OUTRO else Thumb.INTRO
 
   return if (abs(x - otherX) <= reach && abs(x - otherX) < abs(x - ownX)) other else own
 }
+
+private fun halfOf(
+  x: Float,
+  mid: Float,
+) = if (x <= mid) Thumb.INTRO else Thumb.OUTRO
 
 private fun Float.toSteppedSeconds(): Int = ((this / STEP_SECONDS).roundToInt() * STEP_SECONDS).coerceIn(0, MAX_SECONDS)
 

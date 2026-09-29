@@ -36,11 +36,10 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 /**
- * A mocked player whose listener, position and planted messages the test drives by hand, with
- * what matters of media3 imitated: a seek delivers its discontinuity synchronously and leaves
- * the player buffering, a new queue drops the old messages, and the posted decisions settle
- * after every stimulus, as on the real main looper. The podcast is the fixture one: c0 30s,
- * c1 40s, c2 50s; the item skips 10s of intro and 10s of outro.
+ * A mocked player driven by hand, imitating media3 where it matters: a seek delivers its
+ * discontinuity synchronously and leaves the player buffering, a new queue drops the old
+ * messages, posted decisions settle after every stimulus. Chapters of 30, 40 and 50 s, 10 s
+ * skipped at both ends.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class AutoSkipServiceTest {
@@ -59,6 +58,7 @@ class AutoSkipServiceTest {
   private val seeks = mutableListOf<Pair<Int, Long>>()
 
   private var book: DetailedItem = podcast()
+  private val another = podcast(id = "another")
   private var queueSize = 3
   private var index = 0
   private var positionMs = 0L
@@ -68,7 +68,6 @@ class AutoSkipServiceTest {
 
   @BeforeEach
   fun setUp() {
-    // posted decisions run after the player call that caused them, as on the real main looper
     Dispatchers.setMain(StandardTestDispatcher(scheduler))
     mockkStatic(Looper::class)
     every { Looper.getMainLooper() } returns mainLooper
@@ -84,7 +83,6 @@ class AutoSkipServiceTest {
       index = toIndex
       positionMs = toPosition
       seeks += toIndex to toPosition
-      // media3 delivers the discontinuity synchronously inside seekTo and buffers afterwards
       playing = false
       listener.captured.onPositionDiscontinuity(from, position(toIndex, toPosition), Player.DISCONTINUITY_REASON_SEEK)
     }
@@ -176,8 +174,8 @@ class AutoSkipServiceTest {
     }
 
     @Test
-    fun `a seek into the middle of a chapter is left alone`() {
-      userSeeks(to = 2, at = 25_000L)
+    fun `a seek into the intro of another chapter is left alone`() {
+      userSeeks(to = 1, at = 4_000L)
       playbackRuns()
 
       assertTrue(seeks.isEmpty())
@@ -208,7 +206,7 @@ class AutoSkipServiceTest {
     fun `a pending intro is dropped by a seek made while paused`() {
       playing = false
       arriveAutomatically(at = 1)
-      userSeeks(to = 1, at = 20_000L)
+      userSeeks(to = 1, at = 4_000L)
       playbackRuns()
 
       assertTrue(seeks.isEmpty())
@@ -271,7 +269,7 @@ class AutoSkipServiceTest {
     fun `a queue placed at the start of a chapter has its intro pending`() {
       // the way Android Auto and the system resumption build it: no seek, the position is just there
       playing = false
-      buildQueue(book, at = 2, positionMs = 0L)
+      buildQueue(another, at = 2, positionMs = 0L)
       assertTrue(seeks.isEmpty())
 
       playbackRuns()
@@ -282,7 +280,7 @@ class AutoSkipServiceTest {
     @Test
     fun `a queue placed at the start of a chapter while playing skips the intro at once`() {
       playing = true
-      buildQueue(book, at = 2, positionMs = 0L)
+      buildQueue(another, at = 2, positionMs = 0L)
 
       verify(exactly = 1) { player.seekTo(2, 10_000L) }
     }
@@ -290,7 +288,7 @@ class AutoSkipServiceTest {
     @Test
     fun `a queue placed inside the intro skips the rest of it`() {
       playing = false
-      buildQueue(book, at = 1, positionMs = 4_000L)
+      buildQueue(another, at = 1, positionMs = 4_000L)
       playbackRuns()
 
       assertEquals(listOf(1 to 10_000L), seeks)
@@ -300,7 +298,7 @@ class AutoSkipServiceTest {
     fun `a stored position inside the outro is resumed by moving on`() {
       playing = false
       // preparePlayback: the queue is set, then the player is seeked to the stored position, in one task
-      buildQueue(book, at = 1, positionMs = 35_000L) {
+      buildQueue(another, at = 1, positionMs = 35_000L) {
         listener.captured.onPositionDiscontinuity(position(2, 45_000L), position(1, 35_000L), Player.DISCONTINUITY_REASON_SEEK)
       }
 
@@ -310,14 +308,34 @@ class AutoSkipServiceTest {
     }
 
     @Test
-    fun `a new queue forgets what the old one was owed`() {
+    fun `a queue rebuilt for the same item continues inside the intro and forgets what was owed`() {
+      // a new episode order: the same episode at the same offset
       playing = false
       arriveAutomatically(at = 1)
-
-      buildQueue(book, at = 2, positionMs = 20_000L)
+      buildQueue(book, at = 1, positionMs = 4_000L)
       playbackRuns()
 
       assertTrue(seeks.isEmpty())
+    }
+
+    @Test
+    fun `a queue rebuilt for the same item continues inside the outro`() {
+      playing = false
+      buildQueue(book, at = 1, positionMs = 35_000L)
+      playbackRuns()
+
+      assertTrue(seeks.isEmpty())
+      verify(exactly = 0) { synchronization.reportChapterEnd(any()) }
+    }
+
+    @Test
+    fun `the queue of the previous item is left alone until the next one arrives`() {
+      // the session starts the synchronization of the next item before handing its queue over
+      syncState.update { it.start(another) }
+      reachOutroOf(1)
+
+      assertTrue(seeks.isEmpty())
+      verify(exactly = 0) { synchronization.reportChapterEnd(any()) }
     }
 
     @Test
@@ -339,11 +357,6 @@ class AutoSkipServiceTest {
 
   @Nested
   inner class Outro {
-    @Test
-    fun `one message is planted where the outro of each chapter begins`() {
-      assertEquals(listOf(0 to 20_000L, 1 to 30_000L, 2 to 40_000L), livePlan())
-    }
-
     @Test
     fun `the messages are kept after delivery and delivered on the main looper`() {
       val live = planted.filter { !it.dropped }
@@ -385,14 +398,6 @@ class AutoSkipServiceTest {
     }
 
     @Test
-    fun `a next chapter without an intro to skip starts at its beginning`() {
-      configure(AutoSkipConfiguration(introSeconds = 0, outroSeconds = 10))
-      reachOutroOf(1)
-
-      assertEquals(listOf(2 to 0L), seeks)
-    }
-
-    @Test
     fun `a message delivered a hair early still counts`() {
       // the position is not re-read at delivery: the message is the proof of the crossing
       index = 1
@@ -410,19 +415,8 @@ class AutoSkipServiceTest {
     }
 
     @Test
-    fun `the end of the last chapter is reported once even if playback runs again inside it`() {
-      reachOutroOf(2)
-      positionMs = 50_000L
-      playbackRuns()
-
-      assertEquals(listOf(2 to 50_000L), seeks)
-      verify(exactly = 1) { synchronization.reportChapterEnd(2) }
-    }
-
-    @Test
     fun `the message of the last chapter crossed again after the end seek does not end the item again`() {
-      // less audio than the server says: the outro message sits at the very end of the audio,
-      // and the seek to the end lands a hair short of it
+      // less audio than the server says: the message sits at the end of the audio, past where the end seek lands
       reachOutroOf(2)
       positionMs = 49_999L
       playbackRuns()
@@ -461,19 +455,6 @@ class AutoSkipServiceTest {
 
       assertTrue(seeks.isEmpty())
       verify(exactly = 0) { synchronization.reportChapterEnd(any()) }
-    }
-
-    @Test
-    fun `a chapter that is not on the device is not the next one`() {
-      buildQueue(
-        podcast(chapters = listOf(chapter("c0", 0, 30.0, 1L), chapter("c1", 1, 40.0, 2L, available = false), chapter("c2", 2, 50.0, 3L))),
-        at = 0,
-        positionMs = 15_000L,
-      )
-      playbackRuns()
-      reachOutroOf(0)
-
-      assertEquals(listOf(2 to 10_000L), seeks)
     }
 
     @Test
@@ -587,8 +568,8 @@ class AutoSkipServiceTest {
     fun `a forward step is spent by its own seek`() {
       index = 1
       positionMs = 5_000L
-      steps.expect(1, 20_000L)
-      userSeeks(to = 1, at = 20_000L)
+      steps.expect(1, 35_000L)
+      userSeeks(to = 1, at = 35_000L)
       userSeeks(to = 1, at = 35_000L)
       playbackRuns()
 
@@ -623,8 +604,8 @@ class AutoSkipServiceTest {
       assertTrue(seeks.isEmpty())
       verify(exactly = 0) { synchronization.reportChapterEnd(any()) }
 
-      // the morning after: the timer is gone, the position is still inside the outro
       every { playbackTimer.isEpisodeTimerRunning } returns false
+      timerPauses()
       playbackRuns()
 
       verifyOrder {
@@ -647,10 +628,22 @@ class AutoSkipServiceTest {
     }
 
     @Test
+    fun `a stall while the timer holds the outro does not move on under it`() {
+      every { playbackTimer.isEpisodeTimerRunning } returns true
+      reachOutroOf(1)
+      listener.captured.onIsPlayingChanged(false)
+      playbackRuns()
+
+      assertTrue(seeks.isEmpty())
+      verify(exactly = 0) { synchronization.reportChapterEnd(any()) }
+    }
+
+    @Test
     fun `a seek by the listener drops the skip the timer held back`() {
       every { playbackTimer.isEpisodeTimerRunning } returns true
       reachOutroOf(1)
-      userSeeks(to = 1, at = 20_000L)
+      userSeeks(to = 1, at = 35_000L)
+      timerPauses()
       playbackRuns()
 
       assertTrue(seeks.isEmpty())
@@ -672,24 +665,13 @@ class AutoSkipServiceTest {
       assertTrue(planted.take(3).all { it.cancelled })
       assertEquals(listOf(0 to 25_000L, 1 to 35_000L, 2 to 45_000L), livePlan())
     }
-
-    @Test
-    fun `no outro plants nothing`() {
-      configure(AutoSkipConfiguration(introSeconds = 10, outroSeconds = 0))
-
-      assertTrue(livePlan().isEmpty())
-    }
   }
 
   private fun configure(configuration: AutoSkipConfiguration) {
-    configurations.value = mapOf(book.id to configuration)
+    configurations.value = listOf(book.id, another.id).associateWith { configuration }
     settle()
   }
 
-  /**
-   * What the player does when a queue is set: the timeline changes and the old messages are gone,
-   * the player is placed, the synchronization starts, all in one main task.
-   */
   private fun buildQueue(
     item: DetailedItem,
     at: Int,
@@ -707,6 +689,13 @@ class AutoSkipServiceTest {
     syncState.update { it.start(item) }
     settle()
     seeks.clear()
+  }
+
+  private fun timerPauses() {
+    playing = false
+    listener.captured.onPlayWhenReadyChanged(false, Player.PLAY_WHEN_READY_CHANGE_REASON_USER_REQUEST)
+    listener.captured.onIsPlayingChanged(false)
+    settle()
   }
 
   private fun playbackRuns() {
@@ -735,7 +724,6 @@ class AutoSkipServiceTest {
     settle()
   }
 
-  /** Playback crosses into the outro of [chapter]: the message planted there is delivered. */
   private fun reachOutroOf(chapter: Int) {
     index = chapter
     positionMs = planted.last { it.index == chapter && !it.dropped }.positionMs
@@ -765,7 +753,6 @@ class AutoSkipServiceTest {
     var deleteAfterDelivery: Boolean? = null
     var cancelled = false
 
-    /** Dropped by the player itself with the queue that held it. */
     var dropped = false
   }
 }

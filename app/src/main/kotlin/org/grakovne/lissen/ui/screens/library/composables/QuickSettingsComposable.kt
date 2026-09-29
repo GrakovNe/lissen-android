@@ -12,8 +12,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.automirrored.outlined.Sort
-import androidx.compose.material.icons.outlined.ArrowDownward
-import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.CloudOff
@@ -42,14 +40,13 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.common.LibraryOrderingConfiguration
-import org.grakovne.lissen.common.LibraryOrderingDirection.ASCENDING
-import org.grakovne.lissen.common.LibraryOrderingDirection.DESCENDING
 import org.grakovne.lissen.common.LibraryOrderingOption
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.components.ApplicationSettingsItemComposable
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.SettingsOptionRow
 import org.grakovne.lissen.ui.components.SettingsPickerRow
+import org.grakovne.lissen.ui.components.SettingsSortOptionRow
 import org.grakovne.lissen.ui.components.SettingsToggleRow
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 import org.grakovne.lissen.viewmodel.CachingModelView
@@ -155,25 +152,13 @@ fun QuickSettingsComposable(
       AnimatedVisibility(visible = sortExpanded && !sortRequired) {
         Column {
           LibraryOrderingOption.entries.forEach { option ->
-            val isSelected = ordering.option == option
-            SettingsOptionRow(
+            SettingsSortOptionRow(
               title = option.toLocalizedName(context),
               icon = option.icon(),
-              selected = isSelected,
-              trailing =
-                when (ordering.direction) {
-                  ASCENDING -> Icons.Outlined.ArrowUpward
-                  DESCENDING -> Icons.Outlined.ArrowDownward
-                },
-              trailingDescription =
-                when (ordering.direction) {
-                  ASCENDING -> stringResource(R.string.episode_ordering_ascending)
-                  DESCENDING -> stringResource(R.string.episode_ordering_descending)
-                },
-              onClick = {
-                librarySettingsViewModel.preferLibraryOrdering(
-                  LibraryOrderingConfiguration(option = option, direction = if (isSelected) ordering.direction.opposite else ASCENDING),
-                )
+              selected = ordering.option == option,
+              direction = ordering.direction,
+              onSelected = { direction ->
+                librarySettingsViewModel.preferLibraryOrdering(LibraryOrderingConfiguration(option = option, direction = direction))
                 onSortingChanged()
               },
             )

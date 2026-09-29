@@ -3,10 +3,6 @@ package org.grakovne.lissen.playback.autoskip
 import androidx.annotation.Keep
 import com.squareup.moshi.JsonClass
 
-/**
- * How much of every chapter of an item the player skips on its own: the first [introSeconds]
- * and the last [outroSeconds]. Absent means nothing is skipped.
- */
 @Keep
 @JsonClass(generateAdapter = true)
 data class AutoSkipConfiguration(

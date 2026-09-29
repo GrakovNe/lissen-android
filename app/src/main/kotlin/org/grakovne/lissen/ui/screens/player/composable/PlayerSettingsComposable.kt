@@ -12,8 +12,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.InsertDriveFile
 import androidx.compose.material.icons.automirrored.outlined.Sort
-import androidx.compose.material.icons.outlined.ArrowDownward
-import androidx.compose.material.icons.outlined.ArrowUpward
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Layers
 import androidx.compose.material.icons.outlined.SortByAlpha
@@ -35,26 +33,17 @@ import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.common.EpisodeOrderingOption
-import org.grakovne.lissen.common.LibraryOrderingDirection.ASCENDING
-import org.grakovne.lissen.common.LibraryOrderingDirection.DESCENDING
 import org.grakovne.lissen.playback.autoskip.AutoSkipConfiguration
 import org.grakovne.lissen.ui.components.ApplicationSettingsItemComposable
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
-import org.grakovne.lissen.ui.components.SettingsOptionRow
 import org.grakovne.lissen.ui.components.SettingsPickerRow
+import org.grakovne.lissen.ui.components.SettingsSortOptionRow
 import org.grakovne.lissen.ui.components.slider.AutoSkipSlider
 import org.grakovne.lissen.ui.extensions.formatTime
 import org.grakovne.lissen.ui.extensions.spokenDuration
 import org.grakovne.lissen.ui.icons.SkipEdges
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 
-/**
- * The player's counterpart of the library quick settings, in the same sheet layout.
- *
- * Episode ordering (podcasts only): tapping an option selects it ascending, tapping it again flips
- * the direction; the picker is inert while the queue is rebuilt. Auto-skip: a ruler with the intro
- * and outro lengths of the item, stored once per gesture when the thumb is released.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerSettingsComposable(
@@ -74,7 +63,7 @@ fun PlayerSettingsComposable(
 
   var skipExpanded by remember { mutableStateOf(false) }
 
-  // the ruler edits a local copy and hands it over when the thumb is released
+  // stored once per gesture, when the thumb is released
   var draft by remember(autoSkip) { mutableStateOf(autoSkip) }
 
   LissenModalBottomSheet(
@@ -100,32 +89,18 @@ fun PlayerSettingsComposable(
           onClick = { sortExpanded = !sortExpanded },
         )
 
-        // kept open while the queue is rebuilt after a pick: dimmed, not folded under the finger
+        // not folded while the queue is rebuilt after a pick, only dimmed
         AnimatedVisibility(visible = sortExpanded) {
           Column {
             EpisodeOrderingOption.entries.forEach { option ->
-              val isSelected = current.option == option
-              SettingsOptionRow(
+              SettingsSortOptionRow(
                 title = option.toLocalizedName(context),
                 icon = option.icon(),
-                selected = isSelected,
-                trailing =
-                  when (current.direction) {
-                    ASCENDING -> Icons.Outlined.ArrowUpward
-                    DESCENDING -> Icons.Outlined.ArrowDownward
-                  },
-                trailingDescription =
-                  when (current.direction) {
-                    ASCENDING -> stringResource(R.string.episode_ordering_ascending)
-                    DESCENDING -> stringResource(R.string.episode_ordering_descending)
-                  },
+                selected = current.option == option,
+                direction = current.direction,
                 enabled = orderingEnabled,
                 modifier = Modifier.testTag("episodeOrderingOption_${option.name}"),
-                onClick = {
-                  onOrderingChanged(
-                    EpisodeOrderingConfiguration(option = option, direction = if (isSelected) current.direction.opposite else ASCENDING),
-                  )
-                },
+                onSelected = { direction -> onOrderingChanged(EpisodeOrderingConfiguration(option = option, direction = direction)) },
               )
             }
           }
@@ -136,7 +111,6 @@ fun PlayerSettingsComposable(
         label = stringResource(R.string.player_settings_auto_skip),
         icon = SkipEdges,
         value = draft.summary(),
-        // where the title leaves no room for the words, the two numbers alone
         compactValue = draft.compactSummary(),
         expanded = skipExpanded,
         modifier = Modifier.testTag("autoSkipPicker"),
@@ -148,8 +122,7 @@ fun PlayerSettingsComposable(
           introSeconds = draft.introSeconds,
           outroSeconds = draft.outroSeconds,
           stateDescription = draft.summary(spoken = true),
-          // nested one level in like the option rows: nothing of the ruler, its value labels
-          // included, is drawn left of where their icons start or right of where their arrows end
+          // indented like the option rows
           modifier =
             Modifier
               .padding(horizontal = 24.dp, vertical = 8.dp)
@@ -176,7 +149,7 @@ fun PlayerSettingsComposable(
   }
 }
 
-/** "Intro 01:20 · Outro 02:25", or the same read out in words for accessibility; what is not skipped is not mentioned. */
+/** "Intro 01:20 · Outro 02:25", or in words for TalkBack. */
 @Composable
 private fun AutoSkipConfiguration.summary(spoken: Boolean = false): String {
   val intro =
@@ -195,7 +168,6 @@ private fun AutoSkipConfiguration.summary(spoken: Boolean = false): String {
   }
 }
 
-/** The two numbers alone, for a row whose title leaves no room for the words. */
 private fun AutoSkipConfiguration.compactSummary(): String? =
   "${introSeconds.formatTime()}$SUMMARY_SEPARATOR${outroSeconds.formatTime()}".takeIf { enabled }
 

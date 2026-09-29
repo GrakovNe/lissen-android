@@ -282,7 +282,6 @@ fun PlayerScreen(
                     }
                   }
 
-                  // last in the row whatever the queue state
                   IconButton(
                     onClick = { if (isPlaybackReady) settingsSelected = true },
                     modifier =
