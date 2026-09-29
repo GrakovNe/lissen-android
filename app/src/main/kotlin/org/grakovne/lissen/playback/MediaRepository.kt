@@ -118,13 +118,14 @@ class MediaRepository
           }
         }
 
-        override fun onPositionDiscontinuity() {
+        override fun onPositionDiscontinuity(byPlayback: Boolean) {
           if (queueRebuildInFlight) return
 
           updateProgressWhenReady()
           // the end of the episode moved with the position, and the seeks of the auto-skip
-          // service never pass through seekTo
-          adjustTimer(totalPosition.value)
+          // service never pass through seekTo. Playback that ran on by itself has reached the
+          // end the timer counts to: the timer takes it, not a new count over the next chapter
+          if (byPlayback.not()) adjustTimer(totalPosition.value)
         }
 
         override fun onEnded() {

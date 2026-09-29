@@ -113,7 +113,7 @@ class MediaSessionConnection
           oldPosition: Player.PositionInfo,
           newPosition: Player.PositionInfo,
           reason: Int,
-        ) = this@asPlayerListener.onPositionDiscontinuity()
+        ) = this@asPlayerListener.onPositionDiscontinuity(byPlayback = reason == Player.DISCONTINUITY_REASON_AUTO_TRANSITION)
 
         override fun onPlaybackStateChanged(playbackState: Int) {
           if (playbackState == Player.STATE_ENDED) this@asPlayerListener.onEnded()

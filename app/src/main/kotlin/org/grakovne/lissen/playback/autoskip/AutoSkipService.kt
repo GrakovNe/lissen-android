@@ -53,6 +53,13 @@ class AutoSkipService
     private var owed: Int? = null
     private var planted: PlantedOutros? = null
 
+    /**
+     * The chapter whose outro ended the item. A chapter with less audio than the server says has
+     * its outro message at the very end of the audio, and the seek to the end lands a hair short
+     * of it: crossed again, the message would end the item again, and again.
+     */
+    private var ended: Int? = null
+
     private val listener =
       object : Player.Listener {
         override fun onTimelineChanged(
@@ -66,6 +73,7 @@ class AutoSkipService
           // to come inside this same main task, so the chapter is read afterwards
           owed = null
           planted = null
+          ended = null
           post {
             plantOutroMessages()
             reach(player.currentMediaItemIndex)
@@ -89,7 +97,10 @@ class AutoSkipService
             // a "forward" step is the player's own; anywhere else is the listener's
             Player.DISCONTINUITY_REASON_SEEK -> {
               val step = steps.take(newPosition)
-              if (step || (another && newPosition.positionMs == 0L)) reach(newPosition.mediaItemIndex) else owed = null
+              when (step || (another && newPosition.positionMs == 0L)) {
+                true -> reach(newPosition.mediaItemIndex)
+                false -> listenerMoved()
+              }
             }
 
             else -> {}
@@ -108,7 +119,14 @@ class AutoSkipService
 
     private fun reach(index: Int) {
       owed = index
+      ended = null
       post { settleOwed() }
+    }
+
+    /** Wherever the listener moved to is theirs: nothing is owed, and an outro crossed after it is skipped again. */
+    private fun listenerMoved() {
+      owed = null
+      ended = null
     }
 
     /** Playback runs in the chapter it is owed to: past the intro, or on out of the outro. */
@@ -150,7 +168,7 @@ class AutoSkipService
 
     /** Playback crossed into the outro of [index]: a delivered message is the proof, the position is not re-read. */
     private fun onOutroCrossed(index: Int) {
-      if (player.currentMediaItemIndex != index) return
+      if (player.currentMediaItemIndex != index || ended == index) return
       val book = currentBook() ?: return
       val chapter = chapterAt(book, index) ?: return
 
@@ -184,6 +202,8 @@ class AutoSkipService
         is OutroExit.End -> {
           Timber.d("Auto-skip outro: chapter=$index, next=none, endMs=${exit.atMs}")
           player.seekTo(index, exit.atMs)
+          // after the seek: its own discontinuity reads as the listener's and clears the mark
+          ended = index
         }
       }
     }

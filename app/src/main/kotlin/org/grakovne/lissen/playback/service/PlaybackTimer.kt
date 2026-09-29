@@ -42,6 +42,20 @@ class PlaybackTimer
             }
           }
         }
+
+        // the countdown runs on the wall clock from a position read a little earlier, so playback
+        // may reach the end of the episode first: running on into the next one is the expiry
+        override fun onPositionDiscontinuity(
+          oldPosition: Player.PositionInfo,
+          newPosition: Player.PositionInfo,
+          reason: Int,
+        ) {
+          if (timer == null || option != CurrentEpisodeTimerOption) return
+          if (reason != Player.DISCONTINUITY_REASON_AUTO_TRANSITION) return
+          if (newPosition.mediaItemIndex == oldPosition.mediaItemIndex) return
+
+          expire()
+        }
       }
 
     @OptIn(UnstableApi::class)
@@ -79,7 +93,9 @@ class PlaybackTimer
 
     private fun expire() {
       Timber.d("Timer expired, pausing and broadcasting")
-      // an expiry is not a cancellation: no TimerCancelled, or the fade would revert at the pause
+      // an expiry is not a cancellation: no TimerCancelled, or the fade would revert at the pause.
+      // Stopped, since playback may have run out ahead of it and it would finish a second time
+      timer?.stop()
       timer = null
       // paused here and now, not by whoever picks the event up later: anything that watches the
       // player and would act on this very moment sees it paused already

@@ -420,6 +420,30 @@ class AutoSkipServiceTest {
     }
 
     @Test
+    fun `the message of the last chapter crossed again after the end seek does not end the item again`() {
+      // less audio than the server says: the outro message sits at the very end of the audio,
+      // and the seek to the end lands a hair short of it
+      reachOutroOf(2)
+      positionMs = 49_999L
+      playbackRuns()
+      fire(2)
+
+      assertEquals(listOf(2 to 50_000L), seeks)
+      verify(exactly = 1) { synchronization.reportChapterEnd(2) }
+    }
+
+    @Test
+    fun `a seek by the listener back before the outro of the last chapter skips it again`() {
+      reachOutroOf(2)
+      userSeeks(to = 2, at = 20_000L)
+      playbackRuns()
+      reachOutroOf(2)
+
+      assertEquals(listOf(2 to 50_000L, 2 to 50_000L), seeks)
+      verify(exactly = 2) { synchronization.reportChapterEnd(2) }
+    }
+
+    @Test
     fun `the end of the item does not skip the intro of the first chapter while paused`() {
       // MediaRepository.onEnded seeks to the start of the first chapter and pauses
       reachOutroOf(2)

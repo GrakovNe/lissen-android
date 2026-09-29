@@ -1,5 +1,6 @@
 package org.grakovne.lissen.playback.service
 
+import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import io.mockk.Runs
@@ -7,6 +8,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.spyk
+import io.mockk.verify
 import io.mockk.verifyOrder
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
@@ -119,9 +121,58 @@ class PlaybackTimerTest {
     }
 
   @Test
+  fun `playback running on into the next chapter expires an episode timer that was behind`() =
+    runTest {
+      val events = record()
+      timer.startTimer(35.0, CurrentEpisodeTimerOption)
+
+      listeners.forEach { it.onPositionDiscontinuity(position(1), position(2), Player.DISCONTINUITY_REASON_AUTO_TRANSITION) }
+
+      verifyOrder {
+        player.pause()
+        bus.emit(PlaybackEvent.TimerExpired)
+      }
+      assertTrue(countdowns.single().stopped, "the countdown does not finish a second time")
+      assertEquals(listOf(PlaybackEvent.TimerTick(35), PlaybackEvent.TimerExpired), events)
+      assertFalse(timer.isEpisodeTimerRunning)
+    }
+
+  @Test
+  fun `a file boundary inside the chapter leaves an episode timer running`() {
+    timer.startTimer(35.0, CurrentEpisodeTimerOption)
+
+    listeners.forEach { it.onPositionDiscontinuity(position(1), position(1), Player.DISCONTINUITY_REASON_AUTO_TRANSITION) }
+
+    assertTrue(timer.isEpisodeTimerRunning)
+    verify(exactly = 0) { player.pause() }
+  }
+
+  @Test
+  fun `a seek into another chapter leaves the episode timer to be re-armed`() {
+    timer.startTimer(35.0, CurrentEpisodeTimerOption)
+
+    listeners.forEach { it.onPositionDiscontinuity(position(1), position(2), Player.DISCONTINUITY_REASON_SEEK) }
+
+    assertTrue(timer.isEpisodeTimerRunning)
+    verify(exactly = 0) { player.pause() }
+  }
+
+  @Test
+  fun `a duration timer runs on across chapters`() {
+    timer.startTimer(300.0, DurationTimerOption(5))
+
+    listeners.forEach { it.onPositionDiscontinuity(position(1), position(2), Player.DISCONTINUITY_REASON_AUTO_TRANSITION) }
+
+    assertFalse(countdowns.single().stopped)
+    verify(exactly = 0) { player.pause() }
+  }
+
+  @Test
   fun `without a timer nothing owns the end of the episode`() {
     assertFalse(timer.isEpisodeTimerRunning)
   }
+
+  private fun position(mediaItemIndex: Int) = Player.PositionInfo(null, mediaItemIndex, null, null, 0, 0L, 0L, C.INDEX_UNSET, C.INDEX_UNSET)
 
   private fun TestScope.record(): List<PlaybackEvent> {
     val events = mutableListOf<PlaybackEvent>()

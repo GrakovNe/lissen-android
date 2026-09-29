@@ -369,7 +369,7 @@ class MediaRepositoryTest {
         player.currentMediaItemIndex = 2
         player.currentPositionMs = 5_000L
 
-        player.listener.onPositionDiscontinuity()
+        player.listener.onPositionDiscontinuity(byPlayback = false)
 
         assertEquals(75.0, repository.totalPosition.value)
         assertEquals(2, repository.currentChapterIndex.value)
@@ -471,7 +471,7 @@ class MediaRepositoryTest {
       }
 
     @Test
-    fun `a discontinuity re-arms an episode timer from the new position`() =
+    fun `a seek discontinuity re-arms an episode timer from the new position`() =
       runTest {
         playing(podcast(progress = progress(35.0)))
         repository.updateTimer(CurrentEpisodeTimerOption)
@@ -480,9 +480,27 @@ class MediaRepositoryTest {
         // the auto-skip service moved playback into c2 (50s) on its own, 5s in
         player.currentMediaItemIndex = 2
         player.currentPositionMs = 5_000L
-        player.listener.onPositionDiscontinuity()
+        player.listener.onPositionDiscontinuity(byPlayback = false)
 
         assertEquals(PlaybackCommand.SetTimer(45.0, CurrentEpisodeTimerOption), eventBus.commands.first())
+      }
+
+    @Test
+    fun `playback running on into the next chapter leaves the episode timer to expire there`() =
+      runTest {
+        playing(podcast(progress = progress(35.0)))
+        repository.updateTimer(CurrentEpisodeTimerOption)
+        assertEquals(PlaybackCommand.SetTimer(35.0, CurrentEpisodeTimerOption), eventBus.commands.first())
+
+        // the countdown was a little behind: c1 ran out before it did, and c2 has begun
+        player.currentMediaItemIndex = 2
+        player.currentPositionMs = 0L
+        player.listener.onPositionDiscontinuity(byPlayback = true)
+
+        assertEquals(2, repository.currentChapterIndex.value)
+        val minutes = DurationTimerOption(5)
+        repository.updateTimer(minutes)
+        assertEquals(PlaybackCommand.SetTimer(300.0, minutes), eventBus.commands.first(), "no count over all of c2 was sent")
       }
 
     @Test
