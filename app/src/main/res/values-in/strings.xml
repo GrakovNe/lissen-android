@@ -247,4 +247,34 @@
     <string name="equalizer_restore_default">Pulihkan default</string>
     <string name="a11y_equalizer_band">%s Hz</string>
     <string name="a11y_equalizer_restore">Pulihkan default equalizer</string>
+    <string name="a11y_fast_forward">Maju cepat</string>
+    <plurals name="fade_duration_seconds">
+        <item quantity="other">%d detik</item>
+    </plurals>
+    <string name="player_state_widget_label">Sedang diputar</string>
+    <string name="player_cover_widget_label">Sedang diputar (cover)</string>
+    <string name="episode_ordering_published_at_option">Tanggal rilis</string>
+    <string name="episode_ordering_season_option">Season</string>
+    <string name="episode_ordering_episode_option">Episode</string>
+    <string name="episode_ordering_file_name_option">Nama file</string>
+    <string name="episode_ordering_ascending">Menaik</string>
+    <string name="episode_ordering_descending">Menurun</string>
+    <string name="sleep_timer_settings_title">Pengaturan timer</string>
+    <string name="sleep_timer_settings_description">Atur kontrol timer</string>
+    <string name="sleep_timer_fade_title">Meredup perlahan</string>
+    <string name="sleep_timer_fade_description">Kurangi volume saat pemutaran berhenti</string>
+    <string name="sleep_timer_fade_duration_title">Durasi pudar</string>
+    <string name="download_settings_storage_title">Lokasi penyimpanan</string>
+    <string name="download_settings_storage_unavailable">Tidak tersedia</string>
+    <string name="download_settings_storage_switch_failed_toast">Gagal mengubah lokasi penyimpanan</string>
+    <string name="download_settings_storage_confirmation_message">Konten yang diunduh akan dihapus dari perangkat ini. Data server kamu tidak akan terpengaruh</string>
+    <string name="download_settings_storage_confirm">Ubah lokasi</string>
+    <string name="tree_node_downloads_offline">Unduhan (mode offline)</string>
+    <string name="tree_node_all_titles">Semua judul</string>
+    <string name="tree_node_series_collapsed">Sembunyikan seri</string>
+    <string name="tree_node_genres">Genre</string>
+    <string name="tree_node_tags">Tag</string>
+    <string name="tree_node_authors">Penulis</string>
+    <string name="tree_node_series">Seri</string>
+    <string name="a11y_rewind">Putar balik</string>
 </resources>
