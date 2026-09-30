@@ -291,4 +291,8 @@
     <string name="episode_ordering_file_name_option">Naziv datoteke</string>
     <string name="episode_ordering_ascending">Uzlazni</string>
     <string name="episode_ordering_descending">Silazni</string>
+    <string name="player_settings_auto_skip">Automatsko preskakanje</string>
+    <string name="player_settings_skip_disabled">Onemogućeno</string>
+    <string name="player_settings_intro_value">Uvod %1$s</string>
+    <string name="player_settings_outro_value">Odjava %1$s</string>
 </resources>
