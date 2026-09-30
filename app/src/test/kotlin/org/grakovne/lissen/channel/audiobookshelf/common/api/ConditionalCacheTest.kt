@@ -7,13 +7,6 @@ import org.junit.jupiter.api.Test
 class ConditionalCacheTest {
   private val cache = ConditionalCache()
 
-  // weight is the element count of a top-level collection
-  private data class Bag(
-    val items: List<String>,
-  )
-
-  private fun bag(size: Int) = Bag(List(size) { "e$it" })
-
   @Test
   fun `a fresh url has neither a validator nor a value`() {
     assertNull(cache.etag("url"))
@@ -62,7 +55,7 @@ class ConditionalCacheTest {
 
   @Test
   fun `evicts the least recently used entry once over the weight budget`() {
-    val lru = ConditionalCache(maxWeight = 3)
+    val lru = ConditionalCache(maxEntries = 3)
     lru.put("a", "x", "va")
     lru.put("b", "y", "vb")
     lru.put("c", "z", "vc")
@@ -79,7 +72,7 @@ class ConditionalCacheTest {
 
   @Test
   fun `a read protects an entry from eviction`() {
-    val lru = ConditionalCache(maxWeight = 2)
+    val lru = ConditionalCache(maxEntries = 2)
     lru.put("a", "x", "va")
     lru.put("b", "y", "vb")
 
@@ -93,40 +86,14 @@ class ConditionalCacheTest {
   }
 
   @Test
-  fun `a large payload evicts several small ones`() {
-    val lru = ConditionalCache(maxWeight = 10)
-    lru.put("x", bag(1), "vx")
-    lru.put("y", bag(1), "vy")
-    lru.put("z", bag(1), "vz")
+  fun `payload shape does not change the entry limit`() {
+    val lru = ConditionalCache(maxEntries = 2)
+    val large = List(10_000) { it }
 
-    // "big" holds nine elements, so fitting it pushes out the two oldest small entries.
-    lru.put("big", bag(9), "vb")
+    lru.put("large", large, "vl")
+    lru.put("small", "value", "vs")
 
-    assertNull(lru.value<Bag>("x"))
-    assertNull(lru.value<Bag>("y"))
-    assertEquals(1, lru.value<Bag>("z")?.items?.size)
-    assertEquals(9, lru.value<Bag>("big")?.items?.size)
-  }
-
-  @Test
-  fun `an entry larger than the whole budget is not retained`() {
-    val lru = ConditionalCache(maxWeight = 5)
-
-    lru.put("huge", bag(10), "vh")
-
-    assertNull(lru.value<Bag>("huge"))
-  }
-
-  @Test
-  fun `re-putting a key updates its weight instead of double counting it`() {
-    val lru = ConditionalCache(maxWeight = 10)
-    lru.put("a", bag(4), "va")
-    lru.put("a", bag(4), "va")
-
-    // If the re-put double counted, "a" would weigh 8 and adding "b" (4) would evict it.
-    lru.put("b", bag(4), "vb")
-
-    assertEquals(4, lru.value<Bag>("a")?.items?.size)
-    assertEquals(4, lru.value<Bag>("b")?.items?.size)
+    assertEquals(large, lru.value<List<Int>>("large"))
+    assertEquals("value", lru.value<String>("small"))
   }
 }

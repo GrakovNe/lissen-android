@@ -43,9 +43,11 @@ val localProperties = Properties().apply {
 }
 
 tasks.named("preBuild") {
-  dependsOn("formatKotlin")
+  dependsOn("lintKotlin")
 }
 
+// Hilt runs through javac; Moshi already runs through KSP and must not also be loaded as a
+// javac annotation processor. Remove this filter once the processor classpath no longer mixes them.
 tasks.withType<JavaCompile>().configureEach {
   if (name.startsWith("hiltJavaCompile")) {
     doFirst {
@@ -56,6 +58,8 @@ tasks.withType<JavaCompile>().configureEach {
 }
 
 configurations.all {
+  // Keep the Kotlin toolchain libraries aligned when Compose Multiplatform dependencies request
+  // older transitive versions. Re-check these pins when the Compose dependency graph is upgraded.
   resolutionStrategy.force("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
   resolutionStrategy.force("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.1")
 }
@@ -172,7 +176,6 @@ java {
 dependencies {
   implementation(libs.androidx.navigation.compose)
   implementation(libs.material)
-  implementation(libs.material3)
   
   implementation(libs.androidx.media3.ffmpeg.decoder)
   implementation(libs.androidx.material)
