@@ -4,7 +4,7 @@ import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
 
-/** Adds If-None-Match to [Cacheable] requests whose URL has a stored validator. */
+/** Adds If-None-Match to [Cacheable] requests whose entry has a stored validator. */
 class ConditionalCacheInterceptor(
   private val cache: ConditionalCache,
 ) : Interceptor {
@@ -14,7 +14,7 @@ class ConditionalCacheInterceptor(
 
     val builder = request.newBuilder()
     cache
-      .etag(request.url.toString())
+      .etag(conditionalCacheKey(request))
       ?.let { builder.header("If-None-Match", it) }
 
     return chain.proceed(builder.build())

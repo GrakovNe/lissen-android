@@ -33,6 +33,7 @@ import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.Bookmark
 import org.grakovne.lissen.domain.BookmarkSyncState
 import org.grakovne.lissen.domain.DetailedItem
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
@@ -203,6 +204,24 @@ class MediaLibrarySessionCallbackTest {
       verify(exactly = 1) { preferences.savePlayingItem(book) }
       assertEquals(Looper.getMainLooper().thread, synchronizationThread.get())
       assertEquals(Looper.getMainLooper().thread, repositoryThread.get())
+    }
+
+  @Test
+  fun onSetMediaItems_typedPath_fetchesThroughTheListedLibraryType() =
+    runBlocking {
+      val episode = makeDetailedItem("pod-1", "My Podcast", MediaProgress(170.0, false, 0L))
+      coEvery { lissenMediaProvider.fetchBook("pod-1", LibraryType.PODCAST) } returns OperationResult.Success(episode)
+
+      // listed from a podcast library while a book library is preferred
+      val mediaItem =
+        MediaItem.Builder().setMediaId(MediaLibraryTree.bookPath("pod-1", LibraryType.PODCAST)).build()
+      val result =
+        callback
+          .onSetMediaItems(session, controller, listOf(mediaItem), C.INDEX_UNSET, C.TIME_UNSET)
+          .get(5, TimeUnit.SECONDS)
+
+      assertEquals(listOf("chapter:pod-1:0", "chapter:pod-1:1"), result.mediaItems.map { it.mediaId })
+      coVerify(exactly = 1) { lissenMediaProvider.fetchBook("pod-1", LibraryType.PODCAST) }
     }
 
   @Test

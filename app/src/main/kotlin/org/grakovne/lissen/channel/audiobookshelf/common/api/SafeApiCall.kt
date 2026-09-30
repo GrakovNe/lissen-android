@@ -25,14 +25,14 @@ suspend fun <T> safeApiCall(
     val first = apiCall.invoke()
     val request = first.raw().request
     val conditional = request.tag(Cacheable::class.java) != null
-    val url = request.url.toString()
+    val key = conditionalCacheKey(request)
 
     // evicted between sending the validator and reading it back: retry without one
-    val evicted = conditional && first.code() == HTTP_NOT_MODIFIED && cache.value<Any?>(url) == null
+    val evicted = conditional && first.code() == HTTP_NOT_MODIFIED && cache.value<Any?>(key) == null
     val response = if (evicted) apiCall.invoke() else first
 
     if (response.isSuccessful || response.code() == HTTP_NOT_MODIFIED) {
-      mapResponse(response, url, conditional, cache)
+      mapResponse(response, key, conditional, cache)
     } else {
       response.errorBody()?.close()
       errorForCode(response.code())
@@ -57,13 +57,13 @@ suspend fun <T> safeApiCall(
 
 private fun <T> mapResponse(
   response: Response<T>,
-  url: String,
+  key: String,
   conditional: Boolean,
   cache: ConditionalCache,
 ): OperationResult<T> {
   if (response.code() == HTTP_NOT_MODIFIED) {
     return cache
-      .value<T>(url)
+      .value<T>(key)
       ?.let { OperationResult.Success(it) }
       ?: OperationResult.Error(OperationError.InternalError)
   }
@@ -75,7 +75,7 @@ private fun <T> mapResponse(
     body != null -> {
       val etag = response.headers()["ETag"]
       // without a validator the entry could never answer a 304
-      if (conditional && etag != null) cache.put(url, body, etag)
+      if (conditional && etag != null) cache.put(key, body, etag)
       OperationResult.Success(body)
     }
 

@@ -5,8 +5,10 @@ import com.squareup.moshi.Moshi
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
+import mockwebserver3.Dispatcher
 import mockwebserver3.MockResponse
 import mockwebserver3.MockWebServer
+import mockwebserver3.RecordedRequest
 import okhttp3.OkHttpClient
 import org.grakovne.lissen.channel.audiobookshelf.AudiobookshelfHostProvider
 import org.grakovne.lissen.channel.audiobookshelf.Host
@@ -18,11 +20,14 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.bookmark.Bookmark
 import org.grakovne.lissen.channel.audiobookshelf.common.model.metadata.LibraryResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.UserResponse
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.UserStateResponse
+import org.grakovne.lissen.channel.audiobookshelf.library.model.BookResponse
+import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.persistence.preferences.ConnectionPreferences
 import org.grakovne.lissen.persistence.preferences.SessionPreferences
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -232,4 +237,45 @@ class ConditionalCacheIntegrationTest {
       assertEquals(first, second)
       assertEquals("\"v1\"", server.takeRequest().headers["If-None-Match"])
     }
+
+  @Test
+  fun `a book and a podcast read from the same url never answer for each other`() =
+    runTest {
+      // a real server: the same payload and validator whichever type the client expects
+      server.dispatcher = revalidatingServer(itemJson, etag = "\"v1\"")
+
+      val podcast = service.makeRequest { it.fetchPodcastEpisode(itemId = "item-1") }
+      // the podcast's validator must not be sent for the book: a 304 would serve the podcast as a book
+      val book = service.makeRequest { it.fetchLibraryItem(itemId = "item-1") }
+
+      assertInstanceOf(PodcastResponse::class.java, (podcast as OperationResult.Success).data)
+      assertInstanceOf(BookResponse::class.java, (book as OperationResult.Success).data)
+      assertNull(server.takeRequest().headers["If-None-Match"])
+      assertNull(server.takeRequest().headers["If-None-Match"])
+
+      // each type revalidates its own entry
+      val podcastAgain = service.makeRequest { it.fetchPodcastEpisode(itemId = "item-1") }
+      val bookAgain = service.makeRequest { it.fetchLibraryItem(itemId = "item-1") }
+
+      assertInstanceOf(PodcastResponse::class.java, (podcastAgain as OperationResult.Success).data)
+      assertInstanceOf(BookResponse::class.java, (bookAgain as OperationResult.Success).data)
+      assertEquals("\"v1\"", server.takeRequest().headers["If-None-Match"])
+      assertEquals("\"v1\"", server.takeRequest().headers["If-None-Match"])
+    }
+
+  private val itemJson =
+    """
+    {"id":"item-1","ino":"1","libraryId":"library-1","media":{"metadata":{"title":"Item"}},"addedAt":0,"ctimeMs":0}
+    """.trimIndent()
+
+  private fun revalidatingServer(
+    body: String,
+    etag: String,
+  ) = object : Dispatcher() {
+    override fun dispatch(request: RecordedRequest): MockResponse =
+      when (request.headers["If-None-Match"]) {
+        etag -> notModified(etag)
+        else -> ok(body, etag)
+      }
+  }
 }

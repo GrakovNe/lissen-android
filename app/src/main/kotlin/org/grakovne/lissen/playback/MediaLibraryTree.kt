@@ -108,9 +108,24 @@ class MediaLibraryTree
 
       private val SERIES_SUFFIX = Regex("""\s*#\s*\d+(\.\d+)?\s*$""")
 
-      fun bookPath(bookId: String) = "$BOOK/$bookId"
+      /**
+       * The tree lists every library of the server, not only the preferred one, so an item carries
+       * the type of the library it was listed from: fetched through another channel, a podcast would
+       * be read as a book. Paths without a type (older controllers may still hold them) are left to
+       * the preferred library.
+       */
+      fun bookPath(
+        bookId: String,
+        libraryType: LibraryType? = null,
+      ) = libraryType?.let { "$BOOK/${it.name}/$bookId" } ?: "$BOOK/$bookId"
 
-      fun parseBookId(mediaId: String) = mediaId.removePrefix("$BOOK/")
+      /** The item id and the type of the library it was listed from, when the path carries one. */
+      fun parseBookPath(mediaId: String): Pair<String, LibraryType?> {
+        val rest = mediaId.removePrefix("$BOOK/")
+        val type = LibraryType.entries.firstOrNull { rest.startsWith("${it.name}/") } ?: return rest to null
+
+        return rest.removePrefix("${type.name}/") to type
+      }
 
       fun isBookPath(mediaId: String) = mediaId.startsWith("$BOOK/")
 
@@ -152,6 +167,7 @@ class MediaLibraryTree
 
     private fun <T> libraryFilterNode(
       libraryId: String,
+      libraryType: LibraryType,
       filterKey: String,
       label: String,
       items: List<T>?,
@@ -165,6 +181,7 @@ class MediaLibraryTree
               pagedChildren { page, pageSize, _ ->
                 booksFromLibrary(
                   libraryId = libraryId,
+                  libraryType = libraryType,
                   page = page,
                   pageSize = pageSize,
                   extraFilter = filterKey to id,
@@ -188,24 +205,46 @@ class MediaLibraryTree
             resolveLibrary(libraryId)?.let { library ->
               mediaTreeNode(libraryFolderItem("$ROOT/$LIBRARY/$libraryId", library)) {
                 +mediaTreeNode(folderItem("$ROOT/$LIBRARY/$libraryId/titles", context.getString(R.string.tree_node_all_titles))) {
-                  pagedChildren { page, pageSize, _ -> booksFromLibrary(libraryId = libraryId, page = page, pageSize = pageSize) }
+                  pagedChildren { page, pageSize, _ ->
+                    booksFromLibrary(libraryId = libraryId, libraryType = library.type, page = page, pageSize = pageSize)
+                  }
                 }
                 +mediaTreeNode(
                   folderItem("$ROOT/$LIBRARY/$libraryId/$SERIES_COLLAPSED", context.getString(R.string.tree_node_series_collapsed)),
                 ) {
-                  pagedChildren { page, pageSize, _ -> collapsedSeriesItems(libraryId = libraryId, page = page, pageSize = pageSize) }
-                  resolveChild { seriesId -> collapsedSeriesNode(libraryId = libraryId, seriesId = seriesId) }
+                  pagedChildren { page, pageSize, _ ->
+                    collapsedSeriesItems(libraryId = libraryId, libraryType = library.type, page = page, pageSize = pageSize)
+                  }
+                  resolveChild { seriesId -> collapsedSeriesNode(libraryId = libraryId, libraryType = library.type, seriesId = seriesId) }
                 }
-                +libraryFilterNode(libraryId, "series", context.getString(R.string.tree_node_series), library.filters?.series) {
+                +libraryFilterNode(
+                  libraryId,
+                  library.type,
+                  "series",
+                  context.getString(R.string.tree_node_series),
+                  library.filters?.series,
+                ) {
                   it.id to it.name
                 }
-                +libraryFilterNode(libraryId, "authors", context.getString(R.string.tree_node_authors), library.filters?.authors) {
+                +libraryFilterNode(
+                  libraryId,
+                  library.type,
+                  "authors",
+                  context.getString(R.string.tree_node_authors),
+                  library.filters?.authors,
+                ) {
                   it.id to it.name
                 }
-                +libraryFilterNode(libraryId, "genres", context.getString(R.string.tree_node_genres), library.filters?.genres) {
+                +libraryFilterNode(
+                  libraryId,
+                  library.type,
+                  "genres",
+                  context.getString(R.string.tree_node_genres),
+                  library.filters?.genres,
+                ) {
                   it to it
                 }
-                +libraryFilterNode(libraryId, "tags", context.getString(R.string.tree_node_tags), library.filters?.tags) {
+                +libraryFilterNode(libraryId, library.type, "tags", context.getString(R.string.tree_node_tags), library.filters?.tags) {
                   it to it
                 }
               }
@@ -252,7 +291,8 @@ class MediaLibraryTree
             }
 
             isBookPath(path) -> {
-              fetchBookItem(parseBookId(path))?.let { LibraryResult.ofItem(it, null) }
+              val (bookId, libraryType) = parseBookPath(path)
+              fetchBookItem(bookId, libraryType)?.let { LibraryResult.ofItem(it, null) }
                 ?: LibraryResult.ofError(SessionError.INFO_CANCELLED)
             }
 
@@ -269,7 +309,7 @@ class MediaLibraryTree
             lissenMediaProvider
               .searchBooks(libraryId, query, limit = 20)
               .fold(
-                onSuccess = { books -> books.map { bookItem(it) } },
+                onSuccess = { books -> books.map { bookItem(it, libraryPreferences.getPreferredLibraryType()) } },
                 onFailure = { emptyList() },
               )
           } ?: emptyList()
@@ -324,9 +364,10 @@ class MediaLibraryTree
 
     private suspend fun collapsedSeriesNode(
       libraryId: String,
+      libraryType: LibraryType,
       seriesId: String,
     ): MediaTreeNode? {
-      val books = fetchSeriesBooks(libraryId, seriesId)
+      val books = fetchSeriesBooks(libraryId, libraryType, seriesId)
       if (books.isEmpty()) return null
 
       val item =
@@ -344,7 +385,7 @@ class MediaLibraryTree
         )
 
       return mediaTreeNode(item) {
-        pagedChildren { _, _, _ -> books.map { bookItem(it) } }
+        pagedChildren { _, _, _ -> books.map { bookItem(it, libraryType) } }
       }
     }
 
@@ -352,9 +393,10 @@ class MediaLibraryTree
       id: String,
       title: String,
       author: String?,
+      libraryType: LibraryType?,
     ): MediaItem =
       buildMediaItem(
-        id = bookPath(id),
+        id = bookPath(id, libraryType),
         title = title,
         artist = author,
         mediaType = MediaMetadata.MEDIA_TYPE_AUDIO_BOOK,
@@ -363,11 +405,17 @@ class MediaLibraryTree
         imageUri = ExternalCoverProvider.bookCoverUri(id),
       )
 
-    private fun bookItem(book: Book) = bookItem(book.id, book.title, book.author)
+    private fun bookItem(
+      book: Book,
+      libraryType: LibraryType,
+    ) = bookItem(book.id, book.title, book.author, libraryType)
 
-    private fun bookItem(book: DetailedItem) = bookItem(book.id, book.title, book.author)
+    private fun bookItem(book: DetailedItem) = bookItem(book.id, book.title, book.author, book.libraryType)
 
-    private fun bookItem(book: RecentBook) = bookItem(book.id, book.title, book.author)
+    private fun bookItem(
+      book: RecentBook,
+      libraryType: LibraryType,
+    ) = bookItem(book.id, book.title, book.author, libraryType)
 
     private fun recentBooksItems(session: MediaLibrarySession): List<MediaItem> {
       val playingItem = playbackPreferences.getPlayingItem()
@@ -393,7 +441,7 @@ class MediaLibraryTree
                       books
                         .asSequence()
                         .filter { it.id != playingItem?.id }
-                        .map { bookItem(it) }
+                        .map { bookItem(it, libraryPreferences.getPreferredLibraryType()) }
                         .toList()
                     },
                     onFailure = { emptyList() },
@@ -429,19 +477,21 @@ class MediaLibraryTree
 
     private suspend fun booksFromLibrary(
       libraryId: String,
+      libraryType: LibraryType,
       page: Int,
       pageSize: Int,
       extraFilter: Pair<String, String>? = null,
     ): List<MediaItem> =
       lissenMediaProvider
-        .fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = page, extraFilter = extraFilter)
+        .fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = page, extraFilter = extraFilter, libraryType = libraryType)
         .fold(
-          onSuccess = { paged -> paged.items.map { bookItem(it) } },
+          onSuccess = { paged -> paged.items.map { bookItem(it, libraryType) } },
           onFailure = { emptyList() },
         )
 
     private suspend fun collapsedSeriesItems(
       libraryId: String,
+      libraryType: LibraryType,
       page: Int,
       pageSize: Int,
     ): List<MediaItem> =
@@ -451,6 +501,7 @@ class MediaLibraryTree
           pageSize = pageSize,
           pageNumber = page,
           grouping = LibraryGrouping.SERIES,
+          libraryType = libraryType,
         ).fold(
           onSuccess = {
             it.items.mapNotNull { entry ->
@@ -466,7 +517,7 @@ class MediaLibraryTree
                 }
 
                 is LibraryEntry.BookEntry -> {
-                  bookItem(entry.book)
+                  bookItem(entry.book, libraryType)
                 }
 
                 else -> {
@@ -480,10 +531,11 @@ class MediaLibraryTree
 
     private suspend fun fetchSeriesBooks(
       libraryId: String,
+      libraryType: LibraryType,
       seriesId: String,
     ): List<Book> =
       lissenMediaProvider
-        .fetchSeriesItems(libraryId = libraryId, seriesId = seriesId)
+        .fetchSeriesItems(libraryId = libraryId, seriesId = seriesId, libraryType = libraryType)
         .fold(
           onSuccess = { it },
           onFailure = { emptyList() },
@@ -516,9 +568,12 @@ class MediaLibraryTree
         )
     }
 
-    private suspend fun fetchBookItem(bookId: String): MediaItem? =
+    private suspend fun fetchBookItem(
+      bookId: String,
+      libraryType: LibraryType?,
+    ): MediaItem? =
       lissenMediaProvider
-        .fetchBook(bookId)
+        .fetchBook(bookId, libraryType)
         .fold(
           onSuccess = { bookItem(it) },
           onFailure = { null },

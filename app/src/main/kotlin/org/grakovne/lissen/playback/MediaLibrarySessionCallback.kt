@@ -279,9 +279,9 @@ class MediaLibrarySessionCallback
         if (MediaLibraryTree.isBookPath(mediaItem.mediaId) && startIndex == C.INDEX_UNSET && startPositionMs == C.TIME_UNSET) {
           futureScope
             .listenableFuture {
-              val bookId = MediaLibraryTree.parseBookId(mediaItem.mediaId)
+              val (bookId, libraryType) = MediaLibraryTree.parseBookPath(mediaItem.mediaId)
               lissenMediaProvider
-                .fetchBook(bookId)
+                .fetchBook(bookId, libraryType)
                 .foldAsync(
                   onSuccess = {
                     preferences.savePlayingItem(it)
