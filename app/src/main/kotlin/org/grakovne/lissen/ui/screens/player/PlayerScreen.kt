@@ -181,27 +181,24 @@ fun PlayerScreen(
   val lifecycle = LocalLifecycleOwner.current.lifecycle
 
   LaunchedEffect(Unit) {
-    val needsPreparation =
-      playingItemChanged(bookId, playingBook) || cachePolicyChanged(cachingModelView, playingBook)
+    val useLocalCache = cachingModelView.localCacheUsing()
+    val needsPreparation = playerViewModel.requiresBookPreparation(bookId, useLocalCache)
 
     if (needsPreparation) {
       if (playerViewModel.hasCredentials().not()) {
         navController.showLogin()
         return@LaunchedEffect
       }
-
-      playerViewModel.clearPrepared()
     }
 
     lifecycle.withResumed {}
 
-    if (needsPreparation) {
-      playerViewModel.preparePlayback(bookId, playingBook?.takeIf { it.id == bookId }?.libraryType)
-    }
-
-    if (playInstantly) {
-      playerViewModel.prepareAndPlay()
-    }
+    playerViewModel.openBook(
+      bookId = bookId,
+      libraryType = playingBook?.takeIf { it.id == bookId }?.libraryType ?: preferredLibraryType,
+      useLocalCache = useLocalCache,
+      playInstantly = playInstantly,
+    )
   }
 
   LaunchedEffect(playingQueueExpanded) {
@@ -682,16 +679,6 @@ fun InfoRow(
     )
   }
 }
-
-private fun playingItemChanged(
-  item: String,
-  playingBook: DetailedItem?,
-) = item != playingBook?.id
-
-private fun cachePolicyChanged(
-  cachingModelView: CachingModelView,
-  playingBook: DetailedItem?,
-) = cachingModelView.localCacheUsing() != playingBook?.localProvided
 
 /** The placeholder guesses from the library the item is opened from; a loaded item speaks for itself. */
 internal fun isSortable(

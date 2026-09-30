@@ -22,7 +22,6 @@ import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.domain.TimerOption
-import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.MediaLibrarySessionProvider
 import org.grakovne.lissen.playback.PlaybackCommand
 import org.grakovne.lissen.playback.PlaybackEvent
@@ -43,9 +42,6 @@ class PlaybackService : MediaLibraryService() {
   lateinit var playbackSynchronizationService: PlaybackSynchronizationService
 
   @Inject
-  lateinit var sharedPreferences: PlaybackPreferences
-
-  @Inject
   lateinit var playbackTimer: PlaybackTimer
 
   @Inject
@@ -64,10 +60,9 @@ class PlaybackService : MediaLibraryService() {
     playerServiceScope.launch {
       playbackEventBus.commands.collect { command ->
         when (command) {
-          PlaybackCommand.PreparePlayback -> {
-            Timber.d("Command received: PREPARE_PLAYBACK")
-            val book = sharedPreferences.getPlayingItem()
-            book?.let { launch { preparePlayback(it) } }
+          is PlaybackCommand.PreparePlayback -> {
+            Timber.d("Command received: PREPARE_PLAYBACK bookId=${command.book.id}")
+            preparePlayback(command.book)
           }
 
           is PlaybackCommand.SetTimer -> {
@@ -138,7 +133,7 @@ class PlaybackService : MediaLibraryService() {
         }
       }
 
-      playbackEventBus.emit(PlaybackEvent.PlaybackReady)
+      playbackEventBus.emit(PlaybackEvent.PlaybackReady(book.id))
     }
   }
 

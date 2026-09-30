@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.TimerOption
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -31,7 +32,9 @@ class PlaybackEventBus
   }
 
 sealed class PlaybackEvent {
-  data object PlaybackReady : PlaybackEvent()
+  data class PlaybackReady(
+    val bookId: String,
+  ) : PlaybackEvent()
 
   data object TimerExpired : PlaybackEvent()
 
@@ -43,7 +46,9 @@ sealed class PlaybackEvent {
 }
 
 sealed class PlaybackCommand {
-  data object PreparePlayback : PlaybackCommand()
+  data class PreparePlayback(
+    val book: DetailedItem,
+  ) : PlaybackCommand()
 
   data class SetTimer(
     val delay: Double,

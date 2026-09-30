@@ -192,7 +192,7 @@ class MediaRepositoryTest {
         assertEquals(listOf("pause"), player.calls)
         assertFalse(repository.isPlaybackReady.value)
         verify { preferences.savePlayingItem(rebuilt) }
-        assertEquals(PlaybackCommand.PreparePlayback, eventBus.commands.first())
+        assertEquals(PlaybackCommand.PreparePlayback(rebuilt), eventBus.commands.first())
       }
 
     @Test
@@ -256,7 +256,7 @@ class MediaRepositoryTest {
         repository.reorderPlayingItem("podcast", descending())
         every { preferences.getPlayingItem() } returns repository.playingBook.value
 
-        eventBus.emit(PlaybackEvent.PlaybackReady)
+        eventBus.emit(PlaybackEvent.PlaybackReady("podcast"))
 
         assertTrue(repository.isPlaybackReady.value)
         assertEquals(listOf("pause", "play"), player.calls)
@@ -271,7 +271,7 @@ class MediaRepositoryTest {
         repository.reorderPlayingItem("podcast", descending())
         every { preferences.getPlayingItem() } returns repository.playingBook.value
 
-        eventBus.emit(PlaybackEvent.PlaybackReady)
+        eventBus.emit(PlaybackEvent.PlaybackReady("podcast"))
 
         assertTrue(repository.isPlaybackReady.value)
         assertEquals(listOf("pause"), player.calls)
@@ -308,6 +308,22 @@ class MediaRepositoryTest {
   }
 
   @Nested
+  inner class PlaybackReadiness {
+    @Test
+    fun `ready event applies to the book named by the service`() =
+      runTest {
+        playing(podcast())
+        repository.clearPreparedItem()
+
+        eventBus.emit(PlaybackEvent.PlaybackReady("another-book"))
+        assertFalse(repository.isPlaybackReady.value)
+
+        eventBus.emit(PlaybackEvent.PlaybackReady("podcast"))
+        assertTrue(repository.isPlaybackReady.value)
+      }
+  }
+
+  @Nested
   inner class PlayerErrors {
     @Test
     fun `a player error flags the preparation and stops everything in flight`() =
@@ -324,7 +340,7 @@ class MediaRepositoryTest {
         assertFalse(mainThread.polling)
         // the deferred autoplay is dropped: readiness will not come
         every { preferences.getPlayingItem() } returns repository.playingBook.value
-        eventBus.emit(PlaybackEvent.PlaybackReady)
+        eventBus.emit(PlaybackEvent.PlaybackReady("next"))
         assertFalse(player.calls.contains("play"))
       }
 

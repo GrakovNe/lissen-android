@@ -151,7 +151,7 @@ class MediaRepository
     private fun onPlaybackEvent(event: PlaybackEvent) {
       when (event) {
         is PlaybackEvent.PlaybackReady -> {
-          onPlaybackReady()
+          onPlaybackReady(event.bookId)
         }
 
         is PlaybackEvent.TimerExpired -> {
@@ -171,12 +171,13 @@ class MediaRepository
       }
     }
 
-    private fun onPlaybackReady() {
+    private fun onPlaybackReady(bookId: String) {
+      val book = _playingBook.value?.takeIf { it.id == bookId } ?: return
+
       // after an in-place rebuild the seeded position is the truth; the controller
       // may still describe the previous queue for one more hop
       val rebuilt = queueRebuildInFlight
       queueRebuildInFlight = false
-      val book = preferences.getPlayingItem() ?: return
 
       if (rebuilt.not()) updateProgress(book)
       if (player.isPlaying) progressPoller.start()
@@ -476,7 +477,7 @@ class MediaRepository
           _playingBook.value = book
           preferences.savePlayingItem(book)
 
-          eventBus.send(PlaybackCommand.PreparePlayback)
+          eventBus.send(PlaybackCommand.PreparePlayback(book))
         }
       }
     }

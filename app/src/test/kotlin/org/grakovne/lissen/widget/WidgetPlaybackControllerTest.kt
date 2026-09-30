@@ -67,7 +67,7 @@ class WidgetPlaybackControllerTest {
       coVerify { mediaRepository.preparePlayback("book-1", null) }
       assertEquals(0, ranTimes)
 
-      eventBus.emit(PlaybackEvent.PlaybackReady)
+      eventBus.emit(PlaybackEvent.PlaybackReady("book-1"))
 
       assertEquals(1, ranTimes)
     }
@@ -107,8 +107,8 @@ class WidgetPlaybackControllerTest {
       var ranTimes = 0
 
       controller.prepareAndRun("book-1") { ranTimes++ }
-      eventBus.emit(PlaybackEvent.PlaybackReady)
-      eventBus.emit(PlaybackEvent.PlaybackReady)
+      eventBus.emit(PlaybackEvent.PlaybackReady("book-1"))
+      eventBus.emit(PlaybackEvent.PlaybackReady("book-1"))
 
       assertEquals(1, ranTimes)
     }
@@ -120,7 +120,7 @@ class WidgetPlaybackControllerTest {
       var ranTimes = 0
 
       controller.prepareAndRun("book-1") { ranTimes++ }
-      eventBus.emit(PlaybackEvent.PlaybackReady)
+      eventBus.emit(PlaybackEvent.PlaybackReady("book-1"))
 
       assertEquals(0, ranTimes)
     }

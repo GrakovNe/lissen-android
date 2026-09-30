@@ -49,7 +49,7 @@ class MediaPlaybackTransportTest {
       playingBook.value = book
       savedItems.add(book)
 
-      commands.add(PlaybackCommand.PreparePlayback)
+      commands.add(PlaybackCommand.PreparePlayback(book))
     }
   }
 
@@ -101,7 +101,7 @@ class MediaPlaybackTransportTest {
       val book = detailedItem("book-1")
       startPreparingPlayback(book, playingBook, totalPosition, isPlaying, saved, commands)
 
-      assertEquals(listOf<PlaybackCommand>(PlaybackCommand.PreparePlayback), commands)
+      assertEquals(listOf<PlaybackCommand>(PlaybackCommand.PreparePlayback(book)), commands)
       assertEquals(0.0, totalPosition.value)
       assertEquals(false, isPlaying.value)
       assertEquals(book, playingBook.value)
@@ -138,7 +138,7 @@ class MediaPlaybackTransportTest {
       val next = detailedItem("book-2")
       startPreparingPlayback(next, playingBook, totalPosition, isPlaying, saved, commands)
 
-      assertEquals(listOf<PlaybackCommand>(PlaybackCommand.PreparePlayback), commands)
+      assertEquals(listOf<PlaybackCommand>(PlaybackCommand.PreparePlayback(next)), commands)
       assertEquals(next, playingBook.value)
       assertEquals(0.0, totalPosition.value)
     }

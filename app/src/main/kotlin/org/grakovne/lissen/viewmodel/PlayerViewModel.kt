@@ -147,10 +147,6 @@ class PlayerViewModel
       _searchToken.value = token
     }
 
-    fun clearPrepared() {
-      mediaRepository.clearPreparedItem()
-    }
-
     fun preparePlayback(
       bookId: String,
       libraryType: LibraryType? = null,
@@ -158,6 +154,37 @@ class PlayerViewModel
       viewModelScope.launch {
         mediaRepository.clearPreparedItem()
         mediaRepository.preparePlayback(bookId, libraryType)
+      }
+    }
+
+    fun requiresBookPreparation(
+      bookId: String,
+      useLocalCache: Boolean,
+    ): Boolean {
+      val currentBook = book.value
+      return currentBook?.id != bookId || currentBook.localProvided != useLocalCache
+    }
+
+    suspend fun openBook(
+      bookId: String,
+      libraryType: LibraryType?,
+      useLocalCache: Boolean,
+      playInstantly: Boolean,
+    ) {
+      val currentBook = book.value
+
+      if (requiresBookPreparation(bookId, useLocalCache)) {
+        mediaRepository.clearPreparedItem()
+        mediaRepository.preparePlayback(
+          bookId = bookId,
+          libraryType = currentBook?.takeIf { it.id == bookId }?.libraryType ?: libraryType,
+        )
+      }
+
+      if (playInstantly) {
+        mediaRepository.playingBook.value
+          ?.takeIf { it.id == bookId }
+          ?.let(mediaRepository::prepareAndPlay)
       }
     }
 
@@ -212,11 +239,6 @@ class PlayerViewModel
     fun togglePlayPause() {
       Timber.d("User action: togglePlayPause (isPlaying=${isPlaying.value})")
       mediaRepository.togglePlayPause()
-    }
-
-    fun prepareAndPlay() {
-      val playingBook = preferences.getPlayingItem() ?: return
-      mediaRepository.prepareAndPlay(playingBook)
     }
 
     /** One predicate for the sheet's rows and the action, so a tap never fails silently. */

@@ -1,6 +1,8 @@
 package org.grakovne.lissen.viewmodel
 
+import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -414,13 +416,6 @@ class PlayerViewModelTest {
     }
 
     @Test
-    fun `clearPrepared delegates to mediaRepository`() {
-      viewModel.clearPrepared()
-
-      verify { mediaRepository.clearPreparedItem() }
-    }
-
-    @Test
     fun `preparePlayback clears the prepared item before preparing the new one`() {
       viewModel.preparePlayback("book-2", LibraryType.LIBRARY)
 
@@ -429,29 +424,90 @@ class PlayerViewModelTest {
     }
 
     @Test
-    fun `prepareAndPlay does nothing when there is no stored playing item`() {
-      every { preferences.getPlayingItem() } returns null
+    fun `requiresBookPreparation detects another item`() {
+      playingBook.value = detailedItem(id = "book-1")
 
-      viewModel.prepareAndPlay()
-
-      verify(exactly = 0) { mediaRepository.prepareAndPlay(any()) }
+      assertTrue(viewModel.requiresBookPreparation("book-2", useLocalCache = false))
     }
 
     @Test
-    fun `prepareAndPlay delegates to mediaRepository when a playing item is stored`() {
-      val item = detailedItem()
-      every { preferences.getPlayingItem() } returns item
+    fun `requiresBookPreparation detects another cache representation`() {
+      playingBook.value = detailedItem(id = "book-1", localProvided = false)
 
-      viewModel.prepareAndPlay()
-
-      verify { mediaRepository.prepareAndPlay(item) }
+      assertTrue(viewModel.requiresBookPreparation("book-1", useLocalCache = true))
     }
+
+    @Test
+    fun `requiresBookPreparation accepts the loaded representation`() {
+      playingBook.value = detailedItem(id = "book-1", localProvided = true)
+
+      assertFalse(viewModel.requiresBookPreparation("book-1", useLocalCache = true))
+    }
+
+    @Test
+    fun `openBook prepares the requested book before starting it`() =
+      runTest {
+        val requested = detailedItem(id = "book-2")
+        playingBook.value = detailedItem(id = "book-1")
+        coEvery { mediaRepository.preparePlayback("book-2", LibraryType.LIBRARY) } answers {
+          playingBook.value = requested
+        }
+
+        viewModel.openBook(
+          bookId = "book-2",
+          libraryType = LibraryType.LIBRARY,
+          useLocalCache = false,
+          playInstantly = true,
+        )
+
+        coVerifyOrder {
+          mediaRepository.clearPreparedItem()
+          mediaRepository.preparePlayback("book-2", LibraryType.LIBRARY)
+          mediaRepository.prepareAndPlay(requested)
+        }
+      }
+
+    @Test
+    fun `openBook does not start the previous item when preparation fails`() =
+      runTest {
+        val previous = detailedItem(id = "book-1")
+        playingBook.value = previous
+
+        viewModel.openBook(
+          bookId = "book-2",
+          libraryType = LibraryType.LIBRARY,
+          useLocalCache = false,
+          playInstantly = true,
+        )
+
+        coVerify { mediaRepository.preparePlayback("book-2", LibraryType.LIBRARY) }
+        verify(exactly = 0) { mediaRepository.prepareAndPlay(any()) }
+      }
+
+    @Test
+    fun `openBook reuses the loaded item`() =
+      runTest {
+        val requested = detailedItem(id = "book-1", localProvided = true)
+        playingBook.value = requested
+
+        viewModel.openBook(
+          bookId = "book-1",
+          libraryType = LibraryType.LIBRARY,
+          useLocalCache = true,
+          playInstantly = true,
+        )
+
+        verify(exactly = 0) { mediaRepository.clearPreparedItem() }
+        coVerify(exactly = 0) { mediaRepository.preparePlayback(any(), any()) }
+        verify { mediaRepository.prepareAndPlay(requested) }
+      }
   }
 
   private fun detailedItem(
     chapters: List<PlayingChapter> = emptyList(),
     id: String = "book-1",
     libraryType: LibraryType? = null,
+    localProvided: Boolean = false,
   ) = DetailedItem(
     id = id,
     title = "Test Book",
@@ -467,7 +523,7 @@ class PlayerViewModelTest {
     progress = null,
     libraryId = "lib-1",
     libraryType = libraryType,
-    localProvided = false,
+    localProvided = localProvided,
     createdAt = 0L,
     updatedAt = 0L,
   )
