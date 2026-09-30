@@ -56,10 +56,10 @@ class WidgetPlaybackControllerTest {
   }
 
   @Test
-  fun prepareAndRunPreparesPlaybackAndDefersActionUntilReady() =
+  fun runForItemPreparesPlaybackAndDefersActionUntilReady() =
     runTest(testDispatcher) {
       var ranTimes = 0
-      val request = async { controller.prepareAndRun("book-1") { ranTimes++ } }
+      val request = async { controller.runForItem("book-1") { ranTimes++ } }
 
       runCurrent()
 
@@ -75,25 +75,45 @@ class WidgetPlaybackControllerTest {
     }
 
   @Test
-  fun prepareAndRunUsesPlayingBookLibraryType() =
+  fun runForItemUsesTheReadyRequestedBookWithoutPreparingItAgain() =
     runTest(testDispatcher) {
-      playingBook.value =
-        item("book-1", LibraryType.PODCAST)
-      coEvery { mediaRepository.preparePlayback(any(), any()) } answers { preparingError.value = true }
+      playingBook.value = item("book-1", LibraryType.PODCAST)
+      playbackReady.value = true
+      var ranTimes = 0
 
-      controller.prepareAndRun("book-1") {}
+      controller.runForItem("book-1") { ranTimes++ }
 
-      coVerify { mediaRepository.preparePlayback("book-1", LibraryType.PODCAST) }
+      assertEquals(1, ranTimes)
+      verify(exactly = 0) { mediaRepository.clearPreparedItem() }
+      coVerify(exactly = 0) { mediaRepository.preparePlayback(any(), any()) }
     }
 
   @Test
-  fun prepareAndRunUsesStoredItemLibraryTypeWhenPlayingBookIsNotLoaded() =
+  fun runForItemWaitsForTheRequestedBookThatIsAlreadyPreparing() =
+    runTest(testDispatcher) {
+      playingBook.value = item("book-1")
+      var ranTimes = 0
+      val request = async { controller.runForItem("book-1") { ranTimes++ } }
+      runCurrent()
+
+      assertEquals(0, ranTimes)
+      verify(exactly = 0) { mediaRepository.clearPreparedItem() }
+      coVerify(exactly = 0) { mediaRepository.preparePlayback(any(), any()) }
+
+      playbackReady.value = true
+      request.await()
+
+      assertEquals(1, ranTimes)
+    }
+
+  @Test
+  fun runForItemUsesStoredItemLibraryTypeWhenTheRequestedBookIsNotLoaded() =
     runTest(testDispatcher) {
       every { preferences.getPlayingItem() } returns
         item("book-1", LibraryType.LIBRARY)
       coEvery { mediaRepository.preparePlayback(any(), any()) } answers { preparingError.value = true }
 
-      controller.prepareAndRun("book-1") {}
+      controller.runForItem("book-1") {}
 
       coVerify { mediaRepository.preparePlayback("book-1", LibraryType.LIBRARY) }
     }
@@ -101,16 +121,16 @@ class WidgetPlaybackControllerTest {
   @Test
   fun readinessForAnotherBookDoesNotRunTheAction() =
     runTest(testDispatcher) {
-      var ranTimes = 0
-      val request = async { controller.prepareAndRun("book-1") { ranTimes++ } }
-      runCurrent()
-
       playingBook.value = item("book-2")
       playbackReady.value = true
+      var ranTimes = 0
+      val request = async { controller.runForItem("book-1") { ranTimes++ } }
       runCurrent()
 
       assertEquals(0, ranTimes)
       assertFalse(request.isCompleted)
+      verify { mediaRepository.clearPreparedItem() }
+      coVerify { mediaRepository.preparePlayback("book-1", null) }
 
       playingBook.value = item("book-1")
       request.await()
@@ -124,7 +144,7 @@ class WidgetPlaybackControllerTest {
       var ranTimes = 0
       coEvery { mediaRepository.preparePlayback("book-1", null) } answers { preparingError.value = true }
 
-      controller.prepareAndRun("book-1") { ranTimes++ }
+      controller.runForItem("book-1") { ranTimes++ }
 
       assertEquals(0, ranTimes)
     }

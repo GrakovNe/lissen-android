@@ -54,7 +54,7 @@ class ConditionalCacheTest {
   }
 
   @Test
-  fun `evicts the least recently used entry once over the weight budget`() {
+  fun `evicts the least recently used entry once over the entry limit`() {
     val lru = ConditionalCache(maxEntries = 3)
     lru.put("a", "x", "va")
     lru.put("b", "y", "vb")

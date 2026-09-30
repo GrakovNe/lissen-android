@@ -468,6 +468,21 @@ class PlayerViewModelTest {
       }
 
     @Test
+    fun `openBook uses the stored item type before the preferred library type`() =
+      runTest {
+        every { preferences.getPlayingItem() } returns detailedItem(id = "book-2", libraryType = LibraryType.PODCAST)
+
+        viewModel.openBook(
+          bookId = "book-2",
+          libraryType = LibraryType.LIBRARY,
+          useLocalCache = false,
+          playInstantly = false,
+        )
+
+        coVerify { mediaRepository.preparePlayback("book-2", LibraryType.PODCAST) }
+      }
+
+    @Test
     fun `openBook does not start the previous item when preparation fails`() =
       runTest {
         val previous = detailedItem(id = "book-1")

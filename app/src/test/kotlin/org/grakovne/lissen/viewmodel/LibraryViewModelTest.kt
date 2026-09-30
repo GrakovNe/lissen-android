@@ -8,6 +8,9 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runCurrent
@@ -187,6 +190,23 @@ class LibraryViewModelTest {
 
         response.complete(OperationResult.Success(emptyList()))
         request.await()
+
+        assertFalse(viewModel.recentBookUpdating.value)
+      }
+
+    @Test
+    fun `fetchRecentListening stops updating when the request is cancelled`() =
+      runTest {
+        val library = Library(id = "lib-2", title = "Books", type = LibraryType.LIBRARY)
+        every { preferences.getPreferredLibrary() } returns library
+        coEvery { mediaChannel.fetchRecentListenedBooks("lib-2") } coAnswers { awaitCancellation() }
+
+        val request = launch { viewModel.fetchRecentListening() }
+        runCurrent()
+
+        assertTrue(viewModel.recentBookUpdating.value)
+
+        request.cancelAndJoin()
 
         assertFalse(viewModel.recentBookUpdating.value)
       }

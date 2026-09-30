@@ -220,19 +220,18 @@ class LibraryViewModel
     suspend fun fetchRecentListening() {
       _recentBookUpdating.value = true
 
-      val preferredLibrary =
-        preferences.getPreferredLibrary()?.id ?: run {
-          _recentBookUpdating.value = false
-          return
-        }
+      try {
+        val preferredLibrary = preferences.getPreferredLibrary()?.id ?: return
 
-      mediaChannel
-        .fetchRecentListenedBooks(preferredLibrary)
-        .fold(
-          onSuccess = { _recentBooks.value = it },
-          onFailure = { },
-        )
-      _recentBookUpdating.value = false
+        mediaChannel
+          .fetchRecentListenedBooks(preferredLibrary)
+          .fold(
+            onSuccess = { _recentBooks.value = it },
+            onFailure = { },
+          )
+      } finally {
+        _recentBookUpdating.value = false
+      }
     }
 
     companion object {

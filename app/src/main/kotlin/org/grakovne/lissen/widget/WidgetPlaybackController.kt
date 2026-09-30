@@ -16,10 +16,8 @@ class WidgetPlaybackController
   @Inject
   constructor(
     private val mediaRepository: MediaRepository,
-    private val sharedPreferences: PlaybackPreferences,
+    private val preferences: PlaybackPreferences,
   ) {
-    fun providePlayingItem() = mediaRepository.playingBook.value
-
     fun togglePlayPause() = mediaRepository.togglePlayPause()
 
     fun nextTrack() = mediaRepository.nextTrack()
@@ -30,18 +28,16 @@ class WidgetPlaybackController
 
     fun forward() = mediaRepository.forward()
 
-    suspend fun prepareAndRun(
+    suspend fun runForItem(
       itemId: String,
       onPlaybackReady: () -> Unit,
     ) {
-      val libraryType =
-        mediaRepository.playingBook.value
-          ?.takeIf { it.id == itemId }
-          ?.libraryType
-          ?: sharedPreferences.getPlayingItem()?.takeIf { it.id == itemId }?.libraryType
+      if (mediaRepository.playingBook.value?.id != itemId) {
+        val libraryType = preferences.getPlayingItem()?.takeIf { it.id == itemId }?.libraryType
 
-      mediaRepository.clearPreparedItem()
-      mediaRepository.preparePlayback(bookId = itemId, libraryType = libraryType)
+        mediaRepository.clearPreparedItem()
+        mediaRepository.preparePlayback(bookId = itemId, libraryType = libraryType)
+      }
 
       val prepared =
         combine(

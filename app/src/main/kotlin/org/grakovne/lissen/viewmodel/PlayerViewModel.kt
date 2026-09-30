@@ -174,10 +174,12 @@ class PlayerViewModel
       val currentBook = book.value
 
       if (requiresBookPreparation(bookId, useLocalCache)) {
+        val storedBook = preferences.getPlayingItem()?.takeIf { it.id == bookId }
+
         mediaRepository.clearPreparedItem()
         mediaRepository.preparePlayback(
           bookId = bookId,
-          libraryType = currentBook?.takeIf { it.id == bookId }?.libraryType ?: libraryType,
+          libraryType = currentBook?.takeIf { it.id == bookId }?.libraryType ?: storedBook?.libraryType ?: libraryType,
         )
       }
 
