@@ -1,7 +1,6 @@
 package org.grakovne.lissen.viewmodel
 
 import android.content.Context
-import androidx.lifecycle.viewModelScope
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -9,14 +8,10 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.job
-import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.grakovne.lissen.content.cache.persistent.CacheState
@@ -75,7 +70,6 @@ class CachingModelViewTest {
         cachedCoverProvider,
         seriesCoverProvider,
       )
-    viewModel.dispatcher = testDispatcher
   }
 
   @AfterEach
@@ -263,21 +257,6 @@ class CachingModelViewTest {
 
       verify { downloadPreferences.saveDownloadChaptersCount(7) }
     }
-  }
-
-  @Nested
-  inner class RefreshCachedItems {
-    @Test
-    fun `refreshCachedItems completes after invalidation work`() =
-      runTest {
-        viewModel.dispatcher = StandardTestDispatcher(testScheduler)
-
-        val refresh = async { viewModel.refreshCachedItems() }
-
-        assertFalse(refresh.isCompleted)
-        runCurrent()
-        assertTrue(refresh.isCompleted)
-      }
   }
 
   private fun detailedItem(id: String = "book-1") =

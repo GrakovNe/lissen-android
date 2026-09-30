@@ -7,7 +7,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import androidx.paging.PagingSource
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -52,8 +51,6 @@ class CachingModelView
     private val cachedCoverProvider: CachedCoverProvider,
     private val seriesCoverProvider: SeriesCoverProvider,
   ) : ViewModel() {
-    internal var dispatcher = Dispatchers.IO
-
     private val _totalCount = MutableStateFlow(0)
     val totalCount: StateFlow<Int> = _totalCount.asStateFlow()
 
@@ -68,15 +65,11 @@ class CachingModelView
         prefetchDistance = PAGE_SIZE,
       )
 
-    private var pageSource: PagingSource<Int, DetailedItem>? = null
     val libraryPager: Flow<PagingData<DetailedItem>> by lazy {
       Pager(
         config = pageConfig,
         pagingSourceFactory = {
-          val source = CachedItemsPageSource(localCacheRepository) { _totalCount.value = it }
-
-          pageSource = source
-          source
+          CachedItemsPageSource(localCacheRepository) { _totalCount.value = it }
         },
       ).flow.cachedIn(viewModelScope)
     }
@@ -176,12 +169,6 @@ class CachingModelView
     ): Flow<Boolean> = contentCachingManager.hasMetadataCached(bookId, chapterId)
 
     fun provideCachedChapterIds(bookId: String): Flow<List<String>> = contentCachingManager.provideCachedChapterIds(bookId)
-
-    suspend fun refreshCachedItems() {
-      withContext(dispatcher) {
-        pageSource?.invalidate()
-      }
-    }
 
     suspend fun fetchLatestUpdate(libraryId: String) = localCacheRepository.fetchLatestUpdate(libraryId)
 

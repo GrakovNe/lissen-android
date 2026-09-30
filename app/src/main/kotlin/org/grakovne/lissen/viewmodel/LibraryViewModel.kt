@@ -5,11 +5,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import androidx.paging.PagingSource
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
@@ -25,7 +22,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
-import kotlinx.coroutines.withContext
 import org.grakovne.lissen.common.sortedBySeriesPosition
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Book
@@ -48,8 +44,6 @@ class LibraryViewModel
     private val preferences: LibraryPreferences,
     private val session: SessionPreferences,
   ) : ViewModel() {
-    internal var dispatcher: CoroutineDispatcher = Dispatchers.IO
-
     private val _recentBooks = MutableStateFlow<List<RecentBook>>(emptyList())
     val recentBooks: StateFlow<List<RecentBook>> = _recentBooks.asStateFlow()
 
@@ -61,9 +55,6 @@ class LibraryViewModel
 
     private val _searchToken = MutableStateFlow(EMPTY_SEARCH)
     val searchToken: StateFlow<String> = _searchToken.asStateFlow()
-
-    private var defaultPagingSource: PagingSource<Int, LibraryEntry>? = null
-    private var searchPagingSource: PagingSource<Int, LibraryEntry>? = null
 
     private val _totalCount = MutableStateFlow(0)
     val totalCount: StateFlow<Int> = _totalCount.asStateFlow()
@@ -104,7 +95,6 @@ class LibraryViewModel
                 limit = PAGE_SEARCH_SIZE,
               ) { _totalCount.value = it }
 
-            searchPagingSource = source
             source
           },
         ).flow
@@ -115,8 +105,6 @@ class LibraryViewModel
         config = pageConfig,
         pagingSourceFactory = {
           val source = LibraryDefaultPagingSource(preferences, mediaChannel) { _totalCount.value = it }
-          defaultPagingSource = source
-
           source
         },
       ).flow.cachedIn(viewModelScope)
@@ -228,16 +216,6 @@ class LibraryViewModel
     fun fetchPreferredLibraryType() = preferences.getPreferredLibraryType()
 
     fun hasCredentials() = session.hasCredentials()
-
-    suspend fun refreshLibrary() {
-      Timber.d("User action: refreshLibrary")
-      withContext(dispatcher) {
-        when (searchRequested.value) {
-          true -> searchPagingSource?.invalidate()
-          else -> defaultPagingSource?.invalidate()
-        }
-      }
-    }
 
     suspend fun fetchRecentListening() {
       _recentBookUpdating.value = true

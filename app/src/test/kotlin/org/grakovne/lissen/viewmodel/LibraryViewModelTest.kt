@@ -25,7 +25,6 @@ import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -43,7 +42,6 @@ class LibraryViewModelTest {
   fun setup() {
     Dispatchers.setMain(testDispatcher)
     viewModel = LibraryViewModel(mediaChannel, preferences, mockk(relaxed = true))
-    viewModel.dispatcher = testDispatcher
   }
 
   @AfterEach
@@ -397,19 +395,5 @@ class LibraryViewModelTest {
 
       assertEquals("dune", viewModel.searchToken.value)
     }
-  }
-
-  @Nested
-  inner class Refresh {
-    @Test
-    fun `refreshLibrary completes when no search is active`() = runTest { viewModel.refreshLibrary() }
-
-    @Test
-    fun `refreshLibrary completes while search is active`() =
-      runTest {
-        viewModel.requestSearch()
-
-        viewModel.refreshLibrary()
-      }
   }
 }

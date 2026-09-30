@@ -42,7 +42,7 @@ val localProperties = Properties().apply {
   rootProject.file("local.properties").takeIf { it.exists() }?.let { file -> file.inputStream().use { load(it) } }
 }
 
-tasks.named("preBuild") {
+tasks.named("check") {
   dependsOn("lintKotlin")
 }
 
