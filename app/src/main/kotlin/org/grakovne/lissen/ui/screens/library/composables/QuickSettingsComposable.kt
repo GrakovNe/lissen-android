@@ -95,13 +95,15 @@ fun QuickSettingsComposable(
         onClick = onForceLocalToggled,
       )
 
-      SettingsToggleRow(
-        title = stringResource(R.string.hide_completed_items),
-        icon = Icons.Outlined.VisibilityOff,
-        checked = isLibrary && hideCompleted,
-        enabled = isLibrary,
-        onClick = onHideCompletedToggled,
-      )
+      // what a library type does not support is not shown, not dimmed
+      if (isLibrary) {
+        SettingsToggleRow(
+          title = stringResource(R.string.hide_completed_items),
+          icon = Icons.Outlined.VisibilityOff,
+          checked = hideCompleted,
+          onClick = onHideCompletedToggled,
+        )
+      }
 
       Spacer(modifier = Modifier.height(8.dp))
 
@@ -112,56 +114,54 @@ fun QuickSettingsComposable(
 
       Spacer(modifier = Modifier.height(4.dp))
 
-      val displayedGrouping = if (isLibrary) grouping else LibraryGrouping.NONE
+      if (isLibrary) {
+        SettingsPickerRow(
+          label = stringResource(R.string.library_quick_settings_grouping_title),
+          icon = Icons.Outlined.Workspaces,
+          value = grouping.toLocalizedName(context),
+          expanded = groupingExpanded,
+          onClick = { groupingExpanded = !groupingExpanded },
+        )
 
-      SettingsPickerRow(
-        label = stringResource(R.string.library_quick_settings_grouping_title),
-        icon = Icons.Outlined.Workspaces,
-        value = displayedGrouping.toLocalizedName(context),
-        expanded = groupingExpanded,
-        enabled = isLibrary,
-        onClick = { groupingExpanded = !groupingExpanded },
-      )
-
-      AnimatedVisibility(visible = groupingExpanded && isLibrary) {
-        Column {
-          LibraryGrouping.entries.forEach { option ->
-            SettingsOptionRow(
-              title = option.toLocalizedName(context),
-              icon = option.icon(),
-              selected = grouping == option,
-              trailing = Icons.Outlined.Check,
-              onClick = { onGroupingSelected(option) },
-            )
+        AnimatedVisibility(visible = groupingExpanded) {
+          Column {
+            LibraryGrouping.entries.forEach { option ->
+              SettingsOptionRow(
+                title = option.toLocalizedName(context),
+                icon = option.icon(),
+                selected = grouping == option,
+                trailing = Icons.Outlined.Check,
+                onClick = { onGroupingSelected(option) },
+              )
+            }
           }
         }
       }
 
-      val sortRequired = isLibrary && grouping == LibraryGrouping.AUTHOR
-      val displayedSortOption = if (sortRequired) LibraryOrderingOption.AUTHOR else ordering.option
+      // grouped by author, the library is always sorted by author: there is nothing to pick
+      if (isLibrary.not() || grouping != LibraryGrouping.AUTHOR) {
+        SettingsPickerRow(
+          label = stringResource(R.string.library_quick_settings_sort_title),
+          icon = Icons.AutoMirrored.Outlined.Sort,
+          value = ordering.option.toLocalizedName(context),
+          expanded = sortExpanded,
+          onClick = { sortExpanded = !sortExpanded },
+        )
 
-      SettingsPickerRow(
-        label = stringResource(R.string.library_quick_settings_sort_title),
-        icon = Icons.AutoMirrored.Outlined.Sort,
-        value = displayedSortOption.toLocalizedName(context),
-        expanded = sortExpanded,
-        enabled = !sortRequired,
-        onClick = { sortExpanded = !sortExpanded },
-      )
-
-      AnimatedVisibility(visible = sortExpanded && !sortRequired) {
-        Column {
-          LibraryOrderingOption.entries.forEach { option ->
-            SettingsSortOptionRow(
-              title = option.toLocalizedName(context),
-              icon = option.icon(),
-              selected = ordering.option == option,
-              direction = ordering.direction,
-              onSelected = { direction ->
-                librarySettingsViewModel.preferLibraryOrdering(LibraryOrderingConfiguration(option = option, direction = direction))
-                onSortingChanged()
-              },
-            )
+        AnimatedVisibility(visible = sortExpanded) {
+          Column {
+            LibraryOrderingOption.entries.forEach { option ->
+              SettingsSortOptionRow(
+                title = option.toLocalizedName(context),
+                icon = option.icon(),
+                selected = ordering.option == option,
+                direction = ordering.direction,
+                onSelected = { direction ->
+                  librarySettingsViewModel.preferLibraryOrdering(LibraryOrderingConfiguration(option = option, direction = direction))
+                  onSortingChanged()
+                },
+              )
+            }
           }
         }
       }

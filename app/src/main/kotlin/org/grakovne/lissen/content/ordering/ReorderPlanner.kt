@@ -27,18 +27,24 @@ object ReorderPlanner {
       // the screen's item, not whatever happens to be playing while it loads
       book.id != itemId -> false
 
-      // only podcasts are reordered
-      book.libraryType != LibraryType.PODCAST -> false
-
       // a rebuild is in flight: totalPosition is stale
       playbackReady.not() -> false
+
+      else -> supportsReorder(book)
+    }
+  }
+
+  /** Whether the item may ever be reordered, whatever the playback is doing right now. */
+  fun supportsReorder(book: DetailedItem): Boolean =
+    when {
+      // only podcasts are reordered
+      book.libraryType != LibraryType.PODCAST -> false
 
       // savePlayingItem keeps the old item for such a book
       book.libraryId == null -> false
 
       else -> ChapterOrdering.isReorderable(book)
     }
-  }
 
   fun plan(
     book: DetailedItem,

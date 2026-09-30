@@ -64,6 +64,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.withResumed
 import coil3.ImageLoader
 import org.grakovne.lissen.R
+import org.grakovne.lissen.content.ordering.ReorderPlanner
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.SeekTime
@@ -690,12 +691,15 @@ fun InfoRow(
   }
 }
 
-/** The placeholder guesses from the library the item is opened from; a loaded item speaks for itself. */
+/**
+ * The placeholder guesses from the library the item is opened from; a loaded item speaks for itself.
+ * An item that can never be reordered gets no ordering row at all, rather than a dimmed one.
+ */
 internal fun isSortable(
   requestedBook: DetailedItem?,
   preferredLibraryType: LibraryType?,
 ): Boolean =
   when (requestedBook) {
     null -> preferredLibraryType == LibraryType.PODCAST
-    else -> requestedBook.libraryType == LibraryType.PODCAST
+    else -> ReorderPlanner.supportsReorder(requestedBook)
   }
