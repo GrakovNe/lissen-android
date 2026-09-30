@@ -207,10 +207,9 @@ fun LibraryScreen(
     }
   }
 
-  val refreshVisible = pullRefreshing || library.loadState.refresh is LoadState.Loading
   val pullRefreshState =
     rememberPullRefreshState(
-      refreshing = refreshVisible,
+      refreshing = pullRefreshing,
       onRefresh = {
         withHaptic(view) { refreshContent(showPullRefreshing = true) }
       },
@@ -567,7 +566,7 @@ fun LibraryScreen(
 
         if (!searchRequested) {
           PullRefreshIndicator(
-            refreshing = refreshVisible,
+            refreshing = pullRefreshing,
             state = pullRefreshState,
             contentColor = colorScheme.primary,
             backgroundColor = colorScheme.surfaceContainer,

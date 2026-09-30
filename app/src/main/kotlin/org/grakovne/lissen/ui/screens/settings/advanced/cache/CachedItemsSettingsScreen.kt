@@ -62,7 +62,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil3.ImageLoader
@@ -115,10 +114,9 @@ fun CachedItemsSettingsScreen(
     }
   }
 
-  val refreshVisible = pullRefreshing || cachedItems.loadState.refresh is LoadState.Loading
   val pullRefreshState =
     rememberPullRefreshState(
-      refreshing = refreshVisible,
+      refreshing = pullRefreshing,
       onRefresh = {
         withHaptic(view) { refreshContent(showPullRefreshing = true) }
       },
@@ -157,7 +155,7 @@ fun CachedItemsSettingsScreen(
       }
 
       PullRefreshIndicator(
-        refreshing = refreshVisible,
+        refreshing = pullRefreshing,
         state = pullRefreshState,
         contentColor = colorScheme.primary,
         modifier = Modifier.align(Alignment.TopCenter),
