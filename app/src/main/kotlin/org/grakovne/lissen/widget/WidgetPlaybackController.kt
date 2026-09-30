@@ -2,9 +2,11 @@ package org.grakovne.lissen.widget
 
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withContext
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.MediaRepository
 import javax.inject.Inject
@@ -31,7 +33,7 @@ class WidgetPlaybackController
     suspend fun runForItem(
       itemId: String,
       onPlaybackReady: () -> Unit,
-    ) {
+    ) = withContext(Dispatchers.Main.immediate) {
       if (mediaRepository.playingBook.value?.id != itemId) {
         val libraryType = preferences.getLastPlayingItem()?.takeIf { it.id == itemId }?.libraryType
 

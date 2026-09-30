@@ -31,6 +31,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
@@ -284,8 +285,7 @@ class MediaLibrarySessionCallback
                 .foldAsync(
                   onSuccess = {
                     preferences.savePlayingItem(it)
-                    playbackSynchronizationService.startPlaybackSynchronization(it)
-                    mediaRepository.registerPlayingBook(it)
+                    registerPlayback(it)
                     PlaybackService.bookToChapterMediaItems(it)
                   },
                   onFailure = { MediaItemsWithStartPosition(emptyList(), 0, 0) },
@@ -318,12 +318,17 @@ class MediaLibrarySessionCallback
 
           if (isForPlayback) {
             refreshedBook?.let { preferences.savePlayingItem(it) }
-            playbackSynchronizationService.startPlaybackSynchronization(book)
-            mediaRepository.registerPlayingBook(book)
+            registerPlayback(book)
           }
 
           PlaybackService.bookToChapterMediaItems(book)
         }
+
+    private suspend fun registerPlayback(book: DetailedItem) =
+      withContext(Dispatchers.Main.immediate) {
+        playbackSynchronizationService.startPlaybackSynchronization(book)
+        mediaRepository.registerPlayingBook(book)
+      }
 
     /** The stored item is always playable as it was; a cache failure must not take that away. */
     private suspend fun storedBookWithLatestProgress(storedBook: DetailedItem): DetailedItem =

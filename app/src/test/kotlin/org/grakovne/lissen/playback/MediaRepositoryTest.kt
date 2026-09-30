@@ -13,6 +13,8 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import org.grakovne.lissen.channel.common.OperationError
+import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DetailedItem
@@ -319,6 +321,15 @@ class MediaRepositoryTest {
 
   @Nested
   inner class PlaybackReadiness {
+    @Test
+    fun `failed fetch reports that preparation did not start`() =
+      runTest {
+        coEvery { mediaChannel.fetchBook("missing", null) } returns OperationResult.Error(OperationError.NetworkError)
+
+        assertFalse(repository.preparePlayback("missing"))
+        assertTrue(repository.mediaPreparingError.value)
+      }
+
     @Test
     fun `ready event applies to the book named by the service`() =
       runTest {

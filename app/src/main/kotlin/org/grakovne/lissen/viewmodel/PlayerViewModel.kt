@@ -175,18 +175,22 @@ class PlayerViewModel
       playInstantly: Boolean,
     ) {
       val currentBook = book.value
+      val preparationRequired = requiresBookPreparation(bookId, useLocalCache)
 
-      if (requiresBookPreparation(bookId, useLocalCache)) {
-        val storedBook = preferences.getLastPlayingItem()?.takeIf { it.id == bookId }
+      val canStart =
+        if (preparationRequired) {
+          val storedBook = preferences.getLastPlayingItem()?.takeIf { it.id == bookId }
 
-        mediaRepository.clearPreparedItem()
-        mediaRepository.preparePlayback(
-          bookId = bookId,
-          libraryType = currentBook?.takeIf { it.id == bookId }?.libraryType ?: storedBook?.libraryType ?: libraryType,
-        )
-      }
+          mediaRepository.clearPreparedItem()
+          mediaRepository.preparePlayback(
+            bookId = bookId,
+            libraryType = currentBook?.takeIf { it.id == bookId }?.libraryType ?: storedBook?.libraryType ?: libraryType,
+          )
+        } else {
+          true
+        }
 
-      if (playInstantly) {
+      if (playInstantly && canStart) {
         mediaRepository.playingBook.value
           ?.takeIf { it.id == bookId }
           ?.let(mediaRepository::prepareAndPlay)

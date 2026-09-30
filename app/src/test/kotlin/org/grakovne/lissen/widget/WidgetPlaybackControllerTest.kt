@@ -111,7 +111,10 @@ class WidgetPlaybackControllerTest {
     runTest(testDispatcher) {
       every { preferences.getLastPlayingItem() } returns
         item("book-1", LibraryType.LIBRARY)
-      coEvery { mediaRepository.preparePlayback(any(), any()) } answers { preparingError.value = true }
+      coEvery { mediaRepository.preparePlayback(any(), any()) } answers {
+        preparingError.value = true
+        false
+      }
 
       controller.runForItem("book-1") {}
 
@@ -142,7 +145,10 @@ class WidgetPlaybackControllerTest {
   fun preparationFailureDoesNotRunTheAction() =
     runTest(testDispatcher) {
       var ranTimes = 0
-      coEvery { mediaRepository.preparePlayback("book-1", null) } answers { preparingError.value = true }
+      coEvery { mediaRepository.preparePlayback("book-1", null) } answers {
+        preparingError.value = true
+        false
+      }
 
       controller.runForItem("book-1") { ranTimes++ }
 

@@ -121,8 +121,9 @@ class MediaRepositoryThreadingTest {
         }
         player.isPlayingReadThread.set(null)
 
-        repository.preparePlayback(book.id)
+        val prepared = repository.preparePlayback(book.id)
 
+        assertTrue(prepared)
         assertTrue(repository.isPlaybackReady.value)
         assertNotNull(player.isPlayingReadThread.get())
         assertSame(mainThread, player.isPlayingReadThread.get())

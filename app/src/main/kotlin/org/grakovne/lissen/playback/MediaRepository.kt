@@ -315,17 +315,21 @@ class MediaRepository
     suspend fun preparePlayback(
       bookId: String,
       libraryType: LibraryType? = null,
-    ) {
+    ): Boolean {
       val result = withContext(ioDispatcher) { mediaChannel.fetchBook(bookId, libraryType) }
 
       // only the fetch leaves the main thread: the controller answers there alone
-      withContext(Dispatchers.Main.immediate) {
+      return withContext(Dispatchers.Main.immediate) {
         result.fold(
           onSuccess = {
             startPreparingPlayback(it)
             playingBookmarks.refreshFromServerAsync()
+            true
           },
-          onFailure = { _mediaPreparingError.value = true },
+          onFailure = {
+            _mediaPreparingError.value = true
+            false
+          },
         )
       }
     }

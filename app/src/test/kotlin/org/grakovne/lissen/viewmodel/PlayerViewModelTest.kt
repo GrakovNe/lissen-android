@@ -474,6 +474,7 @@ class PlayerViewModelTest {
         playingBook.value = detailedItem(id = "book-1")
         coEvery { mediaRepository.preparePlayback("book-2", LibraryType.LIBRARY) } answers {
           playingBook.value = requested
+          true
         }
 
         viewModel.openBook(
@@ -520,6 +521,48 @@ class PlayerViewModelTest {
 
         coVerify { mediaRepository.preparePlayback("book-2", LibraryType.LIBRARY) }
         verify(exactly = 0) { mediaRepository.prepareAndPlay(any()) }
+      }
+
+    @Test
+    fun `openBook does not start a stale representation when replacement fails`() =
+      runTest {
+        val remote = detailedItem(id = "book-1", localProvided = false)
+        playingBook.value = remote
+        coEvery { mediaRepository.preparePlayback("book-1", LibraryType.LIBRARY) } returns false
+
+        viewModel.openBook(
+          bookId = "book-1",
+          libraryType = LibraryType.LIBRARY,
+          useLocalCache = true,
+          playInstantly = true,
+        )
+
+        coVerifyOrder {
+          mediaRepository.clearPreparedItem()
+          mediaRepository.preparePlayback("book-1", LibraryType.LIBRARY)
+        }
+        verify(exactly = 0) { mediaRepository.prepareAndPlay(any()) }
+      }
+
+    @Test
+    fun `openBook starts a successful fallback representation`() =
+      runTest {
+        val cached = detailedItem(id = "book-1", localProvided = true)
+        playingBook.value = cached
+        coEvery { mediaRepository.preparePlayback("book-1", LibraryType.LIBRARY) } returns true
+
+        viewModel.openBook(
+          bookId = "book-1",
+          libraryType = LibraryType.LIBRARY,
+          useLocalCache = false,
+          playInstantly = true,
+        )
+
+        coVerifyOrder {
+          mediaRepository.clearPreparedItem()
+          mediaRepository.preparePlayback("book-1", LibraryType.LIBRARY)
+        }
+        verify { mediaRepository.prepareAndPlay(cached) }
       }
 
     @Test

@@ -2,6 +2,7 @@ package org.grakovne.lissen.playback
 
 import android.content.Context
 import android.os.Bundle
+import android.os.Looper
 import androidx.annotation.OptIn
 import androidx.core.os.BundleCompat
 import androidx.media3.common.C
@@ -47,6 +48,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 
 @OptIn(UnstableApi::class)
 @RunWith(AndroidJUnit4::class)
@@ -169,7 +171,15 @@ class MediaLibrarySessionCallbackTest {
   fun onSetMediaItems_singleBook_resolvesChaptersFilesProgress() =
     runBlocking {
       val book = makeDetailedItem("book-1", "My Book", MediaProgress(170.0, false, 0L))
+      val synchronizationThread = AtomicReference<Thread?>()
+      val repositoryThread = AtomicReference<Thread?>()
       coEvery { lissenMediaProvider.fetchBook("book-1") } returns OperationResult.Success(book)
+      every { playbackSynchronizationService.startPlaybackSynchronization(book) } answers {
+        synchronizationThread.set(Thread.currentThread())
+      }
+      every { mediaRepository.registerPlayingBook(book) } answers {
+        repositoryThread.set(Thread.currentThread())
+      }
 
       val mediaItem =
         MediaItem.Builder().setMediaId(MediaLibraryTree.bookPath("book-1")).build()
@@ -189,7 +199,10 @@ class MediaLibrarySessionCallbackTest {
       assertEquals(1, result.startIndex)
       assertEquals(20000, result.startPositionMs)
       verify(atLeast = 1) { playbackSynchronizationService.startPlaybackSynchronization(book) }
+      verify(exactly = 1) { mediaRepository.registerPlayingBook(book) }
       verify(exactly = 1) { preferences.savePlayingItem(book) }
+      assertEquals(Looper.getMainLooper().thread, synchronizationThread.get())
+      assertEquals(Looper.getMainLooper().thread, repositoryThread.get())
     }
 
   @Test
