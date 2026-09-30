@@ -7,9 +7,11 @@ import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.domain.Bookmark
@@ -38,6 +40,10 @@ class PlayerViewModel
     private val session: SessionPreferences,
   ) : ViewModel() {
     val book: StateFlow<DetailedItem?> = mediaRepository.playingBook
+
+    val preferredLibraryType: StateFlow<LibraryType> =
+      libraryPreferences.preferredLibraryTypeFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), libraryPreferences.getPreferredLibraryType())
 
     /** The stored ordering of the item the screen shows, not necessarily the playing one. */
     fun episodeOrdering(itemId: String): Flow<EpisodeOrderingConfiguration?> = libraryPreferences.episodeOrderingFlow.map { it[itemId] }
@@ -108,7 +114,7 @@ class PlayerViewModel
       val playingItem = preferences.getPlayingItem()
 
       if (playingItem == null) {
-        viewModelScope.launch { mediaRepository.clearPlayingBook() }
+        mediaRepository.clearPlayingBook()
         return
       }
 

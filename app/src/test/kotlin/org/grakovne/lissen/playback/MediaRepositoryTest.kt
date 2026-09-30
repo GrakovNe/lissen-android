@@ -360,6 +360,36 @@ class MediaRepositoryTest {
   }
 
   @Nested
+  inner class PlayingBookCleanup {
+    @Test
+    fun `clearing the playing book clears preparation and timer state`() =
+      runTest {
+        val book = podcast(progress = progress(35.0))
+        val next = podcast(id = "next")
+        playing(book, playing = true)
+        repository.clearPreparedItem()
+        repository.prepareAndPlay(next)
+        assertEquals(PlaybackCommand.PreparePlayback(next), eventBus.commands.first())
+        player.listener.onError(mockk<PlaybackException>(relaxed = true))
+
+        val timer = DurationTimerOption(5)
+        repository.updateTimer(timer)
+        assertEquals(PlaybackCommand.SetTimer(300.0, timer), eventBus.commands.first())
+
+        repository.clearPlayingBook()
+
+        assertEquals(null, repository.playingBook.value)
+        assertEquals(null, repository.timerOption.value)
+        assertFalse(repository.mediaPreparingError.value)
+        assertFalse(repository.isPlaybackReady.value)
+        assertFalse(repository.isPlaying.value)
+        assertEquals(listOf("clear"), player.calls)
+        assertEquals(PlaybackCommand.CancelTimer, eventBus.commands.first())
+        verify { preferences.clearPlayingItem(next.id) }
+      }
+  }
+
+  @Nested
   inner class ProgressPolling {
     @Test
     fun `progress is polled only while playing`() =

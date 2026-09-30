@@ -11,8 +11,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
@@ -56,6 +58,7 @@ class PlayerViewModelTest {
   private val bookmarks = MutableStateFlow<List<Bookmark>>(emptyList())
   private val timerOption = MutableStateFlow<TimerOption?>(null)
   private val timerRemaining = MutableStateFlow<Long?>(null)
+  private val preferredLibraryType = MutableStateFlow(LibraryType.LIBRARY)
 
   private val mediaRepository = mockk<MediaRepository>(relaxed = true)
   private val preferences = mockk<PlaybackPreferences>(relaxed = true)
@@ -66,6 +69,7 @@ class PlayerViewModelTest {
   @BeforeEach
   fun setup() {
     Dispatchers.setMain(testDispatcher)
+    preferredLibraryType.value = LibraryType.LIBRARY
 
     every { mediaRepository.playingBook } returns playingBook
     every { mediaRepository.currentChapterIndex } returns currentChapterIndex
@@ -81,6 +85,8 @@ class PlayerViewModelTest {
     every { mediaRepository.timerRemaining } returns timerRemaining
 
     every { libraryPreferences.episodeOrderingFlow } returns MutableStateFlow(emptyMap())
+    every { libraryPreferences.preferredLibraryTypeFlow } returns preferredLibraryType
+    every { libraryPreferences.getPreferredLibraryType() } returns LibraryType.LIBRARY
 
     viewModel = PlayerViewModel(mediaRepository, preferences, libraryPreferences, autoSkipPreferences, mockk(relaxed = true))
   }
@@ -229,6 +235,22 @@ class PlayerViewModelTest {
       viewModel.updateSearch("harry potter")
       assertEquals("harry potter", viewModel.searchToken.value)
     }
+  }
+
+  @Nested
+  inner class LibraryPreference {
+    @Test
+    fun `preferred library type follows preferences`() =
+      runTest {
+        val collection = launch { viewModel.preferredLibraryType.collect {} }
+        runCurrent()
+
+        preferredLibraryType.value = LibraryType.PODCAST
+        runCurrent()
+
+        assertEquals(LibraryType.PODCAST, viewModel.preferredLibraryType.value)
+        collection.cancel()
+      }
   }
 
   @Nested

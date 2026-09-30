@@ -243,11 +243,11 @@ class MediaRepository
       val bookId = _playingBook.value?.id
       Timber.d("Clearing playing book: $bookId")
 
+      clearPreparedItem()
       progressPoller.stop()
       player.clear()
 
       _isPlaying.value = false
-      _isPlaybackReady.value = false
       _playingBook.value = null
       preferences.clearPlayingItem(bookId)
     }

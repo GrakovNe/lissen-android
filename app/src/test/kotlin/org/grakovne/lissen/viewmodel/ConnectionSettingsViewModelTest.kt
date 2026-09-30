@@ -23,6 +23,7 @@ import org.grakovne.lissen.domain.connection.ServerRequestHeader
 import org.grakovne.lissen.persistence.preferences.ConnectionPreferences
 import org.grakovne.lissen.persistence.preferences.PreferencesReset
 import org.grakovne.lissen.persistence.preferences.SessionPreferences
+import org.grakovne.lissen.playback.MediaRepository
 import org.grakovne.lissen.playback.service.OfflineSessionSyncService
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -37,12 +38,21 @@ class ConnectionSettingsViewModelTest {
   private val connection = mockk<ConnectionPreferences>(relaxed = true)
   private val preferencesReset = mockk<PreferencesReset>(relaxed = true)
   private val offlineSessionSyncService = mockk<OfflineSessionSyncService>(relaxed = true)
+  private val mediaRepository = mockk<MediaRepository>(relaxed = true)
   private val mediaChannel = mockk<LissenMediaProvider>(relaxed = true)
   private val conditionalCache = mockk<ConditionalCache>(relaxed = true)
   private lateinit var viewModel: ConnectionSettingsViewModel
 
   private fun buildViewModel() =
-    ConnectionSettingsViewModel(mediaChannel, session, connection, preferencesReset, offlineSessionSyncService, conditionalCache)
+    ConnectionSettingsViewModel(
+      mediaChannel,
+      session,
+      connection,
+      mediaRepository,
+      preferencesReset,
+      offlineSessionSyncService,
+      conditionalCache,
+    )
 
   @BeforeEach
   fun setup() {
@@ -209,6 +219,12 @@ class ConnectionSettingsViewModelTest {
   @Nested
   inner class Logout {
     @Test
+    fun `logout clears runtime playback`() {
+      viewModel.logout()
+      verify { mediaRepository.clearPlayingBook() }
+    }
+
+    @Test
     fun `logout calls clearPreferences`() {
       viewModel.logout()
       verify { preferencesReset.clearAll() }
@@ -219,6 +235,7 @@ class ConnectionSettingsViewModelTest {
       viewModel.logout()
 
       verifyOrder {
+        mediaRepository.clearPlayingBook()
         preferencesReset.clearAll()
         offlineSessionSyncService.dropAllSessions()
       }

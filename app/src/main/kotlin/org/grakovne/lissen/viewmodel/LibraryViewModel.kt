@@ -11,13 +11,11 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
@@ -26,7 +24,6 @@ import org.grakovne.lissen.common.sortedBySeriesPosition
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.LibraryEntry
-import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.SessionPreferences
@@ -122,7 +119,7 @@ class LibraryViewModel
     }
 
     fun updateSearch(token: String) {
-      viewModelScope.launch { _searchToken.emit(token) }
+      _searchToken.value = token
     }
 
     fun toggleGroup(entry: LibraryEntry) {
@@ -207,11 +204,6 @@ class LibraryViewModel
       preferences
         .getPreferredLibrary()
         ?.title
-
-    val preferredLibraryType: StateFlow<LibraryType> =
-      preferences
-        .preferredLibraryTypeFlow
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), fetchPreferredLibraryType())
 
     fun fetchPreferredLibraryType() = preferences.getPreferredLibraryType()
 

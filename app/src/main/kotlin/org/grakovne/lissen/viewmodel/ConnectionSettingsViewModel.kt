@@ -1,7 +1,9 @@
 package org.grakovne.lissen.viewmodel
 
+import androidx.annotation.OptIn
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,17 +21,20 @@ import org.grakovne.lissen.domain.connection.ServerRequestHeader.Companion.clean
 import org.grakovne.lissen.persistence.preferences.ConnectionPreferences
 import org.grakovne.lissen.persistence.preferences.PreferencesReset
 import org.grakovne.lissen.persistence.preferences.SessionPreferences
+import org.grakovne.lissen.playback.MediaRepository
 import org.grakovne.lissen.playback.service.OfflineSessionSyncService
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
+@OptIn(UnstableApi::class)
 class ConnectionSettingsViewModel
   @Inject
   constructor(
     private val mediaChannel: LissenMediaProvider,
     private val session: SessionPreferences,
     private val connection: ConnectionPreferences,
+    private val mediaRepository: MediaRepository,
     private val preferencesReset: PreferencesReset,
     private val offlineSessionSyncService: OfflineSessionSyncService,
     private val conditionalCache: ConditionalCache,
@@ -127,6 +132,7 @@ class ConnectionSettingsViewModel
       Timber.d("User action: logout")
 
       conditionalCache.invalidateAll()
+      mediaRepository.clearPlayingBook()
       preferencesReset.clearAll()
 
       // No account is left to upload the offline rows for, so they go with it.

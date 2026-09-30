@@ -89,7 +89,6 @@ import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackControl
 import org.grakovne.lissen.ui.screens.player.composable.placeholder.TrackDetailsPlaceholderComposable
 import org.grakovne.lissen.ui.screens.player.composable.provideChapterNumberTitle
 import org.grakovne.lissen.viewmodel.CachingModelView
-import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlaybackSettingsViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
@@ -123,7 +122,6 @@ fun PlayerScreen(
 
   val cachingModelView: CachingModelView = hiltViewModel()
   val playerViewModel: PlayerViewModel = hiltViewModel()
-  val libraryViewModel: LibraryViewModel = hiltViewModel()
   val playbackSettingsViewModel: PlaybackSettingsViewModel = hiltViewModel()
 
   val titleTextStyle = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
@@ -160,7 +158,7 @@ fun PlayerScreen(
   var bookmarksSelected by remember { mutableStateOf(false) }
   var settingsSelected by remember { mutableStateOf(false) }
 
-  val preferredLibraryType by libraryViewModel.preferredLibraryType.collectAsState()
+  val preferredLibraryType by playerViewModel.preferredLibraryType.collectAsState()
   val seekTime by playbackSettingsViewModel.seekTime.collectAsState()
 
   val libraryType = playingBook?.libraryType ?: preferredLibraryType
