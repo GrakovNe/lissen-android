@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -390,6 +391,7 @@ fun LibraryScreen(
         modifier =
           Modifier
             .padding(innerPadding)
+            .consumeWindowInsets(innerPadding)
             .pullRefresh(pullRefreshState)
             .fillMaxSize(),
       ) {
