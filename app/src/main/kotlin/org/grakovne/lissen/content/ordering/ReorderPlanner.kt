@@ -20,7 +20,6 @@ object ReorderPlanner {
     book: DetailedItem?,
     itemId: String,
     playbackReady: Boolean,
-    storedPlayingItemId: String?,
   ): Boolean {
     if (book == null) return false
 
@@ -36,9 +35,6 @@ object ReorderPlanner {
 
       // savePlayingItem keeps the old item for such a book
       book.libraryId == null -> false
-
-      // the service rebuilds the item stored for the active library; another one would never report ready
-      storedPlayingItemId != book.id -> false
 
       else -> ChapterOrdering.isReorderable(book)
     }

@@ -85,8 +85,7 @@ class ReorderPlannerTest {
       candidate: DetailedItem? = book,
       screen: String = "item",
       ready: Boolean = true,
-      stored: String? = book.id,
-    ) = ReorderPlanner.canReorder(candidate, screen, playbackReady = ready, storedPlayingItemId = stored)
+    ) = ReorderPlanner.canReorder(candidate, screen, playbackReady = ready)
 
     assertTrue(can())
 
@@ -96,8 +95,6 @@ class ReorderPlannerTest {
     assertFalse(can(candidate = book.copy(libraryType = null)))
     assertFalse(can(ready = false))
     assertFalse(can(candidate = book.copy(libraryId = null)))
-    assertFalse(can(stored = "other-library-item"))
-    assertFalse(can(stored = null))
     // a chaptered book shape: two chapters over one file
     assertFalse(can(candidate = book.copy(files = book.files.take(1))))
   }

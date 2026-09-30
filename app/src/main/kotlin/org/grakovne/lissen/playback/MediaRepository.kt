@@ -56,7 +56,7 @@ class MediaRepository
     private val _timerRemaining = MutableStateFlow<Long?>(null)
     val timerRemaining: StateFlow<Long?> = _timerRemaining.asStateFlow()
 
-    private val _playAfterPrepare = MutableStateFlow(false)
+    private var playWhenReady = false
     private val _isPlaybackReady = MutableStateFlow(false)
     val isPlaybackReady: StateFlow<Boolean> = _isPlaybackReady.asStateFlow()
 
@@ -91,6 +91,10 @@ class MediaRepository
     // set by reorderPlayingItem, cleared when the service reports the rebuilt queue ready
     @Volatile
     private var queueRebuildInFlight = false
+
+    // the item whose queue the service is building; readiness for it comes only from the service
+    @Volatile
+    private var queueBuildingItemId: String? = null
 
     private val progressPoller =
       ProgressPoller(
@@ -137,7 +141,8 @@ class MediaRepository
           queueRebuildInFlight = false
           progressPoller.stop()
           _isPlaying.value = false
-          _playAfterPrepare.value = false
+          playWhenReady = false
+          queueBuildingItemId = null
           _mediaPreparingError.value = true
         }
       }
@@ -172,6 +177,7 @@ class MediaRepository
     }
 
     private fun onPlaybackReady(bookId: String) {
+      if (queueBuildingItemId == bookId) queueBuildingItemId = null
       val book = _playingBook.value?.takeIf { it.id == bookId } ?: return
 
       // after an in-place rebuild the seeded position is the truth; the controller
@@ -180,14 +186,17 @@ class MediaRepository
       queueRebuildInFlight = false
 
       if (rebuilt.not()) updateProgress(book)
+      completePlaybackPreparation()
+    }
+
+    private fun completePlaybackPreparation() {
       if (player.isPlaying) progressPoller.start()
 
       _isPlaybackReady.value = true
 
-      if (_playAfterPrepare.value) {
-        _playAfterPrepare.value = false
-        play()
-      }
+      val shouldPlay = playWhenReady
+      playWhenReady = false
+      if (shouldPlay) play()
     }
 
     fun updateTimer(
@@ -274,7 +283,7 @@ class MediaRepository
         }
 
         false -> {
-          _playAfterPrepare.value = true
+          playWhenReady = true
           startPreparingPlayback(book)
         }
       }
@@ -329,7 +338,6 @@ class MediaRepository
         book = playingBook.value,
         itemId = itemId,
         playbackReady = isPlaybackReady.value,
-        storedPlayingItemId = preferences.getPlayingItem()?.id,
       )
 
     /**
@@ -364,7 +372,7 @@ class MediaRepository
       _mediaPreparingError.value = false
       _isPlaybackReady.value = false
 
-      _playAfterPrepare.value = wasPlaying
+      playWhenReady = wasPlaying
       startPreparingPlayback(plan.item)
       playingBookmarks.followReorder(from = book, to = plan.item)
       // after startPreparingPlayback, which resets the flag for every fresh preparation
@@ -400,7 +408,7 @@ class MediaRepository
 
       defaultTimerActivator.onNewBookPrepared()
       _mediaPreparingError.value = false
-      _playAfterPrepare.value = false
+      playWhenReady = false
       _isPlaybackReady.value = false
       queueRebuildInFlight = false
     }
@@ -423,6 +431,7 @@ class MediaRepository
         _playingBook.value = book
         // readiness arrived outside the service: whatever rebuild was in flight is over
         queueRebuildInFlight = false
+        queueBuildingItemId = null
         _isPlaybackReady.value = true
         playingBookmarks.refreshFromServerAsync()
       }
@@ -466,8 +475,9 @@ class MediaRepository
       queueRebuildInFlight = false
 
       when (sameBook) {
+        // the service already holds its queue, unless it is still building it and will report
         true -> {
-          _isPlaybackReady.value = true
+          if (queueBuildingItemId != book.id) completePlaybackPreparation()
         }
 
         false -> {
@@ -477,6 +487,7 @@ class MediaRepository
           _playingBook.value = book
           preferences.savePlayingItem(book)
 
+          queueBuildingItemId = book.id
           eventBus.send(PlaybackCommand.PreparePlayback(book))
         }
       }

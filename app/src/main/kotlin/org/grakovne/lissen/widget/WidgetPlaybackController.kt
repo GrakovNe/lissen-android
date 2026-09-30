@@ -45,9 +45,10 @@ class WidgetPlaybackController
           mediaRepository.isPlaybackReady,
           mediaRepository.mediaPreparingError,
         ) { book, ready, failed ->
+          // a loaded book stays usable after a playback error; the error only fails a preparation
           when {
-            failed -> false
             book?.id == itemId && ready -> true
+            failed -> false
             else -> null
           }
         }.filterNotNull()

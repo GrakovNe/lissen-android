@@ -250,6 +250,16 @@ class MediaRepositoryTest {
       }
 
     @Test
+    fun `reorder does not depend on the item stored for the preferred library`() =
+      runTest {
+        playing(podcast(progress = progress(35.0)))
+        every { preferences.getPlayingItem() } returns podcast(id = "preferred-library-item")
+
+        assertTrue(repository.canReorderPlayingItem("podcast"))
+        assertTrue(repository.reorderPlayingItem("podcast", descending()))
+      }
+
+    @Test
     fun `reorder resumes playback once the rebuilt queue is ready when it was playing`() =
       runTest {
         playing(podcast(progress = progress(35.0)), playing = true)
@@ -320,6 +330,41 @@ class MediaRepositoryTest {
 
         eventBus.emit(PlaybackEvent.PlaybackReady("podcast"))
         assertTrue(repository.isPlaybackReady.value)
+      }
+
+    @Test
+    fun `a book whose queue is still being built waits for the service`() =
+      runTest {
+        playing(podcast())
+        repository.clearPreparedItem()
+        repository.prepareAndPlay(podcast(id = "next"))
+
+        // the same book again, as openBook does right after preparing it
+        repository.prepareAndPlay(repository.playingBook.value!!)
+
+        assertFalse(repository.isPlaybackReady.value)
+        assertTrue(player.calls.isEmpty())
+
+        eventBus.emit(PlaybackEvent.PlaybackReady("next"))
+
+        assertTrue(repository.isPlaybackReady.value)
+        assertEquals(listOf("play"), player.calls)
+      }
+
+    @Test
+    fun `a book whose queue is already built is ready at once`() =
+      runTest {
+        playing(podcast())
+        repository.clearPreparedItem()
+
+        repository.prepareAndPlay(repository.playingBook.value!!)
+
+        assertTrue(repository.isPlaybackReady.value)
+        assertEquals(listOf("play"), player.calls)
+
+        eventBus.emit(PlaybackEvent.PlaybackReady("podcast"))
+
+        assertEquals(listOf("play"), player.calls)
       }
   }
 

@@ -408,18 +408,19 @@ class PlayerViewModelTest {
   @Nested
   inner class PlayingItemLifecycle {
     @Test
-    fun `updatePlayingItem clears the playing book when there is no stored item`() {
-      every { preferences.getPlayingItem() } returns null
+    fun `updatePlayingItem leaves the stored items alone when there is no last playing item`() {
+      every { preferences.getLastPlayingItem() } returns null
 
       viewModel.updatePlayingItem()
 
-      verify { mediaRepository.clearPlayingBook() }
+      verify(exactly = 0) { mediaRepository.clearPlayingBook() }
       coVerify(exactly = 0) { mediaRepository.preparePlayback(any(), any()) }
     }
 
     @Test
-    fun `updatePlayingItem prepares playback when there is a stored item`() {
-      every { preferences.getPlayingItem() } returns detailedItem(libraryType = LibraryType.PODCAST)
+    fun `updatePlayingItem restores the last playing item, not the preferred library's one`() {
+      every { preferences.getLastPlayingItem() } returns detailedItem(libraryType = LibraryType.PODCAST)
+      every { preferences.getPlayingItem() } returns detailedItem(id = "preferred-library-item")
 
       viewModel.updatePlayingItem()
 
@@ -429,7 +430,7 @@ class PlayerViewModelTest {
     @Test
     fun `updatePlayingItem does not replace an already registered playing book`() {
       playingBook.value = detailedItem(id = "current-book")
-      every { preferences.getPlayingItem() } returns detailedItem(id = "stored-book")
+      every { preferences.getLastPlayingItem() } returns detailedItem(id = "stored-book")
 
       viewModel.updatePlayingItem()
 

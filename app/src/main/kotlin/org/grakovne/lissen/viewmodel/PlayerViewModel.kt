@@ -111,12 +111,9 @@ class PlayerViewModel
         return
       }
 
-      val playingItem = preferences.getPlayingItem()
-
-      if (playingItem == null) {
-        mediaRepository.clearPlayingBook()
-        return
-      }
+      // the item the resume paths would start, so restoring it keeps the last playing pointer where it is;
+      // nothing is loaded yet, and clearing here would drop the active library's own stored item
+      val playingItem = preferences.getLastPlayingItem() ?: return
 
       viewModelScope.launch {
         mediaRepository.preparePlayback(playingItem.id, playingItem.libraryType)

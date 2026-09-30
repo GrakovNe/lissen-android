@@ -149,6 +149,19 @@ class WidgetPlaybackControllerTest {
       assertEquals(0, ranTimes)
     }
 
+  @Test
+  fun aPlaybackErrorOnTheLoadedBookDoesNotBlockTheAction() =
+    runTest(testDispatcher) {
+      playingBook.value = item("book-1")
+      playbackReady.value = true
+      preparingError.value = true
+      var ranTimes = 0
+
+      controller.runForItem("book-1") { ranTimes++ }
+
+      assertEquals(1, ranTimes)
+    }
+
   private fun item(
     itemId: String,
     type: LibraryType? = null,
