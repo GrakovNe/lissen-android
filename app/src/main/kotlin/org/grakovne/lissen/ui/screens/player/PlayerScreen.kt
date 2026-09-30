@@ -93,6 +93,20 @@ import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlaybackSettingsViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
 
+internal data class PlayerContentState(
+  val book: DetailedItem?,
+  val ready: Boolean,
+)
+
+internal fun resolvePlayerContent(
+  requestedBookId: String,
+  loadedBook: DetailedItem?,
+  playbackReady: Boolean,
+): PlayerContentState {
+  val requestedBook = loadedBook?.takeIf { it.id == requestedBookId }
+  return PlayerContentState(book = requestedBook, ready = requestedBook != null && playbackReady)
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayerScreen(
@@ -114,11 +128,15 @@ fun PlayerScreen(
 
   val titleTextStyle = typography.titleLarge.copy(fontWeight = FontWeight.SemiBold)
 
-  val playingBook by playerViewModel.book.collectAsState()
-  val isPlaybackReady by playerViewModel.isPlaybackReady.collectAsState()
+  val loadedBook by playerViewModel.book.collectAsState()
+  val playbackReady by playerViewModel.isPlaybackReady.collectAsState()
   val playingQueueExpanded by playerViewModel.playingQueueExpanded.collectAsState()
   val searchRequested by playerViewModel.searchRequested.collectAsState()
   val preparingError by playerViewModel.preparingError.collectAsState()
+
+  val playerContent = resolvePlayerContent(bookId, loadedBook, playbackReady)
+  val playingBook = playerContent.book
+  val isPlaybackReady = playerContent.ready
 
   val view = LocalView.current
   val bufferingAnnouncement = stringResource(R.string.a11y_buffering)
@@ -145,14 +163,11 @@ fun PlayerScreen(
   val preferredLibraryType by libraryViewModel.preferredLibraryType.collectAsState()
   val seekTime by playbackSettingsViewModel.seekTime.collectAsState()
 
-  // playingBook may still be the previous item while the requested one loads: it drives
-  // the labels, but only the requested item decides whether ordering is offered
-  val requestedBook = playingBook?.takeIf { it.id == bookId }
   val libraryType = playingBook?.libraryType ?: preferredLibraryType
   val episodeOrdering by remember(bookId) { playerViewModel.episodeOrdering(bookId) }.collectAsState(initial = null)
   val autoSkip by remember(bookId) { playerViewModel.autoSkip(bookId) }.collectAsState(initial = AutoSkipConfiguration.disabled)
 
-  val sortable = isSortable(requestedBook, preferredLibraryType)
+  val sortable = isSortable(playingBook, preferredLibraryType)
 
   val screenTitle =
     when {
@@ -326,16 +341,13 @@ fun PlayerScreen(
       if (playingBook == null || isPlaybackReady.not()) {
         NavigationBarPlaceholderComposable(libraryType = libraryType)
       } else {
-        playingBook
-          ?.let {
-            NavigationBarComposable(
-              book = it,
-              playerViewModel = playerViewModel,
-              contentCachingModelView = cachingModelView,
-              navController = navController,
-              libraryType = libraryType,
-            )
-          }
+        NavigationBarComposable(
+          book = playingBook,
+          playerViewModel = playerViewModel,
+          contentCachingModelView = cachingModelView,
+          navController = navController,
+          libraryType = libraryType,
+        )
       }
     },
     modifier = Modifier.systemBarsPadding(),
