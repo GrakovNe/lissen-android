@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -66,8 +67,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil3.ImageLoader
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.LibraryGrouping
@@ -136,9 +136,7 @@ fun LibraryScreen(
 
   val library = libraryViewModel.getPager(searchRequested).collectAsLazyPagingItems()
   val libraryCount by libraryViewModel.totalCount.collectAsState()
-  val expandedGroups by libraryViewModel.expandedGroups.collectAsState()
-  val groupBooks = libraryViewModel.groupBooks
-  val groupLoading = libraryViewModel.groupLoading
+  val groups by libraryViewModel.groups.collectAsState()
   val libraryGrouping by settingsViewModel.libraryGrouping.collectAsState(LibraryGrouping.NONE)
 
   val libraryListState = rememberLazyGridState()
@@ -169,11 +167,11 @@ fun LibraryScreen(
         }
 
       withMinimumTime(minimumTime) {
-        listOf(
-          async { settingsViewModel.fetchLibraries() },
-          async { libraryViewModel.refreshLibrary() },
-          async { libraryViewModel.fetchRecentListening() },
-        ).awaitAll()
+        refreshLibraryContent(
+          refreshPaging = library::refresh,
+          fetchLibraries = settingsViewModel::fetchLibraries,
+          fetchRecentListening = libraryViewModel::fetchRecentListening,
+        )
       }
 
       pullRefreshing = false
@@ -232,6 +230,8 @@ fun LibraryScreen(
   }
 
   LaunchedEffect(Unit) {
+    playerViewModel.updatePlayingItem()
+
     val emptyContent = library.itemCount == 0
     val libraryChanged = currentLibraryId != settingsViewModel.fetchPreferredLibraryId()
     val orderingChanged = currentOrdering != settingsViewModel.fetchLibraryOrdering()
@@ -240,16 +240,18 @@ fun LibraryScreen(
     val localCacheUpdated = cachingModelView.fetchLatestUpdate(currentLibraryId)?.let { it > localCacheUpdatedAt } ?: true
 
     if (emptyContent || libraryChanged || orderingChanged || (localCacheUsing && localCacheUpdated)) {
-      libraryViewModel.refreshRecentListening()
-      libraryViewModel.refreshLibrary()
-
       currentLibraryId = settingsViewModel.fetchPreferredLibraryId()
       currentOrdering = settingsViewModel.fetchLibraryOrdering()
       localCacheUpdatedAt = cachingModelView.fetchLatestUpdate(currentLibraryId) ?: 0L
-    }
 
-    playerViewModel.updatePlayingItem()
-    settingsViewModel.fetchLibraries()
+      refreshLibraryContent(
+        refreshPaging = library::refresh,
+        fetchLibraries = settingsViewModel::fetchLibraries,
+        fetchRecentListening = libraryViewModel::fetchRecentListening,
+      )
+    } else {
+      settingsViewModel.fetchLibraries()
+    }
 
     if (libraryViewModel.hasCredentials().not()) {
       navController.showLogin()
@@ -389,6 +391,7 @@ fun LibraryScreen(
         modifier =
           Modifier
             .padding(innerPadding)
+            .consumeWindowInsets(innerPadding)
             .pullRefresh(pullRefreshState)
             .fillMaxSize(),
       ) {
@@ -535,9 +538,9 @@ fun LibraryScreen(
                   is LibraryEntry.SeriesEntry -> {
                     SeriesComposable(
                       series = entry,
-                      expanded = entry.id in expandedGroups,
-                      loading = entry.id in groupLoading,
-                      books = groupBooks[entry.id].orEmpty(),
+                      expanded = entry.id in groups.expanded,
+                      loading = entry.id in groups.loading,
+                      books = groups.books[entry.id].orEmpty(),
                       imageLoader = imageLoader,
                       navController = navController,
                       onToggle = { libraryViewModel.toggleGroup(entry) },
@@ -548,9 +551,9 @@ fun LibraryScreen(
                   is LibraryEntry.AuthorEntry -> {
                     AuthorComposable(
                       author = entry,
-                      expanded = entry.id in expandedGroups,
-                      loading = entry.id in groupLoading,
-                      books = groupBooks[entry.id].orEmpty(),
+                      expanded = entry.id in groups.expanded,
+                      loading = entry.id in groups.loading,
+                      books = groups.books[entry.id].orEmpty(),
                       imageLoader = imageLoader,
                       navController = navController,
                       onToggle = { libraryViewModel.toggleGroup(entry) },
@@ -626,6 +629,16 @@ fun LibraryScreen(
       },
     )
   }
+}
+
+internal suspend fun refreshLibraryContent(
+  refreshPaging: () -> Unit,
+  fetchLibraries: suspend () -> Unit,
+  fetchRecentListening: suspend () -> Unit,
+) = coroutineScope {
+  refreshPaging()
+  launch { fetchLibraries() }
+  launch { fetchRecentListening() }
 }
 
 private val RECENT_SECTION_SPACING = 14.dp

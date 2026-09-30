@@ -25,7 +25,7 @@ class PlaybackPreferences
     private val playingItemLock = Any()
     private val playingItems = CachedValue { readPlayingItems() }
 
-    val playingItemFlow: Flow<DetailedItem?> = store.asFlow(KEY_PLAYING_ITEM, ::getPlayingItem)
+    val hasLastPlayingItemFlow: Flow<Boolean> = store.asFlow(KEY_PLAYING_ITEM) { getLastPlayingItem() != null }
     val playbackVolumeBoostFlow: Flow<Int> = store.asFlow(KEY_VOLUME_BOOST, ::getPlaybackVolumeBoost)
     val audioFocusLossPolicyFlow: Flow<AudioFocusLossPolicy> = store.asFlow(KEY_AUDIO_FOCUS_LOSS_POLICY, ::getAudioFocusLossPolicy)
     val equalizerFlow: Flow<EqualizerSettings> = store.asFlow(KEY_EQUALIZER, ::getEqualizer)
@@ -89,10 +89,16 @@ class PlaybackPreferences
       return playingItems.get()[libraryId]
     }
 
+    fun getLastPlayingItem(): DetailedItem? =
+      when (val libraryId = store.getString(KEY_LAST_PLAYING_LIBRARY_ID)) {
+        null -> getPlayingItem()
+        else -> playingItems.get()[libraryId]
+      }
+
     fun clearPlayingItems() {
       synchronized(playingItemLock) {
-        store.remove(KEY_PLAYING_ITEM)
-        playingItems.invalidate()
+        playingItems.set(emptyMap())
+        store.remove(listOf(KEY_PLAYING_ITEM, KEY_LAST_PLAYING_LIBRARY_ID))
       }
     }
 
@@ -176,8 +182,11 @@ class PlaybackPreferences
 
         try {
           val adapter = moshi.adapter<Map<String, DetailedItem>>(playingItemsType)
-          store.putString(KEY_PLAYING_ITEM, adapter.toJson(current))
+          val json = adapter.toJson(current)
+
+          item?.let { store.putString(KEY_LAST_PLAYING_LIBRARY_ID, libraryId) }
           playingItems.set(current)
+          store.putString(KEY_PLAYING_ITEM, json)
         } catch (t: Throwable) {
           Timber.w("Unable to persist playing item for $libraryId due to: ${t.message}")
         }
@@ -210,6 +219,7 @@ class PlaybackPreferences
 
     companion object {
       private const val KEY_PLAYING_ITEM = "playing_item"
+      private const val KEY_LAST_PLAYING_LIBRARY_ID = "last_playing_library_id"
       private const val KEY_VOLUME_BOOST = "volume_boost"
       private const val KEY_PREFERRED_PLAYBACK_SPEED = "preferred_playback_speed"
       private const val KEY_PREFERRED_SEEK_TIME = "preferred_seek_time"

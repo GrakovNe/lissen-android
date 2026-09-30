@@ -56,7 +56,7 @@ class MediaRepository
     private val _timerRemaining = MutableStateFlow<Long?>(null)
     val timerRemaining: StateFlow<Long?> = _timerRemaining.asStateFlow()
 
-    private val _playAfterPrepare = MutableStateFlow(false)
+    private var playWhenReady = false
     private val _isPlaybackReady = MutableStateFlow(false)
     val isPlaybackReady: StateFlow<Boolean> = _isPlaybackReady.asStateFlow()
 
@@ -81,7 +81,7 @@ class MediaRepository
     private val _currentChapterDuration = MutableStateFlow(0.0)
     val currentChapterDuration: StateFlow<Double> = _currentChapterDuration.asStateFlow()
 
-    // the bookmark reads hop here; a test replaces it before the first read, as LibraryViewModel does
+    // the fetch and the bookmark reads hop here; a test replaces it before the first read, as LibraryViewModel does
     @VisibleForTesting
     internal var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 
@@ -91,6 +91,10 @@ class MediaRepository
     // set by reorderPlayingItem, cleared when the service reports the rebuilt queue ready
     @Volatile
     private var queueRebuildInFlight = false
+
+    // the item whose queue the service is building; readiness for it comes only from the service
+    @Volatile
+    private var queueBuildingItemId: String? = null
 
     private val progressPoller =
       ProgressPoller(
@@ -137,7 +141,8 @@ class MediaRepository
           queueRebuildInFlight = false
           progressPoller.stop()
           _isPlaying.value = false
-          _playAfterPrepare.value = false
+          playWhenReady = false
+          queueBuildingItemId = null
           _mediaPreparingError.value = true
         }
       }
@@ -151,7 +156,7 @@ class MediaRepository
     private fun onPlaybackEvent(event: PlaybackEvent) {
       when (event) {
         is PlaybackEvent.PlaybackReady -> {
-          onPlaybackReady()
+          onPlaybackReady(event.bookId)
         }
 
         is PlaybackEvent.TimerExpired -> {
@@ -171,22 +176,27 @@ class MediaRepository
       }
     }
 
-    private fun onPlaybackReady() {
+    private fun onPlaybackReady(bookId: String) {
+      if (queueBuildingItemId == bookId) queueBuildingItemId = null
+      val book = _playingBook.value?.takeIf { it.id == bookId } ?: return
+
       // after an in-place rebuild the seeded position is the truth; the controller
       // may still describe the previous queue for one more hop
       val rebuilt = queueRebuildInFlight
       queueRebuildInFlight = false
-      val book = preferences.getPlayingItem() ?: return
 
       if (rebuilt.not()) updateProgress(book)
+      completePlaybackPreparation()
+    }
+
+    private fun completePlaybackPreparation() {
       if (player.isPlaying) progressPoller.start()
 
       _isPlaybackReady.value = true
 
-      if (_playAfterPrepare.value) {
-        _playAfterPrepare.value = false
-        play()
-      }
+      val shouldPlay = playWhenReady
+      playWhenReady = false
+      if (shouldPlay) play()
     }
 
     fun updateTimer(
@@ -242,11 +252,11 @@ class MediaRepository
       val bookId = _playingBook.value?.id
       Timber.d("Clearing playing book: $bookId")
 
+      clearPreparedItem()
       progressPoller.stop()
       player.clear()
 
       _isPlaying.value = false
-      _isPlaybackReady.value = false
       _playingBook.value = null
       preferences.clearPlayingItem(bookId)
     }
@@ -273,7 +283,7 @@ class MediaRepository
         }
 
         false -> {
-          _playAfterPrepare.value = true
+          playWhenReady = true
           startPreparingPlayback(book)
         }
       }
@@ -305,17 +315,22 @@ class MediaRepository
     suspend fun preparePlayback(
       bookId: String,
       libraryType: LibraryType? = null,
-    ) {
-      withContext(Dispatchers.IO) {
-        mediaChannel
-          .fetchBook(bookId, libraryType)
-          .foldAsync(
-            onSuccess = {
-              startPreparingPlayback(it)
-              playingBookmarks.refreshFromServerAsync()
-            },
-            onFailure = { _mediaPreparingError.value = true },
-          )
+    ): Boolean {
+      val result = withContext(ioDispatcher) { mediaChannel.fetchBook(bookId, libraryType) }
+
+      // only the fetch leaves the main thread: the controller answers there alone
+      return withContext(Dispatchers.Main.immediate) {
+        result.fold(
+          onSuccess = {
+            startPreparingPlayback(it)
+            playingBookmarks.refreshFromServerAsync()
+            true
+          },
+          onFailure = {
+            _mediaPreparingError.value = true
+            false
+          },
+        )
       }
     }
 
@@ -328,7 +343,6 @@ class MediaRepository
         book = playingBook.value,
         itemId = itemId,
         playbackReady = isPlaybackReady.value,
-        storedPlayingItemId = preferences.getPlayingItem()?.id,
       )
 
     /**
@@ -363,7 +377,7 @@ class MediaRepository
       _mediaPreparingError.value = false
       _isPlaybackReady.value = false
 
-      _playAfterPrepare.value = wasPlaying
+      playWhenReady = wasPlaying
       startPreparingPlayback(plan.item)
       playingBookmarks.followReorder(from = book, to = plan.item)
       // after startPreparingPlayback, which resets the flag for every fresh preparation
@@ -399,7 +413,7 @@ class MediaRepository
 
       defaultTimerActivator.onNewBookPrepared()
       _mediaPreparingError.value = false
-      _playAfterPrepare.value = false
+      playWhenReady = false
       _isPlaybackReady.value = false
       queueRebuildInFlight = false
     }
@@ -422,6 +436,7 @@ class MediaRepository
         _playingBook.value = book
         // readiness arrived outside the service: whatever rebuild was in flight is over
         queueRebuildInFlight = false
+        queueBuildingItemId = null
         _isPlaybackReady.value = true
         playingBookmarks.refreshFromServerAsync()
       }
@@ -465,8 +480,9 @@ class MediaRepository
       queueRebuildInFlight = false
 
       when (sameBook) {
+        // the service already holds its queue, unless it is still building it and will report
         true -> {
-          _isPlaybackReady.value = true
+          if (queueBuildingItemId != book.id) completePlaybackPreparation()
         }
 
         false -> {
@@ -476,7 +492,8 @@ class MediaRepository
           _playingBook.value = book
           preferences.savePlayingItem(book)
 
-          eventBus.send(PlaybackCommand.PreparePlayback)
+          queueBuildingItemId = book.id
+          eventBus.send(PlaybackCommand.PreparePlayback(book))
         }
       }
     }

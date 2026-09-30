@@ -7,9 +7,11 @@ import androidx.media3.common.util.UnstableApi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
 import org.grakovne.lissen.domain.Bookmark
@@ -38,6 +40,10 @@ class PlayerViewModel
     private val session: SessionPreferences,
   ) : ViewModel() {
     val book: StateFlow<DetailedItem?> = mediaRepository.playingBook
+
+    val preferredLibraryType: StateFlow<LibraryType> =
+      libraryPreferences.preferredLibraryTypeFlow
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), libraryPreferences.getPreferredLibraryType())
 
     /** The stored ordering of the item the screen shows, not necessarily the playing one. */
     fun episodeOrdering(itemId: String): Flow<EpisodeOrderingConfiguration?> = libraryPreferences.episodeOrderingFlow.map { it[itemId] }
@@ -105,12 +111,9 @@ class PlayerViewModel
         return
       }
 
-      val playingItem = preferences.getPlayingItem()
-
-      if (playingItem == null) {
-        viewModelScope.launch { mediaRepository.clearPlayingBook() }
-        return
-      }
+      // the item the resume paths would start, so restoring it keeps the last playing pointer where it is;
+      // nothing is loaded yet, and clearing here would drop the active library's own stored item
+      val playingItem = preferences.getLastPlayingItem() ?: return
 
       viewModelScope.launch {
         mediaRepository.preparePlayback(playingItem.id, playingItem.libraryType)
@@ -147,10 +150,6 @@ class PlayerViewModel
       _searchToken.value = token
     }
 
-    fun clearPrepared() {
-      mediaRepository.clearPreparedItem()
-    }
-
     fun preparePlayback(
       bookId: String,
       libraryType: LibraryType? = null,
@@ -158,6 +157,43 @@ class PlayerViewModel
       viewModelScope.launch {
         mediaRepository.clearPreparedItem()
         mediaRepository.preparePlayback(bookId, libraryType)
+      }
+    }
+
+    fun requiresBookPreparation(
+      bookId: String,
+      useLocalCache: Boolean,
+    ): Boolean {
+      val currentBook = book.value
+      return currentBook?.id != bookId || currentBook.localProvided != useLocalCache
+    }
+
+    suspend fun openBook(
+      bookId: String,
+      libraryType: LibraryType?,
+      useLocalCache: Boolean,
+      playInstantly: Boolean,
+    ) {
+      val currentBook = book.value
+      val preparationRequired = requiresBookPreparation(bookId, useLocalCache)
+
+      val canStart =
+        if (preparationRequired) {
+          val storedBook = preferences.getLastPlayingItem()?.takeIf { it.id == bookId }
+
+          mediaRepository.clearPreparedItem()
+          mediaRepository.preparePlayback(
+            bookId = bookId,
+            libraryType = currentBook?.takeIf { it.id == bookId }?.libraryType ?: storedBook?.libraryType ?: libraryType,
+          )
+        } else {
+          true
+        }
+
+      if (playInstantly && canStart) {
+        mediaRepository.playingBook.value
+          ?.takeIf { it.id == bookId }
+          ?.let(mediaRepository::prepareAndPlay)
       }
     }
 
@@ -212,11 +248,6 @@ class PlayerViewModel
     fun togglePlayPause() {
       Timber.d("User action: togglePlayPause (isPlaying=${isPlaying.value})")
       mediaRepository.togglePlayPause()
-    }
-
-    fun prepareAndPlay() {
-      val playingBook = preferences.getPlayingItem() ?: return
-      mediaRepository.prepareAndPlay(playingBook)
     }
 
     /** One predicate for the sheet's rows and the action, so a tap never fails silently. */

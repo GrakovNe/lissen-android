@@ -31,6 +31,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
@@ -278,14 +279,13 @@ class MediaLibrarySessionCallback
         if (MediaLibraryTree.isBookPath(mediaItem.mediaId) && startIndex == C.INDEX_UNSET && startPositionMs == C.TIME_UNSET) {
           futureScope
             .listenableFuture {
-              val bookId = MediaLibraryTree.parseBookId(mediaItem.mediaId)
+              val (bookId, libraryType) = MediaLibraryTree.parseBookPath(mediaItem.mediaId)
               lissenMediaProvider
-                .fetchBook(bookId)
+                .fetchBook(bookId, libraryType)
                 .foldAsync(
                   onSuccess = {
                     preferences.savePlayingItem(it)
-                    playbackSynchronizationService.startPlaybackSynchronization(it)
-                    mediaRepository.registerPlayingBook(it)
+                    registerPlayback(it)
                     PlaybackService.bookToChapterMediaItems(it)
                   },
                   onFailure = { MediaItemsWithStartPosition(emptyList(), 0, 0) },
@@ -306,7 +306,7 @@ class MediaLibrarySessionCallback
           Timber.d("Resuming playback for: $controller (isForPlayback=$isForPlayback)")
 
           val storedBook =
-            preferences.getPlayingItem()
+            preferences.getLastPlayingItem()
               ?: throw IllegalStateException("No last played book stored")
 
           val refreshedBook = refreshBookForResumption(storedBook)
@@ -318,12 +318,17 @@ class MediaLibrarySessionCallback
 
           if (isForPlayback) {
             refreshedBook?.let { preferences.savePlayingItem(it) }
-            playbackSynchronizationService.startPlaybackSynchronization(book)
-            mediaRepository.registerPlayingBook(book)
+            registerPlayback(book)
           }
 
           PlaybackService.bookToChapterMediaItems(book)
         }
+
+    private suspend fun registerPlayback(book: DetailedItem) =
+      withContext(Dispatchers.Main.immediate) {
+        playbackSynchronizationService.startPlaybackSynchronization(book)
+        mediaRepository.registerPlayingBook(book)
+      }
 
     /** The stored item is always playable as it was; a cache failure must not take that away. */
     private suspend fun storedBookWithLatestProgress(storedBook: DetailedItem): DetailedItem =

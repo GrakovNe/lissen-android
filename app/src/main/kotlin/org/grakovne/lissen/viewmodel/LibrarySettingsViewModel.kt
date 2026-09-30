@@ -42,25 +42,23 @@ class LibrarySettingsViewModel
 
     val libraryGrouping = library.libraryGroupingFlow
 
-    fun fetchLibraries() {
-      viewModelScope.launch {
-        when (val response = mediaChannel.fetchLibraries()) {
-          is OperationResult.Success -> {
-            val libraries = response.data
-            _libraries.value = libraries
+    suspend fun fetchLibraries() {
+      when (val response = mediaChannel.fetchLibraries()) {
+        is OperationResult.Success -> {
+          val libraries = response.data
+          _libraries.value = libraries
 
-            val preferredLibrary = library.getPreferredLibrary()
+          val preferredLibrary = library.getPreferredLibrary()
 
-            _preferredLibrary.value =
-              when (preferredLibrary) {
-                null -> libraries.firstOrNull()
-                else -> libraries.find { it.id == preferredLibrary.id }
-              }
-          }
+          _preferredLibrary.value =
+            when (preferredLibrary) {
+              null -> libraries.firstOrNull()
+              else -> libraries.find { it.id == preferredLibrary.id }
+            }
+        }
 
-          is OperationResult.Error -> {
-            _libraries.value = library.getPreferredLibrary()?.let { listOf(it) } ?: emptyList()
-          }
+        is OperationResult.Error -> {
+          _libraries.value = library.getPreferredLibrary()?.let { listOf(it) } ?: emptyList()
         }
       }
     }

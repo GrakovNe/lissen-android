@@ -1,39 +1,29 @@
 package org.grakovne.lissen.viewmodel
 
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import androidx.paging.PagingSource
 import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
-import kotlinx.coroutines.withContext
 import org.grakovne.lissen.common.sortedBySeriesPosition
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.LibraryEntry
-import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.RecentBook
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.grakovne.lissen.persistence.preferences.SessionPreferences
@@ -51,8 +41,6 @@ class LibraryViewModel
     private val preferences: LibraryPreferences,
     private val session: SessionPreferences,
   ) : ViewModel() {
-    internal var dispatcher: CoroutineDispatcher = Dispatchers.IO
-
     private val _recentBooks = MutableStateFlow<List<RecentBook>>(emptyList())
     val recentBooks: StateFlow<List<RecentBook>> = _recentBooks.asStateFlow()
 
@@ -65,18 +53,11 @@ class LibraryViewModel
     private val _searchToken = MutableStateFlow(EMPTY_SEARCH)
     val searchToken: StateFlow<String> = _searchToken.asStateFlow()
 
-    private var defaultPagingSource: PagingSource<Int, LibraryEntry>? = null
-    private var searchPagingSource: PagingSource<Int, LibraryEntry>? = null
-
     private val _totalCount = MutableStateFlow(0)
     val totalCount: StateFlow<Int> = _totalCount.asStateFlow()
 
-    private val _expandedGroups = MutableStateFlow<Set<String>>(emptySet())
-    val expandedGroups: StateFlow<Set<String>> = _expandedGroups.asStateFlow()
-
-    val groupBooks: SnapshotStateMap<String, List<Book>> = mutableStateMapOf()
-
-    val groupLoading: SnapshotStateList<String> = mutableStateListOf()
+    private val _groups = MutableStateFlow(LibraryGroupsState())
+    val groups: StateFlow<LibraryGroupsState> = _groups.asStateFlow()
 
     private val prefetchSemaphore = Semaphore(MAX_CONCURRENT_PREFETCH)
 
@@ -111,7 +92,6 @@ class LibraryViewModel
                 limit = PAGE_SEARCH_SIZE,
               ) { _totalCount.value = it }
 
-            searchPagingSource = source
             source
           },
         ).flow
@@ -122,8 +102,6 @@ class LibraryViewModel
         config = pageConfig,
         pagingSourceFactory = {
           val source = LibraryDefaultPagingSource(preferences, mediaChannel) { _totalCount.value = it }
-          defaultPagingSource = source
-
           source
         },
       ).flow.cachedIn(viewModelScope)
@@ -141,20 +119,20 @@ class LibraryViewModel
     }
 
     fun updateSearch(token: String) {
-      viewModelScope.launch { _searchToken.emit(token) }
+      _searchToken.value = token
     }
 
     fun toggleGroup(entry: LibraryEntry) {
       val groupId = entry.groupId() ?: return
       Timber.d("User action: toggleGroup $groupId")
 
-      when (groupId in _expandedGroups.value) {
+      when (groupId in _groups.value.expanded) {
         true -> {
-          _expandedGroups.value = _expandedGroups.value - groupId
+          _groups.update { it.copy(expanded = it.expanded - groupId) }
         }
 
         false -> {
-          _expandedGroups.value = _expandedGroups.value + groupId
+          _groups.update { it.copy(expanded = it.expanded + groupId) }
           viewModelScope.launch { fetchGroupBooks(entry) }
         }
       }
@@ -174,9 +152,7 @@ class LibraryViewModel
     }
 
     fun resetGroupExpansion() {
-      _expandedGroups.value = emptySet()
-      groupBooks.clear()
-      groupLoading.clear()
+      _groups.value = LibraryGroupsState()
     }
 
     private fun LibraryEntry.groupId(): String? =
@@ -186,7 +162,7 @@ class LibraryViewModel
         is LibraryEntry.BookEntry -> null
       }
 
-    private fun alreadyResolved(groupId: String): Boolean = groupBooks.containsKey(groupId) || groupId in groupLoading
+    private fun alreadyResolved(groupId: String): Boolean = groupId in _groups.value.books || groupId in _groups.value.loading
 
     private suspend fun fetchGroupBooks(entry: LibraryEntry) {
       val groupId = entry.groupId() ?: return
@@ -196,7 +172,7 @@ class LibraryViewModel
 
       val libraryId = preferences.getPreferredLibrary()?.id ?: return
 
-      groupLoading.add(groupId)
+      _groups.update { it.copy(loading = it.loading + groupId) }
       val result =
         when (entry) {
           is LibraryEntry.SeriesEntry -> mediaChannel.fetchSeriesItems(libraryId = libraryId, seriesId = entry.id)
@@ -211,11 +187,11 @@ class LibraryViewModel
               is LibraryEntry.SeriesEntry -> books.sortedBySeriesPosition()
               else -> books
             }
-          groupBooks[groupId] = ordered
+          _groups.update { state -> state.copy(books = state.books + (groupId to ordered)) }
         },
         onFailure = { },
       )
-      groupLoading.remove(groupId)
+      _groups.update { it.copy(loading = it.loading - groupId) }
     }
 
     fun applyLinkedSearch(token: String) {
@@ -229,57 +205,24 @@ class LibraryViewModel
         .getPreferredLibrary()
         ?.title
 
-    val preferredLibraryType: StateFlow<LibraryType> =
-      preferences
-        .preferredLibraryTypeFlow
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), fetchPreferredLibraryType())
-
     fun fetchPreferredLibraryType() = preferences.getPreferredLibraryType()
 
     fun hasCredentials() = session.hasCredentials()
 
-    fun refreshRecentListening() {
-      Timber.d("User action: refreshRecentListening")
-      viewModelScope.launch {
-        withContext(dispatcher) {
-          fetchRecentListening()
-        }
-      }
-    }
-
-    fun refreshLibrary() {
-      Timber.d("User action: refreshLibrary")
-      viewModelScope.launch {
-        withContext(dispatcher) {
-          when (searchRequested.value) {
-            true -> searchPagingSource?.invalidate()
-            else -> defaultPagingSource?.invalidate()
-          }
-        }
-      }
-    }
-
-    fun fetchRecentListening() {
+    suspend fun fetchRecentListening() {
       _recentBookUpdating.value = true
 
-      val preferredLibrary =
-        preferences.getPreferredLibrary()?.id ?: run {
-          _recentBookUpdating.value = false
-          return
-        }
+      try {
+        val preferredLibrary = preferences.getPreferredLibrary()?.id ?: return
 
-      viewModelScope.launch {
         mediaChannel
           .fetchRecentListenedBooks(preferredLibrary)
           .fold(
-            onSuccess = {
-              _recentBooks.value = it
-              _recentBookUpdating.value = false
-            },
-            onFailure = {
-              _recentBookUpdating.value = false
-            },
+            onSuccess = { _recentBooks.value = it },
+            onFailure = { },
           )
+      } finally {
+        _recentBookUpdating.value = false
       }
     }
 
@@ -291,3 +234,9 @@ class LibraryViewModel
       private const val MAX_CONCURRENT_PREFETCH = 3
     }
   }
+
+data class LibraryGroupsState(
+  val expanded: Set<String> = emptySet(),
+  val books: Map<String, List<Book>> = emptyMap(),
+  val loading: Set<String> = emptySet(),
+)

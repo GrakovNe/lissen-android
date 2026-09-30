@@ -11,9 +11,9 @@ class PlaybackEventBusTest {
     runTest {
       val bus = PlaybackEventBus()
 
-      bus.emit(PlaybackEvent.PlaybackReady)
+      bus.emit(PlaybackEvent.PlaybackReady("book-1"))
 
-      assertEquals(PlaybackEvent.PlaybackReady, bus.events.first())
+      assertEquals(PlaybackEvent.PlaybackReady("book-1"), bus.events.first())
     }
 
   @Test
@@ -21,7 +21,7 @@ class PlaybackEventBusTest {
     runTest {
       val bus = PlaybackEventBus()
 
-      bus.emit(PlaybackEvent.PlaybackReady)
+      bus.emit(PlaybackEvent.PlaybackReady("book-1"))
       bus.emit(PlaybackEvent.TimerTick(42))
 
       assertEquals(PlaybackEvent.TimerTick(42), bus.events.first())

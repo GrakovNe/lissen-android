@@ -17,10 +17,7 @@ suspend fun safelyRun(
           entryPoint = WidgetPlaybackControllerEntryPoint::class.java,
         ).widgetPlaybackController()
 
-    when (playbackController.providePlayingItem()) {
-      null -> playbackController.prepareAndRun(playingItemId) { action(playbackController) }
-      else -> action(playbackController)
-    }
+    playbackController.runForItem(playingItemId) { action(playbackController) }
   } catch (ex: Exception) {
     Timber.w("Unable to run $action on $playingItemId due to $ex")
   }

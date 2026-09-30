@@ -1,7 +1,6 @@
 package org.grakovne.lissen.viewmodel
 
 import android.content.Context
-import androidx.lifecycle.viewModelScope
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -11,7 +10,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.job
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -259,22 +257,6 @@ class CachingModelViewTest {
 
       verify { downloadPreferences.saveDownloadChaptersCount(7) }
     }
-  }
-
-  @Nested
-  inner class FetchCachedItems {
-    @Test
-    fun `fetchCachedItems does not throw before the pager has been collected`() =
-      runTest(testDispatcher) {
-        val supervisor = viewModel.viewModelScope.coroutineContext.job
-        val existingChildren = supervisor.children.toSet()
-
-        viewModel.fetchCachedItems()
-
-        supervisor.children
-          .filterNot { it in existingChildren }
-          .forEach { it.join() }
-      }
   }
 
   private fun detailedItem(id: String = "book-1") =

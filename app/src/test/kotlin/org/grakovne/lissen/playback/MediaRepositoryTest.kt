@@ -13,6 +13,8 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import org.grakovne.lissen.channel.common.OperationError
+import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DetailedItem
@@ -192,7 +194,7 @@ class MediaRepositoryTest {
         assertEquals(listOf("pause"), player.calls)
         assertFalse(repository.isPlaybackReady.value)
         verify { preferences.savePlayingItem(rebuilt) }
-        assertEquals(PlaybackCommand.PreparePlayback, eventBus.commands.first())
+        assertEquals(PlaybackCommand.PreparePlayback(rebuilt), eventBus.commands.first())
       }
 
     @Test
@@ -250,13 +252,23 @@ class MediaRepositoryTest {
       }
 
     @Test
+    fun `reorder does not depend on the item stored for the preferred library`() =
+      runTest {
+        playing(podcast(progress = progress(35.0)))
+        every { preferences.getPlayingItem() } returns podcast(id = "preferred-library-item")
+
+        assertTrue(repository.canReorderPlayingItem("podcast"))
+        assertTrue(repository.reorderPlayingItem("podcast", descending()))
+      }
+
+    @Test
     fun `reorder resumes playback once the rebuilt queue is ready when it was playing`() =
       runTest {
         playing(podcast(progress = progress(35.0)), playing = true)
         repository.reorderPlayingItem("podcast", descending())
         every { preferences.getPlayingItem() } returns repository.playingBook.value
 
-        eventBus.emit(PlaybackEvent.PlaybackReady)
+        eventBus.emit(PlaybackEvent.PlaybackReady("podcast"))
 
         assertTrue(repository.isPlaybackReady.value)
         assertEquals(listOf("pause", "play"), player.calls)
@@ -271,7 +283,7 @@ class MediaRepositoryTest {
         repository.reorderPlayingItem("podcast", descending())
         every { preferences.getPlayingItem() } returns repository.playingBook.value
 
-        eventBus.emit(PlaybackEvent.PlaybackReady)
+        eventBus.emit(PlaybackEvent.PlaybackReady("podcast"))
 
         assertTrue(repository.isPlaybackReady.value)
         assertEquals(listOf("pause"), player.calls)
@@ -308,6 +320,66 @@ class MediaRepositoryTest {
   }
 
   @Nested
+  inner class PlaybackReadiness {
+    @Test
+    fun `failed fetch reports that preparation did not start`() =
+      runTest {
+        coEvery { mediaChannel.fetchBook("missing", null) } returns OperationResult.Error(OperationError.NetworkError)
+
+        assertFalse(repository.preparePlayback("missing"))
+        assertTrue(repository.mediaPreparingError.value)
+      }
+
+    @Test
+    fun `ready event applies to the book named by the service`() =
+      runTest {
+        playing(podcast())
+        repository.clearPreparedItem()
+
+        eventBus.emit(PlaybackEvent.PlaybackReady("another-book"))
+        assertFalse(repository.isPlaybackReady.value)
+
+        eventBus.emit(PlaybackEvent.PlaybackReady("podcast"))
+        assertTrue(repository.isPlaybackReady.value)
+      }
+
+    @Test
+    fun `a book whose queue is still being built waits for the service`() =
+      runTest {
+        playing(podcast())
+        repository.clearPreparedItem()
+        repository.prepareAndPlay(podcast(id = "next"))
+
+        // the same book again, as openBook does right after preparing it
+        repository.prepareAndPlay(repository.playingBook.value!!)
+
+        assertFalse(repository.isPlaybackReady.value)
+        assertTrue(player.calls.isEmpty())
+
+        eventBus.emit(PlaybackEvent.PlaybackReady("next"))
+
+        assertTrue(repository.isPlaybackReady.value)
+        assertEquals(listOf("play"), player.calls)
+      }
+
+    @Test
+    fun `a book whose queue is already built is ready at once`() =
+      runTest {
+        playing(podcast())
+        repository.clearPreparedItem()
+
+        repository.prepareAndPlay(repository.playingBook.value!!)
+
+        assertTrue(repository.isPlaybackReady.value)
+        assertEquals(listOf("play"), player.calls)
+
+        eventBus.emit(PlaybackEvent.PlaybackReady("podcast"))
+
+        assertEquals(listOf("play"), player.calls)
+      }
+  }
+
+  @Nested
   inner class PlayerErrors {
     @Test
     fun `a player error flags the preparation and stops everything in flight`() =
@@ -324,7 +396,7 @@ class MediaRepositoryTest {
         assertFalse(mainThread.polling)
         // the deferred autoplay is dropped: readiness will not come
         every { preferences.getPlayingItem() } returns repository.playingBook.value
-        eventBus.emit(PlaybackEvent.PlaybackReady)
+        eventBus.emit(PlaybackEvent.PlaybackReady("next"))
         assertFalse(player.calls.contains("play"))
       }
 
@@ -340,6 +412,36 @@ class MediaRepositoryTest {
 
         assertFalse(repository.mediaPreparingError.value)
         assertFalse(repository.isPlaybackReady.value)
+      }
+  }
+
+  @Nested
+  inner class PlayingBookCleanup {
+    @Test
+    fun `clearing the playing book clears preparation and timer state`() =
+      runTest {
+        val book = podcast(progress = progress(35.0))
+        val next = podcast(id = "next")
+        playing(book, playing = true)
+        repository.clearPreparedItem()
+        repository.prepareAndPlay(next)
+        assertEquals(PlaybackCommand.PreparePlayback(next), eventBus.commands.first())
+        player.listener.onError(mockk<PlaybackException>(relaxed = true))
+
+        val timer = DurationTimerOption(5)
+        repository.updateTimer(timer)
+        assertEquals(PlaybackCommand.SetTimer(300.0, timer), eventBus.commands.first())
+
+        repository.clearPlayingBook()
+
+        assertEquals(null, repository.playingBook.value)
+        assertEquals(null, repository.timerOption.value)
+        assertFalse(repository.mediaPreparingError.value)
+        assertFalse(repository.isPlaybackReady.value)
+        assertFalse(repository.isPlaying.value)
+        assertEquals(listOf("clear"), player.calls)
+        assertEquals(PlaybackCommand.CancelTimer, eventBus.commands.first())
+        verify { preferences.clearPlayingItem(next.id) }
       }
   }
 

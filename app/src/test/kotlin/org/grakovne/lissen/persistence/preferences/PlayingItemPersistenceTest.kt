@@ -3,11 +3,15 @@ package org.grakovne.lissen.persistence.preferences
 import android.content.Context
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.runTest
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
 import org.grakovne.lissen.domain.LibraryType
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.util.concurrent.CountDownLatch
 import kotlin.concurrent.thread
@@ -70,6 +74,49 @@ class PlayingItemPersistenceTest {
     preferences.clearPlayingItem()
     assertNull(preferences.getPlayingItem())
   }
+
+  @Test
+  fun `last playing item stays with playback after the active library changes`() =
+    runTest {
+      preferLibrary("lib-2")
+      preferences.savePlayingItem(item(id = "book-2", libraryId = "lib-2"))
+      preferLibrary("lib-1")
+      preferences.savePlayingItem(item(id = "book-1", libraryId = "lib-1"))
+
+      preferLibrary("lib-2")
+
+      assertEquals("book-2", preferences.getPlayingItem()?.id)
+      assertEquals("book-1", preferences.getLastPlayingItem()?.id)
+      assertTrue(preferences.hasLastPlayingItemFlow.first())
+    }
+
+  @Test
+  fun `clearing the last playing item does not expose the active library item as last played`() =
+    runTest {
+      preferLibrary("lib-2")
+      preferences.savePlayingItem(item(id = "book-2", libraryId = "lib-2"))
+      preferLibrary("lib-1")
+      preferences.savePlayingItem(item(id = "book-1", libraryId = "lib-1"))
+      preferLibrary("lib-2")
+
+      preferences.clearPlayingItem("book-1")
+
+      assertEquals("book-2", preferences.getPlayingItem()?.id)
+      assertNull(preferences.getLastPlayingItem())
+      assertFalse(preferences.hasLastPlayingItemFlow.first())
+    }
+
+  @Test
+  fun `clearing all playing items removes resume availability`() =
+    runTest {
+      preferLibrary("lib-1")
+      preferences.savePlayingItem(item(id = "book-1", libraryId = "lib-1"))
+
+      preferences.clearPlayingItems()
+
+      assertNull(preferences.getLastPlayingItem())
+      assertFalse(preferences.hasLastPlayingItemFlow.first())
+    }
 
   @Test
   fun `clearing by item id removes the stored item from its own library`() {

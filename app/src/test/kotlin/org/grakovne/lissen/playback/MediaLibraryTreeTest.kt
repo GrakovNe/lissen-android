@@ -57,6 +57,7 @@ class MediaLibraryTreeTest {
     every { Uri.encode(any<String>()) } answers { firstArg() }
     every { TextUtils.isEmpty(any()) } returns false
     every { SystemClock.elapsedRealtime() } returns 0L
+    every { libraryPreferences.getPreferredLibraryType() } returns LibraryType.LIBRARY
 
     tree =
       MediaLibraryTree(
@@ -106,10 +107,11 @@ class MediaLibraryTreeTest {
   private fun library(
     id: String,
     filters: FilterData? = null,
+    type: LibraryType = LibraryType.LIBRARY,
   ) = Library(
     id = id,
     title = "Library $id",
-    type = LibraryType.LIBRARY,
+    type = type,
     filters = filters,
   )
 
@@ -121,13 +123,24 @@ class MediaLibraryTreeTest {
     }
 
     @Test
-    fun `parseBookId strips the book prefix`() {
-      assertEquals("abc", MediaLibraryTree.parseBookId("book/abc"))
+    fun `bookPath carries the library type when it is known`() {
+      assertEquals("book/PODCAST/abc", MediaLibraryTree.bookPath("abc", LibraryType.PODCAST))
     }
 
     @Test
-    fun `parseBookId leaves foreign ids untouched`() {
-      assertEquals("root/recent", MediaLibraryTree.parseBookId("root/recent"))
+    fun `parseBookPath reads the id and the library type`() {
+      assertEquals("abc" to LibraryType.PODCAST, MediaLibraryTree.parseBookPath("book/PODCAST/abc"))
+      assertEquals("abc" to LibraryType.LIBRARY, MediaLibraryTree.parseBookPath("book/LIBRARY/abc"))
+    }
+
+    @Test
+    fun `parseBookPath reads a path without a type as before`() {
+      assertEquals("abc" to null, MediaLibraryTree.parseBookPath("book/abc"))
+    }
+
+    @Test
+    fun `parseBookPath leaves foreign ids untouched`() {
+      assertEquals("root/recent" to null, MediaLibraryTree.parseBookPath("root/recent"))
     }
 
     @Test
@@ -164,8 +177,19 @@ class MediaLibraryTreeTest {
 
       val result = tree.getItem("book/b1").get()
 
-      assertEquals("book/b1", result.value!!.mediaId)
+      assertEquals("book/LIBRARY/b1", result.value!!.mediaId)
       assertTrue(result.value!!.mediaMetadata.isPlayable == true)
+    }
+
+    @Test
+    fun `fetches an item through the type of the library it was listed from`() {
+      val episode = detailedItem("b1").copy(libraryType = LibraryType.PODCAST)
+      coEvery { mediaProvider.fetchBook("b1", LibraryType.PODCAST) } returns OperationResult.Success(episode)
+
+      val result = tree.getItem("book/PODCAST/b1").get()
+
+      assertEquals("book/PODCAST/b1", result.value!!.mediaId)
+      coVerify { mediaProvider.fetchBook("b1", LibraryType.PODCAST) }
     }
 
     @Test
@@ -215,12 +239,25 @@ class MediaLibraryTreeTest {
     @Test
     fun `lists books of a library title node`() {
       coEvery { mediaProvider.fetchLibrary("lib1") } returns OperationResult.Success(library("lib1"))
-      coEvery { mediaProvider.fetchBooks("lib1", 20, 0, null) } returns
+      coEvery { mediaProvider.fetchBooks("lib1", 20, 0, null, LibraryType.LIBRARY) } returns
         OperationResult.Success(PagedItems(listOf(book("b1")), currentPage = 0, totalItems = 1))
 
       val result = tree.getChildren("root/library/lib1/titles", 0, 20, session).get()
 
-      assertEquals(listOf("book/b1"), result.value!!.map { it.mediaId })
+      assertEquals(listOf("book/LIBRARY/b1"), result.value!!.map { it.mediaId })
+    }
+
+    @Test
+    fun `a podcast library is listed through its own type while a book library is preferred`() {
+      coEvery { mediaProvider.fetchLibrary("pod") } returns OperationResult.Success(library("pod", type = LibraryType.PODCAST))
+      coEvery { mediaProvider.fetchBooks("pod", 20, 0, null, LibraryType.PODCAST) } returns
+        OperationResult.Success(PagedItems(listOf(book("e1")), currentPage = 0, totalItems = 1))
+
+      val result = tree.getChildren("root/library/pod/titles", 0, 20, session).get()
+
+      // the type goes with the item, so picking it fetches the podcast through the podcast channel
+      assertEquals(listOf("book/PODCAST/e1"), result.value!!.map { it.mediaId })
+      coVerify { mediaProvider.fetchBooks("pod", 20, 0, null, LibraryType.PODCAST) }
     }
 
     @Test
@@ -234,12 +271,12 @@ class MediaLibraryTreeTest {
         )
 
       coEvery { mediaProvider.fetchLibrary("lib1") } returns OperationResult.Success(library("lib1", filters))
-      coEvery { mediaProvider.fetchBooks("lib1", 20, 0, "series" to "s1") } returns
+      coEvery { mediaProvider.fetchBooks("lib1", 20, 0, "series" to "s1", LibraryType.LIBRARY) } returns
         OperationResult.Success(PagedItems(listOf(book("b1")), currentPage = 0, totalItems = 1))
 
       val result = tree.getChildren("root/library/lib1/series/s1", 0, 20, session).get()
 
-      assertEquals(listOf("book/b1"), result.value!!.map { it.mediaId })
+      assertEquals(listOf("book/LIBRARY/b1"), result.value!!.map { it.mediaId })
     }
 
     @Test
@@ -265,7 +302,7 @@ class MediaLibraryTreeTest {
 
       val result = tree.getChildren("root/downloads", 0, 20, session).get()
 
-      assertEquals(listOf("book/b2", "book/b1"), result.value!!.map { it.mediaId })
+      assertEquals(listOf("book/LIBRARY/b2", "book/LIBRARY/b1"), result.value!!.map { it.mediaId })
     }
 
     @Test
@@ -277,7 +314,7 @@ class MediaLibraryTreeTest {
 
       val result = tree.getChildren("root/downloads", 0, 20, session).get()
 
-      assertEquals(listOf("book/b1"), result.value!!.map { it.mediaId })
+      assertEquals(listOf("book/LIBRARY/b1"), result.value!!.map { it.mediaId })
     }
   }
 
@@ -292,7 +329,7 @@ class MediaLibraryTreeTest {
 
       val result = tree.getChildren("root/recent", 0, 20, session).get()
 
-      assertEquals(listOf("book/b1"), result.value!!.map { it.mediaId })
+      assertEquals(listOf("book/LIBRARY/b1"), result.value!!.map { it.mediaId })
 
       verify(timeout = 3000) {
         session.notifyChildrenChanged("root/recent", 2, null)
@@ -320,7 +357,7 @@ class MediaLibraryTreeTest {
 
       val result = tree.searchBooks("the").get()
 
-      assertEquals(listOf("book/b1"), result.map { it.mediaId })
+      assertEquals(listOf("book/LIBRARY/b1"), result.map { it.mediaId })
     }
 
     @Test
@@ -355,6 +392,7 @@ class MediaLibraryTreeTest {
           pageSize = 20,
           pageNumber = 0,
           grouping = org.grakovne.lissen.common.LibraryGrouping.SERIES,
+          libraryType = LibraryType.LIBRARY,
         )
       } returns
         OperationResult.Success(
@@ -378,7 +416,7 @@ class MediaLibraryTreeTest {
       val result = tree.getChildren("root/library/lib1/series_collapsed", 0, 20, session).get()
 
       assertEquals(
-        listOf("root/library/lib1/series_collapsed/s1", "book/b3"),
+        listOf("root/library/lib1/series_collapsed/s1", "book/LIBRARY/b3"),
         result.value!!.map { it.mediaId },
       )
     }
@@ -386,7 +424,7 @@ class MediaLibraryTreeTest {
     @Test
     fun `dynamic series node resolves books and strips the sequence suffix`() {
       coEvery { mediaProvider.fetchLibrary("lib1") } returns OperationResult.Success(library("lib1"))
-      coEvery { mediaProvider.fetchSeriesItems("lib1", "s1") } returns
+      coEvery { mediaProvider.fetchSeriesItems("lib1", "s1", LibraryType.LIBRARY) } returns
         OperationResult.Success(
           listOf(
             book("b1").copy(series = "Series one #1"),
@@ -404,7 +442,7 @@ class MediaLibraryTreeTest {
     @Test
     fun `dynamic series node is absent when the series has no books`() {
       coEvery { mediaProvider.fetchLibrary("lib1") } returns OperationResult.Success(library("lib1"))
-      coEvery { mediaProvider.fetchSeriesItems("lib1", "s1") } returns OperationResult.Success(emptyList())
+      coEvery { mediaProvider.fetchSeriesItems("lib1", "s1", LibraryType.LIBRARY) } returns OperationResult.Success(emptyList())
 
       val result = tree.getItem("root/library/lib1/series_collapsed/s1").get()
 
@@ -427,7 +465,7 @@ class MediaLibraryTreeTest {
 
         val second = tree.getChildren("root/recent", 0, 20, session).get()
 
-        assertEquals(listOf("book/b1"), second.value!!.map { it.mediaId })
+        assertEquals(listOf("book/LIBRARY/b1"), second.value!!.map { it.mediaId })
         coVerify(exactly = 1) { mediaProvider.fetchRecentListenedBooks("lib1") }
       }
   }

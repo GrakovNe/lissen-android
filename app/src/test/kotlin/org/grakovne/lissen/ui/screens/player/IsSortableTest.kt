@@ -1,7 +1,9 @@
 package org.grakovne.lissen.ui.screens.player
 
+import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.PlayingChapter
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -23,6 +25,22 @@ class IsSortableTest {
   @Test
   fun `an item of unknown type is not sortable whatever the library`() {
     assertFalse(isSortable(item(libraryType = null), preferredLibraryType = LibraryType.PODCAST))
+  }
+
+  @Test
+  fun `a podcast that can never be reordered is not sortable`() {
+    val chaptered =
+      item(LibraryType.PODCAST).copy(
+        files = listOf(BookFile(id = "file", name = "file", duration = 60.0, size = null, mimeType = "audio/mpeg")),
+        chapters =
+          listOf(
+            PlayingChapter(available = true, podcastEpisodeState = null, duration = 30.0, start = 0.0, end = 30.0, title = "a", id = "a"),
+            PlayingChapter(available = true, podcastEpisodeState = null, duration = 30.0, start = 30.0, end = 60.0, title = "b", id = "b"),
+          ),
+      )
+
+    assertFalse(isSortable(chaptered, preferredLibraryType = LibraryType.PODCAST))
+    assertFalse(isSortable(item(LibraryType.PODCAST).copy(libraryId = null), preferredLibraryType = LibraryType.PODCAST))
   }
 
   private fun item(libraryType: LibraryType?) =

@@ -170,17 +170,22 @@ class LissenMediaProvider
       )
     }
 
+    /** [libraryType] is the type of [libraryId] when the caller may list a library other than the preferred one. */
     suspend fun fetchBooks(
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
       extraFilter: Pair<String, String>? = null,
+      libraryType: LibraryType? = null,
     ): OperationResult<PagedItems<Book>> {
-      Timber.d("Fetching books: libraryId=$libraryId, page=$pageNumber, pageSize=$pageSize")
+      Timber.d("Fetching books: libraryId=$libraryId, libraryType=$libraryType, page=$pageNumber, pageSize=$pageSize")
 
       return cacheOrChannel(
         local = { localCacheRepository.fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber) },
-        remote = { providePreferredChannel().fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber, extraFilter) },
+        remote = {
+          val channel = provideChannelFor(libraryType)
+          channel.fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber, extraFilter)
+        },
       )
     }
 
@@ -195,6 +200,7 @@ class LissenMediaProvider
       pageSize: Int,
       pageNumber: Int,
       grouping: LibraryGrouping,
+      libraryType: LibraryType? = null,
     ): OperationResult<PagedItems<LibraryEntry>> {
       Timber.d("Fetching library: libraryId=$libraryId, page=$pageNumber, pageSize=$pageSize, grouping=$grouping")
 
@@ -208,7 +214,7 @@ class LissenMediaProvider
           )
         },
         remote = {
-          providePreferredChannel().fetchLibrary(
+          provideChannelFor(libraryType).fetchLibrary(
             libraryId = libraryId,
             pageSize = pageSize,
             pageNumber = pageNumber,
@@ -221,12 +227,13 @@ class LissenMediaProvider
     suspend fun fetchSeriesItems(
       libraryId: String,
       seriesId: String,
+      libraryType: LibraryType? = null,
     ): OperationResult<List<Book>> {
       Timber.d("Fetching series items: libraryId=$libraryId, seriesId=$seriesId")
 
       return cacheOrChannel(
         local = { localCacheRepository.fetchSeriesItems(libraryId = libraryId, seriesId = seriesId) },
-        remote = { providePreferredChannel().fetchSeriesItems(libraryId = libraryId, seriesId = seriesId) },
+        remote = { provideChannelFor(libraryType).fetchSeriesItems(libraryId = libraryId, seriesId = seriesId) },
       )
     }
 

@@ -66,8 +66,6 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import coil3.ImageLoader
 import coil3.request.ImageRequest
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
@@ -109,9 +107,7 @@ fun CachedItemsSettingsScreen(
         }
 
       withMinimumTime(minimumTime) {
-        listOf(
-          async { viewModel.fetchCachedItems() },
-        ).awaitAll()
+        cachedItems.refresh()
       }
 
       pullRefreshing = false

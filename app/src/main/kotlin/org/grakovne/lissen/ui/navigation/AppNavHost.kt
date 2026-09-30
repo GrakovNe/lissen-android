@@ -69,7 +69,7 @@ fun AppNavHost(
   // consumed only on the first layout, so read once
   val startDestination =
     remember {
-      val book = playbackPreferences.getPlayingItem()
+      val book = playbackPreferences.getLastPlayingItem()
 
       when {
         sessionPreferences.hasCredentials().not() -> {

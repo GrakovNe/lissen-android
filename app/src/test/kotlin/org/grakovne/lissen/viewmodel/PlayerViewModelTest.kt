@@ -1,6 +1,8 @@
 package org.grakovne.lissen.viewmodel
 
+import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.coVerifyOrder
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -9,8 +11,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.grakovne.lissen.common.EpisodeOrderingConfiguration
@@ -54,6 +58,7 @@ class PlayerViewModelTest {
   private val bookmarks = MutableStateFlow<List<Bookmark>>(emptyList())
   private val timerOption = MutableStateFlow<TimerOption?>(null)
   private val timerRemaining = MutableStateFlow<Long?>(null)
+  private val preferredLibraryType = MutableStateFlow(LibraryType.LIBRARY)
 
   private val mediaRepository = mockk<MediaRepository>(relaxed = true)
   private val preferences = mockk<PlaybackPreferences>(relaxed = true)
@@ -64,6 +69,7 @@ class PlayerViewModelTest {
   @BeforeEach
   fun setup() {
     Dispatchers.setMain(testDispatcher)
+    preferredLibraryType.value = LibraryType.LIBRARY
 
     every { mediaRepository.playingBook } returns playingBook
     every { mediaRepository.currentChapterIndex } returns currentChapterIndex
@@ -79,6 +85,8 @@ class PlayerViewModelTest {
     every { mediaRepository.timerRemaining } returns timerRemaining
 
     every { libraryPreferences.episodeOrderingFlow } returns MutableStateFlow(emptyMap())
+    every { libraryPreferences.preferredLibraryTypeFlow } returns preferredLibraryType
+    every { libraryPreferences.getPreferredLibraryType() } returns LibraryType.LIBRARY
 
     viewModel = PlayerViewModel(mediaRepository, preferences, libraryPreferences, autoSkipPreferences, mockk(relaxed = true))
   }
@@ -227,6 +235,22 @@ class PlayerViewModelTest {
       viewModel.updateSearch("harry potter")
       assertEquals("harry potter", viewModel.searchToken.value)
     }
+  }
+
+  @Nested
+  inner class LibraryPreference {
+    @Test
+    fun `preferred library type follows preferences`() =
+      runTest {
+        val collection = launch { viewModel.preferredLibraryType.collect {} }
+        runCurrent()
+
+        preferredLibraryType.value = LibraryType.PODCAST
+        runCurrent()
+
+        assertEquals(LibraryType.PODCAST, viewModel.preferredLibraryType.value)
+        collection.cancel()
+      }
   }
 
   @Nested
@@ -384,18 +408,19 @@ class PlayerViewModelTest {
   @Nested
   inner class PlayingItemLifecycle {
     @Test
-    fun `updatePlayingItem clears the playing book when there is no stored item`() {
-      every { preferences.getPlayingItem() } returns null
+    fun `updatePlayingItem leaves the stored items alone when there is no last playing item`() {
+      every { preferences.getLastPlayingItem() } returns null
 
       viewModel.updatePlayingItem()
 
-      verify { mediaRepository.clearPlayingBook() }
+      verify(exactly = 0) { mediaRepository.clearPlayingBook() }
       coVerify(exactly = 0) { mediaRepository.preparePlayback(any(), any()) }
     }
 
     @Test
-    fun `updatePlayingItem prepares playback when there is a stored item`() {
-      every { preferences.getPlayingItem() } returns detailedItem(libraryType = LibraryType.PODCAST)
+    fun `updatePlayingItem restores the last playing item, not the preferred library's one`() {
+      every { preferences.getLastPlayingItem() } returns detailedItem(libraryType = LibraryType.PODCAST)
+      every { preferences.getPlayingItem() } returns detailedItem(id = "preferred-library-item")
 
       viewModel.updatePlayingItem()
 
@@ -405,19 +430,12 @@ class PlayerViewModelTest {
     @Test
     fun `updatePlayingItem does not replace an already registered playing book`() {
       playingBook.value = detailedItem(id = "current-book")
-      every { preferences.getPlayingItem() } returns detailedItem(id = "stored-book")
+      every { preferences.getLastPlayingItem() } returns detailedItem(id = "stored-book")
 
       viewModel.updatePlayingItem()
 
       verify(exactly = 0) { mediaRepository.clearPlayingBook() }
       coVerify(exactly = 0) { mediaRepository.preparePlayback(any(), any()) }
-    }
-
-    @Test
-    fun `clearPrepared delegates to mediaRepository`() {
-      viewModel.clearPrepared()
-
-      verify { mediaRepository.clearPreparedItem() }
     }
 
     @Test
@@ -429,29 +447,148 @@ class PlayerViewModelTest {
     }
 
     @Test
-    fun `prepareAndPlay does nothing when there is no stored playing item`() {
-      every { preferences.getPlayingItem() } returns null
+    fun `requiresBookPreparation detects another item`() {
+      playingBook.value = detailedItem(id = "book-1")
 
-      viewModel.prepareAndPlay()
-
-      verify(exactly = 0) { mediaRepository.prepareAndPlay(any()) }
+      assertTrue(viewModel.requiresBookPreparation("book-2", useLocalCache = false))
     }
 
     @Test
-    fun `prepareAndPlay delegates to mediaRepository when a playing item is stored`() {
-      val item = detailedItem()
-      every { preferences.getPlayingItem() } returns item
+    fun `requiresBookPreparation detects another cache representation`() {
+      playingBook.value = detailedItem(id = "book-1", localProvided = false)
 
-      viewModel.prepareAndPlay()
-
-      verify { mediaRepository.prepareAndPlay(item) }
+      assertTrue(viewModel.requiresBookPreparation("book-1", useLocalCache = true))
     }
+
+    @Test
+    fun `requiresBookPreparation accepts the loaded representation`() {
+      playingBook.value = detailedItem(id = "book-1", localProvided = true)
+
+      assertFalse(viewModel.requiresBookPreparation("book-1", useLocalCache = true))
+    }
+
+    @Test
+    fun `openBook prepares the requested book before starting it`() =
+      runTest {
+        val requested = detailedItem(id = "book-2")
+        playingBook.value = detailedItem(id = "book-1")
+        coEvery { mediaRepository.preparePlayback("book-2", LibraryType.LIBRARY) } answers {
+          playingBook.value = requested
+          true
+        }
+
+        viewModel.openBook(
+          bookId = "book-2",
+          libraryType = LibraryType.LIBRARY,
+          useLocalCache = false,
+          playInstantly = true,
+        )
+
+        coVerifyOrder {
+          mediaRepository.clearPreparedItem()
+          mediaRepository.preparePlayback("book-2", LibraryType.LIBRARY)
+          mediaRepository.prepareAndPlay(requested)
+        }
+      }
+
+    @Test
+    fun `openBook uses the last played item type before the preferred library type`() =
+      runTest {
+        every { preferences.getLastPlayingItem() } returns detailedItem(id = "book-2", libraryType = LibraryType.PODCAST)
+
+        viewModel.openBook(
+          bookId = "book-2",
+          libraryType = LibraryType.LIBRARY,
+          useLocalCache = false,
+          playInstantly = false,
+        )
+
+        coVerify { mediaRepository.preparePlayback("book-2", LibraryType.PODCAST) }
+      }
+
+    @Test
+    fun `openBook does not start the previous item when preparation fails`() =
+      runTest {
+        val previous = detailedItem(id = "book-1")
+        playingBook.value = previous
+
+        viewModel.openBook(
+          bookId = "book-2",
+          libraryType = LibraryType.LIBRARY,
+          useLocalCache = false,
+          playInstantly = true,
+        )
+
+        coVerify { mediaRepository.preparePlayback("book-2", LibraryType.LIBRARY) }
+        verify(exactly = 0) { mediaRepository.prepareAndPlay(any()) }
+      }
+
+    @Test
+    fun `openBook does not start a stale representation when replacement fails`() =
+      runTest {
+        val remote = detailedItem(id = "book-1", localProvided = false)
+        playingBook.value = remote
+        coEvery { mediaRepository.preparePlayback("book-1", LibraryType.LIBRARY) } returns false
+
+        viewModel.openBook(
+          bookId = "book-1",
+          libraryType = LibraryType.LIBRARY,
+          useLocalCache = true,
+          playInstantly = true,
+        )
+
+        coVerifyOrder {
+          mediaRepository.clearPreparedItem()
+          mediaRepository.preparePlayback("book-1", LibraryType.LIBRARY)
+        }
+        verify(exactly = 0) { mediaRepository.prepareAndPlay(any()) }
+      }
+
+    @Test
+    fun `openBook starts a successful fallback representation`() =
+      runTest {
+        val cached = detailedItem(id = "book-1", localProvided = true)
+        playingBook.value = cached
+        coEvery { mediaRepository.preparePlayback("book-1", LibraryType.LIBRARY) } returns true
+
+        viewModel.openBook(
+          bookId = "book-1",
+          libraryType = LibraryType.LIBRARY,
+          useLocalCache = false,
+          playInstantly = true,
+        )
+
+        coVerifyOrder {
+          mediaRepository.clearPreparedItem()
+          mediaRepository.preparePlayback("book-1", LibraryType.LIBRARY)
+        }
+        verify { mediaRepository.prepareAndPlay(cached) }
+      }
+
+    @Test
+    fun `openBook reuses the loaded item`() =
+      runTest {
+        val requested = detailedItem(id = "book-1", localProvided = true)
+        playingBook.value = requested
+
+        viewModel.openBook(
+          bookId = "book-1",
+          libraryType = LibraryType.LIBRARY,
+          useLocalCache = true,
+          playInstantly = true,
+        )
+
+        verify(exactly = 0) { mediaRepository.clearPreparedItem() }
+        coVerify(exactly = 0) { mediaRepository.preparePlayback(any(), any()) }
+        verify { mediaRepository.prepareAndPlay(requested) }
+      }
   }
 
   private fun detailedItem(
     chapters: List<PlayingChapter> = emptyList(),
     id: String = "book-1",
     libraryType: LibraryType? = null,
+    localProvided: Boolean = false,
   ) = DetailedItem(
     id = id,
     title = "Test Book",
@@ -467,7 +604,7 @@ class PlayerViewModelTest {
     progress = null,
     libraryId = "lib-1",
     libraryType = libraryType,
-    localProvided = false,
+    localProvided = localProvided,
     createdAt = 0L,
     updatedAt = 0L,
   )
