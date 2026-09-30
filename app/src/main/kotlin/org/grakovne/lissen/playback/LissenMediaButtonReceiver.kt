@@ -18,5 +18,5 @@ class LissenMediaButtonReceiver : MediaButtonReceiver() {
   override fun shouldStartForegroundService(
     context: Context,
     intent: Intent,
-  ): Boolean = preferences.getPlayingItem()?.canProducePlaybackQueue() == true
+  ): Boolean = preferences.getLastPlayingItem()?.canProducePlaybackQueue() == true
 }

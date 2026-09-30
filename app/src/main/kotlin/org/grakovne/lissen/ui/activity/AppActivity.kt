@@ -99,7 +99,7 @@ class AppActivity : ComponentActivity() {
 
     when (getLaunchAction(intent)) {
       AppLaunchAction.CONTINUE_PLAYBACK -> {
-        playbackPreferences.getPlayingItem()?.let { book ->
+        playbackPreferences.getLastPlayingItem()?.let { book ->
           appNavigationService.showPlayer(
             bookId = book.id,
             bookTitle = book.title,

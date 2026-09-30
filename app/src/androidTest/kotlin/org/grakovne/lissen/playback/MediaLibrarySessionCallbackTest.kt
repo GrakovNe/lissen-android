@@ -213,7 +213,7 @@ class MediaLibrarySessionCallbackTest {
     runBlocking {
       val storedBook = makeDetailedItem("book-1", "Stored Book", MediaProgress(170.0, false, 0L))
       val refreshedBook = makeDetailedItem("book-1", "Refreshed Book", MediaProgress(170.0, false, 0L))
-      every { preferences.getPlayingItem() } returns storedBook
+      every { preferences.getLastPlayingItem() } returns storedBook
       coEvery { lissenMediaProvider.fetchBook("book-1") } returns OperationResult.Success(refreshedBook)
 
       val result =
@@ -238,7 +238,7 @@ class MediaLibrarySessionCallbackTest {
   @Test
   fun onPlaybackResumption_noStoredBook_returnsFailedFutureWithoutSideEffects() =
     runBlocking {
-      every { preferences.getPlayingItem() } returns null
+      every { preferences.getLastPlayingItem() } returns null
 
       val future = callback.onPlaybackResumption(session, controller, isForPlayback = true)
 
@@ -253,7 +253,7 @@ class MediaLibrarySessionCallbackTest {
   fun onPlaybackResumption_fetchBookFails_fallsBackToStoredBook() =
     runBlocking {
       val storedBook = makeDetailedItem("book-1", "My Book", MediaProgress(170.0, false, 0L))
-      every { preferences.getPlayingItem() } returns storedBook
+      every { preferences.getLastPlayingItem() } returns storedBook
       coEvery { lissenMediaProvider.fetchBook("book-1") } returns
         OperationResult.Error(OperationError.NotFoundError)
 
@@ -274,7 +274,7 @@ class MediaLibrarySessionCallbackTest {
   fun onPlaybackResumption_metadataOnlyRequest_skipsPlaybackSideEffects() =
     runBlocking {
       val storedBook = makeDetailedItem("book-1", "My Book", MediaProgress(170.0, false, 0L))
-      every { preferences.getPlayingItem() } returns storedBook
+      every { preferences.getLastPlayingItem() } returns storedBook
       coEvery { lissenMediaProvider.fetchBook("book-1") } returns OperationResult.Success(storedBook)
 
       val result =
@@ -295,7 +295,7 @@ class MediaLibrarySessionCallbackTest {
     runBlocking {
       val storedBook = makeDetailedItem("book-1", "My Book", MediaProgress(170.0, false, 0L))
       val slowBook = makeDetailedItem("book-1", "Slow Book", MediaProgress(170.0, false, 0L))
-      every { preferences.getPlayingItem() } returns storedBook
+      every { preferences.getLastPlayingItem() } returns storedBook
       coEvery { lissenMediaProvider.fetchBook("book-1") } coAnswers {
         delay(5_000)
         OperationResult.Success(slowBook)
@@ -329,7 +329,7 @@ class MediaLibrarySessionCallbackTest {
     runBlocking {
       val storedBook = makeDetailedItem("book-1", "My Book", MediaProgress(170.0, false, 0L))
       val freshBook = storedBook.copy(progress = MediaProgress(190.0, false, 5_000L))
-      every { preferences.getPlayingItem() } returns storedBook
+      every { preferences.getLastPlayingItem() } returns storedBook
       coEvery { lissenMediaProvider.fetchBook("book-1") } coAnswers {
         delay(5_000)
         OperationResult.Success(storedBook)
@@ -352,7 +352,7 @@ class MediaLibrarySessionCallbackTest {
   fun onPlaybackResumption_latestProgressFails_fallsBackToStoredBook() =
     runBlocking {
       val storedBook = makeDetailedItem("book-1", "My Book", MediaProgress(170.0, false, 0L))
-      every { preferences.getPlayingItem() } returns storedBook
+      every { preferences.getLastPlayingItem() } returns storedBook
       coEvery { lissenMediaProvider.fetchBook("book-1") } returns OperationResult.Error(OperationError.NetworkError)
       coEvery { lissenMediaProvider.withLatestProgress(storedBook) } throws IllegalStateException("cache locked")
 
@@ -372,7 +372,7 @@ class MediaLibrarySessionCallbackTest {
       val storedBook = makeDetailedItem("book-1", "My Book", MediaProgress(170.0, false, 0L))
       val unusableBook =
         makeDetailedItem("book-1", "Unusable Book", MediaProgress(170.0, false, 0L)).copy(files = emptyList())
-      every { preferences.getPlayingItem() } returns storedBook
+      every { preferences.getLastPlayingItem() } returns storedBook
       coEvery { lissenMediaProvider.fetchBook("book-1") } returns OperationResult.Success(unusableBook)
 
       val result =
@@ -399,7 +399,7 @@ class MediaLibrarySessionCallbackTest {
   fun onPlaybackResumption_storedBookUnusable_returnsFailedFutureWithoutSideEffects() =
     runBlocking {
       val storedBook = makeDetailedItem("book-1", "My Book").copy(files = emptyList())
-      every { preferences.getPlayingItem() } returns storedBook
+      every { preferences.getLastPlayingItem() } returns storedBook
       coEvery { lissenMediaProvider.fetchBook("book-1") } returns OperationResult.Success(storedBook)
 
       val future = callback.onPlaybackResumption(session, controller, isForPlayback = true)
@@ -414,7 +414,7 @@ class MediaLibrarySessionCallbackTest {
   fun onPlaybackResumption_fetchBookThrows_fallsBackToStoredBook() =
     runBlocking {
       val storedBook = makeDetailedItem("book-1", "My Book", MediaProgress(170.0, false, 0L))
-      every { preferences.getPlayingItem() } returns storedBook
+      every { preferences.getLastPlayingItem() } returns storedBook
       coEvery { lissenMediaProvider.fetchBook("book-1") } throws IllegalStateException("boom")
 
       val result =
@@ -434,7 +434,7 @@ class MediaLibrarySessionCallbackTest {
   fun onPlaybackResumption_failedResumption_keepsSubsequentCallbacksWorking() =
     runBlocking {
       val unusableBook = makeDetailedItem("book-1", "My Book").copy(files = emptyList())
-      every { preferences.getPlayingItem() } returns unusableBook
+      every { preferences.getLastPlayingItem() } returns unusableBook
       coEvery { lissenMediaProvider.fetchBook("book-1") } returns OperationResult.Success(unusableBook)
 
       val failed = callback.onPlaybackResumption(session, controller, isForPlayback = true)

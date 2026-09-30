@@ -306,7 +306,7 @@ class MediaLibrarySessionCallback
           Timber.d("Resuming playback for: $controller (isForPlayback=$isForPlayback)")
 
           val storedBook =
-            preferences.getPlayingItem()
+            preferences.getLastPlayingItem()
               ?: throw IllegalStateException("No last played book stored")
 
           val refreshedBook = refreshBookForResumption(storedBook)

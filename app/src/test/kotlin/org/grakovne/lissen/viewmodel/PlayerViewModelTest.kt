@@ -490,9 +490,9 @@ class PlayerViewModelTest {
       }
 
     @Test
-    fun `openBook uses the stored item type before the preferred library type`() =
+    fun `openBook uses the last played item type before the preferred library type`() =
       runTest {
-        every { preferences.getPlayingItem() } returns detailedItem(id = "book-2", libraryType = LibraryType.PODCAST)
+        every { preferences.getLastPlayingItem() } returns detailedItem(id = "book-2", libraryType = LibraryType.PODCAST)
 
         viewModel.openBook(
           bookId = "book-2",

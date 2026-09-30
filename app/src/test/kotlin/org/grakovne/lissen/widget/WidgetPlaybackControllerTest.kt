@@ -109,7 +109,7 @@ class WidgetPlaybackControllerTest {
   @Test
   fun runForItemUsesStoredItemLibraryTypeWhenTheRequestedBookIsNotLoaded() =
     runTest(testDispatcher) {
-      every { preferences.getPlayingItem() } returns
+      every { preferences.getLastPlayingItem() } returns
         item("book-1", LibraryType.LIBRARY)
       coEvery { mediaRepository.preparePlayback(any(), any()) } answers { preparingError.value = true }
 

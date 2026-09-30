@@ -33,7 +33,7 @@ class WidgetPlaybackController
       onPlaybackReady: () -> Unit,
     ) {
       if (mediaRepository.playingBook.value?.id != itemId) {
-        val libraryType = preferences.getPlayingItem()?.takeIf { it.id == itemId }?.libraryType
+        val libraryType = preferences.getLastPlayingItem()?.takeIf { it.id == itemId }?.libraryType
 
         mediaRepository.clearPreparedItem()
         mediaRepository.preparePlayback(bookId = itemId, libraryType = libraryType)
