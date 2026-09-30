@@ -81,7 +81,7 @@ class MediaRepository
     private val _currentChapterDuration = MutableStateFlow(0.0)
     val currentChapterDuration: StateFlow<Double> = _currentChapterDuration.asStateFlow()
 
-    // the bookmark reads hop here; a test replaces it before the first read, as LibraryViewModel does
+    // the fetch and the bookmark reads hop here; a test replaces it before the first read, as LibraryViewModel does
     @VisibleForTesting
     internal var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 
@@ -316,16 +316,17 @@ class MediaRepository
       bookId: String,
       libraryType: LibraryType? = null,
     ) {
-      withContext(Dispatchers.IO) {
-        mediaChannel
-          .fetchBook(bookId, libraryType)
-          .foldAsync(
-            onSuccess = {
-              startPreparingPlayback(it)
-              playingBookmarks.refreshFromServerAsync()
-            },
-            onFailure = { _mediaPreparingError.value = true },
-          )
+      val result = withContext(ioDispatcher) { mediaChannel.fetchBook(bookId, libraryType) }
+
+      // only the fetch leaves the main thread: the controller answers there alone
+      withContext(Dispatchers.Main.immediate) {
+        result.fold(
+          onSuccess = {
+            startPreparingPlayback(it)
+            playingBookmarks.refreshFromServerAsync()
+          },
+          onFailure = { _mediaPreparingError.value = true },
+        )
       }
     }
 
