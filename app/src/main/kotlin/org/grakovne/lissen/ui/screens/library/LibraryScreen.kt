@@ -136,9 +136,7 @@ fun LibraryScreen(
 
   val library = libraryViewModel.getPager(searchRequested).collectAsLazyPagingItems()
   val libraryCount by libraryViewModel.totalCount.collectAsState()
-  val expandedGroups by libraryViewModel.expandedGroups.collectAsState()
-  val groupBooks = libraryViewModel.groupBooks
-  val groupLoading = libraryViewModel.groupLoading
+  val groups by libraryViewModel.groups.collectAsState()
   val libraryGrouping by settingsViewModel.libraryGrouping.collectAsState(LibraryGrouping.NONE)
 
   val libraryListState = rememberLazyGridState()
@@ -240,7 +238,7 @@ fun LibraryScreen(
     val localCacheUpdated = cachingModelView.fetchLatestUpdate(currentLibraryId)?.let { it > localCacheUpdatedAt } ?: true
 
     if (emptyContent || libraryChanged || orderingChanged || (localCacheUsing && localCacheUpdated)) {
-      libraryViewModel.refreshRecentListening()
+      libraryViewModel.fetchRecentListening()
       libraryViewModel.refreshLibrary()
 
       currentLibraryId = settingsViewModel.fetchPreferredLibraryId()
@@ -535,9 +533,9 @@ fun LibraryScreen(
                   is LibraryEntry.SeriesEntry -> {
                     SeriesComposable(
                       series = entry,
-                      expanded = entry.id in expandedGroups,
-                      loading = entry.id in groupLoading,
-                      books = groupBooks[entry.id].orEmpty(),
+                      expanded = entry.id in groups.expanded,
+                      loading = entry.id in groups.loading,
+                      books = groups.books[entry.id].orEmpty(),
                       imageLoader = imageLoader,
                       navController = navController,
                       onToggle = { libraryViewModel.toggleGroup(entry) },
@@ -548,9 +546,9 @@ fun LibraryScreen(
                   is LibraryEntry.AuthorEntry -> {
                     AuthorComposable(
                       author = entry,
-                      expanded = entry.id in expandedGroups,
-                      loading = entry.id in groupLoading,
-                      books = groupBooks[entry.id].orEmpty(),
+                      expanded = entry.id in groups.expanded,
+                      loading = entry.id in groups.loading,
+                      books = groups.books[entry.id].orEmpty(),
                       imageLoader = imageLoader,
                       navController = navController,
                       onToggle = { libraryViewModel.toggleGroup(entry) },

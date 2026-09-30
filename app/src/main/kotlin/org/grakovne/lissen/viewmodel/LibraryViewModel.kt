@@ -1,9 +1,5 @@
 package org.grakovne.lissen.viewmodel
 
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
-import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
@@ -25,6 +21,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
@@ -71,12 +68,8 @@ class LibraryViewModel
     private val _totalCount = MutableStateFlow(0)
     val totalCount: StateFlow<Int> = _totalCount.asStateFlow()
 
-    private val _expandedGroups = MutableStateFlow<Set<String>>(emptySet())
-    val expandedGroups: StateFlow<Set<String>> = _expandedGroups.asStateFlow()
-
-    val groupBooks: SnapshotStateMap<String, List<Book>> = mutableStateMapOf()
-
-    val groupLoading: SnapshotStateList<String> = mutableStateListOf()
+    private val _groups = MutableStateFlow(LibraryGroupsState())
+    val groups: StateFlow<LibraryGroupsState> = _groups.asStateFlow()
 
     private val prefetchSemaphore = Semaphore(MAX_CONCURRENT_PREFETCH)
 
@@ -148,13 +141,13 @@ class LibraryViewModel
       val groupId = entry.groupId() ?: return
       Timber.d("User action: toggleGroup $groupId")
 
-      when (groupId in _expandedGroups.value) {
+      when (groupId in _groups.value.expanded) {
         true -> {
-          _expandedGroups.value = _expandedGroups.value - groupId
+          _groups.update { it.copy(expanded = it.expanded - groupId) }
         }
 
         false -> {
-          _expandedGroups.value = _expandedGroups.value + groupId
+          _groups.update { it.copy(expanded = it.expanded + groupId) }
           viewModelScope.launch { fetchGroupBooks(entry) }
         }
       }
@@ -174,9 +167,7 @@ class LibraryViewModel
     }
 
     fun resetGroupExpansion() {
-      _expandedGroups.value = emptySet()
-      groupBooks.clear()
-      groupLoading.clear()
+      _groups.value = LibraryGroupsState()
     }
 
     private fun LibraryEntry.groupId(): String? =
@@ -186,7 +177,7 @@ class LibraryViewModel
         is LibraryEntry.BookEntry -> null
       }
 
-    private fun alreadyResolved(groupId: String): Boolean = groupBooks.containsKey(groupId) || groupId in groupLoading
+    private fun alreadyResolved(groupId: String): Boolean = groupId in _groups.value.books || groupId in _groups.value.loading
 
     private suspend fun fetchGroupBooks(entry: LibraryEntry) {
       val groupId = entry.groupId() ?: return
@@ -196,7 +187,7 @@ class LibraryViewModel
 
       val libraryId = preferences.getPreferredLibrary()?.id ?: return
 
-      groupLoading.add(groupId)
+      _groups.update { it.copy(loading = it.loading + groupId) }
       val result =
         when (entry) {
           is LibraryEntry.SeriesEntry -> mediaChannel.fetchSeriesItems(libraryId = libraryId, seriesId = entry.id)
@@ -211,11 +202,11 @@ class LibraryViewModel
               is LibraryEntry.SeriesEntry -> books.sortedBySeriesPosition()
               else -> books
             }
-          groupBooks[groupId] = ordered
+          _groups.update { state -> state.copy(books = state.books + (groupId to ordered)) }
         },
         onFailure = { },
       )
-      groupLoading.remove(groupId)
+      _groups.update { it.copy(loading = it.loading - groupId) }
     }
 
     fun applyLinkedSearch(token: String) {
@@ -238,28 +229,17 @@ class LibraryViewModel
 
     fun hasCredentials() = session.hasCredentials()
 
-    fun refreshRecentListening() {
-      Timber.d("User action: refreshRecentListening")
-      viewModelScope.launch {
-        withContext(dispatcher) {
-          fetchRecentListening()
-        }
-      }
-    }
-
-    fun refreshLibrary() {
+    suspend fun refreshLibrary() {
       Timber.d("User action: refreshLibrary")
-      viewModelScope.launch {
-        withContext(dispatcher) {
-          when (searchRequested.value) {
-            true -> searchPagingSource?.invalidate()
-            else -> defaultPagingSource?.invalidate()
-          }
+      withContext(dispatcher) {
+        when (searchRequested.value) {
+          true -> searchPagingSource?.invalidate()
+          else -> defaultPagingSource?.invalidate()
         }
       }
     }
 
-    fun fetchRecentListening() {
+    suspend fun fetchRecentListening() {
       _recentBookUpdating.value = true
 
       val preferredLibrary =
@@ -268,19 +248,13 @@ class LibraryViewModel
           return
         }
 
-      viewModelScope.launch {
-        mediaChannel
-          .fetchRecentListenedBooks(preferredLibrary)
-          .fold(
-            onSuccess = {
-              _recentBooks.value = it
-              _recentBookUpdating.value = false
-            },
-            onFailure = {
-              _recentBookUpdating.value = false
-            },
-          )
-      }
+      mediaChannel
+        .fetchRecentListenedBooks(preferredLibrary)
+        .fold(
+          onSuccess = { _recentBooks.value = it },
+          onFailure = { },
+        )
+      _recentBookUpdating.value = false
     }
 
     companion object {
@@ -291,3 +265,9 @@ class LibraryViewModel
       private const val MAX_CONCURRENT_PREFETCH = 3
     }
   }
+
+data class LibraryGroupsState(
+  val expanded: Set<String> = emptySet(),
+  val books: Map<String, List<Book>> = emptyMap(),
+  val loading: Set<String> = emptySet(),
+)

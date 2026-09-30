@@ -4,11 +4,15 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
@@ -22,6 +26,7 @@ import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -85,44 +90,65 @@ class LibrarySettingsViewModelTest {
   @Nested
   inner class FetchLibraries {
     @Test
-    fun `fetchLibraries populates libraries on success`() {
-      coEvery { mediaChannel.fetchLibraries() } returns OperationResult.Success(listOf(books, podcasts))
+    fun `fetchLibraries populates libraries on success`() =
+      runTest {
+        coEvery { mediaChannel.fetchLibraries() } returns OperationResult.Success(listOf(books, podcasts))
 
-      viewModel.fetchLibraries()
+        viewModel.fetchLibraries()
 
-      assertEquals(listOf(books, podcasts), viewModel.libraries.value)
-    }
-
-    @Test
-    fun `fetchLibraries selects matching preferred library`() {
-      every { libraryPreferences.getPreferredLibrary() } returns podcasts
-      coEvery { mediaChannel.fetchLibraries() } returns OperationResult.Success(listOf(books, podcasts))
-      viewModel = buildViewModel()
-
-      viewModel.fetchLibraries()
-
-      assertEquals(podcasts, viewModel.preferredLibrary.value)
-    }
+        assertEquals(listOf(books, podcasts), viewModel.libraries.value)
+      }
 
     @Test
-    fun `fetchLibraries selects first library when no preferred set`() {
-      coEvery { mediaChannel.fetchLibraries() } returns OperationResult.Success(listOf(books))
+    fun `fetchLibraries selects matching preferred library`() =
+      runTest {
+        every { libraryPreferences.getPreferredLibrary() } returns podcasts
+        coEvery { mediaChannel.fetchLibraries() } returns OperationResult.Success(listOf(books, podcasts))
+        viewModel = buildViewModel()
 
-      viewModel.fetchLibraries()
+        viewModel.fetchLibraries()
 
-      assertEquals(books, viewModel.preferredLibrary.value)
-    }
+        assertEquals(podcasts, viewModel.preferredLibrary.value)
+      }
 
     @Test
-    fun `fetchLibraries falls back to cached preferred library on error`() {
-      every { libraryPreferences.getPreferredLibrary() } returns books
-      coEvery { mediaChannel.fetchLibraries() } returns OperationResult.Error(OperationError.NetworkError)
-      viewModel = buildViewModel()
+    fun `fetchLibraries selects first library when no preferred set`() =
+      runTest {
+        coEvery { mediaChannel.fetchLibraries() } returns OperationResult.Success(listOf(books))
 
-      viewModel.fetchLibraries()
+        viewModel.fetchLibraries()
 
-      assertEquals(listOf(books), viewModel.libraries.value)
-    }
+        assertEquals(books, viewModel.preferredLibrary.value)
+      }
+
+    @Test
+    fun `fetchLibraries falls back to cached preferred library on error`() =
+      runTest {
+        every { libraryPreferences.getPreferredLibrary() } returns books
+        coEvery { mediaChannel.fetchLibraries() } returns OperationResult.Error(OperationError.NetworkError)
+        viewModel = buildViewModel()
+
+        viewModel.fetchLibraries()
+
+        assertEquals(listOf(books), viewModel.libraries.value)
+      }
+
+    @Test
+    fun `fetchLibraries completes only after the media request completes`() =
+      runTest {
+        val response = CompletableDeferred<OperationResult<List<Library>>>()
+        coEvery { mediaChannel.fetchLibraries() } coAnswers { response.await() }
+
+        val request = async { viewModel.fetchLibraries() }
+        runCurrent()
+
+        assertFalse(request.isCompleted)
+
+        response.complete(OperationResult.Success(listOf(books)))
+        request.await()
+
+        assertEquals(listOf(books), viewModel.libraries.value)
+      }
   }
 
   @Nested

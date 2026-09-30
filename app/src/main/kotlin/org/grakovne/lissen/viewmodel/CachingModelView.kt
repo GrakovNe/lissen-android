@@ -52,6 +52,8 @@ class CachingModelView
     private val cachedCoverProvider: CachedCoverProvider,
     private val seriesCoverProvider: SeriesCoverProvider,
   ) : ViewModel() {
+    internal var dispatcher = Dispatchers.IO
+
     private val _totalCount = MutableStateFlow(0)
     val totalCount: StateFlow<Int> = _totalCount.asStateFlow()
 
@@ -175,11 +177,9 @@ class CachingModelView
 
     fun provideCachedChapterIds(bookId: String): Flow<List<String>> = contentCachingManager.provideCachedChapterIds(bookId)
 
-    fun fetchCachedItems() {
-      viewModelScope.launch {
-        withContext(Dispatchers.IO) {
-          pageSource?.invalidate()
-        }
+    suspend fun refreshCachedItems() {
+      withContext(dispatcher) {
+        pageSource?.invalidate()
       }
     }
 

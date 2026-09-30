@@ -4,10 +4,14 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
@@ -121,62 +125,73 @@ class LibraryViewModelTest {
   @Nested
   inner class RecentListening {
     @Test
-    fun `fetchRecentListening does nothing when no preferred library`() {
-      every { preferences.getPreferredLibrary() } returns null
+    fun `fetchRecentListening does nothing when no preferred library`() =
+      runTest {
+        every { preferences.getPreferredLibrary() } returns null
 
-      viewModel.fetchRecentListening()
+        viewModel.fetchRecentListening()
 
-      assertFalse(viewModel.recentBookUpdating.value == true)
-    }
-
-    @Test
-    fun `fetchRecentListening updates recentBooks on success`() {
-      val library = Library(id = "lib-1", title = "Books", type = LibraryType.LIBRARY)
-      every { preferences.getPreferredLibrary() } returns library
-
-      val books =
-        listOf(
-          RecentBook(
-            id = "book-1",
-            title = "Book One",
-            subtitle = null,
-            author = "Author",
-            listenedPercentage = 50,
-            listenedLastUpdate = null,
-          ),
-        )
-      coEvery { mediaChannel.fetchRecentListenedBooks("lib-1") } returns
-        OperationResult.Success(books)
-
-      viewModel.fetchRecentListening()
-
-      assertEquals(books, viewModel.recentBooks.value)
-      assertFalse(viewModel.recentBookUpdating.value == true)
-    }
+        assertFalse(viewModel.recentBookUpdating.value == true)
+      }
 
     @Test
-    fun `fetchRecentListening stops updating on failure`() {
-      val library = Library(id = "lib-1", title = "Books", type = LibraryType.LIBRARY)
-      every { preferences.getPreferredLibrary() } returns library
-      coEvery { mediaChannel.fetchRecentListenedBooks("lib-1") } returns
-        OperationResult.Error(OperationError.NetworkError)
+    fun `fetchRecentListening updates recentBooks on success`() =
+      runTest {
+        val library = Library(id = "lib-1", title = "Books", type = LibraryType.LIBRARY)
+        every { preferences.getPreferredLibrary() } returns library
 
-      viewModel.fetchRecentListening()
+        val books =
+          listOf(
+            RecentBook(
+              id = "book-1",
+              title = "Book One",
+              subtitle = null,
+              author = "Author",
+              listenedPercentage = 50,
+              listenedLastUpdate = null,
+            ),
+          )
+        coEvery { mediaChannel.fetchRecentListenedBooks("lib-1") } returns
+          OperationResult.Success(books)
 
-      assertFalse(viewModel.recentBookUpdating.value == true)
-    }
+        viewModel.fetchRecentListening()
+
+        assertEquals(books, viewModel.recentBooks.value)
+        assertFalse(viewModel.recentBookUpdating.value == true)
+      }
 
     @Test
-    fun `refreshRecentListening triggers fetch`() {
-      val library = Library(id = "lib-2", title = "Books", type = LibraryType.LIBRARY)
-      every { preferences.getPreferredLibrary() } returns library
-      coEvery { mediaChannel.fetchRecentListenedBooks("lib-2") } returns
-        OperationResult.Success(emptyList())
+    fun `fetchRecentListening stops updating on failure`() =
+      runTest {
+        val library = Library(id = "lib-1", title = "Books", type = LibraryType.LIBRARY)
+        every { preferences.getPreferredLibrary() } returns library
+        coEvery { mediaChannel.fetchRecentListenedBooks("lib-1") } returns
+          OperationResult.Error(OperationError.NetworkError)
 
-      viewModel.refreshRecentListening()
+        viewModel.fetchRecentListening()
 
-      assertNotNull(viewModel.recentBooks.value)
-    }
+        assertFalse(viewModel.recentBookUpdating.value == true)
+      }
+
+    @Test
+    fun `fetchRecentListening remains updating until the request completes`() =
+      runTest {
+        val library = Library(id = "lib-2", title = "Books", type = LibraryType.LIBRARY)
+        every { preferences.getPreferredLibrary() } returns library
+        val response = CompletableDeferred<OperationResult<List<RecentBook>>>()
+        coEvery { mediaChannel.fetchRecentListenedBooks("lib-2") } coAnswers { response.await() }
+
+        val request = async { viewModel.fetchRecentListening() }
+        runCurrent()
+
+        assertTrue(viewModel.recentBookUpdating.value)
+        assertFalse(request.isCompleted)
+
+        response.complete(OperationResult.Success(emptyList()))
+        request.await()
+
+        assertFalse(viewModel.recentBookUpdating.value)
+      }
   }
 
   @Nested
@@ -207,7 +222,11 @@ class LibraryViewModelTest {
 
       viewModel.toggleGroup(series())
 
-      assertEquals(listOf("1", "2", "22"), viewModel.groupBooks["ser-1"]?.map { it.id })
+      assertEquals(
+        listOf("1", "2", "22"),
+        viewModel.groups.value.books["ser-1"]
+          ?.map { it.id },
+      )
     }
 
     @Test
@@ -218,8 +237,12 @@ class LibraryViewModelTest {
 
       viewModel.toggleGroup(author())
 
-      assertTrue("aut-1" in viewModel.expandedGroups.value)
-      assertEquals(listOf("b1"), viewModel.groupBooks["aut-1"]?.map { it.id })
+      assertTrue("aut-1" in viewModel.groups.value.expanded)
+      assertEquals(
+        listOf("b1"),
+        viewModel.groups.value.books["aut-1"]
+          ?.map { it.id },
+      )
       coVerify(exactly = 1) { mediaChannel.fetchAuthorBooks("lib-1", "aut-1") }
     }
 
@@ -231,9 +254,16 @@ class LibraryViewModelTest {
 
       viewModel.toggleGroup(series())
 
-      assertTrue("ser-1" in viewModel.expandedGroups.value)
-      assertEquals(listOf("b1", "b2"), viewModel.groupBooks["ser-1"]?.map { it.id })
-      assertTrue(viewModel.groupLoading.isEmpty())
+      assertTrue("ser-1" in viewModel.groups.value.expanded)
+      assertEquals(
+        listOf("b1", "b2"),
+        viewModel.groups.value.books["ser-1"]
+          ?.map { it.id },
+      )
+      assertTrue(
+        viewModel.groups.value.loading
+          .isEmpty(),
+      )
     }
 
     @Test
@@ -245,7 +275,7 @@ class LibraryViewModelTest {
       viewModel.toggleGroup(series())
       viewModel.toggleGroup(series())
 
-      assertFalse("ser-1" in viewModel.expandedGroups.value)
+      assertFalse("ser-1" in viewModel.groups.value.expanded)
     }
 
     @Test
@@ -258,7 +288,7 @@ class LibraryViewModelTest {
       viewModel.toggleGroup(series())
       viewModel.toggleGroup(series())
 
-      assertTrue("ser-1" in viewModel.expandedGroups.value)
+      assertTrue("ser-1" in viewModel.groups.value.expanded)
       coVerify(exactly = 1) { mediaChannel.fetchSeriesItems("lib-1", "ser-1") }
     }
 
@@ -279,8 +309,12 @@ class LibraryViewModelTest {
 
       viewModel.prefetchGroup(series())
 
-      assertEquals(listOf("b1", "b2"), viewModel.groupBooks["ser-1"]?.map { it.id })
-      assertFalse("ser-1" in viewModel.expandedGroups.value)
+      assertEquals(
+        listOf("b1", "b2"),
+        viewModel.groups.value.books["ser-1"]
+          ?.map { it.id },
+      )
+      assertFalse("ser-1" in viewModel.groups.value.expanded)
     }
 
     @Test
@@ -292,7 +326,7 @@ class LibraryViewModelTest {
       viewModel.prefetchGroup(series())
       viewModel.toggleGroup(series())
 
-      assertTrue("ser-1" in viewModel.expandedGroups.value)
+      assertTrue("ser-1" in viewModel.groups.value.expanded)
       coVerify(exactly = 1) { mediaChannel.fetchSeriesItems("lib-1", "ser-1") }
     }
 
@@ -314,10 +348,45 @@ class LibraryViewModelTest {
       viewModel.toggleGroup(series())
       viewModel.resetGroupExpansion()
 
-      assertTrue(viewModel.expandedGroups.value.isEmpty())
-      assertTrue(viewModel.groupBooks.isEmpty())
-      assertTrue(viewModel.groupLoading.isEmpty())
+      assertEquals(LibraryGroupsState(), viewModel.groups.value)
     }
+
+    @Test
+    fun `group state exposes loading until books are available`() =
+      runTest {
+        every { preferences.getPreferredLibrary() } returns library
+        val response = CompletableDeferred<OperationResult<List<Book>>>()
+        coEvery { mediaChannel.fetchSeriesItems("lib-1", "ser-1") } coAnswers { response.await() }
+
+        viewModel.toggleGroup(series())
+        runCurrent()
+
+        assertEquals(
+          LibraryGroupsState(expanded = setOf("ser-1"), loading = setOf("ser-1")),
+          viewModel.groups.value,
+        )
+
+        response.complete(OperationResult.Success(listOf(book("b1"))))
+        runCurrent()
+
+        assertEquals(
+          LibraryGroupsState(expanded = setOf("ser-1"), books = mapOf("ser-1" to listOf(book("b1")))),
+          viewModel.groups.value,
+        )
+      }
+
+    @Test
+    fun `failed group load clears loading while keeping the group expanded`() =
+      runTest {
+        every { preferences.getPreferredLibrary() } returns library
+        coEvery { mediaChannel.fetchSeriesItems("lib-1", "ser-1") } returns
+          OperationResult.Error(OperationError.NetworkError)
+
+        viewModel.toggleGroup(series())
+        runCurrent()
+
+        assertEquals(LibraryGroupsState(expanded = setOf("ser-1")), viewModel.groups.value)
+      }
   }
 
   @Nested
@@ -333,15 +402,14 @@ class LibraryViewModelTest {
   @Nested
   inner class Refresh {
     @Test
-    fun `refreshLibrary does not throw when no search is active`() {
-      viewModel.refreshLibrary()
-    }
+    fun `refreshLibrary completes when no search is active`() = runTest { viewModel.refreshLibrary() }
 
     @Test
-    fun `refreshLibrary does not throw while search is active`() {
-      viewModel.requestSearch()
+    fun `refreshLibrary completes while search is active`() =
+      runTest {
+        viewModel.requestSearch()
 
-      viewModel.refreshLibrary()
-    }
+        viewModel.refreshLibrary()
+      }
   }
 }

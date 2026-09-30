@@ -9,11 +9,14 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.job
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.grakovne.lissen.content.cache.persistent.CacheState
@@ -72,6 +75,7 @@ class CachingModelViewTest {
         cachedCoverProvider,
         seriesCoverProvider,
       )
+    viewModel.dispatcher = testDispatcher
   }
 
   @AfterEach
@@ -262,18 +266,17 @@ class CachingModelViewTest {
   }
 
   @Nested
-  inner class FetchCachedItems {
+  inner class RefreshCachedItems {
     @Test
-    fun `fetchCachedItems does not throw before the pager has been collected`() =
-      runTest(testDispatcher) {
-        val supervisor = viewModel.viewModelScope.coroutineContext.job
-        val existingChildren = supervisor.children.toSet()
+    fun `refreshCachedItems completes after invalidation work`() =
+      runTest {
+        viewModel.dispatcher = StandardTestDispatcher(testScheduler)
 
-        viewModel.fetchCachedItems()
+        val refresh = async { viewModel.refreshCachedItems() }
 
-        supervisor.children
-          .filterNot { it in existingChildren }
-          .forEach { it.join() }
+        assertFalse(refresh.isCompleted)
+        runCurrent()
+        assertTrue(refresh.isCompleted)
       }
   }
 
