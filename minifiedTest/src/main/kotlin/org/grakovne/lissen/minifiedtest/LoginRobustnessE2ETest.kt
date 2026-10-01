@@ -18,7 +18,7 @@ class LoginRobustnessE2ETest {
     // a refused connection fails fast; any other outcome must still leave the form
     Thread.sleep(5_000)
     assertOnLoginForm()
-    assertAppAlive()
+    assertAppAlive(" while logging in with a bad host")
   }
 
   @Test
@@ -29,16 +29,11 @@ class LoginRobustnessE2ETest {
     clickElement(By.res("loginButton"))
     Thread.sleep(5_000)
     assertOnLoginForm()
-    assertAppAlive()
+    assertAppAlive(" while logging in with a bad host")
   }
 
   private fun UiAutomatorTestScope.assertOnLoginForm() {
     assertNotNull("login button must still be present", device.findObject(By.res("loginButton")))
     assertNotNull("host field must still be present", device.findObject(By.res("hostInput")))
-  }
-
-  private fun UiAutomatorTestScope.assertAppAlive() {
-    val pid = device.executeShellCommand("pidof $TARGET_PACKAGE").trim()
-    if (pid.isEmpty()) throw AssertionError("$TARGET_PACKAGE crashed while logging in with a bad host")
   }
 }

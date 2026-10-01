@@ -7,6 +7,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.util.regex.Pattern
 
 @RunWith(AndroidJUnit4::class)
 class PlayerGapsE2ETest {
@@ -90,39 +91,7 @@ class PlayerGapsE2ETest {
     Regex("Chapter (\\d+) of").find(textOf(By.res("playerChapterNumber"), 10_000))?.groupValues?.get(1)?.toInt() ?: -1
 
   private fun UiAutomatorTestScope.speedCurrent(): String =
-    textOf(By.text(java.util.regex.Pattern.compile("^\\d\\.\\d\\dx$")), 10_000)
-
-  /**
-   * Taps the icon-only (X) button that opens a timer dialog: the leftmost button of the
-   * preset row holding [referenceText]. Preset captions live in child TextViews, so the
-   * buttons themselves carry no text and the row is located by containment, not by label.
-   */
-  private fun UiAutomatorTestScope.tapButtonLeftOf(referenceText: String) {
-    val deadline = System.currentTimeMillis() + DEFAULT_TIMEOUT_MS
-    while (System.currentTimeMillis() < deadline) {
-      val buttons = device.findObjects(By.clazz("android.widget.Button"))
-      val reference =
-        device
-          .findObjects(By.text(referenceText))
-          .firstOrNull { caption ->
-            buttons.any { it.visibleBounds.contains(caption.visibleBounds.centerX(), caption.visibleBounds.centerY()) }
-          }
-      if (reference != null) {
-        val referenceButton =
-          buttons.first { it.visibleBounds.contains(reference.visibleBounds.centerX(), reference.visibleBounds.centerY()) }
-        val leftmost =
-          buttons
-            .filter { kotlin.math.abs(it.visibleBounds.centerY() - referenceButton.visibleBounds.centerY()) < 40 }
-            .minByOrNull { it.visibleBounds.centerX() }
-        if (leftmost != null && leftmost != referenceButton) {
-          leftmost.click()
-          return
-        }
-      }
-      Thread.sleep(300)
-    }
-    throw AssertionError("no icon-only button found left of '$referenceText'")
-  }
+    textOf(By.text(Pattern.compile("^\\d\\.\\d\\dx$")), 10_000)
 
   companion object {
     const val PLAYBACK_TIMEOUT_MS = 120_000L

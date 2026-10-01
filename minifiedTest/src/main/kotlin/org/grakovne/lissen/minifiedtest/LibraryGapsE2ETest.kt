@@ -102,11 +102,6 @@ class LibraryGapsE2ETest {
 
   private fun UiAutomatorTestScope.openQuickSettings(expected: BySelector) = clickUntil(By.desc("Menu"), expected)
 
-  private fun UiAutomatorTestScope.assertAppAlive() {
-    val pid = device.executeShellCommand("pidof $TARGET_PACKAGE").trim()
-    if (pid.isEmpty()) throw AssertionError("$TARGET_PACKAGE crashed")
-  }
-
   private companion object {
     val BOOK_ITEM = By.res(Pattern.compile("bookItem_.*"))
     val AUTHOR_ITEM = By.res(Pattern.compile("authorItem_.*"))

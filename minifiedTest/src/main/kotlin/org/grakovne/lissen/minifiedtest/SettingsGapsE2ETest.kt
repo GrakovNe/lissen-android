@@ -247,16 +247,19 @@ class SettingsGapsE2ETest {
     val deadline = System.currentTimeMillis() + DEFAULT_TIMEOUT_MS
     while (System.currentTimeMillis() < deadline) {
       if (device.findObjects(By.clazz("android.widget.EditText")).size >= 2) return
-      when {
-        elementExists(By.text("Server connection")) -> clickElement(By.text("Custom Headers"))
-        elementExists(By.text("Disconnect from the server")) -> clickElement(By.text("Custom Headers"))
-        elementExists(By.text("Playback")) -> clickElement(By.text("Connection"))
-        else -> openSettings()
-      }
+      navigateTowardCustomHeaders()
       Thread.sleep(500)
     }
     dumpScreen("e2e-headers-nav-miss")
     throw AssertionError("could not reach the Custom Headers screen")
+  }
+
+  private fun UiAutomatorTestScope.navigateTowardCustomHeaders() {
+    when {
+      elementExists(By.text("Server connection")) -> clickElement(By.text("Custom Headers"))
+      elementExists(By.text("Playback")) -> clickElement(By.text("Connection"))
+      else -> openSettings()
+    }
   }
 
   private fun UiAutomatorTestScope.backToLibrary() {
@@ -321,18 +324,15 @@ class SettingsGapsE2ETest {
     val deadline = System.currentTimeMillis() + DEFAULT_TIMEOUT_MS
     while (System.currentTimeMillis() < deadline) {
       val fields = device.findObjects(By.clazz("android.widget.EditText"))
-      if (fields.size > index) {
-        try {
-          return fields[index].text.toString()
-        } catch (_: StaleObjectException) {
-          Thread.sleep(300)
-          continue
-        }
-      }
       when {
-        elementExists(By.text("Server connection")) -> clickElement(By.text("Custom Headers"))
-        elementExists(By.text("Playback")) -> clickElement(By.text("Connection"))
-        else -> openSettings()
+        fields.size > index ->
+          try {
+            return fields[index].text.toString()
+          } catch (_: StaleObjectException) {
+            Thread.sleep(300)
+            continue
+          }
+        else -> navigateTowardCustomHeaders()
       }
       Thread.sleep(500)
     }
@@ -349,39 +349,7 @@ class SettingsGapsE2ETest {
       .contains(TARGET_PACKAGE)
 
   /**
-   * Taps the icon-only (X) button of a timer dialog: the leftmost button of the preset row
-   * holding [referenceText]. Preset captions live in child TextViews, so the row is located
-   * by containment rather than by the buttons' (empty) text.
-   */
-  private fun UiAutomatorTestScope.tapButtonLeftOf(referenceText: String) {
-    val deadline = System.currentTimeMillis() + DEFAULT_TIMEOUT_MS
-    while (System.currentTimeMillis() < deadline) {
-      val buttons = device.findObjects(By.clazz("android.widget.Button"))
-      val reference =
-        device
-          .findObjects(By.text(referenceText))
-          .firstOrNull { caption ->
-            buttons.any { it.visibleBounds.contains(caption.visibleBounds.centerX(), caption.visibleBounds.centerY()) }
-          }
-      if (reference != null) {
-        val referenceButton =
-          buttons.first { it.visibleBounds.contains(reference.visibleBounds.centerX(), reference.visibleBounds.centerY()) }
-        val leftmost =
-          buttons
-            .filter { kotlin.math.abs(it.visibleBounds.centerY() - referenceButton.visibleBounds.centerY()) < 40 }
-            .minByOrNull { it.visibleBounds.centerX() }
-        if (leftmost != null && leftmost != referenceButton) {
-          leftmost.click()
-          return
-        }
-      }
-      Thread.sleep(300)
-    }
-    throw AssertionError("no icon-only button found left of '$referenceText'")
-  }
-
-  /**
-   * Taps the seek preset caption [text]. The slider renders the same numbers as static tick
+    * Taps the seek preset caption [text]. The slider renders the same numbers as static tick
    * labels and the preset captions are siblings (not children) of the Button nodes, so the
    * button is located by bounds containment around the caption center.
    */
