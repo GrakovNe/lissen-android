@@ -128,7 +128,7 @@ class PlaybackService : MediaLibraryService() {
           exoPlayer.prepare()
           exoPlayer.seekTo(itemsWithPosition.startIndex, itemsWithPosition.startPositionMs)
 
-          // same main task as the queue swap, so no player event pairs the old queue with the new item
+          // same main task as the queue swap, so no player event combines the old queue with the new item
           playbackSynchronizationService.startPlaybackSynchronization(book)
         }
       }

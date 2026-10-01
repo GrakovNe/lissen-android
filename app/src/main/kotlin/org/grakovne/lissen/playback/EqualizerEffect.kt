@@ -17,8 +17,8 @@ interface EqualizerEffect : AutoCloseable {
   fun apply(settings: EqualizerSettings)
 }
 
-// One effect per audio session: it is built when a session appears and closed when the session is
-// replaced, so no effect outlives the audio it shapes. A session without an effect yields null.
+// One effect per audio session: it is created when a session appears and closed when the session
+// is replaced, so no effect outlives the audio it shapes. A session without an effect yields null.
 @kotlin.OptIn(ExperimentalCoroutinesApi::class)
 fun equalizerEffects(
   sessionIds: Flow<Int>,

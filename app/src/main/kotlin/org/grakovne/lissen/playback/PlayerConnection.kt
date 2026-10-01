@@ -3,9 +3,9 @@ package org.grakovne.lissen.playback
 import androidx.media3.common.PlaybackException
 
 /**
- * Until the session is bound every query answers a neutral value and every command is
- * dropped: there is nothing to play, pause or seek in before a queue exists. A command that
- * must survive the wait goes through [whenConnected].
+ * Until the session is bound, every query answers a neutral value and every command is
+ * dropped: there is nothing to play, pause or seek before a queue exists. A command that must
+ * survive the wait goes through [whenConnected].
  */
 interface PlayerConnection {
   val isConnected: Boolean
@@ -38,7 +38,7 @@ interface PlayerConnection {
   interface Listener {
     fun onIsPlayingChanged(isPlaying: Boolean)
 
-    /** [byPlayback]: playback ran on into the next file or chapter by itself, nothing moved it. */
+    /** [byPlayback] is true when playback moved into the next file or chapter by itself; nothing else moved it. */
     fun onPositionDiscontinuity(byPlayback: Boolean)
 
     fun onEnded()

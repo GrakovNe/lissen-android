@@ -29,7 +29,7 @@ class NetworkService
     @Volatile
     private var defaultNetworkHandle: Long? = null
 
-    // the callback reports the current default network at once, so start pessimistic
+    // the callback reports the current default network right away, so start with the network unavailable
     private val _networkAvailable = MutableStateFlow(false)
 
     val networkAvailable: StateFlow<Boolean> = _networkAvailable.asStateFlow()
@@ -55,7 +55,7 @@ class NetworkService
       connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
     }
 
-    /** On a handover the new default is reported before the old one is lost, so only losing the current default means offline. */
+    /** During a handover the new default network is reported before the old one is lost. Only losing the current default means offline. */
     internal val defaultNetworkCallback =
       object : ConnectivityManager.NetworkCallback() {
         override fun onAvailable(network: Network) {

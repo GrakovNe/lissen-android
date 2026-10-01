@@ -179,7 +179,7 @@ class LissenMediaProviderTest {
     @Test
     fun `a stored item without indices is reordered like any other`() =
       runBlocking {
-        // every index 0 and no keys: serialized by a version without indices
+        // every index is 0 and there are no keys: serialized by a version without indices
         val item =
           detailedItem(
             chapters =

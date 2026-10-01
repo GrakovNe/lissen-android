@@ -152,7 +152,7 @@ class SessionPreferencesTest {
         every { store.getString("token") } returns null
         every { store.getString("access_token") } returns null
 
-        // the flows are wired at construction, so the instance is built after the stubs
+        // the flows are set up at construction, so the instance is built after the stubs
         assertFalse(SessionPreferences(store).authenticatedFlow.first())
       }
 

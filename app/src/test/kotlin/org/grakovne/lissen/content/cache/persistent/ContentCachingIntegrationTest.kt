@@ -63,7 +63,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import java.io.File
 
-/** Real channel, file layout and chapter resolution against [MockWebServer]; only the Room repositories are mocked. */
+/** Real channel, file layout and chapter resolution against [MockWebServer]. Only the Room repositories are mocked. */
 class ContentCachingIntegrationTest {
   private val server = MockWebServer()
 
@@ -258,7 +258,7 @@ class ContentCachingIntegrationTest {
       server.enqueue(notFound())
       server.enqueue(libraries())
 
-      // the listener flipped the order: same chapters, other bounds
+      // the user flipped the order: same chapters, different bounds
       val reordered =
         book.copy(
           chapters =

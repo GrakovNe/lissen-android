@@ -42,7 +42,7 @@ class PlaybackTimer
           }
         }
 
-        // the countdown is armed from a position polled a moment earlier and can be behind
+        // the countdown was armed from a position polled a moment earlier, so it can be behind
         override fun onPositionDiscontinuity(
           oldPosition: Player.PositionInfo,
           newPosition: Player.PositionInfo,
@@ -88,10 +88,10 @@ class PlaybackTimer
 
     private fun expire() {
       Timber.d("Timer expired, pausing and broadcasting")
-      // an expiry is not a cancellation: no TimerCancelled, or the fade would revert at the pause
+      // an expiry is not a cancellation: no TimerCancelled event, or the fade would undo itself at the pause
       timer?.stop()
       timer = null
-      // before the event: auto-skip must see the player paused at this very moment
+      // pause before the event: auto-skip must see the player paused at this exact moment
       exoPlayer.pause()
       playbackEventBus.emit(PlaybackEvent.TimerExpired)
       stopTimer()

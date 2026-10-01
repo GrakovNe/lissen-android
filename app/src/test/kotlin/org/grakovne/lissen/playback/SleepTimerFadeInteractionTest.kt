@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-/** The real bus and fade service driven with the event sequences PlaybackTimer produces. */
+/** The real bus and fade service, driven with the event sequences PlaybackTimer produces. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class SleepTimerFadeInteractionTest {
   private val player = mockk<ExoPlayer>(relaxed = true)
@@ -81,7 +81,7 @@ class SleepTimerFadeInteractionTest {
       runCurrent()
       assertEquals(1f, playerVolume, "the replaced timer must restore the volume right away")
 
-      // the new timer runs down; the second fade must be monotonic down to zero
+      // the new timer runs down; the second fade must go down to zero without going back up
       val samples = mutableListOf(playerVolume)
       for (second in 31L downTo 1L) {
         bus.emit(PlaybackEvent.TimerTick(second))
@@ -153,7 +153,7 @@ class SleepTimerFadeInteractionTest {
       advanceTimeBy(5_000L)
       runCurrent()
 
-      // resuming must not lift the volume
+      // resuming must not raise the volume
       isPlaying = true
       val atResume = playerVolume
       assertTrue(atResume <= midway, "the volume lifted during the pause from $midway to $atResume")

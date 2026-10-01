@@ -233,7 +233,7 @@ class ConditionalCacheIntegrationTest {
       server.enqueue(notModified("\"v1\""))
       val second = repository.fetchLibrary("lib1")
 
-      // served from the cache, validator on the wire
+      // served from the cache, with the validator in the request
       assertEquals(first, second)
       assertEquals("\"v1\"", server.takeRequest().headers["If-None-Match"])
     }
@@ -241,7 +241,7 @@ class ConditionalCacheIntegrationTest {
   @Test
   fun `a book and a podcast read from the same url never answer for each other`() =
     runTest {
-      // a real server: the same payload and validator whichever type the client expects
+      // a real server: the same payload and validator for every client type
       server.dispatcher = revalidatingServer(itemJson, etag = "\"v1\"")
 
       val podcast = service.makeRequest { it.fetchPodcastEpisode(itemId = "item-1") }

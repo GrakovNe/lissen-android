@@ -24,9 +24,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 /**
- * The chapter being left early is reported played out, under its own index and item, no matter
- * where the player has moved on to by the time the report runs. Everything runs on the test
- * scheduler, the main hop of markSynced included.
+ * A chapter left early is reported as fully played, under its own index and item, no matter
+ * where the player has moved to by the time the report runs. Everything runs on the test
+ * scheduler, including the main-thread switch of markSynced.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class ChapterEndReportTest {

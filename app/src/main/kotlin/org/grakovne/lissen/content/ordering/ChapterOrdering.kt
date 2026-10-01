@@ -9,17 +9,19 @@ import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor
 
-/** A position independent of the chapter order: the chapter and the offset inside it. */
+/** A position that does not depend on the chapter order: which chapter, and the offset inside it. */
 data class ChapterLocation(
   val chapterId: String,
   val offset: Double,
 )
 
 /**
- * Chapters and files are permuted in lockstep, bounds recomputed, progress carried over.
- * The canonical order (published date, season, episode, incoming position; nulls first, exactly
- * as every earlier version sorted) is what stored progress and bookmarks are expressed in, so it
- * must never change.
+ * Reordering permutes chapters and their files together, recomputes the bounds, and moves the
+ * progress to the same audio.
+ *
+ * Stored progress and bookmarks are expressed in the canonical order: published date, season,
+ * episode, then the incoming position, with nulls first. Every earlier version of the app used
+ * this order, so the canonical order must never change.
  */
 object ChapterOrdering {
   fun canonical(item: DetailedItem): DetailedItem = reorder(item, defaultComparator, canonicalize = true)
@@ -29,7 +31,7 @@ object ChapterOrdering {
     configuration: EpisodeOrderingConfiguration?,
   ): DetailedItem = reorder(item, comparator(configuration))
 
-  /** A boundary belongs to the chapter starting there; the very end is the end of the last chapter; past the end is nothing. */
+  /** A boundary position belongs to the chapter that starts there. The very end belongs to the last chapter. A position past the end belongs to nothing. */
   fun locate(
     item: DetailedItem,
     position: Double,
@@ -53,7 +55,11 @@ object ChapterOrdering {
       .firstOrNull { it.id == location.chapterId }
       ?.let { it.start + location.offset.coerceIn(0.0, it.duration.coerceAtLeast(0.0)) }
 
-  /** The end of the item is the end in any order: as a location it would become the start of another chapter. Falls back to the raw value. */
+  /**
+   * The end of the item stays the end in every order: translating it as a location would make
+   * it the start of another chapter. Other positions are translated; unknown ones are returned
+   * unchanged.
+   */
   fun translate(
     from: DetailedItem,
     to: DetailedItem,
@@ -67,7 +73,7 @@ object ChapterOrdering {
       ?: position
   }
 
-  /** A live position may overshoot the declared end by a few hundred ms: that is the end, not outside. */
+  /** A live position can go past the declared end by a few hundred milliseconds. That is still the end, not outside the item. */
   fun toCanonicalPosition(
     item: DetailedItem,
     position: Double,
@@ -80,7 +86,7 @@ object ChapterOrdering {
 
   fun DetailedItem.end(): Double? = chapters.lastOrNull()?.end
 
-  /** Storage keeps whole seconds; truncating can cross into the neighbouring canonical episode, so the second is chosen strictly inside the chapter. */
+  /** Storage keeps whole seconds. A truncated second can fall into the neighbouring canonical episode, so the chosen second stays strictly inside the chapter. */
   fun storedBookmarkPosition(
     item: DetailedItem,
     position: Double,
@@ -104,7 +110,7 @@ object ChapterOrdering {
 
   fun isReorderable(item: DetailedItem): Boolean = item.isPermutable()
 
-  /** Primary key, then season and episode, then the incoming position; the default configuration is the canonical order. */
+  /** Sorts by the chosen key, then season, then episode, then the incoming position. The default configuration gives the canonical order. */
   private fun comparator(configuration: EpisodeOrderingConfiguration?): Comparator<PlayingChapter> {
     val config = configuration ?: return defaultComparator
 
@@ -129,7 +135,7 @@ object ChapterOrdering {
     comparator(EpisodeOrderingConfiguration.default)
   }
 
-  // nulls first everywhere, as Kotlin's compareBy does: that is how the app has always sorted
+  // compareBy puts nulls first everywhere. The app has always sorted that way.
   private fun keyComparator(option: EpisodeOrderingOption): Comparator<PlayingChapter> =
     when (option) {
       EpisodeOrderingOption.PUBLISHED_AT -> compareBy { it.publishedAt }
@@ -140,10 +146,11 @@ object ChapterOrdering {
     }
 
   /**
-   * Only an item whose chapters are its files is permuted: a chaptered book's bounds are file
-   * offsets and rewriting them would play the wrong audio. Bounds are recomputed only when a
-   * permutation happens. With [canonicalize] index = position; all-zero indices come from an older
-   * version and are taken from the list order, which for such an item is canonical.
+   * Only an item whose chapters are its files is permuted. For a chaptered book the bounds are
+   * offsets into the files, and rewriting them would play the wrong audio. Bounds are recomputed
+   * only when the order really changes. With [canonicalize] every index becomes its position;
+   * all-zero indices come from an older version, so they are taken from the list order, which
+   * for such an item is the canonical one.
    */
   private fun reorder(
     item: DetailedItem,
@@ -204,7 +211,7 @@ object ChapterOrdering {
 
   private fun List<PlayingChapter>.hasDegenerateIndices(): Boolean = map { it.index }.toSet().size != size
 
-  /** Whole numbers only, as always compared: "S03" or "1.5" sort first as null. */
+  /** Parses whole numbers only, as the app has always done: "S03" or "1.5" become null and sort first. */
   private fun String?.asNumber(): Int? = this?.takeIf { it.isNotBlank() }?.toIntOrNull()
 
   private const val DURATION_EPSILON = 1e-3

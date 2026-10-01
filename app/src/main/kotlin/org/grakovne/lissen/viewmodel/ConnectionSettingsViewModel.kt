@@ -135,7 +135,7 @@ class ConnectionSettingsViewModel
       mediaRepository.clearPlayingBook()
       preferencesReset.clearAll()
 
-      // No account is left to upload the offline rows for, so they go with it.
+      // There is no account left to upload the offline rows to, so they are dropped too.
       offlineSessionSyncService.dropAllSessions()
     }
 

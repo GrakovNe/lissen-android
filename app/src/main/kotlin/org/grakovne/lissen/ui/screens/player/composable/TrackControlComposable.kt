@@ -232,7 +232,7 @@ fun TrackControlComposable(
   }
 }
 
-/** Corrupted metadata can report a negative or non-finite duration, and an empty slider range crashes on coercion. */
+/** Corrupted metadata can report a negative or non-finite duration. An empty slider range crashes when coerced. */
 internal fun safeSliderDuration(duration: Double): Float = if (duration.isFinite() && duration > 0) duration.toFloat() else 0f
 
 internal fun safeSliderPosition(

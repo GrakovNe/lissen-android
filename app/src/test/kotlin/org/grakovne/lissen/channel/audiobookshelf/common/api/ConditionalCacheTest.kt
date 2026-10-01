@@ -60,7 +60,7 @@ class ConditionalCacheTest {
     lru.put("b", "y", "vb")
     lru.put("c", "z", "vc")
 
-    // Touching "a" makes it most recently used, so "b" becomes the eviction victim.
+    // Reading "a" makes it most recently used, so "b" is the next one evicted.
     assertEquals("x", lru.value<String>("a"))
     lru.put("d", "w", "vd")
 
@@ -76,7 +76,7 @@ class ConditionalCacheTest {
     lru.put("a", "x", "va")
     lru.put("b", "y", "vb")
 
-    // Re-reading "a" promotes it, so the next insert evicts "b" rather than "a".
+    // Reading "a" again promotes it, so the next insert evicts "b" instead of "a".
     lru.etag("a")
     lru.put("c", "z", "vc")
 

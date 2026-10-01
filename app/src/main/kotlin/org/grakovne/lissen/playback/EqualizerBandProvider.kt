@@ -14,7 +14,7 @@ import javax.inject.Singleton
 
 data class BandInfo(
   val centerFreqHz: Int,
-  // the processing effect is cut at the same edges, so the bands the listener sees are the bands
+  // the processing effect is cut at the same edges, so the bands the user sees are the bands
   // that get shaped
   val upperFreqHz: Int,
 )
@@ -38,15 +38,15 @@ class EqualizerBandProvider
     private val mutex = Mutex()
     private var cached: EqualizerCapabilities.Available? = null
 
-    // a failed probe is not cached: AudioFlinger may refuse an effect momentarily, and the
-    // equalizer should come back on the next attempt rather than stay hidden for the process
+    // a failed probe is not cached: AudioFlinger may refuse an effect for a moment, and the
+    // equalizer should come back on the next attempt instead of staying hidden for the process
     suspend fun getCapabilities(): EqualizerCapabilities =
       mutex.withLock {
         cached ?: probeCapabilities()?.also { cached = it } ?: EqualizerCapabilities.Unavailable
       }
 
-    // the band layout and the gain range come from the platform equalizer, the audio itself is
-    // shaped by DynamicsProcessing, so both effects must exist on this device
+    // the band layout and the gain range come from the platform equalizer, while the audio
+    // itself is shaped by DynamicsProcessing, so both effects must exist on this device
     private suspend fun probeCapabilities(): EqualizerCapabilities.Available? =
       withContext(Dispatchers.IO) {
         try {

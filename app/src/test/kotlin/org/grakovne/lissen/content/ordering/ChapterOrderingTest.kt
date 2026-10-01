@@ -95,7 +95,7 @@ class ChapterOrderingTest {
 
   @Test
   fun `canonical order is the order the previous converter produced`() {
-    // the old comparator: pubDate, season.toInt(), episode.toInt(), unparseable first
+    // the old comparator: pubDate, season.toInt(), episode.toInt(), unparseable values first
     val source =
       item(
         listOf(
@@ -153,7 +153,7 @@ class ChapterOrderingTest {
 
   @Test
   fun `a stored item that predates the ordering keys is canonical as it is`() {
-    // every index 0: serialized by a version without indices, which only showed the canonical order
+    // every index is 0: serialized by a version without indices, which only showed the canonical order
     val source = item(listOf(chapter("c", 0), chapter("a", 0), chapter("b", 0)))
 
     val result = ChapterOrdering.canonical(source)
@@ -182,7 +182,7 @@ class ChapterOrderingTest {
           chapter("c", 2, publishedAt = 3L),
         ),
       )
-    // every season is null: the chain falls through to the index tie-break
+    // every season is null, so the chain falls through to the index tie-break
     val bySeason = EpisodeOrderingConfiguration(EpisodeOrderingOption.SEASON, LibraryOrderingDirection.DESCENDING)
 
     assertEquals(
@@ -222,7 +222,7 @@ class ChapterOrderingTest {
       item(listOf(chapter("a", 0, duration = 10.0, publishedAt = 1L), chapter("b", 1, duration = 20.0, publishedAt = 2L)))
         .let { it.copy(chapters = listOf(it.chapters[0], it.chapters[1].copy(start = 100.0, end = 120.0))) }
 
-    // already in order: whatever the bounds, they are the server's business
+    // already in order: whatever the bounds are, they are the server's business
     assertSame(gapped, ChapterOrdering.canonical(gapped))
 
     val permuted = ChapterOrdering.apply(gapped, descendingByDate)
@@ -412,7 +412,7 @@ class ChapterOrderingTest {
         EpisodeOrderingConfiguration(EpisodeOrderingOption.EPISODE, LibraryOrderingDirection.ASCENDING),
       )
 
-    // "bonus", "2.5" and "S02E01" are not whole numbers: null, first, in incoming order
+    // "bonus", "2.5" and "S02E01" are not whole numbers: they become null, sort first, in incoming order
     assertEquals(listOf("a", "c", "d", "e", "b"), result.chapters.map { it.id })
   }
 
@@ -530,7 +530,7 @@ class ChapterOrderingTest {
     assertEquals(140.0, ChapterOrdering.storedBookmarkPosition(reordered, 40.0))
     // 0.2s into a (displayed at 100.7): canonically 0.2, truncated to 0
     assertEquals(0.0, ChapterOrdering.storedBookmarkPosition(reordered, 100.7))
-    // a live overshoot is the end of the listener's order, inside a: its last whole second, 100
+    // a live overshoot is the end of the user's order, inside a: its last whole second, 100
     assertEquals(100.0, ChapterOrdering.storedBookmarkPosition(reordered, 201.3))
   }
 
@@ -546,11 +546,11 @@ class ChapterOrderingTest {
       )
     val reordered = ChapterOrdering.apply(source, descendingByDate)
 
-    // the very end of the listener's order is the end of a: 10 would be the start of b
+    // the very end of the user's order is the end of a: 10 would be the start of b
     assertEquals(9.0, ChapterOrdering.storedBookmarkPosition(reordered, 30.0))
-    // the start of the listener's order is the start of b
+    // the start of the user's order is the start of b
     assertEquals(10.0, ChapterOrdering.storedBookmarkPosition(reordered, 0.0))
-    // the last moment of b in the listener's order: 30 would be past the end
+    // the last moment of b in the user's order: 30 would be past the end
     assertEquals(29.0, ChapterOrdering.storedBookmarkPosition(reordered, 19.99))
   }
 

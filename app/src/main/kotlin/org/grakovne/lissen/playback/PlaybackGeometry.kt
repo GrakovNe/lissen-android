@@ -66,8 +66,8 @@ object PlaybackGeometry {
       ?.let { it.start + chapterPosition }
 
   /**
-   * A seek into a chapter that is not on the device moves on to the nearest one that is, in
-   * the direction of the seek first and the other way round when nothing lies ahead.
+   * A seek into a chapter that is not on the device moves to the nearest chapter that is:
+   * first in the direction of the seek, and the other way round when nothing lies ahead.
    */
   fun resolveSeek(
     book: DetailedItem,
@@ -120,7 +120,7 @@ object PlaybackGeometry {
     totalPosition: Double,
   ): Int = calculateChapterIndex(book, totalPosition) + 1
 
-  /** A "previous" press a few seconds into a chapter (or in the first one) replays it instead of leaving it. */
+  /** A "previous" press a few seconds into a chapter (or in the first chapter) replays it instead of leaving it. */
   fun previousChapter(
     book: DetailedItem,
     totalPosition: Double,

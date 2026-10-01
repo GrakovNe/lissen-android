@@ -27,7 +27,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 
 /**
- * The repository over physically distinct main and IO threads: the media session's controller
+ * The repository over physically separate main and IO threads. The media session's controller
  * answers only on the application thread, which the inline fakes of [MediaRepositoryTest] cannot tell apart.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -128,7 +128,7 @@ class MediaRepositoryThreadingTest {
         assertNotNull(player.isPlayingReadThread.get())
         assertSame(mainThread, player.isPlayingReadThread.get())
 
-        // the bookmark refreshes both preparations started hop main -> io -> main: let them land
+        // the bookmark refresh of both preparations goes main -> io -> main: wait for it to arrive
         repeat(2) {
           withContext(mainDispatcher) {}
           withContext(ioDispatcher) {}

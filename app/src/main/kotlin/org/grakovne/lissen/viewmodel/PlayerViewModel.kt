@@ -45,7 +45,7 @@ class PlayerViewModel
       libraryPreferences.preferredLibraryTypeFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), libraryPreferences.getPreferredLibraryType())
 
-    /** The stored ordering of the item the screen shows, not necessarily the playing one. */
+    /** The stored ordering of the item the screen shows, which is not necessarily the playing one. */
     fun episodeOrdering(itemId: String): Flow<EpisodeOrderingConfiguration?> = libraryPreferences.episodeOrderingFlow.map { it[itemId] }
 
     fun autoSkip(itemId: String): Flow<AutoSkipConfiguration> = autoSkipPreferences.flow(itemId)
@@ -111,8 +111,8 @@ class PlayerViewModel
         return
       }
 
-      // the item the resume paths would start, so restoring it keeps the last playing pointer where it is;
-      // nothing is loaded yet, and clearing here would drop the active library's own stored item
+      // this is the item the resume paths would start, so restoring it keeps the last playing pointer where it is;
+      // nothing is loaded yet, and clearing here would drop the stored item of the active library
       val playingItem = preferences.getLastPlayingItem() ?: return
 
       viewModelScope.launch {
@@ -250,7 +250,6 @@ class PlayerViewModel
       mediaRepository.togglePlayPause()
     }
 
-    /** One predicate for the sheet's rows and the action, so a tap never fails silently. */
     fun canReorderPlayingItem(itemId: String): Boolean = mediaRepository.canReorderPlayingItem(itemId)
 
     fun setEpisodeOrdering(

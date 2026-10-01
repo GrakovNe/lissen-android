@@ -7,15 +7,15 @@ import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.playback.restartWindowStart
 
 /**
- * The item in its new order with the progress at the same chapter and offset; null when it is
- * already in that order. Check [ChapterOrdering.isReorderable] first.
+ * The item in its new order, with the progress kept at the same chapter and offset. Null when
+ * the item is already in that order. Check [ChapterOrdering.isReorderable] first.
  */
 data class ReorderPlan(
   val item: DetailedItem,
 )
 
 object ReorderPlanner {
-  /** One predicate for the sheet's rows and the action, so a tap never fails silently. */
+  /** One condition for the settings sheet and the action itself, so a tap never fails silently. */
   fun canReorder(
     book: DetailedItem?,
     itemId: String,
@@ -24,23 +24,22 @@ object ReorderPlanner {
     if (book == null) return false
 
     return when {
-      // the screen's item, not whatever happens to be playing while it loads
+      // the item the screen shows, not whatever is playing while it loads
       book.id != itemId -> false
 
-      // a rebuild is in flight: totalPosition is stale
+      // a queue rebuild is in progress, so totalPosition is stale
       playbackReady.not() -> false
 
       else -> supportsReorder(book)
     }
   }
 
-  /** Whether the item may ever be reordered, whatever the playback is doing right now. */
+  /** Whether this item can be reordered at all, no matter what playback is doing now. */
   fun supportsReorder(book: DetailedItem): Boolean =
     when {
-      // only podcasts are reordered
       book.libraryType != LibraryType.PODCAST -> false
 
-      // savePlayingItem keeps the old item for such a book
+      // for a book without a library id, savePlayingItem keeps the old item
       book.libraryId == null -> false
 
       else -> ChapterOrdering.isReorderable(book)
@@ -52,19 +51,19 @@ object ReorderPlanner {
     totalPosition: Double,
     now: Long,
   ): ReorderPlan? {
-    // from the canonical item, so a stored item without ordering keys reorders like any other
+    // start from the canonical item, so a stored item without ordering keys reorders like any other
     val reordered = ChapterOrdering.apply(ChapterOrdering.canonical(book), configuration)
-    // same sequence, same order, whatever the indices say
+    // the same chapter sequence means the order is the same, whatever the indices say
     if (reordered.chapters.map { it.id } == book.chapters.map { it.id }) return null
 
-    // a live position may overshoot the declared end by a little: that is the end, not nowhere
+    // a live position can go past the declared end by a little; that is still the end
     val location = ChapterOrdering.locate(book, totalPosition.coerceAtMost(book.chapters.last().end))
 
     val position =
       location
         ?.let { ChapterOrdering.position(reordered, it) }
         ?.let { position ->
-          // never inside the restart window, whatever ended up last, and never outside the listener's chapter
+          // never inside the restart window, whichever chapter ends up last, and never outside the user's chapter
           val chapterStart = reordered.chapters.first { it.id == location.chapterId }.start
           position.coerceAtMost(reordered.restartWindowStart() ?: position).coerceAtLeast(chapterStart)
         }

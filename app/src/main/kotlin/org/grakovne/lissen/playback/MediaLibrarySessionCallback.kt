@@ -183,7 +183,7 @@ class MediaLibrarySessionCallback
           .add(bookmarkCommand)
           .build()
 
-      // every controller gets the full command set, as before media3 restricted untrusted ones
+      // every controller gets the full command set, as before media3 restricted untrusted controllers
       return MediaSession
         .ConnectionResult
         .AcceptedResultBuilder()
@@ -217,8 +217,9 @@ class MediaLibrarySessionCallback
     }
 
     /**
-     * Creates a bookmark and flashes a check mark on every controller; presses during the handling
-     * are ignored. Runs on the main dispatcher only, so [bookmarkFeedback] is single-threaded.
+     * Creates a bookmark and shows a check mark on every controller for a moment. Presses during
+     * the handling are ignored. Runs on the main dispatcher only, so [bookmarkFeedback] needs no
+     * synchronization.
      */
     private fun createBookmark(session: MediaSession) {
       if (bookmarkFeedback?.isActive == true) {
@@ -330,7 +331,7 @@ class MediaLibrarySessionCallback
         mediaRepository.registerPlayingBook(book)
       }
 
-    /** The stored item is always playable as it was; a cache failure must not take that away. */
+    /** The stored item is always playable as it was. A cache failure must not take that away. */
     private suspend fun storedBookWithLatestProgress(storedBook: DetailedItem): DetailedItem =
       try {
         lissenMediaProvider.withLatestProgress(storedBook)

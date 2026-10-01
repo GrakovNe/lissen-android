@@ -5,8 +5,8 @@ import org.grakovne.lissen.domain.EqualizerSettings
 import timber.log.Timber
 
 // DynamicsProcessing used as a plain equalizer: one EQ stage cut at the band edges the platform
-// equalizer reports, and the limiter. Unlike the platform equalizer it applies no headroom
-// attenuation when bands are boosted (issue #486), so the limiter is what keeps a large boost from
+// equalizer reports, plus the limiter. Unlike the platform equalizer, it does not lower the
+// headroom when bands are boosted (issue #486), so the limiter is what keeps a large boost from
 // clipping. The effect starts flat and disabled; gains reach it through apply.
 class DynamicsProcessingEqualizer(
   sessionId: Int,

@@ -381,9 +381,9 @@ val MIGRATION_20_21 =
   }
 
 /**
- * Backfills the canonical position from insertion order, which is the order the item was
- * always shown in. Duplicate (bookId, chapterId) rows would poison it, so they are collapsed
- * first, latest wins.
+ * Backfills the canonical position from the insertion order, which is the order the item was
+ * always shown in. Duplicate (bookId, chapterId) rows would break that order, so they are
+ * collapsed first and the latest row wins.
  */
 val MIGRATION_21_22 =
   object : Migration(21, 22) {
@@ -455,7 +455,7 @@ val MIGRATION_22_23 =
     }
   }
 
-// UNKNOWN left the enum; earlier versions may have stored it
+// UNKNOWN is gone from the enum, but earlier versions may have stored it
 val MIGRATION_23_24 =
   object : Migration(23, 24) {
     override fun migrate(db: SupportSQLiteDatabase) {

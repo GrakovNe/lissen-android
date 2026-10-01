@@ -13,7 +13,7 @@ import javax.inject.Inject
 
 /**
  * The service outlives a test's Hilt graph while a controller is bound, and would keep that
- * graph's event bus; unbinding lets stopService destroy it. The cache locks its folder for as
+ * graph's event bus. Unbinding lets stopService destroy it. The cache locks its folder for as
  * long as it is alive.
  */
 @UnstableApi
@@ -42,7 +42,7 @@ class PlaybackGraphTeardown
       mediaCache.release()
     }
 
-    // deprecated for third-party services, still documented to report the caller's own ones
+    // deprecated for third-party services, but still documented to report the caller's own services
     @Suppress("DEPRECATION")
     private fun playbackServiceRunning(context: Context): Boolean =
       context

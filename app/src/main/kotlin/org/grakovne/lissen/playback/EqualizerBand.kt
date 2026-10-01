@@ -5,8 +5,8 @@ data class EqualizerBand(
   val gainDb: Int,
 )
 
-// the listener's gains laid over the device's bands: a band without a stored gain stays flat, a
-// stored gain outside the device range is clamped to it
+// Applies the user's gains to the device's bands: a band without a stored gain stays flat, and
+// a stored gain outside the device range is clamped to it.
 fun equalizerBands(
   capabilities: EqualizerCapabilities.Available,
   gains: List<Int>,

@@ -4,7 +4,7 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Types
 import org.grakovne.lissen.common.moshi
 
-/** Parsed entry by entry, so one unreadable value drops only itself. */
+/** Parses entry by entry, so one unreadable value drops only that entry. */
 fun <T> SecurePreferenceStore.getPerItem(
   key: String,
   entryAdapter: JsonAdapter<T>,

@@ -38,7 +38,7 @@ import org.grakovne.lissen.ui.extensions.formatTime
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
-/** Two thumbs on one ruler: the intro counted from the left edge, the outro from the right, five minutes each. */
+/** Two thumbs on one ruler: the intro is measured from the left edge, the outro from the right, five minutes each. */
 @Composable
 fun AutoSkipSlider(
   introSeconds: Int,
@@ -111,7 +111,7 @@ fun AutoSkipSlider(
               }
             }
 
-            // a vertical pull belongs to the sheet
+            // a vertical drag belongs to the sheet
             val drag =
               awaitHorizontalTouchSlopOrCancellation(down.id) { change, _ ->
                 change.consume()
@@ -127,14 +127,14 @@ fun AutoSkipSlider(
                     moveTo(thumb, change.position.x)
                   }
                 } finally {
-                  // a sheet closed mid-drag cancels the gesture: what was dragged still counts
+                  // closing the sheet during a drag cancels the gesture: the dragged value still counts
                   dragging = null
                   currentOnUpdateFinished()
                 }
               }
 
               currentEvent.changes.any { it.id == down.id && it.changedToUpIgnoreConsumed() } -> {
-                // only the thumb of the tapped half can land there
+                // only the thumb of the tapped half can move there
                 moveTo(halfOf(x, mid), x)
                 currentOnUpdateFinished()
               }
@@ -155,7 +155,7 @@ fun AutoSkipSlider(
       drawPillThumb(x, active = dragging == thumb, colors)
     }
 
-    // each value stays on its own half so the two never collide
+    // each value stays on its own half, so the two labels never collide
     val markerTop = TRACK_Y.toPx() - PILL_HALF.toPx() - MARKER_GAP.toPx() - MARKER_HEIGHT.toPx()
     val mid = size.width / 2f
     thumbs.forEach { (thumb, x) ->
@@ -164,7 +164,7 @@ fun AutoSkipSlider(
       val centered = x - value.size.width / 2f
       val left =
         when (thumb) {
-          // maxOf: a canvas too narrow for both values leaves an empty range
+          // maxOf: on a canvas too narrow for both values, coerceIn would get an empty range
           Thumb.INTRO -> centered.coerceIn(0f, maxOf(0f, mid - value.size.width - MARKER_GAP.toPx()))
 
           Thumb.OUTRO -> centered.coerceIn(mid + MARKER_GAP.toPx(), maxOf(mid + MARKER_GAP.toPx(), size.width - value.size.width))
@@ -228,7 +228,7 @@ private fun DrawScope.drawRuler(
     val length = if (seconds % LABEL_SECONDS == 0) majorHalf else minorHalf
 
     drawTick(geometry.start + distance, length, alpha)
-    // both halves share the tick in the middle
+    // the middle tick is shared by both halves, so draw it only once
     if (seconds < MAX_SECONDS) drawTick(geometry.end - distance, length, alpha)
 
     tickLabels[seconds]?.let { label ->
@@ -287,7 +287,7 @@ private class RulerColors(
 
 internal enum class Thumb { INTRO, OUTRO }
 
-/** The thumb of the touched half, or the other one within [reach]: one parked at the middle is picked up from either side. */
+/** The thumb of the touched half, or the other one when it is within [reach]: a thumb parked at the middle can be picked up from either side. */
 internal fun pickThumb(
   x: Float,
   introX: Float,

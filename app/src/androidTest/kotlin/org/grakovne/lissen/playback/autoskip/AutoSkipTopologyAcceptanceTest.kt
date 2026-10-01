@@ -26,9 +26,10 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 /**
- * The queue the app builds when chapters do not follow the files, over WAV files of silence. The
- * server says 10 and 14 s, the second file holds 12: chapter 0 is a clip of file 0, chapter 1 runs
- * across both, chapter 2 claims 10 s and has 6, chapter 3 lies past the end of the files.
+ * The queue the app builds when chapters do not follow the files, over WAV files of silence.
+ * The server says 10 and 14 s, the second file holds 12: chapter 0 is a clip of file 0,
+ * chapter 1 runs across both files, chapter 2 claims 10 s but has 6, and chapter 3 lies past
+ * the end of the files.
  */
 @OptIn(UnstableApi::class)
 @RunWith(AndroidJUnit4::class)
@@ -110,7 +111,7 @@ class AutoSkipTopologyAcceptanceTest : AutoSkipOnRealPlayer() {
   fun anEpisodeTimerBehindPlaybackStopsAtTheStartOfTheNextChapter() {
     awaitOnMain("chapter 1, well before its outro") {
       inChapterBeforeOutro(1) {
-        // a countdown behind the player, as one armed from a stale poll is
+        // a countdown behind the player, like one armed from a stale poll
         timer.startTimer(remainingInChapter() + 3.0, CurrentEpisodeTimerOption)
       }
     }

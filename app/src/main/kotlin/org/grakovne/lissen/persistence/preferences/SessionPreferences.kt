@@ -20,7 +20,7 @@ class SessionPreferences
     private val accessTokenCache = CachedValue { store.readSecret(KEY_ACCESS_TOKEN) }
     private val refreshTokenCache = CachedValue { store.readSecret(KEY_REFRESH_TOKEN) }
 
-    /** True while any token is stored; a logout or an expired refresh turns it false. */
+    /** True while any token is stored. A logout or a failed refresh turns it false. */
     val authenticatedFlow: Flow<Boolean> =
       combine(
         store.asFlow(KEY_TOKEN) { hasStoredSecret(KEY_TOKEN) },
@@ -101,7 +101,7 @@ class SessionPreferences
       cache.invalidate()
     }
 
-    /** Runs on the preferences listener thread: presence is answered without decrypting. */
+    /** Runs on the preferences listener thread, so presence is answered without decrypting. */
     private fun hasStoredSecret(key: String): Boolean = store.getString(key) != null
 
     private fun invalidateTokenCaches() {

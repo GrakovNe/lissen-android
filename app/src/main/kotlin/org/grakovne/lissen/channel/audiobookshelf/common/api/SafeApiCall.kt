@@ -14,7 +14,7 @@ private const val HTTP_NOT_MODIFIED = 304
 
 /**
  * Every endpoint goes through here. A [Cacheable] request is served from [cache] on a 304 and
- * replaces the entry on a 200 that carries an ETag; transport failures become [OperationResult.Error].
+ * replaces the entry on a 200 that carries an ETag. Transport failures become [OperationResult.Error].
  */
 suspend fun <T> safeApiCall(
   connection: ConnectionPreferences,
@@ -27,7 +27,7 @@ suspend fun <T> safeApiCall(
     val conditional = request.tag(Cacheable::class.java) != null
     val key = conditionalCacheKey(request)
 
-    // evicted between sending the validator and reading it back: retry without one
+    // evicted between sending the validator and reading it back: retry without a validator
     val evicted = conditional && first.code() == HTTP_NOT_MODIFIED && cache.value<Any?>(key) == null
     val response = if (evicted) apiCall.invoke() else first
 

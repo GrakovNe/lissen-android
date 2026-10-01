@@ -18,7 +18,7 @@ import javax.inject.Singleton
 
 /**
  * Maps into the canonical order, see [ChapterOrdering]. pubDate keeps the pattern every earlier
- * version used: stored positions are expressed in the order derived from it.
+ * version used, because stored positions are expressed in the order derived from it.
  */
 @Singleton
 class PodcastResponseConverter
@@ -84,7 +84,7 @@ class PodcastResponseConverter
             },
           chapters = filesAsChapters,
           progress = null,
-          year = null, // we have no "Year" for the ongoing media
+          year = null, // there is no year for ongoing media
           abstract = item.media.metadata.description,
           publisher = item.media.metadata.publisher,
           series = emptyList(), // there is no series for podcast
@@ -92,8 +92,8 @@ class PodcastResponseConverter
           updatedAt = item.ctimeMs,
         )
 
-      // a finished episode arrives with currentTime on its end, which in another order is the start
-      // of an unrelated episode: anchor it in the canonical timeline first
+      // a finished episode arrives with currentTime at its end, which in another order is the
+      // start of an unrelated episode: anchor it in the canonical timeline first
       val canonical = ChapterOrdering.canonical(raw)
 
       return canonical.copy(progress = latestProgress?.let { canonical.anchoredProgress(it) })
@@ -102,7 +102,7 @@ class PodcastResponseConverter
     private fun DetailedItem.anchoredProgress(progress: MediaProgressResponse): MediaProgress {
       val position =
         ChapterOrdering.position(this, ChapterLocation(chapterId = progress.episodeId ?: "", offset = progress.currentTime))
-          // the episode is gone from the item: past the end, so that the progress is trimmed
+          // the episode is gone from the item: put the progress past the end, so it gets trimmed
           ?: (chapters.lastOrNull()?.end ?: 0.0) + progress.currentTime
 
       return MediaProgress(

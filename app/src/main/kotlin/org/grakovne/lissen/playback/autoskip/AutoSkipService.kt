@@ -23,7 +23,7 @@ import javax.inject.Singleton
 /**
  * Skips the intro and the outro of every chapter, as configured per item. Whatever playback
  * reaches by itself is skipped: a chapter it runs into, the start of a chapter, the position a
- * new queue is placed at, the "forward" step ([PlaybackSteps]). Where the listener seeks to is
+ * new queue is placed at, and the "forward" step ([PlaybackSteps]). Where the user seeks to is
  * played as it is. An armed "end of episode" timer takes the outro instead of the skip.
  */
 @Singleton
@@ -43,11 +43,11 @@ class AutoSkipService
     private var owed: Int? = null
     private var planted: PlantedOutros? = null
 
-    // an outro the episode timer is about to pause in: owed once the player is really paused,
-    // a stall that drops isPlaying for a moment must not move on under the timer
+    // an outro the episode timer is about to pause inside: the skip is due once the player is
+    // really paused; a stall that drops isPlaying for a moment must not move on while the timer is active
     private var held: Int? = null
 
-    // the end seek lands a hair short of an outro message clamped to the end of the audio
+    // the end seek lands slightly short of an outro message clamped to the end of the audio
     // (a chapter with less audio than the server says), which would fire again and again
     private var ended: Int? = null
 
@@ -150,7 +150,7 @@ class AutoSkipService
       }
     }
 
-    // the outro of the last chapter is played: ending the item under a listener who just pressed
+    // the outro of the last chapter is played: ending the item while the user has just pressed
     // play would leave nothing playing
     private fun leaveOutroOnResume(
       book: DetailedItem,
@@ -161,7 +161,7 @@ class AutoSkipService
       if (exit is OutroExit.Next) leaveOutro(book, index, exit)
     }
 
-    // the delivered message is the proof: the position is not re-read, it may be a hair short
+    // the delivered message is the proof: the position is not read again, because it may be slightly short
     private fun onOutroCrossed(index: Int) {
       if (player.currentMediaItemIndex != index || ended == index) return
       val book = plannedBook() ?: return
@@ -201,13 +201,13 @@ class AutoSkipService
           val endMs = book.chapters[index].durationMs
           Timber.d("Auto-skip outro: chapter=$index, next=none, endMs=$endMs")
           player.seekTo(index, endMs)
-          // after the seek, whose discontinuity forgets everything
+          // after the seek, whose discontinuity clears everything
           ended = index
         }
       }
     }
 
-    // planted again only when the plan changed: a cancelled message lingers in the player until
+    // scheduled again only when the plan changed: a cancelled message stays in the player until
     // it is crossed, and every send sorts the player's message list
     private fun plantOutroMessages() {
       val wanted = currentBook()?.let { OutroPlan(it, preferences.get(it.id)) }
@@ -230,17 +230,17 @@ class AutoSkipService
       Timber.d("Auto-skip outro messages: count=${planted?.messages?.size ?: 0}, item=${wanted?.book?.id}")
     }
 
-    // player callbacks arrive inside the call that caused them: decisions are taken afterwards
+    // player callbacks arrive inside the call that caused them, so decisions are made afterwards
     private fun post(action: () -> Unit) {
       scope.launch { action() }
     }
 
-    // the queue items carry neither the item nor an id (the source factory rebuilds them), so the
-    // item is the one the synchronization was started with, together with the queue
+    // the queue items have neither the item nor an id (the source factory rebuilds them), so the
+    // synced item is matched only by its chapter count
     private fun currentBook(): DetailedItem? = syncState.value.item?.takeIf { it.chapters.size == player.mediaItemCount }
 
     // the session starts the synchronization of the next item before its queue arrives: until
-    // then the queue and its messages are still the previous item's
+    // then the queue and its messages still belong to the previous item
     private fun plannedBook(): DetailedItem? = currentBook()?.takeIf { it.id == planted?.plan?.book?.id }
 
     private fun chapterAt(

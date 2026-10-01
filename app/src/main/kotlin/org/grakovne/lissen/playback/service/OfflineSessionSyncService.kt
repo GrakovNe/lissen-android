@@ -60,7 +60,7 @@ class OfflineSessionSyncService
       }
     }
 
-    /** The session still being written is never uploaded, so any change means the previous one is complete. */
+    /** The session still being written is never uploaded, so any change to it means the previous one is complete. */
     private suspend fun uploadOnEverySessionChange() {
       syncState.state
         .map { it.localSession?.sessionId }
@@ -69,10 +69,10 @@ class OfflineSessionSyncService
         .collect { retryUntilSettled() }
     }
 
-    /** For a logout: no account is left to upload the rows for. */
+    /** For a logout: there is no account left to upload the rows to. */
     fun dropAllSessions(): Job = scope.launch { offlineSessions.dropAll() }
 
-    /** Retries are bounded by connectivity, not by count: losing the network cancels this. */
+    /** Retries are limited by connectivity, not by count: losing the network cancels this. */
     private suspend fun retryUntilSettled() {
       var attempt = 0
 
@@ -91,7 +91,7 @@ class OfflineSessionSyncService
         false
       }
 
-    /** True when a later attempt may still deliver: the pass stops at the first transient failure and skips permanent ones. */
+    /** True when a later attempt may still succeed. The pass stops at the first transient failure and skips permanent ones. */
     internal suspend fun uploadOnce(excluding: String?): Boolean {
       val pending = offlineSessions.fetch().filterNot { it.id == excluding }
 
@@ -128,7 +128,7 @@ class OfflineSessionSyncService
         )
   }
 
-/** Only these are worth retrying on their own; anything else waits for the next sync trigger. */
+/** Only these errors are worth retrying on their own. Anything else waits for the next sync trigger. */
 internal fun OperationError.isTransient(): Boolean =
   when (this) {
     OperationError.NetworkError,

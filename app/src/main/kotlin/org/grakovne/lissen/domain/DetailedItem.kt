@@ -60,7 +60,7 @@ data class PlayingChapter(
   val end: Double,
   val title: String,
   val id: String,
-  /** The position the chapter came in with; the list order may differ once the user reorders. */
+  /** The position the chapter came in with. The list order may differ once the user reorders. */
   val index: Int = 0,
   val publishedAt: Long? = null,
   val season: String? = null,

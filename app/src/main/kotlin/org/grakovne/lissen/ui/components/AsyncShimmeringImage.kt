@@ -32,7 +32,7 @@ fun AsyncShimmeringImage(
   var isLoading by remember { mutableStateOf(true) }
   val reportedLoading = remember { mutableStateOf<Boolean?>(null) }
 
-  // so a request that resolves before any coroutine runs still reports loading first
+  // a request that resolves before any coroutine runs still reports loading first
   SideEffect {
     if (reportedLoading.value != isLoading) {
       reportedLoading.value = isLoading

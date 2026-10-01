@@ -101,7 +101,7 @@ class CalculateChapterPositionTest {
 
     @Test
     fun `position at boundary of first chapter`() = assertCorrectIndexAndPosition(book, 99.95, 1, 99.95 - 100.0)
-    // 99.95 >= 100 - 0.1 falls through to chapter 1 with offset -0.05: pinned as is
+    // 99.95 >= 100 - 0.1 falls through to chapter 1 with offset -0.05: kept as is
 
     @Test
     fun `position exactly at chapter boundary`() = assertCorrectIndexAndPosition(book, 100.0, 1, 0.0)
@@ -224,7 +224,6 @@ class CalculateChapterPositionTest {
     @Test
     fun `negative position`() {
       val book = createBook(50.0, 50.0)
-      // a negative position lands in the first chapter with a negative offset
       val pos = -5.0
       val (index, position) = calculateChapterIndexAndPosition(book, pos)
       Assertions.assertEquals(0, index)

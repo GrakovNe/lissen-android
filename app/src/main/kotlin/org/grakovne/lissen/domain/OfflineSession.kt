@@ -2,7 +2,7 @@ package org.grakovne.lissen.domain
 
 import androidx.annotation.Keep
 
-/** Recorded while the server was unreachable, uploaded in a batch once it is back. Rows belong to the account logged in at the time. */
+/** Recorded while the server was unreachable and uploaded in a batch once it is back. Rows belong to the account that was logged in at the time. */
 @Keep
 data class OfflineSession(
   val id: String,

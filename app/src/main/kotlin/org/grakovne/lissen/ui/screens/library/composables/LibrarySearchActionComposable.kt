@@ -45,7 +45,7 @@ fun LibrarySearchActionComposable(
     onSearchRequested(searchText.value)
   }
 
-  // a linked search arrives pre-filled: reading, not typing, so no focus and no keyboard
+  // a linked search arrives pre-filled: it is read, not typed, so no focus and no keyboard
   LaunchedEffect(autoFocus) {
     if (autoFocus) {
       focusRequester.requestFocus()

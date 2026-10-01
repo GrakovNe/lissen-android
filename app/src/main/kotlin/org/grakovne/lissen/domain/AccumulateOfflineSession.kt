@@ -1,9 +1,9 @@
 package org.grakovne.lissen.domain
 
 /**
- * Folds a sync snapshot into session [sessionId]: the first listened snapshot creates the row,
- * later ones advance it. Podcast episodes are reported per episode, as the online sync does.
- * Nothing listened, nothing recorded.
+ * Merges a sync snapshot into session [sessionId]. The first snapshot with listening creates
+ * the row; later ones advance it. Podcast episodes are reported per episode, like the online
+ * sync does. Nothing listened, nothing recorded.
  */
 fun accumulateOfflineSession(
   existing: OfflineSession?,

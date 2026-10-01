@@ -14,8 +14,8 @@ import org.grakovne.lissen.domain.DetailedItem
 import timber.log.Timber
 
 /**
- * The bookmarks of the playing item, shown in the order it is playing in. A refresh whose
- * item is no longer the playing one is dropped, since that item's own refresh follows.
+ * The bookmarks of the playing item, shown in the order the item is playing in. A refresh for
+ * an item that is no longer playing is dropped, because that item's own refresh follows.
  */
 class PlayingBookmarks(
   private val mediaChannel: LissenMediaProvider,
@@ -26,14 +26,14 @@ class PlayingBookmarks(
   private val _bookmarks = MutableStateFlow<List<Bookmark>>(emptyList())
   val bookmarks: StateFlow<List<Bookmark>> = _bookmarks.asStateFlow()
 
-  // the item (and order) the displayed positions were translated for
+  // the item (and its order) that the displayed positions were translated for
   @Volatile
   private var displayedFor: DetailedItem? = null
 
   /**
-   * Every freshly prepared item pulls its bookmarks from the server, so that ones added from
-   * another device show up whichever way the item arrived (the screen, the widget, the media
-   * session).
+   * Every freshly prepared item loads its bookmarks from the server, so ones added from
+   * another device show up however the item arrived: the screen, the widget, or the media
+   * session.
    */
   fun refreshFromServerAsync() {
     scope.launch { refreshFromServer() }
@@ -70,7 +70,7 @@ class PlayingBookmarks(
     return created
   }
 
-  /** Drops the stored bookmark behind [bookmark], which carries a display position. */
+  /** Deletes the stored bookmark behind [bookmark], which carries a display position. */
   suspend fun drop(bookmark: Bookmark) {
     Timber.d("Dropping bookmark for ${bookmark.libraryItemId} at position=${bookmark.totalPosition.toInt()}s")
 
@@ -87,7 +87,7 @@ class PlayingBookmarks(
 
   /**
    * The playing item was rebuilt in another order. The list in memory follows at once, so
-   * nothing can act on positions of the old order; the exact stored values, translated for
+   * nothing can act on positions from the old order. The exact stored values, translated for
    * the new order, replace it as soon as they are read.
    */
   fun followReorder(
@@ -106,8 +106,8 @@ class PlayingBookmarks(
   }
 
   /**
-   * Shows [stored] translated for whatever order is playing at the moment of the write, so
-   * that a reorder landing during the read cannot leave the list in the previous order.
+   * Shows [stored] translated for whatever order is playing at the moment of the write, so a
+   * reorder that happens during the read cannot leave the list in the previous order.
    */
   private fun show(
     stored: List<Bookmark>,
@@ -115,7 +115,7 @@ class PlayingBookmarks(
   ) {
     val book = playingBook.value
 
-    // another item started playing meanwhile: its own refresh will follow, these rows are not its
+    // another item started playing meanwhile: its own refresh will follow, these bookmarks do not belong to it
     if (book?.id != itemId) return
 
     displayedFor = book

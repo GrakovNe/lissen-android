@@ -9,7 +9,7 @@ import org.grakovne.lissen.domain.PlaybackSession
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** What the synchronization is syncing; transitions are pure. */
+/** What the synchronization service is syncing. All transitions return new states. */
 data class SyncState(
   val item: DetailedItem? = null,
   val chapterIndex: Int? = null,
@@ -22,7 +22,7 @@ data class SyncState(
 
   fun cancel(): SyncState = SyncState()
 
-  /** A session for another item is ignored; a local one for the chapter already written locally is a failed server retry and keeps the row. */
+  /** A session for another item is ignored. A local session for a chapter already written locally means a failed server retry, and its row is kept. */
   fun adopt(
     opened: PlaybackSession,
     chapterIndex: Int,
@@ -33,7 +33,7 @@ data class SyncState(
       else -> copy(session = opened, chapterIndex = chapterIndex)
     }
 
-  /** Hands the local session over to the uploader while keeping a remote one as is. */
+  /** Removes the local session so the uploader can take it. A remote session is kept as is. */
   fun releaseLocal(): SyncState = copy(session = session?.takeUnless { it.isLocal })
 
   fun sessionStale(

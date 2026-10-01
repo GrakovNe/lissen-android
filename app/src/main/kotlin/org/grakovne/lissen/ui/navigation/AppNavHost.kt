@@ -66,7 +66,7 @@ fun AppNavHost(
   imageLoader: ImageLoader,
   appLaunchAction: AppLaunchAction,
 ) {
-  // consumed only on the first layout, so read once
+  // used only on the first layout, so it is read once
   val startDestination =
     remember {
       val book = playbackPreferences.getLastPlayingItem()
@@ -126,7 +126,7 @@ fun AppNavHost(
             },
           ),
       ) { backStackEntry ->
-        // The Navigation component already URL-decodes argument values, so read them as-is.
+        // Navigation already decodes URL-encoded argument values, so read them as they are.
         val linkedSearchToken = backStackEntry.arguments?.getString(ARG_LINKED_SEARCH_TOKEN)
 
         LibraryScreen(
