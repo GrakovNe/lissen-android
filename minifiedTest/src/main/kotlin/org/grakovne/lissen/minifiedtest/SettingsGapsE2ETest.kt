@@ -187,6 +187,20 @@ class SettingsGapsE2ETest {
   }
 
   @Test
+  fun settings_equalizer_showsBandsAndRestoreDefault() = loggedInApp {
+    openSettings()
+    clickElement(By.text("Playback"))
+    waitForElement(By.text("Equalizer"))
+    clickElement(By.text("Equalizer"))
+    waitForElement(By.desc("60 hertz band"))
+    assertTrue("all five bands should be rendered", elementExists(By.desc("14k hertz band")))
+    clickElement(By.text("Restore default"))
+    assertTrue("the equalizer must survive restoring defaults", elementExists(By.desc("60 hertz band"), 10_000))
+    pressBack()
+    assertTrue("the playback screen should stay usable", elementExists(By.text("Seek settings"), 15_000))
+  }
+
+  @Test
   fun settings_colorScheme_survivesAppRestart() = loggedInApp {
     openSettings()
     clickElement(By.text("Appearance"))
