@@ -184,7 +184,19 @@ fun freshApp(block: UiAutomatorTestScope.() -> Unit) =
     // the launcher ANRs on the CI emulator often enough that its system dialog covers the
     // app window and every selector lookup fails behind it
     device.executeShellCommand("settings put global hide_error_dialogs 1")
-    androidx.test.shell.Shell.application.clearAppData(TARGET_PACKAGE)
+    // the uiautomator shell server occasionally fails to start on a busy emulator
+    var cleared = false
+    repeat(3) {
+      if (!cleared) {
+        try {
+          androidx.test.shell.Shell.application.clearAppData(TARGET_PACKAGE)
+          cleared = true
+        } catch (_: IllegalStateException) {
+          Thread.sleep(2_000)
+        }
+      }
+    }
+    if (!cleared) androidx.test.shell.Shell.application.clearAppData(TARGET_PACKAGE)
     waitForAppGone()
     watchFor(androidx.test.uiautomator.watcher.PermissionDialog) { clickAllow() }
     startApp(TARGET_PACKAGE)
