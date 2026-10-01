@@ -7,10 +7,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * The key of the entry [request] reads and writes. One URL is read as different types (a book and a
- * podcast are both `api/items/{id}`), so an entry belongs to the endpoint method, never to the URL
- * alone: a 304 must answer with the object that method returns. Requests built outside Retrofit
- * carry no method and fall back to the URL.
+ * The key of the entry [request] reads and writes. One URL is read as different types (a book
+ * and a podcast are both `api/items/{id}`), so an entry belongs to the endpoint method, never
+ * to the URL alone: a 304 must answer with the object that method returns. Requests built
+ * outside Retrofit carry no method and fall back to the URL.
  */
 internal fun conditionalCacheKey(request: Request): String {
   val url = request.url.toString()
@@ -19,7 +19,7 @@ internal fun conditionalCacheKey(request: Request): String {
   return "${method.name} $url"
 }
 
-/** In-memory LRU store of response objects and their ETags, bounded by entry count. */
+/** In-memory LRU store of response objects and their ETags, limited by the number of entries. */
 @Singleton
 class ConditionalCache
   internal constructor(
@@ -57,7 +57,7 @@ class ConditionalCache
     )
 
     private companion object {
-      // Cacheable endpoints include paged library requests, so a small URL cap retains the
+      // Cacheable endpoints include paged library requests, so a small URL cap keeps the
       // working set without guessing object sizes from DTO implementation details.
       const val DEFAULT_MAX_ENTRIES = 32
     }

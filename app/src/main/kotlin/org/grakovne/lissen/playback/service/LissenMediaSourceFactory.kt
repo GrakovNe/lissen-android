@@ -125,7 +125,7 @@ class LissenMediaSourceFactory(
   }
 
   internal companion object {
-    /** NaN or negative bounds from the server would make media3 reject the clip; they degrade to start-to-end-of-file. */
+    /** NaN or negative bounds from the server would make media3 reject the clip. They are treated as the whole file. */
     internal fun clipBoundsUs(
       clipStart: Double,
       clipEnd: Double,

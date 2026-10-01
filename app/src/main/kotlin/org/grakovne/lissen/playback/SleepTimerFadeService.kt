@@ -17,10 +17,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * Fades the volume to silence before the sleep timer pauses playback. One ramp: the first tick
- * inside the window captures the volume and walks it linearly to zero at expiry; later ticks
- * never retime it. The volume is never raised while playing: after an expiry it stays at zero
- * until the player stops, while a cancellation restores it at once.
+ * Fades the volume to silence before the sleep timer pauses playback. There is one ramp: the
+ * first tick inside the window captures the volume and moves it linearly to zero at expiry.
+ * Later ticks never change its timing. The volume is never raised while playing. After an
+ * expiry it stays at zero until the player stops; cancelling the timer restores it at once.
  */
 @Singleton
 class SleepTimerFadeService
@@ -109,7 +109,7 @@ class SleepTimerFadeService
 
       if (!fading) return
 
-      // Pin silence at the exact moment of the pause, even if the ramp is slightly behind.
+      // Force zero volume at the exact moment of the pause, even if the ramp is slightly behind.
       player.volume = 0f
       fading = false
 
@@ -124,7 +124,7 @@ class SleepTimerFadeService
       fadeJob?.cancel()
       fadeJob = null
 
-      // after an expiry `fading` is already cleared, so a trailing cancellation keeps the silence
+      // after an expiry `fading` is already cleared, so a late cancellation keeps the silence
       if (fading) {
         fading = false
         restoreVolume()

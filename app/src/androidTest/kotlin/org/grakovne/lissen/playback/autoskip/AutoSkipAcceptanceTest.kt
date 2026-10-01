@@ -18,9 +18,9 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 /**
- * What the unit tests assume of media3, on a real player: a message is delivered when playback
- * crosses it and not when a seek jumps over it, seeks and transitions report their
- * discontinuities, the timer's pause reaches the player before the message.
+ * What the unit tests assume about media3, checked on a real player: a message is delivered
+ * when playback crosses it and not when a seek jumps over it; seeks and transitions report
+ * their discontinuities; the timer's pause reaches the player before the message.
  */
 @OptIn(UnstableApi::class)
 @RunWith(AndroidJUnit4::class)
@@ -91,7 +91,7 @@ class AutoSkipAcceptanceTest : AutoSkipOnRealPlayer() {
     assertTrue("no seek left chapter 1: $discontinuities", discontinuities.none { it.fromIndex == 1 && it.toIndex == 2 })
     verify(exactly = 0) { synchronization.reportChapterEnd(1) }
 
-    // the morning after
+    // resume after the pause
     onMain { player.play() }
     awaitOnMain("chapter 2 after the resume") { player.currentMediaItemIndex == 2 }
 
@@ -104,7 +104,7 @@ class AutoSkipAcceptanceTest : AutoSkipOnRealPlayer() {
     awaitOnMain("the end of the item", timeoutMs = 40_000L) { player.playbackState == Player.STATE_ENDED }
 
     verify(exactly = 1) { synchronization.reportChapterEnd(3) }
-    // media3 lands a seek to the very end of the last item a millisecond short of it (observed with 1.11.1)
+    // media3 lands a seek to the very end of the last item one millisecond short of it (observed with 1.11.1)
     val exit = discontinuities.last { it.reason == Player.DISCONTINUITY_REASON_SEEK && it.fromIndex == 3 && it.toIndex == 3 }
     assertTrue("the end seek of the last chapter, among $discontinuities", exit.fromMs >= 4_000L && exit.toMs >= 5_990L)
   }

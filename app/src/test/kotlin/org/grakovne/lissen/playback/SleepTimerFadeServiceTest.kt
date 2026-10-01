@@ -67,7 +67,6 @@ class SleepTimerFadeServiceTest {
         samples += sampleVolumeEveryStep(1_000L)
       }
 
-      // the pause itself
       bus.emit(PlaybackEvent.TimerExpired)
       runCurrent()
       samples += playerVolume
@@ -130,7 +129,7 @@ class SleepTimerFadeServiceTest {
       runCurrent()
       assertEquals(0f, playerVolume, "volume must be zero at the moment of the pause")
 
-      // still playing: not even a trailing cancellation may bring the volume back
+      // still playing: not even a late cancellation may bring the volume back
       bus.emit(PlaybackEvent.TimerCancelled)
       advanceUntilIdle()
       assertEquals(0f, playerVolume, "volume must stay zero until playback stops")

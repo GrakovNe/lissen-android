@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-/** Real Retrofit stack against [MockWebServer]; the OAuth browser round trip is out of scope. */
+/** Real Retrofit stack against [MockWebServer]. The OAuth browser round trip is out of scope. */
 class AudiobookshelfAuthServiceIntegrationTest {
   private val server = MockWebServer()
 

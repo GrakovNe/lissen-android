@@ -5,7 +5,7 @@ import android.os.Looper
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/** The main thread as a dependency, so that a JVM test can run everything inline. */
+/** The main thread as a dependency, so a JVM test can run everything inline. */
 interface MainThread {
   /** Runs [action] at once when already on the main thread, otherwise posts it there. */
   fun run(action: () -> Unit)

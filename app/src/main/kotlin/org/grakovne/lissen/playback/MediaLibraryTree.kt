@@ -110,16 +110,16 @@ class MediaLibraryTree
 
       /**
        * The tree lists every library of the server, not only the preferred one, so an item carries
-       * the type of the library it was listed from: fetched through another channel, a podcast would
-       * be read as a book. Paths without a type (older controllers may still hold them) are left to
-       * the preferred library.
+       * the type of the library it was listed from. Fetched through the wrong channel, a podcast
+       * would be read as a book. Paths without a type (older controllers may still hold them) fall
+       * back to the preferred library.
        */
       fun bookPath(
         bookId: String,
         libraryType: LibraryType? = null,
       ) = libraryType?.let { "$BOOK/${it.name}/$bookId" } ?: "$BOOK/$bookId"
 
-      /** The item id and the type of the library it was listed from, when the path carries one. */
+      /** The item id and, when the path carries one, the type of the library it was listed from. */
       fun parseBookPath(mediaId: String): Pair<String, LibraryType?> {
         val rest = mediaId.removePrefix("$BOOK/")
         val type = LibraryType.entries.firstOrNull { rest.startsWith("${it.name}/") } ?: return rest to null

@@ -36,9 +36,9 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 /**
- * A mocked player driven by hand, imitating media3 where it matters: a seek delivers its
+ * A mocked player controlled by hand, imitating media3 where it matters: a seek delivers its
  * discontinuity synchronously and leaves the player buffering, a new queue drops the old
- * messages, posted decisions settle after every stimulus. Chapters of 30, 40 and 50 s, 10 s
+ * messages, and posted decisions settle after every input. Chapters of 30, 40 and 50 s, 10 s
  * skipped at both ends.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -156,7 +156,7 @@ class AutoSkipServiceTest {
 
     @Test
     fun `the very start of another chapter is entered once playback runs again`() {
-      // "next" and a pick from the list land at zero
+      // "next" and a pick from the list move to zero
       userSeeks(to = 2, at = 0L)
       assertTrue(seeks.isEmpty())
 
@@ -183,7 +183,7 @@ class AutoSkipServiceTest {
 
     @Test
     fun `a restart of the same chapter plays it from its true start`() {
-      // "previous" from deep inside the chapter, or a rewind that touches the start: the intro is the listener's
+      // "previous" from deep inside the chapter, or a rewind that touches the start: the user asked for the intro, so do not skip it
       index = 1
       positionMs = 30_000L
       userSeeks(to = 1, at = 0L)
@@ -297,7 +297,7 @@ class AutoSkipServiceTest {
     @Test
     fun `a stored position inside the outro is resumed by moving on`() {
       playing = false
-      // preparePlayback: the queue is set, then the player is seeked to the stored position, in one task
+      // preparePlayback: the queue is set, then the player is moved to the stored position, in one task
       buildQueue(another, at = 1, positionMs = 35_000L) {
         listener.captured.onPositionDiscontinuity(position(2, 45_000L), position(1, 35_000L), Player.DISCONTINUITY_REASON_SEEK)
       }
@@ -399,7 +399,7 @@ class AutoSkipServiceTest {
 
     @Test
     fun `a message delivered a hair early still counts`() {
-      // the position is not re-read at delivery: the message is the proof of the crossing
+      // the position is not read again at delivery: the message is the proof that the point was crossed
       index = 1
       positionMs = 29_900L
       fire(1)
@@ -543,7 +543,7 @@ class AutoSkipServiceTest {
 
     @Test
     fun `a step whose seek never came does not turn the next scrub into one`() {
-      // the step was refused by a controller not yet connected; the listener then scrubs into the outro
+      // the step was refused by a controller not yet connected; the user then scrubs into the outro
       index = 1
       positionMs = 5_000L
       steps.expect(1, 35_000L)

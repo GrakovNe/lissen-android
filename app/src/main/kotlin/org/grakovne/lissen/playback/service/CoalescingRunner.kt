@@ -5,8 +5,8 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicReference
 
 /**
- * Runs one action at a time. Of the plain values submitted meanwhile only the latest runs; a
- * mandatory one always runs, in order, and drops the plain value waiting before it.
+ * Runs one action at a time. Of the plain values submitted while it runs, only the latest one
+ * runs. A mandatory value always runs, in order, and drops the plain value waiting before it.
  */
 internal class CoalescingRunner<T : Any> {
   private val pending = AtomicReference<T?>(null)

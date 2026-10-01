@@ -92,9 +92,9 @@ class PlaybackSynchronizationService
     }
 
     /**
-     * Reports chapter [chapterIndex] played out, for a chapter left before its end. Queued on the
-     * caller's thread as mandatory, so the sync of the next chapter neither drops nor overtakes
-     * it; the listening time stays with the regular syncs.
+     * Reports chapter [chapterIndex] as fully played, for a chapter left before its end. It is
+     * queued on the caller's thread as mandatory, so the sync of the next chapter neither drops
+     * it nor overtakes it. The listening time stays with the regular syncs.
      */
     fun reportChapterEnd(chapterIndex: Int) {
       val currentItem = syncState.value.item ?: return
@@ -134,7 +134,7 @@ class PlaybackSynchronizationService
           paused = exoPlayer.syncTicking.not(),
         )
 
-      // before the hop, in order with the mandatory reports
+      // before the thread switch, in order with the mandatory reports
       syncRunner.offer(snapshot)
       drainSyncs(currentItem)
     }
@@ -153,7 +153,7 @@ class PlaybackSynchronizationService
               }
             }
 
-            // the item was left before its report went out: a session opened for it would leak
+            // the item was left before its report went out: a session opened for it would never close
             else -> {
               Timber.d("Dropping a report for ${item.id}: ${currentItem.id} is playing now")
             }
@@ -168,7 +168,7 @@ class PlaybackSynchronizationService
       val chapterIndex = snapshot.chapterIndexIn(currentItem)
       val current = syncState.value
 
-      // a local session keeps retrying the server to move back to a remote one
+      // a local session keeps retrying the server, to move back to a remote session
       if (current.sessionStale(currentItem.id, chapterIndex) || current.localSession != null) {
         openPlaybackSession(currentItem, snapshot.progress, chapterIndex)
       }
@@ -177,13 +177,13 @@ class PlaybackSynchronizationService
         syncSnapshot(session, currentItem, chapterIndex, snapshot)
       }
 
-      // nothing retries while paused, so the offline row is handed over now
+      // nothing retries while paused, so the offline row is passed to the uploader now
       if (snapshot.paused) {
         syncState.update { it.releaseLocal() }
       }
     }
 
-    /** A dead session is replaced; while the server is unreachable the local one starts where the connection was lost. */
+    /** A dead session is replaced. While the server is unreachable, a local session starts where the connection was lost. */
     private suspend fun syncSnapshot(
       session: PlaybackSession,
       item: DetailedItem,
@@ -264,7 +264,7 @@ class PlaybackSynchronizationService
     }
   }
 
-/** The sync ticker runs while the player intends to play; a pause or the end of the item stops it. */
+/** The sync ticker runs while the player intends to play. A pause or the end of the item stops it. */
 private val Player.syncTicking: Boolean
   get() = playWhenReady && playbackState != Player.STATE_ENDED
 

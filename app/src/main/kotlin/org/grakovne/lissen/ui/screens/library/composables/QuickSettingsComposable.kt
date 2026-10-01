@@ -95,7 +95,7 @@ fun QuickSettingsComposable(
         onClick = onForceLocalToggled,
       )
 
-      // what a library type does not support is not shown, not dimmed
+      // a row the library type does not support is hidden, not dimmed
       if (isLibrary) {
         SettingsToggleRow(
           title = stringResource(R.string.hide_completed_items),
@@ -138,7 +138,7 @@ fun QuickSettingsComposable(
         }
       }
 
-      // grouped by author, the library is always sorted by author: there is nothing to pick
+      // when grouped by author the library is always sorted by author, so there is nothing to pick
       if (isLibrary.not() || grouping != LibraryGrouping.AUTHOR) {
         SettingsPickerRow(
           label = stringResource(R.string.library_quick_settings_sort_title),

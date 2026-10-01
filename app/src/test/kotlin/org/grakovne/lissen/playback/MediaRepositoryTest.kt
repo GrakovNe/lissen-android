@@ -38,8 +38,8 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 /**
- * The repository over a fake player and an inline main thread: the orchestration is
- * exercised for real, only the media session and the Android looper are stood in for.
+ * The repository over a fake player and an inline main thread: the orchestration runs for
+ * real, and only the media session and the Android looper are replaced.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 class MediaRepositoryTest {
@@ -76,7 +76,7 @@ class MediaRepositoryTest {
     ) {
       calls.add("seekTo($mediaItemIndex, $positionMs)")
 
-      // the controller masks a seek and reports it at once, as media3 does
+      // a seek to the current position is masked and reported at once, as media3 does
       if (mediaItemIndex == currentMediaItemIndex && positionMs == currentPositionMs) return
       currentMediaItemIndex = mediaItemIndex
       currentPositionMs = positionMs

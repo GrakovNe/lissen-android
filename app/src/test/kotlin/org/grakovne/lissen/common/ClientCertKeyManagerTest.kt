@@ -26,13 +26,13 @@ class ClientCertKeyManagerTest {
       certChainLoader = { certChain },
     )
 
-  /** chooseEngineClientAlias returns null by default, silently withholding the cert when SSLEngine drives the handshake. */
+  /** chooseEngineClientAlias returns null by default, so the cert is silently withheld when SSLEngine drives the handshake. */
   @Test
   fun `chooseEngineClientAlias returns the configured alias`() {
     assertEquals(alias, keyManagerWithCert().chooseEngineClientAlias(null, null, null))
   }
 
-  /** KeyChain answers null once the cert is revoked or removed; offering the alias then would crash in getPrivateKey. */
+  /** KeyChain returns null once the cert is revoked or removed; offering the alias then would crash in getPrivateKey. */
   @Test
   fun `chooseEngineClientAlias returns null when private key load fails`() {
     val km =

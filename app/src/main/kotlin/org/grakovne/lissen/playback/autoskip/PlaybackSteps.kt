@@ -5,9 +5,10 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * The "forward" step is the player's own movement, so what it lands in is skipped. It is marked
- * with its target before its seek and matched by the discontinuity landing there; any other seek
- * drops the mark. Forward only: a step back into an intro has to be able to land there.
+ * The "forward" step is the player's own movement, so whatever it lands in is skipped. It is
+ * marked with its target before the seek, and the discontinuity that lands there matches the
+ * mark. Any other seek drops the mark. Forward only: a step back into an intro has to be able
+ * to land there.
  */
 @Singleton
 class PlaybackSteps

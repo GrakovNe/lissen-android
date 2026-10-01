@@ -3,7 +3,7 @@ package org.grakovne.lissen.ui.components.slider
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-/** A ruler 600 px wide from 0: the intro lives on 0..300, the outro on 300..600, 1 px a second. */
+/** A ruler 600 px wide starting at 0: the intro lives on 0..300, the outro on 300..600, 1 px per second. */
 class PickThumbTest {
   @Test
   fun `a touch on the intro half takes the intro even when the outro is nearer`() {

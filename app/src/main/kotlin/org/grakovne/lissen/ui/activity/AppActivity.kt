@@ -90,7 +90,7 @@ class AppActivity : ComponentActivity() {
 
   override fun onNewIntent(intent: Intent) {
     super.onNewIntent(intent)
-    // singleTop: a warm start lands here, not in onCreate
+    // launchMode singleTop: a warm start arrives here, not in onCreate
     setIntent(intent)
 
     if (!::appNavigationService.isInitialized) {

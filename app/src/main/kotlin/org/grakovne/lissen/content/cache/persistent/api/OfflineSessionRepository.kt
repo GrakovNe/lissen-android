@@ -53,7 +53,7 @@ class OfflineSessionRepository
       dao.deleteByIds(ids.toList())
     }
 
-    /** The rows belong to one login: both a logout and a login drop them. */
+    /** The rows belong to one login. Both a logout and a new login drop them. */
     suspend fun dropAll() {
       val dropped = dao.deleteAll()
       Timber.d("Dropped $dropped offline session(s)")

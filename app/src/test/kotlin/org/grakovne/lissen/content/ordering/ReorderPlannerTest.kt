@@ -116,7 +116,7 @@ class ReorderPlannerTest {
 
   @Test
   fun `a stored item without ordering keys is reordered like any other`() {
-    // every index 0, keys null: the list order is the canonical one
+    // every index is 0 and the keys are null: the list order is the canonical one
     val legacy = book.copy(chapters = book.chapters.map { it.copy(index = 0, publishedAt = null) })
     val reversed = EpisodeOrderingConfiguration(EpisodeOrderingOption.PUBLISHED_AT, LibraryOrderingDirection.DESCENDING)
 

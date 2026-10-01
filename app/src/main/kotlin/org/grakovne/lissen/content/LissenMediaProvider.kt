@@ -97,7 +97,7 @@ class LissenMediaProvider
     }
 
     /**
-     * Reports the position to the session's home: the server for a remote session, the
+     * Reports the position to where the session lives: the server for a remote session, the
      * offline row for a local one. The local cache gets it either way.
      */
     suspend fun syncProgress(
@@ -170,7 +170,7 @@ class LissenMediaProvider
       )
     }
 
-    /** [libraryType] is the type of [libraryId] when the caller may list a library other than the preferred one. */
+    /** Pass [libraryType] when the caller may list a library other than the preferred one. It is the type of [libraryId]. */
     suspend fun fetchBooks(
       libraryId: String,
       pageSize: Int,
@@ -340,9 +340,9 @@ class LissenMediaProvider
 
     /**
      * The stored playing item carries the progress of the moment it was stored, while the local
-     * cache has every sync tick since. Playback resuming from the stored item, say when the
-     * server cannot be reached in time, starts from the fresher of the two. An item that has no
-     * chapter left to play is returned as it was, for the caller to reject on its own terms.
+     * cache has every sync tick since. Playback that resumes from the stored item, for example
+     * when the server cannot be reached in time, starts from the newer of the two. An item with
+     * no chapter left to play is returned unchanged, so the caller can reject it in its own way.
      */
     suspend fun withLatestProgress(item: DetailedItem): DetailedItem =
       ChapterOrdering
@@ -351,16 +351,16 @@ class LissenMediaProvider
         .let { prepareForPlayback(it) }
         .fold(onSuccess = { it }, onFailure = { item })
 
-    /** The last steps every item takes on its way to a consumer, whatever its source. */
+    /** The last steps every item goes through before a consumer sees it, whatever its source. */
     private suspend fun prepareForPlayback(canonical: DetailedItem): OperationResult<DetailedItem> =
       moveToAvailableChapter(applyOrdering(canonical)).map { trimProgress(it) }
 
     /**
-     * By this point the item is in the canonical order with a canonical progress, whether it
-     * came from the channel (canonicalized above, before the cached progress is merged in) or
-     * from the cache (stored canonical). The user-chosen order is applied here, once, for
-     * every consumer of the item. A stored configuration is trusted regardless of the library
-     * type: it can only ever be written for a podcast, and the cache may not know the type.
+     * By this point the item is in canonical order with canonical progress, whether it came
+     * from the channel (canonicalized above, before the cached progress is merged in) or from
+     * the cache (stored canonical). The order the user chose is applied here, once, for every
+     * consumer. A stored configuration is trusted whatever the library type: it can only ever
+     * be written for a podcast, and the cache may not know the type.
      */
     private fun applyOrdering(detailedItem: DetailedItem): DetailedItem {
       val canonical = ChapterOrdering.canonical(detailedItem)
@@ -373,7 +373,8 @@ class LissenMediaProvider
 
     /**
      * A partially downloaded item may hold its progress inside a chapter that is not on the
-     * device. Playback then starts from the first chapter that is, in the order the user sees.
+     * device. Playback then starts from the first chapter that is on the device, in the order
+     * the user sees.
      */
     private fun moveToAvailableChapter(detailedItem: DetailedItem): OperationResult<DetailedItem> {
       if (detailedItem.chapters.isEmpty()) return OperationResult.Success(detailedItem)
@@ -431,8 +432,8 @@ class LissenMediaProvider
     ) {
       Timber.d("Post-login setup for $host")
 
-      // Offline rows recorded before this login belong to whatever account was there
-      // before; they go before the credentials land, so none is uploaded to this one.
+      // Offline rows recorded before this login belong to the previous account. They are
+      // dropped before the new credentials are saved, so none of them is uploaded to the new account.
       localCacheRepository.dropAllOfflineSessions()
 
       provideAuthService()
@@ -525,8 +526,8 @@ class LissenMediaProvider
     }
 
     /**
-     * Both progresses are canonical positions: the cache only ever stores canonical ones and
-     * the channel item has been canonicalized before getting here.
+     * Both progresses are canonical positions: the cache only ever stores canonical ones, and
+     * the channel item was canonicalized before getting here.
      */
     private suspend fun mergeLocalItemProgress(detailedItem: DetailedItem): DetailedItem {
       val cachedProgress = localCacheRepository.fetchPlayingItemProgress(detailedItem.id)
@@ -549,7 +550,7 @@ class LissenMediaProvider
       return detailedItem.copy(progress = updatedProgress)
     }
 
-    /** Offline mode, forced by the user, reads everything from the local cache; otherwise the channel answers. */
+    /** When the user forces offline mode, everything comes from the local cache; otherwise it comes from the channel. */
     private inline fun <T> cacheOrChannel(
       local: () -> T,
       remote: () -> T,
@@ -570,7 +571,7 @@ class LissenMediaProvider
     fun provideChannelFor(libraryType: LibraryType?): MediaChannel = channelProvider.provideMediaChannel(libraryType)
 
     private companion object {
-      // 2000-01-01T12:00, deliberately older than any real progress so a merge never prefers it
+      // 2000-01-01T12:00, deliberately older than any real progress, so a merge never prefers it
       private const val FALLBACK_PROGRESS_TIMESTAMP = 946728000000L
     }
   }

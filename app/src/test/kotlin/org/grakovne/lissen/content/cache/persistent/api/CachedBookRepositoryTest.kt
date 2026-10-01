@@ -380,7 +380,7 @@ class CachedBookRepositoryTest {
   @Test
   fun `cacheBook stores the item in the canonical order with the progress translated`() =
     runBlocking {
-      // playing order c1, c0 (descending by date), listener 5s into c0 = 15s
+      // playing order c1, c0 (descending by date), the user is 5s into c0 = 15s
       val playing =
         orderedItem(
           listOf(

@@ -63,7 +63,7 @@ fun PlayerSettingsComposable(
 
   var skipExpanded by remember { mutableStateOf(false) }
 
-  // stored once per gesture, when the thumb is released
+  // saved once per gesture, when the thumb is released
   var draft by remember(autoSkip) { mutableStateOf(autoSkip) }
 
   LissenModalBottomSheet(
@@ -89,7 +89,7 @@ fun PlayerSettingsComposable(
           onClick = { sortExpanded = !sortExpanded },
         )
 
-        // not folded while the queue is rebuilt after a pick, only dimmed
+        // stays open while the queue is rebuilt after a pick; it is only dimmed
         AnimatedVisibility(visible = sortExpanded) {
           Column {
             EpisodeOrderingOption.entries.forEach { option ->
@@ -122,7 +122,6 @@ fun PlayerSettingsComposable(
           introSeconds = draft.introSeconds,
           outroSeconds = draft.outroSeconds,
           stateDescription = draft.summary(spoken = true),
-          // indented like the option rows
           modifier =
             Modifier
               .padding(horizontal = 24.dp, vertical = 8.dp)
@@ -149,7 +148,7 @@ fun PlayerSettingsComposable(
   }
 }
 
-/** "Intro 01:20 · Outro 02:25", or in words for TalkBack. */
+/** Formats as "Intro 01:20 · Outro 02:25", or in words for TalkBack. */
 @Composable
 private fun AutoSkipConfiguration.summary(spoken: Boolean = false): String {
   val intro =

@@ -56,13 +56,13 @@ internal data class SkippableChapter(
   fun outroReached(positionMs: Long): Boolean = configuration.outroSeconds > 0 && positionMs >= outroStartMs
 }
 
-/** Null when there is nothing to skip, or the skips would swallow the whole chapter. */
+/** Null when there is nothing to skip, or when the skips would cover the whole chapter. */
 internal fun AutoSkipConfiguration.skippable(durationMs: Long): SkippableChapter? =
   takeIf { enabled && durationMs > 0L && (introSeconds + outroSeconds) * MILLIS < durationMs }?.let { SkippableChapter(it, durationMs) }
 
 /**
- * Where an "end of episode" timer stops: where the outro begins, or the real end once playback is
- * inside the outro already (the listener's own, or one about to be left).
+ * Where an "end of episode" timer stops: where the outro begins, or the real end once playback
+ * is inside the outro already (the user's own position, or one about to be skipped).
  */
 fun AutoSkipConfiguration.chapterEndSeconds(
   chapter: PlayingChapter,

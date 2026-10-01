@@ -89,7 +89,7 @@ class PlaybackExtractorsFactoryTest {
     extractorsFactory: ExtractorsFactory,
     artworkUri: Uri?,
   ): MediaMetadata {
-    // the asset lives in the test APK; DefaultDataSource needs an application context, so play a file copy
+    // the asset lives in the test APK; DefaultDataSource needs an application context, so play a copy of the file
     val context = instrumentation.targetContext
     val mediaFile =
       File(context.cacheDir, ASSET).also { file ->

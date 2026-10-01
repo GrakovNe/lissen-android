@@ -16,7 +16,7 @@ import java.io.FileOutputStream
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-/** The file itself when square, otherwise a temp file with a blurred square backdrop. */
+/** Returns the file itself when it is square. Otherwise returns a temp file with a blurred square backdrop. */
 fun File.withBlur(context: Context): File {
   val bounds =
     BitmapFactory

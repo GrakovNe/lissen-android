@@ -75,7 +75,7 @@ fun SettingsToggleRow(
   }
 }
 
-/** The value gives way to [compactValue] when the label would wrap. */
+/** Shows [compactValue] instead of the value when the label would wrap. */
 @Composable
 fun SettingsPickerRow(
   label: String,
@@ -90,7 +90,7 @@ fun SettingsPickerRow(
   val view = LocalView.current
   val labelColor = colorScheme.onSurface.copy(alpha = if (enabled) 1f else SETTINGS_DISABLED_ALPHA)
   val valueColor = colorScheme.onSurfaceVariant.copy(alpha = if (enabled) 1f else SETTINGS_DISABLED_ALPHA)
-  // decided once per row, not per value, or the row would flip between its forms on every change
+  // decided once per row, not per value; otherwise the row would flip between its forms on every change
   var compact by remember(compactValue != null) { mutableStateOf(false) }
   Row(
     modifier =
@@ -175,7 +175,7 @@ fun SettingsOptionRow(
   }
 }
 
-/** Tapping the selected option flips its direction, tapping another one picks it ascending. */
+/** Tapping the selected option flips its direction. Tapping another option selects it ascending. */
 @Composable
 fun SettingsSortOptionRow(
   title: String,

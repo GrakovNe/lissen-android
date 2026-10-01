@@ -25,9 +25,9 @@ import org.junit.Before
 import java.util.concurrent.CopyOnWriteArrayList
 
 /**
- * The auto-skip service on a real ExoPlayer playing [item] fourfold, recording every
+ * The auto-skip service on a real ExoPlayer playing [item] four times over, recording every
  * discontinuity. A scenario seeks in the same main-thread task as the check that playback is
- * where it needs it.
+ * where it needs to be.
  */
 @OptIn(UnstableApi::class)
 abstract class AutoSkipOnRealPlayer {
@@ -45,7 +45,7 @@ abstract class AutoSkipOnRealPlayer {
   protected lateinit var player: ExoPlayer
   protected lateinit var timer: PlaybackTimer
 
-  // an id per test: the services of the earlier tests, never stopped, stay quiet on another item
+  // an id per test: the services of the earlier tests are never stopped, so they stay quiet on another item
   protected abstract val item: DetailedItem
 
   protected abstract val mediaSourceFactory: MediaSource.Factory
@@ -101,7 +101,7 @@ abstract class AutoSkipOnRealPlayer {
       autoSkip = configuration,
     )!!
 
-  /** Does [action] once playback runs in [index] well before its outro; false to keep waiting. */
+  /** Runs [action] once playback is in [index] well before its outro; returns false to keep waiting. */
   protected fun inChapterBeforeOutro(
     index: Int,
     action: () -> Unit,

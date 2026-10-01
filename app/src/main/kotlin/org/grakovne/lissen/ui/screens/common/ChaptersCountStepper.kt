@@ -76,7 +76,7 @@ fun ChaptersCountStepper(
 
   fun commit() {
     if (!isEditing) return
-    // values above maxCount stay visible as typed; the caller clamps the download
+    // values above maxCount stay visible as typed; the caller limits the download itself
     field.text.toIntOrNull()?.let { onCountChanged(it.coerceAtLeast(minCount)) }
     isEditing = false
     keyboardController?.hide()

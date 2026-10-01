@@ -71,7 +71,7 @@ class CachedBookRepository
 
     suspend fun dropCache() = bookDao.dropCache()
 
-    /** Stored in the canonical order, whatever order the item was handed over in. */
+    /** Stores the book in canonical order, whatever order it arrives in. */
     suspend fun cacheBook(
       book: DetailedItem,
       fetchedChapters: List<PlayingChapter>,
@@ -427,7 +427,7 @@ class CachedBookRepository
         MediaProgressEntity(
           bookId = playingItem.id,
           currentTime = canonicalTime,
-          // the end of the item in the listener's order; read only for LIBRARY today, where that is canonical
+          // compares against the end in the user's order; today only LIBRARY reads this flag, and there the order is canonical
           isFinished = progress.currentTotalTime >= totalDuration - FINISHED_POSITION_EPSILON,
           lastUpdate = Instant.now().toEpochMilli(),
         )

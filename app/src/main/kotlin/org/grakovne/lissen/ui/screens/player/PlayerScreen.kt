@@ -245,7 +245,7 @@ fun PlayerScreen(
               }
 
               else -> {
-                // no dimmed state while the item loads or its queue is rebuilt: a tap does nothing
+                // no dimming while the item loads or its queue is rebuilt: a tap does nothing
                 Row {
                   if (queueControlsVisible) {
                     IconButton(
@@ -444,7 +444,7 @@ fun PlayerScreen(
   }
 
   if (settingsSelected) {
-    // the same conditions the player checks, so a tap never fails silently
+    // the same condition the player checks, so a tap never fails silently
     val canReorder = remember(isPlaybackReady, playingBook, bookId) { playerViewModel.canReorderPlayingItem(bookId) }
 
     PlayerSettingsComposable(
@@ -693,8 +693,8 @@ fun InfoRow(
 }
 
 /**
- * The placeholder guesses from the library the item is opened from; a loaded item speaks for itself.
- * An item that can never be reordered gets no ordering row at all, rather than a dimmed one.
+ * The placeholder guesses from the library the item is opened from; a loaded item knows its own
+ * type. An item that can never be reordered gets no ordering row at all, instead of a dimmed one.
  */
 internal fun isSortable(
   requestedBook: DetailedItem?,

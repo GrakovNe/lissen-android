@@ -84,7 +84,7 @@ class CachedBookmarkProvider
             onFailure = { return@foldAsync null },
           ) ?: return provideBookmarks(libraryItemId)
 
-      // a delete may still be in flight or have failed: writing the remote copy back as synced would resurrect it
+      // a delete may still be in progress or have failed: writing the remote copy back as synced would bring the bookmark back
       val pendingDeletes =
         localCacheRepository
           .fetchBookmarks(libraryItemId)
@@ -135,7 +135,7 @@ class CachedBookmarkProvider
             onSuccess = { remote ->
               localCacheRepository.upsertBookmark(remote.copy(syncState = BookmarkSyncState.SYNCED))
             },
-            onFailure = { /* keep localDraft as-is */ },
+            onFailure = { /* keep localDraft unchanged */ },
           )
       }
 
@@ -154,7 +154,7 @@ class CachedBookmarkProvider
           .dropBookmark(bookmark)
           .foldAsync(
             onSuccess = { localCacheRepository.deleteBookmark(bookmark.libraryItemId, bookmark.totalPosition) },
-            onFailure = { /* keep PENDING_DELETE for retry on reconnect */ },
+            onFailure = { /* keep PENDING_DELETE so it is retried on reconnect */ },
           )
       }
     }

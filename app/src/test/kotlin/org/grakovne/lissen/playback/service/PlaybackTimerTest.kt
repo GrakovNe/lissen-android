@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-/** The countdown is a stand-in; the listeners the timer adds to the player are driven by hand. */
+/** The countdown is a fake; the listeners the timer adds to the player are triggered by hand. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlaybackTimerTest {
   private val bus = spyk(PlaybackEventBus())

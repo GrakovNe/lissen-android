@@ -35,7 +35,7 @@ const val ROUTE_PLAYER_PATTERN =
     "&$ARG_BOOK_SUBTITLE={$ARG_BOOK_SUBTITLE}" +
     "&$ARG_START_INSTANTLY={$ARG_START_INSTANTLY}"
 
-/** Arguments are URL-encoded here and decoded by Navigation; destinations must not decode again. */
+/** Arguments are URL-encoded here and decoded by Navigation. Destinations must not decode them again. */
 fun libraryRoute(linkedSearchToken: String? = null): String =
   when (linkedSearchToken) {
     null -> ROUTE_LIBRARY

@@ -51,7 +51,7 @@ class ContentCachingManager
           currentTotalPosition = currentTotalPosition,
         )
 
-      // by id: the cached item is canonical, the playing one may be reordered with other bounds
+      // compare by id: the cached item is canonical, while the playing one may be reordered with different bounds
       val existingChapterIds =
         bookRepository
           .fetchBook(bookId = mediaItem.id)

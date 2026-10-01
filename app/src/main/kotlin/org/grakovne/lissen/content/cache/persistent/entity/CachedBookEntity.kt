@@ -48,9 +48,9 @@ data class BookEntity(
   val publisher: String?,
   val duration: Int,
   val libraryId: String?,
-  val seriesJson: String?, // List<BookSeriesDto> Json
+  val seriesJson: String?, // JSON of List<BookSeriesDto>
   val seriesNames: String?,
-  val seriesId: String?, // primary series id, used to group the library by series
+  val seriesId: String?, // the primary series id, used to group the library by series
   val authorsJson: String? = null,
   val createdAt: Long,
   val updatedAt: Long,

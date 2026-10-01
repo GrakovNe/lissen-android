@@ -42,7 +42,7 @@ class SettingsBackupManagerTest {
     every { context.getSharedPreferences(any(), any()) } returns sharedPreferences
     every { sharedPreferences.edit() } returns editor
 
-    // unstubbed keys echo their default, so no getter sees a relaxed empty string
+    // unstubbed keys return their default, so no getter sees a relaxed empty string
     every { sharedPreferences.getString(any(), any()) } answers { secondArg() }
     every { sharedPreferences.getBoolean(any(), any()) } answers { secondArg() }
     every { sharedPreferences.getInt(any(), any()) } answers { secondArg() }
