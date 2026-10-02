@@ -72,7 +72,10 @@ class MediaLibrarySessionCallback
     private var speedConfirmation = false
     private lateinit var feedbackScope: CoroutineScope
 
-    internal fun observeMediaButtons(session: MediaSession, scope: CoroutineScope) {
+    internal fun observeMediaButtons(
+      session: MediaSession,
+      scope: CoroutineScope,
+    ) {
       feedbackScope = scope
       bookmarkConfirmation = false
       speedConfirmation = false
@@ -99,11 +102,12 @@ class MediaLibrarySessionCallback
       speedConfirmation = true
       mediaRepository.setPlaybackSpeed(nextSpeed)
       speedFeedback?.cancel()
-      speedFeedback = feedbackScope.launch(Dispatchers.Main) {
-        delay(BUTTON_FEEDBACK_DURATION)
-        speedConfirmation = false
-        refreshMediaButtons(session)
-      }
+      speedFeedback =
+        feedbackScope.launch(Dispatchers.Main) {
+          delay(BUTTON_FEEDBACK_DURATION)
+          speedConfirmation = false
+          refreshMediaButtons(session)
+        }
     }
 
     private fun searchFutureFor(query: String): ListenableFuture<List<MediaItem>> {
