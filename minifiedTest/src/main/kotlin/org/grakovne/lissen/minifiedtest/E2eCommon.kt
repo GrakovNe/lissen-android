@@ -184,7 +184,19 @@ fun freshApp(block: UiAutomatorTestScope.() -> Unit) =
     // the launcher ANRs on the CI emulator often enough that its system dialog covers the
     // app window and every selector lookup fails behind it
     device.executeShellCommand("settings put global hide_error_dialogs 1")
-    androidx.test.shell.Shell.application.clearAppData(TARGET_PACKAGE)
+    // the uiautomator shell server occasionally fails to start on a busy emulator
+    var cleared = false
+    repeat(3) {
+      if (!cleared) {
+        try {
+          androidx.test.shell.Shell.application.clearAppData(TARGET_PACKAGE)
+          cleared = true
+        } catch (_: IllegalStateException) {
+          Thread.sleep(2_000)
+        }
+      }
+    }
+    if (!cleared) androidx.test.shell.Shell.application.clearAppData(TARGET_PACKAGE)
     waitForAppGone()
     watchFor(androidx.test.uiautomator.watcher.PermissionDialog) { clickAllow() }
     startApp(TARGET_PACKAGE)
@@ -330,4 +342,41 @@ fun UiAutomatorTestScope.mediaSessionState(): String {
 fun UiAutomatorTestScope.mediaSessionPositionMs(): Long {
   val dump = device.executeShellCommand("dumpsys media_session")
   return Regex("position=(\\d+), buffered").find(dump)?.groupValues?.get(1)?.toLong() ?: -1L
+}
+
+fun UiAutomatorTestScope.assertAppAlive(
+  context: String = "",
+) {
+  val pid = device.executeShellCommand("pidof $TARGET_PACKAGE").trim()
+  if (pid.isEmpty()) throw AssertionError("$TARGET_PACKAGE crashed$context")
+}
+
+/**
+ * Taps the icon-only (X) button of a dialog preset row: the leftmost button of the row
+ * holding [referenceText]. Preset captions live in child TextViews, so the row is located
+ * by bounds containment rather than by the buttons' (empty) text.
+ */
+fun UiAutomatorTestScope.tapButtonLeftOf(referenceText: String) {
+  val deadline = System.currentTimeMillis() + DEFAULT_TIMEOUT_MS
+  while (System.currentTimeMillis() < deadline) {
+    val buttons = device.findObjects(By.clazz("android.widget.Button"))
+    val referenceButton =
+      buttons.firstOrNull { button ->
+        device
+          .findObjects(By.text(referenceText))
+          .any { it.visibleBounds.contains(button.visibleBounds.centerX(), button.visibleBounds.centerY()) }
+      }
+    if (referenceButton != null) {
+      val leftmost =
+        buttons
+          .filter { kotlin.math.abs(it.visibleBounds.centerY() - referenceButton.visibleBounds.centerY()) < 40 }
+          .minByOrNull { it.visibleBounds.centerX() }
+      if (leftmost != null && leftmost != referenceButton) {
+        leftmost.click()
+        return
+      }
+    }
+    Thread.sleep(300)
+  }
+  throw AssertionError("no icon-only button found left of '$referenceText'")
 }
