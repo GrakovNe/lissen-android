@@ -92,7 +92,9 @@ class PlaybackService : MediaLibraryService() {
 
   private fun getSession(): MediaLibrarySession =
     when (val currentSession = session) {
-      null -> mediaLibrarySessionProvider.provideMediaLibrarySession(this).also { session = it }
+      null -> mediaLibrarySessionProvider
+        .provideMediaLibrarySession(this, playerServiceScope)
+        .also { session = it }
       else -> currentSession
     }
 
