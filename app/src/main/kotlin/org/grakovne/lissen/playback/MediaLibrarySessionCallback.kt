@@ -10,6 +10,7 @@ import android.view.KeyEvent
 import android.view.KeyEvent.KEYCODE_MEDIA_NEXT
 import android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS
 import androidx.annotation.OptIn
+import androidx.core.net.toUri
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
@@ -34,6 +35,7 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import org.grakovne.lissen.BuildConfig
 import org.grakovne.lissen.channel.common.OperationResult
 import org.grakovne.lissen.content.LissenMediaProvider
 import org.grakovne.lissen.domain.Bookmark
@@ -216,10 +218,22 @@ class MediaLibrarySessionCallback
         .setSlots(slot)
         .build()
 
+    internal fun grantCoverPermission(packageName: String) {
+      context.grantUriPermission(
+        packageName,
+        "content://${BuildConfig.APPLICATION_ID}.cover/".toUri(),
+        Intent.FLAG_GRANT_READ_URI_PERMISSION or
+          Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION or
+          Intent.FLAG_GRANT_PREFIX_URI_PERMISSION,
+      )
+    }
+
     override fun onConnect(
       session: MediaSession,
       controller: MediaSession.ControllerInfo,
     ): MediaSession.ConnectionResult {
+      grantCoverPermission(controller.packageName)
+
       val sessionCommands =
         MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS
           .buildUpon()
