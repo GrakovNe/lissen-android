@@ -372,7 +372,7 @@ class LibraryAudiobookshelfChannel
 
     companion object {
       private const val SERIES_PAGE_SIZE = 20
-      private const val GROUP_BOOKS_PAGE_SIZE = 100
+      private const val GROUP_BOOKS_PAGE_SIZE = 20
       private const val MAX_CONCURRENT_FETCH = 3
     }
   }

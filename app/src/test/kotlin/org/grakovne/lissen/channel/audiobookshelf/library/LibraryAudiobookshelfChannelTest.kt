@@ -113,12 +113,12 @@ class LibraryAudiobookshelfChannelTest {
   fun `fetchGenreBooks filters by the base64 genre and collects every page`() =
     runBlocking {
       val filter = "genres.0JTQtdGC0LXQutGC0LjQsg==" // Детектив
-      coEvery { repository.fetchLibraryItems(LIBRARY, any(), 0, any(), any(), filter) } returns page((1..100).map { "b$it" }, total = 130)
-      coEvery { repository.fetchLibraryItems(LIBRARY, any(), 1, any(), any(), filter) } returns page((101..130).map { "b$it" }, total = 130)
+      coEvery { repository.fetchLibraryItems(LIBRARY, 20, 0, any(), any(), filter) } returns page((1..20).map { "b$it" }, total = 24)
+      coEvery { repository.fetchLibraryItems(LIBRARY, 20, 1, any(), any(), filter) } returns page((21..24).map { "b$it" }, total = 24)
 
       val result = channel.fetchGenreBooks(LIBRARY, "Детектив") as OperationResult.Success
 
-      assertEquals((1..130).map { "b$it" }, result.data.map { it.id })
+      assertEquals((1..24).map { "b$it" }, result.data.map { it.id })
       coVerify(exactly = 0) { repository.fetchLibraryItems(LIBRARY, any(), 2, any(), any(), any()) }
     }
 
