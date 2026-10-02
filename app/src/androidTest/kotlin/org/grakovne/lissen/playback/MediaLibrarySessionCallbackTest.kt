@@ -24,7 +24,11 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.runBlocking
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
@@ -36,10 +40,12 @@ import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.domain.MediaProgress
 import org.grakovne.lissen.domain.PlayingChapter
+import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.service.FileClip
 import org.grakovne.lissen.playback.service.PlaybackService.Companion.FILE_SEGMENTS
 import org.grakovne.lissen.playback.service.PlaybackSynchronizationService
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertThrows
@@ -61,6 +67,9 @@ class MediaLibrarySessionCallbackTest {
   private lateinit var libraryTree: MediaLibraryTree
   private lateinit var playbackSynchronizationService: PlaybackSynchronizationService
   private lateinit var callback: MediaLibrarySessionCallback
+  private lateinit var serviceScope: CoroutineScope
+  private lateinit var seekTime: MutableStateFlow<SeekTime>
+  private lateinit var playbackSpeed: MutableStateFlow<Float>
 
   private lateinit var session: MediaLibraryService.MediaLibrarySession
   private lateinit var controller: MediaSession.ControllerInfo
@@ -78,6 +87,13 @@ class MediaLibrarySessionCallbackTest {
     controller = mockk(relaxed = true)
     coEvery { lissenMediaProvider.withLatestProgress(any()) } answers { firstArg() }
 
+    serviceScope = MainScope()
+    seekTime = MutableStateFlow(SeekTime.Default)
+    playbackSpeed = MutableStateFlow(1f)
+    every { preferences.seekTimeFlow } returns seekTime
+    every { preferences.getSeekTime() } answers { seekTime.value }
+    every { mediaRepository.playbackSpeed } returns playbackSpeed
+
     callback =
       MediaLibrarySessionCallback(
         context,
@@ -87,6 +103,12 @@ class MediaLibrarySessionCallbackTest {
         libraryTree,
         playbackSynchronizationService,
       )
+    callback.observeMediaButtons(session, serviceScope)
+  }
+
+  @After
+  fun tearDown() {
+    serviceScope.cancel()
   }
 
   @Test
@@ -485,13 +507,71 @@ class MediaLibrarySessionCallbackTest {
     }
 
   @Test
+  fun seekTimeChanged_updatesBothSeekButtonIconsWithoutReconnecting() {
+    verify(timeout = 2_000) {
+      session.setMediaButtonPreferences(
+        match<List<CommandButton>> {
+          it[0].icon == CommandButton.ICON_SKIP_BACK_10 &&
+            it[1].icon == CommandButton.ICON_SKIP_FORWARD_30
+        },
+      )
+    }
+
+    seekTime.value = SeekTime(rewind = 15, forward = 5)
+
+    verify(timeout = 2_000) {
+      session.setMediaButtonPreferences(
+        match<List<CommandButton>> {
+          it[0].icon == CommandButton.ICON_SKIP_BACK_15 &&
+            it[1].icon == CommandButton.ICON_SKIP_FORWARD_5
+        },
+      )
+    }
+  }
+
+  @Test
+  fun onCustomCommand_speed_showsNewSpeedThenRestoresGenericIcon() {
+    every { mediaRepository.setPlaybackSpeed(any()) } answers {
+      playbackSpeed.value = firstArg()
+    }
+    verify(timeout = 2_000) {
+      session.setMediaButtonPreferences(
+        match<List<CommandButton>> { it[4].icon == CommandButton.ICON_PLAYBACK_SPEED },
+      )
+    }
+
+    callback.onCustomCommand(
+      session,
+      controller,
+      SessionCommand(MediaLibrarySessionCallback.SPEED_COMMAND, Bundle.EMPTY),
+      Bundle.EMPTY,
+    )
+
+    assertEquals(1.2f, playbackSpeed.value)
+    verify(exactly = 1) { mediaRepository.setPlaybackSpeed(1.2f) }
+    verify(timeout = 2_000) {
+      session.setMediaButtonPreferences(
+        match<List<CommandButton>> { it[4].icon == CommandButton.ICON_PLAYBACK_SPEED_1_2 },
+      )
+    }
+    verify(timeout = 6_000, ordering = Ordering.ORDERED) {
+      session.setMediaButtonPreferences(
+        match<List<CommandButton>> { it[4].icon == CommandButton.ICON_PLAYBACK_SPEED_1_2 },
+      )
+      session.setMediaButtonPreferences(
+        match<List<CommandButton>> { it[4].icon == CommandButton.ICON_PLAYBACK_SPEED },
+      )
+    }
+  }
+
+  @Test
   fun onConnect_offersBookmarkAsTheLastMediaButton() {
     val result = callback.onConnect(session, controller)
 
     val buttons = result.mediaButtonPreferences!!
-    assertEquals(5, buttons.size)
+    assertEquals(6, buttons.size)
     assertEquals(CommandButton.ICON_BOOKMARK_UNFILLED, buttons.last().icon)
-    assertTrue(result.availableSessionCommands!!.contains(bookmarkCommand))
+    assertTrue(result.availableSessionCommands.contains(bookmarkCommand))
   }
 
   @Test
@@ -538,12 +618,16 @@ class MediaLibrarySessionCallbackTest {
   @Test
   fun onCustomCommand_bookmark_nothingRecorded_keepsTheBookmarkIcon() {
     coEvery { mediaRepository.createBookmark(any()) } returns null
-
     callback.onCustomCommand(session, controller, bookmarkCommand, Bundle.EMPTY)
 
     Thread.sleep(500)
+
     coVerify(exactly = 1) { mediaRepository.createBookmark(any()) }
-    verify(exactly = 0) { session.setMediaButtonPreferences(any<List<CommandButton>>()) }
+    verify(exactly = 0) {
+      session.setMediaButtonPreferences(
+        match<List<CommandButton>> { it.last().icon != CommandButton.ICON_BOOKMARK_UNFILLED },
+      )
+    }
   }
 
   @Test
