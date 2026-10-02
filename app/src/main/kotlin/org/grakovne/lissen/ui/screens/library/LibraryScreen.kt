@@ -85,9 +85,11 @@ import org.grakovne.lissen.ui.screens.common.RequestNotificationPermissions
 import org.grakovne.lissen.ui.screens.library.composables.AuthorComposable
 import org.grakovne.lissen.ui.screens.library.composables.BookComposable
 import org.grakovne.lissen.ui.screens.library.composables.DefaultActionComposable
+import org.grakovne.lissen.ui.screens.library.composables.GenreComposable
 import org.grakovne.lissen.ui.screens.library.composables.LibrarySearchActionComposable
 import org.grakovne.lissen.ui.screens.library.composables.LibrarySwitchComposable
 import org.grakovne.lissen.ui.screens.library.composables.MiniPlayerComposable
+import org.grakovne.lissen.ui.screens.library.composables.NarratorComposable
 import org.grakovne.lissen.ui.screens.library.composables.QuickSettingsComposable
 import org.grakovne.lissen.ui.screens.library.composables.RecentBooksComposable
 import org.grakovne.lissen.ui.screens.library.composables.SeriesComposable
@@ -238,6 +240,10 @@ fun LibraryScreen(
 
     val localCacheUsing = cachingModelView.localCacheUsing()
     val localCacheUpdated = cachingModelView.fetchLatestUpdate(currentLibraryId)?.let { it > localCacheUpdatedAt } ?: true
+
+    if (libraryChanged) {
+      libraryViewModel.resetGroupExpansion()
+    }
 
     if (emptyContent || libraryChanged || orderingChanged || (localCacheUsing && localCacheUpdated)) {
       currentLibraryId = settingsViewModel.fetchPreferredLibraryId()
@@ -560,6 +566,30 @@ fun LibraryScreen(
                       onPrefetch = { libraryViewModel.prefetchGroup(entry) },
                     )
                   }
+
+                  is LibraryEntry.GenreEntry -> {
+                    GenreComposable(
+                      genre = entry,
+                      expanded = entry.id in groups.expanded,
+                      loading = entry.id in groups.loading,
+                      books = groups.books[entry.id].orEmpty(),
+                      imageLoader = imageLoader,
+                      navController = navController,
+                      onToggle = { libraryViewModel.toggleGroup(entry) },
+                    )
+                  }
+
+                  is LibraryEntry.NarratorEntry -> {
+                    NarratorComposable(
+                      narrator = entry,
+                      expanded = entry.id in groups.expanded,
+                      loading = entry.id in groups.loading,
+                      books = groups.books[entry.id].orEmpty(),
+                      imageLoader = imageLoader,
+                      navController = navController,
+                      onToggle = { libraryViewModel.toggleGroup(entry) },
+                    )
+                  }
                 }
               }
             }
@@ -587,6 +617,7 @@ fun LibraryScreen(
       onItemSelected = {
         settingsViewModel.preferLibrary(it)
         currentLibraryId = settingsViewModel.fetchPreferredLibraryId()
+        libraryViewModel.resetGroupExpansion()
         refreshContent(false)
 
         playerViewModel.updatePlayingItem()

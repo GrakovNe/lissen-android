@@ -333,6 +333,88 @@ class LocalCacheRepositoryTest {
       }
 
     @Test
+    fun `genre grouping delegates to the genres query`() =
+      runBlocking {
+        val entries = listOf<LibraryEntry>(LibraryEntry.GenreEntry("Fantasy", "Fantasy", 3))
+        coEvery { cachedLibraryRepository.fetchLibraryType("lib") } returns LibraryType.LIBRARY
+        coEvery {
+          cachedBookRepository.fetchGenresGrouped(
+            libraryId = "lib",
+            pageSize = 10,
+            pageNumber = 0,
+            libraryType = LibraryType.LIBRARY,
+          )
+        } returns
+          org.grakovne.lissen.domain
+            .PagedItems(entries, currentPage = 0, totalItems = 1)
+
+        val result =
+          repository.fetchLibrary(
+            libraryId = "lib",
+            pageSize = 10,
+            pageNumber = 0,
+            libraryGrouping = LibraryGrouping.GENRE,
+          ) as OperationResult.Success
+
+        assertEquals(entries, result.data.items)
+      }
+
+    @Test
+    fun `narrator grouping delegates to the narrators query`() =
+      runBlocking {
+        val entries = listOf<LibraryEntry>(LibraryEntry.NarratorEntry("Jim Dale", "Jim Dale", 3))
+        coEvery { cachedLibraryRepository.fetchLibraryType("lib") } returns LibraryType.LIBRARY
+        coEvery {
+          cachedBookRepository.fetchNarratorsGrouped(
+            libraryId = "lib",
+            pageSize = 10,
+            pageNumber = 0,
+            libraryType = LibraryType.LIBRARY,
+          )
+        } returns
+          org.grakovne.lissen.domain
+            .PagedItems(entries, currentPage = 0, totalItems = 1)
+
+        val result =
+          repository.fetchLibrary(
+            libraryId = "lib",
+            pageSize = 10,
+            pageNumber = 0,
+            libraryGrouping = LibraryGrouping.NARRATOR,
+          ) as OperationResult.Success
+
+        assertEquals(entries, result.data.items)
+      }
+
+    @Test
+    fun `genre and narrator groupings list a podcast library ungrouped`() =
+      runBlocking {
+        coEvery { cachedLibraryRepository.fetchLibraryType("lib") } returns LibraryType.PODCAST
+        coEvery {
+          cachedBookRepository.fetchBooks(
+            pageNumber = 0,
+            pageSize = 10,
+            libraryId = "lib",
+            libraryType = LibraryType.PODCAST,
+          )
+        } returns
+          listOf(book("p1"))
+        coEvery { cachedBookRepository.countBooks("lib", LibraryType.PODCAST) } returns 1
+
+        listOf(LibraryGrouping.GENRE, LibraryGrouping.NARRATOR).forEach { grouping ->
+          val result =
+            repository.fetchLibrary(
+              libraryId = "lib",
+              pageSize = 10,
+              pageNumber = 0,
+              libraryGrouping = grouping,
+            ) as OperationResult.Success
+
+          assertEquals(listOf(LibraryEntry.BookEntry(book("p1"))), result.data.items)
+        }
+      }
+
+    @Test
     fun `series items receive the resolved library type`() =
       runBlocking {
         coEvery { cachedLibraryRepository.fetchLibraryType("lib") } returns LibraryType.PODCAST
@@ -354,6 +436,21 @@ class LocalCacheRepositoryTest {
         val result = repository.fetchAuthorItems("lib", "a1") as OperationResult.Success
 
         assertEquals(listOf(book("b1")), result.data)
+      }
+
+    @Test
+    fun `genre and narrator items receive the resolved library type`() =
+      runBlocking {
+        coEvery { cachedLibraryRepository.fetchLibraryType("lib") } returns LibraryType.LIBRARY
+        coEvery { cachedBookRepository.fetchGenreItems(libraryId = "lib", genre = "Fantasy", libraryType = LibraryType.LIBRARY) } returns
+          listOf(book("b1"))
+        coEvery {
+          cachedBookRepository.fetchNarratorItems(libraryId = "lib", narrator = "Jim Dale", libraryType = LibraryType.LIBRARY)
+        } returns
+          listOf(book("b2"))
+
+        assertEquals(listOf(book("b1")), (repository.fetchGenreItems("lib", "Fantasy") as OperationResult.Success).data)
+        assertEquals(listOf(book("b2")), (repository.fetchNarratorItems("lib", "Jim Dale") as OperationResult.Success).data)
       }
   }
 

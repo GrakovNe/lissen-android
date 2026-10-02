@@ -16,8 +16,10 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarksResp
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryAuthorsResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryListResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryNarratorsResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryPageResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryStatsResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LocalSessionSyncResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.OfflineSessionRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.PlaybackSessionResponseConverter
@@ -60,6 +62,8 @@ class LibraryAudiobookshelfChannel
     private val libraryFilteringRequestConverter: LibraryFilteringRequestConverter,
     private val libraryPageResponseConverter: LibraryPageResponseConverter,
     private val libraryAuthorsResponseConverter: LibraryAuthorsResponseConverter,
+    private val libraryStatsResponseConverter: LibraryStatsResponseConverter,
+    private val libraryNarratorsResponseConverter: LibraryNarratorsResponseConverter,
     private val bookResponseConverter: BookResponseConverter,
     private val librarySearchItemsConverter: LibrarySearchItemsConverter,
   ) : AudiobookshelfChannel(
@@ -127,6 +131,18 @@ class LibraryAudiobookshelfChannel
             ).map { libraryAuthorsResponseConverter.apply(it) }
         }
 
+        LibraryGrouping.GENRE -> {
+          dataRepository
+            .fetchLibraryStats(libraryId)
+            .map { libraryStatsResponseConverter.apply(it, pageSize, pageNumber) }
+        }
+
+        LibraryGrouping.NARRATOR -> {
+          dataRepository
+            .fetchLibraryNarrators(libraryId)
+            .map { libraryNarratorsResponseConverter.apply(it, pageSize, pageNumber) }
+        }
+
         else -> {
           val (option, direction) = libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering())
           val filter = libraryFilteringRequestConverter.apply(preferences)
@@ -172,6 +188,49 @@ class LibraryAudiobookshelfChannel
             else -> fetchAllSeriesItems(libraryId, seriesId, page + 1, books)
           }
         }
+
+    override suspend fun fetchGenreBooks(
+      libraryId: String,
+      genre: String,
+    ): OperationResult<List<Book>> =
+      concurrentFetchSemaphore.withPermit {
+        fetchAllGroupBooks(libraryId = libraryId, groupFilter = encodeLibraryFilter("genres", genre))
+      }
+
+    override suspend fun fetchNarratorBooks(
+      libraryId: String,
+      narrator: String,
+    ): OperationResult<List<Book>> =
+      concurrentFetchSemaphore.withPermit {
+        fetchAllGroupBooks(libraryId = libraryId, groupFilter = encodeLibraryFilter("narrators", narrator))
+      }
+
+    // the only filter abs accepts is taken by the group, so hide completed does not reach these books
+    private suspend fun fetchAllGroupBooks(
+      libraryId: String,
+      groupFilter: String,
+      page: Int = 0,
+      acc: List<Book> = emptyList(),
+    ): OperationResult<List<Book>> {
+      val (option, direction) = libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering())
+
+      return dataRepository
+        .fetchLibraryItems(
+          libraryId = libraryId,
+          pageSize = GROUP_BOOKS_PAGE_SIZE,
+          pageNumber = page,
+          sort = option,
+          direction = direction,
+          filter = groupFilter,
+        ).flatMap { response ->
+          val books = acc + libraryPageResponseConverter.apply(response).items
+
+          when {
+            response.results.isEmpty() || books.size >= response.total -> Success(books)
+            else -> fetchAllGroupBooks(libraryId, groupFilter, page + 1, books)
+          }
+        }
+    }
 
     override suspend fun fetchAuthorBooks(
       libraryId: String,
@@ -313,6 +372,7 @@ class LibraryAudiobookshelfChannel
 
     companion object {
       private const val SERIES_PAGE_SIZE = 20
+      private const val GROUP_BOOKS_PAGE_SIZE = 20
       private const val MAX_CONCURRENT_FETCH = 3
     }
   }

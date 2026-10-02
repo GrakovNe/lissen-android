@@ -463,3 +463,21 @@ val MIGRATION_23_24 =
       db.execSQL("UPDATE offline_playback_session SET libraryType = 'LIBRARY' WHERE libraryType = 'UNKNOWN'")
     }
   }
+
+// no backfill: books cached before this version have no genres until they are cached again
+val MIGRATION_24_25 =
+  object : Migration(24, 25) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+      db.execSQL(
+        """
+        CREATE TABLE IF NOT EXISTS book_genres (
+            bookId TEXT NOT NULL,
+            genre TEXT NOT NULL,
+            PRIMARY KEY(bookId, genre),
+            FOREIGN KEY(bookId) REFERENCES detailed_books(id) ON UPDATE NO ACTION ON DELETE CASCADE
+        )
+        """.trimIndent(),
+      )
+      db.execSQL("CREATE INDEX IF NOT EXISTS index_book_genres_genre ON book_genres (genre)")
+    }
+  }

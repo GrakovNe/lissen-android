@@ -16,8 +16,10 @@ import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.CollectionsBookmark
+import androidx.compose.material.icons.outlined.MicNone
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.SortByAlpha
+import androidx.compose.material.icons.outlined.TheaterComedy
 import androidx.compose.material.icons.outlined.Update
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material.icons.outlined.Workspaces
@@ -138,8 +140,8 @@ fun QuickSettingsComposable(
         }
       }
 
-      // when grouped by author the library is always sorted by author, so there is nothing to pick
-      if (isLibrary.not() || grouping != LibraryGrouping.AUTHOR) {
+      // these groups are always listed by name; the books inside one keep the last picked sorting
+      if (isLibrary.not() || grouping !in NAME_SORTED_GROUPINGS) {
         SettingsPickerRow(
           label = stringResource(R.string.library_quick_settings_sort_title),
           icon = Icons.AutoMirrored.Outlined.Sort,
@@ -183,6 +185,8 @@ fun QuickSettingsComposable(
   }
 }
 
+private val NAME_SORTED_GROUPINGS = setOf(LibraryGrouping.AUTHOR, LibraryGrouping.GENRE, LibraryGrouping.NARRATOR)
+
 private fun LibraryOrderingOption.icon(): ImageVector =
   when (this) {
     LibraryOrderingOption.TITLE -> Icons.Outlined.SortByAlpha
@@ -204,6 +208,8 @@ private fun LibraryGrouping.icon(): ImageVector =
     LibraryGrouping.NONE -> Icons.AutoMirrored.Outlined.List
     LibraryGrouping.SERIES -> Icons.Outlined.CollectionsBookmark
     LibraryGrouping.AUTHOR -> Icons.Outlined.Person
+    LibraryGrouping.GENRE -> Icons.Outlined.TheaterComedy
+    LibraryGrouping.NARRATOR -> Icons.Outlined.MicNone
   }
 
 private fun LibraryGrouping.toLocalizedName(context: Context): String =
@@ -211,4 +217,6 @@ private fun LibraryGrouping.toLocalizedName(context: Context): String =
     LibraryGrouping.NONE -> context.getString(R.string.library_grouping_disabled)
     LibraryGrouping.SERIES -> context.getString(R.string.library_grouping_series)
     LibraryGrouping.AUTHOR -> context.getString(R.string.library_grouping_author)
+    LibraryGrouping.GENRE -> context.getString(R.string.library_grouping_genre)
+    LibraryGrouping.NARRATOR -> context.getString(R.string.library_grouping_narrator)
   }

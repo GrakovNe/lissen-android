@@ -37,6 +37,7 @@ class CachedBookEntityDetailedConverter
             ?.map { BookAuthor(id = it.id, name = it.name) }
             ?: emptyList(),
         narrator = entity.detailedBook.narrator,
+        genres = entity.genres,
         libraryId = entity.detailedBook.libraryId,
         libraryType = libraryType,
         localProvided = true,

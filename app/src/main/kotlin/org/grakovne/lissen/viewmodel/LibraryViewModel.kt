@@ -159,6 +159,8 @@ class LibraryViewModel
       when (this) {
         is LibraryEntry.SeriesEntry -> id
         is LibraryEntry.AuthorEntry -> id
+        is LibraryEntry.GenreEntry -> id
+        is LibraryEntry.NarratorEntry -> id
         is LibraryEntry.BookEntry -> null
       }
 
@@ -177,6 +179,8 @@ class LibraryViewModel
         when (entry) {
           is LibraryEntry.SeriesEntry -> mediaChannel.fetchSeriesItems(libraryId = libraryId, seriesId = entry.id)
           is LibraryEntry.AuthorEntry -> mediaChannel.fetchAuthorBooks(libraryId = libraryId, authorId = entry.id)
+          is LibraryEntry.GenreEntry -> mediaChannel.fetchGenreBooks(libraryId = libraryId, genre = entry.name)
+          is LibraryEntry.NarratorEntry -> mediaChannel.fetchNarratorBooks(libraryId = libraryId, narrator = entry.name)
           is LibraryEntry.BookEntry -> null
         }
 

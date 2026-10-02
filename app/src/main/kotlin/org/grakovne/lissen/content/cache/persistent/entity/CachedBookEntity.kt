@@ -29,6 +29,13 @@ data class CachedBookEntity(
     entityColumn = "bookId",
   )
   val progress: MediaProgressEntity?,
+  @Relation(
+    parentColumn = "id",
+    entityColumn = "bookId",
+    entity = BookGenreEntity::class,
+    projection = ["genre"],
+  )
+  val genres: List<String>,
 )
 
 @Keep
@@ -110,6 +117,25 @@ data class BookChapterEntity(
   val episode: String? = null,
   val fileName: String? = null,
 ) : Serializable
+
+@Keep
+@Entity(
+  tableName = "book_genres",
+  primaryKeys = ["bookId", "genre"],
+  foreignKeys = [
+    ForeignKey(
+      entity = BookEntity::class,
+      parentColumns = ["id"],
+      childColumns = ["bookId"],
+      onDelete = ForeignKey.CASCADE,
+    ),
+  ],
+  indices = [Index(value = ["genre"])],
+)
+data class BookGenreEntity(
+  val bookId: String,
+  val genre: String,
+)
 
 @Keep
 @Entity(

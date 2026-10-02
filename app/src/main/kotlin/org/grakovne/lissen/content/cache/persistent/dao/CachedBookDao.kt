@@ -12,15 +12,16 @@ import androidx.sqlite.db.SupportSQLiteQuery
 import com.squareup.moshi.Types
 import kotlinx.coroutines.flow.Flow
 import org.grakovne.lissen.common.moshi
-import org.grakovne.lissen.content.cache.persistent.entity.AuthorEntry
 import org.grakovne.lissen.content.cache.persistent.entity.BookAuthorDto
 import org.grakovne.lissen.content.cache.persistent.entity.BookChapterEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookFileEntity
+import org.grakovne.lissen.content.cache.persistent.entity.BookGenreEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookSeriesDto
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.GroupedEntry
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
+import org.grakovne.lissen.content.cache.persistent.entity.NameGroupEntry
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PlayingChapter
 
@@ -121,6 +122,12 @@ interface CachedBookDao {
           )
         }
 
+    val bookGenres =
+      book
+        .genres
+        .distinct()
+        .map { BookGenreEntity(bookId = book.id, genre = it) }
+
     val mediaProgress =
       book
         .progress
@@ -138,6 +145,8 @@ interface CachedBookDao {
     upsertBookFiles(bookFiles)
     deleteBookChapters(book.id)
     upsertBookChapters(bookChapters)
+    deleteBookGenres(book.id)
+    upsertBookGenres(bookGenres)
     mediaProgress?.let { upsertMediaProgress(it) }
   }
 
@@ -149,7 +158,7 @@ interface CachedBookDao {
   suspend fun fetchGroupedEntries(query: SupportSQLiteQuery): List<GroupedEntry>
 
   @RawQuery
-  suspend fun fetchAuthorEntries(query: SupportSQLiteQuery): List<AuthorEntry>
+  suspend fun fetchNameGroupEntries(query: SupportSQLiteQuery): List<NameGroupEntry>
 
   @RawQuery
   suspend fun countRaw(query: SupportSQLiteQuery): Int
@@ -261,6 +270,12 @@ interface CachedBookDao {
 
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   suspend fun upsertBookChapters(chapters: List<BookChapterEntity>)
+
+  @Query("DELETE FROM book_genres WHERE bookId = :bookId")
+  suspend fun deleteBookGenres(bookId: String)
+
+  @Insert(onConflict = OnConflictStrategy.REPLACE)
+  suspend fun upsertBookGenres(genres: List<BookGenreEntity>)
 
   @Insert(onConflict = OnConflictStrategy.REPLACE)
   suspend fun upsertMediaProgress(progress: MediaProgressEntity)

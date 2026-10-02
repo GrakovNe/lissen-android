@@ -42,7 +42,15 @@ class CachedBookEntityDetailedConverterTest {
     files: List<BookFileEntity> = emptyList(),
     chapters: List<BookChapterEntity> = emptyList(),
     progress: MediaProgressEntity? = null,
-  ) = CachedBookEntity(detailedBook = bookEntity, files = files, chapters = chapters, progress = progress)
+    genres: List<String> = emptyList(),
+  ) = CachedBookEntity(detailedBook = bookEntity, files = files, chapters = chapters, progress = progress, genres = genres)
+
+  @Test
+  fun `maps genres`() {
+    val result = converter.apply(entity(genres = listOf("Fantasy", "History")), LibraryType.LIBRARY)
+
+    assertEquals(listOf("Fantasy", "History"), result.genres)
+  }
 
   @Test
   fun `maps basic fields and marks the item as locally provided`() {

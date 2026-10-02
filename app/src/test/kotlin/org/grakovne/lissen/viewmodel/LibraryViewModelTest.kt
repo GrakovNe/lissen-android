@@ -265,6 +265,36 @@ class LibraryViewModelTest {
     }
 
     @Test
+    fun `toggleGroup expands a genre and loads via fetchGenreBooks`() {
+      every { preferences.getPreferredLibrary() } returns library
+      coEvery { mediaChannel.fetchGenreBooks("lib-1", "Fantasy") } returns OperationResult.Success(listOf(book("b1")))
+
+      viewModel.toggleGroup(LibraryEntry.GenreEntry(id = "Fantasy", name = "Fantasy", bookCount = 1))
+
+      assertTrue("Fantasy" in viewModel.groups.value.expanded)
+      assertEquals(
+        listOf("b1"),
+        viewModel.groups.value.books["Fantasy"]
+          ?.map { it.id },
+      )
+    }
+
+    @Test
+    fun `toggleGroup expands a narrator and loads via fetchNarratorBooks`() {
+      every { preferences.getPreferredLibrary() } returns library
+      coEvery { mediaChannel.fetchNarratorBooks("lib-1", "Jim Dale") } returns OperationResult.Success(listOf(book("b1")))
+
+      viewModel.toggleGroup(LibraryEntry.NarratorEntry(id = "Jim Dale", name = "Jim Dale", bookCount = 1))
+
+      assertTrue("Jim Dale" in viewModel.groups.value.expanded)
+      assertEquals(
+        listOf("b1"),
+        viewModel.groups.value.books["Jim Dale"]
+          ?.map { it.id },
+      )
+    }
+
+    @Test
     fun `toggleGroup expands and loads the series books`() {
       every { preferences.getPreferredLibrary() } returns library
       coEvery { mediaChannel.fetchSeriesItems("lib-1", "ser-1") } returns

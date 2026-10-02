@@ -628,6 +628,66 @@ class LissenMediaProviderTest {
   }
 
   @Nested
+  inner class FetchGenreBooks {
+    @Test
+    fun `uses local cache without calling channel when force cache enabled`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns true
+        coEvery {
+          localCacheRepository.fetchGenreItems(libraryId = "l1", genre = "Fantasy")
+        } returns OperationResult.Success(emptyList())
+
+        provider.fetchGenreBooks("l1", "Fantasy")
+
+        coVerify { localCacheRepository.fetchGenreItems("l1", "Fantasy") }
+        coVerify(exactly = 0) { mediaChannel.fetchGenreBooks(any(), any()) }
+      }
+
+    @Test
+    fun `uses channel when force cache disabled`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns false
+        coEvery {
+          mediaChannel.fetchGenreBooks(libraryId = "l1", genre = "Fantasy")
+        } returns OperationResult.Success(emptyList())
+
+        provider.fetchGenreBooks("l1", "Fantasy")
+
+        coVerify { mediaChannel.fetchGenreBooks("l1", "Fantasy") }
+      }
+  }
+
+  @Nested
+  inner class FetchNarratorBooks {
+    @Test
+    fun `uses local cache without calling channel when force cache enabled`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns true
+        coEvery {
+          localCacheRepository.fetchNarratorItems(libraryId = "l1", narrator = "Jim Dale")
+        } returns OperationResult.Success(emptyList())
+
+        provider.fetchNarratorBooks("l1", "Jim Dale")
+
+        coVerify { localCacheRepository.fetchNarratorItems("l1", "Jim Dale") }
+        coVerify(exactly = 0) { mediaChannel.fetchNarratorBooks(any(), any()) }
+      }
+
+    @Test
+    fun `uses channel when force cache disabled`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns false
+        coEvery {
+          mediaChannel.fetchNarratorBooks(libraryId = "l1", narrator = "Jim Dale")
+        } returns OperationResult.Success(emptyList())
+
+        provider.fetchNarratorBooks("l1", "Jim Dale")
+
+        coVerify { mediaChannel.fetchNarratorBooks("l1", "Jim Dale") }
+      }
+  }
+
+  @Nested
   inner class FetchCovers {
     @Test
     fun `book cover comes from local cache without cover provider when force cache enabled`() =

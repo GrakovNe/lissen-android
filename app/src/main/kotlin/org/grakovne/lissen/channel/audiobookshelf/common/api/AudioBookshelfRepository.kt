@@ -30,7 +30,9 @@ import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryAuthorsRe
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsBatchRequest
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsBatchResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsResponse
+import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryNarratorsResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibrarySearchResponse
+import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryStatsResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastSearchResponse
@@ -140,6 +142,12 @@ class AudioBookshelfRepository
           desc = "0",
         )
       }
+
+    suspend fun fetchLibraryStats(libraryId: String): OperationResult<LibraryStatsResponse> =
+      audioBookShelfApiService.makeRequest { it.fetchLibraryStats(libraryId = libraryId) }
+
+    suspend fun fetchLibraryNarrators(libraryId: String): OperationResult<LibraryNarratorsResponse> =
+      audioBookShelfApiService.makeRequest { it.fetchLibraryNarrators(libraryId = libraryId) }
 
     suspend fun fetchAuthorImage(
       authorId: String,

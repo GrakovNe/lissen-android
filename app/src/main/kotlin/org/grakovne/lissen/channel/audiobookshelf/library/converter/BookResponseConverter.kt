@@ -77,6 +77,7 @@ class BookResponseConverter
         narrator =
           item.media.metadata.narrators
             ?.joinToString(separator = ", "),
+        genres = item.media.metadata.genres ?: emptyList(),
         files =
           item
             .media

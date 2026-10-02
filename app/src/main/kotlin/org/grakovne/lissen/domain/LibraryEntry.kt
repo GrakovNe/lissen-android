@@ -24,7 +24,31 @@ sealed interface LibraryEntry {
     val name: String,
     val bookCount: Int,
   ) : LibraryEntry
+
+  @Keep
+  data class GenreEntry(
+    val id: String,
+    val name: String,
+    val bookCount: Int,
+  ) : LibraryEntry
+
+  @Keep
+  data class NarratorEntry(
+    val id: String,
+    val name: String,
+    val bookCount: Int,
+  ) : LibraryEntry
 }
+
+fun List<LibraryEntry>.page(
+  pageSize: Int,
+  pageNumber: Int,
+): PagedItems<LibraryEntry> =
+  PagedItems(
+    items = drop(pageSize * pageNumber).take(pageSize),
+    currentPage = pageNumber,
+    totalItems = size,
+  )
 
 fun PagedItems<Book>.asLibraryEntries(): PagedItems<LibraryEntry> =
   PagedItems(

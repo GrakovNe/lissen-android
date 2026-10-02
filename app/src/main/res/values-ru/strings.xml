@@ -103,6 +103,8 @@
     <string name="library_grouping_disabled">Отключено</string>
     <string name="library_grouping_series">По сериям</string>
     <string name="library_grouping_author">По авторам</string>
+    <string name="library_grouping_genre">По жанрам</string>
+    <string name="library_grouping_narrator">По чтецам</string>
     <string name="timer_option_disabled">Выключен</string>
     <string name="timer_option_disable_timer">Отключить таймер</string>
     <string name="timer_title">Таймер</string>

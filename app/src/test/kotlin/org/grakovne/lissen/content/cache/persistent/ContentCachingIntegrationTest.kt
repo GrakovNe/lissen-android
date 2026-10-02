@@ -27,8 +27,10 @@ import org.grakovne.lissen.channel.audiobookshelf.common.converter.BookmarksResp
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.ConnectionInfoResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryAuthorsResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryListResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryNarratorsResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryPageResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryStatsResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LocalSessionSyncResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LoginResponseConverter
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.OfflineSessionRequestConverter
@@ -182,6 +184,8 @@ class ContentCachingIntegrationTest {
         libraryFilteringRequestConverter = LibraryFilteringRequestConverter(),
         libraryPageResponseConverter = LibraryPageResponseConverter(),
         libraryAuthorsResponseConverter = LibraryAuthorsResponseConverter(),
+        libraryStatsResponseConverter = LibraryStatsResponseConverter(),
+        libraryNarratorsResponseConverter = LibraryNarratorsResponseConverter(),
         bookResponseConverter = BookResponseConverter(),
         librarySearchItemsConverter = LibrarySearchItemsConverter(),
       )

@@ -2,10 +2,13 @@ package org.grakovne.lissen.channel.audiobookshelf.library
 
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import org.grakovne.lissen.channel.audiobookshelf.common.api.AudioBookshelfRepository
 import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryListResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.common.converter.LibraryPageResponseConverter
+import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibraryOrderingRequestConverter
 import org.grakovne.lissen.channel.audiobookshelf.library.converter.LibrarySearchItemsConverter
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItem
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsResponse
@@ -13,19 +16,25 @@ import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryMetadata
 import org.grakovne.lissen.channel.audiobookshelf.library.model.Media
 import org.grakovne.lissen.channel.common.OperationError
 import org.grakovne.lissen.channel.common.OperationResult
+import org.grakovne.lissen.common.LibraryOrderingConfiguration
+import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Test
 
 class LibraryAudiobookshelfChannelTest {
   private val repository = mockk<AudioBookshelfRepository>()
+  private val preferences =
+    mockk<LibraryPreferences>(relaxed = true) {
+      every { getLibraryOrdering() } returns LibraryOrderingConfiguration.default
+    }
 
   private val channel =
     LibraryAudiobookshelfChannel(
       hostProvider = mockk(relaxed = true),
       repository = repository,
       recentListeningResponseConverter = mockk(relaxed = true),
-      preferences = mockk(relaxed = true),
+      preferences = preferences,
       syncService = mockk(relaxed = true),
       sessionResponseConverter = mockk(relaxed = true),
       libraryResponseConverter = mockk(relaxed = true),
@@ -34,10 +43,12 @@ class LibraryAudiobookshelfChannelTest {
       bookmarkItemResponseConverter = mockk(relaxed = true),
       offlineSessionRequestConverter = mockk(relaxed = true),
       localSessionSyncResponseConverter = mockk(relaxed = true),
-      libraryOrderingRequestConverter = mockk(relaxed = true),
+      libraryOrderingRequestConverter = LibraryOrderingRequestConverter(),
       libraryFilteringRequestConverter = mockk(relaxed = true),
-      libraryPageResponseConverter = mockk(relaxed = true),
+      libraryPageResponseConverter = LibraryPageResponseConverter(),
       libraryAuthorsResponseConverter = mockk(relaxed = true),
+      libraryStatsResponseConverter = mockk(relaxed = true),
+      libraryNarratorsResponseConverter = mockk(relaxed = true),
       bookResponseConverter = mockk(relaxed = true),
       librarySearchItemsConverter = LibrarySearchItemsConverter(),
       libraryListResponseConverter = LibraryListResponseConverter(),
@@ -96,6 +107,30 @@ class LibraryAudiobookshelfChannelTest {
       assertInstanceOf(OperationResult.Error::class.java, result)
       assertEquals(OperationError.NetworkError, (result as OperationResult.Error).code)
       coVerify(exactly = 0) { repository.fetchSeriesItems(LIBRARY, SERIES, any(), 2) }
+    }
+
+  @Test
+  fun `fetchGenreBooks filters by the base64 genre and collects every page`() =
+    runBlocking {
+      val filter = "genres.0JTQtdGC0LXQutGC0LjQsg==" // Детектив
+      coEvery { repository.fetchLibraryItems(LIBRARY, 20, 0, any(), any(), filter) } returns page((1..20).map { "b$it" }, total = 24)
+      coEvery { repository.fetchLibraryItems(LIBRARY, 20, 1, any(), any(), filter) } returns page((21..24).map { "b$it" }, total = 24)
+
+      val result = channel.fetchGenreBooks(LIBRARY, "Детектив") as OperationResult.Success
+
+      assertEquals((1..24).map { "b$it" }, result.data.map { it.id })
+      coVerify(exactly = 0) { repository.fetchLibraryItems(LIBRARY, any(), 2, any(), any(), any()) }
+    }
+
+  @Test
+  fun `fetchNarratorBooks filters by the base64 narrator`() =
+    runBlocking {
+      val filter = "narrators.U3RlcGhlbiBGcnk=" // Stephen Fry
+      coEvery { repository.fetchLibraryItems(LIBRARY, any(), 0, any(), any(), filter) } returns page(listOf("b1"), total = 1)
+
+      val result = channel.fetchNarratorBooks(LIBRARY, "Stephen Fry") as OperationResult.Success
+
+      assertEquals(listOf("b1"), result.data.map { it.id })
     }
 
   private fun page(
