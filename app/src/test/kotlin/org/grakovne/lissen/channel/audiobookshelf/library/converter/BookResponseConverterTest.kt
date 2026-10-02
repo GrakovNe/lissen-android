@@ -26,6 +26,7 @@ class BookResponseConverterTest {
     title: String = "My Book",
     authors: List<LibraryAuthorResponse>? = null,
     narrators: List<String>? = null,
+    genres: List<String>? = null,
     series: List<LibrarySeriesResponse>? = null,
     chapters: List<LibraryChapterResponse>? = null,
     audioFiles: List<BookAudioFileResponse>? = null,
@@ -43,6 +44,7 @@ class BookResponseConverterTest {
             subtitle = null,
             authors = authors,
             narrators = narrators,
+            genres = genres,
             series = series,
             description = null,
             publisher = null,
@@ -206,6 +208,12 @@ class BookResponseConverterTest {
     fun `multiple narrators joined with comma`() {
       val item = converter.apply(bookResponse(narrators = listOf("Narrator 1", "Narrator 2")))
       assertEquals("Narrator 1, Narrator 2", item.narrator)
+    }
+
+    @Test
+    fun `genres are kept as a list and default to empty`() {
+      assertEquals(listOf("Fantasy", "History"), converter.apply(bookResponse(genres = listOf("Fantasy", "History"))).genres)
+      assertEquals(emptyList<String>(), converter.apply(bookResponse(genres = null)).genres)
     }
 
     @Test

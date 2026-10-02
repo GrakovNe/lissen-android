@@ -27,12 +27,12 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.user.Personalized
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.UserResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.BookResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryAuthorsResponse
-import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryGenresResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsBatchRequest
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsBatchResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryNarratorsResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibrarySearchResponse
+import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryStatsResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastSearchResponse
@@ -143,8 +143,8 @@ class AudioBookshelfRepository
         )
       }
 
-    suspend fun fetchLibraryGenres(libraryId: String): OperationResult<LibraryGenresResponse> =
-      audioBookShelfApiService.makeRequest { it.fetchLibraryGenres(libraryId = libraryId) }
+    suspend fun fetchLibraryStats(libraryId: String): OperationResult<LibraryStatsResponse> =
+      audioBookShelfApiService.makeRequest { it.fetchLibraryStats(libraryId = libraryId) }
 
     suspend fun fetchLibraryNarrators(libraryId: String): OperationResult<LibraryNarratorsResponse> =
       audioBookShelfApiService.makeRequest { it.fetchLibraryNarrators(libraryId = libraryId) }

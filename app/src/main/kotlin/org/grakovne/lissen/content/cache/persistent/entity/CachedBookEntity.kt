@@ -35,7 +35,7 @@ data class CachedBookEntity(
     entity = BookGenreEntity::class,
     projection = ["genre"],
   )
-  val genres: List<String> = emptyList(),
+  val genres: List<String>,
 )
 
 @Keep
@@ -118,7 +118,6 @@ data class BookChapterEntity(
   val fileName: String? = null,
 ) : Serializable
 
-// a book can have several genres, so they live apart from detailed_books to be grouped on in sql
 @Keep
 @Entity(
   tableName = "book_genres",
@@ -133,11 +132,10 @@ data class BookChapterEntity(
   ],
   indices = [Index(value = ["genre"])],
 )
-@JsonClass(generateAdapter = true)
 data class BookGenreEntity(
   val bookId: String,
   val genre: String,
-) : Serializable
+)
 
 @Keep
 @Entity(

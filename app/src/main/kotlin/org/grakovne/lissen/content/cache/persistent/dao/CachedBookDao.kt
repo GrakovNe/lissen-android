@@ -19,9 +19,9 @@ import org.grakovne.lissen.content.cache.persistent.entity.BookFileEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookGenreEntity
 import org.grakovne.lissen.content.cache.persistent.entity.BookSeriesDto
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
-import org.grakovne.lissen.content.cache.persistent.entity.CategoryEntry
 import org.grakovne.lissen.content.cache.persistent.entity.GroupedEntry
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
+import org.grakovne.lissen.content.cache.persistent.entity.NameGroupEntry
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PlayingChapter
 
@@ -158,7 +158,7 @@ interface CachedBookDao {
   suspend fun fetchGroupedEntries(query: SupportSQLiteQuery): List<GroupedEntry>
 
   @RawQuery
-  suspend fun fetchCategoryEntries(query: SupportSQLiteQuery): List<CategoryEntry>
+  suspend fun fetchNameGroupEntries(query: SupportSQLiteQuery): List<NameGroupEntry>
 
   @RawQuery
   suspend fun countRaw(query: SupportSQLiteQuery): Int

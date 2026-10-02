@@ -16,9 +16,9 @@ import org.grakovne.lissen.content.cache.persistent.converter.MediaProgressEntit
 import org.grakovne.lissen.content.cache.persistent.dao.CachedBookDao
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
-import org.grakovne.lissen.content.cache.persistent.entity.CategoryEntry
 import org.grakovne.lissen.content.cache.persistent.entity.GroupedEntry
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
+import org.grakovne.lissen.content.cache.persistent.entity.NameGroupEntry
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.Library
@@ -233,10 +233,10 @@ class CachedBookRepositoryTest {
   fun `maps author rows into paged author entries`() =
     runBlocking {
       coEvery { bookDao.countRaw(any()) } returns 2
-      coEvery { bookDao.fetchCategoryEntries(any()) } returns
+      coEvery { bookDao.fetchNameGroupEntries(any()) } returns
         listOf(
-          CategoryEntry(name = "Andy Weir", bookCount = 1),
-          CategoryEntry(name = "Frank Herbert", bookCount = 2),
+          NameGroupEntry(name = "Andy Weir", bookCount = 1),
+          NameGroupEntry(name = "Frank Herbert", bookCount = 2),
         )
 
       val page = repository.fetchAuthorsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = null)
@@ -250,6 +250,19 @@ class CachedBookRepositoryTest {
       val second = page.items[1] as LibraryEntry.AuthorEntry
       assertEquals("Frank Herbert", second.id)
       assertEquals(2, second.bookCount)
+    }
+
+  @Test
+  fun `maps genre and narrator rows into entries identified by name`() =
+    runBlocking {
+      coEvery { bookDao.countRaw(any()) } returns 1
+      coEvery { bookDao.fetchNameGroupEntries(any()) } returns listOf(NameGroupEntry(name = "Fantasy", bookCount = 3))
+
+      val genres = repository.fetchGenresGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = null)
+      assertEquals(listOf(LibraryEntry.GenreEntry(id = "Fantasy", name = "Fantasy", bookCount = 3)), genres.items)
+
+      val narrators = repository.fetchNarratorsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = null)
+      assertEquals(listOf(LibraryEntry.NarratorEntry(id = "Fantasy", name = "Fantasy", bookCount = 3)), narrators.items)
     }
 
   @Test
@@ -274,7 +287,7 @@ class CachedBookRepositoryTest {
       val page = repository.fetchAuthorsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = null)
       assertEquals(0, page.totalItems)
       assertTrue(page.items.isEmpty())
-      coVerify(exactly = 0) { bookDao.fetchCategoryEntries(any()) }
+      coVerify(exactly = 0) { bookDao.fetchNameGroupEntries(any()) }
     }
 
   @Test

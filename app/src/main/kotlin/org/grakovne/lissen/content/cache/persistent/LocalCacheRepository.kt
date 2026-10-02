@@ -138,8 +138,17 @@ class LocalCacheRepository
       pageSize: Int,
       pageNumber: Int,
       libraryGrouping: LibraryGrouping,
-    ): OperationResult<PagedItems<LibraryEntry>> =
-      when (libraryGrouping) {
+    ): OperationResult<PagedItems<LibraryEntry>> {
+      val libraryType = cachedLibraryRepository.fetchLibraryType(libraryId)
+
+      // the grouping is picked in a book library but kept for every library, and podcasts have neither genres nor narrators
+      val grouping =
+        when (libraryType) {
+          LibraryType.LIBRARY -> libraryGrouping
+          else -> libraryGrouping.takeUnless { it == LibraryGrouping.GENRE || it == LibraryGrouping.NARRATOR } ?: LibraryGrouping.NONE
+        }
+
+      return when (grouping) {
         LibraryGrouping.NONE -> {
           fetchBooks(libraryId = libraryId, pageSize = pageSize, pageNumber = pageNumber)
             .map { it.asLibraryEntries() }
@@ -151,7 +160,7 @@ class LocalCacheRepository
               libraryId = libraryId,
               pageSize = pageSize,
               pageNumber = pageNumber,
-              libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
+              libraryType = libraryType,
             ).let { OperationResult.Success(it) }
         }
 
@@ -161,7 +170,7 @@ class LocalCacheRepository
               libraryId = libraryId,
               pageSize = pageSize,
               pageNumber = pageNumber,
-              libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
+              libraryType = libraryType,
             ).let { OperationResult.Success(it) }
         }
 
@@ -171,7 +180,7 @@ class LocalCacheRepository
               libraryId = libraryId,
               pageSize = pageSize,
               pageNumber = pageNumber,
-              libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
+              libraryType = libraryType,
             ).let { OperationResult.Success(it) }
         }
 
@@ -181,10 +190,11 @@ class LocalCacheRepository
               libraryId = libraryId,
               pageSize = pageSize,
               pageNumber = pageNumber,
-              libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
+              libraryType = libraryType,
             ).let { OperationResult.Success(it) }
         }
       }
+    }
 
     suspend fun fetchSeriesItems(
       libraryId: String,

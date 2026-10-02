@@ -464,7 +464,7 @@ val MIGRATION_23_24 =
     }
   }
 
-// books downloaded before this version have no genres until another of their chapters is downloaded
+// no backfill: books cached before this version have no genres until they are cached again
 val MIGRATION_24_25 =
   object : Migration(24, 25) {
     override fun migrate(db: SupportSQLiteDatabase) {

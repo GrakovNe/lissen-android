@@ -140,7 +140,7 @@ fun QuickSettingsComposable(
         }
       }
 
-      // grouped by author, genre or narrator the library is always sorted by name, so there is nothing to pick
+      // these groups are always listed by name; the books inside one keep the last picked sorting
       if (isLibrary.not() || grouping !in NAME_SORTED_GROUPINGS) {
         SettingsPickerRow(
           label = stringResource(R.string.library_quick_settings_sort_title),

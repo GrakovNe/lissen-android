@@ -15,8 +15,8 @@ import org.grakovne.lissen.content.cache.persistent.converter.MediaProgressEntit
 import org.grakovne.lissen.content.cache.persistent.dao.CachedBookDao
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
-import org.grakovne.lissen.content.cache.persistent.entity.CategoryEntry
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
+import org.grakovne.lissen.content.cache.persistent.entity.NameGroupEntry
 import org.grakovne.lissen.content.ordering.ChapterOrdering
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.domain.DetailedItem
@@ -38,9 +38,10 @@ private const val FINISHED_POSITION_EPSILON = 1.0
 private fun firstOfJoined(column: String) =
   "TRIM(CASE WHEN instr($column, ',') > 0 THEN substr($column, 1, instr($column, ',') - 1) ELSE $column END)"
 
-private enum class CachedCategory(
-  val source: String,
-  val key: String,
+// a grouping whose groups are told apart by a name computed from the cached book rather than by a server id
+private enum class NameGrouping(
+  val fromClause: String,
+  val nameExpression: String,
 ) {
   AUTHOR("detailed_books", firstOfJoined("author")),
   NARRATOR("detailed_books", firstOfJoined("narrator")),
@@ -159,7 +160,7 @@ class CachedBookRepository
         .hideCompleted(preferences.getHideCompleted())
 
     private fun hideCompletedClauses(libraryType: LibraryType?): Pair<String, String> =
-      hideCompletedSql(hideCompletedApplies(preferences.getHideCompleted(), libraryType), "id")
+      hideCompletedSql(hideCompletedApplies(preferences.getHideCompleted(), libraryType), "detailed_books.id")
 
     suspend fun fetchLibraryGrouped(
       libraryId: String,
@@ -285,7 +286,7 @@ class CachedBookRepository
       pageNumber: Int,
       libraryType: LibraryType?,
     ): PagedItems<LibraryEntry> =
-      fetchCategoriesGrouped(CachedCategory.AUTHOR, libraryId, pageSize, pageNumber, libraryType) {
+      fetchNameGroups(NameGrouping.AUTHOR, libraryId, pageSize, pageNumber, libraryType) {
         LibraryEntry.AuthorEntry(id = it.name, name = it.name, bookCount = it.bookCount)
       }
 
@@ -295,8 +296,8 @@ class CachedBookRepository
       pageNumber: Int,
       libraryType: LibraryType?,
     ): PagedItems<LibraryEntry> =
-      fetchCategoriesGrouped(CachedCategory.NARRATOR, libraryId, pageSize, pageNumber, libraryType) {
-        LibraryEntry.NarratorEntry(name = it.name, bookCount = it.bookCount)
+      fetchNameGroups(NameGrouping.NARRATOR, libraryId, pageSize, pageNumber, libraryType) {
+        LibraryEntry.NarratorEntry(id = it.name, name = it.name, bookCount = it.bookCount)
       }
 
     suspend fun fetchGenresGrouped(
@@ -305,37 +306,37 @@ class CachedBookRepository
       pageNumber: Int,
       libraryType: LibraryType?,
     ): PagedItems<LibraryEntry> =
-      fetchCategoriesGrouped(CachedCategory.GENRE, libraryId, pageSize, pageNumber, libraryType) {
-        LibraryEntry.GenreEntry(name = it.name, bookCount = it.bookCount)
+      fetchNameGroups(NameGrouping.GENRE, libraryId, pageSize, pageNumber, libraryType) {
+        LibraryEntry.GenreEntry(id = it.name, name = it.name, bookCount = it.bookCount)
       }
 
     suspend fun fetchAuthorItems(
       libraryId: String,
       authorId: String,
       libraryType: LibraryType?,
-    ): List<Book> = fetchCategoryItems(CachedCategory.AUTHOR, libraryId, authorId, libraryType)
+    ): List<Book> = fetchNameGroupItems(NameGrouping.AUTHOR, libraryId, authorId, libraryType)
 
     suspend fun fetchNarratorItems(
       libraryId: String,
       narrator: String,
       libraryType: LibraryType?,
-    ): List<Book> = fetchCategoryItems(CachedCategory.NARRATOR, libraryId, narrator, libraryType)
+    ): List<Book> = fetchNameGroupItems(NameGrouping.NARRATOR, libraryId, narrator, libraryType)
 
     suspend fun fetchGenreItems(
       libraryId: String,
       genre: String,
       libraryType: LibraryType?,
-    ): List<Book> = fetchCategoryItems(CachedCategory.GENRE, libraryId, genre, libraryType)
+    ): List<Book> = fetchNameGroupItems(NameGrouping.GENRE, libraryId, genre, libraryType)
 
-    private suspend fun fetchCategoriesGrouped(
-      category: CachedCategory,
+    private suspend fun fetchNameGroups(
+      grouping: NameGrouping,
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
       libraryType: LibraryType?,
-      toEntry: (CategoryEntry) -> LibraryEntry,
+      toEntry: (NameGroupEntry) -> LibraryEntry,
     ): PagedItems<LibraryEntry> {
-      val total = bookDao.countRaw(buildCategoryCountQuery(category, libraryId, libraryType))
+      val total = bookDao.countRaw(buildNameGroupCountQuery(grouping, libraryId, libraryType))
 
       if (total == 0) {
         return PagedItems(items = emptyList(), currentPage = pageNumber, totalItems = 0)
@@ -343,14 +344,14 @@ class CachedBookRepository
 
       val items =
         bookDao
-          .fetchCategoryEntries(buildCategoryPageQuery(category, libraryId, pageSize, pageNumber, libraryType))
+          .fetchNameGroupEntries(buildNameGroupPageQuery(grouping, libraryId, pageSize, pageNumber, libraryType))
           .map(toEntry)
 
       return PagedItems(items = items, currentPage = pageNumber, totalItems = total)
     }
 
-    private suspend fun fetchCategoryItems(
-      category: CachedCategory,
+    private suspend fun fetchNameGroupItems(
+      grouping: NameGrouping,
       libraryId: String,
       name: String,
       libraryType: LibraryType?,
@@ -363,9 +364,9 @@ class CachedBookRepository
 
       val sql =
         """
-        SELECT detailed_books.* FROM ${category.source}
+        SELECT detailed_books.* FROM ${grouping.fromClause}
         $join
-        WHERE libraryId = ? AND ${category.key} = ? $filter
+        WHERE libraryId = ? AND ${grouping.nameExpression} = ? $filter
         ORDER BY $field $sortDirection
         """.trimIndent()
 
@@ -374,8 +375,8 @@ class CachedBookRepository
         .map { cachedBookEntityConverter.apply(it) }
     }
 
-    private fun buildCategoryPageQuery(
-      category: CachedCategory,
+    private fun buildNameGroupPageQuery(
+      grouping: NameGrouping,
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
@@ -385,20 +386,20 @@ class CachedBookRepository
 
       val sql =
         """
-        SELECT ${category.key} AS name, COUNT(*) AS bookCount
-        FROM ${category.source}
+        SELECT ${grouping.nameExpression} AS name, COUNT(*) AS bookCount
+        FROM ${grouping.fromClause}
         $join
-        WHERE libraryId = ? AND ${category.key} IS NOT NULL AND ${category.key} != '' $filter
-        GROUP BY ${category.key}
-        ORDER BY LOWER(${category.key}) ASC
+        WHERE libraryId = ? AND ${grouping.nameExpression} IS NOT NULL AND ${grouping.nameExpression} != '' $filter
+        GROUP BY ${grouping.nameExpression}
+        ORDER BY LOWER(${grouping.nameExpression}) ASC
         LIMIT ? OFFSET ?
         """.trimIndent()
 
       return SimpleSQLiteQuery(sql, arrayOf<Any>(libraryId, pageSize, pageNumber * pageSize))
     }
 
-    private fun buildCategoryCountQuery(
-      category: CachedCategory,
+    private fun buildNameGroupCountQuery(
+      grouping: NameGrouping,
       libraryId: String,
       libraryType: LibraryType?,
     ): SupportSQLiteQuery {
@@ -406,10 +407,10 @@ class CachedBookRepository
 
       val sql =
         """
-        SELECT COUNT(DISTINCT ${category.key})
-        FROM ${category.source}
+        SELECT COUNT(DISTINCT ${grouping.nameExpression})
+        FROM ${grouping.fromClause}
         $join
-        WHERE libraryId = ? AND ${category.key} IS NOT NULL AND ${category.key} != '' $filter
+        WHERE libraryId = ? AND ${grouping.nameExpression} IS NOT NULL AND ${grouping.nameExpression} != '' $filter
         """.trimIndent()
 
       return SimpleSQLiteQuery(sql, arrayOf<Any>(libraryId))

@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -42,20 +41,18 @@ import org.grakovne.lissen.common.LibraryGrouping
 import org.grakovne.lissen.domain.Book
 import org.grakovne.lissen.ui.navigation.AppNavigationService
 
-/** A genre or narrator group: these have no artwork on the server, so the cover slot always shows a placeholder. */
 @Composable
-fun CategoryComposable(
-  name: String,
+fun LibraryGroupComposable(
+  title: String,
   bookCount: Int,
-  @DrawableRes placeholder: Int,
-  grouping: LibraryGrouping,
   testTag: String,
   expanded: Boolean,
   loading: Boolean,
   books: List<Book>,
-  imageLoader: ImageLoader,
-  navController: AppNavigationService,
   onToggle: () -> Unit,
+  subtitle: String? = null,
+  cover: @Composable () -> Unit,
+  bookRows: @Composable (List<Book>) -> Unit,
 ) {
   val context = LocalContext.current
 
@@ -70,22 +67,13 @@ fun CategoryComposable(
           .padding(horizontal = 4.dp, vertical = 8.dp),
       verticalAlignment = Alignment.CenterVertically,
     ) {
-      Image(
-        painter = painterResource(placeholder),
-        contentDescription = null,
-        contentScale = ContentScale.FillBounds,
-        modifier =
-          Modifier
-            .size(LibraryItemCoverSize)
-            .aspectRatio(1f)
-            .clip(RoundedCornerShape(4.dp)),
-      )
+      cover()
 
       Spacer(Modifier.width(16.dp))
 
       Column(Modifier.weight(1f)) {
         Text(
-          text = name,
+          text = title,
           style =
             MaterialTheme.typography.bodyMedium.copy(
               fontWeight = FontWeight.SemiBold,
@@ -96,6 +84,18 @@ fun CategoryComposable(
         )
 
         Spacer(modifier = Modifier.height(2.dp))
+
+        subtitle?.let {
+          Text(
+            text = it,
+            style =
+              MaterialTheme.typography.bodyMedium.copy(
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+              ),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+          )
+        }
 
         Text(
           text = context.resources.getQuantityString(R.plurals.series_books_count, bookCount, bookCount),
@@ -137,15 +137,7 @@ fun CategoryComposable(
           }
 
           else -> {
-            books.forEach { book ->
-              BookComposable(
-                book = book,
-                imageLoader = imageLoader,
-                navController = navController,
-                grouping = grouping,
-                leading = { CategoryBookLeading() },
-              )
-            }
+            bookRows(books)
           }
         }
       }
@@ -154,7 +146,26 @@ fun CategoryComposable(
 }
 
 @Composable
-private fun CategoryBookLeading() {
+fun GroupBooks(
+  books: List<Book>,
+  imageLoader: ImageLoader,
+  navController: AppNavigationService,
+  grouping: LibraryGrouping = LibraryGrouping.NONE,
+) {
+  books.forEach { book ->
+    BookComposable(
+      book = book,
+      imageLoader = imageLoader,
+      navController = navController,
+      grouping = grouping,
+      leading = { GroupBookLeading() },
+    )
+  }
+}
+
+// an invisible digit indents the book like a numbered book of a series
+@Composable
+private fun GroupBookLeading() {
   Box(modifier = Modifier.padding(end = 10.dp)) {
     Text(
       text = "0",
@@ -163,4 +174,19 @@ private fun CategoryBookLeading() {
       modifier = Modifier.alpha(0f),
     )
   }
+}
+
+@Composable
+fun GroupDrawableCover(
+  @DrawableRes drawable: Int,
+) {
+  Image(
+    painter = painterResource(drawable),
+    contentDescription = null,
+    contentScale = ContentScale.FillBounds,
+    modifier =
+      Modifier
+        .size(LibraryItemCoverSize)
+        .clip(RoundedCornerShape(4.dp)),
+  )
 }

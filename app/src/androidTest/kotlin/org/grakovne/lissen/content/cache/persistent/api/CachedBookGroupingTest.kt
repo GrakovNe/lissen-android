@@ -129,7 +129,7 @@ class CachedBookGroupingTest {
     }
 
   @Test
-  fun genreGrouping_countsBookUnderEachOfItsGenres_andListsTheirBooks() =
+  fun genreGrouping_countsBookUnderEachOfItsGenres_andSkipsBooksWithoutGenres() =
     runBlocking {
       insert("b1", "Alpha")
       insert("b2", "Bravo")
@@ -145,7 +145,7 @@ class CachedBookGroupingTest {
       val genres = repository.fetchGenresGrouped(LIBRARY, pageSize = 20, pageNumber = 0, libraryType = null)
       assertEquals(2, genres.totalItems)
       assertEquals(
-        listOf(LibraryEntry.GenreEntry("Fantasy", 2), LibraryEntry.GenreEntry("детектив", 1)),
+        listOf(LibraryEntry.GenreEntry("Fantasy", "Fantasy", 2), LibraryEntry.GenreEntry("детектив", "детектив", 1)),
         genres.items,
       )
 
@@ -166,7 +166,7 @@ class CachedBookGroupingTest {
       dao.upsertMediaProgress(MediaProgressEntity(bookId = "b1", currentTime = 10.0, isFinished = true, lastUpdate = 0))
 
       val genres = repository.fetchGenresGrouped(LIBRARY, pageSize = 20, pageNumber = 0, libraryType = LibraryType.LIBRARY)
-      assertEquals(listOf(LibraryEntry.GenreEntry("Fantasy", 1)), genres.items)
+      assertEquals(listOf(LibraryEntry.GenreEntry("Fantasy", "Fantasy", 1)), genres.items)
       assertEquals(listOf("b2"), repository.fetchGenreItems(LIBRARY, "Fantasy", LibraryType.LIBRARY).map { it.id })
     }
 
@@ -180,7 +180,7 @@ class CachedBookGroupingTest {
 
       val narrators = repository.fetchNarratorsGrouped(LIBRARY, pageSize = 20, pageNumber = 0, libraryType = null)
       assertEquals(
-        listOf(LibraryEntry.NarratorEntry("Jim Dale", 1), LibraryEntry.NarratorEntry("Stephen Fry", 2)),
+        listOf(LibraryEntry.NarratorEntry("Jim Dale", "Jim Dale", 1), LibraryEntry.NarratorEntry("Stephen Fry", "Stephen Fry", 2)),
         narrators.items,
       )
       assertEquals(listOf("b1", "b2"), repository.fetchNarratorItems(LIBRARY, "Stephen Fry", libraryType = null).map { it.id })
@@ -223,8 +223,8 @@ class CachedBookGroupingTest {
       is LibraryEntry.BookEntry -> book.id
       is LibraryEntry.SeriesEntry -> id
       is LibraryEntry.AuthorEntry -> id
-      is LibraryEntry.GenreEntry -> name
-      is LibraryEntry.NarratorEntry -> name
+      is LibraryEntry.GenreEntry -> id
+      is LibraryEntry.NarratorEntry -> id
     }
 
   companion object {

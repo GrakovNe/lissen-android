@@ -29,7 +29,7 @@ data class LibraryMetadataResponse(
   val subtitle: String?,
   val authors: List<LibraryAuthorResponse>?,
   val narrators: List<String>?,
-  val genres: List<String>? = null,
+  val genres: List<String>?,
   val series: List<LibrarySeriesResponse>?,
   val description: String?,
   val publisher: String?,
