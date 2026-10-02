@@ -15,6 +15,7 @@ import org.grakovne.lissen.content.cache.persistent.converter.MediaProgressEntit
 import org.grakovne.lissen.content.cache.persistent.dao.CachedBookDao
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
+import org.grakovne.lissen.content.cache.persistent.entity.CategoryEntry
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
 import org.grakovne.lissen.content.ordering.ChapterOrdering
 import org.grakovne.lissen.domain.Book
@@ -33,7 +34,18 @@ import javax.inject.Singleton
 
 private const val FINISHED_POSITION_EPSILON = 1.0
 
-private const val AUTHOR_KEY = "TRIM(CASE WHEN instr(author, ',') > 0 THEN substr(author, 1, instr(author, ',') - 1) ELSE author END)"
+// authors and narrators are cached as one comma-joined string, so a book is grouped under the first of them
+private fun firstOfJoined(column: String) =
+  "TRIM(CASE WHEN instr($column, ',') > 0 THEN substr($column, 1, instr($column, ',') - 1) ELSE $column END)"
+
+private enum class CachedCategory(
+  val source: String,
+  val key: String,
+) {
+  AUTHOR("detailed_books", firstOfJoined("author")),
+  NARRATOR("detailed_books", firstOfJoined("narrator")),
+  GENRE("detailed_books JOIN book_genres ON book_genres.bookId = detailed_books.id", "book_genres.genre"),
+}
 
 @Singleton
 class CachedBookRepository
@@ -272,8 +284,58 @@ class CachedBookRepository
       pageSize: Int,
       pageNumber: Int,
       libraryType: LibraryType?,
+    ): PagedItems<LibraryEntry> =
+      fetchCategoriesGrouped(CachedCategory.AUTHOR, libraryId, pageSize, pageNumber, libraryType) {
+        LibraryEntry.AuthorEntry(id = it.name, name = it.name, bookCount = it.bookCount)
+      }
+
+    suspend fun fetchNarratorsGrouped(
+      libraryId: String,
+      pageSize: Int,
+      pageNumber: Int,
+      libraryType: LibraryType?,
+    ): PagedItems<LibraryEntry> =
+      fetchCategoriesGrouped(CachedCategory.NARRATOR, libraryId, pageSize, pageNumber, libraryType) {
+        LibraryEntry.NarratorEntry(name = it.name, bookCount = it.bookCount)
+      }
+
+    suspend fun fetchGenresGrouped(
+      libraryId: String,
+      pageSize: Int,
+      pageNumber: Int,
+      libraryType: LibraryType?,
+    ): PagedItems<LibraryEntry> =
+      fetchCategoriesGrouped(CachedCategory.GENRE, libraryId, pageSize, pageNumber, libraryType) {
+        LibraryEntry.GenreEntry(name = it.name, bookCount = it.bookCount)
+      }
+
+    suspend fun fetchAuthorItems(
+      libraryId: String,
+      authorId: String,
+      libraryType: LibraryType?,
+    ): List<Book> = fetchCategoryItems(CachedCategory.AUTHOR, libraryId, authorId, libraryType)
+
+    suspend fun fetchNarratorItems(
+      libraryId: String,
+      narrator: String,
+      libraryType: LibraryType?,
+    ): List<Book> = fetchCategoryItems(CachedCategory.NARRATOR, libraryId, narrator, libraryType)
+
+    suspend fun fetchGenreItems(
+      libraryId: String,
+      genre: String,
+      libraryType: LibraryType?,
+    ): List<Book> = fetchCategoryItems(CachedCategory.GENRE, libraryId, genre, libraryType)
+
+    private suspend fun fetchCategoriesGrouped(
+      category: CachedCategory,
+      libraryId: String,
+      pageSize: Int,
+      pageNumber: Int,
+      libraryType: LibraryType?,
+      toEntry: (CategoryEntry) -> LibraryEntry,
     ): PagedItems<LibraryEntry> {
-      val total = bookDao.countRaw(buildAuthorCountQuery(libraryId, libraryType))
+      val total = bookDao.countRaw(buildCategoryCountQuery(category, libraryId, libraryType))
 
       if (total == 0) {
         return PagedItems(items = emptyList(), currentPage = pageNumber, totalItems = 0)
@@ -281,15 +343,16 @@ class CachedBookRepository
 
       val items =
         bookDao
-          .fetchAuthorEntries(buildAuthorPageQuery(libraryId, pageSize, pageNumber, libraryType))
-          .map { LibraryEntry.AuthorEntry(id = it.author, name = it.author, bookCount = it.bookCount) }
+          .fetchCategoryEntries(buildCategoryPageQuery(category, libraryId, pageSize, pageNumber, libraryType))
+          .map(toEntry)
 
       return PagedItems(items = items, currentPage = pageNumber, totalItems = total)
     }
 
-    suspend fun fetchAuthorItems(
+    private suspend fun fetchCategoryItems(
+      category: CachedCategory,
       libraryId: String,
-      authorId: String,
+      name: String,
       libraryType: LibraryType?,
     ): List<Book> {
       val (option, direction) = buildOrdering()
@@ -300,18 +363,19 @@ class CachedBookRepository
 
       val sql =
         """
-        SELECT detailed_books.* FROM detailed_books
+        SELECT detailed_books.* FROM ${category.source}
         $join
-        WHERE libraryId = ? AND $AUTHOR_KEY = ? $filter
+        WHERE libraryId = ? AND ${category.key} = ? $filter
         ORDER BY $field $sortDirection
         """.trimIndent()
 
       return bookDao
-        .fetchCachedBooks(SimpleSQLiteQuery(sql, arrayOf<Any>(libraryId, authorId)))
+        .fetchCachedBooks(SimpleSQLiteQuery(sql, arrayOf<Any>(libraryId, name)))
         .map { cachedBookEntityConverter.apply(it) }
     }
 
-    private fun buildAuthorPageQuery(
+    private fun buildCategoryPageQuery(
+      category: CachedCategory,
       libraryId: String,
       pageSize: Int,
       pageNumber: Int,
@@ -321,19 +385,20 @@ class CachedBookRepository
 
       val sql =
         """
-        SELECT $AUTHOR_KEY AS author, COUNT(*) AS bookCount
-        FROM detailed_books
+        SELECT ${category.key} AS name, COUNT(*) AS bookCount
+        FROM ${category.source}
         $join
-        WHERE libraryId = ? AND $AUTHOR_KEY IS NOT NULL AND $AUTHOR_KEY != '' $filter
-        GROUP BY $AUTHOR_KEY
-        ORDER BY LOWER($AUTHOR_KEY) ASC
+        WHERE libraryId = ? AND ${category.key} IS NOT NULL AND ${category.key} != '' $filter
+        GROUP BY ${category.key}
+        ORDER BY LOWER(${category.key}) ASC
         LIMIT ? OFFSET ?
         """.trimIndent()
 
       return SimpleSQLiteQuery(sql, arrayOf<Any>(libraryId, pageSize, pageNumber * pageSize))
     }
 
-    private fun buildAuthorCountQuery(
+    private fun buildCategoryCountQuery(
+      category: CachedCategory,
       libraryId: String,
       libraryType: LibraryType?,
     ): SupportSQLiteQuery {
@@ -341,10 +406,10 @@ class CachedBookRepository
 
       val sql =
         """
-        SELECT COUNT(DISTINCT $AUTHOR_KEY)
-        FROM detailed_books
+        SELECT COUNT(DISTINCT ${category.key})
+        FROM ${category.source}
         $join
-        WHERE libraryId = ? AND $AUTHOR_KEY IS NOT NULL AND $AUTHOR_KEY != '' $filter
+        WHERE libraryId = ? AND ${category.key} IS NOT NULL AND ${category.key} != '' $filter
         """.trimIndent()
 
       return SimpleSQLiteQuery(sql, arrayOf<Any>(libraryId))

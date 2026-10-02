@@ -155,13 +155,6 @@ class LibraryViewModel
       _groups.value = LibraryGroupsState()
     }
 
-    private fun LibraryEntry.groupId(): String? =
-      when (this) {
-        is LibraryEntry.SeriesEntry -> id
-        is LibraryEntry.AuthorEntry -> id
-        is LibraryEntry.BookEntry -> null
-      }
-
     private fun alreadyResolved(groupId: String): Boolean = groupId in _groups.value.books || groupId in _groups.value.loading
 
     private suspend fun fetchGroupBooks(entry: LibraryEntry) {
@@ -177,6 +170,8 @@ class LibraryViewModel
         when (entry) {
           is LibraryEntry.SeriesEntry -> mediaChannel.fetchSeriesItems(libraryId = libraryId, seriesId = entry.id)
           is LibraryEntry.AuthorEntry -> mediaChannel.fetchAuthorBooks(libraryId = libraryId, authorId = entry.id)
+          is LibraryEntry.GenreEntry -> mediaChannel.fetchGenreBooks(libraryId = libraryId, genre = entry.name)
+          is LibraryEntry.NarratorEntry -> mediaChannel.fetchNarratorBooks(libraryId = libraryId, narrator = entry.name)
           is LibraryEntry.BookEntry -> null
         }
 
@@ -240,3 +235,13 @@ data class LibraryGroupsState(
   val books: Map<String, List<Book>> = emptyMap(),
   val loading: Set<String> = emptySet(),
 )
+
+/** The key a group is expanded and cached under; books are not groups. */
+fun LibraryEntry.groupId(): String? =
+  when (this) {
+    is LibraryEntry.SeriesEntry -> id
+    is LibraryEntry.AuthorEntry -> id
+    is LibraryEntry.GenreEntry -> "genre:$name"
+    is LibraryEntry.NarratorEntry -> "narrator:$name"
+    is LibraryEntry.BookEntry -> null
+  }

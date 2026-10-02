@@ -83,6 +83,16 @@ interface MediaChannel {
     authorId: String,
   ): OperationResult<List<Book>> = OperationResult.Success(emptyList())
 
+  suspend fun fetchGenreBooks(
+    libraryId: String,
+    genre: String,
+  ): OperationResult<List<Book>> = OperationResult.Success(emptyList())
+
+  suspend fun fetchNarratorBooks(
+    libraryId: String,
+    narrator: String,
+  ): OperationResult<List<Book>> = OperationResult.Success(emptyList())
+
   suspend fun searchBooks(
     libraryId: String,
     query: String,

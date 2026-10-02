@@ -14,9 +14,9 @@ import org.grakovne.lissen.content.cache.persistent.converter.CachedBookEntityDe
 import org.grakovne.lissen.content.cache.persistent.converter.CachedBookEntityRecentConverter
 import org.grakovne.lissen.content.cache.persistent.converter.MediaProgressEntityConverter
 import org.grakovne.lissen.content.cache.persistent.dao.CachedBookDao
-import org.grakovne.lissen.content.cache.persistent.entity.AuthorEntry
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
 import org.grakovne.lissen.content.cache.persistent.entity.CachedBookEntity
+import org.grakovne.lissen.content.cache.persistent.entity.CategoryEntry
 import org.grakovne.lissen.content.cache.persistent.entity.GroupedEntry
 import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
 import org.grakovne.lissen.domain.BookFile
@@ -233,10 +233,10 @@ class CachedBookRepositoryTest {
   fun `maps author rows into paged author entries`() =
     runBlocking {
       coEvery { bookDao.countRaw(any()) } returns 2
-      coEvery { bookDao.fetchAuthorEntries(any()) } returns
+      coEvery { bookDao.fetchCategoryEntries(any()) } returns
         listOf(
-          AuthorEntry(author = "Andy Weir", bookCount = 1),
-          AuthorEntry(author = "Frank Herbert", bookCount = 2),
+          CategoryEntry(name = "Andy Weir", bookCount = 1),
+          CategoryEntry(name = "Frank Herbert", bookCount = 2),
         )
 
       val page = repository.fetchAuthorsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = null)
@@ -274,7 +274,7 @@ class CachedBookRepositoryTest {
       val page = repository.fetchAuthorsGrouped(LIBRARY_ID, pageSize = 20, pageNumber = 0, libraryType = null)
       assertEquals(0, page.totalItems)
       assertTrue(page.items.isEmpty())
-      coVerify(exactly = 0) { bookDao.fetchAuthorEntries(any()) }
+      coVerify(exactly = 0) { bookDao.fetchCategoryEntries(any()) }
     }
 
   @Test

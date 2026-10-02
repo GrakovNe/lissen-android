@@ -4,4 +4,6 @@ enum class LibraryGrouping {
   NONE,
   SERIES,
   AUTHOR,
+  GENRE,
+  NARRATOR,
 }

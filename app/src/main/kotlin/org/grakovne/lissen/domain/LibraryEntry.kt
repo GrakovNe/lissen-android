@@ -24,6 +24,18 @@ sealed interface LibraryEntry {
     val name: String,
     val bookCount: Int,
   ) : LibraryEntry
+
+  @Keep
+  data class GenreEntry(
+    val name: String,
+    val bookCount: Int,
+  ) : LibraryEntry
+
+  @Keep
+  data class NarratorEntry(
+    val name: String,
+    val bookCount: Int,
+  ) : LibraryEntry
 }
 
 fun PagedItems<Book>.asLibraryEntries(): PagedItems<LibraryEntry> =

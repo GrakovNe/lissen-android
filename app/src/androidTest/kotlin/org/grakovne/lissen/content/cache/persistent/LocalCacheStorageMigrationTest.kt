@@ -402,6 +402,33 @@ class LocalCacheStorageMigrationTest {
     }
   }
 
+  @Test
+  fun migrate24To25_createsBookGenresTable_cascadingOnBookDelete() {
+    helper.createDatabase(TEST_DB, 24).use { db ->
+      db.execSQL(
+        """
+        INSERT INTO detailed_books (id, title, duration, createdAt, updatedAt)
+        VALUES ('book-1', 'Dune', 0, 0, 0)
+        """.trimIndent(),
+      )
+    }
+
+    val db = helper.runMigrationsAndValidate(TEST_DB, 25, true, MIGRATION_24_25)
+    db.execSQL("PRAGMA foreign_keys = ON")
+
+    db.execSQL("INSERT INTO book_genres (bookId, genre) VALUES ('book-1', 'Science Fiction')")
+    db.query("SELECT COUNT(*) FROM book_genres").use { cursor ->
+      assertTrue(cursor.moveToFirst())
+      assertEquals(1, cursor.getInt(0))
+    }
+
+    db.execSQL("DELETE FROM detailed_books WHERE id = 'book-1'")
+    db.query("SELECT COUNT(*) FROM book_genres").use { cursor ->
+      assertTrue(cursor.moveToFirst())
+      assertEquals(0, cursor.getInt(0))
+    }
+  }
+
   companion object {
     private const val TEST_DB = "local-cache-migration-test"
   }

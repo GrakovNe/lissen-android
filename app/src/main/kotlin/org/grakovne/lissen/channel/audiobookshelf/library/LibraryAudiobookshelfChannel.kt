@@ -127,6 +127,32 @@ class LibraryAudiobookshelfChannel
             ).map { libraryAuthorsResponseConverter.apply(it) }
         }
 
+        // abs pages neither genres nor narrators, so the whole list comes in one response and is paged here
+        LibraryGrouping.GENRE -> {
+          dataRepository
+            .fetchLibraryGenres(libraryId)
+            .map { response ->
+              response
+                .genresWithCount
+                .orEmpty()
+                .map { LibraryEntry.GenreEntry(name = it.genre, bookCount = it.count ?: 0) }
+                .sortedBy { it.name.lowercase() }
+                .page(pageSize, pageNumber)
+            }
+        }
+
+        LibraryGrouping.NARRATOR -> {
+          dataRepository
+            .fetchLibraryNarrators(libraryId)
+            .map { response ->
+              response
+                .narrators
+                .map { LibraryEntry.NarratorEntry(name = it.name, bookCount = it.numBooks ?: 0) }
+                .sortedBy { it.name.lowercase() }
+                .page(pageSize, pageNumber)
+            }
+        }
+
         else -> {
           val (option, direction) = libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering())
           val filter = libraryFilteringRequestConverter.apply(preferences)
@@ -172,6 +198,48 @@ class LibraryAudiobookshelfChannel
             else -> fetchAllSeriesItems(libraryId, seriesId, page + 1, books)
           }
         }
+
+    override suspend fun fetchGenreBooks(
+      libraryId: String,
+      genre: String,
+    ): OperationResult<List<Book>> =
+      concurrentFetchSemaphore.withPermit {
+        fetchAllFilteredItems(libraryId = libraryId, filter = encodeLibraryFilter("genres", genre))
+      }
+
+    override suspend fun fetchNarratorBooks(
+      libraryId: String,
+      narrator: String,
+    ): OperationResult<List<Book>> =
+      concurrentFetchSemaphore.withPermit {
+        fetchAllFilteredItems(libraryId = libraryId, filter = encodeLibraryFilter("narrators", narrator))
+      }
+
+    private suspend fun fetchAllFilteredItems(
+      libraryId: String,
+      filter: String,
+      page: Int = 0,
+      acc: List<Book> = emptyList(),
+    ): OperationResult<List<Book>> {
+      val (option, direction) = libraryOrderingRequestConverter.apply(preferences.getLibraryOrdering())
+
+      return dataRepository
+        .fetchLibraryItems(
+          libraryId = libraryId,
+          pageSize = GROUP_PAGE_SIZE,
+          pageNumber = page,
+          sort = option,
+          direction = direction,
+          filter = filter,
+        ).flatMap { response ->
+          val books = acc + libraryPageResponseConverter.apply(response).items
+
+          when {
+            response.results.isEmpty() || books.size >= response.total -> Success(books)
+            else -> fetchAllFilteredItems(libraryId, filter, page + 1, books)
+          }
+        }
+    }
 
     override suspend fun fetchAuthorBooks(
       libraryId: String,
@@ -313,6 +381,17 @@ class LibraryAudiobookshelfChannel
 
     companion object {
       private const val SERIES_PAGE_SIZE = 20
+      private const val GROUP_PAGE_SIZE = 100
       private const val MAX_CONCURRENT_FETCH = 3
     }
   }
+
+private fun <T : LibraryEntry> List<T>.page(
+  pageSize: Int,
+  pageNumber: Int,
+): PagedItems<LibraryEntry> =
+  PagedItems(
+    items = drop(pageSize * pageNumber).take(pageSize),
+    currentPage = pageNumber,
+    totalItems = size,
+  )

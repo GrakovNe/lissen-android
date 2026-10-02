@@ -16,7 +16,11 @@ import org.grakovne.lissen.content.cache.persistent.converter.CachedBookEntityRe
 import org.grakovne.lissen.content.cache.persistent.converter.MediaProgressEntityConverter
 import org.grakovne.lissen.content.cache.persistent.dao.CachedBookDao
 import org.grakovne.lissen.content.cache.persistent.entity.BookEntity
+import org.grakovne.lissen.content.cache.persistent.entity.BookGenreEntity
+import org.grakovne.lissen.content.cache.persistent.entity.MediaProgressEntity
+import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.LibraryEntry
+import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.persistence.preferences.LibraryPreferences
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -29,6 +33,7 @@ class CachedBookGroupingTest {
   private lateinit var db: LocalCacheStorage
   private lateinit var dao: CachedBookDao
   private lateinit var repository: CachedBookRepository
+  private lateinit var preferences: LibraryPreferences
 
   @Before
   fun setup() {
@@ -40,7 +45,7 @@ class CachedBookGroupingTest {
         .build()
     dao = db.cachedBookDao()
 
-    val preferences = mockk<LibraryPreferences>(relaxed = true)
+    preferences = mockk(relaxed = true)
     every { preferences.getLibraryOrdering() } returns LibraryOrderingConfiguration.default
     every { preferences.getHideCompleted() } returns false
 
@@ -65,13 +70,14 @@ class CachedBookGroupingTest {
     title: String,
     seriesId: String? = null,
     seriesJson: String? = null,
+    narrator: String? = null,
   ) = dao.upsertBook(
     BookEntity(
       id = id,
       title = title,
       subtitle = null,
       author = "Author $id",
-      narrator = null,
+      narrator = narrator,
       year = null,
       abstract = null,
       publisher = null,
@@ -122,11 +128,103 @@ class CachedBookGroupingTest {
       assertEquals(setOf("d1", "d2"), books.map { it.id }.toSet())
     }
 
+  @Test
+  fun genreGrouping_countsBookUnderEachOfItsGenres_andListsTheirBooks() =
+    runBlocking {
+      insert("b1", "Alpha")
+      insert("b2", "Bravo")
+      insert("b3", "Charlie")
+      dao.upsertBookGenres(
+        listOf(
+          BookGenreEntity("b1", "Fantasy"),
+          BookGenreEntity("b1", "детектив"),
+          BookGenreEntity("b2", "Fantasy"),
+        ),
+      )
+
+      val genres = repository.fetchGenresGrouped(LIBRARY, pageSize = 20, pageNumber = 0, libraryType = null)
+      assertEquals(2, genres.totalItems)
+      assertEquals(
+        listOf(LibraryEntry.GenreEntry("Fantasy", 2), LibraryEntry.GenreEntry("детектив", 1)),
+        genres.items,
+      )
+
+      val page1 = repository.fetchGenresGrouped(LIBRARY, pageSize = 1, pageNumber = 1, libraryType = null)
+      assertEquals(listOf("детектив"), page1.items.map { it.keyOf() })
+
+      val fantasy = repository.fetchGenreItems(LIBRARY, "Fantasy", libraryType = null)
+      assertEquals(listOf("b1", "b2"), fantasy.map { it.id })
+    }
+
+  @Test
+  fun genreGrouping_honoursHideCompleted() =
+    runBlocking {
+      every { preferences.getHideCompleted() } returns true
+      insert("b1", "Alpha")
+      insert("b2", "Bravo")
+      dao.upsertBookGenres(listOf(BookGenreEntity("b1", "Fantasy"), BookGenreEntity("b2", "Fantasy")))
+      dao.upsertMediaProgress(MediaProgressEntity(bookId = "b1", currentTime = 10.0, isFinished = true, lastUpdate = 0))
+
+      val genres = repository.fetchGenresGrouped(LIBRARY, pageSize = 20, pageNumber = 0, libraryType = LibraryType.LIBRARY)
+      assertEquals(listOf(LibraryEntry.GenreEntry("Fantasy", 1)), genres.items)
+      assertEquals(listOf("b2"), repository.fetchGenreItems(LIBRARY, "Fantasy", LibraryType.LIBRARY).map { it.id })
+    }
+
+  @Test
+  fun narratorGrouping_usesFirstNarrator_andSkipsBooksWithout() =
+    runBlocking {
+      insert("b1", "Alpha", narrator = "Stephen Fry, Jim Dale")
+      insert("b2", "Bravo", narrator = "Stephen Fry")
+      insert("b3", "Charlie", narrator = "Jim Dale")
+      insert("b4", "Delta")
+
+      val narrators = repository.fetchNarratorsGrouped(LIBRARY, pageSize = 20, pageNumber = 0, libraryType = null)
+      assertEquals(
+        listOf(LibraryEntry.NarratorEntry("Jim Dale", 1), LibraryEntry.NarratorEntry("Stephen Fry", 2)),
+        narrators.items,
+      )
+      assertEquals(listOf("b1", "b2"), repository.fetchNarratorItems(LIBRARY, "Stephen Fry", libraryType = null).map { it.id })
+    }
+
+  @Test
+  fun upsertCachedBook_replacesGenres() =
+    runBlocking {
+      val book = detailedItem(genres = listOf("Fantasy", "History"))
+      dao.upsertCachedBook(book, emptyList(), emptyList())
+      assertEquals(setOf("Fantasy", "History"), dao.fetchCachedBook("b1")!!.genres.toSet())
+
+      dao.upsertCachedBook(book.copy(genres = listOf("Romance")), emptyList(), emptyList())
+      assertEquals(listOf("Romance"), dao.fetchCachedBook("b1")!!.genres)
+    }
+
+  private fun detailedItem(genres: List<String>) =
+    DetailedItem(
+      id = "b1",
+      title = "Alpha",
+      subtitle = null,
+      author = null,
+      narrator = null,
+      genres = genres,
+      publisher = null,
+      series = emptyList(),
+      year = null,
+      abstract = null,
+      files = emptyList(),
+      chapters = emptyList(),
+      progress = null,
+      libraryId = LIBRARY,
+      localProvided = true,
+      createdAt = 0,
+      updatedAt = 0,
+    )
+
   private fun LibraryEntry.keyOf(): String =
     when (this) {
       is LibraryEntry.BookEntry -> book.id
       is LibraryEntry.SeriesEntry -> id
       is LibraryEntry.AuthorEntry -> id
+      is LibraryEntry.GenreEntry -> name
+      is LibraryEntry.NarratorEntry -> name
     }
 
   companion object {

@@ -84,6 +84,7 @@ import org.grakovne.lissen.ui.screens.common.RequestLocalNetworkPermission
 import org.grakovne.lissen.ui.screens.common.RequestNotificationPermissions
 import org.grakovne.lissen.ui.screens.library.composables.AuthorComposable
 import org.grakovne.lissen.ui.screens.library.composables.BookComposable
+import org.grakovne.lissen.ui.screens.library.composables.CategoryComposable
 import org.grakovne.lissen.ui.screens.library.composables.DefaultActionComposable
 import org.grakovne.lissen.ui.screens.library.composables.LibrarySearchActionComposable
 import org.grakovne.lissen.ui.screens.library.composables.LibrarySwitchComposable
@@ -98,6 +99,7 @@ import org.grakovne.lissen.viewmodel.CachingModelView
 import org.grakovne.lissen.viewmodel.LibrarySettingsViewModel
 import org.grakovne.lissen.viewmodel.LibraryViewModel
 import org.grakovne.lissen.viewmodel.PlayerViewModel
+import org.grakovne.lissen.viewmodel.groupId
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
@@ -560,6 +562,41 @@ fun LibraryScreen(
                       onPrefetch = { libraryViewModel.prefetchGroup(entry) },
                     )
                   }
+
+                  // genre and narrator groups are not prefetched: a genre can hold a large part of the library
+                  is LibraryEntry.GenreEntry -> {
+                    val groupId = entry.groupId()
+                    CategoryComposable(
+                      name = entry.name,
+                      bookCount = entry.bookCount,
+                      placeholder = R.drawable.genre_fallback,
+                      grouping = LibraryGrouping.GENRE,
+                      testTag = "genreItem_${entry.name}",
+                      expanded = groupId in groups.expanded,
+                      loading = groupId in groups.loading,
+                      books = groups.books[groupId].orEmpty(),
+                      imageLoader = imageLoader,
+                      navController = navController,
+                      onToggle = { libraryViewModel.toggleGroup(entry) },
+                    )
+                  }
+
+                  is LibraryEntry.NarratorEntry -> {
+                    val groupId = entry.groupId()
+                    CategoryComposable(
+                      name = entry.name,
+                      bookCount = entry.bookCount,
+                      placeholder = R.drawable.narrator_fallback,
+                      grouping = LibraryGrouping.NARRATOR,
+                      testTag = "narratorItem_${entry.name}",
+                      expanded = groupId in groups.expanded,
+                      loading = groupId in groups.loading,
+                      books = groups.books[groupId].orEmpty(),
+                      imageLoader = imageLoader,
+                      navController = navController,
+                      onToggle = { libraryViewModel.toggleGroup(entry) },
+                    )
+                  }
                 }
               }
             }
@@ -624,6 +661,7 @@ fun LibraryScreen(
         coroutineScope.launch { libraryListState.scrollToItem(0) }
       },
       onSortingChanged = {
+        libraryViewModel.resetGroupExpansion()
         refreshContent(showPullRefreshing = false)
         coroutineScope.launch { libraryListState.scrollToItem(0) }
       },

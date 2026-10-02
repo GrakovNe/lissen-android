@@ -20,9 +20,11 @@ import org.grakovne.lissen.channel.audiobookshelf.common.model.user.Personalized
 import org.grakovne.lissen.channel.audiobookshelf.common.model.user.UserStateResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.BookResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryAuthorsResponse
+import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryGenresResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsBatchRequest
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsBatchResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryItemsResponse
+import org.grakovne.lissen.channel.audiobookshelf.library.model.LibraryNarratorsResponse
 import org.grakovne.lissen.channel.audiobookshelf.library.model.LibrarySearchResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastItemsResponse
 import org.grakovne.lissen.channel.audiobookshelf.podcast.model.PodcastResponse
@@ -115,6 +117,18 @@ interface AudiobookshelfApiClient {
     @Query("desc") desc: String,
     @Tag cacheable: Cacheable = Cacheable(),
   ): Response<LibraryAuthorsResponse>
+
+  @GET("api/libraries/{libraryId}/stats")
+  suspend fun fetchLibraryGenres(
+    @Path("libraryId") libraryId: String,
+    @Tag cacheable: Cacheable = Cacheable(),
+  ): Response<LibraryGenresResponse>
+
+  @GET("api/libraries/{libraryId}/narrators")
+  suspend fun fetchLibraryNarrators(
+    @Path("libraryId") libraryId: String,
+    @Tag cacheable: Cacheable = Cacheable(),
+  ): Response<LibraryNarratorsResponse>
 
   @GET("api/libraries/{libraryId}/search")
   suspend fun searchLibraryItems(

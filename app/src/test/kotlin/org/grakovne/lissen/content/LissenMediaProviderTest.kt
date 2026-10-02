@@ -628,6 +628,33 @@ class LissenMediaProviderTest {
   }
 
   @Nested
+  inner class FetchGenreAndNarratorBooks {
+    @Test
+    fun `genre books come from local cache when force cache enabled`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns true
+        coEvery { localCacheRepository.fetchGenreItems("l1", "Fantasy") } returns OperationResult.Success(emptyList())
+
+        provider.fetchGenreBooks("l1", "Fantasy")
+
+        coVerify { localCacheRepository.fetchGenreItems("l1", "Fantasy") }
+        coVerify(exactly = 0) { mediaChannel.fetchGenreBooks(any(), any()) }
+      }
+
+    @Test
+    fun `narrator books come from channel when force cache disabled`() =
+      runBlocking {
+        every { preferences.isForceCache() } returns false
+        coEvery { mediaChannel.fetchNarratorBooks("l1", "Jim Dale") } returns OperationResult.Success(emptyList())
+
+        provider.fetchNarratorBooks("l1", "Jim Dale")
+
+        coVerify { mediaChannel.fetchNarratorBooks("l1", "Jim Dale") }
+        coVerify(exactly = 0) { localCacheRepository.fetchNarratorItems(any(), any()) }
+      }
+  }
+
+  @Nested
   inner class FetchCovers {
     @Test
     fun `book cover comes from local cache without cover provider when force cache enabled`() =

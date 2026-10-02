@@ -13,6 +13,7 @@ data class DetailedItem(
   val author: String?,
   val authors: List<BookAuthor> = emptyList(),
   val narrator: String?,
+  val genres: List<String> = emptyList(),
   val publisher: String?,
   val series: List<BookSeries>,
   val year: String?,

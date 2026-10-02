@@ -249,6 +249,30 @@ class LissenMediaProvider
       )
     }
 
+    suspend fun fetchGenreBooks(
+      libraryId: String,
+      genre: String,
+    ): OperationResult<List<Book>> {
+      Timber.d("Fetching genre books: libraryId=$libraryId, genre=$genre")
+
+      return cacheOrChannel(
+        local = { localCacheRepository.fetchGenreItems(libraryId = libraryId, genre = genre) },
+        remote = { providePreferredChannel().fetchGenreBooks(libraryId = libraryId, genre = genre) },
+      )
+    }
+
+    suspend fun fetchNarratorBooks(
+      libraryId: String,
+      narrator: String,
+    ): OperationResult<List<Book>> {
+      Timber.d("Fetching narrator books: libraryId=$libraryId, narrator=$narrator")
+
+      return cacheOrChannel(
+        local = { localCacheRepository.fetchNarratorItems(libraryId = libraryId, narrator = narrator) },
+        remote = { providePreferredChannel().fetchNarratorBooks(libraryId = libraryId, narrator = narrator) },
+      )
+    }
+
     suspend fun fetchLibraries(): OperationResult<List<Library>> {
       Timber.d("Fetching libraries: source=${if (preferences.isForceCache()) "cache" else "network"}")
 

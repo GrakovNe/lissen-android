@@ -164,6 +164,26 @@ class LocalCacheRepository
               libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
             ).let { OperationResult.Success(it) }
         }
+
+        LibraryGrouping.GENRE -> {
+          cachedBookRepository
+            .fetchGenresGrouped(
+              libraryId = libraryId,
+              pageSize = pageSize,
+              pageNumber = pageNumber,
+              libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
+            ).let { OperationResult.Success(it) }
+        }
+
+        LibraryGrouping.NARRATOR -> {
+          cachedBookRepository
+            .fetchNarratorsGrouped(
+              libraryId = libraryId,
+              pageSize = pageSize,
+              pageNumber = pageNumber,
+              libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
+            ).let { OperationResult.Success(it) }
+        }
       }
 
     suspend fun fetchSeriesItems(
@@ -185,6 +205,28 @@ class LocalCacheRepository
         .fetchAuthorItems(
           libraryId = libraryId,
           authorId = authorId,
+          libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
+        ).let { OperationResult.Success(it) }
+
+    suspend fun fetchGenreItems(
+      libraryId: String,
+      genre: String,
+    ): OperationResult<List<Book>> =
+      cachedBookRepository
+        .fetchGenreItems(
+          libraryId = libraryId,
+          genre = genre,
+          libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
+        ).let { OperationResult.Success(it) }
+
+    suspend fun fetchNarratorItems(
+      libraryId: String,
+      narrator: String,
+    ): OperationResult<List<Book>> =
+      cachedBookRepository
+        .fetchNarratorItems(
+          libraryId = libraryId,
+          narrator = narrator,
           libraryType = cachedLibraryRepository.fetchLibraryType(libraryId),
         ).let { OperationResult.Success(it) }
 
