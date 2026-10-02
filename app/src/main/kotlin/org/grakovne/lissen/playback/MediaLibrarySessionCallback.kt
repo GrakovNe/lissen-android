@@ -30,6 +30,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
@@ -45,6 +46,7 @@ import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(UnstableApi::class)
 @Singleton
@@ -65,6 +67,44 @@ class MediaLibrarySessionCallback
 
     /** The bookmark press being handled, from creating the bookmark to the end of its confirmation. */
     private var bookmarkFeedback: Job? = null
+    private var speedFeedback: Job? = null
+    private var bookmarkConfirmation = false
+    private var speedConfirmation = false
+    private lateinit var feedbackScope: CoroutineScope
+
+    internal fun observeMediaButtons(session: MediaSession, scope: CoroutineScope) {
+      feedbackScope = scope
+      bookmarkConfirmation = false
+      speedConfirmation = false
+      scope.launch(Dispatchers.Main) {
+        try {
+          merge(preferences.seekTimeFlow, mediaRepository.playbackSpeed)
+            .collect { refreshMediaButtons(session) }
+        } finally {
+          bookmarkFeedback?.cancel()
+          speedFeedback?.cancel()
+          bookmarkConfirmation = false
+          speedConfirmation = false
+        }
+      }
+    }
+
+    private fun refreshMediaButtons(session: MediaSession) {
+      session.setMediaButtonPreferences(mediaButtons())
+    }
+
+    private fun cyclePlaybackSpeed(session: MediaSession) {
+      val currentSpeed = mediaRepository.playbackSpeed.value
+      val nextSpeed = SPEED_ICONS.keys.firstOrNull { it > currentSpeed + 0.01f } ?: SPEED_ICONS.keys.first()
+      speedConfirmation = true
+      mediaRepository.setPlaybackSpeed(nextSpeed)
+      speedFeedback?.cancel()
+      speedFeedback = feedbackScope.launch(Dispatchers.Main) {
+        delay(BUTTON_FEEDBACK_DURATION)
+        speedConfirmation = false
+        refreshMediaButtons(session)
+      }
+    }
 
     private fun searchFutureFor(query: String): ListenableFuture<List<MediaItem>> {
       val key = query.trim().lowercase()
@@ -114,6 +154,7 @@ class MediaLibrarySessionCallback
     private val rewindCommand = SessionCommand(REWIND_COMMAND, Bundle.EMPTY)
     private val forwardCommand = SessionCommand(FORWARD_COMMAND, Bundle.EMPTY)
     private val nextChapterCommand = SessionCommand(NEXT_CHAPTER_COMMAND, Bundle.EMPTY)
+    private val speedCommand = SessionCommand(SPEED_COMMAND, Bundle.EMPTY)
     private val bookmarkCommand = SessionCommand(BOOKMARK_COMMAND, Bundle.EMPTY)
 
     private data class MediaButtonSpec(
@@ -123,7 +164,7 @@ class MediaLibrarySessionCallback
       val slot: Int,
     )
 
-    private fun mediaButtons(bookmarkConfirmed: Boolean = false): List<CommandButton> {
+    private fun mediaButtons(): List<CommandButton> {
       val seekTime = preferences.getSeekTime()
 
       return listOf(
@@ -152,7 +193,13 @@ class MediaLibrarySessionCallback
           slot = CommandButton.SLOT_OVERFLOW,
         ),
         MediaButtonSpec(
-          icon = if (bookmarkConfirmed) CommandButton.ICON_CHECK_CIRCLE_UNFILLED else CommandButton.ICON_BOOKMARK_UNFILLED,
+          icon = if (speedConfirmation) speedIcon(mediaRepository.playbackSpeed.value) else CommandButton.ICON_PLAYBACK_SPEED,
+          command = speedCommand,
+          displayName = "Playback speed",
+          slot = CommandButton.SLOT_OVERFLOW,
+        ),
+        MediaButtonSpec(
+          icon = if (bookmarkConfirmation) CommandButton.ICON_CHECK_CIRCLE_UNFILLED else CommandButton.ICON_BOOKMARK_UNFILLED,
           command = bookmarkCommand,
           displayName = "Create bookmark",
           slot = CommandButton.SLOT_OVERFLOW,
@@ -180,6 +227,7 @@ class MediaLibrarySessionCallback
           .add(rewindCommand)
           .add(forwardCommand)
           .add(nextChapterCommand)
+          .add(speedCommand)
           .add(bookmarkCommand)
           .build()
 
@@ -206,6 +254,7 @@ class MediaLibrarySessionCallback
         REWIND_COMMAND -> accepted { mediaRepository.rewind() }
         FORWARD_COMMAND -> accepted { mediaRepository.forward() }
         NEXT_CHAPTER_COMMAND -> accepted { mediaRepository.nextTrack() }
+        SPEED_COMMAND -> accepted { cyclePlaybackSpeed(session) }
         BOOKMARK_COMMAND -> accepted { createBookmark(session) }
         else -> super.onCustomCommand(session, controller, customCommand, args)
       }
@@ -227,7 +276,7 @@ class MediaLibrarySessionCallback
       }
 
       bookmarkFeedback =
-        futureScope.launch(Dispatchers.Main) {
+        feedbackScope.launch(Dispatchers.Main) {
           createBookmarkOrNull()?.let { showBookmarkConfirmation(session) }
         }
     }
@@ -243,9 +292,11 @@ class MediaLibrarySessionCallback
       }
 
     private suspend fun showBookmarkConfirmation(session: MediaSession) {
-      session.setMediaButtonPreferences(mediaButtons(bookmarkConfirmed = true))
-      delay(BOOKMARK_BUTTON_FEEDBACK_DURATION_MS)
-      session.setMediaButtonPreferences(mediaButtons(bookmarkConfirmed = false))
+      bookmarkConfirmation = true
+      refreshMediaButtons(session)
+      delay(BUTTON_FEEDBACK_DURATION)
+      bookmarkConfirmation = false
+      refreshMediaButtons(session)
     }
 
     override fun onGetLibraryRoot(
@@ -345,7 +396,7 @@ class MediaLibrarySessionCallback
     private suspend fun refreshBookForResumption(storedBook: DetailedItem): DetailedItem? {
       val refreshed =
         try {
-          withTimeoutOrNull(REFRESH_TIMEOUT_MS) { lissenMediaProvider.fetchBook(storedBook.id, storedBook.libraryType) }
+          withTimeoutOrNull(REFRESH_TIMEOUT) { lissenMediaProvider.fetchBook(storedBook.id, storedBook.libraryType) }
         } catch (e: CancellationException) {
           throw e
         } catch (e: Exception) {
@@ -425,10 +476,24 @@ class MediaLibrarySessionCallback
       internal const val REWIND_COMMAND = "notification_rewind"
       internal const val FORWARD_COMMAND = "notification_forward"
       internal const val NEXT_CHAPTER_COMMAND = "notification_next_chapter"
+      internal const val SPEED_COMMAND = "notification_playback_speed"
       internal const val BOOKMARK_COMMAND = "notification_bookmark"
 
-      private const val REFRESH_TIMEOUT_MS = 2_000L
-      private const val BOOKMARK_BUTTON_FEEDBACK_DURATION_MS = 3_000L
+      private val REFRESH_TIMEOUT = 2_000.milliseconds
+      private val BUTTON_FEEDBACK_DURATION = 3_000.milliseconds
+
+      private val SPEED_ICONS =
+        mapOf(
+          0.5f to CommandButton.ICON_PLAYBACK_SPEED_0_5,
+          0.8f to CommandButton.ICON_PLAYBACK_SPEED_0_8,
+          1.0f to CommandButton.ICON_PLAYBACK_SPEED_1_0,
+          1.2f to CommandButton.ICON_PLAYBACK_SPEED_1_2,
+          1.5f to CommandButton.ICON_PLAYBACK_SPEED_1_5,
+          1.8f to CommandButton.ICON_PLAYBACK_SPEED_1_8,
+          2.0f to CommandButton.ICON_PLAYBACK_SPEED_2_0,
+        )
+
+      private fun speedIcon(speed: Float) = SPEED_ICONS[speed] ?: CommandButton.ICON_PLAYBACK_SPEED
 
       private val SKIP_BACK_ICONS =
         mapOf(

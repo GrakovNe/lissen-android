@@ -29,6 +29,7 @@ class PlaybackPreferences
     val hasLastPlayingItemFlow: Flow<Boolean> = store.asFlow(KEY_PLAYING_ITEM) { getLastPlayingItem() != null }
     val playbackVolumeBoostFlow: Flow<Int> = store.asFlow(KEY_VOLUME_BOOST, ::getPlaybackVolumeBoost)
     val audioFocusLossPolicyFlow: Flow<AudioFocusLossPolicy> = store.asFlow(KEY_AUDIO_FOCUS_LOSS_POLICY, ::getAudioFocusLossPolicy)
+    val seekTimeFlow: Flow<SeekTime> = store.asFlow(KEY_PREFERRED_SEEK_TIME, ::getSeekTime)
     val equalizerFlow: Flow<EqualizerSettings> = store.asFlow(KEY_EQUALIZER, ::getEqualizer)
 
     fun getPlaybackVolumeBoost(): Int =
