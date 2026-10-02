@@ -289,4 +289,6 @@
     <string name="player_settings_skip_disabled">Disabilitato</string>
     <string name="player_settings_intro_value">Introduzione %1$s</string>
     <string name="player_settings_outro_value">Finale %1$s</string>
+    <string name="library_grouping_genre">Per genere</string>
+    <string name="library_grouping_narrator">Per narratore</string>
 </resources>
