@@ -2,19 +2,20 @@ package org.grakovne.lissen.ui.components.slider
 
 import android.content.Context
 import androidx.annotation.PluralsRes
+import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import org.grakovne.lissen.R
 import kotlin.math.roundToInt
 
 /** A number of seconds, or off at the very left. */
 @Composable
-fun OptionalSecondsSlider(
+fun SecondsOrOffSlider(
   context: Context,
   seconds: Int?,
   @PluralsRes secondsLabel: Int,
+  @StringRes offLabel: Int,
   modifier: Modifier = Modifier,
   onUpdate: (Int?) -> Unit,
 ) {
@@ -23,7 +24,7 @@ fun OptionalSecondsSlider(
     range = OFF..MAX_SECONDS,
     formatHeader = { value ->
       when (val v = value.roundToInt().coerceIn(OFF, MAX_SECONDS)) {
-        OFF -> context.getString(R.string.setting_disabled)
+        OFF -> context.getString(offLabel)
         else -> context.resources.getQuantityString(secondsLabel, v, v)
       }
     },

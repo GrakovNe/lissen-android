@@ -1,7 +1,7 @@
 package org.grakovne.lissen.ui.screens.settings.advanced
 
+import android.content.Context
 import android.view.View
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -50,7 +50,7 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.slider.SeekTimeSlider
-import org.grakovne.lissen.ui.screens.settings.composable.OptionalSecondsBottomSheet
+import org.grakovne.lissen.ui.screens.settings.composable.SecondsOrOffBottomSheet
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
 import org.grakovne.lissen.viewmodel.PlaybackSettingsViewModel
 
@@ -86,24 +86,21 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
       ) {
-        SeekTimeRowComposable(
+        AdvancedSettingsSimpleItemComposable(
           title = stringResource(R.string.rewind_interval),
-          currentSeconds = preferredSeekTime.rewind,
-          onClicked = { rewindExpanded = true },
+          description = context.seconds(preferredSeekTime.rewind),
+          onclick = { rewindExpanded = true },
         )
 
-        SeekTimeRowComposable(
+        AdvancedSettingsSimpleItemComposable(
           title = stringResource(R.string.forward_interval),
-          currentSeconds = preferredSeekTime.forward,
-          onClicked = { forwardExpanded = true },
+          description = context.seconds(preferredSeekTime.forward),
+          onclick = { forwardExpanded = true },
         )
 
         AdvancedSettingsSimpleItemComposable(
           title = stringResource(R.string.rewind_on_pause_title),
-          description =
-            rewindOnPause
-              ?.let { context.resources.getQuantityString(R.plurals.seek_interval_seconds, it, it) }
-              ?: stringResource(R.string.setting_disabled),
+          description = rewindOnPause?.let { context.seconds(it) } ?: stringResource(R.string.rewind_on_pause_disabled),
           onclick = { rewindOnPauseExpanded = true },
         )
       }
@@ -129,11 +126,12 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
   }
 
   if (rewindOnPauseExpanded) {
-    OptionalSecondsBottomSheet(
+    SecondsOrOffBottomSheet(
       title = stringResource(R.string.rewind_on_pause_title),
       seconds = rewindOnPause,
       presets = rewindOnPausePresets,
       secondsLabel = R.plurals.seek_interval_seconds,
+      offLabel = R.string.rewind_on_pause_disabled,
       onDismissRequest = { rewindOnPauseExpanded = false },
       onUpdate = { viewModel.preferRewindOnPause(it) },
     )
@@ -224,34 +222,7 @@ private fun SeekTimeBottomSheet(
   )
 }
 
-@Composable
-private fun SeekTimeRowComposable(
-  title: String,
-  currentSeconds: Int,
-  onClicked: () -> Unit,
-) {
-  val context = LocalContext.current
-
-  Row(
-    modifier =
-      Modifier
-        .fillMaxWidth()
-        .clickable { onClicked() }
-        .padding(horizontal = 24.dp, vertical = 12.dp),
-  ) {
-    Column(modifier = Modifier.weight(1f)) {
-      Text(
-        text = title,
-        style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-        modifier = Modifier.padding(bottom = 4.dp),
-      )
-      Text(
-        text = context.resources.getQuantityString(R.plurals.seek_interval_seconds, currentSeconds, currentSeconds),
-        style = typography.bodyMedium,
-      )
-    }
-  }
-}
+private fun Context.seconds(seconds: Int): String = resources.getQuantityString(R.plurals.seek_interval_seconds, seconds, seconds)
 
 private val seekTimePresets = listOf(5, 10, 15, 30, 60)
 private val rewindOnPausePresets = listOf(1, 3, 5, 7, 10, 30)

@@ -246,7 +246,7 @@ class PlaybackPreferences
       private const val KEY_DEFAULT_SLEEP_TIMER = "default_sleep_timer"
       private const val KEY_SLEEP_TIMER_SETTINGS = "sleep_timer_settings"
 
-      // not "rewind_on_pause": the releases of 2025 stored {"enabled":…,"time":"SEEK_5"} there, which would parse as enabled
+      // the 1.4.x releases left {"enabled":…,"time":"SEEK_5"} under "rewind_on_pause", which would load as enabled
       private const val KEY_REWIND_ON_PAUSE = "rewind_on_pause_settings"
 
       private val playingItemsType =

@@ -2,6 +2,7 @@ package org.grakovne.lissen.ui.screens.settings.composable
 
 import android.view.View
 import androidx.annotation.PluralsRes
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -35,16 +36,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
-import org.grakovne.lissen.ui.components.slider.OptionalSecondsSlider
+import org.grakovne.lissen.ui.components.slider.SecondsOrOffSlider
 
 /** Picks a number of seconds or off, like the sleep timer sheet: a slider and presets, the first of which is off. */
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun OptionalSecondsBottomSheet(
+fun SecondsOrOffBottomSheet(
   title: String,
   seconds: Int?,
   presets: List<Int>,
   @PluralsRes secondsLabel: Int,
+  @StringRes offLabel: Int,
   onDismissRequest: () -> Unit,
   onUpdate: (Int?) -> Unit,
 ) {
@@ -69,10 +71,11 @@ fun OptionalSecondsBottomSheet(
           style = typography.bodyLarge,
         )
 
-        OptionalSecondsSlider(
+        SecondsOrOffSlider(
           context = context,
           seconds = selected,
           secondsLabel = secondsLabel,
+          offLabel = offLabel,
           modifier =
             Modifier
               .fillMaxWidth()
@@ -83,7 +86,7 @@ fun OptionalSecondsBottomSheet(
           },
         )
 
-        // as many presets as the setting has: the buttons share the width
+        // the buttons share the width: with the cross there are more of them than fit at a fixed size
         Row(
           modifier = Modifier.fillMaxWidth(),
           horizontalArrangement = Arrangement.spacedBy(8.dp),

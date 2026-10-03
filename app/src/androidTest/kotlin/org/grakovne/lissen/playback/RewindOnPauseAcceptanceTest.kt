@@ -12,9 +12,6 @@ import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.RewindOnPauseSettings
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
-import org.grakovne.lissen.playback.autoskip.AutoSkipOnRealPlayer
-import org.grakovne.lissen.playback.autoskip.Discontinuity
-import org.grakovne.lissen.playback.autoskip.SilenceFactory
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -27,7 +24,7 @@ import org.junit.runner.RunWith
  */
 @OptIn(UnstableApi::class)
 @RunWith(AndroidJUnit4::class)
-class RewindOnPauseAcceptanceTest : AutoSkipOnRealPlayer() {
+class RewindOnPauseAcceptanceTest : RealPlayerTest() {
   override val item = item(id = "rewind-on-pause-acceptance-${System.nanoTime()}", chapterSeconds = listOf(6, 16, 20, 6))
 
   override val mediaSourceFactory: MediaSource.Factory = SilenceFactory()
@@ -121,7 +118,7 @@ class RewindOnPauseAcceptanceTest : AutoSkipOnRealPlayer() {
   }
 
   @Test
-  fun anEpisodeTimerThatIsBehindEndsTheEpisodeAtTheNextChapterAndTheResumeSkipsItsIntro() {
+  fun aLateEpisodeTimerEndsAtTheNextChapterAndTheResumeSkipsItsIntro() {
     awaitOnMain("chapter 1, well before its outro") {
       inChapterBeforeOutro(1) {
         // the countdown is late, so the chapter runs out first and the timer expires inside that callback
@@ -177,18 +174,6 @@ class RewindOnPauseAcceptanceTest : AutoSkipOnRealPlayer() {
     val rewind = seeksInside(1).single()
     assertEquals("a rewind of two seconds: $rewind", 2_000L, rewind.fromMs - rewind.toMs)
     assertTrue("the timer ran before it paused: $rewind", rewind.fromMs > armedAt)
-  }
-
-  /** Runs [action] once playback is in chapter [index] within [positions]; returns false to keep waiting. */
-  private fun inChapter(
-    index: Int,
-    positions: LongRange,
-    action: () -> Unit,
-  ): Boolean {
-    if (player.currentMediaItemIndex != index || !player.isPlaying || player.currentPosition !in positions) return false
-
-    action()
-    return true
   }
 
   private fun seeksInside(index: Int): List<Discontinuity> =

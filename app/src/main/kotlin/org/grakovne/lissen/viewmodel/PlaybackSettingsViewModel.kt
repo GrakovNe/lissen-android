@@ -100,13 +100,12 @@ class PlaybackSettingsViewModel
       _seekTime.value = seekTime
     }
 
-    /** Null switches the rewind off and keeps the seconds for the next time it is on. */
     fun preferRewindOnPause(seconds: Int?) {
       Timber.d("User action: preferRewindOnPause $seconds")
-      val current = playback.getRewindOnPause()
-
-      playback.saveRewindOnPause(current.copy(enabled = seconds != null, seconds = seconds ?: current.seconds))
       _rewindOnPause.value = seconds
+
+      val current = playback.getRewindOnPause()
+      playback.saveRewindOnPause(current.copy(enabled = seconds != null, seconds = seconds ?: current.seconds))
     }
 
     fun saveDefaultTimerOption(option: TimerOption?) {
@@ -115,13 +114,12 @@ class PlaybackSettingsViewModel
       playback.saveDefaultTimerOption(option)
     }
 
-    /** Null switches the fade off and keeps the seconds for the next time it is on. */
     fun preferSleepTimerFade(seconds: Int?) {
       Timber.d("User action: preferSleepTimerFade $seconds")
-      val current = playback.getSleepTimerSettings()
-
-      playback.saveSleepTimerSettings(current.copy(fadeEnabled = seconds != null, fadeSeconds = seconds ?: current.fadeSeconds))
       _sleepTimerFade.value = seconds
+
+      val current = playback.getSleepTimerSettings()
+      playback.saveSleepTimerSettings(current.copy(fadeEnabled = seconds != null, fadeSeconds = seconds ?: current.fadeSeconds))
     }
 
     fun preferSoftwareCodecsEnabled(value: Boolean) {

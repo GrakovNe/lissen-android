@@ -23,7 +23,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.screens.settings.composable.DefaultTimerSettingsComposable
-import org.grakovne.lissen.ui.screens.settings.composable.OptionalSecondsBottomSheet
+import org.grakovne.lissen.ui.screens.settings.composable.SecondsOrOffBottomSheet
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
 import org.grakovne.lissen.viewmodel.LibrarySettingsViewModel
 import org.grakovne.lissen.viewmodel.PlaybackSettingsViewModel
@@ -50,7 +50,7 @@ internal fun SleepTimerSettingsScreenContent(
   val fade by viewModel.sleepTimerFade.collectAsState()
   val context = LocalContext.current
 
-  var durationExpanded by remember { mutableStateOf(false) }
+  var fadeExpanded by remember { mutableStateOf(false) }
 
   Scaffold(
     topBar = {
@@ -77,8 +77,8 @@ internal fun SleepTimerSettingsScreenContent(
           description =
             fade
               ?.let { context.resources.getQuantityString(R.plurals.fade_duration_seconds, it, it) }
-              ?: stringResource(R.string.setting_disabled),
-          onclick = { durationExpanded = true },
+              ?: stringResource(R.string.sleep_timer_fade_disabled),
+          onclick = { fadeExpanded = true },
         )
 
         DefaultTimerSettingsComposable(viewModel, libraryType)
@@ -86,13 +86,14 @@ internal fun SleepTimerSettingsScreenContent(
     },
   )
 
-  if (durationExpanded) {
-    OptionalSecondsBottomSheet(
+  if (fadeExpanded) {
+    SecondsOrOffBottomSheet(
       title = stringResource(R.string.sleep_timer_fade_title),
       seconds = fade,
       presets = fadeTimePresets,
       secondsLabel = R.plurals.fade_duration_seconds,
-      onDismissRequest = { durationExpanded = false },
+      offLabel = R.string.sleep_timer_fade_disabled,
+      onDismissRequest = { fadeExpanded = false },
       onUpdate = { viewModel.preferSleepTimerFade(it) },
     )
   }

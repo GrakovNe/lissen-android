@@ -13,6 +13,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.verify
 import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
+import org.grakovne.lissen.playback.RealPlayerTest
 import org.grakovne.lissen.playback.service.LissenMediaSourceFactory
 import org.grakovne.lissen.playback.service.PlaybackService
 import org.junit.After
@@ -33,7 +34,7 @@ import java.nio.ByteOrder
  */
 @OptIn(UnstableApi::class)
 @RunWith(AndroidJUnit4::class)
-class AutoSkipTopologyAcceptanceTest : AutoSkipOnRealPlayer() {
+class AutoSkipTopologyAcceptanceTest : RealPlayerTest() {
   private val directory = File(context.cacheDir, "auto-skip-topology").apply { mkdirs() }
 
   override val item =

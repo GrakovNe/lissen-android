@@ -1,4 +1,4 @@
-package org.grakovne.lissen.playback.autoskip
+package org.grakovne.lissen.playback
 
 import android.content.Context
 import android.os.SystemClock
@@ -18,8 +18,10 @@ import org.grakovne.lissen.domain.BookFile
 import org.grakovne.lissen.domain.DetailedItem
 import org.grakovne.lissen.domain.PlayingChapter
 import org.grakovne.lissen.persistence.preferences.SecurePreferenceStore
-import org.grakovne.lissen.playback.PlaybackEventBus
-import org.grakovne.lissen.playback.PlaybackGeometry
+import org.grakovne.lissen.playback.autoskip.AutoSkipConfiguration
+import org.grakovne.lissen.playback.autoskip.AutoSkipPreferences
+import org.grakovne.lissen.playback.autoskip.AutoSkipService
+import org.grakovne.lissen.playback.autoskip.PlaybackSteps
 import org.grakovne.lissen.playback.service.PlaybackSynchronizationService
 import org.grakovne.lissen.playback.service.PlaybackTimer
 import org.grakovne.lissen.playback.service.SyncStateStore
@@ -29,12 +31,12 @@ import org.junit.Before
 import java.util.concurrent.CopyOnWriteArrayList
 
 /**
- * The auto-skip service on a real ExoPlayer playing [item] four times over, recording every
- * discontinuity. A scenario seeks in the same main-thread task as the check that playback is
- * where it needs to be. A subclass may attach more services to the player.
+ * The playback services on a real ExoPlayer playing [item] four times over, recording every
+ * discontinuity: the timer and the auto-skip always, whatever else a subclass attaches. A
+ * scenario seeks in the same main-thread task as the check that playback is where it needs to be.
  */
 @OptIn(UnstableApi::class)
-abstract class AutoSkipOnRealPlayer {
+abstract class RealPlayerTest {
   private val instrumentation = InstrumentationRegistry.getInstrumentation()
   protected val context: Context = instrumentation.targetContext
 
@@ -108,6 +110,18 @@ abstract class AutoSkipOnRealPlayer {
       speed = SPEED,
       autoSkip = configuration,
     )!!
+
+  /** Runs [action] once playback is in chapter [index] within [positions]; returns false to keep waiting. */
+  protected fun inChapter(
+    index: Int,
+    positions: LongRange,
+    action: () -> Unit,
+  ): Boolean {
+    if (player.currentMediaItemIndex != index || !player.isPlaying || player.currentPosition !in positions) return false
+
+    action()
+    return true
+  }
 
   /** Runs [action] once playback is in [index] well before its outro; returns false to keep waiting. */
   protected fun inChapterBeforeOutro(

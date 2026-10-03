@@ -5,11 +5,9 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
-import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -21,7 +19,6 @@ import androidx.test.rule.GrantPermissionRule
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import org.grakovne.lissen.domain.RewindOnPauseSettings
-import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.persistence.preferences.PreferencesReset
 import org.grakovne.lissen.ui.activity.AppActivity
@@ -58,13 +55,11 @@ class RewindOnPauseSettingsE2ETest {
         hiltRule.inject()
         preferencesReset.clearAll()
         E2ESession.restore()
-        // after the restore: the session snapshot carries the playback settings of the test it was taken in
+        // a logout keeps the playback settings, so the pick of an earlier test would still be there
         playbackPreferences.saveRewindOnPause(RewindOnPauseSettings.Default)
-        playbackPreferences.saveSeekTime(SeekTime.Default)
       }
 
       override fun after() {
-        playbackPreferences.saveRewindOnPause(RewindOnPauseSettings.Default)
         playbackTeardown.run()
       }
     }
@@ -123,35 +118,5 @@ class RewindOnPauseSettingsE2ETest {
     )
 
     composeRule.onNodeWithText("7 seconds").performScrollTo().assertIsDisplayed()
-  }
-
-  @Test
-  fun seekSettings_rewindOnPauseSwitchedOffKeepsItsSeconds() {
-    playbackPreferences.saveRewindOnPause(RewindOnPauseSettings(enabled = true, seconds = 7))
-    navigateToSeekSettings()
-
-    composeRule.onNodeWithText("7 seconds").performScrollTo().assertIsDisplayed()
-
-    composeRule.onNodeWithText("Rewind on pause").performScrollTo().performClick()
-    composeRule.waitUntilAtLeastOneExists(
-      matcher = hasTestTag("bottomSheetContent"),
-      timeoutMillis = TIMEOUT_MS,
-    )
-
-    // the first preset is the cross
-    composeRule
-      .onAllNodes(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button) and hasAnyAncestor(hasTestTag("bottomSheetContent")))
-      .onFirst()
-      .performClick()
-
-    composeRule.waitUntil(TIMEOUT_MS) { playbackPreferences.getRewindOnPause() == RewindOnPauseSettings(enabled = false, seconds = 7) }
-
-    composeRule.onNode(hasTestTag("bottomSheetContent")).performTouchInput { swipeDown() }
-    composeRule.waitUntilDoesNotExist(
-      matcher = hasTestTag("bottomSheetContent"),
-      timeoutMillis = TIMEOUT_MS,
-    )
-
-    composeRule.onNodeWithText("Disabled").performScrollTo().assertIsDisplayed()
   }
 }

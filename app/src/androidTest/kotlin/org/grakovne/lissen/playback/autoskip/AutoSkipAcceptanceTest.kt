@@ -8,6 +8,8 @@ import androidx.media3.exoplayer.source.MediaSource
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.verify
 import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
+import org.grakovne.lissen.playback.RealPlayerTest
+import org.grakovne.lissen.playback.SilenceFactory
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -20,7 +22,7 @@ import org.junit.runner.RunWith
  */
 @OptIn(UnstableApi::class)
 @RunWith(AndroidJUnit4::class)
-class AutoSkipAcceptanceTest : AutoSkipOnRealPlayer() {
+class AutoSkipAcceptanceTest : RealPlayerTest() {
   override val item = item(id = "auto-skip-acceptance-${System.nanoTime()}", chapterSeconds = listOf(6, 16, 20, 6))
 
   override val mediaSourceFactory: MediaSource.Factory = SilenceFactory()

@@ -178,10 +178,11 @@
     <string name="sleep_timer_settings_title">Настройки таймера</string>
     <string name="sleep_timer_settings_description">Настройте управление таймером</string>
     <string name="sleep_timer_fade_title">Плавное затухание</string>
+    <string name="sleep_timer_fade_disabled">Отключено</string>
     <string name="rewind_interval">Интервал перемотки назад</string>
     <string name="forward_interval">Интервал перемотки вперёд</string>
     <string name="rewind_on_pause_title">Перемотка назад при паузе</string>
-    <string name="setting_disabled">Отключено</string>
+    <string name="rewind_on_pause_disabled">Отключена</string>
     <string name="continue_playback_shortcut_title">Продолжить</string>
     <string name="continue_playback_shortcut_description">Продолжить слушать</string>
     <string name="playing_item_details_narrator">Чтец</string>

@@ -142,7 +142,7 @@ class PlaybackSettingsViewModelTest {
     }
 
     @Test
-    fun `preferRewindOnPause off keeps the stored seconds`() {
+    fun `preferRewindOnPause off persists as disabled`() {
       every { playback.getRewindOnPause() } returns RewindOnPauseSettings(enabled = true, seconds = 10)
 
       viewModel.preferRewindOnPause(null)
@@ -175,7 +175,7 @@ class PlaybackSettingsViewModelTest {
     }
 
     @Test
-    fun `preferSleepTimerFade off keeps the stored seconds`() {
+    fun `preferSleepTimerFade off persists as disabled`() {
       every { playback.getSleepTimerSettings() } returns SleepTimerSettings(fadeEnabled = true, fadeSeconds = 45)
 
       viewModel.preferSleepTimerFade(null)
