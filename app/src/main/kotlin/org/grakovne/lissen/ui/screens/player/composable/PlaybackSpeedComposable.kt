@@ -14,13 +14,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalView
@@ -43,7 +38,6 @@ fun PlaybackSpeedComposable(
   onDismissRequest: () -> Unit,
 ) {
   val view: View = LocalView.current
-  var selectedPlaybackSpeed by remember { mutableFloatStateOf(currentSpeed) }
 
   LissenModalBottomSheet(
     containerColor = colorScheme.background,
@@ -63,16 +57,13 @@ fun PlaybackSpeedComposable(
         )
 
         PlaybackSpeedSlider(
-          speed = selectedPlaybackSpeed,
+          speed = currentSpeed,
           speedRange = (PlaybackGeometry.MIN_PLAYBACK_SPEED..PlaybackGeometry.MAX_PLAYBACK_SPEED),
           modifier =
             Modifier
               .fillMaxWidth()
               .padding(vertical = 16.dp),
-          onSpeedUpdate = {
-            selectedPlaybackSpeed = it
-            onSpeedChange(it)
-          },
+          onSpeedUpdate = onSpeedChange,
         )
 
         Row(
@@ -83,7 +74,6 @@ fun PlaybackSpeedComposable(
             FilledTonalButton(
               onClick = {
                 withHaptic(view) {
-                  selectedPlaybackSpeed = value
                   onSpeedChange(value)
                 }
               },
@@ -92,17 +82,13 @@ fun PlaybackSpeedComposable(
               colors =
                 ButtonDefaults.filledTonalButtonColors(
                   containerColor =
-                    if (selectedPlaybackSpeed ==
-                      value
-                    ) {
+                    if (currentSpeed == value) {
                       colorScheme.primary
                     } else {
                       colorScheme.surfaceContainer
                     },
                   contentColor =
-                    if (selectedPlaybackSpeed ==
-                      value
-                    ) {
+                    if (currentSpeed == value) {
                       colorScheme.onPrimary
                     } else {
                       colorScheme.onSurfaceVariant
@@ -113,7 +99,7 @@ fun PlaybackSpeedComposable(
               Text(
                 text = String.format(Locale.US, "%.1f", value),
                 style =
-                  if (selectedPlaybackSpeed == value) {
+                  if (currentSpeed == value) {
                     typography.labelMedium.copy(fontWeight = FontWeight.Bold)
                   } else {
                     typography.labelMedium
