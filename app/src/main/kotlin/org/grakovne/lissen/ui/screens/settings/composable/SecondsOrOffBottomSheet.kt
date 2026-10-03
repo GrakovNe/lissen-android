@@ -88,7 +88,7 @@ fun SecondsOrOffBottomSheet(
           },
         )
 
-        // seven buttons at 56 dp do not fit a narrow screen, so they share the width
+        // the seven buttons of the rewind sheet do not fit a narrow screen at 56 dp, so they share the width
         Row(
           modifier = Modifier.fillMaxWidth(),
           horizontalArrangement = Arrangement.SpaceEvenly,
