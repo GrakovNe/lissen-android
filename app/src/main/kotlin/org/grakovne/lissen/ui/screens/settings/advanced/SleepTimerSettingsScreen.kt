@@ -98,4 +98,4 @@ internal fun SleepTimerSettingsScreenContent(
   }
 }
 
-private val fadeTimePresets = listOf(5, 10, 15, 30, 60)
+private val fadeTimePresets = listOf(10, 15, 30, 60)

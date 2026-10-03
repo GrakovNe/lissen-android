@@ -7,11 +7,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
@@ -88,7 +86,6 @@ fun SecondsOrOffBottomSheet(
           },
         )
 
-        // the seven buttons of the rewind sheet do not fit a narrow screen at 56 dp, so they share the width
         Row(
           modifier = Modifier.fillMaxWidth(),
           horizontalArrangement = Arrangement.SpaceEvenly,
@@ -101,11 +98,7 @@ fun SecondsOrOffBottomSheet(
                   onUpdate(preset)
                 }
               },
-              modifier =
-                Modifier
-                  .weight(1f, fill = false)
-                  .widthIn(max = 56.dp)
-                  .aspectRatio(1f),
+              modifier = Modifier.size(56.dp),
               shape = CircleShape,
               colors =
                 ButtonDefaults.filledTonalButtonColors(

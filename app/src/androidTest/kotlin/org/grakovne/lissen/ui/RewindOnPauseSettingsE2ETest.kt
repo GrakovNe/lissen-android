@@ -106,10 +106,10 @@ class RewindOnPauseSettingsE2ETest {
     )
 
     composeRule
-      .onNode(hasText("7") and SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
+      .onNode(hasText("5") and SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
       .performClick()
 
-    composeRule.waitUntil(TIMEOUT_MS) { playbackPreferences.getRewindOnPause() == RewindOnPauseSettings(enabled = true, seconds = 7) }
+    composeRule.waitUntil(TIMEOUT_MS) { playbackPreferences.getRewindOnPause() == RewindOnPauseSettings(enabled = true, seconds = 5) }
 
     composeRule.onNode(hasTestTag("bottomSheetContent")).performTouchInput { swipeDown() }
     composeRule.waitUntilDoesNotExist(
@@ -117,6 +117,6 @@ class RewindOnPauseSettingsE2ETest {
       timeoutMillis = TIMEOUT_MS,
     )
 
-    composeRule.onNodeWithText("7 seconds").performScrollTo().assertIsDisplayed()
+    composeRule.onNodeWithText("5 seconds").performScrollTo().assertIsDisplayed()
   }
 }

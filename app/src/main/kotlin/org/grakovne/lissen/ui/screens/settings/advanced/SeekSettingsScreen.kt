@@ -217,4 +217,4 @@ private fun SeekTimeBottomSheet(
 private fun Context.seconds(seconds: Int): String = resources.getQuantityString(R.plurals.seek_interval_seconds, seconds, seconds)
 
 private val seekTimePresets = listOf(5, 10, 15, 30, 60)
-private val rewindOnPausePresets = listOf(1, 3, 5, 7, 10, 30)
+private val rewindOnPausePresets = listOf(1, 3, 5, 10)
