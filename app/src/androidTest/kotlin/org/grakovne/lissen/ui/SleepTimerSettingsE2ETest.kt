@@ -91,19 +91,6 @@ class SleepTimerSettingsE2ETest {
     )
 
     composeRule.onNodeWithText("Fade out").assertIsDisplayed()
-    composeRule.onNodeWithText("Reduce volume when playback stops").assertIsDisplayed()
-  }
-
-  @Test
-  fun sleepTimerSettings_fadeDurationRowIsVisible() {
-    navigateToSleepTimerSettings()
-
-    composeRule.waitUntilAtLeastOneExists(
-      matcher = hasText("Fade duration"),
-      timeoutMillis = TIMEOUT_MS,
-    )
-
-    composeRule.onNodeWithText("Fade duration").assertIsDisplayed()
   }
 
   @Test
@@ -117,7 +104,7 @@ class SleepTimerSettingsE2ETest {
     )
 
     composeRule.onNodeWithText("Default sleep timer while playing").assertIsDisplayed()
-    composeRule.onNodeWithText("Disabled").performScrollTo().assertIsDisplayed()
+    composeRule.onNode(hasText("Default sleep timer while playing") and hasText("Disabled")).performScrollTo().assertIsDisplayed()
   }
 
   @Test
@@ -130,7 +117,7 @@ class SleepTimerSettingsE2ETest {
       timeoutMillis = TIMEOUT_MS,
     )
 
-    composeRule.onNodeWithText("Disabled").performScrollTo().assertIsDisplayed()
+    composeRule.onNode(hasText("Default sleep timer while playing") and hasText("Disabled")).performScrollTo().assertIsDisplayed()
 
     composeRule.onNodeWithText("Default sleep timer while playing").performClick()
 

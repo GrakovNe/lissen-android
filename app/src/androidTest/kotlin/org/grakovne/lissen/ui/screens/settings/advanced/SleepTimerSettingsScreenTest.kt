@@ -28,8 +28,7 @@ class SleepTimerSettingsScreenTest {
 
   private fun viewModelWith(defaultTimerOption: TimerOption?): PlaybackSettingsViewModel {
     val viewModel = mockk<PlaybackSettingsViewModel>(relaxed = true)
-    every { viewModel.sleepTimerFadeEnabled } returns MutableStateFlow(false)
-    every { viewModel.sleepTimerFadeSeconds } returns MutableStateFlow(30)
+    every { viewModel.sleepTimerFade } returns MutableStateFlow(30)
     every { viewModel.defaultTimerOption } returns MutableStateFlow(defaultTimerOption)
     return viewModel
   }
@@ -45,7 +44,7 @@ class SleepTimerSettingsScreenTest {
     }
 
     composeRule.onNodeWithText("Fade out").assertIsDisplayed()
-    composeRule.onNodeWithText("Fade duration").assertIsDisplayed()
+    composeRule.onNodeWithText("30 seconds").assertIsDisplayed()
     composeRule.onNodeWithText("Default sleep timer while playing").assertIsDisplayed()
     composeRule.onNodeWithText("Disabled").assertIsDisplayed()
   }

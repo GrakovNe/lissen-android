@@ -12,7 +12,7 @@ data class SleepTimerSettings(
   fun clamped(): SleepTimerSettings = copy(fadeSeconds = fadeSeconds.coerceIn(MIN_FADE_SECONDS, MAX_FADE_SECONDS))
 
   companion object {
-    const val MIN_FADE_SECONDS = 5
+    const val MIN_FADE_SECONDS = 1
     const val MAX_FADE_SECONDS = 60
     const val DEFAULT_FADE_SECONDS = 30
 

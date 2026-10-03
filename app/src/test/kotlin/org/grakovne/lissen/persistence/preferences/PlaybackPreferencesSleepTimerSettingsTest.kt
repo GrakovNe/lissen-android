@@ -55,7 +55,7 @@ class PlaybackPreferencesSleepTimerSettingsTest {
       assertEquals(SleepTimerSettings.MAX_FADE_SECONDS, preferences.getSleepTimerSettings().fadeSeconds)
 
       every { sharedPreferences.getString("sleep_timer_settings", null) } returns
-        """{"fadeEnabled":true,"fadeSeconds":1}"""
+        """{"fadeEnabled":true,"fadeSeconds":0}"""
       assertEquals(SleepTimerSettings.MIN_FADE_SECONDS, preferences.getSleepTimerSettings().fadeSeconds)
     }
 

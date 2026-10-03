@@ -5,11 +5,11 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.assertIsEnabled
-import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -93,30 +93,18 @@ class RewindOnPauseSettingsE2ETest {
   }
 
   @Test
-  fun seekSettings_rewindOnPauseIsOffWithThreeSeconds() {
+  fun seekSettings_rewindOnPauseIsOffByDefault() {
     navigateToSeekSettings()
 
     composeRule.onNodeWithText("Rewind on pause").performScrollTo().assertIsDisplayed()
-    composeRule
-      .onNodeWithText("Rewind on pause interval")
-      .performScrollTo()
-      .assertIsDisplayed()
-      .assertIsNotEnabled()
-    composeRule.onNodeWithText("3 seconds").performScrollTo().assertIsDisplayed()
+    composeRule.onNodeWithText("Disabled").performScrollTo().assertIsDisplayed()
   }
 
   @Test
-  fun seekSettings_rewindOnPauseIntervalIsPickedOnceEnabled() {
+  fun seekSettings_rewindOnPauseIsPickedFromTheSheet() {
     navigateToSeekSettings()
 
     composeRule.onNodeWithText("Rewind on pause").performScrollTo().performClick()
-    composeRule.waitUntil(TIMEOUT_MS) { playbackPreferences.getRewindOnPause().enabled }
-
-    composeRule
-      .onNodeWithText("Rewind on pause interval")
-      .performScrollTo()
-      .assertIsEnabled()
-      .performClick()
     composeRule.waitUntilAtLeastOneExists(
       matcher = hasTestTag("bottomSheetContent"),
       timeoutMillis = TIMEOUT_MS,
@@ -138,17 +126,32 @@ class RewindOnPauseSettingsE2ETest {
   }
 
   @Test
-  fun seekSettings_rewindOnPauseOffAgainKeepsTheIntervalAndDisablesTheRow() {
-    playbackPreferences.saveRewindOnPause(RewindOnPauseSettings(enabled = true, seconds = 15))
+  fun seekSettings_rewindOnPauseSwitchedOffKeepsItsSeconds() {
+    playbackPreferences.saveRewindOnPause(RewindOnPauseSettings(enabled = true, seconds = 7))
     navigateToSeekSettings()
 
-    composeRule.onNodeWithText("Rewind on pause interval").performScrollTo().assertIsEnabled()
-    composeRule.onNodeWithText("15 seconds").performScrollTo().assertIsDisplayed()
+    composeRule.onNodeWithText("7 seconds").performScrollTo().assertIsDisplayed()
 
     composeRule.onNodeWithText("Rewind on pause").performScrollTo().performClick()
-    composeRule.waitUntil(TIMEOUT_MS) { playbackPreferences.getRewindOnPause() == RewindOnPauseSettings(enabled = false, seconds = 15) }
+    composeRule.waitUntilAtLeastOneExists(
+      matcher = hasTestTag("bottomSheetContent"),
+      timeoutMillis = TIMEOUT_MS,
+    )
 
-    composeRule.onNodeWithText("Rewind on pause interval").performScrollTo().assertIsNotEnabled()
-    composeRule.onNodeWithText("15 seconds").performScrollTo().assertIsDisplayed()
+    // the first preset is the cross
+    composeRule
+      .onAllNodes(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button) and hasAnyAncestor(hasTestTag("bottomSheetContent")))
+      .onFirst()
+      .performClick()
+
+    composeRule.waitUntil(TIMEOUT_MS) { playbackPreferences.getRewindOnPause() == RewindOnPauseSettings(enabled = false, seconds = 7) }
+
+    composeRule.onNode(hasTestTag("bottomSheetContent")).performTouchInput { swipeDown() }
+    composeRule.waitUntilDoesNotExist(
+      matcher = hasTestTag("bottomSheetContent"),
+      timeoutMillis = TIMEOUT_MS,
+    )
+
+    composeRule.onNodeWithText("Disabled").performScrollTo().assertIsDisplayed()
   }
 }

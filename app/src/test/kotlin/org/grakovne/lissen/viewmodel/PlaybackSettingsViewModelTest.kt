@@ -21,6 +21,7 @@ import org.grakovne.lissen.playback.EqualizerCapabilities
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -124,36 +125,30 @@ class PlaybackSettingsViewModelTest {
     fun `rewind on pause is initialized from preferences`() {
       every { playback.getRewindOnPause() } returns RewindOnPauseSettings(enabled = true, seconds = 10)
 
-      assertEquals(
-        RewindOnPauseSettings(enabled = true, seconds = 10),
-        PlaybackSettingsViewModel(playback, equalizerBandProvider).rewindOnPause.value,
-      )
+      assertEquals(10, PlaybackSettingsViewModel(playback, equalizerBandProvider).rewindOnPause.value)
     }
 
     @Test
-    fun `preferRewindOnPauseEnabled off keeps the seconds`() {
-      viewModel.preferRewindOnPauseSeconds(10)
-      viewModel.preferRewindOnPauseEnabled(false)
-
-      assertEquals(RewindOnPauseSettings(enabled = false, seconds = 10), viewModel.rewindOnPause.value)
-      verify { playback.saveRewindOnPause(RewindOnPauseSettings(enabled = false, seconds = 10)) }
+    fun `a stored rewind that is off reads as none`() {
+      assertNull(viewModel.rewindOnPause.value)
     }
 
     @Test
-    fun `preferRewindOnPauseEnabled updates state and persists`() {
-      viewModel.preferRewindOnPauseEnabled(true)
+    fun `preferRewindOnPause switches on with the seconds and persists`() {
+      viewModel.preferRewindOnPause(10)
 
-      assertEquals(RewindOnPauseSettings(enabled = true, seconds = 3), viewModel.rewindOnPause.value)
-      verify { playback.saveRewindOnPause(RewindOnPauseSettings(enabled = true, seconds = 3)) }
-    }
-
-    @Test
-    fun `preferRewindOnPauseSeconds keeps the toggle and persists`() {
-      viewModel.preferRewindOnPauseEnabled(true)
-      viewModel.preferRewindOnPauseSeconds(10)
-
-      assertEquals(RewindOnPauseSettings(enabled = true, seconds = 10), viewModel.rewindOnPause.value)
+      assertEquals(10, viewModel.rewindOnPause.value)
       verify { playback.saveRewindOnPause(RewindOnPauseSettings(enabled = true, seconds = 10)) }
+    }
+
+    @Test
+    fun `preferRewindOnPause off keeps the stored seconds`() {
+      every { playback.getRewindOnPause() } returns RewindOnPauseSettings(enabled = true, seconds = 10)
+
+      viewModel.preferRewindOnPause(null)
+
+      assertNull(viewModel.rewindOnPause.value)
+      verify { playback.saveRewindOnPause(RewindOnPauseSettings(enabled = false, seconds = 10)) }
     }
   }
 
@@ -161,27 +156,31 @@ class PlaybackSettingsViewModelTest {
   inner class SleepTimerFadePreference {
     @Test
     fun `fade state is initialized from preferences`() {
-      assertFalse(viewModel.sleepTimerFadeEnabled.value)
-      assertEquals(SleepTimerSettings.DEFAULT_FADE_SECONDS, viewModel.sleepTimerFadeSeconds.value)
+      every { playback.getSleepTimerSettings() } returns SleepTimerSettings(fadeEnabled = true, fadeSeconds = 45)
+
+      assertEquals(45, PlaybackSettingsViewModel(playback, equalizerBandProvider).sleepTimerFade.value)
     }
 
     @Test
-    fun `preferSleepTimerFadeEnabled updates state and persists`() {
-      viewModel.preferSleepTimerFadeEnabled(true)
-
-      assertTrue(viewModel.sleepTimerFadeEnabled.value)
-      verify {
-        playback.saveSleepTimerSettings(
-          SleepTimerSettings(fadeEnabled = true, fadeSeconds = SleepTimerSettings.DEFAULT_FADE_SECONDS),
-        )
-      }
+    fun `a stored fade that is off reads as none`() {
+      assertNull(viewModel.sleepTimerFade.value)
     }
 
     @Test
-    fun `preferSleepTimerFadeSeconds updates state and persists`() {
-      viewModel.preferSleepTimerFadeSeconds(45)
+    fun `preferSleepTimerFade switches on with the seconds and persists`() {
+      viewModel.preferSleepTimerFade(45)
 
-      assertEquals(45, viewModel.sleepTimerFadeSeconds.value)
+      assertEquals(45, viewModel.sleepTimerFade.value)
+      verify { playback.saveSleepTimerSettings(SleepTimerSettings(fadeEnabled = true, fadeSeconds = 45)) }
+    }
+
+    @Test
+    fun `preferSleepTimerFade off keeps the stored seconds`() {
+      every { playback.getSleepTimerSettings() } returns SleepTimerSettings(fadeEnabled = true, fadeSeconds = 45)
+
+      viewModel.preferSleepTimerFade(null)
+
+      assertNull(viewModel.sleepTimerFade.value)
       verify { playback.saveSleepTimerSettings(SleepTimerSettings(fadeEnabled = false, fadeSeconds = 45)) }
     }
   }

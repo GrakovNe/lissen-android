@@ -273,8 +273,6 @@
     <string name="sleep_timer_settings_title">Impostazioni timer</string>
     <string name="sleep_timer_settings_description">Configura i controlli del timer</string>
     <string name="sleep_timer_fade_title">Dissolvenza in uscita</string>
-    <string name="sleep_timer_fade_description">Diminuisci il volume quando la riproduzione si interrompe</string>
-    <string name="sleep_timer_fade_duration_title">Durata dissolvenza</string>
     <string name="a11y_rewind">Torna indietro</string>
     <string name="a11y_fast_forward">Avanti veloce</string>
     <string name="player_state_widget_label">In riproduzione</string>

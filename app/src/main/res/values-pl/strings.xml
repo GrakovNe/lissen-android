@@ -290,8 +290,6 @@
     <string name="sleep_timer_settings_title">Ustawienia uśpienia</string>
     <string name="sleep_timer_settings_description">Skonfiguruj zegar uśpienia</string>
     <string name="sleep_timer_fade_title">Zanikanie</string>
-    <string name="sleep_timer_fade_description">Zmniejsz głośność, gdy odtwarzanie się zatrzyma</string>
-    <string name="sleep_timer_fade_duration_title">Długość zanikania</string>
     <string name="episode_ordering_published_at_option">Data publikacji</string>
     <string name="episode_ordering_season_option">Sezon</string>
     <string name="episode_ordering_episode_option">Odcinek</string>
