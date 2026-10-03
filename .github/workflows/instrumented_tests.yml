@@ -32,17 +32,20 @@ jobs:
 
       - name: Ensure emulator packages
         run: |
-          # The runner SDK (/opt/android-sdk) is pre-provisioned and not
-          # writable by the runner user; only install what is genuinely
-          # missing so an available update never fails on permissions.
-          missing=0
-          [ -x "$ANDROID_HOME/emulator/emulator" ] || missing=1
-          command -v adb >/dev/null || missing=1
-          [ -d "$ANDROID_HOME/system-images/android-34/google_apis/x86_64" ] || missing=1
-          if [ "$missing" = "1" ]; then
-            yes | sdkmanager --licenses >/dev/null 2>&1 || true
-            sdkmanager "emulator" "platform-tools" "system-images;android-34;google_apis;x86_64"
+          # The runner keeps a pre-provisioned SDK at /opt/android-sdk that is
+          # not writable by the runner user, and its tools are not on PATH.
+          # Locate the binaries by path, install only what is genuinely
+          # missing, then export ANDROID_HOME/PATH for the following steps.
+          SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/opt/android-sdk}}"
+          SDKM="$SDK/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDK/emulator/emulator" ] || [ ! -x "$SDK/platform-tools/adb" ] ||
+             [ ! -d "$SDK/system-images/android-34/google_apis/x86_64" ]; then
+            yes | "$SDKM" --licenses >/dev/null 2>&1 || true
+            "$SDKM" "emulator" "platform-tools" "system-images;android-34;google_apis;x86_64"
           fi
+          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+          echo "$SDK/platform-tools" >> "$GITHUB_PATH"
+          echo "$SDK/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
 
       - name: Build test APKs
         run: >
