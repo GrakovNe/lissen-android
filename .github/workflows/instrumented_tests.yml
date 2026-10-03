@@ -27,19 +27,22 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
 
-      # The old emulator-runner action installed the SDK itself; do it
-      # explicitly now (no-op when ANDROID_HOME is already provisioned).
-      - name: Set Up Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
 
       - name: Ensure emulator packages
         run: |
-          SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
-          yes | "$SDKM" --licenses >/dev/null 2>&1 || true
-          "$SDKM" "emulator" "platform-tools" "system-images;android-34;google_apis;x86_64"
+          # The runner SDK (/opt/android-sdk) is pre-provisioned and not
+          # writable by the runner user; only install what is genuinely
+          # missing so an available update never fails on permissions.
+          missing=0
+          [ -x "$ANDROID_HOME/emulator/emulator" ] || missing=1
+          command -v adb >/dev/null || missing=1
+          [ -d "$ANDROID_HOME/system-images/android-34/google_apis/x86_64" ] || missing=1
+          if [ "$missing" = "1" ]; then
+            yes | sdkmanager --licenses >/dev/null 2>&1 || true
+            sdkmanager "emulator" "platform-tools" "system-images;android-34;google_apis;x86_64"
+          fi
 
       - name: Build test APKs
         run: >

@@ -81,6 +81,7 @@ set_avd_config() {
 
 create_avds() {
   local avdmanager="$SDK/cmdline-tools/latest/bin/avdmanager"
+  [ -x "$avdmanager" ] || avdmanager="$(command -v avdmanager)"
   for slot in $SLOTS; do
     local name="$AVD_PREFIX-$slot" ram="$E2E_RAM"
     [ "$slot" = "0" ] && ram="$CONNECTED_RAM"
