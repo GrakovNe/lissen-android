@@ -54,6 +54,19 @@ internal data class SkippableChapter(
   fun introTargetMs(positionMs: Long): Long? = introEndMs.takeIf { configuration.introSeconds > 0 && positionMs < it }
 
   fun outroReached(positionMs: Long): Boolean = configuration.outroSeconds > 0 && positionMs >= outroStartMs
+
+  /**
+   * The earliest position the rewind on pause may reach from [positionMs]: inside the outro it
+   * stays there, otherwise it does not enter the intro unless playback is inside it already.
+   * One millisecond past the outro start, because a seek exactly onto a message position
+   * delivers the message again.
+   */
+  fun rewindLimitMs(positionMs: Long): Long =
+    when {
+      outroReached(positionMs) -> outroStartMs + 1
+      positionMs >= introEndMs -> introEndMs
+      else -> 0L
+    }
 }
 
 /** Null when there is nothing to skip, or when the skips would cover the whole chapter. */

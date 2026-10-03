@@ -1,7 +1,7 @@
 package org.grakovne.lissen.ui.screens.settings.advanced
 
+import android.content.Context
 import android.view.View
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,19 +15,13 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme.colorScheme
 import androidx.compose.material3.MaterialTheme.typography
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -40,16 +34,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.heading
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
+import org.grakovne.lissen.domain.RewindOnPauseSettings
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.slider.SeekTimeSlider
+import org.grakovne.lissen.ui.screens.settings.composable.DisableableTimeBottomSheet
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
 import org.grakovne.lissen.viewmodel.PlaybackSettingsViewModel
 
@@ -58,9 +52,12 @@ import org.grakovne.lissen.viewmodel.PlaybackSettingsViewModel
 fun SeekSettingsScreen(onBack: () -> Unit) {
   val viewModel: PlaybackSettingsViewModel = hiltViewModel()
   val preferredSeekTime by viewModel.seekTime.collectAsState()
+  val rewindOnPause by viewModel.rewindOnPause.collectAsState()
+  val context = LocalContext.current
 
   var rewindExpanded by remember { mutableStateOf(false) }
   var forwardExpanded by remember { mutableStateOf(false) }
+  var rewindOnPauseExpanded by remember { mutableStateOf(false) }
 
   Scaffold(
     topBar = {
@@ -82,16 +79,22 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
       ) {
-        SeekTimeRowComposable(
+        AdvancedSettingsSimpleItemComposable(
           title = stringResource(R.string.rewind_interval),
-          currentSeconds = preferredSeekTime.rewind,
-          onClicked = { rewindExpanded = true },
+          description = context.seconds(preferredSeekTime.rewind),
+          onclick = { rewindExpanded = true },
         )
 
-        SeekTimeRowComposable(
+        AdvancedSettingsSimpleItemComposable(
           title = stringResource(R.string.forward_interval),
-          currentSeconds = preferredSeekTime.forward,
-          onClicked = { forwardExpanded = true },
+          description = context.seconds(preferredSeekTime.forward),
+          onclick = { forwardExpanded = true },
+        )
+
+        AdvancedSettingsSimpleItemComposable(
+          title = stringResource(R.string.rewind_on_pause_title),
+          description = rewindOnPause?.let { context.seconds(it) } ?: stringResource(R.string.rewind_on_pause_disabled),
+          onclick = { rewindOnPauseExpanded = true },
         )
       }
     },
@@ -112,6 +115,19 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
       currentSeconds = preferredSeekTime.forward,
       onDismissRequest = { forwardExpanded = false },
       onUpdate = { viewModel.preferForward(it) },
+    )
+  }
+
+  if (rewindOnPauseExpanded) {
+    DisableableTimeBottomSheet(
+      title = stringResource(R.string.rewind_on_pause_title),
+      seconds = rewindOnPause,
+      maxSeconds = RewindOnPauseSettings.MAX_SECONDS,
+      presets = rewindOnPausePresets,
+      secondsLabel = R.plurals.seek_interval_seconds,
+      offLabel = R.string.rewind_on_pause_disabled,
+      onDismissRequest = { rewindOnPauseExpanded = false },
+      onUpdate = { viewModel.preferRewindOnPause(it) },
     )
   }
 }
@@ -200,33 +216,7 @@ private fun SeekTimeBottomSheet(
   )
 }
 
-@Composable
-private fun SeekTimeRowComposable(
-  title: String,
-  currentSeconds: Int,
-  onClicked: () -> Unit,
-) {
-  val context = LocalContext.current
-
-  Row(
-    modifier =
-      Modifier
-        .fillMaxWidth()
-        .clickable { onClicked() }
-        .padding(horizontal = 24.dp, vertical = 12.dp),
-  ) {
-    Column(modifier = Modifier.weight(1f)) {
-      Text(
-        text = title,
-        style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-        modifier = Modifier.padding(bottom = 4.dp),
-      )
-      Text(
-        text = context.resources.getQuantityString(R.plurals.seek_interval_seconds, currentSeconds, currentSeconds),
-        style = typography.bodyMedium,
-      )
-    }
-  }
-}
+private fun Context.seconds(seconds: Int): String = resources.getQuantityString(R.plurals.seek_interval_seconds, seconds, seconds)
 
 private val seekTimePresets = listOf(5, 10, 15, 30, 60)
+private val rewindOnPausePresets = listOf(1, 3, 5, 10)

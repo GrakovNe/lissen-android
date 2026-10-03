@@ -11,7 +11,9 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import org.grakovne.lissen.common.AudioFocusLossPolicy
 import org.grakovne.lissen.domain.EqualizerSettings
+import org.grakovne.lissen.domain.RewindOnPauseSettings
 import org.grakovne.lissen.domain.SeekTime
+import org.grakovne.lissen.domain.SleepTimerSettings
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
 import org.grakovne.lissen.playback.EqualizerBandProvider
@@ -39,14 +41,14 @@ class PlaybackSettingsViewModel
     private val _seekTime = MutableStateFlow(playback.getSeekTime())
     val seekTime: StateFlow<SeekTime> = _seekTime.asStateFlow()
 
+    private val _rewindOnPause = MutableStateFlow(playback.getRewindOnPause().secondsOrNull())
+    val rewindOnPause: StateFlow<Int?> = _rewindOnPause.asStateFlow()
+
     private val _defaultTimerOption = MutableStateFlow<TimerOption?>(playback.getDefaultTimerOption())
     val defaultTimerOption: StateFlow<TimerOption?> = _defaultTimerOption.asStateFlow()
 
-    private val _sleepTimerFadeEnabled = MutableStateFlow(playback.getSleepTimerSettings().fadeEnabled)
-    val sleepTimerFadeEnabled: StateFlow<Boolean> = _sleepTimerFadeEnabled.asStateFlow()
-
-    private val _sleepTimerFadeSeconds = MutableStateFlow(playback.getSleepTimerSettings().fadeSeconds)
-    val sleepTimerFadeSeconds: StateFlow<Int> = _sleepTimerFadeSeconds.asStateFlow()
+    private val _sleepTimerFade = MutableStateFlow(playback.getSleepTimerSettings().fadeSecondsOrNull())
+    val sleepTimerFade: StateFlow<Int?> = _sleepTimerFade.asStateFlow()
 
     private val _softwareCodecsEnabled = MutableStateFlow(playback.getSoftwareCodecsEnabled())
     val softwareCodecsEnabled: StateFlow<Boolean> = _softwareCodecsEnabled.asStateFlow()
@@ -98,22 +100,26 @@ class PlaybackSettingsViewModel
       _seekTime.value = seekTime
     }
 
+    fun preferRewindOnPause(seconds: Int?) {
+      Timber.d("User action: preferRewindOnPause $seconds")
+      _rewindOnPause.value = seconds
+
+      val current = playback.getRewindOnPause()
+      playback.saveRewindOnPause(current.copy(enabled = seconds != null, seconds = seconds ?: current.seconds))
+    }
+
     fun saveDefaultTimerOption(option: TimerOption?) {
       Timber.d("User action: saveDefaultTimerOption option=$option")
       _defaultTimerOption.value = option
       playback.saveDefaultTimerOption(option)
     }
 
-    fun preferSleepTimerFadeEnabled(value: Boolean) {
-      Timber.d("User action: preferSleepTimerFadeEnabled $value")
-      _sleepTimerFadeEnabled.value = value
-      playback.saveSleepTimerSettings(playback.getSleepTimerSettings().copy(fadeEnabled = value))
-    }
+    fun preferSleepTimerFade(seconds: Int?) {
+      Timber.d("User action: preferSleepTimerFade $seconds")
+      _sleepTimerFade.value = seconds
 
-    fun preferSleepTimerFadeSeconds(seconds: Int) {
-      Timber.d("User action: preferSleepTimerFadeSeconds $seconds")
-      _sleepTimerFadeSeconds.value = seconds
-      playback.saveSleepTimerSettings(playback.getSleepTimerSettings().copy(fadeSeconds = seconds))
+      val current = playback.getSleepTimerSettings()
+      playback.saveSleepTimerSettings(current.copy(fadeEnabled = seconds != null, fadeSeconds = seconds ?: current.fadeSeconds))
     }
 
     fun preferSoftwareCodecsEnabled(value: Boolean) {
@@ -128,3 +134,7 @@ class PlaybackSettingsViewModel
       playback.saveAudioFocusLossPolicy(policy)
     }
   }
+
+private fun RewindOnPauseSettings.secondsOrNull(): Int? = seconds.takeIf { enabled }
+
+private fun SleepTimerSettings.fadeSecondsOrNull(): Int? = fadeSeconds.takeIf { fadeEnabled }

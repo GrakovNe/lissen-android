@@ -122,22 +122,23 @@ class SettingsGapsE2ETest {
   }
 
   @Test
-  fun settings_timerSettingsScreen_opensFadeDurationPicker() = loggedInApp {
+  fun settings_timerSettingsScreen_opensFadeSheet() = loggedInApp {
     openSettings()
     clickElement(By.text("Playback"))
     waitForElement(By.text("Timer settings"))
     clickElement(By.text("Timer settings"))
     waitForElement(By.text("Fade out"))
-    assertTrue(elementExists(By.text("Reduce volume when playback stops")))
-    clickElement(By.text("Fade duration"))
-    assertTrue("the duration picker should show a seconds label", elementExists(By.textContains("second"), 10_000))
+    // "60" is a preset inside the sheet; "Disabled" is on the screen underneath as well
+    clickUntil(By.text("Fade out"), By.text("60"))
+    tapPresetButton("15")
+    assertTrue("the fade sheet should take the preset", elementExists(By.text("15 seconds"), 10_000))
     // a back press dismisses the sheet and may pop the whole screen; either way the app
     // must land back on the timer screen or the playback list, not crash
     pressBack()
     val backOnTrack =
       elementExists(By.text("Fade out"), 10_000) ||
         elementExists(By.text("Timer settings"), 10_000)
-    assertTrue("the app should survive closing the duration picker", backOnTrack)
+    assertTrue("the app should survive closing the fade sheet", backOnTrack)
   }
 
   @Test
@@ -157,7 +158,8 @@ class SettingsGapsE2ETest {
     waitForElement(By.text("Sleep Timer"))
     tapButtonLeftOf("15")
     pressBack()
-    assertTrue("the row should be back to Disabled", elementExists(By.text("Disabled")))
+    // "Disabled" is also what the fade row says
+    waitUntilAbsent(By.text("15 minutes"))
   }
 
   @Test

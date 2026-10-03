@@ -70,7 +70,7 @@ content description, or visible string on `main`.
 | G20 | Clear thumbnail cache (5.27) | Advanced → row → confirmation dialog → "Clear" → sheet closes (toast not observable via uiautomator on the headless emulator) | ✅ |
 | G21 | Export logs (5.26) | Advanced → "Export logs" → share sheet opens or "No logs available"; no crash | ✅ |
 | G22 | Equalizer screen (5.8) | Playback → "Equalizer" → band sliders (desc `… hertz band`) + "Restore default" → back | ✅ |
-| G23 | Timer settings sub-screen (5.9) | Playback → "Timer settings" → "Fade out" row; "Fade duration" picker opens | ✅ |
+| G23 | Timer settings sub-screen (5.9) | Playback → "Timer settings" → "Fade out" row opens the seconds-or-off sheet; the 15 s preset reaches the row | ✅ |
 | G24 | Default sleep timer (5.10) | Playback → "Default sleep timer while playing" → "When the chapter ends" → reflected → revert "Disabled" | ✅ |
 | G25 | Seek interval contract (5.4) | Playback → "Seek settings" → set rewind interval to a new value → player rewind button reads "Rewind N seconds" → revert | ✅ |
 | G26 | Color scheme survives restart (5.1b) | set Black → force-stop → relaunch → Appearance shows "Black" → revert to System | ✅ |
@@ -84,7 +84,7 @@ content description, or visible string on `main`.
 | 7.1 resume at saved position | position clock frozen; G10 asserts the observable half (same chapter) |
 | 7.2 network cut during playback | same clock problem + flaky emulator link |
 | Toggle on/off state assertions (Material You, SSL bypass, autodownload…) | toggles expose no `checkable`/`checked` node; only row presence is assertable |
-| Boosted volume, fade duration value | continuous sliders, no discrete selection |
+| Boosted volume | continuous slider, no discrete selection |
 | Bookmark create/delete (4.5+) | mutates the shared demo server irreversibly; no delete affordance |
 | Storage location switch (5.15) | wipes downloads; dialog open/cancel only |
 | Sleep timer firing, end-of-chapter default timer | ≥10 min wall clock |

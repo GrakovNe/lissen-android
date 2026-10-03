@@ -18,6 +18,7 @@ import org.grakovne.lissen.common.moshi
 import org.grakovne.lissen.domain.AllItemsDownloadOption
 import org.grakovne.lissen.domain.EqualizerSettings
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.RewindOnPauseSettings
 import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.domain.SleepTimerSettings
 import org.grakovne.lissen.domain.connection.LocalUrl
@@ -192,6 +193,16 @@ class SettingsBackupManagerTest {
     }
 
     @Test
+    fun `maps rewind on pause settings`() {
+      every { sharedPreferences.getString("rewind_on_pause_settings", null) } returns
+        """{"enabled":true,"seconds":10}"""
+
+      val backup = preferences.exportSettings()
+
+      assertEquals(RewindOnPauseSettings(enabled = true, seconds = 10), backup.rewindOnPause)
+    }
+
+    @Test
     fun `maps sleep timer settings`() {
       every { sharedPreferences.getString("sleep_timer_settings", null) } returns
         """{"fadeEnabled":true,"fadeSeconds":45}"""
@@ -255,6 +266,7 @@ class SettingsBackupManagerTest {
       assertEquals("disabled", backup.autoDownloadOptionId)
       assertEquals(listOf(LibraryType.LIBRARY.name, LibraryType.PODCAST.name), backup.autoDownloadLibraryTypes)
       assertEquals(SeekTime.Default, backup.seekTime)
+      assertEquals(RewindOnPauseSettings.Default, backup.rewindOnPause)
       assertEquals(EqualizerSettings.Default, backup.equalizer)
       assertEquals(LibraryOrderingConfiguration.default, backup.libraryOrdering)
       assertEquals(DEFAULT_USER_AGENT, backup.userAgent)
@@ -436,6 +448,20 @@ class SettingsBackupManagerTest {
       preferences.importSettings(SettingsBackup(defaultSleepTimerType = null))
       verify(exactly = 0) { editor.putString("default_sleep_timer", any()) }
       verify(exactly = 0) { editor.remove("default_sleep_timer") }
+    }
+
+    @Test
+    fun `saves rewind on pause settings`() {
+      preferences.importSettings(SettingsBackup(rewindOnPause = RewindOnPauseSettings(enabled = true, seconds = 10)))
+
+      verify { editor.putString("rewind_on_pause_settings", """{"enabled":true,"seconds":10}""") }
+    }
+
+    @Test
+    fun `skips rewind on pause settings when absent`() {
+      preferences.importSettings(SettingsBackup())
+
+      verify(exactly = 0) { editor.putString("rewind_on_pause_settings", any()) }
     }
 
     @Test

@@ -1,17 +1,15 @@
 package org.grakovne.lissen.playback.autoskip
 
 import androidx.annotation.OptIn
-import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.drm.DrmSessionManagerProvider
 import androidx.media3.exoplayer.source.MediaSource
-import androidx.media3.exoplayer.source.SilenceMediaSource
-import androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import io.mockk.verify
 import org.grakovne.lissen.domain.CurrentEpisodeTimerOption
+import org.grakovne.lissen.playback.RealPlayerTest
+import org.grakovne.lissen.playback.SilenceFactory
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -24,7 +22,7 @@ import org.junit.runner.RunWith
  */
 @OptIn(UnstableApi::class)
 @RunWith(AndroidJUnit4::class)
-class AutoSkipAcceptanceTest : AutoSkipOnRealPlayer() {
+class AutoSkipAcceptanceTest : RealPlayerTest() {
   override val item = item(id = "auto-skip-acceptance-${System.nanoTime()}", chapterSeconds = listOf(6, 16, 20, 6))
 
   override val mediaSourceFactory: MediaSource.Factory = SilenceFactory()
@@ -107,17 +105,6 @@ class AutoSkipAcceptanceTest : AutoSkipOnRealPlayer() {
     // media3 lands a seek to the very end of the last item one millisecond short of it (observed with 1.11.1)
     val exit = discontinuities.last { it.reason == Player.DISCONTINUITY_REASON_SEEK && it.fromIndex == 3 && it.toIndex == 3 }
     assertTrue("the end seek of the last chapter, among $discontinuities", exit.fromMs >= 4_000L && exit.toMs >= 5_990L)
-  }
-
-  private class SilenceFactory : MediaSource.Factory {
-    override fun setDrmSessionManagerProvider(drmSessionManagerProvider: DrmSessionManagerProvider) = this
-
-    override fun setLoadErrorHandlingPolicy(loadErrorHandlingPolicy: LoadErrorHandlingPolicy) = this
-
-    override fun getSupportedTypes() = intArrayOf(C.CONTENT_TYPE_OTHER)
-
-    override fun createMediaSource(mediaItem: MediaItem): MediaSource =
-      SilenceMediaSource(mediaItem.mediaId.removePrefix("silence:").toLong() * 1_000L)
   }
 
   private companion object {

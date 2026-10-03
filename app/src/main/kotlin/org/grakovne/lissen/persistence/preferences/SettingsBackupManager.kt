@@ -30,6 +30,7 @@ class SettingsBackupManager
         playbackSpeed = playback.getPlaybackSpeed(),
         volumeBoost = playback.getPlaybackVolumeBoost(),
         seekTime = playback.getSeekTime(),
+        rewindOnPause = playback.getRewindOnPause(),
         equalizer = playback.getEqualizer(),
         audioFocusLossPolicy = playback.getAudioFocusLossPolicy().name,
         softwareCodecsEnabled = playback.getSoftwareCodecsEnabled(),
@@ -63,6 +64,7 @@ class SettingsBackupManager
       backup.playbackSpeed?.let { playback.savePlaybackSpeed(it) }
       backup.volumeBoost?.let { playback.savePlaybackVolumeBoost(it) }
       backup.seekTime?.let { playback.saveSeekTime(it) }
+      backup.rewindOnPause?.let { playback.saveRewindOnPause(it) }
       backup.equalizer?.let { playback.saveEqualizer(it) }
 
       backup.audioFocusLossPolicy

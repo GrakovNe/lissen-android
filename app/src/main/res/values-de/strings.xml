@@ -262,8 +262,6 @@
     <string name="sleep_timer_settings_title">Timer-Einstellungen</string>
     <string name="sleep_timer_settings_description">Timer-Steuerung konfigurieren</string>
     <string name="sleep_timer_fade_title">Ausblenden</string>
-    <string name="sleep_timer_fade_description">Lautstärke verringern, wenn die Wiedergabe stoppt</string>
-    <string name="sleep_timer_fade_duration_title">Ausblenddauer</string>
     <string name="download_settings_storage_title">Speicherort</string>
     <string name="download_settings_storage_unavailable">Nicht verfügbar</string>
     <string name="download_settings_storage_switch_failed_toast">Speicherort kann nicht gewechselt werden</string>

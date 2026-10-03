@@ -262,8 +262,6 @@
     <string name="sleep_timer_settings_title">Pengaturan timer</string>
     <string name="sleep_timer_settings_description">Atur kontrol timer</string>
     <string name="sleep_timer_fade_title">Meredup perlahan</string>
-    <string name="sleep_timer_fade_description">Kurangi volume saat pemutaran berhenti</string>
-    <string name="sleep_timer_fade_duration_title">Durasi pudar</string>
     <string name="download_settings_storage_title">Lokasi penyimpanan</string>
     <string name="download_settings_storage_unavailable">Tidak tersedia</string>
     <string name="download_settings_storage_switch_failed_toast">Gagal mengubah lokasi penyimpanan</string>
