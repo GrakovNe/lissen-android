@@ -12,13 +12,17 @@ on:
 
   workflow_dispatch:
 
+concurrency:
+  group: app-build-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build:
     runs-on: self-hosted
     #runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
 
       # Set Current Date As Env Variable
       - name: Set current date as env variable
@@ -33,6 +37,9 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: '25'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
