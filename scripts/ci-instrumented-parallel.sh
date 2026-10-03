@@ -7,7 +7,6 @@
 #   slot 0  debug build + androidTest APK   -> HiltTestRunner (connected suite)
 #   slot 1  minified app + minifiedTest APK -> E2E shard 1
 #   slot 2  ...                             -> E2E shard 2
-#   slot 3  ...                             -> E2E shard 3
 #
 # The connected suite runs alone first: CoverOomReproTest measures HTTP/2
 # buffering throughput and the UI tests have wall-clock timeouts, so both
@@ -41,13 +40,12 @@ CONNECTED_INSTR="org.grakovne.lissen.debug.test/org.grakovne.lissen.HiltTestRunn
 # with SLOT_CLASSES_<n> and the connected suite's classes with CONNECTED_CLASSES
 # (smoke runs); the defaults are the full suite.
 NS=org.grakovne.lissen.minifiedtest
-SHARD_CLASSES[1]="$NS.SettingsGapsE2ETest,$NS.LoginRobustnessE2ETest,$NS.LoginFlowE2ETest"
-SHARD_CLASSES[2]="$NS.SettingsFlowE2ETest,$NS.LibraryGapsE2ETest,$NS.LibraryFlowE2ETest,$NS.RobustnessFlowE2ETest,$NS.PlaybackFlowE2ETest"
-SHARD_CLASSES[3]="$NS.PlayerTabsFlowE2ETest,$NS.PlayerGapsE2ETest,$NS.ShortcutFlowE2eTest,$NS.WidgetFlowE2eTest"
+SHARD_CLASSES[1]="$NS.SettingsGapsE2ETest,$NS.LoginRobustnessE2ETest,$NS.LoginFlowE2ETest,$NS.SettingsFlowE2ETest"
+SHARD_CLASSES[2]="$NS.LibraryGapsE2ETest,$NS.LibraryFlowE2ETest,$NS.RobustnessFlowE2ETest,$NS.PlaybackFlowE2ETest,$NS.PlayerTabsFlowE2ETest,$NS.PlayerGapsE2ETest,$NS.ShortcutFlowE2eTest,$NS.WidgetFlowE2eTest"
 
 AVD_PREFIX="ci-e2e"
 BASE_PORT=5554
-SLOTS="${FLEET_SLOTS:-0 1 2 3}"
+SLOTS="${FLEET_SLOTS:-0 1 2}"
 CONNECTED_CLASSES="${CONNECTED_CLASSES:-}"
 for slot in $SLOTS; do
   override="SLOT_CLASSES_$slot"
@@ -194,7 +192,7 @@ run_instrumentation() {
 # ---- main --------------------------------------------------------------------
 create_avds
 
-E2E_SLOTS="1 2 3"
+E2E_SLOTS="1 2"
 [ -n "${FLEET_SLOTS:-}" ] && E2E_SLOTS="$(echo " $FLEET_SLOTS " | sed 's/ 0 / /' | xargs)"
 
 log "booting slot 0 (connected suite runs alone: CoverOomReproTest and audio"
