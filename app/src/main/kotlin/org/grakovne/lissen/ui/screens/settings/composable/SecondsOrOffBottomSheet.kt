@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
@@ -86,10 +87,10 @@ fun SecondsOrOffBottomSheet(
           },
         )
 
-        // the buttons share the width: with the cross there are more of them than fit at a fixed size
+        // the buttons share the width once the cross makes 56 dp each too wide
         Row(
           modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.spacedBy(8.dp),
+          horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
           (listOf(null) + presets).forEach { preset ->
             FilledTonalButton(
@@ -101,7 +102,8 @@ fun SecondsOrOffBottomSheet(
               },
               modifier =
                 Modifier
-                  .weight(1f)
+                  .weight(1f, fill = false)
+                  .widthIn(max = 56.dp)
                   .aspectRatio(1f),
               shape = CircleShape,
               colors =

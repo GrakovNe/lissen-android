@@ -122,22 +122,22 @@ class SettingsGapsE2ETest {
   }
 
   @Test
-  fun settings_timerSettingsScreen_opensFadeDurationPicker() = loggedInApp {
+  fun settings_timerSettingsScreen_opensFadeSheet() = loggedInApp {
     openSettings()
     clickElement(By.text("Playback"))
     waitForElement(By.text("Timer settings"))
     clickElement(By.text("Timer settings"))
     waitForElement(By.text("Fade out"))
-    assertTrue(elementExists(By.text("Reduce volume when playback stops")))
-    clickElement(By.text("Fade duration"))
-    assertTrue("the duration picker should show a seconds label", elementExists(By.textContains("second"), 10_000))
+    clickElement(By.text("Fade out"))
+    // the sheet opens at the stored value: off on cleared app data
+    assertTrue("the fade sheet should show the current value", elementExists(By.text("Disabled"), 10_000))
     // a back press dismisses the sheet and may pop the whole screen; either way the app
     // must land back on the timer screen or the playback list, not crash
     pressBack()
     val backOnTrack =
       elementExists(By.text("Fade out"), 10_000) ||
         elementExists(By.text("Timer settings"), 10_000)
-    assertTrue("the app should survive closing the duration picker", backOnTrack)
+    assertTrue("the app should survive closing the fade sheet", backOnTrack)
   }
 
   @Test
