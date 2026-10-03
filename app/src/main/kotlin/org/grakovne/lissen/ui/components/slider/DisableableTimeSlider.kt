@@ -6,10 +6,11 @@ import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import kotlin.math.roundToInt
 
-/** A number of seconds, or off at the very left. */
+/** Every number of seconds from one up to [maxSeconds], or off at the very left. */
 @Composable
 fun DisableableTimeSlider(
   context: Context,
@@ -20,6 +21,8 @@ fun DisableableTimeSlider(
   modifier: Modifier = Modifier,
   onUpdate: (Int?) -> Unit,
 ) {
+  val labeledIndexes = remember(maxSeconds) { listOf(OFF) + (5..maxSeconds step 5) }
+
   CommonSlider(
     internalValue = seconds ?: OFF,
     range = OFF..maxSeconds,
@@ -31,7 +34,7 @@ fun DisableableTimeSlider(
     },
     formatIndex = { if (it == OFF) Icons.Outlined.Close else it },
     modifier = modifier,
-    labeledIndexes = listOf(OFF) + (5..maxSeconds step 5),
+    labeledIndexes = labeledIndexes,
     onUpdate = { onUpdate(it.roundToInt().coerceIn(OFF, maxSeconds).takeUnless { v -> v == OFF }) },
   )
 }

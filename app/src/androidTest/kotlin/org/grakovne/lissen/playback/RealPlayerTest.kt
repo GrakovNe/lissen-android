@@ -40,7 +40,7 @@ abstract class RealPlayerTest {
   private val instrumentation = InstrumentationRegistry.getInstrumentation()
   protected val context: Context = instrumentation.targetContext
 
-  protected val configuration = AutoSkipConfiguration(introSeconds = 2, outroSeconds = 2)
+  protected open val configuration = AutoSkipConfiguration(introSeconds = 2, outroSeconds = 2)
   protected val steps = PlaybackSteps()
   protected val synchronization = mockk<PlaybackSynchronizationService>(relaxed = true)
   protected val discontinuities = CopyOnWriteArrayList<Discontinuity>()
