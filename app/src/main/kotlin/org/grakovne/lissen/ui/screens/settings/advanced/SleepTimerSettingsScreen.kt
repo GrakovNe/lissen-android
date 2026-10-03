@@ -21,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.LibraryType
+import org.grakovne.lissen.domain.SleepTimerSettings
 import org.grakovne.lissen.ui.screens.settings.composable.DefaultTimerSettingsComposable
 import org.grakovne.lissen.ui.screens.settings.composable.DisableableTimeBottomSheet
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
@@ -89,6 +90,7 @@ internal fun SleepTimerSettingsScreenContent(
     DisableableTimeBottomSheet(
       title = stringResource(R.string.sleep_timer_fade_title),
       seconds = fade,
+      maxSeconds = SleepTimerSettings.MAX_FADE_SECONDS,
       presets = fadeTimePresets,
       secondsLabel = R.plurals.fade_duration_seconds,
       offLabel = R.string.sleep_timer_fade_disabled,

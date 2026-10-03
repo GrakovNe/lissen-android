@@ -44,6 +44,7 @@ import org.grakovne.lissen.ui.components.slider.DisableableTimeSlider
 fun DisableableTimeBottomSheet(
   title: String,
   seconds: Int?,
+  maxSeconds: Int,
   presets: List<Int>,
   @PluralsRes secondsLabel: Int,
   @StringRes offLabel: Int,
@@ -74,6 +75,7 @@ fun DisableableTimeBottomSheet(
         DisableableTimeSlider(
           context = context,
           seconds = selected,
+          maxSeconds = maxSeconds,
           secondsLabel = secondsLabel,
           offLabel = offLabel,
           modifier =

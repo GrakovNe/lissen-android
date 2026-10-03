@@ -160,6 +160,19 @@ class RewindOnPauseAcceptanceTest : RealPlayerTest() {
   }
 
   @Test
+  fun aPauseAtTheEndOfTheItemLeavesItThere() {
+    awaitOnMain("the end of the item", timeoutMs = 40_000L) { player.playbackState == Player.STATE_ENDED }
+    val endSeeks = seeksInside(3).size
+
+    onMain {
+      player.pause()
+      assertEquals(Player.STATE_ENDED, player.playbackState)
+    }
+
+    assertEquals("no rewind out of the end: $discontinuities", endSeeks, seeksInside(3).size)
+  }
+
+  @Test
   fun aDurationTimerPausesWithARewind() {
     var armedAt = 0L
     awaitOnMain("chapter 1, well inside") {

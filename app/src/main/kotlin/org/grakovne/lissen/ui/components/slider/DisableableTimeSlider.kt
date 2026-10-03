@@ -14,6 +14,7 @@ import kotlin.math.roundToInt
 fun DisableableTimeSlider(
   context: Context,
   seconds: Int?,
+  maxSeconds: Int,
   @PluralsRes secondsLabel: Int,
   @StringRes offLabel: Int,
   modifier: Modifier = Modifier,
@@ -21,21 +22,18 @@ fun DisableableTimeSlider(
 ) {
   CommonSlider(
     internalValue = seconds ?: OFF,
-    range = OFF..MAX_SECONDS,
+    range = OFF..maxSeconds,
     formatHeader = { value ->
-      when (val v = value.roundToInt().coerceIn(OFF, MAX_SECONDS)) {
+      when (val v = value.roundToInt().coerceIn(OFF, maxSeconds)) {
         OFF -> context.getString(offLabel)
         else -> context.resources.getQuantityString(secondsLabel, v, v)
       }
     },
     formatIndex = { if (it == OFF) Icons.Outlined.Close else it },
     modifier = modifier,
-    labeledIndexes = labeledIndexes,
-    onUpdate = { onUpdate(it.roundToInt().coerceIn(OFF, MAX_SECONDS).takeUnless { v -> v == OFF }) },
+    labeledIndexes = listOf(OFF) + (5..maxSeconds step 5),
+    onUpdate = { onUpdate(it.roundToInt().coerceIn(OFF, maxSeconds).takeUnless { v -> v == OFF }) },
   )
 }
 
 private const val OFF = 0
-private const val MAX_SECONDS = 60
-
-private val labeledIndexes = listOf(OFF) + (5..MAX_SECONDS step 5)

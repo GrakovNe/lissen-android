@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
+import org.grakovne.lissen.domain.RewindOnPauseSettings
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.slider.SeekTimeSlider
 import org.grakovne.lissen.ui.screens.settings.composable.DisableableTimeBottomSheet
@@ -121,6 +122,7 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
     DisableableTimeBottomSheet(
       title = stringResource(R.string.rewind_on_pause_title),
       seconds = rewindOnPause,
+      maxSeconds = RewindOnPauseSettings.MAX_SECONDS,
       presets = rewindOnPausePresets,
       secondsLabel = R.plurals.seek_interval_seconds,
       offLabel = R.string.rewind_on_pause_disabled,

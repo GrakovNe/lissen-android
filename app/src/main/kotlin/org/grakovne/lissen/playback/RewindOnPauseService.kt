@@ -17,8 +17,9 @@ import javax.inject.Singleton
 
 /**
  * Rewinds a few seconds when playback is paused, so it continues with what was said last. Any
- * drop of playWhenReady is a pause: the user, a sleep timer, unplugged headphones, a lost audio
- * focus, the switch to another item. A seek or a stall stops the audio too and does not rewind.
+ * drop of playWhenReady is a pause: the user, a sleep timer, unplugged headphones, an audio
+ * focus lost for good, the switch to another item. A seek, a stall or a short loss of the audio
+ * focus stops the audio too and does not rewind.
  * The rewind stays inside the chapter and does not cross what the auto-skip skips. An "end of
  * episode" timer ends the episode, so its pause does not rewind either.
  */
