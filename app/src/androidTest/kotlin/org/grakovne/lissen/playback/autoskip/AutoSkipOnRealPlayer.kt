@@ -3,11 +3,15 @@ package org.grakovne.lissen.playback.autoskip
 import android.content.Context
 import android.os.SystemClock
 import androidx.annotation.OptIn
+import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.drm.DrmSessionManagerProvider
 import androidx.media3.exoplayer.source.MediaSource
+import androidx.media3.exoplayer.source.SilenceMediaSource
+import androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy
 import androidx.test.platform.app.InstrumentationRegistry
 import io.mockk.mockk
 import org.grakovne.lissen.domain.BookFile
@@ -27,7 +31,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 /**
  * The auto-skip service on a real ExoPlayer playing [item] four times over, recording every
  * discontinuity. A scenario seeks in the same main-thread task as the check that playback is
- * where it needs to be.
+ * where it needs to be. A subclass may attach more services to the player.
  */
 @OptIn(UnstableApi::class)
 abstract class AutoSkipOnRealPlayer {
@@ -39,8 +43,8 @@ abstract class AutoSkipOnRealPlayer {
   protected val synchronization = mockk<PlaybackSynchronizationService>(relaxed = true)
   protected val discontinuities = CopyOnWriteArrayList<Discontinuity>()
 
-  private val syncState = SyncStateStore()
-  private val preferences = AutoSkipPreferences(SecurePreferenceStore(context))
+  protected val syncState = SyncStateStore()
+  protected val preferences = AutoSkipPreferences(SecurePreferenceStore(context))
 
   protected lateinit var player: ExoPlayer
   protected lateinit var timer: PlaybackTimer
@@ -52,6 +56,9 @@ abstract class AutoSkipOnRealPlayer {
 
   // called before the player is built, so the media it reads can be made ready
   protected abstract fun prepareQueue(): List<MediaItem>
+
+  // called on the main thread once the player and its timer exist, before playback starts
+  protected open fun attachServices() {}
 
   @Before
   fun startPlayback() {
@@ -74,6 +81,7 @@ abstract class AutoSkipOnRealPlayer {
       )
       timer = PlaybackTimer(PlaybackEventBus(), player)
       AutoSkipService(player, preferences, syncState, timer, synchronization, steps).onCreate()
+      attachServices()
 
       // in the order the playback service does it
       syncState.update { it.start(item) }
@@ -176,6 +184,19 @@ abstract class AutoSkipOnRealPlayer {
       )
     }
   }
+}
+
+/** Plays silence as long as the media id says: "silence:<milliseconds>". */
+@OptIn(UnstableApi::class)
+class SilenceFactory : MediaSource.Factory {
+  override fun setDrmSessionManagerProvider(drmSessionManagerProvider: DrmSessionManagerProvider) = this
+
+  override fun setLoadErrorHandlingPolicy(loadErrorHandlingPolicy: LoadErrorHandlingPolicy) = this
+
+  override fun getSupportedTypes() = intArrayOf(C.CONTENT_TYPE_OTHER)
+
+  override fun createMediaSource(mediaItem: MediaItem): MediaSource =
+    SilenceMediaSource(mediaItem.mediaId.removePrefix("silence:").toLong() * 1_000L)
 }
 
 data class Discontinuity(

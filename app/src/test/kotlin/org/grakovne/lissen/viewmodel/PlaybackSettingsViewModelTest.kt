@@ -12,6 +12,7 @@ import kotlinx.coroutines.test.setMain
 import org.grakovne.lissen.common.AudioFocusLossPolicy
 import org.grakovne.lissen.domain.DurationTimerOption
 import org.grakovne.lissen.domain.EqualizerSettings
+import org.grakovne.lissen.domain.RewindOnPauseSettings
 import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.domain.SleepTimerSettings
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
@@ -38,6 +39,7 @@ class PlaybackSettingsViewModelTest {
     every { playback.getPlaybackVolumeBoost() } returns 0
     every { playback.getSeekTime() } returns SeekTime.Default
     every { playback.getSleepTimerSettings() } returns SleepTimerSettings.Default
+    every { playback.getRewindOnPause() } returns RewindOnPauseSettings.Default
     every { playback.getEqualizer() } returns EqualizerSettings.Default
     every { playback.getSoftwareCodecsEnabled() } returns false
     coEvery { equalizerBandProvider.getCapabilities() } returns EqualizerCapabilities.Unavailable
@@ -113,6 +115,45 @@ class PlaybackSettingsViewModelTest {
     fun `preferRewind preserves forward value`() {
       viewModel.preferRewind(10)
       assertEquals(SeekTime.Default.forward, viewModel.seekTime.value.forward)
+    }
+  }
+
+  @Nested
+  inner class RewindOnPausePreference {
+    @Test
+    fun `rewind on pause is initialized from preferences`() {
+      every { playback.getRewindOnPause() } returns RewindOnPauseSettings(enabled = true, seconds = 10)
+
+      assertEquals(
+        RewindOnPauseSettings(enabled = true, seconds = 10),
+        PlaybackSettingsViewModel(playback, equalizerBandProvider).rewindOnPause.value,
+      )
+    }
+
+    @Test
+    fun `preferRewindOnPauseEnabled off keeps the seconds`() {
+      viewModel.preferRewindOnPauseSeconds(10)
+      viewModel.preferRewindOnPauseEnabled(false)
+
+      assertEquals(RewindOnPauseSettings(enabled = false, seconds = 10), viewModel.rewindOnPause.value)
+      verify { playback.saveRewindOnPause(RewindOnPauseSettings(enabled = false, seconds = 10)) }
+    }
+
+    @Test
+    fun `preferRewindOnPauseEnabled updates state and persists`() {
+      viewModel.preferRewindOnPauseEnabled(true)
+
+      assertEquals(RewindOnPauseSettings(enabled = true, seconds = 3), viewModel.rewindOnPause.value)
+      verify { playback.saveRewindOnPause(RewindOnPauseSettings(enabled = true, seconds = 3)) }
+    }
+
+    @Test
+    fun `preferRewindOnPauseSeconds keeps the toggle and persists`() {
+      viewModel.preferRewindOnPauseEnabled(true)
+      viewModel.preferRewindOnPauseSeconds(10)
+
+      assertEquals(RewindOnPauseSettings(enabled = true, seconds = 10), viewModel.rewindOnPause.value)
+      verify { playback.saveRewindOnPause(RewindOnPauseSettings(enabled = true, seconds = 10)) }
     }
   }
 

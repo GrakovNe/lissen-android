@@ -23,13 +23,16 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.util.concurrent.CopyOnWriteArrayList
 
 /** The countdown is a fake; the listeners the timer adds to the player are triggered by hand. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class PlaybackTimerTest {
   private val bus = spyk(PlaybackEventBus())
   private val player = mockk<ExoPlayer>(relaxed = true)
-  private val listeners = mutableListOf<Player.Listener>()
+
+  // the timer adds a listener while the player is notifying, as media3 allows
+  private val listeners = CopyOnWriteArrayList<Player.Listener>()
   private val countdowns = mutableListOf<FakeCountdown>()
 
   private val timer =
@@ -40,6 +43,7 @@ class PlaybackTimerTest {
   init {
     every { player.addListener(capture(listeners)) } just Runs
     every { player.isPlaying } returns true
+    every { player.playWhenReady } returns true
   }
 
   @Test
@@ -56,6 +60,74 @@ class PlaybackTimerTest {
       assertEquals(listOf(PlaybackEvent.TimerTick(35), PlaybackEvent.TimerExpired), events)
       assertFalse(timer.isEpisodeTimerRunning)
     }
+
+  @Test
+  fun `an episode timer is expiring from its pause until every listener has seen it`() {
+    val expiringAtPause = mutableListOf<Boolean>()
+    every { player.pause() } answers { expiringAtPause += timer.isEpisodeTimerExpiring }
+
+    timer.startTimer(35.0, CurrentEpisodeTimerOption)
+    countdowns.single().finish()
+
+    // a pause made inside a player callback is delivered after pause() has returned
+    assertEquals(listOf(true), expiringAtPause)
+    assertTrue(timer.isEpisodeTimerExpiring)
+
+    listeners.last().onEvents(player, events(Player.EVENT_PLAY_WHEN_READY_CHANGED))
+
+    assertFalse(timer.isEpisodeTimerExpiring)
+    verify { player.removeListener(listeners.last()) }
+  }
+
+  @Test
+  fun `an episode timer that runs out at the chapter boundary is expiring from its pause as well`() {
+    val expiringAtPause = mutableListOf<Boolean>()
+    every { player.pause() } answers { expiringAtPause += timer.isEpisodeTimerExpiring }
+
+    timer.startTimer(35.0, CurrentEpisodeTimerOption)
+    listeners.first().onPositionDiscontinuity(position(1), position(2), Player.DISCONTINUITY_REASON_AUTO_TRANSITION)
+
+    assertEquals(listOf(true), expiringAtPause)
+    assertTrue(timer.isEpisodeTimerExpiring)
+
+    listeners.last().onEvents(player, events(Player.EVENT_PLAY_WHEN_READY_CHANGED))
+
+    assertFalse(timer.isEpisodeTimerExpiring)
+  }
+
+  @Test
+  fun `an episode timer keeps expiring through events that are not its pause`() {
+    timer.startTimer(35.0, CurrentEpisodeTimerOption)
+    countdowns.single().finish()
+
+    listeners.last().onEvents(player, events(Player.EVENT_POSITION_DISCONTINUITY))
+
+    assertTrue(timer.isEpisodeTimerExpiring)
+  }
+
+  @Test
+  fun `an episode timer with nothing left expires as one`() {
+    timer.startTimer(0.0, CurrentEpisodeTimerOption)
+
+    assertTrue(timer.isEpisodeTimerExpiring)
+  }
+
+  @Test
+  fun `an episode timer that expires on a paused player has no pause to wait for`() {
+    every { player.playWhenReady } returns false
+
+    timer.startTimer(0.0, CurrentEpisodeTimerOption)
+
+    assertFalse(timer.isEpisodeTimerExpiring)
+  }
+
+  @Test
+  fun `a duration timer never expires as an episode timer`() {
+    timer.startTimer(300.0, DurationTimerOption(5))
+    countdowns.single().finish()
+
+    assertFalse(timer.isEpisodeTimerExpiring)
+  }
 
   @Test
   fun `a duration timer does not own the end of the episode`() {
@@ -149,6 +221,8 @@ class PlaybackTimerTest {
     assertFalse(countdowns.single().stopped)
     verify(exactly = 0) { player.pause() }
   }
+
+  private fun events(event: Int) = mockk<Player.Events> { every { contains(any()) } answers { firstArg<Int>() == event } }
 
   private fun position(mediaItemIndex: Int) = Player.PositionInfo(null, mediaItemIndex, null, null, 0, 0L, 0L, C.INDEX_UNSET, C.INDEX_UNSET)
 

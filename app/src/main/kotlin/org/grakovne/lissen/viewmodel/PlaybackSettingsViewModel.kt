@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import org.grakovne.lissen.common.AudioFocusLossPolicy
 import org.grakovne.lissen.domain.EqualizerSettings
+import org.grakovne.lissen.domain.RewindOnPauseSettings
 import org.grakovne.lissen.domain.SeekTime
 import org.grakovne.lissen.domain.TimerOption
 import org.grakovne.lissen.persistence.preferences.PlaybackPreferences
@@ -38,6 +39,9 @@ class PlaybackSettingsViewModel
 
     private val _seekTime = MutableStateFlow(playback.getSeekTime())
     val seekTime: StateFlow<SeekTime> = _seekTime.asStateFlow()
+
+    private val _rewindOnPause = MutableStateFlow(playback.getRewindOnPause())
+    val rewindOnPause: StateFlow<RewindOnPauseSettings> = _rewindOnPause.asStateFlow()
 
     private val _defaultTimerOption = MutableStateFlow<TimerOption?>(playback.getDefaultTimerOption())
     val defaultTimerOption: StateFlow<TimerOption?> = _defaultTimerOption.asStateFlow()
@@ -96,6 +100,21 @@ class PlaybackSettingsViewModel
     private fun saveSeekTime(seekTime: SeekTime) {
       playback.saveSeekTime(seekTime)
       _seekTime.value = seekTime
+    }
+
+    fun preferRewindOnPauseEnabled(value: Boolean) {
+      Timber.d("User action: preferRewindOnPauseEnabled $value")
+      saveRewindOnPause(_rewindOnPause.value.copy(enabled = value))
+    }
+
+    fun preferRewindOnPauseSeconds(seconds: Int) {
+      Timber.d("User action: preferRewindOnPauseSeconds $seconds")
+      saveRewindOnPause(_rewindOnPause.value.copy(seconds = seconds))
+    }
+
+    private fun saveRewindOnPause(settings: RewindOnPauseSettings) {
+      playback.saveRewindOnPause(settings)
+      _rewindOnPause.value = settings
     }
 
     fun saveDefaultTimerOption(option: TimerOption?) {

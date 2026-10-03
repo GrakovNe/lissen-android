@@ -50,6 +50,7 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.slider.SeekTimeSlider
+import org.grakovne.lissen.ui.screens.settings.composable.SettingsToggleItem
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
 import org.grakovne.lissen.viewmodel.PlaybackSettingsViewModel
 
@@ -58,9 +59,11 @@ import org.grakovne.lissen.viewmodel.PlaybackSettingsViewModel
 fun SeekSettingsScreen(onBack: () -> Unit) {
   val viewModel: PlaybackSettingsViewModel = hiltViewModel()
   val preferredSeekTime by viewModel.seekTime.collectAsState()
+  val rewindOnPause by viewModel.rewindOnPause.collectAsState()
 
   var rewindExpanded by remember { mutableStateOf(false) }
   var forwardExpanded by remember { mutableStateOf(false) }
+  var rewindOnPauseExpanded by remember { mutableStateOf(false) }
 
   Scaffold(
     topBar = {
@@ -93,6 +96,19 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
           currentSeconds = preferredSeekTime.forward,
           onClicked = { forwardExpanded = true },
         )
+
+        SettingsToggleItem(
+          title = stringResource(R.string.rewind_on_pause_title),
+          description = stringResource(R.string.rewind_on_pause_description),
+          initialState = rewindOnPause.enabled,
+        ) { viewModel.preferRewindOnPauseEnabled(it) }
+
+        SeekTimeRowComposable(
+          title = stringResource(R.string.rewind_on_pause_interval_title),
+          currentSeconds = rewindOnPause.seconds,
+          enabled = rewindOnPause.enabled,
+          onClicked = { rewindOnPauseExpanded = true },
+        )
       }
     },
   )
@@ -112,6 +128,15 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
       currentSeconds = preferredSeekTime.forward,
       onDismissRequest = { forwardExpanded = false },
       onUpdate = { viewModel.preferForward(it) },
+    )
+  }
+
+  if (rewindOnPauseExpanded) {
+    SeekTimeBottomSheet(
+      title = stringResource(R.string.rewind_on_pause_interval_title),
+      currentSeconds = rewindOnPause.seconds,
+      onDismissRequest = { rewindOnPauseExpanded = false },
+      onUpdate = { viewModel.preferRewindOnPauseSeconds(it) },
     )
   }
 }
@@ -204,15 +229,21 @@ private fun SeekTimeBottomSheet(
 private fun SeekTimeRowComposable(
   title: String,
   currentSeconds: Int,
+  enabled: Boolean = true,
   onClicked: () -> Unit,
 ) {
   val context = LocalContext.current
+  val color =
+    when (enabled) {
+      true -> colorScheme.onBackground
+      false -> colorScheme.onBackground.copy(alpha = 0.4f)
+    }
 
   Row(
     modifier =
       Modifier
         .fillMaxWidth()
-        .clickable { onClicked() }
+        .clickable(enabled = enabled) { onClicked() }
         .padding(horizontal = 24.dp, vertical = 12.dp),
   ) {
     Column(modifier = Modifier.weight(1f)) {
@@ -220,10 +251,12 @@ private fun SeekTimeRowComposable(
         text = title,
         style = typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
         modifier = Modifier.padding(bottom = 4.dp),
+        color = color,
       )
       Text(
         text = context.resources.getQuantityString(R.plurals.seek_interval_seconds, currentSeconds, currentSeconds),
         style = typography.bodyMedium,
+        color = color,
       )
     }
   }

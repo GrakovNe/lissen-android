@@ -182,6 +182,9 @@
     <string name="sleep_timer_fade_duration_title">Длительность затухания</string>
     <string name="rewind_interval">Интервал перемотки назад</string>
     <string name="forward_interval">Интервал перемотки вперёд</string>
+    <string name="rewind_on_pause_title">Перемотка назад при паузе</string>
+    <string name="rewind_on_pause_description">Возвращаться на несколько секунд при паузе</string>
+    <string name="rewind_on_pause_interval_title">Интервал перемотки при паузе</string>
     <string name="continue_playback_shortcut_title">Продолжить</string>
     <string name="continue_playback_shortcut_description">Продолжить слушать</string>
     <string name="playing_item_details_narrator">Чтец</string>

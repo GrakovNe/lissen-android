@@ -4,6 +4,7 @@ import android.content.Context
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import org.grakovne.lissen.domain.RewindOnPauseSettings
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -49,6 +50,20 @@ class LissenConfigProviderTest {
 
       assertTrue(result)
       verify { backupManager.importSettings(match { it.colorScheme == "DARK" }) }
+    }
+
+    @Test
+    fun `importConfig passes the nested rewind on pause settings through`() {
+      provider.importConfig("""{"schemaVersion":1,"rewindOnPause":{"enabled":true,"seconds":10}}""")
+
+      verify { backupManager.importSettings(match { it.rewindOnPause == RewindOnPauseSettings(enabled = true, seconds = 10) }) }
+    }
+
+    @Test
+    fun `a backup from a release without the setting leaves it alone`() {
+      provider.importConfig("""{"schemaVersion":1}""")
+
+      verify { backupManager.importSettings(match { it.rewindOnPause == null }) }
     }
 
     @Test

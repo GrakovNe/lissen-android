@@ -182,6 +182,9 @@
     <string name="sleep_timer_fade_duration_title">Fade duration</string>
     <string name="rewind_interval">Rewind interval</string>
     <string name="forward_interval">Forward interval</string>
+    <string name="rewind_on_pause_title">Rewind on pause</string>
+    <string name="rewind_on_pause_description">Go back a few seconds when playback is paused</string>
+    <string name="rewind_on_pause_interval_title">Rewind on pause interval</string>
     <string name="continue_playback_shortcut_title">Continue</string>
     <string name="continue_playback_shortcut_description">Continue listening</string>
     <string name="offline_cache_is_empty">No saved content yet</string>

@@ -79,6 +79,26 @@ class AutoSkipPlannerTest {
     }
   }
 
+  @Nested
+  inner class RewindLimit {
+    @Test
+    fun `past the intro a rewind stops at its end`() {
+      assertEquals(30_000L, chapter.rewindLimitMs(positionMs = 30_000L))
+      assertEquals(30_000L, chapter.rewindLimitMs(positionMs = 579_999L))
+    }
+
+    @Test
+    fun `inside the intro a rewind may reach the start`() {
+      assertEquals(0L, chapter.rewindLimitMs(positionMs = 29_999L))
+    }
+
+    @Test
+    fun `inside the outro a rewind stays a millisecond past its start`() {
+      assertEquals(580_001L, chapter.rewindLimitMs(positionMs = 580_000L))
+      assertEquals(580_001L, chapter.rewindLimitMs(positionMs = chapterMs))
+    }
+  }
+
   /** The fixture podcast: c0 30s, c1 40s, c2 50s, skipping 10s at both ends. */
   @Nested
   inner class Exit {

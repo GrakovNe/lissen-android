@@ -120,12 +120,13 @@ class PlaybackSynchronizationService
 
       Timber.d("Trying to sync $overallProgress for ${currentItem.id}")
 
+      // before the return below: a pause that lands on the very start still ends the listening stretch
+      listeningMark = accumulateListening(listeningMark, exoPlayer.isPlaying, SystemClock.elapsedRealtime())
+
       if (overallProgress.currentTotalTime == 0.0) {
         Timber.d("Skipping sync for ${currentItem.id} due to playing doesn't started ")
         return
       }
-
-      listeningMark = accumulateListening(listeningMark, exoPlayer.isPlaying, SystemClock.elapsedRealtime())
 
       val snapshot =
         SyncSnapshot(
