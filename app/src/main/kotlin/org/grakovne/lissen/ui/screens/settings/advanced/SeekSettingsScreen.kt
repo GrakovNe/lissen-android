@@ -135,6 +135,7 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
     SeekTimeBottomSheet(
       title = stringResource(R.string.rewind_on_pause_interval_title),
       currentSeconds = rewindOnPause.seconds,
+      presets = rewindOnPausePresets,
       onDismissRequest = { rewindOnPauseExpanded = false },
       onUpdate = { viewModel.preferRewindOnPauseSeconds(it) },
     )
@@ -146,6 +147,7 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
 private fun SeekTimeBottomSheet(
   title: String,
   currentSeconds: Int,
+  presets: List<Int> = seekTimePresets,
   onDismissRequest: () -> Unit,
   onUpdate: (Int) -> Unit,
 ) {
@@ -187,7 +189,7 @@ private fun SeekTimeBottomSheet(
           modifier = Modifier.fillMaxWidth(),
           horizontalArrangement = Arrangement.SpaceEvenly,
         ) {
-          seekTimePresets.forEach { preset ->
+          presets.forEach { preset ->
             FilledTonalButton(
               onClick = {
                 withHaptic(view) {
@@ -263,3 +265,4 @@ private fun SeekTimeRowComposable(
 }
 
 private val seekTimePresets = listOf(5, 10, 15, 30, 60)
+private val rewindOnPausePresets = listOf(1, 3, 5, 7, 10, 30)
