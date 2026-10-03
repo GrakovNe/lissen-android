@@ -171,6 +171,16 @@ class RewindOnPauseServiceTest {
     }
 
     @Test
+    fun `a gap inside the source keeps the next pause rewinding`() {
+      playbackRuns()
+      listener.captured.onPositionDiscontinuity(position(20_000L), position(21_000L), Player.DISCONTINUITY_REASON_INTERNAL)
+      positionMs = 21_000L
+      pause()
+
+      assertEquals(listOf(18_000L), seeks)
+    }
+
+    @Test
     fun `the pause of an expiring episode timer keeps the position`() {
       episodeTimerExpiring = true
       playbackRuns()

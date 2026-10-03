@@ -48,8 +48,8 @@ class RewindOnPauseService
           newPosition: Player.PositionInfo,
           reason: Int,
         ) {
-          // a chapter that follows on its own continues the audio
-          if (reason != Player.DISCONTINUITY_REASON_AUTO_TRANSITION) played = false
+          // the audio runs on through a chapter that follows on its own and through a gap in the source
+          if (reason != Player.DISCONTINUITY_REASON_AUTO_TRANSITION && reason != Player.DISCONTINUITY_REASON_INTERNAL) played = false
         }
 
         override fun onPlayWhenReadyChanged(

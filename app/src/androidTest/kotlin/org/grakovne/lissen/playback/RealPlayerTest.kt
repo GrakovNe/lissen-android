@@ -46,7 +46,7 @@ abstract class RealPlayerTest {
   protected val discontinuities = CopyOnWriteArrayList<Discontinuity>()
 
   protected val syncState = SyncStateStore()
-  protected val preferences = AutoSkipPreferences(SecurePreferenceStore(context))
+  protected val autoSkipPreferences = AutoSkipPreferences(SecurePreferenceStore(context))
 
   protected lateinit var player: ExoPlayer
   protected lateinit var timer: PlaybackTimer
@@ -64,7 +64,7 @@ abstract class RealPlayerTest {
 
   @Before
   fun startPlayback() {
-    preferences.save(item.id, configuration)
+    autoSkipPreferences.save(item.id, configuration)
     val queue = prepareQueue()
 
     onMain {
@@ -82,7 +82,7 @@ abstract class RealPlayerTest {
         },
       )
       timer = PlaybackTimer(PlaybackEventBus(), player)
-      AutoSkipService(player, preferences, syncState, timer, synchronization, steps).onCreate()
+      AutoSkipService(player, autoSkipPreferences, syncState, timer, synchronization, steps).onCreate()
       attachServices()
 
       // in the order the playback service does it
@@ -100,7 +100,7 @@ abstract class RealPlayerTest {
       timer.stopTimer()
       player.release()
     }
-    preferences.save(item.id, AutoSkipConfiguration.disabled)
+    autoSkipPreferences.save(item.id, AutoSkipConfiguration.disabled)
   }
 
   protected fun remainingInChapter(): Double =

@@ -36,7 +36,7 @@ class PlaybackPreferencesRewindOnPauseTest {
     }
 
     @Test
-    fun `ignores the value the withdrawn setting of 2025 left behind`() {
+    fun `ignores the value 1_4_5 to 1_6_0 left under the old key`() {
       every { sharedPreferences.getString("rewind_on_pause", null) } returns
         """{"enabled":true,"time":"SEEK_5"}"""
       every { sharedPreferences.getString("rewind_on_pause_settings", null) } returns null

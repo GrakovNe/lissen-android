@@ -112,7 +112,7 @@ effect (where observable in UI), restore default, back out.
 | 5.6 | Boosted volume | open picker, pick option, persists |
 | 5.7 | Playback on notification (Lower volume/Pause) | pick option, persists |
 | 5.8 | Equalizer | open → bands + "Restore default" visible; toggle Enabled/Disabled; restore defaults; back |
-| 5.9 | Timer settings: Fade out | the seconds-or-off sheet opens at the stored value, states persist |
+| 5.9 | Timer settings: Fade out | the seconds-or-off sheet opens, a preset is taken and shown on the row |
 | 5.10 | Default sleep timer | pick "When the chapter ends" → selection shown; revert to Disabled |
 
 ### 5.z Downloads

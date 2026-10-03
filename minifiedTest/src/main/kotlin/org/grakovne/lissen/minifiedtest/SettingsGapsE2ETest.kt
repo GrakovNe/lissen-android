@@ -128,9 +128,10 @@ class SettingsGapsE2ETest {
     waitForElement(By.text("Timer settings"))
     clickElement(By.text("Timer settings"))
     waitForElement(By.text("Fade out"))
-    clickElement(By.text("Fade out"))
-    // the sheet opens at the stored value: off on cleared app data
-    assertTrue("the fade sheet should show the current value", elementExists(By.text("Disabled"), 10_000))
+    // "60" is a preset inside the sheet; "Disabled" is on the screen underneath as well
+    clickUntil(By.text("Fade out"), By.text("60"))
+    tapPresetButton("15")
+    assertTrue("the fade sheet should take the preset", elementExists(By.text("15 seconds"), 10_000))
     // a back press dismisses the sheet and may pop the whole screen; either way the app
     // must land back on the timer screen or the playback list, not crash
     pressBack()
@@ -157,7 +158,8 @@ class SettingsGapsE2ETest {
     waitForElement(By.text("Sleep Timer"))
     tapButtonLeftOf("15")
     pressBack()
-    assertTrue("the row should be back to Disabled", elementExists(By.text("Disabled")))
+    // "Disabled" is also what the fade row says
+    waitUntilAbsent(By.text("15 minutes"))
   }
 
   @Test

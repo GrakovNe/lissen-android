@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -87,7 +88,7 @@ fun SecondsOrOffBottomSheet(
           },
         )
 
-        // the buttons share the width once the cross makes 56 dp each too wide
+        // seven buttons at 56 dp do not fit a narrow screen, so they share the width
         Row(
           modifier = Modifier.fillMaxWidth(),
           horizontalArrangement = Arrangement.SpaceEvenly,
@@ -121,7 +122,7 @@ fun SecondsOrOffBottomSheet(
 
                 Icon(
                   imageVector = Icons.Outlined.Close,
-                  contentDescription = null,
+                  contentDescription = stringResource(offLabel),
                   modifier = Modifier.size(iconSize),
                 )
               } else {

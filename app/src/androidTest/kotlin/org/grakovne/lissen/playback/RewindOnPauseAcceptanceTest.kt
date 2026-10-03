@@ -38,7 +38,7 @@ class RewindOnPauseAcceptanceTest : RealPlayerTest() {
     RewindOnPauseService(
       player = player,
       preferences = playbackPreferences,
-      autoSkipPreferences = preferences,
+      autoSkipPreferences = autoSkipPreferences,
       syncState = syncState,
       playbackTimer = timer,
     ).onCreate()
