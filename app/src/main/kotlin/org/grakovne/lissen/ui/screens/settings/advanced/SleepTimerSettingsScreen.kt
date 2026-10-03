@@ -22,7 +22,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import org.grakovne.lissen.R
 import org.grakovne.lissen.domain.LibraryType
 import org.grakovne.lissen.ui.screens.settings.composable.DefaultTimerSettingsComposable
-import org.grakovne.lissen.ui.screens.settings.composable.SecondsOrOffBottomSheet
+import org.grakovne.lissen.ui.screens.settings.composable.DisableableTimeBottomSheet
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
 import org.grakovne.lissen.viewmodel.LibrarySettingsViewModel
 import org.grakovne.lissen.viewmodel.PlaybackSettingsViewModel
@@ -86,7 +86,7 @@ internal fun SleepTimerSettingsScreenContent(
   )
 
   if (fadeExpanded) {
-    SecondsOrOffBottomSheet(
+    DisableableTimeBottomSheet(
       title = stringResource(R.string.sleep_timer_fade_title),
       seconds = fade,
       presets = fadeTimePresets,

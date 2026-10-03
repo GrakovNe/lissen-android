@@ -42,7 +42,7 @@ import org.grakovne.lissen.R
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
 import org.grakovne.lissen.ui.components.slider.SeekTimeSlider
-import org.grakovne.lissen.ui.screens.settings.composable.SecondsOrOffBottomSheet
+import org.grakovne.lissen.ui.screens.settings.composable.DisableableTimeBottomSheet
 import org.grakovne.lissen.ui.screens.settings.composable.SettingsTopAppBar
 import org.grakovne.lissen.viewmodel.PlaybackSettingsViewModel
 
@@ -118,7 +118,7 @@ fun SeekSettingsScreen(onBack: () -> Unit) {
   }
 
   if (rewindOnPauseExpanded) {
-    SecondsOrOffBottomSheet(
+    DisableableTimeBottomSheet(
       title = stringResource(R.string.rewind_on_pause_title),
       seconds = rewindOnPause,
       presets = rewindOnPausePresets,

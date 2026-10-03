@@ -36,12 +36,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import org.grakovne.lissen.common.withHaptic
 import org.grakovne.lissen.ui.components.LissenModalBottomSheet
-import org.grakovne.lissen.ui.components.slider.SecondsOrOffSlider
+import org.grakovne.lissen.ui.components.slider.DisableableTimeSlider
 
 /** Picks a number of seconds or off, like the sleep timer sheet: a slider and presets, the first of which is off. */
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-fun SecondsOrOffBottomSheet(
+fun DisableableTimeBottomSheet(
   title: String,
   seconds: Int?,
   presets: List<Int>,
@@ -71,7 +71,7 @@ fun SecondsOrOffBottomSheet(
           style = typography.bodyLarge,
         )
 
-        SecondsOrOffSlider(
+        DisableableTimeSlider(
           context = context,
           seconds = selected,
           secondsLabel = secondsLabel,

@@ -11,7 +11,7 @@ import kotlin.math.roundToInt
 
 /** A number of seconds, or off at the very left. */
 @Composable
-fun SecondsOrOffSlider(
+fun DisableableTimeSlider(
   context: Context,
   seconds: Int?,
   @PluralsRes secondsLabel: Int,
