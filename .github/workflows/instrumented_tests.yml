@@ -24,8 +24,12 @@ jobs:
           distribution: 'zulu'
           java-version: '25'
 
+      # The runner is persistent and keeps its own Gradle home; saving it to the
+      # GitHub cache only costs an upload (16 minutes on a push to main).
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
+        with:
+          cache-disabled: true
 
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
