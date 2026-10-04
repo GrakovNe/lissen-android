@@ -240,8 +240,19 @@ done
 log "installing minified APKs"
 for slot in $E2E_SLOTS; do
   serial="$(serial_of "$slot")"
-  $ADB -s "$serial" install -r "$MINIFIED_APP_APK" >/dev/null || { log "install failed: $MINIFIED_APP_APK"; exit 1; }
-  $ADB -s "$serial" install -r -t "$MINIFIED_TEST_APK" >/dev/null || { log "install failed: $MINIFIED_TEST_APK"; exit 1; }
+  # Uninstall, not reinstall: the launcher drops its widget host views for a
+  # removed package. pm clear alone leaves the previous run's pins behind as
+  # zombie cells, and pinWidget then drags onto occupied/rejected targets.
+  $ADB -s "$serial" uninstall org.grakovne.lissen.minified >/dev/null 2>&1 || true
+  $ADB -s "$serial" uninstall org.grakovne.lissen.minifiedtest >/dev/null 2>&1 || true
+  $ADB -s "$serial" install "$MINIFIED_APP_APK" >/dev/null || { log "install failed: $MINIFIED_APP_APK"; exit 1; }
+  $ADB -s "$serial" install -t "$MINIFIED_TEST_APK" >/dev/null || { log "install failed: $MINIFIED_TEST_APK"; exit 1; }
+  # The AVD (and its launcher database) survives between CI runs; a polluted
+  # workspace makes widget drops land on rejected cells and pressHome stop
+  # foregrounding. Reset the launcher to its default workspace instead.
+  $ADB -s "$serial" shell pm clear com.google.android.apps.nexuslauncher >/dev/null 2>&1 || true
+  $ADB -s "$serial" shell input keyevent KEYCODE_HOME >/dev/null 2>&1 || true
+  sleep 3
   prepare_device "$serial" org.grakovne.lissen.minified
   start_logcat "$slot"
 done
